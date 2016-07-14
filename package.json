@@ -1,0 +1,31 @@
+{
+  "name": "ethers-wallet",
+  "version": "0.0.1",
+  "description": "Ethereum wallet library.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "aes-js": "0.2.4",
+    "elliptic": "6.3.1",
+    "ethereumjs-tx": "1.1.1",
+    "ethereumjs-util": "4.3.0",
+    "pbkdf2": "3.0.4",
+    "rlp": "2.0.0",
+    "scrypt-js": "2.0.0",
+    "uuid": "2.0.1"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-browserify": "^5.0.0",
+    "grunt-contrib-uglify": "^1.0.1",
+    "web3": "0.15.3"
+  },
+  "keywords": [
+    "ethereum",
+    "wallet"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT"
+}
