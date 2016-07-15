@@ -1,5 +1,6 @@
 var aes = require('aes-js');
 var elliptic = require('elliptic');
+//var elliptic = require('./elliptic/lib/elliptic.js');
 var pbkdf2 = require('pbkdf2');
 var rlp = require('rlp');
 var scrypt = require('scrypt-js');
@@ -9,7 +10,7 @@ var BN = require('./node_modules/elliptic/node_modules/bn.js/lib/bn.js');
 
 var sha3 = require('./lib/sha3.js');
 
-var secp256k1 = new (require('elliptic').ec)('secp256k1');
+var secp256k1 = new (elliptic.ec)('secp256k1');
 
 
 function stripZeros(buffer) {
@@ -42,7 +43,7 @@ function hexOrBuffer(value, name) {
 
     return value;
 }
-
+/*
 function rlpEncodeLength(length) {
 }
 
@@ -53,7 +54,7 @@ function rlpArray(items) {
     }
     
 }
-
+*/
 function defineProperty(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
