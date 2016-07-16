@@ -1,3 +1,5 @@
+// @TODO: Move to an actual unit test system
+
 var crypto = require('crypto');
 
 var ethereumTx = require('ethereumjs-tx');
@@ -27,10 +29,63 @@ function randomHex(length) {
 }
 
 (function() {
+    var abi = {
+        "SimpleStorage": [
+            {
+                "constant":true,
+                "inputs":[],
+                "name":"getValue",
+                "outputs":[{"name":"","type":"string"}],
+                "type":"function"
+            }, {
+                "constant":false,
+                "inputs":[{"name":"value","type":"string"}],
+                "name":"setValue",
+                "outputs":[],
+                "type":"function"
+            }, {
+                "anonymous":false,
+                "inputs":[
+                    {"indexed":false,"name":"oldValue","type":"string"},
+                    {"indexed":false,"name":"newValue","type":"string"}
+                ],
+                "name":"valueChanged",
+                "type":"event"
+            }
+        ]
+    }
+/*
+    var privateKey = Wallet.utils.Buffer(32);
+    privateKey.fill(0x42);
+
+    var wallet = new Wallet(privateKey);
+*/
+    var contract = new Wallet._Contract(abi.SimpleStorage);
+    var getValue = contract.getValue()
+    var setValue = contract.setValue("foobar");
+    var valueChanged = contract.valueChanged()
+    console.log(getValue, setValue, valueChanged);
+})();
+
+(function() {
+    for (var i = 0; i < 1000; i++) {
+        var privateKey = randomBytes(32);
+        var official = '0x' + ethereumUtil.privateToAddress(privateKey).toString('hex');
+        var ethers = (new Wallet(privateKey)).address;
+        if (ethers !== ethereumUtil.toChecksumAddress(official)) {
+            console.log(i);
+            console.log('A', official);
+            console.log('B', ethers);
+            throw new Error('What?');
+        }
+    }
+})();
+
+(function() {
     function testAddress(address) {
         var officialIban = (iban.fromAddress(address))._iban;
 
-        var ethersAddress = Wallet.utils.getAddress(officialIban);
+        var ethersAddress = Wallet.getAddress(officialIban);
         var officialAddress = ethereumUtil.toChecksumAddress(address)
 
         if (officialAddress !== ethersAddress) {
@@ -39,7 +94,7 @@ function randomHex(length) {
             throw new Error('waht?! address');
         }
 
-        var ethersIban = Wallet.utils.getIcapAddress(address);
+        var ethersIban = Wallet.getIcapAddress(address);
 
         if (officialIban !== ethersIban) {
             console.log('A', officialIban);
@@ -58,7 +113,7 @@ function randomHex(length) {
 (function() {
     function testAddress(address) {
         var official = ethereumUtil.toChecksumAddress(address);
-        var ethers = Wallet.utils.getAddress(address);
+        var ethers = Wallet.getAddress(address);
         if (official !== ethers) {
             console.log('A', official);
             console.log('B', ethers);
@@ -69,19 +124,6 @@ function randomHex(length) {
     testAddress('0xffffffffffffffffffffffffffffffffffffffff');
     for (var i = 0; i < 10000; i++) {
         testAddress(randomHex(20));
-    }
-})();
-
-(function() {
-    for (var i = 0; i < 1000; i++) {
-        var privateKey = randomBytes(32);
-        var official = '0x' + ethereumUtil.privateToAddress(privateKey).toString('hex');
-        var ethers = (new Wallet(privateKey)).address;
-        if (ethers !== official) {
-            console.log('A', official);
-            console.log('B', ethers);
-            throw new Error('What?');
-        }
     }
 })();
 
