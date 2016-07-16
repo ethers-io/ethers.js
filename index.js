@@ -6,55 +6,25 @@ var rlp = require('rlp');
 var scrypt = require('scrypt-js');
 var uuid = require('uuid');
 
-var BN = require('./node_modules/elliptic/node_modules/bn.js/lib/bn.js');
+var Contract = require('./lib/contract.js');
 
-var sha3 = require('./lib/sha3.js');
+var utils = require('./lib/utils.js');
+var BN = utils.BN;
 
 var secp256k1 = new (elliptic.ec)('secp256k1');
 
-
-function stripZeros(buffer) {
-    var i = 0;
-    for (i = 0; i < buffer.length; i++) {
-        if (buffer[i] !== 0) { break; }
-    }
-    return (i > 0) ? buffer.slice(i): buffer;
-}
-
-function bnToBuffer(bn) {
-    var hex = bn.toString(16);
-    if (hex.length % 2) { hex = '0' + hex; }
-    return stripZeros(new Buffer(hex, 'hex'));
-}
-
-function hexOrBuffer(value, name) {
-    if (!Buffer.isBuffer(value)) {
-        if (typeof(value) !== 'string' || !value.match(/^0x[0-9A-Fa-f]*$/)) {
-            var error = new Error(name ? ('invalid ' + name) : 'invalid hex or buffer');
-            error.reason = 'invalid hex string';
-            error.value = value;
-            throw error;
-        }
-
-        value = value.substring(2);
-        if (value.length % 2) { value = '0' + value; }
-        value = new Buffer(value, 'hex');
-    }
-
-    return value;
-}
 /*
+// @TODO: Make our own implementation of rlp; the existing one is MLP-2.0, we want MIT. :)
 function rlpEncodeLength(length) {
 }
 
 function rlpArray(items) {
-    
     var output = new Buffer(0);
     for (var i = 0; i < items.length; i++) {
     }
-    
 }
 */
+
 function defineProperty(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -62,14 +32,15 @@ function defineProperty(object, name, value) {
     });
 }
 
-var utils = {};
-defineProperty(utils, 'defineProperty', defineProperty);
+var exportUtils = {};
 
-defineProperty(utils, 'aes', aes);
-defineProperty(utils, 'BN', BN);
-defineProperty(utils, 'Buffer', Buffer);
-defineProperty(utils, 'scrypt', scrypt);
-defineProperty(utils, 'sha3', sha3);
+// These may go away in the future...
+defineProperty(exportUtils, '_aes', aes);
+defineProperty(exportUtils, '_scrypt', scrypt);
+
+defineProperty(exportUtils, 'BN', BN);
+defineProperty(exportUtils, 'Buffer', Buffer);
+defineProperty(exportUtils, 'sha3', utils.sha3);
 
 function getChecksumAddress(address) {
     if (typeof(address) !== 'string' || !address.match(/^0x[0-9A-Fa-f]{40}$/)) {
@@ -77,7 +48,7 @@ function getChecksumAddress(address) {
     }
 
     address = address.substring(2).toLowerCase();
-    var hash = sha3(address);
+    var hash = utils.sha3(address);
 
     address = address.split('');
     for (var i = 0; i < 40; i += 2) {
@@ -126,7 +97,88 @@ var ibanChecksum = (function() {
     };
 })();
 
-defineProperty(utils, 'getAddress', function(address) {
+// http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
+defineProperty(exportUtils, 'getContractAddress', function(transaction) {
+    if (typeof(address) !== 'string' || !address.match(/^0x[0-9A-Fa-f]{40}$/)) {
+        throw new Error('invalid from');
+    }
+
+    return '0x' + utils.sha3(rlp.encode([
+        utils.hexOrBuffer(transaction.from),
+        utils.hexOrBuffer(utils.hexlify(transaction.nonce, 'nonce'))
+    ])).slice(12).toString('hex');
+});
+
+var transactionFields = [
+    {name: 'nonce',    maxLength: 32, },
+    {name: 'gasPrice', maxLength: 32, },
+    {name: 'gasLimit', maxLength: 32, },
+    {name: 'to',          length: 20, },
+    {name: 'value',    maxLength: 32, },
+    {name: 'data'},
+];
+
+
+function Wallet(privateKey) {
+    if (!(this instanceof Wallet)) { throw new Error('missing new'); }
+
+    if (typeof(privateKey) === 'string' && privateKey.match(/^0x[0-9A-Fa-f]{64}$/)) {
+        privateKey = new Buffer(privateKey.substring(2), 'hex');
+    } else if (!Buffer.isBuffer(privateKey) || privateKey.length !== 32) {
+        throw new Error('invalid private key');
+    }
+
+    var keyPair = secp256k1.keyFromPrivate(privateKey);
+
+    var publicKey = (new Buffer(keyPair.getPublic(false, 'hex'), 'hex')).slice(1);
+    var address = Wallet.getAddress(utils.sha3(publicKey).slice(12).toString('hex'));
+    defineProperty(this, 'address', address);
+
+    defineProperty(this, 'sign', function(transaction) {
+        var raw = [];
+        transactionFields.forEach(function(fieldInfo) {
+            var value = transaction[fieldInfo.name] || (new Buffer(0));
+            value = utils.hexOrBuffer(utils.hexlify(value), fieldInfo.name);
+
+            // Fixed-width field
+            if (fieldInfo.length && value.length !== fieldInfo.length) {
+                var error = new Error('invalid ' + fieldInfo.name);
+                error.reason = 'wrong length';
+                error.value = value;
+                throw error;
+            }
+
+            // Variable-width (with a maximum)
+            if (fieldInfo.maxLength) {
+                value = utils.stripZeros(value);
+                if (value.length > fieldInfo.maxLength) {
+                    var error = new Error('invalid ' + fieldInfo.name);
+                    error.reason = 'too long';
+                    error.value = value;
+                    throw error;
+                }
+            }
+
+            raw.push(value);
+        });
+
+        var digest = utils.sha3(rlp.encode(raw));
+
+        var signature = keyPair.sign(digest, {canonical: true});
+        var s = signature.s;
+        var v = signature.recoveryParam;
+
+        raw.push(new Buffer([27 + v]));
+        raw.push(utils.bnToBuffer(signature.r));
+        raw.push(utils.bnToBuffer(s));
+
+        return ('0x' + rlp.encode(raw).toString('hex'));
+    });
+}
+
+defineProperty(Wallet, 'utils', exportUtils);
+
+defineProperty(Wallet, 'getAddress', function(address) {
     var result = null;
 
     if (typeof(address) !== 'string') { throw new Error('invalid address'); }
@@ -162,87 +214,195 @@ defineProperty(utils, 'getAddress', function(address) {
     return result;
 });
 
-defineProperty(utils, 'getIcapAddress', function(address) {
-    address = utils.getAddress(address).substring(2);
+defineProperty(Wallet, 'getIcapAddress', function(address) {
+    address = Wallet.getAddress(address).substring(2);
     var base36 = (new BN(address, 16)).toString(36).toUpperCase();
     while (base36.length < 30) { base36 = '0' + base36; }
     return 'XE' + ibanChecksum('XE00' + base36) + base36;
 });
 
-// http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
-defineProperty(utils, 'getContractAddress', function(transaction) {
-    return '0x' + utils.sha3(rlp.encode([
-        hexOrBuffer(transaction.from, 'from'),
-        hexOrBuffer(transaction.nonce, 'nonce')
-    ])).slice(12).toString('hex');
-});
+defineProperty(Wallet, '_Contract', Contract);
 
-var transactionFields = [
-    {name: 'nonce',    maxLength: 32, },
-    {name: 'gasPrice', maxLength: 32, },
-    {name: 'gasLimit', maxLength: 32, },
-    {name: 'to',          length: 20, },
-    {name: 'value',    maxLength: 32, },
-    {name: 'data'},
-];
+var allowedTransactionKeys = {
+    data: true, from: true, gasLimit: true, gasPrice:true, to: true, value: true
+}
+function AttachedContract(web3, wallet, contractAddress, contract) {
+    utils.defineProperty(this, 'web3', web3);
+    utils.defineProperty(this, 'wallet', wallet);
+    utils.defineProperty(this, 'contractAddress', contractAddress);
 
+    utils.defineProperty(this, '_contract', contract);
 
-function Wallet(privateKey) {
-    if (!(this instanceof Wallet)) { throw new Error('missing new'); }
-
-    if (typeof(privateKey) === 'string' && privateKey.match(/^0x[0-9A-Fa-f]{64}$/)) {
-        privateKey = new Buffer(privateKey.substring(2), 'hex');
-    } else if (!Buffer.isBuffer(privateKey) || privateKey.length !== 32) {
-        throw new Error('invalid private key');
+    function getWeb3Promise(method) {
+        var params = Array.prototype.slice.call(arguments, 1);
+        return new Promise(function(resolve, reject) {
+            params.push(function(error, result) {
+                if (error) {
+                    return reject(error);
+                }
+                resolve(result);
+            });
+            web3.eth[method].apply(web3, params);
+        });
     }
 
-    var keyPair = secp256k1.keyFromPrivate(privateKey);
+    var self = this;
 
-    var publicKey = (new Buffer(keyPair.getPublic(false, 'hex'), 'hex')).slice(1);
-    defineProperty(this, 'address', '0x' + sha3(publicKey).slice(12).toString('hex'));
+    var filters = {};
+    function setupFilter(call, callback) {
+        var info = filters[call.name];
 
-    defineProperty(this, 'sign', function(transaction) {
-        var raw = [];
-        transactionFields.forEach(function(fieldInfo) {
-            var value = transaction[fieldInfo.name] || (new Buffer(0));
-            value = hexOrBuffer(value, fieldInfo.name);
+        // Stop and remove the filter
+        if (!callback) {
+            if (info) { info.filter.stopWatching(); }
+            delete filters[call.name];
+            return;
+        }
 
-            // Fixed-width field
-            if (fieldInfo.length && value.length !== fieldInfo.length) {
-                var error = new Error('invalid ' + fieldInfo.name);
-                error.reason = 'wrong length';
-                error.value = value;
-                throw error;
+        if (typeof(callback) !== 'function') {
+            throw new Error('invalid callback');
+        }
+
+        // Already have a filter, just update the callback
+        if (info) {
+            info.callback = callback;
+            return;
+        }
+
+        info = {callback: callback};
+        filters[call.name] = info;
+
+        // Start a new filter
+        info.filter = web3.eth.filter({
+            address: contractAddress,
+            topics: call.topics
+        }, function(error, result) {
+            // @TODO: Emit errors to .onerror? Maybe?
+            if (error) {
+                console.log(error);
+                return;
             }
 
-            // Variable-width (with a maximum)
-            if (fieldInfo.maxLength) {
-                value = stripZeros(value);
-                if (value.length > fieldInfo.maxLength) {
-                    var error = new Error('invalid ' + fieldInfo.name);
-                    error.reason = 'too long';
-                    error.value = value;
-                    throw error;
+            try {
+                info.callback.apply(self, call.parse(result.data));
+            } catch(error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function runMethod(method) {
+        return function() {
+            var transaction = {}
+
+            var params = Array.prototype.slice.call(arguments);
+            if (params.length == contract[method].inputs.length + 1) {
+                transaction = params.pop();
+                if (typeof(transaction) !== 'object') {
+                    throw new Error('invalid transaction overrides');
+                }
+                for (var key in transaction) {
+                    if (!allowedTransactionKeys[key]) {
+                        throw new Error('unknown transaction override ' + key);
+                    }
                 }
             }
 
-            raw.push(value);
+            var call = contract[method].apply(contract, params);
+            switch (call.type) {
+                case 'call':
+                    ['data', 'gasLimit', 'gasPrice', 'to', 'value'].forEach(function(key) {
+                        if (transaction[key] != null) {
+                            throw new Error('call cannot override ' + key) ;
+                        }
+                    });
+                    transaction.data = call.data;
+                    if (transaction.from == null) {
+                        transaction.from = wallet.address;
+                    }
+                    transaction.to = contractAddress;
+
+                    return new Promise(function(resolve, reject) {
+                        getWeb3Promise('call', transaction).then(function(value) {
+                            resolve(call.parse(value));
+                        }, function(error) {
+                            reject(error);
+                        });
+                    });
+
+                case 'transaction':
+                    ['data', 'from', 'to'].forEach(function(key) {
+                        if (transaction[key] != null) {
+                            throw new Error('transaction cannot override ' + key) ;
+                        }
+                    });
+                    transaction.data = call.data;
+                    transaction.to = contractAddress;
+                    if (transaction.gasLimit == null) {
+                        transaction.gasLimit = 3000000;
+                    }
+
+                    return new Promise(function(resolve, reject) {
+                        Promise.all([
+                            getWeb3Promise('getTransactionCount', wallet.address, 'pending'),
+                            getWeb3Promise('getGasPrice'),
+                        ]).then(function(results) {
+                            if (transaction.nonce == null) {
+                                transaction.nonce = results[0];
+                            } else if (console.warn) {
+                                console.warn('Overriding suggested nonce: ' + results[0]);
+                            }
+                            if (transaction.gasPrice == null) {
+                                transaction.gasPrice = results[1];
+                            } else if (console.warn) {
+                                console.warn('Overriding suggested gasPrice: ' + utils.hexlify(results[1]));
+                            }
+                            var signedTransaction = wallet.sign(transaction);
+                            /*
+                                data: call.data,
+                                gasLimit: 3000000,
+                                gasPrice: results[1],
+                                nonce: results[0],
+                                to: contractAddress,
+                            });
+                                */
+                            getWeb3Promise('sendRawTransaction', signedTransaction).then(function(txid) {
+                                resolve(txid);
+                            }, function(error) {
+                                reject(error);
+                            });
+                        }, function(error) {
+                            reject(error);
+                        });
+                    });
+            }
+        };
+    }
+
+    contract.methods.forEach(function(method) {
+        utils.defineProperty(this, method, runMethod(method));
+    }, this);
+
+    contract.events.forEach(function(method) {
+        var call = contract[method].apply(contract, []);
+        Object.defineProperty(self, 'on' + call.name.toLowerCase(), {
+            enumerable: true,
+            get: function() {
+                console.log('get');
+                var info = filters[call.name];
+                if (!info || !info[call.name]) { return null; }
+                return info.callback;
+            },
+            set: function(value) {
+                console.log('set');
+                setupFilter(call, value);
+            }
         });
-
-        var digest = utils.sha3(rlp.encode(raw));
-
-        var signature = keyPair.sign(digest, {canonical: true});
-        var s = signature.s;
-        var v = signature.recoveryParam;
-
-        raw.push(new Buffer([27 + v]));
-        raw.push(bnToBuffer(signature.r));
-        raw.push(bnToBuffer(s));
-
-        return ('0x' + rlp.encode(raw).toString('hex'));
-    });
+    }, this);
 }
 
-defineProperty(Wallet, 'utils', utils);
+defineProperty(Wallet.prototype, 'getContract', function(web3, address, abi) {
+    return new AttachedContract(web3, this, address, new Contract(abi));
+});
 
 module.exports = Wallet;
