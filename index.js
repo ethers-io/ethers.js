@@ -41,6 +41,7 @@ defineProperty(exportUtils, '_scrypt', scrypt);
 defineProperty(exportUtils, 'BN', BN);
 defineProperty(exportUtils, 'Buffer', Buffer);
 defineProperty(exportUtils, 'sha3', utils.sha3);
+defineProperty(exportUtils, 'sha256', utils.sha256);
 
 function getChecksumAddress(address) {
     if (typeof(address) !== 'string' || !address.match(/^0x[0-9A-Fa-f]{40}$/)) {
@@ -48,14 +49,14 @@ function getChecksumAddress(address) {
     }
 
     address = address.substring(2).toLowerCase();
-    var hash = utils.sha3(address);
+    var hashed = utils.sha3(address);
 
     address = address.split('');
     for (var i = 0; i < 40; i += 2) {
-        if ((hash[i >> 1] >> 4) >= 8) {
+        if ((hashed[i >> 1] >> 4) >= 8) {
             address[i] = address[i].toUpperCase();
         }
-        if ((hash[i >> 1] & 0x0f) >= 8) {
+        if ((hashed[i >> 1] & 0x0f) >= 8) {
             address[i + 1] = address[i + 1].toUpperCase();
         }
     }
