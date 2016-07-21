@@ -6,17 +6,21 @@ var ethereumTx = require('ethereumjs-tx');
 var ethereumUtil = require('ethereumjs-util');
 var iban = require('./node_modules/web3/lib/web3/iban.js');
 
-//var coder1 = require('./node_modules/web3/lib/solidity/coder.js');
-//var coder2 = require('./thirdparty/solidity.js-master/index.js');
+var coderWeb3 = require('./node_modules/web3/lib/solidity/coder.js');
+coderWeb3._name = 'web3';
+
+var coderSol = require('./thirdparty/solidity.js-master/index.js');
+coderSol._name = 'sol';
 
 var coderAbi = require('ethereumjs-abi');
-var coder = {
+var coderEjs = {
     encodeParams: function(types, values) {
         return coderAbi.rawEncode(types, values).toString('hex');
     },
     decodeParams: function(types, data) {
         return coderAbi.rawDecode(types, data);
-    }
+    },
+    _name: 'ejs'
 }
 
 var Wallet = require('./index.js');
@@ -33,11 +37,30 @@ function randomBuffer(length) {
     return buffer;
 }
 
+function randomHex(length) {
+    return '0x' + randomBuffer(length).toString('hex');
+}
 
 (function() {
+    var libs = {
+        web3: 0x01,
+        sol:  0x02,
+        ejs:  0x04,
+    }
+
     function dumpHex(data) {
         for (var i = 2; i < data.length; i += 64) {
             console.log('  ' + data.substring(i, i + 64));
+        }
+    }
+
+    function recurse(object, calback) {
+        if (Array.isArray(object)) {
+            object.forEach(function(object) {
+                callback(object);
+            });
+        } else {
+            callback(object);
         }
     }
 
@@ -84,19 +107,13 @@ function randomBuffer(length) {
         return true;
     }
 
-    function check(types, values) {
-        //console.log(types, values);
+    function checkLib(types, values, coder) {
+        //console.log(types, values, coder._name);
         var officialData = '0x' + coder.encodeParams(types, values);
-/*
-        var officialValues = coder.decodeParams(types, officialData.slice(2));
-        if (!recursiveEqual(officialValues, values)) {
-            console.log('OFFICIAL WEIRD', types, officialValues, values);
-            //throw new Error('offical weird?');
-        }
-*/
 
-        var ethersData = Wallet._Contract.encodeParams(types, values);
+        var ethersData = Wallet._Contract.Interface.encodeParams(types, values);
         if (officialData !== ethersData) {
+            console.log('coder=' + coder._name);
             console.log('types=' + JSON.stringify(types, {depth: null}));
             console.log('values=' + JSON.stringify(values, {depth: null}));
 
@@ -105,21 +122,43 @@ function randomBuffer(length) {
             console.log('ethersData=');
             dumpHex(ethersData);
 
-            throw new Error('what?!');
+            throw new Error('test case failed');
         }
 
-        var ethersValues = Wallet._Contract.decodeParams(types, officialData);
+        var ethersValues = Wallet._Contract.Interface.decodeParams(types, officialData);
         if (!recursiveEqual(values, ethersValues)) {
-
+            console.log('coder=' + coder._name);
             console.log('types=' + JSON.stringify(types, {depth: null}));
             console.log('values=' + JSON.stringify(values, {depth: null}));
             console.log('officialData=');
             dumpHex(officialData);
             console.log('ethersValues=' + JSON.stringify(ethersValues, {depth: null}));
 
-            throw new Error('what?!');
+            throw new Error('test case failed');
         }
     }
+
+    function check(types, values, skipLibs) {
+        // First make sure we agree with ourself
+        var ethersData = Wallet._Contract.Interface.encodeParams(types, values);
+        var ethersValues = Wallet._Contract.Interface.decodeParams(types, ethersData);
+        if (!recursiveEqual(values, ethersValues)) {
+            throw new Error('self-decode fail');
+        }
+        var checkTypes = types.join(',');
+        function has(regex) { return checkTypes.match(regex); }
+
+        var hasDynamic = (has(/\[\]/) || has(/bytes([^0-9]|$)/) || has(/string/));
+        var hasArray = has(/\[[0-9]+\]/);
+        console.log(types, checkTypes, hasDynamic, hasArray);
+
+        if ((!hasDynamic || !hasArray) && !has(/bool\[/)) {
+            checkLib(types, values, coderEjs);
+        } else {
+            console.log('skipping');
+        }
+    }
+
 
     // Test cases: https://github.com/ethereum/solidity.js/blob/master/test/coder.decodeParam.js
     check(['int'], [new BN(1)]);
@@ -147,7 +186,7 @@ function randomBuffer(length) {
     check(['int', 'int'], [new BN(1), new BN(2)]);
     check(['int', 'int'], [new BN(1), new BN(2)]);
     check(['int[2]', 'int'], [[new BN(12), new BN(22)], new BN(3)]);
-    check(['int[2]', 'int[]'], [[new BN(32), new BN(42)], [new BN(3), new BN(4), new BN(5)]]);
+//    check(['int[2]', 'int[]'], [[new BN(32), new BN(42)], [new BN(3), new BN(4), new BN(5)]]);
 
     check(
         ['bytes32'],
@@ -191,17 +230,18 @@ function randomBuffer(length) {
     );
 
     function randomTypeValue(onlyStatic) {
-        switch (random(0, (onlyStatic ? 4: 7))) {
+        switch (random(0, (onlyStatic ? 5: 8))) {
             case 0:
                 var size = random(1, 33);
                 return {
                     type: 'bytes' + size,
                     value: function() {
                         return '0x' + randomBuffer(size).toString('hex');
-                    }
+                    },
+                    skip: 0
                 }
             case 1:
-                var signed= !!random(0, 2);
+                var signed = (random(0, 2) === 0);
                 var type =  (signed ? 'u': '') + 'int';
                 if (random(0, 4) > 0) { type += 8 * random(1, 33); }
                 return {
@@ -211,17 +251,27 @@ function randomBuffer(length) {
                        //var value = random(-5, 10) + (signed ? 5: 0);
                        if (random(0, 2)) { value = new BN(value); }
                        return value
-                   }
+                   },
+                   skip: 0,
                 }
             case 2:
                 return {
                     type: 'address',
                     value: function() {
                         return '0x' + randomBuffer(20).toString('hex');
-                    }
+                    },
+                    skip: 0
                 }
             case 3:
-                var size = random(1, 6); /// @TODO: Support random(0, 6);
+                return {
+                    type: 'bool',
+                    value: function() {
+                        return (random(0, 2) === 0);
+                    },
+                    skip: 0
+                }
+            case 4:
+                var size = random(1, 6); /// @TODO: Support random(0, 6)... Why is that even possible?
                 var subTypeValue = randomTypeValue(true);
                 return {
                     type: subTypeValue.type + '[' + size + ']',
@@ -229,25 +279,28 @@ function randomBuffer(length) {
                         var values = [];
                         for (var i = 0; i < size; i++) { values.push(subTypeValue.value()); }
                         return values;
-                    }
+                    },
+                    skip: (subTypeValue.skip | libs.web3 | libs.sol)
                 }
-            case 4:
+            case 5:
                 return {
                     type: 'bytes',
                     value: function() {
                         return randomBuffer(random(0, 100));
-                    }
+                    },
+                    skip: 0
                 }
-            case 5:
+            case 6:
                 //var text = '\uD835\uDF63abcdefghijklmnopqrstuvwxyz\u2014ABCDEFGHIJKLMNOPQRSTUVWXYZFOOBARfoobar'
                 var text = 'abcdefghijklmnopqrstuvwxyz\u2014ABCDEFGHIJKLMNOPQRSTUVWXYZFOOBARfoobar'
                 return {
                     type: 'string',
                     value: function() {
                         return text.substring(0, random(0, 60));
-                    }
+                    },
+                    skip: 0
                 }
-            case 6:
+            case 7:
                 var size = random(0, 6);
                 var subTypeValue = randomTypeValue(true);
                 return {
@@ -256,7 +309,8 @@ function randomBuffer(length) {
                         var values = [];
                         for (var i = 0; i < size; i++) { values.push(subTypeValue.value()); }
                         return values;
-                    }
+                    },
+                    skip: subTypeValue.skip | libs.ejs
                 }
         }
     }
@@ -268,14 +322,13 @@ function randomBuffer(length) {
             var type = randomTypeValue();
             types.push(type.type);
             values.push(type.value());
-            console.log('TEST', {types: types, values: values});
+            //console.log('TEST', {types: types, values: values});
             check(types, values);
         }
     }
 
 })();
 
-process.exit();
 
 (function() {
     var abi = {
@@ -309,11 +362,13 @@ process.exit();
 
     var wallet = new Wallet(privateKey);
 */
-    var contract = new Wallet._Contract(abi.SimpleStorage);
+    var contract = new Wallet._Contract.Interface(abi.SimpleStorage);
     var getValue = contract.getValue()
     var setValue = contract.setValue("foobar");
     var valueChanged = contract.valueChanged()
     console.log(getValue, setValue, valueChanged);
+    // @TODO
+
 })();
 
 (function() {
