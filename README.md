@@ -5,8 +5,8 @@ Complete Ethereum wallet implementation in JavaScript.
 
 Features
 - Keep your private keys in the browser
-- Small (~155kb compressed; hopefully under 100kb soon)
-- MIT licensed (with a few exceptions, which we are migrating off of; see below)
+- Small (~100kb compressed; 290kb uncompressed)
+- MIT licensed (with one exception, which we are migrating off of; see below)
 
 *NOTE: This is still very beta; please only use it on the testnet for now, or with VERY small amounts of ether on the livenet that you are willing to lose due to bugs.*
 
@@ -37,6 +37,7 @@ console.log(wallet.address)
 Wallet.getIcapAddress(wallet.address)
 /// "XE39DH16QOXYG5JY9BYY6JGZW8ORUPBX71V"
 
+// All address functions accept any format
 Wallet.getIcapAddress("XE39DH16QOXYG5JY9BYY6JGZW8ORUPBX71V")
 /// "XE39DH16QOXYG5JY9BYY6JGZW8ORUPBX71V"
 
@@ -122,7 +123,7 @@ contract.setValue("Hello World").then(function(txid) {
     console.log('txid: ' + txid);
 });
 
-// Include ether with a state-changing call, or custom gasLimit or gasPrice
+// Include custom parameters with a state-changing call
 var options = {
     gasPrice: 1000       // in wei (default: from network)
     gasLimit: 3000000,   // is gas (default: 3000000)
@@ -139,9 +140,8 @@ License
 -------
 
 MIT Licensed, with the exceptions:
-- The Solidity encoder/decoder (LGPL)
 - RLP (MPL-2.0)
 
-We are working on our own implementations so we can move off of them and have a completely MIT licensed implementation in the near future.
+We are working on our own implementations and will have the library 100% MIT in the near future.
 
 Stay tuned! 
