@@ -1,6 +1,8 @@
-// @TODO: Move to an actual unit test system
+var nodeunit = require('nodeunit');
+
 
 var crypto = require('crypto');
+var fs = require('fs');
 
 var ethereumTx = require('ethereumjs-tx');
 var ethereumUtil = require('ethereumjs-util');
@@ -41,7 +43,83 @@ function randomHex(length) {
     return '0x' + randomBuffer(length).toString('hex');
 }
 
-(function() {
+exports.testSecretStorage = function(test) {
+    var secretStorage = require('./lib/secret-storage.js');
+    var crowdsale = [
+        {
+            address: '0x2e326fA404Fc3661de4F4361776ed9bBABDC26E3',
+            data: fs.readFileSync('./test-wallets/wallet-test-encseed-foo.json').toString(),
+            password: 'foo',
+            privateKey: '0xcf367fc32bf789b3339c6664af4a12263e9db0e0eb70f247da1d1165e150c487',
+            type: 'crowdsale'
+        },
+        {
+            address: '0x0b88d4b324ec24C8c078551e6e5075547157E5b6',
+            data: fs.readFileSync('./test-wallets/wallet-test-encseed-no-password.json').toString(),
+            password: '',
+            privateKey: '0xd4375d2a931db84ea8825b69a3128913597744d9236cacec675cc18e1bda4446',
+            type: 'crowdsale'
+        }
+    ]
+    var geth = [
+        {
+            address: '0x88a5C2d9919e46F883EB62F7b8Dd9d0CC45bc290',
+            data: fs.readFileSync('./test-wallets/wallet-test-geth-foo.json').toString(),
+            password: 'foo',
+            privateKey: '0xf03e581353c794928373fb0893bc731aefc4c4e234e643f3a46998b03cd4d7c5',
+            type: 'version3'
+        },
+        {
+            address: '0x4A9cf99357F5789251a8D7FaD5b86D0F31EEB938',
+            data: fs.readFileSync('./test-wallets/wallet-test-geth-no-password.json').toString(),
+            password: '',
+            privateKey: '0xa016182717223d01f776149ec0b4a217d0e9930cad263f205427c6d3cd5560e7',
+            type: 'version3'
+        },
+    ];
+
+    test.expect((crowdsale.length * 3) + (geth.length * 3));
+
+    // Test crowdsale private key decryption
+    crowdsale.forEach(function(testcase) {
+
+        // Check wallet type detection
+        test.equal(secretStorage.getWalletType(testcase.data), testcase.type, 'wrong wallet type detected');
+
+        var signingKey = secretStorage.decryptCrowdsalePrivateKey(testcase.data, testcase.password);
+
+        test.equal(signingKey.privateKey, testcase.privateKey, 'wrong private key');
+        test.equal(signingKey.address, testcase.address, 'wrong address');
+    });
+
+    var expecting = 2;
+    function checkAsync() {
+        expecting--;
+        if (expecting === 0) { test.done(); }
+    }
+
+    geth.forEach(function(testcase) {
+        // Check wallet type detection
+        test.equal(secretStorage.getWalletType(testcase.data), testcase.type, 'wrong wallet type detected');
+
+        // Test private key decryption
+        var password = new Buffer(testcase.password, 'utf8');
+        secretStorage.decryptPrivateKey(testcase.data, password, function(error, signingKey, progress) {
+            if (error) {
+                console.log(error);
+                test.ok(false, 'callback return error - ' + error.message);
+                checkAsync();
+
+            } else if (signingKey) {
+                test.equals(signingKey.privateKey, testcase.privateKey, 'wrong private key')
+                test.equals(signingKey.address, testcase.address, 'wrong address');
+                checkAsync();
+            }
+        });
+    });
+}
+
+exports.testCoderParams = function(test) {
     var libs = {
         web3: 0x01,
         sol:  0x02,
@@ -183,6 +261,8 @@ function randomHex(length) {
     check(['uint64'], [new BN(16)]);
     check(['uint128'], [new BN(16)]);
 
+test.done();
+return;
     check(['int', 'int'], [new BN(1), new BN(2)]);
     check(['int', 'int'], [new BN(1), new BN(2)]);
     check(['int[2]', 'int'], [[new BN(12), new BN(22)], new BN(3)]);
@@ -327,10 +407,10 @@ function randomHex(length) {
         }
     }
 
-})();
+}
 
 
-(function() {
+exports.testContract = function(test) {
     var abi = {
         "SimpleStorage": [
             {
@@ -369,69 +449,62 @@ function randomHex(length) {
     console.log(getValue, setValue, valueChanged);
     // @TODO
 
-})();
+    test.done();
 
-(function() {
+};
+
+exports.testChecksumAddress = function(test) {
     for (var i = 0; i < 1000; i++) {
         var privateKey = randomBuffer(32, true);
         var official = '0x' + ethereumUtil.privateToAddress(privateKey).toString('hex');
         var ethers = (new Wallet(privateKey)).address;
-        if (ethers !== ethereumUtil.toChecksumAddress(official)) {
-            console.log(i);
-            console.log('A', official);
-            console.log('B', ethers);
-            throw new Error('What?');
-        }
+        test.equal(ethers, ethereumUtil.toChecksumAddress(official), 'wrong address');
     }
-})();
+    test.done();
+}
 
-(function() {
+exports.testIcapAddress = function(test) {
     function testAddress(address) {
         var officialIban = (iban.fromAddress(address))._iban;
 
         var ethersAddress = Wallet.getAddress(officialIban);
         var officialAddress = ethereumUtil.toChecksumAddress(address)
 
-        if (officialAddress !== ethersAddress) {
-            console.log('A', officialAddress);
-            console.log('B', ethersAddress);
-            throw new Error('waht?! address');
-        }
-
         var ethersIban = Wallet.getIcapAddress(address);
 
-        if (officialIban !== ethersIban) {
-            console.log('A', officialIban);
-            console.log('B', ethersIban);
-            throw new Error('waht?! icap');
-        }
+        test.equal(ethersAddress, officialAddress, 'wrong address');
+        test.equal(ethersIban, officialIban, 'wrong ICAP address');
     }
+
+    test.expect(2 * (2 + 10000));
 
     testAddress('0x0000000000000000000000000000000000000000');
     testAddress('0xffffffffffffffffffffffffffffffffffffffff');
     for (var i = 0; i < 10000; i++) {
         testAddress(randomHex(20));
     }
-})();
 
-(function() {
+    test.done();
+};
+
+exports.testAddress = function(test) {
     function testAddress(address) {
         var official = ethereumUtil.toChecksumAddress(address);
         var ethers = Wallet.getAddress(address);
-        if (official !== ethers) {
-            console.log('A', official);
-            console.log('B', ethers);
-            throw new Error('waht?!');
-        }
+        test.equal(ethers, official, 'wrong address');
     }
+
+    test.expect(2 + 10000);
+
     testAddress('0x0000000000000000000000000000000000000000');
     testAddress('0xffffffffffffffffffffffffffffffffffffffff');
     for (var i = 0; i < 10000; i++) {
         testAddress(randomHex(20));
     }
-})();
+    test.done();
+};
 
-(function() {
+exports.testTransaction = function(test) {
     function testTransaction(privateKey, transaction, signature) {
         var rawTransaction = new ethereumTx(transaction);
         rawTransaction.sign(privateKey);
@@ -439,11 +512,7 @@ function randomHex(length) {
 
         var ethers = (new Wallet(privateKey)).sign(transaction);
 
-        if (ethers !== official) {
-            console.log('A', ethers);
-            console.log('B', official);
-            throw new Error('What?');
-        }
+        test.equal(ethers, official, 'invalid transaction');
     }
 
     for (var i = 0; i < 1000; i++) {
@@ -498,5 +567,7 @@ function randomHex(length) {
         r: "0x5e9361ca27e14f3af0e6b28466406ad8be026d3b0f2ae56e3c064043fb73ec77",
         s: "0x29ae9893dac4f9afb1af743e25fbb6a63f7879a61437203cb48c997b0fcefc3a"
     });
-})();
+
+    test.done();
+};
 
