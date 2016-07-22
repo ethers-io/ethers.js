@@ -8,23 +8,6 @@ var ethereumTx = require('ethereumjs-tx');
 var ethereumUtil = require('ethereumjs-util');
 var iban = require('./node_modules/web3/lib/web3/iban.js');
 
-var coderWeb3 = require('./node_modules/web3/lib/solidity/coder.js');
-coderWeb3._name = 'web3';
-
-var coderSol = require('./thirdparty/solidity.js-master/index.js');
-coderSol._name = 'sol';
-
-var coderAbi = require('ethereumjs-abi');
-var coderEjs = {
-    encodeParams: function(types, values) {
-        return coderAbi.rawEncode(types, values).toString('hex');
-    },
-    decodeParams: function(types, data) {
-        return coderAbi.rawDecode(types, data);
-    },
-    _name: 'ejs'
-}
-
 var Wallet = require('./index.js');
 var BN  = Wallet.utils.BN;
 
@@ -120,25 +103,24 @@ exports.testSecretStorage = function(test) {
 }
 
 exports.testCoderParams = function(test) {
-    var libs = {
-        web3: 0x01,
-        sol:  0x02,
-        ejs:  0x04,
+
+    //var coderWeb3 = require('./node_modules/web3/lib/solidity/coder.js');
+    //coderWeb3._name = 'web3';
+
+    var coderAbi = require('ethereumjs-abi');
+    var coderEjs = {
+        encodeParams: function(types, values) {
+            return coderAbi.rawEncode(types, values).toString('hex');
+        },
+        decodeParams: function(types, data) {
+            return coderAbi.rawDecode(types, data);
+        },
+        _name: 'ejs'
     }
 
     function dumpHex(data) {
         for (var i = 2; i < data.length; i += 64) {
             console.log('  ' + data.substring(i, i + 64));
-        }
-    }
-
-    function recurse(object, calback) {
-        if (Array.isArray(object)) {
-            object.forEach(function(object) {
-                callback(object);
-            });
-        } else {
-            callback(object);
         }
     }
 
@@ -191,6 +173,7 @@ exports.testCoderParams = function(test) {
 
         var ethersData = Wallet._Contract.Interface.encodeParams(types, values);
         if (officialData !== ethersData) {
+            test.ok(false, 'encoded value did not match ' + coder._name);
             console.log('coder=' + coder._name);
             console.log('types=' + JSON.stringify(types, {depth: null}));
             console.log('values=' + JSON.stringify(values, {depth: null}));
@@ -199,42 +182,77 @@ exports.testCoderParams = function(test) {
             dumpHex(officialData);
             console.log('ethersData=');
             dumpHex(ethersData);
-
-            throw new Error('test case failed');
+            process.exit();
         }
 
         var ethersValues = Wallet._Contract.Interface.decodeParams(types, officialData);
         if (!recursiveEqual(values, ethersValues)) {
+            test.ok(false, 'decoded value did not match ' + coder._name);
             console.log('coder=' + coder._name);
             console.log('types=' + JSON.stringify(types, {depth: null}));
             console.log('values=' + JSON.stringify(values, {depth: null}));
             console.log('officialData=');
             dumpHex(officialData);
             console.log('ethersValues=' + JSON.stringify(ethersValues, {depth: null}));
-
-            throw new Error('test case failed');
+            process.exit();
         }
     }
 
-    function check(types, values, skipLibs) {
+    // Web3 doesn't like buffers
+    /*
+    function recurseBufferify(object) {
+        if (!Array.isArray(object)) { return; }
+        for (var i = 0; i < object.length; i++) {
+            if (Buffer.isBuffer(object[i])) {
+                object[i] = '0x' + object[i].toString('hex');
+            } else {
+                recurseBufferify(object[i]);
+            }
+        }
+    }
+    */
+
+    function check(types, values) {
         // First make sure we agree with ourself
         var ethersData = Wallet._Contract.Interface.encodeParams(types, values);
         var ethersValues = Wallet._Contract.Interface.decodeParams(types, ethersData);
-        if (!recursiveEqual(values, ethersValues)) {
-            throw new Error('self-decode fail');
-        }
+        test.ok(recursiveEqual(values, ethersValues), "self encode/decode failed");
+
         var checkTypes = types.join(',');
         function has(regex) { return checkTypes.match(regex); }
 
         var hasDynamic = (has(/\[\]/) || has(/bytes([^0-9]|$)/) || has(/string/));
-        var hasArray = has(/\[[0-9]+\]/);
-        console.log(types, checkTypes, hasDynamic, hasArray);
+        var hasDynamicArray = has(/\[\]/);
+        var hasFixedArray = has(/\[[0-9]+\]/);
+        var hasNestedArray = has(/\]\[/);
 
-        if ((!hasDynamic || !hasArray) && !has(/bool\[/)) {
-            checkLib(types, values, coderEjs);
-        } else {
-            console.log('skipping');
+        //console.log(types, checkTypes, hasDynamic, hasArray, hasNestedArray);
+        if (!hasFixedArray && !hasDynamicArray) {
+            try {
+                checkLib(types, values, coderEjs);
+            } catch (error) {
+
+                // Bugs in coder
+                if (error.message === "Cannot read property '1' of null") {
+                    return;
+                } else if (error.message.match(/^invalid /)) {
+                    return;
+                }
+
+                if (error.message.match(/^Number can only safely store up to/)) {
+                    return;
+                }
+
+                throw error;
+            }
         }
+
+        /*
+        if (!hasFixedArray) {
+            recurseBufferify(values);
+            checkLib(types, values, coderWeb3);
+        }
+        */
     }
 
 
@@ -261,12 +279,10 @@ exports.testCoderParams = function(test) {
     check(['uint64'], [new BN(16)]);
     check(['uint128'], [new BN(16)]);
 
-test.done();
-return;
     check(['int', 'int'], [new BN(1), new BN(2)]);
     check(['int', 'int'], [new BN(1), new BN(2)]);
     check(['int[2]', 'int'], [[new BN(12), new BN(22)], new BN(3)]);
-//    check(['int[2]', 'int[]'], [[new BN(32), new BN(42)], [new BN(3), new BN(4), new BN(5)]]);
+    check(['int[2]', 'int[]'], [[new BN(32), new BN(42)], [new BN(3), new BN(4), new BN(5)]]);
 
     check(
         ['bytes32'],
@@ -276,7 +292,12 @@ return;
         ['bytes'],
         [new Buffer('6761766f66796f726b', 'hex')]
     );
-/*
+
+    check(
+        ['string'],
+        ['\uD835\uDF63']
+    );
+
     check(
         ['address', 'string', 'bytes6[4]', 'int'],
         [
@@ -286,7 +307,7 @@ return;
             34
         ]
     );
-*/
+
     check(
         ['bytes32'],
         ['0x731a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b']
@@ -295,13 +316,13 @@ return;
         ['bytes'],
         [new Buffer('731a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b')]
     );
-/*
+
     check(
         ['bytes32[2]'],
         [['0x731a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b',
          '0x731a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b']]
     );
-*/
+
     check(
         ['bytes'],
         [new Buffer('131a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b' +
@@ -360,7 +381,7 @@ return;
                         for (var i = 0; i < size; i++) { values.push(subTypeValue.value()); }
                         return values;
                     },
-                    skip: (subTypeValue.skip | libs.web3 | libs.sol)
+                    skip: 0
                 }
             case 5:
                 return {
@@ -390,23 +411,23 @@ return;
                         for (var i = 0; i < size; i++) { values.push(subTypeValue.value()); }
                         return values;
                     },
-                    skip: subTypeValue.skip | libs.ejs
+                    skip: 0
                 }
         }
     }
 
-    for (var i = 0; i < 1000; i++) {
+    for (var i = 0; i < 10000; i++) {
         var count = random(0, 8);
         var types = [], values = [];
         for (var j = 0; j < count; j++) {
             var type = randomTypeValue();
             types.push(type.type);
             values.push(type.value());
-            //console.log('TEST', {types: types, values: values});
             check(types, values);
         }
     }
 
+    test.done();
 }
 
 
@@ -436,25 +457,27 @@ exports.testContract = function(test) {
             }
         ]
     }
-/*
-    var privateKey = Wallet.utils.Buffer(32);
-    privateKey.fill(0x42);
 
-    var wallet = new Wallet(privateKey);
-*/
     var contract = new Wallet._Contract.Interface(abi.SimpleStorage);
     var getValue = contract.getValue()
     var setValue = contract.setValue("foobar");
     var valueChanged = contract.valueChanged()
-    console.log(getValue, setValue, valueChanged);
-    // @TODO
+
+    test.equal(getValue.data, '0x20965255', "wrong call data");
+    test.equal(setValue.data, '0x93a0935200000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000006666f6f6261720000000000000000000000000000000000000000000000000000', "wrong transaction data");
+    test.ok(
+        (valueChanged.topics.length === 1 && valueChanged.topics[0] === '0x68ad6719a0070b3bb2f866fa0d46c8123b18cefe9b387ddb4feb6647ca418435'),
+        "wrong call data"
+    );
+
+    // @TODO - test decode
 
     test.done();
 
 };
 
 exports.testChecksumAddress = function(test) {
-    for (var i = 0; i < 1000; i++) {
+    for (var i = 0; i < 10000; i++) {
         var privateKey = randomBuffer(32, true);
         var official = '0x' + ethereumUtil.privateToAddress(privateKey).toString('hex');
         var ethers = (new Wallet(privateKey)).address;
@@ -515,7 +538,7 @@ exports.testTransaction = function(test) {
         test.equal(ethers, official, 'invalid transaction');
     }
 
-    for (var i = 0; i < 1000; i++) {
+    for (var i = 0; i < 10000; i++) {
         var transaction = {
             to: randomHex(20),
             data: randomHex(parseInt(10 * Math.random())),
