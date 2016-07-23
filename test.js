@@ -27,7 +27,8 @@ function randomHex(length) {
 }
 
 exports.testSecretStorage = function(test) {
-    var secretStorage = require('./lib/secret-storage.js');
+    //var SecretStorage = require('./lib/secret-storage.js');
+
     var crowdsale = [
         {
             address: '0x2e326fA404Fc3661de4F4361776ed9bBABDC26E3',
@@ -43,7 +44,8 @@ exports.testSecretStorage = function(test) {
             privateKey: '0xd4375d2a931db84ea8825b69a3128913597744d9236cacec675cc18e1bda4446',
             type: 'crowdsale'
         }
-    ]
+    ];
+
     var geth = [
         {
             address: '0x88a5C2d9919e46F883EB62F7b8Dd9d0CC45bc290',
@@ -61,21 +63,25 @@ exports.testSecretStorage = function(test) {
         },
     ];
 
-    test.expect((crowdsale.length * 3) + (geth.length * 3));
+    test.expect((crowdsale.length * 4) + (geth.length * 4) + 1);
+
 
     // Test crowdsale private key decryption
     crowdsale.forEach(function(testcase) {
 
         // Check wallet type detection
-        test.equal(secretStorage.getWalletType(testcase.data), testcase.type, 'wrong wallet type detected');
+        test.ok(Wallet.isCrowdsaleWallet(testcase.data), 'wrong wallet type detected');
+        test.ok(!Wallet.isValidWallet(testcase.data), 'wrong wallet type detected');
 
-        var signingKey = secretStorage.decryptCrowdsalePrivateKey(testcase.data, testcase.password);
+        var wallet = Wallet.decryptCrowdsale(testcase.data, testcase.password);
 
-        test.equal(signingKey.privateKey, testcase.privateKey, 'wrong private key');
-        test.equal(signingKey.address, testcase.address, 'wrong address');
+        test.equal(wallet.privateKey, testcase.privateKey, 'wrong private key');
+        test.equal(wallet.address, testcase.address, 'wrong address');
     });
 
-    var expecting = 2;
+    // Private keys are asynchronous, so we do this to trigger the done
+    // only after all testcases have returned
+    var expecting = geth.length + 1;
     function checkAsync() {
         expecting--;
         if (expecting === 0) { test.done(); }
@@ -83,14 +89,15 @@ exports.testSecretStorage = function(test) {
 
     geth.forEach(function(testcase) {
         // Check wallet type detection
-        test.equal(secretStorage.getWalletType(testcase.data), testcase.type, 'wrong wallet type detected');
+        test.ok(Wallet.isValidWallet(testcase.data), 'wrong wallet type detected');
+        test.ok(!Wallet.isCrowdsaleWallet(testcase.data), 'wrong wallet type detected');
 
         // Test private key decryption
         var password = new Buffer(testcase.password, 'utf8');
-        secretStorage.decryptPrivateKey(testcase.data, password, function(error, signingKey, progress) {
+        Wallet.decrypt(testcase.data, password, function(error, signingKey, progress) {
             if (error) {
                 console.log(error);
-                test.ok(false, 'callback return error - ' + error.message);
+                test.ok(false, 'callback returned error - ' + error.message);
                 checkAsync();
 
             } else if (signingKey) {
@@ -99,6 +106,28 @@ exports.testSecretStorage = function(test) {
                 checkAsync();
             }
         });
+    });
+
+    var privateKey = new Buffer(32);
+    privateKey.fill(0x42);
+
+    var password = new Buffer("foo", 'utf8');
+
+    (new Wallet(privateKey)).encrypt(password, {
+        scrypt: { N: (1 << 10), r: 4, p: 2 },
+        iv:   '0xdeadbeef1deadbeef2deadbeef301234',
+        salt: '0xabcd1abcd2abcd3abcd4abcd5abcd6ef',
+        uuid: '0x01234567890123456789012345678901',
+    }, function(error, json, progress) {
+        if (error) {
+            test.ok(false, 'callback returned error - ' + error.message);
+            checkAsync();
+
+        } else if (json) {
+            var jsonWallet = fs.readFileSync('./test-wallets/wallet-test-life.json').toString();
+            test.equal(json, jsonWallet, 'failed to encrypt wallet');
+            checkAsync();
+        }
     });
 }
 

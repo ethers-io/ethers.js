@@ -4,7 +4,7 @@
   "description": "Ethereum wallet library.",
   "main": "index.js",
   "scripts": {
-    "test": "nodeunit test.js",
+    "test": "./node_modules/.bin/nodeunit test.js",
     "version": "grunt dist"
   },
   "dependencies": {
