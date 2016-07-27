@@ -4,6 +4,7 @@ var rlp = require('rlp');
 
 var Contract = require('./lib/contract.js');
 var secretStorage = require('./lib/secret-storage.js');
+var Randomish = require('./lib/randomish.js');
 var SigningKey = require('./lib/signing-key.js');
 var Wallet = require('./lib/wallet.js');
 
@@ -61,5 +62,7 @@ utils.defineProperty(Wallet.prototype, 'encrypt', function(password, options, ca
 
     secretStorage.encrypt(this.privateKey, password, options, callback);
 });
+
+utils.defineProperty(Wallet, 'randomish', new Randomish());
 
 module.exports = Wallet;

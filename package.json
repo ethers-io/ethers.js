@@ -11,14 +11,14 @@
     "aes-js": "0.2.4",
     "elliptic": "6.3.1",
     "pbkdf2": "3.0.4",
-    "randombytes": "2.0.3",
     "rlp": "2.0.0",
     "scrypt-js": "2.0.0",
     "uuid": "2.0.1",
     "xmlhttprequest": "1.8.0"
   },
   "browser": {
-    "xmlhttprequest": "./lib/browser/browser-xmlhttprequest.js"
+    "./lib/random-bytes.js": "./lib/browser-random-bytes.js",
+    "xmlhttprequest": "./lib/browser-xmlhttprequest.js"
   },
   "devDependencies": {
     "ethereumjs-abi": "0.6.2",
