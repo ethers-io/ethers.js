@@ -1,0 +1,377 @@
+<html>
+    <head>
+        <title>Ethereum Classic Split Tool</title>
+        <style type="text/css">
+            body {
+                background-color: #eee;
+                font-family: sans-serif;
+                font-size: 18px;
+                margin: 0;
+            }
+            .centerer {
+                margin-left: 50%;
+            }
+            .centered {
+                background-color: #fff;
+                border-left: 1px solid #888;
+                border-right: 1px solid #888;
+                box-shadow: 0 0 7px #999;
+                margin-left: -370px;
+                padding: 20px;
+                width: 700px;
+            }
+            p {
+                text-align: justify;
+            }
+            th {
+                text-align: left;
+                padding: 0 15px 15px 0;
+            }
+            td {
+                padding: 0 15px 15px 0;
+            }
+
+            input[type=text] {
+                border: 1px solid #555;
+                font-size: 16px;
+                padding: 10px;
+                width: 500px;
+            }
+
+            input[type=password] {
+                border: 1px solid #555;
+                font-size: 16px;
+                padding: 10px;
+                width: 500px;
+            }
+
+            .submit {
+                border: 1px solid #555;
+                box-shadow: 0px 0px 5px #888;
+                cursor: pointer;
+                font-size: 16px;
+                padding: 10px;
+                text-align: center;
+                transition: opacity 0.1s linear;
+                width: 480px;
+            }
+
+            .submit:hover {
+                border: 1px solid #999;
+                box-shadow: 0px 0px 5px #aaa;
+            }
+
+            .submit:active {
+                box-shadow: none;
+            }
+
+            .submit.disable {
+                box-shadow: none;
+                opacity: 0.5;
+            }
+
+            .submit.disable:hover {
+                border: 1px solid #555;
+                box-shadow: none;
+            }
+
+            .submit.disable:active {
+                box-shadow: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="centerer">
+            <div class="centered">
+                <h1>Split Ether Classic</h1>
+                <hr />
+                <h2>What does this tool do?</h2>
+                <p>
+                    This tool will take a <i>geth</i> (or crowdsale) JSON wallet, decrypt it and
+                    send all its funds to <a href="http://etherscan.io/address/0x3474627d4f63a678266bc17171d87f8570936622#code">this contract</a>,
+                    which will:
+                </p>
+                <ul>
+                    <li>On the ETH branch &mdash; send the funds back to the original address</li>
+                    <li>On the ETC branch &mdash; send the funds to the provided target address (for example, a <a href="https://shapeshift.io">shapeshift</a> deposit address)</li>
+                </ul>
+                <br />
+                <h3>Disclaimer:</h3>
+                <p>
+                    I threw this together in couple of hours, mainly to split my own ether
+                    and test my <i>ethers-wallet</i> library (which is still missing features
+                    and is itself not ready for production use). Testing has been fairly minimal
+                    beyond trying it on a few wallets. <b>Use this at your own risk.</b>
+                </p>
+                <hr />
+                <h2>Check Current ETC Balance</h2>
+                <table>
+                    <tr>
+                        <th>ETC Address:</th>
+                        <td><input type="text" id="checkAddress" /></td>
+                    </tr>
+                    <tr>
+                        <td> </td>
+                        <td>
+                            <div id="submitCheck" class="submit disable">Check Classic Ether Balance</div>
+                        </td>
+                    </tr>
+                </table>
+                <hr />
+                <h2>Split ETC/ETH</h2>
+                <table>
+                    <tr>
+                        <th>JSON Wallet:</th>
+                        <td><input type="file" id="json" /></td>
+                    </tr>
+                    <tr>
+                        <th>Password:</th>
+                        <td><input type="password" id="password" /></td>
+                    </tr>
+                    <tr>
+                        <th>Target ETC Address:</th>
+                        <td><input type="text" id="targetAddress" /></td>
+                    </tr>
+                    <tr>
+                        <td> </td>
+                        <td>
+                            <div id="submitSplit" class="submit disable">Split Classic Ether</div>
+                        </td>
+                    </tr>
+                </table>
+                <hr />
+                <h2>Donations?</h2>
+                <p>
+                    *shrug*
+                </p>
+                <p>
+                    <code>0xb2682160c482eb985ec9f3e364eec0a904c44c23</code>
+                </p>
+            </div>
+        </div>
+
+        <script type="text/javascript" src="../../dist/ethers-wallet.js"></script>
+        <script type="text/javascript" src="./web3.min.js"></script>
+
+        <!-- This greatly improves the scrypt PBKDF performance -->
+        <script type="text/javascript" src="./setImmediate.js"></script>
+
+        <script type="text/javascript">
+            var submitCheck = document.getElementById('submitCheck');
+            var submitSplit = document.getElementById('submitSplit');
+
+            var inputJson = document.getElementById('json');
+            var inputCheckAddress = document.getElementById('checkAddress')
+            var inputTargetAddress = document.getElementById('targetAddress')
+            var inputPassword = document.getElementById('password');
+
+            var web3Classic = new Web3(new Web3.providers.HttpProvider('http://homestead-virginia-2.ethers.ws:8545'));
+            function getWeb3Promise(method) {
+                var args = Array.prototype.slice.call(arguments, 1);
+                return new Promise(function(resolve, reject) {
+                    args.push(function(error, result) {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+                    web3Classic.eth[method].apply(web3Classic, args);
+                });
+            }
+
+            function bigNumberToBN(bigNumber) {
+                var hexValue = bigNumber.toString(16);
+                if (hexValue.length % 2) { hexValue = '0' + hexValue; }
+                return new Wallet.utils.BN(new Wallet.utils.Buffer(hexValue, 'hex'), 16);
+            }
+
+            var contractAddress = '0x3474627d4f63a678266bc17171d87f8570936622';
+            var contractAbi = JSON.parse('[{"constant":false,"inputs":[{"name":"balance","type":"uint256"}],"name":"claimDonations","outputs":[],"type":"function"},{"constant":true,"inputs":[],"name":"isClassic","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[{"name":"classicAddress","type":"address"}],"name":"split","outputs":[],"type":"function"},{"inputs":[],"type":"constructor"}]');
+
+            submitCheck.onclick = function() {
+                if (submitCheck.classList.contains('disable')) { return; }
+
+                var address = document.getElementById('checkAddress').value;
+                try {
+                    address = Wallet.getAddress(address);
+                } catch (error) {
+                    console.log(error);
+                    alert('invalid address');
+                    return;
+                }
+                getWeb3Promise('getBalance', address, 'latest').then(function(balance) {
+                    alert('Balance: ' + web3Classic.fromWei(balance).toString(10) + ' ' + Wallet.etherSymbol);
+                }, function(error) {
+                    if (error) {
+                        console.log(error);
+                        alert('Faied to get balance');
+                        return;
+                    }
+                });
+
+                console.log('check', address);
+            }
+
+            submitSplit.onclick = function() {
+                if (submitSplit.classList.contains('disable')) { return; }
+
+                function done() {
+                    submitSplit.textContent = 'Split Classic Ether';
+                    inputJson.readOnly = false;
+                    inputPassword.readOnly = false;
+                    inputTargetAddress.readOnly = false;
+                    checkSplit();
+                }
+
+                inputJson.readOnly = true;
+                inputPassword.readOnly = true;
+                inputTargetAddress.readOnly = true;
+
+                submitSplit.classList.add('disable');
+
+                var files = inputJson.files;
+                if (files.length !== 1) {
+                    alert('No wallet found');
+                    return done();
+                }
+
+                var password = new Wallet.utils.Buffer(inputPassword.value, 'utf8');
+
+                var targetAddress = document.getElementById('targetAddress').value;
+                try {
+                    targetAddress = Wallet.getAddress(targetAddress);
+                } catch (error) {
+                    console.log(error);
+                    alert('invalid target address');
+                    return done();
+                }
+
+                function processWallet(wallet) {
+                    if (wallet.address === targetAddress) {
+                        alert('Wallet address and target address cannot be the same.');
+                        return done();
+                    }
+
+                    submitSplit.textContent = 'Decrypted \u2014 Processing (please wait)';
+
+                    var contract = wallet.getContract(contractAddress, contractAbi);
+                    var data = contract.interface.split(targetAddress).data;
+
+                    var transaction = {
+                        to: contractAddress,
+                        data: data
+                    };
+
+                    Promise.all([
+                        getWeb3Promise('getBalance', wallet.address, 'latest'),
+                        getWeb3Promise('getTransactionCount', wallet.address, 'latest'),
+                        getWeb3Promise('getGasPrice'),
+                        getWeb3Promise('estimateGas', transaction)
+                    ]).then(function(results) {
+                        var balance = results[0];
+                        var transactionCount = results[1];
+                        var gasPrice = results[2];
+                        var gasEstimate = results[3] + 21000;
+
+                        transaction.gasPrice = '0x' + gasPrice.toString(16);
+                        transaction.nonce = transactionCount;
+                        transaction.gasLimit = bigNumberToBN(gasEstimate);
+
+                        var toSend = bigNumberToBN(balance).sub(bigNumberToBN(gasPrice).mul(bigNumberToBN(gasEstimate)));
+                        transaction.value = toSend;
+
+                        var accept = confirm('Balance: ' + web3Classic.fromWei(balance).toString(10) + ' ' + Wallet.etherSymbol + '. Are you sure you want to split Classic Ether to ' + targetAddress + '?');
+                        if (accept) {
+                            var signedTransaction = wallet.sign(transaction);
+                            function showError(error) {
+                                done();
+                                console.log(error);
+                                alert('Error sending transaction');
+                            }
+                            getWeb3Promise('sendRawTransaction', signedTransaction).then(function(txid) {
+                                if (txid.match(/^0x0+$/)) {
+                                    showError(new Error('txid was zero'));
+                                    return;
+                                }
+                                done();
+                                console.log('txid:' + txid);
+                                alert('Success \u2014 ' + txid);
+                            }, function(error) {
+                                showError(error);
+                            });
+                        } else {
+                            done();
+                        }
+                    }, function(error) {
+                        done();
+                        console.log(error);
+                        alert('Error: Faied to fetch info');
+                    });
+                }
+
+                var fileReader = new FileReader();
+                fileReader.onload = function(e) {
+                    var json = e.target.result;
+                    if (Wallet.isCrowdsaleWallet(json)) {
+                        var wallet = Wallet.decryptCrowdsale(json, password);
+                        processWallet(wallet);
+                    } else if (Wallet.isValidWallet(json)) {
+                        Wallet.decrypt(json, password, function(error, wallet, progress) {
+                            if (error) {
+                                done();
+                                console.log(error);
+                                if (error.message === 'invalid password') {
+                                    alert('Wrong Password');
+                                } else {
+                                    alert('Error Decrypting Wallet');
+                                }
+                            } else if (wallet) {
+                                processWallet(wallet);
+                            } else {
+                                submitSplit.textContent = 'Decrypting \u2014 ' + (parseInt(progress * 100) + '%');
+                            }
+                        });
+                    } else {
+                        alert('unknown walet format');
+                        done();
+                    }
+                }
+
+                fileReader.readAsText(files[0]);
+            }
+
+            inputCheckAddress.oninput = function() {
+                try {
+                    Wallet.getAddress(inputCheckAddress.value);
+                    submitCheck.classList.remove('disable');
+                } catch (error) {
+                    submitCheck.classList.add('disable');
+                }
+            }
+
+            function checkSplit() {
+                console.log('foo');
+                try {
+                    Wallet.getAddress(inputTargetAddress.value);
+                } catch (error) {
+                console.log(error);
+                    submitSplit.classList.add('disable');
+                    return;
+                }
+                if (!inputJson.files || inputJson.files.length !== 1) {
+                console.log(inputJson);
+                    submitSplit.classList.add('disable');
+                    return;
+                }
+                submitSplit.classList.remove('disable');
+            }
+
+            inputTargetAddress.oninput = checkSplit;
+            inputJson.onchange = checkSplit;
+
+            var check
+        </script>
+    </body>
+</html>
+

@@ -34,6 +34,8 @@ utils.defineProperty(exportUtils, 'getContractAddress', function(transaction) {
 module.exports = Wallet;
 
 
+utils.defineProperty(Wallet, 'etherSymbol', '\uD835\uDF63');
+
 utils.defineProperty(Wallet, 'getAddress', SigningKey.getAddress);
 utils.defineProperty(Wallet, 'getIcapAddress', SigningKey.getIcapAddress);
 
@@ -161,21 +163,32 @@ function numberOrBN(value) {
     return value;
 }
 
+function zpad(buffer, length) {
+    var zero = new Buffer([0]);
+    while (buffer.length < length) {
+        buffer = Buffer.concat([zero, buffer]);
+    }
+    return buffer;
+}
+
 function coderNumber(size, signed) {
     return {
         encode: function(value) {
             value = numberOrBN(value)
-//            if (signed) {
-                return value.toTwos(32 * 8).toArrayLike(Buffer, 'be', 32);
-//            } else {
-//                return value.toArrayLike(Buffer, 'be', 32);
-//            }
+            if (signed) {
+                value = value.toTwos(32 * 8);
+            } else if (value < 0) {
+                value = value.toTwos(size * 8);
+            }
+            return value.toArrayLike(Buffer, 'be', 32);
         },
         decode: function(data, offset) {
             var value = new utils.BN(data.slice(offset, offset + 32));
-//            if (signed) {
-            value = value.fromTwos(32 * 8);
-//            }
+            if (signed) {
+                value = value.fromTwos(size * 8);
+            } else {
+                value = value.mod((new utils.BN(2)).pow(new utils.BN(size * 8)))
+            }
             return {
                 consumed: 32,
                 value: value,
@@ -451,7 +464,7 @@ function Interface(abi) {
                                 return Interface.decodeParams(
                                     outputTypes,
                                     utils.hexOrBuffer(data)
-                                )
+                                );
                             };
                         } else {
                             result.type = 'transaction';
@@ -701,8 +714,8 @@ function Contract(provider, wallet, contractAddress, contractInterface) {
 
                     return new Promise(function(resolve, reject) {
                         Promise.all([
-                            provider.client.sendMessage('getTransactionCount', [wallet.address, 'pending']),
-                            provider.client.sendMessage('getGasPrice', []),
+                            provider.client.sendMessage('eth_getTransactionCount', [wallet.address, 'pending']),
+                            provider.client.sendMessage('eth_gasPrice', []),
                         ]).then(function(results) {
                             if (transaction.nonce == null) {
                                 transaction.nonce = results[0];
@@ -716,7 +729,7 @@ function Contract(provider, wallet, contractAddress, contractInterface) {
                             }
 
                             var signedTransaction = wallet.sign(transaction);
-                            provider.client.sendMessage('sendRawTransaction', [signedTransaction]).then(function(txid) {
+                            provider.client.sendMessage('eth_sendRawTransaction', [signedTransaction]).then(function(txid) {
                                 resolve(txid);
                             }, function(error) {
                                 reject(error);
@@ -871,31 +884,31 @@ var utils = require('./utils.js');
 function Randomish() {
     if (!(this instanceof Randomish)) { throw new Error('missing new'); }
 
-    var bits = 0;
+    var weak = (randomBytes._weakCrypto || false);
+
+    var entropyBits = (weak ? 0: ((32 + 16) * 8));
     Object.defineProperty(this, 'entropy', {
         enumerable: true,
-        get: function() { return bits; }
+        get: function() { return entropyBits; }
     });
-
-    var weak = !!(randomBytes._weakCrypto);
 
     var entropy = new aes.ModeOfOperation.cbc(
         Randomish.randomishBytes(32),
         Randomish.randomishBytes(16)
     );
 
-    if (!weak) { bits += (32 + 16) * 8; }
-
-    utils.defineProperty(this, 'feedEntropy', function(data, expectedBits) {
+    utils.defineProperty(this, 'feedEntropy', function(data, expectedEntropyBits) {
         if (!data) { data = ''; }
-        if (!expectedBits) { expectedBits = 0; }
+        if (!expectedEntropyBits) { expectedEntropyBits = 0; }
 
-        if (parseInt(expectedBits) != expectedBits) { throw new Error('invalid expectedBits'); }
+        if (parseInt(expectedEntropyBits) != expectedEntropyBits) {
+            throw new Error('invalid expectedEntropyBits');
+        }
 
         data = (new Date()).getTime() + '-' + JSON.stringify(data) + '-' + data.toString();
         var hashed = utils.sha3(new Buffer(data, 'utf8'));
 
-        bits += expectedBits + (weak ? 0: ((32) * 8));
+        entropyBits += expectedEntropyBits + (weak ? 0: ((32) * 8));
 
         // Feed the hashed data and random data to the mode of operation
         entropy.encrypt(hashed.slice(0, 16));
