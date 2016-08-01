@@ -71,7 +71,6 @@ utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, c
 
     scrypt(password, username, (1 << 18), 8, 1, 32, function(error, progress, key) {
         if (key) {
-        console.log(key, new Buffer(key), (new Buffer(key)).toString('hex'));
             return callback(error, new Wallet(new Buffer(key)), 1);
         } else {
             return callback(error, null, progress);
