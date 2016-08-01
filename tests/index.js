@@ -31,6 +31,9 @@ module.exports.testContracts = require('./test-contracts.js');
 // Test the secret storage JSON wallet encryption/decryption
 module.exports.testSecretStorage = require('./test-secret-storage.js');
 
+// Test brain wallet generation
+module.exports.testBrainWallet = require('./test-brain-wallet.js');
+
 
 // Test the solidity encoding/decoding parameters
 module.exports.testSolidityCoder = require('./test-solidity-coder.js');
