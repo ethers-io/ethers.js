@@ -59,7 +59,7 @@ wallet.sign({
 Addresses come in various forms, and it is often useful to convert between them. You can pass any valid address into any function, and the library will convert it internally as needed. The address types are:
 - **hexidecimal** - 0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef (all letters must be either lower case or uppercase; no mixed case, as this implies a checksum address)
 - **ICAP** - XE49Q0EPSW7XTS5PRIE9226HRPOO69XRVU7 (uses the International Bank Account Number format)
-- **checksummed** - 0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF (notice the case is adjusted encoding checkum information)
+- **checksum** - 0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF (notice the case is adjusted encoding checkum information)
 
 ```javascript
 // ICAP Addresses 
@@ -105,7 +105,7 @@ This API allows you to decrypt and encrypt the [Secret Storage](https://github.c
 
 The Secret Storage JSON Wallet format uses an algorithm called *scrypt*, which is intentionally CPU-intensive, which ensures that an attacker would need to tie up considerable resources to attempt to brute-force guess your password. It aslo means it may take some time (10-30 seconds) to decrypt or encrypt a wallet. So, these API calls use a callback to provide progress feedback as well as the opportunity to cancel the process.
 
-The callback should look like `function(error, result, progress)` where progress is a Number between 0 and 1 (inclusive) and if the function returns `true`, then the process will be cancelled, calling the callback once more with `callback(new Error('cancelled')`.
+The callback should look like `function(error, result, progress)` where progress is a Number between 0 and 1 (inclusive) and if the function returns `true`, then the process will be cancelled, calling the callback once more with `callback(new Error('cancelled'))`.
 
 #### Wallet.decrypt(json, password, callback);
 
