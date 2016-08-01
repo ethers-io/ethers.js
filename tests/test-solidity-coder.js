@@ -686,3 +686,5 @@ module.exports = function(test) {
     });
 }
 
+module.exports.testSelf = module.exports;
+

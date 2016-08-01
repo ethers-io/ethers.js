@@ -78,3 +78,5 @@ module.exports = function(test) {
     test.done();
 };
 
+module.exports.testSelf = module.exports;
+
