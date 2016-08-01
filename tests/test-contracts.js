@@ -54,7 +54,7 @@ module.exports = function(test) {
                 test.equal(result, 'foobar', 'failed to call getVaue');
                 resolve(result);
             }, function(error) {
-                test.ok(false, 'failed to call getValue');
+                test.ok(false, 'failed to call getValue (is parity running on this host?)');
                 reject(error);
             });
         });
