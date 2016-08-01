@@ -8,11 +8,11 @@
     "version": "grunt dist"
   },
   "dependencies": {
-    "aes-js": "0.2.4",
+    "aes-js": "2.0.0",
     "elliptic": "6.3.1",
     "pbkdf2": "3.0.4",
     "rlp": "2.0.0",
-    "scrypt-js": "2.0.0",
+    "scrypt-js": "2.0.2",
     "uuid": "2.0.1",
     "xmlhttprequest": "1.8.0"
   },
