@@ -28,7 +28,10 @@
     "grunt-browserify": "^5.0.0",
     "grunt-contrib-uglify": "^1.0.1",
     "nodeunit": "0.9.1",
-    "web3": "0.15.3"
+    "web3": "0.15.3",
+
+    "ethereumjs-vm": "1.4.0",
+    "solc": "0.3.5"
   },
   "keywords": [
     "ethereum",
