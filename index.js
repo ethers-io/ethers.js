@@ -35,8 +35,8 @@ module.exports = Wallet;
 
 utils.defineProperty(Wallet, 'etherSymbol', '\uD835\uDF63');
 
-utils.defineProperty(Wallet, 'getAddress', SigningKey.getAddress);
-utils.defineProperty(Wallet, 'getIcapAddress', SigningKey.getIcapAddress);
+//utils.defineProperty(Wallet, 'getAddress', SigningKey.getAddress);
+//utils.defineProperty(Wallet, 'getIcapAddress', SigningKey.getIcapAddress);
 
 utils.defineProperty(Wallet, 'isCrowdsaleWallet', secretStorage.isCrowdsaleWallet);
 utils.defineProperty(Wallet, 'isValidWallet', secretStorage.isValidWallet);
