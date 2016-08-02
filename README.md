@@ -262,20 +262,23 @@ To run the test suite,
 ```
 /Users/ethers> npm test
 
-> ethers-wallet@0.0.1 test /Users/ricmoo/Development/ethers/ethers-wallet
+> ethers-wallet@0.0.3 test /Users/ethers/ethers-wallet
 > nodeunit test.js
 
+Running test cases... (this can take a long time, please be patient)
 
-test.js
-+ testSecretStorage
-+ testCoderParams
-+ testContract
+index.js
++ testPrivateKeyToAddress
 + testChecksumAddress
 + testIcapAddress
-+ testAddress
-+ testTransaction
++ testEtherFormat
++ testTrasactions
++ testSolidityCoder
++ testContracts
++ testSecretStorage
++ testBrainWallet
 
-OK: 85128 assertions (66646ms)
+OK: 52156 assertions (127920ms)
 ```
 
 There are also some test JSON wallets available in the [test-wallets](https://github.com/ethers-io/ethers-wallet/tree/master/test-wallets) directory.
