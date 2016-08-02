@@ -3,6 +3,7 @@
 'use strict';
 
 var rlp = require('rlp');
+var scrypt = require('scrypt-js');
 
 var Contract = require('./lib/contract.js');
 var secretStorage = require('./lib/secret-storage.js');
@@ -36,8 +37,8 @@ module.exports = Wallet;
 
 utils.defineProperty(Wallet, 'etherSymbol', '\uD835\uDF63');
 
-utils.defineProperty(Wallet, 'getAddress', SigningKey.getAddress);
-utils.defineProperty(Wallet, 'getIcapAddress', SigningKey.getIcapAddress);
+//utils.defineProperty(Wallet, 'getAddress', SigningKey.getAddress);
+//utils.defineProperty(Wallet, 'getIcapAddress', SigningKey.getIcapAddress);
 
 utils.defineProperty(Wallet, 'isCrowdsaleWallet', secretStorage.isCrowdsaleWallet);
 utils.defineProperty(Wallet, 'isValidWallet', secretStorage.isValidWallet);
@@ -67,12 +68,25 @@ utils.defineProperty(Wallet.prototype, 'encrypt', function(password, options, ca
     secretStorage.encrypt(this.privateKey, password, options, callback);
 });
 
+utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, callback) {
+    if (typeof(callback) !== 'function') { throw new Error('invalid callback'); }
+
+    scrypt(password, username, (1 << 18), 8, 1, 32, function(error, progress, key) {
+        if (key) {
+            return callback(error, new Wallet(new Buffer(key)), 1);
+        } else {
+            return callback(error, null, progress);
+        }
+    });
+});
+
+
 utils.defineProperty(Wallet, 'randomish', new Randomish());
 
 module.exports = Wallet;
 
 }).call(this,require("buffer").Buffer)
-},{"./lib/contract.js":4,"./lib/randomish.js":6,"./lib/secret-storage.js":7,"./lib/signing-key.js":8,"./lib/utils.js":9,"./lib/wallet.js":10,"buffer":40,"rlp":83}],2:[function(require,module,exports){
+},{"./lib/contract.js":4,"./lib/randomish.js":6,"./lib/secret-storage.js":7,"./lib/signing-key.js":8,"./lib/utils.js":9,"./lib/wallet.js":10,"buffer":40,"rlp":83,"scrypt-js":84}],2:[function(require,module,exports){
 (function (global,Buffer){
 'use strict';
 
@@ -171,23 +185,33 @@ function zpad(buffer, length) {
     return buffer;
 }
 
+// There seems to be a but in maskn, so we are doing this for now.
+var bitmasks = [];
+(function() {
+    var mask = '';
+    for (var i = 0; i < 33; i++) {
+        bitmasks.push(new utils.BN(mask, 16));
+        mask += 'ff';
+    }
+})();
+
 function coderNumber(size, signed) {
     return {
         encode: function(value) {
             value = numberOrBN(value)
+            value = value.toTwos(size * 8).and(bitmasks[size]);
             if (signed) {
-                value = value.toTwos(32 * 8);
-            } else if (value < 0) {
-                value = value.toTwos(size * 8);
+                value = value.fromTwos(size * 8).toTwos(256);
             }
             return value.toArrayLike(Buffer, 'be', 32);
         },
         decode: function(data, offset) {
-            var value = new utils.BN(data.slice(offset, offset + 32));
+            var junkLength = 32 - size;
+            var value = new utils.BN(data.slice(offset + junkLength, offset + 32));
             if (signed) {
                 value = value.fromTwos(size * 8);
             } else {
-                value = value.mod((new utils.BN(2)).pow(new utils.BN(size * 8)))
+                value = value.and(bitmasks[size]);
             }
             return {
                 consumed: 32,
@@ -593,27 +617,12 @@ var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice:true, to: true, value: true
 }
 
-function Contract(provider, wallet, contractAddress, contractInterface) {
-    utils.defineProperty(this, 'provider', provider);
+function Contract(wallet, contractAddress, contractInterface) {
     utils.defineProperty(this, 'wallet', wallet);
 
     utils.defineProperty(this, 'contractAddress', contractAddress);
-
     utils.defineProperty(this, 'interface', contractInterface);
-/*
-    function getWeb3Promise(method) {
-        var params = Array.prototype.slice.call(arguments, 1);
-        return new Promise(function(resolve, reject) {
-            params.push(function(error, result) {
-                if (error) {
-                    return reject(error);
-                }
-                resolve(result);
-            });
-            web3.eth[method].apply(web3, params);
-        });
-    }
-*/
+
     var self = this;
 
     var filters = {};
@@ -660,8 +669,10 @@ function Contract(provider, wallet, contractAddress, contractInterface) {
         });
 */
     }
-    function runMethod(method) {
+    function runMethod(method, estimateOnly) {
         return function() {
+            var provider = wallet._provider;
+
             var transaction = {}
 
             var params = Array.prototype.slice.call(arguments);
@@ -692,8 +703,14 @@ function Contract(provider, wallet, contractAddress, contractInterface) {
                     }
                     transaction.to = contractAddress;
 
+                    if (estimateOnly) {
+                        return new Promise(function(resolve, reject) {
+                            resolve(new utils.BN(0));
+                        });
+                    }
+
                     return new Promise(function(resolve, reject) {
-                        provider.client.sendMessage('eth_call', [transaction]).then(function(value) {
+                        provider.call(transaction).then(function(value) {
                             resolve(call.parse(value));
                         }, function(error) {
                             reject(error);
@@ -712,10 +729,24 @@ function Contract(provider, wallet, contractAddress, contractInterface) {
                         transaction.gasLimit = 3000000;
                     }
 
+                    if (estimateOnly) {
+                        return new Promise(function(resolve, reject) {
+                            provider.estimateGas(transaction).then(function(gasEstimate) {
+                                if (!utils.isHexString(gasEstimate)) {
+                                    reject(new Error('invalid server response'));
+                                } else {
+                                    resolve(new utils.BN(gasEstimate.substring(2), 16));
+                                }
+                            }, function(error) {
+                                reject(error);
+                            });
+                        });
+                    }
+
                     return new Promise(function(resolve, reject) {
                         Promise.all([
-                            provider.client.sendMessage('eth_getTransactionCount', [wallet.address, 'pending']),
-                            provider.client.sendMessage('eth_gasPrice', []),
+                            provider.getTransactionCount(wallet.address, 'pending'),
+                            provider.getGasPrice(),
                         ]).then(function(results) {
                             if (transaction.nonce == null) {
                                 transaction.nonce = results[0];
@@ -729,7 +760,7 @@ function Contract(provider, wallet, contractAddress, contractInterface) {
                             }
 
                             var signedTransaction = wallet.sign(transaction);
-                            provider.client.sendMessage('eth_sendRawTransaction', [signedTransaction]).then(function(txid) {
+                            provider.sendTransaction(signedTransaction).then(function(txid) {
                                 resolve(txid);
                             }, function(error) {
                                 reject(error);
@@ -742,8 +773,12 @@ function Contract(provider, wallet, contractAddress, contractInterface) {
         };
     }
 
+    var estimate = {};
+    utils.defineProperty(this, 'estimate', estimate);
+
     contractInterface.methods.forEach(function(method) {
-        utils.defineProperty(this, method, runMethod(method));
+        utils.defineProperty(this, method, runMethod(method, false));
+        utils.defineProperty(estimate, method, runMethod(method, true));
     }, this);
 
     contractInterface.events.forEach(function(method) {
@@ -788,14 +823,13 @@ function Web3Connector(provider) {
                 method: method,
                 params: params
             }, function(error, result) {
-            console.log(error, result);
                 if (error) {
                     reject(error);
                 } else {
-                    if (result.code) {
-                        var error = new Error(result.message);
-                        error.code = result.code;
-                        error.data = result.data;
+                    if (result.error) {
+                        var error = new Error(result.error.message);
+                        error.code = result.error.code;
+                        error.data = result.error.data;
                         reject(error);
                     } else {
                         resolve(result.result);
@@ -805,7 +839,6 @@ function Web3Connector(provider) {
         });
     });
 }
-
 
 function rpcSendAsync(url) {
     return {
@@ -853,6 +886,10 @@ function Provider(provider) {
         // An ethers.io URL
         } else if (provider.substring(0, 5) === 'ws://' || provider.substirng(0, 6) === 'wss://') {
             //client =
+
+        // Etherscan
+        } else if (string === 'testnet.etherscan.io' || string === 'etherscan.io') {
+            // client =
         }
 
     // A Web3 Instance
@@ -868,6 +905,32 @@ function Provider(provider) {
 
     utils.defineProperty(this, 'client', client);
 }
+
+utils.defineProperty(Provider.prototype, 'getBalance', function(address, blockNumber) {
+    if (blockNumber == null) { blockNumber = 'latest'; }
+    return this.client.sendMessage('eth_getBalance', [address, blockNumber]);
+});
+
+utils.defineProperty(Provider.prototype, 'getTransactionCount', function(address, blockNumber) {
+    if (blockNumber == null) { blockNumber = 'latest'; }
+    return this.client.sendMessage('eth_getTransactionCount', [address, blockNumber]);
+});
+
+utils.defineProperty(Provider.prototype, 'getGasPrice', function() {
+    return this.client.sendMessage('eth_gasPrice', []);
+});
+
+utils.defineProperty(Provider.prototype, 'sendTransaction', function(signedTransaction) {
+    return this.client.sendMessage('eth_sendRawTransaction', [signedTransaction]);
+});
+
+utils.defineProperty(Provider.prototype, 'call', function(transaction) {
+    return this.client.sendMessage('eth_call', [transaction]);
+});
+
+utils.defineProperty(Provider.prototype, 'estimateGas', function(transaction) {
+    return this.client.sendMessage('eth_estimateGas', [transaction]);
+});
 
 
 module.exports = Provider;
@@ -1191,7 +1254,7 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
     // Check the password
     if (!Buffer.isBuffer(password)) { throw new Error('password must be a buffer'); }
 
-    // Check/generate the DAO
+    // Check/generate the salt
     var salt = options.salt;
     if (salt) {
         salt = utils.hexOrBuffer(salt, 'salt');
@@ -1214,11 +1277,11 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
     }
 
     // Override the scrypt password-based key derivation function parameters
-    var N = (1 << 17), p = 1, r = 8;
+    var N = (1 << 17), r = 8, p = 1;
     if (options.scrypt) {
         if (options.scrypt.N) { N = options.scrypt.N; }
-        if (options.scrypt.p) { p = options.scrypt.p; }
         if (options.scrypt.r) { r = options.scrypt.r; }
+        if (options.scrypt.p) { p = options.scrypt.p; }
     }
 
     // We take 64 bytes:
@@ -1743,8 +1806,24 @@ function Wallet(privateKey, provider) {
     }
     utils.defineProperty(this, 'privateKey', signingKey.privateKey);
 
+    Object.defineProperty(this, 'provider', {
+        enumerable: true,
+        get: function() { return provider; },
+        set: function(value) {
+            provider = new Provider(provider);
+        }
+    });
+
+    Object.defineProperty(this, '_provider', {
+        enumerable: true,
+        get: function() {
+            if (!provider) { throw new Error('missing provider'); }
+            return provider;
+        },
+    });
+
     if (provider) {
-        utils.defineProperty(this, 'provider', new Provider(provider));
+        this.provider = provider;
     }
 
     utils.defineProperty(this, 'address', signingKey.address);
@@ -1791,8 +1870,85 @@ function Wallet(privateKey, provider) {
     });
 }
 
+utils.defineProperty(Wallet.prototype, 'getBalance', function(blockNumber) {
+    var provider = this._provider;
+
+    var self = this;
+    return new Promise(function(resolve, reject) {
+        provider.getBalance(self.address, 'latest').then(function(balance) {
+            if (!utils.isHexString(balance)) {
+                reject(new Error('client response error'));
+            } else {
+                resolve(new Wallet.utils.BN(balance.substring(2), 16));
+            }
+        }, function(error) {
+            reject(error);
+        });
+    });
+});
+
+utils.defineProperty(Wallet.prototype, 'getTransactionCount', function(blockNumber) {
+    var provider = this._provider;
+
+    var self = this;
+    return new Promise(function(resolve, reject) {
+        provider.getTransactionCount(self.address, 'latest').then(function(transactionCount) {
+            if (!utils.isHexString(transactionCount)) {
+                reject(new Error('client response error'));
+            } else {
+                resolve(parseInt(transactionCount.substring(2), 16));
+            }
+        }, function(error) {
+            reject(error);
+        });
+    });
+});
+
+utils.defineProperty(Wallet.prototype, 'send', function(address, amountWei, options) {
+    address = SigningKey.getAddress(address);
+    if (utils.BN.isBN(amountWei)) {
+        amountWei = '0x' + utils.bnToBuffer(amountWei).toString('hex');
+    }
+    if (!utils.isHexString(amountWei)) { throw new Error('invalid amountWei'); }
+
+    var provider = this._provider;
+
+    if (!options) { options = {}; }
+
+    var gasLimit = options.gasLimit;
+    if (gasLimit == null) { gasLimit = 3000000; }
+
+    var self = this;
+    return new Promise(function(resolve, reject) {
+        Promise.all([
+            provider.getGasPrice(),
+            provider.getTransactionCount(self.address)
+        ]).then(function(results) {
+            var gasPrice = options.gasPrice;
+            if (gasPrice == null) { gasPrice = results[0]; }
+
+            var signedTransaction = self.sign({
+                to: address,
+                gasLimit: gasLimit,
+                gasPrice: gasPrice,
+                nonce: results[1],
+                value: amountWei
+            });
+
+            provider.sendTransaction(signedTransaction).then(function(txid) {
+                resolve(txid);
+            }, function(error) {
+                reject(error);
+            });
+
+        }, function(error) {
+            reject(error);
+        });
+    });
+});
+
 utils.defineProperty(Wallet.prototype, 'getContract', function(address, abi) {
-    return new Contract(this.provider, this, address, new Contract.Interface(abi));
+    return new Contract(this, address, new Contract.Interface(abi));
 });
 
 
@@ -1801,6 +1957,69 @@ utils.defineProperty(Wallet, 'getIcapAddress', SigningKey.getIcapAddress);
 
 utils.defineProperty(Wallet, '_Contract', Contract);
 
+var zero = new utils.BN(0);
+var negative1 = new utils.BN(-1);
+var tenPower18 = new utils.BN('1000000000000000000');
+utils.defineProperty(Wallet, 'formatEther', function(wei, options) {
+    if (typeof(wei) === 'number') { wei = new utils.BN(wei); }
+    if (!options) { options = {}; }
+
+    if (!(wei instanceof utils.BN)) { throw new Error('invalid wei'); }
+
+    var negative = wei.lt(zero);
+    if (negative) { wei = wei.mul(negative1); }
+
+    var fraction = wei.mod(tenPower18).toString(10);
+    while (fraction.length < 18) { fraction = '0' + fraction; }
+
+    if (!options.pad) {
+        fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
+    }
+
+    var whole = wei.div(tenPower18).toString(10);
+
+    if (options.commify) {
+        whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    }
+
+    var value = whole + '.' + fraction;
+
+    if (negative) { value = '-' + value; }
+
+    return value;
+});
+
+utils.defineProperty(Wallet, 'parseEther', function(ether) {
+    if (typeof(ether) !== 'string' || !ether.match(/^-?[0-9.]+$/)) {
+        throw new Error('invalid value');
+    }
+
+    // Is it negative?
+    var negative = (ether.substring(0, 1) === '-');
+    if (negative) { ether = ether.substring(1); }
+
+    if (ether === '.') { throw new Error('invalid value'); }
+
+    // Split it into a whole and fractional part
+    var comps = ether.split('.');
+    if (comps.length > 2) { throw new Error('too many decimal points'); }
+
+    var whole = comps[0], fraction = comps[1];
+    if (!whole) { whole = '0'; }
+    if (!fraction) { fraction = '0'; }
+    if (fraction.length > 18) { throw new Error('too many decimal places'); }
+
+    while (fraction.length < 18) { fraction += '0'; }
+
+    whole = new utils.BN(whole);
+    fraction = new utils.BN(fraction);
+
+    var wei = (whole.mul(tenPower18)).add(fraction);
+
+    if (negative) { wei = wei.mul(negative1); }
+
+    return wei;
+});
 
 module.exports = Wallet;
 
@@ -1809,11 +2028,9 @@ module.exports = Wallet;
 (function (Buffer){
 "use strict";
 
-(function() {
-    var root = this;
-    var previous_mymodule = root.mymodule;
+(function(root) {
 
-    var createBuffer = null, convertBytesToString, convertStringToBytes = null;
+    var createBuffer = null, copyBuffer = null, convertBytesToString, convertStringToBytes = null;
 
     var slowCreateBuffer = function(arg) {
 
@@ -1829,7 +2046,7 @@ module.exports = Wallet;
             // Make sure they are passing sensible data
             for (var i = 0; i < arg.length; i++) {
                 if (arg[i] < 0 || arg[i] >= 256 || typeof arg[i] !== 'number') {
-                    throw new Error('invalid byte at index ' + i + '(' + arg[i] + ')');
+                    throw new Error('invalid byte (' + arg[i] + ':' + i + ')');
                 }
             }
 
@@ -1850,12 +2067,12 @@ module.exports = Wallet;
     if (typeof(Buffer) === 'undefined') {
         createBuffer = slowCreateBuffer;
 
-        Array.prototype.copy = function(targetArray, targetStart, sourceStart, sourceEnd) {
+        copyBuffer = function(sourceBuffer, targetBuffer, targetStart, sourceStart, sourceEnd) {
             if (targetStart == null) { targetStart = 0; }
             if (sourceStart == null) { sourceStart = 0; }
-            if (sourceEnd == null) { sourceEnd = this.length; }
+            if (sourceEnd == null) { sourceEnd = sourceBuffer.length; }
             for (var i = sourceStart; i < sourceEnd; i++) {
-                targetArray[targetStart++] = this[i];
+                targetBuffer[targetStart++] = sourceBuffer[i];
             }
         }
 
@@ -1936,6 +2153,11 @@ module.exports = Wallet;
 
     } else {
         createBuffer = function(arg) { return new Buffer(arg); }
+
+        copyBuffer = function(sourceBuffer, targetBuffer, targetStart, sourceStart, sourceEnd) {
+            sourceBuffer.copy(targetBuffer, targetStart, sourceStart, sourceEnd);
+        }
+
         convertStringToBytes = function(text, encoding) {
             return new Buffer(text, encoding);
         }
@@ -1992,6 +2214,10 @@ module.exports = Wallet;
 
 
     var AES = function(key) {
+        if (!(this instanceof AES)) {
+            throw Error('AES must be instanitated with `new`');
+        }
+
         this.key = createBuffer(key);
         this._prepare();
     }
@@ -2001,7 +2227,7 @@ module.exports = Wallet;
 
         var rounds = numberOfRounds[this.key.length];
         if (rounds == null) {
-            throw new Error('invalid key size (must be length 16, 24 or 32)');
+            throw new Error('invalid key size (must be 16, 24 or 32 bytes)');
         }
 
         // encryption round keys
@@ -2089,7 +2315,7 @@ module.exports = Wallet;
 
     AES.prototype.encrypt = function(plaintext) {
         if (plaintext.length != 16) {
-            return new Error('plaintext must be a block of size 16');
+            throw new Error('invalid plaintext size (must be 16 bytes)');
         }
 
         var rounds = this._Ke.length - 1;
@@ -2128,7 +2354,7 @@ module.exports = Wallet;
 
     AES.prototype.decrypt = function(ciphertext) {
         if (ciphertext.length != 16) {
-            return new Error('ciphertext must be a block of size 16');
+            throw new Error('invalid ciphertext size (must be 16 bytes)');
         }
 
         var rounds = this._Kd.length - 1;
@@ -2170,6 +2396,10 @@ module.exports = Wallet;
      *  Mode Of Operation - Electonic Codebook (ECB)
      */
     var ModeOfOperationECB = function(key) {
+        if (!(this instanceof ModeOfOperationECB)) {
+            throw Error('AES must be instanitated with `new`');
+        }
+
         this.description = "Electronic Code Block";
         this.name = "ecb";
 
@@ -2189,13 +2419,18 @@ module.exports = Wallet;
      *  Mode Of Operation - Cipher Block Chaining (CBC)
      */
     var ModeOfOperationCBC = function(key, iv) {
+        if (!(this instanceof ModeOfOperationCBC)) {
+            throw Error('AES must be instanitated with `new`');
+        }
+
         this.description = "Cipher Block Chaining";
         this.name = "cbc";
 
-        if (iv === null) {
-            iv = createBuffer([0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        if (!iv) {
+            iv = createBuffer([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
         } else if (iv.length != 16) {
-            return new Error('initialation vector iv must be of length 16');
+            throw new Error('invalid initialation vector size (must be 16 bytes)');
         }
 
         this._lastCipherblock = createBuffer(iv);
@@ -2205,7 +2440,7 @@ module.exports = Wallet;
 
     ModeOfOperationCBC.prototype.encrypt = function(plaintext) {
         if (plaintext.length != 16) {
-            return new Error('plaintext must be a block of size 16');
+            throw new Error('invalid plaintext size (must be 16 bytes)');
         }
 
         var precipherblock = createBuffer(plaintext);
@@ -2220,7 +2455,7 @@ module.exports = Wallet;
 
     ModeOfOperationCBC.prototype.decrypt = function(ciphertext) {
         if (ciphertext.length != 16) {
-            return new Error('ciphertext must be a block of size 16');
+            throw new Error('invalid ciphertext size (must be 16 bytes)');
         }
 
         var plaintext = this._aes.decrypt(ciphertext);
@@ -2228,7 +2463,7 @@ module.exports = Wallet;
             plaintext[i] ^= this._lastCipherblock[i];
         }
 
-        ciphertext.copy(this._lastCipherblock);
+        copyBuffer(ciphertext, this._lastCipherblock);
 
         return plaintext;
     }
@@ -2238,13 +2473,18 @@ module.exports = Wallet;
      *  Mode Of Operation - Cipher Feedback (CFB)
      */
     var ModeOfOperationCFB = function(key, iv, segmentSize) {
+        if (!(this instanceof ModeOfOperationCFB)) {
+            throw Error('AES must be instanitated with `new`');
+        }
+
         this.description = "Cipher Feedback";
         this.name = "cfb";
 
-        if (iv === null) {
+        if (!iv) {
             iv = createBuffer([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
         } else if (iv.length != 16) {
-            return new Error('initialation vector iv must be of length 16');
+            throw new Error('invalid initialation vector size (must be 16 size)');
         }
 
         if (!segmentSize) { segmentSize = 1; }
@@ -2258,7 +2498,7 @@ module.exports = Wallet;
 
     ModeOfOperationCFB.prototype.encrypt = function(plaintext) {
         if ((plaintext.length % this.segmentSize) != 0) {
-            return new Error('plaintext must be a block of size module segmentSize (' + this.segmentSize + ')');
+            throw new Error('invalid plaintext size (must be segmentSize bytes)');
         }
 
         var encrypted = createBuffer(plaintext);
@@ -2271,8 +2511,8 @@ module.exports = Wallet;
             }
 
             // Shift the register
-            this._shiftRegister.copy(this._shiftRegister, 0, this.segmentSize);
-            encrypted.copy(this._shiftRegister, 16 - this.segmentSize, i, i + this.segmentSize);
+            copyBuffer(this._shiftRegister, this._shiftRegister, 0, this.segmentSize);
+            copyBuffer(encrypted, this._shiftRegister, 16 - this.segmentSize, i, i + this.segmentSize);
         }
 
         return encrypted;
@@ -2280,7 +2520,7 @@ module.exports = Wallet;
 
     ModeOfOperationCFB.prototype.decrypt = function(ciphertext) {
         if ((ciphertext.length % this.segmentSize) != 0) {
-            return new Error('ciphertext must be a block of size module segmentSize (' + this.segmentSize + ')');
+            throw new Error('invalid ciphertext size (must be segmentSize bytes)');
         }
 
         var plaintext = createBuffer(ciphertext);
@@ -2294,8 +2534,8 @@ module.exports = Wallet;
             }
 
             // Shift the register
-            this._shiftRegister.copy(this._shiftRegister, 0, this.segmentSize);
-            ciphertext.copy(this._shiftRegister, 16 - this.segmentSize, i, i + this.segmentSize);
+            copyBuffer(this._shiftRegister, this._shiftRegister, 0, this.segmentSize);
+            copyBuffer(ciphertext, this._shiftRegister, 16 - this.segmentSize, i, i + this.segmentSize);
         }
 
         return plaintext;
@@ -2305,13 +2545,18 @@ module.exports = Wallet;
      *  Mode Of Operation - Output Feedback (OFB)
      */
     var ModeOfOperationOFB = function(key, iv) {
+        if (!(this instanceof ModeOfOperationOFB)) {
+            throw Error('AES must be instanitated with `new`');
+        }
+
         this.description = "Output Feedback";
         this.name = "ofb";
 
-        if (iv === null) {
+        if (!iv) {
             iv = createBuffer([0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
         } else if (iv.length != 16) {
-            return new Error('initialation vector iv must be of length 16');
+            throw new Error('invalid initialation vector size (must be 16 bytes)');
         }
 
         this._lastPrecipher = createBuffer(iv);
@@ -2342,7 +2587,12 @@ module.exports = Wallet;
      *  Counter object for CTR common mode of operation
      */
     var Counter = function(initialValue) {
-        if (initialValue === null || initialValue === undefined) { initialValue = 1; }
+        if (!(this instanceof Counter)) {
+            throw Error('Counter must be instanitated with `new`');
+        }
+
+        // We allow 0, but anything false-ish uses the default 1
+        if (initialValue !== 0 && !initialValue) { initialValue = 1; }
 
         if (typeof(initialValue) === 'number') {
             this._counter = createBuffer([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
@@ -2354,8 +2604,8 @@ module.exports = Wallet;
     }
 
     Counter.prototype.setValue = function(value) {
-        if (typeof(value) !== 'number') {
-            throw new Error('value must be a number');
+        if (typeof(value) !== 'number' || parseInt(value) != value) {
+            throw new Error('invalid counter value (must be an integer)');
         }
 
         for (var index = 15; index >= 0; --index) {
@@ -2366,7 +2616,7 @@ module.exports = Wallet;
 
     Counter.prototype.setBytes = function(bytes) {
         if (bytes.length != 16) {
-            throw new Error('invalid counter bytes size (must be 16)');
+            throw new Error('invalid counter bytes size (must be 16 bytes)');
         }
         this._counter = createBuffer(bytes);
     };
@@ -2387,11 +2637,15 @@ module.exports = Wallet;
      *  Mode Of Operation - Counter (CTR)
      */
     var ModeOfOperationCTR = function(key, counter) {
+        if (!(this instanceof ModeOfOperationCTR)) {
+            throw Error('AES must be instanitated with `new`');
+        }
+
         this.description = "Counter";
         this.name = "ctr";
 
-        if (counter === null) {
-            counter = new Counter()
+        if (!(counter instanceof Counter)) {
+            counter = new Counter(counter)
         }
 
         this._counter = counter;
@@ -2432,7 +2686,7 @@ module.exports = Wallet;
 
 
     ///////////////////////
-    // Exports
+    // Exporting
 
 
     // The block cipher
@@ -2448,29 +2702,29 @@ module.exports = Wallet;
     };
 
 
+    // node.js
+    if (typeof exports !== 'undefined') {
+        module.exports = aesjs
 
-    if(typeof exports !== 'undefined') {
-        exports.AES = AES;
-        exports.Counter = Counter;
-        exports.ModeOfOperation = ModeOfOperation;
-        exports.util = {
-            convertBytesToString: convertBytesToString,
-            convertStringToBytes: convertStringToBytes,
-            _slowCreateBuffer: slowCreateBuffer
-        }
-        /*
-        if(typeof module !== 'undefined' && module.exports) {
-            exports = module.exports = export;
-        }
-        exports.mymodule = mymodule;
-        */
+    // RequireJS/AMD
+    // http://www.requirejs.org/docs/api.html
+    // https://github.com/amdjs/amdjs-api/wiki/AMD
+    } else if (typeof(define) === 'function' && define.amd) {
+        define(aesjs);
 
+    // Web Browsers
     } else {
+
+        // If there was an existing library at "aes" make sure it's still available
+        if (root.aes) {
+            aesjs._aes = root.aes;
+        }
+
         root.aesjs = aesjs;
     }
 
 
-}).call(this);
+})(this);
 
 }).call(this,require("buffer").Buffer)
 },{"buffer":40}],12:[function(require,module,exports){
@@ -18982,12 +19236,23 @@ function toBuffer (v) {
         return true;
     }
 
+    function ensureInteger(value, name) {
+        var intValue = parseInt(value);
+        if (value != intValue) { throw new Error('invalid ' + name); }
+        return intValue;
+    }
 
     // N = Cpu cost, r = Memory cost, p = parallelization cost
     // callback(error, progress, key)
     function scrypt(password, salt, N, r, p, dkLen, callback) {
 
         if (!callback) { throw new Error('missing callback'); }
+
+        N = ensureInteger(N, 'N');
+        r = ensureInteger(r, 'r');
+        p = ensureInteger(p, 'p');
+
+        dkLen = ensureInteger(dkLen, 'dkLen');
 
         if (N === 0 || (N & (N - 1)) !== 0) { throw new Error('N must be power of 2'); }
 
@@ -19164,13 +19429,14 @@ function toBuffer (v) {
         define(scrypt);
 
     // Web Browsers
-    } else {
-        root.scrypt = scrypt;
+    } else if (root) {
 
         // If there was an existing library "scrypt", make sure it is still available
-        if (root && root.scrypt) {
+        if (root.scrypt) {
             root._scrypt = root.scrypt;
         }
+
+        root.scrypt = scrypt;
     }
 
 })(this);
