@@ -4,9 +4,10 @@ ethers-wallet
 Complete Ethereum wallet implementation in JavaScript.
 
 Features
-- Keep your private keys in the browser
-- Import and export JSON wallets (geth and crowdsale)
+- Keep your private keys in your browser
+- Import and export JSON wallets (geth and crowdsale) and brain wallets
 - Generate JavaScript bindings for any contract ABI
+- Connect to Ethereum nodes over RPC
 - Small (~100kb compressed; 290kb uncompressed)
 - MIT licensed (with one exception, which we are migrating off of; see below)
 
@@ -120,9 +121,10 @@ Wallet.decrypt(json, password, function(error, wallet, progress) {
     if (error) {
         if (error.message === 'invalid password') {
             // Wrong password
+
         } else if (error.message === 'cancelled') {
             // The decryption was cancelled
-        } else {
+
         }
 
     } else if (wallet) {
@@ -157,14 +159,16 @@ var options = {
 }
 
 var wallet = new Wallet(privateKey);
+
+var shouldCancelEncrypt = false;
 wallet.encrypt(password, options, function(error, json, progress) {
     if (error) {
-        if (error.message === 'invalid password') {
-            // Wrong password
+        if (error.message === 'cancelled') {
+            // Cancelled
         }
 
     } else if (json) {
-        // The wallet was successfully encrypted
+        // The wallet was successfully encrypted as a json string
 
     } else {
         // The wallet is still being encrypted
@@ -174,20 +178,87 @@ wallet.encrypt(password, options, function(error, json, progress) {
 
     // Optionally return true to stop this decryption; this callback will get
     // called once more with callback(new Error("cancelled"))
-    return shouldCancelDecrypt;
+    return shouldCancelEncrypt;
 });
 ```
 
+
+### Brain Wallets
+
+Brain wallets should not be considered a secure way to store large amounts of ether; anyone who knows your username/password can steal your funds.
+
+```javascript
+
+// Username and passwords must be buffers; see scrypt-js library for summary
+// of UTF-8 gotchas (@TOOD: include a link)
+var email = new Wallet.utils.Buffer('github@ricmoo.com', 'utf8');
+var password = new Wallet.utils.Buffer('password', 'utf8');
+
+var shouldCancelSummon = false;
+Wallet.summonBrainWallet(email, password, function(error, wallet, progress) {
+    if (error) {
+        if (error.message === 'cancelled') {
+            // Cancelled
+        }
+
+    } else if (wallet) {
+        // The wallet was successfully generated
+
+    } else {
+        // The wallet is still being generated
+        console.log('The wallet is ' + parseInt(100 * progress) + '% encrypted');
+    }
+
+    // Optionally return true to stop this generation; this callback will get
+    // called once more with callback(new Error("cancelled"))
+    return shouldCancelSummon;
+});
+```
+
+
+Provider API
+------------
+
+Connect to standard *Ethereum* nodes via RPC, for example, if you have a local parity (or geth) instance running:
+
+```javascript
+
+// The Web3 library is NOT required, but if you have one (for example from Metamask)
+var web3Provider = new Web3.providers.HttpProvider('http://localhost:8545');
+var web3 = new Web3(web3Provider);
+
+// All these are equivalent
+var Wallet = new Wallet(privateKey, 'http://localhost:8545');
+var Wallet = new Wallet(privateKey, web3Provider);
+var Wallet = new Wallet(privateKey, web3);
+
+// With a provider attached, you can call additional methods on the wallet
+
+// Get the wallet's balance
+Wallet.getBalance().then(function(balance) {
+    console.log(balance);
+});
+
+// Get the current nonce for this wallet
+Wallet.getTransactionCount().then(function(transactionCount) {
+    console.log(transactionCount);
+})
+
+// Send ether to another account or contract
+Wallet.send(targetAddress, Wallet.parseEther(1.0)).then(function(txid) {
+    console.log(txid);
+})
+```
 
 Contract API
 ------------
 
 ```javascript
-// Load a normal web3 object (you need a local RPC-enabled ethereum node running)
-var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
 
-// Create your wallet
-var wallet = new Wallet('0x3141592653589793238462643383279502884197169399375105820974944592')
+var privateKey = '0x3141592653589793238462643383279502884197169399375105820974944592';
+
+// Create your wallet with any method from the above Provider API
+var wallet = new Wallet(privateKey, 'http://localhost:8545')
 
 console.log(wallet.address);
 /// "0x7357589f8e367c2C31F51242fB77B350A11830F3"
@@ -220,7 +291,7 @@ var simpleStorageAbi = [
 ];
 
 // Get the contract
-var contract = wallet.getContract(web3, simpleStorageAddress, simpleStorageAbi)
+var contract = wallet.getContract(simpleStorageAddress, simpleStorageAbi)
 
 // Set up events
 contract.onvaluechanged = function(oldValue, newValue) {
@@ -249,6 +320,10 @@ contract.setValue("Hello World", options).then(function(txid) {
     console.log('txid: ' + txid);
 });
 
+// Estimate the gas cost of calling a state-changing method (returns a BN.js)
+contract.estimate.setValue("Hello World").then(function(gasCost) {
+    console.log(gasCost.toString(10));
+});
 ```
 
 
