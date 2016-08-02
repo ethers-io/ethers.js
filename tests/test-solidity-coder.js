@@ -112,110 +112,8 @@ function createContractOutput(types, values) {
     }
 }
 
-/**
- *  createContract(types)
- *
- *  Creates the source code for a function that takes in the types,
- *  creates a deep copy of them and returns them and compiles the
- *  contract.
- */
- /* I don't need this anymore, I think?
-function createContract(types) {
-    var signature = [];
-    for (var i = 0; i < types.length; i++) {
-        var name = String.fromCharCode(97 + i);
-        signature.push(types[i] + ' _' + name);
-    }
-
-    var returns = [];
-
-    var maxCounter = -1;
-
-    // Begin a contract and test function
-    var source = 'contract Test {\n';
-    source += '    function test(' + signature.join(', ') + ') constant returns (' + types.join(', ') + ') {\n';
-    for (var i = 0; i < types.length; i++) {
-        var name = String.fromCharCode(97 + i);
-
-        // Array type; do a deep copy
-        if (types[i].indexOf('[') >= 0) {
-
-            // Each count (or optionally empty) array type
-            var arrays = types[i].match(/\[[0-9]*\]/g);
-
-            // Allocate the space
-            source += indent(2) + types[i] + ' memory ' + name;
-            if (arrays[arrays.length - 1] === '[]') {
-                source += ' = new ' + types[i] + '(_' + name + '.length)';
-            }
-            source +=';\n';
-
-            // Build the for loops to copy
-            var current = name;
-            for (var j = 0; j < arrays.length; j++) {
-                var counter = 'l' + String.fromCharCode(97 + j);
-                if (j > maxCounter) {
-                    source += indent(j + 2) + 'uint ' + counter + ';\n';
-                    maxCounter = j;
-                }
-                source += indent(j + 2) + 'for (' + counter + ' = 0; ' + counter + ' < _' + current + '.length; ' + counter+ '++) {\n';
-                current += '[' + counter + ']'; //arrays[j];
-            }
-
-            // Do the copy of an individual value
-            var loc = name;
-            for (var j = 0; j < arrays.length; j++) {
-                loc += '[l' + String.fromCharCode(97 + j) + ']';
-            }
-            source += indent(2 + arrays.length) + loc + ' = _' + loc + ';\n';
-
-            // Close all the for loops
-            for (var j = arrays.length - 1; j >= 0; j--) {
-                source += indent(j + 2) + '}\n';
-            }
-
-        // Dynamic type; new memory
-        } else if (types[i] === 'bytes' || types[i] === 'string') {
-            source += '        ' + types[i] + ' memory ' + name + ' = _' + name + ';\n';
-
-        // Static type; just use the stack
-        } else {
-            source += '        ' + types[i] + ' ' + name + ' = _' + name + ';\n';
-        }
-
-        // Track the name to return
-        returns.push(name);
-    }
-
-    // Return the copied values
-    source += '        return (' + returns.join(', ') + ');\n';
-
-    // Done the function and contract
-    source += '    }\n';
-    source += '}';
-
-    var contract = solc.compile(source, 0);
-    contract = contract.contracts.Test;
-    contract.sourceCode= source;
-    return contract;
-}
-*/
 
 module.exports = function(test) {
-
-    //var coderWeb3 = require('./node_modules/web3/lib/solidity/coder.js');
-    //coderWeb3._name = 'web3';
-
-    var coderAbi = require('ethereumjs-abi');
-    var coderEjs = {
-        encodeParams: function(types, values) {
-            return coderAbi.rawEncode(types, values).toString('hex');
-        },
-        decodeParams: function(types, data) {
-            return coderAbi.rawDecode(types, data);
-        },
-        _name: 'ejs'
-    }
 
     function dumpHex(data) {
         for (var i = 2; i < data.length; i += 64) {
@@ -255,34 +153,6 @@ module.exports = function(test) {
         return true;
     }
 
-    function checkLib(types, values, coder) {
-        //console.log(types, values, coder._name);
-        var officialData = '0x' + coder.encodeParams(types, values);
-
-        var ethersData = Wallet._Contract.Interface.encodeParams(types, values);
-        if (officialData !== ethersData) {
-            test.ok(false, 'encoded value did not match ' + coder._name);
-            console.log('coder=' + coder._name);
-            console.log('types=' + JSON.stringify(types, {depth: null}));
-            console.log('values=' + JSON.stringify(values, {depth: null}));
-
-            console.log('officialData=');
-            dumpHex(officialData);
-            console.log('ethersData=');
-            dumpHex(ethersData);
-        }
-
-        var ethersValues = Wallet._Contract.Interface.decodeParams(types, officialData);
-        if (!recursiveEqual(values, ethersValues)) {
-            test.ok(false, 'decoded value did not match ' + coder._name);
-            console.log('coder=' + coder._name);
-            console.log('types=' + JSON.stringify(types, {depth: null}));
-            console.log('values=' + JSON.stringify(values, {depth: null}));
-            console.log('officialData=');
-            dumpHex(officialData);
-            console.log('ethersValues=' + JSON.stringify(ethersValues, {depth: null}));
-        }
-    }
 
     var checkPromises = [];
 
@@ -349,85 +219,8 @@ module.exports = function(test) {
                 reject(error);
             }
         }));
-
-        return;
-
-        // Second, compile and feed to a solidity contract
-        checkPromises.push(new Promise(function(resolve, reject) {
-            var contract = createContract(types);
-            var contractInterface = new Wallet._Contract.Interface(JSON.parse(contract.interface));
-            var call = contractInterface.test.apply(contractInterface, values);
-            var vm = new ethereumVm();
-            vm.runCode({
-                code: new Buffer(contract.runtimeBytecode, 'hex'),
-                data: new Buffer(call.data.substring(2), 'hex'),
-                gasLimit: '0x80000000'
-            }, function(error, result) {
-                var vmData = '0x' + result.return.toString('hex');
-                var okData = (vmData === ethersData);
-                test.ok(okData, 'Data did not match');
-                if (!okData) {
-                    console.dir({
-                        types: types,
-                        contract: contract.sourceCode,
-                        values: values
-                    }, {depth: null});
-                    console.log('vm.data=');
-                    dumpHex(vmData)
-                    console.log('ethers.data=');
-                    dumpHex(ethersData)
-                }
-
-                var vmValues = call.parse(vmData)
-                var okValues = recursiveEqual(normalizedValues, vmValues);
-                test.ok(okValues, 'Values did not match');
-                if (!okValues) {
-                    console.dir({
-                        types: types,
-                        contract: contract.sourceCode,
-                        values: values,
-                        normalized: normalizedValues,
-                        vmValues: vmValues
-                    }, {depth: null});
-                }
-
-                resolve();
-            });
-        }));
-
-        return;
-
-        // And thirdly try ocmparing ourselves against ethereumjs-lib (ignoring
-        // cases which they currently have open bugs/issues)
-
-        var checkTypes = types.join(',');
-        function has(regex) { return checkTypes.match(regex); }
-
-        var hasDynamic = (has(/\[\]/) || has(/bytes([^0-9]|$)/) || has(/string/));
-        var hasDynamicArray = has(/\[\]/);
-        var hasFixedArray = has(/\[[0-9]+\]/);
-        var hasNestedArray = has(/\]\[/);
-
-        if (!hasFixedArray && !hasDynamicArray) {
-            try {
-                checkLib(types, values, coderEjs);
-            } catch (error) {
-
-                // Bugs in coder
-                if (error.message === "Cannot read property '1' of null") {
-                    return;
-                } else if (error.message.match(/^invalid /)) {
-                    return;
-                }
-
-                if (error.message.match(/^Number can only safely store up to/)) {
-                    return;
-                }
-
-                throw error;
-            }
-        }
     }
+
 
     // Test cases: https://github.com/ethereum/solidity.js/blob/master/test/coder.decodeParam.js
     check(['int'], [new BN(1)]);
@@ -555,11 +348,6 @@ module.exports = function(test) {
                         if (signed) {
                             normalized = normalized.fromTwos(size * 8);
                         }
-                        /*
-                        if (!signed && value < 0) {
-                            normalized = normalized.toTwos(size * 8);
-                        }
-                        */
                         return {
                             value: value,
                             normalized: normalized
@@ -653,9 +441,9 @@ module.exports = function(test) {
         }
     }
 
-// @TODO: Test 0 arguments
-    // Create a bunch of random test cases
+    // @TODO: Test 0 arguments
 
+    // Create a bunch of random test cases
     for (var i = 0; i < 1000; i++) {
         var count = random(1, 4);
         var types = [], values = [], normalized = [];;
@@ -669,12 +457,6 @@ module.exports = function(test) {
         check(types, values, normalized);
     }
 
-/*
-    check([ 'bool[4]', 'bool[]', 'int8' ],
-          [ [ true, true, false, true ], [ true, true ], -210 ] [ [ true, true, false, true ], [ true, true ], new BN(-0xd2) ],
-          [ [ true, true, false, true ], [ true, true ], new BN(2e) ]
-          );
-*/
     // Bug in solidity or in the VM, not sure, but this fails
     // check(['uint8[4][]'], [ [] ]);
 
