@@ -46,10 +46,11 @@ module.exports = function(test) {
     var privateKey = new Buffer(32);
     privateKey.fill(0x42);
 
+    var wallet = new Wallet(privateKey, 'http://localhost:8545');
+    var contract = wallet.getContract(contractAddress, contractABI.SimpleStorage);
+
     function testCall() {
         return new Promise(function(resolve, reject) {
-            var wallet = new Wallet(privateKey, 'http://localhost:8545');
-            var contract = wallet.getContract(contractAddress, contractABI.SimpleStorage);
             contract.getValue().then(function(result) {
                 test.equal(result, 'foobar', 'failed to call getVaue');
                 resolve(result);
@@ -60,8 +61,21 @@ module.exports = function(test) {
         });
     }
 
+    function testEstimate() {
+        return new Promise(function(resolve, reject) {
+            contract.estimate.setValue('foo').then(function(result) {
+                test.equal(result.toString(16), '8b04', 'failed to estimate setVaue');
+                resolve(result);
+            }, function(error) {
+                test.ok(false, 'failed to call getValue (is parity running on this host?)');
+                reject(error);
+            });
+        });
+    }
+
     Promise.all([
-        testCall()
+        testCall(),
+        testEstimate(),
     ]).then(function(results) {
         test.done();
     }, function(error) {
