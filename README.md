@@ -219,7 +219,7 @@ Wallet.summonBrainWallet(email, password, function(error, wallet, progress) {
 Provider API
 ------------
 
-Connect to standard *Ethereum* nodes via RPC, for example, if you have a local parity (or geth) instance running:
+Connect to standard *Ethereum* nodes via RPC (if you have a local [parity](https://ethcore.io/parity.html) or [geth](https://github.com/ethereum/go-ethereum/wiki/Geth) instance running), or via [Etherscan](https://etherscan.io):
 
 ```javascript
 
@@ -231,6 +231,10 @@ var web3 = new Web3(web3Provider);
 var Wallet = new Wallet(privateKey, 'http://localhost:8545');
 var Wallet = new Wallet(privateKey, web3Provider);
 var Wallet = new Wallet(privateKey, web3);
+
+// Or use Etherscan:
+var Wallet = new Wallet(privateKey, new Wallet.providers.EtherscanProvider({testnet: true}));
+
 
 // With a provider attached, you can call additional methods on the wallet
 
