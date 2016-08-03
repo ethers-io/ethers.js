@@ -6,6 +6,7 @@ var rlp = require('rlp');
 var scrypt = require('scrypt-js');
 
 var Contract = require('./lib/contract.js');
+var providers = require('./lib/providers.js');
 var secretStorage = require('./lib/secret-storage.js');
 var Randomish = require('./lib/randomish.js');
 var SigningKey = require('./lib/signing-key.js');
@@ -36,6 +37,7 @@ module.exports = Wallet;
 
 
 utils.defineProperty(Wallet, 'etherSymbol', '\uD835\uDF63');
+
 
 //utils.defineProperty(Wallet, 'getAddress', SigningKey.getAddress);
 //utils.defineProperty(Wallet, 'getIcapAddress', SigningKey.getIcapAddress);
@@ -81,12 +83,15 @@ utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, c
 });
 
 
+utils.defineProperty(Wallet, 'providers', providers);
+
+
 utils.defineProperty(Wallet, 'randomish', new Randomish());
 
 module.exports = Wallet;
 
 }).call(this,require("buffer").Buffer)
-},{"./lib/contract.js":4,"./lib/randomish.js":6,"./lib/secret-storage.js":7,"./lib/signing-key.js":8,"./lib/utils.js":9,"./lib/wallet.js":10,"buffer":40,"rlp":83,"scrypt-js":84}],2:[function(require,module,exports){
+},{"./lib/contract.js":4,"./lib/providers.js":5,"./lib/randomish.js":6,"./lib/secret-storage.js":7,"./lib/signing-key.js":8,"./lib/utils.js":9,"./lib/wallet.js":10,"buffer":40,"rlp":84,"scrypt-js":85}],2:[function(require,module,exports){
 (function (global,Buffer){
 'use strict';
 
@@ -802,16 +807,29 @@ module.exports = Contract;
 },{"./utils.js":9,"buffer":40}],5:[function(require,module,exports){
 'use strict';
 
-var utils = require('./utils.js');
+var inherits = require('inherits');
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
+var SigningKey = require('./signing-key.js');
+var utils = require('./utils.js');
 
+// The required methods a provider must support
+var methods = [
+    'getBalance',
+    'getTransactionCount',
+    'getGasPrice',
+    'sendTransaction',
+    'call',
+    'estimateGas'
+];
+
+
+// Manages JSON-RPC to an Ethereum node
 function Web3Connector(provider) {
     if (!(this instanceof Web3Connector)) { throw new Error('missing new'); }
 
     var nextMessageId = 1;
     utils.defineProperty(this, 'sendMessage', function(method, params) {
-    //console.log('mm', method, params);
         return new Promise(function(resolve, reject) {
             provider.sendAsync({
                 id: (nextMessageId++),
@@ -836,6 +854,7 @@ function Web3Connector(provider) {
     });
 }
 
+// Mimics Web3 interface
 function rpcSendAsync(url) {
     return {
         sendAsync: function(payload, callback) {
@@ -852,6 +871,7 @@ function rpcSendAsync(url) {
                 try {
                     callback(null, JSON.parse(result));
                 } catch (error) {
+                    console.log(error);
                     callback(new Error('invalid response'));
                 }
             };
@@ -867,39 +887,9 @@ function rpcSendAsync(url) {
     }
 }
 
-
-function Provider(provider) {
-    if (!(this instanceof Provider)) { throw new Error('missing new'); }
-
-    var client = null;
-
-    if (typeof(provider) === 'string') {
-
-        // An RPC URL
-        if (provider.substring(0, 7) === 'http://') {
-            client = new Web3Connector(rpcSendAsync(provider));
-
-        // An ethers.io URL
-        } else if (provider.substring(0, 5) === 'ws://' || provider.substirng(0, 6) === 'wss://') {
-            //client =
-
-        // Etherscan
-        } else if (string === 'testnet.etherscan.io' || string === 'etherscan.io') {
-            // client =
-        }
-
-    // A Web3 Instance
-    } else if (provider.currentProvider && provider.currentProvider.sendAsync) {
-        client = new Web3Connector(provider.currentProvider);
-
-    // A Web3 Provider
-    } else if (provider.sendAsync) {
-        client = new Web3Connector(provider);
-    }
-
-    if (!client) { throw new Error('invalid connector'); }
-
-    utils.defineProperty(this, 'client', client);
+function SendAsyncProvider(sendAsync) {
+    if (!(this instanceof SendAsyncProvider)) { throw new Error('missing new'); }
+    utils.defineProperty(this, 'client', new Web3Connector(sendAsync));
 }
 
 
@@ -934,34 +924,201 @@ function postProcess(client, method, params, makeBN) {
     });
 }
 
-utils.defineProperty(Provider.prototype, 'getBalance', function(address, blockNumber) {
+utils.defineProperty(SendAsyncProvider.prototype, 'getBalance', function(address, blockNumber) {
+    address = SigningKey.getAddress(address);
     return postProcess(this.client, 'eth_getBalance', [address, validBlock(blockNumber)], true);
 });
 
-utils.defineProperty(Provider.prototype, 'getTransactionCount', function(address, blockNumber) {
+utils.defineProperty(SendAsyncProvider.prototype, 'getTransactionCount', function(address, blockNumber) {
+    address = SigningKey.getAddress(address);
     return postProcess(this.client, 'eth_getTransactionCount', [address, validBlock(blockNumber)], false);
 });
 
-utils.defineProperty(Provider.prototype, 'getGasPrice', function() {
+utils.defineProperty(SendAsyncProvider.prototype, 'getGasPrice', function() {
     return postProcess(this.client, 'eth_gasPrice', [], true);
 });
 
-utils.defineProperty(Provider.prototype, 'sendTransaction', function(signedTransaction) {
+utils.defineProperty(SendAsyncProvider.prototype, 'sendTransaction', function(signedTransaction) {
+    if (!utils.isHexString(signedTransaction)) { throw new Error('invalid transaction'); }
     return this.client.sendMessage('eth_sendRawTransaction', [signedTransaction]);
 });
 
-utils.defineProperty(Provider.prototype, 'call', function(transaction) {
+utils.defineProperty(SendAsyncProvider.prototype, 'call', function(transaction) {
+    // @TODO: check validTransaction?
     return this.client.sendMessage('eth_call', [transaction]);
 });
 
-utils.defineProperty(Provider.prototype, 'estimateGas', function(transaction) {
+utils.defineProperty(SendAsyncProvider.prototype, 'estimateGas', function(transaction) {
+    // @TODO: check validTransaction?
     return postProcess(this.client, 'eth_estimateGas', [transaction], true);
 });
 
 
-module.exports = Provider;
+var providers = {};
 
-},{"./utils.js":9,"xmlhttprequest":3}],6:[function(require,module,exports){
+
+function HttpProvider(url) {
+    if (!(this instanceof HttpProvider)) { throw new Error('missing new'); }
+    SendAsyncProvider.call(this, rpcSendAsync(url));
+}
+inherits(HttpProvider, SendAsyncProvider);
+utils.defineProperty(providers, 'HttpProvider', HttpProvider);
+
+
+function Web3Provider(provider) {
+    if (!(this instanceof Web3Provider)) { throw new Error('missing new'); }
+    if (provider.currentProvider) { provider = provider.currentProvider; }
+    if (!provider.sendAsync) { throw new Error('invalid provider'); }
+    SendAsyncProvider.call(this, provider);
+}
+inherits(Web3Provider, SendAsyncProvider);
+utils.defineProperty(providers, 'Web3Provider', Web3Provider);
+
+
+function base10ToBN(value) {
+    return new utils.BN(value);
+}
+
+function hexToBN(value) {
+    return new utils.BN(ensureHex(value).substring(2), 16);
+}
+
+function hexToNumber(value) {
+    if (!utils.isHexString(value)) { throw new Error('invalid hex string'); }
+    return parseInt(value.substring(2), 16);
+}
+
+function ensureHex(value) {
+    if (!utils.isHexString(value)) { throw new Error('invalid hex string'); }
+    return value;
+}
+
+function ensureTxid(value) {
+    if (!utils.isHexString(value, 32)) { throw new Error('invalid hex string'); }
+    return value;
+}
+
+function getGasPrice(value) {
+    if (!value || !value.transactions || value.transactions.length === 0) {
+        throw new Error('invalid response');
+    }
+    console.log(value.transactions[0].gasPrice)
+    return hexToBN(value.transactions[0].gasPrice);
+}
+
+function EtherscanProvider(options) {
+    if (!(this instanceof EtherscanProvider)) { throw new Error('missing new'); }
+    if (!options) { options = {}; }
+
+    var testnet = options.testnet;
+    var apiKey = options.apiKey;
+
+    utils.defineProperty(this, 'testnet', testnet);
+    utils.defineProperty(this, 'apiKey', apiKey);
+
+    utils.defineProperty(this, '_send', function(query, check) {
+        var url = (testnet ? 'https://testnet.etherscan.io/api?': 'https://etherscan.io/api?');
+        url += query;
+        if (apiKey) { url += 'apikey=' + apiKey; }
+        //console.log('URL', url);
+
+        return new Promise(function(resolve, reject) {
+            var request = new XMLHttpRequest();
+            request.open('GET', url, true);
+            request.onreadystatechange = function() {
+                if (request.readyState !== 4) { return; }
+
+                var result = request.responseText;
+                //console.log(result);
+                try {
+                    result = JSON.parse(result);
+                    if (result.message) {
+                        if (result.message === 'OK') {
+                            resolve(check(result.result));
+                        } else {
+                            reject(new Error('invalid response'));
+                        }
+                    } else {
+                        if (result.error) {
+                            console.log(result.error);
+                            reject(new Error('invalid response'));
+                        } else {
+                            resolve(check(result.result));
+                        }
+                    }
+                } catch (error) {
+                    console.log(error);
+                    reject(new Error('invalid response'));
+                }
+            }
+
+            try {
+                request.send();
+            } catch (error) {
+                var connectionError = new Error('connection error');
+                connectionError.error = error;
+                reject(connectionError);
+            }
+        });
+
+    });
+}
+utils.defineProperty(providers, 'EtherscanProvider', EtherscanProvider);
+
+utils.defineProperty(EtherscanProvider.prototype, 'getBalance', function(address, blockNumber) {
+    address = SigningKey.getAddress(address);
+    blockNumber = validBlock(blockNumber);
+    var query = ('module=account&action=balance&address=' + address + '&tag=' + blockNumber);
+    return this._send(query, base10ToBN);
+});
+
+utils.defineProperty(EtherscanProvider.prototype, 'getTransactionCount', function(address, blockNumber) {
+    address = SigningKey.getAddress(address);
+    blockNumber = validBlock(blockNumber);
+    var query = ('module=proxy&action=eth_getTransactionCount&address=' + address + '&tag=' + blockNumber);
+    return this._send(query, hexToNumber);
+});
+
+utils.defineProperty(EtherscanProvider.prototype, 'getGasPrice', function() {
+/* This doesn't work, over-estimates gas if current block was anxious
+    var query = ('module=proxy&action=eth_getBlockByNumber&tag=latest&boolean=true');
+    return this._send(query, getGasPrice);
+*/
+    throw new Error('etherscan does not support gasPrice');
+});
+
+utils.defineProperty(EtherscanProvider.prototype, 'sendTransaction', function(signedTransaction) {
+    if (!utils.isHexString(signedTransaction)) { throw new Error('invalid transaction'); }
+    var query = ('module=proxy&action=eth_sendRawTransaction&hex=' + signedTransaction);
+    return this._send(query, ensureTxid);
+});
+
+utils.defineProperty(EtherscanProvider.prototype, 'call', function(transaction) {
+    var address = SigningKey.getAddress(transaction.to);
+    var data = transaction.data;
+    if (!utils.isHexString(data)) { throw new Error('invalid data'); }
+    var query = ('module=proxy&action=eth_call&to=' + address + '&data=' + data);
+    return this._send(query, ensureHex);
+});
+
+utils.defineProperty(EtherscanProvider.prototype, 'estimateGas', function(transaction) {
+    throw new Error('etherscan does not support estimation');
+});
+
+
+utils.defineProperty(providers, 'isProvider', function(provider) {
+    if (!provider) { return false; }
+    for (var i = 0; i < methods; i++) {
+        if (typeof(provider[methods[i]]) !== 'function') {
+            return false;
+        }
+    }
+    return true;
+});
+
+module.exports = providers;
+
+},{"./signing-key.js":8,"./utils.js":9,"inherits":67,"xmlhttprequest":3}],6:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -1379,7 +1536,7 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
 module.exports = secretStorage;
 
 }).call(this,require("buffer").Buffer)
-},{"./randomish.js":6,"./signing-key.js":8,"./utils.js":9,"aes-js":11,"buffer":40,"pbkdf2":67,"scrypt-js":84,"uuid":86}],8:[function(require,module,exports){
+},{"./randomish.js":6,"./signing-key.js":8,"./utils.js":9,"aes-js":11,"buffer":40,"pbkdf2":68,"scrypt-js":85,"uuid":87}],8:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -1809,13 +1966,13 @@ module.exports = {
 
 }).call(this,require("buffer").Buffer)
 },{"../node_modules/elliptic/node_modules/bn.js/lib/bn.js":28,"../node_modules/elliptic/node_modules/hash.js/lib/hash.js":30,"buffer":40}],10:[function(require,module,exports){
-(function (Buffer){
+(function (global,Buffer){
 'use strict';
 
 var rlp = require('rlp');
 
 var Contract = require('./contract.js');
-var Provider = require('./provider.js');
+var providers = require('./providers.js');
 var SigningKey = require('./signing-key.js');
 
 var utils = require('./utils.js');
@@ -1844,7 +2001,8 @@ function Wallet(privateKey, provider) {
         enumerable: true,
         get: function() { return provider; },
         set: function(value) {
-            provider = new Provider(provider);
+            if (!providers.isProvider(value)) { throw new Error('invalid provider'); }
+            provider = value;
         }
     });
 
@@ -1856,8 +2014,21 @@ function Wallet(privateKey, provider) {
         },
     });
 
-    if (provider) {
-        this.provider = provider;
+    if (provider !== null) {
+
+        // If no provider was provided, check for metamask or ilk
+        if (provider === undefined) {
+            if (global.web3 && global.web3.currentProvider && global.web3.currentProvider.sendAsync) {
+                this.provider = new providers.Web3Provider(global.web3.currentProvider);
+            }
+
+        // An Ethereum RPC node
+        } else if (typeof(provider) === 'string' && provider.match(/^https?:\/\//)) {
+            this.provider = new providers.HttpProvider(provider);
+
+        } else {
+            this.provider = provider;
+        }
     }
 
     utils.defineProperty(this, 'address', signingKey.address);
@@ -2091,8 +2262,8 @@ utils.defineProperty(Wallet, 'parseEther', function(ether) {
 
 module.exports = Wallet;
 
-}).call(this,require("buffer").Buffer)
-},{"./contract.js":4,"./provider.js":5,"./signing-key.js":8,"./utils.js":9,"buffer":40,"rlp":83}],11:[function(require,module,exports){
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
+},{"./contract.js":4,"./providers.js":5,"./signing-key.js":8,"./utils.js":9,"buffer":40,"rlp":84}],11:[function(require,module,exports){
 (function (Buffer){
 "use strict";
 
@@ -17294,6 +17465,8 @@ function hasOwnProperty(obj, prop) {
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./support/isBuffer":65,"_process":47,"inherits":45}],67:[function(require,module,exports){
+arguments[4][36][0].apply(exports,arguments)
+},{"dup":36}],68:[function(require,module,exports){
 (function (Buffer){
 var createHmac = require('create-hmac')
 var MAX_ALLOC = Math.pow(2, 30) - 1 // default in iojs
@@ -17377,7 +17550,7 @@ function pbkdf2Sync (password, salt, iterations, keylen, digest) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":40,"create-hmac":68}],68:[function(require,module,exports){
+},{"buffer":40,"create-hmac":69}],69:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 var createHash = require('create-hash/browser');
@@ -17449,7 +17622,7 @@ module.exports = function createHmac(alg, key) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":40,"create-hash/browser":69,"inherits":82,"stream":63}],69:[function(require,module,exports){
+},{"buffer":40,"create-hash/browser":70,"inherits":83,"stream":63}],70:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 var inherits = require('inherits')
@@ -17505,7 +17678,7 @@ module.exports = function createHash (alg) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./md5":71,"buffer":40,"cipher-base":72,"inherits":82,"ripemd160":73,"sha.js":75}],70:[function(require,module,exports){
+},{"./md5":72,"buffer":40,"cipher-base":73,"inherits":83,"ripemd160":74,"sha.js":76}],71:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 var intSize = 4;
@@ -17542,7 +17715,7 @@ function hash(buf, fn, hashSize, bigEndian) {
 }
 exports.hash = hash;
 }).call(this,require("buffer").Buffer)
-},{"buffer":40}],71:[function(require,module,exports){
+},{"buffer":40}],72:[function(require,module,exports){
 'use strict';
 /*
  * A JavaScript implementation of the RSA Data Security, Inc. MD5 Message
@@ -17699,7 +17872,7 @@ function bit_rol(num, cnt)
 module.exports = function md5(buf) {
   return helpers.hash(buf, core_md5, 16);
 };
-},{"./helpers":70}],72:[function(require,module,exports){
+},{"./helpers":71}],73:[function(require,module,exports){
 (function (Buffer){
 var Transform = require('stream').Transform
 var inherits = require('inherits')
@@ -17793,7 +17966,7 @@ CipherBase.prototype._toString = function (value, enc, final) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":40,"inherits":82,"stream":63,"string_decoder":64}],73:[function(require,module,exports){
+},{"buffer":40,"inherits":83,"stream":63,"string_decoder":64}],74:[function(require,module,exports){
 (function (Buffer){
 /*
 CryptoJS v3.1.2
@@ -18007,7 +18180,7 @@ function ripemd160 (message) {
 module.exports = ripemd160
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":40}],74:[function(require,module,exports){
+},{"buffer":40}],75:[function(require,module,exports){
 (function (Buffer){
 // prototype class for hash functions
 function Hash (blockSize, finalSize) {
@@ -18080,7 +18253,7 @@ Hash.prototype._update = function () {
 module.exports = Hash
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":40}],75:[function(require,module,exports){
+},{"buffer":40}],76:[function(require,module,exports){
 var exports = module.exports = function SHA (algorithm) {
   algorithm = algorithm.toLowerCase()
 
@@ -18097,7 +18270,7 @@ exports.sha256 = require('./sha256')
 exports.sha384 = require('./sha384')
 exports.sha512 = require('./sha512')
 
-},{"./sha":76,"./sha1":77,"./sha224":78,"./sha256":79,"./sha384":80,"./sha512":81}],76:[function(require,module,exports){
+},{"./sha":77,"./sha1":78,"./sha224":79,"./sha256":80,"./sha384":81,"./sha512":82}],77:[function(require,module,exports){
 (function (Buffer){
 /*
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-0, as defined
@@ -18194,7 +18367,7 @@ Sha.prototype._hash = function () {
 module.exports = Sha
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":74,"buffer":40,"inherits":82}],77:[function(require,module,exports){
+},{"./hash":75,"buffer":40,"inherits":83}],78:[function(require,module,exports){
 (function (Buffer){
 /*
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-1, as defined
@@ -18296,7 +18469,7 @@ Sha1.prototype._hash = function () {
 module.exports = Sha1
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":74,"buffer":40,"inherits":82}],78:[function(require,module,exports){
+},{"./hash":75,"buffer":40,"inherits":83}],79:[function(require,module,exports){
 (function (Buffer){
 /**
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-256, as defined
@@ -18352,7 +18525,7 @@ Sha224.prototype._hash = function () {
 module.exports = Sha224
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":74,"./sha256":79,"buffer":40,"inherits":82}],79:[function(require,module,exports){
+},{"./hash":75,"./sha256":80,"buffer":40,"inherits":83}],80:[function(require,module,exports){
 (function (Buffer){
 /**
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-256, as defined
@@ -18490,7 +18663,7 @@ Sha256.prototype._hash = function () {
 module.exports = Sha256
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":74,"buffer":40,"inherits":82}],80:[function(require,module,exports){
+},{"./hash":75,"buffer":40,"inherits":83}],81:[function(require,module,exports){
 (function (Buffer){
 var inherits = require('inherits')
 var SHA512 = require('./sha512')
@@ -18550,7 +18723,7 @@ Sha384.prototype._hash = function () {
 module.exports = Sha384
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":74,"./sha512":81,"buffer":40,"inherits":82}],81:[function(require,module,exports){
+},{"./hash":75,"./sha512":82,"buffer":40,"inherits":83}],82:[function(require,module,exports){
 (function (Buffer){
 var inherits = require('inherits')
 var Hash = require('./hash')
@@ -18813,9 +18986,9 @@ Sha512.prototype._hash = function () {
 module.exports = Sha512
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":74,"buffer":40,"inherits":82}],82:[function(require,module,exports){
+},{"./hash":75,"buffer":40,"inherits":83}],83:[function(require,module,exports){
 arguments[4][36][0].apply(exports,arguments)
-},{"dup":36}],83:[function(require,module,exports){
+},{"dup":36}],84:[function(require,module,exports){
 (function (Buffer){
 const assert = require('assert')
 /**
@@ -19048,7 +19221,7 @@ function toBuffer (v) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"assert":38,"buffer":40}],84:[function(require,module,exports){
+},{"assert":38,"buffer":40}],85:[function(require,module,exports){
 (function (Buffer){
 "use strict";
 
@@ -19510,7 +19683,7 @@ function toBuffer (v) {
 })(this);
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":40}],85:[function(require,module,exports){
+},{"buffer":40}],86:[function(require,module,exports){
 (function (global){
 
 var rng;
@@ -19545,7 +19718,7 @@ module.exports = rng;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],86:[function(require,module,exports){
+},{}],87:[function(require,module,exports){
 //     uuid.js
 //
 //     Copyright (c) 2010-2012 Robert Kieffer
@@ -19730,5 +19903,5 @@ uuid.unparse = unparse;
 
 module.exports = uuid;
 
-},{"./rng":85}]},{},[1])(1)
+},{"./rng":86}]},{},[1])(1)
 });

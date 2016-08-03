@@ -4,6 +4,7 @@ var rlp = require('rlp');
 var scrypt = require('scrypt-js');
 
 var Contract = require('./lib/contract.js');
+var providers = require('./lib/providers.js');
 var secretStorage = require('./lib/secret-storage.js');
 var Randomish = require('./lib/randomish.js');
 var SigningKey = require('./lib/signing-key.js');
@@ -34,6 +35,7 @@ module.exports = Wallet;
 
 
 utils.defineProperty(Wallet, 'etherSymbol', '\uD835\uDF63');
+
 
 //utils.defineProperty(Wallet, 'getAddress', SigningKey.getAddress);
 //utils.defineProperty(Wallet, 'getIcapAddress', SigningKey.getIcapAddress);
@@ -77,6 +79,9 @@ utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, c
         }
     });
 });
+
+
+utils.defineProperty(Wallet, 'providers', providers);
 
 
 utils.defineProperty(Wallet, 'randomish', new Randomish());
