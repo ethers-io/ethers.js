@@ -732,11 +732,7 @@ function Contract(wallet, contractAddress, contractInterface) {
                     if (estimateOnly) {
                         return new Promise(function(resolve, reject) {
                             provider.estimateGas(transaction).then(function(gasEstimate) {
-                                if (!utils.isHexString(gasEstimate)) {
-                                    reject(new Error('invalid server response'));
-                                } else {
-                                    resolve(new utils.BN(gasEstimate.substring(2), 16));
-                                }
+                                resolve(gasEstimate);
                             }, function(error) {
                                 reject(error);
                             });
@@ -906,18 +902,48 @@ function Provider(provider) {
     utils.defineProperty(this, 'client', client);
 }
 
+
+function validBlock(value) {
+    if (value == null) { return 'latest'; }
+    if (value === 'latest' || value === 'pending') { return value; }
+
+    if (typeof(value) === 'number' && value == parseInt(value)) {
+        return parseInt(value);
+    }
+
+    throw new Error('invalid blockNumber');
+}
+
+function postProcess(client, method, params, makeBN) {
+    return new Promise(function(resolve, reject) {
+        client.sendMessage(method, params).then(function (result) {
+            if (!utils.isHexString(result)) {
+                reject(new Error('invalid server response'));
+            } else {
+                result = result.substring(2);
+                if (makeBN) {
+                    result = new utils.BN(result, 16);
+                } else {
+                    result = parseInt(result, 16);
+                }
+                resolve(result);
+            }
+        }, function(error) {
+            reject(error);
+        });
+    });
+}
+
 utils.defineProperty(Provider.prototype, 'getBalance', function(address, blockNumber) {
-    if (blockNumber == null) { blockNumber = 'latest'; }
-    return this.client.sendMessage('eth_getBalance', [address, blockNumber]);
+    return postProcess(this.client, 'eth_getBalance', [address, validBlock(blockNumber)], true);
 });
 
 utils.defineProperty(Provider.prototype, 'getTransactionCount', function(address, blockNumber) {
-    if (blockNumber == null) { blockNumber = 'latest'; }
-    return this.client.sendMessage('eth_getTransactionCount', [address, blockNumber]);
+    return postProcess(this.client, 'eth_getTransactionCount', [address, validBlock(blockNumber)], false);
 });
 
 utils.defineProperty(Provider.prototype, 'getGasPrice', function() {
-    return this.client.sendMessage('eth_gasPrice', []);
+    return postProcess(this.client, 'eth_gasPrice', [], true);
 });
 
 utils.defineProperty(Provider.prototype, 'sendTransaction', function(signedTransaction) {
@@ -929,7 +955,7 @@ utils.defineProperty(Provider.prototype, 'call', function(transaction) {
 });
 
 utils.defineProperty(Provider.prototype, 'estimateGas', function(transaction) {
-    return this.client.sendMessage('eth_estimateGas', [transaction]);
+    return postProcess(this.client, 'eth_estimateGas', [transaction], true);
 });
 
 
@@ -1707,6 +1733,12 @@ function defineProperty(object, name, value) {
     });
 }
 
+function cloneObject(object) {
+    var clone = {};
+    for (var key in object) { clone[key] = object[key]; }
+    return clone;
+}
+
 function stripZeros(buffer) {
     var i = 0;
     for (i = 0; i < buffer.length; i++) {
@@ -1762,6 +1794,8 @@ module.exports = {
     BN: BN,
 
     defineProperty: defineProperty,
+
+    cloneObject: cloneObject,
 
     bnToBuffer: bnToBuffer,
     isHexString: isHexString,
@@ -1875,12 +1909,8 @@ utils.defineProperty(Wallet.prototype, 'getBalance', function(blockNumber) {
 
     var self = this;
     return new Promise(function(resolve, reject) {
-        provider.getBalance(self.address, 'latest').then(function(balance) {
-            if (!utils.isHexString(balance)) {
-                reject(new Error('client response error'));
-            } else {
-                resolve(new Wallet.utils.BN(balance.substring(2), 16));
-            }
+        provider.getBalance(self.address, blockNumber).then(function(balance) {
+            resolve(balance);
         }, function(error) {
             reject(error);
         });
@@ -1892,12 +1922,75 @@ utils.defineProperty(Wallet.prototype, 'getTransactionCount', function(blockNumb
 
     var self = this;
     return new Promise(function(resolve, reject) {
-        provider.getTransactionCount(self.address, 'latest').then(function(transactionCount) {
-            if (!utils.isHexString(transactionCount)) {
-                reject(new Error('client response error'));
-            } else {
-                resolve(parseInt(transactionCount.substring(2), 16));
-            }
+        provider.getTransactionCount(self.address, blockNumber).then(function(transactionCount) {
+            resolve(transactionCount);
+        }, function(error) {
+            reject(error);
+        });
+    });
+});
+
+utils.defineProperty(Wallet.prototype, 'estimateGas', function(transaction) {
+    var provider = this._provider;
+
+    transaction = utils.cloneObject(transaction);
+    if (transaction.from == null) { transaction.from = this.address; }
+
+    return new Promise(function(resolve, reject) {
+        provider.estimateGas(transaction).then(function(gasEstimate) {
+            resolve(gasEstimate);
+        }, function(error) {
+            reject(error);
+        });
+    });
+});
+
+utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) {
+    var gasLimit = 3000000;
+    if (transaction.gasLimit != null) { gasLimit = transaction.gasLimit; }
+
+    var self = this;
+
+    var provider = this._provider;
+
+    var gasPrice = new Promise(function(resolve, reject) {
+        if (transaction.gasPrice) {
+            return resolve(transaction.gasPrice);
+        }
+        provider.getGasPrice().then(function(gasPrice) {
+            resolve(gasPrice);
+        }, function(error) {
+            reject(error);
+        });
+    });
+
+    var nonce = new Promise(function(resolve, reject) {
+        if (transaction.nonce) {
+            return resolve(transaction.nonce);
+        }
+        provider.getTransactionCount(self.address).then(function(transactionCount) {
+            resolve(transactionCount);
+        }, function(error) {
+            reject(error);
+        });
+    });
+
+    return new Promise(function(resolve, reject) {
+        Promise.all([gasPrice, nonce]).then(function(results) {
+            var signedTransaction = self.sign({
+                to: transaction.to,
+                gasLimit: results[1],
+                gasPrice: results[0],
+                nonce: results[1],
+                value: transaction.value
+            });
+
+            provider.sendTransaction(signedTransaction).then(function(txid) {
+                resolve(txid);
+            }, function(error) {
+                reject(error);
+            });
+
         }, function(error) {
             reject(error);
         });
@@ -1911,39 +2004,14 @@ utils.defineProperty(Wallet.prototype, 'send', function(address, amountWei, opti
     }
     if (!utils.isHexString(amountWei)) { throw new Error('invalid amountWei'); }
 
-    var provider = this._provider;
-
     if (!options) { options = {}; }
 
-    var gasLimit = options.gasLimit;
-    if (gasLimit == null) { gasLimit = 3000000; }
-
-    var self = this;
-    return new Promise(function(resolve, reject) {
-        Promise.all([
-            provider.getGasPrice(),
-            provider.getTransactionCount(self.address)
-        ]).then(function(results) {
-            var gasPrice = options.gasPrice;
-            if (gasPrice == null) { gasPrice = results[0]; }
-
-            var signedTransaction = self.sign({
-                to: address,
-                gasLimit: gasLimit,
-                gasPrice: gasPrice,
-                nonce: results[1],
-                value: amountWei
-            });
-
-            provider.sendTransaction(signedTransaction).then(function(txid) {
-                resolve(txid);
-            }, function(error) {
-                reject(error);
-            });
-
-        }, function(error) {
-            reject(error);
-        });
+    return this.sendTransaction({
+        to: address,
+        gasLimit: options.gasLimit,
+        gasPrice: options.gasPrice,
+        nonce: options.nonce,
+        value: amountWei,
     });
 });
 
