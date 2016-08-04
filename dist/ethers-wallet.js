@@ -1017,7 +1017,7 @@ function EtherscanProvider(options) {
     utils.defineProperty(this, 'apiKey', apiKey);
 
     utils.defineProperty(this, '_send', function(query, check) {
-        var url = (testnet ? 'https://testnet.etherscan.io/api?': 'https://etherscan.io/api?');
+        var url = (testnet ? 'https://testnet.etherscan.io/api?': 'https://api.etherscan.io/api?');
         url += query;
         if (apiKey) { url += 'apikey=' + apiKey; }
         //console.log('URL', url);
@@ -2036,7 +2036,6 @@ function Wallet(privateKey, provider) {
     utils.defineProperty(this, 'address', signingKey.address);
 
     utils.defineProperty(this, 'sign', function(transaction) {
-console.log(transaction);
         var raw = [];
         transactionFields.forEach(function(fieldInfo) {
             var value = transaction[fieldInfo.name] || (new Buffer(0));
