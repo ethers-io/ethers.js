@@ -1,0 +1,647 @@
+<html>
+    <head>
+        <title>Ethereum Wallet</title>
+        <style type="text/css">
+            body {
+                background-color: #eee;
+                font-family: sans-serif;
+                font-size: 18px;
+                margin: 0;
+            }
+
+            .centerer {
+                margin-left: 50%;
+                min-height: 100%;
+                }
+
+            .centered:before {
+                box-shadow: -10px 0 15px -10px #999 inset;
+                content: " ";
+                height: 100%;
+                left: -10px;
+                position: absolute;
+                top: 0;
+                width: 10px;
+            }
+
+            .centered:after {
+                box-shadow: 10px 0 15px -10px #999 inset;
+                content: " ";
+                height: 100%;
+                right: -10px;
+                position: absolute;
+                top: 0;
+                width: 10px;
+            }
+
+            .centered {
+                background-color: #fff;
+                border-left: 1px solid #888;
+                border-right: 1px solid #888;
+                dbox-shadow: -1px 0 15px 0 #999;
+                margin-left: -370px;
+                min-height: 100%;
+                padding: 20px;
+                position: relative;
+                width: 700px;
+            }
+
+            .hidden {
+                display: none;
+            }
+
+            p {
+                text-align: justify;
+                margin-bottom: 30px;
+            }
+            th {
+                text-align: left;
+                padding: 0 15px 15px 0;
+            }
+            td {
+                padding: 0 15px 15px 0;
+            }
+
+            input[type=text] {
+                border: 1px solid #555;
+                font-size: 16px;
+                padding: 10px;
+                width: 500px;
+            }
+
+            input[type=password] {
+                border: 1px solid #555;
+                font-size: 16px;
+                padding: 10px;
+                width: 500px;
+            }
+
+            input[type=file] {
+                dbackground: #fff;
+                border: 1px solid #555;
+                cursor: pointer;
+                font-size: 16px;
+                opacity: 0;
+                padding: 10px;
+                position: relative;
+                dvisibility: hidden;
+                width: 500px;
+            }
+
+            input[type=text].readonly {
+                border: 1px solid #ccc;
+                color: #888;
+            }
+
+            .file {
+                dddbackground: #fff;
+                border: 1px solid green;
+                color: #444;
+                dcursor: pointer;
+                font-size: 12px;
+                line-height: 16px;
+                margin-top: 2px;
+                padding: 13px 10px 12px;
+                position: absolute;
+                text-align: center;
+                width: 478px;
+            }
+
+            .option {
+                border: 1px solid #999;
+                cursor: pointer;
+                font-size: 16px;
+                opacity: 0.3;
+                padding: 10px;
+                text-align: center;
+                transition: opacity 0.1s linear;
+                width: 200px;
+            }
+
+            .option.selected {
+                dbox-shadow: 0px 0px 5px #888;
+                opacity: 1;
+            }
+
+            .option:hover {
+                box-shadow: 0px 0px 5px #888;
+                opacity: 1;
+            }
+
+            table {
+                margin-bottom: 40px;
+            }
+
+            div.activity {
+                font-family: monospace;
+                margin-bottom: 40px;
+            }
+
+            div.activity a {
+                display: block;
+                text-decoration: none;
+            }
+
+            .username {
+                color: #888;
+                font-size: 14px;
+            }
+
+            .submit {
+                border: 1px solid #555;
+                box-shadow: 0px 0px 5px #888;
+                cursor: pointer;
+                font-size: 16px;
+                padding: 10px;
+                text-align: center;
+                transition: opacity 0.1s linear;
+                width: 480px;
+            }
+
+            .submit:hover {
+                border: 1px solid #999;
+                box-shadow: 0px 0px 5px #aaa;
+            }
+
+            .submit:active {
+                box-shadow: none;
+            }
+
+            .submit.disable {
+                box-shadow: none;
+                opacity: 0.5;
+            }
+
+            .submit.disable:hover {
+                border: 1px solid #555;
+                box-shadow: none;
+            }
+
+            .submit.disable:active {
+                box-shadow: none;
+            }
+
+            .left {
+                float: left;
+            }
+
+            .right {
+                float: right;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div class="centerer" id="screen-select">
+            <div class="centered">
+                <h1>Ethereum Wallet Tool</h1>
+                <hr />
+                <h2>Summon Brain Wallet</h2>
+                <p>
+                    A brain wallet generates an <i>Ethereum</i> wallet from a username and a password
+                    without using any servers to store your information. If you lose your username
+                    or password, <b>no one</b> can help you recover them. Anyone who can guess your
+                    username and password can steal your funds. Brain wallets should <b>not</b> be
+                    considered a safe way to store large amounts of ether nor for long periods of time.
+                </p>
+                <table>
+                    <tr>
+                        <th>E-mail Address:</th>
+                        <td><input type="text" placeholder="(e-mail address)" id="select-brainwallet-username" /></td>
+                    </tr>
+                    <tr>
+                        <th>Password:</th>
+                        <td><input type="password" placeholder="(password)" id="select-brainwallet-password" /></td>
+                    </tr>
+                    <tr>
+                        <th>Confirm Password:</th>
+                        <td><input type="password" placeholder="(same password)" id="select-brainwallet-confirm-password" /></td>
+                    </tr>
+                    <tr>
+                        <td> </td>
+                        <td>
+                            <div id="select-submit-brainwallet" class="submit disable">Summon Brain Wallet</div>
+                        </td>
+                    </tr>
+                </table>
+                <hr />
+                <h2>Load JSON Wallet</h2>
+                <p>
+                    If you have a JSON wallet file from <i>geth</i> or from the initial <i>Ethereum</i>
+                    crowd sale, you can decrypt it here. No information is shared with <b>any</b>
+                    server.
+                </p>
+                <table>
+                    <tr>
+                        <th>JSON Wallet:</th>
+                        <td><div class="file" id="select-wallet-drop">Drop JSON wallet file here</div><input type="file" id="select-wallet-file" /></td>
+                    </tr>
+                    <tr>
+                        <th>Password:</th>
+                        <td><input type="password" placeholder="(password)" id="select-wallet-password" /></td>
+                    </tr>
+                    <tr>
+                        <td> </td>
+                        <td>
+                            <div id="select-submit-wallet" class="submit disable">Unlock JSON Wallet</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <hr />
+                <h3>Disclaimer:</h3>
+                <p>
+                    This is beta software, with no warranty. <b>Use at your own risk.</b>
+                </p>
+            </div>
+        </div>
+        <div class="centerer hidden" id="screen-loading">
+            <div class="centered">
+                <h1>Loading Wallet</h1>
+                <hr />
+                <h2 id="loading-header"></h2>
+                <table>
+                    <tr>
+                        <th>Progress:</th>
+                        <td>
+                            <input type="text" readonly="readonly" class="readonly" id="loading-status" value="" /></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td> </td>
+                        <td>
+                            <div id="loading-cancel" class="submit">Cancel</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <hr />
+                <h3>Disclaimer:</h3>
+                <p>
+                    This is beta software, with no warranty. <b>Use at your own risk.</b>
+                </p>
+            </div>
+        </div>
+        <div class="centerer hidden" id="screen-wallet">
+            <div class="centered">
+                <h1>Ethereum Wallet<span id="wallet-username" class="username right"></span></h1>
+                <hr />
+                <h3>Wallet Details:</h3>
+                <table>
+                    <tr>
+                        <th>Address:</th>
+                        <td>
+                            <input type="text" readonly="readonly" class="readonly" id="wallet-address" value="" /></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Network:</th>
+                        <td>
+                            <div class="option left selected" id="option-morden">Morden (testnet)</div>
+                            <div class="option right" id="option-homestead">Homestead (mainnet)</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Balance:</th>
+                        <td>
+                            <input type="text" readonly="readonly" class="readonly" id="wallet-balance" value="0.0" /></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Nonce:</th>
+                        <td>
+                            <input type="text" readonly="readonly" class="readonly" id="wallet-transaction-count" value="0" /></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td> </td>
+                        <td>
+                            <div id="wallet-submit-refresh" class="submit">Refresh</div>
+                        </td>
+                    </tr>
+                </table>
+                <h3>Send Ether:</h3>
+                <table>
+                    <tr>
+                        <th>Target Address:</th>
+                        <td><input type="text" placeholder="(target address)" id="wallet-send-target-address" /></td>
+                    </tr>
+                    <tr>
+                        <th>Amount:</th>
+                        <td><input type="text" placeholder="(amount)" id="wallet-send-amount" /></td>
+                    </tr>
+                    <tr>
+                        <td> </td>
+                        <td>
+                            <div id="wallet-submit-send" class="submit disable">Send Ether</div>
+                        </td>
+                    </tr>
+                </table>
+                <h3>Session Activity</h3>
+                <div id="wallet-activity" class="activity"></div>
+
+                <hr />
+                <h3>Disclaimer:</h3>
+                <p>
+                    This is beta software, with no warranty. <b>Use at your own risk.</b>
+                </p>
+            </div>
+        </div>
+
+        <script type="text/javascript" src="../../dist/ethers-wallet.js"></script>
+
+        <!-- This greatly improves the scrypt PBKDF performance -->
+        <script type="text/javascript" src="./setImmediate.js"></script>
+
+        <script type="text/javascript">
+            function setEnter(source, target) {
+                source.onkeyup = function(e) {
+                    if (e.which === 13) { target.click(); }
+                }
+            }
+
+            var cancelScrypt = false;
+            document.getElementById('loading-cancel').onclick = function() {
+                cancelScrypt = true;
+            };
+
+            (function() {
+                var inputUsername = document.getElementById('select-brainwallet-username');
+                var inputPassword = document.getElementById('select-brainwallet-password');
+                var inputConfirmPassword = document.getElementById('select-brainwallet-confirm-password');
+                var submit = document.getElementById('select-submit-brainwallet');
+
+                function checkBrainwallet() {
+                    if (inputUsername.value && inputPassword.value && inputPassword.value === inputConfirmPassword.value) {
+                        submit.classList.remove('disable');
+                    } else {
+                        submit.classList.add('disable');
+                    }
+                }
+                inputUsername.oninput = checkBrainwallet;
+                inputPassword.oninput = checkBrainwallet;
+                inputConfirmPassword.oninput = checkBrainwallet;
+
+                setEnter(inputUsername, submit);
+                setEnter(inputPassword, submit);
+                setEnter(inputConfirmPassword, submit);
+
+                submit.onclick = function() {
+                    if (submit.classList.contains('disable')) { return; }
+
+                    var username = new Wallet.utils.Buffer(inputUsername.value, 'utf8');
+                    var password = new Wallet.utils.Buffer(inputPassword.value, 'utf8');
+
+                    showLoading('Summoning Brain Wallet...');
+
+                    cancelScrypt = false;
+
+                    Wallet.summonBrainWallet(username, password, function(error, wallet, progress) {
+                        if (error) {
+                            if (error.message !== 'cancelled') {
+                                alert('Unknown error');
+                            }
+                            showSelect();
+
+                        } else if (wallet) {
+                            showWallet(wallet);
+                            document.getElementById('wallet-username').textContent = inputUsername.value;
+
+                        } else {
+                            updateLoading(progress);
+                        }
+
+                        return cancelScrypt;
+                    });
+                };
+            })();
+
+
+            (function() {
+                var inputFile = document.getElementById('select-wallet-file');
+                var targetDrop = document.getElementById('select-wallet-drop');
+                var inputPassword = document.getElementById('select-wallet-password');
+                var submit = document.getElementById('select-submit-wallet');
+
+                function check() {
+                    if (inputFile.files && inputFile.files.length === 1) {
+                        submit.classList.remove('disable');
+                        targetDrop.textContent = inputFile.files[0].name;
+                    } else {
+                        submit.classList.add('disable');
+                    }
+                }
+                inputFile.onchange = check;
+                inputPassword.oninput = check;
+
+                setEnter(inputPassword, submit);
+
+                targetDrop.addEventListener('dragover', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    targetDrop.classList.add('highlight');
+                }, true);
+
+                targetDrop.addEventListener('drop', function(event) {
+                    targetDrop.classList.remove('highlight');
+                }, true);
+
+                submit.onclick = function() {
+                    if (submit.classList.contains('disable')) { return; }
+
+                    var fileReader = new FileReader();
+                    fileReader.onload = function(e) {
+                        var json = e.target.result;
+
+                        if (Wallet.isCrowdsaleWallet(json)) {
+                            showWallet(Wallet.decryptCrowdsale(json, password));
+
+                        } else if (Wallet.isValidWallet(json)) {
+                            showLoading('Decrypting Wallet...');
+                            var password = new Wallet.utils.Buffer(inputPassword.value);
+
+                            cancelScrypt = false;
+
+                            Wallet.decrypt(json, password, function(error, wallet, progress) {
+                                if (error) {
+                                    if (error.message === 'invalid password') {
+                                        alert('Wrong Password');
+                                    } else {
+                                        console.log(error);
+                                        alert('Error Decrypting Wallet');
+                                    }
+                                    showSelect();
+
+                                } else if (wallet) {
+                                    showWallet(wallet);
+
+                                } else {
+                                    updateLoading(progress);
+                                }
+
+                                return cancelScrypt;
+                            });
+                        } else {
+                            alert('Unknown JSON wallet format');
+                        }
+                    };
+                    fileReader.readAsText(inputFile.files[0]);
+                };
+
+            })();
+
+            var activeWallet = null;
+
+            function showError(error) {
+                alert('Error \u2014 ' + error.message);
+            }
+
+            // Refresh balance and transaction count in the UI
+            var refresh = (function() {
+                var inputBalance = document.getElementById('wallet-balance');
+                var inputTransactionCount = document.getElementById('wallet-transaction-count');
+                var submit = document.getElementById('wallet-submit-refresh');
+
+                function refresh() {
+                    addActivity('> Refreshing details...');
+                    activeWallet.getBalance('pending').then(function(balance) {
+                        addActivity('< Balance: ' + balance.toString(10));
+                        inputBalance.value = Wallet.formatEther(balance, {commify: true});
+                    }, function(error) {
+                        showError(error);
+                    });
+                    activeWallet.getTransactionCount('pending').then(function(transactionCount) {
+                        addActivity('< TransactionCount: ' + transactionCount);
+                        inputTransactionCount.value = transactionCount;
+                    }, function(error) {
+                        showError(error);
+                    });
+                }
+                submit.onclick = refresh;
+
+                return refresh;
+            })();
+
+            var addActivity = (function() {
+                var activity = document.getElementById('wallet-activity');
+                return function(message, url) {
+                    var line = document.createElement('a');
+                    line.textContent = message;
+                    if (url) { line.setAttribute('href', url); }
+                    activity.appendChild(line);
+                }
+            })();
+
+            // Set up the wallet page
+            (function() {
+
+                var inputTargetAddress = document.getElementById('wallet-send-target-address');
+                var inputAmount = document.getElementById('wallet-send-amount');
+                var submit = document.getElementById('wallet-submit-send');
+
+                // Validate the address and value (to enable the send button)
+                function check() {
+                    try {
+                        Wallet.getAddress(inputTargetAddress.value);
+                        Wallet.parseEther(inputAmount.value);
+                    } catch (error) {
+                        submit.classList.add('disable');
+                        return;
+                    }
+                    submit.classList.remove('disable');
+                }
+                inputTargetAddress.oninput = check;
+                inputAmount.oninput = check;
+
+                var optionMorden = document.getElementById('option-morden');
+                var optionHomestead = document.getElementById('option-homestead');
+
+                // Select the morden network
+                optionMorden.onclick = function() {
+                    if (optionMorden.classList.contains('selected')) { return; }
+                    addActivity('! Switched network: Morden');
+                    activeWallet.provider = new Wallet.providers.EtherscanProvider({testnet: true});
+                    optionMorden.classList.add('selected');
+                    optionHomestead.classList.remove('selected');
+                    refresh();
+                }
+
+                // Select the homestead network
+                optionHomestead.onclick = function() {
+                    if (optionHomestead.classList.contains('selected')) { return; }
+                    addActivity('! Switched network: Homestead');
+                    activeWallet.provider = new Wallet.providers.EtherscanProvider({testnet: false});
+                    optionMorden.classList.remove('selected');
+                    optionHomestead.classList.add('selected');
+                    refresh();
+                }
+
+                // Send ether
+                submit.onclick = function() {
+                    var gasPrice = (activeWallet.provider.testnet ? 0x4a817c800: 0xba43b7400);
+                    console.log('GasPrice: ' + gasPrice);
+
+                    var targetAddress = Wallet.getAddress(inputTargetAddress.value);
+                    var amountWei = Wallet.parseEther(inputAmount.value);
+                    activeWallet.send(targetAddress, amountWei, {
+                        gasPrice: gasPrice,
+                        gasLimit: 21000,
+                    }).then(function(txid) {
+                        var url = (activeWallet.provider.testnet ? 'https://testnet.etherscan.io/tx/': 'https://etherscan.io/tx/') + txid;
+                        addActivity('< Transaction sent: ' + txid.substring(0, 20) + '...', url);
+                        alert('Success!');
+
+                        inputTargetAddress.value = '';
+                        inputAmount.value = '';
+                        submit.classList.add('disable');
+
+                        refresh();
+                    }, function(error) {
+                        showError(error);
+                    });
+                }
+            })();
+
+            function showSelect() {
+                document.getElementById('screen-select').style.display = 'block';
+                document.getElementById('screen-loading').style.display = 'none';
+                document.getElementById('screen-wallet').style.display = 'none';
+            }
+
+            function showLoading(title) {
+                document.getElementById('screen-select').style.display = 'none';
+                document.getElementById('screen-loading').style.display = 'block';
+                document.getElementById('screen-wallet').style.display = 'none';
+
+                document.getElementById('loading-header').textContent = title;
+            }
+
+            var loadingStatus = document.getElementById('loading-status');
+            function updateLoading(progress) {
+                loadingStatus.value = (parseInt(progress * 100)) + '%';
+            }
+
+            function showWallet(wallet) {
+                activeWallet = wallet;
+                activeWallet.provider = new Wallet.providers.EtherscanProvider({testnet: true});
+
+                document.getElementById('screen-select').style.display = 'none';
+                document.getElementById('screen-loading').style.display = 'none';
+                document.getElementById('screen-wallet').style.display = 'block';
+
+                var inputWalletAddress = document.getElementById('wallet-address');
+                inputWalletAddress.value = wallet.address;
+                inputWalletAddress.onclick = function() {
+                    this.select();
+                };
+
+                refresh();
+            }
+
+            //var privateKey = '0x3141592653589793238462643383279502884197169399375105820974944592';
+            //showWallet(new Wallet(privateKey));
+
+        </script>
+    </body>
+</html>
+
