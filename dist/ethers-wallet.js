@@ -2001,7 +2001,9 @@ function Wallet(privateKey, provider) {
         enumerable: true,
         get: function() { return provider; },
         set: function(value) {
-            if (!providers.isProvider(value)) { throw new Error('invalid provider'); }
+            if (value !== null && !providers.isProvider(value)) {
+                throw new Error('invalid provider');
+            }
             provider = value;
         }
     });
@@ -2034,6 +2036,7 @@ function Wallet(privateKey, provider) {
     utils.defineProperty(this, 'address', signingKey.address);
 
     utils.defineProperty(this, 'sign', function(transaction) {
+console.log(transaction);
         var raw = [];
         transactionFields.forEach(function(fieldInfo) {
             var value = transaction[fieldInfo.name] || (new Buffer(0));
@@ -2117,8 +2120,8 @@ utils.defineProperty(Wallet.prototype, 'estimateGas', function(transaction) {
 });
 
 utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) {
-    var gasLimit = 3000000;
-    if (transaction.gasLimit != null) { gasLimit = transaction.gasLimit; }
+    var gasLimit = transaction.gasLimit;
+    if (gasLimit == null) { gasLimit = 3000000; }
 
     var self = this;
 
@@ -2139,7 +2142,7 @@ utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) 
         if (transaction.nonce) {
             return resolve(transaction.nonce);
         }
-        provider.getTransactionCount(self.address).then(function(transactionCount) {
+        provider.getTransactionCount(self.address, 'pending').then(function(transactionCount) {
             resolve(transactionCount);
         }, function(error) {
             reject(error);
@@ -2150,7 +2153,7 @@ utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) 
         Promise.all([gasPrice, nonce]).then(function(results) {
             var signedTransaction = self.sign({
                 to: transaction.to,
-                gasLimit: results[1],
+                gasLimit: gasLimit,
                 gasPrice: results[0],
                 nonce: results[1],
                 value: transaction.value
