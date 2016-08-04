@@ -578,6 +578,9 @@
 
                 // Send ether
                 submit.onclick = function() {
+
+                    // Matt (from Etherscan) is working on a gasPrice API call, which
+                    // should be done within a week or so.
                     var gasPrice = (activeWallet.provider.testnet ? 0x4a817c800: 0xba43b7400);
                     console.log('GasPrice: ' + gasPrice);
 
