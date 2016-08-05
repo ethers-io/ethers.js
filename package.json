@@ -13,6 +13,7 @@
     "inherits": "2.0.1",
     "pbkdf2": "3.0.4",
     "rlp": "2.0.0",
+    "setimmediate": "1.0.4",
     "scrypt-js": "2.0.2",
     "uuid": "2.0.1",
     "xmlhttprequest": "1.8.0"
