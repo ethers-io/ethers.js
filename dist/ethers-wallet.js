@@ -28,7 +28,7 @@ utils.defineProperty(exportUtils, 'sha256', utils.sha256);
 // http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
 utils.defineProperty(exportUtils, 'getContractAddress', function(transaction) {
     return SigningKey.getAddress('0x' + utils.sha3(rlp.encode([
-        utils.hexOrBuffer(utils.getAddress(transaction.from)),
+        utils.hexOrBuffer(SigningKey.getAddress(transaction.from)),
         utils.hexOrBuffer(utils.hexlify(transaction.nonce, 'nonce'))
     ])).slice(12).toString('hex'));
 });
@@ -2207,7 +2207,12 @@ var zero = new utils.BN(0);
 var negative1 = new utils.BN(-1);
 var tenPower18 = new utils.BN('1000000000000000000');
 utils.defineProperty(Wallet, 'formatEther', function(wei, options) {
-    if (typeof(wei) === 'number') { wei = new utils.BN(wei); }
+    if (typeof(wei) === 'number') {
+        // @TODO: Warn if truncation will occur?
+        wei = new utils.BN(wei);
+    } else if (utils.isHexString(wei)) {
+        wei = new utils.BN(wei.substring(2));
+    }
     if (!options) { options = {}; }
 
     if (!(wei instanceof utils.BN)) { throw new Error('invalid wei'); }
