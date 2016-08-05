@@ -38,3 +38,11 @@ module.exports.testBrainWallet = require('./test-brain-wallet.js');
 // Test the solidity encoding/decoding parameters
 module.exports.testSolidityCoder = require('./test-solidity-coder.js');
 
+
+// Test contract address helper
+module.exports.testSolidityCoder = require('./test-contract-address.js');
+
+// Test the providers API (this test case needs a little work as it
+// needs to modify the blockchain for a full test)
+//module.exports.testSolidityCoder = require('./test-providers.js');
+

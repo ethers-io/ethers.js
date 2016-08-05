@@ -26,7 +26,7 @@ utils.defineProperty(exportUtils, 'sha256', utils.sha256);
 // http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
 utils.defineProperty(exportUtils, 'getContractAddress', function(transaction) {
     return SigningKey.getAddress('0x' + utils.sha3(rlp.encode([
-        utils.hexOrBuffer(utils.getAddress(transaction.from)),
+        utils.hexOrBuffer(SigningKey.getAddress(transaction.from)),
         utils.hexOrBuffer(utils.hexlify(transaction.nonce, 'nonce'))
     ])).slice(12).toString('hex'));
 });
