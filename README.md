@@ -1,6 +1,8 @@
 ethers-wallet
 =============
 
+[![npm version](https://badge.fury.io/js/ethers-wallet.svg)](https://badge.fury.io/js/ethers-wallet)
+
 Complete Ethereum wallet implementation and utilities in JavaScript.
 
 **Features:**
@@ -13,6 +15,22 @@ Complete Ethereum wallet implementation and utilities in JavaScript.
 - MIT licensed (with one exception, which we are migrating off of; see below)
 
 **NOTE: This is still very beta; please only use it on the testnet for now, or with VERY small amounts of ether on the livenet that you are willing to lose due to bugs.**
+
+
+Installing
+----------
+
+To use in a browser:
+
+```html
+<script type="text/javascript" src="https://rawgit.com/ethers-io/ethers-wallet/master/dist/ethers-wallet.min.js"></script>
+```
+
+To use in [node.js](https://nodejs.org/):
+
+```
+npm install ethers-wallet
+```
 
 
 API
@@ -342,7 +360,7 @@ To run the test suite,
 ```
 /Users/ethers> npm test
 
-> ethers-wallet@0.0.3 test /Users/ethers/ethers-wallet
+> ethers-wallet@0.0.9 test /Users/ethers/ethers-wallet
 > nodeunit test.js
 
 Running test cases... (this can take a long time, please be patient)
