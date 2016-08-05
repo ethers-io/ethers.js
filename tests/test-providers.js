@@ -77,6 +77,22 @@ module.exports = function(test) {
          new Wallet.utils.BN('35588')
      );
 
+     var privateKey = new Buffer(32);
+     privateKey.fill(0x42);
+
+     var wallet = new Wallet(privateKey, url);
+     pending.push(new Promise(function(resolve, reject) {
+         wallet.estimateGas({
+             to: '0xdfaf84077cF4bCECA4F79d167F47041Ed3006D5b',
+             data: '0x93a0935200000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000003666f6f0000000000000000000000000000000000000000000000000000000000'
+         }).then(function(value) {
+             test.equal(value.toString(10), '35588', 'Failed to call wallet.estimateGas');
+             resolve();
+         }, function(error) {
+             reject(error);
+         });
+     }));
+
      Promise.all(pending).then(function(results) {
          test.done();
      }, function(error) {
