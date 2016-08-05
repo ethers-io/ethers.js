@@ -42,7 +42,7 @@ module.exports.testSolidityCoder = require('./test-solidity-coder.js');
 // Test contract address helper
 module.exports.testSolidityCoder = require('./test-contract-address.js');
 
-// Test the providers API (this test case needs a little work as it
-// needs to modify the blockchain for a full test)
-//module.exports.testSolidityCoder = require('./test-providers.js');
+
+// Test the providers API (we still need to add a lot ore test cases here)
+module.exports.testSolidityCoder = require('./test-providers.js');
 
