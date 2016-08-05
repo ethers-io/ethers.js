@@ -1,13 +1,14 @@
 ethers-wallet
 =============
 
-Complete Ethereum wallet implementation in JavaScript.
+Complete Ethereum wallet implementation and utilities in JavaScript.
 
-Features
+**Features:**
+
 - Keep your private keys in your browser
-- Import and export JSON wallets (geth and crowdsale) and brain wallets
-- Generate JavaScript bindings for any contract ABI
-- Connect to Ethereum nodes over RPC
+- Import and export JSON wallets (Geth and crowdsale) and brain wallets
+- Meta-classes create JavaScript objects from any contract ABI
+- Connect to Ethereum nodes over RPC, injected Web3 or [Etherscan](https://etherscan.io)
 - Small (~100kb compressed; 290kb uncompressed)
 - MIT licensed (with one exception, which we are migrating off of; see below)
 
