@@ -356,8 +356,10 @@ index.js
 + testContracts
 + testSecretStorage
 + testBrainWallet
++ testContractAddress
++ testProviders
 
-OK: 52156 assertions (127920ms)
+OK: 52178 assertions (147788ms)
 ```
 
 There are also some test JSON wallets available in the [test-wallets](https://github.com/ethers-io/ethers-wallet/tree/master/test-wallets) directory.

@@ -35,14 +35,10 @@ module.exports.testSecretStorage = require('./test-secret-storage.js');
 module.exports.testBrainWallet = require('./test-brain-wallet.js');
 
 
-// Test the solidity encoding/decoding parameters
-module.exports.testSolidityCoder = require('./test-solidity-coder.js');
-
-
 // Test contract address helper
-module.exports.testSolidityCoder = require('./test-contract-address.js');
+module.exports.testContractAddress = require('./test-contract-address.js');
 
 
 // Test the providers API (we still need to add a lot ore test cases here)
-module.exports.testSolidityCoder = require('./test-providers.js');
+module.exports.testProviders = require('./test-providers.js');
 

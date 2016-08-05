@@ -1004,7 +1004,6 @@ function getGasPrice(value) {
     if (!value || !value.transactions || value.transactions.length === 0) {
         throw new Error('invalid response');
     }
-    console.log(value.transactions[0].gasPrice)
     return hexToBN(value.transactions[0].gasPrice);
 }
 
@@ -1082,11 +1081,8 @@ utils.defineProperty(EtherscanProvider.prototype, 'getTransactionCount', functio
 });
 
 utils.defineProperty(EtherscanProvider.prototype, 'getGasPrice', function() {
-/* This doesn't work, over-estimates gas if current block was anxious
-    var query = ('module=proxy&action=eth_getBlockByNumber&tag=latest&boolean=true');
-    return this._send(query, getGasPrice);
-*/
-    throw new Error('etherscan does not support gasPrice');
+    var query = ('module=proxy&action=eth_gasPrice');
+    return this._send(query, hexToBN);
 });
 
 utils.defineProperty(EtherscanProvider.prototype, 'sendTransaction', function(signedTransaction) {
@@ -1104,7 +1100,25 @@ utils.defineProperty(EtherscanProvider.prototype, 'call', function(transaction) 
 });
 
 utils.defineProperty(EtherscanProvider.prototype, 'estimateGas', function(transaction) {
-    throw new Error('etherscan does not support estimation');
+    var address = SigningKey.getAddress(transaction.to);
+
+    var query = 'module=proxy&action=eth_estimateGas&to=' + address;
+    if (transaction.gasPrice) {
+        query += '&gasPrice=' + utils.hexlify(transaction.gasPrice);
+    }
+    if (transaction.gasLimit) {
+        query += '&gas=' + utils.hexlify(transaction.gasLimit);
+    }
+    if (transaction.from) {
+        query += '&from=' + SigningKey.getAddress(transaction.from);
+    }
+    if (transaction.data) {
+        query += '&data=' + ensureHex(transaction.data);
+    }
+    if (transaction.value) {
+        query += '&value=' + utils.hexlify(transaction.value);
+    }
+    return this._send(query, hexToBN);
 });
 
 
