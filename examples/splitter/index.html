@@ -1,84 +1,7 @@
 <html>
     <head>
         <title>Ethereum Classic Split Tool</title>
-        <style type="text/css">
-            body {
-                background-color: #eee;
-                font-family: sans-serif;
-                font-size: 18px;
-                margin: 0;
-            }
-            .centerer {
-                margin-left: 50%;
-            }
-            .centered {
-                background-color: #fff;
-                border-left: 1px solid #888;
-                border-right: 1px solid #888;
-                box-shadow: 0 0 7px #999;
-                margin-left: -370px;
-                padding: 20px;
-                width: 700px;
-            }
-            p {
-                text-align: justify;
-            }
-            th {
-                text-align: left;
-                padding: 0 15px 15px 0;
-            }
-            td {
-                padding: 0 15px 15px 0;
-            }
-
-            input[type=text] {
-                border: 1px solid #555;
-                font-size: 16px;
-                padding: 10px;
-                width: 500px;
-            }
-
-            input[type=password] {
-                border: 1px solid #555;
-                font-size: 16px;
-                padding: 10px;
-                width: 500px;
-            }
-
-            .submit {
-                border: 1px solid #555;
-                box-shadow: 0px 0px 5px #888;
-                cursor: pointer;
-                font-size: 16px;
-                padding: 10px;
-                text-align: center;
-                transition: opacity 0.1s linear;
-                width: 480px;
-            }
-
-            .submit:hover {
-                border: 1px solid #999;
-                box-shadow: 0px 0px 5px #aaa;
-            }
-
-            .submit:active {
-                box-shadow: none;
-            }
-
-            .submit.disable {
-                box-shadow: none;
-                opacity: 0.5;
-            }
-
-            .submit.disable:hover {
-                border: 1px solid #555;
-                box-shadow: none;
-            }
-
-            .submit.disable:active {
-                box-shadow: none;
-            }
-        </style>
+        <link rel="stylesheet" type="text/css" href="../style.css">
     </head>
     <body>
         <div class="centerer">
@@ -93,7 +16,7 @@
                 </p>
                 <ul>
                     <li>On the ETH branch &mdash; send the funds back to the original address</li>
-                    <li>On the ETC branch &mdash; send the funds to the provided target address (for example, a <a href="https://shapeshift.io">shapeshift</a> deposit address)</li>
+                    <li>On the ETC branch &mdash; send the funds to the provided target address (for example, a <a href="https://www.poloniex.com">Poloniex</a> deposit address)</li>
                 </ul>
                 <br />
                 <h3>Disclaimer:</h3>
@@ -122,7 +45,7 @@
                 <table>
                     <tr>
                         <th>JSON Wallet:</th>
-                        <td><input type="file" id="json" /></td>
+                        <td><div class="file" id="drop">Drop JSON wallet file here</div><input type="file" id="json" /></td>
                     </tr>
                     <tr>
                         <th>Password:</th>
@@ -139,19 +62,10 @@
                         </td>
                     </tr>
                 </table>
-                <hr />
-                <h2>Donations?</h2>
-                <p>
-                    *shrug*
-                </p>
-                <p>
-                    <code>0xb2682160c482eb985ec9f3e364eec0a904c44c23</code>
-                </p>
             </div>
         </div>
 
         <script type="text/javascript" src="../../dist/ethers-wallet.js"></script>
-        <script type="text/javascript" src="./web3.min.js"></script>
 
         <!-- This greatly improves the scrypt PBKDF performance -->
         <script type="text/javascript" src="./setImmediate.js"></script>
@@ -165,26 +79,9 @@
             var inputTargetAddress = document.getElementById('targetAddress')
             var inputPassword = document.getElementById('password');
 
-            var web3Classic = new Web3(new Web3.providers.HttpProvider('https://homestead-virginia-2.ethers.ws:8586'));
-            function getWeb3Promise(method) {
-                var args = Array.prototype.slice.call(arguments, 1);
-                return new Promise(function(resolve, reject) {
-                    args.push(function(error, result) {
-                        if (error) {
-                            reject(error);
-                        } else {
-                            resolve(result);
-                        }
-                    });
-                    web3Classic.eth[method].apply(web3Classic, args);
-                });
-            }
+            var targetDrop = document.getElementById('drop');
 
-            function bigNumberToBN(bigNumber) {
-                var hexValue = bigNumber.toString(16);
-                if (hexValue.length % 2) { hexValue = '0' + hexValue; }
-                return new Wallet.utils.BN(new Wallet.utils.Buffer(hexValue, 'hex'), 16);
-            }
+            var provider = new Wallet.providers.HttpProvider('https://linode-newark.ethers.ws:8002');
 
             var contractAddress = '0x3474627d4f63a678266bc17171d87f8570936622';
             var contractAbi = JSON.parse('[{"constant":false,"inputs":[{"name":"balance","type":"uint256"}],"name":"claimDonations","outputs":[],"type":"function"},{"constant":true,"inputs":[],"name":"isClassic","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[{"name":"classicAddress","type":"address"}],"name":"split","outputs":[],"type":"function"},{"inputs":[],"type":"constructor"}]');
@@ -200,13 +97,12 @@
                     alert('invalid address');
                     return;
                 }
-                getWeb3Promise('getBalance', address, 'latest').then(function(balance) {
-                    alert('Balance: ' + web3Classic.fromWei(balance).toString(10) + ' ' + Wallet.etherSymbol);
+                provider.getBalance(address, 'latest').then(function(balance) {
+                    alert('Balance: ' + Wallet.formatEther(balance, {commify: true}) + ' ' + Wallet.etherSymbol);
                 }, function(error) {
                     if (error) {
                         console.log(error);
                         alert('Faied to get balance');
-                        return;
                     }
                 });
 
@@ -248,6 +144,7 @@
                 }
 
                 function processWallet(wallet) {
+                console.log(wallet);
                     if (wallet.address === targetAddress) {
                         alert('Wallet address and target address cannot be the same.');
                         return done();
@@ -264,32 +161,35 @@
                     };
 
                     Promise.all([
-                        getWeb3Promise('getBalance', wallet.address, 'latest'),
-                        getWeb3Promise('getTransactionCount', wallet.address, 'latest'),
-                        getWeb3Promise('getGasPrice'),
-                        getWeb3Promise('estimateGas', transaction)
+                        provider.getBalance(wallet.address, 'latest'),
+                        provider.getTransactionCount(wallet.address, 'latest'),
+                        provider.getGasPrice(),
+//                        provider.estimateGas(transaction)
                     ]).then(function(results) {
                         var balance = results[0];
                         var transactionCount = results[1];
                         var gasPrice = results[2];
-                        var gasEstimate = results[3] + 21000;
+                        var gasEstimate = new Wallet.utils.BN('29735');
+                        //results[3].add(new Wallet.utils.BN(21000));
 
                         transaction.gasPrice = '0x' + gasPrice.toString(16);
                         transaction.nonce = transactionCount;
-                        transaction.gasLimit = bigNumberToBN(gasEstimate);
+                        transaction.gasLimit = gasEstimate;
 
-                        var toSend = bigNumberToBN(balance).sub(bigNumberToBN(gasPrice).mul(bigNumberToBN(gasEstimate)));
+                        var toSend = balance.sub(gasPrice.mul(gasEstimate));
                         transaction.value = toSend;
 
-                        var accept = confirm('Balance: ' + web3Classic.fromWei(balance).toString(10) + ' ' + Wallet.etherSymbol + '. Are you sure you want to split Classic Ether to ' + targetAddress + '?');
+                        console.log(transaction);
+
+                        var accept = confirm('Balance: ' + Wallet.formatEther(balance, {commify: true}) + ' ' + Wallet.etherSymbol + '. Are you sure you want to split Classic Ether to ' + targetAddress + '?');
                         if (accept) {
                             var signedTransaction = wallet.sign(transaction);
                             function showError(error) {
-                                done();
                                 console.log(error);
+                                done();
                                 alert('Error sending transaction');
                             }
-                            getWeb3Promise('sendRawTransaction', signedTransaction).then(function(txid) {
+                            provider.sendTransaction(signedTransaction).then(function(txid) {
                                 if (txid.match(/^0x0+$/)) {
                                     showError(new Error('txid was zero'));
                                     return;
@@ -351,24 +251,35 @@
             }
 
             function checkSplit() {
-                console.log('foo');
+                if (!inputJson.files || inputJson.files.length !== 1) {
+                    submitSplit.classList.add('disable');
+                    return;
+                }
+                targetDrop.textContent = inputJson.files[0].name;
+
                 try {
                     Wallet.getAddress(inputTargetAddress.value);
                 } catch (error) {
-                console.log(error);
                     submitSplit.classList.add('disable');
                     return;
                 }
-                if (!inputJson.files || inputJson.files.length !== 1) {
-                console.log(inputJson);
-                    submitSplit.classList.add('disable');
-                    return;
-                }
+
                 submitSplit.classList.remove('disable');
             }
 
             inputTargetAddress.oninput = checkSplit;
             inputJson.onchange = checkSplit;
+
+            inputJson.addEventListener('dragover', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                targetDrop.classList.add('highlight');
+            }, true);
+
+            inputJson.addEventListener('drop', function(event) {
+                targetDrop.classList.remove('highlight');
+            }, true);
+
 
             var check
         </script>
