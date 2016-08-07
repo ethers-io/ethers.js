@@ -75,6 +75,19 @@ module.exports = function(test) {
         s: "0x29ae9893dac4f9afb1af743e25fbb6a63f7879a61437203cb48c997b0fcefc3a"
     });
 
+    // Test all possible blank fields
+    var privateKey = new Buffer('0123456789012345678901234567890123456789012345678901234567890123', 'hex');
+    for (var i = 0; i < 64; i++) {
+        var transaction = {};
+        if (i & (1 << 0)) { transaction.nonce     = '0x02'; }
+        if (i & (1 << 1)) { transaction.gasPrice  = '0x03'; }
+        if (i & (1 << 2)) { transaction.gasLimit  = '0x04'; }
+        if (i & (1 << 3)) { transaction.to        = '0x0123456789012345678901234567890123456789'; }
+        if (i & (1 << 4)) { transaction.value     = '0x05'; }
+        if (i & (1 << 5)) { transaction.data      = '0x06'; }
+        testTransaction(privateKey, transaction);
+    }
+
     test.done();
 };
 
