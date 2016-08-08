@@ -1196,10 +1196,10 @@ function Randomish() {
         var aesCbc = new aes.ModeOfOperation.cbc(key, this.feedEntropy());
         var result = new Buffer(0);
         while (result.length < length) {
-            result = result.concat([result, this.feedEntropy()]);
+            result = Buffer.concat([result, this.feedEntropy()]);
         }
 
-        return result;
+        return result.slice(0, length);
     });
 
     this.feedEntropy();
@@ -2061,7 +2061,7 @@ function Wallet(privateKey, provider) {
             value = utils.hexOrBuffer(utils.hexlify(value), fieldInfo.name);
 
             // Fixed-width field
-            if (fieldInfo.length && value.length !== fieldInfo.length) {
+            if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
                 var error = new Error('invalid ' + fieldInfo.name);
                 error.reason = 'wrong length';
                 error.value = value;

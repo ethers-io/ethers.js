@@ -61,6 +61,23 @@
                 </table>
 
                 <hr />
+                <h2>Raw Private Key</h2>
+                <p>
+                </p>
+                <table>
+                    <tr>
+                        <th>Private KeyE-mail Address:</th>
+                        <td><input type="text" placeholder="(private key)" id="select-privatekey" /></td>
+                    </tr>
+                    <tr>
+                        <td> </td>
+                        <td>
+                            <div id="select-submit-privatekey" class="submit disable">Unlock JSON Wallet</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <hr />
                 <h3>Disclaimer:</h3>
                 <p>
                     This is beta software, with no warranty. <b>Use at your own risk.</b>
@@ -109,8 +126,8 @@
                     <tr>
                         <th>Network:</th>
                         <td>
-                            <div class="option left selected" id="option-morden">Morden (testnet)</div>
-                            <div class="option right" id="option-homestead">Homestead (mainnet)</div>
+                            <div class="option left" id="option-morden">Morden (testnet)</div>
+                            <div class="option right selected" id="option-homestead">Homestead (mainnet)</div>
                         </td>
                     </tr>
                     <tr>
@@ -298,6 +315,30 @@
 
             })();
 
+            (function() {
+                var inputPrivatekey = document.getElementById('select-privatekey');
+                var submit = document.getElementById('select-submit-privatekey');
+
+                function check() {
+                    if (inputPrivatekey.value.match(/^(0x)?[0-9A-fa-f]{64}$/)) {
+                        submit.classList.remove('disable');
+                    } else {
+                        submit.classList.add('disable');
+                    }
+                }
+                inputPrivatekey.oninput = check;
+
+                setEnter(inputPrivatekey, submit);
+
+                submit.onclick = function() {
+                    if (submit.classList.contains('disable')) { return; }
+                    var privateKey = inputPrivatekey.value;
+                    if (privateKey.substring(0, 2) !== '0x') { privateKey = '0x' + privateKey; }
+                    showWallet(new Wallet(privateKey));
+                }
+            })();
+
+
             var activeWallet = null;
 
             function showError(error) {
@@ -433,8 +474,9 @@
             }
 
             function showWallet(wallet) {
+                var testnet = document.getElementById('option-morden').classList.contains('selected');
                 activeWallet = wallet;
-                activeWallet.provider = new Wallet.providers.EtherscanProvider({testnet: true});
+                activeWallet.provider = new Wallet.providers.EtherscanProvider({testnet: testnet});
 
                 document.getElementById('screen-select').style.display = 'none';
                 document.getElementById('screen-loading').style.display = 'none';
