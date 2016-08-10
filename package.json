@@ -1,6 +1,6 @@
 {
   "name": "ethers-wallet",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Ethereum wallet library.",
   "main": "index.js",
   "scripts": {
@@ -40,5 +40,9 @@
     "wallet"
   ],
   "author": "Richard Moore <me@ricmoo.com>",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers-wallet.git"
+  },
   "license": "MIT"
 }
