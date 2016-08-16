@@ -125,9 +125,9 @@ This API allows you to decrypt and encrypt the [Secret Storage](https://github.c
 
 The Secret Storage JSON Wallet format uses an algorithm called *scrypt*, which is intentionally CPU-intensive, which ensures that an attacker would need to tie up considerable resources to attempt to brute-force guess your password. It aslo means it may take some time (10-30 seconds) to decrypt or encrypt a wallet. So, these API calls use a callback to provide progress feedback as well as the opportunity to cancel the process.
 
-The callback should look like `function(error, result, progress)` where progress is a Number between 0 and 1 (inclusive) and if the function returns `true`, then the process will be cancelled, calling the callback once more with `callback(new Error('cancelled'))`.
+The callback should look like `function(progress)` where progress is a Number between 0 and 1 (inclusive) and if the function returns `true`, then the process will be cancelled, calling the callback once more with `callback(new Error('cancelled'))`.
 
-#### Wallet.decrypt(json, password, callback);
+#### Wallet.decrypt(json, password[, callback]);
 
 ```javascript
 
@@ -136,31 +136,29 @@ var json = "... see the test-wallets directory for samples ...";
 
 // Decrypt a Secret Storage JSON wallet
 var shouldCancelDecrypt = false;
-Wallet.decrypt(json, password, function(error, wallet, progress) {
-    if (error) {
-        if (error.message === 'invalid password') {
-            // Wrong password
 
-        } else if (error.message === 'cancelled') {
-            // The decryption was cancelled
-
-        }
-
-    } else if (wallet) {
-        // The wallet was successfully decrypted
-
-    } else {
-        // The wallet is still being decrypted
-        console.log('The wallet is ' + parseInt(100 * progress) + '% decrypted');
-    }
+function updateInterface(progress) {
+    console.log('The wallet is ' + parseInt(100 * progress) + '% decrypted');
 
     // Optionally return true to stop this decryption; this callback will get
     // called once more with callback(new Error("cancelled"))
     return shouldCancelDecrypt;
+}
+
+Wallet.decrypt(json, password, updateInterface).then(function(wallet) {
+    // The wallet was successfully decrypted
+
+}, function(error) {
+    if (error.message === 'invalid password') {
+        // Wrong password
+
+    } else if (error.message === 'cancelled') {
+        // The decryption was cancelled
+    }
 });
 ```
 
-#### Wallet.prototype.encrypt(password[, options], callback);
+#### Wallet.prototype.encrypt(password[, options][, callback]);
 
 ```javascript
 
@@ -180,24 +178,22 @@ var options = {
 var wallet = new Wallet(privateKey);
 
 var shouldCancelEncrypt = false;
-wallet.encrypt(password, options, function(error, json, progress) {
-    if (error) {
-        if (error.message === 'cancelled') {
-            // Cancelled
-        }
 
-    } else if (json) {
-        // The wallet was successfully encrypted as a json string
+function updateInterface(progress) {
+    console.log('The wallet is ' + parseInt(100 * progress) + '% encrypted');
 
-    } else {
-        // The wallet is still being encrypted
-        console.log('The wallet is ' + parseInt(100 * progress) + '% encrypted');
-
-    }
-
-    // Optionally return true to stop this decryption; this callback will get
+    // Optionally return true to stop this encryption; this callback will get
     // called once more with callback(new Error("cancelled"))
     return shouldCancelEncrypt;
+}
+
+wallet.encrypt(password, options, updateInterface).then(function(json) {
+    // The wallet was successfully encrypted as a json string
+
+}, function(error) {
+    if (error.message === 'cancelled') {
+        // Cancelled
+    }
 });
 ```
 
@@ -214,23 +210,22 @@ var email = new Wallet.utils.Buffer('github@ricmoo.com', 'utf8');
 var password = new Wallet.utils.Buffer('password', 'utf8');
 
 var shouldCancelSummon = false;
-Wallet.summonBrainWallet(email, password, function(error, wallet, progress) {
-    if (error) {
-        if (error.message === 'cancelled') {
-            // Cancelled
-        }
 
-    } else if (wallet) {
-        // The wallet was successfully generated
-
-    } else {
-        // The wallet is still being generated
-        console.log('The wallet is ' + parseInt(100 * progress) + '% encrypted');
-    }
+function updateInterface(progress) {
+    console.log('The wallet is ' + parseInt(100 * progress) + '% generated');
 
     // Optionally return true to stop this generation; this callback will get
     // called once more with callback(new Error("cancelled"))
     return shouldCancelSummon;
+}
+
+Wallet.summonBrainWallet(email, password, updateInterface).then(function(wallet) {
+    // The wallet was successfully generated
+
+}, function(error) {
+    if (error.message === 'cancelled') {
+        // Cancelled
+    }
 });
 ```
 
@@ -268,7 +263,7 @@ wallet.getTransactionCount().then(function(transactionCount) {
 })
 
 // Send ether to another account or contract
-wallet.send(targetAddress, Wallet.parseEther(1.0)).then(function(txid) {
+wallet.send(targetAddress, Wallet.parseEther('1.0')).then(function(txid) {
     console.log(txid);
 })
 ```
