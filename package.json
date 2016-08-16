@@ -1,6 +1,6 @@
 {
   "name": "ethers-wallet",
-  "version": "0.0.12",
+  "version": "1.0.0",
   "description": "Ethereum wallet library.",
   "main": "index.js",
   "scripts": {
@@ -14,7 +14,7 @@
     "pbkdf2": "3.0.4",
     "rlp": "2.0.0",
     "setimmediate": "1.0.4",
-    "scrypt-js": "2.0.2",
+    "scrypt-js": "2.0.3",
     "uuid": "2.0.1",
     "xmlhttprequest": "1.8.0"
   },

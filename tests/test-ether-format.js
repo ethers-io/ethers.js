@@ -1,6 +1,8 @@
 'use strict';
 var Wallet = require('../index.js');
 
+// @TODO: Add testcases where format receives hexidecimal string
+
 var BN = Wallet.utils.BN;
 
 module.exports = function(test) {

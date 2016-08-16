@@ -39,9 +39,6 @@ module.exports = function(test) {
         },
     ];
 
-    test.expect((crowdsale.length * 4) + (geth.length * 4) + 2);
-
-
     // Test crowdsale private key decryption
     crowdsale.forEach(function(testcase) {
 
@@ -55,63 +52,60 @@ module.exports = function(test) {
         test.equal(wallet.address, testcase.address, 'wrong address');
     });
 
-    // Private keys are asynchronous, so we do this to trigger the done
-    // only after all testcases have returned
-    var expecting = geth.length + 1;
-    function checkAsync() {
-        expecting--;
-        if (expecting === 0) { test.done(); }
-    }
+    var async = [];
 
     geth.forEach(function(testcase) {
         // Check wallet type detection
         test.ok(Wallet.isValidWallet(testcase.data), 'wrong wallet type detected');
         test.ok(!Wallet.isCrowdsaleWallet(testcase.data), 'wrong wallet type detected');
 
-        // Test private key decryption
-        var password = new Buffer(testcase.password, 'utf8');
-        Wallet.decrypt(testcase.data, password, function(error, wallet, progress) {
-            if (error) {
-                console.log(error);
-                test.ok(false, 'callback returned error - ' + error.message);
-                checkAsync();
+        async.push(new Promise(function(resolve, reject) {
 
-            } else if (wallet) {
+            // Test private key decryption
+            var password = new Buffer(testcase.password, 'utf8');
+            Wallet.decrypt(testcase.data, password).then(function(wallet) {
                 test.equals(wallet.privateKey, testcase.privateKey, 'wrong private key')
                 test.equals(wallet.address, testcase.address, 'wrong address');
-                checkAsync();
-            }
-        });
+                resolve();
+            }, function(error) {
+                console.log(error);
+                test.ok(false, 'callback returned error - ' + error.message);
+                reject(error);
+            });
+        }));
     });
 
     var privateKey = new Buffer(32);
     privateKey.fill(0x42);
-
     var password = new Buffer("foo", 'utf8');
 
-    (new Wallet(privateKey)).encrypt(password, {
-        scrypt: { N: (1 << 10), r: 4, p: 2 },
-        iv:   '0xdeadbeef1deadbeef2deadbeef301234',
-        salt: '0xabcd1abcd2abcd3abcd4abcd5abcd6ef',
-        uuid: '0x01234567890123456789012345678901',
-    }, function(error, json, progress) {
-        if (error) {
-            test.ok(false, 'callback returned error - ' + error.message);
-            checkAsync();
-
-        } else if (json) {
+    async.push(new Promise(function(resolve, reject) {
+        (new Wallet(privateKey)).encrypt(password, {
+            scrypt: { N: (1 << 10), r: 4, p: 2 },
+            iv:   '0xdeadbeef1deadbeef2deadbeef301234',
+            salt: '0xabcd1abcd2abcd3abcd4abcd5abcd6ef',
+            uuid: '0x01234567890123456789012345678901',
+        }).then(function(json) {
             var jsonWallet = fs.readFileSync('./test-wallets/wallet-test-life.json').toString();
             test.equal(json, jsonWallet, 'failed to encrypt wallet');
-            Wallet.decrypt(json, password, function(error, wallet, progress) {
-                if (error) {
-                    test.ok(false, 'callback returned error - ' + error.message);
-                    checkAsync();
-                } else if (wallet) {
-                    test.equal(wallet.privateKey, '0x' + privateKey.toString('hex'), 'decryption failed');
-                    checkAsync();
-                }
+            Wallet.decrypt(json, password).then(function(wallet) {
+                test.equal(wallet.privateKey, '0x' + privateKey.toString('hex'), 'decryption failed');
+                resolve();
+            }, function(error) {
+                test.ok(false, 'callback returned error - ' + error.message);
+                reject(error);
             });
-        }
+        }, function(error) {
+            test.ok(false, 'callback returned error - ' + error.message);
+            reject(error);
+        });
+    }));
+
+    Promise.all(async).then(function(results) {
+        test.done();
+    }, function(error) {
+        console.log(error);
+        test.done();
     });
 }
 

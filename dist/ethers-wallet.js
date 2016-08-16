@@ -49,36 +49,47 @@ utils.defineProperty(Wallet, 'decryptCrowdsale', function(json, password) {
     return new Wallet(secretStorage.decryptCrowdsale(json, password));
 });
 
-utils.defineProperty(Wallet, 'decrypt', function(json, password, callback) {
-    if (typeof(callback) !== 'function') { throw new Error('invalid callback'); }
+utils.defineProperty(Wallet, 'decrypt', function(json, password, progressCallback) {
+    if (progressCallback && typeof(progressCallback) !== 'function') {
+        throw new Error('invalid callback');
+    }
 
-    secretStorage.decrypt(json, password, function(error, signingKey, progress) {
-        if (signingKey) {
-            return callback(error, new Wallet(signingKey), progress);
-        }
-        return callback(error, signingKey, progress);
+    return new Promise(function(resolve, reject) {
+        secretStorage.decrypt(json, password, progressCallback).then(function(signingKey) {
+            resolve(new Wallet(signingKey));
+        }, function(error) {
+            reject(error);
+        });
     });
 });
 
-utils.defineProperty(Wallet.prototype, 'encrypt', function(password, options, callback) {
-    if (typeof(options) === 'function' && !callback) {
-        callback = options;
+utils.defineProperty(Wallet.prototype, 'encrypt', function(password, options, progressCallback) {
+    if (typeof(options) === 'function' && !progressCallback) {
+        progressCallback = options;
         options = {};
     }
-    if (typeof(callback) !== 'function') { throw new Error('invalid callback'); }
+    if (progressCallback && typeof(progressCallback) !== 'function') {
+        throw new Error('invalid callback');
+    }
 
-    secretStorage.encrypt(this.privateKey, password, options, callback);
+    return secretStorage.encrypt(this.privateKey, password, options, progressCallback);
 });
 
-utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, callback) {
-    if (typeof(callback) !== 'function') { throw new Error('invalid callback'); }
+utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, progressCallback) {
+    if (progressCallback && typeof(progressCallback) !== 'function') {
+        throw new Error('invalid callback');
+    }
 
-    scrypt(password, username, (1 << 18), 8, 1, 32, function(error, progress, key) {
-        if (key) {
-            return callback(error, new Wallet(new Buffer(key)), 1);
-        } else {
-            return callback(error, null, progress);
-        }
+    return new Promise(function(resolve, reject) {
+        scrypt(password, username, (1 << 18), 8, 1, 32, function(error, progress, key) {
+            if (error) {
+                reject(error);
+            } else if (key) {
+                resolve(new Wallet(new Buffer(key)));
+            } else if (progressCallback) {
+                progressCallback(progress);
+            }
+        });
     });
 });
 
@@ -1348,15 +1359,10 @@ utils.defineProperty(secretStorage, 'decryptCrowdsale', function(json, password)
 });
 
 
-utils.defineProperty(secretStorage, 'decrypt', function(json, password, callback) {
+utils.defineProperty(secretStorage, 'decrypt', function(json, password, progressCallback) {
     if (!Buffer.isBuffer(password)) { throw new Error('password must be a buffer'); }
 
     var data = JSON.parse(json);
-
-    var fail = function(reason) {
-        console.log('fail', reason);
-        setTimeout(function() { callback(new Error(reason)); }, 0);
-    }
 
     var decrypt = function(key, ciphertext) {
         var cipher = searchPath(data, 'crypto/cipher');
@@ -1376,69 +1382,80 @@ utils.defineProperty(secretStorage, 'decrypt', function(json, password, callback
         return utils.sha3(Buffer.concat([derivedHalf, ciphertext]));
     }
 
-    var kdf = searchPath(data, 'crypto/kdf');
-    if (kdf && kdf.toLowerCase() === 'scrypt') {
-        var salt = new Buffer(searchPath(data, 'crypto/kdfparams/salt'), 'hex');
-        var N = parseInt(searchPath(data, 'crypto/kdfparams/n'));
-        var r = parseInt(searchPath(data, 'crypto/kdfparams/r'));
-        var p = parseInt(searchPath(data, 'crypto/kdfparams/p'));
-        if (!N || !r || !p) {
-            return fail('unsupported key-derivation function parameters');
-        }
-
-        // Make sure N is a power of 2
-        if ((N & (N - 1)) !== 0) {
-            return fail('unsupported key-derivation function parameter value for N')
-        }
-
-        var dkLen = searchPath(data, 'crypto/kdfparams/dklen');
-        if (dkLen !== 32) {
-            return fail('unsupported key-derivation derived-key length');
-        }
-
-        scrypt(password, salt, N, r, p, dkLen, function(error, progress, key) {
-            if (error) {
-                callback(error, null, progress);
-
-            } else if (key) {
-                key = new Buffer(key);
-
-                var ciphertext = new Buffer(searchPath(data, 'crypto/ciphertext'), 'hex');
-
-                var computedMAC = computeMAC(key.slice(16, 32), ciphertext).toString('hex').toLowerCase();
-                if (computedMAC !== searchPath(data, 'crypto/mac').toLowerCase()) {
-                    return fail('invalid password');
-                }
-
-                var privateKey = decrypt(key.slice(0, 16), ciphertext);
-
-                if (!privateKey) {
-                    return fail('unsupported cipher');
-                }
-
-                var signingKey = new SigningKey(privateKey);
-                if (signingKey.address !== SigningKey.getAddress(data.address)) {
-                    return fail('address mismatch');
-                }
-
-                callback(null, signingKey, 1.0);
-
-            } else {
-                return callback(null, null, progress);
+    return new Promise(function(resolve, reject) {
+        var kdf = searchPath(data, 'crypto/kdf');
+        if (kdf && kdf.toLowerCase() === 'scrypt') {
+            var salt = new Buffer(searchPath(data, 'crypto/kdfparams/salt'), 'hex');
+            var N = parseInt(searchPath(data, 'crypto/kdfparams/n'));
+            var r = parseInt(searchPath(data, 'crypto/kdfparams/r'));
+            var p = parseInt(searchPath(data, 'crypto/kdfparams/p'));
+            if (!N || !r || !p) {
+                reject(new Error('unsupported key-derivation function parameters'));
+                return;
             }
-        });
 
-    } else {
-        // @TOOD: Support pbkdf2 kdf
-        return fail('unsupported key-derivation function');
-    }
+            // Make sure N is a power of 2
+            if ((N & (N - 1)) !== 0) {
+                reject(new Error('unsupported key-derivation function parameter value for N'));
+                return;
+            }
+
+            var dkLen = searchPath(data, 'crypto/kdfparams/dklen');
+            if (dkLen !== 32) {
+                reject( new Error('unsupported key-derivation derived-key length'));
+                return;
+            }
+
+            scrypt(password, salt, N, r, p, dkLen, function(error, progress, key) {
+                if (error) {
+                    error.progress = progress;
+                    reject(error);
+
+                } else if (key) {
+                    key = new Buffer(key);
+
+                    var ciphertext = new Buffer(searchPath(data, 'crypto/ciphertext'), 'hex');
+
+                    var computedMAC = computeMAC(key.slice(16, 32), ciphertext).toString('hex').toLowerCase();
+                    if (computedMAC !== searchPath(data, 'crypto/mac').toLowerCase()) {
+                        reject(new Error('invalid password'));
+                        return;
+                    }
+
+                    var privateKey = decrypt(key.slice(0, 16), ciphertext);
+
+                    if (!privateKey) {
+                        reject(new Error('unsupported cipher'));
+                        return;
+                    }
+
+                    var signingKey = new SigningKey(privateKey);
+                    if (signingKey.address !== SigningKey.getAddress(data.address)) {
+                        reject(new Error('address mismatch'));
+                        return;
+                    }
+
+                    if (progressCallback) { progressCallback(1); }
+                    resolve(signingKey);
+
+                } else if (progressCallback) {
+                    return progressCallback(progress);
+                }
+            });
+
+        } else {
+            // @TOOD: Support pbkdf2 kdf
+            reject(new Error('unsupported key-derivation function'));
+        }
+
+    });
 });
 
-utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, options, callback) {
+utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, options, progressCallback) {
 
     // the options are optional, so adjust the call as needed
-    if (typeof(options) === 'function' && !callback) {
-        callback = options;
+    if (typeof(options) === 'function' && !progressCallback) {
+        progressCallback = options;
         options = {};
     }
     if (!options) { options = {}; }
@@ -1483,70 +1500,73 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
         if (options.scrypt.p) { p = options.scrypt.p; }
     }
 
-    // We take 64 bytes:
-    //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
-    //   - 16 bytes   The initialization vector
-    //   - 16 bytes   The UUID random bytes
-    scrypt(password, salt, N, r, p, 64, function(error, progress, key) {
+    return new Promise(function(resolve, reject) {
 
-        if (error) {
-            return callback(error, null, progress);
+        // We take 64 bytes:
+        //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
+        //   - 16 bytes   The initialization vector
+        //   - 16 bytes   The UUID random bytes
+        scrypt(password, salt, N, r, p, 64, function(error, progress, key) {
+            if (error) {
+                error.progress = progress;
+                reject(error);
 
-        } else if (key) {
-            // Convert the array-like to a Buffer
-            key = new Buffer(key);
+            } else if (key) {
+                // Convert the array-like to a Buffer
+                key = new Buffer(key);
 
-            // These will be used to encrypt the wallet (as per Web3 secret storage)
-            var derivedKey = key.slice(0, 16);
-            var macPrefix = key.slice(16, 32);
+                // These will be used to encrypt the wallet (as per Web3 secret storage)
+                var derivedKey = key.slice(0, 16);
+                var macPrefix = key.slice(16, 32);
 
-            // Get the initialization vector
-            if (!iv) { iv = key.slice(32, 48); }
+                // Get the initialization vector
+                if (!iv) { iv = key.slice(32, 48); }
 
-            // Get the UUID random data
-            if (!uuidRandom) { uuidRandom = key.slice(48, 64); }
+                // Get the UUID random data
+                if (!uuidRandom) { uuidRandom = key.slice(48, 64); }
 
-            // Get the address for this private key
-            var address = (new SigningKey(privateKey)).address;
+                // Get the address for this private key
+                var address = (new SigningKey(privateKey)).address;
 
-            // Encrypt the private key
-            var counter = new aes.Counter(iv);
-            var aesCtr = new aes.ModeOfOperation.ctr(derivedKey, counter);
-            var ciphertext = new Buffer(aesCtr.encrypt(privateKey));
+                // Encrypt the private key
+                var counter = new aes.Counter(iv);
+                var aesCtr = new aes.ModeOfOperation.ctr(derivedKey, counter);
+                var ciphertext = new Buffer(aesCtr.encrypt(privateKey));
 
-            // Compute the message authentication code, used to check the password
-            var mac = utils.sha3(Buffer.concat([macPrefix, ciphertext]))
+                // Compute the message authentication code, used to check the password
+                var mac = utils.sha3(Buffer.concat([macPrefix, ciphertext]))
 
-            // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
-            var data = {
-                address: address,
-                id: uuid.v4({random: uuidRandom}),
-                version: 3,
-                Crypto: {
-                    cipher: 'aes-128-ctr',
-                    cipherparams: {
-                        iv: iv.toString('hex')
-                    },
-                    ciphertext: ciphertext.toString('hex'),
-                    kdf: 'scrypt',
-                    kdfparams: {
-                        salt: salt.toString('hex'),
-                        n: N,
-                        dklen: 32,
-                        p: p,
-                        r: r
-                    },
-                    mac: mac.toString('hex')
-                }
-            };
+                // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
+                var data = {
+                    address: address,
+                    id: uuid.v4({random: uuidRandom}),
+                    version: 3,
+                    Crypto: {
+                        cipher: 'aes-128-ctr',
+                        cipherparams: {
+                            iv: iv.toString('hex')
+                        },
+                        ciphertext: ciphertext.toString('hex'),
+                        kdf: 'scrypt',
+                        kdfparams: {
+                            salt: salt.toString('hex'),
+                            n: N,
+                            dklen: 32,
+                            p: p,
+                            r: r
+                        },
+                        mac: mac.toString('hex')
+                    }
+                };
 
-            return callback(null, JSON.stringify(data), 1);
+                if (progressCallback) { progressCallback(1); }
+                resolve(JSON.stringify(data));
 
-        } else {
-            return callback(null, null, progress);
-        }
+            } else if (progressCallback) {
+                return progressCallback(progress);
+            }
+        });
     });
-
 });
 
 module.exports = secretStorage;
@@ -19250,7 +19270,6 @@ function toBuffer (v) {
 
 }).call(this,require("buffer").Buffer)
 },{"assert":38,"buffer":40}],85:[function(require,module,exports){
-(function (Buffer){
 "use strict";
 
 (function(root) {
@@ -19406,7 +19425,6 @@ function toBuffer (v) {
         }
 
         return dk;
-        //return new Buffer(dk);
     }
 
     // The following is an adaptation of scryptsy
@@ -19535,8 +19553,6 @@ function toBuffer (v) {
         if (!checkBufferish(salt)) {
             throw new Error('salt must be an array or buffer');
         }
-        password = new Buffer(password);
-        salt = new Buffer(salt);
 
         var b = PBKDF2_HMAC_SHA256_OneIter(password, salt, p * 128 * r);
         var B = new Uint32Array(p * 32 * r)
@@ -19671,9 +19687,6 @@ function toBuffer (v) {
                     }
 
                     var derivedKey = PBKDF2_HMAC_SHA256_OneIter(password, b, dkLen);
-                    //if (typeof(Buffer) !== 'undefined') {
-                    //    derivedKey = new Buffer(derivedKey);
-                    //}
 
                     // Done; don't break (which would reschedule)
                     return callback(null, 1.0, derivedKey);
@@ -19710,8 +19723,7 @@ function toBuffer (v) {
 
 })(this);
 
-}).call(this,require("buffer").Buffer)
-},{"buffer":40}],86:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 (function (process,global){
 (function (global, undefined) {
     "use strict";

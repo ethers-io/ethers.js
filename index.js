@@ -47,36 +47,47 @@ utils.defineProperty(Wallet, 'decryptCrowdsale', function(json, password) {
     return new Wallet(secretStorage.decryptCrowdsale(json, password));
 });
 
-utils.defineProperty(Wallet, 'decrypt', function(json, password, callback) {
-    if (typeof(callback) !== 'function') { throw new Error('invalid callback'); }
+utils.defineProperty(Wallet, 'decrypt', function(json, password, progressCallback) {
+    if (progressCallback && typeof(progressCallback) !== 'function') {
+        throw new Error('invalid callback');
+    }
 
-    secretStorage.decrypt(json, password, function(error, signingKey, progress) {
-        if (signingKey) {
-            return callback(error, new Wallet(signingKey), progress);
-        }
-        return callback(error, signingKey, progress);
+    return new Promise(function(resolve, reject) {
+        secretStorage.decrypt(json, password, progressCallback).then(function(signingKey) {
+            resolve(new Wallet(signingKey));
+        }, function(error) {
+            reject(error);
+        });
     });
 });
 
-utils.defineProperty(Wallet.prototype, 'encrypt', function(password, options, callback) {
-    if (typeof(options) === 'function' && !callback) {
-        callback = options;
+utils.defineProperty(Wallet.prototype, 'encrypt', function(password, options, progressCallback) {
+    if (typeof(options) === 'function' && !progressCallback) {
+        progressCallback = options;
         options = {};
     }
-    if (typeof(callback) !== 'function') { throw new Error('invalid callback'); }
+    if (progressCallback && typeof(progressCallback) !== 'function') {
+        throw new Error('invalid callback');
+    }
 
-    secretStorage.encrypt(this.privateKey, password, options, callback);
+    return secretStorage.encrypt(this.privateKey, password, options, progressCallback);
 });
 
-utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, callback) {
-    if (typeof(callback) !== 'function') { throw new Error('invalid callback'); }
+utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, progressCallback) {
+    if (progressCallback && typeof(progressCallback) !== 'function') {
+        throw new Error('invalid callback');
+    }
 
-    scrypt(password, username, (1 << 18), 8, 1, 32, function(error, progress, key) {
-        if (key) {
-            return callback(error, new Wallet(new Buffer(key)), 1);
-        } else {
-            return callback(error, null, progress);
-        }
+    return new Promise(function(resolve, reject) {
+        scrypt(password, username, (1 << 18), 8, 1, 32, function(error, progress, key) {
+            if (error) {
+                reject(error);
+            } else if (key) {
+                resolve(new Wallet(new Buffer(key)));
+            } else if (progressCallback) {
+                progressCallback(progress);
+            }
+        });
     });
 });
 
