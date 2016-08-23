@@ -9,6 +9,7 @@ var secretStorage = require('./lib/secret-storage.js');
 var Randomish = require('./lib/randomish.js');
 var SigningKey = require('./lib/signing-key.js');
 var Wallet = require('./lib/wallet.js');
+var units = require('./lib/units.js');
 
 var utils = require('./lib/utils.js');
 var BN = utils.BN;
@@ -36,6 +37,8 @@ module.exports = Wallet;
 
 utils.defineProperty(Wallet, 'etherSymbol', '\uD835\uDF63');
 
+utils.defineProperty(Wallet, 'formatEther', units.formatEther);
+utils.defineProperty(Wallet, 'parseEther', units.parseEther);
 
 //utils.defineProperty(Wallet, 'getAddress', SigningKey.getAddress);
 //utils.defineProperty(Wallet, 'getIcapAddress', SigningKey.getIcapAddress);
