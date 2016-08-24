@@ -26,8 +26,8 @@ utils.defineProperty(exportUtils, 'sha256', utils.sha256);
 
 // http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
 utils.defineProperty(exportUtils, 'getContractAddress', function(transaction) {
-    return SigningKey.getAddress('0x' + utils.sha3(rlp.encode([
-        utils.hexOrBuffer(SigningKey.getAddress(transaction.from)),
+    return utils.getAddress('0x' + utils.sha3(rlp.encode([
+        utils.hexOrBuffer(utils.getAddress(transaction.from)),
         utils.hexOrBuffer(utils.hexlify(transaction.nonce, 'nonce'))
     ])).slice(12).toString('hex'));
 });
@@ -40,8 +40,8 @@ utils.defineProperty(Wallet, 'etherSymbol', '\uD835\uDF63');
 utils.defineProperty(Wallet, 'formatEther', units.formatEther);
 utils.defineProperty(Wallet, 'parseEther', units.parseEther);
 
-//utils.defineProperty(Wallet, 'getAddress', SigningKey.getAddress);
-//utils.defineProperty(Wallet, 'getIcapAddress', SigningKey.getIcapAddress);
+utils.defineProperty(Wallet, 'getAddress', utils.getAddress);
+utils.defineProperty(Wallet, 'getIcapAddress', utils.getIcapAddress);
 
 utils.defineProperty(Wallet, 'isCrowdsaleWallet', secretStorage.isCrowdsaleWallet);
 utils.defineProperty(Wallet, 'isValidWallet', secretStorage.isValidWallet);
