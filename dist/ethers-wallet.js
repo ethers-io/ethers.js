@@ -2,7 +2,6 @@
 (function (Buffer){
 'use strict';
 
-var rlp = require('rlp');
 var scrypt = require('scrypt-js');
 
 var Contract = require('./lib/contract.js');
@@ -26,13 +25,7 @@ utils.defineProperty(exportUtils, 'Buffer', Buffer);
 utils.defineProperty(exportUtils, 'sha3', utils.sha3);
 utils.defineProperty(exportUtils, 'sha256', utils.sha256);
 
-// http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
-utils.defineProperty(exportUtils, 'getContractAddress', function(transaction) {
-    return utils.getAddress('0x' + utils.sha3(rlp.encode([
-        utils.hexOrBuffer(utils.getAddress(transaction.from)),
-        utils.hexOrBuffer(utils.hexlify(transaction.nonce, 'nonce'))
-    ])).slice(12).toString('hex'));
-});
+utils.defineProperty(exportUtils, 'getContractAddress', utils.getContractAddress);
 
 module.exports = Wallet;
 
@@ -105,7 +98,7 @@ utils.defineProperty(Wallet, 'randomish', new Randomish());
 module.exports = Wallet;
 
 }).call(this,require("buffer").Buffer)
-},{"./lib/contract.js":4,"./lib/providers.js":5,"./lib/randomish.js":6,"./lib/secret-storage.js":7,"./lib/signing-key.js":8,"./lib/units.js":9,"./lib/utils.js":10,"./lib/wallet.js":11,"buffer":41,"rlp":85,"scrypt-js":86}],2:[function(require,module,exports){
+},{"./lib/contract.js":4,"./lib/providers.js":5,"./lib/randomish.js":6,"./lib/secret-storage.js":7,"./lib/signing-key.js":8,"./lib/units.js":9,"./lib/utils.js":10,"./lib/wallet.js":11,"buffer":41,"scrypt-js":86}],2:[function(require,module,exports){
 (function (global,Buffer){
 'use strict';
 
@@ -1698,6 +1691,8 @@ module.exports = {
 (function (Buffer){
 'use strict';
 
+var rlp = require('rlp');
+
 var BN = require('../node_modules/elliptic/node_modules/bn.js/lib/bn.js');
 var hash = require('../node_modules/elliptic/node_modules/hash.js/lib/hash.js');
 
@@ -2010,6 +2005,14 @@ function getIcapAddress(address) {
     return 'XE' + ibanChecksum('XE00' + base36) + base36;
 }
 
+// http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
+function getContractAddress(transaction) {
+    return getAddress('0x' + sha3(rlp.encode([
+        hexOrBuffer(getAddress(transaction.from)),
+        hexOrBuffer(hexlify(transaction.nonce, 'nonce'))
+    ])).slice(12).toString('hex'));
+}
+
 function cloneObject(object) {
     var clone = {};
     for (var key in object) { clone[key] = object[key]; }
@@ -2075,6 +2078,8 @@ module.exports = {
     getAddress: getAddress,
     getIcapAddress: getIcapAddress,
 
+    getContractAddress: getContractAddress,
+
     cloneObject: cloneObject,
 
     bnToBuffer: bnToBuffer,
@@ -2088,7 +2093,7 @@ module.exports = {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"../node_modules/elliptic/node_modules/bn.js/lib/bn.js":29,"../node_modules/elliptic/node_modules/hash.js/lib/hash.js":31,"buffer":41}],11:[function(require,module,exports){
+},{"../node_modules/elliptic/node_modules/bn.js/lib/bn.js":29,"../node_modules/elliptic/node_modules/hash.js/lib/hash.js":31,"buffer":41,"rlp":85}],11:[function(require,module,exports){
 (function (global,Buffer){
 'use strict';
 
