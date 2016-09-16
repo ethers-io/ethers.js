@@ -1582,6 +1582,7 @@ var utils = require('./utils.js');
 var secp256k1 = new (elliptic.ec)('secp256k1');
 
 
+
 function SigningKey(privateKey) {
     if (!(this instanceof SigningKey)) { throw new Error('missing new'); }
 
@@ -1603,6 +1604,11 @@ function SigningKey(privateKey) {
     });
 }
 
+utils.defineProperty(SigningKey, 'recover', function(digest, r, s, recoveryParam) {
+    var publicKey = secp256k1.recoverPubKey(digest, {r: r, s: s}, recoveryParam);
+    publicKey = (new Buffer(publicKey.encode('hex', false), 'hex')).slice(1);
+    return utils.getAddress(utils.sha3(publicKey).slice(12).toString('hex'));
+});
 
 module.exports = SigningKey;
 
@@ -2207,6 +2213,28 @@ function Wallet(privateKey, provider) {
         return ('0x' + rlp.encode(raw).toString('hex'));
     });
 }
+
+utils.defineProperty(Wallet, 'parseTransaction', function(rawTransaction) {
+    rawTransaction = utils.hexOrBuffer(rawTransaction, 'rawTransaction');
+    var signedTransaction = rlp.decode(rawTransaction);
+
+    var raw = [];
+
+    var transaction = {};
+    transactionFields.forEach(function(fieldInfo, index) {
+        transaction[fieldInfo.name] = signedTransaction[index];
+        raw.push(signedTransaction[index]);
+    });
+
+    transaction.v = signedTransaction[6];
+    transaction.r = signedTransaction[7];
+    transaction.s = signedTransaction[8];
+
+    var digest = utils.sha3(rlp.encode(raw));
+    transaction.from = SigningKey.recover(digest, transaction.r, transaction.s, transaction.v[0] - 27);
+
+    return transaction;
+});
 
 utils.defineProperty(Wallet.prototype, 'getBalance', function(blockNumber) {
     var provider = this._provider;

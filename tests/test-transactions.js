@@ -17,9 +17,12 @@ module.exports = function(test) {
         rawTransaction.sign(privateKey);
         var ethereumLib = '0x' + rawTransaction.serialize().toString('hex');
 
-        var ethers = (new Wallet(privateKey)).sign(transaction);
+        var wallet = new Wallet(privateKey);
+        var ethers = wallet.sign(transaction);
 
         test.equal(ethers, ethereumLib, 'invalid transaction');
+
+        test.equal(wallet.address, Wallet.parseTransaction(ethers).from, 'invalid parseTransaction');
     }
 
     for (var i = 0; i < 10000; i++) {
