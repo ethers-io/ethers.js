@@ -1,6 +1,6 @@
 {
   "name": "ethers-wallet",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Ethereum wallet library.",
   "main": "index.js",
   "scripts": {

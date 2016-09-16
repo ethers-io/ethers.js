@@ -22,6 +22,7 @@ module.exports = function(test) {
 
         test.equal(ethers, ethereumLib, 'invalid transaction');
 
+        // @TODO: More testing on parsed transaction.
         test.equal(wallet.address, Wallet.parseTransaction(ethers).from, 'invalid parseTransaction');
     }
 
