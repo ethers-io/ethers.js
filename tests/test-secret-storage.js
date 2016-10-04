@@ -3,7 +3,28 @@ var Wallet = require('../index.js');
 
 var fs = require('fs');
 
+
 module.exports = function(test) {
+
+    function equals(a, b) {
+        if (typeof(a) !== typeof(b)) { return false; }
+        if (Array.isArray(a)) {
+            if (!Array.isArray(b)) { return false; }
+            for (var i = 0; i < a.length; i++) {
+                if (a[i] !== b[i]) { return false; }
+            }
+        } else if (typeof(a) === 'object') {
+            if (!equals(Object.keys(a), Object.keys(b))) {
+                return false;
+            }
+            for (var key in a) {
+                if (!equals(a[key], b[key])) { return false; }
+            }
+        } else {
+            return (a === b);
+        }
+        return true;
+    }
 
     var crowdsale = [
         {
@@ -87,7 +108,8 @@ module.exports = function(test) {
             uuid: '0x01234567890123456789012345678901',
         }).then(function(json) {
             var jsonWallet = fs.readFileSync('./test-wallets/wallet-test-life.json').toString();
-            test.equal(json, jsonWallet, 'failed to encrypt wallet');
+            test.ok(equals(JSON.parse(json), JSON.parse(jsonWallet)), 'failed to encrypt wallet')
+            //test.equal(json, jsonWallet, 'failed to encrypt wallet');
             Wallet.decrypt(json, password).then(function(wallet) {
                 test.equal(wallet.privateKey, '0x' + privateKey.toString('hex'), 'decryption failed');
                 resolve();
