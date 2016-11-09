@@ -1,6 +1,8 @@
 'use strict';
 var Wallet = require('../index.js');
 
+var provider = new Wallet.providers.EtherscanProvider({testnet: true});
+
 module.exports = function(test) {
     var contractAddress = '0xdfaf84077cF4bCECA4F79d167F47041Ed3006D5b';
     var contractABI = {
@@ -9,7 +11,7 @@ module.exports = function(test) {
                 "constant":true,
                 "inputs":[],
                 "name":"getValue",
-                "outputs":[{"name":"","type":"string"}],
+                "outputs":[{"name":"value","type":"string"}],
                 "type":"function"
             }, {
                 "constant":false,
@@ -46,13 +48,14 @@ module.exports = function(test) {
     var privateKey = new Buffer(32);
     privateKey.fill(0x42);
 
-    var wallet = new Wallet(privateKey, 'http://localhost:8545');
+    var wallet = new Wallet(privateKey, provider);
     var contract = wallet.getContract(contractAddress, contractABI.SimpleStorage);
 
     function testCall() {
         return new Promise(function(resolve, reject) {
             contract.getValue().then(function(result) {
-                test.equal(result, 'foobar', 'failed to call getVaue');
+                test.equal(result[0], 'test888888', 'failed to call getVaue (positional)');
+                test.equal(result.value, 'test888888', 'failed to call getVaue (keyword)');
                 resolve(result);
             }, function(error) {
                 test.ok(false, 'failed to call getValue (is parity running on this host?)');
@@ -64,7 +67,7 @@ module.exports = function(test) {
     function testEstimate() {
         return new Promise(function(resolve, reject) {
             contract.estimate.setValue('foo').then(function(result) {
-                test.equal(result.toString(16), '8b04', 'failed to estimate setVaue');
+                test.equal(result.toString(16), '8f5a', 'failed to estimate setVaue');
                 resolve(result);
             }, function(error) {
                 test.ok(false, 'failed to call getValue (is parity running on this host?)');
