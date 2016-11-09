@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "aes-js": "2.0.0",
-    "elliptic": "6.3.1",
+    "elliptic": "6.3.2",
     "inherits": "2.0.1",
     "pbkdf2": "3.0.4",
     "rlp": "2.0.0",
