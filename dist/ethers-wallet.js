@@ -1728,8 +1728,8 @@ module.exports = {
 
 var rlp = require('rlp');
 
-var BN = require('../node_modules/elliptic/node_modules/bn.js/lib/bn.js');
-var hash = require('../node_modules/elliptic/node_modules/hash.js/lib/hash.js');
+var BN = require('elliptic/node_modules/bn.js/lib/bn.js');
+var hash = require('elliptic/node_modules/hash.js/lib/hash.js');
 
 
 // See: https://github.com/emn178/js-sha3
@@ -2128,7 +2128,7 @@ module.exports = {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"../node_modules/elliptic/node_modules/bn.js/lib/bn.js":29,"../node_modules/elliptic/node_modules/hash.js/lib/hash.js":31,"buffer":40,"rlp":84}],11:[function(require,module,exports){
+},{"buffer":40,"elliptic/node_modules/bn.js/lib/bn.js":29,"elliptic/node_modules/hash.js/lib/hash.js":31,"rlp":84}],11:[function(require,module,exports){
 (function (global,Buffer){
 'use strict';
 
