@@ -162,13 +162,19 @@ module.exports = function(test) {
         if (!normalizedValues) { normalizedValues = values; }
 
         // First make sure we agree with ourself
-        var ethersData = Wallet._Contract.Interface.encodeParams(types, values);
-        var ethersValues = Wallet._Contract.Interface.decodeParams(types, ethersData);
+        var ethersData = Wallet.Contract.Interface.encodeParams(types, values);
+        var ethersValues = Wallet.Contract.Interface.decodeParams(types, ethersData);
 
-        var okSelf = recursiveEqual(normalizedValues, ethersValues);
+        // Convert the result object into an Array
+        var ethersValuesArray = [];
+        for (var i = 0; ethersValues[i] !== undefined; i++) {
+            ethersValuesArray.push(ethersValues[i]);
+        }
+
+        var okSelf = recursiveEqual(normalizedValues, ethersValuesArray);
         test.ok(okSelf, "self encode/decode failed");
         if (!okSelf) {
-            console.log('okSelf', okSelf, types, values, normalizedValues, ethersValues);
+            console.log('okSelf', okSelf, types, values, normalizedValues, ethersValues, ethersValuesArray);
         }
 
         checkPromises.push(new Promise(function(resolve, reject) {
@@ -180,7 +186,7 @@ module.exports = function(test) {
 
             try {
                 var contract = createContractOutput(types, values);
-                var contractInterface = new Wallet._Contract.Interface(JSON.parse(contract.interface));
+                var contractInterface = new Wallet.Contract.Interface(JSON.parse(contract.interface));
                 var call = contractInterface.test.apply(contractInterface);
                 var vm = new ethereumVm();
                 vm.runCode({

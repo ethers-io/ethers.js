@@ -90,6 +90,8 @@ utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, p
 
 utils.defineProperty(Wallet, 'providers', providers);
 
+utils.defineProperty(Wallet, 'Contract', Contract);
+utils.defineProperty(Wallet, 'Interface', Contract.Interface);
 
 utils.defineProperty(Wallet, 'randomish', new Randomish());
 
