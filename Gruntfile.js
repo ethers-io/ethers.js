@@ -3,19 +3,27 @@ module.exports = function(grunt) {
     browserify: {
       dist: {
         files: {
-          'dist/ethers-wallet.js': [ 'index.js' ]
+            'dist/ethers.js': './index.js',
+            'dist/ethers-contracts.js': './contracts/index.js',
+            'dist/ethers-hdnode.js': './hdnode/index.js',
+            'dist/ethers-utils.js': './utils/index.js',
+            'dist/ethers-wallet.js': './wallet/index.js',
         },
         options: {
           browserifyOptions: {
-            standalone: 'Wallet'
+            standalone: 'ethers'
           }
-        }
-      }
+        },
+      },
     },
     uglify: {
       dist: {
         files: {
-          'dist/ethers-wallet.min.js' : [ 'dist/ethers-wallet.js' ]
+          'dist/ethers.min.js' : [ './dist/ethers.js' ],
+          'dist/ethers-contracts.min.js' : [ './dist/ethers-contracts.js' ],
+          'dist/ethers-hdnode.min.js' : [ './dist/ethers-hdnode.js' ],
+          'dist/ethers-utils.min.js' : [ './dist/ethers-utils.js' ],
+          'dist/ethers-wallet.min.js' : [ './dist/ethers-wallet.js' ],
         }
       }
     }

@@ -1,7 +1,9 @@
 'use strict';
-var Wallet = require('../index.js');
 
-var provider = new Wallet.providers.EtherscanProvider({testnet: true});
+var contracts = require('../contracts/index.js');
+//var providers = require('../providers/index.js');
+
+var provider = new providers.EtherscanProvider({testnet: true});
 
 module.exports = function(test) {
     var contractAddress = '0xdfaf84077cF4bCECA4F79d167F47041Ed3006D5b';
@@ -31,7 +33,7 @@ module.exports = function(test) {
         ]
     }
 
-    var contractInterface = new Wallet._Contract.Interface(contractABI.SimpleStorage);
+    var contractInterface = new contracts.Interface(contractABI.SimpleStorage);
     var getValue = contractInterface.getValue()
     var setValue = contractInterface.setValue("foobar");
     var valueChanged = contractInterface.valueChanged()

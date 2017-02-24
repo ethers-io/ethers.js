@@ -8,21 +8,8 @@
     "version": "grunt dist"
   },
   "dependencies": {
-    "aes-js": "2.0.0",
-    "bn.js": "^4.4.0",
-    "elliptic": "6.3.2",
-    "hash.js": "1.0.3",
-    "inherits": "2.0.1",
-    "pbkdf2": "3.0.4",
-    "rlp": "2.0.0",
-    "setimmediate": "1.0.4",
-    "scrypt-js": "2.0.3",
-    "uuid": "2.0.1",
-    "xmlhttprequest": "1.8.0"
   },
   "browser": {
-    "./lib/random-bytes.js": "./lib/browser-random-bytes.js",
-    "xmlhttprequest": "./lib/browser-xmlhttprequest.js"
   },
   "devDependencies": {
     "ethereumjs-abi": "0.6.2",

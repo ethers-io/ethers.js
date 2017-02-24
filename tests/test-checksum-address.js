@@ -1,5 +1,7 @@
 'use strict';
-var Wallet = require('../index.js');
+
+//var Wallet = require('../index.js');
+var ethersAddress = require('../utils/address.js');
 
 var ethereumUtil = require('ethereumjs-util');
 
@@ -9,7 +11,7 @@ var utils = require('./utils.js');
 module.exports = function(test) {
     function testAddress(address) {
         var official = ethereumUtil.toChecksumAddress(address);
-        var ethers = Wallet.getAddress(address);
+        var ethers = ethersAddress.getAddress(address);
         test.equal(ethers, official, 'wrong address');
     }
 

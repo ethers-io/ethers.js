@@ -1,7 +1,9 @@
 'use strict';
-var Wallet = require('../index.js');
 
+var ethersWallet = require('../wallet/index.js');
 var ethereumTx = require('ethereumjs-tx');
+
+var convert = require('../utils/convert.js');
 
 var utils = require('./utils.js');
 
@@ -13,17 +15,34 @@ function randomHexString(lowerRandomInterval, upperOpenInterval) {
 module.exports = function(test) {
 
     function testTransaction(privateKey, transaction, signature) {
+        //console.log('===================');
+        //console.log(transaction);
         var rawTransaction = new ethereumTx(transaction);
         rawTransaction.sign(privateKey);
         var ethereumLib = '0x' + rawTransaction.serialize().toString('hex');
 
-        var wallet = new Wallet(privateKey);
+        var wallet = new ethersWallet('0x' + privateKey.toString('hex'));
         var ethers = wallet.sign(transaction);
-
         test.equal(ethers, ethereumLib, 'invalid transaction');
 
-        // @TODO: More testing on parsed transaction.
-        test.equal(wallet.address, Wallet.parseTransaction(ethers).from, 'invalid parseTransaction');
+        var parsedTransaction = ethersWallet.parseTransaction(ethers);
+        if (wallet.address != parsedTransaction.from) {
+            console.log('FOO', wallet.address, parsedTransaction.from);
+            console.log('RAW', privateKey, transaction, signature, rawTransaction.raw);
+        }
+        test.equal(wallet.address, parsedTransaction.from, 'invalid parseTransaction - from');
+
+        ['to', 'data', 'gasLimit', 'gasPrice', 'value', 'nonce'].forEach(function(key) {
+            var a = convert.hexlify(transaction[key] || []).toLowerCase();
+            var b = convert.hexlify(parsedTransaction[key] || []).toLowerCase();
+
+            if (key !== 'to') {
+                a = convert.hexlify(convert.stripZeros(a));
+                b = convert.hexlify(convert.stripZeros(b));
+            }
+
+            test.equal(a, b, 'invalid parseTransaction - ' + key);
+        });
     }
 
     for (var i = 0; i < 10000; i++) {
@@ -33,7 +52,7 @@ module.exports = function(test) {
             gasLimit: randomHexString(0, 10),
             gasPrice: randomHexString(0, 10),
             value: randomHexString(0, 10),
-            nonce: randomHexString(0, 10),
+            nonce: randomHexString(0, 3),
         };
 
         testTransaction(utils.randomBuffer(32), transaction);

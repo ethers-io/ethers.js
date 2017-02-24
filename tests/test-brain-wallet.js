@@ -1,9 +1,10 @@
 'use strict';
-var Wallet = require('../index.js');
+
+var Wallet = require('../wallet/index.js');
 
 module.exports = function(test) {
-    var username = new Wallet.utils.Buffer('ricmoo', 'utf8');
-    var password = new Wallet.utils.Buffer('password', 'utf8');
+    var username = 'ricmoo';
+    var password = 'password';
     Wallet.summonBrainWallet(username, password).then(function(wallet) {
         test.equal(wallet.address, '0xbed9d2E41BdD066f702C4bDB86eB3A3740101acC', 'wrong wallet generated');
         test.done();

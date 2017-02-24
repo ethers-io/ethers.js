@@ -1,21 +1,13 @@
-var utils = require('./utils.js');
+var bigNumberify = require('./bignumber.js').bigNumberify;
 
-var zero = new utils.BN(0);
-var negative1 = new utils.BN(-1);
-var tenPower18 = new utils.BN('1000000000000000000');
+var zero = new bigNumberify(0);
+var negative1 = new bigNumberify(-1);
+var tenPower18 = new bigNumberify('1000000000000000000');
 
 function formatEther(wei, options) {
-
-    if (typeof(wei) === 'number') {
-        // @TODO: Warn if truncation will occur?
-        wei = new utils.BN(wei);
-    } else if (utils.isHexString(wei)) {
-        wei = new utils.BN(wei.substring(2), 16);
-    }
+    wei = bigNumberify(wei);
 
     if (!options) { options = {}; }
-
-    if (!(wei instanceof utils.BN)) { throw new Error('invalid wei'); }
 
     var negative = wei.lt(zero);
     if (negative) { wei = wei.mul(negative1); }
@@ -41,9 +33,11 @@ function formatEther(wei, options) {
 }
 
 function parseEther(ether) {
-    if (typeof(ether) !== 'string' || !ether.match(/^-?[0-9.]+$/)) {
+    if (typeof(ether) !== 'string' || !ether.match(/^-?[0-9.,]+$/)) {
         throw new Error('invalid value');
     }
+
+    ether = ether.replace(/,/g,'');
 
     // Is it negative?
     var negative = (ether.substring(0, 1) === '-');
@@ -62,8 +56,8 @@ function parseEther(ether) {
 
     while (fraction.length < 18) { fraction += '0'; }
 
-    whole = new utils.BN(whole);
-    fraction = new utils.BN(fraction);
+    whole = bigNumberify(whole);
+    fraction = bigNumberify(fraction);
 
     var wei = (whole.mul(tenPower18)).add(fraction);
 

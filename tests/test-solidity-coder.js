@@ -1,11 +1,17 @@
 'use strict';
-var Wallet = require('../index.js');
+
+//var Wallet = require('../index.js');
+var contracts = require('../contracts/index.js');
+
+var bigNumber = require('../utils/bignumber.js');
+var convert = require('../utils/convert.js');
 
 var solc = require('solc');
 var ethereumVm = require('ethereumjs-vm');
 var ethereumUtil = require('ethereumjs-util');
 
-var BN = Wallet.utils.BN;
+var BN = require('bn.js');
+
 var utils = require('./utils.js');
 var random = utils.random;
 
@@ -122,35 +128,42 @@ module.exports = function(test) {
     }
 
     function recursiveEqual(a, b) {
-        function fail() {
-            return false;
-        }
-
-        if (typeof(a) === 'number') { a = new BN(a); }
-        if (typeof(b) === 'number') { b = new BN(b); }
-        if (utils.isHexString(a)) { a = utils.hexOrBuffer(a); }
-        if (utils.isHexString(b)) { b = utils.hexOrBuffer(b); }
-
-        if (a.eq) {
-            if (!b.eq || !a.eq(b)) { return fail(); }
+        if (typeof(b) === 'boolean') {
+            if (typeof(a) !== 'boolean' || a !== b) { return false; }
             return true;
         }
 
-        if (Buffer.isBuffer(a)) {
-            if (!Buffer.isBuffer(b) || Buffer.compare(a, b) !== 0) { return fail(); }
-            return true;
-        }
-
-        if (Array.isArray(a)) {
-            if (!Array.isArray(b) || a.length !== b.length) { return fail(); }
-            for (var i = 0; i < a.length; i++) {
-                if (!recursiveEqual(a[i], b[i])) { return fail(); }
+        if (typeof(b) === 'string') {
+            if (typeof(a) !== 'string' || a !== b) {
+                console.log('String', new Buffer(a), new Buffer(b));
+                return false;
             }
             return true;
         }
 
-        if (a !== b) { return fail(); }
-        return true;
+        if (b.buffer) {
+            if (convert.hexlify(a) !== convert.hexlify(b)) { return false; }
+            return true;
+        }
+
+        if (b._bn) {
+            return b.eq(bigNumber.bigNumberify(a));
+        }
+
+        //if (typeof(a) === 'number' || BN.isBN(a)) { a = bigNumber.bigNumberify(a); }
+        //if (typeof(b) === 'number' || BN.isBN(b)) { b = bigNumber.bigNumberify(b); }
+        //if (typeof(a) === 'string' && !convert.isHexString(a)) { a = '0x' + (new Buffer(a)).toString('hex'); }
+        //if (typeof(b) === 'string' && !convert.isHexString(b)) { b = '0x' + (new Buffer(b)).toString('hex'); }
+
+        if (Array.isArray(a)) {
+            if (!Array.isArray(b) || a.length !== b.length) { return fail(); }
+            for (var i = 0; i < a.length; i++) {
+                if (!recursiveEqual(a[i], b[i])) { return false; }
+            }
+            return true;
+        }
+
+        return false;
     }
 
 
@@ -162,8 +175,8 @@ module.exports = function(test) {
         if (!normalizedValues) { normalizedValues = values; }
 
         // First make sure we agree with ourself
-        var ethersData = Wallet.Contract.Interface.encodeParams(types, values);
-        var ethersValues = Wallet.Contract.Interface.decodeParams(types, ethersData);
+        var ethersData = contracts.Interface.encodeParams(types, values);
+        var ethersValues = contracts.Interface.decodeParams(types, ethersData);
 
         // Convert the result object into an Array
         var ethersValuesArray = [];
@@ -174,7 +187,8 @@ module.exports = function(test) {
         var okSelf = recursiveEqual(normalizedValues, ethersValuesArray);
         test.ok(okSelf, "self encode/decode failed");
         if (!okSelf) {
-            console.log('okSelf', okSelf, types, values, normalizedValues, ethersValues, ethersValuesArray);
+            console.log('okSelf', types, values, normalizedValues, ethersValues, ethersValuesArray);
+            console.log('=================');
         }
 
         checkPromises.push(new Promise(function(resolve, reject) {
@@ -186,7 +200,7 @@ module.exports = function(test) {
 
             try {
                 var contract = createContractOutput(types, values);
-                var contractInterface = new Wallet.Contract.Interface(JSON.parse(contract.interface));
+                var contractInterface = new contracts.Interface(JSON.parse(contract.interface));
                 var call = contractInterface.test.apply(contractInterface);
                 var vm = new ethereumVm();
                 vm.runCode({

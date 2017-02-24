@@ -1,6 +1,29 @@
 'use strict';
 
-var utils = require('./utils.js');
+
+var utils = (function() {
+    var convert = require('ethers-utils/convert.js');
+    var utf8 = require('ethers-utils/utf8.js');
+
+    return {
+        defineProperty: require('ethers-utils/properties.js').defineProperty,
+
+        arrayify: convert.arrayify,
+        padZeros: convert.padZeros,
+
+        bigNumberify: require('ethers-utils/bignumber.js').bigNumberify,
+
+        concat: convert.concat,
+
+        toUtf8Bytes: utf8.toUtf8Bytes,
+        toUtf8String: utf8.toUtf8String,
+
+        hexlify: convert.hexlify,
+        isHexString: convert.isHexString,
+
+        keccak256: require('ethers-utils/keccak256.js'),
+    };
+})();
 
 // Creates property that is immutable
 function defineFrozen(object, name, value) {
@@ -10,7 +33,126 @@ function defineFrozen(object, name, value) {
         get: function() { return JSON.parse(frozen); }
     });
 }
+/*
+function concat(arrays) {
+    var length = 0;
+    for (var i = 0; i < arrays.length; i++) { length += arrays[i].length; }
 
+    var result = new Uint8Array(length);
+    var offset = 0;
+    for (var i = 0; i < arrays.length; i++) {
+        result.set(arrays[i], offset);
+        offset += arrays[i].length;
+    }
+
+    return result;
+}
+*/
+/*
+// http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+function utf8ToBytes(str) {
+    var result = [];
+    var offset = 0;
+    for (var i = 0; i < str.length; i++) {
+        var c = str.charCodeAt(i);
+        if (c < 128) {
+            result[offset++] = c;
+        } else if (c < 2048) {
+            result[offset++] = (c >> 6) | 192;
+            result[offset++] = (c & 63) | 128;
+        } else if (((c & 0xFC00) == 0xD800) && (i + 1) < str.length && ((str.charCodeAt(i + 1) & 0xFC00) == 0xDC00)) {
+            // Surrogate Pair
+            c = 0x10000 + ((c & 0x03FF) << 10) + (str.charCodeAt(++i) & 0x03FF);
+            result[offset++] = (c >> 18) | 240;
+            result[offset++] = ((c >> 12) & 63) | 128;
+            result[offset++] = ((c >> 6) & 63) | 128;
+            result[offset++] = (c & 63) | 128;
+        } else {
+            result[offset++] = (c >> 12) | 224;
+            result[offset++] = ((c >> 6) & 63) | 128;
+            result[offset++] = (c & 63) | 128;
+        }
+    }
+
+    return result;
+};
+
+
+// http://stackoverflow.com/questions/13356493/decode-utf-8-with-javascript#13691499
+function bytesToUtf8(bytes) {
+    var result = '';
+    var i = 0;
+
+    // Invalid bytes are ignored
+    while(i < bytes.length) {
+        var c = bytes[i++];
+        if (c >> 7 == 0) {
+            // 0xxx xxxx
+            result += String.fromCharCode(c);
+            continue;
+        }
+
+        // Invalid starting byte
+        if (c >> 6 == 0x02) { continue; }
+
+        // Multibyte; how many bytes left for thus character?
+        var extraLength = null;
+        if (c >> 5 == 0x06) {
+            extraLength = 1;
+        } else if (c >> 4 == 0x0e) {
+            extraLength = 2;
+        } else if (c >> 3 == 0x1e) {
+            extraLength = 3;
+        } else if (c >> 2 == 0x3e) {
+            extraLength = 4;
+        } else if (c >> 1 == 0x7e) {
+            extraLength = 5;
+        } else {
+            continue;
+        }
+
+        // Do we have enough bytes in our data?
+        if (i + extraLength > bytes.length) {
+
+            // If there is an invalid unprocessed byte, try to continue
+            for (; i < bytes.length; i++) {
+                if (bytes[i] >> 6 != 0x02) { break; }
+            }
+            if (i != bytes.length) continue;
+
+            // All leftover bytes are valid.
+            return result;
+        }
+
+        // Remove the UTF-8 prefix from the char (res)
+        var res = c & ((1 << (8 - extraLength - 1)) - 1);
+
+        var count;
+        for (count = 0; count < extraLength; count++) {
+            var nextChar = bytes[i++];
+
+            // Is the char valid multibyte part?
+            if (nextChar >> 6 != 0x02) {break;};
+            res = (res << 6) | (nextChar & 0x3f);
+        }
+
+        if (count != extraLength) {
+            i--;
+            continue;
+        }
+
+        if (res <= 0xffff) {
+            result += String.fromCharCode(res);
+            continue;
+        }
+
+        res -= 0x10000;
+        result += String.fromCharCode(((res >> 10) & 0x3ff) + 0xd800, (res & 0x3ff) + 0xdc00);
+    }
+
+    return result;
+}
+*/
 // getKeys([{a: 1, b: 2}, {a: 3, b: 4}], 'a') => [1, 3]
 function getKeys(params, key, allowEmpty) {
     if (!Array.isArray(params)) { throw new Error('invalid params'); }
@@ -30,38 +172,19 @@ function getKeys(params, key, allowEmpty) {
     return result;
 }
 
-// Convert the value from a Number to a BN (if necessary)
-function numberOrBN(value) {
-    if (!value.eq) {
-        if (typeof(value) !== 'number') {
-            throw new Error('invalid number');
-        }
-        value = new utils.BN(value);
-    }
-    return value;
-}
-
-function zpad(buffer, length) {
-    var zero = new Buffer([0]);
-    while (buffer.length < length) {
-        buffer = Buffer.concat([zero, buffer]);
-    }
-    return buffer;
-}
-
 function coderNumber(size, signed) {
     return {
         encode: function(value) {
-            value = numberOrBN(value)
-            value = value.toTwos(size * 8).maskn(size * 8);
+            value = utils.bigNumberify(value).toTwos(size * 8).maskn(size * 8);
+            //value = value.toTwos(size * 8).maskn(size * 8);
             if (signed) {
                 value = value.fromTwos(size * 8).toTwos(256);
             }
-            return value.toArrayLike(Buffer, 'be', 32);
+            return utils.padZeros(utils.arrayify(value), 32);
         },
         decode: function(data, offset) {
             var junkLength = 32 - size;
-            var value = new utils.BN(data.slice(offset + junkLength, offset + 32));
+            var value = utils.bigNumberify(data.slice(offset + junkLength, offset + 32));
             if (signed) {
                 value = value.fromTwos(size * 8);
             } else {
@@ -92,12 +215,11 @@ var coderBoolean = {
 function coderFixedBytes(length) {
     return {
         encode: function(value) {
-            value = utils.hexOrBuffer(value);
+            value = utils.arrayify(value);
             if (length === 32) { return value; }
 
-            var result = new Buffer(32);
-            result.fill(0);
-            value.copy(result);
+            var result = new Uint8Array(32);
+            result.set(value);
             return result;
         },
         decode: function(data, offset) {
@@ -105,7 +227,7 @@ function coderFixedBytes(length) {
 
             return {
                 consumed: 32,
-                value: '0x' + data.slice(offset, offset + length).toString('hex')
+                value: data.slice(offset, offset + length)
             }
         }
     };
@@ -113,28 +235,26 @@ function coderFixedBytes(length) {
 
 var coderAddress = {
     encode: function(value) {
-        if (!utils.isHexString(value, 20)) { throw new Error('invalid address'); }
-        value = utils.hexOrBuffer(value);
-        var result = new Buffer(32);
-        result.fill(0);
-        value.copy(result, 12);
+        if (!utils.isHexString(value) && value.length === 42) { throw new Error('invalid address'); }
+        value = utils.arrayify(value);
+        var result = new Uint8Array(32);
+        result.set(value, 12);
         return result;
     },
     decode: function(data, offset) {
         if (data.length < offset + 32) { throw new Error('invalid address'); }
         return {
             consumed: 32,
-            value: '0x' + data.slice(offset + 12, offset + 32).toString('hex')
+            value: utils.hexlify(data.slice(offset + 12, offset + 32))
         }
     }
 }
 
 function _encodeDynamicBytes(value) {
     var dataLength = parseInt(32 * Math.ceil(value.length / 32));
-    var padding = new Buffer(dataLength - value.length);
-    padding.fill(0);
+    var padding = new Uint8Array(dataLength - value.length);
 
-    return Buffer.concat([
+    return utils.concat([
         uint256Coder.encode(value.length),
         value,
         padding
@@ -156,11 +276,11 @@ function _decodeDynamicBytes(data, offset) {
 
 var coderDynamicBytes = {
     encode: function(value) {
-        return _encodeDynamicBytes(utils.hexOrBuffer(value));
+        return _encodeDynamicBytes(utils.arrayify(value));
     },
     decode: function(data, offset) {
         var result = _decodeDynamicBytes(data, offset);
-        result.value = '0x' + result.value.toString('hex');
+        result.value = result.value;
         return result;
     },
     dynamic: true
@@ -168,11 +288,11 @@ var coderDynamicBytes = {
 
 var coderString = {
     encode: function(value) {
-        return _encodeDynamicBytes(new Buffer(value, 'utf8'));
+        return _encodeDynamicBytes(utils.toUtf8Bytes(value));
     },
     decode: function(data, offset) {
         var result = _decodeDynamicBytes(data, offset);
-        result.value = result.value.toString('utf8');
+        result.value = utils.toUtf8String(result.value);
         return result;
     },
     dynamic: true
@@ -183,7 +303,7 @@ function coderArray(coder, length) {
         encode: function(value) {
             if (!Array.isArray(value)) { throw new Error('invalid array'); }
 
-            var result = new Buffer(0);
+            var result = new Uint8Array(0);
             if (length === -1) {
                 length = value.length;
                 result = uint256Coder.encode(length);
@@ -192,10 +312,7 @@ function coderArray(coder, length) {
             if (length !== value.length) { throw new Error('size mismatch'); }
 
             value.forEach(function(value) {
-                result = Buffer.concat([
-                    result,
-                    coder.encode(value)
-                ]);
+                result = utils.concat([result, coder.encode(value)]);
             });
 
             return result;
@@ -354,7 +471,7 @@ function Interface(abi) {
                             throw new Error('too many parameters');
                         }
 
-                        signature = '0x' + utils.sha3(signature).slice(0, 4).toString('hex');
+                        signature = utils.keccak256(utils.toUtf8Bytes(signature)).substring(0, 10);
 
                         result.data = signature + Interface.encodeParams(inputTypes, params).substring(2);
                         if (method.constant) {
@@ -362,7 +479,7 @@ function Interface(abi) {
                                 return Interface.decodeParams(
                                     outputNames,
                                     outputTypes,
-                                    utils.hexOrBuffer(data)
+                                    utils.arrayify(data)
                                 );
                             };
                             return populateDescription(new CallDescription(), result);
@@ -389,13 +506,13 @@ function Interface(abi) {
                             inputs: method.inputs,
                             name: method.name,
                             signature: signature,
-                            topics: ['0x' + utils.sha3(signature).toString('hex')],
+                            topics: [utils.keccak256(utils.toUtf8Bytes(signature))],
                         };
                         result.parse = function(data) {
                             return Interface.decodeParams(
                                 inputNames,
                                 inputTypes,
-                                utils.hexOrBuffer(data)
+                                utils.arrayify(data)
                             );
                         };
                         return populateDescription(new EventDescription(), result);
@@ -451,23 +568,26 @@ utils.defineProperty(Interface, 'encodeParams', function(types, values) {
     });
 
     var offset = 0, dynamicOffset = staticSize;
-    var data = new Buffer(staticSize + dynamicSize);
+    var data = new Uint8Array(staticSize + dynamicSize);
 
     parts.forEach(function(part, index) {
         if (part.dynamic) {
-            uint256Coder.encode(dynamicOffset).copy(data, offset);
+            //uint256Coder.encode(dynamicOffset).copy(data, offset);
+            data.set(uint256Coder.encode(dynamicOffset), offset);
             offset += 32;
 
-            part.value.copy(data, dynamicOffset);
+            //part.value.copy(data, dynamicOffset);  @TODO
+            data.set(part.value, dynamicOffset);
             dynamicOffset += alignSize(part.value.length);
         } else {
-            part.value.copy(data, offset);
+            //part.value.copy(data, offset);  @TODO
+            data.set(part.value, offset);
             offset += alignSize(part.value.length);
         }
     });
-
-    return '0x' + data.toString('hex');
+    return utils.hexlify(data);
 });
+
 
 function Result() {}
 
@@ -480,7 +600,7 @@ utils.defineProperty(Interface, 'decodeParams', function(names, types, data) {
         names = [];
     }
 
-    data = utils.hexOrBuffer(data);
+    data = utils.arrayify(data);
     var values = new Result();
 
     var offset = 0;
@@ -593,7 +713,7 @@ function Contract(wallet, contractAddress, contractInterface) {
 
                     if (estimateOnly) {
                         return new Promise(function(resolve, reject) {
-                            resolve(new utils.BN(0));
+                            resolve(new utils.bigNumberify(0));
                         });
                     }
 
@@ -670,13 +790,11 @@ function Contract(wallet, contractAddress, contractInterface) {
         Object.defineProperty(self, 'on' + call.name.toLowerCase(), {
             enumerable: true,
             get: function() {
-                //console.log('get');
                 var info = filters[call.name];
                 if (!info || !info[call.name]) { return null; }
                 return info.callback;
             },
             set: function(value) {
-                //console.log('set');
                 setupFilter(call, value);
             }
         });

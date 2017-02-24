@@ -1,5 +1,6 @@
 'use strict';
-var Wallet = require('../index.js');
+
+var ethersAddress = require('../utils/address.js');
 
 var ethereumUtil = require('ethereumjs-util');
 var iban = require('../node_modules/web3/lib/web3/iban.js');
@@ -10,12 +11,12 @@ module.exports = function(test) {
     function testAddress(address) {
         var officialIban = (iban.fromAddress(address))._iban;
 
-        var ethersAddress = Wallet.getAddress(officialIban);
+        var address = ethersAddress.getAddress(officialIban);
         var officialAddress = ethereumUtil.toChecksumAddress(address)
 
-        var ethersIban = Wallet.getIcapAddress(address);
+        var ethersIban = ethersAddress.getAddress(address, true);
 
-        test.equal(ethersAddress, officialAddress, 'wrong address');
+        test.equal(address, officialAddress, 'wrong address');
         test.equal(ethersIban, officialIban, 'wrong ICAP address');
     }
 

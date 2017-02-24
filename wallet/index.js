@@ -1,12 +1,11 @@
 'use strict';
 
-var rlp = require('rlp');
+var utils = require('ethers-utils');
 
-var Contract = require('./contract.js');
-var providers = require('./providers.js');
+var secretStorage = require('./secret-storage.js');
 var SigningKey = require('./signing-key.js');
 
-var utils = require('./utils.js');
+var scrypt = require('scrypt-js');
 
 // This ensures we inject a setImmediate into the global space, which
 // dramatically improves the performance of the scrypt PBKDF.
@@ -31,49 +30,33 @@ function Wallet(privateKey, provider) {
     }
     utils.defineProperty(this, 'privateKey', signingKey.privateKey);
 
+    // Provider
     Object.defineProperty(this, 'provider', {
         enumerable: true,
         get: function() { return provider; },
         set: function(value) {
-            if (value !== null && !providers.isProvider(value)) {
-                throw new Error('invalid provider');
-            }
             provider = value;
         }
     });
+    if (provider) { this.provider = provider; }
 
-    Object.defineProperty(this, '_provider', {
+    var defaultGasLimit = 3000000;
+    Object.defineProperty(this, 'defaultGasLimit', {
         enumerable: true,
-        get: function() {
-            if (!provider) { throw new Error('missing provider'); }
-            return provider;
-        },
-    });
-
-    if (provider !== null) {
-
-        // If no provider was provided, check for metamask or ilk
-        if (provider === undefined) {
-            if (global.web3 && global.web3.currentProvider && global.web3.currentProvider.sendAsync) {
-                this.provider = new providers.Web3Provider(global.web3.currentProvider);
-            }
-
-        // An Ethereum RPC node
-        } else if (typeof(provider) === 'string' && provider.match(/^https?:\/\//)) {
-            this.provider = new providers.HttpProvider(provider);
-
-        } else {
-            this.provider = provider;
+        get: function() { return provider; },
+        set: function(value) {
+            if (typeof(value) !== 'number') { throw new Error('invalid defaultGasLimit'); }
+            defaultGasLimit = value;
         }
-    }
+    });
 
     utils.defineProperty(this, 'address', signingKey.address);
 
     utils.defineProperty(this, 'sign', function(transaction) {
         var raw = [];
         transactionFields.forEach(function(fieldInfo) {
-            var value = transaction[fieldInfo.name] || (new Buffer(0));
-            value = utils.hexOrBuffer(utils.hexlify(value), fieldInfo.name);
+            var value = transaction[fieldInfo.name] || ([]);
+            value = utils.arrayify(utils.hexlify(value), fieldInfo.name);
 
             // Fixed-width field
             if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
@@ -94,27 +77,24 @@ function Wallet(privateKey, provider) {
                 }
             }
 
-            raw.push(value);
+            raw.push(utils.hexlify(value));
         });
 
-        var digest = utils.sha3(rlp.encode(raw));
+        var digest = utils.keccak256(utils.rlp.encode(raw));
 
         var signature = signingKey.signDigest(digest);
-        var s = signature.s;
-        var v = signature.recoveryParam;
 
-        raw.push(new Buffer([27 + v]));
-        raw.push(utils.bnToBuffer(signature.r));
-        raw.push(utils.bnToBuffer(s));
+        raw.push(utils.hexlify([27 + signature.recoveryParam]));
+        raw.push(signature.r);
+        raw.push(signature.s);
 
-        return ('0x' + rlp.encode(raw).toString('hex'));
+        return (utils.rlp.encode(raw));
     });
 }
 
 utils.defineProperty(Wallet, 'parseTransaction', function(rawTransaction) {
-    rawTransaction = utils.hexOrBuffer(rawTransaction, 'rawTransaction');
-    var signedTransaction = rlp.decode(rawTransaction);
-
+    rawTransaction = utils.hexlify(rawTransaction, 'rawTransaction');
+    var signedTransaction = utils.rlp.decode(rawTransaction);
     var raw = [];
 
     var transaction = {};
@@ -124,51 +104,56 @@ utils.defineProperty(Wallet, 'parseTransaction', function(rawTransaction) {
     });
 
     if (transaction.to) {
-        if (transaction.to.length === 0) {
+        if (transaction.to == '0x') {
             delete transaction.to;
         } else {
-            transaction.to = utils.getAddress('0x' + transaction.to.toString('hex'));
+            transaction.to = utils.getAddress(transaction.to);
         }
     }
 
     ['gasPrice', 'gasLimit', 'nonce', 'value'].forEach(function(name) {
         if (!transaction[name]) { return; }
         if (transaction[name].length === 0) {
-            transaction[name] = new utils.BN(0);
+            transaction[name] = utils.bigNumberify(0);
         } else {
-            transaction[name] = new utils.BN(transaction[name].toString('hex'), 16);
+            transaction[name] = utils.bigNumberify(transaction[name]);
         }
     });
 
-    /* @TODO: Maybe? In the future, all nonces stored as numbers? (obviously, major version change)
     if (transaction.nonce) {
-        transaction.nonce = transaction.nonce.toNumber()
+        transaction.nonce = transaction.nonce.toNumber();
+    } else {
+        transaction.nonce = 0;
     }
-    */
 
-    if (signedTransaction.length > 6 && signedTransaction[6].length === 1 &&
-        signedTransaction[7].length >= 1 && signedTransaction[7].length <= 32 &&
-        signedTransaction[8].length >= 1 && signedTransaction[7].length <= 32) {
+    if (signedTransaction.length > 6) {
+        var v = utils.arrayify(signedTransaction[6]);
+        var r = utils.arrayify(signedTransaction[7]);
+        var s = utils.arrayify(signedTransaction[8]);
 
-        transaction.v = signedTransaction[6][0];
-        transaction.r = signedTransaction[7];
-        transaction.s = signedTransaction[8];
+        if (v.length === 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
+            transaction.v = v[0];
+            transaction.r = signedTransaction[7];
+            transaction.s = signedTransaction[8];
 
-        var digest = utils.sha3(rlp.encode(raw));
-        try {
-            transaction.from = SigningKey.recover(digest, transaction.r, transaction.s, transaction.v - 27);
-        } catch (error) { }
+            var digest = utils.keccak256(utils.rlp.encode(raw));
+            try {
+                transaction.from = SigningKey.recover(digest, r, s, transaction.v - 27);
+            } catch (error) {
+                console.log(error);
+            }
+        }
     }
 
     return transaction;
 });
 
-utils.defineProperty(Wallet.prototype, 'getBalance', function(blockNumber) {
-    var provider = this._provider;
+utils.defineProperty(Wallet.prototype, 'getBalance', function(blockTag) {
+    if (!this.provider) { throw new Error('missing provider'); }
 
     var self = this;
     return new Promise(function(resolve, reject) {
-        provider.getBalance(self.address, blockNumber).then(function(balance) {
+        self.provider.getBalance(self.address, blockTag).then(function(balance) {
             resolve(balance);
         }, function(error) {
             reject(error);
@@ -177,11 +162,11 @@ utils.defineProperty(Wallet.prototype, 'getBalance', function(blockNumber) {
 });
 
 utils.defineProperty(Wallet.prototype, 'getTransactionCount', function(blockNumber) {
-    var provider = this._provider;
+    if (!this.provider) { throw new Error('missing provider'); }
 
     var self = this;
     return new Promise(function(resolve, reject) {
-        provider.getTransactionCount(self.address, blockNumber).then(function(transactionCount) {
+        self.provider.getTransactionCount(self.address, blockNumber).then(function(transactionCount) {
             resolve(transactionCount);
         }, function(error) {
             reject(error);
@@ -190,13 +175,13 @@ utils.defineProperty(Wallet.prototype, 'getTransactionCount', function(blockNumb
 });
 
 utils.defineProperty(Wallet.prototype, 'estimateGas', function(transaction) {
-    var provider = this._provider;
+    if (!this.provider) { throw new Error('missing provider'); }
 
     transaction = utils.cloneObject(transaction);
     if (transaction.from == null) { transaction.from = this.address; }
 
     return new Promise(function(resolve, reject) {
-        provider.estimateGas(transaction).then(function(gasEstimate) {
+        self.provider.estimateGas(transaction).then(function(gasEstimate) {
             resolve(gasEstimate);
         }, function(error) {
             reject(error);
@@ -205,18 +190,20 @@ utils.defineProperty(Wallet.prototype, 'estimateGas', function(transaction) {
 });
 
 utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) {
+    if (!this.provider) { throw new Error('missing provider'); }
+
     var gasLimit = transaction.gasLimit;
-    if (gasLimit == null) { gasLimit = 3000000; }
+    if (gasLimit == null) { gasLimit = this.defaultGasLimit; }
 
     var self = this;
 
-    var provider = this._provider;
-
     var gasPrice = new Promise(function(resolve, reject) {
         if (transaction.gasPrice) {
-            return resolve(transaction.gasPrice);
+            resolve(transaction.gasPrice);
+            return;
         }
-        provider.getGasPrice().then(function(gasPrice) {
+
+        self.provider.getGasPrice().then(function(gasPrice) {
             resolve(gasPrice);
         }, function(error) {
             reject(error);
@@ -225,27 +212,35 @@ utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) 
 
     var nonce = new Promise(function(resolve, reject) {
         if (transaction.nonce) {
-            return resolve(transaction.nonce);
+            resolve(transaction.nonce);
+            return;
         }
-        provider.getTransactionCount(self.address, 'pending').then(function(transactionCount) {
+
+        self.provider.getTransactionCount(self.address, 'pending').then(function(transactionCount) {
             resolve(transactionCount);
         }, function(error) {
             reject(error);
         });
     });
 
+    var toAddress = undefined;
+    if (transaction.to) { utils.getAddress(transaction.to); }
+
+    var data = utils.hexlify(transaction.data || '0x');
+    var value = utils.hexlify(transaction.value || 0);
+
     return new Promise(function(resolve, reject) {
         Promise.all([gasPrice, nonce]).then(function(results) {
             var signedTransaction = self.sign({
-                to: transaction.to,
-                data: transaction.data,
+                to: toAddress,
+                data: data,
                 gasLimit: gasLimit,
                 gasPrice: results[0],
                 nonce: results[1],
-                value: transaction.value
+                value: value
             });
 
-            provider.sendTransaction(signedTransaction).then(function(txid) {
+            self.provider.sendTransaction(signedTransaction).then(function(txid) {
                 resolve(txid);
             }, function(error) {
                 reject(error);
@@ -258,12 +253,6 @@ utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) 
 });
 
 utils.defineProperty(Wallet.prototype, 'send', function(address, amountWei, options) {
-    address = utils.getAddress(address);
-    if (utils.BN.isBN(amountWei)) {
-        amountWei = '0x' + utils.bnToBuffer(amountWei).toString('hex');
-    }
-    if (!utils.isHexString(amountWei)) { throw new Error('invalid amountWei'); }
-
     if (!options) { options = {}; }
 
     return this.sendTransaction({
@@ -275,10 +264,93 @@ utils.defineProperty(Wallet.prototype, 'send', function(address, amountWei, opti
     });
 });
 
-utils.defineProperty(Wallet.prototype, 'getContract', function(address, abi) {
-    return new Contract(this, address, new Contract.Interface(abi));
+
+utils.defineProperty(Wallet.prototype, 'encrypt', function(password, options, progressCallback) {
+    if (typeof(options) === 'function' && !progressCallback) {
+        progressCallback = options;
+        options = {};
+    }
+
+    if (progressCallback && typeof(progressCallback) !== 'function') {
+        throw new Error('invalid callback');
+    }
+
+    if (!options) { options = {}; }
+
+    return secretStorage.encrypt(this.privateKey, password, options, progressCallback);
 });
 
-utils.defineProperty(Wallet, '_Contract', Contract);
+utils.defineProperty(Wallet, 'isValidWallet', function(json) {
+    return (secretStorage.isValidWallet(json) || secretStorage.isCrowdsaleWallet(json));
+});
+
+utils.defineProperty(Wallet, 'decrypt', function(json, password, progressCallback) {
+    if (progressCallback && typeof(progressCallback) !== 'function') {
+        throw new Error('invalid callback');
+    }
+    return new Promise(function(resolve, reject) {
+
+        if (secretStorage.isCrowdsaleWallet(json)) {
+            try {
+                var privateKey = secretStorage.decryptCrowdsale(json, password);
+                resolve(new Wallet(privateKey));
+            } catch (error) {
+                reject(error);
+            }
+
+        } else if (secretStorage.isValidWallet(json)) {
+
+            secretStorage.decrypt(json, password, progressCallback).then(function(signingKey) {
+                resolve(new Wallet(signingKey));
+            }, function(error) {
+                reject(error);
+            });
+
+        } else {
+            reject('invalid wallet JSON');
+        }
+    });
+});
+
+
+utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, progressCallback) {
+    if (progressCallback && typeof(progressCallback) !== 'function') {
+        throw new Error('invalid callback');
+    }
+
+    if (typeof(username) === 'string') {
+        username =  utils.toUtf8Bytes(username, 'NFKC');
+    } else {
+        username = utils.arrayify(username, 'password');
+    }
+
+    if (typeof(password) === 'string') {
+        password =  utils.toUtf8Bytes(password, 'NFKC');
+    } else {
+        password = utils.arrayify(password, 'password');
+    }
+
+    return new Promise(function(resolve, reject) {
+        scrypt(password, username, (1 << 18), 8, 1, 32, function(error, progress, key) {
+            if (error) {
+                reject(error);
+            } else if (key) {
+                resolve(new Wallet(new Buffer(key)));
+            } else if (progressCallback) {
+                progressCallback(progress);
+            }
+        });
+    });
+});
+
+
+//utils.defineProperty(Wallet, 'isCrowdsaleWallet', secretStorage.isCrowdsaleWallet);
+
+//utils.defineProperty(Wallet, 'decryptCrowdsale', function(json, password) {
+//    return new Wallet(secretStorage.decryptCrowdsale(json, password));
+//});
+
+
+utils.defineProperty(Wallet, '_SigningKey', SigningKey);
 
 module.exports = Wallet;

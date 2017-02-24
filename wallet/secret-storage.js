@@ -5,10 +5,23 @@ var pbkdf2 = require('pbkdf2');
 var scrypt = require('scrypt-js');
 var uuid = require('uuid');
 
-var Randomish = require('./randomish.js');
-var SigningKey = require('./signing-key.js');
-var utils = require('./utils.js')
+var utils = require('ethers-utils');
 
+var SigningKey = require('./signing-key.js');
+
+function arrayify(hexString) {
+    if (typeof(hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
+        hexString = '0x' + hexString;
+    }
+    return utils.arrayify(hexString);
+}
+
+function getPassword(password) {
+    if (typeof(password) === 'string') {
+        return utils.toUtf8Bytes(password, 'NFKC');
+    }
+    return utils.arrayify(password, 'password');
+}
 
 // Search an Object and its children recursively, caselessly.
 function searchPath(object, path) {
@@ -38,21 +51,6 @@ function searchPath(object, path) {
     return currentChild;
 }
 
-/*
-function SecretStorage(json, signingKey) {
-    if (!(this instanceof SecretStorage)) { throw new Error('missing new'); }
-
-    utils.defineProperty(this, 'json', json);
-
-    Object.defineProperty(this, 'data', {
-        enumerable: true,
-        get: function() { return JSON.parse(json); }
-    });
-
-    utils.defineProperty(this, 'address', signingKey.privateKey);
-    utils.defineProperty(this, 'signingKey', signingKey);
-}
-*/
 var secretStorage = {};
 
 
@@ -81,11 +79,13 @@ utils.defineProperty(secretStorage, 'isValidWallet', function(json) {
 utils.defineProperty(secretStorage, 'decryptCrowdsale', function(json, password) {
     var data = JSON.parse(json);
 
+    password = getPassword(password);
+
     // Ethereum Address
     var ethaddr = utils.getAddress(searchPath(data, 'ethaddr'));
 
     // Encrypted Seed
-    var encseed = new Buffer(searchPath(data, 'encseed'), 'hex');
+    var encseed = arrayify(searchPath(data, 'encseed'));
     if (!encseed || (encseed.length % 16) !== 0) {
         throw new Error('invalid encseed');
     }
@@ -96,25 +96,9 @@ utils.defineProperty(secretStorage, 'decryptCrowdsale', function(json, password)
     var encryptedSeed = encseed.slice(16);
 
     // Decrypt the seed
-    var seed = new Buffer(0);
     var aesCbc = new aes.ModeOfOperation.cbc(key, iv);
-    for (var i = 0; i < encryptedSeed.length; i += 16) {
-        seed = Buffer.concat([seed, new Buffer(aesCbc.decrypt(encryptedSeed.slice(i, i + 16)))]);
-    }
-
-    // Check PKCS#7 padding is valid
-    var pad = seed[seed.length - 1];
-    if (pad > 16 || pad > seed.length) {
-        throw new Error('invalid password');
-    }
-    for (var i = seed.length - pad; i < seed.length; i++) {
-        if (seed[i] !== pad) {
-            throw new Error('invalid password');
-        }
-    }
-
-    // Strip the padding
-    seed = seed.slice(0, seed.length - pad);
+    var seed = utils.arrayify(aesCbc.decrypt(encryptedSeed));
+    seed = aes.padding.pkcs7.strip(seed);
 
     // This wallet format is weird... Convert the binary encoded hex to a string.
     var seedHex = '';
@@ -122,7 +106,9 @@ utils.defineProperty(secretStorage, 'decryptCrowdsale', function(json, password)
         seedHex += String.fromCharCode(seed[i]);
     }
 
-    var signingKey = new SigningKey(utils.sha3(new Buffer(seedHex)));
+    var seedHexBytes = utils.toUtf8Bytes(seedHex);
+
+    var signingKey = new SigningKey(utils.keccak256(seedHexBytes));
 
     if (signingKey.address !== ethaddr) {
         throw new Error('corrupt crowdsale wallet');
@@ -133,32 +119,32 @@ utils.defineProperty(secretStorage, 'decryptCrowdsale', function(json, password)
 
 
 utils.defineProperty(secretStorage, 'decrypt', function(json, password, progressCallback) {
-    if (!Buffer.isBuffer(password)) { throw new Error('password must be a buffer'); }
-
     var data = JSON.parse(json);
+
+    password = getPassword(password);
 
     var decrypt = function(key, ciphertext) {
         var cipher = searchPath(data, 'crypto/cipher');
         if (cipher === 'aes-128-ctr') {
-            var iv = new Buffer(searchPath(data, 'crypto/cipherparams/iv'), 'hex')
+            var iv = arrayify(searchPath(data, 'crypto/cipherparams/iv'), 'crypto/cipherparams/iv')
             var counter = new aes.Counter(iv);
 
             var aesCtr = new aes.ModeOfOperation.ctr(key, counter);
 
-            return new Buffer(aesCtr.decrypt(ciphertext));
+            return new arrayify(aesCtr.decrypt(ciphertext));
         }
 
         return null;
     };
 
     var computeMAC = function(derivedHalf, ciphertext) {
-        return utils.sha3(Buffer.concat([derivedHalf, ciphertext]));
+        return utils.keccak256(utils.concat([derivedHalf, ciphertext]));
     }
 
     return new Promise(function(resolve, reject) {
         var kdf = searchPath(data, 'crypto/kdf');
-        if (kdf && kdf.toLowerCase() === 'scrypt') {
-            var salt = new Buffer(searchPath(data, 'crypto/kdfparams/salt'), 'hex');
+        if (kdf && typeof(kdf) === 'string' && kdf.toLowerCase() === 'scrypt') {
+            var salt = arrayify(searchPath(data, 'crypto/kdfparams/salt'), 'crypto/kdfparams/salt');
             var N = parseInt(searchPath(data, 'crypto/kdfparams/n'));
             var r = parseInt(searchPath(data, 'crypto/kdfparams/r'));
             var p = parseInt(searchPath(data, 'crypto/kdfparams/p'));
@@ -173,7 +159,7 @@ utils.defineProperty(secretStorage, 'decrypt', function(json, password, progress
                 return;
             }
 
-            var dkLen = searchPath(data, 'crypto/kdfparams/dklen');
+            var dkLen = parseInt(searchPath(data, 'crypto/kdfparams/dklen'));
             if (dkLen !== 32) {
                 reject( new Error('unsupported key-derivation derived-key length'));
                 return;
@@ -185,11 +171,11 @@ utils.defineProperty(secretStorage, 'decrypt', function(json, password, progress
                     reject(error);
 
                 } else if (key) {
-                    key = new Buffer(key);
+                    key = arrayify(key);
 
-                    var ciphertext = new Buffer(searchPath(data, 'crypto/ciphertext'), 'hex');
+                    var ciphertext = arrayify(searchPath(data, 'crypto/ciphertext'));
 
-                    var computedMAC = computeMAC(key.slice(16, 32), ciphertext).toString('hex').toLowerCase();
+                    var computedMAC = utils.hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
                     if (computedMAC !== searchPath(data, 'crypto/mac').toLowerCase()) {
                         reject(new Error('invalid password'));
                         return;
@@ -237,31 +223,30 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
     if (privateKey instanceof SigningKey) {
         privateKey = privateKey.privateKey;
     }
-    privateKey = utils.hexOrBuffer(privateKey, 'private key');
+    privateKey = utils.arrayify(privateKey, 'private key');
     if (privateKey.length !== 32) { throw new Erro('invalid private key'); }
 
-    // Check the password
-    if (!Buffer.isBuffer(password)) { throw new Error('password must be a buffer'); }
+    password = getPassword(password);
 
     // Check/generate the salt
     var salt = options.salt;
     if (salt) {
-        salt = utils.hexOrBuffer(salt, 'salt');
+        salt = arrayify(salt, 'salt');
     } else {
-        salt = (new Randomish()).randomBytes(32);;
+        salt = utils.randomBytes(32);;
     }
 
     // Override initialization vector
     var iv = null;
     if (options.iv) {
-        iv = utils.hexOrBuffer(options.iv, 'iv');
+        iv = arrayify(options.iv, 'iv');
         if (iv.length !== 16) { throw new Error('invalid iv'); }
     }
 
     // Override the uuid
     var uuidRandom = options.uuid;
     if (uuidRandom) {
-        uuidRandom = utils.hexOrBuffer(uuidRandom, 'uuid');
+        uuidRandom = utils.arrayify(uuidRandom, 'uuid');
         if (uuidRandom.length !== 16) { throw new Error('invalid uuid'); }
     }
 
@@ -285,8 +270,7 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
                 reject(error);
 
             } else if (key) {
-                // Convert the array-like to a Buffer
-                key = new Buffer(key);
+                key = arrayify(key);
 
                 // These will be used to encrypt the wallet (as per Web3 secret storage)
                 var derivedKey = key.slice(0, 16);
@@ -304,10 +288,10 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
                 // Encrypt the private key
                 var counter = new aes.Counter(iv);
                 var aesCtr = new aes.ModeOfOperation.ctr(derivedKey, counter);
-                var ciphertext = new Buffer(aesCtr.encrypt(privateKey));
+                var ciphertext = utils.arrayify(aesCtr.encrypt(privateKey));
 
                 // Compute the message authentication code, used to check the password
-                var mac = utils.sha3(Buffer.concat([macPrefix, ciphertext]))
+                var mac = utils.keccak256(utils.concat([macPrefix, ciphertext]))
 
                 // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
                 var data = {
@@ -317,18 +301,18 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
                     Crypto: {
                         cipher: 'aes-128-ctr',
                         cipherparams: {
-                            iv: iv.toString('hex')
+                            iv: utils.hexlify(iv).substring(2),
                         },
-                        ciphertext: ciphertext.toString('hex'),
+                        ciphertext: utils.hexlify(ciphertext).substring(2),
                         kdf: 'scrypt',
                         kdfparams: {
-                            salt: salt.toString('hex'),
+                            salt: utils.hexlify(salt).substring(2),
                             n: N,
                             dklen: 32,
                             p: p,
                             r: r
                         },
-                        mac: mac.toString('hex')
+                        mac: mac.substring(2)
                     }
                 };
 

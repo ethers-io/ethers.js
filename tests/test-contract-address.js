@@ -1,5 +1,6 @@
 'use strict';
-var Wallet = require('../index.js');
+
+var ethersAddress = require('../utils/address.js');
 
 module.exports = function(test) {
     // Transaction: 0x939aa17985bc2a52a0c1cba9497ef09e092355a805a8150e30e24b753bac6864
@@ -9,8 +10,8 @@ module.exports = function(test) {
     }
 
     test.equal(
-        Wallet.utils.getContractAddress(transaction),
-        Wallet.getAddress('0x3474627d4f63a678266bc17171d87f8570936622'),
+        ethersAddress.getContractAddress(transaction),
+        ethersAddress.getAddress('0x3474627d4f63a678266bc17171d87f8570936622'),
         'Failed to match contract address'
     )
 

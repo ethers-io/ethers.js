@@ -1,6 +1,6 @@
 'use strict';
 
-var utils = require('./utils.js');
+var defineProperty = require('./properties.js').defineProperty;
 
 var crypto = global.crypto || global.msCrypto;
 if (!crypto || !crypto.getRandomValues) {
@@ -25,9 +25,9 @@ function randomBytes(length) {
         throw new Error('invalid length');
     }
 
-    var buffer = new Buffer(length);
-    crypto.getRandomValues(buffer);
-    return buffer;
+    var result = new Uint8Array(length);
+    crypto.getRandomValues(result);
+    return result;
 };
 
 if (crypto._weakCrypto === true) {

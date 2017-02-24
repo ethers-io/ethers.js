@@ -1,98 +1,49 @@
 'use strict';
 
-var scrypt = require('scrypt-js');
 
-var Contract = require('./lib/contract.js');
-var providers = require('./lib/providers.js');
-var secretStorage = require('./lib/secret-storage.js');
-var Randomish = require('./lib/randomish.js');
-var SigningKey = require('./lib/signing-key.js');
-var Wallet = require('./lib/wallet.js');
-var units = require('./lib/units.js');
+/*
+var contracts = require('ethers-contracts');
+var HDNode = require('ethers-hdnode');
+//var providers = require('providers');
+var utils = require('ethers-utils');
+var Wallet = require('ethers-wallet');
+*/
 
-var utils = require('./lib/utils.js');
-var BN = utils.BN;
+var contracts = require('./contracts/index.js');
+var HDNode = require('./hdnode/index.js');
+//var providers = require('providers');
+var utils = require('./utils/index.js');
+var Wallet = require('./wallet/index.js');
 
+module.exports = {
+    Wallet: Wallet,
 
-var exportUtils = {};
-utils.defineProperty(Wallet, 'utils', exportUtils);
+    HDNode: HDNode,
 
-utils.defineProperty(exportUtils, 'BN', BN);
-utils.defineProperty(exportUtils, 'Buffer', Buffer);
+    Contract: contracts.Contract,
+    Interface: contracts.Interface,
 
-utils.defineProperty(exportUtils, 'sha3', utils.sha3);
-utils.defineProperty(exportUtils, 'sha256', utils.sha256);
-
-utils.defineProperty(exportUtils, 'getContractAddress', utils.getContractAddress);
-
-module.exports = Wallet;
+//    providers: providers,
 
 
-utils.defineProperty(Wallet, 'etherSymbol', '\uD835\uDF63');
+    utils: {
+        bigNumberify: utils.bigNumberify,
 
-utils.defineProperty(Wallet, 'formatEther', units.formatEther);
-utils.defineProperty(Wallet, 'parseEther', units.parseEther);
+        etherSymbol: utils.etherSymbol,
 
-utils.defineProperty(Wallet, 'getAddress', utils.getAddress);
-utils.defineProperty(Wallet, 'getIcapAddress', utils.getIcapAddress);
+        formatEther: utils.formatEther,
+        parseEther: utils.parseEther,
 
-utils.defineProperty(Wallet, 'isCrowdsaleWallet', secretStorage.isCrowdsaleWallet);
-utils.defineProperty(Wallet, 'isValidWallet', secretStorage.isValidWallet);
+        getAddress: utils.getAddress,
+        getContractAddress: utils.getContractAddress,
 
-utils.defineProperty(Wallet, 'decryptCrowdsale', function(json, password) {
-    return new Wallet(secretStorage.decryptCrowdsale(json, password));
-});
+        keccak256: utils.keccak256,
+        sha256: utils.sha256,
 
-utils.defineProperty(Wallet, 'decrypt', function(json, password, progressCallback) {
-    if (progressCallback && typeof(progressCallback) !== 'function') {
-        throw new Error('invalid callback');
-    }
+        randomBytes: utils.randomBytes,
+    },
 
-    return new Promise(function(resolve, reject) {
-        secretStorage.decrypt(json, password, progressCallback).then(function(signingKey) {
-            resolve(new Wallet(signingKey));
-        }, function(error) {
-            reject(error);
-        });
-    });
-});
+    _utils: utils,
+    _SigningKey: Wallet._SigningKey,
+};
 
-utils.defineProperty(Wallet.prototype, 'encrypt', function(password, options, progressCallback) {
-    if (typeof(options) === 'function' && !progressCallback) {
-        progressCallback = options;
-        options = {};
-    }
-    if (progressCallback && typeof(progressCallback) !== 'function') {
-        throw new Error('invalid callback');
-    }
-
-    return secretStorage.encrypt(this.privateKey, password, options, progressCallback);
-});
-
-utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, progressCallback) {
-    if (progressCallback && typeof(progressCallback) !== 'function') {
-        throw new Error('invalid callback');
-    }
-
-    return new Promise(function(resolve, reject) {
-        scrypt(password, username, (1 << 18), 8, 1, 32, function(error, progress, key) {
-            if (error) {
-                reject(error);
-            } else if (key) {
-                resolve(new Wallet(new Buffer(key)));
-            } else if (progressCallback) {
-                progressCallback(progress);
-            }
-        });
-    });
-});
-
-
-utils.defineProperty(Wallet, 'providers', providers);
-
-utils.defineProperty(Wallet, 'Contract', Contract);
-utils.defineProperty(Wallet, 'Interface', Contract.Interface);
-
-utils.defineProperty(Wallet, 'randomish', new Randomish());
-
-module.exports = Wallet;
