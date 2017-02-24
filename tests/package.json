@@ -4,12 +4,14 @@
   "description": "Scripts to generate Ethereum test cases and run ethers.js against them.",
   "main": "index.js",
   "dependencies": {
+    "nodeunit": "0.9.1"
+  },
+  "devDendencies": {
     "bip39": "2.2.0",
     "bitcoinjs-lib": "2.3.0",
     "ethereumjs-abi": "0.6.2",
     "ethereumjs-tx": "1.1.1",
     "ethereumjs-util": "4.3.0",
-    "ethereumjs-vm": "1.4.0",
     "promise-rationing": "0.0.1",
     "rlp": "2.0.0",
     "solc": "0.3.5",
