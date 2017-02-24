@@ -26,6 +26,27 @@ function testAddress(test) {
     test.done();
 }
 
+function testContractAddress(test) {
+
+    // @TODO: Mine a large collection of these from the blockchain
+
+    var getContractAddress = require('../utils/contract-address.js').getContractAddress;
+
+    // Transaction: 0x939aa17985bc2a52a0c1cba9497ef09e092355a805a8150e30e24b753bac6864
+    var transaction = {
+        from: '0xb2682160c482eb985ec9f3e364eec0a904c44c23',
+        nonce: 10,
+    }
+
+    test.equal(
+        getContractAddress(transaction),
+        "0x3474627D4F63A678266BC17171D87f8570936622",
+        'Failed to match contract address'
+    )
+
+    test.done();
+}
+
 function testRLPCoder(test) {
     var rlp = require('../utils/rlp.js');
 
@@ -59,6 +80,7 @@ function testUnits(test) {
 
 module.exports = {
     "address": testAddress,
+    "contract-address": testContractAddress,
     "rlp-coder": testRLPCoder,
     "units": testUnits,
 }
