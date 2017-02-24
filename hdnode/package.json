@@ -1,0 +1,15 @@
+{
+  "name": "ethers-hdnode",
+  "version": "2.0.0",
+  "description": "HDNode",
+  "main": "index.js",
+  "dependencies": {
+    "ethers-utils": "2.0.0",
+    "pbkdf2": "3.0.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT"
+}
