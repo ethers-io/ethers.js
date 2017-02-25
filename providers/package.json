@@ -1,0 +1,29 @@
+{
+  "name": "ethers-providers",
+  "version": "2.0.0",
+  "description": "Service provider for Ethereum wallet library.",
+  "main": "index.js",
+  "browser": {
+    "xmlhttprequest": "./browser-xmlhttprequest.js"
+  },
+  "dependencies": {
+    "inherits": "2.0.1",
+    "xmlhttprequest": "1.8.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ethereum",
+    "ethers",
+    "providers",
+    "etherscan",
+    "web3",
+    "json",
+    "rpc",
+    "json-rpc",
+    "jsonrpc"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT"
+}
