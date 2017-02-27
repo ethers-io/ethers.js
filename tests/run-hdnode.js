@@ -1,6 +1,6 @@
 'use strict';
 
-var hdnode = require('../hdnode/index.js');
+var HDNode = require('../hdnode/index.js');
 
 function testHDNode(test) {
     var Wallet = require('../wallet/index.js');
@@ -8,7 +8,7 @@ var c = 0;
     var testcases = require('./tests/hdnode.json');
     testcases.forEach(function(testcase) {
         //if (c++ > 10) { return; }
-        var rootNode = new hdnode.HDNode.fromSeed(testcase.seed);
+        var rootNode = new HDNode.fromSeed(testcase.seed);
         testcase.hdnodes.forEach(function(hdTestcase) {
 
             var node = rootNode.derivePath(hdTestcase.path);
@@ -29,11 +29,11 @@ var c = 0;
     var testcases = require('./tests/hdnode.json');
     testcases.forEach(function(testcase) {
         //if (c++ > 10) { return; }
-        test.equal(hdnode.entropyToMnemonic(testcase.entropy), testcase.mnemonic,
+        test.equal(HDNode.entropyToMnemonic(testcase.entropy), testcase.mnemonic,
                    'Failed to convert mnemonic - ' + testcase.name);
-        test.equal(hdnode.mnemonicToEntropy(testcase.mnemonic), testcase.entropy,
+        test.equal(HDNode.mnemonicToEntropy(testcase.mnemonic), testcase.entropy,
                    'Failed to convert entropy - ' + testcase.name);
-        test.equal(hdnode.mnemonicToSeed(testcase.mnemonic, testcase.password), testcase.seed,
+        test.equal(HDNode.mnemonicToSeed(testcase.mnemonic, testcase.password), testcase.seed,
                    'Failed to convert seed - ' + testcase.name);
     });
     test.done();
