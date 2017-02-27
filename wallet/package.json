@@ -10,8 +10,6 @@
     "ethers-utils": "2.0.0",
     "aes-js": "3.0.0",
     "elliptic": "6.3.3",
-    "pbkdf2": "3.0.4",
-    "rlp": "2.0.0",
     "scrypt-js": "2.0.3",
     "setimmediate": "1.0.4",
     "uuid": "2.0.1"

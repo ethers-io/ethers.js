@@ -90,7 +90,7 @@ utils.defineProperty(secretStorage, 'decryptCrowdsale', function(json, password)
         throw new Error('invalid encseed');
     }
 
-    var key = pbkdf2.pbkdf2Sync(password, password, 2000, 32, 'sha256').slice(0, 16);
+    var key = utils.pbkdf2(password, password, 2000, 32, utils.hmac.createSha256Hmac).slice(0, 16);
 
     var iv = encseed.slice(0, 16);
     var encryptedSeed = encseed.slice(16);

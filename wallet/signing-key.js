@@ -6,9 +6,7 @@
  *
  */
 
-var elliptic = require('elliptic');
-var secp256k1 = new (elliptic.ec)('secp256k1');
-
+var secp256k1 = new (require('elliptic')).ec('secp256k1');
 var utils = require('ethers-utils');
 
 

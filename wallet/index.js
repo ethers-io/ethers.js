@@ -335,7 +335,7 @@ utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, p
             if (error) {
                 reject(error);
             } else if (key) {
-                resolve(new Wallet(new Buffer(key)));
+                resolve(new Wallet(utils.hexlify(key)));
             } else if (progressCallback) {
                 progressCallback(progress);
             }
