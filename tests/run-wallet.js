@@ -170,6 +170,7 @@ function testTransactions(test) {
 
 module.exports = {
     "accounts": testAccounts,
+    "brainwallet": testBrainWallet,
     "transactions": testTransactions,
     "wallets": testWallets,
 }
