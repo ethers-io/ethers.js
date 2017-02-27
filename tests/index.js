@@ -12,9 +12,10 @@ module.exports = {};
     }
 });
 */
+
 reporter.run([
-    'run-contract-iterface.js'
-    'hdnode',
-    'utils',
-    'wallet',
+    'run-contract-interface.js',
+    'run-hdnode.js',
+    'run-utils.js',
+    'run-wallet.js',
 ]);
