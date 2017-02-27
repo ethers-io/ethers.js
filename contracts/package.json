@@ -1,0 +1,22 @@
+{
+  "name": "ethers-contracts",
+  "version": "2.0.0",
+  "description": "Contract and Interface (ABI) library for Ethereum.",
+  "main": "index.js",
+  "dependencies": {
+    "ethers-utils": "2.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ethereum",
+    "ethers",
+    "contrat",
+    "interface",
+    "coder",
+    "abi"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT"
+}
