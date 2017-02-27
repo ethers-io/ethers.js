@@ -38,6 +38,8 @@ function JsonRpcProvider(url, testnet, chainId) {
 
     Provider.call(this, testnet, chainId);
 
+    if (!url) { url = 'http://localhost:8545'; }
+
     utils.defineProperty(this, 'url', url);
 }
 inherits(JsonRpcProvider, Provider);
