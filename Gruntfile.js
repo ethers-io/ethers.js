@@ -4,34 +4,29 @@ var through = require('through');
 var undef = "module.exports = undefined;";
 var empty = "module.exports = {};";
 
+// The elliptic package.json is only used for its version
+var ellipticPackage = require('elliptic/package.json');
+ellipticPackage = JSON.stringify({ version: ellipticPackage.version });
+
+// We already have a random Uint8Array browser/node safe source
+var brorand = "var randomBytes = require('ethers-utils').randomBytes; module.exports = function(length) { return randomBytes(length); };";
+
 var transforms = {
-    "ripemd.js": "module.exports = {ripemd160: null}",
-    "precomputed/secp256k1.js": undef,
+    "elliptic/lib/elliptic/precomputed/secp256k1.js": undef,
     "elliptic/curve/edwards.js": empty,
     "elliptic/curve/mont.js": empty,
     "elliptic/lib/elliptic/eddsa/.*": empty,
-    "elliptic/lib/elliptic/eddsa/.*": empty,
-    "elliptic/lib/elliptic/hmac-drbg.js": empty,
-//    "elliptic/package.json" :
+    "elliptic/package.json" : ellipticPackage,
 
-    "base64-js/.*": undef,
-    "browser-resolve:.*": undef,
-    "buffer/.*": undef,
-    "buffer-shims/.*": undef,
-    "cipher-base/.*": undef,
-    "core-util-is/.*": undef,
-    "create-hash/.*": undef,
-    "create-hmac/.*": undef,
-    "events/.*": undef,
-    "hmac-drbg/lib/hmac-drbg.js": undef,
-    "ieee754/.*": undef,
-    "isarray/.*": undef,
-    "pbkdf2/.*": undef,
+    "hash.js/lib/hash/ripemd.js": "module.exports = {ripemd160: null}",
+
+    // brorand (Maybe swap out brorand with out getRandomBytes from utils?
+    "brorand/index.js": brorand,
+//    "browser-resolve/.*": undef,   // If we use the actual brorand, we need this
+
+    // Used by sha3
     "process/.*": undef,
-    "readable-stream/.*": undef,
-    "sha.js/.*": undef,
-    "stream-browserify/.*": undef,
-    "string_decoder/.*": undef,
+
 };
 
 var modified = {};
@@ -39,7 +34,7 @@ var unmodified = {};
 
 function transformFile(path) {
     for (var pattern in transforms) {
-        if (path.match(new RegExp(pattern + '$'))) {
+        if (path.match(new RegExp('/' + pattern + '$'))) {
             modified[pattern] = true;
             return transforms[pattern];
         }
@@ -55,38 +50,74 @@ function transform(path, options) {
     }, function () {
         var transformed = transformFile(path);
         if (transformed != null) {
-            //console.log('Transform: ' + path + ' => ' + transformed);
             data = transformed;
         } else {
             unmodified[path] = true;
-            //console.log('Not transformed:', path);
         }
+        //data = data.replace(/__ETHERS_EXPORT__/g, '__MASKED_ETHERS_EXPORT__');
         //console.log(data.length, 'FOOBAR', path);
         this.queue(data);
         this.queue(null);
     });
 }
 
-function checkBundle(error, source, next) {
-    var passed = Object.keys(unmodified);
-    passed.sort();
-    console.log('Unmodified:');
-    passed.forEach(function(path) {
-        console.log('  ' + path);
-    });
-    /*
-    var skipped = Object.keys(transforms);
-    Object.keys(modified).forEach(function(key) {
-        delete skipped[key];
-    });
-    skipped.sort();
-    if (skipped.length) {
-        console.log('Unused Patterns:');
-        skipped.forEach(function(pattern) {
-            console.log('  ' + pattern);
-        });
+var inflight = 0;
+
+function preBundle(bundle) {
+    inflight++;
+}
+
+function postBundle(error, source, next) {
+    if (error) {
+        console.log(error);
+
+    } else {
+        // We setup the utils instance to be able to create a stand-alone package
+        source = source.toString();
+        var lengthBefore = source.length;
+        var source = source.replace(/"__STAND_ALONE_FALSE__"/g, '"__STAND_ALONE_TRUE__"');
+        if (lengthBefore - source.length !== 1) {
+            next(new Error('multiple stand-alone variables changed'));
+            return;
+        }
     }
-    */
+
+    inflight--
+    if (inflight === 0) {
+
+        // List all files that passed though unchanged
+        var preserved = {};
+        Object.keys(unmodified).forEach(function(filename) {
+            var match = filename.match(/(node_modules.*)$/);
+            if (!match) {
+                match = filename.match(/(ethers\.js.*)$/);
+            }
+            if (!match) {
+                match = [null, filename];
+            }
+            preserved[match[1]] = true;
+        });
+        preserved = Object.keys(preserved);
+        preserved.sort();
+        console.log('Preserved:');
+        preserved.forEach(function(path) {
+            console.log('  ' + path);
+        });
+
+        // Make sure there were no replacement patterns that went unused
+        var skipped = [];
+        for (var key in transforms) {
+            if (!modified[key]) { skipped.push(key); }
+        }
+        skipped.sort();
+        if (skipped.length) {
+            console.log('Unused Patterns:');
+            skipped.forEach(function(pattern) {
+                console.log('  ' + pattern);
+            });
+        }
+    }
+
     next(error, source);
 }
 
@@ -101,16 +132,16 @@ module.exports = function(grunt) {
             'dist/ethers-providers.js': './providers/index.js',
             'dist/ethers-utils.js': './utils/index.js',
             'dist/ethers-wallet.js': './wallet/index.js',
-            'dist/ethers-tests.js': './tests/browser.js',
         },
         options: {
           transform: [
               [ transform, { global: true } ],
           ],
           browserifyOptions: {
-            standalone: 'ethers',
+            //standalone: '_ethers',
           },
-          postBundleCB: checkBundle
+          preBundleCB: preBundle,
+          postBundleCB: postBundle
         },
       },
     },

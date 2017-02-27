@@ -17,15 +17,6 @@ var rlp = require('./rlp.js');
 var utf8 = require('./utf8.js');
 var units = require('./units.js');
 
-////var xmlhttprequest = require('./xmlhttprequest.js');
-
-/*
-function cloneObject(object) {
-    var clone = {};
-    for (var key in object) { clone[key] = object[key]; }
-    return clone;
-}
-*/
 
 module.exports = {
     rlp: rlp,
@@ -68,3 +59,8 @@ module.exports = {
 
     randomBytes: randomBytes,
 }
+
+require('./standalone.js')({
+    utils: module.exports
+});
+

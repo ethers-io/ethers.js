@@ -1,6 +1,5 @@
 'use strict';
 
-
 /*
 var contracts = require('ethers-contracts');
 var HDNode = require('ethers-hdnode');
@@ -46,3 +45,4 @@ module.exports = {
     _SigningKey: Wallet._SigningKey,
 };
 
+require('ethers-utils/standalone.js')(module.exports);

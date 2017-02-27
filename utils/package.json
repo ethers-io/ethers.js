@@ -13,8 +13,7 @@
     "xmlhttprequest": "1.8.0"
   },
   "browser": {
-    "./random-bytes.js": "./browser-random-bytes.js",
-    "xmlhttprequest": "./browser-xmlhttprequest.js"
+    "./random-bytes.js": "./browser-random-bytes.js"
   },
   "keywords": [
     "ethereum",

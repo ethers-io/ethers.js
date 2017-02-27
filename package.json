@@ -8,6 +8,7 @@
     "version": "grunt dist"
   },
   "dependencies": {
+    "ethers-utils": "2.0.0"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

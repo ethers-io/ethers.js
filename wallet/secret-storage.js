@@ -1,7 +1,6 @@
 'use strict';
 
 var aes = require('aes-js');
-var pbkdf2 = require('pbkdf2');
 var scrypt = require('scrypt-js');
 var uuid = require('uuid');
 

@@ -354,3 +354,8 @@ utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, p
 utils.defineProperty(Wallet, '_SigningKey', SigningKey);
 
 module.exports = Wallet;
+
+require('ethers-utils/standalone.js')({
+    Wallet: module.exports
+});
+
