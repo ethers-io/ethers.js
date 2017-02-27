@@ -101,6 +101,7 @@ module.exports = function(grunt) {
             'dist/ethers-providers.js': './providers/index.js',
             'dist/ethers-utils.js': './utils/index.js',
             'dist/ethers-wallet.js': './wallet/index.js',
+            'dist/ethers-tests.js': './tests/browser.js',
         },
         options: {
           transform: [
