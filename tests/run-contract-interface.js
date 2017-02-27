@@ -79,7 +79,7 @@ function testContractInterface(test) {
 
         try {
             var encoded = Interface.encodeParams(types, values);
-            test.equal(result, encoded, 'failed to encode data');
+            test.equal(result, encoded, 'failed to encode data - ' + testcase.name);
 
         } catch (error) {
             test.ok(false, 'Failed Encode (' + testcase.name + ') - ' + error.message);
@@ -93,7 +93,7 @@ function testContractInterface(test) {
                 decodedArray.push(decoded[i]);
             }
 
-            test.ok(equals(values, decodedArray), 'failed to decode parameters');
+            test.ok(equals(values, decodedArray), 'failed to decode parameters - ' + testcase.name);
 
         } catch (error) {
             test.ok(false, 'Failed Decode (' + testcase.name + ') - ' + error.message);
