@@ -1,10 +1,7 @@
 // See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 // See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
-var elliptic = require('elliptic');
-var secp256k1 = new (elliptic.ec)('secp256k1');
-
-var pbkdf2 = require('pbkdf2');
+var secp256k1 = new (require('elliptic')).ec('secp256k1');
 
 var wordlist = (function() {
     var words = require('./words.json');
@@ -18,10 +15,6 @@ var utils = (function() {
 
     var hmac = require('ethers-utils/hmac');
 
-    function hmac512(key) {
-        return (new hmac(sha2.createSha512, 128, key));
-    }
-
     return {
         defineProperty: require('ethers-utils/properties.js').defineProperty,
 
@@ -32,7 +25,9 @@ var utils = (function() {
         toUtf8Bytes: require('ethers-utils/utf8.js').toUtf8Bytes,
 
         sha256: sha2.sha256,
-        hmac512: hmac512,
+        createSha512Hmac: hmac.createSha512Hmac,
+
+        pbkdf2: require('ethers-utils/pbkdf2.js'),
     }
 })();
 
@@ -87,7 +82,7 @@ utils.defineProperty(HDNode.prototype, '_derive', function(index) {
     // Data += ser_32(i)
     for (var i = 24; i >= 0; i -= 8) { data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff); }
 
-    var I = utils.hmac512(this.chainCode).update(data).digest();
+    var I = utils.createSha512Hmac(this.chainCode).update(data).digest();
     var IL = utils.bigNumberify(I.slice(0, 32));
     var IR = I.slice(32);
 
@@ -135,7 +130,7 @@ utils.defineProperty(HDNode, 'fromSeed', function(seed) {
     seed = utils.arrayify(seed);
     if (seed.length < 16 || seed.length > 64) { throw new Error('invalid seed'); }
 
-    var I = utils.hmac512(MasterSecret).update(seed).digest();
+    var I = utils.createSha512Hmac(MasterSecret).update(seed).digest();
 
     return new HDNode(secp256k1.keyFromPrivate(I.slice(0, 32)), I.slice(32), 0, 0, 0);
 });
@@ -158,7 +153,7 @@ function mnemonicToSeed(mnemonic, password) {
     mnemonic = utils.toUtf8Bytes(mnemonic, 'NFKD');
     var salt = utils.toUtf8Bytes('mnemonic' + password, 'NFKD');
 
-    return utils.hexlify(pbkdf2.pbkdf2Sync(mnemonic, salt, 2048, 64, 'sha512'));
+    return utils.hexlify(utils.pbkdf2(mnemonic, salt, 2048, 64, utils.createSha512Hmac));
 }
 
 function mnemonicToEntropy(mnemonic) {
