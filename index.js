@@ -11,7 +11,7 @@ var Wallet = require('ethers-wallet');
 
 var contracts = require('./contracts/index.js');
 var HDNode = require('./hdnode/index.js');
-//var providers = require('providers');
+var providers = require('./providers/index.js');
 var utils = require('./utils/index.js');
 var Wallet = require('./wallet/index.js');
 
@@ -23,8 +23,7 @@ module.exports = {
     Contract: contracts.Contract,
     Interface: contracts.Interface,
 
-//    providers: providers,
-
+    providers: providers,
 
     utils: {
         bigNumberify: utils.bigNumberify,
