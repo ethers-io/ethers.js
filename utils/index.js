@@ -7,9 +7,11 @@ var address = require('./address.js');
 var bigNumber = require('./bignumber.js');
 var contractAddress = require('./contract-address.js');
 var convert = require('./convert.js');
+var hmac = require('./hmac.js');
 var keccak256 = require('./keccak256.js');
 var sha256 = require('./sha2.js').sha256;
 var randomBytes = require('./random-bytes.js');
+var pbkdf2 = require('./pbkdf2.js');
 var properties = require('./properties.js');
 var rlp = require('./rlp.js');
 var utf8 = require('./utf8.js');
@@ -60,6 +62,9 @@ module.exports = {
 
     keccak256: keccak256,
     sha256: sha256,
+
+    hmac: hmac,
+    pbkdf2: pbkdf2,
 
     randomBytes: randomBytes,
 }

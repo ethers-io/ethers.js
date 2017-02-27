@@ -10,7 +10,6 @@
     "bn.js": "^4.4.0",
     "hash.js": "^1.0.0",
     "js-sha3": "0.5.7",
-    "rlp": "2.0.0",
     "xmlhttprequest": "1.8.0"
   },
   "browser": {
