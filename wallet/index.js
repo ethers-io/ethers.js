@@ -40,10 +40,10 @@ function Wallet(privateKey, provider) {
     });
     if (provider) { this.provider = provider; }
 
-    var defaultGasLimit = 3000000;
+    var defaultGasLimit = 2000000;
     Object.defineProperty(this, 'defaultGasLimit', {
         enumerable: true,
-        get: function() { return provider; },
+        get: function() { return defaultGasLimit; },
         set: function(value) {
             if (typeof(value) !== 'number') { throw new Error('invalid defaultGasLimit'); }
             defaultGasLimit = value;
@@ -150,43 +150,26 @@ utils.defineProperty(Wallet, 'parseTransaction', function(rawTransaction) {
 
 utils.defineProperty(Wallet.prototype, 'getBalance', function(blockTag) {
     if (!this.provider) { throw new Error('missing provider'); }
-
-    var self = this;
-    return new Promise(function(resolve, reject) {
-        self.provider.getBalance(self.address, blockTag).then(function(balance) {
-            resolve(balance);
-        }, function(error) {
-            reject(error);
-        });
-    });
+    return this.provider.getBalance(this.address, blockTag);
 });
 
-utils.defineProperty(Wallet.prototype, 'getTransactionCount', function(blockNumber) {
+utils.defineProperty(Wallet.prototype, 'getTransactionCount', function(blockTag) {
     if (!this.provider) { throw new Error('missing provider'); }
-
-    var self = this;
-    return new Promise(function(resolve, reject) {
-        self.provider.getTransactionCount(self.address, blockNumber).then(function(transactionCount) {
-            resolve(transactionCount);
-        }, function(error) {
-            reject(error);
-        });
-    });
+    return this.provider.getTransactionCount(this.address, blockTag);
 });
 
 utils.defineProperty(Wallet.prototype, 'estimateGas', function(transaction) {
     if (!this.provider) { throw new Error('missing provider'); }
 
-    transaction = utils.cloneObject(transaction);
-    if (transaction.from == null) { transaction.from = this.address; }
-
-    return new Promise(function(resolve, reject) {
-        self.provider.estimateGas(transaction).then(function(gasEstimate) {
-            resolve(gasEstimate);
-        }, function(error) {
-            reject(error);
-        });
+    var calculate = {};
+    ['from', 'to', 'data', 'value'].forEach(function(key) {
+        if (transaction[key] == null) { return; }
+        calculate[key] = transaction[key];
     });
+
+    if (transaction.from == null) { calculate.from = this.address; }
+
+    return this.provider.estimateGas(calculate);
 });
 
 utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) {
@@ -224,31 +207,22 @@ utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) 
     });
 
     var toAddress = undefined;
-    if (transaction.to) { utils.getAddress(transaction.to); }
+    if (transaction.to) { toAddress = utils.getAddress(transaction.to); }
 
     var data = utils.hexlify(transaction.data || '0x');
     var value = utils.hexlify(transaction.value || 0);
 
-    return new Promise(function(resolve, reject) {
-        Promise.all([gasPrice, nonce]).then(function(results) {
-            var signedTransaction = self.sign({
-                to: toAddress,
-                data: data,
-                gasLimit: gasLimit,
-                gasPrice: results[0],
-                nonce: results[1],
-                value: value
-            });
-
-            self.provider.sendTransaction(signedTransaction).then(function(txid) {
-                resolve(txid);
-            }, function(error) {
-                reject(error);
-            });
-
-        }, function(error) {
-            reject(error);
+    return Promise.all([gasPrice, nonce]).then(function(results) {
+        var signedTransaction = self.sign({
+            to: toAddress,
+            data: data,
+            gasLimit: gasLimit,
+            gasPrice: results[0],
+            nonce: results[1],
+            value: value
         });
+
+        return self.provider.sendTransaction(signedTransaction);
     });
 });
 
