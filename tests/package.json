@@ -6,19 +6,22 @@
   "dependencies": {
     "nodeunit": "0.9.1"
   },
-  "devDendencies": {
+  "devDependencies": {
     "bip39": "2.2.0",
     "bitcoinjs-lib": "2.3.0",
     "ethereumjs-abi": "0.6.2",
     "ethereumjs-tx": "1.1.1",
     "ethereumjs-util": "4.3.0",
+    "grunt": "^0.4.5",
+    "grunt-browserify": "^5.0.0",
+    "grunt-contrib-uglify": "^1.0.1",
     "promise-rationing": "0.0.1",
     "rlp": "2.0.0",
     "solc": "0.3.5",
     "web3": "0.18.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node index.js"
   },
   "keywords": [
     "Ethereum",

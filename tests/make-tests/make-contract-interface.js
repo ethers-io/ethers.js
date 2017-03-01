@@ -11,6 +11,7 @@ var contracts = require('../../contracts/index.js');
 
 var bigNumber = require('../../utils/bignumber.js');
 var convert = require('../../utils/convert.js');
+var getAddress = require('../../utils/address.js').getAddress;
 
 var utils = require('./utils.js');
 
@@ -305,7 +306,7 @@ function makeTests() {
     check('sol-28',
         ['address', 'string', 'bytes6[4]', 'int'],
         [
-            "0x97916ef549947a3e0d321485a31dd2715a97d455",
+            getAddress("0x97916ef549947a3e0d321485a31dd2715a97d455"),
             "foobar2",
             [
                 new Buffer("a165ab0173c6", 'hex'),
@@ -409,7 +410,7 @@ function makeTests() {
                 return {
                     type: 'address',
                     value: function(extraSeed) {
-                        var value = utils.randomHexString(seed + '-' + extraSeed + '-type-2', 20);
+                        var value = getAddress(utils.randomHexString(seed + '-' + extraSeed + '-type-2', 20));
                         return {
                             value: value,
                             normalized: value

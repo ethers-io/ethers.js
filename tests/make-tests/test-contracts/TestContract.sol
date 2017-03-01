@@ -82,3 +82,25 @@ contract TestContract {
         callFallback(msg.sender, msg.value);
     }
 }
+
+contract TestContractDeploy {
+    address _owner;
+
+    uint _uintValue;
+    string _stringValue;
+
+    function TestContractDeploy(uint uintValue, string stringValue) {
+        _owner = msg.sender;
+        _uintValue = uintValue;
+        _stringValue = stringValue;
+    }
+
+    function getValues() constant returns (uint, string) {
+        return (_uintValue, _stringValue);
+    }
+
+    function cleanup() {
+        if (msg.sender != _owner) { return; }
+        suicide(_owner);
+    }
+}

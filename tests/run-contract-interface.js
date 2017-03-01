@@ -1,14 +1,15 @@
 'use strict';
 
 var utils = (function() {
-    var bigNumber = require('../utils/bignumber.js');
-    var convert = require('../utils/convert.js');
+    var bigNumber = require('../utils/bignumber');
+    var convert = require('../utils/convert');
 
     return {
         arrayify: convert.arrayify,
         bigNumberify: bigNumber.bigNumberify,
     };
 })();
+
 
 function equals(a, b) {
 
@@ -88,10 +89,7 @@ function testContractInterface(test) {
         try {
             var decoded = Interface.decodeParams(types, result);
 
-            var decodedArray = [];
-            for (var i = 0; decoded[i] != null; i++) {
-                decodedArray.push(decoded[i]);
-            }
+            var decodedArray = Array.prototype.slice.call(decoded);;
 
             test.ok(equals(values, decodedArray), 'failed to decode parameters - ' + testcase.name);
 

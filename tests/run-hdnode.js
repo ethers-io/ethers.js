@@ -4,7 +4,7 @@ var HDNode = require('../hdnode/index.js');
 
 function testHDNode(test) {
     var Wallet = require('../wallet/index.js');
-var c = 0;
+    var c = 0;
     var testcases = require('./tests/hdnode.json');
     testcases.forEach(function(testcase) {
         //if (c++ > 10) { return; }
@@ -25,7 +25,7 @@ var c = 0;
 }
 
 function testMnemonic(test) {
-var c = 0;
+    var c = 0;
     var testcases = require('./tests/hdnode.json');
     testcases.forEach(function(testcase) {
         //if (c++ > 10) { return; }
