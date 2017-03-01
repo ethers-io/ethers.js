@@ -1,8 +1,12 @@
 'use strict';
 
+var Interface = require('./interface.js');
+
 var utils = (function() {
     return {
         defineProperty: require('ethers-utils/properties.js').defineProperty,
+
+        getAddress: require('ethers-utils/address.js').getAddress,
 
         bigNumberify: require('ethers-utils/bignumber.js').bigNumberify,
 
@@ -14,14 +18,32 @@ var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice:true, to: true, value: true
 }
 
-function Contract(wallet, contractAddress, contractInterface) {
-    utils.defineProperty(this, 'wallet', wallet);
+function Contract(address, contractInterface, signerOrProvider) {
+    if (!(this instanceof Contract)) { throw new Error('missing new'); }
 
-    utils.defineProperty(this, 'contractAddress', contractAddress);
+    address = utils.getAddress(address);
+
+    if (!(contractInterface instanceof Interface)) {
+        contractInterface = new Interface(contractInterface);
+    }
+
+    var signer = signerOrProvider;
+    var provider = null;
+    if (signerOrProvider.provider) {
+        provider = signerOrProvider.provider;
+    } else if (signerOrProvider) {
+        provider = signerOrProvider;
+        signer = null;
+    } else {
+        throw new Error('missing provider');
+    }
+
+    utils.defineProperty(this, 'address', address);
     utils.defineProperty(this, 'interface', contractInterface);
+    utils.defineProperty(this, 'signer', signer);
+    utils.defineProperty(this, 'provider', provider);
 
-    var self = this;
-
+    /*
     var filters = {};
     function setupFilter(call, callback) {
         var info = filters[call.name];
@@ -45,7 +67,7 @@ function Contract(wallet, contractAddress, contractInterface) {
 
         info = {callback: callback};
         filters[call.name] = info;
-
+*/
         // Start a new filter
 /*
         info.filter = web3.eth.filter({
@@ -65,15 +87,16 @@ function Contract(wallet, contractAddress, contractInterface) {
             }
         });
 */
-    }
+//    }
+
     function runMethod(method, estimateOnly) {
         return function() {
-            var provider = wallet._provider;
-
             var transaction = {}
 
             var params = Array.prototype.slice.call(arguments);
-            if (params.length == contractInterface[method].inputs.length + 1) {
+
+            // If 1 extra parameter was passed in, it contains overrides
+            if (params.length == method.inputs.length + 1) {
                 transaction = params.pop();
                 if (typeof(transaction) !== 'object') {
                     throw new Error('invalid transaction overrides');
@@ -86,32 +109,45 @@ function Contract(wallet, contractAddress, contractInterface) {
             }
 
 
-            var call = contractInterface[method].apply(contractInterface, params);
+            var call = method.apply(contractInterface, params);
             switch (call.type) {
                 case 'call':
+
+                    // Call (constant functions) always cost 0 ether
+                    if (estimateOnly) {
+                        return Promise.resolve(new utils.bigNumberify(0));
+                    }
+
+                    // Check overrides make sense
                     ['data', 'gasLimit', 'gasPrice', 'to', 'value'].forEach(function(key) {
                         if (transaction[key] != null) {
                             throw new Error('call cannot override ' + key) ;
                         }
                     });
+
                     transaction.data = call.data;
-                    if (transaction.from == null) {
-                        transaction.from = wallet.address;
-                    }
-                    transaction.to = contractAddress;
 
-                    if (estimateOnly) {
-                        return new Promise(function(resolve, reject) {
-                            resolve(new utils.bigNumberify(0));
+                    var fromPromise = null;
+                    if (transaction.from == null && signer) {
+                        fromPromise = new Promise(function(resolve, reject) {
+                            var address = signer.address;
+                            if (address instanceof Promise) { return address; }
+                            resolve(address);
                         });
+                    } else {
+                        fromPromise = Promise.resolve(null);
                     }
 
-                    return new Promise(function(resolve, reject) {
-                        provider.call(transaction).then(function(value) {
-                            resolve(call.parse(value));
-                        }, function(error) {
-                            reject(error);
-                        });
+                    transaction.to = address;
+
+
+                    return fromPromise.then(function(address) {
+                        if (address) {
+                            transaction.from = utils.getAddress(address);
+                        }
+                        return provider.call(transaction);
+                    }).then(function(value) {
+                        return call.parse(value);
                     });
 
                 case 'transaction':
@@ -120,47 +156,44 @@ function Contract(wallet, contractAddress, contractInterface) {
                             throw new Error('transaction cannot override ' + key) ;
                         }
                     });
+
                     transaction.data = call.data;
-                    transaction.to = contractAddress;
+
+                    transaction.to = address;
                     if (transaction.gasLimit == null) {
                         transaction.gasLimit = 3000000;
                     }
 
                     if (estimateOnly) {
-                        return new Promise(function(resolve, reject) {
-                            provider.estimateGas(transaction).then(function(gasEstimate) {
-                                resolve(gasEstimate);
-                            }, function(error) {
-                                reject(error);
-                            });
-                        });
+                        return provider.estimateGas(transaction)
                     }
 
-                    return new Promise(function(resolve, reject) {
-                        Promise.all([
-                            provider.getTransactionCount(wallet.address, 'pending'),
-                            provider.getGasPrice(),
-                        ]).then(function(results) {
-                            if (transaction.nonce == null) {
-                                transaction.nonce = results[0];
-                            } else if (console.warn) {
-                                console.warn('Overriding suggested nonce: ' + results[0]);
-                            }
-                            if (transaction.gasPrice == null) {
-                                transaction.gasPrice = results[1];
-                            } else if (console.warn) {
-                                console.warn('Overriding suggested gasPrice: ' + utils.hexlify(results[1]));
-                            }
+                    var gasPricePromise = null;
+                    var noncePromise = null;
+                    if (transaction.nonce) {
+                        noncePromise = Promise.resolve(transaction.nonce)
+                    } else {
+                        noncePromise = provider.getTransactionCount(signer.address, 'pending');
+                    }
 
-                            var signedTransaction = wallet.sign(transaction);
-                            provider.sendTransaction(signedTransaction).then(function(txid) {
-                                resolve(txid);
-                            }, function(error) {
-                                reject(error);
-                            });
-                        }, function(error) {
-                            reject(error);
-                        });
+                    if (transaction.gasPrice) {
+                        gasPricePromise = Promise.resolve(transaction.gasPrice);
+                    } else {
+                        gasPricePromise = provider.getGasPrice();
+                    }
+
+                    return Promise.all([
+                        noncePromise,
+                        gasPricePromise
+
+                    ]).then(function(results) {
+                        transaction.nonce = results[0];
+                        transaction.gasPrice = results[1];
+
+                        return signer.sign(transaction);
+
+                    }).then(function(signedTransaction) {
+                        return provider.sendTransaction(signedTransaction);
                     });
             }
         };
@@ -169,25 +202,94 @@ function Contract(wallet, contractAddress, contractInterface) {
     var estimate = {};
     utils.defineProperty(this, 'estimate', estimate);
 
-    contractInterface.methods.forEach(function(method) {
-        utils.defineProperty(this, method, runMethod(method, false));
-        utils.defineProperty(estimate, method, runMethod(method, true));
+    var execute = {};
+    utils.defineProperty(this, 'execute', execute);
+
+    var events = {};
+    utils.defineProperty(this, 'events', events);
+
+    Object.keys(contractInterface.functions).forEach(function(methodName) {
+        var method = contractInterface.functions[methodName];
+
+        var run = runMethod(method, false);
+
+        if (this[methodName] == null) {
+            utils.defineProperty(this, methodName, run);
+        } else {
+            console.log('WARNING: Multiple definitions for ' + method);
+        }
+
+        if (execute[method] == null) {
+            utils.defineProperty(execute, methodName, run);
+            utils.defineProperty(estimate, methodName, runMethod(method, true));
+        }
     }, this);
 
-    contractInterface.events.forEach(function(method) {
-        var call = contractInterface[method].apply(contractInterface, []);
-        Object.defineProperty(self, 'on' + call.name.toLowerCase(), {
+    Object.keys(contractInterface.events).forEach(function(eventName) {
+        var eventInfo = contractInterface.events[eventName]();
+
+        var eventCallback = null;
+
+        function handleEvent(log) {
+            try {
+                var result = eventInfo.parse(log.data);
+                eventCallback.apply(log, Array.prototype.slice.call(result));
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        var property = {
             enumerable: true,
             get: function() {
-                var info = filters[call.name];
-                if (!info || !info[call.name]) { return null; }
-                return info.callback;
+                return eventCallback;
             },
             set: function(value) {
-                setupFilter(call, value);
+                if (!value) { value = null; }
+
+                if (!value && eventCallback) {
+                    provider.removeListener(eventInfo.topics, handleEvent);
+
+                } else if (value && !eventCallback) {
+                    provider.on(eventInfo.topics, handleEvent);
+                }
+
+                eventCallback = value;
             }
-        });
+        };
+
+        var propertyName = 'on' + eventName.toLowerCase();
+        if (this[propertyName] == null) {
+            Object.defineProperty(this, propertyName, property);
+        }
+
+        Object.defineProperty(events, eventName, property);
+
     }, this);
 }
+/*
+utils.defineProperty(Contract, 'getDeployTransaction', function(bytecode, contractInterface) {
+    if (typeof(contractInterface) === 'string') {
+        contractInterface = new Interface(contractInterface);
+    }
 
+    bytecode = utils.hexlify(bytecode);
+
+    var args = Array.prototype.slice.call(arguments, 2);
+
+    if (contractInterface.constructorFunction) {
+        var init = contractInterface.constructorFunction.apply(contractInterface, args);
+        console.log(init);
+        bytecode += init.data.substring(2);
+    } else {
+        if (args.length) { throw new Error('constructor takes no parameters'); }
+    }
+
+    console.log('deploy', bytecode, args, init);
+
+    return {
+        data: bytecode
+    }
+});
+*/
 module.exports = Contract;
