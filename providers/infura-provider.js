@@ -1,5 +1,3 @@
-var inherits = require('inherits');
-
 var JsonRpcProvider = require('./json-rpc-provider.js');
 
 var utils = (function() {
@@ -18,7 +16,6 @@ function InfuraProvider(testnet, apiAccessToken) {
 
     utils.defineProperty(this, 'apiAccessToken', apiAccessToken || null);
 }
-
-inherits(InfuraProvider, JsonRpcProvider);
+JsonRpcProvider.inherits(InfuraProvider);
 
 module.exports = InfuraProvider;
