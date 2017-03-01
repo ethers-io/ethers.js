@@ -43,52 +43,6 @@ function Contract(address, contractInterface, signerOrProvider) {
     utils.defineProperty(this, 'signer', signer);
     utils.defineProperty(this, 'provider', provider);
 
-    /*
-    var filters = {};
-    function setupFilter(call, callback) {
-        var info = filters[call.name];
-
-        // Stop and remove the filter
-        if (!callback) {
-            if (info) { info.filter.stopWatching(); }
-            delete filters[call.name];
-            return;
-        }
-
-        if (typeof(callback) !== 'function') {
-            throw new Error('invalid callback');
-        }
-
-        // Already have a filter, just update the callback
-        if (info) {
-            info.callback = callback;
-            return;
-        }
-
-        info = {callback: callback};
-        filters[call.name] = info;
-*/
-        // Start a new filter
-/*
-        info.filter = web3.eth.filter({
-            address: contractAddress,
-            topics: call.topics
-        }, function(error, result) {
-            // @TODO: Emit errors to .onerror? Maybe?
-            if (error) {
-                console.log(error);
-                return;
-            }
-
-            try {
-                info.callback.apply(self, call.parse(result.data));
-            } catch(error) {
-                console.log(error);
-            }
-        });
-*/
-//    }
-
     function runMethod(method, estimateOnly) {
         return function() {
             var transaction = {}
@@ -140,7 +94,6 @@ function Contract(address, contractInterface, signerOrProvider) {
 
                     transaction.to = address;
 
-
                     return fromPromise.then(function(address) {
                         if (address) {
                             transaction.from = utils.getAddress(address);
@@ -151,6 +104,8 @@ function Contract(address, contractInterface, signerOrProvider) {
                     });
 
                 case 'transaction':
+                    if (!signer) { return Promise.reject(new Error('missing signer')); }
+
                     ['data', 'from', 'to'].forEach(function(key) {
                         if (transaction[key] != null) {
                             throw new Error('transaction cannot override ' + key) ;
@@ -160,12 +115,13 @@ function Contract(address, contractInterface, signerOrProvider) {
                     transaction.data = call.data;
 
                     transaction.to = address;
-                    if (transaction.gasLimit == null) {
-                        transaction.gasLimit = 3000000;
-                    }
 
                     if (estimateOnly) {
                         return provider.estimateGas(transaction)
+                    }
+
+                    if (transaction.gasLimit == null) {
+                        transaction.gasLimit = signer.defaultGasRate || 2000000;
                     }
 
                     var gasPricePromise = null;
@@ -267,29 +223,18 @@ function Contract(address, contractInterface, signerOrProvider) {
 
     }, this);
 }
-/*
+
 utils.defineProperty(Contract, 'getDeployTransaction', function(bytecode, contractInterface) {
     if (typeof(contractInterface) === 'string') {
         contractInterface = new Interface(contractInterface);
     }
 
-    bytecode = utils.hexlify(bytecode);
-
-    var args = Array.prototype.slice.call(arguments, 2);
-
-    if (contractInterface.constructorFunction) {
-        var init = contractInterface.constructorFunction.apply(contractInterface, args);
-        console.log(init);
-        bytecode += init.data.substring(2);
-    } else {
-        if (args.length) { throw new Error('constructor takes no parameters'); }
-    }
-
-    console.log('deploy', bytecode, args, init);
+    var args = Array.prototype.slice.call(arguments);
+    args.splice(1, 1);
 
     return {
-        data: bytecode
+        data: contractInterface.deployFunction.apply(contractInterface, args).bytecode
     }
 });
-*/
+
 module.exports = Contract;

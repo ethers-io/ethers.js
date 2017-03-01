@@ -344,6 +344,7 @@ function testDeploy(test) {
     var valueUint = parseInt((new Date()).getTime());
     var valueString = 'HelloWorld-' + valueUint;
 
+    /*
     var contractInterface = new contracts.Interface(TestContractDeploy.interface);
     var deployInfo = contractInterface.deployFunction(
         TestContractDeploy.bytecode,
@@ -354,6 +355,14 @@ function testDeploy(test) {
     var transaction = {
         data: deployInfo.bytecode
     };
+    */
+
+    var transaction = contracts.Contract.getDeployTransaction(
+        TestContractDeploy.bytecode,
+        TestContractDeploy.interface,
+        valueUint,
+        valueString
+    );
 
     var contract = null;
 
