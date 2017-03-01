@@ -23,13 +23,25 @@ var callFallback = (function() {
 })();
 
 var privateKey = null;
-try {
-    privateKey = fs.readFileSync('.test-account.key').toString();
-    console.log('Found privateKey!');
-} catch (error) {
-    console.log('Creating new private key!');
-    privateKey = utils.hexlify(utils.randomBytes(32));
-    fs.writeFileSync('.test-account.key', privateKey);
+if (fs && fs.readFileSync) {
+    try {
+        privateKey = fs.readFileSync('.test-account.key').toString();
+        console.log('Found privateKey!');
+    } catch (error) {
+        console.log('Creating new private key!');
+        privateKey = utils.hexlify(utils.randomBytes(32));
+        fs.writeFileSync('.test-account.key', privateKey);
+    }
+
+} else {
+    privateKey = global.localStorage.getItem('ethers-tests-privateKey');
+    if (privateKey) {
+        console.log('Found privateKey');
+    } else {
+        console.log('Creating new private key!');
+        privateKey = utils.hexlify(utils.randomBytes(32));
+        global.localStorage.setItem('ethers-tests-privateKey', privateKey);
+    }
 }
 
 var provider = providers.getDefaultProvider(true);
