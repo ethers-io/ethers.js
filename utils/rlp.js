@@ -48,7 +48,6 @@ function _encode(object) {
         }
 
         var length = arrayifyInteger(object.length);
-
         length.unshift(0xb7 + length.length);
 
         return length.concat(object);
@@ -59,8 +58,22 @@ function encode(object) {
     return convert.hexlify(_encode(object));
 }
 
-/*
-*/
+function _decodeChildren(data, offset, childOffset, length) {
+    var result = [];
+
+    while (childOffset < offset + 1 + length) {
+        var decoded = _decode(data, childOffset);
+
+        result.push(decoded.result);
+
+        childOffset += decoded.consumed;
+        if (childOffset > offset + 1 + length) {
+            throw new Error('invalid rlp');
+        }
+    }
+
+    return {consumed: (1 + length), result: result};
+}
 
 // returns { consumed: number, result: Object }
 function _decode(data, offset) {
@@ -78,21 +91,7 @@ function _decode(data, offset) {
             throw new Error('to short');
         }
 
-        var result = [];
-
-        var childOffset = offset + 1 + lengthLength;
-        while (childOffset < offset + 1 + lengthLength + length) {
-            var decoded = _decode(data, childOffset);
-
-            result.push(decoded.result);
-
-            childOffset += decoded.consumed;
-            if (childOffset > offset + 1 + lengthLength + length) {
-                throw new Error('hungry child');
-            }
-        }
-
-        return {consumed: (1 + lengthLength + length), result: result};
+        return _decodeChildren(data, offset, offset + 1 + lengthLength, lengthLength + length);
 
     } else if (data[offset] >= 0xc0) {
         var length = data[offset] - 0xc0;
@@ -100,20 +99,7 @@ function _decode(data, offset) {
             throw new Error('invalid rlp data');
         }
 
-        var result = [];
-
-        var childOffset = offset + 1;
-        while (childOffset < offset + 1 + length) {
-            var decoded = _decode(data, childOffset);
-            result.push(decoded.result);
-
-            childOffset += decoded.consumed;
-            if (childOffset > offset + 1 + length) {
-                throw new Error('invalid rlp data');
-            }
-        }
-
-        return { consumed: (1 + length), result: result };
+        return _decodeChildren(data, offset, offset + 1, length);
 
     } else if (data[offset] >= 0xb8) {
         var lengthLength = data[offset] - 0xb7;
