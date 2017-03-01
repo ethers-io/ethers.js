@@ -26,7 +26,7 @@ function getResult(payload) {
 }
 
 function getTransaction(transaction) {
-    var result = [];
+    var result = {};
     for (var key in transaction) {
         result[key] = utils.hexlify(transaction[key]);
     }
@@ -42,7 +42,7 @@ function JsonRpcProvider(url, testnet, chainId) {
 
     utils.defineProperty(this, 'url', url);
 }
-inherits(JsonRpcProvider, Provider);
+Provider.inherits(JsonRpcProvider);
 
 utils.defineProperty(JsonRpcProvider.prototype, 'send', function(method, params) {
     var request = {
@@ -92,13 +92,12 @@ utils.defineProperty(JsonRpcProvider.prototype, 'perform', function(method, para
             return this.send('eth_getTransactionReceipt', [params.transactionHash]);
 
         case 'call':
-            return this.send('eth_call', [getTransaction(params.transaction)]);
+            return this.send('eth_call', [getTransaction(params.transaction), 'latest']);
 
         case 'estimateGas':
             return this.send('eth_estimateGas', [getTransaction(params.transaction)]);
 
         case 'getLogs':
-            console.log('FFF', params.filter);
             return this.send('eth_getLogs', [params.filter]);
 
         default:
