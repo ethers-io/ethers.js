@@ -24,12 +24,12 @@ var callFallback = (function() {
 
 var privateKey = null;
 try {
-    privateKey = fs.readFileSync('.run-providers-account').toString();
+    privateKey = fs.readFileSync('.test-account.key').toString();
     console.log('Found privateKey!');
 } catch (error) {
     console.log('Creating new private key!');
     privateKey = utils.hexlify(utils.randomBytes(32));
-    fs.writeFileSync('.run-providers-account', privateKey);
+    fs.writeFileSync('.test-account.key', privateKey);
 }
 
 var provider = providers.getDefaultProvider(true);

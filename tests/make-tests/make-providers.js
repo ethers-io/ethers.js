@@ -11,12 +11,12 @@ var utils = require('./utils.js');
 
 var privateKey = null;
 try {
-    privateKey = fs.readFileSync('.make-providers-account').toString();
+    privateKey = fs.readFileSync('.test-account.key').toString();
     console.log('Found privateKey: ' + privateKey);
 } catch (error) {
     privateKey = convert.hexlify(ethers.utils.randomBytes(32));
     console.log('Created new private key: ' + privateKey);
-    fs.writeFileSync('.make-providers-account', privateKey);
+    fs.writeFileSync('.test-account.key', privateKey);
 }
 
 var sourcePath = path.join(__dirname, 'test-contracts/TestContract.sol');
