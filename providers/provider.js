@@ -1,18 +1,23 @@
 
+var inherits = require('inherits');
+
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 var utils = (function() {
-    var convert = require('ethers-utils/convert.js');
+    var convert = require('ethers-utils/convert');
     return {
-        defineProperty: require('ethers-utils/properties.js').defineProperty,
+        defineProperty: require('ethers-utils/properties').defineProperty,
 
-        getAddress: require('ethers-utils/address.js').getAddress,
+        getAddress: require('ethers-utils/address').getAddress,
+        getContractAddress: require('ethers-utils/contract-address').getContractAddress,
 
-        bigNumberify: require('ethers-utils/bignumber.js').bigNumberify,
+        bigNumberify: require('ethers-utils/bignumber').bigNumberify,
         arrayify: convert.arrayify,
 
         hexlify: convert.hexlify,
         isHexString: convert.isHexString,
+
+        rlp: require('ethers-utils/rlp'),
     }
 })();
 
@@ -62,13 +67,23 @@ function arrayOf(check) {
 
 function checkHash(hash) {
     if (!utils.isHexString(hash) || hash.length !== 66) {
-        throw new Error('invalid hash');
+        throw new Error('invalid hash - ' + hash);
     }
     return hash;
 }
 
 function checkNumber(number) {
     return utils.bigNumberify(number).toNumber();
+}
+
+function checkUint256(uint256) {
+    if (!utils.isHexString(uint256)) {
+        throw new Error('invalid uint256');
+    }
+    while (uint256.length < 66) {
+        uint256 = '0x0' + uint256.substring(2);
+    }
+    return uint256;
 }
 
 function checkString(string) {
@@ -105,7 +120,7 @@ var formatBlock = {
     gasLimit: utils.bigNumberify,
     gasUsed: utils.bigNumberify,
 
-    author: utils.getAddress,
+    miner: utils.getAddress,
     extraData: utils.hexlify,
 
     //transactions: allowNull(arrayOf(checkTransaction)),
@@ -119,6 +134,9 @@ var formatBlock = {
 };
 
 function checkBlock(block) {
+    if (block.author != null && block.miner == null) {
+        block.miner = block.author;
+    }
     return check(formatBlock, block);
 }
 
@@ -139,8 +157,8 @@ var formatTransaction = {
    nonce: checkNumber,
    data: utils.hexlify,
 
-   r: checkHash,
-   s: checkHash,
+   r: checkUint256,
+   s: checkUint256,
    v: checkNumber,
 
    creates: allowNull(utils.getAddress, null),
@@ -153,7 +171,30 @@ function checkTransaction(transaction) {
     if (transaction.input != null && transaction.data == null) {
         transaction.data = transaction.input;
     }
-    return check(formatTransaction, transaction);
+
+    if (transaction.to == null && transaction.creates == null) {
+        transaction.creates = utils.getContractAddress(transaction);
+    }
+
+    var result = check(formatTransaction, transaction);
+    if (result.blockHash && result.blockHash.replace(/0/g, '') === 'x') {
+        result.blockHash = null;
+    }
+
+    return result;
+}
+
+var formatTransactionRequest = {
+    nonce: allowNull(checkNumber),
+    gasLimit: allowNull(utils.bigNumberify),
+    gasPrice: allowNull(utils.bigNumberify),
+    to: allowNull(utils.getAddress),
+    value: allowNull(utils.bigNumberify),
+    data: allowNull(utils.hexlify)
+};
+
+function checkTransactionRequest(transaction) {
+    return check(formatTransactionRequest, transaction);
 }
 
 var formatTransactionReceiptLog = {
@@ -251,7 +292,8 @@ function Provider(testnet, chainId) {
     var self = this;
 
     var lastBlockNumber = null;
-    var poller = setInterval(function() {
+
+    function doPoll() {
         self.getBlockNumber().then(function(blockNumber) {
 
             // If the block hasn't changed, meh.
@@ -263,26 +305,70 @@ function Provider(testnet, chainId) {
             for (var i = lastBlockNumber + 1; i <= blockNumber; i++) {
                 self.emit('block', i);
             }
-            lastBlockNumber = blockNumber;
 
             // Find all transaction hashes we are waiting on
-            for (var eventName in events) {
-                if (utils.isHexString(eventName) && eventName.length === 66) {
-                    eventName = getString(eventName);
-                    self.getTransaction(eventName).then(function(transaction) {
+            Object.keys(events).forEach(function(eventName) {
+                var event = parseEventString(eventName);
+
+                if (event.type === 'transaction') {
+                    self.getTransaction(event.hash).then(function(transaction) {
                         if (!transaction.blockNumber) { return; }
-                        self.emit(eventName, transaction);
+                        self.emit(event.hash, transaction);
+                    });
+
+                } else if (event.type === 'topic') {
+                    self.getLogs({
+                        fromBlock: lastBlockNumber + 1,
+                        toBlock: blockNumber,
+                        topics: event.topic
+                    }).then(function(logs) {
+                        if (logs.length === 0) { return; }
+                        logs.forEach(function(log) {
+                            self.emit(event.topic, log);
+                        });
                     });
                 }
-            }
+            });
+
+            lastBlockNumber = blockNumber;
         });
 
         self.doPoll();
-    }, 4000);
+    }
 
-    if (poller.unref) { poller.unref(); }
+    var poller = null;
+    Object.defineProperty(this, 'polling', {
+        get: function() { return (poller != null); },
+        set: function(value) {
+            setTimeout(function() {
+                if (value && !poller) {
+                    poller = setInterval(doPoll, 4000);
+
+                } else if (!value && poller) {
+                    clearInterval(poller);
+                    poller = null;
+                }
+            }, 0);
+        }
+    });
 }
 
+function inheritable(parent) {
+    return function(child) {
+        inherits(child, parent);
+        utils.defineProperty(child, 'inherits', inheritable(child));
+    }
+}
+
+utils.defineProperty(Provider, 'inherits', inheritable(Provider));
+/*
+function(child) {
+    inherits(child, Provider);
+    child.inherits = function(grandchild) {
+        inherits(grandchild, child)
+    }
+});
+*/
 utils.defineProperty(Provider, 'chainId', {
     homestead: 1,
     morden: 2,
@@ -308,17 +394,8 @@ utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
         request.onreadystatechange = function() {
             if (request.readyState !== 4) { return; }
 
-            if (request.status != 200) {
-                var error = new Error('invalid response');
-                error.statusCode = request.statusCode;
-                reject(error);
-                return;
-            }
-
-            var result = request.responseText;
-
             try {
-                result = JSON.parse(result);
+                var result = JSON.parse(request.responseText);
             } catch (error) {
                 var jsonError = new Error('invalid json response');
                 jsonError.orginialError = error;
@@ -331,10 +408,19 @@ utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
                 try {
                     result = processFunc(result);
                 } catch (error) {
+                    error.url = url;
+                    error.body = json;
                     error.responseText = request.responseText;
                     reject(error);
                     return;
                 }
+            }
+
+            if (request.status != 200) {
+                var error = new Error('invalid response - ' + request.status);
+                error.statusCode = request.statusCode;
+                reject(error);
+                return;
             }
 
             resolve(result);
@@ -361,29 +447,20 @@ utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
 
 
 utils.defineProperty(Provider.prototype, 'waitForTransaction', function(transactionHash, timeout) {
-    return new Promise(function() {
-        var done = false;
+    var self = this;
+    return new Promise(function(resolve, reject) {
         var timer = null;
 
         function complete(transaction) {
-            if (done) { return; }
-            done = true;
-
-            if (timer) {
-                clearTimeout(timer);
-                timer = null;
-            }
-
+            if (timer) { clearTimeout(timer); }
             resolve(transaction);
         }
 
-        function checkTransaction(transaction) {
-        }
+        self.once(transactionHash, complete);
 
         if (typeof(timeout) === 'number' && timeout > 0) {
             timer = setTimeout(function() {
-                done = true;
-                timer = null;
+                self.removeListener(transactionHash, complete);
                 reject(new Error('timeout'));
             }, timeout);
         }
@@ -396,7 +473,7 @@ utils.defineProperty(Provider.prototype, 'getBlockNumber', function() {
     try {
         return this.perform('getBlockNumber').then(function(result) {
             var value = parseInt(result);
-            if (value != result) { throw new Error('invalid response'); }
+            if (value != result) { throw new Error('invalid response - getBlockNumber'); }
             return value;
         });
     } catch (error) {
@@ -431,7 +508,7 @@ utils.defineProperty(Provider.prototype, 'getTransactionCount', function(address
         var params = {address: utils.getAddress(address), blockTag: checkBlockTag(blockTag)};
         return this.perform('getTransactionCount', params).then(function(result) {
             var value = parseInt(result);
-            if (value != result) { throw new Error('invalid response'); }
+            if (value != result) { throw new Error('invalid response - getTransactionCount'); }
             return value;
         });
     } catch (error) {
@@ -470,7 +547,7 @@ utils.defineProperty(Provider.prototype, 'sendTransaction', function(signedTrans
         var params = {signedTransaction: utils.hexlify(signedTransaction)};
         return this.perform('sendTransaction', params).then(function(result) {
             result = utils.hexlify(result);
-            if (result.length !== 66) { throw new Error('invalid response'); }
+            if (result.length !== 66) { throw new Error('invalid response - sendTransaction'); }
             return result;
         });
     } catch (error) {
@@ -481,7 +558,7 @@ utils.defineProperty(Provider.prototype, 'sendTransaction', function(signedTrans
 
 utils.defineProperty(Provider.prototype, 'call', function(transaction) {
     try {
-        var params = {transaction: checkTransaction(transaction)};
+        var params = {transaction: checkTransactionRequest(transaction)};
         return this.perform('call', params).then(function(result) {
             return utils.hexlify(result);
         });
@@ -492,8 +569,8 @@ utils.defineProperty(Provider.prototype, 'call', function(transaction) {
 
 utils.defineProperty(Provider.prototype, 'estimateGas', function(transaction) {
     try {
-        var params = {transaction: checkTransaction(transaction)};
-        return this.perform('call', params).then(function(result) {
+        var params = {transaction: checkTransactionRequest(transaction)};
+        return this.perform('estimateGas', params).then(function(result) {
              return utils.bigNumberify(result);
         });
     } catch (error) {
@@ -530,7 +607,8 @@ utils.defineProperty(Provider.prototype, 'getTransaction', function(transactionH
     try {
         var params = {transactionHash: checkHash(transactionHash)};
         return this.perform('getTransaction', params).then(function(result) {
-            return checkTransaction(result);
+            if (result != null) { result = checkTransaction(result); }
+            return result;
         });
     } catch (error) {
         return Promise.reject(error);
@@ -541,7 +619,8 @@ utils.defineProperty(Provider.prototype, 'getTransactionReceipt', function(trans
     try {
         var params = {transactionHash: checkHash(transactionHash)};
         return this.perform('getTransactionReceipt', params).then(function(result) {
-            return checkTransactionReceipt(result);
+            if (result != null) { result = checkTransactionReceipt(result); }
+            return result;
         });
     } catch (error) {
         return Promise.reject(error);
@@ -579,38 +658,80 @@ utils.defineProperty(Provider.prototype, 'perform', function(method, params) {
     return Promise.reject(new Error('not implemented - ' + method));
 });
 
-function getString(object) {
+function recurse(object, convertFunc) {
     if (Array.isArray(object)) {
-        var  result = [];
-        for (var i = 0; i < object.length; i++) {
-            result.push(getString(object[i]));
+        var result = [];
+        object.forEach(function(object) {
+            result.push(recurse(object, convertFunc));
+        });
+        return result;
+    }
+    return convertFunc(object);
+}
+
+function getEventString(object) {
+    if (object === 'block') {
+        return 'block';
+
+    } else if (utils.isHexString(object)) {
+        if (object.length === 66) {
+            return 'tx:' + object;
         }
-        return '[' + result.join(',') + ']';
+    } else if (Array.isArray(object)) {
+        object = recurse(object, function(object) {
+            if (object == null) { object = '0x'; }
+            return object;
+        });
 
-    } else if (typeof(object) === 'string') {
-        return object;
-
-    } else if (object == null) {
-        return 'null';
+        try {
+            return 'topic:' + utils.rlp.encode(object);
+        } catch (error) {
+            console.log(error);
+        }
     }
 
-    throw new Error('invalid topic');
+    throw new Error('invalid event - ' + object);
+}
+
+function parseEventString(string) {
+    if (string.substring(0, 3) === 'tx:') {
+        return {type: 'transaction', hash: string.substring(3)};
+
+    } else if (string === 'block') {
+        return {type: 'block'};
+
+    } else if (string.substring(0, 6) === 'topic:') {
+        try {
+            var object = utils.rlp.decode(string.substring(6));
+            object = recurse(object, function(object) {
+                if (object === '0x') { object = null; }
+                return object;
+            });
+            return {type: 'topic', topic: object};
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    throw new Error('invalid event string');
 }
 
 utils.defineProperty(Provider.prototype, 'on', function(eventName, listener) {
-    var key = getString(eventName);
-    if (!this._events[key]) { this._events[eventName] = []; }
+    var key = getEventString(eventName);
+    if (!this._events[key]) { this._events[key] = []; }
     this._events[key].push({eventName: eventName, listener: listener, type: 'on'});
+    this.polling = true;
 });
 
 utils.defineProperty(Provider.prototype, 'once', function(eventName, listener) {
-    var key = getString(eventName);
-    if (!this._events[key]) { this._events[eventName] = []; }
-    this._events[key].push({listener: listener, type: 'once'});
+    var key = getEventString(eventName);
+    if (!this._events[key]) { this._events[key] = []; }
+    this._events[key].push({eventName: eventName, listener: listener, type: 'once'});
+    this.polling = true;
 });
 
 utils.defineProperty(Provider.prototype, 'emit', function(eventName) {
-    var key = getString(eventName);
+    var key = getEventString(eventName);
 
     var args = Array.prototype.slice.call(arguments, 1);
     var listeners = this._events[key];
@@ -618,9 +739,8 @@ utils.defineProperty(Provider.prototype, 'emit', function(eventName) {
 
     for (var i = 0; i < listeners.length; i++) {
         var listener = listeners[i];
-
         if (listener.type === 'once') {
-            delete listeners[i];
+            listeners.splice(i, 1);
             i--;
         }
 
@@ -630,39 +750,50 @@ utils.defineProperty(Provider.prototype, 'emit', function(eventName) {
             console.log('Event Listener Error: ' + error.message);
         }
     }
-console.log('LLL', listeners);
+
     if (listeners.length === 0) { delete this._events[key]; }
+    if (this.listenerCount() === 0) { this.polling = false; }
 });
 
 utils.defineProperty(Provider.prototype, 'listenerCount', function(eventName) {
-    var listeners = this._events[getString(eventName)];
+    if (!eventName) {
+        var result = 0;
+        for (var key in this._events) {
+            result += this._events[key].length;
+        }
+        return result;
+    }
+
+    var listeners = this._events[getEventString(eventName)];
     if (!listeners) { return 0; }
     return listeners.length;
 });
 
 utils.defineProperty(Provider.prototype, 'listeners', function(eventName) {
-    var listeners = this._events[getString(eventName)];
+    var listeners = this._events[getEventString(eventName)];
     if (!listeners) { return 0; }
     var result = [];
     for (var i = 0; i < listeners.length; i++) {
-        result.push(lisrteners[i].listener);
+        result.push(listeners[i].listener);
     }
     return result;
 });
 
 utils.defineProperty(Provider.prototype, 'removeAllListeners', function(eventName) {
-    delete this._events[getString(eventName)];
+    delete this._events[getEventString(eventName)];
+    if (this.listenerCount() === 0) { this.polling = false; }
 });
 
 utils.defineProperty(Provider.prototype, 'removeListener', function(eventName, listener) {
-    var listeners = this._events[getString(eventName)];
+    var listeners = this._events[getEventString(eventName)];
     if (!listeners) { return 0; }
     for (var i = 0; i < listeners.length; i++) {
         if (listeners[i].listener === listener) {
-            delete listeners[i];
+            listeners.splice(i, 1);
             return;
         }
     }
+    if (this.listenerCount() === 0) { this.polling = false; }
 });
 
 module.exports = Provider;
