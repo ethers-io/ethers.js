@@ -1,5 +1,6 @@
 'use strict';
 
+// See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
 var utils = (function() {
     var convert = require('ethers-utils/convert.js');
@@ -12,6 +13,8 @@ var utils = (function() {
         padZeros: convert.padZeros,
 
         bigNumberify: require('ethers-utils/bignumber.js').bigNumberify,
+
+        getAddress: require('ethers-utils/address').getAddress,
 
         concat: convert.concat,
 
@@ -126,7 +129,7 @@ var coderAddress = {
         if (data.length < offset + 32) { throw new Error('invalid address'); }
         return {
             consumed: 32,
-            value: utils.hexlify(data.slice(offset + 12, offset + 32))
+            value: utils.getAddress(utils.hexlify(data.slice(offset + 12, offset + 32)))
         }
     }
 }
@@ -306,34 +309,73 @@ function populateDescription(object, items) {
 function CallDescription() { }
 utils.defineProperty(CallDescription.prototype, 'type', 'call');
 
+function DeployDescription() { }
+utils.defineProperty(DeployDescription.prototype, 'type', 'deploy');
+
 function TransactionDescription() { }
 utils.defineProperty(TransactionDescription.prototype, 'type', 'transaction');
 
 function EventDescription() { }
 utils.defineProperty(EventDescription.prototype, 'type', 'event');
 
-function UnsupportedDescription() { }
-utils.defineProperty(UnsupportedDescription.prototype, 'type', 'unknown');
-
-
 function Interface(abi) {
     if (!(this instanceof Interface)) { throw new Error('missing new'); }
+
+    if (typeof(abi) === 'string') {
+        try {
+            abi = JSON.parse(abi);
+        } catch (error) {
+            throw new Error('invalid abi');
+        }
+    }
 
     // Wrap this up as JSON so we can return a "copy" and avoid mutation
     defineFrozen(this, 'abi', abi);
 
-    var methods = [], events = [];
-    abi.forEach(function(method) {
-
-        var func = null;
+    var methods = {}, events = {};
+    function addMethod(method) {
 
         switch (method.type) {
-            case 'function':
-                methods.push(method.name);
-                func = (function() {
+            case 'constructor':
+                var func = (function() {
                     var inputTypes = getKeys(method.inputs, 'type');
-                    var outputTypes = getKeys(method.outputs, 'type');
-                    var outputNames = getKeys(method.outputs, 'name', true);
+                    var func = function(bytecode) {
+                        if (!utils.isHexString(bytecode)) {
+                            throw new Error('invalid bytecode');
+                        }
+
+                        var params = Array.prototype.slice.call(arguments, 1);
+                        if (params.length < inputTypes.length) {
+                            throw new Error('missing parameter');
+                        } else if (params.length > inputTypes.length) {
+                            throw new Error('too many parameters');
+                        }
+
+                        var result = {
+                            bytecode: bytecode + Interface.encodeParams(inputTypes, params).substring(2),
+                        }
+
+                        return populateDescription(new DeployDescription(), result);
+                    }
+
+                    defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
+
+                    return func;
+                })();
+
+                if (this.deployFunction == null) {
+                    utils.defineProperty(this, 'deployFunction', func);
+                }
+
+                break;
+
+            case 'function':
+                var func = (function() {
+                    var inputTypes = getKeys(method.inputs, 'type');
+                    if (method.constant) {
+                        var outputTypes = getKeys(method.outputs, 'type');
+                        var outputNames = getKeys(method.outputs, 'name', true);
+                    }
 
                     var func = function() {
                         var signature = method.name + '(' + getKeys(method.inputs, 'type').join(',') + ')';
@@ -372,11 +414,17 @@ function Interface(abi) {
 
                     return func;
                 })();
+
+                if (method.name && methods[method.name] == null) {
+                    utils.defineProperty(methods, method.name, func);
+                //} else if (this.fallbackFunction == null) {
+                //    utils.defineProperty(this, 'fallbackFunction', func);
+                }
+
                 break;
 
             case 'event':
-                events.push(method.name);
-                func = (function() {
+                var func = (function() {
                     var inputTypes = getKeys(method.inputs, 'type');
                     var inputNames = getKeys(method.inputs, 'name', true);
                     var func = function() {
@@ -399,24 +447,28 @@ function Interface(abi) {
                     defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
                     return func;
                 })();
+
+                if (method.name && events[method.name] == null) {
+                    utils.defineProperty(events, method.name, func);
+                }
+
                 break;
 
             default:
-                func = (function() {
-                    return function() {
-                        return populateDescription(new UnsupportedDescription(), {});
-                    }
-                })();
+                console.log('WARNING: unsupported ABI type - ' + method.type);
                 break;
         }
+    };
 
-        if (method.name) {
-            utils.defineProperty(this, method.name, func);
-        }
-    }, this);
+    abi.forEach(addMethod, this);
 
-    defineFrozen(this, 'methods', methods);
-    defineFrozen(this, 'events', events);
+    // If there wasn't a constructor, create the default constructor
+    if (!this.deployFunction) {
+        addMethod({type: 'constructor', inputs: []});
+    }
+
+    utils.defineProperty(this, 'functions', methods);
+    utils.defineProperty(this, 'events', events);
 }
 
 
@@ -491,10 +543,34 @@ utils.defineProperty(Interface, 'decodeParams', function(names, types, data) {
             var result = coder.decode(data, offset);
             offset += result.consumed;
         }
+
+        // Add indexed parameter
         values[index] = result.value;
-        if (names[index]) { values[names[index]] = result.value; }
+
+        // Add named parameters
+        if (names[index]) {
+            var name = names[index];
+
+            // We reserve length to make the Result object arrayish
+            if (name === 'length') {
+                console.log('WARNING: result length renamed to _length');
+                name = '_length';
+            }
+
+            if (values[name] == null) {
+                values[name] = result.value;
+            } else {
+                console.log('WARNING: duplicate value - ' + name);
+            }
+        }
     });
+
+    values.length = types.length;
+
     return values;
+});
+
+utils.defineProperty(Interface, 'getDeployTransaction', function(bytecode) {
 });
 
 module.exports = Interface;
