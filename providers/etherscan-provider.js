@@ -1,7 +1,5 @@
 'use strict';
 
-var inherits = require('inherits');
-
 var Provider = require('./provider.js');
 
 var utils = (function() {
@@ -27,7 +25,7 @@ function EtherscanProvider(testnet, apiKey) {
 
     utils.defineProperty(this, 'apiKey', apiKey || null);
 }
-inherits(EtherscanProvider, Provider);
+Provider.inherits(EtherscanProvider);
 
 utils.defineProperty(EtherscanProvider.prototype, '_call', function() {
 });
@@ -36,16 +34,34 @@ utils.defineProperty(EtherscanProvider.prototype, '_callProxy', function() {
 });
 
 function getResult(result) {
-    if (result.status != 1 || result.message != 'OK') {
-        throw new Error('invalid response');
+    // getLogs has weird success responses
+    if (result.status == 0 && result.message === 'No records found') {
+        return result.result;
     }
+
+    if (result.status != 1 || result.message != 'OK') {
+        var error = new Error('invalid response');
+        error.result = JSON.stringify(result);
+        throw error;
+    }
+
     return result.result;
 }
 
 function getJsonResult(result) {
-    if (result.jsonrpc != '2.0' || result.error) {
-        throw new Error('invalid response');
+    if (result.jsonrpc != '2.0') {
+        var error = new Error('invalid response');
+        error.result = JSON.stringify(result);
+        throw error;
     }
+
+    if (result.error) {
+        var error = new Error(result.error.message || 'unknown error');
+        if (result.error.code) { error.code = result.error.code; }
+        if (result.error.data) { error.data = result.error.data; }
+        throw error;
+    }
+
     return result.result;
 }
 
@@ -125,7 +141,7 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
         case 'call':
             var transaction = getTransactionString(params.transaction);
             if (transaction) { transaction = '&' + transaction; }
-            url += '/api?module=proxy&action=call' + transaction;
+            url += '/api?module=proxy&action=eth_call' + transaction;
             url += apiKey;
             return Provider.fetchJSON(url, null, getJsonResult);
 
