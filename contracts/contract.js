@@ -55,6 +55,8 @@ function Contract(address, contractInterface, signerOrProvider) {
                 if (typeof(transaction) !== 'object') {
                     throw new Error('invalid transaction overrides');
                 }
+
+                // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
                 for (var key in transaction) {
                     if (!allowedTransactionKeys[key]) {
                         throw new Error('unknown transaction override ' + key);
@@ -62,8 +64,21 @@ function Contract(address, contractInterface, signerOrProvider) {
                 }
             }
 
+            // Check overrides make sense
+            ['data', 'to'].forEach(function(key) {
+                if (transaction[key] != null) {
+                    throw new Error('cannot override ' + key) ;
+                }
+            });
 
             var call = method.apply(contractInterface, params);
+
+            // Send to the contract address
+            transaction.to = address;
+
+            // Set the transaction data
+            transaction.data = call.data;
+
             switch (call.type) {
                 case 'call':
 
@@ -73,26 +88,22 @@ function Contract(address, contractInterface, signerOrProvider) {
                     }
 
                     // Check overrides make sense
-                    ['data', 'gasLimit', 'gasPrice', 'to', 'value'].forEach(function(key) {
+                    ['gasLimit', 'gasPrice', 'value'].forEach(function(key) {
                         if (transaction[key] != null) {
                             throw new Error('call cannot override ' + key) ;
                         }
                     });
 
-                    transaction.data = call.data;
-
                     var fromPromise = null;
-                    if (transaction.from == null && signer) {
+                    if (transaction.from == null && signer && signer.getAddress) {
                         fromPromise = new Promise(function(resolve, reject) {
-                            var address = signer.address;
+                            var address = signer.getAddress();
                             if (address instanceof Promise) { return address; }
                             resolve(address);
                         });
                     } else {
                         fromPromise = Promise.resolve(null);
                     }
-
-                    transaction.to = address;
 
                     return fromPromise.then(function(address) {
                         if (address) {
@@ -106,25 +117,25 @@ function Contract(address, contractInterface, signerOrProvider) {
                 case 'transaction':
                     if (!signer) { return Promise.reject(new Error('missing signer')); }
 
-                    ['data', 'from', 'to'].forEach(function(key) {
-                        if (transaction[key] != null) {
-                            throw new Error('transaction cannot override ' + key) ;
-                        }
-                    });
+                    // Make sure they aren't overriding something they shouldn't
+                    if (transaction.from != null) {
+                        throw new Error('transaction cannot override from') ;
+                    }
 
-                    transaction.data = call.data;
-
-                    transaction.to = address;
-
+                    // Only computing the transaction estimate
                     if (estimateOnly) {
                         return provider.estimateGas(transaction)
                     }
 
-                    if (transaction.gasLimit == null) {
-                        transaction.gasLimit = signer.defaultGasRate || 2000000;
+                    // If the signer supports sendTrasaction, use it
+                    if (signer.sendTransaction) {
+                        return signer.sendTransaction(transaction);
                     }
 
-                    var gasPricePromise = null;
+                    if (transaction.gasLimit == null) {
+                        transaction.gasLimit = signer.defaultGasLimit || 2000000;
+                    }
+
                     var noncePromise = null;
                     if (transaction.nonce) {
                         noncePromise = Promise.resolve(transaction.nonce)
@@ -132,6 +143,7 @@ function Contract(address, contractInterface, signerOrProvider) {
                         noncePromise = provider.getTransactionCount(signer.address, 'pending');
                     }
 
+                    var gasPricePromise = null;
                     if (transaction.gasPrice) {
                         gasPricePromise = Promise.resolve(transaction.gasPrice);
                     } else {
@@ -145,7 +157,6 @@ function Contract(address, contractInterface, signerOrProvider) {
                     ]).then(function(results) {
                         transaction.nonce = results[0];
                         transaction.gasPrice = results[1];
-
                         return signer.sign(transaction);
 
                     }).then(function(signedTransaction) {
