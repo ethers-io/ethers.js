@@ -110,8 +110,9 @@ defineProperty(BigNumber.prototype, 'toNumber', function(base) {
     return this._bn.toNumber();
 });
 
-defineProperty(BigNumber.prototype, 'toString', function(base) {
-    return this._bn.toString(base || 10);
+defineProperty(BigNumber.prototype, 'toString', function() {
+    //return this._bn.toString(base || 10);
+    return this._bn.toString(10);
 });
 
 defineProperty(BigNumber.prototype, 'toHexString', function() {
