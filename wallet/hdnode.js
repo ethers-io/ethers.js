@@ -256,7 +256,3 @@ module.exports = {
 
     validMnemonic: validMnemonic,
 };
-
-require('ethers-utils/standalone.js')({
-    HDNode: module.exports
-});
