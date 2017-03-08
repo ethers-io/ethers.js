@@ -6,10 +6,15 @@ var crypto = global.crypto || global.msCrypto;
 if (!crypto || !crypto.getRandomValues) {
     console.log('WARNING: Missing strong random number source; using weak randomBytes');
     crypto = {
-        getRandomValues: function(length) {
-
-            for (var i = 0; i < buffer.length; i++) {
-                buffer[i] = parseInt(256 * Math.random());
+        getRandomValues: function(buffer) {
+            for (var round = 0; round < 20; round++) {
+                for (var i = 0; i < buffer.length; i++) {
+                    if (round) {
+                        buffer[i] ^= parseInt(256 * Math.random());
+                    } else {
+                        buffer[i] = parseInt(256 * Math.random());
+                    }
+                }
             }
 
             return buffer;
