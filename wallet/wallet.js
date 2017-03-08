@@ -1,15 +1,18 @@
 'use strict';
 
+var scrypt = require('scrypt-js');
 var utils = require('ethers-utils');
 
-var secretStorage = require('./secret-storage.js');
-var SigningKey = require('./signing-key.js');
+var HDNode = require('./hdnode');
 
-var scrypt = require('scrypt-js');
+var secretStorage = require('./secret-storage');
+var SigningKey = require('./signing-key');
 
 // This ensures we inject a setImmediate into the global space, which
 // dramatically improves the performance of the scrypt PBKDF.
 require('setimmediate');
+
+var defaultPath = "m/44'/60'/0'/0/0";
 
 var transactionFields = [
     {name: 'nonce',    maxLength: 32, },
@@ -40,7 +43,7 @@ function Wallet(privateKey, provider) {
     });
     if (provider) { this.provider = provider; }
 
-    var defaultGasLimit = 2000000;
+    var defaultGasLimit = 1500000;
     Object.defineProperty(this, 'defaultGasLimit', {
         enumerable: true,
         get: function() { return defaultGasLimit; },
@@ -53,6 +56,10 @@ function Wallet(privateKey, provider) {
     utils.defineProperty(this, 'address', signingKey.address);
 
     utils.defineProperty(this, 'sign', function(transaction) {
+        var chainId = transaction.chainId;
+        if (!chainId && this.provider) { chainId = this.provider.chainId; }
+        if (!chainId) { chainId = 0; }
+
         var raw = [];
         transactionFields.forEach(function(fieldInfo) {
             var value = transaction[fieldInfo.name] || ([]);
@@ -80,21 +87,37 @@ function Wallet(privateKey, provider) {
             raw.push(utils.hexlify(value));
         });
 
+        if (chainId) {
+            raw.push(utils.hexlify(chainId));
+            raw.push('0x');
+            raw.push('0x');
+        }
+
         var digest = utils.keccak256(utils.rlp.encode(raw));
 
         var signature = signingKey.signDigest(digest);
 
-        raw.push(utils.hexlify([27 + signature.recoveryParam]));
+        var v = 27 + signature.recoveryParam
+        if (chainId) {
+            raw.pop();
+            raw.pop();
+            raw.pop();
+            v += chainId * 2 + 8;
+        }
+
+        raw.push(utils.hexlify(v));
         raw.push(signature.r);
         raw.push(signature.s);
 
-        return (utils.rlp.encode(raw));
+        return utils.rlp.encode(raw);
     });
 }
 
 utils.defineProperty(Wallet, 'parseTransaction', function(rawTransaction) {
     rawTransaction = utils.hexlify(rawTransaction, 'rawTransaction');
     var signedTransaction = utils.rlp.decode(rawTransaction);
+    if (signedTransaction.length !== 9) { throw new Error('invalid transaction'); }
+
     var raw = [];
 
     var transaction = {};
@@ -126,26 +149,44 @@ utils.defineProperty(Wallet, 'parseTransaction', function(rawTransaction) {
         transaction.nonce = 0;
     }
 
-    if (signedTransaction.length > 6) {
-        var v = utils.arrayify(signedTransaction[6]);
-        var r = utils.arrayify(signedTransaction[7]);
-        var s = utils.arrayify(signedTransaction[8]);
+    var v = utils.arrayify(signedTransaction[6]);
+    var r = utils.arrayify(signedTransaction[7]);
+    var s = utils.arrayify(signedTransaction[8]);
 
-        if (v.length === 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
-            transaction.v = v[0];
-            transaction.r = signedTransaction[7];
-            transaction.s = signedTransaction[8];
+    if (v.length === 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
+        transaction.v = v[0];
+        transaction.r = signedTransaction[7];
+        transaction.s = signedTransaction[8];
 
-            var digest = utils.keccak256(utils.rlp.encode(raw));
-            try {
-                transaction.from = SigningKey.recover(digest, r, s, transaction.v - 27);
-            } catch (error) {
-                console.log(error);
-            }
+        var chainId = (transaction.v - 35) / 2;
+        if (chainId < 0) { chainId = 0; }
+        chainId = parseInt(chainId);
+
+        transaction.chainId = chainId;
+
+        var recoveryParam = transaction.v - 27;
+
+        if (chainId) {
+            raw.push(utils.hexlify(chainId));
+            raw.push('0x');
+            raw.push('0x');
+            recoveryParam -= chainId * 2 + 8;
+        }
+
+        var digest = utils.keccak256(utils.rlp.encode(raw));
+        try {
+            transaction.from = SigningKey.recover(digest, r, s, recoveryParam);
+        } catch (error) {
+            console.log(error);
         }
     }
 
+
     return transaction;
+});
+
+utils.defineProperty(Wallet.prototype, 'getAddress', function() {
+    return this.address;
 });
 
 utils.defineProperty(Wallet.prototype, 'getBalance', function(blockTag) {
@@ -206,6 +247,8 @@ utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) 
         });
     });
 
+    var chainId = this.provider.chainId;
+
     var toAddress = undefined;
     if (transaction.to) { toAddress = utils.getAddress(transaction.to); }
 
@@ -219,7 +262,8 @@ utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) 
             gasLimit: gasLimit,
             gasPrice: results[0],
             nonce: results[1],
-            value: value
+            value: value,
+            chainId: chainId
         });
 
         return self.provider.sendTransaction(signedTransaction);
@@ -254,14 +298,28 @@ utils.defineProperty(Wallet.prototype, 'encrypt', function(password, options, pr
     return secretStorage.encrypt(this.privateKey, password, options, progressCallback);
 });
 
-utils.defineProperty(Wallet, 'isValidWallet', function(json) {
+
+utils.defineProperty(Wallet, 'isEncryptedWallet', function(json) {
     return (secretStorage.isValidWallet(json) || secretStorage.isCrowdsaleWallet(json));
 });
 
-utils.defineProperty(Wallet, 'decrypt', function(json, password, progressCallback) {
+
+
+utils.defineProperty(Wallet, 'createRandom', function(options) {
+    var entropy = utils.randomBytes(16);
+    if (options.extraEntropy) {
+        entropy = utils.keccak256(utils.concat([entropy, options.extraEntropy])).substring(0, 34);
+    }
+    var mnemonic = HDNode.entropyToMnemonic(entropy);
+    return Wallet.fromMnemonic(mnemonic, options.path);
+});
+
+
+utils.defineProperty(Wallet, 'fromEncryptedWallet', function(json, password, progressCallback) {
     if (progressCallback && typeof(progressCallback) !== 'function') {
         throw new Error('invalid callback');
     }
+
     return new Promise(function(resolve, reject) {
 
         if (secretStorage.isCrowdsaleWallet(json)) {
@@ -286,8 +344,20 @@ utils.defineProperty(Wallet, 'decrypt', function(json, password, progressCallbac
     });
 });
 
+utils.defineProperty(Wallet, 'fromMnemonic', function(mnemonic, path) {
+    if (!path) { path = defaultPath; }
 
-utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, progressCallback) {
+    var hdnode = HDNode.fromMnemonic(mnemonic).derivePath(path);
+
+    var wallet = new Wallet(hdnode.privateKey);
+    utils.defineProperty(wallet, 'mnemonic', mnemonic);
+    utils.defineProperty(wallet, 'path', path);
+
+    return wallet;
+});
+
+
+utils.defineProperty(Wallet, 'fromBrainWallet', function(username, password, progressCallback) {
     if (progressCallback && typeof(progressCallback) !== 'function') {
         throw new Error('invalid callback');
     }
@@ -324,12 +394,8 @@ utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, p
 //    return new Wallet(secretStorage.decryptCrowdsale(json, password));
 //});
 
-
-utils.defineProperty(Wallet, '_SigningKey', SigningKey);
+// @TOOD: Move this to ethers.SigningKey, ethers.HDNode and ethers.Wallet
+utils.defineProperty(Wallet, 'SigningKey', SigningKey);
+utils.defineProperty(Wallet, 'HDNode', HDNode);
 
 module.exports = Wallet;
-
-require('ethers-utils/standalone.js')({
-    Wallet: module.exports
-});
-

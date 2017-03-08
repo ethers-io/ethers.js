@@ -12,8 +12,9 @@ var Output = [];
 function addTransaction(privateKey, name, transaction, signature) {
     var rawTransaction = new ethereumTx(transaction);
 
+    transaction.chainId = 5;
     var rawTransactionEip155 = new ethereumTx(transaction);
-    rawTransactionEip155._chainId = 5;
+    delete transaction['chainId'];
 
     var test = {
         accountAddress: '0x' + ethereumUtil.privateToAddress(privateKey).toString('hex'),
@@ -40,14 +41,21 @@ function addTransaction(privateKey, name, transaction, signature) {
     Output.push(test);
 }
 
+function trimHex(hex) {
+    while (hex.substring(0, 4) === '0x00' && hex.length > 4) {
+        hex = '0x' + hex.substring(4);
+    }
+    return hex;
+}
+
 for (var i = 0; i < 1000; i++) {
     var transaction = {
         to: utils.randomHexString('to-' + i, 20),
         data: utils.randomHexString('data-' + i, 0, 10),
-        gasLimit: utils.randomHexString('gasLimit-' + i, 0, 10),
-        gasPrice: utils.randomHexString('gasPrice-' + i, 0, 10),
-        value: utils.randomHexString('value-' + i, 0, 10),
-        nonce: utils.randomHexString('nonce-' + i, 0, 4),
+        gasLimit: trimHex(utils.randomHexString('gasLimit-' + i, 0, 10)),
+        gasPrice: trimHex(utils.randomHexString('gasPrice-' + i, 0, 10)),
+        value: trimHex(utils.randomHexString('value-' + i, 0, 10)),
+        nonce: trimHex(utils.randomHexString('nonce-' + i, 0, 4)),
     };
 
     var privateKey = new Buffer(utils.randomBytes('privateKey-' + i, 32));

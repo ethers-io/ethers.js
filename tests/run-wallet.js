@@ -1,6 +1,6 @@
 'use strict';
 
-var Wallet = require('../wallet/index.js');
+var Wallet = require('../wallet/wallet.js');
 
 function testAccounts(test) {
 
@@ -113,7 +113,7 @@ function testTransactions(test) {
 
             if ({gasLimit: 1, gasPrice: 1, value: 1}[key]) {
                 if (utils.isBigNumber(value)) {
-                    test.ok(true, 'failed to parse into a big number - ' + key + ' - ' + testcase.name);
+                    test.ok(true, 'parse into a big number - ' + key + ' - ' + testcase.name);
                     value = value.toHexString();
 
                     if (!expected || expected === '0x') {
@@ -121,13 +121,13 @@ function testTransactions(test) {
                     }
 
                 } else {
-                    test.ok(false, 'failed to parse into a big number - ' + key + ' - ' + testcase.name);
+                    test.ok(false, 'parse into a big number - ' + key + ' - ' + testcase.name);
                     return;
                 }
 
             } else if (key === 'nonce') {
                 if (typeof(value) === 'number') {
-                    test.ok(true, 'failed to parse into a number - nonce - ' + testcase.name);
+                    test.ok(true, 'parse into a number - nonce - ' + testcase.name);
                     value = utils.hexlify(value);
 
                     if (!expected || expected === '0x') {
@@ -135,7 +135,7 @@ function testTransactions(test) {
                     }
 
                 } else {
-                    test.ok(false, 'failed to parse into a number - nonce - ' + testcase.name);
+                    test.ok(false, 'parse into a number - nonce - ' + testcase.name);
                     return;
                 }
 
@@ -149,20 +149,38 @@ function testTransactions(test) {
                     try {
                         utils.getAddress(value);
                     } catch (error) {
-                        test.ok(false, 'failed to create checksum address - to - ' + testcase.name);
+                        test.ok(false, 'create checksum address - to - ' + testcase.name);
                     }
                     value = value.toLowerCase();
                 }
             }
 
-            test.equal(value, expected, 'failed to parse - ' + key + ' - ' + testcase.name);
+            test.equal(value, expected, 'parse - ' + key + ' - ' + testcase.name);
 
             transaction[key] = testcase[key];
         });
 
+        test.equal(parsedTransaction.from, utils.getAddress(testcase.accountAddress), 'compute - from - ' + testcase.name);
+
+        test.equal(parsedTransaction.chainId, 0, 'parse - chainId - ' + testcase.name);
+
         var signedTransaction = wallet.sign(transaction);
-        test.equal(signedTransaction, testcase.signedTransaction,
-                   'failed to sign transaction - ' + testcase.name);
+        test.equal(signedTransaction, testcase.signedTransaction, 'sign transaction - ' + testcase.name);
+
+        // EIP155
+
+        var parsedTransactionChainId5 = Wallet.parseTransaction(testcase.signedTransactionChainId5);
+        ['data', 'from', 'nonce', 'to'].forEach(function (key) {
+            test.equal(parsedTransaction[key], parsedTransactionChainId5[key], 'eip155 parse - ' + key + ' - ' + testcase.name);
+        });
+        ['gasLimit', 'gasPrice', 'value'].forEach(function (key) {
+            test.ok(parsedTransaction[key].eq(parsedTransactionChainId5[key]), 'eip155 parse - ' + key + ' - ' + testcase.name);
+        });
+        test.equal(parsedTransactionChainId5.chainId, 5, 'eip155 parse - chainId - ' + testcase.name);
+
+        transaction.chainId = 5;
+        var signedTransactionChainId5 = wallet.sign(transaction);
+        test.equal(signedTransactionChainId5, testcase.signedTransactionChainId5, 'eip155 sign transaction - ' + testcase.name);
     });
 
     test.done();
