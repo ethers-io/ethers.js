@@ -185,6 +185,7 @@ function checkTransaction(transaction) {
 }
 
 var formatTransactionRequest = {
+    from: allowNull(utils.getAddress),
     nonce: allowNull(checkNumber),
     gasLimit: allowNull(utils.bigNumberify),
     gasPrice: allowNull(utils.bigNumberify),
@@ -293,6 +294,8 @@ function Provider(testnet, chainId) {
 
     var lastBlockNumber = null;
 
+    var balances = {};
+
     function doPoll() {
         self.getBlockNumber().then(function(blockNumber) {
 
@@ -306,6 +309,9 @@ function Provider(testnet, chainId) {
                 self.emit('block', i);
             }
 
+            // Sweep balances and remove addresses we no longer have events for
+            var newBalances = {};
+
             // Find all transaction hashes we are waiting on
             Object.keys(events).forEach(function(eventName) {
                 var event = parseEventString(eventName);
@@ -314,6 +320,17 @@ function Provider(testnet, chainId) {
                     self.getTransaction(event.hash).then(function(transaction) {
                         if (!transaction.blockNumber) { return; }
                         self.emit(event.hash, transaction);
+                    });
+
+                } else if (event.type === 'address') {
+                    if (balances[event.address]) {
+                        newBalances[event.address] = balances[event.address];
+                    }
+                    self.getBalance(event.address, 'latest').then(function(balance) {
+                        var lastBalance = balances[event.address];
+                        if (lastBalance && balance.eq(lastBalance)) { return; }
+                        balances[event.address] = balance;
+                        self.emit(event.address, balance);
                     });
 
                 } else if (event.type === 'topic') {
@@ -331,6 +348,8 @@ function Provider(testnet, chainId) {
             });
 
             lastBlockNumber = blockNumber;
+
+            balances = newBalances;
         });
 
         self.doPoll();
@@ -670,6 +689,10 @@ function recurse(object, convertFunc) {
 }
 
 function getEventString(object) {
+    try {
+        return 'address:' + utils.getAddress(object);
+    } catch (error) { }
+
     if (object === 'block') {
         return 'block';
 
@@ -699,6 +722,9 @@ function parseEventString(string) {
 
     } else if (string === 'block') {
         return {type: 'block'};
+
+    } else if (string.substring(0, 8) === 'address:') {
+        return {type: 'address', address: string.substring(8)};
 
     } else if (string.substring(0, 6) === 'topic:') {
         try {
