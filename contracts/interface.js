@@ -332,7 +332,7 @@ function Interface(abi) {
     // Wrap this up as JSON so we can return a "copy" and avoid mutation
     defineFrozen(this, 'abi', abi);
 
-    var methods = {}, events = {};
+    var methods = {}, events = {}, deploy = null;
     function addMethod(method) {
 
         switch (method.type) {
@@ -363,9 +363,7 @@ function Interface(abi) {
                     return func;
                 })();
 
-                if (this.deployFunction == null) {
-                    utils.defineProperty(this, 'deployFunction', func);
-                }
+                if (!deploy) { deploy = func; }
 
                 break;
 
@@ -463,12 +461,13 @@ function Interface(abi) {
     abi.forEach(addMethod, this);
 
     // If there wasn't a constructor, create the default constructor
-    if (!this.deployFunction) {
+    if (!deploy) {
         addMethod({type: 'constructor', inputs: []});
     }
 
     utils.defineProperty(this, 'functions', methods);
     utils.defineProperty(this, 'events', events);
+    utils.defineProperty(this, 'deployFunction', deploy);
 }
 
 
