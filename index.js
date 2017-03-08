@@ -9,15 +9,15 @@ var Wallet = require('ethers-wallet');
 */
 
 var contracts = require('./contracts/index.js');
-var HDNode = require('./hdnode/index.js');
+//var HDNode = require('./hdnode/index.js');
 var providers = require('./providers/index.js');
 var utils = require('./utils/index.js');
-var Wallet = require('./wallet/index.js');
+var wallet = require('./wallet/index.js');
 
 module.exports = {
-    Wallet: Wallet,
+    Wallet: wallet.Wallet,
 
-    HDNode: HDNode,
+    HDNode: wallet.HDNode,
 
     Contract: contracts.Contract,
     Interface: contracts.Interface,
@@ -35,6 +35,9 @@ module.exports = {
         getAddress: utils.getAddress,
         getContractAddress: utils.getContractAddress,
 
+        toUtf8Bytes: utils.toUtf8Bytes,
+        toUtf8String: utils.toUtf8String,
+
         keccak256: utils.keccak256,
         sha256: utils.sha256,
 
@@ -42,7 +45,7 @@ module.exports = {
     },
 
     _utils: utils,
-    _SigningKey: Wallet._SigningKey,
+    _SigningKey: wallet._SigningKey,
 };
 
 require('ethers-utils/standalone.js')(module.exports);
