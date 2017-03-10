@@ -11,7 +11,7 @@ function getContractAddress(transaction) {
 
     return getAddress('0x' + keccak256(rlp.encode([
         getAddress(transaction.from),
-        convert.hexlify(nonce, 'nonce')
+        convert.stripZeros(convert.hexlify(nonce, 'nonce'))
     ])).substring(26));
 }
 
