@@ -22,11 +22,6 @@ the owners machine at all times.
    notes
    testing
 
+-----
 
-Indices and tables
-*******************
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+.. EOF

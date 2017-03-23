@@ -55,14 +55,22 @@ Include example links to etherscan showing the transactions
     var privateKey = '';
 
     var wallet = new ethers.Wallet(privateKey, provider);
-    wallet.getBalance().then(function(balance) {
-        // The exacy cost (in gas) to send to an Externally Owned Account (EOA)
-        var transaction = {
-            to: newAddress,
-            gasLimit: 21000,
-            value: balance.sub(2100)
-        };
-        wallet.sendTransaction(transaction);
+    Promise.all([
+        wallet.getBalance(),
+        provider.getGasPrice(),
+    ]).then(function(results) {
+        var balance = results[0];
+        var gasPrice = results[1];
+
+        // The exact cost (in gas) to send to an Externally Owned Account (EOA)
+        var gasLimit = 21000;
+
+        // The balance less exactly the txfee in wei
+        var value = balance.sub(gasPrice.mul(gasLimit))
+
+        wallet.send(newAddress, value, {gasLimit: gasLimit}).then(function(transaction) {
+            console.log(transaction);
+        });
     });
 
 

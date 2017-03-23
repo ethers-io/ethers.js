@@ -35,6 +35,15 @@ which can have mathematical operations handeled safely.
 
 -----
 
+.. _promise:
+
+Promises
+========
+
+Hello
+
+-----
+
 .. _checksum-address:
 
 Checksum Address

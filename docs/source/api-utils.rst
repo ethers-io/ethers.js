@@ -3,7 +3,7 @@ Utilities
 
 The utility functions exposed in both the *ethers* umbrella package and the *ethers-utils*::
 
-    var utils = require('ethers').utils;
+    var utils = ethers.utils;
 
 
 -----
@@ -65,27 +65,33 @@ Creating Instances
 ------------------
 
 :sup:`utils` **. bigNumberify** ( value )
-    Returns a BigNumber instance of *value*.
-    The *value* may be anything which can be
-    reliably converted into a BigNumber.
+    Returns a BigNumber instance of *value*. The *value* may be anything which can be
+    reliably converted into a BigNumber:
 
-:sup:`Decimal String:`
-    A string consisting of the decimal digits 0 through 9, optionally with a leading
-    negative sign. (example: ``utils.bigNumberify("42")``)
+    *Decimal String*
+      A string consisting of the decimal digits 0 through 9, optionally with a leading
+      negative sign.
 
-:sup:`Hexidecimal String:`
-    A string with a **prefix of 0x** and consisting of the hexidecimal digits 0 through 9 and
-    a through f. (example: ``utils.bigNumberify("0x2a")``)
+      **examples:** utils.bigNumberify("42")
 
-:sup:`Numbers:`
-    Numbers must be within the `safe range`_ for JavaScript. (example: ``utils.bigNumberify(42)``)
+    *Hex String*
+        A string with a **prefix of 0x** and consisting of the hexidecimal digits 0 through 9 and
+        a through f, case-insensitive. Must be non-negative.
 
-:sup:`Arrayish:`
-    Treats the :ref:`arrayish <arrayish>` as a big-endian encoded bytes representation.
-    (example: ``utils.bigNumberify([ 42 ])``)
+        **examples:** utils.bigNumberify("0x2a")
 
-:sup:`BigNumber:`
-    Returns the same instance (since BigNumbers are immutable).
+    *JavaScript Numbers*
+        Numbers must be within the `safe range`_ for JavaScript.
+
+        **examples:** utils.bigNumberify(42)
+
+    *Arrayish*
+        Treats the :ref:`arrayish <arrayish>` as a big-endian encoded bytes representation.
+
+        **examples:** utils.bigNumberify([ 42 ])
+
+    *BigNumber*
+        Returns *value*, since a BigNumber is immutable.
 
 .. _safe range: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isSafeInteger
 
@@ -94,15 +100,15 @@ Creating Instances
 
 ::
 
-    @TODO:
-    var utils = require('ethers').utils;
-
-    var gasPriceWei = utils.bigNumberify();
+    var gasPriceWei = utils.bigNumberify("20902747399");
     var gasLimit = utils.bigNumberify(3000000);
 
-    var cost
+    var maxCostWei = gasPriceWei.mul(gasLimit)
+    console.log("Max Cost: " + maxCostWei.toString());
+    // "Max Cost: 62708242197000000"
 
-    console.log();
+    console.log("Number: " + maxCostWei.toNumber());
+    // throws an Error, the value is too large for JavaScript to handle safely
 
 -----
 
@@ -240,7 +246,7 @@ Cryptographic Functions
 *Examples*
 ----------
 
-::
+**Hashing Binary Data** ::
 
     console.log(utils.keccak256([ 0x42 ]));
     // '0x1f675bff07515f5df96737194ea945c36c41e7b4fcef307b7cd4d0e602a69111'
@@ -256,7 +262,9 @@ Cryptographic Functions
     // '0xdf7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c'
 
 
-    // Use with the toUtf8Bytes() function to get the hash of strings
+**Hashing UTF-8 Strings** ::
+
+    // Convert the string to binary data
     var utf8Bytes = utils.toUtf8Bytes('Hello World');
 
     console.log(utils.keccak256(utf8Bytes));
@@ -266,9 +274,53 @@ Cryptographic Functions
     // '0xa591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e'
 
 
+**Random Bytes** ::
+
     console.log(utils.randomBytes(3));
     // Uint8Array [ 194, 22, 140 ]
 
+
+-----
+
+.. _api-arrayish:
+
+Arrayish
+========
+
+An arrayish object is any such that it:
+
+* has a *length* property
+* has a value for each index from 0 up to (but excluding) *length*
+* has a valid byte for each value; a byte is an integer in the range [0, 255]
+
+:sup:`utils` . isArrayish ( object )
+    Returns true if *object* can be treated as an arrayish object.
+
+:sup:`utils` . arrayify ( hexStringOrArrayish )
+    Returns a Uint8Array of a hex string, BigNumber or of an `Arrayish`_ object.
+
+:sup:`utils` . concat ( arrayOfHexStringsAndArrayish )
+    Return a Uint8Array of all *arrayOfHexStringsAndArrayish* concatenated.
+
+:sup:`utils` . padZeros ( typedUint8Array, length )
+    Return a Uint8Array of *typedUint8Array* with zeros prepended to *length* bytes.
+
+:sup:`utils` . stripZeros ( hexStringOrArrayish )
+    Returns a Uint8Array with all leading zero **bytes** striped.
+
+-----
+
+.. _api-hexstring:
+
+Hex Strings
+===========
+
+A hex string is **always** prefixed with "0x" and is always returned
+with even-length (although any hex string may be passed in with odd-length).
+
+:sup:`utils` . hexlify ( numberOrBigNumberOrHexStringOrArrayish )
+    Converts any number, :ref:`BigNumber <bignumber>`, hex string or
+    `Arrayish`_ to a hex string. (otherwise, throws an error)
 
 -----
 

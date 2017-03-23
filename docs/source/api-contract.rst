@@ -1,3 +1,5 @@
+.. _api-contract:
+
 Contracts
 *********
 
@@ -23,58 +25,389 @@ Most of a contract is procedurally defined by the ABI provided, but in addition
 to those functions, there are two properties which can (and ofter should) be set:
 
 
-Creating
-========
+-----
+
+Connecting to a Contract
+========================
+
+new `ethers` . Contract ( address , interface , providerOrSigner )
+    Connects to the contract at *address* defined by *interface*, which
+    may be a JSON string or the parsed object.
+
+    The *providerOrSigner* may be any instance the following:
+
+    :ref:`Wallet <api-wallet>`
+        The wallet will be used to sign and send transactions, and
+        estimates and calls will use the wallet address.
+
+    :ref:`Provider <api-provider>`
+        Gas estimates and constant functions can be called (but without an
+        address) and event callbacks may be registered.
+
+    `Custom Signer`_
+        For much more control over how and when signing and sending
+        transaction occurs and to defer address behaviour.
+
+-----
+
+Prototype
+=========
+
+The prototype will contain all the methods and events defined in the
+**interface**.
+
+Name collisions with the following properties will not overwrite them.
+Instead, they must be accessed through the **functions** or **events**
+property.
+
+Due to signature overloading, multiple functions can have the same name.
+The JavaScript type system cannot determine these, so only the first
+function with a given name will be available. (In the future this will
+be addressed).
+
+:sup:`prototype` . address
+    The address of the contract.
+
+:sup:`prototype` . interface
+    The :ref:`Interface <api-interface>` meta-class of the parsed
+    ABI. Generally, this should not need to be accessed directly.
+
+:sup:`prototype` . functions . *functionName*
+    An object that maps each ABI function name to a function that will
+    either call (for contant functions) or sign and send a transaction
+    (for non-constant functions)
+
+:sup:`prototype` . estimate . *functionName*
+    An object that maps each ABI function name to a function that will
+    estimate the cost the provided parameters.
+
+:sup:`prototype` . events . on\ *functionname*
+    An object that maps each ABI event name (lower case, with the "on"
+    prefix) to a callback that is triggered when the event occurs.
 
 Examples
 --------
 
-Example::
+*Example Contract and Interface* ::
 
-    var foo
+    /**
+     *  contract SimpleStore {
+     *
+     *      event valueChanged(address author, string value);
+     *
+     *      address _author;
+     *      string _value;
+     *
+     *      function setValue(string value) {
+     *          _author = msg.sender;
+     *          _value = value;
+     *          valueChanged(msg.sender, value);
+     *      }
+     *
+     *      function getValue() constant returns (address author, string value) {
+     *          return (_author, _value);
+     *      }
+     *  }
+     */
+
+     // The interface from the Solidity compiler
+     var abi = [
+         {
+             "constant":true,
+             "inputs":[],
+             "name":"getValue",
+             "outputs":[{"name":"author","type":"address"},{"name":"value","type":"string"}],
+             "payable":false,
+             "type":"function"
+         },
+         {
+             "constant":false,
+             "inputs":[{"name":"value","type":"string"}],
+             "name":"setValue",
+             "outputs":[],
+             "payable":false,
+             "type":"function"
+         },
+         {
+             "anonymous":false,
+             "inputs":[
+                 {"indexed":false,"name":"author","type":"address"},
+                 {"indexed":false,"name":"value","type":"string"}
+             ],
+             "name":"valueChanged",
+             "type":"event"
+         }
+     ];
+
+     var address = "";
+     var provider = ethers.providers.getDefaultProvider();
+
+     var contract = new ethers.Contract(address, abi, provider);
 
 
-Name collisions
-===============
+*Example Constant Function* ::
 
-Many contracts overload a methods signature, which cannot be don in JavaScript.
-To get around this, several other accessor properties are created on the
-Contract object.
+     var callPromise = contract.getValue();
 
-Contract.prototype.execute
-Contract.prototype.executeExplicit
+     callPromise.then(function(result) {
 
-Example::
+         // Solidity return tuples, which can be accessed by their
+         // position or by their name.
 
-    var foo
+         // The first entry of the return result (author)
+         console.log('Positional argument (0):' + result[0]);
+         console.log('Named argument (author): ' + result.author);
+
+         // The second entry of the return result (value)
+         console.log('Positional argument (1):' + result[1]);
+         console.log('Named argument (value): ' + result.value);
+     });
+
+     // This is identical to the above call
+     // var callPromise = contract.functions.getValue();
 
 
-Interface
-=========
+*Example Non-Constant Gas Estimate* ::
 
-Sometimes you may wish to deal with lower-level aspects of a contract and the
-binary format which the Ethereum VM uses. For these purposes you can use the
-Interface object, which is what the Contract object uses under the hood.
+     var estimatePromise = contract.estimate.setValue("Hello World");
+
+     estimatePromise.then(function(gasCost) {
+         // gasCost is returned as BigNumber
+         console.log('Estimated Gas Cost: ' + gasCost.toString());
+     });
+
+*Example Non-Constant Function* ::
+
+     var sendPromise = contract.setValue("Hello World");
+
+     sendPromise.then(function(transaction) {
+         console.log(transaction);
+     });
+
+     // This is identical to the above send
+     // var sendPromise = contract.functions.setValue("Hello World");
 
 
-Example::
+*Example Event Registration* ::
 
-    var foo
+     // Register for events
+     contract.onvaluechanged = function(author, value) {
+         console.log('Author: ' + author);
+         console.log('Value: ' + value);
+     };
 
+     // This is identical to the above event registry
+     // contract.events.onvaluechanged = function(authot, value) { ...
+
+-----
+
+Result Types
+============
+
+There are many variable types avaiable in Solidity, some which work well
+in JavaScript and others that do not. Here are some note regarding passing
+and returning values in Contracts.
+
+Integers
+--------
+
+Integers in solidity are a fixed number of bits (aligned to the nearest bytes)
+and are available in signed and unsigned variants.
+
+For example, a **uint256** is 256 bits (32 bytes) and unsigned. An *int8*
+is 8 bits (1 byte) and signed.
+
+When the type is 48 bits (6 bytes) or less, values are returned as a JavaScript
+Number, since Javascript Numbers are safe to use up to 53 bits.
+
+Any types with 56 bits (7 bytes) or more will be returned as a BigNumber,
+even if the *value* is within the 53 bit safe range.
+
+When passing numeric values in, JavaScript Numbers, hex strings or any BigNumber
+is acceptable (however, take care when using JavaScript Numbers amd performing
+mathematic operations on them).
+
+The uint and int types are aliases for uint256 and int256, respectively.
+
+Strings
+-------
+
+Strings work fine and require no special care.
+
+To convert between strings and bytes, which may occasionally come up, use the
+`utils.toUtf8Bytes()` and `utils.toUtf8String()` utility functions.
+
+Bytes
+-----
+
+Bytes are available in fixed-length or dynamic-length variants. In both cases, the
+values are returned as a hex string and may be passed in as either a hex string or
+as an arrayish.
+
+To convert the string into an array, use the `utils.arrayify()` utility function.
+
+Arrays
+------
+
+Arrays work fine and require no special care.
+
+-----
+
+Deploying a Contract
+====================
+
+To deploy a contract to the Ethereum network, you must have its bytecode
+and its application binary interface (ABI), usually generated from the
+Solidity compiler.
+
+:sup:`Contract` . getDeployTransaction ( bytecode , interface , ... )
+    Generate the transaction needed to deploy the contract specified by
+    *bytecode* and *interface*. Any additional parameters the constructor
+    take should also be passed in.
+
+*Examples*
+----------
+
+::
+
+    /**
+     *  contract Example {
+     *
+     *      string _value;
+     *
+     *      // Constructor
+     *      function Example(string value) {
+     *          _value = value;
+     *      }
+     *  }
+     */
+
+    // The interface from Solidity
+    var abi = '[{"inputs":[{"name":"value","type":"string"}],"type":"constructor"}]';
+
+    // The bytecode from Solidity
+    var bytecode = "0x6060604052341561000c57fe5b60405161012d38038061012d83398101604052" +
+                     "8080518201919050505b806000908051906020019061003f929190610047565b" +
+                     "505b506100ec565b828054600181600116156101000203166002900490600052" +
+                     "602060002090601f016020900481019282601f1061008857805160ff19168380" +
+                     "011785556100b6565b828001600101855582156100b6579182015b8281111561" +
+                     "00b557825182559160200191906001019061009a565b5b5090506100c3919061" +
+                     "00c7565b5090565b6100e991905b808211156100e55760008160009055506001" +
+                     "016100cd565b5090565b90565b6033806100fa6000396000f30060606040525b" +
+                     "fe00a165627a7a72305820041f440021b887310055b6f4e647c2844f4e1c8cf1" +
+                     "d8e037c72cd7d0aa671e2f0029";
+
+    // Notice we pass in "Hello World" as the parameter to the constructor
+    var deployTransaction = Contract.getDeployTransaction(bytecode, abi, "Hello World");
+    console.log(deployTransaction);
+    // {
+    //    data: "0x6060604052341561000c57fe5b60405161012d38038061012d83398101604052" +
+    //            "8080518201919050505b806000908051906020019061003f929190610047565b" +
+    //            "505b506100ec565b828054600181600116156101000203166002900490600052" +
+    //            "602060002090601f016020900481019282601f1061008857805160ff19168380" +
+    //            "011785556100b6565b828001600101855582156100b6579182015b8281111561" +
+    //            "00b557825182559160200191906001019061009a565b5b5090506100c3919061" +
+    //            "00c7565b5090565b6100e991905b808211156100e55760008160009055506001" +
+    //            "016100cd565b5090565b90565b6033806100fa6000396000f30060606040525b" +
+    //            "fe00a165627a7a72305820041f440021b887310055b6f4e647c2844f4e1c8cf1" +
+    //            "d8e037c72cd7d0aa671e2f002900000000000000000000000000000000000000" +
+    //            "0000000000000000000000002000000000000000000000000000000000000000" +
+    //            "0000000000000000000000000b48656c6c6f20576f726c640000000000000000" +
+    //            "00000000000000000000000000"
+    // }
+
+    // Connect to the network
+    var provider = ethers.providers.getDefaultProvider();
+
+    // Create a wallet to deploy the contract with
+    var privateKey = '0x0123456789012345678901234567890123456789012345678901234567890123';
+    var wallet = new ethers.Wallet(privateKey, provider);
+
+    // Send the transaction
+    var sendPromise = wallet.sendTransaction(deployTransaction);
+
+    // Get the transaction
+    sendPromise.then(function(transaction) {
+        console.log(transaction);
+    });
+
+-----
 
 Custom Signers
 ==============
 
 The simplest way to specify a signer is to simply use an instance of a wallet.
-However, if you wish to have more fine-tuned control over what is signed, you can
-implement your own customer signer.
+However, if more fine-grained control is required, a custom signer allow
+deferring the address, signing and sending transactions.
 
-A signer is required to have teh following two properties:
+A signer can be any object with:
 
-**address**:
+:sup:`object` . getAddress()
     Which must return a vaid address or a promise which will resolve to a valid
     address or reject an error.
 
-**sign**:
-    Which must return a valid hexString or a promise which will resolve to a valid
-    signed transaction or reject an error.
+:sup:`object` . provider
+    A provider that will be used to connect to the Ethereum blockchain to issue
+    calls, listen for events and possibly send transaction.
+
+:sup:`object` . sendTransaction ( transaction )
+    *Optional.*
+
+    If this is defined, it is called instead of sign and is expected to
+    populate *nonce*, *gasLimit* and *gasPrice*.
+
+    The result must be a `Promise`_ which resolves to the sent transaction, or
+    rejects on failure.
+
+:sup:`instance` . sign ( transaction )
+    *Optional.*
+
+    If this is defined, it is called to sign a transaction before using the
+    provider to send it to the network.
+
+    The result may be a valid hexString or a promise which will resolve to a valid
+    hexString signed transaction or reject on failure.
+
+*Examples*
+----------
+
+::
+
+    var privateKey = '0x0123456789012345678901234567890123456789012345678901234567890123';
+    var wallet = new ethers.Wallet(privateKey);
+
+    function getAddress() {
+        return new Promise(function(resolve, reject) {
+            // Some asynchronous method; some examples
+            //  - request which account from the user
+            //  - query a database
+            //  - wait for another contract to be mined
+
+            var address = wallet.address;
+
+            resolve(address);
+        });
+    }
+
+    function sign(transaction) {
+        return new Promise(function(resolve, reject) {
+            // Some asynchronous method; some examples
+            //  - prompt the user to confirm or decline
+            //  - check available funds and credits
+            //  - request 2FA over SMS
+
+            var signedTransaction = wallet.sign(transaction);
+
+            resolve(signedTransaction);
+        });
+    }
+
+    var customSigner = {
+        getAddress: getAddress,
+        provider: ethers.providers.getDefaultProvider(),
+        sign: sign
+    }
+
+-----
+
+.. Hello World
