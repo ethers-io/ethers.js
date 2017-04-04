@@ -2,11 +2,11 @@
 
 var fs = require('fs');
 
-var utils = require('../utils/index.js');
+var utils = require('../utils');
 
-var Wallet = require('../wallet/index.js');
+var Wallet = require('../wallet/wallet');
 
-var providers = require('../providers/index.js');
+var providers = require('../providers');
 
 var contracts = require('../contracts');
 
@@ -164,13 +164,17 @@ function testWriteProvider(test, wallet) {
 
     ]).then(function(results) {
         test.ok(results[0].eq(0x793e), 'estimateGas()');
-        return wallet.provider.waitForTransaction(results[1]);
+        return wallet.provider.waitForTransaction(results[1].hash);
 
     }).then(function(transaction) {
         test.equal(transaction.to, testTransaction.to, 'check toAddress');
         test.equal(transaction.from, wallet.address, 'check fromAddress');
         test.ok(transaction.gasLimit.eq(testTransaction.gasLimit), 'check gasLimit');
         test.ok(transaction.value.eq(testTransaction.value), 'check value');
+
+    }).catch(function(error) {
+        console.log(error);
+        test.ok(false, 'error occurred');
     });
 }
 
@@ -287,8 +291,8 @@ function testEvents(test) {
     });
 
     // Send 123 wei to the contrat to trigger its callFallback event
-    wallet.send(TestContract.address, 123).then(function(hash) {
-        console.log('Trigger Transaction: ' + hash);
+    wallet.send(TestContract.address, 123).then(function(transaction) {
+        console.log('Trigger Transaction: ' + transaction.hash);
     });
 }
 
@@ -322,6 +326,7 @@ function testContracts(test) {
         })),
         contract.setValue(newValue),
     ]).then(function(results) {
+
         test.ok(results[0][0].eq(42), 'getUintValue()');
         test.equal(results[1][0], 'One', 'getArrayValue(1)');
         test.equal(results[2][0], 'Two', 'getArrayValue(2)');
@@ -378,8 +383,8 @@ function testDeploy(test) {
 
     var contract = null;
 
-    wallet.sendTransaction(transaction).then(function(hash) {
-        return provider.waitForTransaction(hash);
+    wallet.sendTransaction(transaction).then(function(transaction) {
+        return provider.waitForTransaction(transaction.hash);
 
     }).then(function(transaction) {
         contract = new contracts.Contract(transaction.creates, TestContractDeploy.interface, wallet);
@@ -394,8 +399,8 @@ function testDeploy(test) {
         test.equal(code, TestContractDeploy.runtimeBytecode, 'getCode() == runtimeBytecode (after deploy)');
         return contract.cleanup();
 
-    }).then(function(hash) {
-        return provider.waitForTransaction(hash);
+    }).then(function(transaction) {
+        return provider.waitForTransaction(transaction.hash);
 
     }).then(function(transaction) {
         return provider.getCode(contract.address);

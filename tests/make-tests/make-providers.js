@@ -114,9 +114,9 @@ wallet.getBalance().then(function(balance) {
 
     return wallet.sendTransaction(transaction);
 
-}).then(function(hash) {
-    TestContract.transactionHash = hash;
-    return provider.waitForTransaction(hash);
+}).then(function(transaction) {
+    TestContract.transactionHash = transaction.hash;
+    return provider.waitForTransaction(transaction.hash);
 
 }).then(function(transaction) {
 
@@ -135,4 +135,8 @@ wallet.getBalance().then(function(balance) {
     TestContract.block = JSON.stringify(serialize(results[1]));
 
     utils.saveTestcase('test-contract', {deploy: TestContractDeploy, test: TestContract});
+
+}).catch(function(error) {
+    console.log(error);
 });
+
