@@ -17,7 +17,7 @@ function testBrainWallet(test) {
     var username = 'ricmoo';
     var password = 'password';
 
-    Wallet.summonBrainWallet(username, password).then(function(wallet) {
+    Wallet.fromBrainWallet(username, password).then(function(wallet) {
         test.equal(wallet.address, '0xbed9d2E41BdD066f702C4bDB86eB3A3740101acC', 'wrong wallet generated');
         test.done();
     }, function(error) {
@@ -33,9 +33,11 @@ function testWallets(test) {
 
     var testcases = require('./tests/wallets.json');
     testcases.forEach(function(testcase) {
+        // Currently removed support for crowdsale wallets; will add this back soon.
+        if (testcase.type === 'crowdsale') { return; }
 
-        test.ok(Wallet.isValidWallet(testcase.json), 'failed to detect secret storage wallet');
-        var promise = Wallet.decrypt(testcase.json, testcase.password).then(function(wallet) {
+        test.ok(Wallet.isEncryptedWallet(testcase.json), 'failed to detect secret storage wallet');
+        var promise = Wallet.fromEncryptedWallet(testcase.json, testcase.password).then(function(wallet) {
             test.equal(wallet.privateKey, testcase.privateKey, 'failed to generate correct private key');
             test.equal(wallet.address.toLowerCase(), testcase.address, 'failed to generate correct address');
         }, function(error) {
@@ -51,7 +53,7 @@ function testWallets(test) {
         var wallet = new Wallet(utils.randomHexString('test-' + i, 32));
         var promise = new Promise(function(resolve, reject) {
             wallet.encrypt(password).then(function(json) {
-                Wallet.decrypt(json, password).then(function(decryptedWallet) {
+                Wallet.fromEncryptedWallet(json, password).then(function(decryptedWallet) {
                     test.equal(decryptedWallet.address, wallet.address, 'failed to decrypt encrypted wallet - ' + wallet.address);
                     decryptedWallet.encrypt(password).then(function(encryptedWallet) {
                         var parsedWallet = JSON.parse(encryptedWallet);
