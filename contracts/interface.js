@@ -2,6 +2,8 @@
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
+var throwError = require('ethers-utils/throw-error');
+
 var utils = (function() {
     var convert = require('ethers-utils/convert.js');
     var utf8 = require('ethers-utils/utf8.js');
@@ -39,7 +41,7 @@ function defineFrozen(object, name, value) {
 
 // getKeys([{a: 1, b: 2}, {a: 3, b: 4}], 'a') => [1, 3]
 function getKeys(params, key, allowEmpty) {
-    if (!Array.isArray(params)) { throw new Error('invalid params'); }
+    if (!Array.isArray(params)) { throwError('invalid params', {params: params}); }
 
     var result = [];
 
@@ -48,7 +50,7 @@ function getKeys(params, key, allowEmpty) {
         if (allowEmpty && !value) {
             value = '';
         } else if (typeof(value) !== 'string') {
-            throw new Error('invalid abi');
+            throwError('invalid abi', {params: params, key: key, value: value});
         }
         result.push(value);
     }
@@ -74,6 +76,9 @@ function coderNumber(size, signed) {
             } else {
                 value = value.maskn(size * 8);
             }
+
+            if (size <= 6) { value = value.toNumber(); }
+
             return {
                 consumed: 32,
                 value: value,
@@ -107,11 +112,11 @@ function coderFixedBytes(length) {
             return result;
         },
         decode: function(data, offset) {
-            if (data.length < offset + 32) { throw new Error('invalid bytes' + length); }
+            if (data.length < offset + 32) { throwError('invalid bytes' + length); }
 
             return {
                 consumed: 32,
-                value: data.slice(offset, offset + length)
+                value: utils.hexlify(data.slice(offset, offset + length))
             }
         }
     };
@@ -119,14 +124,13 @@ function coderFixedBytes(length) {
 
 var coderAddress = {
     encode: function(value) {
-        if (!utils.isHexString(value) && value.length === 42) { throw new Error('invalid address'); }
-        value = utils.arrayify(value);
+        value = utils.arrayify(utils.getAddress(value));
         var result = new Uint8Array(32);
         result.set(value, 12);
         return result;
     },
     decode: function(data, offset) {
-        if (data.length < offset + 32) { throw new Error('invalid address'); }
+        if (data.length < offset + 32) { throwError('invalid address'); }
         return {
             consumed: 32,
             value: utils.getAddress(utils.hexlify(data.slice(offset + 12, offset + 32)))
@@ -146,11 +150,11 @@ function _encodeDynamicBytes(value) {
 }
 
 function _decodeDynamicBytes(data, offset) {
-    if (data.length < offset + 32) { throw new Error('invalid bytes'); }
+    if (data.length < offset + 32) { throwError('invalid bytes'); }
 
     var length = uint256Coder.decode(data, offset).value;
     length = length.toNumber();
-    if (data.length < offset + 32 + length) { throw new Error('invalid bytes'); }
+    if (data.length < offset + 32 + length) { throwError('invalid bytes'); }
 
     return {
         consumed: parseInt(32 + 32 * Math.ceil(length / 32)),
@@ -164,7 +168,7 @@ var coderDynamicBytes = {
     },
     decode: function(data, offset) {
         var result = _decodeDynamicBytes(data, offset);
-        result.value = result.value;
+        result.value = utils.hexlify(result.value);
         return result;
     },
     dynamic: true
@@ -185,7 +189,7 @@ var coderString = {
 function coderArray(coder, length) {
     return {
         encode: function(value) {
-            if (!Array.isArray(value)) { throw new Error('invalid array'); }
+            if (!Array.isArray(value)) { throwError('invalid array'); }
 
             var result = new Uint8Array(0);
             if (length === -1) {
@@ -193,7 +197,7 @@ function coderArray(coder, length) {
                 result = uint256Coder.encode(length);
             }
 
-            if (length !== value.length) { throw new Error('size mismatch'); }
+            if (length !== value.length) { throwError('size mismatch'); }
 
             value.forEach(function(value) {
                 result = utils.concat([result, coder.encode(value)]);
@@ -240,36 +244,36 @@ function getParamCoder(type) {
     var coder = null;
     while (type) {
         var part = type.match(paramTypePart);
-        if (!part) { throw new Error('invalid type: ' + type); }
+        if (!part) { throwError('invalid type', { type: type }); }
         type = type.substring(part[0].length);
 
         var prefix = (part[2] || part[4] || part[5]);
         switch (prefix) {
             case 'int': case 'uint':
-                if (coder) { throw new Error('invalid type ' + type); }
+                if (coder) { throwError('invalid type', { type: type }); }
                 var size = parseInt(part[3] || 256);
                 if (size === 0 || size > 256 || (size % 8) !== 0) {
-                    throw new Error('invalid type ' + type);
+                    throwError('invalid type', { type: type });
                 }
                 coder = coderNumber(size / 8, (prefix === 'int'));
                 break;
 
             case 'bool':
-                if (coder) { throw new Error('invalid type ' + type); }
+                if (coder) { throwError('invalid type', { type: type }); }
                 coder = coderBoolean;
                 break;
 
             case 'string':
-                if (coder) { throw new Error('invalid type ' + type); }
+                if (coder) { throwError('invalid type', { type: type }); }
                 coder = coderString;
                 break;
 
             case 'bytes':
-                if (coder) { throw new Error('invalid type ' + type); }
+                if (coder) { throwError('invalid type', { type: type }); }
                 if (part[3]) {
                     var size = parseInt(part[3]);
                     if (size === 0 || size > 32) {
-                        throw new Error('invalid type ' + type);
+                        throwError('invalid type ' + type);
                     }
                     coder = coderFixedBytes(size);
                 } else {
@@ -278,24 +282,24 @@ function getParamCoder(type) {
                 break;
 
             case 'address':
-                if (coder) { throw new Error('invalid type '  + type); }
+                if (coder) { throwError('invalid type', { type: type }); }
                 coder = coderAddress;
                 break;
 
             case '[]':
-                if (!coder || coder.dynamic) { throw new Error('invalid type ' + type); }
+                if (!coder || coder.dynamic) { throwError('invalid type', { type: type }); }
                 coder = coderArray(coder, -1);
                 break;
 
             // "[0-9+]"
             default:
-                if (!coder || coder.dynamic) { throw new Error('invalid type ' + type); }
+                if (!coder || coder.dynamic) { throwError('invalid type', { type: type }); }
                 var size = parseInt(part[6]);
                 coder = coderArray(coder, size);
         }
     }
 
-    if (!coder) { throw new Error('invalid type'); }
+    if (!coder) { throwError('invalid type'); }
     return coder;
 }
 
@@ -325,7 +329,7 @@ function Interface(abi) {
         try {
             abi = JSON.parse(abi);
         } catch (error) {
-            throw new Error('invalid abi');
+            throwError('invalid abi', { input: abi });
         }
     }
 
@@ -333,6 +337,10 @@ function Interface(abi) {
     defineFrozen(this, 'abi', abi);
 
     var methods = {}, events = {}, deploy = null;
+
+    utils.defineProperty(this, 'functions', methods);
+    utils.defineProperty(this, 'events', events);
+
     function addMethod(method) {
 
         switch (method.type) {
@@ -341,14 +349,14 @@ function Interface(abi) {
                     var inputTypes = getKeys(method.inputs, 'type');
                     var func = function(bytecode) {
                         if (!utils.isHexString(bytecode)) {
-                            throw new Error('invalid bytecode');
+                            throwError('invalid bytecode', {input: bytecode});
                         }
 
                         var params = Array.prototype.slice.call(arguments, 1);
                         if (params.length < inputTypes.length) {
-                            throw new Error('missing parameter');
+                            throwError('missing parameter');
                         } else if (params.length > inputTypes.length) {
-                            throw new Error('too many parameters');
+                            throwError('too many parameters');
                         }
 
                         var result = {
@@ -385,9 +393,9 @@ function Interface(abi) {
                         var params = Array.prototype.slice.call(arguments, 0);
 
                         if (params.length < inputTypes.length) {
-                            throw new Error('missing parameter');
+                            throwError('missing parameter');
                         } else if (params.length > inputTypes.length) {
-                            throw new Error('too many parameters');
+                            throwError('too many parameters');
                         }
 
                         signature = utils.keccak256(utils.toUtf8Bytes(signature)).substring(0, 10);
@@ -413,7 +421,7 @@ function Interface(abi) {
                     return func;
                 })();
 
-                if (method.name && methods[method.name] == null) {
+                if (method.name && method.name !== 'deployFunction' && methods[method.name] == null) {
                     utils.defineProperty(methods, method.name, func);
                 //} else if (this.fallbackFunction == null) {
                 //    utils.defineProperty(this, 'fallbackFunction', func);
@@ -452,6 +460,10 @@ function Interface(abi) {
 
                 break;
 
+            case 'fallback':
+                // Nothing to do for fallback
+                break;
+
             default:
                 console.log('WARNING: unsupported ABI type - ' + method.type);
                 break;
@@ -465,14 +477,12 @@ function Interface(abi) {
         addMethod({type: 'constructor', inputs: []});
     }
 
-    utils.defineProperty(this, 'functions', methods);
-    utils.defineProperty(this, 'events', events);
     utils.defineProperty(this, 'deployFunction', deploy);
 }
 
 
 utils.defineProperty(Interface, 'encodeParams', function(types, values) {
-    if (types.length !== values.length) { throw new Error('types/values mismatch'); }
+    if (types.length !== values.length) { throwError('types/values mismatch', {types: types, values: values}); }
 
     var parts = [];
 
@@ -569,7 +579,7 @@ utils.defineProperty(Interface, 'decodeParams', function(names, types, data) {
     return values;
 });
 
-utils.defineProperty(Interface, 'getDeployTransaction', function(bytecode) {
-});
+//utils.defineProperty(Interface, 'getDeployTransaction', function(bytecode) {
+//});
 
 module.exports = Interface;
