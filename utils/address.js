@@ -1,12 +1,13 @@
 
 var BN = require('bn.js');
 
-var convert = require('./convert.js');
-var keccak256 = require('./keccak256.js');
+var convert = require('./convert');
+var throwError = require('./throw-error');
+var keccak256 = require('./keccak256');
 
 function getChecksumAddress(address) {
     if (typeof(address) !== 'string' || !address.match(/^0x[0-9A-Fa-f]{40}$/)) {
-        throw new Error('invalid address');
+        throwError('invalid address', {input: address});
     }
 
     address = address.toLowerCase();
@@ -67,7 +68,9 @@ var ibanChecksum = (function() {
 function getAddress(address, icapFormat) {
     var result = null;
 
-    if (typeof(address) !== 'string') { throw new Error('invalid address'); }
+    if (typeof(address) !== 'string') {
+        throwError('invalid address', {input: address});
+    }
 
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
 
@@ -78,7 +81,7 @@ function getAddress(address, icapFormat) {
 
         // It is a checksummed address with a bad checksum
         if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
-            throw new Error('invalid address checksum');
+            throwError('invalid address checksum', { input: address, expected: result });
         }
 
     // Maybe ICAP? (we only support direct mode)
@@ -86,7 +89,7 @@ function getAddress(address, icapFormat) {
 
         // It is an ICAP address with a bad checksum
         if (address.substring(2, 4) !== ibanChecksum(address)) {
-            throw new Error('invalid address icap checksum');
+            throwError('invalid address icap checksum', { input: address });
         }
 
         result = (new BN(address.substring(4), 36)).toString(16);
@@ -94,7 +97,7 @@ function getAddress(address, icapFormat) {
         result = getChecksumAddress('0x' + result);
 
     } else {
-        throw new Error('invalid address - ' + address);
+        throwError('invalid address', { input: address });
     }
 
     if (icapFormat) {

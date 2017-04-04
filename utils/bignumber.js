@@ -7,8 +7,9 @@
 
 var BN = require('bn.js');
 
-var defineProperty = require('./properties.js').defineProperty;
-var convert = require('./convert.js');
+var defineProperty = require('./properties').defineProperty;
+var convert = require('./convert');
+var throwError = require('./throw-error');
 
 function BigNumber(value) {
     if (!(this instanceof BigNumber)) { throw new Error('missing new'); }
@@ -34,7 +35,7 @@ function BigNumber(value) {
         value = new BN(convert.hexlify(value).substring(2), 16);
 
     } else {
-        throw new Error('invalid value');
+        throwError('invalid BigNumber value', { input: value });
     }
 
     defineProperty(this, '_bn', value);
@@ -126,19 +127,9 @@ function isBigNumber(value) {
     return (value instanceof BigNumber);
 }
 
-function bigNumberify(value, name) {
+function bigNumberify(value) {
     if (value instanceof BigNumber) { return value; }
-
-    try {
-        return new BigNumber(value);
-
-    } catch (error) {
-        console.log(error);
-        if (name) {
-            throw new Error('invalid arrayify object (' + name + ')');
-        }
-        throw new Error('invalid arrayify object');
-    }
+    return new BigNumber(value);
 }
 
 module.exports = {

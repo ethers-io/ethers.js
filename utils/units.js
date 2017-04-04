@@ -1,4 +1,5 @@
 var bigNumberify = require('./bignumber.js').bigNumberify;
+var throwError = require('./throw-error');
 
 var zero = new bigNumberify(0);
 var negative1 = new bigNumberify(-1);
@@ -34,25 +35,25 @@ function formatEther(wei, options) {
 
 function parseEther(ether) {
     if (typeof(ether) !== 'string' || !ether.match(/^-?[0-9.,]+$/)) {
-        throw new Error('invalid value');
+        throwError('invalid value', { input: ether });
     }
 
-    ether = ether.replace(/,/g,'');
+    var value = ether.replace(/,/g,'');
 
     // Is it negative?
-    var negative = (ether.substring(0, 1) === '-');
-    if (negative) { ether = ether.substring(1); }
+    var negative = (value.substring(0, 1) === '-');
+    if (negative) { value = value.substring(1); }
 
-    if (ether === '.') { throw new Error('invalid value'); }
+    if (value === '.') { throwError('invalid value', { input: ether }); }
 
     // Split it into a whole and fractional part
-    var comps = ether.split('.');
-    if (comps.length > 2) { throw new Error('too many decimal points'); }
+    var comps = value.split('.');
+    if (comps.length > 2) { throwError('too many decimal points', { input: ether }); }
 
     var whole = comps[0], fraction = comps[1];
     if (!whole) { whole = '0'; }
     if (!fraction) { fraction = '0'; }
-    if (fraction.length > 18) { throw new Error('too many decimal places'); }
+    if (fraction.length > 18) { throwError('too many decimal places', { input: ether, decimals: fraction.length }); }
 
     while (fraction.length < 18) { fraction += '0'; }
 

@@ -4,7 +4,7 @@
  */
 
 var defineProperty = require('./properties.js').defineProperty;
-
+var throwError = require('./throw-error');
 
 function isArrayish(value) {
     if (!value || parseInt(value.length) != value.length) {
@@ -43,12 +43,7 @@ function arrayify(value, name) {
         return new Uint8Array(value);
     }
 
-console.log('AA', typeof(value), value);
-
-    if (name) {
-        throw new Error('invalid arrayify object (' + name + ')');
-    }
-    throw new Error('invalid arrayify object');
+    throwError('invalid arrayify value', { name: name, input: value });
 }
 
 function concat(objects) {
@@ -87,7 +82,10 @@ function stripZeros(value) {
 }
 
 function padZeros(value, length) {
+    value = arrayify(value);
+
     if (length < value.length) { throw new Error('cannot pad'); }
+
     var result = new Uint8Array(length);
     result.set(value, length - value.length);
     return result;
@@ -112,7 +110,7 @@ function hexlify(value, name) {
 
     if (typeof(value) === 'number') {
         if (value < 0) {
-            throw new Error('cannot hexlify negative value');
+            throwError('cannot hexlify negative value', { name: name, input: value });
         }
 
         var hex = '';
@@ -145,12 +143,7 @@ function hexlify(value, name) {
         return '0x' + result.join('');
     }
 
-console.log('ERROR', typeof(value), value);
-
-    if (name) {
-        throw new Error('invalid hexlifiy value (' + name + ')');
-    }
-    throw new Error('invalid hexlify value');
+    throwError('invalid hexlify value', { name: name, input: value });
 }
 
 
