@@ -38,13 +38,18 @@ function SigningKey(privateKey) {
 }
 
 utils.defineProperty(SigningKey, 'recover', function(digest, r, s, recoveryParam) {
-    var publicKey = secp256k1.recoverPubKey(utils.arrayify(digest), {r: r, s: s}, recoveryParam);
+    var signature = {
+        r: utils.arrayify(r),
+        s: utils.arrayify(s)
+    };
+    var publicKey = secp256k1.recoverPubKey(utils.arrayify(digest), signature, recoveryParam);
     return SigningKey.publicKeyToAddress('0x' + publicKey.encode('hex', false));
 });
 
 
 utils.defineProperty(SigningKey, 'getPublicKey', function(value, compressed) {
     value = utils.arrayify(value);
+    compressed = !!compressed;
 
     if (value.length === 32) {
         var keyPair = secp256k1.keyFromPrivate(value);
