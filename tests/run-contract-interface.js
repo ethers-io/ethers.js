@@ -7,12 +7,13 @@ var utils = (function() {
     return {
         arrayify: convert.arrayify,
         bigNumberify: bigNumber.bigNumberify,
+
+        isHexString: convert.isHexString,
     };
 })();
 
 
 function equals(a, b) {
-
     // Array (treat recursively)
     if (Array.isArray(a)) {
         if (!Array.isArray(b) || a.length !== b.length) { return false; }
@@ -24,12 +25,15 @@ function equals(a, b) {
 
     // BigNumber
     if (a.eq) {
-        if (!b.eq || !a.eq(b)) { return false; }
+        if (!a.eq(b)) { return false; }
         return true;
     }
 
     // Uint8Array
     if (a.buffer) {
+        if (!utils.isHexString(b)) { return false; }
+        b = utils.arrayify(b);
+
         if (!b.buffer || a.length !== b.length) { return false; }
         for (var i = 0; i < a.length; i++) {
             if (a[i] !== b[i]) { return false; }
