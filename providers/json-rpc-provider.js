@@ -2,15 +2,13 @@
 
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 
-var inherits = require('inherits');
-
 var Provider = require('./provider.js');
 
 var utils = (function() {
     return {
-        defineProperty: require('ethers-utils/properties.js').defineProperty,
+        defineProperty: require('ethers-utils/properties').defineProperty,
 
-        hexlify: require('ethers-utils/convert.js').hexlify,
+        hexlify: require('ethers-utils/convert').hexlify,
     }
 })();
 
