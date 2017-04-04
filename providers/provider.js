@@ -1,3 +1,4 @@
+'use strict';
 
 var inherits = require('inherits');
 
@@ -17,7 +18,7 @@ var utils = (function() {
         hexlify: convert.hexlify,
         isHexString: convert.isHexString,
 
-        rlp: require('ethers-utils/rlp'),
+        RLP: require('ethers-utils/rlp'),
     }
 })();
 
@@ -25,7 +26,7 @@ function check(format, object) {
     var result = {};
     for (var key in format) {
         try {
-            value = format[key](object[key]);
+            var value = format[key](object[key]);
             if (value !== undefined) { result[key] = value; }
         } catch (error) {
             console.log(error, key, object);
@@ -162,21 +163,44 @@ var formatTransaction = {
    v: checkNumber,
 
    creates: allowNull(utils.getAddress, null),
+
+   raw: utils.hexlify,
 };
 
 function checkTransaction(transaction) {
+
+    // Rename gas to gasLimit
     if (transaction.gas != null && transaction.gasLimit == null) {
         transaction.gasLimit = transaction.gas;
     }
+
+    // Rename input to data
     if (transaction.input != null && transaction.data == null) {
         transaction.data = transaction.input;
     }
 
+    // If to and creates are empty, populate the creates from the transaction
     if (transaction.to == null && transaction.creates == null) {
         transaction.creates = utils.getContractAddress(transaction);
     }
 
     var result = check(formatTransaction, transaction);
+
+    var networkId = transaction.networkId;
+
+    if (utils.isHexString(networkId)) {
+        networkId = utils.bigNumberify(networkId).toNumber();
+    }
+
+    if (typeof(networkId) !== 'number') {
+        networkId = (result.v - 35) / 2;
+        if (networkId < 0) { networkId = 0; }
+        networkId = parseInt(networkId);
+    }
+
+    result.networkId = networkId;
+
+    // 0x0000... should actually be null
     if (result.blockHash && result.blockHash.replace(/0/g, '') === 'x') {
         result.blockHash = null;
     }
@@ -191,7 +215,7 @@ var formatTransactionRequest = {
     gasPrice: allowNull(utils.bigNumberify),
     to: allowNull(utils.getAddress),
     value: allowNull(utils.bigNumberify),
-    data: allowNull(utils.hexlify)
+    data: allowNull(utils.hexlify),
 };
 
 function checkTransactionRequest(transaction) {
@@ -318,7 +342,7 @@ function Provider(testnet, chainId) {
 
                 if (event.type === 'transaction') {
                     self.getTransaction(event.hash).then(function(transaction) {
-                        if (!transaction.blockNumber) { return; }
+                        if (!transaction || !transaction.blockNumber) { return; }
                         self.emit(event.hash, transaction);
                     });
 
@@ -394,9 +418,9 @@ utils.defineProperty(Provider, 'chainId', {
     ropsten: 3,
 });
 
-utils.defineProperty(Provider, 'isProvider', function(object) {
-    return (object instanceof Provider);
-});
+//utils.defineProperty(Provider, 'isProvider', function(object) {
+//    return (object instanceof Provider);
+//});
 
 utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
 
@@ -707,7 +731,7 @@ function getEventString(object) {
         });
 
         try {
-            return 'topic:' + utils.rlp.encode(object);
+            return 'topic:' + utils.RLP.encode(object);
         } catch (error) {
             console.log(error);
         }
@@ -728,7 +752,7 @@ function parseEventString(string) {
 
     } else if (string.substring(0, 6) === 'topic:') {
         try {
-            var object = utils.rlp.decode(string.substring(6));
+            var object = utils.RLP.decode(string.substring(6));
             object = recurse(object, function(object) {
                 if (object === '0x') { object = null; }
                 return object;
