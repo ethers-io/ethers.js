@@ -93,7 +93,7 @@ function Wallet(privateKey, provider) {
             raw.push('0x');
         }
 
-        var digest = utils.keccak256(utils.rlp.encode(raw));
+        var digest = utils.keccak256(utils.RLP.encode(raw));
 
         var signature = signingKey.signDigest(digest);
 
@@ -109,13 +109,13 @@ function Wallet(privateKey, provider) {
         raw.push(signature.r);
         raw.push(signature.s);
 
-        return utils.rlp.encode(raw);
+        return utils.RLP.encode(raw);
     });
 }
 
 utils.defineProperty(Wallet, 'parseTransaction', function(rawTransaction) {
     rawTransaction = utils.hexlify(rawTransaction, 'rawTransaction');
-    var signedTransaction = utils.rlp.decode(rawTransaction);
+    var signedTransaction = utils.RLP.decode(rawTransaction);
     if (signedTransaction.length !== 9) { throw new Error('invalid transaction'); }
 
     var raw = [];
@@ -173,7 +173,7 @@ utils.defineProperty(Wallet, 'parseTransaction', function(rawTransaction) {
             recoveryParam -= chainId * 2 + 8;
         }
 
-        var digest = utils.keccak256(utils.rlp.encode(raw));
+        var digest = utils.keccak256(utils.RLP.encode(raw));
         try {
             transaction.from = SigningKey.recover(digest, r, s, recoveryParam);
         } catch (error) {
@@ -266,7 +266,11 @@ utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) 
             chainId: chainId
         });
 
-        return self.provider.sendTransaction(signedTransaction);
+        return self.provider.sendTransaction(signedTransaction).then(function(hash) {
+            var transaction = Wallet.parseTransaction(signedTransaction);
+            transaction.hash = hash;
+            return transaction;
+        });
     });
 });
 
@@ -378,10 +382,12 @@ utils.defineProperty(Wallet, 'fromBrainWallet', function(username, password, pro
         scrypt(password, username, (1 << 18), 8, 1, 32, function(error, progress, key) {
             if (error) {
                 reject(error);
+
             } else if (key) {
                 resolve(new Wallet(utils.hexlify(key)));
+
             } else if (progressCallback) {
-                progressCallback(progress);
+                return progressCallback(progress);
             }
         });
     });
@@ -395,7 +401,7 @@ utils.defineProperty(Wallet, 'fromBrainWallet', function(username, password, pro
 //});
 
 // @TOOD: Move this to ethers.SigningKey, ethers.HDNode and ethers.Wallet
-utils.defineProperty(Wallet, 'SigningKey', SigningKey);
-utils.defineProperty(Wallet, 'HDNode', HDNode);
+//utils.defineProperty(Wallet, 'SigningKey', SigningKey);
+//utils.defineProperty(Wallet, 'HDNode', HDNode);
 
 module.exports = Wallet;
