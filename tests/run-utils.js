@@ -44,6 +44,18 @@ function testContractAddress(test) {
         'Failed to match contract address'
     )
 
+    // Ropsten: 0x5bdfd14fcc917abc2f02a30721d152a6f147f09e8cbaad4e0d5405d646c5c3e1
+    transaction = {
+        from: '0xc6af6e1a78a6752c7f8cd63877eb789a2adb776c',
+        nonce: 0
+    };
+
+    test.equal(
+        getContractAddress(transaction),
+        '0x0CcCC7507aEDf9FEaF8C8D731421746e16b4d39D',
+        'zero nonce'
+    );
+
     test.done();
 }
 
