@@ -4,7 +4,7 @@
   "description": "Contract and Interface (ABI) library for Ethereum.",
   "main": "index.js",
   "dependencies": {
-    "ethers-utils": "2.0.0"
+    "ethers-utils": "^2.0.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
