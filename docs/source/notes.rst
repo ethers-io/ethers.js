@@ -1,7 +1,8 @@
 Notes
 *****
 
-Hello
+A few quick notes about some of the less obvious aspects of interacting with
+Ethereum in JavaScript.
 
 -----
 
@@ -26,8 +27,8 @@ To demonstrate how this may be an issue in your code, cosider::
     false
 
 
-To remedy this, all numbers (which can be large) in *ethers.js* are stored and manipulated
-as Big Numbers (i.e. `BN.js`_).
+To remedy this, all numbers (which can be large) are stored and manipulated
+as :ref:`Big Numbers <bignumber>`.
 
 The functions :ref:`parseEther( etherString ) <parseEther>` and :ref:`formatEther( wei ) <formatEther>` can be used to convert between
 string representations, which are displayed to or entered by the user and Big Number representations
@@ -40,7 +41,96 @@ which can have mathematical operations handeled safely.
 Promises
 ========
 
-Hello
+A `Promise in JavaScript`_ is an object which simplifies many aspects of dealing with
+asynchronous functions.
+
+The most useful operations you will need are:
+
+:sup:`Promise` . all ( promises )
+    Returns a new promise that resolves once all the *promises* have resolved.
+
+:sup:`prototype` . then ( onResolve, onReject )
+    Returns another Promise, which once the Promise was resolved, the *onResolve*
+    function will be executed and if an error occurs, *onReject* will be called.
+
+    If *onResolve* returns a Promise, it will be inserted into the chain of the returned
+    promise. If *onResolve* throws an Error, the returned Promise will reject.
+
+**Examples**
+------------
+
+**Cleaning out an account**
+
+::
+
+    var targetAddress = "0x02F024e0882B310c6734703AB9066EdD3a10C6e0";
+
+    var privateKey = "0x0123456789012345678901234567890123456789012345678901234567890123";
+    var wallet = new ethers.Wallet(privateKey);
+
+    // Promises we are interested in
+    var balancePromise = provider.getBalance(wallet.address);
+    var gasPricePromise = provider.getGasPrice();
+    var transactionCountPromise = provider.getCode(wallet.address);
+
+    var allPromise = Promsie.all([
+        gasPricePromise,
+        balancePromise,
+        transactionCountPromise
+    ]);
+
+    var sendPromise = allPromises.then(function(results) {
+         // This function is ONLY called once ALL promises are fulfilled
+
+         var gasPrice = results[0];
+         var balance = results[1];
+         var transactionCount = results[2];
+
+         // Sending a transaction to an externally owned account (EOA) is 21000 gas)
+         var txFeeInWei = gasPrice.mul(21000);
+
+         // This will send the maximum amount (our balance minus the fee)
+         var value = balance.sub(txFeeInWei);
+
+         var transaction = {
+             to: targetAddress,
+             gasPrice: gasPrice,
+             nonce: transactionCount,
+
+             // The amount to send
+             value: value,
+
+             // Prevent replay attacks across networks
+             chainId: provider.chainId,
+         };
+
+         var signedTransaction = wallet.sign(transaction);
+
+         // By returning a Promise, the sendPromise will resolve once the
+         // transaction is sent
+         return provider.sendTransaction(signedTransaction);
+    });
+
+    var minedPromise = sendPromise.then(function(transaction) {
+        // This will be called once the transaction is sent
+
+        // This promise will be resolve once the transaction has been mined.
+        return provider.waitForTransaction(transaction.hash);
+    });
+
+    minedPromise.then(function(transaction) {
+        console.log("The transaction was mined: Block " + transaction.blockNumber);
+    });
+
+
+    // Promises can be re-used for their value; it will not make the external
+    // call again, and will provide the exact same result every time.
+    balancePromise.then(function(balance) {
+        // This *may* return before teh above allPromises, since it only
+        // required one external call. Keep in mind asynchronous calls can
+        // be called out of order.
+        console.log(balance);
+    });
 
 -----
 
@@ -95,4 +185,6 @@ To convert between ICAP and checksum addresses, see :ref:`getAddress() <api-getA
 .. _IBAN: https://en.wikipedia.org/wiki/International_Bank_Account_Number
 .. _IEEE 754 double-precision binary floating point: https://en.wikipedia.org/wiki/Double-precision_floating-point_format
 .. _BN.js: https://github.com/indutny/bn.js/
+.. _Promise in JavaScript: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 
+.. EOF

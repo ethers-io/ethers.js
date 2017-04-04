@@ -39,7 +39,7 @@ Prototype
 ---------
 
 :sup:`prototype` **. privateKey**
-    The hex string private key for this node.
+    The :ref:`hex string <hexstring>` private key for this node.
 
 :sup:`prototype` **. publicKey**
     The (compressed) public key for this node.
@@ -133,7 +133,7 @@ Static Methods
 --------------
 
 :sup:`Interface` . encodeParams( types , values )
-    Returns a hex string of the *values* encoded as the *types*. (throws if a
+    Returns a :ref:`hex string <hexstring>` of the *values* encoded as the *types*. (throws if a
     value is invalid for the type)
 
 :sup:`Interface` . decodeParams( [ names , ] types , data )
@@ -419,7 +419,7 @@ The SigningKey interface provides an abstraction around the
 Creating Instances
 ------------------
 
-A private key may be a any hex string or an `Arrayish`_
+A private key may be a any :ref:`hex string <hexstring>` or an :ref:`Arrayish <api-arrayish>`
 representing 32 bytes.
 
 new :sup:`ethers` . _SigningKey ( privateKey )
@@ -446,13 +446,17 @@ Static Methods
 --------------
 
 :sup:`_SigningKey` . recover( digest, r, s, recoveryParam )
-    foobar
+    Given a message *digest* and the signature parameters *r*, *s*
+    and *recoveryParam* compute the the address that signed the
+    message.
 
-:sup:`_SigningKey` . getPublicKey( value [, compressed] )
-    foobar
+:sup:`_SigningKey` . getPublicKey( publicOrPrivateKey [, compressed] )
+    Given a *publicOrPrivateKey*, return the public key, optionally *compressed*.
 
-:sup:`_SigningKey` . publicKeyToAddress( publicKey )
-    foobar
+    **default:** *compressed*\ =false
+
+:sup:`_SigningKey` . publicKeyToAddress( publicOrPrivateKey )
+    Convert a *publicOrPrivateKey* to an Ethereum address.
 
 
 *Examples*
@@ -520,8 +524,8 @@ This encoding method is used internally for several aspects of Ethereum, such as
 encoding transactions and determining contract addresses. For most developers this
 should not be necessary to use.
 
-RLP can encode nested arrays, with data as hex strings and Uint8Array (or other non-Array
-arrayish objects). A decoded object will always have data represented as hex strings and
+RLP can encode nested arrays, with data as :ref:`hex strings <hexstring>` and Uint8Array (or other non-Array
+:ref:`arrayish <api-arrayish>` objects). A decoded object will always have data represented as :ref:`hex strings <hexstring>` and
 Arrays.
 
 See: https://github.com/ethereum/wiki/wiki/RLP
@@ -530,7 +534,7 @@ Static Methods
 --------------
 
 :sup:`RLP` . encode( object )
-    Encodes an object as an RLP hex string. (throws an Error if the object contains
+    Encodes an object as an RLP :ref:`hex string <hexstring>`. (throws an Error if the object contains
     invalid items)
 
 :sup:`RLP` . decode( hexStringOrArrayish )
@@ -558,3 +562,5 @@ Static Methods
 
 .. _BIP 32 Specification: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 .. _BIP 39 Specification: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
+
+.. EOF

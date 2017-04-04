@@ -75,8 +75,9 @@ Creating Instances
       **examples:** utils.bigNumberify("42")
 
     *Hex String*
-        A string with a **prefix of 0x** and consisting of the hexidecimal digits 0 through 9 and
-        a through f, case-insensitive. Must be non-negative.
+        A :ref:`hex string <hexstring>`, witch has aa **prefix of 0x** and consisting
+        of the hexidecimal digits 0 through 9 and a through f, case-insensitive. Must
+        be non-negative.
 
         **examples:** utils.bigNumberify("0x2a")
 
@@ -86,7 +87,7 @@ Creating Instances
         **examples:** utils.bigNumberify(42)
 
     *Arrayish*
-        Treats the :ref:`arrayish <arrayish>` as a big-endian encoded bytes representation.
+        Treats the :ref:`arrayish <api-arrayish>` as a big-endian encoded bytes representation.
 
         **examples:** utils.bigNumberify([ 42 ])
 
@@ -310,13 +311,15 @@ An arrayish object is any such that it:
 
 -----
 
-.. _api-hexstring:
+.. _hexstring:
 
 Hex Strings
 ===========
 
-A hex string is **always** prefixed with "0x" and is always returned
-with even-length (although any hex string may be passed in with odd-length).
+A hex string is **always** prefixed with "0x" and consists of the characters
+0 -- 9 and a -- f. It is always returned lower case with even-length, but any hex
+string passed into a function may be any case and may be odd-length.
+
 
 :sup:`utils` . hexlify ( numberOrBigNumberOrHexStringOrArrayish )
     Converts any number, :ref:`BigNumber <bignumber>`, hex string or
@@ -353,4 +356,4 @@ of the transaction.
 
 -----
 
-\ 
+.. EOF

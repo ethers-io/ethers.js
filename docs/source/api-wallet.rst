@@ -3,7 +3,7 @@
 Wallets
 *******
 
-A **Wallet** manages a private/public key pair which is used to cryptographically sign
+A **wallet** manages a private/public key pair which is used to cryptographically sign
 transactions and prove ownership on the Ethereum network.
 
 ::
@@ -127,7 +127,7 @@ Prototype
     `address`_ property
 
 :sup:`prototype` . sign ( transaction )
-    Signs *transaction* and returns the signed transaction as a raw hex string.
+    Signs *transaction* and returns the signed transaction as a :ref:`hex string <hexstring>`.
     See :ref:`Transaction Requests <transactionrequest>`.
 
 :sup:`prototype` . encrypt ( password [ , options ] [ , progressCallback ] )
@@ -225,6 +225,10 @@ These operations require the wallet have a provider attached to it.
 
 **Query the Network** ::
 
+    var privateKey = '0x0123456789012345678901234567890123456789012345678901234567890123';
+    var wallet = new ethers.Wallet(privateKey);
+    wallet.provider = ethers.providers.getDefaultProvider();
+
     var balancePromise = wallet.getBalance(address);
 
     balancePromise.then(function(balance) {
@@ -240,6 +244,10 @@ These operations require the wallet have a provider attached to it.
 
 
 **Transfer Ether** ::
+
+    var privateKey = '0x0123456789012345678901234567890123456789012345678901234567890123';
+    var wallet = new ethers.Wallet(privateKey);
+    wallet.provider = ethers.providers.getDefaultProvider();
 
     // We must pass in the amount as wei (1 ether = 1e18 wei), so we use
     // this convenience function to convert ether to wei.
@@ -266,6 +274,10 @@ These operations require the wallet have a provider attached to it.
 
 
 **Sending (Complex) Transactions** ::
+
+    var privateKey = '0x0123456789012345678901234567890123456789012345678901234567890123';
+    var wallet = new ethers.Wallet(privateKey);
+    wallet.provider = ethers.providers.getDefaultProvider();
 
     var transaction = {
         // Recommendation: omit nonce; the provider will query the network
@@ -351,4 +363,4 @@ Parsing Transactions
 
 -----
 
-\ 
+.. EOF

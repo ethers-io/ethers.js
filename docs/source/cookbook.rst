@@ -3,6 +3,11 @@ Cookbook
 
 Some quick snippets of code and ideas to work from.
 
+Some of these recipes are stubs that will be filled in shortly.
+
+If there is a simple recipe you would like added, please send
+suggestions to support@ethers.io.
+
 -----
 
 Dump Balances of All Geth Wallets (in the current director)
@@ -30,7 +35,7 @@ Parity
                 return;
             }
 
-            var address = Wallet.getWalletAddress(data.toString());
+            var address = JSON.parse(data.toString()).address;
             provider.getBalance(address).then(function(balance) {
                 console.log(address + ':' + ethers.formatEther(balance));
             });
@@ -58,9 +63,15 @@ Include example links to etherscan showing the transactions
     Promise.all([
         wallet.getBalance(),
         provider.getGasPrice(),
+        provider.getCode(newAddress)
     ]).then(function(results) {
         var balance = results[0];
         var gasPrice = results[1];
+        var code = results[2];
+
+        if (code !== '0x') {
+            throw new Error('this tool should not send to a contract');
+        }
 
         // The exact cost (in gas) to send to an Externally Owned Account (EOA)
         var gasLimit = 21000;
@@ -72,7 +83,6 @@ Include example links to etherscan showing the transactions
             console.log(transaction);
         });
     });
-
 
 -----
 
@@ -128,7 +138,17 @@ Transactions Confirm UI (with a Custom Signer)
 Coalesce Jaxx Wallets
 =====================
 
-Explain how Jaxx uses HD Wallets
+The Jaxx Wallet (for iOS, Android, desktop, et cetera) uses HD wallets on Ethereum the
+same way as Bitcoin, which results in each transaction being received by a separate
+address. As a result, funds get spread across many accounts, making several operations
+in Ethereum impossible.
+
+This short recipe will coalesce all these accounts into a single one, by sending the funds
+from each account into a single one.
+
+This also results in paying multiple transaction fees (1 fee per account to merge).
+
+@TODO: This is incomplete!!
 
 *Source Code:* ::
 
@@ -139,11 +159,15 @@ Explain how Jaxx uses HD Wallets
     var hdnode = ethers.HDNode.fromMnemonic();
     hdnode = hdnode.derivePath("m/44'/60'/0'/0");
 
+    @TODO:
+
 
 -----
 
 Access Funds in a Mnemonic Phrase Wallet
 ========================================
+
+@TODO: This is incomplete
 
 *Source Code:* ::
 
@@ -152,7 +176,7 @@ Access Funds in a Mnemonic Phrase Wallet
     var walletPath = {
         "standard": "m/44'/60'/0'/0/0",
 
-        "electrum": "m/0'"  // Non-standard
+        // @TODO: Include some non-standard wallet paths
     };
 
     var mnemonic = "";
@@ -162,6 +186,8 @@ Access Funds in a Mnemonic Phrase Wallet
 
     var wallet = new Wallet(node.privateKey);
     console.log(wallet.address);
+
+    @TODO:
 
 -----
 
@@ -201,4 +227,4 @@ through to INFURA, but dump all data going back and forth.
 
 -----
 
-\ 
+.. EOF

@@ -104,6 +104,11 @@ JsonRpcProvider :sup:`( inherits from Provider )`
 :sup:`prototype` . url
     The JSON-RPC URL the provider is connected to
 
+:sup:`prototype` . send ( method , params )
+    Send the JSON-RPC *method* with *params*. This is useful for calling
+    non-standard or less common JSON-RPC methods. A :ref:`Promise <promise>` is
+    returned which will resolve to the parsed JSON result.
+
 EtherscanProvider :sup:`( inherits from Provider )`
 ---------------------------------------------------
 
@@ -234,7 +239,7 @@ usually be used instead.
 
 :sup:`prototype` . call ( transaction )
     Send the **read-only** (constant) *transaction* to a single Ethereum node and
-    return a :ref:`Promise <promise>` with the result (as a hex string) of executing it.
+    return a :ref:`Promise <promise>` with the result (as a :ref:`hex string <hexstring>`) of executing it.
     (See `Transaction Requests <transactionrequest>`_)
 
     This is free, since it does not change any state on the blockchain.
@@ -259,7 +264,7 @@ usually be used instead.
 
 ::
 
-    foobar
+    @TODO
 
 -----
 
@@ -267,10 +272,10 @@ Contract State
 ==============
 
 :sup:`prototype` . getCode ( address )
-    Returns a :ref:`Promise <promise>` with the bytecode (as a hex string) at  *address*.
+    Returns a :ref:`Promise <promise>` with the bytecode (as a :ref:`hex string <hexstring>`) at  *address*.
 
 :sup:`prototype` . getStorageAt ( address, position [ , blockTag ] )
-    Returns a :ref:`Promise <promise>` with the value (as a hex string) at *address* in
+    Returns a :ref:`Promise <promise>` with the value (as a :ref:`hex string <hexstring>`) at *address* in
     *position* at *blockTag*. (See `Block Tags <blocktag>`_)
 
     default: *blockTag*\ = "latest"
@@ -284,7 +289,7 @@ Contract State
 
 ::
 
-    foobar
+    @TODO
 
 -----
 
@@ -337,7 +342,7 @@ Waiting for Transactions
 ------------------------
 
 :sup:`prototype` . waitForTransaction ( transachtionHash [ , timeout ] )
-    Return a Promise which returns the transaction once *transactionHash* is
+    Return a :ref:`Promise <promise>` which returns the transaction once *transactionHash* is
     mined, with an optional *timeout* (in milliseconds)
 
 *Examples*
@@ -383,7 +388,7 @@ Block Tag
 
 A block tag is used to uniquely identify a block's position in th blockchain:
 
-a Number or hex string:
+a Number or :ref:`hex string <hexstring>`:
     Each block has a block number (eg. ``42`` or ``"0x2a``.
 
 "latest":
@@ -427,7 +432,7 @@ Transaction Requests
 --------------------
 
 Any property which accepts a number may also be specified as a :ref:`BigNumber <bignumber>`
-or hex string.
+or :ref:`hex string <hexstring>`.
 
 ::
 
@@ -579,3 +584,5 @@ Provider Specific Extra API Calls
 .. _events: https://nodejs.org/dist/latest-v6.x/docs/api/events.html
 .. _replay-attack: https://github.com/ethereum/EIPs/issues/155
 .. _api-topics: https://github.com/ethereum/wiki/wiki/JSON-RPC#a-note-on-specifying-topic-filters
+
+.. EOF

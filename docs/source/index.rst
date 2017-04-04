@@ -4,11 +4,11 @@
    contain the root `toctree` directive.
 
 
-What is Ethers.js
+What is ethers.js
 *****************
 
 This library (which was made for and used by ethers.io) is designed to make it
-easier to run client-side JavaScript based wallets, keeping the private key on
+easier to write client-side JavaScript based wallets, keeping the private key on
 the owners machine at all times.
 
 .. toctree::
