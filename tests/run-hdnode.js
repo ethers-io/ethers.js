@@ -1,9 +1,9 @@
 'use strict';
 
-var HDNode = require('../hdnode/index.js');
+var HDNode = require('../wallet/hdnode');
 
 function testHDNode(test) {
-    var Wallet = require('../wallet/index.js');
+    var Wallet = require('../wallet/wallet');
     var c = 0;
     var testcases = require('./tests/hdnode.json');
     testcases.forEach(function(testcase) {
