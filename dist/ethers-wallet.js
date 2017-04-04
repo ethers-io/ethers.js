@@ -1,19 +1,16 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-
-},{}],2:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 module.exports = undefined;
-},{}],3:[function(require,module,exports){
-arguments[4][2][0].apply(exports,arguments)
-},{"dup":2}],4:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 
 var BN = require('bn.js');
 
-var convert = require('./convert.js');
-var keccak256 = require('./keccak256.js');
+var convert = require('./convert');
+var throwError = require('./throw-error');
+var keccak256 = require('./keccak256');
 
 function getChecksumAddress(address) {
     if (typeof(address) !== 'string' || !address.match(/^0x[0-9A-Fa-f]{40}$/)) {
-        throw new Error('invalid address');
+        throwError('invalid address', {input: address});
     }
 
     address = address.toLowerCase();
@@ -74,7 +71,9 @@ var ibanChecksum = (function() {
 function getAddress(address, icapFormat) {
     var result = null;
 
-    if (typeof(address) !== 'string') { throw new Error('invalid address'); }
+    if (typeof(address) !== 'string') {
+        throwError('invalid address', {input: address});
+    }
 
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
 
@@ -85,7 +84,7 @@ function getAddress(address, icapFormat) {
 
         // It is a checksummed address with a bad checksum
         if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
-            throw new Error('invalid address checksum');
+            throwError('invalid address checksum', { input: address, expected: result });
         }
 
     // Maybe ICAP? (we only support direct mode)
@@ -93,7 +92,7 @@ function getAddress(address, icapFormat) {
 
         // It is an ICAP address with a bad checksum
         if (address.substring(2, 4) !== ibanChecksum(address)) {
-            throw new Error('invalid address icap checksum');
+            throwError('invalid address icap checksum', { input: address });
         }
 
         result = (new BN(address.substring(4), 36)).toString(16);
@@ -101,7 +100,7 @@ function getAddress(address, icapFormat) {
         result = getChecksumAddress('0x' + result);
 
     } else {
-        throw new Error('invalid address - ' + address);
+        throwError('invalid address', { input: address });
     }
 
     if (icapFormat) {
@@ -118,7 +117,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert.js":8,"./keccak256.js":11,"bn.js":12}],5:[function(require,module,exports){
+},{"./convert":6,"./keccak256":9,"./throw-error":24,"bn.js":10}],3:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -128,8 +127,9 @@ module.exports = {
 
 var BN = require('bn.js');
 
-var defineProperty = require('./properties.js').defineProperty;
-var convert = require('./convert.js');
+var defineProperty = require('./properties').defineProperty;
+var convert = require('./convert');
+var throwError = require('./throw-error');
 
 function BigNumber(value) {
     if (!(this instanceof BigNumber)) { throw new Error('missing new'); }
@@ -155,7 +155,7 @@ function BigNumber(value) {
         value = new BN(convert.hexlify(value).substring(2), 16);
 
     } else {
-        throw new Error('invalid value');
+        throwError('invalid BigNumber value', { input: value });
     }
 
     defineProperty(this, '_bn', value);
@@ -231,8 +231,9 @@ defineProperty(BigNumber.prototype, 'toNumber', function(base) {
     return this._bn.toNumber();
 });
 
-defineProperty(BigNumber.prototype, 'toString', function(base) {
-    return this._bn.toString(base || 10);
+defineProperty(BigNumber.prototype, 'toString', function() {
+    //return this._bn.toString(base || 10);
+    return this._bn.toString(10);
 });
 
 defineProperty(BigNumber.prototype, 'toHexString', function() {
@@ -246,19 +247,9 @@ function isBigNumber(value) {
     return (value instanceof BigNumber);
 }
 
-function bigNumberify(value, name) {
+function bigNumberify(value) {
     if (value instanceof BigNumber) { return value; }
-
-    try {
-        return new BigNumber(value);
-
-    } catch (error) {
-        console.log(error);
-        if (name) {
-            throw new Error('invalid arrayify object (' + name + ')');
-        }
-        throw new Error('invalid arrayify object');
-    }
+    return new BigNumber(value);
 }
 
 module.exports = {
@@ -266,7 +257,7 @@ module.exports = {
     bigNumberify: bigNumberify
 };
 
-},{"./convert.js":8,"./properties.js":22,"bn.js":12}],6:[function(require,module,exports){
+},{"./convert":6,"./properties":20,"./throw-error":24,"bn.js":10}],4:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -276,10 +267,15 @@ var crypto = global.crypto || global.msCrypto;
 if (!crypto || !crypto.getRandomValues) {
     console.log('WARNING: Missing strong random number source; using weak randomBytes');
     crypto = {
-        getRandomValues: function(length) {
-
-            for (var i = 0; i < buffer.length; i++) {
-                buffer[i] = parseInt(256 * Math.random());
+        getRandomValues: function(buffer) {
+            for (var round = 0; round < 20; round++) {
+                for (var i = 0; i < buffer.length; i++) {
+                    if (round) {
+                        buffer[i] ^= parseInt(256 * Math.random());
+                    } else {
+                        buffer[i] = parseInt(256 * Math.random());
+                    }
+                }
             }
 
             return buffer;
@@ -307,21 +303,21 @@ if (crypto._weakCrypto === true) {
 module.exports = randomBytes;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./properties.js":22}],7:[function(require,module,exports){
+},{"./properties.js":20}],5:[function(require,module,exports){
 
-var getAddress = require('./address.js').getAddress;
-var convert = require('./convert.js');
-var keccak256 = require('./keccak256.js');
-var rlp = require('./rlp.js');
+var getAddress = require('./address').getAddress;
+var convert = require('./convert');
+var keccak256 = require('./keccak256');
+var RLP = require('./rlp');
 
 // http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
 function getContractAddress(transaction) {
     if (!transaction.from) { throw new Error('missing from address'); }
     var nonce = transaction.nonce;
 
-    return getAddress('0x' + keccak256(rlp.encode([
+    return getAddress('0x' + keccak256(RLP.encode([
         getAddress(transaction.from),
-        convert.hexlify(nonce, 'nonce')
+        convert.stripZeros(convert.hexlify(nonce, 'nonce'))
     ])).substring(26));
 }
 
@@ -329,14 +325,14 @@ module.exports = {
     getContractAddress: getContractAddress,
 }
 
-},{"./address.js":4,"./convert.js":8,"./keccak256.js":11,"./rlp.js":23}],8:[function(require,module,exports){
+},{"./address":2,"./convert":6,"./keccak256":9,"./rlp":21}],6:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
  */
 
 var defineProperty = require('./properties.js').defineProperty;
-
+var throwError = require('./throw-error');
 
 function isArrayish(value) {
     if (!value || parseInt(value.length) != value.length) {
@@ -375,12 +371,7 @@ function arrayify(value, name) {
         return new Uint8Array(value);
     }
 
-console.log('AA', typeof(value), value);
-
-    if (name) {
-        throw new Error('invalid arrayify object (' + name + ')');
-    }
-    throw new Error('invalid arrayify object');
+    throwError('invalid arrayify value', { name: name, input: value });
 }
 
 function concat(objects) {
@@ -419,7 +410,10 @@ function stripZeros(value) {
 }
 
 function padZeros(value, length) {
+    value = arrayify(value);
+
     if (length < value.length) { throw new Error('cannot pad'); }
+
     var result = new Uint8Array(length);
     result.set(value, length - value.length);
     return result;
@@ -444,7 +438,7 @@ function hexlify(value, name) {
 
     if (typeof(value) === 'number') {
         if (value < 0) {
-            throw new Error('cannot hexlify negative value');
+            throwError('cannot hexlify negative value', { name: name, input: value });
         }
 
         var hex = '';
@@ -477,12 +471,7 @@ function hexlify(value, name) {
         return '0x' + result.join('');
     }
 
-console.log('ERROR', typeof(value), value);
-
-    if (name) {
-        throw new Error('invalid hexlifiy value (' + name + ')');
-    }
-    throw new Error('invalid hexlify value');
+    throwError('invalid hexlify value', { name: name, input: value });
 }
 
 
@@ -499,10 +488,12 @@ module.exports = {
     isHexString: isHexString,
 };
 
-},{"./properties.js":22}],9:[function(require,module,exports){
+},{"./properties.js":20,"./throw-error":24}],7:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
+
+var sha2 = require('./sha2.js');
 
 var convert = require('./convert.js');
 
@@ -510,12 +501,12 @@ var convert = require('./convert.js');
 
 function createSha256Hmac(key) {
     if (!key.buffer) { key = convert.arrayify(key); }
-    return new hash.hmac(hash.sha256, key);
+    return new hash.hmac(sha2.createSha256, key);
 }
 
 function createSha512Hmac(key) {
     if (!key.buffer) { key = convert.arrayify(key); }
-    return new hash.hmac(hash.sha512, key);
+    return new hash.hmac(sha2.createSha512, key);
 }
 
 module.exports = {
@@ -523,38 +514,27 @@ module.exports = {
     createSha512Hmac: createSha512Hmac,
 };
 
-},{"./convert.js":8,"hash.js":13}],10:[function(require,module,exports){
+},{"./convert.js":6,"./sha2.js":22,"hash.js":11}],8:[function(require,module,exports){
 'use strict';
 
 // This is SUPER useful, but adds 140kb (even zipped, adds 40kb)
 //var unorm = require('unorm');
 
-var address = require('./address.js');
-var bigNumber = require('./bignumber.js');
-var contractAddress = require('./contract-address.js');
-var convert = require('./convert.js');
-var hmac = require('./hmac.js');
-var keccak256 = require('./keccak256.js');
-var sha256 = require('./sha2.js').sha256;
-var randomBytes = require('./random-bytes.js');
-var pbkdf2 = require('./pbkdf2.js');
-var properties = require('./properties.js');
-var rlp = require('./rlp.js');
-var utf8 = require('./utf8.js');
-var units = require('./units.js');
+var address = require('./address');
+var bigNumber = require('./bignumber');
+var contractAddress = require('./contract-address');
+var convert = require('./convert');
+var keccak256 = require('./keccak256');
+var sha256 = require('./sha2').sha256;
+var randomBytes = require('./random-bytes');
+var properties = require('./properties');
+var RLP = require('./rlp');
+var utf8 = require('./utf8');
+var units = require('./units');
 
-////var xmlhttprequest = require('./xmlhttprequest.js');
-
-/*
-function cloneObject(object) {
-    var clone = {};
-    for (var key in object) { clone[key] = object[key]; }
-    return clone;
-}
-*/
 
 module.exports = {
-    rlp: rlp,
+    RLP: RLP,
 
     defineProperty: properties.defineProperty,
 
@@ -565,17 +545,14 @@ module.exports = {
     etherSymbol: '\u039e',
 
     arrayify: convert.arrayify,
-    isArrayish: convert.isArrayish,
 
     concat: convert.concat,
     padZeros: convert.padZeros,
     stripZeros: convert.stripZeros,
 
     bigNumberify: bigNumber.bigNumberify,
-    isBigNumber: bigNumber.isBigNumber,
 
     hexlify: convert.hexlify,
-    isHexString: convert.isHexString,
 
     toUtf8Bytes: utf8.toUtf8Bytes,
     toUtf8String: utf8.toUtf8String,
@@ -589,13 +566,15 @@ module.exports = {
     keccak256: keccak256,
     sha256: sha256,
 
-    hmac: hmac,
-    pbkdf2: pbkdf2,
-
     randomBytes: randomBytes,
 }
 
-},{"./address.js":4,"./bignumber.js":5,"./contract-address.js":7,"./convert.js":8,"./hmac.js":9,"./keccak256.js":11,"./pbkdf2.js":21,"./properties.js":22,"./random-bytes.js":6,"./rlp.js":23,"./sha2.js":24,"./units.js":25,"./utf8.js":26}],11:[function(require,module,exports){
+require('./standalone')({
+    utils: module.exports
+});
+
+
+},{"./address":2,"./bignumber":3,"./contract-address":5,"./convert":6,"./keccak256":9,"./properties":20,"./random-bytes":4,"./rlp":21,"./sha2":22,"./standalone":23,"./units":25,"./utf8":26}],9:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -609,7 +588,7 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":8,"js-sha3":20}],12:[function(require,module,exports){
+},{"./convert.js":6,"js-sha3":18}],10:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -4038,7 +4017,7 @@ module.exports = keccak256;
   };
 })(typeof module === 'undefined' || module, this);
 
-},{}],13:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var hash = exports;
 
 hash.utils = require('./hash/utils');
@@ -4055,7 +4034,7 @@ hash.sha384 = hash.sha.sha384;
 hash.sha512 = hash.sha.sha512;
 hash.ripemd160 = hash.ripemd.ripemd160;
 
-},{"./hash/common":14,"./hash/hmac":15,"./hash/ripemd":16,"./hash/sha":17,"./hash/utils":18}],14:[function(require,module,exports){
+},{"./hash/common":12,"./hash/hmac":13,"./hash/ripemd":14,"./hash/sha":15,"./hash/utils":16}],12:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -4148,7 +4127,7 @@ BlockHash.prototype._pad = function pad() {
   return res;
 };
 
-},{"../hash":13}],15:[function(require,module,exports){
+},{"../hash":11}],13:[function(require,module,exports){
 var hmac = exports;
 
 var hash = require('../hash');
@@ -4198,9 +4177,9 @@ Hmac.prototype.digest = function digest(enc) {
   return this.outer.digest(enc);
 };
 
-},{"../hash":13}],16:[function(require,module,exports){
+},{"../hash":11}],14:[function(require,module,exports){
 module.exports = {ripemd160: null}
-},{}],17:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -4766,7 +4745,7 @@ function g1_512_lo(xh, xl) {
   return r;
 }
 
-},{"../hash":13}],18:[function(require,module,exports){
+},{"../hash":11}],16:[function(require,module,exports){
 var utils = exports;
 var inherits = require('inherits');
 
@@ -5025,7 +5004,7 @@ function shr64_lo(ah, al, num) {
 };
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":19}],19:[function(require,module,exports){
+},{"inherits":17}],17:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -5050,7 +5029,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],20:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -5529,7 +5508,7 @@ if (typeof Object.create === 'function') {
 })();
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":3}],21:[function(require,module,exports){
+},{"_process":1}],19:[function(require,module,exports){
 
 function pbkdf2(password, salt, iterations, keylen, createHmac) {
     var hLen
@@ -5600,7 +5579,7 @@ console.log('TT', t1 - t0, t2 - t1);
 */
 module.exports = pbkdf2;
 
-},{}],22:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 function defineProperty(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -5613,7 +5592,7 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],23:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 var convert = require('./convert.js');
@@ -5664,7 +5643,6 @@ function _encode(object) {
         }
 
         var length = arrayifyInteger(object.length);
-
         length.unshift(0xb7 + length.length);
 
         return length.concat(object);
@@ -5675,8 +5653,22 @@ function encode(object) {
     return convert.hexlify(_encode(object));
 }
 
-/*
-*/
+function _decodeChildren(data, offset, childOffset, length) {
+    var result = [];
+
+    while (childOffset < offset + 1 + length) {
+        var decoded = _decode(data, childOffset);
+
+        result.push(decoded.result);
+
+        childOffset += decoded.consumed;
+        if (childOffset > offset + 1 + length) {
+            throw new Error('invalid rlp');
+        }
+    }
+
+    return {consumed: (1 + length), result: result};
+}
 
 // returns { consumed: number, result: Object }
 function _decode(data, offset) {
@@ -5694,21 +5686,7 @@ function _decode(data, offset) {
             throw new Error('to short');
         }
 
-        var result = [];
-
-        var childOffset = offset + 1 + lengthLength;
-        while (childOffset < offset + 1 + lengthLength + length) {
-            var decoded = _decode(data, childOffset);
-
-            result.push(decoded.result);
-
-            childOffset += decoded.consumed;
-            if (childOffset > offset + 1 + lengthLength + length) {
-                throw new Error('hungry child');
-            }
-        }
-
-        return {consumed: (1 + lengthLength + length), result: result};
+        return _decodeChildren(data, offset, offset + 1 + lengthLength, lengthLength + length);
 
     } else if (data[offset] >= 0xc0) {
         var length = data[offset] - 0xc0;
@@ -5716,20 +5694,7 @@ function _decode(data, offset) {
             throw new Error('invalid rlp data');
         }
 
-        var result = [];
-
-        var childOffset = offset + 1;
-        while (childOffset < offset + 1 + length) {
-            var decoded = _decode(data, childOffset);
-            result.push(decoded.result);
-
-            childOffset += decoded.consumed;
-            if (childOffset > offset + 1 + length) {
-                throw new Error('invalid rlp data');
-            }
-        }
-
-        return { consumed: (1 + length), result: result };
+        return _decodeChildren(data, offset, offset + 1, length);
 
     } else if (data[offset] >= 0xb8) {
         var lengthLength = data[offset] - 0xb7;
@@ -5771,7 +5736,7 @@ module.exports = {
     decode: decode,
 }
 
-},{"./convert.js":8}],24:[function(require,module,exports){
+},{"./convert.js":6}],22:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -5796,8 +5761,49 @@ module.exports = {
     createSha512: hash.sha512,
 }
 
-},{"./convert.js":8,"hash.js":13}],25:[function(require,module,exports){
+},{"./convert.js":6,"hash.js":11}],23:[function(require,module,exports){
+(function (global){
+var defineProperty = require('./properties.js').defineProperty;
+
+function Ethers() { }
+
+function defineEthersValues(values) {
+
+    // This is modified in the Gruntfile.js
+    if ("__STAND_ALONE_TRUE__" !== ("__STAND_ALONE_" + "TRUE__")) {
+        return;
+    }
+
+    if (global.ethers == null) {
+        defineProperty(global, 'ethers', new Ethers());
+    }
+
+    for (var key in values) {
+        if (global.ethers[key] == null) {
+            defineProperty(global.ethers, key, values[key]);
+        }
+    }
+}
+
+module.exports = defineEthersValues;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./properties.js":20}],24:[function(require,module,exports){
+'use strict';
+
+function throwError(message, params) {
+    var error = new Error(message);
+    for (var key in params) {
+        error[key] = params[key];
+    }
+    throw error;
+}
+
+module.exports = throwError;
+
+},{}],25:[function(require,module,exports){
 var bigNumberify = require('./bignumber.js').bigNumberify;
+var throwError = require('./throw-error');
 
 var zero = new bigNumberify(0);
 var negative1 = new bigNumberify(-1);
@@ -5833,25 +5839,25 @@ function formatEther(wei, options) {
 
 function parseEther(ether) {
     if (typeof(ether) !== 'string' || !ether.match(/^-?[0-9.,]+$/)) {
-        throw new Error('invalid value');
+        throwError('invalid value', { input: ether });
     }
 
-    ether = ether.replace(/,/g,'');
+    var value = ether.replace(/,/g,'');
 
     // Is it negative?
-    var negative = (ether.substring(0, 1) === '-');
-    if (negative) { ether = ether.substring(1); }
+    var negative = (value.substring(0, 1) === '-');
+    if (negative) { value = value.substring(1); }
 
-    if (ether === '.') { throw new Error('invalid value'); }
+    if (value === '.') { throwError('invalid value', { input: ether }); }
 
     // Split it into a whole and fractional part
-    var comps = ether.split('.');
-    if (comps.length > 2) { throw new Error('too many decimal points'); }
+    var comps = value.split('.');
+    if (comps.length > 2) { throwError('too many decimal points', { input: ether }); }
 
     var whole = comps[0], fraction = comps[1];
     if (!whole) { whole = '0'; }
     if (!fraction) { fraction = '0'; }
-    if (fraction.length > 18) { throw new Error('too many decimal places'); }
+    if (fraction.length > 18) { throwError('too many decimal places', { input: ether, decimals: fraction.length }); }
 
     while (fraction.length < 18) { fraction += '0'; }
 
@@ -5870,7 +5876,7 @@ module.exports = {
     parseEther: parseEther,
 }
 
-},{"./bignumber.js":5}],26:[function(require,module,exports){
+},{"./bignumber.js":3,"./throw-error":24}],26:[function(require,module,exports){
 
 var convert = require('./convert.js');
 
@@ -5985,365 +5991,285 @@ module.exports = {
     toUtf8String: bytesToUtf8,
 };
 
-},{"./convert.js":8}],27:[function(require,module,exports){
-'use strict';
+},{"./convert.js":6}],27:[function(require,module,exports){
+// See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+// See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
-var utils = require('ethers-utils');
+var secp256k1 = new (require('elliptic')).ec('secp256k1');
 
-var secretStorage = require('./secret-storage.js');
-var SigningKey = require('./signing-key.js');
+var wordlist = (function() {
+    var words = require('./words.json');
+    return words.replace(/([A-Z])/g, ' $1').toLowerCase().substring(1).split(' ');
+})();
 
-var scrypt = require('scrypt-js');
+var utils = (function() {
+    var convert = require('ethers-utils/convert.js');
 
-// This ensures we inject a setImmediate into the global space, which
-// dramatically improves the performance of the scrypt PBKDF.
-require('setimmediate');
+    var sha2 = require('ethers-utils/sha2');
 
-var transactionFields = [
-    {name: 'nonce',    maxLength: 32, },
-    {name: 'gasPrice', maxLength: 32, },
-    {name: 'gasLimit', maxLength: 32, },
-    {name: 'to',          length: 20, },
-    {name: 'value',    maxLength: 32, },
-    {name: 'data'},
-];
+    var hmac = require('ethers-utils/hmac');
 
-function Wallet(privateKey, provider) {
-    if (!(this instanceof Wallet)) { throw new Error('missing new'); }
+    return {
+        defineProperty: require('ethers-utils/properties.js').defineProperty,
 
-    // Make sure we have a valid signing key
-    var signingKey = privateKey;
-    if (!(privateKey instanceof SigningKey)) {
-        signingKey = new SigningKey(privateKey);
+        arrayify: convert.arrayify,
+        bigNumberify: require('ethers-utils/bignumber.js').bigNumberify,
+        hexlify: convert.hexlify,
+
+        toUtf8Bytes: require('ethers-utils/utf8.js').toUtf8Bytes,
+
+        sha256: sha2.sha256,
+        createSha512Hmac: hmac.createSha512Hmac,
+
+        pbkdf2: require('ethers-utils/pbkdf2.js'),
     }
-    utils.defineProperty(this, 'privateKey', signingKey.privateKey);
+})();
 
-    // Provider
-    Object.defineProperty(this, 'provider', {
-        enumerable: true,
-        get: function() { return provider; },
-        set: function(value) {
-            provider = value;
-        }
-    });
-    if (provider) { this.provider = provider; }
+// "Bitcoin seed"
+var MasterSecret = utils.toUtf8Bytes('Bitcoin seed');
 
-    var defaultGasLimit = 3000000;
-    Object.defineProperty(this, 'defaultGasLimit', {
-        enumerable: true,
-        get: function() { return provider; },
-        set: function(value) {
-            if (typeof(value) !== 'number') { throw new Error('invalid defaultGasLimit'); }
-            defaultGasLimit = value;
-        }
-    });
+var HardenedBit = 0x80000000;
 
-    utils.defineProperty(this, 'address', signingKey.address);
-
-    utils.defineProperty(this, 'sign', function(transaction) {
-        var raw = [];
-        transactionFields.forEach(function(fieldInfo) {
-            var value = transaction[fieldInfo.name] || ([]);
-            value = utils.arrayify(utils.hexlify(value), fieldInfo.name);
-
-            // Fixed-width field
-            if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
-                var error = new Error('invalid ' + fieldInfo.name);
-                error.reason = 'wrong length';
-                error.value = value;
-                throw error;
-            }
-
-            // Variable-width (with a maximum)
-            if (fieldInfo.maxLength) {
-                value = utils.stripZeros(value);
-                if (value.length > fieldInfo.maxLength) {
-                    var error = new Error('invalid ' + fieldInfo.name);
-                    error.reason = 'too long';
-                    error.value = value;
-                    throw error;
-                }
-            }
-
-            raw.push(utils.hexlify(value));
-        });
-
-        var digest = utils.keccak256(utils.rlp.encode(raw));
-
-        var signature = signingKey.signDigest(digest);
-
-        raw.push(utils.hexlify([27 + signature.recoveryParam]));
-        raw.push(signature.r);
-        raw.push(signature.s);
-
-        return (utils.rlp.encode(raw));
-    });
+// Returns a byte with the MSB bits set
+function getUpperMask(bits) {
+   return ((1 << bits) - 1) << (8 - bits);
 }
 
-utils.defineProperty(Wallet, 'parseTransaction', function(rawTransaction) {
-    rawTransaction = utils.hexlify(rawTransaction, 'rawTransaction');
-    var signedTransaction = utils.rlp.decode(rawTransaction);
-    var raw = [];
+// Returns a byte with the LSB bits set
+function getLowerMask(bits) {
+   return (1 << bits) - 1;
+}
 
-    var transaction = {};
-    transactionFields.forEach(function(fieldInfo, index) {
-        transaction[fieldInfo.name] = signedTransaction[index];
-        raw.push(signedTransaction[index]);
-    });
+function HDNode(keyPair, chainCode, index, depth) {
+    if (!(this instanceof HDNode)) { throw new Error('missing new'); }
 
-    if (transaction.to) {
-        if (transaction.to == '0x') {
-            delete transaction.to;
-        } else {
-            transaction.to = utils.getAddress(transaction.to);
-        }
+    utils.defineProperty(this, '_keyPair', keyPair);
+
+    utils.defineProperty(this, 'privateKey', utils.hexlify(keyPair.priv.toArray('be', 32)));
+    utils.defineProperty(this, 'publicKey', '0x' + keyPair.getPublic(true, 'hex'));
+
+    utils.defineProperty(this, 'chainCode', utils.hexlify(chainCode));
+
+    utils.defineProperty(this, 'index', index);
+    utils.defineProperty(this, 'depth', depth);
+}
+
+utils.defineProperty(HDNode.prototype, '_derive', function(index) {
+
+    // Public parent key -> public child key
+    if (!this.privateKey) {
+        if (index >= HardenedBit) { throw new Error('cannot derive child of neutered node'); }
+        throw new Error('not implemented');
     }
 
-    ['gasPrice', 'gasLimit', 'nonce', 'value'].forEach(function(name) {
-        if (!transaction[name]) { return; }
-        if (transaction[name].length === 0) {
-            transaction[name] = utils.bigNumberify(0);
-        } else {
-            transaction[name] = utils.bigNumberify(transaction[name]);
-        }
-    });
+    var data = new Uint8Array(37);
 
-    if (transaction.nonce) {
-        transaction.nonce = transaction.nonce.toNumber();
+    if (index & HardenedBit) {
+        // Data = 0x00 || ser_256(k_par)
+        data.set(utils.arrayify(this.privateKey), 1);
+
     } else {
-        transaction.nonce = 0;
+        // Data = ser_p(point(k_par))
+        data.set(this._keyPair.getPublic().encode(null, true));
     }
 
-    if (signedTransaction.length > 6) {
-        var v = utils.arrayify(signedTransaction[6]);
-        var r = utils.arrayify(signedTransaction[7]);
-        var s = utils.arrayify(signedTransaction[8]);
+    // Data += ser_32(i)
+    for (var i = 24; i >= 0; i -= 8) { data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff); }
 
-        if (v.length === 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
-            transaction.v = v[0];
-            transaction.r = signedTransaction[7];
-            transaction.s = signedTransaction[8];
+    var I = utils.createSha512Hmac(this.chainCode).update(data).digest();
+    var IL = utils.bigNumberify(I.slice(0, 32));
+    var IR = I.slice(32);
 
-            var digest = utils.keccak256(utils.rlp.encode(raw));
-            try {
-                transaction.from = SigningKey.recover(digest, r, s, transaction.v - 27);
-            } catch (error) {
-                console.log(error);
-            }
-        }
+    var ki = IL.add('0x' + this._keyPair.getPrivate('hex')).mod('0x' + secp256k1.curve.n.toString(16));
+
+    return new HDNode(secp256k1.keyFromPrivate(utils.arrayify(ki)), I.slice(32), index, this.depth + 1);
+});
+
+utils.defineProperty(HDNode.prototype, 'derivePath', function(path) {
+    var components = path.split('/');
+
+    if (components.length === 0 || (components[0] === 'm' && this.depth !== 0)) {
+        throw new Error('invalid path');
     }
 
-    return transaction;
-});
+    if (components[0] === 'm') { components.shift(); }
 
-utils.defineProperty(Wallet.prototype, 'getBalance', function(blockTag) {
-    if (!this.provider) { throw new Error('missing provider'); }
-
-    var self = this;
-    return new Promise(function(resolve, reject) {
-        self.provider.getBalance(self.address, blockTag).then(function(balance) {
-            resolve(balance);
-        }, function(error) {
-            reject(error);
-        });
-    });
-});
-
-utils.defineProperty(Wallet.prototype, 'getTransactionCount', function(blockNumber) {
-    if (!this.provider) { throw new Error('missing provider'); }
-
-    var self = this;
-    return new Promise(function(resolve, reject) {
-        self.provider.getTransactionCount(self.address, blockNumber).then(function(transactionCount) {
-            resolve(transactionCount);
-        }, function(error) {
-            reject(error);
-        });
-    });
-});
-
-utils.defineProperty(Wallet.prototype, 'estimateGas', function(transaction) {
-    if (!this.provider) { throw new Error('missing provider'); }
-
-    transaction = utils.cloneObject(transaction);
-    if (transaction.from == null) { transaction.from = this.address; }
-
-    return new Promise(function(resolve, reject) {
-        self.provider.estimateGas(transaction).then(function(gasEstimate) {
-            resolve(gasEstimate);
-        }, function(error) {
-            reject(error);
-        });
-    });
-});
-
-utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) {
-    if (!this.provider) { throw new Error('missing provider'); }
-
-    var gasLimit = transaction.gasLimit;
-    if (gasLimit == null) { gasLimit = this.defaultGasLimit; }
-
-    var self = this;
-
-    var gasPrice = new Promise(function(resolve, reject) {
-        if (transaction.gasPrice) {
-            resolve(transaction.gasPrice);
-            return;
-        }
-
-        self.provider.getGasPrice().then(function(gasPrice) {
-            resolve(gasPrice);
-        }, function(error) {
-            reject(error);
-        });
-    });
-
-    var nonce = new Promise(function(resolve, reject) {
-        if (transaction.nonce) {
-            resolve(transaction.nonce);
-            return;
-        }
-
-        self.provider.getTransactionCount(self.address, 'pending').then(function(transactionCount) {
-            resolve(transactionCount);
-        }, function(error) {
-            reject(error);
-        });
-    });
-
-    var toAddress = undefined;
-    if (transaction.to) { utils.getAddress(transaction.to); }
-
-    var data = utils.hexlify(transaction.data || '0x');
-    var value = utils.hexlify(transaction.value || 0);
-
-    return new Promise(function(resolve, reject) {
-        Promise.all([gasPrice, nonce]).then(function(results) {
-            var signedTransaction = self.sign({
-                to: toAddress,
-                data: data,
-                gasLimit: gasLimit,
-                gasPrice: results[0],
-                nonce: results[1],
-                value: value
-            });
-
-            self.provider.sendTransaction(signedTransaction).then(function(txid) {
-                resolve(txid);
-            }, function(error) {
-                reject(error);
-            });
-
-        }, function(error) {
-            reject(error);
-        });
-    });
-});
-
-utils.defineProperty(Wallet.prototype, 'send', function(address, amountWei, options) {
-    if (!options) { options = {}; }
-
-    return this.sendTransaction({
-        to: address,
-        gasLimit: options.gasLimit,
-        gasPrice: options.gasPrice,
-        nonce: options.nonce,
-        value: amountWei,
-    });
-});
-
-
-utils.defineProperty(Wallet.prototype, 'encrypt', function(password, options, progressCallback) {
-    if (typeof(options) === 'function' && !progressCallback) {
-        progressCallback = options;
-        options = {};
-    }
-
-    if (progressCallback && typeof(progressCallback) !== 'function') {
-        throw new Error('invalid callback');
-    }
-
-    if (!options) { options = {}; }
-
-    return secretStorage.encrypt(this.privateKey, password, options, progressCallback);
-});
-
-utils.defineProperty(Wallet, 'isValidWallet', function(json) {
-    return (secretStorage.isValidWallet(json) || secretStorage.isCrowdsaleWallet(json));
-});
-
-utils.defineProperty(Wallet, 'decrypt', function(json, password, progressCallback) {
-    if (progressCallback && typeof(progressCallback) !== 'function') {
-        throw new Error('invalid callback');
-    }
-    return new Promise(function(resolve, reject) {
-
-        if (secretStorage.isCrowdsaleWallet(json)) {
-            try {
-                var privateKey = secretStorage.decryptCrowdsale(json, password);
-                resolve(new Wallet(privateKey));
-            } catch (error) {
-                reject(error);
-            }
-
-        } else if (secretStorage.isValidWallet(json)) {
-
-            secretStorage.decrypt(json, password, progressCallback).then(function(signingKey) {
-                resolve(new Wallet(signingKey));
-            }, function(error) {
-                reject(error);
-            });
-
+    var result = this;
+    for (var i = 0; i < components.length; i++) {
+        var component = components[i];
+        if (component.match(/^[0-9]+'$/)) {
+            var index = parseInt(component.substring(0, component.length - 1));
+            if (index >= HardenedBit) { throw new Error('invalid path index - ' + component); }
+            result = result._derive(HardenedBit + index);
+        } else if (component.match(/^[0-9]+$/)) {
+            var index = parseInt(component);
+            if (index >= HardenedBit) { throw new Error('invalid path index - ' + component); }
+            result = result._derive(index);
         } else {
-            reject('invalid wallet JSON');
+            throw new Error('invlaid path component - ' + component);
         }
-    });
+    }
+
+    return result;
 });
 
+utils.defineProperty(HDNode, 'fromMnemonic', function(mnemonic) {
+    // Check that the checksum s valid (will throw an error)
+    mnemonicToEntropy(mnemonic);
 
-utils.defineProperty(Wallet, 'summonBrainWallet', function(username, password, progressCallback) {
-    if (progressCallback && typeof(progressCallback) !== 'function') {
-        throw new Error('invalid callback');
-    }
-
-    if (typeof(username) === 'string') {
-        username =  utils.toUtf8Bytes(username, 'NFKC');
-    } else {
-        username = utils.arrayify(username, 'password');
-    }
-
-    if (typeof(password) === 'string') {
-        password =  utils.toUtf8Bytes(password, 'NFKC');
-    } else {
-        password = utils.arrayify(password, 'password');
-    }
-
-    return new Promise(function(resolve, reject) {
-        scrypt(password, username, (1 << 18), 8, 1, 32, function(error, progress, key) {
-            if (error) {
-                reject(error);
-            } else if (key) {
-                resolve(new Wallet(utils.hexlify(key)));
-            } else if (progressCallback) {
-                progressCallback(progress);
-            }
-        });
-    });
+    return HDNode.fromSeed(mnemonicToSeed(mnemonic));
 });
 
+utils.defineProperty(HDNode, 'fromSeed', function(seed) {
+    seed = utils.arrayify(seed);
+    if (seed.length < 16 || seed.length > 64) { throw new Error('invalid seed'); }
 
-//utils.defineProperty(Wallet, 'isCrowdsaleWallet', secretStorage.isCrowdsaleWallet);
+    var I = utils.createSha512Hmac(MasterSecret).update(seed).digest();
 
-//utils.defineProperty(Wallet, 'decryptCrowdsale', function(json, password) {
-//    return new Wallet(secretStorage.decryptCrowdsale(json, password));
-//});
+    return new HDNode(secp256k1.keyFromPrivate(I.slice(0, 32)), I.slice(32), 0, 0, 0);
+});
 
+function mnemonicToSeed(mnemonic, password) {
 
-utils.defineProperty(Wallet, '_SigningKey', SigningKey);
+    if (!password) {
+        password = '';
 
-module.exports = Wallet;
+    } else if (password.normalize) {
+        password = password.normalize('NFKD');
 
-},{"./secret-storage.js":57,"./signing-key.js":58,"ethers-utils":10,"scrypt-js":53,"setimmediate":54}],28:[function(require,module,exports){
+    } else {
+        for (var i = 0; i < password.length; i++) {
+            var c = password.charCodeAt(i);
+            if (c < 32 || c > 127) { throw new Error('passwords with non-ASCII characters not supported in this environment'); }
+        }
+    }
+
+    mnemonic = utils.toUtf8Bytes(mnemonic, 'NFKD');
+    var salt = utils.toUtf8Bytes('mnemonic' + password, 'NFKD');
+
+    return utils.hexlify(utils.pbkdf2(mnemonic, salt, 2048, 64, utils.createSha512Hmac));
+}
+
+function mnemonicToEntropy(mnemonic) {
+   var words = mnemonic.toLowerCase().split(' ');
+   if ((words.length % 3) !== 0) { throw new Error('invalid mnemonic'); }
+
+   var entropy = new Uint8Array(Math.ceil(11 * words.length / 8));
+
+   var offset = 0;
+   for (var i = 0; i < words.length; i++) {
+       var index = wordlist.indexOf(words[i]);
+       if (index === -1) { throw new Error('invalid mnemonic'); }
+
+       for (var bit = 0; bit < 11; bit++) {
+           if (index & (1 << (10 - bit))) {
+               entropy[offset >> 3] |= (1 << (7 - (offset % 8)));
+           }
+           offset++;
+       }
+   }
+
+   var entropyBits = 32 * words.length / 3;
+
+   var checksumBits = words.length / 3;
+   var checksumMask = getUpperMask(checksumBits);
+
+   var checksum = utils.arrayify(utils.sha256(entropy.slice(0, entropyBits / 8)))[0];
+   checksum &= checksumMask;
+
+   if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
+       throw new Error('invalid checksum');
+   }
+
+   return utils.hexlify(entropy.slice(0, entropyBits / 8));
+}
+
+function entropyToMnemonic(entropy) {
+    entropy = utils.arrayify(entropy);
+
+    if ((entropy.length % 4) !== 0 || entropy.length < 16 || entropy.length > 32) {
+        throw new Error('invalid entropy');
+    }
+
+    var words = [0];
+
+    var remainingBits = 11;
+    for (var i = 0; i < entropy.length; i++) {
+
+        // Consume the whole byte (with still more to go)
+        if (remainingBits > 8) {
+            words[words.length - 1] <<= 8;
+            words[words.length - 1] |= entropy[i];
+
+            remainingBits -= 8;
+
+        // This byte will complete an 11-bit index
+        } else {
+            words[words.length - 1] <<= remainingBits;
+            words[words.length - 1] |= entropy[i] >> (8 - remainingBits);
+
+            // Start the next word
+            words.push(entropy[i] & getLowerMask(8 - remainingBits));
+
+            remainingBits += 3;
+        }
+    }
+
+    // Compute the checksum bits
+    var checksum = utils.arrayify(utils.sha256(entropy))[0];
+    var checksumBits = entropy.length / 4;
+    checksum &= getUpperMask(checksumBits);
+
+    // Shift the checksum into the word indices
+    words[words.length - 1] <<= checksumBits;
+    words[words.length - 1] |= (checksum >> (8 - checksumBits));
+
+    // Convert indices into words
+    for (var i = 0; i < words.length; i++) {
+        words[i] = wordlist[words[i]];
+    }
+
+    return words.join(' ');
+}
+
+function isValidMnemonic(mnemonic) {
+    try {
+        mnemonicToEntropy(mnemonic);
+        return true;
+    } catch (error) { }
+
+    return false;
+}
+
+module.exports = {
+    fromMnemonic: HDNode.fromMnemonic,
+    fromSeed: HDNode.fromSeed,
+
+    mnemonicToEntropy: mnemonicToEntropy,
+    entropyToMnemonic: entropyToMnemonic,
+    mnemonicToSeed: mnemonicToSeed,
+
+    isValidMnemonic: isValidMnemonic,
+};
+
+},{"./words.json":61,"elliptic":32,"ethers-utils/bignumber.js":3,"ethers-utils/convert.js":6,"ethers-utils/hmac":7,"ethers-utils/pbkdf2.js":19,"ethers-utils/properties.js":20,"ethers-utils/sha2":22,"ethers-utils/utf8.js":26}],28:[function(require,module,exports){
+'use strict';
+
+var Wallet = require('./wallet');
+var HDNode = require('./hdnode');
+var SigningKey = require('./signing-key');
+
+module.exports = {
+    HDNode: HDNode,
+    Wallet: Wallet,
+
+    // Do we need to expose this at all?
+    _SigningKey: SigningKey,
+}
+
+require('ethers-utils/standalone.js')(module.exports);
+
+},{"./hdnode":27,"./signing-key":59,"./wallet":60,"ethers-utils/standalone.js":23}],29:[function(require,module,exports){
 "use strict";
 
 (function(root) {
@@ -7143,76 +7069,11 @@ module.exports = Wallet;
 
 })(this);
 
-},{}],29:[function(require,module,exports){
-arguments[4][12][0].apply(exports,arguments)
-},{"dup":12}],30:[function(require,module,exports){
-var r;
-
-module.exports = function rand(len) {
-  if (!r)
-    r = new Rand(null);
-
-  return r.generate(len);
-};
-
-function Rand(rand) {
-  this.rand = rand;
-}
-module.exports.Rand = Rand;
-
-Rand.prototype.generate = function generate(len) {
-  return this._rand(len);
-};
-
-// Emulate crypto API using randy
-Rand.prototype._rand = function _rand(n) {
-  if (this.rand.getBytes)
-    return this.rand.getBytes(n);
-
-  var res = new Uint8Array(n);
-  for (var i = 0; i < res.length; i++)
-    res[i] = this.rand.getByte();
-  return res;
-};
-
-if (typeof self === 'object') {
-  if (self.crypto && self.crypto.getRandomValues) {
-    // Modern browsers
-    Rand.prototype._rand = function _rand(n) {
-      var arr = new Uint8Array(n);
-      self.crypto.getRandomValues(arr);
-      return arr;
-    };
-  } else if (self.msCrypto && self.msCrypto.getRandomValues) {
-    // IE
-    Rand.prototype._rand = function _rand(n) {
-      var arr = new Uint8Array(n);
-      self.msCrypto.getRandomValues(arr);
-      return arr;
-    };
-
-  // Safari's WebWorkers do not have `crypto`
-  } else if (typeof window === 'object') {
-    // Old junk
-    Rand.prototype._rand = function() {
-      throw new Error('Not implemented yet');
-    };
-  }
-} else {
-  // Node.js or Web worker with no crypto support
-  try {
-    var crypto = require('crypto');
-    if (typeof crypto.randomBytes !== 'function')
-      throw new Error('Not supported');
-
-    Rand.prototype._rand = function _rand(n) {
-      return crypto.randomBytes(n);
-    };
-  } catch (e) {
-  }
-}
-
-},{"crypto":1}],31:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
+arguments[4][10][0].apply(exports,arguments)
+},{"dup":10}],31:[function(require,module,exports){
+var randomBytes = require('ethers-utils').randomBytes; module.exports = function(length) { return randomBytes(length); };
+},{"ethers-utils":8}],32:[function(require,module,exports){
 'use strict';
 
 var elliptic = exports;
@@ -7228,7 +7089,7 @@ elliptic.curves = require('./elliptic/curves');
 elliptic.ec = require('./elliptic/ec');
 elliptic.eddsa = require('./elliptic/eddsa');
 
-},{"../package.json":45,"./elliptic/curve":34,"./elliptic/curves":37,"./elliptic/ec":38,"./elliptic/eddsa":41,"./elliptic/hmac-drbg":42,"./elliptic/utils":44,"brorand":30}],32:[function(require,module,exports){
+},{"../package.json":46,"./elliptic/curve":35,"./elliptic/curves":38,"./elliptic/ec":39,"./elliptic/eddsa":42,"./elliptic/hmac-drbg":43,"./elliptic/utils":45,"brorand":31}],33:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -7605,9 +7466,9 @@ BasePoint.prototype.dblp = function dblp(k) {
   return r;
 };
 
-},{"../../elliptic":31,"bn.js":29}],33:[function(require,module,exports){
+},{"../../elliptic":32,"bn.js":30}],34:[function(require,module,exports){
 module.exports = {};
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 'use strict';
 
 var curve = exports;
@@ -7617,9 +7478,9 @@ curve.short = require('./short');
 curve.mont = require('./mont');
 curve.edwards = require('./edwards');
 
-},{"./base":32,"./edwards":33,"./mont":35,"./short":36}],35:[function(require,module,exports){
-arguments[4][33][0].apply(exports,arguments)
-},{"dup":33}],36:[function(require,module,exports){
+},{"./base":33,"./edwards":34,"./mont":36,"./short":37}],36:[function(require,module,exports){
+arguments[4][34][0].apply(exports,arguments)
+},{"dup":34}],37:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -8559,7 +8420,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../../elliptic":31,"../curve":34,"bn.js":29,"inherits":52}],37:[function(require,module,exports){
+},{"../../elliptic":32,"../curve":35,"bn.js":30,"inherits":53}],38:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -8766,7 +8627,7 @@ defineCurve('secp256k1', {
   ]
 });
 
-},{"../elliptic":31,"./precomputed/secp256k1":43,"hash.js":46}],38:[function(require,module,exports){
+},{"../elliptic":32,"./precomputed/secp256k1":44,"hash.js":47}],39:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -9005,7 +8866,7 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
   throw new Error('Unable to find valid recovery factor');
 };
 
-},{"../../elliptic":31,"./key":39,"./signature":40,"bn.js":29}],39:[function(require,module,exports){
+},{"../../elliptic":32,"./key":40,"./signature":41,"bn.js":30}],40:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -9126,7 +8987,7 @@ KeyPair.prototype.inspect = function inspect() {
          ' pub: ' + (this.pub && this.pub.inspect()) + ' >';
 };
 
-},{"../../elliptic":31,"bn.js":29}],40:[function(require,module,exports){
+},{"../../elliptic":32,"bn.js":30}],41:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -9263,13 +9124,127 @@ Signature.prototype.toDER = function toDER(enc) {
   return utils.encode(res, enc);
 };
 
-},{"../../elliptic":31,"bn.js":29}],41:[function(require,module,exports){
-arguments[4][33][0].apply(exports,arguments)
-},{"dup":33}],42:[function(require,module,exports){
-arguments[4][33][0].apply(exports,arguments)
-},{"dup":33}],43:[function(require,module,exports){
-arguments[4][2][0].apply(exports,arguments)
-},{"dup":2}],44:[function(require,module,exports){
+},{"../../elliptic":32,"bn.js":30}],42:[function(require,module,exports){
+arguments[4][34][0].apply(exports,arguments)
+},{"dup":34}],43:[function(require,module,exports){
+'use strict';
+
+var hash = require('hash.js');
+var elliptic = require('../elliptic');
+var utils = elliptic.utils;
+var assert = utils.assert;
+
+function HmacDRBG(options) {
+  if (!(this instanceof HmacDRBG))
+    return new HmacDRBG(options);
+  this.hash = options.hash;
+  this.predResist = !!options.predResist;
+
+  this.outLen = this.hash.outSize;
+  this.minEntropy = options.minEntropy || this.hash.hmacStrength;
+
+  this.reseed = null;
+  this.reseedInterval = null;
+  this.K = null;
+  this.V = null;
+
+  var entropy = utils.toArray(options.entropy, options.entropyEnc);
+  var nonce = utils.toArray(options.nonce, options.nonceEnc);
+  var pers = utils.toArray(options.pers, options.persEnc);
+  assert(entropy.length >= (this.minEntropy / 8),
+         'Not enough entropy. Minimum is: ' + this.minEntropy + ' bits');
+  this._init(entropy, nonce, pers);
+}
+module.exports = HmacDRBG;
+
+HmacDRBG.prototype._init = function init(entropy, nonce, pers) {
+  var seed = entropy.concat(nonce).concat(pers);
+
+  this.K = new Array(this.outLen / 8);
+  this.V = new Array(this.outLen / 8);
+  for (var i = 0; i < this.V.length; i++) {
+    this.K[i] = 0x00;
+    this.V[i] = 0x01;
+  }
+
+  this._update(seed);
+  this.reseed = 1;
+  this.reseedInterval = 0x1000000000000;  // 2^48
+};
+
+HmacDRBG.prototype._hmac = function hmac() {
+  return new hash.hmac(this.hash, this.K);
+};
+
+HmacDRBG.prototype._update = function update(seed) {
+  var kmac = this._hmac()
+                 .update(this.V)
+                 .update([ 0x00 ]);
+  if (seed)
+    kmac = kmac.update(seed);
+  this.K = kmac.digest();
+  this.V = this._hmac().update(this.V).digest();
+  if (!seed)
+    return;
+
+  this.K = this._hmac()
+               .update(this.V)
+               .update([ 0x01 ])
+               .update(seed)
+               .digest();
+  this.V = this._hmac().update(this.V).digest();
+};
+
+HmacDRBG.prototype.reseed = function reseed(entropy, entropyEnc, add, addEnc) {
+  // Optional entropy enc
+  if (typeof entropyEnc !== 'string') {
+    addEnc = add;
+    add = entropyEnc;
+    entropyEnc = null;
+  }
+
+  entropy = utils.toBuffer(entropy, entropyEnc);
+  add = utils.toBuffer(add, addEnc);
+
+  assert(entropy.length >= (this.minEntropy / 8),
+         'Not enough entropy. Minimum is: ' + this.minEntropy + ' bits');
+
+  this._update(entropy.concat(add || []));
+  this.reseed = 1;
+};
+
+HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
+  if (this.reseed > this.reseedInterval)
+    throw new Error('Reseed is required');
+
+  // Optional encoding
+  if (typeof enc !== 'string') {
+    addEnc = add;
+    add = enc;
+    enc = null;
+  }
+
+  // Optional additional data
+  if (add) {
+    add = utils.toArray(add, addEnc);
+    this._update(add);
+  }
+
+  var temp = [];
+  while (temp.length < len) {
+    this.V = this._hmac().update(this.V).digest();
+    temp = temp.concat(this.V);
+  }
+
+  var res = temp.slice(0, len);
+  this._update(add);
+  this.reseed++;
+  return utils.encode(res, enc);
+};
+
+},{"../elliptic":32,"hash.js":47}],44:[function(require,module,exports){
+arguments[4][1][0].apply(exports,arguments)
+},{"dup":1}],45:[function(require,module,exports){
 'use strict';
 
 var utils = exports;
@@ -9443,141 +9418,23 @@ function intFromLE(bytes) {
 utils.intFromLE = intFromLE;
 
 
-},{"bn.js":29}],45:[function(require,module,exports){
-module.exports={
-  "_args": [
-    [
-      {
-        "raw": "elliptic@6.3.3",
-        "scope": null,
-        "escapedName": "elliptic",
-        "name": "elliptic",
-        "rawSpec": "6.3.3",
-        "spec": "6.3.3",
-        "type": "version"
-      },
-      "/Users/ricmoo/Development/ethers/ethers.js/wallet"
-    ]
-  ],
-  "_from": "elliptic@6.3.3",
-  "_id": "elliptic@6.3.3",
-  "_inCache": true,
-  "_location": "/elliptic",
-  "_nodeVersion": "7.0.0",
-  "_npmOperationalInternal": {
-    "host": "packages-18-east.internal.npmjs.com",
-    "tmp": "tmp/elliptic-6.3.3.tgz_1486422837740_0.10658654430881143"
-  },
-  "_npmUser": {
-    "name": "indutny",
-    "email": "fedor@indutny.com"
-  },
-  "_npmVersion": "3.10.8",
-  "_phantomChildren": {},
-  "_requested": {
-    "raw": "elliptic@6.3.3",
-    "scope": null,
-    "escapedName": "elliptic",
-    "name": "elliptic",
-    "rawSpec": "6.3.3",
-    "spec": "6.3.3",
-    "type": "version"
-  },
-  "_requiredBy": [
-    "/"
-  ],
-  "_resolved": "https://registry.npmjs.org/elliptic/-/elliptic-6.3.3.tgz",
-  "_shasum": "5482d9646d54bcb89fd7d994fc9e2e9568876e3f",
-  "_shrinkwrap": null,
-  "_spec": "elliptic@6.3.3",
-  "_where": "/Users/ricmoo/Development/ethers/ethers.js/wallet",
-  "author": {
-    "name": "Fedor Indutny",
-    "email": "fedor@indutny.com"
-  },
-  "bugs": {
-    "url": "https://github.com/indutny/elliptic/issues"
-  },
-  "dependencies": {
-    "bn.js": "^4.4.0",
-    "brorand": "^1.0.1",
-    "hash.js": "^1.0.0",
-    "inherits": "^2.0.1"
-  },
-  "description": "EC cryptography",
-  "devDependencies": {
-    "brfs": "^1.4.3",
-    "coveralls": "^2.11.3",
-    "grunt": "^0.4.5",
-    "grunt-browserify": "^5.0.0",
-    "grunt-cli": "^1.2.0",
-    "grunt-contrib-connect": "^1.0.0",
-    "grunt-contrib-copy": "^1.0.0",
-    "grunt-contrib-uglify": "^1.0.1",
-    "grunt-mocha-istanbul": "^3.0.1",
-    "grunt-saucelabs": "^8.6.2",
-    "istanbul": "^0.4.2",
-    "jscs": "^2.9.0",
-    "jshint": "^2.6.0",
-    "mocha": "^2.1.0"
-  },
-  "directories": {},
-  "dist": {
-    "shasum": "5482d9646d54bcb89fd7d994fc9e2e9568876e3f",
-    "tarball": "https://registry.npmjs.org/elliptic/-/elliptic-6.3.3.tgz"
-  },
-  "files": [
-    "lib"
-  ],
-  "gitHead": "63aee8d697e9b7fac37ece24222029117a890a7e",
-  "homepage": "https://github.com/indutny/elliptic",
-  "keywords": [
-    "EC",
-    "Elliptic",
-    "curve",
-    "Cryptography"
-  ],
-  "license": "MIT",
-  "main": "lib/elliptic.js",
-  "maintainers": [
-    {
-      "name": "indutny",
-      "email": "fedor@indutny.com"
-    }
-  ],
-  "name": "elliptic",
-  "optionalDependencies": {},
-  "readme": "ERROR: No README data found!",
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/indutny/elliptic.git"
-  },
-  "scripts": {
-    "jscs": "jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js",
-    "jshint": "jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js",
-    "lint": "npm run jscs && npm run jshint",
-    "test": "npm run lint && npm run unit",
-    "unit": "istanbul test _mocha --reporter=spec test/index.js",
-    "version": "grunt dist && git add dist/"
-  },
-  "version": "6.3.3"
-}
-
-},{}],46:[function(require,module,exports){
+},{"bn.js":30}],46:[function(require,module,exports){
+module.exports={"version":"6.4.0"}
+},{}],47:[function(require,module,exports){
+arguments[4][11][0].apply(exports,arguments)
+},{"./hash/common":48,"./hash/hmac":49,"./hash/ripemd":50,"./hash/sha":51,"./hash/utils":52,"dup":11}],48:[function(require,module,exports){
+arguments[4][12][0].apply(exports,arguments)
+},{"../hash":47,"dup":12}],49:[function(require,module,exports){
 arguments[4][13][0].apply(exports,arguments)
-},{"./hash/common":47,"./hash/hmac":48,"./hash/ripemd":49,"./hash/sha":50,"./hash/utils":51,"dup":13}],47:[function(require,module,exports){
+},{"../hash":47,"dup":13}],50:[function(require,module,exports){
 arguments[4][14][0].apply(exports,arguments)
-},{"../hash":46,"dup":14}],48:[function(require,module,exports){
+},{"dup":14}],51:[function(require,module,exports){
 arguments[4][15][0].apply(exports,arguments)
-},{"../hash":46,"dup":15}],49:[function(require,module,exports){
+},{"../hash":47,"dup":15}],52:[function(require,module,exports){
 arguments[4][16][0].apply(exports,arguments)
-},{"dup":16}],50:[function(require,module,exports){
+},{"dup":16,"inherits":53}],53:[function(require,module,exports){
 arguments[4][17][0].apply(exports,arguments)
-},{"../hash":46,"dup":17}],51:[function(require,module,exports){
-arguments[4][18][0].apply(exports,arguments)
-},{"dup":18,"inherits":52}],52:[function(require,module,exports){
-arguments[4][19][0].apply(exports,arguments)
-},{"dup":19}],53:[function(require,module,exports){
+},{"dup":17}],54:[function(require,module,exports){
 "use strict";
 
 (function(root) {
@@ -10031,7 +9888,7 @@ arguments[4][19][0].apply(exports,arguments)
 
 })(this);
 
-},{}],54:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 (function (process,global){
 (function (global, undefined) {
     "use strict";
@@ -10210,7 +10067,7 @@ arguments[4][19][0].apply(exports,arguments)
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":3}],55:[function(require,module,exports){
+},{"_process":1}],56:[function(require,module,exports){
 (function (global){
 
 var rng;
@@ -10245,7 +10102,7 @@ module.exports = rng;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],56:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 //     uuid.js
 //
 //     Copyright (c) 2010-2012 Robert Kieffer
@@ -10430,40 +10287,14 @@ uuid.unparse = unparse;
 
 module.exports = uuid;
 
-},{"./rng":55}],57:[function(require,module,exports){
+},{"./rng":56}],58:[function(require,module,exports){
 'use strict';
 
 var aes = require('aes-js');
-var pbkdf2 = require('pbkdf2');
 var scrypt = require('scrypt-js');
 var uuid = require('uuid');
 
 var utils = require('ethers-utils');
-/*
-var utils = (function() {
-    var convert = require('ethers-utils/convert.js');
-
-    return {
-        defineProperty: require('ethers-utils/properties.js').defineProperty,
-
-        arrayify: convert.arrayify,
-        concat: convert.concat,
-        hexlify: convert.hexlify,
-
-        randomBytes:
-
-        toUtf8Bytes: require('ethers-utils/utf8.js').toUtfBytes,
-
-        keccak256: require('ethers-utils/keccak256.js'),
-
-        createSha512Hmac: require('ethers-utils/hmac.js').createSha512Hmac,
-        pbkdf2: require('ethers-utils/pbkdf2.js'),
-
-        getAddress: require('ethers-utils/address.js').getAddress,
-        rand
-    }
-})();
-*/
 
 var SigningKey = require('./signing-key.js');
 
@@ -10774,6 +10605,17 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
                     }
                 };
 
+                if (options.ethers) {
+                    throw new Error('not ready yet');
+                    data['x-ethers'] = {
+                        getFilename: utils.gethFilename(address),
+                        mnemonicCiphertext: '',
+                        mnemonicCounter: '',
+                        version: '0.1',
+                        client: 'ethers-wallet',
+                    };
+                }
+
                 if (progressCallback) { progressCallback(1); }
                 resolve(JSON.stringify(data));
 
@@ -10786,7 +10628,7 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
 
 module.exports = secretStorage;
 
-},{"./signing-key.js":58,"aes-js":28,"ethers-utils":10,"pbkdf2":2,"scrypt-js":53,"uuid":56}],58:[function(require,module,exports){
+},{"./signing-key.js":59,"aes-js":29,"ethers-utils":8,"scrypt-js":54,"uuid":57}],59:[function(require,module,exports){
 'use strict';
 
 /**
@@ -10795,15 +10637,6 @@ module.exports = secretStorage;
  *
  */
 
-/*
-var secp256k1 = (function() {
-    var secp256k1 = require('elliptic/lib/elliptic/presetcurves/secp256k1-nopre');
-    var PresetCurve = require('elliptic/lib/elliptic/presetcurve');
-    var EC = require('elliptic/lib/elliptic/ec');
-
-    return new EC(new PresetCurve(secp256k1));
-})();
-*/
 var secp256k1 = new (require('elliptic')).ec('secp256k1');
 var utils = require('ethers-utils');
 
@@ -10836,13 +10669,18 @@ function SigningKey(privateKey) {
 }
 
 utils.defineProperty(SigningKey, 'recover', function(digest, r, s, recoveryParam) {
-    var publicKey = secp256k1.recoverPubKey(utils.arrayify(digest), {r: r, s: s}, recoveryParam);
+    var signature = {
+        r: utils.arrayify(r),
+        s: utils.arrayify(s)
+    };
+    var publicKey = secp256k1.recoverPubKey(utils.arrayify(digest), signature, recoveryParam);
     return SigningKey.publicKeyToAddress('0x' + publicKey.encode('hex', false));
 });
 
 
 utils.defineProperty(SigningKey, 'getPublicKey', function(value, compressed) {
     value = utils.arrayify(value);
+    compressed = !!compressed;
 
     if (value.length === 32) {
         var keyPair = secp256k1.keyFromPrivate(value);
@@ -10867,5 +10705,416 @@ utils.defineProperty(SigningKey, 'publicKeyToAddress', function(publicKey) {
 
 module.exports = SigningKey;
 
-},{"elliptic":31,"ethers-utils":10}]},{},[27])(27)
+},{"elliptic":32,"ethers-utils":8}],60:[function(require,module,exports){
+'use strict';
+
+var scrypt = require('scrypt-js');
+var utils = require('ethers-utils');
+
+var HDNode = require('./hdnode');
+
+var secretStorage = require('./secret-storage');
+var SigningKey = require('./signing-key');
+
+// This ensures we inject a setImmediate into the global space, which
+// dramatically improves the performance of the scrypt PBKDF.
+require('setimmediate');
+
+var defaultPath = "m/44'/60'/0'/0/0";
+
+var transactionFields = [
+    {name: 'nonce',    maxLength: 32, },
+    {name: 'gasPrice', maxLength: 32, },
+    {name: 'gasLimit', maxLength: 32, },
+    {name: 'to',          length: 20, },
+    {name: 'value',    maxLength: 32, },
+    {name: 'data'},
+];
+
+function Wallet(privateKey, provider) {
+    if (!(this instanceof Wallet)) { throw new Error('missing new'); }
+
+    // Make sure we have a valid signing key
+    var signingKey = privateKey;
+    if (!(privateKey instanceof SigningKey)) {
+        signingKey = new SigningKey(privateKey);
+    }
+    utils.defineProperty(this, 'privateKey', signingKey.privateKey);
+
+    // Provider
+    Object.defineProperty(this, 'provider', {
+        enumerable: true,
+        get: function() { return provider; },
+        set: function(value) {
+            provider = value;
+        }
+    });
+    if (provider) { this.provider = provider; }
+
+    var defaultGasLimit = 1500000;
+    Object.defineProperty(this, 'defaultGasLimit', {
+        enumerable: true,
+        get: function() { return defaultGasLimit; },
+        set: function(value) {
+            if (typeof(value) !== 'number') { throw new Error('invalid defaultGasLimit'); }
+            defaultGasLimit = value;
+        }
+    });
+
+    utils.defineProperty(this, 'address', signingKey.address);
+
+    utils.defineProperty(this, 'sign', function(transaction) {
+        var chainId = transaction.chainId;
+        if (!chainId && this.provider) { chainId = this.provider.chainId; }
+        if (!chainId) { chainId = 0; }
+
+        var raw = [];
+        transactionFields.forEach(function(fieldInfo) {
+            var value = transaction[fieldInfo.name] || ([]);
+            value = utils.arrayify(utils.hexlify(value), fieldInfo.name);
+
+            // Fixed-width field
+            if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
+                var error = new Error('invalid ' + fieldInfo.name);
+                error.reason = 'wrong length';
+                error.value = value;
+                throw error;
+            }
+
+            // Variable-width (with a maximum)
+            if (fieldInfo.maxLength) {
+                value = utils.stripZeros(value);
+                if (value.length > fieldInfo.maxLength) {
+                    var error = new Error('invalid ' + fieldInfo.name);
+                    error.reason = 'too long';
+                    error.value = value;
+                    throw error;
+                }
+            }
+
+            raw.push(utils.hexlify(value));
+        });
+
+        if (chainId) {
+            raw.push(utils.hexlify(chainId));
+            raw.push('0x');
+            raw.push('0x');
+        }
+
+        var digest = utils.keccak256(utils.RLP.encode(raw));
+
+        var signature = signingKey.signDigest(digest);
+
+        var v = 27 + signature.recoveryParam
+        if (chainId) {
+            raw.pop();
+            raw.pop();
+            raw.pop();
+            v += chainId * 2 + 8;
+        }
+
+        raw.push(utils.hexlify(v));
+        raw.push(signature.r);
+        raw.push(signature.s);
+
+        return utils.RLP.encode(raw);
+    });
+}
+
+utils.defineProperty(Wallet, 'parseTransaction', function(rawTransaction) {
+    rawTransaction = utils.hexlify(rawTransaction, 'rawTransaction');
+    var signedTransaction = utils.RLP.decode(rawTransaction);
+    if (signedTransaction.length !== 9) { throw new Error('invalid transaction'); }
+
+    var raw = [];
+
+    var transaction = {};
+    transactionFields.forEach(function(fieldInfo, index) {
+        transaction[fieldInfo.name] = signedTransaction[index];
+        raw.push(signedTransaction[index]);
+    });
+
+    if (transaction.to) {
+        if (transaction.to == '0x') {
+            delete transaction.to;
+        } else {
+            transaction.to = utils.getAddress(transaction.to);
+        }
+    }
+
+    ['gasPrice', 'gasLimit', 'nonce', 'value'].forEach(function(name) {
+        if (!transaction[name]) { return; }
+        if (transaction[name].length === 0) {
+            transaction[name] = utils.bigNumberify(0);
+        } else {
+            transaction[name] = utils.bigNumberify(transaction[name]);
+        }
+    });
+
+    if (transaction.nonce) {
+        transaction.nonce = transaction.nonce.toNumber();
+    } else {
+        transaction.nonce = 0;
+    }
+
+    var v = utils.arrayify(signedTransaction[6]);
+    var r = utils.arrayify(signedTransaction[7]);
+    var s = utils.arrayify(signedTransaction[8]);
+
+    if (v.length === 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
+        transaction.v = v[0];
+        transaction.r = signedTransaction[7];
+        transaction.s = signedTransaction[8];
+
+        var chainId = (transaction.v - 35) / 2;
+        if (chainId < 0) { chainId = 0; }
+        chainId = parseInt(chainId);
+
+        transaction.chainId = chainId;
+
+        var recoveryParam = transaction.v - 27;
+
+        if (chainId) {
+            raw.push(utils.hexlify(chainId));
+            raw.push('0x');
+            raw.push('0x');
+            recoveryParam -= chainId * 2 + 8;
+        }
+
+        var digest = utils.keccak256(utils.RLP.encode(raw));
+        try {
+            transaction.from = SigningKey.recover(digest, r, s, recoveryParam);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+
+    return transaction;
 });
+
+utils.defineProperty(Wallet.prototype, 'getAddress', function() {
+    return this.address;
+});
+
+utils.defineProperty(Wallet.prototype, 'getBalance', function(blockTag) {
+    if (!this.provider) { throw new Error('missing provider'); }
+    return this.provider.getBalance(this.address, blockTag);
+});
+
+utils.defineProperty(Wallet.prototype, 'getTransactionCount', function(blockTag) {
+    if (!this.provider) { throw new Error('missing provider'); }
+    return this.provider.getTransactionCount(this.address, blockTag);
+});
+
+utils.defineProperty(Wallet.prototype, 'estimateGas', function(transaction) {
+    if (!this.provider) { throw new Error('missing provider'); }
+
+    var calculate = {};
+    ['from', 'to', 'data', 'value'].forEach(function(key) {
+        if (transaction[key] == null) { return; }
+        calculate[key] = transaction[key];
+    });
+
+    if (transaction.from == null) { calculate.from = this.address; }
+
+    return this.provider.estimateGas(calculate);
+});
+
+utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) {
+    if (!this.provider) { throw new Error('missing provider'); }
+
+    var gasLimit = transaction.gasLimit;
+    if (gasLimit == null) { gasLimit = this.defaultGasLimit; }
+
+    var self = this;
+
+    var gasPrice = new Promise(function(resolve, reject) {
+        if (transaction.gasPrice) {
+            resolve(transaction.gasPrice);
+            return;
+        }
+
+        self.provider.getGasPrice().then(function(gasPrice) {
+            resolve(gasPrice);
+        }, function(error) {
+            reject(error);
+        });
+    });
+
+    var nonce = new Promise(function(resolve, reject) {
+        if (transaction.nonce) {
+            resolve(transaction.nonce);
+            return;
+        }
+
+        self.provider.getTransactionCount(self.address, 'pending').then(function(transactionCount) {
+            resolve(transactionCount);
+        }, function(error) {
+            reject(error);
+        });
+    });
+
+    var chainId = this.provider.chainId;
+
+    var toAddress = undefined;
+    if (transaction.to) { toAddress = utils.getAddress(transaction.to); }
+
+    var data = utils.hexlify(transaction.data || '0x');
+    var value = utils.hexlify(transaction.value || 0);
+
+    return Promise.all([gasPrice, nonce]).then(function(results) {
+        var signedTransaction = self.sign({
+            to: toAddress,
+            data: data,
+            gasLimit: gasLimit,
+            gasPrice: results[0],
+            nonce: results[1],
+            value: value,
+            chainId: chainId
+        });
+
+        return self.provider.sendTransaction(signedTransaction).then(function(hash) {
+            var transaction = Wallet.parseTransaction(signedTransaction);
+            transaction.hash = hash;
+            return transaction;
+        });
+    });
+});
+
+utils.defineProperty(Wallet.prototype, 'send', function(address, amountWei, options) {
+    if (!options) { options = {}; }
+
+    return this.sendTransaction({
+        to: address,
+        gasLimit: options.gasLimit,
+        gasPrice: options.gasPrice,
+        nonce: options.nonce,
+        value: amountWei,
+    });
+});
+
+
+utils.defineProperty(Wallet.prototype, 'encrypt', function(password, options, progressCallback) {
+    if (typeof(options) === 'function' && !progressCallback) {
+        progressCallback = options;
+        options = {};
+    }
+
+    if (progressCallback && typeof(progressCallback) !== 'function') {
+        throw new Error('invalid callback');
+    }
+
+    if (!options) { options = {}; }
+
+    return secretStorage.encrypt(this.privateKey, password, options, progressCallback);
+});
+
+
+utils.defineProperty(Wallet, 'isEncryptedWallet', function(json) {
+    return (secretStorage.isValidWallet(json) || secretStorage.isCrowdsaleWallet(json));
+});
+
+
+
+utils.defineProperty(Wallet, 'createRandom', function(options) {
+    var entropy = utils.randomBytes(16);
+    if (options.extraEntropy) {
+        entropy = utils.keccak256(utils.concat([entropy, options.extraEntropy])).substring(0, 34);
+    }
+    var mnemonic = HDNode.entropyToMnemonic(entropy);
+    return Wallet.fromMnemonic(mnemonic, options.path);
+});
+
+
+utils.defineProperty(Wallet, 'fromEncryptedWallet', function(json, password, progressCallback) {
+    if (progressCallback && typeof(progressCallback) !== 'function') {
+        throw new Error('invalid callback');
+    }
+
+    return new Promise(function(resolve, reject) {
+
+        if (secretStorage.isCrowdsaleWallet(json)) {
+            try {
+                var privateKey = secretStorage.decryptCrowdsale(json, password);
+                resolve(new Wallet(privateKey));
+            } catch (error) {
+                reject(error);
+            }
+
+        } else if (secretStorage.isValidWallet(json)) {
+
+            secretStorage.decrypt(json, password, progressCallback).then(function(signingKey) {
+                resolve(new Wallet(signingKey));
+            }, function(error) {
+                reject(error);
+            });
+
+        } else {
+            reject('invalid wallet JSON');
+        }
+    });
+});
+
+utils.defineProperty(Wallet, 'fromMnemonic', function(mnemonic, path) {
+    if (!path) { path = defaultPath; }
+
+    var hdnode = HDNode.fromMnemonic(mnemonic).derivePath(path);
+
+    var wallet = new Wallet(hdnode.privateKey);
+    utils.defineProperty(wallet, 'mnemonic', mnemonic);
+    utils.defineProperty(wallet, 'path', path);
+
+    return wallet;
+});
+
+
+utils.defineProperty(Wallet, 'fromBrainWallet', function(username, password, progressCallback) {
+    if (progressCallback && typeof(progressCallback) !== 'function') {
+        throw new Error('invalid callback');
+    }
+
+    if (typeof(username) === 'string') {
+        username =  utils.toUtf8Bytes(username, 'NFKC');
+    } else {
+        username = utils.arrayify(username, 'password');
+    }
+
+    if (typeof(password) === 'string') {
+        password =  utils.toUtf8Bytes(password, 'NFKC');
+    } else {
+        password = utils.arrayify(password, 'password');
+    }
+
+    return new Promise(function(resolve, reject) {
+        scrypt(password, username, (1 << 18), 8, 1, 32, function(error, progress, key) {
+            if (error) {
+                reject(error);
+
+            } else if (key) {
+                resolve(new Wallet(utils.hexlify(key)));
+
+            } else if (progressCallback) {
+                return progressCallback(progress);
+            }
+        });
+    });
+});
+
+
+//utils.defineProperty(Wallet, 'isCrowdsaleWallet', secretStorage.isCrowdsaleWallet);
+
+//utils.defineProperty(Wallet, 'decryptCrowdsale', function(json, password) {
+//    return new Wallet(secretStorage.decryptCrowdsale(json, password));
+//});
+
+// @TOOD: Move this to ethers.SigningKey, ethers.HDNode and ethers.Wallet
+//utils.defineProperty(Wallet, 'SigningKey', SigningKey);
+//utils.defineProperty(Wallet, 'HDNode', HDNode);
+
+module.exports = Wallet;
+
+},{"./hdnode":27,"./secret-storage":58,"./signing-key":59,"ethers-utils":8,"scrypt-js":54,"setimmediate":55}],61:[function(require,module,exports){
+module.exports="AbandonAbilityAbleAboutAboveAbsentAbsorbAbstractAbsurdAbuseAccessAccidentAccountAccuseAchieveAcidAcousticAcquireAcrossActActionActorActressActualAdaptAddAddictAddressAdjustAdmitAdultAdvanceAdviceAerobicAffairAffordAfraidAgainAgeAgentAgreeAheadAimAirAirportAisleAlarmAlbumAlcoholAlertAlienAllAlleyAllowAlmostAloneAlphaAlreadyAlsoAlterAlwaysAmateurAmazingAmongAmountAmusedAnalystAnchorAncientAngerAngleAngryAnimalAnkleAnnounceAnnualAnotherAnswerAntennaAntiqueAnxietyAnyApartApologyAppearAppleApproveAprilArchArcticAreaArenaArgueArmArmedArmorArmyAroundArrangeArrestArriveArrowArtArtefactArtistArtworkAskAspectAssaultAssetAssistAssumeAsthmaAthleteAtomAttackAttendAttitudeAttractAuctionAuditAugustAuntAuthorAutoAutumnAverageAvocadoAvoidAwakeAwareAwayAwesomeAwfulAwkwardAxisBabyBachelorBaconBadgeBagBalanceBalconyBallBambooBananaBannerBarBarelyBargainBarrelBaseBasicBasketBattleBeachBeanBeautyBecauseBecomeBeefBeforeBeginBehaveBehindBelieveBelowBeltBenchBenefitBestBetrayBetterBetweenBeyondBicycleBidBikeBindBiologyBirdBirthBitterBlackBladeBlameBlanketBlastBleakBlessBlindBloodBlossomBlouseBlueBlurBlushBoardBoatBodyBoilBombBoneBonusBookBoostBorderBoringBorrowBossBottomBounceBoxBoyBracketBrainBrandBrassBraveBreadBreezeBrickBridgeBriefBrightBringBriskBroccoliBrokenBronzeBroomBrotherBrownBrushBubbleBuddyBudgetBuffaloBuildBulbBulkBulletBundleBunkerBurdenBurgerBurstBusBusinessBusyButterBuyerBuzzCabbageCabinCableCactusCageCakeCallCalmCameraCampCanCanalCancelCandyCannonCanoeCanvasCanyonCapableCapitalCaptainCarCarbonCardCargoCarpetCarryCartCaseCashCasinoCastleCasualCatCatalogCatchCategoryCattleCaughtCauseCautionCaveCeilingCeleryCementCensusCenturyCerealCertainChairChalkChampionChangeChaosChapterChargeChaseChatCheapCheckCheeseChefCherryChestChickenChiefChildChimneyChoiceChooseChronicChuckleChunkChurnCigarCinnamonCircleCitizenCityCivilClaimClapClarifyClawClayCleanClerkCleverClickClientCliffClimbClinicClipClockClogCloseClothCloudClownClubClumpClusterClutchCoachCoastCoconutCodeCoffeeCoilCoinCollectColorColumnCombineComeComfortComicCommonCompanyConcertConductConfirmCongressConnectConsiderControlConvinceCookCoolCopperCopyCoralCoreCornCorrectCostCottonCouchCountryCoupleCourseCousinCoverCoyoteCrackCradleCraftCramCraneCrashCraterCrawlCrazyCreamCreditCreekCrewCricketCrimeCrispCriticCropCrossCrouchCrowdCrucialCruelCruiseCrumbleCrunchCrushCryCrystalCubeCultureCupCupboardCuriousCurrentCurtainCurveCushionCustomCuteCycleDadDamageDampDanceDangerDaringDashDaughterDawnDayDealDebateDebrisDecadeDecemberDecideDeclineDecorateDecreaseDeerDefenseDefineDefyDegreeDelayDeliverDemandDemiseDenialDentistDenyDepartDependDepositDepthDeputyDeriveDescribeDesertDesignDeskDespairDestroyDetailDetectDevelopDeviceDevoteDiagramDialDiamondDiaryDiceDieselDietDifferDigitalDignityDilemmaDinnerDinosaurDirectDirtDisagreeDiscoverDiseaseDishDismissDisorderDisplayDistanceDivertDivideDivorceDizzyDoctorDocumentDogDollDolphinDomainDonateDonkeyDonorDoorDoseDoubleDoveDraftDragonDramaDrasticDrawDreamDressDriftDrillDrinkDripDriveDropDrumDryDuckDumbDuneDuringDustDutchDutyDwarfDynamicEagerEagleEarlyEarnEarthEasilyEastEasyEchoEcologyEconomyEdgeEditEducateEffortEggEightEitherElbowElderElectricElegantElementElephantElevatorEliteElseEmbarkEmbodyEmbraceEmergeEmotionEmployEmpowerEmptyEnableEnactEndEndlessEndorseEnemyEnergyEnforceEngageEngineEnhanceEnjoyEnlistEnoughEnrichEnrollEnsureEnterEntireEntryEnvelopeEpisodeEqualEquipEraEraseErodeErosionErrorEruptEscapeEssayEssenceEstateEternalEthicsEvidenceEvilEvokeEvolveExactExampleExcessExchangeExciteExcludeExcuseExecuteExerciseExhaustExhibitExileExistExitExoticExpandExpectExpireExplainExposeExpressExtendExtraEyeEyebrowFabricFaceFacultyFadeFaintFaithFallFalseFameFamilyFamousFanFancyFantasyFarmFashionFatFatalFatherFatigueFaultFavoriteFeatureFebruaryFederalFeeFeedFeelFemaleFenceFestivalFetchFeverFewFiberFictionFieldFigureFileFilmFilterFinalFindFineFingerFinishFireFirmFirstFiscalFishFitFitnessFixFlagFlameFlashFlatFlavorFleeFlightFlipFloatFlockFloorFlowerFluidFlushFlyFoamFocusFogFoilFoldFollowFoodFootForceForestForgetForkFortuneForumForwardFossilFosterFoundFoxFragileFrameFrequentFreshFriendFringeFrogFrontFrostFrownFrozenFruitFuelFunFunnyFurnaceFuryFutureGadgetGainGalaxyGalleryGameGapGarageGarbageGardenGarlicGarmentGasGaspGateGatherGaugeGazeGeneralGeniusGenreGentleGenuineGestureGhostGiantGiftGiggleGingerGiraffeGirlGiveGladGlanceGlareGlassGlideGlimpseGlobeGloomGloryGloveGlowGlueGoatGoddessGoldGoodGooseGorillaGospelGossipGovernGownGrabGraceGrainGrantGrapeGrassGravityGreatGreenGridGriefGritGroceryGroupGrowGruntGuardGuessGuideGuiltGuitarGunGymHabitHairHalfHammerHamsterHandHappyHarborHardHarshHarvestHatHaveHawkHazardHeadHealthHeartHeavyHedgehogHeightHelloHelmetHelpHenHeroHiddenHighHillHintHipHireHistoryHobbyHockeyHoldHoleHolidayHollowHomeHoneyHoodHopeHornHorrorHorseHospitalHostHotelHourHoverHubHugeHumanHumbleHumorHundredHungryHuntHurdleHurryHurtHusbandHybridIceIconIdeaIdentifyIdleIgnoreIllIllegalIllnessImageImitateImmenseImmuneImpactImposeImproveImpulseInchIncludeIncomeIncreaseIndexIndicateIndoorIndustryInfantInflictInformInhaleInheritInitialInjectInjuryInmateInnerInnocentInputInquiryInsaneInsectInsideInspireInstallIntactInterestIntoInvestInviteInvolveIronIslandIsolateIssueItemIvoryJacketJaguarJarJazzJealousJeansJellyJewelJobJoinJokeJourneyJoyJudgeJuiceJumpJungleJuniorJunkJustKangarooKeenKeepKetchupKeyKickKidKidneyKindKingdomKissKitKitchenKiteKittenKiwiKneeKnifeKnockKnowLabLabelLaborLadderLadyLakeLampLanguageLaptopLargeLaterLatinLaughLaundryLavaLawLawnLawsuitLayerLazyLeaderLeafLearnLeaveLectureLeftLegLegalLegendLeisureLemonLendLengthLensLeopardLessonLetterLevelLiarLibertyLibraryLicenseLifeLiftLightLikeLimbLimitLinkLionLiquidListLittleLiveLizardLoadLoanLobsterLocalLockLogicLonelyLongLoopLotteryLoudLoungeLoveLoyalLuckyLuggageLumberLunarLunchLuxuryLyricsMachineMadMagicMagnetMaidMailMainMajorMakeMammalManManageMandateMangoMansionManualMapleMarbleMarchMarginMarineMarketMarriageMaskMassMasterMatchMaterialMathMatrixMatterMaximumMazeMeadowMeanMeasureMeatMechanicMedalMediaMelodyMeltMemberMemoryMentionMenuMercyMergeMeritMerryMeshMessageMetalMethodMiddleMidnightMilkMillionMimicMindMinimumMinorMinuteMiracleMirrorMiseryMissMistakeMixMixedMixtureMobileModelModifyMomMomentMonitorMonkeyMonsterMonthMoonMoralMoreMorningMosquitoMotherMotionMotorMountainMouseMoveMovieMuchMuffinMuleMultiplyMuscleMuseumMushroomMusicMustMutualMyselfMysteryMythNaiveNameNapkinNarrowNastyNationNatureNearNeckNeedNegativeNeglectNeitherNephewNerveNestNetNetworkNeutralNeverNewsNextNiceNightNobleNoiseNomineeNoodleNormalNorthNoseNotableNoteNothingNoticeNovelNowNuclearNumberNurseNutOakObeyObjectObligeObscureObserveObtainObviousOccurOceanOctoberOdorOffOfferOfficeOftenOilOkayOldOliveOlympicOmitOnceOneOnionOnlineOnlyOpenOperaOpinionOpposeOptionOrangeOrbitOrchardOrderOrdinaryOrganOrientOriginalOrphanOstrichOtherOutdoorOuterOutputOutsideOvalOvenOverOwnOwnerOxygenOysterOzonePactPaddlePagePairPalacePalmPandaPanelPanicPantherPaperParadeParentParkParrotPartyPassPatchPathPatientPatrolPatternPausePavePaymentPeacePeanutPearPeasantPelicanPenPenaltyPencilPeoplePepperPerfectPermitPersonPetPhonePhotoPhrasePhysicalPianoPicnicPicturePiecePigPigeonPillPilotPinkPioneerPipePistolPitchPizzaPlacePlanetPlasticPlatePlayPleasePledgePluckPlugPlungePoemPoetPointPolarPolePolicePondPonyPoolPopularPortionPositionPossiblePostPotatoPotteryPovertyPowderPowerPracticePraisePredictPreferPreparePresentPrettyPreventPricePridePrimaryPrintPriorityPrisonPrivatePrizeProblemProcessProduceProfitProgramProjectPromoteProofPropertyProsperProtectProudProvidePublicPuddingPullPulpPulsePumpkinPunchPupilPuppyPurchasePurityPurposePursePushPutPuzzlePyramidQualityQuantumQuarterQuestionQuickQuitQuizQuoteRabbitRaccoonRaceRackRadarRadioRailRainRaiseRallyRampRanchRandomRangeRapidRareRateRatherRavenRawRazorReadyRealReasonRebelRebuildRecallReceiveRecipeRecordRecycleReduceReflectReformRefuseRegionRegretRegularRejectRelaxReleaseReliefRelyRemainRememberRemindRemoveRenderRenewRentReopenRepairRepeatReplaceReportRequireRescueResembleResistResourceResponseResultRetireRetreatReturnReunionRevealReviewRewardRhythmRibRibbonRiceRichRideRidgeRifleRightRigidRingRiotRippleRiskRitualRivalRiverRoadRoastRobotRobustRocketRomanceRoofRookieRoomRoseRotateRoughRoundRouteRoyalRubberRudeRugRuleRunRunwayRuralSadSaddleSadnessSafeSailSaladSalmonSalonSaltSaluteSameSampleSandSatisfySatoshiSauceSausageSaveSayScaleScanScareScatterSceneSchemeSchoolScienceScissorsScorpionScoutScrapScreenScriptScrubSeaSearchSeasonSeatSecondSecretSectionSecuritySeedSeekSegmentSelectSellSeminarSeniorSenseSentenceSeriesServiceSessionSettleSetupSevenShadowShaftShallowShareShedShellSheriffShieldShiftShineShipShiverShockShoeShootShopShortShoulderShoveShrimpShrugShuffleShySiblingSickSideSiegeSightSignSilentSilkSillySilverSimilarSimpleSinceSingSirenSisterSituateSixSizeSkateSketchSkiSkillSkinSkirtSkullSlabSlamSleepSlenderSliceSlideSlightSlimSloganSlotSlowSlushSmallSmartSmileSmokeSmoothSnackSnakeSnapSniffSnowSoapSoccerSocialSockSodaSoftSolarSoldierSolidSolutionSolveSomeoneSongSoonSorrySortSoulSoundSoupSourceSouthSpaceSpareSpatialSpawnSpeakSpecialSpeedSpellSpendSphereSpiceSpiderSpikeSpinSpiritSplitSpoilSponsorSpoonSportSpotSpraySpreadSpringSpySquareSqueezeSquirrelStableStadiumStaffStageStairsStampStandStartStateStaySteakSteelStemStepStereoStickStillStingStockStomachStoneStoolStoryStoveStrategyStreetStrikeStrongStruggleStudentStuffStumbleStyleSubjectSubmitSubwaySuccessSuchSuddenSufferSugarSuggestSuitSummerSunSunnySunsetSuperSupplySupremeSureSurfaceSurgeSurpriseSurroundSurveySuspectSustainSwallowSwampSwapSwarmSwearSweetSwiftSwimSwingSwitchSwordSymbolSymptomSyrupSystemTableTackleTagTailTalentTalkTankTapeTargetTaskTasteTattooTaxiTeachTeamTellTenTenantTennisTentTermTestTextThankThatThemeThenTheoryThereTheyThingThisThoughtThreeThriveThrowThumbThunderTicketTideTigerTiltTimberTimeTinyTipTiredTissueTitleToastTobaccoTodayToddlerToeTogetherToiletTokenTomatoTomorrowToneTongueTonightToolToothTopTopicToppleTorchTornadoTortoiseTossTotalTouristTowardTowerTownToyTrackTradeTrafficTragicTrainTransferTrapTrashTravelTrayTreatTreeTrendTrialTribeTrickTriggerTrimTripTrophyTroubleTruckTrueTrulyTrumpetTrustTruthTryTubeTuitionTumbleTunaTunnelTurkeyTurnTurtleTwelveTwentyTwiceTwinTwistTwoTypeTypicalUglyUmbrellaUnableUnawareUncleUncoverUnderUndoUnfairUnfoldUnhappyUniformUniqueUnitUniverseUnknownUnlockUntilUnusualUnveilUpdateUpgradeUpholdUponUpperUpsetUrbanUrgeUsageUseUsedUsefulUselessUsualUtilityVacantVacuumVagueValidValleyValveVanVanishVaporVariousVastVaultVehicleVelvetVendorVentureVenueVerbVerifyVersionVeryVesselVeteranViableVibrantViciousVictoryVideoViewVillageVintageViolinVirtualVirusVisaVisitVisualVitalVividVocalVoiceVoidVolcanoVolumeVoteVoyageWageWagonWaitWalkWallWalnutWantWarfareWarmWarriorWashWaspWasteWaterWaveWayWealthWeaponWearWeaselWeatherWebWeddingWeekendWeirdWelcomeWestWetWhaleWhatWheatWheelWhenWhereWhipWhisperWideWidthWifeWildWillWinWindowWineWingWinkWinnerWinterWireWisdomWiseWishWitnessWolfWomanWonderWoodWoolWordWorkWorldWorryWorthWrapWreckWrestleWristWriteWrongYardYearYellowYouYoungYouthZebraZeroZoneZoo"
+
+},{}]},{},[28]);

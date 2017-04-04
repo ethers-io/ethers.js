@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 module.exports = undefined;
 },{}],2:[function(require,module,exports){
 'use strict';
@@ -12,8 +12,6 @@ try {
 
 },{}],3:[function(require,module,exports){
 'use strict';
-
-var inherits = require('inherits');
 
 var Provider = require('./provider.js');
 
@@ -40,7 +38,7 @@ function EtherscanProvider(testnet, apiKey) {
 
     utils.defineProperty(this, 'apiKey', apiKey || null);
 }
-inherits(EtherscanProvider, Provider);
+Provider.inherits(EtherscanProvider);
 
 utils.defineProperty(EtherscanProvider.prototype, '_call', function() {
 });
@@ -49,16 +47,34 @@ utils.defineProperty(EtherscanProvider.prototype, '_callProxy', function() {
 });
 
 function getResult(result) {
-    if (result.status != 1 || result.message != 'OK') {
-        throw new Error('invalid response');
+    // getLogs has weird success responses
+    if (result.status == 0 && result.message === 'No records found') {
+        return result.result;
     }
+
+    if (result.status != 1 || result.message != 'OK') {
+        var error = new Error('invalid response');
+        error.result = JSON.stringify(result);
+        throw error;
+    }
+
     return result.result;
 }
 
 function getJsonResult(result) {
-    if (result.jsonrpc != '2.0' || result.error) {
-        throw new Error('invalid response');
+    if (result.jsonrpc != '2.0') {
+        var error = new Error('invalid response');
+        error.result = JSON.stringify(result);
+        throw error;
     }
+
+    if (result.error) {
+        var error = new Error(result.error.message || 'unknown error');
+        if (result.error.code) { error.code = result.error.code; }
+        if (result.error.data) { error.data = result.error.data; }
+        throw error;
+    }
+
     return result.result;
 }
 
@@ -138,7 +154,7 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
         case 'call':
             var transaction = getTransactionString(params.transaction);
             if (transaction) { transaction = '&' + transaction; }
-            url += '/api?module=proxy&action=call' + transaction;
+            url += '/api?module=proxy&action=eth_call' + transaction;
             url += apiKey;
             return Provider.fetchJSON(url, null, getJsonResult);
 
@@ -192,7 +208,7 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
 
 module.exports = EtherscanProvider;;
 
-},{"./provider.js":9,"ethers-utils/convert.js":12,"ethers-utils/properties.js":16,"inherits":8}],4:[function(require,module,exports){
+},{"./provider.js":9,"ethers-utils/convert.js":13,"ethers-utils/properties.js":17}],4:[function(require,module,exports){
 'use strict';
 
 var inherits = require('inherits');
@@ -222,6 +238,7 @@ function FallbackProvider(providers) {
     if (!(this instanceof FallbackProvider)) { throw new Error('missing new'); }
     Provider.call(this, providers[0].testnet, providers[0].chainId);
 
+    providers = providers.slice(0);
     Object.defineProperty(this, 'providers', {
         get: function() {
             return providers.slice(0);
@@ -233,7 +250,6 @@ inherits(FallbackProvider, Provider);
 
 utils.defineProperty(FallbackProvider.prototype, 'perform', function(method, params) {
     var providers = this.providers;
-
     return new Promise(function(resolve, reject) {
         var firstError = null;
         function next() {
@@ -256,7 +272,7 @@ utils.defineProperty(FallbackProvider.prototype, 'perform', function(method, par
 
 module.exports = FallbackProvider;
 
-},{"./provider.js":9,"ethers-utils/properties.js":16,"inherits":8}],5:[function(require,module,exports){
+},{"./provider.js":9,"ethers-utils/properties.js":17,"inherits":8}],5:[function(require,module,exports){
 'use strict';
 
 var Provider = require('./provider.js');
@@ -266,6 +282,13 @@ var FallbackProvider = require('./fallback-provider.js');
 var InfuraProvider = require('./infura-provider.js');
 var JsonRpcProvider = require('./json-rpc-provider.js');
 
+function getDefaultProvider(testnet) {
+    return new FallbackProvider([
+        new InfuraProvider(testnet),
+        new EtherscanProvider(testnet),
+    ]);
+}
+
 module.exports = {
     EtherscanProvider: EtherscanProvider,
     FallbackProvider: FallbackProvider,
@@ -274,12 +297,17 @@ module.exports = {
 
     isProvder: Provider.isProvider,
 
-    _Provider: Provider,
+    getDefaultProvider:getDefaultProvider,
+
+    Provider: Provider,
 }
 
-},{"./etherscan-provider.js":3,"./fallback-provider.js":4,"./infura-provider.js":6,"./json-rpc-provider.js":7,"./provider.js":9}],6:[function(require,module,exports){
-var inherits = require('inherits');
+require('ethers-utils/standalone.js')({
+    providers: module.exports
+});
 
+
+},{"./etherscan-provider.js":3,"./fallback-provider.js":4,"./infura-provider.js":6,"./json-rpc-provider.js":7,"./provider.js":9,"ethers-utils/standalone.js":19}],6:[function(require,module,exports){
 var JsonRpcProvider = require('./json-rpc-provider.js');
 
 var utils = (function() {
@@ -298,25 +326,22 @@ function InfuraProvider(testnet, apiAccessToken) {
 
     utils.defineProperty(this, 'apiAccessToken', apiAccessToken || null);
 }
-
-inherits(InfuraProvider, JsonRpcProvider);
+JsonRpcProvider.inherits(InfuraProvider);
 
 module.exports = InfuraProvider;
 
-},{"./json-rpc-provider.js":7,"ethers-utils/properties.js":16,"inherits":8}],7:[function(require,module,exports){
+},{"./json-rpc-provider.js":7,"ethers-utils/properties.js":17}],7:[function(require,module,exports){
 'use strict';
 
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
-
-var inherits = require('inherits');
 
 var Provider = require('./provider.js');
 
 var utils = (function() {
     return {
-        defineProperty: require('ethers-utils/properties.js').defineProperty,
+        defineProperty: require('ethers-utils/properties').defineProperty,
 
-        hexlify: require('ethers-utils/convert.js').hexlify,
+        hexlify: require('ethers-utils/convert').hexlify,
     }
 })();
 
@@ -332,7 +357,7 @@ function getResult(payload) {
 }
 
 function getTransaction(transaction) {
-    var result = [];
+    var result = {};
     for (var key in transaction) {
         result[key] = utils.hexlify(transaction[key]);
     }
@@ -348,7 +373,7 @@ function JsonRpcProvider(url, testnet, chainId) {
 
     utils.defineProperty(this, 'url', url);
 }
-inherits(JsonRpcProvider, Provider);
+Provider.inherits(JsonRpcProvider);
 
 utils.defineProperty(JsonRpcProvider.prototype, 'send', function(method, params) {
     var request = {
@@ -398,13 +423,12 @@ utils.defineProperty(JsonRpcProvider.prototype, 'perform', function(method, para
             return this.send('eth_getTransactionReceipt', [params.transactionHash]);
 
         case 'call':
-            return this.send('eth_call', [getTransaction(params.transaction)]);
+            return this.send('eth_call', [getTransaction(params.transaction), 'latest']);
 
         case 'estimateGas':
             return this.send('eth_estimateGas', [getTransaction(params.transaction)]);
 
         case 'getLogs':
-            console.log('FFF', params.filter);
             return this.send('eth_getLogs', [params.filter]);
 
         default:
@@ -416,7 +440,7 @@ utils.defineProperty(JsonRpcProvider.prototype, 'perform', function(method, para
 
 module.exports = JsonRpcProvider;
 
-},{"./provider.js":9,"ethers-utils/convert.js":12,"ethers-utils/properties.js":16,"inherits":8}],8:[function(require,module,exports){
+},{"./provider.js":9,"ethers-utils/convert":13,"ethers-utils/properties":17}],8:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -442,21 +466,27 @@ if (typeof Object.create === 'function') {
 }
 
 },{}],9:[function(require,module,exports){
+'use strict';
+
+var inherits = require('inherits');
 
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 var utils = (function() {
-    var convert = require('ethers-utils/convert.js');
+    var convert = require('ethers-utils/convert');
     return {
-        defineProperty: require('ethers-utils/properties.js').defineProperty,
+        defineProperty: require('ethers-utils/properties').defineProperty,
 
-        getAddress: require('ethers-utils/address.js').getAddress,
+        getAddress: require('ethers-utils/address').getAddress,
+        getContractAddress: require('ethers-utils/contract-address').getContractAddress,
 
-        bigNumberify: require('ethers-utils/bignumber.js').bigNumberify,
+        bigNumberify: require('ethers-utils/bignumber').bigNumberify,
         arrayify: convert.arrayify,
 
         hexlify: convert.hexlify,
         isHexString: convert.isHexString,
+
+        RLP: require('ethers-utils/rlp'),
     }
 })();
 
@@ -464,10 +494,9 @@ function check(format, object) {
     var result = {};
     for (var key in format) {
         try {
-            value = format[key](object[key]);
+            var value = format[key](object[key]);
             if (value !== undefined) { result[key] = value; }
         } catch (error) {
-            console.log(error, key, object);
             error.checkKey = key;
             error.checkValue = object[key];
             throw error;
@@ -506,13 +535,23 @@ function arrayOf(check) {
 
 function checkHash(hash) {
     if (!utils.isHexString(hash) || hash.length !== 66) {
-        throw new Error('invalid hash');
+        throw new Error('invalid hash - ' + hash);
     }
     return hash;
 }
 
 function checkNumber(number) {
     return utils.bigNumberify(number).toNumber();
+}
+
+function checkUint256(uint256) {
+    if (!utils.isHexString(uint256)) {
+        throw new Error('invalid uint256');
+    }
+    while (uint256.length < 66) {
+        uint256 = '0x0' + uint256.substring(2);
+    }
+    return uint256;
 }
 
 function checkString(string) {
@@ -549,7 +588,7 @@ var formatBlock = {
     gasLimit: utils.bigNumberify,
     gasUsed: utils.bigNumberify,
 
-    author: utils.getAddress,
+    miner: utils.getAddress,
     extraData: utils.hexlify,
 
     //transactions: allowNull(arrayOf(checkTransaction)),
@@ -563,6 +602,9 @@ var formatBlock = {
 };
 
 function checkBlock(block) {
+    if (block.author != null && block.miner == null) {
+        block.miner = block.author;
+    }
     return check(formatBlock, block);
 }
 
@@ -583,21 +625,85 @@ var formatTransaction = {
    nonce: checkNumber,
    data: utils.hexlify,
 
-   r: checkHash,
-   s: checkHash,
+   r: checkUint256,
+   s: checkUint256,
    v: checkNumber,
 
    creates: allowNull(utils.getAddress, null),
+
+   raw: utils.hexlify,
 };
 
 function checkTransaction(transaction) {
+
+    // Rename gas to gasLimit
     if (transaction.gas != null && transaction.gasLimit == null) {
         transaction.gasLimit = transaction.gas;
     }
+
+    // Rename input to data
     if (transaction.input != null && transaction.data == null) {
         transaction.data = transaction.input;
     }
-    return check(formatTransaction, transaction);
+
+    // If to and creates are empty, populate the creates from the transaction
+    if (transaction.to == null && transaction.creates == null) {
+        transaction.creates = utils.getContractAddress(transaction);
+    }
+
+    if (!transaction.raw) {
+        var raw = [
+            utils.hexlify(transaction.nonce),
+            utils.hexlify(transaction.gasPrice),
+            utils.hexlify(transaction.gasLimit),
+            (transaction.to || "0x"),
+            utils.hexlify(transaction.value || '0x'),
+            utils.hexlify(transaction.data || '0x'),
+            utils.hexlify(transaction.v || '0x'),
+            utils.hexlify(transaction.r),
+            utils.hexlify(transaction.s),
+        ];
+
+        transaction.raw = utils.RLP.encode(raw);
+    }
+
+
+    var result = check(formatTransaction, transaction);
+
+    var networkId = transaction.networkId;
+
+    if (utils.isHexString(networkId)) {
+        networkId = utils.bigNumberify(networkId).toNumber();
+    }
+
+    if (typeof(networkId) !== 'number') {
+        networkId = (result.v - 35) / 2;
+        if (networkId < 0) { networkId = 0; }
+        networkId = parseInt(networkId);
+    }
+
+    result.networkId = networkId;
+
+    // 0x0000... should actually be null
+    if (result.blockHash && result.blockHash.replace(/0/g, '') === 'x') {
+        result.blockHash = null;
+    }
+
+    return result;
+}
+
+var formatTransactionRequest = {
+    from: allowNull(utils.getAddress),
+    nonce: allowNull(checkNumber),
+    gasLimit: allowNull(utils.bigNumberify),
+    gasPrice: allowNull(utils.bigNumberify),
+    to: allowNull(utils.getAddress),
+    value: allowNull(utils.bigNumberify),
+    data: allowNull(utils.hexlify),
+};
+
+function checkTransactionRequest(transaction) {
+    return check(formatTransactionRequest, transaction);
 }
 
 var formatTransactionReceiptLog = {
@@ -695,7 +801,10 @@ function Provider(testnet, chainId) {
     var self = this;
 
     var lastBlockNumber = null;
-    var poller = setInterval(function() {
+
+    var balances = {};
+
+    function doPoll() {
         self.getBlockNumber().then(function(blockNumber) {
 
             // If the block hasn't changed, meh.
@@ -707,35 +816,95 @@ function Provider(testnet, chainId) {
             for (var i = lastBlockNumber + 1; i <= blockNumber; i++) {
                 self.emit('block', i);
             }
-            lastBlockNumber = blockNumber;
+
+            // Sweep balances and remove addresses we no longer have events for
+            var newBalances = {};
 
             // Find all transaction hashes we are waiting on
-            for (var eventName in events) {
-                if (utils.isHexString(eventName) && eventName.length === 66) {
-                    eventName = getString(eventName);
-                    self.getTransaction(eventName).then(function(transaction) {
-                        if (!transaction.blockNumber) { return; }
-                        self.emit(eventName, transaction);
+            Object.keys(events).forEach(function(eventName) {
+                var event = parseEventString(eventName);
+
+                if (event.type === 'transaction') {
+                    self.getTransaction(event.hash).then(function(transaction) {
+                        if (!transaction || !transaction.blockNumber) { return; }
+                        self.emit(event.hash, transaction);
+                    });
+
+                } else if (event.type === 'address') {
+                    if (balances[event.address]) {
+                        newBalances[event.address] = balances[event.address];
+                    }
+                    self.getBalance(event.address, 'latest').then(function(balance) {
+                        var lastBalance = balances[event.address];
+                        if (lastBalance && balance.eq(lastBalance)) { return; }
+                        balances[event.address] = balance;
+                        self.emit(event.address, balance);
+                    });
+
+                } else if (event.type === 'topic') {
+                    self.getLogs({
+                        fromBlock: lastBlockNumber + 1,
+                        toBlock: blockNumber,
+                        topics: event.topic
+                    }).then(function(logs) {
+                        if (logs.length === 0) { return; }
+                        logs.forEach(function(log) {
+                            self.emit(event.topic, log);
+                        });
                     });
                 }
-            }
+            });
+
+            lastBlockNumber = blockNumber;
+
+            balances = newBalances;
         });
 
         self.doPoll();
-    }, 4000);
+    }
 
-    if (poller.unref) { poller.unref(); }
+    var poller = null;
+    Object.defineProperty(this, 'polling', {
+        get: function() { return (poller != null); },
+        set: function(value) {
+            setTimeout(function() {
+                if (value && !poller) {
+                    poller = setInterval(doPoll, 4000);
+
+                } else if (!value && poller) {
+                    clearInterval(poller);
+                    poller = null;
+                }
+            }, 0);
+        }
+    });
 }
 
+function inheritable(parent) {
+    return function(child) {
+        inherits(child, parent);
+        utils.defineProperty(child, 'inherits', inheritable(child));
+    }
+}
+
+utils.defineProperty(Provider, 'inherits', inheritable(Provider));
+/*
+function(child) {
+    inherits(child, Provider);
+    child.inherits = function(grandchild) {
+        inherits(grandchild, child)
+    }
+});
+*/
 utils.defineProperty(Provider, 'chainId', {
     homestead: 1,
     morden: 2,
     ropsten: 3,
 });
 
-utils.defineProperty(Provider, 'isProvider', function(object) {
-    return (object instanceof Provider);
-});
+//utils.defineProperty(Provider, 'isProvider', function(object) {
+//    return (object instanceof Provider);
+//});
 
 utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
 
@@ -752,17 +921,8 @@ utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
         request.onreadystatechange = function() {
             if (request.readyState !== 4) { return; }
 
-            if (request.status != 200) {
-                var error = new Error('invalid response');
-                error.statusCode = request.statusCode;
-                reject(error);
-                return;
-            }
-
-            var result = request.responseText;
-
             try {
-                result = JSON.parse(result);
+                var result = JSON.parse(request.responseText);
             } catch (error) {
                 var jsonError = new Error('invalid json response');
                 jsonError.orginialError = error;
@@ -775,10 +935,19 @@ utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
                 try {
                     result = processFunc(result);
                 } catch (error) {
+                    error.url = url;
+                    error.body = json;
                     error.responseText = request.responseText;
                     reject(error);
                     return;
                 }
+            }
+
+            if (request.status != 200) {
+                var error = new Error('invalid response - ' + request.status);
+                error.statusCode = request.statusCode;
+                reject(error);
+                return;
             }
 
             resolve(result);
@@ -805,29 +974,20 @@ utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
 
 
 utils.defineProperty(Provider.prototype, 'waitForTransaction', function(transactionHash, timeout) {
-    return new Promise(function() {
-        var done = false;
+    var self = this;
+    return new Promise(function(resolve, reject) {
         var timer = null;
 
         function complete(transaction) {
-            if (done) { return; }
-            done = true;
-
-            if (timer) {
-                clearTimeout(timer);
-                timer = null;
-            }
-
+            if (timer) { clearTimeout(timer); }
             resolve(transaction);
         }
 
-        function checkTransaction(transaction) {
-        }
+        self.once(transactionHash, complete);
 
         if (typeof(timeout) === 'number' && timeout > 0) {
             timer = setTimeout(function() {
-                done = true;
-                timer = null;
+                self.removeListener(transactionHash, complete);
                 reject(new Error('timeout'));
             }, timeout);
         }
@@ -840,7 +1000,7 @@ utils.defineProperty(Provider.prototype, 'getBlockNumber', function() {
     try {
         return this.perform('getBlockNumber').then(function(result) {
             var value = parseInt(result);
-            if (value != result) { throw new Error('invalid response'); }
+            if (value != result) { throw new Error('invalid response - getBlockNumber'); }
             return value;
         });
     } catch (error) {
@@ -875,7 +1035,7 @@ utils.defineProperty(Provider.prototype, 'getTransactionCount', function(address
         var params = {address: utils.getAddress(address), blockTag: checkBlockTag(blockTag)};
         return this.perform('getTransactionCount', params).then(function(result) {
             var value = parseInt(result);
-            if (value != result) { throw new Error('invalid response'); }
+            if (value != result) { throw new Error('invalid response - getTransactionCount'); }
             return value;
         });
     } catch (error) {
@@ -914,7 +1074,7 @@ utils.defineProperty(Provider.prototype, 'sendTransaction', function(signedTrans
         var params = {signedTransaction: utils.hexlify(signedTransaction)};
         return this.perform('sendTransaction', params).then(function(result) {
             result = utils.hexlify(result);
-            if (result.length !== 66) { throw new Error('invalid response'); }
+            if (result.length !== 66) { throw new Error('invalid response - sendTransaction'); }
             return result;
         });
     } catch (error) {
@@ -925,7 +1085,7 @@ utils.defineProperty(Provider.prototype, 'sendTransaction', function(signedTrans
 
 utils.defineProperty(Provider.prototype, 'call', function(transaction) {
     try {
-        var params = {transaction: checkTransaction(transaction)};
+        var params = {transaction: checkTransactionRequest(transaction)};
         return this.perform('call', params).then(function(result) {
             return utils.hexlify(result);
         });
@@ -936,8 +1096,8 @@ utils.defineProperty(Provider.prototype, 'call', function(transaction) {
 
 utils.defineProperty(Provider.prototype, 'estimateGas', function(transaction) {
     try {
-        var params = {transaction: checkTransaction(transaction)};
-        return this.perform('call', params).then(function(result) {
+        var params = {transaction: checkTransactionRequest(transaction)};
+        return this.perform('estimateGas', params).then(function(result) {
              return utils.bigNumberify(result);
         });
     } catch (error) {
@@ -974,7 +1134,8 @@ utils.defineProperty(Provider.prototype, 'getTransaction', function(transactionH
     try {
         var params = {transactionHash: checkHash(transactionHash)};
         return this.perform('getTransaction', params).then(function(result) {
-            return checkTransaction(result);
+            if (result != null) { result = checkTransaction(result); }
+            return result;
         });
     } catch (error) {
         return Promise.reject(error);
@@ -985,7 +1146,8 @@ utils.defineProperty(Provider.prototype, 'getTransactionReceipt', function(trans
     try {
         var params = {transactionHash: checkHash(transactionHash)};
         return this.perform('getTransactionReceipt', params).then(function(result) {
-            return checkTransactionReceipt(result);
+            if (result != null) { result = checkTransactionReceipt(result); }
+            return result;
         });
     } catch (error) {
         return Promise.reject(error);
@@ -1023,38 +1185,87 @@ utils.defineProperty(Provider.prototype, 'perform', function(method, params) {
     return Promise.reject(new Error('not implemented - ' + method));
 });
 
-function getString(object) {
+function recurse(object, convertFunc) {
     if (Array.isArray(object)) {
-        var  result = [];
-        for (var i = 0; i < object.length; i++) {
-            result.push(getString(object[i]));
+        var result = [];
+        object.forEach(function(object) {
+            result.push(recurse(object, convertFunc));
+        });
+        return result;
+    }
+    return convertFunc(object);
+}
+
+function getEventString(object) {
+    try {
+        return 'address:' + utils.getAddress(object);
+    } catch (error) { }
+
+    if (object === 'block') {
+        return 'block';
+
+    } else if (utils.isHexString(object)) {
+        if (object.length === 66) {
+            return 'tx:' + object;
         }
-        return '[' + result.join(',') + ']';
+    } else if (Array.isArray(object)) {
+        object = recurse(object, function(object) {
+            if (object == null) { object = '0x'; }
+            return object;
+        });
 
-    } else if (typeof(object) === 'string') {
-        return object;
-
-    } else if (object == null) {
-        return 'null';
+        try {
+            return 'topic:' + utils.RLP.encode(object);
+        } catch (error) {
+            console.log(error);
+        }
     }
 
-    throw new Error('invalid topic');
+    throw new Error('invalid event - ' + object);
+}
+
+function parseEventString(string) {
+    if (string.substring(0, 3) === 'tx:') {
+        return {type: 'transaction', hash: string.substring(3)};
+
+    } else if (string === 'block') {
+        return {type: 'block'};
+
+    } else if (string.substring(0, 8) === 'address:') {
+        return {type: 'address', address: string.substring(8)};
+
+    } else if (string.substring(0, 6) === 'topic:') {
+        try {
+            var object = utils.RLP.decode(string.substring(6));
+            object = recurse(object, function(object) {
+                if (object === '0x') { object = null; }
+                return object;
+            });
+            return {type: 'topic', topic: object};
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    throw new Error('invalid event string');
 }
 
 utils.defineProperty(Provider.prototype, 'on', function(eventName, listener) {
-    var key = getString(eventName);
-    if (!this._events[key]) { this._events[eventName] = []; }
+    var key = getEventString(eventName);
+    if (!this._events[key]) { this._events[key] = []; }
     this._events[key].push({eventName: eventName, listener: listener, type: 'on'});
+    this.polling = true;
 });
 
 utils.defineProperty(Provider.prototype, 'once', function(eventName, listener) {
-    var key = getString(eventName);
-    if (!this._events[key]) { this._events[eventName] = []; }
-    this._events[key].push({listener: listener, type: 'once'});
+    var key = getEventString(eventName);
+    if (!this._events[key]) { this._events[key] = []; }
+    this._events[key].push({eventName: eventName, listener: listener, type: 'once'});
+    this.polling = true;
 });
 
 utils.defineProperty(Provider.prototype, 'emit', function(eventName) {
-    var key = getString(eventName);
+    var key = getEventString(eventName);
 
     var args = Array.prototype.slice.call(arguments, 1);
     var listeners = this._events[key];
@@ -1062,9 +1273,8 @@ utils.defineProperty(Provider.prototype, 'emit', function(eventName) {
 
     for (var i = 0; i < listeners.length; i++) {
         var listener = listeners[i];
-
         if (listener.type === 'once') {
-            delete listeners[i];
+            listeners.splice(i, 1);
             i--;
         }
 
@@ -1074,53 +1284,65 @@ utils.defineProperty(Provider.prototype, 'emit', function(eventName) {
             console.log('Event Listener Error: ' + error.message);
         }
     }
-console.log('LLL', listeners);
+
     if (listeners.length === 0) { delete this._events[key]; }
+    if (this.listenerCount() === 0) { this.polling = false; }
 });
 
 utils.defineProperty(Provider.prototype, 'listenerCount', function(eventName) {
-    var listeners = this._events[getString(eventName)];
+    if (!eventName) {
+        var result = 0;
+        for (var key in this._events) {
+            result += this._events[key].length;
+        }
+        return result;
+    }
+
+    var listeners = this._events[getEventString(eventName)];
     if (!listeners) { return 0; }
     return listeners.length;
 });
 
 utils.defineProperty(Provider.prototype, 'listeners', function(eventName) {
-    var listeners = this._events[getString(eventName)];
+    var listeners = this._events[getEventString(eventName)];
     if (!listeners) { return 0; }
     var result = [];
     for (var i = 0; i < listeners.length; i++) {
-        result.push(lisrteners[i].listener);
+        result.push(listeners[i].listener);
     }
     return result;
 });
 
 utils.defineProperty(Provider.prototype, 'removeAllListeners', function(eventName) {
-    delete this._events[getString(eventName)];
+    delete this._events[getEventString(eventName)];
+    if (this.listenerCount() === 0) { this.polling = false; }
 });
 
 utils.defineProperty(Provider.prototype, 'removeListener', function(eventName, listener) {
-    var listeners = this._events[getString(eventName)];
+    var listeners = this._events[getEventString(eventName)];
     if (!listeners) { return 0; }
     for (var i = 0; i < listeners.length; i++) {
         if (listeners[i].listener === listener) {
-            delete listeners[i];
+            listeners.splice(i, 1);
             return;
         }
     }
+    if (this.listenerCount() === 0) { this.polling = false; }
 });
 
 module.exports = Provider;
 
-},{"ethers-utils/address.js":10,"ethers-utils/bignumber.js":11,"ethers-utils/convert.js":12,"ethers-utils/properties.js":16,"xmlhttprequest":2}],10:[function(require,module,exports){
+},{"ethers-utils/address":10,"ethers-utils/bignumber":11,"ethers-utils/contract-address":12,"ethers-utils/convert":13,"ethers-utils/properties":17,"ethers-utils/rlp":18,"inherits":8,"xmlhttprequest":2}],10:[function(require,module,exports){
 
 var BN = require('bn.js');
 
-var convert = require('./convert.js');
-var keccak256 = require('./keccak256.js');
+var convert = require('./convert');
+var throwError = require('./throw-error');
+var keccak256 = require('./keccak256');
 
 function getChecksumAddress(address) {
     if (typeof(address) !== 'string' || !address.match(/^0x[0-9A-Fa-f]{40}$/)) {
-        throw new Error('invalid address');
+        throwError('invalid address', {input: address});
     }
 
     address = address.toLowerCase();
@@ -1181,7 +1403,9 @@ var ibanChecksum = (function() {
 function getAddress(address, icapFormat) {
     var result = null;
 
-    if (typeof(address) !== 'string') { throw new Error('invalid address'); }
+    if (typeof(address) !== 'string') {
+        throwError('invalid address', {input: address});
+    }
 
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
 
@@ -1192,7 +1416,7 @@ function getAddress(address, icapFormat) {
 
         // It is a checksummed address with a bad checksum
         if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
-            throw new Error('invalid address checksum');
+            throwError('invalid address checksum', { input: address, expected: result });
         }
 
     // Maybe ICAP? (we only support direct mode)
@@ -1200,7 +1424,7 @@ function getAddress(address, icapFormat) {
 
         // It is an ICAP address with a bad checksum
         if (address.substring(2, 4) !== ibanChecksum(address)) {
-            throw new Error('invalid address icap checksum');
+            throwError('invalid address icap checksum', { input: address });
         }
 
         result = (new BN(address.substring(4), 36)).toString(16);
@@ -1208,7 +1432,7 @@ function getAddress(address, icapFormat) {
         result = getChecksumAddress('0x' + result);
 
     } else {
-        throw new Error('invalid address - ' + address);
+        throwError('invalid address', { input: address });
     }
 
     if (icapFormat) {
@@ -1225,7 +1449,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert.js":12,"./keccak256.js":13,"bn.js":14}],11:[function(require,module,exports){
+},{"./convert":13,"./keccak256":14,"./throw-error":20,"bn.js":15}],11:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -1235,8 +1459,9 @@ module.exports = {
 
 var BN = require('bn.js');
 
-var defineProperty = require('./properties.js').defineProperty;
-var convert = require('./convert.js');
+var defineProperty = require('./properties').defineProperty;
+var convert = require('./convert');
+var throwError = require('./throw-error');
 
 function BigNumber(value) {
     if (!(this instanceof BigNumber)) { throw new Error('missing new'); }
@@ -1262,7 +1487,7 @@ function BigNumber(value) {
         value = new BN(convert.hexlify(value).substring(2), 16);
 
     } else {
-        throw new Error('invalid value');
+        throwError('invalid BigNumber value', { input: value });
     }
 
     defineProperty(this, '_bn', value);
@@ -1338,8 +1563,9 @@ defineProperty(BigNumber.prototype, 'toNumber', function(base) {
     return this._bn.toNumber();
 });
 
-defineProperty(BigNumber.prototype, 'toString', function(base) {
-    return this._bn.toString(base || 10);
+defineProperty(BigNumber.prototype, 'toString', function() {
+    //return this._bn.toString(base || 10);
+    return this._bn.toString(10);
 });
 
 defineProperty(BigNumber.prototype, 'toHexString', function() {
@@ -1353,19 +1579,9 @@ function isBigNumber(value) {
     return (value instanceof BigNumber);
 }
 
-function bigNumberify(value, name) {
+function bigNumberify(value) {
     if (value instanceof BigNumber) { return value; }
-
-    try {
-        return new BigNumber(value);
-
-    } catch (error) {
-        console.log(error);
-        if (name) {
-            throw new Error('invalid arrayify object (' + name + ')');
-        }
-        throw new Error('invalid arrayify object');
-    }
+    return new BigNumber(value);
 }
 
 module.exports = {
@@ -1373,14 +1589,36 @@ module.exports = {
     bigNumberify: bigNumberify
 };
 
-},{"./convert.js":12,"./properties.js":16,"bn.js":14}],12:[function(require,module,exports){
+},{"./convert":13,"./properties":17,"./throw-error":20,"bn.js":15}],12:[function(require,module,exports){
+
+var getAddress = require('./address').getAddress;
+var convert = require('./convert');
+var keccak256 = require('./keccak256');
+var RLP = require('./rlp');
+
+// http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
+function getContractAddress(transaction) {
+    if (!transaction.from) { throw new Error('missing from address'); }
+    var nonce = transaction.nonce;
+
+    return getAddress('0x' + keccak256(RLP.encode([
+        getAddress(transaction.from),
+        convert.stripZeros(convert.hexlify(nonce, 'nonce'))
+    ])).substring(26));
+}
+
+module.exports = {
+    getContractAddress: getContractAddress,
+}
+
+},{"./address":10,"./convert":13,"./keccak256":14,"./rlp":18}],13:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
  */
 
 var defineProperty = require('./properties.js').defineProperty;
-
+var throwError = require('./throw-error');
 
 function isArrayish(value) {
     if (!value || parseInt(value.length) != value.length) {
@@ -1419,12 +1657,7 @@ function arrayify(value, name) {
         return new Uint8Array(value);
     }
 
-console.log('AA', typeof(value), value);
-
-    if (name) {
-        throw new Error('invalid arrayify object (' + name + ')');
-    }
-    throw new Error('invalid arrayify object');
+    throwError('invalid arrayify value', { name: name, input: value });
 }
 
 function concat(objects) {
@@ -1463,7 +1696,10 @@ function stripZeros(value) {
 }
 
 function padZeros(value, length) {
+    value = arrayify(value);
+
     if (length < value.length) { throw new Error('cannot pad'); }
+
     var result = new Uint8Array(length);
     result.set(value, length - value.length);
     return result;
@@ -1488,7 +1724,7 @@ function hexlify(value, name) {
 
     if (typeof(value) === 'number') {
         if (value < 0) {
-            throw new Error('cannot hexlify negative value');
+            throwError('cannot hexlify negative value', { name: name, input: value });
         }
 
         var hex = '';
@@ -1521,12 +1757,7 @@ function hexlify(value, name) {
         return '0x' + result.join('');
     }
 
-console.log('ERROR', typeof(value), value);
-
-    if (name) {
-        throw new Error('invalid hexlifiy value (' + name + ')');
-    }
-    throw new Error('invalid hexlify value');
+    throwError('invalid hexlify value', { name: name, input: value });
 }
 
 
@@ -1543,7 +1774,7 @@ module.exports = {
     isHexString: isHexString,
 };
 
-},{"./properties.js":16}],13:[function(require,module,exports){
+},{"./properties.js":17,"./throw-error":20}],14:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -1557,7 +1788,7 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":12,"js-sha3":15}],14:[function(require,module,exports){
+},{"./convert.js":13,"js-sha3":16}],15:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -4986,7 +5217,7 @@ module.exports = keccak256;
   };
 })(typeof module === 'undefined' || module, this);
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -5465,7 +5696,7 @@ module.exports = keccak256;
 })();
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":1}],16:[function(require,module,exports){
+},{"_process":1}],17:[function(require,module,exports){
 function defineProperty(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -5478,5 +5709,188 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}]},{},[5])(5)
-});
+},{}],18:[function(require,module,exports){
+//See: https://github.com/ethereum/wiki/wiki/RLP
+
+var convert = require('./convert.js');
+
+function arrayifyInteger(value) {
+    var result = [];
+    while (value) {
+        result.unshift(value & 0xff);
+        value >>= 8;
+    }
+    return result;
+}
+
+function unarrayifyInteger(data, offset, length) {
+    var result = 0;
+    for (var i = 0; i < length; i++) {
+        result = (result * 256) + data[offset + i];
+    }
+    return result;
+}
+
+function _encode(object) {
+    if (Array.isArray(object)) {
+        var payload = [];
+        object.forEach(function(child) {
+            payload = payload.concat(_encode(child));
+        });
+
+        if (payload.length <= 55) {
+            payload.unshift(0xc0 + payload.length)
+            return payload;
+        }
+
+        var length = arrayifyInteger(payload.length);
+        length.unshift(0xf7 + length.length);
+
+        return length.concat(payload);
+
+    } else {
+        object = [].slice.call(convert.arrayify(object));
+
+        if (object.length === 1 && object[0] <= 0x7f) {
+            return object;
+
+        } else if (object.length <= 55) {
+            object.unshift(0x80 + object.length);
+            return object
+        }
+
+        var length = arrayifyInteger(object.length);
+        length.unshift(0xb7 + length.length);
+
+        return length.concat(object);
+    }
+}
+
+function encode(object) {
+    return convert.hexlify(_encode(object));
+}
+
+function _decodeChildren(data, offset, childOffset, length) {
+    var result = [];
+
+    while (childOffset < offset + 1 + length) {
+        var decoded = _decode(data, childOffset);
+
+        result.push(decoded.result);
+
+        childOffset += decoded.consumed;
+        if (childOffset > offset + 1 + length) {
+            throw new Error('invalid rlp');
+        }
+    }
+
+    return {consumed: (1 + length), result: result};
+}
+
+// returns { consumed: number, result: Object }
+function _decode(data, offset) {
+    if (data.length === 0) { throw new Error('invalid rlp data'); }
+
+    // Array with extra length prefix
+    if (data[offset] >= 0xf8) {
+        var lengthLength = data[offset] - 0xf7;
+        if (offset + 1 + lengthLength > data.length) {
+            throw new Error('too short');
+        }
+
+        var length = unarrayifyInteger(data, offset + 1, lengthLength);
+        if (offset + 1 + lengthLength + length > data.length) {
+            throw new Error('to short');
+        }
+
+        return _decodeChildren(data, offset, offset + 1 + lengthLength, lengthLength + length);
+
+    } else if (data[offset] >= 0xc0) {
+        var length = data[offset] - 0xc0;
+        if (offset + 1 + length > data.length) {
+            throw new Error('invalid rlp data');
+        }
+
+        return _decodeChildren(data, offset, offset + 1, length);
+
+    } else if (data[offset] >= 0xb8) {
+        var lengthLength = data[offset] - 0xb7;
+        if (offset + 1 + lengthLength > data.length) {
+            throw new Error('invalid rlp data');
+        }
+
+        var length = unarrayifyInteger(data, offset + 1, lengthLength);
+        if (offset + 1 + lengthLength + length > data.length) {
+            throw new Error('invalid rlp data');
+        }
+
+        var result = convert.hexlify(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length));
+        return { consumed: (1 + lengthLength + length), result: result }
+
+    } else if (data[offset] >= 0x80) {
+        var length = data[offset] - 0x80;
+        if (offset + 1 + length > data.offset) {
+            throw new Error('invlaid rlp data');
+        }
+
+        var result = convert.hexlify(data.slice(offset + 1, offset + 1 + length));
+        return { consumed: (1 + length), result: result }
+    }
+    return { consumed: 1, result: convert.hexlify(data[offset]) };
+}
+
+function decode(data) {
+    data = convert.arrayify(data);
+    var decoded = _decode(data, 0);
+    if (decoded.consumed !== data.length) {
+        throw new Error('invalid rlp data');
+    }
+    return decoded.result;
+}
+
+module.exports = {
+    encode: encode,
+    decode: decode,
+}
+
+},{"./convert.js":13}],19:[function(require,module,exports){
+(function (global){
+var defineProperty = require('./properties.js').defineProperty;
+
+function Ethers() { }
+
+function defineEthersValues(values) {
+
+    // This is modified in the Gruntfile.js
+    if ("__STAND_ALONE_TRUE__" !== ("__STAND_ALONE_" + "TRUE__")) {
+        return;
+    }
+
+    if (global.ethers == null) {
+        defineProperty(global, 'ethers', new Ethers());
+    }
+
+    for (var key in values) {
+        if (global.ethers[key] == null) {
+            defineProperty(global.ethers, key, values[key]);
+        }
+    }
+}
+
+module.exports = defineEthersValues;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./properties.js":17}],20:[function(require,module,exports){
+'use strict';
+
+function throwError(message, params) {
+    var error = new Error(message);
+    for (var key in params) {
+        error[key] = params[key];
+    }
+    throw error;
+}
+
+module.exports = throwError;
+
+},{}]},{},[5]);

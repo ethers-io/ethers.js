@@ -1,15 +1,16 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 module.exports = undefined;
 },{}],2:[function(require,module,exports){
 
 var BN = require('bn.js');
 
-var convert = require('./convert.js');
-var keccak256 = require('./keccak256.js');
+var convert = require('./convert');
+var throwError = require('./throw-error');
+var keccak256 = require('./keccak256');
 
 function getChecksumAddress(address) {
     if (typeof(address) !== 'string' || !address.match(/^0x[0-9A-Fa-f]{40}$/)) {
-        throw new Error('invalid address');
+        throwError('invalid address', {input: address});
     }
 
     address = address.toLowerCase();
@@ -70,7 +71,9 @@ var ibanChecksum = (function() {
 function getAddress(address, icapFormat) {
     var result = null;
 
-    if (typeof(address) !== 'string') { throw new Error('invalid address'); }
+    if (typeof(address) !== 'string') {
+        throwError('invalid address', {input: address});
+    }
 
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
 
@@ -81,7 +84,7 @@ function getAddress(address, icapFormat) {
 
         // It is a checksummed address with a bad checksum
         if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
-            throw new Error('invalid address checksum');
+            throwError('invalid address checksum', { input: address, expected: result });
         }
 
     // Maybe ICAP? (we only support direct mode)
@@ -89,7 +92,7 @@ function getAddress(address, icapFormat) {
 
         // It is an ICAP address with a bad checksum
         if (address.substring(2, 4) !== ibanChecksum(address)) {
-            throw new Error('invalid address icap checksum');
+            throwError('invalid address icap checksum', { input: address });
         }
 
         result = (new BN(address.substring(4), 36)).toString(16);
@@ -97,7 +100,7 @@ function getAddress(address, icapFormat) {
         result = getChecksumAddress('0x' + result);
 
     } else {
-        throw new Error('invalid address - ' + address);
+        throwError('invalid address', { input: address });
     }
 
     if (icapFormat) {
@@ -114,7 +117,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert.js":6,"./keccak256.js":9,"bn.js":10}],3:[function(require,module,exports){
+},{"./convert":6,"./keccak256":8,"./throw-error":22,"bn.js":9}],3:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -124,8 +127,9 @@ module.exports = {
 
 var BN = require('bn.js');
 
-var defineProperty = require('./properties.js').defineProperty;
-var convert = require('./convert.js');
+var defineProperty = require('./properties').defineProperty;
+var convert = require('./convert');
+var throwError = require('./throw-error');
 
 function BigNumber(value) {
     if (!(this instanceof BigNumber)) { throw new Error('missing new'); }
@@ -151,7 +155,7 @@ function BigNumber(value) {
         value = new BN(convert.hexlify(value).substring(2), 16);
 
     } else {
-        throw new Error('invalid value');
+        throwError('invalid BigNumber value', { input: value });
     }
 
     defineProperty(this, '_bn', value);
@@ -227,8 +231,9 @@ defineProperty(BigNumber.prototype, 'toNumber', function(base) {
     return this._bn.toNumber();
 });
 
-defineProperty(BigNumber.prototype, 'toString', function(base) {
-    return this._bn.toString(base || 10);
+defineProperty(BigNumber.prototype, 'toString', function() {
+    //return this._bn.toString(base || 10);
+    return this._bn.toString(10);
 });
 
 defineProperty(BigNumber.prototype, 'toHexString', function() {
@@ -242,19 +247,9 @@ function isBigNumber(value) {
     return (value instanceof BigNumber);
 }
 
-function bigNumberify(value, name) {
+function bigNumberify(value) {
     if (value instanceof BigNumber) { return value; }
-
-    try {
-        return new BigNumber(value);
-
-    } catch (error) {
-        console.log(error);
-        if (name) {
-            throw new Error('invalid arrayify object (' + name + ')');
-        }
-        throw new Error('invalid arrayify object');
-    }
+    return new BigNumber(value);
 }
 
 module.exports = {
@@ -262,7 +257,7 @@ module.exports = {
     bigNumberify: bigNumberify
 };
 
-},{"./convert.js":6,"./properties.js":20,"bn.js":10}],4:[function(require,module,exports){
+},{"./convert":6,"./properties":18,"./throw-error":22,"bn.js":9}],4:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -272,10 +267,15 @@ var crypto = global.crypto || global.msCrypto;
 if (!crypto || !crypto.getRandomValues) {
     console.log('WARNING: Missing strong random number source; using weak randomBytes');
     crypto = {
-        getRandomValues: function(length) {
-
-            for (var i = 0; i < buffer.length; i++) {
-                buffer[i] = parseInt(256 * Math.random());
+        getRandomValues: function(buffer) {
+            for (var round = 0; round < 20; round++) {
+                for (var i = 0; i < buffer.length; i++) {
+                    if (round) {
+                        buffer[i] ^= parseInt(256 * Math.random());
+                    } else {
+                        buffer[i] = parseInt(256 * Math.random());
+                    }
+                }
             }
 
             return buffer;
@@ -303,21 +303,21 @@ if (crypto._weakCrypto === true) {
 module.exports = randomBytes;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./properties.js":20}],5:[function(require,module,exports){
+},{"./properties.js":18}],5:[function(require,module,exports){
 
-var getAddress = require('./address.js').getAddress;
-var convert = require('./convert.js');
-var keccak256 = require('./keccak256.js');
-var rlp = require('./rlp.js');
+var getAddress = require('./address').getAddress;
+var convert = require('./convert');
+var keccak256 = require('./keccak256');
+var RLP = require('./rlp');
 
 // http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
 function getContractAddress(transaction) {
     if (!transaction.from) { throw new Error('missing from address'); }
     var nonce = transaction.nonce;
 
-    return getAddress('0x' + keccak256(rlp.encode([
+    return getAddress('0x' + keccak256(RLP.encode([
         getAddress(transaction.from),
-        convert.hexlify(nonce, 'nonce')
+        convert.stripZeros(convert.hexlify(nonce, 'nonce'))
     ])).substring(26));
 }
 
@@ -325,14 +325,14 @@ module.exports = {
     getContractAddress: getContractAddress,
 }
 
-},{"./address.js":2,"./convert.js":6,"./keccak256.js":9,"./rlp.js":21}],6:[function(require,module,exports){
+},{"./address":2,"./convert":6,"./keccak256":8,"./rlp":19}],6:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
  */
 
 var defineProperty = require('./properties.js').defineProperty;
-
+var throwError = require('./throw-error');
 
 function isArrayish(value) {
     if (!value || parseInt(value.length) != value.length) {
@@ -371,12 +371,7 @@ function arrayify(value, name) {
         return new Uint8Array(value);
     }
 
-console.log('AA', typeof(value), value);
-
-    if (name) {
-        throw new Error('invalid arrayify object (' + name + ')');
-    }
-    throw new Error('invalid arrayify object');
+    throwError('invalid arrayify value', { name: name, input: value });
 }
 
 function concat(objects) {
@@ -415,7 +410,10 @@ function stripZeros(value) {
 }
 
 function padZeros(value, length) {
+    value = arrayify(value);
+
     if (length < value.length) { throw new Error('cannot pad'); }
+
     var result = new Uint8Array(length);
     result.set(value, length - value.length);
     return result;
@@ -440,7 +438,7 @@ function hexlify(value, name) {
 
     if (typeof(value) === 'number') {
         if (value < 0) {
-            throw new Error('cannot hexlify negative value');
+            throwError('cannot hexlify negative value', { name: name, input: value });
         }
 
         var hex = '';
@@ -473,12 +471,7 @@ function hexlify(value, name) {
         return '0x' + result.join('');
     }
 
-console.log('ERROR', typeof(value), value);
-
-    if (name) {
-        throw new Error('invalid hexlifiy value (' + name + ')');
-    }
-    throw new Error('invalid hexlify value');
+    throwError('invalid hexlify value', { name: name, input: value });
 }
 
 
@@ -495,62 +488,27 @@ module.exports = {
     isHexString: isHexString,
 };
 
-},{"./properties.js":20}],7:[function(require,module,exports){
-'use strict';
-
-var hash = require('hash.js');
-
-var convert = require('./convert.js');
-
-// @TODO: Make this use create-hmac in node
-
-function createSha256Hmac(key) {
-    if (!key.buffer) { key = convert.arrayify(key); }
-    return new hash.hmac(hash.sha256, key);
-}
-
-function createSha512Hmac(key) {
-    if (!key.buffer) { key = convert.arrayify(key); }
-    return new hash.hmac(hash.sha512, key);
-}
-
-module.exports = {
-    createSha256Hmac: createSha256Hmac,
-    createSha512Hmac: createSha512Hmac,
-};
-
-},{"./convert.js":6,"hash.js":11}],8:[function(require,module,exports){
+},{"./properties.js":18,"./throw-error":22}],7:[function(require,module,exports){
 'use strict';
 
 // This is SUPER useful, but adds 140kb (even zipped, adds 40kb)
 //var unorm = require('unorm');
 
-var address = require('./address.js');
-var bigNumber = require('./bignumber.js');
-var contractAddress = require('./contract-address.js');
-var convert = require('./convert.js');
-var hmac = require('./hmac.js');
-var keccak256 = require('./keccak256.js');
-var sha256 = require('./sha2.js').sha256;
-var randomBytes = require('./random-bytes.js');
-var pbkdf2 = require('./pbkdf2.js');
-var properties = require('./properties.js');
-var rlp = require('./rlp.js');
-var utf8 = require('./utf8.js');
-var units = require('./units.js');
+var address = require('./address');
+var bigNumber = require('./bignumber');
+var contractAddress = require('./contract-address');
+var convert = require('./convert');
+var keccak256 = require('./keccak256');
+var sha256 = require('./sha2').sha256;
+var randomBytes = require('./random-bytes');
+var properties = require('./properties');
+var RLP = require('./rlp');
+var utf8 = require('./utf8');
+var units = require('./units');
 
-////var xmlhttprequest = require('./xmlhttprequest.js');
-
-/*
-function cloneObject(object) {
-    var clone = {};
-    for (var key in object) { clone[key] = object[key]; }
-    return clone;
-}
-*/
 
 module.exports = {
-    rlp: rlp,
+    RLP: RLP,
 
     defineProperty: properties.defineProperty,
 
@@ -561,17 +519,14 @@ module.exports = {
     etherSymbol: '\u039e',
 
     arrayify: convert.arrayify,
-    isArrayish: convert.isArrayish,
 
     concat: convert.concat,
     padZeros: convert.padZeros,
     stripZeros: convert.stripZeros,
 
     bigNumberify: bigNumber.bigNumberify,
-    isBigNumber: bigNumber.isBigNumber,
 
     hexlify: convert.hexlify,
-    isHexString: convert.isHexString,
 
     toUtf8Bytes: utf8.toUtf8Bytes,
     toUtf8String: utf8.toUtf8String,
@@ -585,13 +540,15 @@ module.exports = {
     keccak256: keccak256,
     sha256: sha256,
 
-    hmac: hmac,
-    pbkdf2: pbkdf2,
-
     randomBytes: randomBytes,
 }
 
-},{"./address.js":2,"./bignumber.js":3,"./contract-address.js":5,"./convert.js":6,"./hmac.js":7,"./keccak256.js":9,"./pbkdf2.js":19,"./properties.js":20,"./random-bytes.js":4,"./rlp.js":21,"./sha2.js":22,"./units.js":23,"./utf8.js":24}],9:[function(require,module,exports){
+require('./standalone')({
+    utils: module.exports
+});
+
+
+},{"./address":2,"./bignumber":3,"./contract-address":5,"./convert":6,"./keccak256":8,"./properties":18,"./random-bytes":4,"./rlp":19,"./sha2":20,"./standalone":21,"./units":23,"./utf8":24}],8:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -605,7 +562,7 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":6,"js-sha3":18}],10:[function(require,module,exports){
+},{"./convert.js":6,"js-sha3":17}],9:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -4034,7 +3991,7 @@ module.exports = keccak256;
   };
 })(typeof module === 'undefined' || module, this);
 
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var hash = exports;
 
 hash.utils = require('./hash/utils');
@@ -4051,7 +4008,7 @@ hash.sha384 = hash.sha.sha384;
 hash.sha512 = hash.sha.sha512;
 hash.ripemd160 = hash.ripemd.ripemd160;
 
-},{"./hash/common":12,"./hash/hmac":13,"./hash/ripemd":14,"./hash/sha":15,"./hash/utils":16}],12:[function(require,module,exports){
+},{"./hash/common":11,"./hash/hmac":12,"./hash/ripemd":13,"./hash/sha":14,"./hash/utils":15}],11:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -4144,7 +4101,7 @@ BlockHash.prototype._pad = function pad() {
   return res;
 };
 
-},{"../hash":11}],13:[function(require,module,exports){
+},{"../hash":10}],12:[function(require,module,exports){
 var hmac = exports;
 
 var hash = require('../hash');
@@ -4194,9 +4151,9 @@ Hmac.prototype.digest = function digest(enc) {
   return this.outer.digest(enc);
 };
 
-},{"../hash":11}],14:[function(require,module,exports){
+},{"../hash":10}],13:[function(require,module,exports){
 module.exports = {ripemd160: null}
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -4762,7 +4719,7 @@ function g1_512_lo(xh, xl) {
   return r;
 }
 
-},{"../hash":11}],16:[function(require,module,exports){
+},{"../hash":10}],15:[function(require,module,exports){
 var utils = exports;
 var inherits = require('inherits');
 
@@ -5021,7 +4978,7 @@ function shr64_lo(ah, al, num) {
 };
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":17}],17:[function(require,module,exports){
+},{"inherits":16}],16:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -5046,7 +5003,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -5525,78 +5482,7 @@ if (typeof Object.create === 'function') {
 })();
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":1}],19:[function(require,module,exports){
-
-function pbkdf2(password, salt, iterations, keylen, createHmac) {
-    var hLen
-    var l = 1
-    var DK = new Uint8Array(keylen)
-    var block1 = new Uint8Array(salt.length + 4)
-    block1.set(salt);
-    //salt.copy(block1, 0, 0, salt.length)
-
-    var r
-    var T
-
-    for (var i = 1; i <= l; i++) {
-        //block1.writeUInt32BE(i, salt.length)
-        block1[salt.length] = (i >> 24) & 0xff;
-        block1[salt.length + 1] = (i >> 16) & 0xff;
-        block1[salt.length + 2] = (i >> 8) & 0xff;
-        block1[salt.length + 3] = i & 0xff;
-
-        var U = createHmac(password).update(block1).digest();
-
-        if (!hLen) {
-            hLen = U.length
-            T = new Uint8Array(hLen)
-            l = Math.ceil(keylen / hLen)
-            r = keylen - (l - 1) * hLen
-        }
-
-        //U.copy(T, 0, 0, hLen)
-        T.set(U);
-
-
-        for (var j = 1; j < iterations; j++) {
-            U = createHmac(password).update(U).digest()
-            for (var k = 0; k < hLen; k++) T[k] ^= U[k]
-        }
-
-
-        var destPos = (i - 1) * hLen
-        var len = (i === l ? r : hLen)
-        //T.copy(DK, destPos, 0, len)
-        DK.set(T.slice(0, len), destPos);
-
-    }
-
-    return DK
-}
-
-/*
-var hmac = require('./hmac.js');
-var utf8 = require('./utf8.js');
-var p = require('pbkdf2');
-
-var pw = utf8.toUtf8Bytes('password');
-var sa = utf8.toUtf8Bytes('salt');
-
-var t0 = (new Date()).getTime();
-for (var i = 0; i < 100; i++) {
-    pbkdf2(pw, sa, 1000, 40, hmac.createSha512Hmac);
-}
-var t1 = (new Date()).getTime();
-for (var i = 0; i < 100; i++) {
-    p.pbkdf2Sync('password', 'salt', 1000, 40, 'sha512');
-}
-var t2 = (new Date()).getTime();
-
-console.log('TT', t1 - t0, t2 - t1);
-*/
-module.exports = pbkdf2;
-
-},{}],20:[function(require,module,exports){
+},{"_process":1}],18:[function(require,module,exports){
 function defineProperty(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -5609,7 +5495,7 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],21:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 var convert = require('./convert.js');
@@ -5660,7 +5546,6 @@ function _encode(object) {
         }
 
         var length = arrayifyInteger(object.length);
-
         length.unshift(0xb7 + length.length);
 
         return length.concat(object);
@@ -5671,8 +5556,22 @@ function encode(object) {
     return convert.hexlify(_encode(object));
 }
 
-/*
-*/
+function _decodeChildren(data, offset, childOffset, length) {
+    var result = [];
+
+    while (childOffset < offset + 1 + length) {
+        var decoded = _decode(data, childOffset);
+
+        result.push(decoded.result);
+
+        childOffset += decoded.consumed;
+        if (childOffset > offset + 1 + length) {
+            throw new Error('invalid rlp');
+        }
+    }
+
+    return {consumed: (1 + length), result: result};
+}
 
 // returns { consumed: number, result: Object }
 function _decode(data, offset) {
@@ -5690,21 +5589,7 @@ function _decode(data, offset) {
             throw new Error('to short');
         }
 
-        var result = [];
-
-        var childOffset = offset + 1 + lengthLength;
-        while (childOffset < offset + 1 + lengthLength + length) {
-            var decoded = _decode(data, childOffset);
-
-            result.push(decoded.result);
-
-            childOffset += decoded.consumed;
-            if (childOffset > offset + 1 + lengthLength + length) {
-                throw new Error('hungry child');
-            }
-        }
-
-        return {consumed: (1 + lengthLength + length), result: result};
+        return _decodeChildren(data, offset, offset + 1 + lengthLength, lengthLength + length);
 
     } else if (data[offset] >= 0xc0) {
         var length = data[offset] - 0xc0;
@@ -5712,20 +5597,7 @@ function _decode(data, offset) {
             throw new Error('invalid rlp data');
         }
 
-        var result = [];
-
-        var childOffset = offset + 1;
-        while (childOffset < offset + 1 + length) {
-            var decoded = _decode(data, childOffset);
-            result.push(decoded.result);
-
-            childOffset += decoded.consumed;
-            if (childOffset > offset + 1 + length) {
-                throw new Error('invalid rlp data');
-            }
-        }
-
-        return { consumed: (1 + length), result: result };
+        return _decodeChildren(data, offset, offset + 1, length);
 
     } else if (data[offset] >= 0xb8) {
         var lengthLength = data[offset] - 0xb7;
@@ -5767,7 +5639,7 @@ module.exports = {
     decode: decode,
 }
 
-},{"./convert.js":6}],22:[function(require,module,exports){
+},{"./convert.js":6}],20:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -5792,8 +5664,49 @@ module.exports = {
     createSha512: hash.sha512,
 }
 
-},{"./convert.js":6,"hash.js":11}],23:[function(require,module,exports){
+},{"./convert.js":6,"hash.js":10}],21:[function(require,module,exports){
+(function (global){
+var defineProperty = require('./properties.js').defineProperty;
+
+function Ethers() { }
+
+function defineEthersValues(values) {
+
+    // This is modified in the Gruntfile.js
+    if ("__STAND_ALONE_TRUE__" !== ("__STAND_ALONE_" + "TRUE__")) {
+        return;
+    }
+
+    if (global.ethers == null) {
+        defineProperty(global, 'ethers', new Ethers());
+    }
+
+    for (var key in values) {
+        if (global.ethers[key] == null) {
+            defineProperty(global.ethers, key, values[key]);
+        }
+    }
+}
+
+module.exports = defineEthersValues;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./properties.js":18}],22:[function(require,module,exports){
+'use strict';
+
+function throwError(message, params) {
+    var error = new Error(message);
+    for (var key in params) {
+        error[key] = params[key];
+    }
+    throw error;
+}
+
+module.exports = throwError;
+
+},{}],23:[function(require,module,exports){
 var bigNumberify = require('./bignumber.js').bigNumberify;
+var throwError = require('./throw-error');
 
 var zero = new bigNumberify(0);
 var negative1 = new bigNumberify(-1);
@@ -5829,25 +5742,25 @@ function formatEther(wei, options) {
 
 function parseEther(ether) {
     if (typeof(ether) !== 'string' || !ether.match(/^-?[0-9.,]+$/)) {
-        throw new Error('invalid value');
+        throwError('invalid value', { input: ether });
     }
 
-    ether = ether.replace(/,/g,'');
+    var value = ether.replace(/,/g,'');
 
     // Is it negative?
-    var negative = (ether.substring(0, 1) === '-');
-    if (negative) { ether = ether.substring(1); }
+    var negative = (value.substring(0, 1) === '-');
+    if (negative) { value = value.substring(1); }
 
-    if (ether === '.') { throw new Error('invalid value'); }
+    if (value === '.') { throwError('invalid value', { input: ether }); }
 
     // Split it into a whole and fractional part
-    var comps = ether.split('.');
-    if (comps.length > 2) { throw new Error('too many decimal points'); }
+    var comps = value.split('.');
+    if (comps.length > 2) { throwError('too many decimal points', { input: ether }); }
 
     var whole = comps[0], fraction = comps[1];
     if (!whole) { whole = '0'; }
     if (!fraction) { fraction = '0'; }
-    if (fraction.length > 18) { throw new Error('too many decimal places'); }
+    if (fraction.length > 18) { throwError('too many decimal places', { input: ether, decimals: fraction.length }); }
 
     while (fraction.length < 18) { fraction += '0'; }
 
@@ -5866,7 +5779,7 @@ module.exports = {
     parseEther: parseEther,
 }
 
-},{"./bignumber.js":3}],24:[function(require,module,exports){
+},{"./bignumber.js":3,"./throw-error":22}],24:[function(require,module,exports){
 
 var convert = require('./convert.js');
 
@@ -5981,5 +5894,4 @@ module.exports = {
     toUtf8String: bytesToUtf8,
 };
 
-},{"./convert.js":6}]},{},[8])(8)
-});
+},{"./convert.js":6}]},{},[7]);

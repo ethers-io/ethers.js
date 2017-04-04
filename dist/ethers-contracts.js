@@ -1,9 +1,13 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
+
+var Interface = require('./interface.js');
 
 var utils = (function() {
     return {
         defineProperty: require('ethers-utils/properties.js').defineProperty,
+
+        getAddress: require('ethers-utils/address.js').getAddress,
 
         bigNumberify: require('ethers-utils/bignumber.js').bigNumberify,
 
@@ -15,70 +19,45 @@ var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice:true, to: true, value: true
 }
 
-function Contract(wallet, contractAddress, contractInterface) {
-    utils.defineProperty(this, 'wallet', wallet);
+function Contract(address, contractInterface, signerOrProvider) {
+    if (!(this instanceof Contract)) { throw new Error('missing new'); }
 
-    utils.defineProperty(this, 'contractAddress', contractAddress);
-    utils.defineProperty(this, 'interface', contractInterface);
+    address = utils.getAddress(address);
 
-    var self = this;
-
-    var filters = {};
-    function setupFilter(call, callback) {
-        var info = filters[call.name];
-
-        // Stop and remove the filter
-        if (!callback) {
-            if (info) { info.filter.stopWatching(); }
-            delete filters[call.name];
-            return;
-        }
-
-        if (typeof(callback) !== 'function') {
-            throw new Error('invalid callback');
-        }
-
-        // Already have a filter, just update the callback
-        if (info) {
-            info.callback = callback;
-            return;
-        }
-
-        info = {callback: callback};
-        filters[call.name] = info;
-
-        // Start a new filter
-/*
-        info.filter = web3.eth.filter({
-            address: contractAddress,
-            topics: call.topics
-        }, function(error, result) {
-            // @TODO: Emit errors to .onerror? Maybe?
-            if (error) {
-                console.log(error);
-                return;
-            }
-
-            try {
-                info.callback.apply(self, call.parse(result.data));
-            } catch(error) {
-                console.log(error);
-            }
-        });
-*/
+    if (!(contractInterface instanceof Interface)) {
+        contractInterface = new Interface(contractInterface);
     }
+
+    var signer = signerOrProvider;
+    var provider = null;
+    if (signerOrProvider.provider) {
+        provider = signerOrProvider.provider;
+    } else if (signerOrProvider) {
+        provider = signerOrProvider;
+        signer = null;
+    } else {
+        throw new Error('missing provider');
+    }
+
+    utils.defineProperty(this, 'address', address);
+    utils.defineProperty(this, 'interface', contractInterface);
+    utils.defineProperty(this, 'signer', signer);
+    utils.defineProperty(this, 'provider', provider);
+
     function runMethod(method, estimateOnly) {
         return function() {
-            var provider = wallet._provider;
-
             var transaction = {}
 
             var params = Array.prototype.slice.call(arguments);
-            if (params.length == contractInterface[method].inputs.length + 1) {
+
+            // If 1 extra parameter was passed in, it contains overrides
+            if (params.length == method.inputs.length + 1) {
                 transaction = params.pop();
                 if (typeof(transaction) !== 'object') {
                     throw new Error('invalid transaction overrides');
                 }
+
+                // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
                 for (var key in transaction) {
                     if (!allowedTransactionKeys[key]) {
                         throw new Error('unknown transaction override ' + key);
@@ -86,82 +65,111 @@ function Contract(wallet, contractAddress, contractInterface) {
                 }
             }
 
+            // Check overrides make sense
+            ['data', 'to'].forEach(function(key) {
+                if (transaction[key] != null) {
+                    throw new Error('cannot override ' + key) ;
+                }
+            });
 
-            var call = contractInterface[method].apply(contractInterface, params);
+            var call = method.apply(contractInterface, params);
+
+            // Send to the contract address
+            transaction.to = address;
+
+            // Set the transaction data
+            transaction.data = call.data;
+
             switch (call.type) {
                 case 'call':
-                    ['data', 'gasLimit', 'gasPrice', 'to', 'value'].forEach(function(key) {
+
+                    // Call (constant functions) always cost 0 ether
+                    if (estimateOnly) {
+                        return Promise.resolve(new utils.bigNumberify(0));
+                    }
+
+                    // Check overrides make sense
+                    ['gasLimit', 'gasPrice', 'value'].forEach(function(key) {
                         if (transaction[key] != null) {
                             throw new Error('call cannot override ' + key) ;
                         }
                     });
-                    transaction.data = call.data;
-                    if (transaction.from == null) {
-                        transaction.from = wallet.address;
-                    }
-                    transaction.to = contractAddress;
 
-                    if (estimateOnly) {
-                        return new Promise(function(resolve, reject) {
-                            resolve(new utils.bigNumberify(0));
-                        });
+                    var fromPromise = null;
+                    if (transaction.from == null && signer && signer.getAddress) {
+                        fromPromise = signer.getAddress();
+                        if (!(address instanceof Promise)) {
+                            fromPromise = Promise.resolve(fromPromise);
+                        }
+                    } else {
+                        fromPromise = Promise.resolve(null);
                     }
 
-                    return new Promise(function(resolve, reject) {
-                        provider.call(transaction).then(function(value) {
-                            resolve(call.parse(value));
-                        }, function(error) {
-                            reject(error);
-                        });
+                    return fromPromise.then(function(address) {
+                        if (address) {
+                            transaction.from = utils.getAddress(address);
+                        }
+                        return provider.call(transaction);
+
+                    }).then(function(value) {
+                        return call.parse(value);
                     });
 
                 case 'transaction':
-                    ['data', 'from', 'to'].forEach(function(key) {
-                        if (transaction[key] != null) {
-                            throw new Error('transaction cannot override ' + key) ;
-                        }
-                    });
-                    transaction.data = call.data;
-                    transaction.to = contractAddress;
-                    if (transaction.gasLimit == null) {
-                        transaction.gasLimit = 3000000;
+                    if (!signer) { return Promise.reject(new Error('missing signer')); }
+
+                    // Make sure they aren't overriding something they shouldn't
+                    if (transaction.from != null) {
+                        throw new Error('transaction cannot override from') ;
                     }
 
+                    // Only computing the transaction estimate
                     if (estimateOnly) {
-                        return new Promise(function(resolve, reject) {
-                            provider.estimateGas(transaction).then(function(gasEstimate) {
-                                resolve(gasEstimate);
-                            }, function(error) {
-                                reject(error);
-                            });
-                        });
+                        if (signer && signer.estimateGas) {
+                            return signer.estimateGas(transaction);
+                        }
+
+                        return provider.estimateGas(transaction)
                     }
 
-                    return new Promise(function(resolve, reject) {
-                        Promise.all([
-                            provider.getTransactionCount(wallet.address, 'pending'),
-                            provider.getGasPrice(),
-                        ]).then(function(results) {
-                            if (transaction.nonce == null) {
-                                transaction.nonce = results[0];
-                            } else if (console.warn) {
-                                console.warn('Overriding suggested nonce: ' + results[0]);
-                            }
-                            if (transaction.gasPrice == null) {
-                                transaction.gasPrice = results[1];
-                            } else if (console.warn) {
-                                console.warn('Overriding suggested gasPrice: ' + utils.hexlify(results[1]));
-                            }
+                    // If the signer supports sendTrasaction, use it
+                    if (signer.sendTransaction) {
+                        return signer.sendTransaction(transaction);
+                    }
 
-                            var signedTransaction = wallet.sign(transaction);
-                            provider.sendTransaction(signedTransaction).then(function(txid) {
-                                resolve(txid);
-                            }, function(error) {
-                                reject(error);
-                            });
-                        }, function(error) {
-                            reject(error);
-                        });
+                    if (!signer.sign) {
+                        return Promise.reject(new Error('custom signer does not support signing'));
+                    }
+
+                    if (transaction.gasLimit == null) {
+                        transaction.gasLimit = signer.defaultGasLimit || 2000000;
+                    }
+
+                    var noncePromise = null;
+                    if (transaction.nonce) {
+                        noncePromise = Promise.resolve(transaction.nonce)
+                    } else {
+                        noncePromise = provider.getTransactionCount(signer.address, 'pending');
+                    }
+
+                    var gasPricePromise = null;
+                    if (transaction.gasPrice) {
+                        gasPricePromise = Promise.resolve(transaction.gasPrice);
+                    } else {
+                        gasPricePromise = provider.getGasPrice();
+                    }
+
+                    return Promise.all([
+                        noncePromise,
+                        gasPricePromise
+
+                    ]).then(function(results) {
+                        transaction.nonce = results[0];
+                        transaction.gasPrice = results[1];
+                        return signer.sign(transaction);
+
+                    }).then(function(signedTransaction) {
+                        return provider.sendTransaction(signedTransaction);
                     });
             }
         };
@@ -170,41 +178,107 @@ function Contract(wallet, contractAddress, contractInterface) {
     var estimate = {};
     utils.defineProperty(this, 'estimate', estimate);
 
-    contractInterface.methods.forEach(function(method) {
-        utils.defineProperty(this, method, runMethod(method, false));
-        utils.defineProperty(estimate, method, runMethod(method, true));
+    var functions = {};
+    utils.defineProperty(this, 'functions', functions);
+
+    var events = {};
+    utils.defineProperty(this, 'events', events);
+
+    Object.keys(contractInterface.functions).forEach(function(methodName) {
+        var method = contractInterface.functions[methodName];
+
+        var run = runMethod(method, false);
+
+        if (this[methodName] == null) {
+            utils.defineProperty(this, methodName, run);
+        } else {
+            console.log('WARNING: Multiple definitions for ' + method);
+        }
+
+        if (functions[method] == null) {
+            utils.defineProperty(functions, methodName, run);
+            utils.defineProperty(estimate, methodName, runMethod(method, true));
+        }
     }, this);
 
-    contractInterface.events.forEach(function(method) {
-        var call = contractInterface[method].apply(contractInterface, []);
-        Object.defineProperty(self, 'on' + call.name.toLowerCase(), {
+    Object.keys(contractInterface.events).forEach(function(eventName) {
+        var eventInfo = contractInterface.events[eventName]();
+
+        var eventCallback = null;
+
+        function handleEvent(log) {
+            try {
+                var result = eventInfo.parse(log.data);
+                eventCallback.apply(log, Array.prototype.slice.call(result));
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        var property = {
             enumerable: true,
             get: function() {
-                var info = filters[call.name];
-                if (!info || !info[call.name]) { return null; }
-                return info.callback;
+                return eventCallback;
             },
             set: function(value) {
-                setupFilter(call, value);
+                if (!value) { value = null; }
+
+                if (!value && eventCallback) {
+                    provider.removeListener(eventInfo.topics, handleEvent);
+
+                } else if (value && !eventCallback) {
+                    provider.on(eventInfo.topics, handleEvent);
+                }
+
+                eventCallback = value;
             }
-        });
+        };
+
+        var propertyName = 'on' + eventName.toLowerCase();
+        if (this[propertyName] == null) {
+            Object.defineProperty(this, propertyName, property);
+        }
+
+        Object.defineProperty(events, eventName, property);
+
     }, this);
 }
 
+utils.defineProperty(Contract, 'getDeployTransaction', function(bytecode, contractInterface) {
+    if (typeof(contractInterface) === 'string') {
+        contractInterface = new Interface(contractInterface);
+    }
+
+    var args = Array.prototype.slice.call(arguments);
+    args.splice(1, 1);
+
+    return {
+        data: contractInterface.deployFunction.apply(contractInterface, args).bytecode
+    }
+});
+
 module.exports = Contract;
 
-},{"ethers-utils/bignumber.js":5,"ethers-utils/convert.js":6,"ethers-utils/properties.js":10}],2:[function(require,module,exports){
+},{"./interface.js":3,"ethers-utils/address.js":5,"ethers-utils/bignumber.js":6,"ethers-utils/convert.js":7,"ethers-utils/properties.js":11}],2:[function(require,module,exports){
+'use strict';
+
 var Contract = require('./contract.js');
 var Interface = require('./interface.js');
 
 module.exports = {
-    Constract: Contract,
+    Contract: Contract,
     Interface: Interface,
 }
 
-},{"./contract.js":1,"./interface.js":3}],3:[function(require,module,exports){
+require('ethers-utils/standalone.js')(module.exports);
+
+
+},{"./contract.js":1,"./interface.js":3,"ethers-utils/standalone.js":12}],3:[function(require,module,exports){
 'use strict';
 
+// See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
+
+var throwError = require('ethers-utils/throw-error');
 
 var utils = (function() {
     var convert = require('ethers-utils/convert.js');
@@ -217,6 +291,8 @@ var utils = (function() {
         padZeros: convert.padZeros,
 
         bigNumberify: require('ethers-utils/bignumber.js').bigNumberify,
+
+        getAddress: require('ethers-utils/address').getAddress,
 
         concat: convert.concat,
 
@@ -241,7 +317,7 @@ function defineFrozen(object, name, value) {
 
 // getKeys([{a: 1, b: 2}, {a: 3, b: 4}], 'a') => [1, 3]
 function getKeys(params, key, allowEmpty) {
-    if (!Array.isArray(params)) { throw new Error('invalid params'); }
+    if (!Array.isArray(params)) { throwError('invalid params', {params: params}); }
 
     var result = [];
 
@@ -250,7 +326,7 @@ function getKeys(params, key, allowEmpty) {
         if (allowEmpty && !value) {
             value = '';
         } else if (typeof(value) !== 'string') {
-            throw new Error('invalid abi');
+            throwError('invalid abi', {params: params, key: key, value: value});
         }
         result.push(value);
     }
@@ -276,6 +352,9 @@ function coderNumber(size, signed) {
             } else {
                 value = value.maskn(size * 8);
             }
+
+            if (size <= 6) { value = value.toNumber(); }
+
             return {
                 consumed: 32,
                 value: value,
@@ -309,11 +388,11 @@ function coderFixedBytes(length) {
             return result;
         },
         decode: function(data, offset) {
-            if (data.length < offset + 32) { throw new Error('invalid bytes' + length); }
+            if (data.length < offset + 32) { throwError('invalid bytes' + length); }
 
             return {
                 consumed: 32,
-                value: data.slice(offset, offset + length)
+                value: utils.hexlify(data.slice(offset, offset + length))
             }
         }
     };
@@ -321,17 +400,16 @@ function coderFixedBytes(length) {
 
 var coderAddress = {
     encode: function(value) {
-        if (!utils.isHexString(value) && value.length === 42) { throw new Error('invalid address'); }
-        value = utils.arrayify(value);
+        value = utils.arrayify(utils.getAddress(value));
         var result = new Uint8Array(32);
         result.set(value, 12);
         return result;
     },
     decode: function(data, offset) {
-        if (data.length < offset + 32) { throw new Error('invalid address'); }
+        if (data.length < offset + 32) { throwError('invalid address'); }
         return {
             consumed: 32,
-            value: utils.hexlify(data.slice(offset + 12, offset + 32))
+            value: utils.getAddress(utils.hexlify(data.slice(offset + 12, offset + 32)))
         }
     }
 }
@@ -348,11 +426,11 @@ function _encodeDynamicBytes(value) {
 }
 
 function _decodeDynamicBytes(data, offset) {
-    if (data.length < offset + 32) { throw new Error('invalid bytes'); }
+    if (data.length < offset + 32) { throwError('invalid bytes'); }
 
     var length = uint256Coder.decode(data, offset).value;
     length = length.toNumber();
-    if (data.length < offset + 32 + length) { throw new Error('invalid bytes'); }
+    if (data.length < offset + 32 + length) { throwError('invalid bytes'); }
 
     return {
         consumed: parseInt(32 + 32 * Math.ceil(length / 32)),
@@ -366,7 +444,7 @@ var coderDynamicBytes = {
     },
     decode: function(data, offset) {
         var result = _decodeDynamicBytes(data, offset);
-        result.value = result.value;
+        result.value = utils.hexlify(result.value);
         return result;
     },
     dynamic: true
@@ -387,7 +465,7 @@ var coderString = {
 function coderArray(coder, length) {
     return {
         encode: function(value) {
-            if (!Array.isArray(value)) { throw new Error('invalid array'); }
+            if (!Array.isArray(value)) { throwError('invalid array'); }
 
             var result = new Uint8Array(0);
             if (length === -1) {
@@ -395,7 +473,7 @@ function coderArray(coder, length) {
                 result = uint256Coder.encode(length);
             }
 
-            if (length !== value.length) { throw new Error('size mismatch'); }
+            if (length !== value.length) { throwError('size mismatch'); }
 
             value.forEach(function(value) {
                 result = utils.concat([result, coder.encode(value)]);
@@ -442,36 +520,36 @@ function getParamCoder(type) {
     var coder = null;
     while (type) {
         var part = type.match(paramTypePart);
-        if (!part) { throw new Error('invalid type: ' + type); }
+        if (!part) { throwError('invalid type', { type: type }); }
         type = type.substring(part[0].length);
 
         var prefix = (part[2] || part[4] || part[5]);
         switch (prefix) {
             case 'int': case 'uint':
-                if (coder) { throw new Error('invalid type ' + type); }
+                if (coder) { throwError('invalid type', { type: type }); }
                 var size = parseInt(part[3] || 256);
                 if (size === 0 || size > 256 || (size % 8) !== 0) {
-                    throw new Error('invalid type ' + type);
+                    throwError('invalid type', { type: type });
                 }
                 coder = coderNumber(size / 8, (prefix === 'int'));
                 break;
 
             case 'bool':
-                if (coder) { throw new Error('invalid type ' + type); }
+                if (coder) { throwError('invalid type', { type: type }); }
                 coder = coderBoolean;
                 break;
 
             case 'string':
-                if (coder) { throw new Error('invalid type ' + type); }
+                if (coder) { throwError('invalid type', { type: type }); }
                 coder = coderString;
                 break;
 
             case 'bytes':
-                if (coder) { throw new Error('invalid type ' + type); }
+                if (coder) { throwError('invalid type', { type: type }); }
                 if (part[3]) {
                     var size = parseInt(part[3]);
                     if (size === 0 || size > 32) {
-                        throw new Error('invalid type ' + type);
+                        throwError('invalid type ' + type);
                     }
                     coder = coderFixedBytes(size);
                 } else {
@@ -480,24 +558,24 @@ function getParamCoder(type) {
                 break;
 
             case 'address':
-                if (coder) { throw new Error('invalid type '  + type); }
+                if (coder) { throwError('invalid type', { type: type }); }
                 coder = coderAddress;
                 break;
 
             case '[]':
-                if (!coder || coder.dynamic) { throw new Error('invalid type ' + type); }
+                if (!coder || coder.dynamic) { throwError('invalid type', { type: type }); }
                 coder = coderArray(coder, -1);
                 break;
 
             // "[0-9+]"
             default:
-                if (!coder || coder.dynamic) { throw new Error('invalid type ' + type); }
+                if (!coder || coder.dynamic) { throwError('invalid type', { type: type }); }
                 var size = parseInt(part[6]);
                 coder = coderArray(coder, size);
         }
     }
 
-    if (!coder) { throw new Error('invalid type'); }
+    if (!coder) { throwError('invalid type'); }
     return coder;
 }
 
@@ -511,34 +589,75 @@ function populateDescription(object, items) {
 function CallDescription() { }
 utils.defineProperty(CallDescription.prototype, 'type', 'call');
 
+function DeployDescription() { }
+utils.defineProperty(DeployDescription.prototype, 'type', 'deploy');
+
 function TransactionDescription() { }
 utils.defineProperty(TransactionDescription.prototype, 'type', 'transaction');
 
 function EventDescription() { }
 utils.defineProperty(EventDescription.prototype, 'type', 'event');
 
-function UnsupportedDescription() { }
-utils.defineProperty(UnsupportedDescription.prototype, 'type', 'unknown');
-
-
 function Interface(abi) {
     if (!(this instanceof Interface)) { throw new Error('missing new'); }
+
+    if (typeof(abi) === 'string') {
+        try {
+            abi = JSON.parse(abi);
+        } catch (error) {
+            throwError('invalid abi', { input: abi });
+        }
+    }
 
     // Wrap this up as JSON so we can return a "copy" and avoid mutation
     defineFrozen(this, 'abi', abi);
 
-    var methods = [], events = [];
-    abi.forEach(function(method) {
+    var methods = {}, events = {}, deploy = null;
 
-        var func = null;
+    utils.defineProperty(this, 'functions', methods);
+    utils.defineProperty(this, 'events', events);
+
+    function addMethod(method) {
 
         switch (method.type) {
-            case 'function':
-                methods.push(method.name);
-                func = (function() {
+            case 'constructor':
+                var func = (function() {
                     var inputTypes = getKeys(method.inputs, 'type');
-                    var outputTypes = getKeys(method.outputs, 'type');
-                    var outputNames = getKeys(method.outputs, 'name', true);
+                    var func = function(bytecode) {
+                        if (!utils.isHexString(bytecode)) {
+                            throwError('invalid bytecode', {input: bytecode});
+                        }
+
+                        var params = Array.prototype.slice.call(arguments, 1);
+                        if (params.length < inputTypes.length) {
+                            throwError('missing parameter');
+                        } else if (params.length > inputTypes.length) {
+                            throwError('too many parameters');
+                        }
+
+                        var result = {
+                            bytecode: bytecode + Interface.encodeParams(inputTypes, params).substring(2),
+                        }
+
+                        return populateDescription(new DeployDescription(), result);
+                    }
+
+                    defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
+
+                    return func;
+                })();
+
+                if (!deploy) { deploy = func; }
+
+                break;
+
+            case 'function':
+                var func = (function() {
+                    var inputTypes = getKeys(method.inputs, 'type');
+                    if (method.constant) {
+                        var outputTypes = getKeys(method.outputs, 'type');
+                        var outputNames = getKeys(method.outputs, 'name', true);
+                    }
 
                     var func = function() {
                         var signature = method.name + '(' + getKeys(method.inputs, 'type').join(',') + ')';
@@ -550,9 +669,9 @@ function Interface(abi) {
                         var params = Array.prototype.slice.call(arguments, 0);
 
                         if (params.length < inputTypes.length) {
-                            throw new Error('missing parameter');
+                            throwError('missing parameter');
                         } else if (params.length > inputTypes.length) {
-                            throw new Error('too many parameters');
+                            throwError('too many parameters');
                         }
 
                         signature = utils.keccak256(utils.toUtf8Bytes(signature)).substring(0, 10);
@@ -577,11 +696,17 @@ function Interface(abi) {
 
                     return func;
                 })();
+
+                if (method.name && method.name !== 'deployFunction' && methods[method.name] == null) {
+                    utils.defineProperty(methods, method.name, func);
+                //} else if (this.fallbackFunction == null) {
+                //    utils.defineProperty(this, 'fallbackFunction', func);
+                }
+
                 break;
 
             case 'event':
-                events.push(method.name);
-                func = (function() {
+                var func = (function() {
                     var inputTypes = getKeys(method.inputs, 'type');
                     var inputNames = getKeys(method.inputs, 'name', true);
                     var func = function() {
@@ -604,29 +729,36 @@ function Interface(abi) {
                     defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
                     return func;
                 })();
+
+                if (method.name && events[method.name] == null) {
+                    utils.defineProperty(events, method.name, func);
+                }
+
+                break;
+
+            case 'fallback':
+                // Nothing to do for fallback
                 break;
 
             default:
-                func = (function() {
-                    return function() {
-                        return populateDescription(new UnsupportedDescription(), {});
-                    }
-                })();
+                console.log('WARNING: unsupported ABI type - ' + method.type);
                 break;
         }
+    };
 
-        if (method.name) {
-            utils.defineProperty(this, method.name, func);
-        }
-    }, this);
+    abi.forEach(addMethod, this);
 
-    defineFrozen(this, 'methods', methods);
-    defineFrozen(this, 'events', events);
+    // If there wasn't a constructor, create the default constructor
+    if (!deploy) {
+        addMethod({type: 'constructor', inputs: []});
+    }
+
+    utils.defineProperty(this, 'deployFunction', deploy);
 }
 
 
 utils.defineProperty(Interface, 'encodeParams', function(types, values) {
-    if (types.length !== values.length) { throw new Error('types/values mismatch'); }
+    if (types.length !== values.length) { throwError('types/values mismatch', {types: types, values: values}); }
 
     var parts = [];
 
@@ -696,17 +828,158 @@ utils.defineProperty(Interface, 'decodeParams', function(names, types, data) {
             var result = coder.decode(data, offset);
             offset += result.consumed;
         }
+
+        // Add indexed parameter
         values[index] = result.value;
-        if (names[index]) { values[names[index]] = result.value; }
+
+        // Add named parameters
+        if (names[index]) {
+            var name = names[index];
+
+            // We reserve length to make the Result object arrayish
+            if (name === 'length') {
+                console.log('WARNING: result length renamed to _length');
+                name = '_length';
+            }
+
+            if (values[name] == null) {
+                values[name] = result.value;
+            } else {
+                console.log('WARNING: duplicate value - ' + name);
+            }
+        }
     });
+
+    values.length = types.length;
+
     return values;
 });
 
+//utils.defineProperty(Interface, 'getDeployTransaction', function(bytecode) {
+//});
+
 module.exports = Interface;
 
-},{"ethers-utils/bignumber.js":5,"ethers-utils/convert.js":6,"ethers-utils/keccak256.js":7,"ethers-utils/properties.js":10,"ethers-utils/utf8.js":11}],4:[function(require,module,exports){
+},{"ethers-utils/address":5,"ethers-utils/bignumber.js":6,"ethers-utils/convert.js":7,"ethers-utils/keccak256.js":8,"ethers-utils/properties.js":11,"ethers-utils/throw-error":13,"ethers-utils/utf8.js":14}],4:[function(require,module,exports){
 module.exports = undefined;
 },{}],5:[function(require,module,exports){
+
+var BN = require('bn.js');
+
+var convert = require('./convert');
+var throwError = require('./throw-error');
+var keccak256 = require('./keccak256');
+
+function getChecksumAddress(address) {
+    if (typeof(address) !== 'string' || !address.match(/^0x[0-9A-Fa-f]{40}$/)) {
+        throwError('invalid address', {input: address});
+    }
+
+    address = address.toLowerCase();
+
+    var hashed = address.substring(2).split('');
+    for (var i = 0; i < hashed.length; i++) {
+        hashed[i] = hashed[i].charCodeAt(0);
+    }
+    hashed = convert.arrayify(keccak256(hashed));
+
+    address = address.substring(2).split('');
+    for (var i = 0; i < 40; i += 2) {
+        if ((hashed[i >> 1] >> 4) >= 8) {
+            address[i] = address[i].toUpperCase();
+        }
+        if ((hashed[i >> 1] & 0x0f) >= 8) {
+            address[i + 1] = address[i + 1].toUpperCase();
+        }
+    }
+
+    return '0x' + address.join('');
+}
+
+// See: https://en.wikipedia.org/wiki/International_Bank_Account_Number
+var ibanChecksum = (function() {
+
+    // Create lookup table
+    var ibanLookup = {};
+    for (var i = 0; i < 10; i++) { ibanLookup[String(i)] = String(i); }
+    for (var i = 0; i < 26; i++) { ibanLookup[String.fromCharCode(65 + i)] = String(10 + i); }
+
+    // How many decimal digits can we process? (for 64-bit float, this is 15)
+    var safeDigits = Math.floor(Math.log10(Number.MAX_SAFE_INTEGER));
+
+    return function(address) {
+        address = address.toUpperCase();
+        address = address.substring(4) + address.substring(0, 2) + '00';
+
+        var expanded = address.split('');
+        for (var i = 0; i < expanded.length; i++) {
+            expanded[i] = ibanLookup[expanded[i]];
+        }
+        expanded = expanded.join('');
+
+        // Javascript can handle integers safely up to 15 (decimal) digits
+        while (expanded.length >= safeDigits){
+            var block = expanded.substring(0, safeDigits);
+            expanded = parseInt(block, 10) % 97 + expanded.substring(block.length);
+        }
+
+        var checksum = String(98 - (parseInt(expanded, 10) % 97));
+        while (checksum.length < 2) { checksum = '0' + checksum; }
+
+        return checksum;
+    };
+})();
+
+function getAddress(address, icapFormat) {
+    var result = null;
+
+    if (typeof(address) !== 'string') {
+        throwError('invalid address', {input: address});
+    }
+
+    if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
+
+        // Missing the 0x prefix
+        if (address.substring(0, 2) !== '0x') { address = '0x' + address; }
+
+        result = getChecksumAddress(address);
+
+        // It is a checksummed address with a bad checksum
+        if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
+            throwError('invalid address checksum', { input: address, expected: result });
+        }
+
+    // Maybe ICAP? (we only support direct mode)
+    } else if (address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
+
+        // It is an ICAP address with a bad checksum
+        if (address.substring(2, 4) !== ibanChecksum(address)) {
+            throwError('invalid address icap checksum', { input: address });
+        }
+
+        result = (new BN(address.substring(4), 36)).toString(16);
+        while (result.length < 40) { result = '0' + result; }
+        result = getChecksumAddress('0x' + result);
+
+    } else {
+        throwError('invalid address', { input: address });
+    }
+
+    if (icapFormat) {
+        var base36 = (new BN(result.substring(2), 16)).toString(36).toUpperCase();
+        while (base36.length < 30) { base36 = '0' + base36; }
+        return 'XE' + ibanChecksum('XE00' + base36) + base36;
+    }
+
+    return result;
+}
+
+
+module.exports = {
+    getAddress: getAddress,
+}
+
+},{"./convert":7,"./keccak256":8,"./throw-error":13,"bn.js":9}],6:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -716,8 +989,9 @@ module.exports = undefined;
 
 var BN = require('bn.js');
 
-var defineProperty = require('./properties.js').defineProperty;
-var convert = require('./convert.js');
+var defineProperty = require('./properties').defineProperty;
+var convert = require('./convert');
+var throwError = require('./throw-error');
 
 function BigNumber(value) {
     if (!(this instanceof BigNumber)) { throw new Error('missing new'); }
@@ -743,7 +1017,7 @@ function BigNumber(value) {
         value = new BN(convert.hexlify(value).substring(2), 16);
 
     } else {
-        throw new Error('invalid value');
+        throwError('invalid BigNumber value', { input: value });
     }
 
     defineProperty(this, '_bn', value);
@@ -819,8 +1093,9 @@ defineProperty(BigNumber.prototype, 'toNumber', function(base) {
     return this._bn.toNumber();
 });
 
-defineProperty(BigNumber.prototype, 'toString', function(base) {
-    return this._bn.toString(base || 10);
+defineProperty(BigNumber.prototype, 'toString', function() {
+    //return this._bn.toString(base || 10);
+    return this._bn.toString(10);
 });
 
 defineProperty(BigNumber.prototype, 'toHexString', function() {
@@ -834,19 +1109,9 @@ function isBigNumber(value) {
     return (value instanceof BigNumber);
 }
 
-function bigNumberify(value, name) {
+function bigNumberify(value) {
     if (value instanceof BigNumber) { return value; }
-
-    try {
-        return new BigNumber(value);
-
-    } catch (error) {
-        console.log(error);
-        if (name) {
-            throw new Error('invalid arrayify object (' + name + ')');
-        }
-        throw new Error('invalid arrayify object');
-    }
+    return new BigNumber(value);
 }
 
 module.exports = {
@@ -854,14 +1119,14 @@ module.exports = {
     bigNumberify: bigNumberify
 };
 
-},{"./convert.js":6,"./properties.js":10,"bn.js":8}],6:[function(require,module,exports){
+},{"./convert":7,"./properties":11,"./throw-error":13,"bn.js":9}],7:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
  */
 
 var defineProperty = require('./properties.js').defineProperty;
-
+var throwError = require('./throw-error');
 
 function isArrayish(value) {
     if (!value || parseInt(value.length) != value.length) {
@@ -900,12 +1165,7 @@ function arrayify(value, name) {
         return new Uint8Array(value);
     }
 
-console.log('AA', typeof(value), value);
-
-    if (name) {
-        throw new Error('invalid arrayify object (' + name + ')');
-    }
-    throw new Error('invalid arrayify object');
+    throwError('invalid arrayify value', { name: name, input: value });
 }
 
 function concat(objects) {
@@ -944,7 +1204,10 @@ function stripZeros(value) {
 }
 
 function padZeros(value, length) {
+    value = arrayify(value);
+
     if (length < value.length) { throw new Error('cannot pad'); }
+
     var result = new Uint8Array(length);
     result.set(value, length - value.length);
     return result;
@@ -969,7 +1232,7 @@ function hexlify(value, name) {
 
     if (typeof(value) === 'number') {
         if (value < 0) {
-            throw new Error('cannot hexlify negative value');
+            throwError('cannot hexlify negative value', { name: name, input: value });
         }
 
         var hex = '';
@@ -1002,12 +1265,7 @@ function hexlify(value, name) {
         return '0x' + result.join('');
     }
 
-console.log('ERROR', typeof(value), value);
-
-    if (name) {
-        throw new Error('invalid hexlifiy value (' + name + ')');
-    }
-    throw new Error('invalid hexlify value');
+    throwError('invalid hexlify value', { name: name, input: value });
 }
 
 
@@ -1024,7 +1282,7 @@ module.exports = {
     isHexString: isHexString,
 };
 
-},{"./properties.js":10}],7:[function(require,module,exports){
+},{"./properties.js":11,"./throw-error":13}],8:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -1038,7 +1296,7 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":6,"js-sha3":9}],8:[function(require,module,exports){
+},{"./convert.js":7,"js-sha3":10}],9:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -4467,7 +4725,7 @@ module.exports = keccak256;
   };
 })(typeof module === 'undefined' || module, this);
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -4946,7 +5204,7 @@ module.exports = keccak256;
 })();
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":4}],10:[function(require,module,exports){
+},{"_process":4}],11:[function(require,module,exports){
 function defineProperty(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -4959,7 +5217,47 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
+(function (global){
+var defineProperty = require('./properties.js').defineProperty;
+
+function Ethers() { }
+
+function defineEthersValues(values) {
+
+    // This is modified in the Gruntfile.js
+    if ("__STAND_ALONE_TRUE__" !== ("__STAND_ALONE_" + "TRUE__")) {
+        return;
+    }
+
+    if (global.ethers == null) {
+        defineProperty(global, 'ethers', new Ethers());
+    }
+
+    for (var key in values) {
+        if (global.ethers[key] == null) {
+            defineProperty(global.ethers, key, values[key]);
+        }
+    }
+}
+
+module.exports = defineEthersValues;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./properties.js":11}],13:[function(require,module,exports){
+'use strict';
+
+function throwError(message, params) {
+    var error = new Error(message);
+    for (var key in params) {
+        error[key] = params[key];
+    }
+    throw error;
+}
+
+module.exports = throwError;
+
+},{}],14:[function(require,module,exports){
 
 var convert = require('./convert.js');
 
@@ -5074,5 +5372,4 @@ module.exports = {
     toUtf8String: bytesToUtf8,
 };
 
-},{"./convert.js":6}]},{},[2])(2)
-});
+},{"./convert.js":7}]},{},[2]);
