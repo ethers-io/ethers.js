@@ -3,23 +3,21 @@
 // This is SUPER useful, but adds 140kb (even zipped, adds 40kb)
 //var unorm = require('unorm');
 
-var address = require('./address.js');
-var bigNumber = require('./bignumber.js');
-var contractAddress = require('./contract-address.js');
-var convert = require('./convert.js');
-var hmac = require('./hmac.js');
-var keccak256 = require('./keccak256.js');
-var sha256 = require('./sha2.js').sha256;
-var randomBytes = require('./random-bytes.js');
-var pbkdf2 = require('./pbkdf2.js');
-var properties = require('./properties.js');
-var rlp = require('./rlp.js');
-var utf8 = require('./utf8.js');
-var units = require('./units.js');
+var address = require('./address');
+var bigNumber = require('./bignumber');
+var contractAddress = require('./contract-address');
+var convert = require('./convert');
+var keccak256 = require('./keccak256');
+var sha256 = require('./sha2').sha256;
+var randomBytes = require('./random-bytes');
+var properties = require('./properties');
+var RLP = require('./rlp');
+var utf8 = require('./utf8');
+var units = require('./units');
 
 
 module.exports = {
-    rlp: rlp,
+    RLP: RLP,
 
     defineProperty: properties.defineProperty,
 
@@ -30,17 +28,14 @@ module.exports = {
     etherSymbol: '\u039e',
 
     arrayify: convert.arrayify,
-    isArrayish: convert.isArrayish,
 
     concat: convert.concat,
     padZeros: convert.padZeros,
     stripZeros: convert.stripZeros,
 
     bigNumberify: bigNumber.bigNumberify,
-    isBigNumber: bigNumber.isBigNumber,
 
     hexlify: convert.hexlify,
-    isHexString: convert.isHexString,
 
     toUtf8Bytes: utf8.toUtf8Bytes,
     toUtf8String: utf8.toUtf8String,
@@ -54,13 +49,10 @@ module.exports = {
     keccak256: keccak256,
     sha256: sha256,
 
-    hmac: hmac,
-    pbkdf2: pbkdf2,
-
     randomBytes: randomBytes,
 }
 
-require('./standalone.js')({
+require('./standalone')({
     utils: module.exports
 });
 
