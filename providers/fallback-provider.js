@@ -27,6 +27,7 @@ function FallbackProvider(providers) {
     if (!(this instanceof FallbackProvider)) { throw new Error('missing new'); }
     Provider.call(this, providers[0].testnet, providers[0].chainId);
 
+    providers = providers.slice(0);
     Object.defineProperty(this, 'providers', {
         get: function() {
             return providers.slice(0);
@@ -38,7 +39,6 @@ inherits(FallbackProvider, Provider);
 
 utils.defineProperty(FallbackProvider.prototype, 'perform', function(method, params) {
     var providers = this.providers;
-
     return new Promise(function(resolve, reject) {
         var firstError = null;
         function next() {
