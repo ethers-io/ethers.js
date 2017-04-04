@@ -29,7 +29,6 @@ function check(format, object) {
             var value = format[key](object[key]);
             if (value !== undefined) { result[key] = value; }
         } catch (error) {
-            console.log(error, key, object);
             error.checkKey = key;
             error.checkValue = object[key];
             throw error;
@@ -183,6 +182,23 @@ function checkTransaction(transaction) {
     if (transaction.to == null && transaction.creates == null) {
         transaction.creates = utils.getContractAddress(transaction);
     }
+
+    if (!transaction.raw) {
+        var raw = [
+            utils.hexlify(transaction.nonce),
+            utils.hexlify(transaction.gasPrice),
+            utils.hexlify(transaction.gasLimit),
+            (transaction.to || "0x"),
+            utils.hexlify(transaction.value || '0x'),
+            utils.hexlify(transaction.data || '0x'),
+            utils.hexlify(transaction.v || '0x'),
+            utils.hexlify(transaction.r),
+            utils.hexlify(transaction.s),
+        ];
+
+        transaction.raw = utils.RLP.encode(raw);
+    }
+
 
     var result = check(formatTransaction, transaction);
 
