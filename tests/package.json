@@ -10,7 +10,7 @@
     "bip39": "2.2.0",
     "bitcoinjs-lib": "2.3.0",
     "ethereumjs-abi": "0.6.2",
-    "ethereumjs-tx": "1.1.1",
+    "ethereumjs-tx": "1.2.5",
     "ethereumjs-util": "4.3.0",
     "grunt": "^0.4.5",
     "grunt-browserify": "^5.0.0",
