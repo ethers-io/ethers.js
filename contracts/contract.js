@@ -96,11 +96,10 @@ function Contract(address, contractInterface, signerOrProvider) {
 
                     var fromPromise = null;
                     if (transaction.from == null && signer && signer.getAddress) {
-                        fromPromise = new Promise(function(resolve, reject) {
-                            var address = signer.getAddress();
-                            if (address instanceof Promise) { return address; }
-                            resolve(address);
-                        });
+                        fromPromise = signer.getAddress();
+                        if (!(address instanceof Promise)) {
+                            fromPromise = Promise.resolve(fromPromise);
+                        }
                     } else {
                         fromPromise = Promise.resolve(null);
                     }
@@ -110,6 +109,7 @@ function Contract(address, contractInterface, signerOrProvider) {
                             transaction.from = utils.getAddress(address);
                         }
                         return provider.call(transaction);
+
                     }).then(function(value) {
                         return call.parse(value);
                     });
@@ -124,12 +124,20 @@ function Contract(address, contractInterface, signerOrProvider) {
 
                     // Only computing the transaction estimate
                     if (estimateOnly) {
+                        if (signer && signer.estimateGas) {
+                            return signer.estimateGas(transaction);
+                        }
+
                         return provider.estimateGas(transaction)
                     }
 
                     // If the signer supports sendTrasaction, use it
                     if (signer.sendTransaction) {
                         return signer.sendTransaction(transaction);
+                    }
+
+                    if (!signer.sign) {
+                        return Promise.reject(new Error('custom signer does not support signing'));
                     }
 
                     if (transaction.gasLimit == null) {
@@ -169,8 +177,8 @@ function Contract(address, contractInterface, signerOrProvider) {
     var estimate = {};
     utils.defineProperty(this, 'estimate', estimate);
 
-    var execute = {};
-    utils.defineProperty(this, 'execute', execute);
+    var functions = {};
+    utils.defineProperty(this, 'functions', functions);
 
     var events = {};
     utils.defineProperty(this, 'events', events);
@@ -186,8 +194,8 @@ function Contract(address, contractInterface, signerOrProvider) {
             console.log('WARNING: Multiple definitions for ' + method);
         }
 
-        if (execute[method] == null) {
-            utils.defineProperty(execute, methodName, run);
+        if (functions[method] == null) {
+            utils.defineProperty(functions, methodName, run);
             utils.defineProperty(estimate, methodName, runMethod(method, true));
         }
     }, this);
