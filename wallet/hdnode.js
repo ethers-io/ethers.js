@@ -238,11 +238,12 @@ function entropyToMnemonic(entropy) {
     return words.join(' ');
 }
 
-function validMnemonic(mnemonic) {
+function isValidMnemonic(mnemonic) {
     try {
         mnemonicToEntropy(mnemonic);
         return true;
     } catch (error) { }
+
     return false;
 }
 
@@ -254,5 +255,5 @@ module.exports = {
     entropyToMnemonic: entropyToMnemonic,
     mnemonicToSeed: mnemonicToSeed,
 
-    validMnemonic: validMnemonic,
+    isValidMnemonic: isValidMnemonic,
 };
