@@ -1,4 +1,6 @@
 node_modules/
 obsolete/
 .test-account.key
-
+.DS_Store
+docs/build/doctrees/
+docs/build/html/_sources/
