@@ -2,6 +2,10 @@
   "name": "ethers-wallet",
   "version": "2.0.0",
   "description": "Wallet and signing library for Ethereum.",
+  "bugs": {
+    "url": "http://github.com/ethers-io/ethers.js/issues",
+    "email": "github@ricmoo.com"
+  },
   "main": "index.js",
   "scripts": {
     "test": "echo \"Please run the tests from Ethers root\" && exit 1"
@@ -25,6 +29,10 @@
     "signing",
     "signer"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
   "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT"
 }
