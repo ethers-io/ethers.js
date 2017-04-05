@@ -1,17 +1,9 @@
 'use strict';
 
-/*
 var contracts = require('ethers-contracts');
-var HDNode = require('ethers-hdnode');
-//var providers = require('providers');
+var providers = require('ethers-providers');
 var utils = require('ethers-utils');
-var Wallet = require('ethers-wallet');
-*/
-
-var contracts = require('./contracts/index.js');
-var providers = require('./providers/index.js');
-var utils = require('./utils/index.js');
-var wallet = require('./wallet/index.js');
+var wallet = require('ethers-wallet');
 
 module.exports = {
     Wallet: wallet.Wallet,

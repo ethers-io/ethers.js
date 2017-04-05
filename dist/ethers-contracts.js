@@ -259,7 +259,7 @@ utils.defineProperty(Contract, 'getDeployTransaction', function(bytecode, contra
 
 module.exports = Contract;
 
-},{"./interface.js":3,"ethers-utils/address.js":5,"ethers-utils/bignumber.js":6,"ethers-utils/convert.js":7,"ethers-utils/properties.js":11}],2:[function(require,module,exports){
+},{"./interface.js":3,"ethers-utils/address.js":5,"ethers-utils/bignumber.js":6,"ethers-utils/convert.js":7,"ethers-utils/properties.js":9}],2:[function(require,module,exports){
 'use strict';
 
 var Contract = require('./contract.js');
@@ -273,7 +273,7 @@ module.exports = {
 require('ethers-utils/standalone.js')(module.exports);
 
 
-},{"./contract.js":1,"./interface.js":3,"ethers-utils/standalone.js":12}],3:[function(require,module,exports){
+},{"./contract.js":1,"./interface.js":3,"ethers-utils/standalone.js":10}],3:[function(require,module,exports){
 'use strict';
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
@@ -860,443 +860,7 @@ utils.defineProperty(Interface, 'decodeParams', function(names, types, data) {
 
 module.exports = Interface;
 
-},{"ethers-utils/address":5,"ethers-utils/bignumber.js":6,"ethers-utils/convert.js":7,"ethers-utils/keccak256.js":8,"ethers-utils/properties.js":11,"ethers-utils/throw-error":13,"ethers-utils/utf8.js":14}],4:[function(require,module,exports){
-module.exports = undefined;
-},{}],5:[function(require,module,exports){
-
-var BN = require('bn.js');
-
-var convert = require('./convert');
-var throwError = require('./throw-error');
-var keccak256 = require('./keccak256');
-
-function getChecksumAddress(address) {
-    if (typeof(address) !== 'string' || !address.match(/^0x[0-9A-Fa-f]{40}$/)) {
-        throwError('invalid address', {input: address});
-    }
-
-    address = address.toLowerCase();
-
-    var hashed = address.substring(2).split('');
-    for (var i = 0; i < hashed.length; i++) {
-        hashed[i] = hashed[i].charCodeAt(0);
-    }
-    hashed = convert.arrayify(keccak256(hashed));
-
-    address = address.substring(2).split('');
-    for (var i = 0; i < 40; i += 2) {
-        if ((hashed[i >> 1] >> 4) >= 8) {
-            address[i] = address[i].toUpperCase();
-        }
-        if ((hashed[i >> 1] & 0x0f) >= 8) {
-            address[i + 1] = address[i + 1].toUpperCase();
-        }
-    }
-
-    return '0x' + address.join('');
-}
-
-// See: https://en.wikipedia.org/wiki/International_Bank_Account_Number
-var ibanChecksum = (function() {
-
-    // Create lookup table
-    var ibanLookup = {};
-    for (var i = 0; i < 10; i++) { ibanLookup[String(i)] = String(i); }
-    for (var i = 0; i < 26; i++) { ibanLookup[String.fromCharCode(65 + i)] = String(10 + i); }
-
-    // How many decimal digits can we process? (for 64-bit float, this is 15)
-    var safeDigits = Math.floor(Math.log10(Number.MAX_SAFE_INTEGER));
-
-    return function(address) {
-        address = address.toUpperCase();
-        address = address.substring(4) + address.substring(0, 2) + '00';
-
-        var expanded = address.split('');
-        for (var i = 0; i < expanded.length; i++) {
-            expanded[i] = ibanLookup[expanded[i]];
-        }
-        expanded = expanded.join('');
-
-        // Javascript can handle integers safely up to 15 (decimal) digits
-        while (expanded.length >= safeDigits){
-            var block = expanded.substring(0, safeDigits);
-            expanded = parseInt(block, 10) % 97 + expanded.substring(block.length);
-        }
-
-        var checksum = String(98 - (parseInt(expanded, 10) % 97));
-        while (checksum.length < 2) { checksum = '0' + checksum; }
-
-        return checksum;
-    };
-})();
-
-function getAddress(address, icapFormat) {
-    var result = null;
-
-    if (typeof(address) !== 'string') {
-        throwError('invalid address', {input: address});
-    }
-
-    if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
-
-        // Missing the 0x prefix
-        if (address.substring(0, 2) !== '0x') { address = '0x' + address; }
-
-        result = getChecksumAddress(address);
-
-        // It is a checksummed address with a bad checksum
-        if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
-            throwError('invalid address checksum', { input: address, expected: result });
-        }
-
-    // Maybe ICAP? (we only support direct mode)
-    } else if (address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
-
-        // It is an ICAP address with a bad checksum
-        if (address.substring(2, 4) !== ibanChecksum(address)) {
-            throwError('invalid address icap checksum', { input: address });
-        }
-
-        result = (new BN(address.substring(4), 36)).toString(16);
-        while (result.length < 40) { result = '0' + result; }
-        result = getChecksumAddress('0x' + result);
-
-    } else {
-        throwError('invalid address', { input: address });
-    }
-
-    if (icapFormat) {
-        var base36 = (new BN(result.substring(2), 16)).toString(36).toUpperCase();
-        while (base36.length < 30) { base36 = '0' + base36; }
-        return 'XE' + ibanChecksum('XE00' + base36) + base36;
-    }
-
-    return result;
-}
-
-
-module.exports = {
-    getAddress: getAddress,
-}
-
-},{"./convert":7,"./keccak256":8,"./throw-error":13,"bn.js":9}],6:[function(require,module,exports){
-/**
- *  BigNumber
- *
- *  A wrapper around the BN.js object. In the future we can swap out
- *  the underlying BN.js library for something smaller.
- */
-
-var BN = require('bn.js');
-
-var defineProperty = require('./properties').defineProperty;
-var convert = require('./convert');
-var throwError = require('./throw-error');
-
-function BigNumber(value) {
-    if (!(this instanceof BigNumber)) { throw new Error('missing new'); }
-
-    if (convert.isHexString(value)) {
-        if (value == '0x') { value = '0x0'; }
-        value = new BN(value.substring(2), 16);
-
-    } else if (typeof(value) === 'string' && value.match(/^-?[0-9]*$/)) {
-        if (value == '') { value = '0'; }
-        value = new BN(value);
-
-    } else if (typeof(value) === 'number' && parseInt(value) == value) {
-        value = new BN(value);
-
-    } else if (BN.isBN(value)) {
-        //value = value
-
-    } else if (value instanceof BigNumber) {
-        value = value._bn;
-
-    } else if (convert.isArrayish(value)) {
-        value = new BN(convert.hexlify(value).substring(2), 16);
-
-    } else {
-        throwError('invalid BigNumber value', { input: value });
-    }
-
-    defineProperty(this, '_bn', value);
-}
-
-defineProperty(BigNumber, 'constantNegativeOne', bigNumberify(-1));
-defineProperty(BigNumber, 'constantZero', bigNumberify(0));
-defineProperty(BigNumber, 'constantOne', bigNumberify(1));
-defineProperty(BigNumber, 'constantTwo', bigNumberify(2));
-defineProperty(BigNumber, 'constantWeiPerEther', bigNumberify(new BN('1000000000000000000')));
-
-
-defineProperty(BigNumber.prototype, 'fromTwos', function(value) {
-    return new BigNumber(this._bn.fromTwos(value));
-});
-
-defineProperty(BigNumber.prototype, 'toTwos', function(value) {
-    return new BigNumber(this._bn.toTwos(value));
-});
-
-
-defineProperty(BigNumber.prototype, 'add', function(other) {
-    return new BigNumber(this._bn.add(bigNumberify(other)._bn));
-});
-
-defineProperty(BigNumber.prototype, 'sub', function(other) {
-    return new BigNumber(this._bn.sub(bigNumberify(other)._bn));
-});
-
-
-defineProperty(BigNumber.prototype, 'div', function(other) {
-    return new BigNumber(this._bn.div(bigNumberify(other)._bn));
-});
-
-defineProperty(BigNumber.prototype, 'mul', function(other) {
-    return new BigNumber(this._bn.mul(bigNumberify(other)._bn));
-});
-
-defineProperty(BigNumber.prototype, 'mod', function(other) {
-    return new BigNumber(this._bn.mod(bigNumberify(other)._bn));
-});
-
-
-defineProperty(BigNumber.prototype, 'maskn', function(value) {
-    return new BigNumber(this._bn.maskn(value));
-});
-
-
-
-defineProperty(BigNumber.prototype, 'eq', function(other) {
-    return this._bn.eq(bigNumberify(other)._bn);
-});
-
-defineProperty(BigNumber.prototype, 'lt', function(other) {
-    return this._bn.lt(bigNumberify(other)._bn);
-});
-
-defineProperty(BigNumber.prototype, 'lte', function(other) {
-    return this._bn.lte(bigNumberify(other)._bn);
-});
-
-defineProperty(BigNumber.prototype, 'gte', function(other) {
-    return this._bn.gte(bigNumberify(other)._bn);
-});
-
-
-defineProperty(BigNumber.prototype, 'isZero', function() {
-    return this._bn.isZero();
-});
-
-
-defineProperty(BigNumber.prototype, 'toNumber', function(base) {
-    return this._bn.toNumber();
-});
-
-defineProperty(BigNumber.prototype, 'toString', function() {
-    //return this._bn.toString(base || 10);
-    return this._bn.toString(10);
-});
-
-defineProperty(BigNumber.prototype, 'toHexString', function() {
-    var hex = this._bn.toString(16);
-    if (hex.length % 2) { hex = '0' + hex; }
-    return '0x' + hex;
-});
-
-
-function isBigNumber(value) {
-    return (value instanceof BigNumber);
-}
-
-function bigNumberify(value) {
-    if (value instanceof BigNumber) { return value; }
-    return new BigNumber(value);
-}
-
-module.exports = {
-    isBigNumber: isBigNumber,
-    bigNumberify: bigNumberify
-};
-
-},{"./convert":7,"./properties":11,"./throw-error":13,"bn.js":9}],7:[function(require,module,exports){
-/**
- *  Conversion Utilities
- *
- */
-
-var defineProperty = require('./properties.js').defineProperty;
-var throwError = require('./throw-error');
-
-function isArrayish(value) {
-    if (!value || parseInt(value.length) != value.length) {
-        return false;
-    }
-
-    for (var i = 0; i < value.length; i++) {
-        var v = value[i];
-        if (v < 0 || v >= 256 || parseInt(v) != v) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-function arrayify(value, name) {
-
-    if (value && value.toHexString) {
-        value = value.toHexString();
-    }
-
-    if (isHexString(value)) {
-        value = value.substring(2);
-        if (value.length % 2) { value = '0' + value; }
-
-        var result = [];
-        for (var i = 0; i < value.length; i += 2) {
-            result.push(parseInt(value.substr(i, 2), 16));
-        }
-
-        return new Uint8Array(result);
-    }
-
-    if (isArrayish(value)) {
-        return new Uint8Array(value);
-    }
-
-    throwError('invalid arrayify value', { name: name, input: value });
-}
-
-function concat(objects) {
-    var arrays = [];
-    var length = 0;
-    for (var i = 0; i < objects.length; i++) {
-        var object = arrayify(objects[i])
-        arrays.push(object);
-        length += object.length;
-    }
-
-    var result = new Uint8Array(length);
-    var offset = 0;
-    for (var i = 0; i < arrays.length; i++) {
-        result.set(arrays[i], offset);
-        offset += arrays[i].length;
-    }
-
-    return result;
-}
-function stripZeros(value) {
-    value = arrayify(value);
-
-    if (value.length === 0) { return value; }
-
-    // Find the first non-zero entry
-    var start = 0;
-    while (value[start] === 0) { start++ }
-
-    // If we started with zeros, strip them
-    if (start) {
-        value = value.slice(start);
-    }
-
-    return value;
-}
-
-function padZeros(value, length) {
-    value = arrayify(value);
-
-    if (length < value.length) { throw new Error('cannot pad'); }
-
-    var result = new Uint8Array(length);
-    result.set(value, length - value.length);
-    return result;
-}
-
-
-function isHexString(value, length) {
-    if (typeof(value) !== 'string' || !value.match(/^0x[0-9A-Fa-f]*$/)) {
-        return false
-    }
-    if (length && value.length !== 2 + 2 * length) { return false; }
-    return true;
-}
-
-var HexCharacters = '0123456789abcdef';
-
-function hexlify(value, name) {
-
-    if (value && value.toHexString) {
-        return value.toHexString();
-    }
-
-    if (typeof(value) === 'number') {
-        if (value < 0) {
-            throwError('cannot hexlify negative value', { name: name, input: value });
-        }
-
-        var hex = '';
-        while (value) {
-            hex = HexCharacters[value & 0x0f] + hex;
-            value = parseInt(value / 16);
-        }
-
-        if (hex.length) {
-            if (hex.length % 2) { hex = '0' + hex; }
-            return '0x' + hex;
-        }
-
-        return '0x00';
-    }
-
-    if (isHexString(value)) {
-        if (value.length % 2) {
-            value = '0x0' + value.substring(2);
-        }
-        return value;
-    }
-
-    if (isArrayish(value)) {
-        var result = [];
-        for (var i = 0; i < value.length; i++) {
-             var v = value[i];
-             result.push(HexCharacters[(v & 0xf0) >> 4] + HexCharacters[v & 0x0f]);
-        }
-        return '0x' + result.join('');
-    }
-
-    throwError('invalid hexlify value', { name: name, input: value });
-}
-
-
-module.exports = {
-    arrayify: arrayify,
-    isArrayish: isArrayish,
-
-    concat: concat,
-
-    padZeros: padZeros,
-    stripZeros: stripZeros,
-
-    hexlify: hexlify,
-    isHexString: isHexString,
-};
-
-},{"./properties.js":11,"./throw-error":13}],8:[function(require,module,exports){
-'use strict';
-
-var sha3 = require('js-sha3');
-
-var convert = require('./convert.js');
-
-function keccak256(data) {
-    data = convert.arrayify(data);
-    return '0x' + sha3.keccak_256(data);
-}
-
-module.exports = keccak256;
-
-},{"./convert.js":7,"js-sha3":10}],9:[function(require,module,exports){
+},{"ethers-utils/address":5,"ethers-utils/bignumber.js":6,"ethers-utils/convert.js":7,"ethers-utils/keccak256.js":8,"ethers-utils/properties.js":9,"ethers-utils/throw-error":11,"ethers-utils/utf8.js":12}],4:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -4725,7 +4289,609 @@ module.exports = keccak256;
   };
 })(typeof module === 'undefined' || module, this);
 
+},{}],5:[function(require,module,exports){
+
+var BN = require('bn.js');
+
+var convert = require('./convert');
+var throwError = require('./throw-error');
+var keccak256 = require('./keccak256');
+
+function getChecksumAddress(address) {
+    if (typeof(address) !== 'string' || !address.match(/^0x[0-9A-Fa-f]{40}$/)) {
+        throwError('invalid address', {input: address});
+    }
+
+    address = address.toLowerCase();
+
+    var hashed = address.substring(2).split('');
+    for (var i = 0; i < hashed.length; i++) {
+        hashed[i] = hashed[i].charCodeAt(0);
+    }
+    hashed = convert.arrayify(keccak256(hashed));
+
+    address = address.substring(2).split('');
+    for (var i = 0; i < 40; i += 2) {
+        if ((hashed[i >> 1] >> 4) >= 8) {
+            address[i] = address[i].toUpperCase();
+        }
+        if ((hashed[i >> 1] & 0x0f) >= 8) {
+            address[i + 1] = address[i + 1].toUpperCase();
+        }
+    }
+
+    return '0x' + address.join('');
+}
+
+// See: https://en.wikipedia.org/wiki/International_Bank_Account_Number
+var ibanChecksum = (function() {
+
+    // Create lookup table
+    var ibanLookup = {};
+    for (var i = 0; i < 10; i++) { ibanLookup[String(i)] = String(i); }
+    for (var i = 0; i < 26; i++) { ibanLookup[String.fromCharCode(65 + i)] = String(10 + i); }
+
+    // How many decimal digits can we process? (for 64-bit float, this is 15)
+    var safeDigits = Math.floor(Math.log10(Number.MAX_SAFE_INTEGER));
+
+    return function(address) {
+        address = address.toUpperCase();
+        address = address.substring(4) + address.substring(0, 2) + '00';
+
+        var expanded = address.split('');
+        for (var i = 0; i < expanded.length; i++) {
+            expanded[i] = ibanLookup[expanded[i]];
+        }
+        expanded = expanded.join('');
+
+        // Javascript can handle integers safely up to 15 (decimal) digits
+        while (expanded.length >= safeDigits){
+            var block = expanded.substring(0, safeDigits);
+            expanded = parseInt(block, 10) % 97 + expanded.substring(block.length);
+        }
+
+        var checksum = String(98 - (parseInt(expanded, 10) % 97));
+        while (checksum.length < 2) { checksum = '0' + checksum; }
+
+        return checksum;
+    };
+})();
+
+function getAddress(address, icapFormat) {
+    var result = null;
+
+    if (typeof(address) !== 'string') {
+        throwError('invalid address', {input: address});
+    }
+
+    if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
+
+        // Missing the 0x prefix
+        if (address.substring(0, 2) !== '0x') { address = '0x' + address; }
+
+        result = getChecksumAddress(address);
+
+        // It is a checksummed address with a bad checksum
+        if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
+            throwError('invalid address checksum', { input: address, expected: result });
+        }
+
+    // Maybe ICAP? (we only support direct mode)
+    } else if (address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
+
+        // It is an ICAP address with a bad checksum
+        if (address.substring(2, 4) !== ibanChecksum(address)) {
+            throwError('invalid address icap checksum', { input: address });
+        }
+
+        result = (new BN(address.substring(4), 36)).toString(16);
+        while (result.length < 40) { result = '0' + result; }
+        result = getChecksumAddress('0x' + result);
+
+    } else {
+        throwError('invalid address', { input: address });
+    }
+
+    if (icapFormat) {
+        var base36 = (new BN(result.substring(2), 16)).toString(36).toUpperCase();
+        while (base36.length < 30) { base36 = '0' + base36; }
+        return 'XE' + ibanChecksum('XE00' + base36) + base36;
+    }
+
+    return result;
+}
+
+
+module.exports = {
+    getAddress: getAddress,
+}
+
+},{"./convert":7,"./keccak256":8,"./throw-error":11,"bn.js":4}],6:[function(require,module,exports){
+/**
+ *  BigNumber
+ *
+ *  A wrapper around the BN.js object. In the future we can swap out
+ *  the underlying BN.js library for something smaller.
+ */
+
+var BN = require('bn.js');
+
+var defineProperty = require('./properties').defineProperty;
+var convert = require('./convert');
+var throwError = require('./throw-error');
+
+function BigNumber(value) {
+    if (!(this instanceof BigNumber)) { throw new Error('missing new'); }
+
+    if (convert.isHexString(value)) {
+        if (value == '0x') { value = '0x0'; }
+        value = new BN(value.substring(2), 16);
+
+    } else if (typeof(value) === 'string' && value.match(/^-?[0-9]*$/)) {
+        if (value == '') { value = '0'; }
+        value = new BN(value);
+
+    } else if (typeof(value) === 'number' && parseInt(value) == value) {
+        value = new BN(value);
+
+    } else if (BN.isBN(value)) {
+        //value = value
+
+    } else if (isBigNumber(value)) {
+        value = value._bn;
+
+    } else if (convert.isArrayish(value)) {
+        value = new BN(convert.hexlify(value).substring(2), 16);
+
+    } else {
+        throwError('invalid BigNumber value', { input: value });
+    }
+
+    defineProperty(this, '_bn', value);
+}
+
+defineProperty(BigNumber, 'constantNegativeOne', bigNumberify(-1));
+defineProperty(BigNumber, 'constantZero', bigNumberify(0));
+defineProperty(BigNumber, 'constantOne', bigNumberify(1));
+defineProperty(BigNumber, 'constantTwo', bigNumberify(2));
+defineProperty(BigNumber, 'constantWeiPerEther', bigNumberify(new BN('1000000000000000000')));
+
+
+defineProperty(BigNumber.prototype, 'fromTwos', function(value) {
+    return new BigNumber(this._bn.fromTwos(value));
+});
+
+defineProperty(BigNumber.prototype, 'toTwos', function(value) {
+    return new BigNumber(this._bn.toTwos(value));
+});
+
+
+defineProperty(BigNumber.prototype, 'add', function(other) {
+    return new BigNumber(this._bn.add(bigNumberify(other)._bn));
+});
+
+defineProperty(BigNumber.prototype, 'sub', function(other) {
+    return new BigNumber(this._bn.sub(bigNumberify(other)._bn));
+});
+
+
+defineProperty(BigNumber.prototype, 'div', function(other) {
+    return new BigNumber(this._bn.div(bigNumberify(other)._bn));
+});
+
+defineProperty(BigNumber.prototype, 'mul', function(other) {
+    return new BigNumber(this._bn.mul(bigNumberify(other)._bn));
+});
+
+defineProperty(BigNumber.prototype, 'mod', function(other) {
+    return new BigNumber(this._bn.mod(bigNumberify(other)._bn));
+});
+
+
+defineProperty(BigNumber.prototype, 'maskn', function(value) {
+    return new BigNumber(this._bn.maskn(value));
+});
+
+
+
+defineProperty(BigNumber.prototype, 'eq', function(other) {
+    return this._bn.eq(bigNumberify(other)._bn);
+});
+
+defineProperty(BigNumber.prototype, 'lt', function(other) {
+    return this._bn.lt(bigNumberify(other)._bn);
+});
+
+defineProperty(BigNumber.prototype, 'lte', function(other) {
+    return this._bn.lte(bigNumberify(other)._bn);
+});
+
+defineProperty(BigNumber.prototype, 'gte', function(other) {
+    return this._bn.gte(bigNumberify(other)._bn);
+});
+
+
+defineProperty(BigNumber.prototype, 'isZero', function() {
+    return this._bn.isZero();
+});
+
+
+defineProperty(BigNumber.prototype, 'toNumber', function(base) {
+    return this._bn.toNumber();
+});
+
+defineProperty(BigNumber.prototype, 'toString', function() {
+    //return this._bn.toString(base || 10);
+    return this._bn.toString(10);
+});
+
+defineProperty(BigNumber.prototype, 'toHexString', function() {
+    var hex = this._bn.toString(16);
+    if (hex.length % 2) { hex = '0' + hex; }
+    return '0x' + hex;
+});
+
+
+function isBigNumber(value) {
+    return (value._bn && value._bn.mod);
+}
+
+function bigNumberify(value) {
+    if (isBigNumber(value)) { return value; }
+    return new BigNumber(value);
+}
+
+module.exports = {
+    isBigNumber: isBigNumber,
+    bigNumberify: bigNumberify
+};
+
+},{"./convert":7,"./properties":9,"./throw-error":11,"bn.js":4}],7:[function(require,module,exports){
+/**
+ *  Conversion Utilities
+ *
+ */
+
+var defineProperty = require('./properties.js').defineProperty;
+var throwError = require('./throw-error');
+
+function isArrayish(value) {
+    if (!value || parseInt(value.length) != value.length) {
+        return false;
+    }
+
+    for (var i = 0; i < value.length; i++) {
+        var v = value[i];
+        if (v < 0 || v >= 256 || parseInt(v) != v) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function arrayify(value, name) {
+
+    if (value && value.toHexString) {
+        value = value.toHexString();
+    }
+
+    if (isHexString(value)) {
+        value = value.substring(2);
+        if (value.length % 2) { value = '0' + value; }
+
+        var result = [];
+        for (var i = 0; i < value.length; i += 2) {
+            result.push(parseInt(value.substr(i, 2), 16));
+        }
+
+        return new Uint8Array(result);
+    }
+
+    if (isArrayish(value)) {
+        return new Uint8Array(value);
+    }
+
+    throwError('invalid arrayify value', { name: name, input: value });
+}
+
+function concat(objects) {
+    var arrays = [];
+    var length = 0;
+    for (var i = 0; i < objects.length; i++) {
+        var object = arrayify(objects[i])
+        arrays.push(object);
+        length += object.length;
+    }
+
+    var result = new Uint8Array(length);
+    var offset = 0;
+    for (var i = 0; i < arrays.length; i++) {
+        result.set(arrays[i], offset);
+        offset += arrays[i].length;
+    }
+
+    return result;
+}
+function stripZeros(value) {
+    value = arrayify(value);
+
+    if (value.length === 0) { return value; }
+
+    // Find the first non-zero entry
+    var start = 0;
+    while (value[start] === 0) { start++ }
+
+    // If we started with zeros, strip them
+    if (start) {
+        value = value.slice(start);
+    }
+
+    return value;
+}
+
+function padZeros(value, length) {
+    value = arrayify(value);
+
+    if (length < value.length) { throw new Error('cannot pad'); }
+
+    var result = new Uint8Array(length);
+    result.set(value, length - value.length);
+    return result;
+}
+
+
+function isHexString(value, length) {
+    if (typeof(value) !== 'string' || !value.match(/^0x[0-9A-Fa-f]*$/)) {
+        return false
+    }
+    if (length && value.length !== 2 + 2 * length) { return false; }
+    return true;
+}
+
+var HexCharacters = '0123456789abcdef';
+
+function hexlify(value, name) {
+
+    if (value && value.toHexString) {
+        return value.toHexString();
+    }
+
+    if (typeof(value) === 'number') {
+        if (value < 0) {
+            throwError('cannot hexlify negative value', { name: name, input: value });
+        }
+
+        var hex = '';
+        while (value) {
+            hex = HexCharacters[value & 0x0f] + hex;
+            value = parseInt(value / 16);
+        }
+
+        if (hex.length) {
+            if (hex.length % 2) { hex = '0' + hex; }
+            return '0x' + hex;
+        }
+
+        return '0x00';
+    }
+
+    if (isHexString(value)) {
+        if (value.length % 2) {
+            value = '0x0' + value.substring(2);
+        }
+        return value;
+    }
+
+    if (isArrayish(value)) {
+        var result = [];
+        for (var i = 0; i < value.length; i++) {
+             var v = value[i];
+             result.push(HexCharacters[(v & 0xf0) >> 4] + HexCharacters[v & 0x0f]);
+        }
+        return '0x' + result.join('');
+    }
+
+    throwError('invalid hexlify value', { name: name, input: value });
+}
+
+
+module.exports = {
+    arrayify: arrayify,
+    isArrayish: isArrayish,
+
+    concat: concat,
+
+    padZeros: padZeros,
+    stripZeros: stripZeros,
+
+    hexlify: hexlify,
+    isHexString: isHexString,
+};
+
+},{"./properties.js":9,"./throw-error":11}],8:[function(require,module,exports){
+'use strict';
+
+var sha3 = require('js-sha3');
+
+var convert = require('./convert.js');
+
+function keccak256(data) {
+    data = convert.arrayify(data);
+    return '0x' + sha3.keccak_256(data);
+}
+
+module.exports = keccak256;
+
+},{"./convert.js":7,"js-sha3":13}],9:[function(require,module,exports){
+function defineProperty(object, name, value) {
+    Object.defineProperty(object, name, {
+        enumerable: true,
+        value: value,
+        writable: false,
+    });
+}
+
+module.exports = {
+    defineProperty: defineProperty,
+};
+
 },{}],10:[function(require,module,exports){
+(function (global){
+var defineProperty = require('./properties.js').defineProperty;
+
+function Ethers() { }
+
+function defineEthersValues(values) {
+
+    // This is modified in the Gruntfile.js
+    if ("__STAND_ALONE_TRUE__" !== ("__STAND_ALONE_" + "TRUE__")) {
+        return;
+    }
+
+    if (global.ethers == null) {
+        defineProperty(global, 'ethers', new Ethers());
+    }
+
+    for (var key in values) {
+        if (global.ethers[key] == null) {
+            defineProperty(global.ethers, key, values[key]);
+        }
+    }
+}
+
+module.exports = defineEthersValues;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./properties.js":9}],11:[function(require,module,exports){
+'use strict';
+
+function throwError(message, params) {
+    var error = new Error(message);
+    for (var key in params) {
+        error[key] = params[key];
+    }
+    throw error;
+}
+
+module.exports = throwError;
+
+},{}],12:[function(require,module,exports){
+
+var convert = require('./convert.js');
+
+// http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+function utf8ToBytes(str) {
+    var result = [];
+    var offset = 0;
+    for (var i = 0; i < str.length; i++) {
+        var c = str.charCodeAt(i);
+        if (c < 128) {
+            result[offset++] = c;
+        } else if (c < 2048) {
+            result[offset++] = (c >> 6) | 192;
+            result[offset++] = (c & 63) | 128;
+        } else if (((c & 0xFC00) == 0xD800) && (i + 1) < str.length && ((str.charCodeAt(i + 1) & 0xFC00) == 0xDC00)) {
+            // Surrogate Pair
+            c = 0x10000 + ((c & 0x03FF) << 10) + (str.charCodeAt(++i) & 0x03FF);
+            result[offset++] = (c >> 18) | 240;
+            result[offset++] = ((c >> 12) & 63) | 128;
+            result[offset++] = ((c >> 6) & 63) | 128;
+            result[offset++] = (c & 63) | 128;
+        } else {
+            result[offset++] = (c >> 12) | 224;
+            result[offset++] = ((c >> 6) & 63) | 128;
+            result[offset++] = (c & 63) | 128;
+        }
+    }
+
+    return convert.arrayify(result);
+};
+
+
+// http://stackoverflow.com/questions/13356493/decode-utf-8-with-javascript#13691499
+function bytesToUtf8(bytes) {
+    bytes = convert.arrayify(bytes);
+
+    var result = '';
+    var i = 0;
+
+    // Invalid bytes are ignored
+    while(i < bytes.length) {
+        var c = bytes[i++];
+        if (c >> 7 == 0) {
+            // 0xxx xxxx
+            result += String.fromCharCode(c);
+            continue;
+        }
+
+        // Invalid starting byte
+        if (c >> 6 == 0x02) { continue; }
+
+        // Multibyte; how many bytes left for thus character?
+        var extraLength = null;
+        if (c >> 5 == 0x06) {
+            extraLength = 1;
+        } else if (c >> 4 == 0x0e) {
+            extraLength = 2;
+        } else if (c >> 3 == 0x1e) {
+            extraLength = 3;
+        } else if (c >> 2 == 0x3e) {
+            extraLength = 4;
+        } else if (c >> 1 == 0x7e) {
+            extraLength = 5;
+        } else {
+            continue;
+        }
+
+        // Do we have enough bytes in our data?
+        if (i + extraLength > bytes.length) {
+
+            // If there is an invalid unprocessed byte, try to continue
+            for (; i < bytes.length; i++) {
+                if (bytes[i] >> 6 != 0x02) { break; }
+            }
+            if (i != bytes.length) continue;
+
+            // All leftover bytes are valid.
+            return result;
+        }
+
+        // Remove the UTF-8 prefix from the char (res)
+        var res = c & ((1 << (8 - extraLength - 1)) - 1);
+
+        var count;
+        for (count = 0; count < extraLength; count++) {
+            var nextChar = bytes[i++];
+
+            // Is the char valid multibyte part?
+            if (nextChar >> 6 != 0x02) {break;};
+            res = (res << 6) | (nextChar & 0x3f);
+        }
+
+        if (count != extraLength) {
+            i--;
+            continue;
+        }
+
+        if (res <= 0xffff) {
+            result += String.fromCharCode(res);
+            continue;
+        }
+
+        res -= 0x10000;
+        result += String.fromCharCode(((res >> 10) & 0x3ff) + 0xd800, (res & 0x3ff) + 0xdc00);
+    }
+
+    return result;
+}
+
+module.exports = {
+    toUtf8Bytes: utf8ToBytes,
+    toUtf8String: bytesToUtf8,
+};
+
+},{"./convert.js":7}],13:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -5204,172 +5370,6 @@ module.exports = keccak256;
 })();
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":4}],11:[function(require,module,exports){
-function defineProperty(object, name, value) {
-    Object.defineProperty(object, name, {
-        enumerable: true,
-        value: value,
-        writable: false,
-    });
-}
-
-module.exports = {
-    defineProperty: defineProperty,
-};
-
-},{}],12:[function(require,module,exports){
-(function (global){
-var defineProperty = require('./properties.js').defineProperty;
-
-function Ethers() { }
-
-function defineEthersValues(values) {
-
-    // This is modified in the Gruntfile.js
-    if ("__STAND_ALONE_TRUE__" !== ("__STAND_ALONE_" + "TRUE__")) {
-        return;
-    }
-
-    if (global.ethers == null) {
-        defineProperty(global, 'ethers', new Ethers());
-    }
-
-    for (var key in values) {
-        if (global.ethers[key] == null) {
-            defineProperty(global.ethers, key, values[key]);
-        }
-    }
-}
-
-module.exports = defineEthersValues;
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./properties.js":11}],13:[function(require,module,exports){
-'use strict';
-
-function throwError(message, params) {
-    var error = new Error(message);
-    for (var key in params) {
-        error[key] = params[key];
-    }
-    throw error;
-}
-
-module.exports = throwError;
-
-},{}],14:[function(require,module,exports){
-
-var convert = require('./convert.js');
-
-// http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
-function utf8ToBytes(str) {
-    var result = [];
-    var offset = 0;
-    for (var i = 0; i < str.length; i++) {
-        var c = str.charCodeAt(i);
-        if (c < 128) {
-            result[offset++] = c;
-        } else if (c < 2048) {
-            result[offset++] = (c >> 6) | 192;
-            result[offset++] = (c & 63) | 128;
-        } else if (((c & 0xFC00) == 0xD800) && (i + 1) < str.length && ((str.charCodeAt(i + 1) & 0xFC00) == 0xDC00)) {
-            // Surrogate Pair
-            c = 0x10000 + ((c & 0x03FF) << 10) + (str.charCodeAt(++i) & 0x03FF);
-            result[offset++] = (c >> 18) | 240;
-            result[offset++] = ((c >> 12) & 63) | 128;
-            result[offset++] = ((c >> 6) & 63) | 128;
-            result[offset++] = (c & 63) | 128;
-        } else {
-            result[offset++] = (c >> 12) | 224;
-            result[offset++] = ((c >> 6) & 63) | 128;
-            result[offset++] = (c & 63) | 128;
-        }
-    }
-
-    return convert.arrayify(result);
-};
-
-
-// http://stackoverflow.com/questions/13356493/decode-utf-8-with-javascript#13691499
-function bytesToUtf8(bytes) {
-    bytes = convert.arrayify(bytes);
-
-    var result = '';
-    var i = 0;
-
-    // Invalid bytes are ignored
-    while(i < bytes.length) {
-        var c = bytes[i++];
-        if (c >> 7 == 0) {
-            // 0xxx xxxx
-            result += String.fromCharCode(c);
-            continue;
-        }
-
-        // Invalid starting byte
-        if (c >> 6 == 0x02) { continue; }
-
-        // Multibyte; how many bytes left for thus character?
-        var extraLength = null;
-        if (c >> 5 == 0x06) {
-            extraLength = 1;
-        } else if (c >> 4 == 0x0e) {
-            extraLength = 2;
-        } else if (c >> 3 == 0x1e) {
-            extraLength = 3;
-        } else if (c >> 2 == 0x3e) {
-            extraLength = 4;
-        } else if (c >> 1 == 0x7e) {
-            extraLength = 5;
-        } else {
-            continue;
-        }
-
-        // Do we have enough bytes in our data?
-        if (i + extraLength > bytes.length) {
-
-            // If there is an invalid unprocessed byte, try to continue
-            for (; i < bytes.length; i++) {
-                if (bytes[i] >> 6 != 0x02) { break; }
-            }
-            if (i != bytes.length) continue;
-
-            // All leftover bytes are valid.
-            return result;
-        }
-
-        // Remove the UTF-8 prefix from the char (res)
-        var res = c & ((1 << (8 - extraLength - 1)) - 1);
-
-        var count;
-        for (count = 0; count < extraLength; count++) {
-            var nextChar = bytes[i++];
-
-            // Is the char valid multibyte part?
-            if (nextChar >> 6 != 0x02) {break;};
-            res = (res << 6) | (nextChar & 0x3f);
-        }
-
-        if (count != extraLength) {
-            i--;
-            continue;
-        }
-
-        if (res <= 0xffff) {
-            result += String.fromCharCode(res);
-            continue;
-        }
-
-        res -= 0x10000;
-        result += String.fromCharCode(((res >> 10) & 0x3ff) + 0xd800, (res & 0x3ff) + 0xdc00);
-    }
-
-    return result;
-}
-
-module.exports = {
-    toUtf8Bytes: utf8ToBytes,
-    toUtf8String: bytesToUtf8,
-};
-
-},{"./convert.js":7}]},{},[2]);
+},{"_process":14}],14:[function(require,module,exports){
+module.exports = undefined;
+},{}]},{},[2]);

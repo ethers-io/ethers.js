@@ -148,7 +148,7 @@ function BigNumber(value) {
     } else if (BN.isBN(value)) {
         //value = value
 
-    } else if (value instanceof BigNumber) {
+    } else if (isBigNumber(value)) {
         value = value._bn;
 
     } else if (convert.isArrayish(value)) {
@@ -244,11 +244,11 @@ defineProperty(BigNumber.prototype, 'toHexString', function() {
 
 
 function isBigNumber(value) {
-    return (value instanceof BigNumber);
+    return (value._bn && value._bn.mod);
 }
 
 function bigNumberify(value) {
-    if (value instanceof BigNumber) { return value; }
+    if (isBigNumber(value)) { return value; }
     return new BigNumber(value);
 }
 
