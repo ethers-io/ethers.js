@@ -1,25 +1,31 @@
 Cookbook
 ********
 
-Some quick snippets of code and ideas to work from.
+This is a small (but growing) collection of simple recipes to perform common tasks
+with the Ethereum blockchain and Ethereum accounts.
 
 Some of these recipes are stubs that will be filled in shortly.
 
-If there is a simple recipe you would like added, please send
-suggestions to support@ethers.io.
+If there is a simple recipe you would like added, please send suggestions to support@ethers.io.
 
 -----
 
-Dump Balances of All Geth Wallets (in the current director)
-===========================================================
+Dump All JSON Wallet Balances (in current directory)
+====================================================
+
+The directory your JSON wallets are located in will depend on the Ethereum
+node you are using.
 
 Geth
     ~/.ethereum/keystore
 
 Parity
-    ~/.parity/keys/*some directory*/keys
+    ~/.parity/keys/\ *chainDirectory*\ /keys
 
-*SourceCode:* ::
+*Source Code*
+-------------
+
+::
 
     var fs = require('fs');
 
@@ -50,7 +56,10 @@ Empty One Account into Another
 
 Include example links to etherscan showing the transactions
 
-*Source Code:* ::
+*Source Code*
+-------------
+
+::
 
     var ethers = require('ethers');
 
@@ -90,7 +99,10 @@ Transactions Confirm UI (with a Custom Signer)
 ==============================================
 
 
-*Source Code:* ::
+*Source Code*
+-------------
+
+::
 
     var ethers = require('ethers');
 
@@ -150,7 +162,10 @@ This also results in paying multiple transaction fees (1 fee per account to merg
 
 @TODO: This is incomplete!!
 
-*Source Code:* ::
+*Source Code*
+-------------
+
+::
 
     var ethers = require('ethers');
 
@@ -169,7 +184,10 @@ Access Funds in a Mnemonic Phrase Wallet
 
 @TODO: This is incomplete
 
-*Source Code:* ::
+*Source Code*
+-------------
+
+::
 
     var ethers = require('ethers');
 
@@ -205,7 +223,10 @@ before returning them to the user.
 For this example, we will build a DebugProvider, which will simple proxy all commands
 through to INFURA, but dump all data going back and forth.
 
-*Source Code:* ::
+*Source Code*
+-------------
+
+::
 
     var inherits = require('inherits');
     var ethers = require('ethers');

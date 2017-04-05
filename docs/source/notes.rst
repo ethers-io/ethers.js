@@ -44,6 +44,8 @@ Promises
 A `Promise in JavaScript`_ is an object which simplifies many aspects of dealing with
 asynchronous functions.
 
+It allows a pending result to be treated in many ways as if it has already been resolved.
+
 The most useful operations you will need are:
 
 :sup:`Promise` . all ( promises )

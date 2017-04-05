@@ -91,12 +91,30 @@
 <li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface (API)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Cookbook</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#dump-balances-of-all-geth-wallets-in-the-current-director">Dump Balances of All Geth Wallets (in the current director)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#empty-one-account-into-another">Empty One Account into Another</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#transactions-confirm-ui-with-a-custom-signer">Transactions Confirm UI (with a Custom Signer)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#coalesce-jaxx-wallets">Coalesce Jaxx Wallets</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#access-funds-in-a-mnemonic-phrase-wallet">Access Funds in a Mnemonic Phrase Wallet</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#custom-provider">Custom Provider</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dump-all-json-wallet-balances-in-current-directory">Dump All JSON Wallet Balances (in current directory)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#source-code"><em>Source Code</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#empty-one-account-into-another">Empty One Account into Another</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1"><em>Source Code</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#transactions-confirm-ui-with-a-custom-signer">Transactions Confirm UI (with a Custom Signer)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2"><em>Source Code</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#coalesce-jaxx-wallets">Coalesce Jaxx Wallets</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3"><em>Source Code</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#access-funds-in-a-mnemonic-phrase-wallet">Access Funds in a Mnemonic Phrase Wallet</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id4"><em>Source Code</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-provider">Custom Provider</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id5"><em>Source Code</em></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
@@ -147,20 +165,23 @@
             
   <div class="section" id="cookbook">
 <h1>Cookbook<a class="headerlink" href="#cookbook" title="Permalink to this headline">¶</a></h1>
-<p>Some quick snippets of code and ideas to work from.</p>
+<p>This is a small (but growing) collection of simple recipes to perform common tasks
+with the Ethereum blockchain and Ethereum accounts.</p>
 <p>Some of these recipes are stubs that will be filled in shortly.</p>
-<p>If there is a simple recipe you would like added, please send
-suggestions to <a class="reference external" href="mailto:support&#37;&#52;&#48;ethers&#46;io">support<span>&#64;</span>ethers<span>&#46;</span>io</a>.</p>
+<p>If there is a simple recipe you would like added, please send suggestions to <a class="reference external" href="mailto:support&#37;&#52;&#48;ethers&#46;io">support<span>&#64;</span>ethers<span>&#46;</span>io</a>.</p>
 <hr class="docutils" />
-<div class="section" id="dump-balances-of-all-geth-wallets-in-the-current-director">
-<h2>Dump Balances of All Geth Wallets (in the current director)<a class="headerlink" href="#dump-balances-of-all-geth-wallets-in-the-current-director" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dump-all-json-wallet-balances-in-current-directory">
+<h2>Dump All JSON Wallet Balances (in current directory)<a class="headerlink" href="#dump-all-json-wallet-balances-in-current-directory" title="Permalink to this headline">¶</a></h2>
+<p>The directory your JSON wallets are located in will depend on the Ethereum
+node you are using.</p>
 <dl class="docutils">
 <dt>Geth</dt>
 <dd>~/.ethereum/keystore</dd>
 <dt>Parity</dt>
-<dd>~/.parity/keys/<em>some directory</em>/keys</dd>
+<dd>~/.parity/keys/<em>chainDirectory</em>/keys</dd>
 </dl>
-<p><em>SourceCode:</em></p>
+<div class="section" id="source-code">
+<h3><em>Source Code</em><a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;fs&#39;</span><span class="p">);</span>
 
 <span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
@@ -184,11 +205,13 @@ suggestions to <a class="reference external" href="mailto:support&#37;&#52;&#48;
 </pre></div>
 </div>
 </div>
+</div>
 <hr class="docutils" />
 <div class="section" id="empty-one-account-into-another">
 <h2>Empty One Account into Another<a class="headerlink" href="#empty-one-account-into-another" title="Permalink to this headline">¶</a></h2>
 <p>Include example links to etherscan showing the transactions</p>
-<p><em>Source Code:</em></p>
+<div class="section" id="id1">
+<h3><em>Source Code</em><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
 
 <span class="n">var</span> <span class="n">provider</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">getDefaultProvider</span><span class="p">();</span>
@@ -223,10 +246,12 @@ suggestions to <a class="reference external" href="mailto:support&#37;&#52;&#48;
 </pre></div>
 </div>
 </div>
+</div>
 <hr class="docutils" />
 <div class="section" id="transactions-confirm-ui-with-a-custom-signer">
 <h2>Transactions Confirm UI (with a Custom Signer)<a class="headerlink" href="#transactions-confirm-ui-with-a-custom-signer" title="Permalink to this headline">¶</a></h2>
-<p><em>Source Code:</em></p>
+<div class="section" id="id2">
+<h3><em>Source Code</em><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
 
 <span class="n">function</span> <span class="n">CustomSigner</span><span class="p">(</span><span class="n">privateKey</span><span class="p">)</span> <span class="p">{</span>
@@ -270,6 +295,7 @@ suggestions to <a class="reference external" href="mailto:support&#37;&#52;&#48;
 </pre></div>
 </div>
 </div>
+</div>
 <hr class="docutils" />
 <div class="section" id="coalesce-jaxx-wallets">
 <h2>Coalesce Jaxx Wallets<a class="headerlink" href="#coalesce-jaxx-wallets" title="Permalink to this headline">¶</a></h2>
@@ -281,7 +307,8 @@ in Ethereum impossible.</p>
 from each account into a single one.</p>
 <p>This also results in paying multiple transaction fees (1 fee per account to merge).</p>
 <p>&#64;TODO: This is incomplete!!</p>
-<p><em>Source Code:</em></p>
+<div class="section" id="id3">
+<h3><em>Source Code</em><a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
 
 <span class="n">var</span> <span class="n">provider</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">getDefaultProvider</span><span class="p">();</span>
@@ -293,11 +320,13 @@ from each account into a single one.</p>
 </pre></div>
 </div>
 </div>
+</div>
 <hr class="docutils" />
 <div class="section" id="access-funds-in-a-mnemonic-phrase-wallet">
 <h2>Access Funds in a Mnemonic Phrase Wallet<a class="headerlink" href="#access-funds-in-a-mnemonic-phrase-wallet" title="Permalink to this headline">¶</a></h2>
 <p>&#64;TODO: This is incomplete</p>
-<p><em>Source Code:</em></p>
+<div class="section" id="id4">
+<h3><em>Source Code</em><a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
 
 <span class="n">var</span> <span class="n">walletPath</span> <span class="o">=</span> <span class="p">{</span>
@@ -318,6 +347,7 @@ from each account into a single one.</p>
 </pre></div>
 </div>
 </div>
+</div>
 <hr class="docutils" />
 <div class="section" id="custom-provider">
 <h2>Custom Provider<a class="headerlink" href="#custom-provider" title="Permalink to this headline">¶</a></h2>
@@ -329,7 +359,8 @@ into a provider is sanitized by the Provider subclass, and all results are norma
 before returning them to the user.</p>
 <p>For this example, we will build a DebugProvider, which will simple proxy all commands
 through to INFURA, but dump all data going back and forth.</p>
-<p><em>Source Code:</em></p>
+<div class="section" id="id5">
+<h3><em>Source Code</em><a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">inherits</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;inherits&#39;</span><span class="p">);</span>
 <span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
 
@@ -350,6 +381,7 @@ through to INFURA, but dump all data going back and forth.</p>
 </pre></div>
 </div>
 <hr class="docutils" />
+</div>
 </div>
 </div>
 
