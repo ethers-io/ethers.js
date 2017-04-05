@@ -61,6 +61,29 @@
                 </table>
 
                 <hr />
+                <h2>Mnemonic Phrase Wallet</h2>
+                <p>
+                    If you have a 12 word mnemonic phrase, you can generate your wallet here.
+                    No information is shared with <b>any</b> server.
+                </p>
+                <table>
+                    <tr>
+                        <th>Mnemonic Phrase:</th>
+                        <td><input type="text" placeholder="(mnemonic phrase)" id="select-mnemonic-phrase" /></td>
+                    </tr>
+                    <tr>
+                        <th>Path:</th>
+                        <td><input type="text" placeholder="(path)" id="select-mnemonic-path" value="m/44'/60'/0'/0/0" /></td>
+                    </tr>
+                    <tr>
+                        <td> </td>
+                        <td>
+                            <div id="select-submit-mnemonic" class="submit disable">Derive Wallet</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <hr />
                 <h2>Raw Private Key</h2>
                 <p>
                 </p>
@@ -126,8 +149,8 @@
                     <tr>
                         <th>Network:</th>
                         <td>
-                            <div class="option left" id="option-morden">Morden (testnet)</div>
-                            <div class="option right selected" id="option-homestead">Homestead (mainnet)</div>
+                            <div class="option left" id="option-testnet">Testnet (Ropsten)</div>
+                            <div class="option right selected" id="option-mainnet">Mainnet (Homestead)</div>
                         </td>
                     </tr>
                     <tr>
@@ -177,7 +200,7 @@
             </div>
         </div>
 
-        <script type="text/javascript" src="../../dist/ethers-wallet.js"></script>
+        <script type="text/javascript" src="../../dist/ethers.js"></script>
         <script type="text/javascript">
             function setEnter(source, target) {
                 source.onkeyup = function(e) {
@@ -189,6 +212,14 @@
             document.getElementById('loading-cancel').onclick = function() {
                 cancelScrypt = true;
             };
+
+            var updateLoading = (function() {
+                var loadingStatus = document.getElementById('loading-status');
+                return (function(progress) {
+                    loadingStatus.value = (parseInt(progress * 100)) + '%';
+                    return cancelScrypt;
+                });
+            })();
 
             (function() {
                 var inputUsername = document.getElementById('select-brainwallet-username');
@@ -214,29 +245,22 @@
                 submit.onclick = function() {
                     if (submit.classList.contains('disable')) { return; }
 
-                    var username = new Wallet.utils.Buffer(inputUsername.value, 'utf8');
-                    var password = new Wallet.utils.Buffer(inputPassword.value, 'utf8');
+                    var username = new ethers.utils.toUtf8Bytes(inputUsername.value);
+                    var password = new ethers.utils.toUtf8Bytes(inputPassword.value);
 
                     showLoading('Summoning Brain Wallet...');
 
                     cancelScrypt = false;
 
-                    Wallet.summonBrainWallet(username, password, function(error, wallet, progress) {
-                        if (error) {
-                            if (error.message !== 'cancelled') {
-                                alert('Unknown error');
-                            }
-                            showSelect();
+                    ethers.Wallet.fromBrainWallet(username, password, updateLoading).then(function(wallet) {
+                        showWallet(wallet);
+                        document.getElementById('wallet-username').textContent = inputUsername.value;
 
-                        } else if (wallet) {
-                            showWallet(wallet);
-                            document.getElementById('wallet-username').textContent = inputUsername.value;
-
-                        } else {
-                            updateLoading(progress);
+                    }, function (error) {
+                        if (error.message !== 'cancelled') {
+                            alert('Unknown error');
                         }
-
-                        return cancelScrypt;
+                        showSelect();
                     });
                 };
             })();
@@ -278,16 +302,16 @@
                     fileReader.onload = function(e) {
                         var json = e.target.result;
 
-                        if (Wallet.isCrowdsaleWallet(json)) {
+                        if (ethers.Wallet.isCrowdsaleWallet(json)) {
                             showWallet(Wallet.decryptCrowdsale(json, password));
 
-                        } else if (Wallet.isValidWallet(json)) {
+                        } else if (ethers.Wallet.isValidWallet(json)) {
                             showLoading('Decrypting Wallet...');
-                            var password = new Wallet.utils.Buffer(inputPassword.value);
+                            var password = new ethers.Wallet.utils.Buffer(inputPassword.value);
 
                             cancelScrypt = false;
 
-                            Wallet.decrypt(json, password, function(error, wallet, progress) {
+                            ethers.Wallet.decrypt(json, password, function(error, wallet, progress) {
                                 if (error) {
                                     if (error.message === 'invalid password') {
                                         alert('Wrong Password');
@@ -334,7 +358,7 @@
                     if (submit.classList.contains('disable')) { return; }
                     var privateKey = inputPrivatekey.value;
                     if (privateKey.substring(0, 2) !== '0x') { privateKey = '0x' + privateKey; }
-                    showWallet(new Wallet(privateKey));
+                    showWallet(new ethers.Wallet(privateKey));
                 }
             })();
 
@@ -355,7 +379,7 @@
                     addActivity('> Refreshing details...');
                     activeWallet.getBalance('pending').then(function(balance) {
                         addActivity('< Balance: ' + balance.toString(10));
-                        inputBalance.value = Wallet.formatEther(balance, {commify: true});
+                        inputBalance.value = ethers.utils.formatEther(balance, {commify: true});
                     }, function(error) {
                         showError(error);
                     });
@@ -391,8 +415,8 @@
                 // Validate the address and value (to enable the send button)
                 function check() {
                     try {
-                        Wallet.getAddress(inputTargetAddress.value);
-                        Wallet.parseEther(inputAmount.value);
+                        ethers.utils.getAddress(inputTargetAddress.value);
+                        ethers.utils.parseEther(inputAmount.value);
                     } catch (error) {
                         submit.classList.add('disable');
                         return;
@@ -402,26 +426,26 @@
                 inputTargetAddress.oninput = check;
                 inputAmount.oninput = check;
 
-                var optionMorden = document.getElementById('option-morden');
-                var optionHomestead = document.getElementById('option-homestead');
+                var optionTestnet = document.getElementById('option-testnet');
+                var optionMainnet = document.getElementById('option-mainnet');
 
-                // Select the morden network
-                optionMorden.onclick = function() {
-                    if (optionMorden.classList.contains('selected')) { return; }
-                    addActivity('! Switched network: Morden');
-                    activeWallet.provider = new Wallet.providers.EtherscanProvider({testnet: true});
-                    optionMorden.classList.add('selected');
-                    optionHomestead.classList.remove('selected');
+                // Select the testnet network
+                optionTestnet.onclick = function() {
+                    if (optionTestnet.classList.contains('selected')) { return; }
+                    addActivity('! Switched network: Testnet');
+                    activeWallet.provider = new ethers.providers.getDefaultProvider(true);
+                    optionTestnet.classList.add('selected');
+                    optionMainnet.classList.remove('selected');
                     refresh();
                 }
 
-                // Select the homestead network
-                optionHomestead.onclick = function() {
-                    if (optionHomestead.classList.contains('selected')) { return; }
-                    addActivity('! Switched network: Homestead');
-                    activeWallet.provider = new Wallet.providers.EtherscanProvider({testnet: false});
-                    optionMorden.classList.remove('selected');
-                    optionHomestead.classList.add('selected');
+                // Select the mainnet network
+                optionMainnet.onclick = function() {
+                    if (optionMainnet.classList.contains('selected')) { return; }
+                    addActivity('! Switched network: Mainnet');
+                    activeWallet.provider = new ethers.providers.getDefaultProvider(false);
+                    optionTestnet.classList.remove('selected');
+                    optionMainnet.classList.add('selected');
                     refresh();
                 }
 
@@ -430,11 +454,12 @@
 
                     // Matt (from Etherscan) is working on a gasPrice API call, which
                     // should be done within a week or so.
+                    // @TODO
                     var gasPrice = (activeWallet.provider.testnet ? 0x4a817c800: 0xba43b7400);
                     console.log('GasPrice: ' + gasPrice);
 
-                    var targetAddress = Wallet.getAddress(inputTargetAddress.value);
-                    var amountWei = Wallet.parseEther(inputAmount.value);
+                    var targetAddress = ethers.utils.getAddress(inputTargetAddress.value);
+                    var amountWei = ethers.utils.parseEther(inputAmount.value);
                     activeWallet.send(targetAddress, amountWei, {
                         gasPrice: gasPrice,
                         gasLimit: 21000,
@@ -468,15 +493,10 @@
                 document.getElementById('loading-header').textContent = title;
             }
 
-            var loadingStatus = document.getElementById('loading-status');
-            function updateLoading(progress) {
-                loadingStatus.value = (parseInt(progress * 100)) + '%';
-            }
-
             function showWallet(wallet) {
-                var testnet = document.getElementById('option-morden').classList.contains('selected');
+                var testnet = document.getElementById('option-testnet').classList.contains('selected');
                 activeWallet = wallet;
-                activeWallet.provider = new Wallet.providers.EtherscanProvider({testnet: testnet});
+                activeWallet.provider = new ethers.providers.getDefaultProvider(testnet);
 
                 document.getElementById('screen-select').style.display = 'none';
                 document.getElementById('screen-loading').style.display = 'none';
