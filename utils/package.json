@@ -2,6 +2,10 @@
   "name": "ethers-utils",
   "version": "2.0.0",
   "description": "Utilities for the Ethers Ethereum library.",
+  "bugs": {
+    "url": "http://github.com/ethers-io/ethers.js/issues",
+    "email": "github@ricmoo.com"
+  },
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -22,6 +26,10 @@
     "utils",
     "utilities"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
   "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT"
 }
