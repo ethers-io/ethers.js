@@ -2,6 +2,10 @@
   "name": "ethers-providers",
   "version": "2.0.0",
   "description": "Service provider for Ethereum wallet library.",
+  "bugs": {
+    "url": "http://github.com/ethers-io/ethers.js/issues",
+    "email": "github@ricmoo.com"
+  },
   "main": "index.js",
   "browser": {
     "xmlhttprequest": "./browser-xmlhttprequest.js"
@@ -25,6 +29,10 @@
     "json-rpc",
     "jsonrpc"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
   "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT"
 }
