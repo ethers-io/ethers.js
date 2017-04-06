@@ -36,7 +36,7 @@ function randomBytes(length) {
 };
 
 if (crypto._weakCrypto === true) {
-    utils.defineProperty(randomBytes, '_weakCrypto', true);
+    defineProperty(randomBytes, '_weakCrypto', true);
 }
 
 module.exports = randomBytes;
