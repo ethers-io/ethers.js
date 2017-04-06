@@ -1,0 +1,14 @@
+Gruntfile.js
+
+# If you need these, checkout GitHub
+docs/
+examples/
+
+# These are all included by their sub-packages in npm
+utils/
+contracts/
+providers/
+wallet/
+
+# To run tests, checkout GitHub
+tests/
