@@ -75,7 +75,7 @@ function checkLogTag(blockTag) {
 utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, params) {
     if (!params) { params = {}; }
 
-    var url = this.testnet ? 'https://testnet.etherscan.io': 'https://api.etherscan.io';
+    var url = this.testnet ? 'https://ropsten.etherscan.io': 'https://api.etherscan.io';
 
     var apiKey = '';
     if (this.apiKey) { apiKey += '&apikey=' + this.apiKey; }
