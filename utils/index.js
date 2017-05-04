@@ -8,6 +8,7 @@ var bigNumber = require('./bignumber');
 var contractAddress = require('./contract-address');
 var convert = require('./convert');
 var keccak256 = require('./keccak256');
+var namehash = require('./namehash');
 var sha256 = require('./sha2').sha256;
 var randomBytes = require('./random-bytes');
 var properties = require('./properties');
@@ -39,6 +40,8 @@ module.exports = {
 
     toUtf8Bytes: utf8.toUtf8Bytes,
     toUtf8String: utf8.toUtf8String,
+
+    namehash: namehash,
 
     getAddress: address.getAddress,
     getContractAddress: contractAddress.getContractAddress,
