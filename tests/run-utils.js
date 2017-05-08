@@ -90,9 +90,20 @@ function testUnits(test) {
     test.done();
 }
 
+function testNamehash(test) {
+    var namehash = require('../utils/namehash');
+
+    var testcases = require('./tests/ens.json');
+    testcases.forEach(function(testcase) {
+        test.equal(namehash(testcase.name), testcase.expected, 'namehash(' + testcase.name + ')');
+    });
+    test.done();
+}
+
 module.exports = {
     "address": testAddress,
     "contract-address": testContractAddress,
+    'namehash': testNamehash,
     "rlp-coder": testRLPCoder,
     "units": testUnits,
 }
