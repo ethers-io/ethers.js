@@ -41,5 +41,5 @@ for i in xrange(0, len(Tests)):
     else:
         test['expected'] = hash
 
-with file('../tests/ens.json', 'w') as f:
+with file('../tests/namehash.json', 'w') as f:
     f.write(json.dumps(Tests))

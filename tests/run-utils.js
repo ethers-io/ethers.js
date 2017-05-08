@@ -93,7 +93,7 @@ function testUnits(test) {
 function testNamehash(test) {
     var namehash = require('../utils/namehash');
 
-    var testcases = require('./tests/ens.json');
+    var testcases = require('./tests/namehash.json');
     testcases.forEach(function(testcase) {
         test.equal(namehash(testcase.name), testcase.expected, 'namehash(' + testcase.name + ')');
     });
