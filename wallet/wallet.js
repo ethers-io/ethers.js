@@ -311,6 +311,9 @@ utils.defineProperty(Wallet, 'isEncryptedWallet', function(json) {
 
 utils.defineProperty(Wallet, 'createRandom', function(options) {
     var entropy = utils.randomBytes(16);
+
+    if (!options) { options = { }; }
+
     if (options.extraEntropy) {
         entropy = utils.keccak256(utils.concat([entropy, options.extraEntropy])).substring(0, 34);
     }
@@ -392,7 +395,6 @@ utils.defineProperty(Wallet, 'fromBrainWallet', function(username, password, pro
         });
     });
 });
-
 
 //utils.defineProperty(Wallet, 'isCrowdsaleWallet', secretStorage.isCrowdsaleWallet);
 

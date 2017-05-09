@@ -8,7 +8,7 @@ module.exports = {
     HDNode: HDNode,
     Wallet: Wallet,
 
-    // Do we need to expose this at all?
+    SigningKey: SigningKey,
     _SigningKey: SigningKey,
 }
 
