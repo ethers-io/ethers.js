@@ -213,7 +213,7 @@ function testEventsProvider(test, provider) {
         }),
         new Promise(function(resolve, reject) {
             function callback(log) {
-                var result = callFallback.parse(log.data);
+                var result = callFallback.parse(log.topics, log.data);
                 if (result.sender !== wallet.address || !result.amount.eq(123)) {
                     //console.log('someone else is running the test cases');
                     return;
@@ -411,11 +411,23 @@ function testDeploy(test) {
     });
 }
 
+function testENSProvider(test, provider) {
+    provider.resolveName('foo.test').then(function(result) {
+        console.log(result);
+        test.done();
+    });
+}
+
+function testENS(test) {
+    testENSProvider(test, new providers.InfuraProvider(true));
+}
+
 module.exports = {
     'read-only': testReadOnly,
     'write': testWrite,
     'events': testEvents,
     'contracts': testContracts,
     'deploy': testDeploy,
+//    'ens': testENS,
 };
 
