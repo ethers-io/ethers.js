@@ -1,6 +1,6 @@
 {
   "name": "ethers-contracts",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Contract and Interface (ABI) library for Ethereum.",
   "bugs": {
     "url": "http://github.com/ethers-io/ethers.js/issues",

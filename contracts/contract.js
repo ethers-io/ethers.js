@@ -147,8 +147,19 @@ function Contract(address, contractInterface, signerOrProvider) {
                     var noncePromise = null;
                     if (transaction.nonce) {
                         noncePromise = Promise.resolve(transaction.nonce)
+                    } else if (signer.getTransactionCount) {
+                        noncePromise = signer.getTransactionCount;
+                        if (!(noncePromise instanceof Promise)) {
+                            noncePromise = Promise.resolve(noncePromise);
+                        }
                     } else {
-                        noncePromise = provider.getTransactionCount(signer.address, 'pending');
+                        var addressPromise = signer.getAddress();
+                        if (!(addressPromise instanceof Promise)) {
+                            addressPromise = Promise.resolve(addressPromise);
+                        }
+                        noncePromise = addressPromise.then(function(address) {
+                            return provider.getTransactionCount(address, 'pending');
+                        });
                     }
 
                     var gasPricePromise = null;
@@ -207,7 +218,7 @@ function Contract(address, contractInterface, signerOrProvider) {
 
         function handleEvent(log) {
             try {
-                var result = eventInfo.parse(log.data);
+                var result = eventInfo.parse(log.topics, log.data);
                 eventCallback.apply(log, Array.prototype.slice.call(result));
             } catch (error) {
                 console.log(error);
@@ -244,7 +255,8 @@ function Contract(address, contractInterface, signerOrProvider) {
 }
 
 utils.defineProperty(Contract, 'getDeployTransaction', function(bytecode, contractInterface) {
-    if (typeof(contractInterface) === 'string') {
+
+    if (!(contractInterface instanceof Interface)) {
         contractInterface = new Interface(contractInterface);
     }
 

@@ -432,7 +432,6 @@ function Interface(abi) {
             case 'event':
                 var func = (function() {
                     var inputTypes = getKeys(method.inputs, 'type');
-                    var inputNames = getKeys(method.inputs, 'name', true);
                     var func = function() {
                         var signature = method.name + '(' + getKeys(method.inputs, 'type').join(',') + ')';
                         var result = {
@@ -441,12 +440,50 @@ function Interface(abi) {
                             signature: signature,
                             topics: [utils.keccak256(utils.toUtf8Bytes(signature))],
                         };
-                        result.parse = function(data) {
-                            return Interface.decodeParams(
-                                inputNames,
-                                inputTypes,
+
+                        result.parse = function(topics, data) {
+
+                            // Strip the signature off of non-anonymous topics
+                            if (!method.anonymous) { topics = topics.slice(1); }
+
+                            var inputNamesIndexed = [], inputNamesNonIndexed = [];
+                            var inputTypesIndexed = [], inputTypesNonIndexed = [];
+                            method.inputs.forEach(function(input) {
+                                if (input.indexed) {
+                                    inputNamesIndexed.push(input.name);
+                                    inputTypesIndexed.push(input.type);
+                                } else {
+                                    inputNamesNonIndexed.push(input.name);
+                                    inputTypesNonIndexed.push(input.type);
+                                }
+                            });
+
+                            var resultIndexed = Interface.decodeParams(
+                                inputNamesIndexed,
+                                inputTypesIndexed,
+                                utils.concat(topics)
+                            );
+
+                            var resultNonIndexed = Interface.decodeParams(
+                                inputNamesNonIndexed,
+                                inputTypesNonIndexed,
                                 utils.arrayify(data)
                             );
+
+                            var result = new Result();
+                            var nonIndexedIndex = 0, indexedIndex = 0;
+                            method.inputs.forEach(function(input, i) {
+                                if (input.indexed) {
+                                    result[i] = resultIndexed[indexedIndex++];
+                                } else {
+                                    result[i] = resultNonIndexed[nonIndexedIndex++];
+                                }
+                                if (input.name) { result[input.name] = result[i]; }
+                            });
+
+                            result.length = method.inputs.length;
+
+                            return result;
                         };
                         return populateDescription(new EventDescription(), result);
                     }
@@ -470,7 +507,7 @@ function Interface(abi) {
         }
     };
 
-    abi.forEach(addMethod, this);
+    this.abi.forEach(addMethod, this);
 
     // If there wasn't a constructor, create the default constructor
     if (!deploy) {
