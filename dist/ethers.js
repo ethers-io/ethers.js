@@ -7,6 +7,7 @@ var utils = require('ethers-utils');
 var wallet = require('ethers-wallet');
 
 module.exports = {
+    SigningKey: wallet.SigningKey,
     Wallet: wallet.Wallet,
 
     HDNode: wallet.HDNode,
@@ -18,12 +19,12 @@ module.exports = {
 
     utils: utils,
 
-    _SigningKey: wallet._SigningKey,
+    _SigningKey: wallet.SigningKey,
 };
 
 require('ethers-utils/standalone.js')(module.exports);
 
-},{"ethers-contracts":21,"ethers-providers":26,"ethers-utils":37,"ethers-utils/standalone.js":43,"ethers-wallet":48}],2:[function(require,module,exports){
+},{"ethers-contracts":21,"ethers-providers":26,"ethers-utils":37,"ethers-utils/standalone.js":44,"ethers-wallet":49}],2:[function(require,module,exports){
 "use strict";
 
 (function(root) {
@@ -5601,7 +5602,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../../elliptic":5,"../curve":8,"bn.js":3,"inherits":59}],11:[function(require,module,exports){
+},{"../../elliptic":5,"../curve":8,"bn.js":3,"inherits":60}],11:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -5808,7 +5809,7 @@ defineCurve('secp256k1', {
   ]
 });
 
-},{"../elliptic":5,"./precomputed/secp256k1":17,"hash.js":53}],12:[function(require,module,exports){
+},{"../elliptic":5,"./precomputed/secp256k1":17,"hash.js":54}],12:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -6423,7 +6424,7 @@ HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
   return utils.encode(res, enc);
 };
 
-},{"../elliptic":5,"hash.js":53}],17:[function(require,module,exports){
+},{"../elliptic":5,"hash.js":54}],17:[function(require,module,exports){
 module.exports = undefined;
 },{}],18:[function(require,module,exports){
 'use strict';
@@ -6751,8 +6752,19 @@ function Contract(address, contractInterface, signerOrProvider) {
                     var noncePromise = null;
                     if (transaction.nonce) {
                         noncePromise = Promise.resolve(transaction.nonce)
+                    } else if (signer.getTransactionCount) {
+                        noncePromise = signer.getTransactionCount;
+                        if (!(noncePromise instanceof Promise)) {
+                            noncePromise = Promise.resolve(noncePromise);
+                        }
                     } else {
-                        noncePromise = provider.getTransactionCount(signer.address, 'pending');
+                        var addressPromise = signer.getAddress();
+                        if (!(addressPromise instanceof Promise)) {
+                            addressPromise = Promise.resolve(addressPromise);
+                        }
+                        noncePromise = addressPromise.then(function(address) {
+                            return provider.getTransactionCount(address, 'pending');
+                        });
                     }
 
                     var gasPricePromise = null;
@@ -6811,7 +6823,7 @@ function Contract(address, contractInterface, signerOrProvider) {
 
         function handleEvent(log) {
             try {
-                var result = eventInfo.parse(log.data);
+                var result = eventInfo.parse(log.topics, log.data);
                 eventCallback.apply(log, Array.prototype.slice.call(result));
             } catch (error) {
                 console.log(error);
@@ -6848,7 +6860,8 @@ function Contract(address, contractInterface, signerOrProvider) {
 }
 
 utils.defineProperty(Contract, 'getDeployTransaction', function(bytecode, contractInterface) {
-    if (typeof(contractInterface) === 'string') {
+
+    if (!(contractInterface instanceof Interface)) {
         contractInterface = new Interface(contractInterface);
     }
 
@@ -6862,7 +6875,7 @@ utils.defineProperty(Contract, 'getDeployTransaction', function(bytecode, contra
 
 module.exports = Contract;
 
-},{"./interface.js":22,"ethers-utils/address.js":31,"ethers-utils/bignumber.js":32,"ethers-utils/convert.js":35,"ethers-utils/properties.js":40}],21:[function(require,module,exports){
+},{"./interface.js":22,"ethers-utils/address.js":31,"ethers-utils/bignumber.js":32,"ethers-utils/convert.js":35,"ethers-utils/properties.js":41}],21:[function(require,module,exports){
 'use strict';
 
 var Contract = require('./contract.js');
@@ -6876,7 +6889,7 @@ module.exports = {
 require('ethers-utils/standalone.js')(module.exports);
 
 
-},{"./contract.js":20,"./interface.js":22,"ethers-utils/standalone.js":43}],22:[function(require,module,exports){
+},{"./contract.js":20,"./interface.js":22,"ethers-utils/standalone.js":44}],22:[function(require,module,exports){
 'use strict';
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
@@ -7311,7 +7324,6 @@ function Interface(abi) {
             case 'event':
                 var func = (function() {
                     var inputTypes = getKeys(method.inputs, 'type');
-                    var inputNames = getKeys(method.inputs, 'name', true);
                     var func = function() {
                         var signature = method.name + '(' + getKeys(method.inputs, 'type').join(',') + ')';
                         var result = {
@@ -7320,12 +7332,50 @@ function Interface(abi) {
                             signature: signature,
                             topics: [utils.keccak256(utils.toUtf8Bytes(signature))],
                         };
-                        result.parse = function(data) {
-                            return Interface.decodeParams(
-                                inputNames,
-                                inputTypes,
+
+                        result.parse = function(topics, data) {
+
+                            // Strip the signature off of non-anonymous topics
+                            if (!method.anonymous) { topics = topics.slice(1); }
+
+                            var inputNamesIndexed = [], inputNamesNonIndexed = [];
+                            var inputTypesIndexed = [], inputTypesNonIndexed = [];
+                            method.inputs.forEach(function(input) {
+                                if (input.indexed) {
+                                    inputNamesIndexed.push(input.name);
+                                    inputTypesIndexed.push(input.type);
+                                } else {
+                                    inputNamesNonIndexed.push(input.name);
+                                    inputTypesNonIndexed.push(input.type);
+                                }
+                            });
+
+                            var resultIndexed = Interface.decodeParams(
+                                inputNamesIndexed,
+                                inputTypesIndexed,
+                                utils.concat(topics)
+                            );
+
+                            var resultNonIndexed = Interface.decodeParams(
+                                inputNamesNonIndexed,
+                                inputTypesNonIndexed,
                                 utils.arrayify(data)
                             );
+
+                            var result = new Result();
+                            var nonIndexedIndex = 0, indexedIndex = 0;
+                            method.inputs.forEach(function(input, i) {
+                                if (input.indexed) {
+                                    result[i] = resultIndexed[indexedIndex++];
+                                } else {
+                                    result[i] = resultNonIndexed[nonIndexedIndex++];
+                                }
+                                if (input.name) { result[input.name] = result[i]; }
+                            });
+
+                            result.length = method.inputs.length;
+
+                            return result;
                         };
                         return populateDescription(new EventDescription(), result);
                     }
@@ -7349,7 +7399,7 @@ function Interface(abi) {
         }
     };
 
-    abi.forEach(addMethod, this);
+    this.abi.forEach(addMethod, this);
 
     // If there wasn't a constructor, create the default constructor
     if (!deploy) {
@@ -7463,7 +7513,7 @@ utils.defineProperty(Interface, 'decodeParams', function(names, types, data) {
 
 module.exports = Interface;
 
-},{"ethers-utils/address":31,"ethers-utils/bignumber.js":32,"ethers-utils/convert.js":35,"ethers-utils/keccak256.js":38,"ethers-utils/properties.js":40,"ethers-utils/throw-error":44,"ethers-utils/utf8.js":46}],23:[function(require,module,exports){
+},{"ethers-utils/address":31,"ethers-utils/bignumber.js":32,"ethers-utils/convert.js":35,"ethers-utils/keccak256.js":38,"ethers-utils/properties.js":41,"ethers-utils/throw-error":45,"ethers-utils/utf8.js":47}],23:[function(require,module,exports){
 'use strict';
 
 try {
@@ -7671,7 +7721,7 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
 
 module.exports = EtherscanProvider;;
 
-},{"./provider.js":30,"ethers-utils/convert.js":35,"ethers-utils/properties.js":40}],25:[function(require,module,exports){
+},{"./provider.js":30,"ethers-utils/convert.js":35,"ethers-utils/properties.js":41}],25:[function(require,module,exports){
 'use strict';
 
 var inherits = require('inherits');
@@ -7735,7 +7785,7 @@ utils.defineProperty(FallbackProvider.prototype, 'perform', function(method, par
 
 module.exports = FallbackProvider;
 
-},{"./provider.js":30,"ethers-utils/properties.js":40,"inherits":29}],26:[function(require,module,exports){
+},{"./provider.js":30,"ethers-utils/properties.js":41,"inherits":29}],26:[function(require,module,exports){
 'use strict';
 
 var Provider = require('./provider.js');
@@ -7770,7 +7820,7 @@ require('ethers-utils/standalone.js')({
 });
 
 
-},{"./etherscan-provider.js":24,"./fallback-provider.js":25,"./infura-provider.js":27,"./json-rpc-provider.js":28,"./provider.js":30,"ethers-utils/standalone.js":43}],27:[function(require,module,exports){
+},{"./etherscan-provider.js":24,"./fallback-provider.js":25,"./infura-provider.js":27,"./json-rpc-provider.js":28,"./provider.js":30,"ethers-utils/standalone.js":44}],27:[function(require,module,exports){
 var JsonRpcProvider = require('./json-rpc-provider.js');
 
 var utils = (function() {
@@ -7793,7 +7843,7 @@ JsonRpcProvider.inherits(InfuraProvider);
 
 module.exports = InfuraProvider;
 
-},{"./json-rpc-provider.js":28,"ethers-utils/properties.js":40}],28:[function(require,module,exports){
+},{"./json-rpc-provider.js":28,"ethers-utils/properties.js":41}],28:[function(require,module,exports){
 'use strict';
 
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
@@ -7903,7 +7953,7 @@ utils.defineProperty(JsonRpcProvider.prototype, 'perform', function(method, para
 
 module.exports = JsonRpcProvider;
 
-},{"./provider.js":30,"ethers-utils/convert":35,"ethers-utils/properties":40}],29:[function(require,module,exports){
+},{"./provider.js":30,"ethers-utils/convert":35,"ethers-utils/properties":41}],29:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -8025,11 +8075,21 @@ function checkString(string) {
 function checkBlockTag(blockTag) {
     if (blockTag == null) { return 'latest'; }
 
-    if (utils.isHexString(blockTag)) { return blockTag; }
+    if (blockTag === 'earliest') { return '0x0'; }
 
-    if (blockTag === 'earliest') { blockTag = 0; }
     if (typeof(blockTag) === 'number') {
-        return utils.hexlify(blockTag);
+        blockTag = utils.hexlify(blockTag);
+    }
+
+    if (utils.isHexString(blockTag)) {
+        // HACK: This seems to be a weird requirement some nodes have
+        // (e.g. INFURA on ropsten; INFURA on homestead is fine)
+        // Remove leading 0's from the hex blockTag
+        while (blockTag.length > 3 && blockTag.substring(0, 3) === '0x0') {
+            blockTag = '0x' + blockTag.substring(3);
+        }
+
+        return blockTag;
     }
 
     if (blockTag === 'latest' || blockTag === 'pending') {
@@ -8325,6 +8385,11 @@ function Provider(testnet, chainId) {
 
         self.doPoll();
     }
+
+    utils.defineProperty(this, 'resetEventsBlock', function(blockNumber) {
+        lastBlockNumber = blockNumber;
+        self.doPoll();
+    });
 
     var poller = null;
     Object.defineProperty(this, 'polling', {
@@ -8639,7 +8704,6 @@ utils.defineProperty(Provider.prototype, 'getEtherPrice', function() {
     }
 });
 
-
 utils.defineProperty(Provider.prototype, 'doPoll', function() {
     
 });
@@ -8795,7 +8859,7 @@ utils.defineProperty(Provider.prototype, 'removeListener', function(eventName, l
 
 module.exports = Provider;
 
-},{"ethers-utils/address":31,"ethers-utils/bignumber":32,"ethers-utils/contract-address":34,"ethers-utils/convert":35,"ethers-utils/properties":40,"ethers-utils/rlp":41,"inherits":29,"xmlhttprequest":23}],31:[function(require,module,exports){
+},{"ethers-utils/address":31,"ethers-utils/bignumber":32,"ethers-utils/contract-address":34,"ethers-utils/convert":35,"ethers-utils/properties":41,"ethers-utils/rlp":42,"inherits":29,"xmlhttprequest":23}],31:[function(require,module,exports){
 
 var BN = require('bn.js');
 
@@ -8912,7 +8976,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert":35,"./keccak256":38,"./throw-error":44,"bn.js":3}],32:[function(require,module,exports){
+},{"./convert":35,"./keccak256":38,"./throw-error":45,"bn.js":3}],32:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -9052,7 +9116,7 @@ module.exports = {
     bigNumberify: bigNumberify
 };
 
-},{"./convert":35,"./properties":40,"./throw-error":44,"bn.js":3}],33:[function(require,module,exports){
+},{"./convert":35,"./properties":41,"./throw-error":45,"bn.js":3}],33:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -9098,7 +9162,7 @@ if (crypto._weakCrypto === true) {
 module.exports = randomBytes;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./properties.js":40}],34:[function(require,module,exports){
+},{"./properties.js":41}],34:[function(require,module,exports){
 
 var getAddress = require('./address').getAddress;
 var convert = require('./convert');
@@ -9120,7 +9184,7 @@ module.exports = {
     getContractAddress: getContractAddress,
 }
 
-},{"./address":31,"./convert":35,"./keccak256":38,"./rlp":41}],35:[function(require,module,exports){
+},{"./address":31,"./convert":35,"./keccak256":38,"./rlp":42}],35:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
@@ -9283,7 +9347,7 @@ module.exports = {
     isHexString: isHexString,
 };
 
-},{"./properties.js":40,"./throw-error":44}],36:[function(require,module,exports){
+},{"./properties.js":41,"./throw-error":45}],36:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -9309,7 +9373,7 @@ module.exports = {
     createSha512Hmac: createSha512Hmac,
 };
 
-},{"./convert.js":35,"./sha2.js":42,"hash.js":53}],37:[function(require,module,exports){
+},{"./convert.js":35,"./sha2.js":43,"hash.js":54}],37:[function(require,module,exports){
 'use strict';
 
 // This is SUPER useful, but adds 140kb (even zipped, adds 40kb)
@@ -9320,6 +9384,7 @@ var bigNumber = require('./bignumber');
 var contractAddress = require('./contract-address');
 var convert = require('./convert');
 var keccak256 = require('./keccak256');
+var namehash = require('./namehash');
 var sha256 = require('./sha2').sha256;
 var randomBytes = require('./random-bytes');
 var properties = require('./properties');
@@ -9352,6 +9417,8 @@ module.exports = {
     toUtf8Bytes: utf8.toUtf8Bytes,
     toUtf8String: utf8.toUtf8String,
 
+    namehash: namehash,
+
     getAddress: address.getAddress,
     getContractAddress: contractAddress.getContractAddress,
 
@@ -9369,7 +9436,7 @@ require('./standalone')({
 });
 
 
-},{"./address":31,"./bignumber":32,"./contract-address":34,"./convert":35,"./keccak256":38,"./properties":40,"./random-bytes":33,"./rlp":41,"./sha2":42,"./standalone":43,"./units":45,"./utf8":46}],38:[function(require,module,exports){
+},{"./address":31,"./bignumber":32,"./contract-address":34,"./convert":35,"./keccak256":38,"./namehash":39,"./properties":41,"./random-bytes":33,"./rlp":42,"./sha2":43,"./standalone":44,"./units":46,"./utf8":47}],38:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -9383,7 +9450,47 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":35,"js-sha3":60}],39:[function(require,module,exports){
+},{"./convert.js":35,"js-sha3":61}],39:[function(require,module,exports){
+'use strict';
+
+var convert = require('./convert');
+var utf8 = require('./utf8');
+var keccak256 = require('./keccak256');
+
+var Zeros = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+var Partition = new RegExp("^((.*)\\.)?([^.]+)$");
+var UseSTD3ASCIIRules = new RegExp("^[a-z0-9.-]*$");
+
+function namehash(name, depth) {
+    name = name.toLowerCase();
+
+    // Supporting the full UTF-8 space requires additional (and large)
+    // libraries, so for now we simply do not support them.
+    // It should be fairly easy in the future to support systems with
+    // String.normalize, but that is future work.
+    if (!name.match(UseSTD3ASCIIRules)) {
+        throw new Error('contains invalid UseSTD3ASCIIRules characters');
+    }
+
+    var result = Zeros;
+    var processed = 0;
+    while (name.length && (!depth || processed < depth)) {
+        var partition = name.match(Partition);
+        var label = utf8.toUtf8Bytes(partition[3]);
+        result = keccak256(convert.concat([result, keccak256(label)]));
+
+        name = partition[2] || '';
+
+        processed++;
+    }
+
+    return convert.hexlify(result);
+}
+
+module.exports = namehash;
+
+
+},{"./convert":35,"./keccak256":38,"./utf8":47}],40:[function(require,module,exports){
 
 function pbkdf2(password, salt, iterations, keylen, createHmac) {
     var hLen
@@ -9454,7 +9561,7 @@ console.log('TT', t1 - t0, t2 - t1);
 */
 module.exports = pbkdf2;
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 function defineProperty(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -9467,7 +9574,7 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 var convert = require('./convert.js');
@@ -9611,7 +9718,7 @@ module.exports = {
     decode: decode,
 }
 
-},{"./convert.js":35}],42:[function(require,module,exports){
+},{"./convert.js":35}],43:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -9636,7 +9743,7 @@ module.exports = {
     createSha512: hash.sha512,
 }
 
-},{"./convert.js":35,"hash.js":53}],43:[function(require,module,exports){
+},{"./convert.js":35,"hash.js":54}],44:[function(require,module,exports){
 (function (global){
 var defineProperty = require('./properties.js').defineProperty;
 
@@ -9663,7 +9770,7 @@ function defineEthersValues(values) {
 module.exports = defineEthersValues;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./properties.js":40}],44:[function(require,module,exports){
+},{"./properties.js":41}],45:[function(require,module,exports){
 'use strict';
 
 function throwError(message, params) {
@@ -9676,7 +9783,7 @@ function throwError(message, params) {
 
 module.exports = throwError;
 
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 var bigNumberify = require('./bignumber.js').bigNumberify;
 var throwError = require('./throw-error');
 
@@ -9751,7 +9858,7 @@ module.exports = {
     parseEther: parseEther,
 }
 
-},{"./bignumber.js":32,"./throw-error":44}],46:[function(require,module,exports){
+},{"./bignumber.js":32,"./throw-error":45}],47:[function(require,module,exports){
 
 var convert = require('./convert.js');
 
@@ -9866,7 +9973,7 @@ module.exports = {
     toUtf8String: bytesToUtf8,
 };
 
-},{"./convert.js":35}],47:[function(require,module,exports){
+},{"./convert.js":35}],48:[function(require,module,exports){
 // See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 // See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
@@ -10127,7 +10234,7 @@ module.exports = {
     isValidMnemonic: isValidMnemonic,
 };
 
-},{"./words.json":52,"elliptic":5,"ethers-utils/bignumber.js":32,"ethers-utils/convert.js":35,"ethers-utils/hmac":36,"ethers-utils/pbkdf2.js":39,"ethers-utils/properties.js":40,"ethers-utils/sha2":42,"ethers-utils/utf8.js":46}],48:[function(require,module,exports){
+},{"./words.json":53,"elliptic":5,"ethers-utils/bignumber.js":32,"ethers-utils/convert.js":35,"ethers-utils/hmac":36,"ethers-utils/pbkdf2.js":40,"ethers-utils/properties.js":41,"ethers-utils/sha2":43,"ethers-utils/utf8.js":47}],49:[function(require,module,exports){
 'use strict';
 
 var Wallet = require('./wallet');
@@ -10138,13 +10245,13 @@ module.exports = {
     HDNode: HDNode,
     Wallet: Wallet,
 
-    // Do we need to expose this at all?
+    SigningKey: SigningKey,
     _SigningKey: SigningKey,
 }
 
 require('ethers-utils/standalone.js')(module.exports);
 
-},{"./hdnode":47,"./signing-key":50,"./wallet":51,"ethers-utils/standalone.js":43}],49:[function(require,module,exports){
+},{"./hdnode":48,"./signing-key":51,"./wallet":52,"ethers-utils/standalone.js":44}],50:[function(require,module,exports){
 'use strict';
 
 var aes = require('aes-js');
@@ -10462,17 +10569,6 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
                     }
                 };
 
-                if (options.ethers) {
-                    throw new Error('not ready yet');
-                    data['x-ethers'] = {
-                        getFilename: utils.gethFilename(address),
-                        mnemonicCiphertext: '',
-                        mnemonicCounter: '',
-                        version: '0.1',
-                        client: 'ethers-wallet',
-                    };
-                }
-
                 if (progressCallback) { progressCallback(1); }
                 resolve(JSON.stringify(data));
 
@@ -10485,7 +10581,7 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
 
 module.exports = secretStorage;
 
-},{"./signing-key.js":50,"aes-js":2,"ethers-utils":37,"scrypt-js":62,"uuid":65}],50:[function(require,module,exports){
+},{"./signing-key.js":51,"aes-js":2,"ethers-utils":37,"scrypt-js":63,"uuid":66}],51:[function(require,module,exports){
 'use strict';
 
 /**
@@ -10562,7 +10658,7 @@ utils.defineProperty(SigningKey, 'publicKeyToAddress', function(publicKey) {
 
 module.exports = SigningKey;
 
-},{"elliptic":5,"ethers-utils":37}],51:[function(require,module,exports){
+},{"elliptic":5,"ethers-utils":37}],52:[function(require,module,exports){
 'use strict';
 
 var scrypt = require('scrypt-js');
@@ -10876,6 +10972,9 @@ utils.defineProperty(Wallet, 'isEncryptedWallet', function(json) {
 
 utils.defineProperty(Wallet, 'createRandom', function(options) {
     var entropy = utils.randomBytes(16);
+
+    if (!options) { options = { }; }
+
     if (options.extraEntropy) {
         entropy = utils.keccak256(utils.concat([entropy, options.extraEntropy])).substring(0, 34);
     }
@@ -10958,7 +11057,6 @@ utils.defineProperty(Wallet, 'fromBrainWallet', function(username, password, pro
     });
 });
 
-
 //utils.defineProperty(Wallet, 'isCrowdsaleWallet', secretStorage.isCrowdsaleWallet);
 
 //utils.defineProperty(Wallet, 'decryptCrowdsale', function(json, password) {
@@ -10971,10 +11069,10 @@ utils.defineProperty(Wallet, 'fromBrainWallet', function(username, password, pro
 
 module.exports = Wallet;
 
-},{"./hdnode":47,"./secret-storage":49,"./signing-key":50,"ethers-utils":37,"scrypt-js":62,"setimmediate":63}],52:[function(require,module,exports){
+},{"./hdnode":48,"./secret-storage":50,"./signing-key":51,"ethers-utils":37,"scrypt-js":63,"setimmediate":64}],53:[function(require,module,exports){
 module.exports="AbandonAbilityAbleAboutAboveAbsentAbsorbAbstractAbsurdAbuseAccessAccidentAccountAccuseAchieveAcidAcousticAcquireAcrossActActionActorActressActualAdaptAddAddictAddressAdjustAdmitAdultAdvanceAdviceAerobicAffairAffordAfraidAgainAgeAgentAgreeAheadAimAirAirportAisleAlarmAlbumAlcoholAlertAlienAllAlleyAllowAlmostAloneAlphaAlreadyAlsoAlterAlwaysAmateurAmazingAmongAmountAmusedAnalystAnchorAncientAngerAngleAngryAnimalAnkleAnnounceAnnualAnotherAnswerAntennaAntiqueAnxietyAnyApartApologyAppearAppleApproveAprilArchArcticAreaArenaArgueArmArmedArmorArmyAroundArrangeArrestArriveArrowArtArtefactArtistArtworkAskAspectAssaultAssetAssistAssumeAsthmaAthleteAtomAttackAttendAttitudeAttractAuctionAuditAugustAuntAuthorAutoAutumnAverageAvocadoAvoidAwakeAwareAwayAwesomeAwfulAwkwardAxisBabyBachelorBaconBadgeBagBalanceBalconyBallBambooBananaBannerBarBarelyBargainBarrelBaseBasicBasketBattleBeachBeanBeautyBecauseBecomeBeefBeforeBeginBehaveBehindBelieveBelowBeltBenchBenefitBestBetrayBetterBetweenBeyondBicycleBidBikeBindBiologyBirdBirthBitterBlackBladeBlameBlanketBlastBleakBlessBlindBloodBlossomBlouseBlueBlurBlushBoardBoatBodyBoilBombBoneBonusBookBoostBorderBoringBorrowBossBottomBounceBoxBoyBracketBrainBrandBrassBraveBreadBreezeBrickBridgeBriefBrightBringBriskBroccoliBrokenBronzeBroomBrotherBrownBrushBubbleBuddyBudgetBuffaloBuildBulbBulkBulletBundleBunkerBurdenBurgerBurstBusBusinessBusyButterBuyerBuzzCabbageCabinCableCactusCageCakeCallCalmCameraCampCanCanalCancelCandyCannonCanoeCanvasCanyonCapableCapitalCaptainCarCarbonCardCargoCarpetCarryCartCaseCashCasinoCastleCasualCatCatalogCatchCategoryCattleCaughtCauseCautionCaveCeilingCeleryCementCensusCenturyCerealCertainChairChalkChampionChangeChaosChapterChargeChaseChatCheapCheckCheeseChefCherryChestChickenChiefChildChimneyChoiceChooseChronicChuckleChunkChurnCigarCinnamonCircleCitizenCityCivilClaimClapClarifyClawClayCleanClerkCleverClickClientCliffClimbClinicClipClockClogCloseClothCloudClownClubClumpClusterClutchCoachCoastCoconutCodeCoffeeCoilCoinCollectColorColumnCombineComeComfortComicCommonCompanyConcertConductConfirmCongressConnectConsiderControlConvinceCookCoolCopperCopyCoralCoreCornCorrectCostCottonCouchCountryCoupleCourseCousinCoverCoyoteCrackCradleCraftCramCraneCrashCraterCrawlCrazyCreamCreditCreekCrewCricketCrimeCrispCriticCropCrossCrouchCrowdCrucialCruelCruiseCrumbleCrunchCrushCryCrystalCubeCultureCupCupboardCuriousCurrentCurtainCurveCushionCustomCuteCycleDadDamageDampDanceDangerDaringDashDaughterDawnDayDealDebateDebrisDecadeDecemberDecideDeclineDecorateDecreaseDeerDefenseDefineDefyDegreeDelayDeliverDemandDemiseDenialDentistDenyDepartDependDepositDepthDeputyDeriveDescribeDesertDesignDeskDespairDestroyDetailDetectDevelopDeviceDevoteDiagramDialDiamondDiaryDiceDieselDietDifferDigitalDignityDilemmaDinnerDinosaurDirectDirtDisagreeDiscoverDiseaseDishDismissDisorderDisplayDistanceDivertDivideDivorceDizzyDoctorDocumentDogDollDolphinDomainDonateDonkeyDonorDoorDoseDoubleDoveDraftDragonDramaDrasticDrawDreamDressDriftDrillDrinkDripDriveDropDrumDryDuckDumbDuneDuringDustDutchDutyDwarfDynamicEagerEagleEarlyEarnEarthEasilyEastEasyEchoEcologyEconomyEdgeEditEducateEffortEggEightEitherElbowElderElectricElegantElementElephantElevatorEliteElseEmbarkEmbodyEmbraceEmergeEmotionEmployEmpowerEmptyEnableEnactEndEndlessEndorseEnemyEnergyEnforceEngageEngineEnhanceEnjoyEnlistEnoughEnrichEnrollEnsureEnterEntireEntryEnvelopeEpisodeEqualEquipEraEraseErodeErosionErrorEruptEscapeEssayEssenceEstateEternalEthicsEvidenceEvilEvokeEvolveExactExampleExcessExchangeExciteExcludeExcuseExecuteExerciseExhaustExhibitExileExistExitExoticExpandExpectExpireExplainExposeExpressExtendExtraEyeEyebrowFabricFaceFacultyFadeFaintFaithFallFalseFameFamilyFamousFanFancyFantasyFarmFashionFatFatalFatherFatigueFaultFavoriteFeatureFebruaryFederalFeeFeedFeelFemaleFenceFestivalFetchFeverFewFiberFictionFieldFigureFileFilmFilterFinalFindFineFingerFinishFireFirmFirstFiscalFishFitFitnessFixFlagFlameFlashFlatFlavorFleeFlightFlipFloatFlockFloorFlowerFluidFlushFlyFoamFocusFogFoilFoldFollowFoodFootForceForestForgetForkFortuneForumForwardFossilFosterFoundFoxFragileFrameFrequentFreshFriendFringeFrogFrontFrostFrownFrozenFruitFuelFunFunnyFurnaceFuryFutureGadgetGainGalaxyGalleryGameGapGarageGarbageGardenGarlicGarmentGasGaspGateGatherGaugeGazeGeneralGeniusGenreGentleGenuineGestureGhostGiantGiftGiggleGingerGiraffeGirlGiveGladGlanceGlareGlassGlideGlimpseGlobeGloomGloryGloveGlowGlueGoatGoddessGoldGoodGooseGorillaGospelGossipGovernGownGrabGraceGrainGrantGrapeGrassGravityGreatGreenGridGriefGritGroceryGroupGrowGruntGuardGuessGuideGuiltGuitarGunGymHabitHairHalfHammerHamsterHandHappyHarborHardHarshHarvestHatHaveHawkHazardHeadHealthHeartHeavyHedgehogHeightHelloHelmetHelpHenHeroHiddenHighHillHintHipHireHistoryHobbyHockeyHoldHoleHolidayHollowHomeHoneyHoodHopeHornHorrorHorseHospitalHostHotelHourHoverHubHugeHumanHumbleHumorHundredHungryHuntHurdleHurryHurtHusbandHybridIceIconIdeaIdentifyIdleIgnoreIllIllegalIllnessImageImitateImmenseImmuneImpactImposeImproveImpulseInchIncludeIncomeIncreaseIndexIndicateIndoorIndustryInfantInflictInformInhaleInheritInitialInjectInjuryInmateInnerInnocentInputInquiryInsaneInsectInsideInspireInstallIntactInterestIntoInvestInviteInvolveIronIslandIsolateIssueItemIvoryJacketJaguarJarJazzJealousJeansJellyJewelJobJoinJokeJourneyJoyJudgeJuiceJumpJungleJuniorJunkJustKangarooKeenKeepKetchupKeyKickKidKidneyKindKingdomKissKitKitchenKiteKittenKiwiKneeKnifeKnockKnowLabLabelLaborLadderLadyLakeLampLanguageLaptopLargeLaterLatinLaughLaundryLavaLawLawnLawsuitLayerLazyLeaderLeafLearnLeaveLectureLeftLegLegalLegendLeisureLemonLendLengthLensLeopardLessonLetterLevelLiarLibertyLibraryLicenseLifeLiftLightLikeLimbLimitLinkLionLiquidListLittleLiveLizardLoadLoanLobsterLocalLockLogicLonelyLongLoopLotteryLoudLoungeLoveLoyalLuckyLuggageLumberLunarLunchLuxuryLyricsMachineMadMagicMagnetMaidMailMainMajorMakeMammalManManageMandateMangoMansionManualMapleMarbleMarchMarginMarineMarketMarriageMaskMassMasterMatchMaterialMathMatrixMatterMaximumMazeMeadowMeanMeasureMeatMechanicMedalMediaMelodyMeltMemberMemoryMentionMenuMercyMergeMeritMerryMeshMessageMetalMethodMiddleMidnightMilkMillionMimicMindMinimumMinorMinuteMiracleMirrorMiseryMissMistakeMixMixedMixtureMobileModelModifyMomMomentMonitorMonkeyMonsterMonthMoonMoralMoreMorningMosquitoMotherMotionMotorMountainMouseMoveMovieMuchMuffinMuleMultiplyMuscleMuseumMushroomMusicMustMutualMyselfMysteryMythNaiveNameNapkinNarrowNastyNationNatureNearNeckNeedNegativeNeglectNeitherNephewNerveNestNetNetworkNeutralNeverNewsNextNiceNightNobleNoiseNomineeNoodleNormalNorthNoseNotableNoteNothingNoticeNovelNowNuclearNumberNurseNutOakObeyObjectObligeObscureObserveObtainObviousOccurOceanOctoberOdorOffOfferOfficeOftenOilOkayOldOliveOlympicOmitOnceOneOnionOnlineOnlyOpenOperaOpinionOpposeOptionOrangeOrbitOrchardOrderOrdinaryOrganOrientOriginalOrphanOstrichOtherOutdoorOuterOutputOutsideOvalOvenOverOwnOwnerOxygenOysterOzonePactPaddlePagePairPalacePalmPandaPanelPanicPantherPaperParadeParentParkParrotPartyPassPatchPathPatientPatrolPatternPausePavePaymentPeacePeanutPearPeasantPelicanPenPenaltyPencilPeoplePepperPerfectPermitPersonPetPhonePhotoPhrasePhysicalPianoPicnicPicturePiecePigPigeonPillPilotPinkPioneerPipePistolPitchPizzaPlacePlanetPlasticPlatePlayPleasePledgePluckPlugPlungePoemPoetPointPolarPolePolicePondPonyPoolPopularPortionPositionPossiblePostPotatoPotteryPovertyPowderPowerPracticePraisePredictPreferPreparePresentPrettyPreventPricePridePrimaryPrintPriorityPrisonPrivatePrizeProblemProcessProduceProfitProgramProjectPromoteProofPropertyProsperProtectProudProvidePublicPuddingPullPulpPulsePumpkinPunchPupilPuppyPurchasePurityPurposePursePushPutPuzzlePyramidQualityQuantumQuarterQuestionQuickQuitQuizQuoteRabbitRaccoonRaceRackRadarRadioRailRainRaiseRallyRampRanchRandomRangeRapidRareRateRatherRavenRawRazorReadyRealReasonRebelRebuildRecallReceiveRecipeRecordRecycleReduceReflectReformRefuseRegionRegretRegularRejectRelaxReleaseReliefRelyRemainRememberRemindRemoveRenderRenewRentReopenRepairRepeatReplaceReportRequireRescueResembleResistResourceResponseResultRetireRetreatReturnReunionRevealReviewRewardRhythmRibRibbonRiceRichRideRidgeRifleRightRigidRingRiotRippleRiskRitualRivalRiverRoadRoastRobotRobustRocketRomanceRoofRookieRoomRoseRotateRoughRoundRouteRoyalRubberRudeRugRuleRunRunwayRuralSadSaddleSadnessSafeSailSaladSalmonSalonSaltSaluteSameSampleSandSatisfySatoshiSauceSausageSaveSayScaleScanScareScatterSceneSchemeSchoolScienceScissorsScorpionScoutScrapScreenScriptScrubSeaSearchSeasonSeatSecondSecretSectionSecuritySeedSeekSegmentSelectSellSeminarSeniorSenseSentenceSeriesServiceSessionSettleSetupSevenShadowShaftShallowShareShedShellSheriffShieldShiftShineShipShiverShockShoeShootShopShortShoulderShoveShrimpShrugShuffleShySiblingSickSideSiegeSightSignSilentSilkSillySilverSimilarSimpleSinceSingSirenSisterSituateSixSizeSkateSketchSkiSkillSkinSkirtSkullSlabSlamSleepSlenderSliceSlideSlightSlimSloganSlotSlowSlushSmallSmartSmileSmokeSmoothSnackSnakeSnapSniffSnowSoapSoccerSocialSockSodaSoftSolarSoldierSolidSolutionSolveSomeoneSongSoonSorrySortSoulSoundSoupSourceSouthSpaceSpareSpatialSpawnSpeakSpecialSpeedSpellSpendSphereSpiceSpiderSpikeSpinSpiritSplitSpoilSponsorSpoonSportSpotSpraySpreadSpringSpySquareSqueezeSquirrelStableStadiumStaffStageStairsStampStandStartStateStaySteakSteelStemStepStereoStickStillStingStockStomachStoneStoolStoryStoveStrategyStreetStrikeStrongStruggleStudentStuffStumbleStyleSubjectSubmitSubwaySuccessSuchSuddenSufferSugarSuggestSuitSummerSunSunnySunsetSuperSupplySupremeSureSurfaceSurgeSurpriseSurroundSurveySuspectSustainSwallowSwampSwapSwarmSwearSweetSwiftSwimSwingSwitchSwordSymbolSymptomSyrupSystemTableTackleTagTailTalentTalkTankTapeTargetTaskTasteTattooTaxiTeachTeamTellTenTenantTennisTentTermTestTextThankThatThemeThenTheoryThereTheyThingThisThoughtThreeThriveThrowThumbThunderTicketTideTigerTiltTimberTimeTinyTipTiredTissueTitleToastTobaccoTodayToddlerToeTogetherToiletTokenTomatoTomorrowToneTongueTonightToolToothTopTopicToppleTorchTornadoTortoiseTossTotalTouristTowardTowerTownToyTrackTradeTrafficTragicTrainTransferTrapTrashTravelTrayTreatTreeTrendTrialTribeTrickTriggerTrimTripTrophyTroubleTruckTrueTrulyTrumpetTrustTruthTryTubeTuitionTumbleTunaTunnelTurkeyTurnTurtleTwelveTwentyTwiceTwinTwistTwoTypeTypicalUglyUmbrellaUnableUnawareUncleUncoverUnderUndoUnfairUnfoldUnhappyUniformUniqueUnitUniverseUnknownUnlockUntilUnusualUnveilUpdateUpgradeUpholdUponUpperUpsetUrbanUrgeUsageUseUsedUsefulUselessUsualUtilityVacantVacuumVagueValidValleyValveVanVanishVaporVariousVastVaultVehicleVelvetVendorVentureVenueVerbVerifyVersionVeryVesselVeteranViableVibrantViciousVictoryVideoViewVillageVintageViolinVirtualVirusVisaVisitVisualVitalVividVocalVoiceVoidVolcanoVolumeVoteVoyageWageWagonWaitWalkWallWalnutWantWarfareWarmWarriorWashWaspWasteWaterWaveWayWealthWeaponWearWeaselWeatherWebWeddingWeekendWeirdWelcomeWestWetWhaleWhatWheatWheelWhenWhereWhipWhisperWideWidthWifeWildWillWinWindowWineWingWinkWinnerWinterWireWisdomWiseWishWitnessWolfWomanWonderWoodWoolWordWorkWorldWorryWorthWrapWreckWrestleWristWriteWrongYardYearYellowYouYoungYouthZebraZeroZoneZoo"
 
-},{}],53:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 var hash = exports;
 
 hash.utils = require('./hash/utils');
@@ -10991,7 +11089,7 @@ hash.sha384 = hash.sha.sha384;
 hash.sha512 = hash.sha.sha512;
 hash.ripemd160 = hash.ripemd.ripemd160;
 
-},{"./hash/common":54,"./hash/hmac":55,"./hash/ripemd":56,"./hash/sha":57,"./hash/utils":58}],54:[function(require,module,exports){
+},{"./hash/common":55,"./hash/hmac":56,"./hash/ripemd":57,"./hash/sha":58,"./hash/utils":59}],55:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -11084,7 +11182,7 @@ BlockHash.prototype._pad = function pad() {
   return res;
 };
 
-},{"../hash":53}],55:[function(require,module,exports){
+},{"../hash":54}],56:[function(require,module,exports){
 var hmac = exports;
 
 var hash = require('../hash');
@@ -11134,9 +11232,9 @@ Hmac.prototype.digest = function digest(enc) {
   return this.outer.digest(enc);
 };
 
-},{"../hash":53}],56:[function(require,module,exports){
+},{"../hash":54}],57:[function(require,module,exports){
 module.exports = {ripemd160: null}
-},{}],57:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -11702,7 +11800,7 @@ function g1_512_lo(xh, xl) {
   return r;
 }
 
-},{"../hash":53}],58:[function(require,module,exports){
+},{"../hash":54}],59:[function(require,module,exports){
 var utils = exports;
 var inherits = require('inherits');
 
@@ -11961,9 +12059,9 @@ function shr64_lo(ah, al, num) {
 };
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":59}],59:[function(require,module,exports){
+},{"inherits":60}],60:[function(require,module,exports){
 arguments[4][29][0].apply(exports,arguments)
-},{"dup":29}],60:[function(require,module,exports){
+},{"dup":29}],61:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -12442,9 +12540,9 @@ arguments[4][29][0].apply(exports,arguments)
 })();
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":61}],61:[function(require,module,exports){
+},{"_process":62}],62:[function(require,module,exports){
 arguments[4][17][0].apply(exports,arguments)
-},{"dup":17}],62:[function(require,module,exports){
+},{"dup":17}],63:[function(require,module,exports){
 "use strict";
 
 (function(root) {
@@ -12898,7 +12996,7 @@ arguments[4][17][0].apply(exports,arguments)
 
 })(this);
 
-},{}],63:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 (function (process,global){
 (function (global, undefined) {
     "use strict";
@@ -13077,7 +13175,7 @@ arguments[4][17][0].apply(exports,arguments)
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":61}],64:[function(require,module,exports){
+},{"_process":62}],65:[function(require,module,exports){
 (function (global){
 
 var rng;
@@ -13112,7 +13210,7 @@ module.exports = rng;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],65:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 //     uuid.js
 //
 //     Copyright (c) 2010-2012 Robert Kieffer
@@ -13297,4 +13395,4 @@ uuid.unparse = unparse;
 
 module.exports = uuid;
 
-},{"./rng":64}]},{},[1]);
+},{"./rng":65}]},{},[1]);

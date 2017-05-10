@@ -46,6 +46,14 @@ Documentation is generated using [Sphinx](http://www.sphinx-doc.org) and can be 
 
 
 
+Donations
+---------
+
+I do this because I love it, but if you want to buy me a coffee, I won't say no. **:o)**
+
+Ethereum: `0xEA517D5a070e6705Cc5467858681Ed953d285Eb9`
+
+
 License
 -------
 

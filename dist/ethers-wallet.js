@@ -272,7 +272,7 @@ module.exports = {
     HDNode: HDNode,
     Wallet: Wallet,
 
-    // Do we need to expose this at all?
+    SigningKey: SigningKey,
     _SigningKey: SigningKey,
 }
 
@@ -10589,17 +10589,6 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
                     }
                 };
 
-                if (options.ethers) {
-                    throw new Error('not ready yet');
-                    data['x-ethers'] = {
-                        getFilename: utils.gethFilename(address),
-                        mnemonicCiphertext: '',
-                        mnemonicCounter: '',
-                        version: '0.1',
-                        client: 'ethers-wallet',
-                    };
-                }
-
                 if (progressCallback) { progressCallback(1); }
                 resolve(JSON.stringify(data));
 
@@ -11003,6 +10992,9 @@ utils.defineProperty(Wallet, 'isEncryptedWallet', function(json) {
 
 utils.defineProperty(Wallet, 'createRandom', function(options) {
     var entropy = utils.randomBytes(16);
+
+    if (!options) { options = { }; }
+
     if (options.extraEntropy) {
         entropy = utils.keccak256(utils.concat([entropy, options.extraEntropy])).substring(0, 34);
     }
@@ -11084,7 +11076,6 @@ utils.defineProperty(Wallet, 'fromBrainWallet', function(username, password, pro
         });
     });
 });
-
 
 //utils.defineProperty(Wallet, 'isCrowdsaleWallet', secretStorage.isCrowdsaleWallet);
 

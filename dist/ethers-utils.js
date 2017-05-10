@@ -117,7 +117,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert":6,"./keccak256":8,"./throw-error":22,"bn.js":9}],3:[function(require,module,exports){
+},{"./convert":6,"./keccak256":8,"./throw-error":23,"bn.js":10}],3:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -257,7 +257,7 @@ module.exports = {
     bigNumberify: bigNumberify
 };
 
-},{"./convert":6,"./properties":18,"./throw-error":22,"bn.js":9}],4:[function(require,module,exports){
+},{"./convert":6,"./properties":19,"./throw-error":23,"bn.js":10}],4:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -297,13 +297,13 @@ function randomBytes(length) {
 };
 
 if (crypto._weakCrypto === true) {
-    utils.defineProperty(randomBytes, '_weakCrypto', true);
+    defineProperty(randomBytes, '_weakCrypto', true);
 }
 
 module.exports = randomBytes;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./properties.js":18}],5:[function(require,module,exports){
+},{"./properties.js":19}],5:[function(require,module,exports){
 
 var getAddress = require('./address').getAddress;
 var convert = require('./convert');
@@ -325,7 +325,7 @@ module.exports = {
     getContractAddress: getContractAddress,
 }
 
-},{"./address":2,"./convert":6,"./keccak256":8,"./rlp":19}],6:[function(require,module,exports){
+},{"./address":2,"./convert":6,"./keccak256":8,"./rlp":20}],6:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
@@ -488,7 +488,7 @@ module.exports = {
     isHexString: isHexString,
 };
 
-},{"./properties.js":18,"./throw-error":22}],7:[function(require,module,exports){
+},{"./properties.js":19,"./throw-error":23}],7:[function(require,module,exports){
 'use strict';
 
 // This is SUPER useful, but adds 140kb (even zipped, adds 40kb)
@@ -499,6 +499,7 @@ var bigNumber = require('./bignumber');
 var contractAddress = require('./contract-address');
 var convert = require('./convert');
 var keccak256 = require('./keccak256');
+var namehash = require('./namehash');
 var sha256 = require('./sha2').sha256;
 var randomBytes = require('./random-bytes');
 var properties = require('./properties');
@@ -531,6 +532,8 @@ module.exports = {
     toUtf8Bytes: utf8.toUtf8Bytes,
     toUtf8String: utf8.toUtf8String,
 
+    namehash: namehash,
+
     getAddress: address.getAddress,
     getContractAddress: contractAddress.getContractAddress,
 
@@ -548,7 +551,7 @@ require('./standalone')({
 });
 
 
-},{"./address":2,"./bignumber":3,"./contract-address":5,"./convert":6,"./keccak256":8,"./properties":18,"./random-bytes":4,"./rlp":19,"./sha2":20,"./standalone":21,"./units":23,"./utf8":24}],8:[function(require,module,exports){
+},{"./address":2,"./bignumber":3,"./contract-address":5,"./convert":6,"./keccak256":8,"./namehash":9,"./properties":19,"./random-bytes":4,"./rlp":20,"./sha2":21,"./standalone":22,"./units":24,"./utf8":25}],8:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -562,7 +565,47 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":6,"js-sha3":17}],9:[function(require,module,exports){
+},{"./convert.js":6,"js-sha3":18}],9:[function(require,module,exports){
+'use strict';
+
+var convert = require('./convert');
+var utf8 = require('./utf8');
+var keccak256 = require('./keccak256');
+
+var Zeros = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+var Partition = new RegExp("^((.*)\\.)?([^.]+)$");
+var UseSTD3ASCIIRules = new RegExp("^[a-z0-9.-]*$");
+
+function namehash(name, depth) {
+    name = name.toLowerCase();
+
+    // Supporting the full UTF-8 space requires additional (and large)
+    // libraries, so for now we simply do not support them.
+    // It should be fairly easy in the future to support systems with
+    // String.normalize, but that is future work.
+    if (!name.match(UseSTD3ASCIIRules)) {
+        throw new Error('contains invalid UseSTD3ASCIIRules characters');
+    }
+
+    var result = Zeros;
+    var processed = 0;
+    while (name.length && (!depth || processed < depth)) {
+        var partition = name.match(Partition);
+        var label = utf8.toUtf8Bytes(partition[3]);
+        result = keccak256(convert.concat([result, keccak256(label)]));
+
+        name = partition[2] || '';
+
+        processed++;
+    }
+
+    return convert.hexlify(result);
+}
+
+module.exports = namehash;
+
+
+},{"./convert":6,"./keccak256":8,"./utf8":25}],10:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -3991,7 +4034,7 @@ module.exports = keccak256;
   };
 })(typeof module === 'undefined' || module, this);
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var hash = exports;
 
 hash.utils = require('./hash/utils');
@@ -4008,7 +4051,7 @@ hash.sha384 = hash.sha.sha384;
 hash.sha512 = hash.sha.sha512;
 hash.ripemd160 = hash.ripemd.ripemd160;
 
-},{"./hash/common":11,"./hash/hmac":12,"./hash/ripemd":13,"./hash/sha":14,"./hash/utils":15}],11:[function(require,module,exports){
+},{"./hash/common":12,"./hash/hmac":13,"./hash/ripemd":14,"./hash/sha":15,"./hash/utils":16}],12:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -4101,7 +4144,7 @@ BlockHash.prototype._pad = function pad() {
   return res;
 };
 
-},{"../hash":10}],12:[function(require,module,exports){
+},{"../hash":11}],13:[function(require,module,exports){
 var hmac = exports;
 
 var hash = require('../hash');
@@ -4151,9 +4194,9 @@ Hmac.prototype.digest = function digest(enc) {
   return this.outer.digest(enc);
 };
 
-},{"../hash":10}],13:[function(require,module,exports){
+},{"../hash":11}],14:[function(require,module,exports){
 module.exports = {ripemd160: null}
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -4719,7 +4762,7 @@ function g1_512_lo(xh, xl) {
   return r;
 }
 
-},{"../hash":10}],15:[function(require,module,exports){
+},{"../hash":11}],16:[function(require,module,exports){
 var utils = exports;
 var inherits = require('inherits');
 
@@ -4978,7 +5021,7 @@ function shr64_lo(ah, al, num) {
 };
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":16}],16:[function(require,module,exports){
+},{"inherits":17}],17:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -5003,7 +5046,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -5482,7 +5525,7 @@ if (typeof Object.create === 'function') {
 })();
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":1}],18:[function(require,module,exports){
+},{"_process":1}],19:[function(require,module,exports){
 function defineProperty(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -5495,7 +5538,7 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 var convert = require('./convert.js');
@@ -5639,7 +5682,7 @@ module.exports = {
     decode: decode,
 }
 
-},{"./convert.js":6}],20:[function(require,module,exports){
+},{"./convert.js":6}],21:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -5664,7 +5707,7 @@ module.exports = {
     createSha512: hash.sha512,
 }
 
-},{"./convert.js":6,"hash.js":10}],21:[function(require,module,exports){
+},{"./convert.js":6,"hash.js":11}],22:[function(require,module,exports){
 (function (global){
 var defineProperty = require('./properties.js').defineProperty;
 
@@ -5691,7 +5734,7 @@ function defineEthersValues(values) {
 module.exports = defineEthersValues;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./properties.js":18}],22:[function(require,module,exports){
+},{"./properties.js":19}],23:[function(require,module,exports){
 'use strict';
 
 function throwError(message, params) {
@@ -5704,7 +5747,7 @@ function throwError(message, params) {
 
 module.exports = throwError;
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var bigNumberify = require('./bignumber.js').bigNumberify;
 var throwError = require('./throw-error');
 
@@ -5779,7 +5822,7 @@ module.exports = {
     parseEther: parseEther,
 }
 
-},{"./bignumber.js":3,"./throw-error":22}],24:[function(require,module,exports){
+},{"./bignumber.js":3,"./throw-error":23}],25:[function(require,module,exports){
 
 var convert = require('./convert.js');
 

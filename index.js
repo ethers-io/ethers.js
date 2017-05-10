@@ -6,6 +6,7 @@ var utils = require('ethers-utils');
 var wallet = require('ethers-wallet');
 
 module.exports = {
+    SigningKey: wallet.SigningKey,
     Wallet: wallet.Wallet,
 
     HDNode: wallet.HDNode,
@@ -17,7 +18,7 @@ module.exports = {
 
     utils: utils,
 
-    _SigningKey: wallet._SigningKey,
+    _SigningKey: wallet.SigningKey,
 };
 
 require('ethers-utils/standalone.js')(module.exports);
