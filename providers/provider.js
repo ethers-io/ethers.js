@@ -18,6 +18,10 @@ var utils = (function() {
         hexlify: convert.hexlify,
         isHexString: convert.isHexString,
 
+        concat: convert.concat,
+
+        namehash: require('ethers-utils/namehash'),
+
         RLP: require('ethers-utils/rlp'),
     }
 })();
@@ -323,6 +327,9 @@ function checkLog(log) {
     return check(formatLog, log);
 }
 
+var ensAddressTestnet = '0x112234455c3a32fd11230c42e7bccd4a84e02010';
+var ensAddressMainnet = '0x314159265dd8dbb310642f98f50c066173c1259b';
+
 function Provider(testnet, chainId) {
     if (!(this instanceof Provider)) { throw new Error('missing new'); }
 
@@ -331,6 +338,9 @@ function Provider(testnet, chainId) {
     if (chainId == null) {
         chainId = (testnet ? Provider.chainId.ropsten: Provider.chainId.homestead);
     }
+
+    // Figure out which ENS to talk to
+    this.ensAddress = (testnet ? ensAddressTestnet: ensAddressMainnet);
 
     if (typeof(chainId) !== 'number') { throw new Error('invalid chainId'); }
 
@@ -566,54 +576,48 @@ utils.defineProperty(Provider.prototype, 'getGasPrice', function() {
 });
 
 
-utils.defineProperty(Provider.prototype, 'getBalance', function(address, blockTag) {
-    try {
-        var params = {address: utils.getAddress(address), blockTag: checkBlockTag(blockTag)};
-        return this.perform('getBalance', params).then(function(result) {
+utils.defineProperty(Provider.prototype, 'getBalance', function(addressOrName, blockTag) {
+    var self = this;
+    return this.resolveName(addressOrName).then(function(address) {
+        var params = { address: address, blockTag: checkBlockTag(blockTag) };
+        return self.perform('getBalance', params).then(function(result) {
             return utils.bigNumberify(result);
         });
-    } catch (error) {
-        return Promise.reject(error);
-    }
+    });
 });
 
-utils.defineProperty(Provider.prototype, 'getTransactionCount', function(address, blockTag) {
-    try {
-        var params = {address: utils.getAddress(address), blockTag: checkBlockTag(blockTag)};
-        return this.perform('getTransactionCount', params).then(function(result) {
+utils.defineProperty(Provider.prototype, 'getTransactionCount', function(addressOrName, blockTag) {
+    var self = this;
+    return this.resolveName(addressOrName).then(function(address) {
+        var params = { address: address, blockTag: checkBlockTag(blockTag) };
+        return self.perform('getTransactionCount', params).then(function(result) {
             var value = parseInt(result);
             if (value != result) { throw new Error('invalid response - getTransactionCount'); }
             return value;
         });
-    } catch (error) {
-        return Promise.reject(error);
-    }
+    });
 });
 
-utils.defineProperty(Provider.prototype, 'getCode', function(address, blockTag) {
-    try {
-        var params = {address: utils.getAddress(address), blockTag: checkBlockTag(blockTag)};
-        return this.perform('getCode', params).then(function(result) {
+utils.defineProperty(Provider.prototype, 'getCode', function(addressOrName, blockTag) {
+    var self = this;
+    return this.resolveName(addressOrName).then(function(address) {
+        var params = {address: address, blockTag: checkBlockTag(blockTag)};
+        return self.perform('getCode', params).then(function(result) {
             return utils.hexlify(result);
         });
-    } catch (error) {
-        return Promise.reject(error);
-    }
+    });
 });
 
-utils.defineProperty(Provider.prototype, 'getStorageAt', function(address, position, blockTag) {
-    try {
-        var params = {
-            address: utils.getAddress(address),
-            position: utils.hexlify(position),
-            blockTag: checkBlockTag(blockTag)
-        };
-        return this.perform('getStorageAt', params).then(function(result) {
+utils.defineProperty(Provider.prototype, 'getStorageAt', function(addressOrName, position, blockTag) {
+    var params = { address: addressOrName };
+    var self = this;
+    return this._resolveNames(params, ['address']).then(function(params) {
+        params.position = utils.hexlify(position);
+        params.blockTag = checkBlockTag(blockTag);
+        return self.perform('getStorageAt', params).then(function(result) {
             return utils.hexlify(result);
         });
-    } catch (error) {
-        return Promise.reject(error);
-    }
+    });
 });
 
 utils.defineProperty(Provider.prototype, 'sendTransaction', function(signedTransaction) {
@@ -631,25 +635,23 @@ utils.defineProperty(Provider.prototype, 'sendTransaction', function(signedTrans
 
 
 utils.defineProperty(Provider.prototype, 'call', function(transaction) {
-    try {
-        var params = {transaction: checkTransactionRequest(transaction)};
-        return this.perform('call', params).then(function(result) {
+    var self = this;
+    return this._resolveNames(transaction, ['to', 'from']).then(function(transaction) {
+        var params = { transaction: checkTransactionRequest(transaction) };
+        return self.perform('call', params).then(function(result) {
             return utils.hexlify(result);
         });
-    } catch (error) {
-        return Promise.reject(error);
-    }
+    });
 });
 
 utils.defineProperty(Provider.prototype, 'estimateGas', function(transaction) {
-    try {
+    var self = this;
+    return this._resolveNames(transaction, ['to', 'from']).then(function(transaction) {
         var params = {transaction: checkTransactionRequest(transaction)};
-        return this.perform('estimateGas', params).then(function(result) {
+        return self.perform('estimateGas', params).then(function(result) {
              return utils.bigNumberify(result);
         });
-    } catch (error) {
-        return Promise.reject(error);
-    }
+    });
 });
 
 
@@ -723,8 +725,58 @@ utils.defineProperty(Provider.prototype, 'getEtherPrice', function() {
     }
 });
 
+
+utils.defineProperty(Provider.prototype, '_resolveNames', function(object, keys) {
+    var promises = [];
+
+    var result = {};
+    for (var key in object) { result[key] = object[key]; }
+
+    keys.forEach(function(key) {
+        if (result[key] === undefined) { return; }
+        promises.push(this.resolveName(result[key]).then(function(address) {
+            result[key] = address;
+        }));
+    }, this);
+
+    return Promise.all(promises).then(function() { return result; });
+});
+
+utils.defineProperty(Provider.prototype, 'resolveName', function(name) {
+    // If it is already an address, nothing to resolve
+    try {
+        return Promise.resolve(utils.getAddress(name));
+    } catch (error) { }
+
+    var nodeHash = utils.namehash(name);
+
+    // keccak256('resolver(bytes32)')
+    var data = '0x0178b8bf' + nodeHash.substring(2);
+    var transaction = { to: this.ensAddress, data:  data };
+
+    var self = this;
+    // Get the resolver from the blockchain
+    return this.call(transaction).then(function(data) {
+
+        // extract the address from the data
+        if (data.length != 66) { return null; }
+        return utils.getAddress('0x' + data.substring(26));
+
+    // Get the addr from the resovler
+    }).then(function(resolverAddress) {
+        // keccak256('addr(bytes32)')
+        var data = '0x3b3b57de' + nodeHash.substring(2);
+        var transaction = { to: resolverAddress, data: data };
+        return self.call(transaction);
+
+    // extract the address from the data
+    }).then(function(data) {
+        if (data.length != 66) { return null; }
+        return utils.getAddress('0x' + data.substring(26));
+    });
+});
+
 utils.defineProperty(Provider.prototype, 'doPoll', function() {
-    
 });
 
 utils.defineProperty(Provider.prototype, 'perform', function(method, params) {

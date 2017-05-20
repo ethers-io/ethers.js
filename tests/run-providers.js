@@ -102,23 +102,22 @@ function equal(serialized, object) {
 }
 
 
-function testReadOnlyProvider(test, provider) {
+function testReadOnlyProvider(test, address, provider) {
     return Promise.all([
-        provider.getBalance(TestContract.address),
-        provider.getCode(TestContract.address),
-        provider.getStorageAt(TestContract.address, 0),
+        provider.getBalance(address),
+        provider.getCode(address),
+        provider.getStorageAt(address, 0),
         provider.getBlock(TestContract.blockNumber),
         provider.getBlock((provider instanceof providers.EtherscanProvider) ? TestContract.blockNumber: TestContract.blockHash),
         provider.getTransaction(TestContract.transactionHash),
         provider.getTransactionReceipt(TestContract.transactionHash),
-        provider.call({to: TestContract.address, data: '0x' + TestContract.functions['getOwner()']}),
-        provider.call({to: TestContract.address, data: '0x' + TestContract.functions['getStringValue()']}),
+        provider.call({to: address, data: '0x' + TestContract.functions['getOwner()']}),
+        provider.call({to: address, data: '0x' + TestContract.functions['getStringValue()']}),
 
         provider.getBlockNumber(),
         provider.getGasPrice(),
         //provider.estimeGas()
     ]).then(function(result) {
-
         // getBalance
         test.equal(result[0].toString(), '123456789', 'getBalance(contractAddress)');
 
@@ -150,10 +149,10 @@ function testReadOnlyProvider(test, provider) {
     });
 }
 
-function testWriteProvider(test, wallet) {
+function testWriteProvider(test, address, wallet) {
 
     var testTransaction = {
-        to: TestContract.address,
+        to: address,
         gasLimit: 0x793e + 42,
         value: 100,
     };
@@ -233,7 +232,7 @@ function testEventsProvider(test, provider) {
 function testReadOnly(test) {
     var promises = [];
     getProviders().forEach(function(provider) {
-        promises.push(testReadOnlyProvider(test, provider));
+        promises.push(testReadOnlyProvider(test, TestContract.address, provider));
     });
 
     Promise.all(promises).then(function(results) {
@@ -262,7 +261,7 @@ function testWrite(test) {
     getProviders().forEach(function(provider) {
         promise = promise.then(function() {
             var wallet = new Wallet(privateKey, provider);
-            return testWriteProvider(test, wallet);
+            return testWriteProvider(test, TestContract.address, wallet);
         });
     });
 
@@ -411,15 +410,60 @@ function testDeploy(test) {
     });
 }
 
-function testENSProvider(test, provider) {
-    provider.resolveName('foo.test').then(function(result) {
+function testENSProviderReadOnly(test, provider) {
+    var promises = [];
+    getProviders().forEach(function(provider) {
+        promises.push(testReadOnlyProvider(test, 'test.ricmoose.eth', provider));
+    });
+
+    Promise.all(promises).then(function(results) {
+        console.log(results);
+        test.done();
+    }, function(error) {
+        console.log(error);
+        test.ok(false, 'error occurred');
+    });
+
+    /*
+    provider.resolveName('anemone.eth').then(function(result) {
         console.log(result);
+        test.done();
+    });
+    */
+}
+
+
+function testENSProviderWrite(test, provider) {
+    var promise = wallet.getBalance().then(function(balance) {
+        if (balance.isZero()) {
+            console.log('Plese send some testnet ether to: ' + wallet.address);
+            throw new Error('insufficient balance');
+        }
+    });
+
+    getProviders().forEach(function(provider) {
+        promise = promise.then(function() {
+            var wallet = new Wallet(privateKey, provider);
+            return testWriteProvider(test, TestContract.address, wallet);
+        });
+    });
+
+    promise.then(function(result) {
+        test.done();
+
+    }, function(error) {
+        console.log(error);
+        test.ok(false, 'error occurred');
         test.done();
     });
 }
 
-function testENS(test) {
-    testENSProvider(test, new providers.InfuraProvider(true));
+function testENSReadOnly(test) {
+    testENSProviderReadOnly(test, new providers.InfuraProvider(true));
+}
+
+function testENSWrite(test) {
+    testENSProviderWrite(test, new providers.InfuraProvider(true));
 }
 
 module.exports = {
@@ -428,6 +472,7 @@ module.exports = {
     'events': testEvents,
     'contracts': testContracts,
     'deploy': testDeploy,
-//    'ens': testENS,
+    'ens-readonly': testENSReadOnly,
+    'ens-write': testENSWrite,
 };
 
