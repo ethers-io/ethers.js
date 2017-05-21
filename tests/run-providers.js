@@ -466,12 +466,24 @@ function testENSWrite(test) {
     testENSProviderWrite(test, new providers.InfuraProvider(true));
 }
 
+function testENS(test) {
+    var provider = providers.getDefaultProvider(true);
+    provider.resolveName('ricmoose.eth').then(function(address) {
+        test.equal('0x5543707cC4520F3984656e8eDEa6527ca474E77B', address, 'Simple ENS name');
+        return provider.resolveName('duck.ricmoose.eth');
+    }).then(function(address) {
+        test.equal('0xf770358c6F29FAA38186E49c149C87968775B228', address, 'Nested ENS name');
+        test.done();
+    });
+}
+
 module.exports = {
     'read-only': testReadOnly,
     'write': testWrite,
     'events': testEvents,
     'contracts': testContracts,
     'deploy': testDeploy,
+    'ens': testENS,
     'ens-readonly': testENSReadOnly,
     'ens-write': testENSWrite,
 };
