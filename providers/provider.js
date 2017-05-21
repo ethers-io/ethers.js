@@ -26,6 +26,12 @@ var utils = (function() {
     }
 })();
 
+function copyObject(obj) {
+    var result = {};
+    for (var key in obj) { result[key] = obj[key]; }
+    return result;
+}
+
 function check(format, object) {
     var result = {};
     for (var key in format) {
@@ -609,11 +615,13 @@ utils.defineProperty(Provider.prototype, 'getCode', function(addressOrName, bloc
 });
 
 utils.defineProperty(Provider.prototype, 'getStorageAt', function(addressOrName, position, blockTag) {
-    var params = { address: addressOrName };
     var self = this;
-    return this._resolveNames(params, ['address']).then(function(params) {
-        params.position = utils.hexlify(position);
-        params.blockTag = checkBlockTag(blockTag);
+    return this.resolveName(addressOrName).then(function(address) {
+        var params = {
+            address: address,
+            blockTag: checkBlockTag(blockTag),
+            position: utils.hexlify(position),
+        };
         return self.perform('getStorageAt', params).then(function(result) {
             return utils.hexlify(result);
         });
@@ -681,7 +689,7 @@ utils.defineProperty(Provider.prototype, 'getBlock', function(blockHashOrBlockTa
 
 utils.defineProperty(Provider.prototype, 'getTransaction', function(transactionHash) {
     try {
-        var params = {transactionHash: checkHash(transactionHash)};
+        var params = { transactionHash: checkHash(transactionHash) };
         return this.perform('getTransaction', params).then(function(result) {
             if (result != null) { result = checkTransaction(result); }
             return result;
@@ -693,7 +701,7 @@ utils.defineProperty(Provider.prototype, 'getTransaction', function(transactionH
 
 utils.defineProperty(Provider.prototype, 'getTransactionReceipt', function(transactionHash) {
     try {
-        var params = {transactionHash: checkHash(transactionHash)};
+        var params = { transactionHash: checkHash(transactionHash) };
         return this.perform('getTransactionReceipt', params).then(function(result) {
             if (result != null) { result = checkTransactionReceipt(result); }
             return result;
@@ -704,14 +712,13 @@ utils.defineProperty(Provider.prototype, 'getTransactionReceipt', function(trans
 });
 
 utils.defineProperty(Provider.prototype, 'getLogs', function(filter) {
-    try {
-        var params = {filter: checkFilter(filter)};
+    var self = this;
+    return this._resolveNames(filter, ['address']).then(function(filter) {
+        var params = { filter: checkFilter(filter) };
         return this.perform('getLogs', params).then(function(result) {
             return arrayOf(checkLog)(result);
         });
-    } catch (error) {
-        return Promise.reject(error);
-    }
+    });
 });
 
 utils.defineProperty(Provider.prototype, 'getEtherPrice', function() {
@@ -729,8 +736,7 @@ utils.defineProperty(Provider.prototype, 'getEtherPrice', function() {
 utils.defineProperty(Provider.prototype, '_resolveNames', function(object, keys) {
     var promises = [];
 
-    var result = {};
-    for (var key in object) { result[key] = object[key]; }
+    var result = copyObject(object);
 
     keys.forEach(function(key) {
         if (result[key] === undefined) { return; }
