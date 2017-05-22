@@ -715,7 +715,7 @@ utils.defineProperty(Provider.prototype, 'getLogs', function(filter) {
     var self = this;
     return this._resolveNames(filter, ['address']).then(function(filter) {
         var params = { filter: checkFilter(filter) };
-        return this.perform('getLogs', params).then(function(result) {
+        return self.perform('getLogs', params).then(function(result) {
             return arrayOf(checkLog)(result);
         });
     });
@@ -758,7 +758,7 @@ utils.defineProperty(Provider.prototype, 'resolveName', function(name) {
 
     // keccak256('resolver(bytes32)')
     var data = '0x0178b8bf' + nodeHash.substring(2);
-    var transaction = { to: this.ensAddress, data:  data };
+    var transaction = { to: this.ensAddress, data: data };
 
     var self = this;
     // Get the resolver from the blockchain
@@ -770,6 +770,7 @@ utils.defineProperty(Provider.prototype, 'resolveName', function(name) {
 
     // Get the addr from the resovler
     }).then(function(resolverAddress) {
+
         // keccak256('addr(bytes32)')
         var data = '0x3b3b57de' + nodeHash.substring(2);
         var transaction = { to: resolverAddress, data: data };
@@ -778,7 +779,9 @@ utils.defineProperty(Provider.prototype, 'resolveName', function(name) {
     // extract the address from the data
     }).then(function(data) {
         if (data.length != 66) { return null; }
-        return utils.getAddress('0x' + data.substring(26));
+        var address = utils.getAddress('0x' + data.substring(26));
+        if (address === '0x0000000000000000000000000000000000000000') { return null; }
+        return address;
     });
 });
 
