@@ -15,6 +15,11 @@ var TestContracts = require('./tests/test-contract.json');
 var TestContract = TestContracts.test;
 var TestContractDeploy = TestContracts.deploy;
 
+process.on('unhandledRejection', function(reason, p){
+    console.log("Possibly Unhandled Rejection at: Promise ", p, " reason: ", reason);
+    console.log(p);
+    console.log(reason);
+});
 
 var callFallback = (function() {
     var contractInterface = new contracts.Interface(TestContract.interface);
@@ -473,6 +478,12 @@ function testENS(test) {
         return provider.resolveName('duck.ricmoose.eth');
     }).then(function(address) {
         test.equal('0xf770358c6F29FAA38186E49c149C87968775B228', address, 'Nested ENS name');
+        return provider.resolveName('nothing-here.ricmoose.eth');
+    }).then(function(address) {
+        test.equal(null, address, 'Non-existing ENS name');
+        return provider.resolveName('not-valid');
+    }).then(function(address) {
+        test.equal(null, address, 'Invalid ENS name');
         test.done();
     });
 }
