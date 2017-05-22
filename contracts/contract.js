@@ -18,10 +18,11 @@ var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice:true, to: true, value: true
 }
 
-function Contract(address, contractInterface, signerOrProvider) {
+function Contract(addressOrName, contractInterface, signerOrProvider) {
     if (!(this instanceof Contract)) { throw new Error('missing new'); }
 
-    address = utils.getAddress(address);
+    // @TODO: Maybe still check the addressOrName looks like a valid address or name?
+    //address = utils.getAddress(address);
 
     if (!(contractInterface instanceof Interface)) {
         contractInterface = new Interface(contractInterface);
@@ -38,7 +39,7 @@ function Contract(address, contractInterface, signerOrProvider) {
         throw new Error('missing provider');
     }
 
-    utils.defineProperty(this, 'address', address);
+    utils.defineProperty(this, 'address', addressOrName);
     utils.defineProperty(this, 'interface', contractInterface);
     utils.defineProperty(this, 'signer', signer);
     utils.defineProperty(this, 'provider', provider);
@@ -74,7 +75,7 @@ function Contract(address, contractInterface, signerOrProvider) {
             var call = method.apply(contractInterface, params);
 
             // Send to the contract address
-            transaction.to = address;
+            transaction.to = addressOrName;
 
             // Set the transaction data
             transaction.data = call.data;
@@ -97,7 +98,7 @@ function Contract(address, contractInterface, signerOrProvider) {
                     var fromPromise = null;
                     if (transaction.from == null && signer && signer.getAddress) {
                         fromPromise = signer.getAddress();
-                        if (!(address instanceof Promise)) {
+                        if (!(fromPromise instanceof Promise)) {
                             fromPromise = Promise.resolve(fromPromise);
                         }
                     } else {
