@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Low-Level API &mdash; ethers.js 2.0.0 documentation</title>
+  <title>Low-Level API &mdash; ethers.js 2.1.0 documentation</title>
   
 
   
@@ -34,7 +34,7 @@
   
 
   
-    <link rel="top" title="ethers.js 2.0.0 documentation" href="index.html"/>
+    <link rel="top" title="ethers.js 2.1.0 documentation" href="index.html"/>
         <link rel="next" title="Cookbook" href="cookbook.html"/>
         <link rel="prev" title="Utilities" href="api-utils.html"/> 
 
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                2.0.0
+                2.1.0
               </div>
             
           
@@ -420,7 +420,7 @@ is designed for developers that are sub-classing Provider.</p>
 <dt><sup>prototype</sup> . perform ( method , params )</dt>
 <dd>The only method needed to override in a subclass. All values are sanitized
 and defaults populated in params and the result is sanitized before returning.
-Returns a <span class="xref std std-ref">Promise</span>, see the example below for overview of
+Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a>, see the example below for overview of
 <em>method</em> and <em>params</em>.</dd>
 </dl>
 </div>
@@ -431,7 +431,7 @@ Returns a <span class="xref std std-ref">Promise</span>, see the example below f
 <dd>Set up <em>childProvider</em> as an provider, inheriting the parent prototype and
 set up a prototype.inherits on the <em>childProvider</em>.</dd>
 <dt><sup>Provider</sup> . fetchJSON ( url , body , processFunc )</dt>
-<dd>Convenience method for returning a <span class="xref std std-ref">Promise</span> with the result of fetching JSON
+<dd>Convenience method for returning a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the result of fetching JSON
 from a <em>url</em> with an optional <em>body</em>. The optional <em>processFunc</em> is called on
 the parsed JSON before being passed to the Promise&#8217;s resolve. (throwing an error
 in the <em>processFunc</em> will cause the Promise to reject)</dd>
@@ -728,7 +728,7 @@ invalid RLP-coded data)</dd>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2.0.0',
+            VERSION:'2.1.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

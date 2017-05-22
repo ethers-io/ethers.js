@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Providers API &mdash; ethers.js 2.0.0 documentation</title>
+  <title>Providers API &mdash; ethers.js 2.1.0 documentation</title>
   
 
   
@@ -34,7 +34,7 @@
   
 
   
-    <link rel="top" title="ethers.js 2.0.0 documentation" href="index.html"/>
+    <link rel="top" title="ethers.js 2.1.0 documentation" href="index.html"/>
         <link rel="up" title="Application Programming Interface (API)" href="api.html"/>
         <link rel="next" title="Contracts" href="api-contract.html"/>
         <link rel="prev" title="Wallets" href="api-wallet.html"/> 
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                2.0.0
+                2.1.0
               </div>
             
           
@@ -286,7 +286,7 @@ the providers attached)</dd>
 <dd>The JSON-RPC URL the provider is connected to</dd>
 <dt><sup>prototype</sup> . send ( method , params )</dt>
 <dd>Send the JSON-RPC <em>method</em> with <em>params</em>. This is useful for calling
-non-standard or less common JSON-RPC methods. A <span class="xref std std-ref">Promise</span> is
+non-standard or less common JSON-RPC methods. A <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> is
 returned which will resolve to the parsed JSON result.</dd>
 </dl>
 </div>
@@ -309,17 +309,20 @@ returned which will resolve to the parsed JSON result.</dd>
 <div class="section" id="account-actions">
 <h2>Account Actions<a class="headerlink" href="#account-actions" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt><sup>prototype</sup> . getBalance ( address [ , blockTag ] )</dt>
-<dd><p class="first">Returns a <span class="xref std std-ref">Promise</span> with the balance (as a <a class="reference internal" href="api-utils.html#bignumber"><span class="std std-ref">BigNumber</span></a>) of
-<em>address</em> at <em>blockTag</em>. (See: <a class="reference external" href="blocktag">Block Tags</a>)</p>
+<dt><sup>prototype</sup> . getBalance ( addressOrName [ , blockTag ] )</dt>
+<dd><p class="first">Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the balance (as a <a class="reference internal" href="api-utils.html#bignumber"><span class="std std-ref">BigNumber</span></a>) of
+<em>addressOrName</em> at <em>blockTag</em>. (See: <a class="reference external" href="blocktag">Block Tags</a>)</p>
 <p class="last"><strong>default:</strong> <em>blockTag</em>=&#8221;latest&#8221;</p>
 </dd>
-<dt><sup>prototype</sup> . getTransactionCount ( address [ , blockTag ] )</dt>
-<dd><p class="first">Returns a <span class="xref std std-ref">Promise</span> with the number of sent transactions (as a Number) from
-<em>address</em> at <em>blockTag</em>. This is also the nonce required to send a new
+<dt><sup>prototype</sup> . getTransactionCount ( addressOrName [ , blockTag ] )</dt>
+<dd><p class="first">Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the number of sent transactions (as a Number) from
+<em>addressOrName</em> at <em>blockTag</em>. This is also the nonce required to send a new
 transaction. (See: <a class="reference external" href="blocktag">Block Tags</a>)</p>
 <p class="last"><strong>default:</strong> <em>blockTag</em>=&#8221;latest&#8221;</p>
 </dd>
+<dt><sup>prototype</sup> . resolveName ( ensName )</dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the address (or null) of that the <em>ensName</em> resolves
+to.</dd>
 </dl>
 <div class="section" id="id3">
 <h3><em>Examples</em><a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
@@ -338,6 +341,10 @@ transaction. (See: <a class="reference external" href="blocktag">Block Tags</a>)
 <span class="n">provider</span><span class="o">.</span><span class="n">getTransactionCount</span><span class="p">(</span><span class="n">address</span><span class="p">)</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">transactionCount</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Total Transactions Ever Send: &quot;</span> <span class="o">+</span> <span class="n">transactionCount</span><span class="p">);</span>
 <span class="p">});</span>
+
+<span class="n">provider</span><span class="o">.</span><span class="n">resolveName</span><span class="p">(</span><span class="s2">&quot;test.ricmoose.eth&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">address</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Address: &quot;</span> <span class="o">+</span> <span class="n">address</span><span class="p">);</span>
+<span class="p">});</span>
 </pre></div>
 </div>
 </div>
@@ -347,15 +354,15 @@ transaction. (See: <a class="reference external" href="blocktag">Block Tags</a>)
 <h2>Blockchain Status<a class="headerlink" href="#blockchain-status" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt><sup>prototype</sup> . getBlockNumber ( )</dt>
-<dd>Returns a <span class="xref std std-ref">Promise</span> with the latest block number (as a Number).</dd>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the latest block number (as a Number).</dd>
 <dt><sup>prototype</sup> . getGasPrice ( )</dt>
-<dd>Returns a <span class="xref std std-ref">Promise</span> with the current gas price (as a <a class="reference internal" href="api-utils.html#bignumber"><span class="std std-ref">BigNumber</span></a>).</dd>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the current gas price (as a <a class="reference internal" href="api-utils.html#bignumber"><span class="std std-ref">BigNumber</span></a>).</dd>
 <dt><sup>prototype</sup> . getBlock ( blockHashOrBlockNumber )</dt>
-<dd>Returns a <span class="xref std std-ref">Promise</span> with the block at <em>blockHashorBlockNumber</em>. (See: <a class="reference external" href="blockresponse">Block Responses</a>)</dd>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the block at <em>blockHashorBlockNumber</em>. (See: <a class="reference external" href="blockresponse">Block Responses</a>)</dd>
 <dt><sup>prototype</sup> . getTransaction ( transactionHash )</dt>
-<dd>Returns a <span class="xref std std-ref">Promise</span> with the transaction with <em>transactionHash</em>. (See: <a class="reference external" href="transactionresult">Transaction Results</a>)</dd>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the transaction with <em>transactionHash</em>. (See: <a class="reference external" href="transactionresult">Transaction Results</a>)</dd>
 <dt><sup>prototype</sup> . getTransactionReceipt ( transactionHash )</dt>
-<dd>Returns a <span class="xref std std-ref">Promise</span> with the transaction receipt with <em>transactionHash</em>.
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the transaction receipt with <em>transactionHash</em>.
 (See: <a class="reference external" href="transactionReceipts">Transaction Receipts</a>)</dd>
 </dl>
 <div class="section" id="id4">
@@ -414,19 +421,19 @@ usually be used instead.</p>
 <dl class="docutils">
 <dt><sup>prototype</sup> . call ( transaction )</dt>
 <dd><p class="first">Send the <strong>read-only</strong> (constant) <em>transaction</em> to a single Ethereum node and
-return a <span class="xref std std-ref">Promise</span> with the result (as a <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a>) of executing it.
+return a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the result (as a <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a>) of executing it.
 (See <a class="reference external" href="transactionrequest">Transaction Requests</a>)</p>
 <p class="last">This is free, since it does not change any state on the blockchain.</p>
 </dd>
 <dt><sup>prototype</sup> . estimateGas ( transaction )</dt>
-<dd><p class="first">Send a <em>transaction</em> to a single Ethereum node and return a <span class="xref std std-ref">Promise</span> with the
+<dd><p class="first">Send a <em>transaction</em> to a single Ethereum node and return a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the
 estimated amount of gas required (as a <a class="reference internal" href="api-utils.html#bignumber"><span class="std std-ref">BigNumber</span></a>) to send it.
 (See <a class="reference external" href="transactionrequest">Transaction Requests</a>)</p>
 <p class="last">This is free, but only an estimate. Providing too little gas will result in a
 transaction being rejected (while still consuming all provided gas).</p>
 </dd>
 <dt><sup>prototype</sup> . sendTransaction ( signedTransaction )</dt>
-<dd><p class="first">Send the <em>signedTransaction</em> to the <strong>entire</strong> Ethereum network and returns a <span class="xref std std-ref">Promise</span>
+<dd><p class="first">Send the <em>signedTransaction</em> to the <strong>entire</strong> Ethereum network and returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a>
 with the transaction hash.</p>
 <p class="last"><strong>This will consume gas</strong> from the account that signed the transaction.</p>
 </dd>
@@ -442,15 +449,16 @@ with the transaction hash.</p>
 <div class="section" id="contract-state">
 <h2>Contract State<a class="headerlink" href="#contract-state" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt><sup>prototype</sup> . getCode ( address )</dt>
-<dd>Returns a <span class="xref std std-ref">Promise</span> with the bytecode (as a <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a>) at  <em>address</em>.</dd>
-<dt><sup>prototype</sup> . getStorageAt ( address, position [ , blockTag ] )</dt>
-<dd><p class="first">Returns a <span class="xref std std-ref">Promise</span> with the value (as a <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a>) at <em>address</em> in
-<em>position</em> at <em>blockTag</em>. (See <a class="reference external" href="blocktag">Block Tags</a>)</p>
+<dt><sup>prototype</sup> . getCode ( addressOrName )</dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the bytecode (as a <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a>)
+at  <em>addressOrName</em>.</dd>
+<dt><sup>prototype</sup> . getStorageAt ( addressOrName, position [ , blockTag ] )</dt>
+<dd><p class="first">Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the value (as a <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a>) at
+<em>addressOrName</em> in <em>position</em> at <em>blockTag</em>. (See <a class="reference external" href="blocktag">Block Tags</a>)</p>
 <p class="last">default: <em>blockTag</em>= &#8220;latest&#8221;</p>
 </dd>
 <dt><sup>prototype</sup> . getLogs ( filter )</dt>
-<dd>Returns a <span class="xref std std-ref">Promise</span> with an array (possibly empty) of the logs that
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with an array (possibly empty) of the logs that
 match the <em>filter</em>. (See <a class="reference external" href="filter">Filters</a>)</dd>
 </dl>
 <div class="section" id="id8">
@@ -486,6 +494,11 @@ total number of callbacks registered</dd>
 <dd><p class="first">Whenever a new block is mined</p>
 <p class="last"><code class="docutils literal"><span class="pre">callback(</span> <span class="pre">blockNumber</span> <span class="pre">)</span></code></p>
 </dd>
+<dt>any address</dt>
+<dd><p class="first">When the balance of the coresposding address changes.</p>
+<blockquote class="last">
+<div><code class="docutils literal"><span class="pre">callback(</span> <span class="pre">balance</span> <span class="pre">)</span></code></div></blockquote>
+</dd>
 <dt>any transaction hash</dt>
 <dd><p class="first">When the coresponding transaction is mined; also see
 <a class="reference external" href="waitForTransaction">Waiting for Transactions</a></p>
@@ -502,7 +515,7 @@ total number of callbacks registered</dd>
 <span id="id9"></span><h3>Waiting for Transactions<a class="headerlink" href="#waitfortransaction" title="Permalink to this headline">¶</a></h3>
 <dl class="docutils">
 <dt><sup>prototype</sup> . waitForTransaction ( transachtionHash [ , timeout ] )</dt>
-<dd>Return a <span class="xref std std-ref">Promise</span> which returns the transaction once <em>transactionHash</em> is
+<dd>Return a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> which returns the transaction once <em>transactionHash</em> is
 mined, with an optional <em>timeout</em> (in milliseconds)</dd>
 </dl>
 </div>
@@ -513,6 +526,10 @@ mined, with an optional <em>timeout</em> (in milliseconds)</dd>
     <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;New Block: &#39;</span> <span class="o">+</span> <span class="n">blockNumber</span><span class="p">);</span>
 <span class="p">});</span>
 
+<span class="o">//</span> <span class="n">Get</span> <span class="n">notified</span> <span class="n">on</span> <span class="n">account</span> <span class="n">balance</span> <span class="n">change</span>
+<span class="n">provider</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">&#39;0x46Fa84b9355dB0708b6A57cd6ac222950478Be1d&#39;</span><span class="p">,</span> <span class="n">function</span><span class="p">(</span><span class="n">blockNumber</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;New Block: &#39;</span> <span class="o">+</span> <span class="n">blockNumber</span><span class="p">);</span>
+<span class="p">});</span>
 
 <span class="o">//</span> <span class="n">Get</span> <span class="n">notified</span> <span class="n">when</span> <span class="n">a</span> <span class="n">transaction</span> <span class="ow">is</span> <span class="n">mined</span>
 <span class="n">provider</span><span class="o">.</span><span class="n">once</span><span class="p">(</span><span class="n">transactionHash</span><span class="p">,</span> <span class="n">function</span><span class="p">(</span><span class="n">transction</span><span class="p">)</span> <span class="p">{</span>
@@ -585,17 +602,17 @@ or <a class="reference internal" href="api-utils.html#hexstring"><span class="st
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Example</span><span class="p">:</span>
 <span class="p">{</span>
     <span class="o">//</span> <span class="n">Required</span> <span class="n">unless</span> <span class="n">deploying</span> <span class="n">a</span> <span class="n">contract</span> <span class="p">(</span><span class="ow">in</span> <span class="n">which</span> <span class="n">case</span> <span class="n">omit</span><span class="p">)</span>
-    <span class="n">to</span><span class="p">:</span> <span class="n">address</span><span class="p">,</span>      <span class="o">//</span> <span class="n">the</span> <span class="n">target</span> <span class="n">address</span>
+    <span class="n">to</span><span class="p">:</span> <span class="n">addressOrName</span><span class="p">,</span>  <span class="o">//</span> <span class="n">the</span> <span class="n">target</span> <span class="n">address</span> <span class="ow">or</span> <span class="n">ENS</span> <span class="n">name</span>
 
     <span class="o">//</span> <span class="n">These</span> <span class="n">are</span> <span class="n">optional</span><span class="o">/</span><span class="n">meaningless</span> <span class="k">for</span> <span class="n">call</span> <span class="ow">and</span> <span class="n">estimateGas</span>
-    <span class="n">nonce</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>         <span class="o">//</span> <span class="n">the</span> <span class="n">transaction</span> <span class="n">nonce</span>
-    <span class="n">gasLimit</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>      <span class="o">//</span> <span class="n">the</span> <span class="n">maximum</span> <span class="n">gas</span> <span class="n">this</span> <span class="n">transaction</span> <span class="n">may</span> <span class="n">spend</span>
-    <span class="n">gasPrice</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>      <span class="o">//</span> <span class="n">the</span> <span class="n">price</span> <span class="p">(</span><span class="ow">in</span> <span class="n">wei</span><span class="p">)</span> <span class="n">per</span> <span class="n">unit</span> <span class="n">of</span> <span class="n">gas</span>
+    <span class="n">nonce</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>           <span class="o">//</span> <span class="n">the</span> <span class="n">transaction</span> <span class="n">nonce</span>
+    <span class="n">gasLimit</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>        <span class="o">//</span> <span class="n">the</span> <span class="n">maximum</span> <span class="n">gas</span> <span class="n">this</span> <span class="n">transaction</span> <span class="n">may</span> <span class="n">spend</span>
+    <span class="n">gasPrice</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>        <span class="o">//</span> <span class="n">the</span> <span class="n">price</span> <span class="p">(</span><span class="ow">in</span> <span class="n">wei</span><span class="p">)</span> <span class="n">per</span> <span class="n">unit</span> <span class="n">of</span> <span class="n">gas</span>
 
     <span class="o">//</span> <span class="n">These</span> <span class="n">are</span> <span class="n">always</span> <span class="n">optional</span> <span class="p">(</span><span class="n">but</span> <span class="k">for</span> <span class="n">call</span><span class="p">,</span> <span class="n">data</span> <span class="ow">is</span> <span class="n">usually</span> <span class="n">specified</span><span class="p">)</span>
-    <span class="n">data</span><span class="p">:</span> <span class="s2">&quot;0x&quot;</span><span class="p">,</span>       <span class="o">//</span> <span class="n">extra</span> <span class="n">data</span> <span class="k">for</span> <span class="n">the</span> <span class="n">transaction</span><span class="p">,</span> <span class="ow">or</span> <span class="nb">input</span> <span class="k">for</span> <span class="n">call</span>
-    <span class="n">value</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>         <span class="o">//</span> <span class="n">the</span> <span class="n">amount</span> <span class="p">(</span><span class="ow">in</span> <span class="n">wei</span><span class="p">)</span> <span class="n">this</span> <span class="n">transaction</span> <span class="ow">is</span> <span class="n">sending</span>
-    <span class="n">chainId</span><span class="p">:</span> <span class="mi">3</span>        <span class="o">//</span> <span class="n">the</span> <span class="n">network</span> <span class="n">ID</span><span class="p">;</span> <span class="n">usually</span> <span class="n">added</span> <span class="n">by</span> <span class="n">a</span> <span class="n">signer</span>
+    <span class="n">data</span><span class="p">:</span> <span class="s2">&quot;0x&quot;</span><span class="p">,</span>         <span class="o">//</span> <span class="n">extra</span> <span class="n">data</span> <span class="k">for</span> <span class="n">the</span> <span class="n">transaction</span><span class="p">,</span> <span class="ow">or</span> <span class="nb">input</span> <span class="k">for</span> <span class="n">call</span>
+    <span class="n">value</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>           <span class="o">//</span> <span class="n">the</span> <span class="n">amount</span> <span class="p">(</span><span class="ow">in</span> <span class="n">wei</span><span class="p">)</span> <span class="n">this</span> <span class="n">transaction</span> <span class="ow">is</span> <span class="n">sending</span>
+    <span class="n">chainId</span><span class="p">:</span> <span class="mi">3</span>          <span class="o">//</span> <span class="n">the</span> <span class="n">network</span> <span class="n">ID</span><span class="p">;</span> <span class="n">usually</span> <span class="n">added</span> <span class="n">by</span> <span class="n">a</span> <span class="n">signer</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -683,8 +700,8 @@ for the vast majority of filters, a single topic is usually sufficient (see the 
     <span class="n">fromBlock</span><span class="p">:</span> <span class="s2">&quot;latest&quot;</span><span class="p">,</span>
     <span class="n">toBlock</span><span class="p">:</span> <span class="s2">&quot;latest&quot;</span><span class="p">,</span>
 
-    <span class="o">//</span> <span class="n">Optional</span><span class="p">;</span> <span class="n">An</span> <span class="n">address</span> <span class="n">to</span> <span class="nb">filter</span> <span class="n">by</span>
-    <span class="n">address</span><span class="p">:</span> <span class="n">address</span><span class="p">,</span>
+    <span class="o">//</span> <span class="n">Optional</span><span class="p">;</span> <span class="n">An</span> <span class="n">address</span> <span class="p">(</span><span class="ow">or</span> <span class="n">ENS</span> <span class="n">name</span><span class="p">)</span> <span class="n">to</span> <span class="nb">filter</span> <span class="n">by</span>
+    <span class="n">address</span><span class="p">:</span> <span class="n">addressOrName</span><span class="p">,</span>
 
     <span class="o">//</span> <span class="n">Optional</span><span class="p">;</span> <span class="n">A</span> <span class="p">(</span><span class="n">possibly</span> <span class="n">nested</span><span class="p">)</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">topics</span>
     <span class="n">topics</span><span class="p">:</span> <span class="p">[</span> <span class="n">topic1</span> <span class="p">]</span>
@@ -698,7 +715,7 @@ for the vast majority of filters, a single topic is usually sufficient (see the 
 <h2>Provider Specific Extra API Calls<a class="headerlink" href="#provider-specific-extra-api-calls" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt><sup>EtherscanProvider</sup> . getEtherPrice()</dt>
-<dd>Returns a <span class="xref std std-ref">Promise</span> with the price of ether in USD.</dd>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the price of ether in USD.</dd>
 </dl>
 <div class="section" id="id16">
 <h3><em>Examples</em><a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
@@ -753,7 +770,7 @@ for the vast majority of filters, a single topic is usually sufficient (see the 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2.0.0',
+            VERSION:'2.1.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

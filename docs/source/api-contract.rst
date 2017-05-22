@@ -22,8 +22,8 @@ To better see this demonstrated, see the `example`_ below.
 Connecting to a Contract
 ========================
 
-new :sup:`ethers` . Contract ( address , interface , providerOrSigner )
-    Connects to the contract at *address* defined by *interface*, which
+new :sup:`ethers` . Contract ( addressOrName , interface , providerOrSigner )
+    Connects to the contract at *addressOrName* defined by *interface*, which
     may be a JSON string or the parsed object.
 
     The *providerOrSigner* may be any instance of the following:
@@ -66,7 +66,7 @@ function with a given name will be available. (In the future this will
 be addressed by adding parameter explicit calls).
 
 :sup:`prototype` . address
-    The address of the contract.
+    The address (or ENS name) of the contract.
 
 :sup:`prototype` . interface
     The :ref:`Interface <api-interface>` meta-class of the parsed

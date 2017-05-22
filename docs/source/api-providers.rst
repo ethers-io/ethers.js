@@ -126,19 +126,22 @@ InfuraProvider :sup:`( inherits from JsonRpcProvider )`
 Account Actions
 ===============
 
-:sup:`prototype` . getBalance ( address [ , blockTag ] )
+:sup:`prototype` . getBalance ( addressOrName [ , blockTag ] )
     Returns a :ref:`Promise <promise>` with the balance (as a :ref:`BigNumber <bignumber>`) of
-    *address* at *blockTag*. (See: `Block Tags <blocktag>`_)
+    *addressOrName* at *blockTag*. (See: `Block Tags <blocktag>`_)
 
     **default:** *blockTag*\ ="latest"
 
-:sup:`prototype` . getTransactionCount ( address [ , blockTag ] )
+:sup:`prototype` . getTransactionCount ( addressOrName [ , blockTag ] )
     Returns a :ref:`Promise <promise>` with the number of sent transactions (as a Number) from
-    *address* at *blockTag*. This is also the nonce required to send a new
+    *addressOrName* at *blockTag*. This is also the nonce required to send a new
     transaction. (See: `Block Tags <blocktag>`_)
 
     **default:** *blockTag*\ ="latest"
 
+:sup:`prototype` . resolveName ( ensName )
+    Returns a :ref:`Promise <promise>` with the address (or null) of that the *ensName* resolves
+    to.
 
 *Examples*
 ----------
@@ -159,6 +162,10 @@ Account Actions
 
     provider.getTransactionCount(address).then(function(transactionCount) {
         console.log("Total Transactions Ever Send: " + transactionCount);
+    });
+
+    provider.resolveName("test.ricmoose.eth").then(function(address) {
+        console.log("Address: " + address);
     });
 
 -----
@@ -271,12 +278,13 @@ usually be used instead.
 Contract State
 ==============
 
-:sup:`prototype` . getCode ( address )
-    Returns a :ref:`Promise <promise>` with the bytecode (as a :ref:`hex string <hexstring>`) at  *address*.
+:sup:`prototype` . getCode ( addressOrName )
+    Returns a :ref:`Promise <promise>` with the bytecode (as a :ref:`hex string <hexstring>`)
+    at  *addressOrName*.
 
-:sup:`prototype` . getStorageAt ( address, position [ , blockTag ] )
-    Returns a :ref:`Promise <promise>` with the value (as a :ref:`hex string <hexstring>`) at *address* in
-    *position* at *blockTag*. (See `Block Tags <blocktag>`_)
+:sup:`prototype` . getStorageAt ( addressOrName, position [ , blockTag ] )
+    Returns a :ref:`Promise <promise>` with the value (as a :ref:`hex string <hexstring>`) at
+    *addressOrName* in *position* at *blockTag*. (See `Block Tags <blocktag>`_)
 
     default: *blockTag*\ = "latest"
 
@@ -324,6 +332,11 @@ Event Types
 
     ``callback( blockNumber )``
 
+any address
+   When the balance of the coresposding address changes.
+
+    ``callback( balance )``
+
 any transaction hash
     When the coresponding transaction is mined; also see
     `Waiting for Transactions <waitForTransaction>`_
@@ -355,6 +368,10 @@ Waiting for Transactions
         console.log('New Block: ' + blockNumber);
     });
 
+    // Get notified on account balance change
+    provider.on('0x46Fa84b9355dB0708b6A57cd6ac222950478Be1d', function(blockNumber) {
+        console.log('New Block: ' + blockNumber);
+    });
 
     // Get notified when a transaction is mined
     provider.once(transactionHash, function(transction) {
@@ -439,17 +456,17 @@ or :ref:`hex string <hexstring>`.
     // Example:
     {
         // Required unless deploying a contract (in which case omit)
-        to: address,      // the target address
+        to: addressOrName,  // the target address or ENS name
 
         // These are optional/meaningless for call and estimateGas
-        nonce: 0,         // the transaction nonce
-        gasLimit: 0,      // the maximum gas this transaction may spend
-        gasPrice: 0,      // the price (in wei) per unit of gas
+        nonce: 0,           // the transaction nonce
+        gasLimit: 0,        // the maximum gas this transaction may spend
+        gasPrice: 0,        // the price (in wei) per unit of gas
 
         // These are always optional (but for call, data is usually specified)
-        data: "0x",       // extra data for the transaction, or input for call
-        value: 0,         // the amount (in wei) this transaction is sending
-        chainId: 3        // the network ID; usually added by a signer
+        data: "0x",         // extra data for the transaction, or input for call
+        value: 0,           // the amount (in wei) this transaction is sending
+        chainId: 3          // the network ID; usually added by a signer
     }
 
 
@@ -549,8 +566,8 @@ The *EtherscanProvider* only supports a single topic.
         fromBlock: "latest",
         toBlock: "latest",
 
-        // Optional; An address to filter by
-        address: address,
+        // Optional; An address (or ENS name) to filter by
+        address: addressOrName,
 
         // Optional; A (possibly nested) list of topics
         topics: [ topic1 ]

@@ -216,8 +216,8 @@ These operations require the wallet have a provider attached to it.
     details. It is highly recommended to omit *transaction.chainId*, it will be
     filled in by *provider*.
 
-:sup:`prototype` . send ( address, amountWei [ , options ] )
-    Sends *amountWei* to *address* on the network and returns a Promise with the
+:sup:`prototype` . send ( addressOrName, amountWei [ , options ] )
+    Sends *amountWei* to *addressOrName* on the network and returns a Promise with the
     transaction details.
 
 *Examples*
