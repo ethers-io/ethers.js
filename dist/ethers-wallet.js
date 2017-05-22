@@ -10902,43 +10902,35 @@ utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) 
 
     var self = this;
 
-    var gasPrice = new Promise(function(resolve, reject) {
-        if (transaction.gasPrice) {
-            resolve(transaction.gasPrice);
-            return;
-        }
+    var gasPricePromise = null;
+    if (transaction.gasPrice) {
+        gasPricePromise = Promise.resolve(transaction.gasPrice);
+    } else {
+        gasPricePromise = this.provider.getGasPrice();
+    }
 
-        self.provider.getGasPrice().then(function(gasPrice) {
-            resolve(gasPrice);
-        }, function(error) {
-            reject(error);
-        });
-    });
-
-    var nonce = new Promise(function(resolve, reject) {
-        if (transaction.nonce) {
-            resolve(transaction.nonce);
-            return;
-        }
-
-        self.provider.getTransactionCount(self.address, 'pending').then(function(transactionCount) {
-            resolve(transactionCount);
-        }, function(error) {
-            reject(error);
-        });
-    });
+    var noncePromise = null;
+    if (transaction.nonce) {
+        noncePromise = Promise.resolve(transaction.nonce);
+    } else {
+        noncePromise = this.provider.getTransactionCount(self.address, 'pending');
+    }
 
     var chainId = this.provider.chainId;
 
-    var toAddress = undefined;
-    if (transaction.to) { toAddress = utils.getAddress(transaction.to); }
+    var toPromise = null;
+    if (transaction.to) {
+        toPromise = this.provider.resolveName(transaction.to);
+    } else {
+        toPromise = Promise.resolve(undefined);
+    }
 
     var data = utils.hexlify(transaction.data || '0x');
     var value = utils.hexlify(transaction.value || 0);
 
-    return Promise.all([gasPrice, nonce]).then(function(results) {
+    return Promise.all([gasPricePromise, noncePromise, toPromise]).then(function(results) {
         var signedTransaction = self.sign({
-            to: toAddress,
+            to: results[2],
             data: data,
             gasLimit: gasLimit,
             gasPrice: results[0],
@@ -10955,11 +10947,11 @@ utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) 
     });
 });
 
-utils.defineProperty(Wallet.prototype, 'send', function(address, amountWei, options) {
+utils.defineProperty(Wallet.prototype, 'send', function(addressOrName, amountWei, options) {
     if (!options) { options = {}; }
 
     return this.sendTransaction({
-        to: address,
+        to: addressOrName,
         gasLimit: options.gasLimit,
         gasPrice: options.gasPrice,
         nonce: options.nonce,
@@ -11082,10 +11074,6 @@ utils.defineProperty(Wallet, 'fromBrainWallet', function(username, password, pro
 //utils.defineProperty(Wallet, 'decryptCrowdsale', function(json, password) {
 //    return new Wallet(secretStorage.decryptCrowdsale(json, password));
 //});
-
-// @TOOD: Move this to ethers.SigningKey, ethers.HDNode and ethers.Wallet
-//utils.defineProperty(Wallet, 'SigningKey', SigningKey);
-//utils.defineProperty(Wallet, 'HDNode', HDNode);
 
 module.exports = Wallet;
 

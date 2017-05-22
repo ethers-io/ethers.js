@@ -6623,10 +6623,11 @@ var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice:true, to: true, value: true
 }
 
-function Contract(address, contractInterface, signerOrProvider) {
+function Contract(addressOrName, contractInterface, signerOrProvider) {
     if (!(this instanceof Contract)) { throw new Error('missing new'); }
 
-    address = utils.getAddress(address);
+    // @TODO: Maybe still check the addressOrName looks like a valid address or name?
+    //address = utils.getAddress(address);
 
     if (!(contractInterface instanceof Interface)) {
         contractInterface = new Interface(contractInterface);
@@ -6643,7 +6644,7 @@ function Contract(address, contractInterface, signerOrProvider) {
         throw new Error('missing provider');
     }
 
-    utils.defineProperty(this, 'address', address);
+    utils.defineProperty(this, 'address', addressOrName);
     utils.defineProperty(this, 'interface', contractInterface);
     utils.defineProperty(this, 'signer', signer);
     utils.defineProperty(this, 'provider', provider);
@@ -6679,7 +6680,7 @@ function Contract(address, contractInterface, signerOrProvider) {
             var call = method.apply(contractInterface, params);
 
             // Send to the contract address
-            transaction.to = address;
+            transaction.to = addressOrName;
 
             // Set the transaction data
             transaction.data = call.data;
@@ -6702,7 +6703,7 @@ function Contract(address, contractInterface, signerOrProvider) {
                     var fromPromise = null;
                     if (transaction.from == null && signer && signer.getAddress) {
                         fromPromise = signer.getAddress();
-                        if (!(address instanceof Promise)) {
+                        if (!(fromPromise instanceof Promise)) {
                             fromPromise = Promise.resolve(fromPromise);
                         }
                     } else {
@@ -7999,9 +8000,19 @@ var utils = (function() {
         hexlify: convert.hexlify,
         isHexString: convert.isHexString,
 
+        concat: convert.concat,
+
+        namehash: require('ethers-utils/namehash'),
+
         RLP: require('ethers-utils/rlp'),
     }
 })();
+
+function copyObject(obj) {
+    var result = {};
+    for (var key in obj) { result[key] = obj[key]; }
+    return result;
+}
 
 function check(format, object) {
     var result = {};
@@ -8304,6 +8315,9 @@ function checkLog(log) {
     return check(formatLog, log);
 }
 
+var ensAddressTestnet = '0x112234455c3a32fd11230c42e7bccd4a84e02010';
+var ensAddressMainnet = '0x314159265dd8dbb310642f98f50c066173c1259b';
+
 function Provider(testnet, chainId) {
     if (!(this instanceof Provider)) { throw new Error('missing new'); }
 
@@ -8312,6 +8326,9 @@ function Provider(testnet, chainId) {
     if (chainId == null) {
         chainId = (testnet ? Provider.chainId.ropsten: Provider.chainId.homestead);
     }
+
+    // Figure out which ENS to talk to
+    this.ensAddress = (testnet ? ensAddressTestnet: ensAddressMainnet);
 
     if (typeof(chainId) !== 'number') { throw new Error('invalid chainId'); }
 
@@ -8547,54 +8564,50 @@ utils.defineProperty(Provider.prototype, 'getGasPrice', function() {
 });
 
 
-utils.defineProperty(Provider.prototype, 'getBalance', function(address, blockTag) {
-    try {
-        var params = {address: utils.getAddress(address), blockTag: checkBlockTag(blockTag)};
-        return this.perform('getBalance', params).then(function(result) {
+utils.defineProperty(Provider.prototype, 'getBalance', function(addressOrName, blockTag) {
+    var self = this;
+    return this.resolveName(addressOrName).then(function(address) {
+        var params = { address: address, blockTag: checkBlockTag(blockTag) };
+        return self.perform('getBalance', params).then(function(result) {
             return utils.bigNumberify(result);
         });
-    } catch (error) {
-        return Promise.reject(error);
-    }
+    });
 });
 
-utils.defineProperty(Provider.prototype, 'getTransactionCount', function(address, blockTag) {
-    try {
-        var params = {address: utils.getAddress(address), blockTag: checkBlockTag(blockTag)};
-        return this.perform('getTransactionCount', params).then(function(result) {
+utils.defineProperty(Provider.prototype, 'getTransactionCount', function(addressOrName, blockTag) {
+    var self = this;
+    return this.resolveName(addressOrName).then(function(address) {
+        var params = { address: address, blockTag: checkBlockTag(blockTag) };
+        return self.perform('getTransactionCount', params).then(function(result) {
             var value = parseInt(result);
             if (value != result) { throw new Error('invalid response - getTransactionCount'); }
             return value;
         });
-    } catch (error) {
-        return Promise.reject(error);
-    }
+    });
 });
 
-utils.defineProperty(Provider.prototype, 'getCode', function(address, blockTag) {
-    try {
-        var params = {address: utils.getAddress(address), blockTag: checkBlockTag(blockTag)};
-        return this.perform('getCode', params).then(function(result) {
+utils.defineProperty(Provider.prototype, 'getCode', function(addressOrName, blockTag) {
+    var self = this;
+    return this.resolveName(addressOrName).then(function(address) {
+        var params = {address: address, blockTag: checkBlockTag(blockTag)};
+        return self.perform('getCode', params).then(function(result) {
             return utils.hexlify(result);
         });
-    } catch (error) {
-        return Promise.reject(error);
-    }
+    });
 });
 
-utils.defineProperty(Provider.prototype, 'getStorageAt', function(address, position, blockTag) {
-    try {
+utils.defineProperty(Provider.prototype, 'getStorageAt', function(addressOrName, position, blockTag) {
+    var self = this;
+    return this.resolveName(addressOrName).then(function(address) {
         var params = {
-            address: utils.getAddress(address),
+            address: address,
+            blockTag: checkBlockTag(blockTag),
             position: utils.hexlify(position),
-            blockTag: checkBlockTag(blockTag)
         };
-        return this.perform('getStorageAt', params).then(function(result) {
+        return self.perform('getStorageAt', params).then(function(result) {
             return utils.hexlify(result);
         });
-    } catch (error) {
-        return Promise.reject(error);
-    }
+    });
 });
 
 utils.defineProperty(Provider.prototype, 'sendTransaction', function(signedTransaction) {
@@ -8612,25 +8625,23 @@ utils.defineProperty(Provider.prototype, 'sendTransaction', function(signedTrans
 
 
 utils.defineProperty(Provider.prototype, 'call', function(transaction) {
-    try {
-        var params = {transaction: checkTransactionRequest(transaction)};
-        return this.perform('call', params).then(function(result) {
+    var self = this;
+    return this._resolveNames(transaction, ['to', 'from']).then(function(transaction) {
+        var params = { transaction: checkTransactionRequest(transaction) };
+        return self.perform('call', params).then(function(result) {
             return utils.hexlify(result);
         });
-    } catch (error) {
-        return Promise.reject(error);
-    }
+    });
 });
 
 utils.defineProperty(Provider.prototype, 'estimateGas', function(transaction) {
-    try {
+    var self = this;
+    return this._resolveNames(transaction, ['to', 'from']).then(function(transaction) {
         var params = {transaction: checkTransactionRequest(transaction)};
-        return this.perform('estimateGas', params).then(function(result) {
+        return self.perform('estimateGas', params).then(function(result) {
              return utils.bigNumberify(result);
         });
-    } catch (error) {
-        return Promise.reject(error);
-    }
+    });
 });
 
 
@@ -8660,7 +8671,7 @@ utils.defineProperty(Provider.prototype, 'getBlock', function(blockHashOrBlockTa
 
 utils.defineProperty(Provider.prototype, 'getTransaction', function(transactionHash) {
     try {
-        var params = {transactionHash: checkHash(transactionHash)};
+        var params = { transactionHash: checkHash(transactionHash) };
         return this.perform('getTransaction', params).then(function(result) {
             if (result != null) { result = checkTransaction(result); }
             return result;
@@ -8672,7 +8683,7 @@ utils.defineProperty(Provider.prototype, 'getTransaction', function(transactionH
 
 utils.defineProperty(Provider.prototype, 'getTransactionReceipt', function(transactionHash) {
     try {
-        var params = {transactionHash: checkHash(transactionHash)};
+        var params = { transactionHash: checkHash(transactionHash) };
         return this.perform('getTransactionReceipt', params).then(function(result) {
             if (result != null) { result = checkTransactionReceipt(result); }
             return result;
@@ -8683,14 +8694,13 @@ utils.defineProperty(Provider.prototype, 'getTransactionReceipt', function(trans
 });
 
 utils.defineProperty(Provider.prototype, 'getLogs', function(filter) {
-    try {
-        var params = {filter: checkFilter(filter)};
-        return this.perform('getLogs', params).then(function(result) {
+    var self = this;
+    return this._resolveNames(filter, ['address']).then(function(filter) {
+        var params = { filter: checkFilter(filter) };
+        return self.perform('getLogs', params).then(function(result) {
             return arrayOf(checkLog)(result);
         });
-    } catch (error) {
-        return Promise.reject(error);
-    }
+    });
 });
 
 utils.defineProperty(Provider.prototype, 'getEtherPrice', function() {
@@ -8704,8 +8714,60 @@ utils.defineProperty(Provider.prototype, 'getEtherPrice', function() {
     }
 });
 
+
+utils.defineProperty(Provider.prototype, '_resolveNames', function(object, keys) {
+    var promises = [];
+
+    var result = copyObject(object);
+
+    keys.forEach(function(key) {
+        if (result[key] === undefined) { return; }
+        promises.push(this.resolveName(result[key]).then(function(address) {
+            result[key] = address;
+        }));
+    }, this);
+
+    return Promise.all(promises).then(function() { return result; });
+});
+
+utils.defineProperty(Provider.prototype, 'resolveName', function(name) {
+    // If it is already an address, nothing to resolve
+    try {
+        return Promise.resolve(utils.getAddress(name));
+    } catch (error) { }
+
+    var nodeHash = utils.namehash(name);
+
+    // keccak256('resolver(bytes32)')
+    var data = '0x0178b8bf' + nodeHash.substring(2);
+    var transaction = { to: this.ensAddress, data: data };
+
+    var self = this;
+    // Get the resolver from the blockchain
+    return this.call(transaction).then(function(data) {
+
+        // extract the address from the data
+        if (data.length != 66) { return null; }
+        return utils.getAddress('0x' + data.substring(26));
+
+    // Get the addr from the resovler
+    }).then(function(resolverAddress) {
+
+        // keccak256('addr(bytes32)')
+        var data = '0x3b3b57de' + nodeHash.substring(2);
+        var transaction = { to: resolverAddress, data: data };
+        return self.call(transaction);
+
+    // extract the address from the data
+    }).then(function(data) {
+        if (data.length != 66) { return null; }
+        var address = utils.getAddress('0x' + data.substring(26));
+        if (address === '0x0000000000000000000000000000000000000000') { return null; }
+        return address;
+    });
+});
+
 utils.defineProperty(Provider.prototype, 'doPoll', function() {
-    
 });
 
 utils.defineProperty(Provider.prototype, 'perform', function(method, params) {
@@ -8859,7 +8921,7 @@ utils.defineProperty(Provider.prototype, 'removeListener', function(eventName, l
 
 module.exports = Provider;
 
-},{"ethers-utils/address":31,"ethers-utils/bignumber":32,"ethers-utils/contract-address":34,"ethers-utils/convert":35,"ethers-utils/properties":41,"ethers-utils/rlp":42,"inherits":29,"xmlhttprequest":23}],31:[function(require,module,exports){
+},{"ethers-utils/address":31,"ethers-utils/bignumber":32,"ethers-utils/contract-address":34,"ethers-utils/convert":35,"ethers-utils/namehash":39,"ethers-utils/properties":41,"ethers-utils/rlp":42,"inherits":29,"xmlhttprequest":23}],31:[function(require,module,exports){
 
 var BN = require('bn.js');
 
@@ -10882,43 +10944,35 @@ utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) 
 
     var self = this;
 
-    var gasPrice = new Promise(function(resolve, reject) {
-        if (transaction.gasPrice) {
-            resolve(transaction.gasPrice);
-            return;
-        }
+    var gasPricePromise = null;
+    if (transaction.gasPrice) {
+        gasPricePromise = Promise.resolve(transaction.gasPrice);
+    } else {
+        gasPricePromise = this.provider.getGasPrice();
+    }
 
-        self.provider.getGasPrice().then(function(gasPrice) {
-            resolve(gasPrice);
-        }, function(error) {
-            reject(error);
-        });
-    });
-
-    var nonce = new Promise(function(resolve, reject) {
-        if (transaction.nonce) {
-            resolve(transaction.nonce);
-            return;
-        }
-
-        self.provider.getTransactionCount(self.address, 'pending').then(function(transactionCount) {
-            resolve(transactionCount);
-        }, function(error) {
-            reject(error);
-        });
-    });
+    var noncePromise = null;
+    if (transaction.nonce) {
+        noncePromise = Promise.resolve(transaction.nonce);
+    } else {
+        noncePromise = this.provider.getTransactionCount(self.address, 'pending');
+    }
 
     var chainId = this.provider.chainId;
 
-    var toAddress = undefined;
-    if (transaction.to) { toAddress = utils.getAddress(transaction.to); }
+    var toPromise = null;
+    if (transaction.to) {
+        toPromise = this.provider.resolveName(transaction.to);
+    } else {
+        toPromise = Promise.resolve(undefined);
+    }
 
     var data = utils.hexlify(transaction.data || '0x');
     var value = utils.hexlify(transaction.value || 0);
 
-    return Promise.all([gasPrice, nonce]).then(function(results) {
+    return Promise.all([gasPricePromise, noncePromise, toPromise]).then(function(results) {
         var signedTransaction = self.sign({
-            to: toAddress,
+            to: results[2],
             data: data,
             gasLimit: gasLimit,
             gasPrice: results[0],
@@ -10935,11 +10989,11 @@ utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) 
     });
 });
 
-utils.defineProperty(Wallet.prototype, 'send', function(address, amountWei, options) {
+utils.defineProperty(Wallet.prototype, 'send', function(addressOrName, amountWei, options) {
     if (!options) { options = {}; }
 
     return this.sendTransaction({
-        to: address,
+        to: addressOrName,
         gasLimit: options.gasLimit,
         gasPrice: options.gasPrice,
         nonce: options.nonce,
@@ -11062,10 +11116,6 @@ utils.defineProperty(Wallet, 'fromBrainWallet', function(username, password, pro
 //utils.defineProperty(Wallet, 'decryptCrowdsale', function(json, password) {
 //    return new Wallet(secretStorage.decryptCrowdsale(json, password));
 //});
-
-// @TOOD: Move this to ethers.SigningKey, ethers.HDNode and ethers.Wallet
-//utils.defineProperty(Wallet, 'SigningKey', SigningKey);
-//utils.defineProperty(Wallet, 'HDNode', HDNode);
 
 module.exports = Wallet;
 
