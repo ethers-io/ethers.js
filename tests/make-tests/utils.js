@@ -2,7 +2,7 @@
 var fs = require('fs');
 var path = require('path');
 
-var utils = require('ethers-utils');
+var utils = require('../../utils');
 
 function randomBytes(seed, lower, upper) {
     if (!upper) { upper = lower; }

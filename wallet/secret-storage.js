@@ -4,6 +4,8 @@ var aes = require('aes-js');
 var scrypt = require('scrypt-js');
 var uuid = require('uuid');
 
+var hmac = require('ethers-utils/hmac');
+var pbkdf2 = require('ethers-utils/pbkdf2');
 var utils = require('ethers-utils');
 
 var SigningKey = require('./signing-key.js');
@@ -69,6 +71,7 @@ utils.defineProperty(secretStorage, 'isValidWallet', function(json) {
     if (!data.version || parseInt(data.version) !== data.version || parseInt(data.version) !== 3) {
         return false;
     }
+
     // @TODO: Put more checks to make sure it has kdf, iv and all that good stuff
     return true;
 });
@@ -89,7 +92,7 @@ utils.defineProperty(secretStorage, 'decryptCrowdsale', function(json, password)
         throw new Error('invalid encseed');
     }
 
-    var key = utils.pbkdf2(password, password, 2000, 32, utils.hmac.createSha256Hmac).slice(0, 16);
+    var key = pbkdf2(password, password, 2000, 32, hmac.createSha256Hmac).slice(0, 16);
 
     var iv = encseed.slice(0, 16);
     var encryptedSeed = encseed.slice(16);
@@ -140,72 +143,112 @@ utils.defineProperty(secretStorage, 'decrypt', function(json, password, progress
         return utils.keccak256(utils.concat([derivedHalf, ciphertext]));
     }
 
-    return new Promise(function(resolve, reject) {
-        var kdf = searchPath(data, 'crypto/kdf');
-        if (kdf && typeof(kdf) === 'string' && kdf.toLowerCase() === 'scrypt') {
-            var salt = arrayify(searchPath(data, 'crypto/kdfparams/salt'), 'crypto/kdfparams/salt');
-            var N = parseInt(searchPath(data, 'crypto/kdfparams/n'));
-            var r = parseInt(searchPath(data, 'crypto/kdfparams/r'));
-            var p = parseInt(searchPath(data, 'crypto/kdfparams/p'));
-            if (!N || !r || !p) {
-                reject(new Error('unsupported key-derivation function parameters'));
-                return;
-            }
+    var getSigningKey = function(key) {
+        var ciphertext = arrayify(searchPath(data, 'crypto/ciphertext'));
 
-            // Make sure N is a power of 2
-            if ((N & (N - 1)) !== 0) {
-                reject(new Error('unsupported key-derivation function parameter value for N'));
-                return;
-            }
-
-            var dkLen = parseInt(searchPath(data, 'crypto/kdfparams/dklen'));
-            if (dkLen !== 32) {
-                reject( new Error('unsupported key-derivation derived-key length'));
-                return;
-            }
-
-            scrypt(password, salt, N, r, p, dkLen, function(error, progress, key) {
-                if (error) {
-                    error.progress = progress;
-                    reject(error);
-
-                } else if (key) {
-                    key = arrayify(key);
-
-                    var ciphertext = arrayify(searchPath(data, 'crypto/ciphertext'));
-
-                    var computedMAC = utils.hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
-                    if (computedMAC !== searchPath(data, 'crypto/mac').toLowerCase()) {
-                        reject(new Error('invalid password'));
-                        return;
-                    }
-
-                    var privateKey = decrypt(key.slice(0, 16), ciphertext);
-
-                    if (!privateKey) {
-                        reject(new Error('unsupported cipher'));
-                        return;
-                    }
-
-                    var signingKey = new SigningKey(privateKey);
-                    if (signingKey.address !== utils.getAddress(data.address)) {
-                        reject(new Error('address mismatch'));
-                        return;
-                    }
-
-                    if (progressCallback) { progressCallback(1); }
-                    resolve(signingKey);
-
-                } else if (progressCallback) {
-                    return progressCallback(progress);
-                }
-            });
-
-        } else {
-            // @TOOD: Support pbkdf2 kdf
-            reject(new Error('unsupported key-derivation function'));
+        var computedMAC = utils.hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
+        if (computedMAC !== searchPath(data, 'crypto/mac').toLowerCase()) {
+            reject(new Error('invalid password'));
+            return null;
         }
 
+        var privateKey = decrypt(key.slice(0, 16), ciphertext);
+
+        if (!privateKey) {
+            reject(new Error('unsupported cipher'));
+            return null;
+        }
+
+        var signingKey = new SigningKey(privateKey);
+        if (signingKey.address !== utils.getAddress(data.address)) {
+            reject(new Error('address mismatch'));
+            return null;
+        }
+
+        return signingKey;
+    }
+
+
+    return new Promise(function(resolve, reject) {
+        var kdf = searchPath(data, 'crypto/kdf');
+        if (kdf && typeof(kdf) === 'string') {
+            if (kdf.toLowerCase() === 'scrypt') {
+                var salt = arrayify(searchPath(data, 'crypto/kdfparams/salt'), 'crypto/kdfparams/salt');
+                var N = parseInt(searchPath(data, 'crypto/kdfparams/n'));
+                var r = parseInt(searchPath(data, 'crypto/kdfparams/r'));
+                var p = parseInt(searchPath(data, 'crypto/kdfparams/p'));
+                if (!N || !r || !p) {
+                    reject(new Error('unsupported key-derivation function parameters'));
+                    return;
+                }
+
+                // Make sure N is a power of 2
+                if ((N & (N - 1)) !== 0) {
+                    reject(new Error('unsupported key-derivation function parameter value for N'));
+                    return;
+                }
+
+                var dkLen = parseInt(searchPath(data, 'crypto/kdfparams/dklen'));
+                if (dkLen !== 32) {
+                    reject( new Error('unsupported key-derivation derived-key length'));
+                    return;
+                }
+
+                scrypt(password, salt, N, r, p, dkLen, function(error, progress, key) {
+                    if (error) {
+                        error.progress = progress;
+                        reject(error);
+
+                    } else if (key) {
+                        key = arrayify(key);
+
+                        var signingKey = getSigningKey(key);
+                        if (!signingKey) { return; }
+
+                        if (progressCallback) { progressCallback(1); }
+                        resolve(signingKey);
+
+                    } else if (progressCallback) {
+                        return progressCallback(progress);
+                    }
+                });
+
+            } else if (kdf.toLowerCase() === 'pbkdf2') {
+                var salt = arrayify(searchPath(data, 'crypto/kdfparams/salt'), 'crypto/kdfparams/salt');
+
+                var prfFunc = null;
+                var prf = searchPath(data, 'crypto/kdfparams/prf');
+                if (prf === 'hmac-sha256') {
+                    prfFunc = hmac.createSha256Hmac;
+                } else if (prf === 'hmac-sha512') {
+                    prfFunc = hmac.createSha512Hmac;
+                } else {
+                    reject(new Error('unsupported prf'));
+                    return;
+                }
+
+                var c = parseInt(searchPath(data, 'crypto/kdfparams/c'));
+
+                var dkLen = parseInt(searchPath(data, 'crypto/kdfparams/dklen'));
+                if (dkLen !== 32) {
+                    reject( new Error('unsupported key-derivation derived-key length'));
+                    return;
+                }
+
+                var key = pbkdf2(password, salt, c, dkLen, prfFunc);
+
+                var signingKey = getSigningKey(key);
+                if (!signingKey) { return; }
+
+                resolve(signingKey);
+
+            } else {
+                reject(new Error('unsupported key-derivation function'));
+            }
+
+        } else {
+            reject(new Error('unsupported key-derivation function'));
+        }
     });
 });
 
