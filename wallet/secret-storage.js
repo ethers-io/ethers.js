@@ -143,7 +143,7 @@ utils.defineProperty(secretStorage, 'decrypt', function(json, password, progress
         return utils.keccak256(utils.concat([derivedHalf, ciphertext]));
     }
 
-    var getSigningKey = function(key) {
+    var getSigningKey = function(key, reject) {
         var ciphertext = arrayify(searchPath(data, 'crypto/ciphertext'));
 
         var computedMAC = utils.hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
@@ -202,7 +202,7 @@ utils.defineProperty(secretStorage, 'decrypt', function(json, password, progress
                     } else if (key) {
                         key = arrayify(key);
 
-                        var signingKey = getSigningKey(key);
+                        var signingKey = getSigningKey(key, reject);
                         if (!signingKey) { return; }
 
                         if (progressCallback) { progressCallback(1); }
@@ -237,7 +237,7 @@ utils.defineProperty(secretStorage, 'decrypt', function(json, password, progress
 
                 var key = pbkdf2(password, salt, c, dkLen, prfFunc);
 
-                var signingKey = getSigningKey(key);
+                var signingKey = getSigningKey(key, reject);
                 if (!signingKey) { return; }
 
                 resolve(signingKey);
