@@ -28,6 +28,9 @@ function getTransaction(transaction) {
     for (var key in transaction) {
         result[key] = utils.hexlify(transaction[key]);
     }
+	['value'].forEach(function(item) { // When encoding QUANTITIES (integers, numbers): encode as hex, prefix with "0x", the most compact representation (slight exception: zero should be represented as "0x0")
+		if (result[item] && result[item].length > 2) { result[item] = result[item].replace(/0x0/g, '0x') }
+	})
     return result;
 }
 
