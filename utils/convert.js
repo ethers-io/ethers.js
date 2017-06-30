@@ -7,7 +7,7 @@ var defineProperty = require('./properties.js').defineProperty;
 var throwError = require('./throw-error');
 
 function isArrayish(value) {
-    if (!value || parseInt(value.length) != value.length) {
+    if (!value || parseInt(value.length) != value.length || typeof(value) === 'string') {
         return false;
     }
 
