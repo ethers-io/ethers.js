@@ -97,6 +97,10 @@ defineProperty(BigNumber.prototype, 'lte', function(other) {
     return this._bn.lte(bigNumberify(other)._bn);
 });
 
+defineProperty(BigNumber.prototype, 'gt', function(other) {
+    return this._bn.gt(bigNumberify(other)._bn);
+});
+
 defineProperty(BigNumber.prototype, 'gte', function(other) {
     return this._bn.gte(bigNumberify(other)._bn);
 });
