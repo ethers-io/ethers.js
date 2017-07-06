@@ -106,24 +106,15 @@ function checkBlockTag(blockTag) {
 
     if (blockTag === 'earliest') { return '0x0'; }
 
-    if (typeof(blockTag) === 'number') {
-        blockTag = utils.hexlify(blockTag);
-    }
-
-    if (utils.isHexString(blockTag)) {
-        // HACK: This seems to be a weird requirement some nodes have
-        // (e.g. INFURA on ropsten; INFURA on homestead is fine)
-        // Remove leading 0's from the hex blockTag
-        while (blockTag.length > 3 && blockTag.substring(0, 3) === '0x0') {
-            blockTag = '0x' + blockTag.substring(3);
-        }
-
-        return blockTag;
-    }
-
     if (blockTag === 'latest' || blockTag === 'pending') {
         return blockTag;
     }
+
+    if (typeof(blockTag) === 'number') {
+        return utils.hexlify(blockTag);
+    }
+
+    if (utils.isHexString(blockTag)) { return blockTag; }
 
     throw new Error('invalid blockTag');
 }
