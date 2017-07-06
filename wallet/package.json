@@ -1,6 +1,6 @@
 {
   "name": "ethers-wallet",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Wallet and signing library for Ethereum.",
   "bugs": {
     "url": "http://github.com/ethers-io/ethers.js/issues",
@@ -13,7 +13,7 @@
   "dependencies": {
     "aes-js": "3.0.0",
     "elliptic": "6.3.3",
-    "ethers-utils": "^2.0.0",
+    "ethers-utils": "^2.1.0",
     "scrypt-js": "2.0.3",
     "setimmediate": "1.0.4",
     "uuid": "2.0.1"
