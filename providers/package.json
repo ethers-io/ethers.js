@@ -1,6 +1,6 @@
 {
   "name": "ethers-providers",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Service provider for Ethereum wallet library.",
   "bugs": {
     "url": "http://github.com/ethers-io/ethers.js/issues",
@@ -11,7 +11,7 @@
     "xmlhttprequest": "./browser-xmlhttprequest.js"
   },
   "dependencies": {
-    "ethers-utils": "^2.0.0",
+    "ethers-utils": "^2.1.0",
     "inherits": "2.0.1",
     "xmlhttprequest": "1.8.0"
   },
