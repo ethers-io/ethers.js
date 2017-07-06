@@ -1175,10 +1175,12 @@ module.exports = InfuraProvider;
 var Provider = require('./provider.js');
 
 var utils = (function() {
+    var convert = require('ethers-utils/convert');
     return {
         defineProperty: require('ethers-utils/properties').defineProperty,
 
-        hexlify: require('ethers-utils/convert').hexlify,
+        hexlify: convert.hexlify,
+        isHexString: convert.isHexString,
     }
 })();
 
@@ -1193,11 +1195,26 @@ function getResult(payload) {
     return payload.result;
 }
 
+function stripHexZeros(value) {
+    while (value.length > 3 && value.substring(0, 3) === '0x0') {
+        value = '0x' + value.substring(3);
+    }
+    return value;
+}
+
 function getTransaction(transaction) {
     var result = {};
+
     for (var key in transaction) {
         result[key] = utils.hexlify(transaction[key]);
     }
+
+    // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
+    ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function(key) {
+        if (!result[key]) { return; }
+        result[key] = stripHexZeros(result[key]);
+    });
+
     return result;
 }
 
@@ -1231,23 +1248,35 @@ utils.defineProperty(JsonRpcProvider.prototype, 'perform', function(method, para
             return this.send('eth_gasPrice', []);
 
         case 'getBalance':
-            return this.send('eth_getBalance', [params.address, params.blockTag]);
+            var blockTag = params.blockTag;
+            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+            return this.send('eth_getBalance', [params.address, blockTag]);
 
         case 'getTransactionCount':
-            return this.send('eth_getTransactionCount', [params.address, params.blockTag]);
+            var blockTag = params.blockTag;
+            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+            return this.send('eth_getTransactionCount', [params.address, blockTag]);
 
         case 'getCode':
-            return this.send('eth_getCode', [params.address, params.blockTag]);
+            var blockTag = params.blockTag;
+            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+            return this.send('eth_getCode', [params.address, blockTag]);
 
         case 'getStorageAt':
-            return this.send('eth_getStorageAt', [params.address, params.position, params.blockTag]);
+            var position = params.position;
+            if (utils.isHexString(position)) { position = stripHexZeros(position); }
+            var blockTag = params.blockTag;
+            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+            return this.send('eth_getStorageAt', [params.address, position, blockTag]);
 
         case 'sendTransaction':
             return this.send('eth_sendRawTransaction', [params.signedTransaction]);
 
         case 'getBlock':
             if (params.blockTag) {
-                return this.send('eth_getBlockByNumber', [params.blockTag, false]);
+                var blockTag = params.blockTag;
+                if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+                return this.send('eth_getBlockByNumber', [blockTag, false]);
             } else if (params.blockHash) {
                 return this.send('eth_getBlockByHash', [params.blockHash, false]);
             }
@@ -5300,24 +5329,15 @@ function checkBlockTag(blockTag) {
 
     if (blockTag === 'earliest') { return '0x0'; }
 
-    if (typeof(blockTag) === 'number') {
-        blockTag = utils.hexlify(blockTag);
-    }
-
-    if (utils.isHexString(blockTag)) {
-        // HACK: This seems to be a weird requirement some nodes have
-        // (e.g. INFURA on ropsten; INFURA on homestead is fine)
-        // Remove leading 0's from the hex blockTag
-        while (blockTag.length > 3 && blockTag.substring(0, 3) === '0x0') {
-            blockTag = '0x' + blockTag.substring(3);
-        }
-
-        return blockTag;
-    }
-
     if (blockTag === 'latest' || blockTag === 'pending') {
         return blockTag;
     }
+
+    if (typeof(blockTag) === 'number') {
+        return utils.hexlify(blockTag);
+    }
+
+    if (utils.isHexString(blockTag)) { return blockTag; }
 
     throw new Error('invalid blockTag');
 }
