@@ -484,6 +484,9 @@ function testENS(test) {
         return provider.resolveName('not-valid');
     }).then(function(address) {
         test.equal(null, address, 'Invalid ENS name');
+        return provider.lookupAddress('0x06B5955A67D827CDF91823E3bB8F069e6c89c1D6');
+    }).then(function(name) {
+        test.equal('ricmoo.firefly.eth', name, 'Invalid ENS reverse lookup');
         test.done();
     });
 }
