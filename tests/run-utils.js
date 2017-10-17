@@ -100,10 +100,20 @@ function testNamehash(test) {
     test.done();
 }
 
+function testId(test) {
+    var id = require('../utils/id');
+
+    var sig = id('setAddr(bytes32,address)').substring(0, 10);
+    test.equal(sig, '0xd5fa2b00', 'id("setAddr(bytes32,address)")')
+
+    test.done();
+}
+
 module.exports = {
     "address": testAddress,
     "contract-address": testContractAddress,
     'namehash': testNamehash,
+    'id': testId,
     "rlp-coder": testRLPCoder,
     "units": testUnits,
 }
