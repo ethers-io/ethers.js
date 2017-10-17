@@ -785,7 +785,9 @@ utils.defineProperty(Provider.prototype, 'resolveName', function(name) {
 });
 
 utils.defineProperty(Provider.prototype, 'lookupAddress', function(address) {
-    var name = utils.getAddress(address).substring(2) + '.addr.reverse'
+    address = utils.getAddress(address);
+
+    var name = address.substring(2) + '.addr.reverse'
     var nodehash = utils.namehash(name);
 
     var self = this;
