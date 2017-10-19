@@ -39,7 +39,7 @@ Running Tests
 # Test encrypting/decrypting JSON wallets and transaction parsing/signing
 # - See tests/transactions.json.gz
 # - See tests/wallets.json.gz
-> ./node_modules/.bin/mocha test-wallet.js
+> ./node_modules/.bin/mocha --timeout 100000 test-wallet.js
 
 
 # This test case has not yet been migrated to mocha

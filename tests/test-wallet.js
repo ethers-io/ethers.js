@@ -3,7 +3,6 @@
 var assert = require('assert');
 var utils = require('./utils');
 
-
 describe('Test Brain Wallets', function() {
     var Wallet = require('../wallet/wallet');
 
@@ -142,6 +141,34 @@ describe('Test Transaction Signing and Parsing', function() {
             var signedTransactionChainId5 = wallet.sign(transaction);
             assert.equal(signedTransactionChainId5, test.signedTransactionChainId5,
                 'eip155 signed transaction');
+        });
+    });
+});
+
+describe('Test Signing Messages', function() {
+    var Wallet = require('../wallet/wallet');
+
+    var tests = [
+        {
+            address: '0x14791697260E4c9A71f18484C9f997B308e59325',
+            message: 'hello world',
+            privateKey: '0x0123456789012345678901234567890123456789012345678901234567890123',
+            signature: '0xddd0a7290af9526056b4e35a077b9a11b513aa0028ec6c9880948544508f3c63265e99e47ad31bb2cab9646c504576b3abc6939a1710afc08cbf3034d73214b81c'
+        }
+    ];
+
+    tests.forEach(function(test) {
+        it(('signs a message "' + test.message + '"'), function() {
+            var wallet = new Wallet(test.privateKey);
+            var signature = wallet.signMessage(test.message);
+            assert.equal(signature, test.signature, 'computes message signature');
+        });
+    });
+
+    tests.forEach(function(test) {
+        it(('verifies a message "' + test.message + '"'), function() {
+            var address = Wallet.verifyMessage(test.message, test.signature);
+            assert.equal(address, test.address, 'verifies message signature');
         });
     });
 });
