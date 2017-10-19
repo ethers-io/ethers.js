@@ -2,7 +2,7 @@
 
 var rlp = require('rlp');
 
-var utils = require('./utils.js');
+var utils = require('../utils.js');
 
 var nullBuffer = new Buffer('');
 var shortBuffer = new Buffer('Hello World');
@@ -75,4 +75,4 @@ testNames.forEach(function(testName) {
 });
 console.log(Output);
 
-utils.saveTestcase('rlp-coder', Output);
+utils.saveTests('rlp-coder', Output);

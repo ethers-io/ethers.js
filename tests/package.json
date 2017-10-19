@@ -16,12 +16,13 @@
     "grunt-browserify": "^5.0.0",
     "grunt-contrib-uglify": "^1.0.1",
     "promise-rationing": "0.0.1",
+    "mocha": "^3.2.0",
     "rlp": "2.0.0",
     "solc": "0.3.5",
     "web3": "0.18.2"
   },
   "scripts": {
-    "test": "node index.js"
+    "test": "./node_modules/.bin/mocha --timeout 100000 test-*.js"
   },
   "keywords": [
     "Ethereum",

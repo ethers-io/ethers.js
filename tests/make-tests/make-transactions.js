@@ -3,7 +3,7 @@
 var ethereumUtil = require('ethereumjs-util');
 var ethereumTx = require('ethereumjs-tx');
 
-var utils = require('./utils.js');
+var utils = require('../utils.js');
 
 
 var Output = [];
@@ -130,4 +130,4 @@ Output.sort(function(a, b) {
     return 0;
 });
 
-utils.saveTestcase('transactions', Output);
+utils.saveTests('transactions', Output);

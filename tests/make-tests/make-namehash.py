@@ -1,6 +1,8 @@
 
 import json
+import os
 import sha3
+
 
 def keccak256(data):
     hasher = sha3.keccak_256()
@@ -43,3 +45,4 @@ for i in xrange(0, len(Tests)):
 
 with file('../tests/namehash.json', 'w') as f:
     f.write(json.dumps(Tests))
+    os.system('cat ../test/namehash.json | gzip > ../tests/namehash.json.gz');

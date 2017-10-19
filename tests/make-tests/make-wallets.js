@@ -3,7 +3,7 @@
 var fs = require('fs');
 var path = require('path');
 
-var utils = require('./utils.js');
+var utils = require('../utils.js');
 
 function prefixAddress(address) {
     if (address.substring(0, 2) !== '0x') {
@@ -38,6 +38,8 @@ var walletPath = path.join(__dirname, 'test-wallets');
 fs.readdirSync(walletPath).forEach(function(filename) {
     var data = require(path.join(walletPath, filename));
 
+    var name = filename.substring(0, filename.length - 5).split('-')[1];
+
     // The password is the last segment of the filename
     var password = filename.substring(0, filename.length - 5).split('-');
     password = password[password.length - 1];
@@ -49,6 +51,7 @@ fs.readdirSync(walletPath).forEach(function(filename) {
             type: 'crowdsale',
             address: prefixAddress(data.ethaddr),
             json: JSON.stringify(data),
+            name: name,
             password: password,
             privateKey: privateKeys[prefixAddress(data.ethaddr)],
         });
@@ -58,10 +61,11 @@ fs.readdirSync(walletPath).forEach(function(filename) {
             type: 'secret-storage',
             address: prefixAddress(data.address),
             json: JSON.stringify(data),
+            name: name,
             password: password,
             privateKey: privateKeys[prefixAddress(data.address)],
         });
     }
 });
 
-utils.saveTestcase('wallets', Output);
+utils.saveTests('wallets', Output);

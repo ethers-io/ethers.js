@@ -4,7 +4,7 @@ var bip39 = require('bip39');
 var HDNode = require('bitcoinjs-lib').HDNode;
 var ethereumUtil = require('ethereumjs-util');
 
-var utils = require('./utils.js');
+var utils = require('../utils.js');
 
 function getPath(seed) {
     var path = 'm';
@@ -61,7 +61,7 @@ trezor.english.forEach(function(testcase, i) {
     };
 });
 
-for (var i = 0; i < 1000; i++) {
+for (var i = 0; i < 1024; i++) {
     var strength = 16 + 4 * utils.randomNumber('random-1-' + i, 0, 5);
     var entropy = utils.randomHexString('random-2-' + i, strength);
 
@@ -108,4 +108,4 @@ TestcaseNames.forEach(function(testcase) {
     Output.push(Testcases[testcase]);
 });
 
-utils.saveTestcase('hdnode', Output);
+utils.saveTests('hdnode', Output);
