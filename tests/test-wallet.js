@@ -149,6 +149,7 @@ describe('Test Signing Messages', function() {
     var Wallet = require('../wallet/wallet');
 
     var tests = [
+        // See: https://etherscan.io/verifySig/57
         {
             address: '0x14791697260E4c9A71f18484C9f997B308e59325',
             message: 'hello world',
