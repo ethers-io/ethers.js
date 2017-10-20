@@ -1,7 +1,7 @@
 ethers.js
 =========
 
-[![npm version](https://badge.fury.io/js/ethers-wallet.svg)](https://badge.fury.io/js/ethers)
+[![npm version](https://badge.fury.io/js/ethers.svg)](https://badge.fury.io/js/ethers)
 
 Complete Ethereum wallet implementation and utilities in JavaScript.
 
@@ -12,11 +12,12 @@ Complete Ethereum wallet implementation and utilities in JavaScript.
 - Import and export BIP 39 **mnemonic phrases** (12 word backup phrases) and **HD Wallets**
 - Meta-classes create JavaScript objects from any contract ABI
 - Connect to Ethereum nodes over [JSON-RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC), [INFURA](https://infura.io) or [Etherscan](https://etherscan.io)
+- ENS names are first-class citizens; they can almost always used instead of Ethereum addresses
 - **Tiny** (~77kb compressed; 227kb uncompressed)
 - **Complete** functionality for all your Ethereum needs
 - Extensive [documentation](https://docs.ethers.io/ethers.js/)
+- Large collection of test cases which are maintained and added to
 - **MIT License** (including ALL dependencies); completely open source to do with as you please
-
 
 
 Installing

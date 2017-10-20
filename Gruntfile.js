@@ -1,3 +1,10 @@
+'use strict';
+
+[ 'contracts', 'providers', 'utils', 'wallet'].forEach(function(name) {
+    var npmVersion = require('./node_modules/ethers-' + name + '/package.json').version;
+    var liveVersion = require('./' + name + '/package.json').version;
+    console.log(name, npmVersion, liveVersion);
+});
 
 var through = require('through');
 

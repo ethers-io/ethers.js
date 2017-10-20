@@ -1,6 +1,6 @@
 {
   "name": "ethers-contracts",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "description": "Contract and Interface (ABI) library for Ethereum.",
   "bugs": {
     "url": "http://github.com/ethers-io/ethers.js/issues",
@@ -8,7 +8,7 @@
   },
   "main": "index.js",
   "dependencies": {
-    "ethers-utils": "^2.0.0"
+    "ethers-utils": "^2.1.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

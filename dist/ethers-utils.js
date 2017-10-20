@@ -117,7 +117,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert":6,"./keccak256":8,"./throw-error":23,"bn.js":10}],3:[function(require,module,exports){
+},{"./convert":6,"./keccak256":9,"./throw-error":24,"bn.js":11}],3:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -261,7 +261,7 @@ module.exports = {
     bigNumberify: bigNumberify
 };
 
-},{"./convert":6,"./properties":19,"./throw-error":23,"bn.js":10}],4:[function(require,module,exports){
+},{"./convert":6,"./properties":20,"./throw-error":24,"bn.js":11}],4:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -269,7 +269,9 @@ var defineProperty = require('./properties.js').defineProperty;
 
 var crypto = global.crypto || global.msCrypto;
 if (!crypto || !crypto.getRandomValues) {
+
     console.log('WARNING: Missing strong random number source; using weak randomBytes');
+
     crypto = {
         getRandomValues: function(buffer) {
             for (var round = 0; round < 20; round++) {
@@ -286,8 +288,6 @@ if (!crypto || !crypto.getRandomValues) {
         },
         _weakCrypto: true
     };
-} else {
-    console.log('Found strong random number source');
 }
 
 function randomBytes(length) {
@@ -307,7 +307,7 @@ if (crypto._weakCrypto === true) {
 module.exports = randomBytes;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./properties.js":19}],5:[function(require,module,exports){
+},{"./properties.js":20}],5:[function(require,module,exports){
 
 var getAddress = require('./address').getAddress;
 var convert = require('./convert');
@@ -329,7 +329,7 @@ module.exports = {
     getContractAddress: getContractAddress,
 }
 
-},{"./address":2,"./convert":6,"./keccak256":8,"./rlp":20}],6:[function(require,module,exports){
+},{"./address":2,"./convert":6,"./keccak256":9,"./rlp":21}],6:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
@@ -492,7 +492,19 @@ module.exports = {
     isHexString: isHexString,
 };
 
-},{"./properties.js":19,"./throw-error":23}],7:[function(require,module,exports){
+},{"./properties.js":20,"./throw-error":24}],7:[function(require,module,exports){
+'use strict';
+
+var keccak256 = require('./keccak256');
+var utf8 = require('./utf8');
+
+function id(text) {
+    return keccak256(utf8.toUtf8Bytes(text));
+}
+
+module.exports = id;
+
+},{"./keccak256":9,"./utf8":26}],8:[function(require,module,exports){
 'use strict';
 
 // This is SUPER useful, but adds 140kb (even zipped, adds 40kb)
@@ -502,6 +514,7 @@ var address = require('./address');
 var bigNumber = require('./bignumber');
 var contractAddress = require('./contract-address');
 var convert = require('./convert');
+var id = require('./id');
 var keccak256 = require('./keccak256');
 var namehash = require('./namehash');
 var sha256 = require('./sha2').sha256;
@@ -537,6 +550,7 @@ module.exports = {
     toUtf8String: utf8.toUtf8String,
 
     namehash: namehash,
+    id: id,
 
     getAddress: address.getAddress,
     getContractAddress: contractAddress.getContractAddress,
@@ -555,7 +569,7 @@ require('./standalone')({
 });
 
 
-},{"./address":2,"./bignumber":3,"./contract-address":5,"./convert":6,"./keccak256":8,"./namehash":9,"./properties":19,"./random-bytes":4,"./rlp":20,"./sha2":21,"./standalone":22,"./units":24,"./utf8":25}],8:[function(require,module,exports){
+},{"./address":2,"./bignumber":3,"./contract-address":5,"./convert":6,"./id":7,"./keccak256":9,"./namehash":10,"./properties":20,"./random-bytes":4,"./rlp":21,"./sha2":22,"./standalone":23,"./units":25,"./utf8":26}],9:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -569,7 +583,7 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":6,"js-sha3":18}],9:[function(require,module,exports){
+},{"./convert.js":6,"js-sha3":19}],10:[function(require,module,exports){
 'use strict';
 
 var convert = require('./convert');
@@ -609,7 +623,7 @@ function namehash(name, depth) {
 module.exports = namehash;
 
 
-},{"./convert":6,"./keccak256":8,"./utf8":25}],10:[function(require,module,exports){
+},{"./convert":6,"./keccak256":9,"./utf8":26}],11:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -4038,7 +4052,7 @@ module.exports = namehash;
   };
 })(typeof module === 'undefined' || module, this);
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var hash = exports;
 
 hash.utils = require('./hash/utils');
@@ -4055,7 +4069,7 @@ hash.sha384 = hash.sha.sha384;
 hash.sha512 = hash.sha.sha512;
 hash.ripemd160 = hash.ripemd.ripemd160;
 
-},{"./hash/common":12,"./hash/hmac":13,"./hash/ripemd":14,"./hash/sha":15,"./hash/utils":16}],12:[function(require,module,exports){
+},{"./hash/common":13,"./hash/hmac":14,"./hash/ripemd":15,"./hash/sha":16,"./hash/utils":17}],13:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -4148,7 +4162,7 @@ BlockHash.prototype._pad = function pad() {
   return res;
 };
 
-},{"../hash":11}],13:[function(require,module,exports){
+},{"../hash":12}],14:[function(require,module,exports){
 var hmac = exports;
 
 var hash = require('../hash');
@@ -4198,9 +4212,9 @@ Hmac.prototype.digest = function digest(enc) {
   return this.outer.digest(enc);
 };
 
-},{"../hash":11}],14:[function(require,module,exports){
+},{"../hash":12}],15:[function(require,module,exports){
 module.exports = {ripemd160: null}
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -4766,7 +4780,7 @@ function g1_512_lo(xh, xl) {
   return r;
 }
 
-},{"../hash":11}],16:[function(require,module,exports){
+},{"../hash":12}],17:[function(require,module,exports){
 var utils = exports;
 var inherits = require('inherits');
 
@@ -5025,7 +5039,7 @@ function shr64_lo(ah, al, num) {
 };
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":17}],17:[function(require,module,exports){
+},{"inherits":18}],18:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -5050,7 +5064,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -5529,7 +5543,7 @@ if (typeof Object.create === 'function') {
 })();
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":1}],19:[function(require,module,exports){
+},{"_process":1}],20:[function(require,module,exports){
 function defineProperty(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -5542,7 +5556,7 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 var convert = require('./convert.js');
@@ -5686,7 +5700,7 @@ module.exports = {
     decode: decode,
 }
 
-},{"./convert.js":6}],21:[function(require,module,exports){
+},{"./convert.js":6}],22:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -5711,7 +5725,7 @@ module.exports = {
     createSha512: hash.sha512,
 }
 
-},{"./convert.js":6,"hash.js":11}],22:[function(require,module,exports){
+},{"./convert.js":6,"hash.js":12}],23:[function(require,module,exports){
 (function (global){
 var defineProperty = require('./properties.js').defineProperty;
 
@@ -5738,7 +5752,7 @@ function defineEthersValues(values) {
 module.exports = defineEthersValues;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./properties.js":19}],23:[function(require,module,exports){
+},{"./properties.js":20}],24:[function(require,module,exports){
 'use strict';
 
 function throwError(message, params) {
@@ -5751,7 +5765,7 @@ function throwError(message, params) {
 
 module.exports = throwError;
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 var bigNumberify = require('./bignumber.js').bigNumberify;
 var throwError = require('./throw-error');
 
@@ -5826,7 +5840,7 @@ module.exports = {
     parseEther: parseEther,
 }
 
-},{"./bignumber.js":3,"./throw-error":23}],25:[function(require,module,exports){
+},{"./bignumber.js":3,"./throw-error":24}],26:[function(require,module,exports){
 
 var convert = require('./convert.js');
 
@@ -5941,4 +5955,4 @@ module.exports = {
     toUtf8String: bytesToUtf8,
 };
 
-},{"./convert.js":6}]},{},[7]);
+},{"./convert.js":6}]},{},[8]);

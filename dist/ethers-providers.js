@@ -5240,6 +5240,8 @@ var utils = (function() {
 
         namehash: require('ethers-utils/namehash'),
 
+        toUtf8String: require('ethers-utils/utf8').toUtf8String,
+
         RLP: require('ethers-utils/rlp'),
     }
 })();
@@ -5957,28 +5959,34 @@ utils.defineProperty(Provider.prototype, '_resolveNames', function(object, keys)
     return Promise.all(promises).then(function() { return result; });
 });
 
-utils.defineProperty(Provider.prototype, 'resolveName', function(name) {
-    // If it is already an address, nothing to resolve
-    try {
-        return Promise.resolve(utils.getAddress(name));
-    } catch (error) { }
-
+utils.defineProperty(Provider.prototype, '_getResolver', function(name) {
     var nodeHash = utils.namehash(name);
 
     // keccak256('resolver(bytes32)')
     var data = '0x0178b8bf' + nodeHash.substring(2);
     var transaction = { to: this.ensAddress, data: data };
 
-    var self = this;
     // Get the resolver from the blockchain
     return this.call(transaction).then(function(data) {
 
         // extract the address from the data
         if (data.length != 66) { return null; }
         return utils.getAddress('0x' + data.substring(26));
+    });
+});
+
+utils.defineProperty(Provider.prototype, 'resolveName', function(name) {
+    // If it is already an address, nothing to resolve
+    try {
+        return Promise.resolve(utils.getAddress(name));
+    } catch (error) { }
+
+    var self = this;
+
+    var nodeHash = utils.namehash(name);
 
     // Get the addr from the resovler
-    }).then(function(resolverAddress) {
+    return this._getResolver(name).then(function(resolverAddress) {
 
         // keccak256('addr(bytes32)')
         var data = '0x3b3b57de' + nodeHash.substring(2);
@@ -5991,6 +5999,47 @@ utils.defineProperty(Provider.prototype, 'resolveName', function(name) {
         var address = utils.getAddress('0x' + data.substring(26));
         if (address === '0x0000000000000000000000000000000000000000') { return null; }
         return address;
+    });
+});
+
+utils.defineProperty(Provider.prototype, 'lookupAddress', function(address) {
+    address = utils.getAddress(address);
+
+    var name = address.substring(2) + '.addr.reverse'
+    var nodehash = utils.namehash(name);
+
+    var self = this;
+
+    return this._getResolver(name).then(function(resolverAddress) {
+        if (!resolverAddress) { return null; }
+
+        // keccak('name(bytes32)')
+        var data = '0x691f3431' + nodehash.substring(2);
+        var transaction = { to: resolverAddress, data: data };
+        return self.call(transaction);
+
+    }).then(function(data) {
+        // Strip off the "0x"
+        data = data.substring(2);
+
+        // Strip off the dynamic string pointer (0x20)
+        if (data.length < 64) { return null; }
+        data = data.substring(64);
+
+        if (data.length < 64) { return null; }
+        var length = utils.bigNumberify('0x' + data.substring(0, 64)).toNumber();
+        data = data.substring(64);
+
+        if (2 * length > data.length) { return null; }
+
+        var name = utils.toUtf8String('0x' + data.substring(0, 2 * length));
+
+        // Make sure the reverse record matches the foward record
+        return self.resolveName(name).then(function(addr) {
+            if (addr != address) { return null; }
+            return name;
+        });
+
     });
 });
 
@@ -6148,4 +6197,4 @@ utils.defineProperty(Provider.prototype, 'removeListener', function(eventName, l
 
 module.exports = Provider;
 
-},{"ethers-utils/address":9,"ethers-utils/bignumber":10,"ethers-utils/contract-address":11,"ethers-utils/convert":12,"ethers-utils/namehash":14,"ethers-utils/properties":15,"ethers-utils/rlp":16,"inherits":20,"xmlhttprequest":2}]},{},[5]);
+},{"ethers-utils/address":9,"ethers-utils/bignumber":10,"ethers-utils/contract-address":11,"ethers-utils/convert":12,"ethers-utils/namehash":14,"ethers-utils/properties":15,"ethers-utils/rlp":16,"ethers-utils/utf8":19,"inherits":20,"xmlhttprequest":2}]},{},[5]);
