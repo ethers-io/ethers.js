@@ -5,7 +5,7 @@ var assert = require('assert');
 var utils = require('./utils');
 
 describe('Private key generation', function() {
-    var Wallet = require('../wallet/Wallet');
+    var Wallet = require('../wallet/wallet');
 
     var tests = utils.loadTests('accounts');
     tests.forEach(function(test) {
