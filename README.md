@@ -26,7 +26,9 @@ Installing
 To use in a browser:
 
 ```html
-<script type="text/javascript" src="https://cdn.ethers.io/scripts/ethers-2.0.min.js">
+<script charset="utf-8"
+        src="https://cdn.ethers.io/scripts/ethers-v2.min.js"
+        type="text/javascript">
 </script>
 ```
 
