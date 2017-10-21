@@ -15,7 +15,7 @@ Complete Ethereum wallet implementation and utilities in JavaScript.
 - ENS names are first-class citizens; they can almost always used instead of Ethereum addresses
 - **Tiny** (~77kb compressed; 227kb uncompressed)
 - **Complete** functionality for all your Ethereum needs
-- Extensive [documentation](https://docs.ethers.io/ethers.js/)
+- Extensive [documentation](https://docs.ethers.io/ethers.js/html/)
 - Large collection of test cases which are maintained and added to
 - **MIT License** (including ALL dependencies); completely open source to do with as you please
 
