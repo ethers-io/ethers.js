@@ -4,7 +4,7 @@
   "description": "Ethereum wallet library.",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha tests/test-*.js",
+    "test": "./node_modules/.bin/mocha --timeout 100000 tests/test-*.js",
     "version": "grunt dist"
   },
   "dependencies": {
