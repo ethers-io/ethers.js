@@ -4,7 +4,7 @@
   "description": "Ethereum wallet library.",
   "main": "index.js",
   "scripts": {
-    "test": "cd tests && node index.js",
+    "test": "./node_modules/.bin/mocha tests/test-*.js",
     "version": "grunt dist"
   },
   "dependencies": {
@@ -16,7 +16,8 @@
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-browserify": "^5.0.0",
-    "grunt-contrib-uglify": "^1.0.1"
+    "grunt-contrib-uglify": "^1.0.1",
+    "mocha": "^3.2.0"
   },
   "keywords": [
     "ethereum",
