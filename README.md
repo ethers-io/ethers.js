@@ -43,7 +43,7 @@ To use in [node.js](https://nodejs.org/):
 Documentation
 -------------
 
-Browse the [API Documentation](https://docs.ethers.io/ethers.js/index.html) online.
+Browse the [API Documentation](https://docs.ethers.io/ethers.js/html/) online.
 
 Documentation is generated using [Sphinx](http://www.sphinx-doc.org) and can be browsed locally from the /docs/build/html directory.
 
