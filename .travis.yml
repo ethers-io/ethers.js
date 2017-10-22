@@ -12,10 +12,6 @@ before_script:
   - "pushd tests && npm install && popd"
 
 matrix:
-  include:
-    - node_js: "6"
-      env: RUN_PHANTOMJS=0
-    - node_js: "6"
-      env: RUN_PHANTOMJS=1
+  exclude:
     - node_js: "8"
-      env: RUN_PHANTOMJS=0
+      env: RUN_PHANTOMJS=1
