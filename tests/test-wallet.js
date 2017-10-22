@@ -17,6 +17,7 @@ describe('Test Brain Wallets', function() {
 
     tests.forEach(function(test) {
         it(('computes the brain wallet for ' + test.name), function() {
+            this.timeout(1000000);
             return Wallet.fromBrainWallet(test.username, test.password).then(function(wallet) {
                 assert.equal(wallet.address, test.address,
                     'computed brain wallet for ' + test.username + ':' + test.password);
@@ -30,6 +31,8 @@ describe('Test JSON Wallets', function() {
     var tests = utils.loadTests('wallets');
     tests.forEach(function(test) {
         it(('decrypts wallet - ' + test.name), function() {
+            this.timeout(1000000);
+
             assert.ok(Wallet.isEncryptedWallet(test.json),
                 'detect encrypted JSON wallet');
 
@@ -47,6 +50,8 @@ describe('Test JSON Wallets', function() {
         var password = 'foobar' + i;
         var wallet = new Wallet(utils.randomHexString('test-' + i, 32));
         it('encrypts and decrypts a random wallet - ' + i, function() {
+            this.timeout(1000000);
+
             return wallet.encrypt(password).then(function(json) {
                 return Wallet.fromEncryptedWallet(json, password).then(function(decryptedWallet) {
                     assert.equal(decryptedWallet.address, wallet.address,

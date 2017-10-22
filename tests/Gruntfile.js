@@ -1,10 +1,22 @@
+'use strict';
+
+var fs = require('fs');
+
+// Create a mock-fs module that can load our gzipped test cases
+var data = {};
+fs.readdirSync('tests').forEach(function(filename) {
+    filename = 'tests/' + filename;
+    data['/' + filename] = fs.readFileSync(filename).toString('base64');
+});
+fs.writeFileSync('./dist/tests.json', JSON.stringify(data));
+
 
 module.exports = function(grunt) {
   grunt.initConfig({
     browserify: {
       dist: {
         files: {
-            'dist/ethers-tests.js': './browser.js',
+            'dist/tests.js': './browser.js',
         },
         options: {
           browserifyOptions: {

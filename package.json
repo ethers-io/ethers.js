@@ -4,7 +4,9 @@
   "description": "Ethereum wallet library.",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha --timeout 100000 tests/test-*.js",
+    "test": "./node_modules/.bin/mocha tests/test-*.js",
+    "test-phantomjs": "./node_modules/.bin/grunt --gruntfile tests/gruntfile.js dist && phantomjs ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",
+    "test-check-env": "if [ \"$RUN_PHANTOMJS\" ]; then npm run-script test-phantomjs; else npm test; fi",
     "version": "grunt dist"
   },
   "dependencies": {
@@ -16,8 +18,10 @@
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-browserify": "^5.0.0",
+    "grunt-cli": "1.2.0",
     "grunt-contrib-uglify": "^1.0.1",
-    "mocha": "^3.2.0"
+    "mocha": "^3.2.0",
+    "mocha-phantomjs-core": "2.1.2"
   },
   "keywords": [
     "ethereum",

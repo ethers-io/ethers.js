@@ -1,39 +1,53 @@
 'use strict';
 
-[ 'contracts', 'providers', 'utils', 'wallet'].forEach(function(name) {
-    var npmVersion = require('./node_modules/ethers-' + name + '/package.json').version;
-    var liveVersion = require('./' + name + '/package.json').version;
-    console.log(name, npmVersion, liveVersion);
-});
-
 var through = require('through');
-
-var undef = "module.exports = undefined;";
-var empty = "module.exports = {};";
 
 // The elliptic package.json is only used for its version
 var ellipticPackage = require('elliptic/package.json');
 ellipticPackage = JSON.stringify({ version: ellipticPackage.version });
 
+
+// Make sure the versions we are building a dist from are the most rescent
+[ 'contracts', 'providers', 'utils', 'wallet'].forEach(function(name) {
+    var npmVersion = require('./node_modules/ethers-' + name + '/package.json').version;
+    var liveVersion = require('./' + name + '/package.json').version;
+    if (npmVersion !== liveVersion) {
+        throw new Error('version mismatch for ' + name + ' - redo npm install');
+    }
+
+    console.log('Including: ', name + '@' + npmVersion);
+});
+
+
+
+
+var undef = "module.exports = undefined;";
+var empty = "module.exports = {};";
+
+
 // We already have a random Uint8Array browser/node safe source
 var brorand = "var randomBytes = require('ethers-utils').randomBytes; module.exports = function(length) { return randomBytes(length); };";
 
 var transforms = {
+    // Remove the precomputed secp256k1 points
     "elliptic/lib/elliptic/precomputed/secp256k1.js": undef,
+
+    // Remove curves we don't care about
     "elliptic/curve/edwards.js": empty,
     "elliptic/curve/mont.js": empty,
     "elliptic/lib/elliptic/eddsa/.*": empty,
+
+    // We only use the version from this JSON package
     "elliptic/package.json" : ellipticPackage,
 
+    // Remove RIPEMD160
     "hash.js/lib/hash/ripemd.js": "module.exports = {ripemd160: null}",
 
-    // brorand (Maybe swap out brorand with out getRandomBytes from utils?
+    // Swap out borland for the random bytes we already have
     "brorand/index.js": brorand,
-//    "browser-resolve/.*": undef,   // If we use the actual brorand, we need this
 
-    // Used by sha3
+    // Used by sha3 if it exists; (so make it no exist)
     "process/.*": undef,
-
 };
 
 var modified = {};
@@ -61,8 +75,6 @@ function transform(path, options) {
         } else {
             unmodified[path] = true;
         }
-        //data = data.replace(/__ETHERS_EXPORT__/g, '__MASKED_ETHERS_EXPORT__');
-        //console.log(data.length, 'FOOBAR', path);
         this.queue(data);
         this.queue(null);
     });
@@ -108,7 +120,7 @@ function postBundle(error, source, next) {
         preserved.sort();
         console.log('Preserved:');
         preserved.forEach(function(path) {
-            console.log('  ' + path);
+            console.log('  ', path);
         });
 
         // Make sure there were no replacement patterns that went unused
@@ -120,7 +132,7 @@ function postBundle(error, source, next) {
         if (skipped.length) {
             console.log('Unused Patterns:');
             skipped.forEach(function(pattern) {
-                console.log('  ' + pattern);
+                console.log('  ', pattern);
             });
         }
     }
@@ -135,7 +147,6 @@ module.exports = function(grunt) {
         files: {
             'dist/ethers.js': './index.js',
             'dist/ethers-contracts.js': './contracts/index.js',
-//            'dist/ethers-hdnode.js': './hdnode/index.js',
             'dist/ethers-providers.js': './providers/index.js',
             'dist/ethers-utils.js': './utils/index.js',
             'dist/ethers-wallet.js': './wallet/index.js',
@@ -157,7 +168,6 @@ module.exports = function(grunt) {
         files: {
           'dist/ethers.min.js' : [ './dist/ethers.js' ],
           'dist/ethers-contracts.min.js' : [ './dist/ethers-contracts.js' ],
-//          'dist/ethers-hdnode.min.js' : [ './dist/ethers-hdnode.js' ],
           'dist/ethers-providers.min.js' : [ './dist/ethers-providers.js' ],
           'dist/ethers-utils.min.js' : [ './dist/ethers-utils.js' ],
           'dist/ethers-wallet.min.js' : [ './dist/ethers-wallet.js' ],

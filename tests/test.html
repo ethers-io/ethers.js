@@ -1,26 +1,69 @@
 <!doctype html>
 <html>
     <head>
-        <title>Example Test Suite</title>
+        <title>Ethers Test Suite</title>
         <meta charset="UTF-8">
+        <link href="../node_modules/mocha/mocha.css" rel="stylesheet" />
         <style type="text/css">
-            ol {
-                display: block;
-            }
         </style>
-        <script src="./node_modules/nodeunit/examples/browser/nodeunit.js"></script>
-        <script src="./dist/ethers-tests.js"></script>
     </head>
 
     <body>
-        <h1 id="nodeunit-header">Example Test Suite</h1>
-        <script>
-          //nodeunit.run(tests);
-          nodeunit.run({
-              single: tests['providers']
-          });
-          /*
-          */
+        <div id="mocha"></div>
+        <script src="../node_modules/mocha/mocha.js"></script>
+        <!--
+           Shim for PhantomJS: Promise
+           See: https://github.com/stefanpenner/es6-promise
+        -->
+        <script src="./dist/es6-promise.auto.js"></script>
+
+        <!--
+           Shim for PhantomJS:
+             - Type Array prototype.slice
+             - ArrayBuffer.isView
+             - Number.MAX_SAFE_INTEGER
+             - Math.log10
+        -->
+        <script type="text/javascript">
+            if (!Uint8Array.prototype.slice) {
+                Uint8Array.prototype.slice = function() {
+                    var args = Array.prototype.slice.call(arguments);
+                    return new Uint8Array(Array.prototype.slice.apply(this, args));
+                }
+            }
+
+            if (!ArrayBuffer.isView) {
+                 ArrayBuffer.isView = function(obj) {
+                     // @TODO: This should probably check various instanceof aswell
+                     return !!(obj.buffer);
+                 }
+            }
+
+            if (!Number.MAX_SAFE_INTEGER) {
+                Number.MAX_SAFE_INTEGER = 0x1fffffffffffff;
+            }
+
+            if (!Math.log10) {
+                Math.log10 = Math.log10 || function(x) {
+                    return Math.log(x) / Math.LN10;
+                };
+            }
+
+            // https://github.com/nathanboktae/mocha-phantomjs-core#usage
+            if (typeof(initMochaPhantomJS) === 'function') {
+                initMochaPhantomJS();
+            }
+        </script>
+
+        <!-- Inject the mocha describe and it functions -->
+        <script type="text/javascript">mocha.setup('bdd')</script>
+
+        <!-- Our test cases; compiled by browserify -->
+        <script src="./dist/tests.js" type="text/javascript"></script>
+
+        <!-- Run the test cases! -->
+        <script type="text/javascript">
+            mocha.run();
         </script>
     </body>
 </html>
