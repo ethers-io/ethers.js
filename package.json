@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha tests/test-*.js",
-    "test-phantomjs": "./node_modules/.bin/grunt --gruntfile tests/gruntfile.js dist && phantomjs ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",
+    "test-phantomjs": "./node_modules/.bin/grunt --gruntfile tests/Gruntfile.js dist && phantomjs ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",
     "test-check-env": "if [ \"$RUN_PHANTOMJS\" ]; then npm run-script test-phantomjs; else npm test; fi",
     "version": "grunt dist"
   },
