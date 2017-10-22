@@ -1,7 +1,12 @@
 language: node_js
+
 node_js:
   - "6"
   - "8"
+
+env:
+  - RUN_PHANTOMJS=0
+  - RUN_PHANTOMJS=1
+
 before_script:
   - "pushd tests && npm install && popd"
-  - "npm run-script test-phantomjs"
