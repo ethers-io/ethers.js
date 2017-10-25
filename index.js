@@ -14,6 +14,7 @@ module.exports = {
     Contract: contracts.Contract,
     Interface: contracts.Interface,
 
+    networks: providers.networks,
     providers: providers,
 
     utils: utils,
