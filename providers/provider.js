@@ -172,13 +172,13 @@ var formatTransaction = {
    nonce: checkNumber,
    data: utils.hexlify,
 
-   r: checkUint256,
-   s: checkUint256,
-   v: checkNumber,
+   r: allowNull(checkUint256),
+   s: allowNull(checkUint256),
+   v: allowNull(checkNumber),
 
    creates: allowNull(utils.getAddress, null),
 
-   raw: utils.hexlify,
+   raw: allowNull(utils.hexlify),
 };
 
 function checkTransaction(transaction) {
@@ -199,19 +199,23 @@ function checkTransaction(transaction) {
     }
 
     if (!transaction.raw) {
-        var raw = [
-            utils.hexlify(transaction.nonce),
-            utils.hexlify(transaction.gasPrice),
-            utils.hexlify(transaction.gasLimit),
-            (transaction.to || "0x"),
-            utils.hexlify(transaction.value || '0x'),
-            utils.hexlify(transaction.data || '0x'),
-            utils.hexlify(transaction.v || '0x'),
-            utils.hexlify(transaction.r),
-            utils.hexlify(transaction.s),
-        ];
 
-        transaction.raw = utils.RLP.encode(raw);
+        // Very loose providers (e.g. TestRPC) don't provide a signature or raw
+        if (transaction.v && transaction.r && transaction.s) {
+            var raw = [
+                utils.hexlify(transaction.nonce),
+                utils.hexlify(transaction.gasPrice),
+                utils.hexlify(transaction.gasLimit),
+                (transaction.to || "0x"),
+                utils.hexlify(transaction.value || '0x'),
+                utils.hexlify(transaction.data || '0x'),
+                utils.hexlify(transaction.v || '0x'),
+                utils.hexlify(transaction.r),
+                utils.hexlify(transaction.s),
+            ];
+
+            transaction.raw = utils.RLP.encode(raw);
+        }
     }
 
 
@@ -223,11 +227,13 @@ function checkTransaction(transaction) {
         networkId = utils.bigNumberify(networkId).toNumber();
     }
 
-    if (typeof(networkId) !== 'number') {
+    if (typeof(networkId) !== 'number' && result.v != null) {
         networkId = (result.v - 35) / 2;
         if (networkId < 0) { networkId = 0; }
         networkId = parseInt(networkId);
     }
+
+    if (typeof(networkId) !== 'number') { networkId = 0; }
 
     result.networkId = networkId;
 
