@@ -7,10 +7,10 @@ var FallbackProvider = require('./fallback-provider.js');
 var InfuraProvider = require('./infura-provider.js');
 var JsonRpcProvider = require('./json-rpc-provider.js');
 
-function getDefaultProvider(testnet) {
+function getDefaultProvider(network) {
     return new FallbackProvider([
-        new InfuraProvider(testnet),
-        new EtherscanProvider(testnet),
+        new InfuraProvider(network),
+        new EtherscanProvider(network),
     ]);
 }
 
@@ -20,7 +20,9 @@ module.exports = {
     InfuraProvider: InfuraProvider,
     JsonRpcProvider: JsonRpcProvider,
 
-    isProvder: Provider.isProvider,
+    isProvider: Provider.isProvider,
+
+    networks: Provider.networks,
 
     getDefaultProvider:getDefaultProvider,
 

@@ -10,7 +10,7 @@ var providers = require('../providers');
 
 var contracts = require('../contracts');
 
-var TestContracts = require('./tests/test-contract.json');
+var TestContracts = require('./test-contract.json');
 
 var TestContract = TestContracts.test;
 var TestContractDeploy = TestContracts.deploy;

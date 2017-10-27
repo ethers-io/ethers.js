@@ -4,6 +4,8 @@ var inherits = require('inherits');
 
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
+var networks = require('./networks.json');
+
 var utils = (function() {
     var convert = require('ethers-utils/convert');
     return {
@@ -127,8 +129,8 @@ var formatBlock = {
     number: checkNumber,
 
     timestamp: checkNumber,
-    nonce: utils.hexlify,
-    difficulty: checkNumber,
+    nonce: allowNull(utils.hexlify),
+    difficulty: allowNull(checkNumber),
 
     gasLimit: utils.bigNumberify,
     gasUsed: utils.bigNumberify,
@@ -326,25 +328,24 @@ function checkLog(log) {
     return check(formatLog, log);
 }
 
-var ensAddressTestnet = '0x112234455c3a32fd11230c42e7bccd4a84e02010';
-var ensAddressMainnet = '0x314159265dd8dbb310642f98f50c066173c1259b';
-
-function Provider(testnet, chainId) {
+function Provider(network) {
     if (!(this instanceof Provider)) { throw new Error('missing new'); }
 
-    testnet = !!testnet;
+    network = Provider._legacyConstructor(network, arguments.length, arguments[0], arguments[1]);
 
-    if (chainId == null) {
-        chainId = (testnet ? Provider.chainId.ropsten: Provider.chainId.homestead);
+    // Check the ensAddress (if any)
+    var ensAddress = null;
+    if (network.ensAddress) {
+        ensAddress = utils.getAddress(network.ensAddress);
     }
 
-    // Figure out which ENS to talk to
-    this.ensAddress = (testnet ? ensAddressTestnet: ensAddressMainnet);
+    // Setup our network properties
+    utils.defineProperty(this, 'chainId', network.chainId);
+    utils.defineProperty(this, 'ensAddress', ensAddress);
+    utils.defineProperty(this, 'name', network.name);
 
-    if (typeof(chainId) !== 'number') { throw new Error('invalid chainId'); }
-
-    utils.defineProperty(this, 'testnet', testnet);
-    utils.defineProperty(this, 'chainId', chainId);
+    // @TODO: Remove in the next major release
+    utils.defineProperty(this, 'testnet', (network.name !== 'homestead'));
 
     var events = {};
     utils.defineProperty(this, '_events', events);
@@ -452,6 +453,35 @@ function(child) {
     }
 });
 */
+
+utils.defineProperty(Provider, '_legacyConstructor', function(network, length, arg0, arg1) {
+
+    // Legacy parameters Provider(testnet:boolean, chainId:Number)
+    if (typeof(arg0) === 'boolean' || length === 2) {
+        var testnet = !!arg0;
+        var chainId = arg1;
+
+        // true => testnet, false => mainnet
+        network = networks[testnet ? 'ropsten': 'homestead'];
+
+        // Overriding chain ID
+        if (length === 2 && chainId != null) {
+            network = {
+                chainId: chainId,
+                ensAddress: network.ensAddress,
+                name: network.name
+            };
+        }
+
+    } else if (typeof(network) === 'string') {
+        network = networks[network];
+        if (!network) { throw new Error('unknown network'); }
+    }
+
+    if (typeof(network.chainId) !== 'number') { throw new Error('invalid chainId'); }
+
+    return network;
+});
 utils.defineProperty(Provider, 'chainId', {
     homestead: 1,
     morden: 2,
@@ -461,6 +491,8 @@ utils.defineProperty(Provider, 'chainId', {
 //utils.defineProperty(Provider, 'isProvider', function(object) {
 //    return (object instanceof Provider);
 //});
+
+utils.defineProperty(Provider, 'networks', networks);
 
 utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
 

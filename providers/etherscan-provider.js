@@ -11,17 +11,48 @@ var utils = (function() {
     };
 })();
 
+// @TODO: Add this to utils; lots of things need this now
+function stripHexZeros(value) {
+    while (value.length > 3 && value.substring(0, 3) === '0x0') {
+        value = '0x' + value.substring(3);
+    }
+    return value;
+}
+
 function getTransactionString(transaction) {
     var result = [];
     for (var key in transaction) {
         if (transaction[key] == null) { continue; }
-        result.push(key + '=' + utils.hexlify(transaction[key]));
+        var value = utils.hexlify(transaction[key]);
+        if ({ gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
+            value = stripHexZeros(value);
+        }
+        result.push(key + '=' + value);
     }
     return result.join('&');
 }
 
-function EtherscanProvider(testnet, apiKey) {
-    Provider.call(this, testnet);
+function EtherscanProvider(network, apiKey) {
+    Provider.call(this, network);
+
+    var baseUrl = null;
+    switch(this.name) {
+        case 'homestead':
+            baseUrl = 'https://api.etherscan.io';
+            break;
+        case 'ropsten':
+            baseUrl = 'https://ropsten.etherscan.io';
+            break;
+        case 'rinkeby':
+            baseUrl = 'https://rinkeby.etherscan.io';
+            break;
+        case 'kovan':
+            baseUrl = 'https://kovan.etherscan.io';
+            break;
+        default:
+            throw new Error('unsupported network');
+    }
+    utils.defineProperty(this, 'baseUrl', baseUrl);
 
     utils.defineProperty(this, 'apiKey', apiKey || null);
 }
@@ -72,10 +103,11 @@ function checkLogTag(blockTag) {
     return parseInt(blockTag.substring(2), 16);
 }
 
+
 utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, params) {
     if (!params) { params = {}; }
 
-    var url = this.testnet ? 'https://ropsten.etherscan.io': 'https://api.etherscan.io';
+    var url = this.baseUrl;
 
     var apiKey = '';
     if (this.apiKey) { apiKey += '&apikey=' + this.apiKey; }
@@ -108,8 +140,8 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
 
         case 'getStorageAt':
             url += '/api?module=proxy&action=eth_getStorageAt&address=' + params.address;
-            url += '&position=' + params.position;
-            url += '&tag=' + params.blockTag + apiKey;
+            url += '&position=' + stripHexZeros(params.position);
+            url += '&tag=' + stripHexZeros(params.blockTag) + apiKey;
             return Provider.fetchJSON(url, null, getJsonResult);
 
         case 'sendTransaction':
@@ -120,7 +152,7 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
 
         case 'getBlock':
             if (params.blockTag) {
-                url += '/api?module=proxy&action=eth_getBlockByNumber&tag=' + params.blockTag;
+                url += '/api?module=proxy&action=eth_getBlockByNumber&tag=' + stripHexZeros(params.blockTag);
                 url += '&boolean=false';
                 url += apiKey;
                 return Provider.fetchJSON(url, null, getJsonResult);
