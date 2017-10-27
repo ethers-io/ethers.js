@@ -383,11 +383,13 @@ function Interface(abi) {
                         var outputNames = getKeys(method.outputs, 'name', true);
                     }
 
+                    var signature = method.name + '(' + getKeys(method.inputs, 'type').join(',') + ')';
+                    var sighash = utils.keccak256(utils.toUtf8Bytes(signature)).substring(0, 10);
                     var func = function() {
-                        var signature = method.name + '(' + getKeys(method.inputs, 'type').join(',') + ')';
                         var result = {
                             name: method.name,
                             signature: signature,
+                            sighash: sighash
                         };
 
                         var params = Array.prototype.slice.call(arguments, 0);
@@ -398,9 +400,7 @@ function Interface(abi) {
                             throwError('too many parameters');
                         }
 
-                        signature = utils.keccak256(utils.toUtf8Bytes(signature)).substring(0, 10);
-
-                        result.data = signature + Interface.encodeParams(inputTypes, params).substring(2);
+                        result.data = sighash + Interface.encodeParams(inputTypes, params).substring(2);
                         if (method.constant) {
                             result.parse = function(data) {
                                 return Interface.decodeParams(
@@ -417,6 +417,8 @@ function Interface(abi) {
 
                     defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
                     defineFrozen(func, 'outputs', getKeys(method.outputs, 'name'));
+                    utils.defineProperty(func, 'signature', signature);
+                    utils.defineProperty(func, 'sighash', sighash);
 
                     return func;
                 })();
@@ -487,7 +489,9 @@ function Interface(abi) {
                         };
                         return populateDescription(new EventDescription(), result);
                     }
+
                     defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
+
                     return func;
                 })();
 
