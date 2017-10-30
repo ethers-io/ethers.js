@@ -65,7 +65,7 @@ utils.defineProperty(JsonRpcProvider.prototype, 'send', function(method, params)
     var request = {
         method: method,
         params: params,
-        id: this.chainId,
+        id: 42,
         jsonrpc: "2.0"
     };
     return Provider.fetchJSON(this.url, JSON.stringify(request), getResult);
