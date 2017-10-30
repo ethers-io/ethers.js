@@ -279,7 +279,8 @@ function checkTransactionReceiptLog(log) {
 var formatTransactionReceipt = {
     contractAddress: allowNull(utils.getAddress, null),
     transactionIndex: checkNumber,
-    root: checkHash,
+    root: allowNull(checkHash, null),
+    status: allowNull(utils.bigNumberify, null),
     gasUsed: utils.bigNumberify,
     logsBloom: utils.hexlify,
     blockHash: checkHash,
@@ -495,6 +496,9 @@ utils.defineProperty(Provider, 'chainId', {
     homestead: 1,
     morden: 2,
     ropsten: 3,
+    rinkeby: 4,
+    kovan: 42,
+    localDev: 100
 });
 
 //utils.defineProperty(Provider, 'isProvider', function(object) {
