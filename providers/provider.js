@@ -497,8 +497,7 @@ utils.defineProperty(Provider, 'chainId', {
     morden: 2,
     ropsten: 3,
     rinkeby: 4,
-    kovan: 42,
-    localDev: 100
+    kovan: 42
 });
 
 //utils.defineProperty(Provider, 'isProvider', function(object) {
