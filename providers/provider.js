@@ -260,11 +260,10 @@ function checkTransactionRequest(transaction) {
 }
 
 var formatTransactionReceiptLog = {
-    transactionLogIndex: checkNumber,
+    transactionIndex: checkNumber,
     blockNumber: checkNumber,
     transactionHash: checkHash,
     address: utils.getAddress,
-    type: checkString,
     topics: arrayOf(checkHash),
     transactionIndex: checkNumber,
     data: utils.hexlify,
@@ -279,7 +278,8 @@ function checkTransactionReceiptLog(log) {
 var formatTransactionReceipt = {
     contractAddress: allowNull(utils.getAddress, null),
     transactionIndex: checkNumber,
-    root: checkHash,
+    root: allowNull(checkHash, null),
+    status: allowNull(utils.bigNumberify, null),
     gasUsed: utils.bigNumberify,
     logsBloom: utils.hexlify,
     blockHash: checkHash,
@@ -495,6 +495,8 @@ utils.defineProperty(Provider, 'chainId', {
     homestead: 1,
     morden: 2,
     ropsten: 3,
+    rinkeby: 4,
+    kovan: 42
 });
 
 //utils.defineProperty(Provider, 'isProvider', function(object) {
