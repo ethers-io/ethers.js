@@ -260,11 +260,10 @@ function checkTransactionRequest(transaction) {
 }
 
 var formatTransactionReceiptLog = {
-    transactionLogIndex: checkNumber,
+    transactionIndex: checkNumber,
     blockNumber: checkNumber,
     transactionHash: checkHash,
     address: utils.getAddress,
-    type: checkString,
     topics: arrayOf(checkHash),
     transactionIndex: checkNumber,
     data: utils.hexlify,
