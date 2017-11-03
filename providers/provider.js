@@ -512,10 +512,13 @@ utils.defineProperty(Provider, '_legacyConstructor', function(network, length, a
 
     return network;
 });
+// @TODO: Remove in next major version (use networks instead)
 utils.defineProperty(Provider, 'chainId', {
     homestead: 1,
     morden: 2,
     ropsten: 3,
+    rinkeby: 4,
+    kovan: 42
 });
 
 //utils.defineProperty(Provider, 'isProvider', function(object) {
