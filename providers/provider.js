@@ -503,6 +503,9 @@ utils.defineProperty(Provider, '_legacyConstructor', function(network, length, a
     } else if (typeof(network) === 'string') {
         network = networks[network];
         if (!network) { throw new Error('unknown network'); }
+
+    } else if (network == null) {
+        network = networks['homestead'];
     }
 
     if (typeof(network.chainId) !== 'number') { throw new Error('invalid chainId'); }

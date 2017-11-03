@@ -198,6 +198,8 @@ var blockchainData = {
     },
 }
 
+blockchainData['default'] = blockchainData.homestead;
+
 function equals(name, actual, expected) {
     if (expected && expected.eq) {
         if (actual == null) { assert.ok(false, name + ' - actual big number null'); }
@@ -231,7 +233,20 @@ function equals(name, actual, expected) {
 
 function testProvider(providerName, networkName) {
     describe(('Read-Only ' + providerName + ' (' + networkName + ')'), function() {
-        var provider = new providers[providerName](networkName);
+        var provider = null;
+        if (networkName === 'default') {
+            if (providerName === 'getDefaultProvider') {
+                provider = providers.getDefaultProvider();
+            } else {
+                provider = new providers[providerName]();
+            }
+        } else {
+            if (providerName === 'getDefaultProvider') {
+                provider = providers.getDefaultProvider(networkName);
+            } else {
+                provider = new providers[providerName](networkName);
+            }
+        }
 
         it('fetches block #3', function() {
             this.timeout(20000);
@@ -302,8 +317,9 @@ function testProvider(providerName, networkName) {
     });
 }
 
-['homestead', 'ropsten', 'rinkeby', 'kovan'].forEach(function(networkName) {
-    ['InfuraProvider', 'EtherscanProvider'].forEach(function(providerName) {
+['default', 'homestead', 'ropsten', 'rinkeby', 'kovan'].forEach(function(networkName) {
+    ['getDefaultProvider', 'InfuraProvider', 'EtherscanProvider'].forEach(function(providerName) {
         testProvider(providerName, networkName);
     });
 });
+
