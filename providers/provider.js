@@ -172,13 +172,13 @@ var formatTransaction = {
    nonce: checkNumber,
    data: utils.hexlify,
 
-   r: checkUint256,
-   s: checkUint256,
-   v: checkNumber,
+   r: allowNull(checkUint256),
+   s: allowNull(checkUint256),
+   v: allowNull(checkNumber),
 
    creates: allowNull(utils.getAddress, null),
 
-   raw: utils.hexlify,
+   raw: allowNull(utils.hexlify),
 };
 
 function checkTransaction(transaction) {
@@ -199,19 +199,23 @@ function checkTransaction(transaction) {
     }
 
     if (!transaction.raw) {
-        var raw = [
-            utils.hexlify(transaction.nonce),
-            utils.hexlify(transaction.gasPrice),
-            utils.hexlify(transaction.gasLimit),
-            (transaction.to || "0x"),
-            utils.hexlify(transaction.value || '0x'),
-            utils.hexlify(transaction.data || '0x'),
-            utils.hexlify(transaction.v || '0x'),
-            utils.hexlify(transaction.r),
-            utils.hexlify(transaction.s),
-        ];
 
-        transaction.raw = utils.RLP.encode(raw);
+        // Very loose providers (e.g. TestRPC) don't provide a signature or raw
+        if (transaction.v && transaction.r && transaction.s) {
+            var raw = [
+                utils.hexlify(transaction.nonce),
+                utils.hexlify(transaction.gasPrice),
+                utils.hexlify(transaction.gasLimit),
+                (transaction.to || "0x"),
+                utils.hexlify(transaction.value || '0x'),
+                utils.hexlify(transaction.data || '0x'),
+                utils.hexlify(transaction.v || '0x'),
+                utils.hexlify(transaction.r),
+                utils.hexlify(transaction.s),
+            ];
+
+            transaction.raw = utils.RLP.encode(raw);
+        }
     }
 
 
@@ -223,11 +227,13 @@ function checkTransaction(transaction) {
         networkId = utils.bigNumberify(networkId).toNumber();
     }
 
-    if (typeof(networkId) !== 'number') {
+    if (typeof(networkId) !== 'number' && result.v != null) {
         networkId = (result.v - 35) / 2;
         if (networkId < 0) { networkId = 0; }
         networkId = parseInt(networkId);
     }
+
+    if (typeof(networkId) !== 'number') { networkId = 0; }
 
     result.networkId = networkId;
 
@@ -254,11 +260,13 @@ function checkTransactionRequest(transaction) {
 }
 
 var formatTransactionReceiptLog = {
-    transactionLogIndex: checkNumber,
+    transactionLogIndex: allowNull(checkNumber),
+    transactionIndex: checkNumber,
     blockNumber: checkNumber,
     transactionHash: checkHash,
     address: utils.getAddress,
-    type: checkString,
+    // @TODO: Next major release remove this
+    type: allowNull(checkString),
     topics: arrayOf(checkHash),
     transactionIndex: checkNumber,
     data: utils.hexlify,
@@ -273,7 +281,7 @@ function checkTransactionReceiptLog(log) {
 var formatTransactionReceipt = {
     contractAddress: allowNull(utils.getAddress, null),
     transactionIndex: checkNumber,
-    root: checkHash,
+    root: allowNull(checkHash),
     gasUsed: utils.bigNumberify,
     logsBloom: utils.hexlify,
     blockHash: checkHash,
@@ -281,10 +289,29 @@ var formatTransactionReceipt = {
     logs: arrayOf(checkTransactionReceiptLog),
     blockNumber: checkNumber,
     cumulativeGasUsed: utils.bigNumberify,
+    status: allowNull(checkNumber)
 };
 
 function checkTransactionReceipt(transactionReceipt) {
-    return check(formatTransactionReceipt, transactionReceipt);
+    var status = transactionReceipt.status;
+    var root = transactionReceipt.root;
+    if (!((status != null) ^ (root != null))) {
+        throw new Error('invalid transaction receipt - exactly one of status and root should be present');
+    }
+    var result = check(formatTransactionReceipt, transactionReceipt);
+    result.logs.forEach(function(entry, index) {
+        if (entry.transactionLogIndex == null) {
+            entry.transactionLogIndex = index;
+        }
+        // @TODO: Remove this is next major version
+        if (entry.type == null) {
+            entry.type = 'mined';
+        }
+    });
+    if (transactionReceipt.status != null) {
+        result.byzantium = true;
+    }
+    return result;
 }
 
 function checkTopics(topics) {
@@ -476,16 +503,22 @@ utils.defineProperty(Provider, '_legacyConstructor', function(network, length, a
     } else if (typeof(network) === 'string') {
         network = networks[network];
         if (!network) { throw new Error('unknown network'); }
+
+    } else if (network == null) {
+        network = networks['homestead'];
     }
 
     if (typeof(network.chainId) !== 'number') { throw new Error('invalid chainId'); }
 
     return network;
 });
+// @TODO: Remove in next major version (use networks instead)
 utils.defineProperty(Provider, 'chainId', {
     homestead: 1,
     morden: 2,
     ropsten: 3,
+    rinkeby: 4,
+    kovan: 42
 });
 
 //utils.defineProperty(Provider, 'isProvider', function(object) {
