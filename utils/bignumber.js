@@ -78,6 +78,10 @@ defineProperty(BigNumber.prototype, 'mod', function(other) {
     return new BigNumber(this._bn.mod(bigNumberify(other)._bn));
 });
 
+defineProperty(BigNumber.prototype, 'pow', function(other) {
+    return new BigNumber(this._bn.pow(bigNumberify(other)._bn));
+});
+
 
 defineProperty(BigNumber.prototype, 'maskn', function(value) {
     return new BigNumber(this._bn.maskn(value));
