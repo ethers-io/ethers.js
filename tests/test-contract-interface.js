@@ -75,7 +75,7 @@ function equals(a, b) {
         return true;
     }
 
-    if (testWeb3) {
+    if (testWeb3 || true) {
         if (a.match && a.match(/^0x[0-9A-Fa-f]{40}$/)) { a = a.toLowerCase(); }
         if (b.match && b.match(/^0x[0-9A-Fa-f]{40}$/)) { b = b.toLowerCase(); }
     }
@@ -125,6 +125,9 @@ function getValues(object, format) {
                return object.value.toLowerCase();
            }
            return utils.arrayify(object.value);
+
+       case 'tuple':
+           return getValues(object.value, format);
 
        default:
            throw new Error('invalid type - ' + object.type);
@@ -207,19 +210,63 @@ describe('Contract Interface ABI Decoding', function() {
                     assert.ok(false, 'This testcase seems to fail');
 
                 } else {
-                    //console.log(result);
                     var resultBuffer = new Buffer(result.substring(2), 'hex');
                     var valuesEthereumLib = getValues(JSON.parse(test.normalizedValues), FORMAT_ETHEREUM_LIB);
-                    //console.log('V', valuesEthereumLib);
                     var ethereumLibDecoded = ethereumLibCoder.rawDecode(types, resultBuffer);
-                    //console.log('R', types, ethereumLibDecoded);
-                    //console.log('E', valuesEthereumLib, ethereumLibDecoded, equals(valuesEthereumLib, ethereumLibDecoded));
-                    //console.log(ethereumLibDecoded);
                     assert.ok(equals(valuesEthereumLib, ethereumLibDecoded),
                         'ethereum-lib decoded data - ' + title);
                 }
             }
         });
 
+    });
+});
+
+describe('Contract Interface ABI v2 Decoding', function() {
+    var Interface = require('../contracts/index.js').Interface;
+
+    var tests = utils.loadTests('contract-interface-abi2');
+    tests.forEach(function(test) {
+        var values = getValues(JSON.parse(test.values));
+        var types = JSON.parse(test.types);
+        var result = test.result;
+        var title = test.name + ' => (' + test.types + ') = (' + test.values + ')';
+
+        it(('decodes parameters - ' + test.name + ' - ' + test.types), function() {
+            var decoded = Interface.decodeParams(types, result);
+            var decodedArray = Array.prototype.slice.call(decoded);
+
+            assert.ok(equals(values, decodedArray), 'decoded parameters - ' + title);
+        });
+    });
+});
+
+describe('Contract Interface ABI v2 Encoding', function() {
+    var Interface = require('../contracts/index.js').Interface;
+
+    var tests = utils.loadTests('contract-interface-abi2');
+    tests.forEach(function(test) {
+        var values = getValues(JSON.parse(test.values));
+        var types = JSON.parse(test.types);
+        var expected = test.result;
+        var title = test.name + ' => (' + test.types + ') = (' + test.value + ')';
+
+        it(('encodes parameters - ' + test.name + ' - ' + test.types), function() {
+            var encoded = Interface.encodeParams(types, values);
+
+            /*
+            console.log('Actual:');
+            for (var i = 2; i < encoded.length; i += 64) {
+                console.log('  ', encoded.substring(i, i + 64));
+            }
+
+            console.log('Expected:');
+            for (var i = 2; i < expected.length; i += 64) {
+                console.log('  ', expected.substring(i, i + 64));
+            }
+            */
+
+            assert.equal(encoded, expected, 'decoded parameters - ' + title);
+        });
     });
 });
