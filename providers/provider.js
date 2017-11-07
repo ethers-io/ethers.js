@@ -260,11 +260,13 @@ function checkTransactionRequest(transaction) {
 }
 
 var formatTransactionReceiptLog = {
-    transactionLogIndex: checkNumber,
+    transactionLogIndex: allowNull(checkNumber),
+    transactionIndex: checkNumber,
     blockNumber: checkNumber,
     transactionHash: checkHash,
     address: utils.getAddress,
-    type: checkString,
+    // @TODO: Next major release remove this
+    type: allowNull(checkString),
     topics: arrayOf(checkHash),
     transactionIndex: checkNumber,
     data: utils.hexlify,
@@ -279,7 +281,7 @@ function checkTransactionReceiptLog(log) {
 var formatTransactionReceipt = {
     contractAddress: allowNull(utils.getAddress, null),
     transactionIndex: checkNumber,
-    root: checkHash,
+    root: allowNull(checkHash),
     gasUsed: utils.bigNumberify,
     logsBloom: utils.hexlify,
     blockHash: checkHash,
@@ -287,10 +289,29 @@ var formatTransactionReceipt = {
     logs: arrayOf(checkTransactionReceiptLog),
     blockNumber: checkNumber,
     cumulativeGasUsed: utils.bigNumberify,
+    status: allowNull(checkNumber)
 };
 
 function checkTransactionReceipt(transactionReceipt) {
-    return check(formatTransactionReceipt, transactionReceipt);
+    var status = transactionReceipt.status;
+    var root = transactionReceipt.root;
+    if (!((status != null) ^ (root != null))) {
+        throw new Error('invalid transaction receipt - exactly one of status and root should be present');
+    }
+    var result = check(formatTransactionReceipt, transactionReceipt);
+    result.logs.forEach(function(entry, index) {
+        if (entry.transactionLogIndex == null) {
+            entry.transactionLogIndex = index;
+        }
+        // @TODO: Remove this is next major version
+        if (entry.type == null) {
+            entry.type = 'mined';
+        }
+    });
+    if (transactionReceipt.status != null) {
+        result.byzantium = true;
+    }
+    return result;
 }
 
 function checkTopics(topics) {
@@ -491,10 +512,13 @@ utils.defineProperty(Provider, '_legacyConstructor', function(network, length, a
 
     return network;
 });
+// @TODO: Remove in next major version (use networks instead)
 utils.defineProperty(Provider, 'chainId', {
     homestead: 1,
     morden: 2,
     ropsten: 3,
+    rinkeby: 4,
+    kovan: 42
 });
 
 //utils.defineProperty(Provider, 'isProvider', function(object) {
