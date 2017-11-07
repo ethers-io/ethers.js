@@ -58,8 +58,27 @@ function getKeys(params, key, allowEmpty) {
     return result;
 }
 
+var coderNull = {
+    name: 'null',
+    type: '',
+    encode: function(value) {
+        return utils.arrayify([]);
+    },
+    decode: function(data, offset) {
+        if (offset > data.length) { throw new Error('invalid null'); }
+        return {
+            consumed: 0,
+            value: undefined
+        }
+    },
+    dynamic: false
+};
+
 function coderNumber(size, signed) {
+    var name = ((signed ? 'int': 'uint') + size);
     return {
+        name: name,
+        type: name,
         encode: function(value) {
             value = utils.bigNumberify(value).toTwos(size * 8).maskn(size * 8);
             //value = value.toTwos(size * 8).maskn(size * 8);
@@ -89,6 +108,8 @@ function coderNumber(size, signed) {
 var uint256Coder = coderNumber(32, false);
 
 var coderBoolean = {
+    name: 'boolean',
+    type: 'boolean',
     encode: function(value) {
         return uint256Coder.encode(value ? 1: 0);
     },
@@ -102,7 +123,10 @@ var coderBoolean = {
 }
 
 function coderFixedBytes(length) {
+    var name = ('bytes' + length);
     return {
+        name: name,
+        type: name,
         encode: function(value) {
             value = utils.arrayify(value);
             if (length === 32) { return value; }
@@ -123,6 +147,8 @@ function coderFixedBytes(length) {
 }
 
 var coderAddress = {
+    name: 'address',
+    type: 'address',
     encode: function(value) {
         value = utils.arrayify(utils.getAddress(value));
         var result = new Uint8Array(32);
@@ -163,6 +189,8 @@ function _decodeDynamicBytes(data, offset) {
 }
 
 var coderDynamicBytes = {
+    name: 'bytes',
+    type: 'bytes',
     encode: function(value) {
         return _encodeDynamicBytes(utils.arrayify(value));
     },
@@ -175,6 +203,8 @@ var coderDynamicBytes = {
 };
 
 var coderString = {
+    name: 'string',
+    type: 'string',
     encode: function(value) {
         return _encodeDynamicBytes(utils.toUtf8Bytes(value));
     },
@@ -186,24 +216,106 @@ var coderString = {
     dynamic: true
 };
 
-function coderArray(coder, length) {
+function alignSize(size) {
+    return parseInt(32 * Math.ceil(size / 32));
+}
+
+function pack(coders, values) {
+    var parts = [];
+
+    coders.forEach(function(coder, index) {
+        parts.push({ dynamic: coder.dynamic, value: coder.encode(values[index]) });
+    })
+
+    var staticSize = 0, dynamicSize = 0;
+    parts.forEach(function(part, index) {
+        if (part.dynamic) {
+            staticSize += 32;
+            dynamicSize += alignSize(part.value.length);
+        } else {
+            staticSize += alignSize(part.value.length);
+        }
+    });
+
+    var offset = 0, dynamicOffset = staticSize;
+    var data = new Uint8Array(staticSize + dynamicSize);
+
+    parts.forEach(function(part, index) {
+        if (part.dynamic) {
+            //uint256Coder.encode(dynamicOffset).copy(data, offset);
+            data.set(uint256Coder.encode(dynamicOffset), offset);
+            offset += 32;
+
+            //part.value.copy(data, dynamicOffset);  @TODO
+            data.set(part.value, dynamicOffset);
+            dynamicOffset += alignSize(part.value.length);
+        } else {
+            //part.value.copy(data, offset);  @TODO
+            data.set(part.value, offset);
+            offset += alignSize(part.value.length);
+        }
+    });
+
+    return data;
+}
+
+
+function unpack(coders, data, offset) {
+    var baseOffset = offset;
+    var consumed = 0;
+    var value = [];
+
+    coders.forEach(function(coder) {
+        if (coder.dynamic) {
+            var dynamicOffset = uint256Coder.decode(data, offset);
+            var result = coder.decode(data, baseOffset + dynamicOffset.value.toNumber());
+            // The dynamic part is leap-frogged somewhere else; doesn't count towards size
+            result.consumed = dynamicOffset.consumed;
+        } else {
+            var result = coder.decode(data, offset);
+        }
+
+        if (result.value != undefined) {
+            value.push(result.value);
+        }
+
+        offset += result.consumed;
+        consumed += result.consumed;
+    });
+
     return {
+        value: value,
+        consumed: consumed
+    }
+
+    return result;
+}
+
+function coderArray(coder, length) {
+    var type = (coder.type + '[' + (length >= 0 ? length: '') + ']');
+
+    return {
+        coder: coder,
+        length: length,
+        name: 'array',
+        type: type,
         encode: function(value) {
             if (!Array.isArray(value)) { throwError('invalid array'); }
 
+            var count = length;
+
             var result = new Uint8Array(0);
-            if (length === -1) {
-                length = value.length;
-                result = uint256Coder.encode(length);
+            if (count === -1) {
+                count = value.length;
+                result = uint256Coder.encode(count);
             }
 
-            if (length !== value.length) { throwError('size mismatch'); }
+            if (count !== value.length) { throwError('size mismatch'); }
 
-            value.forEach(function(value) {
-                result = utils.concat([result, coder.encode(value)]);
-            });
+            var coders = [];
+            value.forEach(function(value) { coders.push(coder); });
 
-            return result;
+            return utils.concat([result, pack(coders, value)]);
         },
         decode: function(data, offset) {
             // @TODO:
@@ -211,97 +323,141 @@ function coderArray(coder, length) {
 
             var consumed = 0;
 
-            var result;
-            if (length === -1) {
-                 result = uint256Coder.decode(data, offset);
-                 length = result.value.toNumber();
-                 consumed += result.consumed;
-                 offset += result.consumed;
+            var count = length;
+
+            if (count === -1) {
+                 var decodedLength = uint256Coder.decode(data, offset);
+                 count = decodedLength.value.toNumber();
+                 consumed += decodedLength.consumed;
+                 offset += decodedLength.consumed;
             }
 
-            var value = [];
+            var coders = [];
+            for (var i = 0; i < count; i++) { coders.push(coder); }
 
-            for (var i = 0; i < length; i++) {
-                var result = coder.decode(data, offset);
-                consumed += result.consumed;
-                offset += result.consumed;
-                value.push(result.value);
-            }
-
-            return {
-                consumed: consumed,
-                value: value,
-            }
+            var result = unpack(coders, data, offset);
+            result.consumed += consumed;
+            return result;
         },
-        dynamic: (length === -1)
+        dynamic: (length === -1 || coder.dynamic)
     }
 }
 
-// Break the type up into [staticType][staticArray]*[dynamicArray]? | [dynamicType] and
-// build the coder up from its parts
-var paramTypePart = new RegExp(/^((u?int|bytes)([0-9]*)|(address|bool|string)|(\[([0-9]*)\]))/);
-function getParamCoder(type) {
-    var coder = null;
-    while (type) {
-        var part = type.match(paramTypePart);
-        if (!part) { throwError('invalid type', { type: type }); }
-        type = type.substring(part[0].length);
 
-        var prefix = (part[2] || part[4] || part[5]);
-        switch (prefix) {
-            case 'int': case 'uint':
-                if (coder) { throwError('invalid type', { type: type }); }
-                var size = parseInt(part[3] || 256);
-                if (size === 0 || size > 256 || (size % 8) !== 0) {
-                    throwError('invalid type', { type: type });
+function coderTuple(coders) {
+    var dynamic = false;
+    var types = [];
+    coders.forEach(function(coder) {
+        if (coder.dynamic) { dynamic = true; }
+        types.push(coder.type);
+    });
+
+    var type = ('tuple(' + types.join(',') + ')');
+
+    return {
+        coders: coders,
+        name: 'tuple',
+        type: type,
+        encode: function(value) {
+
+            if (coders.length !== coders.length) {
+                throwError('types/values mismatch', { type: type, values: values });
+            }
+
+            return pack(coders, value);
+        },
+        decode: function(data, offset) {
+            return unpack(coders, data, offset);
+        },
+        dynamic: dynamic
+    };
+}
+
+function getTypes(coders) {
+    var type = coderTuple(coders).type;
+    return type.substring(6, type.length - 1);
+}
+
+function splitNesting(value) {
+    var result = [];
+    var accum = '';
+    var depth = 0;
+    for (var offset = 0; offset < value.length; offset++) {
+        var c = value[offset];
+        if (c === ',' && depth === 0) {
+            result.push(accum);
+            accum = '';
+        } else {
+            accum += c;
+            if (c === '(') {
+                depth++;
+            } else if (c === ')') {
+                depth--;
+                if (depth === -1) {
+                    throw new Error('unbalanced parenthsis');
                 }
-                coder = coderNumber(size / 8, (prefix === 'int'));
-                break;
-
-            case 'bool':
-                if (coder) { throwError('invalid type', { type: type }); }
-                coder = coderBoolean;
-                break;
-
-            case 'string':
-                if (coder) { throwError('invalid type', { type: type }); }
-                coder = coderString;
-                break;
-
-            case 'bytes':
-                if (coder) { throwError('invalid type', { type: type }); }
-                if (part[3]) {
-                    var size = parseInt(part[3]);
-                    if (size === 0 || size > 32) {
-                        throwError('invalid type ' + type);
-                    }
-                    coder = coderFixedBytes(size);
-                } else {
-                    coder = coderDynamicBytes;
-                }
-                break;
-
-            case 'address':
-                if (coder) { throwError('invalid type', { type: type }); }
-                coder = coderAddress;
-                break;
-
-            case '[]':
-                if (!coder || coder.dynamic) { throwError('invalid type', { type: type }); }
-                coder = coderArray(coder, -1);
-                break;
-
-            // "[0-9+]"
-            default:
-                if (!coder || coder.dynamic) { throwError('invalid type', { type: type }); }
-                var size = parseInt(part[6]);
-                coder = coderArray(coder, size);
+            }
         }
     }
+    result.push(accum);
 
-    if (!coder) { throwError('invalid type'); }
-    return coder;
+    return result;
 }
+
+var paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
+var paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
+var paramTypeArray = new RegExp(/^(.*)\[([0-9]*)\]$/);
+var paramTypeSimple = {
+    address: coderAddress,
+    bool: coderBoolean,
+    string: coderString,
+    bytes: coderDynamicBytes,
+};
+
+function getParamCoder(type) {
+
+    var coder = paramTypeSimple[type];
+    if (coder) { return coder; }
+
+    var match = type.match(paramTypeNumber);
+    if (match) {
+        var size = parseInt(match[2] || 256);
+        if (size === 0 || size > 256 || (size % 8) !== 0) {
+            throwError('invalid type', { type: type });
+        }
+        return coderNumber(size / 8, (match[1] === 'int'));
+    }
+
+    var match = type.match(paramTypeBytes);
+    if (match) {
+        var size = parseInt(match[1]);
+        if (size === 0 || size > 32) {
+            throwError('invalid type ' + type);
+        }
+        return coderFixedBytes(size);
+    }
+
+    var match = type.match(paramTypeArray);
+    if (match) {
+        var size = parseInt(match[2] || -1);
+        return coderArray(getParamCoder(match[1]), size);
+    }
+
+    if (type.substring(0, 6) === 'tuple(' && type.substring(type.length - 1) === ')') {
+        var coders = [];
+        splitNesting(type.substring(6, type.length - 1)).forEach(function(type) {
+            coders.push(getParamCoder(type));
+        });
+        return coderTuple(coders);
+    }
+
+    if (type === '') {
+        return coderNull;
+    }
+
+    throwError('invalid type', { type: type });
+}
+
 
 function populateDescription(object, items) {
     for (var key in items) {
@@ -525,46 +681,12 @@ function Interface(abi) {
 utils.defineProperty(Interface, 'encodeParams', function(types, values) {
     if (types.length !== values.length) { throwError('types/values mismatch', {types: types, values: values}); }
 
-    var parts = [];
-
-    types.forEach(function(type, index) {
-        var coder = getParamCoder(type);
-        parts.push({dynamic: coder.dynamic, value: coder.encode(values[index])});
-    })
-
-    function alignSize(size) {
-        return parseInt(32 * Math.ceil(size / 32));
-    }
-
-    var staticSize = 0, dynamicSize = 0;
-    parts.forEach(function(part) {
-        if (part.dynamic) {
-            staticSize += 32;
-            dynamicSize += alignSize(part.value.length);
-        } else {
-            staticSize += alignSize(part.value.length);
-        }
+    var coders = [];
+    types.forEach(function(type) {
+        coders.push(getParamCoder(type));
     });
 
-    var offset = 0, dynamicOffset = staticSize;
-    var data = new Uint8Array(staticSize + dynamicSize);
-
-    parts.forEach(function(part, index) {
-        if (part.dynamic) {
-            //uint256Coder.encode(dynamicOffset).copy(data, offset);
-            data.set(uint256Coder.encode(dynamicOffset), offset);
-            offset += 32;
-
-            //part.value.copy(data, dynamicOffset);  @TODO
-            data.set(part.value, dynamicOffset);
-            dynamicOffset += alignSize(part.value.length);
-        } else {
-            //part.value.copy(data, offset);  @TODO
-            data.set(part.value, offset);
-            offset += alignSize(part.value.length);
-        }
-    });
-    return utils.hexlify(data);
+    return utils.hexlify(coderTuple(coders).encode(values));
 });
 
 
@@ -580,47 +702,35 @@ utils.defineProperty(Interface, 'decodeParams', function(names, types, data) {
     }
 
     data = utils.arrayify(data);
+
+    var coders = [];
+    types.forEach(function(type) {
+        coders.push(getParamCoder(type));
+    });
+
+    var result = coderTuple(coders).decode(data, 0);
+
+    // @TODO: Move this into coderTuple
     var values = new Result();
-
-    var offset = 0;
-    types.forEach(function(type, index) {
-        var coder = getParamCoder(type);
-        if (coder.dynamic) {
-            var dynamicOffset = uint256Coder.decode(data, offset);
-            var result = coder.decode(data, dynamicOffset.value.toNumber());
-            offset += dynamicOffset.consumed;
-        } else {
-            var result = coder.decode(data, offset);
-            offset += result.consumed;
-        }
-
-        // Add indexed parameter
-        values[index] = result.value;
-
-        // Add named parameters
-        if (names[index]) {
+    coders.forEach(function(coder, index) {
+        values[index] = result.value[index];
+        if (names && names[index]) {
             var name = names[index];
-
-            // We reserve length to make the Result object arrayish
             if (name === 'length') {
                 console.log('WARNING: result length renamed to _length');
                 name = '_length';
             }
-
             if (values[name] == null) {
-                values[name] = result.value;
+                values[name] = values[index];
             } else {
                 console.log('WARNING: duplicate value - ' + name);
             }
         }
-    });
+    })
 
     values.length = types.length;
 
     return values;
 });
-
-//utils.defineProperty(Interface, 'getDeployTransaction', function(bytecode) {
-//});
 
 module.exports = Interface;
