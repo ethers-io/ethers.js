@@ -8,7 +8,7 @@ Complete Ethereum wallet implementation and utilities in JavaScript.
 **Features:**
 
 - Keep your private keys in your client, **safe** and sound
-- Import and export **JSON wallets** (Geth and crowdsale) and brain wallets
+- Import and export **JSON wallets** (Geth, Parity and crowdsale) and brain wallets
 - Import and export BIP 39 **mnemonic phrases** (12 word backup phrases) and **HD Wallets**
 - Meta-classes create JavaScript objects from any contract ABI
 - Connect to Ethereum nodes over [JSON-RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC), [INFURA](https://infura.io) or [Etherscan](https://etherscan.io)
