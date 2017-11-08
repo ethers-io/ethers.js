@@ -268,7 +268,6 @@ var formatTransactionReceiptLog = {
     // @TODO: Next major release remove this
     type: allowNull(checkString),
     topics: arrayOf(checkHash),
-    transactionIndex: checkNumber,
     data: utils.hexlify,
     logIndex: checkNumber,
     blockHash: checkHash,
