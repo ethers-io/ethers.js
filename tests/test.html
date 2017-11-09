@@ -11,6 +11,7 @@
     <body>
         <div id="mocha"></div>
         <script src="../node_modules/mocha/mocha.js"></script>
+
         <!--
            Shim for PhantomJS: Promise
            See: https://github.com/stefanpenner/es6-promise
@@ -19,34 +20,14 @@
 
         <!--
            Shim for PhantomJS:
-             - Type Array prototype.slice
              - ArrayBuffer.isView
-             - Number.MAX_SAFE_INTEGER
-             - Math.log10
         -->
         <script type="text/javascript">
-            if (!Uint8Array.prototype.slice) {
-                Uint8Array.prototype.slice = function() {
-                    var args = Array.prototype.slice.call(arguments);
-                    return new Uint8Array(Array.prototype.slice.apply(this, args));
-                }
-            }
-
             if (!ArrayBuffer.isView) {
                  ArrayBuffer.isView = function(obj) {
                      // @TODO: This should probably check various instanceof aswell
                      return !!(obj.buffer);
                  }
-            }
-
-            if (!Number.MAX_SAFE_INTEGER) {
-                Number.MAX_SAFE_INTEGER = 0x1fffffffffffff;
-            }
-
-            if (!Math.log10) {
-                Math.log10 = Math.log10 || function(x) {
-                    return Math.log(x) / Math.LN10;
-                };
             }
 
             // https://github.com/nathanboktae/mocha-phantomjs-core#usage
@@ -63,6 +44,7 @@
 
         <!-- Run the test cases! -->
         <script type="text/javascript">
+            //mocha.grep(new RegExp('...')).run();
             mocha.run();
         </script>
     </body>
