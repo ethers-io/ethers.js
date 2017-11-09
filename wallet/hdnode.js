@@ -82,7 +82,7 @@ utils.defineProperty(HDNode.prototype, '_derive', function(index) {
     // Data += ser_32(i)
     for (var i = 24; i >= 0; i -= 8) { data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff); }
 
-    var I = utils.createSha512Hmac(this.chainCode).update(data).digest();
+    var I = utils.arrayify(utils.createSha512Hmac(this.chainCode).update(data).digest());
     var IL = utils.bigNumberify(I.slice(0, 32));
     var IR = I.slice(32);
 
@@ -130,7 +130,7 @@ utils.defineProperty(HDNode, 'fromSeed', function(seed) {
     seed = utils.arrayify(seed);
     if (seed.length < 16 || seed.length > 64) { throw new Error('invalid seed'); }
 
-    var I = utils.createSha512Hmac(MasterSecret).update(seed).digest();
+    var I = utils.arrayify(utils.createSha512Hmac(MasterSecret).update(seed).digest());
 
     return new HDNode(secp256k1.keyFromPrivate(I.slice(0, 32)), I.slice(32), 0, 0, 0);
 });
@@ -160,7 +160,7 @@ function mnemonicToEntropy(mnemonic) {
    var words = mnemonic.toLowerCase().split(' ');
    if ((words.length % 3) !== 0) { throw new Error('invalid mnemonic'); }
 
-   var entropy = new Uint8Array(Math.ceil(11 * words.length / 8));
+   var entropy = utils.arrayify(new Uint8Array(Math.ceil(11 * words.length / 8)));
 
    var offset = 0;
    for (var i = 0; i < words.length; i++) {

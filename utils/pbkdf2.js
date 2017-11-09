@@ -1,3 +1,6 @@
+'use strict';
+
+var convert = require('./convert');
 
 function pbkdf2(password, salt, iterations, keylen, createHmac) {
     var hLen
@@ -39,31 +42,10 @@ function pbkdf2(password, salt, iterations, keylen, createHmac) {
         var destPos = (i - 1) * hLen
         var len = (i === l ? r : hLen)
         //T.copy(DK, destPos, 0, len)
-        DK.set(Array.prototype.slice.call(T, 0, len), destPos);
-
+        DK.set(convert.arrayify(T).slice(0, len), destPos);
     }
 
-    return DK
+    return convert.arrayify(DK)
 }
 
-/*
-var hmac = require('./hmac.js');
-var utf8 = require('./utf8.js');
-var p = require('pbkdf2');
-
-var pw = utf8.toUtf8Bytes('password');
-var sa = utf8.toUtf8Bytes('salt');
-
-var t0 = (new Date()).getTime();
-for (var i = 0; i < 100; i++) {
-    pbkdf2(pw, sa, 1000, 40, hmac.createSha512Hmac);
-}
-var t1 = (new Date()).getTime();
-for (var i = 0; i < 100; i++) {
-    p.pbkdf2Sync('password', 'salt', 1000, 40, 'sha512');
-}
-var t2 = (new Date()).getTime();
-
-console.log('TT', t1 - t0, t2 - t1);
-*/
 module.exports = pbkdf2;
