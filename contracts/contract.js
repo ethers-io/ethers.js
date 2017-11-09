@@ -28,15 +28,16 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
         contractInterface = new Interface(contractInterface);
     }
 
+    if (!signerOrProvider) { throw new Error('missing signer or provider'); }
+
     var signer = signerOrProvider;
     var provider = null;
+
     if (signerOrProvider.provider) {
         provider = signerOrProvider.provider;
-    } else if (signerOrProvider) {
+    } else {
         provider = signerOrProvider;
         signer = null;
-    } else {
-        throw new Error('missing provider');
     }
 
     utils.defineProperty(this, 'address', addressOrName);
@@ -254,6 +255,10 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
 
     }, this);
 }
+
+utils.defineProperty(Contract.prototype, 'connect', function(signerOrProvider) {
+    return new Contract(this.address, this.interface, signerOrProvider);
+});
 
 utils.defineProperty(Contract, 'getDeployTransaction', function(bytecode, contractInterface) {
 
