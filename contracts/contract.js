@@ -30,13 +30,13 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
 
     var signer = signerOrProvider;
     var provider = null;
-    if (signerOrProvider.provider) {
+    if (signerOrProvider && signerOrProvider.provider) {
         provider = signerOrProvider.provider;
     } else if (signerOrProvider) {
         provider = signerOrProvider;
         signer = null;
     } else {
-        throw new Error('missing provider');
+        throw new Error('missing provider. signerOrProvider is undefined');
     }
 
     utils.defineProperty(this, 'address', addressOrName);
