@@ -39,7 +39,7 @@ function pbkdf2(password, salt, iterations, keylen, createHmac) {
         var destPos = (i - 1) * hLen
         var len = (i === l ? r : hLen)
         //T.copy(DK, destPos, 0, len)
-        DK.set(T.slice(0, len), destPos);
+        DK.set(Array.prototype.slice.call(T, 0, len), destPos);
 
     }
 

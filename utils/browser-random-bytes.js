@@ -1,6 +1,7 @@
 'use strict';
 
-var defineProperty = require('./properties.js').defineProperty;
+var convert = require('./convert');
+var defineProperty = require('./properties').defineProperty;
 
 var crypto = global.crypto || global.msCrypto;
 if (!crypto || !crypto.getRandomValues) {
@@ -32,7 +33,7 @@ function randomBytes(length) {
 
     var result = new Uint8Array(length);
     crypto.getRandomValues(result);
-    return result;
+    return convert.arrayify(result);
 };
 
 if (crypto._weakCrypto === true) {

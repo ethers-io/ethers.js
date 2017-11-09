@@ -6,6 +6,17 @@
 var defineProperty = require('./properties.js').defineProperty;
 var throwError = require('./throw-error');
 
+function addSlice(array) {
+    if (array.slice) { return array; }
+
+    array.slice = function() {
+        var args = Array.prototype.slice.call(arguments);
+        return new Uint8Array(Array.prototype.slice.apply(array, args));
+    }
+
+    return array;
+}
+
 function isArrayish(value) {
     if (!value || parseInt(value.length) != value.length || typeof(value) === 'string') {
         return false;
@@ -36,11 +47,11 @@ function arrayify(value, name) {
             result.push(parseInt(value.substr(i, 2), 16));
         }
 
-        return new Uint8Array(result);
+        return addSlice(new Uint8Array(result));
     }
 
     if (isArrayish(value)) {
-        return new Uint8Array(value);
+        return addSlice(new Uint8Array(value));
     }
 
     throwError('invalid arrayify value', { name: name, input: value });
@@ -62,7 +73,7 @@ function concat(objects) {
         offset += arrays[i].length;
     }
 
-    return result;
+    return addSlice(result);
 }
 function stripZeros(value) {
     value = arrayify(value);
@@ -88,7 +99,7 @@ function padZeros(value, length) {
 
     var result = new Uint8Array(length);
     result.set(value, length - value.length);
-    return result;
+    return addSlice(result);
 }
 
 

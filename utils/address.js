@@ -31,6 +31,15 @@ function getChecksumAddress(address) {
     return '0x' + address.join('');
 }
 
+// Shims for environments that are missing some required constants and functions
+var MAX_SAFE_INTEGER = 0x1fffffffffffff;
+
+function log10(x) {
+    if (Math.log10) { return Math.log10(x); }
+    return Math.log(x) / Math.LN10;
+}
+
+
 // See: https://en.wikipedia.org/wiki/International_Bank_Account_Number
 var ibanChecksum = (function() {
 
@@ -40,7 +49,7 @@ var ibanChecksum = (function() {
     for (var i = 0; i < 26; i++) { ibanLookup[String.fromCharCode(65 + i)] = String(10 + i); }
 
     // How many decimal digits can we process? (for 64-bit float, this is 15)
-    var safeDigits = Math.floor(Math.log10(Number.MAX_SAFE_INTEGER));
+    var safeDigits = Math.floor(log10(MAX_SAFE_INTEGER));
 
     return function(address) {
         address = address.toUpperCase();
