@@ -1,6 +1,6 @@
 {
   "name": "ethers-providers",
-  "version": "2.1.7",
+  "version": "2.1.8",
   "description": "Service provider for Ethereum wallet library.",
   "bugs": {
     "url": "http://github.com/ethers-io/ethers.js/issues",
