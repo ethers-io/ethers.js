@@ -1,284 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-module.exports = undefined;
-},{}],2:[function(require,module,exports){
-// See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
-// See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
-
-var secp256k1 = new (require('elliptic')).ec('secp256k1');
-
-var wordlist = (function() {
-    var words = require('./words.json');
-    return words.replace(/([A-Z])/g, ' $1').toLowerCase().substring(1).split(' ');
-})();
-
-var utils = (function() {
-    var convert = require('ethers-utils/convert.js');
-
-    var sha2 = require('ethers-utils/sha2');
-
-    var hmac = require('ethers-utils/hmac');
-
-    return {
-        defineProperty: require('ethers-utils/properties.js').defineProperty,
-
-        arrayify: convert.arrayify,
-        bigNumberify: require('ethers-utils/bignumber.js').bigNumberify,
-        hexlify: convert.hexlify,
-
-        toUtf8Bytes: require('ethers-utils/utf8.js').toUtf8Bytes,
-
-        sha256: sha2.sha256,
-        createSha512Hmac: hmac.createSha512Hmac,
-
-        pbkdf2: require('ethers-utils/pbkdf2.js'),
-    }
-})();
-
-// "Bitcoin seed"
-var MasterSecret = utils.toUtf8Bytes('Bitcoin seed');
-
-var HardenedBit = 0x80000000;
-
-// Returns a byte with the MSB bits set
-function getUpperMask(bits) {
-   return ((1 << bits) - 1) << (8 - bits);
-}
-
-// Returns a byte with the LSB bits set
-function getLowerMask(bits) {
-   return (1 << bits) - 1;
-}
-
-function HDNode(keyPair, chainCode, index, depth) {
-    if (!(this instanceof HDNode)) { throw new Error('missing new'); }
-
-    utils.defineProperty(this, '_keyPair', keyPair);
-
-    utils.defineProperty(this, 'privateKey', utils.hexlify(keyPair.priv.toArray('be', 32)));
-    utils.defineProperty(this, 'publicKey', '0x' + keyPair.getPublic(true, 'hex'));
-
-    utils.defineProperty(this, 'chainCode', utils.hexlify(chainCode));
-
-    utils.defineProperty(this, 'index', index);
-    utils.defineProperty(this, 'depth', depth);
-}
-
-utils.defineProperty(HDNode.prototype, '_derive', function(index) {
-
-    // Public parent key -> public child key
-    if (!this.privateKey) {
-        if (index >= HardenedBit) { throw new Error('cannot derive child of neutered node'); }
-        throw new Error('not implemented');
-    }
-
-    var data = new Uint8Array(37);
-
-    if (index & HardenedBit) {
-        // Data = 0x00 || ser_256(k_par)
-        data.set(utils.arrayify(this.privateKey), 1);
-
-    } else {
-        // Data = ser_p(point(k_par))
-        data.set(this._keyPair.getPublic().encode(null, true));
-    }
-
-    // Data += ser_32(i)
-    for (var i = 24; i >= 0; i -= 8) { data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff); }
-
-    var I = utils.createSha512Hmac(this.chainCode).update(data).digest();
-    var IL = utils.bigNumberify(I.slice(0, 32));
-    var IR = I.slice(32);
-
-    var ki = IL.add('0x' + this._keyPair.getPrivate('hex')).mod('0x' + secp256k1.curve.n.toString(16));
-
-    return new HDNode(secp256k1.keyFromPrivate(utils.arrayify(ki)), I.slice(32), index, this.depth + 1);
-});
-
-utils.defineProperty(HDNode.prototype, 'derivePath', function(path) {
-    var components = path.split('/');
-
-    if (components.length === 0 || (components[0] === 'm' && this.depth !== 0)) {
-        throw new Error('invalid path');
-    }
-
-    if (components[0] === 'm') { components.shift(); }
-
-    var result = this;
-    for (var i = 0; i < components.length; i++) {
-        var component = components[i];
-        if (component.match(/^[0-9]+'$/)) {
-            var index = parseInt(component.substring(0, component.length - 1));
-            if (index >= HardenedBit) { throw new Error('invalid path index - ' + component); }
-            result = result._derive(HardenedBit + index);
-        } else if (component.match(/^[0-9]+$/)) {
-            var index = parseInt(component);
-            if (index >= HardenedBit) { throw new Error('invalid path index - ' + component); }
-            result = result._derive(index);
-        } else {
-            throw new Error('invlaid path component - ' + component);
-        }
-    }
-
-    return result;
-});
-
-utils.defineProperty(HDNode, 'fromMnemonic', function(mnemonic) {
-    // Check that the checksum s valid (will throw an error)
-    mnemonicToEntropy(mnemonic);
-
-    return HDNode.fromSeed(mnemonicToSeed(mnemonic));
-});
-
-utils.defineProperty(HDNode, 'fromSeed', function(seed) {
-    seed = utils.arrayify(seed);
-    if (seed.length < 16 || seed.length > 64) { throw new Error('invalid seed'); }
-
-    var I = utils.createSha512Hmac(MasterSecret).update(seed).digest();
-
-    return new HDNode(secp256k1.keyFromPrivate(I.slice(0, 32)), I.slice(32), 0, 0, 0);
-});
-
-function mnemonicToSeed(mnemonic, password) {
-
-    if (!password) {
-        password = '';
-
-    } else if (password.normalize) {
-        password = password.normalize('NFKD');
-
-    } else {
-        for (var i = 0; i < password.length; i++) {
-            var c = password.charCodeAt(i);
-            if (c < 32 || c > 127) { throw new Error('passwords with non-ASCII characters not supported in this environment'); }
-        }
-    }
-
-    mnemonic = utils.toUtf8Bytes(mnemonic, 'NFKD');
-    var salt = utils.toUtf8Bytes('mnemonic' + password, 'NFKD');
-
-    return utils.hexlify(utils.pbkdf2(mnemonic, salt, 2048, 64, utils.createSha512Hmac));
-}
-
-function mnemonicToEntropy(mnemonic) {
-   var words = mnemonic.toLowerCase().split(' ');
-   if ((words.length % 3) !== 0) { throw new Error('invalid mnemonic'); }
-
-   var entropy = new Uint8Array(Math.ceil(11 * words.length / 8));
-
-   var offset = 0;
-   for (var i = 0; i < words.length; i++) {
-       var index = wordlist.indexOf(words[i]);
-       if (index === -1) { throw new Error('invalid mnemonic'); }
-
-       for (var bit = 0; bit < 11; bit++) {
-           if (index & (1 << (10 - bit))) {
-               entropy[offset >> 3] |= (1 << (7 - (offset % 8)));
-           }
-           offset++;
-       }
-   }
-
-   var entropyBits = 32 * words.length / 3;
-
-   var checksumBits = words.length / 3;
-   var checksumMask = getUpperMask(checksumBits);
-
-   var checksum = utils.arrayify(utils.sha256(entropy.slice(0, entropyBits / 8)))[0];
-   checksum &= checksumMask;
-
-   if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
-       throw new Error('invalid checksum');
-   }
-
-   return utils.hexlify(entropy.slice(0, entropyBits / 8));
-}
-
-function entropyToMnemonic(entropy) {
-    entropy = utils.arrayify(entropy);
-
-    if ((entropy.length % 4) !== 0 || entropy.length < 16 || entropy.length > 32) {
-        throw new Error('invalid entropy');
-    }
-
-    var words = [0];
-
-    var remainingBits = 11;
-    for (var i = 0; i < entropy.length; i++) {
-
-        // Consume the whole byte (with still more to go)
-        if (remainingBits > 8) {
-            words[words.length - 1] <<= 8;
-            words[words.length - 1] |= entropy[i];
-
-            remainingBits -= 8;
-
-        // This byte will complete an 11-bit index
-        } else {
-            words[words.length - 1] <<= remainingBits;
-            words[words.length - 1] |= entropy[i] >> (8 - remainingBits);
-
-            // Start the next word
-            words.push(entropy[i] & getLowerMask(8 - remainingBits));
-
-            remainingBits += 3;
-        }
-    }
-
-    // Compute the checksum bits
-    var checksum = utils.arrayify(utils.sha256(entropy))[0];
-    var checksumBits = entropy.length / 4;
-    checksum &= getUpperMask(checksumBits);
-
-    // Shift the checksum into the word indices
-    words[words.length - 1] <<= checksumBits;
-    words[words.length - 1] |= (checksum >> (8 - checksumBits));
-
-    // Convert indices into words
-    for (var i = 0; i < words.length; i++) {
-        words[i] = wordlist[words[i]];
-    }
-
-    return words.join(' ');
-}
-
-function isValidMnemonic(mnemonic) {
-    try {
-        mnemonicToEntropy(mnemonic);
-        return true;
-    } catch (error) { }
-
-    return false;
-}
-
-module.exports = {
-    fromMnemonic: HDNode.fromMnemonic,
-    fromSeed: HDNode.fromSeed,
-
-    mnemonicToEntropy: mnemonicToEntropy,
-    entropyToMnemonic: entropyToMnemonic,
-    mnemonicToSeed: mnemonicToSeed,
-
-    isValidMnemonic: isValidMnemonic,
-};
-
-},{"./words.json":53,"elliptic":7,"ethers-utils/bignumber.js":23,"ethers-utils/convert.js":26,"ethers-utils/hmac":27,"ethers-utils/pbkdf2.js":30,"ethers-utils/properties.js":31,"ethers-utils/sha2":33,"ethers-utils/utf8.js":37}],3:[function(require,module,exports){
-'use strict';
-
-var Wallet = require('./wallet');
-var HDNode = require('./hdnode');
-var SigningKey = require('./signing-key');
-
-module.exports = {
-    HDNode: HDNode,
-    Wallet: Wallet,
-
-    SigningKey: SigningKey,
-    _SigningKey: SigningKey,
-}
-
-require('ethers-utils/standalone.js')(module.exports);
-
-},{"./hdnode":2,"./signing-key":51,"./wallet":52,"ethers-utils/standalone.js":34}],4:[function(require,module,exports){
 "use strict";
 
 (function(root) {
@@ -1078,7 +798,7 @@ require('ethers-utils/standalone.js')(module.exports);
 
 })(this);
 
-},{}],5:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -1131,7 +851,7 @@ require('ethers-utils/standalone.js')(module.exports);
 
   var Buffer;
   try {
-    Buffer = require('buf' + 'fer').Buffer;
+    Buffer = require('buffer').Buffer;
   } catch (e) {
   }
 
@@ -4368,7 +4088,7 @@ require('ethers-utils/standalone.js')(module.exports);
   };
 
   Red.prototype.pow = function pow (a, num) {
-    if (num.isZero()) return new BN(1);
+    if (num.isZero()) return new BN(1).toRed(this);
     if (num.cmpn(1) === 0) return a.clone();
 
     var windowSize = 4;
@@ -4507,9 +4227,11 @@ require('ethers-utils/standalone.js')(module.exports);
   };
 })(typeof module === 'undefined' || module, this);
 
-},{}],6:[function(require,module,exports){
+},{"buffer":4}],3:[function(require,module,exports){
 var randomBytes = require('ethers-utils').randomBytes; module.exports = function(length) { return randomBytes(length); };
-},{"ethers-utils":28}],7:[function(require,module,exports){
+},{"ethers-utils":27}],4:[function(require,module,exports){
+
+},{}],5:[function(require,module,exports){
 'use strict';
 
 var elliptic = exports;
@@ -4525,7 +4247,7 @@ elliptic.curves = require('./elliptic/curves');
 elliptic.ec = require('./elliptic/ec');
 elliptic.eddsa = require('./elliptic/eddsa');
 
-},{"../package.json":21,"./elliptic/curve":10,"./elliptic/curves":13,"./elliptic/ec":14,"./elliptic/eddsa":17,"./elliptic/hmac-drbg":18,"./elliptic/utils":20,"brorand":6}],8:[function(require,module,exports){
+},{"../package.json":19,"./elliptic/curve":8,"./elliptic/curves":11,"./elliptic/ec":12,"./elliptic/eddsa":15,"./elliptic/hmac-drbg":16,"./elliptic/utils":18,"brorand":3}],6:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -4902,9 +4624,9 @@ BasePoint.prototype.dblp = function dblp(k) {
   return r;
 };
 
-},{"../../elliptic":7,"bn.js":5}],9:[function(require,module,exports){
+},{"../../elliptic":5,"bn.js":2}],7:[function(require,module,exports){
 module.exports = {};
-},{}],10:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict';
 
 var curve = exports;
@@ -4914,9 +4636,9 @@ curve.short = require('./short');
 curve.mont = require('./mont');
 curve.edwards = require('./edwards');
 
-},{"./base":8,"./edwards":9,"./mont":11,"./short":12}],11:[function(require,module,exports){
-arguments[4][9][0].apply(exports,arguments)
-},{"dup":9}],12:[function(require,module,exports){
+},{"./base":6,"./edwards":7,"./mont":9,"./short":10}],9:[function(require,module,exports){
+arguments[4][7][0].apply(exports,arguments)
+},{"dup":7}],10:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -5856,7 +5578,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../../elliptic":7,"../curve":10,"bn.js":5,"inherits":44}],13:[function(require,module,exports){
+},{"../../elliptic":5,"../curve":8,"bn.js":2,"inherits":50}],11:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -6063,7 +5785,7 @@ defineCurve('secp256k1', {
   ]
 });
 
-},{"../elliptic":7,"./precomputed/secp256k1":19,"hash.js":38}],14:[function(require,module,exports){
+},{"../elliptic":5,"./precomputed/secp256k1":17,"hash.js":38}],12:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -6302,7 +6024,7 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
   throw new Error('Unable to find valid recovery factor');
 };
 
-},{"../../elliptic":7,"./key":15,"./signature":16,"bn.js":5}],15:[function(require,module,exports){
+},{"../../elliptic":5,"./key":13,"./signature":14,"bn.js":2}],13:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -6423,7 +6145,7 @@ KeyPair.prototype.inspect = function inspect() {
          ' pub: ' + (this.pub && this.pub.inspect()) + ' >';
 };
 
-},{"../../elliptic":7,"bn.js":5}],16:[function(require,module,exports){
+},{"../../elliptic":5,"bn.js":2}],14:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -6560,9 +6282,9 @@ Signature.prototype.toDER = function toDER(enc) {
   return utils.encode(res, enc);
 };
 
-},{"../../elliptic":7,"bn.js":5}],17:[function(require,module,exports){
-arguments[4][9][0].apply(exports,arguments)
-},{"dup":9}],18:[function(require,module,exports){
+},{"../../elliptic":5,"bn.js":2}],15:[function(require,module,exports){
+arguments[4][7][0].apply(exports,arguments)
+},{"dup":7}],16:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -6678,9 +6400,9 @@ HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
   return utils.encode(res, enc);
 };
 
-},{"../elliptic":7,"hash.js":38}],19:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],20:[function(require,module,exports){
+},{"../elliptic":5,"hash.js":38}],17:[function(require,module,exports){
+module.exports = undefined;
+},{}],18:[function(require,module,exports){
 'use strict';
 
 var utils = exports;
@@ -6854,9 +6576,9 @@ function intFromLE(bytes) {
 utils.intFromLE = intFromLE;
 
 
-},{"bn.js":5}],21:[function(require,module,exports){
+},{"bn.js":2}],19:[function(require,module,exports){
 module.exports={"version":"6.3.3"}
-},{}],22:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 
 var BN = require('bn.js');
 
@@ -6890,6 +6612,15 @@ function getChecksumAddress(address) {
     return '0x' + address.join('');
 }
 
+// Shims for environments that are missing some required constants and functions
+var MAX_SAFE_INTEGER = 0x1fffffffffffff;
+
+function log10(x) {
+    if (Math.log10) { return Math.log10(x); }
+    return Math.log(x) / Math.LN10;
+}
+
+
 // See: https://en.wikipedia.org/wiki/International_Bank_Account_Number
 var ibanChecksum = (function() {
 
@@ -6899,7 +6630,7 @@ var ibanChecksum = (function() {
     for (var i = 0; i < 26; i++) { ibanLookup[String.fromCharCode(65 + i)] = String(10 + i); }
 
     // How many decimal digits can we process? (for 64-bit float, this is 15)
-    var safeDigits = Math.floor(Math.log10(Number.MAX_SAFE_INTEGER));
+    var safeDigits = Math.floor(log10(MAX_SAFE_INTEGER));
 
     return function(address) {
         address = address.toUpperCase();
@@ -6973,7 +6704,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert":26,"./keccak256":29,"./throw-error":35,"bn.js":5}],23:[function(require,module,exports){
+},{"./convert":24,"./keccak256":28,"./throw-error":35,"bn.js":2}],21:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -7004,7 +6735,7 @@ function BigNumber(value) {
     } else if (BN.isBN(value)) {
         //value = value
 
-    } else if (value instanceof BigNumber) {
+    } else if (isBigNumber(value)) {
         value = value._bn;
 
     } else if (convert.isArrayish(value)) {
@@ -7054,6 +6785,10 @@ defineProperty(BigNumber.prototype, 'mod', function(other) {
     return new BigNumber(this._bn.mod(bigNumberify(other)._bn));
 });
 
+defineProperty(BigNumber.prototype, 'pow', function(other) {
+    return new BigNumber(this._bn.pow(bigNumberify(other)._bn));
+});
+
 
 defineProperty(BigNumber.prototype, 'maskn', function(value) {
     return new BigNumber(this._bn.maskn(value));
@@ -7071,6 +6806,10 @@ defineProperty(BigNumber.prototype, 'lt', function(other) {
 
 defineProperty(BigNumber.prototype, 'lte', function(other) {
     return this._bn.lte(bigNumberify(other)._bn);
+});
+
+defineProperty(BigNumber.prototype, 'gt', function(other) {
+    return this._bn.gt(bigNumberify(other)._bn);
 });
 
 defineProperty(BigNumber.prototype, 'gte', function(other) {
@@ -7100,11 +6839,11 @@ defineProperty(BigNumber.prototype, 'toHexString', function() {
 
 
 function isBigNumber(value) {
-    return (value instanceof BigNumber);
+    return (value._bn && value._bn.mod);
 }
 
 function bigNumberify(value) {
-    if (value instanceof BigNumber) { return value; }
+    if (isBigNumber(value)) { return value; }
     return new BigNumber(value);
 }
 
@@ -7113,15 +6852,18 @@ module.exports = {
     bigNumberify: bigNumberify
 };
 
-},{"./convert":26,"./properties":31,"./throw-error":35,"bn.js":5}],24:[function(require,module,exports){
+},{"./convert":24,"./properties":31,"./throw-error":35,"bn.js":2}],22:[function(require,module,exports){
 (function (global){
 'use strict';
 
-var defineProperty = require('./properties.js').defineProperty;
+var convert = require('./convert');
+var defineProperty = require('./properties').defineProperty;
 
 var crypto = global.crypto || global.msCrypto;
 if (!crypto || !crypto.getRandomValues) {
+
     console.log('WARNING: Missing strong random number source; using weak randomBytes');
+
     crypto = {
         getRandomValues: function(buffer) {
             for (var round = 0; round < 20; round++) {
@@ -7138,8 +6880,6 @@ if (!crypto || !crypto.getRandomValues) {
         },
         _weakCrypto: true
     };
-} else {
-    console.log('Found strong random number source');
 }
 
 function randomBytes(length) {
@@ -7149,17 +6889,17 @@ function randomBytes(length) {
 
     var result = new Uint8Array(length);
     crypto.getRandomValues(result);
-    return result;
+    return convert.arrayify(result);
 };
 
 if (crypto._weakCrypto === true) {
-    utils.defineProperty(randomBytes, '_weakCrypto', true);
+    defineProperty(randomBytes, '_weakCrypto', true);
 }
 
 module.exports = randomBytes;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./properties.js":31}],25:[function(require,module,exports){
+},{"./convert":24,"./properties":31}],23:[function(require,module,exports){
 
 var getAddress = require('./address').getAddress;
 var convert = require('./convert');
@@ -7181,7 +6921,7 @@ module.exports = {
     getContractAddress: getContractAddress,
 }
 
-},{"./address":22,"./convert":26,"./keccak256":29,"./rlp":32}],26:[function(require,module,exports){
+},{"./address":20,"./convert":24,"./keccak256":28,"./rlp":32}],24:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
@@ -7190,8 +6930,19 @@ module.exports = {
 var defineProperty = require('./properties.js').defineProperty;
 var throwError = require('./throw-error');
 
+function addSlice(array) {
+    if (array.slice) { return array; }
+
+    array.slice = function() {
+        var args = Array.prototype.slice.call(arguments);
+        return new Uint8Array(Array.prototype.slice.apply(array, args));
+    }
+
+    return array;
+}
+
 function isArrayish(value) {
-    if (!value || parseInt(value.length) != value.length) {
+    if (!value || parseInt(value.length) != value.length || typeof(value) === 'string') {
         return false;
     }
 
@@ -7220,11 +6971,11 @@ function arrayify(value, name) {
             result.push(parseInt(value.substr(i, 2), 16));
         }
 
-        return new Uint8Array(result);
+        return addSlice(new Uint8Array(result));
     }
 
     if (isArrayish(value)) {
-        return new Uint8Array(value);
+        return addSlice(new Uint8Array(value));
     }
 
     throwError('invalid arrayify value', { name: name, input: value });
@@ -7246,7 +6997,7 @@ function concat(objects) {
         offset += arrays[i].length;
     }
 
-    return result;
+    return addSlice(result);
 }
 function stripZeros(value) {
     value = arrayify(value);
@@ -7272,7 +7023,7 @@ function padZeros(value, length) {
 
     var result = new Uint8Array(length);
     result.set(value, length - value.length);
-    return result;
+    return addSlice(result);
 }
 
 
@@ -7344,7 +7095,7 @@ module.exports = {
     isHexString: isHexString,
 };
 
-},{"./properties.js":31,"./throw-error":35}],27:[function(require,module,exports){
+},{"./properties.js":31,"./throw-error":35}],25:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -7370,7 +7121,19 @@ module.exports = {
     createSha512Hmac: createSha512Hmac,
 };
 
-},{"./convert.js":26,"./sha2.js":33,"hash.js":38}],28:[function(require,module,exports){
+},{"./convert.js":24,"./sha2.js":33,"hash.js":38}],26:[function(require,module,exports){
+'use strict';
+
+var keccak256 = require('./keccak256');
+var utf8 = require('./utf8');
+
+function id(text) {
+    return keccak256(utf8.toUtf8Bytes(text));
+}
+
+module.exports = id;
+
+},{"./keccak256":28,"./utf8":37}],27:[function(require,module,exports){
 'use strict';
 
 // This is SUPER useful, but adds 140kb (even zipped, adds 40kb)
@@ -7380,7 +7143,9 @@ var address = require('./address');
 var bigNumber = require('./bignumber');
 var contractAddress = require('./contract-address');
 var convert = require('./convert');
+var id = require('./id');
 var keccak256 = require('./keccak256');
+var namehash = require('./namehash');
 var sha256 = require('./sha2').sha256;
 var randomBytes = require('./random-bytes');
 var properties = require('./properties');
@@ -7413,6 +7178,9 @@ module.exports = {
     toUtf8Bytes: utf8.toUtf8Bytes,
     toUtf8String: utf8.toUtf8String,
 
+    namehash: namehash,
+    id: id,
+
     getAddress: address.getAddress,
     getContractAddress: contractAddress.getContractAddress,
 
@@ -7430,7 +7198,7 @@ require('./standalone')({
 });
 
 
-},{"./address":22,"./bignumber":23,"./contract-address":25,"./convert":26,"./keccak256":29,"./properties":31,"./random-bytes":24,"./rlp":32,"./sha2":33,"./standalone":34,"./units":36,"./utf8":37}],29:[function(require,module,exports){
+},{"./address":20,"./bignumber":21,"./contract-address":23,"./convert":24,"./id":26,"./keccak256":28,"./namehash":29,"./properties":31,"./random-bytes":22,"./rlp":32,"./sha2":33,"./standalone":34,"./units":36,"./utf8":37}],28:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -7444,7 +7212,50 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":26,"js-sha3":45}],30:[function(require,module,exports){
+},{"./convert.js":24,"js-sha3":51}],29:[function(require,module,exports){
+'use strict';
+
+var convert = require('./convert');
+var utf8 = require('./utf8');
+var keccak256 = require('./keccak256');
+
+var Zeros = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+var Partition = new RegExp("^((.*)\\.)?([^.]+)$");
+var UseSTD3ASCIIRules = new RegExp("^[a-z0-9.-]*$");
+
+function namehash(name, depth) {
+    name = name.toLowerCase();
+
+    // Supporting the full UTF-8 space requires additional (and large)
+    // libraries, so for now we simply do not support them.
+    // It should be fairly easy in the future to support systems with
+    // String.normalize, but that is future work.
+    if (!name.match(UseSTD3ASCIIRules)) {
+        throw new Error('contains invalid UseSTD3ASCIIRules characters');
+    }
+
+    var result = Zeros;
+    var processed = 0;
+    while (name.length && (!depth || processed < depth)) {
+        var partition = name.match(Partition);
+        var label = utf8.toUtf8Bytes(partition[3]);
+        result = keccak256(convert.concat([result, keccak256(label)]));
+
+        name = partition[2] || '';
+
+        processed++;
+    }
+
+    return convert.hexlify(result);
+}
+
+module.exports = namehash;
+
+
+},{"./convert":24,"./keccak256":28,"./utf8":37}],30:[function(require,module,exports){
+'use strict';
+
+var convert = require('./convert');
 
 function pbkdf2(password, salt, iterations, keylen, createHmac) {
     var hLen
@@ -7486,36 +7297,15 @@ function pbkdf2(password, salt, iterations, keylen, createHmac) {
         var destPos = (i - 1) * hLen
         var len = (i === l ? r : hLen)
         //T.copy(DK, destPos, 0, len)
-        DK.set(T.slice(0, len), destPos);
-
+        DK.set(convert.arrayify(T).slice(0, len), destPos);
     }
 
-    return DK
+    return convert.arrayify(DK)
 }
 
-/*
-var hmac = require('./hmac.js');
-var utf8 = require('./utf8.js');
-var p = require('pbkdf2');
-
-var pw = utf8.toUtf8Bytes('password');
-var sa = utf8.toUtf8Bytes('salt');
-
-var t0 = (new Date()).getTime();
-for (var i = 0; i < 100; i++) {
-    pbkdf2(pw, sa, 1000, 40, hmac.createSha512Hmac);
-}
-var t1 = (new Date()).getTime();
-for (var i = 0; i < 100; i++) {
-    p.pbkdf2Sync('password', 'salt', 1000, 40, 'sha512');
-}
-var t2 = (new Date()).getTime();
-
-console.log('TT', t1 - t0, t2 - t1);
-*/
 module.exports = pbkdf2;
 
-},{}],31:[function(require,module,exports){
+},{"./convert":24}],31:[function(require,module,exports){
 function defineProperty(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -7672,7 +7462,7 @@ module.exports = {
     decode: decode,
 }
 
-},{"./convert.js":26}],33:[function(require,module,exports){
+},{"./convert.js":24}],33:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -7697,7 +7487,7 @@ module.exports = {
     createSha512: hash.sha512,
 }
 
-},{"./convert.js":26,"hash.js":38}],34:[function(require,module,exports){
+},{"./convert.js":24,"hash.js":38}],34:[function(require,module,exports){
 (function (global){
 var defineProperty = require('./properties.js').defineProperty;
 
@@ -7812,7 +7602,7 @@ module.exports = {
     parseEther: parseEther,
 }
 
-},{"./bignumber.js":23,"./throw-error":35}],37:[function(require,module,exports){
+},{"./bignumber.js":21,"./throw-error":35}],37:[function(require,module,exports){
 
 var convert = require('./convert.js');
 
@@ -7927,7 +7717,7 @@ module.exports = {
     toUtf8String: bytesToUtf8,
 };
 
-},{"./convert.js":26}],38:[function(require,module,exports){
+},{"./convert.js":24}],38:[function(require,module,exports){
 var hash = exports;
 
 hash.utils = require('./hash/utils');
@@ -7944,10 +7734,11 @@ hash.sha384 = hash.sha.sha384;
 hash.sha512 = hash.sha.sha512;
 hash.ripemd160 = hash.ripemd.ripemd160;
 
-},{"./hash/common":39,"./hash/hmac":40,"./hash/ripemd":41,"./hash/sha":42,"./hash/utils":43}],39:[function(require,module,exports){
-var hash = require('../hash');
-var utils = hash.utils;
-var assert = utils.assert;
+},{"./hash/common":39,"./hash/hmac":40,"./hash/ripemd":41,"./hash/sha":42,"./hash/utils":49}],39:[function(require,module,exports){
+'use strict';
+
+var utils = require('./utils');
+var assert = require('minimalistic-assert');
 
 function BlockHash() {
   this.pending = null;
@@ -8030,19 +7821,18 @@ BlockHash.prototype._pad = function pad() {
     res[i++] = 0;
     res[i++] = 0;
 
-    for (var t = 8; t < this.padLength; t++)
+    for (t = 8; t < this.padLength; t++)
       res[i++] = 0;
   }
 
   return res;
 };
 
-},{"../hash":38}],40:[function(require,module,exports){
-var hmac = exports;
+},{"./utils":49,"minimalistic-assert":52}],40:[function(require,module,exports){
+'use strict';
 
-var hash = require('../hash');
-var utils = hash.utils;
-var assert = utils.assert;
+var utils = require('./utils');
+var assert = require('minimalistic-assert');
 
 function Hmac(hash, key, enc) {
   if (!(this instanceof Hmac))
@@ -8067,12 +7857,12 @@ Hmac.prototype._init = function init(key) {
   for (var i = key.length; i < this.blockSize; i++)
     key.push(0);
 
-  for (var i = 0; i < key.length; i++)
+  for (i = 0; i < key.length; i++)
     key[i] ^= 0x36;
   this.inner = new this.Hash().update(key);
 
   // 0x36 ^ 0x5c = 0x6a
-  for (var i = 0; i < key.length; i++)
+  for (i = 0; i < key.length; i++)
     key[i] ^= 0x6a;
   this.outer = new this.Hash().update(key);
 };
@@ -8087,30 +7877,144 @@ Hmac.prototype.digest = function digest(enc) {
   return this.outer.digest(enc);
 };
 
-},{"../hash":38}],41:[function(require,module,exports){
+},{"./utils":49,"minimalistic-assert":52}],41:[function(require,module,exports){
 module.exports = {ripemd160: null}
 },{}],42:[function(require,module,exports){
-var hash = require('../hash');
-var utils = hash.utils;
-var assert = utils.assert;
+'use strict';
 
-var rotr32 = utils.rotr32;
+exports.sha1 = require('./sha/1');
+exports.sha224 = require('./sha/224');
+exports.sha256 = require('./sha/256');
+exports.sha384 = require('./sha/384');
+exports.sha512 = require('./sha/512');
+
+},{"./sha/1":43,"./sha/224":44,"./sha/256":45,"./sha/384":46,"./sha/512":47}],43:[function(require,module,exports){
+'use strict';
+
+var utils = require('../utils');
+var common = require('../common');
+var shaCommon = require('./common');
+
 var rotl32 = utils.rotl32;
+var sum32 = utils.sum32;
+var sum32_5 = utils.sum32_5;
+var ft_1 = shaCommon.ft_1;
+var BlockHash = common.BlockHash;
+
+var sha1_K = [
+  0x5A827999, 0x6ED9EBA1,
+  0x8F1BBCDC, 0xCA62C1D6
+];
+
+function SHA1() {
+  if (!(this instanceof SHA1))
+    return new SHA1();
+
+  BlockHash.call(this);
+  this.h = [
+    0x67452301, 0xefcdab89, 0x98badcfe,
+    0x10325476, 0xc3d2e1f0 ];
+  this.W = new Array(80);
+}
+
+utils.inherits(SHA1, BlockHash);
+module.exports = SHA1;
+
+SHA1.blockSize = 512;
+SHA1.outSize = 160;
+SHA1.hmacStrength = 80;
+SHA1.padLength = 64;
+
+SHA1.prototype._update = function _update(msg, start) {
+  var W = this.W;
+
+  for (var i = 0; i < 16; i++)
+    W[i] = msg[start + i];
+
+  for(; i < W.length; i++)
+    W[i] = rotl32(W[i - 3] ^ W[i - 8] ^ W[i - 14] ^ W[i - 16], 1);
+
+  var a = this.h[0];
+  var b = this.h[1];
+  var c = this.h[2];
+  var d = this.h[3];
+  var e = this.h[4];
+
+  for (i = 0; i < W.length; i++) {
+    var s = ~~(i / 20);
+    var t = sum32_5(rotl32(a, 5), ft_1(s, b, c, d), e, W[i], sha1_K[s]);
+    e = d;
+    d = c;
+    c = rotl32(b, 30);
+    b = a;
+    a = t;
+  }
+
+  this.h[0] = sum32(this.h[0], a);
+  this.h[1] = sum32(this.h[1], b);
+  this.h[2] = sum32(this.h[2], c);
+  this.h[3] = sum32(this.h[3], d);
+  this.h[4] = sum32(this.h[4], e);
+};
+
+SHA1.prototype._digest = function digest(enc) {
+  if (enc === 'hex')
+    return utils.toHex32(this.h, 'big');
+  else
+    return utils.split32(this.h, 'big');
+};
+
+},{"../common":39,"../utils":49,"./common":48}],44:[function(require,module,exports){
+'use strict';
+
+var utils = require('../utils');
+var SHA256 = require('./256');
+
+function SHA224() {
+  if (!(this instanceof SHA224))
+    return new SHA224();
+
+  SHA256.call(this);
+  this.h = [
+    0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939,
+    0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4 ];
+}
+utils.inherits(SHA224, SHA256);
+module.exports = SHA224;
+
+SHA224.blockSize = 512;
+SHA224.outSize = 224;
+SHA224.hmacStrength = 192;
+SHA224.padLength = 64;
+
+SHA224.prototype._digest = function digest(enc) {
+  // Just truncate output
+  if (enc === 'hex')
+    return utils.toHex32(this.h.slice(0, 7), 'big');
+  else
+    return utils.split32(this.h.slice(0, 7), 'big');
+};
+
+
+},{"../utils":49,"./256":45}],45:[function(require,module,exports){
+'use strict';
+
+var utils = require('../utils');
+var common = require('../common');
+var shaCommon = require('./common');
+var assert = require('minimalistic-assert');
+
 var sum32 = utils.sum32;
 var sum32_4 = utils.sum32_4;
 var sum32_5 = utils.sum32_5;
-var rotr64_hi = utils.rotr64_hi;
-var rotr64_lo = utils.rotr64_lo;
-var shr64_hi = utils.shr64_hi;
-var shr64_lo = utils.shr64_lo;
-var sum64 = utils.sum64;
-var sum64_hi = utils.sum64_hi;
-var sum64_lo = utils.sum64_lo;
-var sum64_4_hi = utils.sum64_4_hi;
-var sum64_4_lo = utils.sum64_4_lo;
-var sum64_5_hi = utils.sum64_5_hi;
-var sum64_5_lo = utils.sum64_5_lo;
-var BlockHash = hash.common.BlockHash;
+var ch32 = shaCommon.ch32;
+var maj32 = shaCommon.maj32;
+var s0_256 = shaCommon.s0_256;
+var s1_256 = shaCommon.s1_256;
+var g0_256 = shaCommon.g0_256;
+var g1_256 = shaCommon.g1_256;
+
+var BlockHash = common.BlockHash;
 
 var sha256_K = [
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
@@ -8130,6 +8034,132 @@ var sha256_K = [
   0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
   0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 ];
+
+function SHA256() {
+  if (!(this instanceof SHA256))
+    return new SHA256();
+
+  BlockHash.call(this);
+  this.h = [
+    0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+    0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+  ];
+  this.k = sha256_K;
+  this.W = new Array(64);
+}
+utils.inherits(SHA256, BlockHash);
+module.exports = SHA256;
+
+SHA256.blockSize = 512;
+SHA256.outSize = 256;
+SHA256.hmacStrength = 192;
+SHA256.padLength = 64;
+
+SHA256.prototype._update = function _update(msg, start) {
+  var W = this.W;
+
+  for (var i = 0; i < 16; i++)
+    W[i] = msg[start + i];
+  for (; i < W.length; i++)
+    W[i] = sum32_4(g1_256(W[i - 2]), W[i - 7], g0_256(W[i - 15]), W[i - 16]);
+
+  var a = this.h[0];
+  var b = this.h[1];
+  var c = this.h[2];
+  var d = this.h[3];
+  var e = this.h[4];
+  var f = this.h[5];
+  var g = this.h[6];
+  var h = this.h[7];
+
+  assert(this.k.length === W.length);
+  for (i = 0; i < W.length; i++) {
+    var T1 = sum32_5(h, s1_256(e), ch32(e, f, g), this.k[i], W[i]);
+    var T2 = sum32(s0_256(a), maj32(a, b, c));
+    h = g;
+    g = f;
+    f = e;
+    e = sum32(d, T1);
+    d = c;
+    c = b;
+    b = a;
+    a = sum32(T1, T2);
+  }
+
+  this.h[0] = sum32(this.h[0], a);
+  this.h[1] = sum32(this.h[1], b);
+  this.h[2] = sum32(this.h[2], c);
+  this.h[3] = sum32(this.h[3], d);
+  this.h[4] = sum32(this.h[4], e);
+  this.h[5] = sum32(this.h[5], f);
+  this.h[6] = sum32(this.h[6], g);
+  this.h[7] = sum32(this.h[7], h);
+};
+
+SHA256.prototype._digest = function digest(enc) {
+  if (enc === 'hex')
+    return utils.toHex32(this.h, 'big');
+  else
+    return utils.split32(this.h, 'big');
+};
+
+},{"../common":39,"../utils":49,"./common":48,"minimalistic-assert":52}],46:[function(require,module,exports){
+'use strict';
+
+var utils = require('../utils');
+
+var SHA512 = require('./512');
+
+function SHA384() {
+  if (!(this instanceof SHA384))
+    return new SHA384();
+
+  SHA512.call(this);
+  this.h = [
+    0xcbbb9d5d, 0xc1059ed8,
+    0x629a292a, 0x367cd507,
+    0x9159015a, 0x3070dd17,
+    0x152fecd8, 0xf70e5939,
+    0x67332667, 0xffc00b31,
+    0x8eb44a87, 0x68581511,
+    0xdb0c2e0d, 0x64f98fa7,
+    0x47b5481d, 0xbefa4fa4 ];
+}
+utils.inherits(SHA384, SHA512);
+module.exports = SHA384;
+
+SHA384.blockSize = 1024;
+SHA384.outSize = 384;
+SHA384.hmacStrength = 192;
+SHA384.padLength = 128;
+
+SHA384.prototype._digest = function digest(enc) {
+  if (enc === 'hex')
+    return utils.toHex32(this.h.slice(0, 12), 'big');
+  else
+    return utils.split32(this.h.slice(0, 12), 'big');
+};
+
+},{"../utils":49,"./512":47}],47:[function(require,module,exports){
+'use strict';
+
+var utils = require('../utils');
+var common = require('../common');
+var assert = require('minimalistic-assert');
+
+var rotr64_hi = utils.rotr64_hi;
+var rotr64_lo = utils.rotr64_lo;
+var shr64_hi = utils.shr64_hi;
+var shr64_lo = utils.shr64_lo;
+var sum64 = utils.sum64;
+var sum64_hi = utils.sum64_hi;
+var sum64_lo = utils.sum64_lo;
+var sum64_4_hi = utils.sum64_4_hi;
+var sum64_4_lo = utils.sum64_4_lo;
+var sum64_5_hi = utils.sum64_5_hi;
+var sum64_5_lo = utils.sum64_5_lo;
+
+var BlockHash = common.BlockHash;
 
 var sha512_K = [
   0x428a2f98, 0xd728ae22, 0x71374491, 0x23ef65cd,
@@ -8174,119 +8204,25 @@ var sha512_K = [
   0x5fcb6fab, 0x3ad6faec, 0x6c44198c, 0x4a475817
 ];
 
-var sha1_K = [
-  0x5A827999, 0x6ED9EBA1,
-  0x8F1BBCDC, 0xCA62C1D6
-];
-
-function SHA256() {
-  if (!(this instanceof SHA256))
-    return new SHA256();
-
-  BlockHash.call(this);
-  this.h = [ 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
-             0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 ];
-  this.k = sha256_K;
-  this.W = new Array(64);
-}
-utils.inherits(SHA256, BlockHash);
-exports.sha256 = SHA256;
-
-SHA256.blockSize = 512;
-SHA256.outSize = 256;
-SHA256.hmacStrength = 192;
-SHA256.padLength = 64;
-
-SHA256.prototype._update = function _update(msg, start) {
-  var W = this.W;
-
-  for (var i = 0; i < 16; i++)
-    W[i] = msg[start + i];
-  for (; i < W.length; i++)
-    W[i] = sum32_4(g1_256(W[i - 2]), W[i - 7], g0_256(W[i - 15]), W[i - 16]);
-
-  var a = this.h[0];
-  var b = this.h[1];
-  var c = this.h[2];
-  var d = this.h[3];
-  var e = this.h[4];
-  var f = this.h[5];
-  var g = this.h[6];
-  var h = this.h[7];
-
-  assert(this.k.length === W.length);
-  for (var i = 0; i < W.length; i++) {
-    var T1 = sum32_5(h, s1_256(e), ch32(e, f, g), this.k[i], W[i]);
-    var T2 = sum32(s0_256(a), maj32(a, b, c));
-    h = g;
-    g = f;
-    f = e;
-    e = sum32(d, T1);
-    d = c;
-    c = b;
-    b = a;
-    a = sum32(T1, T2);
-  }
-
-  this.h[0] = sum32(this.h[0], a);
-  this.h[1] = sum32(this.h[1], b);
-  this.h[2] = sum32(this.h[2], c);
-  this.h[3] = sum32(this.h[3], d);
-  this.h[4] = sum32(this.h[4], e);
-  this.h[5] = sum32(this.h[5], f);
-  this.h[6] = sum32(this.h[6], g);
-  this.h[7] = sum32(this.h[7], h);
-};
-
-SHA256.prototype._digest = function digest(enc) {
-  if (enc === 'hex')
-    return utils.toHex32(this.h, 'big');
-  else
-    return utils.split32(this.h, 'big');
-};
-
-function SHA224() {
-  if (!(this instanceof SHA224))
-    return new SHA224();
-
-  SHA256.call(this);
-  this.h = [ 0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939,
-             0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4 ];
-}
-utils.inherits(SHA224, SHA256);
-exports.sha224 = SHA224;
-
-SHA224.blockSize = 512;
-SHA224.outSize = 224;
-SHA224.hmacStrength = 192;
-SHA224.padLength = 64;
-
-SHA224.prototype._digest = function digest(enc) {
-  // Just truncate output
-  if (enc === 'hex')
-    return utils.toHex32(this.h.slice(0, 7), 'big');
-  else
-    return utils.split32(this.h.slice(0, 7), 'big');
-};
-
 function SHA512() {
   if (!(this instanceof SHA512))
     return new SHA512();
 
   BlockHash.call(this);
-  this.h = [ 0x6a09e667, 0xf3bcc908,
-             0xbb67ae85, 0x84caa73b,
-             0x3c6ef372, 0xfe94f82b,
-             0xa54ff53a, 0x5f1d36f1,
-             0x510e527f, 0xade682d1,
-             0x9b05688c, 0x2b3e6c1f,
-             0x1f83d9ab, 0xfb41bd6b,
-             0x5be0cd19, 0x137e2179 ];
+  this.h = [
+    0x6a09e667, 0xf3bcc908,
+    0xbb67ae85, 0x84caa73b,
+    0x3c6ef372, 0xfe94f82b,
+    0xa54ff53a, 0x5f1d36f1,
+    0x510e527f, 0xade682d1,
+    0x9b05688c, 0x2b3e6c1f,
+    0x1f83d9ab, 0xfb41bd6b,
+    0x5be0cd19, 0x137e2179 ];
   this.k = sha512_K;
   this.W = new Array(160);
 }
 utils.inherits(SHA512, BlockHash);
-exports.sha512 = SHA512;
+module.exports = SHA512;
 
 SHA512.blockSize = 1024;
 SHA512.outSize = 512;
@@ -8309,14 +8245,16 @@ SHA512.prototype._prepareBlock = function _prepareBlock(msg, start) {
     var c3_hi = W[i - 32];  // i - 16
     var c3_lo = W[i - 31];
 
-    W[i] = sum64_4_hi(c0_hi, c0_lo,
-                      c1_hi, c1_lo,
-                      c2_hi, c2_lo,
-                      c3_hi, c3_lo);
-    W[i + 1] = sum64_4_lo(c0_hi, c0_lo,
-                          c1_hi, c1_lo,
-                          c2_hi, c2_lo,
-                          c3_hi, c3_lo);
+    W[i] = sum64_4_hi(
+      c0_hi, c0_lo,
+      c1_hi, c1_lo,
+      c2_hi, c2_lo,
+      c3_hi, c3_lo);
+    W[i + 1] = sum64_4_lo(
+      c0_hi, c0_lo,
+      c1_hi, c1_lo,
+      c2_hi, c2_lo,
+      c3_hi, c3_lo);
   }
 };
 
@@ -8355,21 +8293,23 @@ SHA512.prototype._update = function _update(msg, start) {
     var c4_hi = W[i];
     var c4_lo = W[i + 1];
 
-    var T1_hi = sum64_5_hi(c0_hi, c0_lo,
-                           c1_hi, c1_lo,
-                           c2_hi, c2_lo,
-                           c3_hi, c3_lo,
-                           c4_hi, c4_lo);
-    var T1_lo = sum64_5_lo(c0_hi, c0_lo,
-                           c1_hi, c1_lo,
-                           c2_hi, c2_lo,
-                           c3_hi, c3_lo,
-                           c4_hi, c4_lo);
+    var T1_hi = sum64_5_hi(
+      c0_hi, c0_lo,
+      c1_hi, c1_lo,
+      c2_hi, c2_lo,
+      c3_hi, c3_lo,
+      c4_hi, c4_lo);
+    var T1_lo = sum64_5_lo(
+      c0_hi, c0_lo,
+      c1_hi, c1_lo,
+      c2_hi, c2_lo,
+      c3_hi, c3_lo,
+      c4_hi, c4_lo);
 
-    var c0_hi = s0_512_hi(ah, al);
-    var c0_lo = s0_512_lo(ah, al);
-    var c1_hi = maj64_hi(ah, al, bh, bl, ch, cl);
-    var c1_lo = maj64_lo(ah, al, bh, bl, ch, cl);
+    c0_hi = s0_512_hi(ah, al);
+    c0_lo = s0_512_lo(ah, al);
+    c1_hi = maj64_hi(ah, al, bh, bl, ch, cl);
+    c1_lo = maj64_lo(ah, al, bh, bl, ch, cl);
 
     var T2_hi = sum64_hi(c0_hi, c0_lo, c1_hi, c1_lo);
     var T2_lo = sum64_lo(c0_hi, c0_lo, c1_hi, c1_lo);
@@ -8416,130 +8356,7 @@ SHA512.prototype._digest = function digest(enc) {
     return utils.split32(this.h, 'big');
 };
 
-function SHA384() {
-  if (!(this instanceof SHA384))
-    return new SHA384();
-
-  SHA512.call(this);
-  this.h = [ 0xcbbb9d5d, 0xc1059ed8,
-             0x629a292a, 0x367cd507,
-             0x9159015a, 0x3070dd17,
-             0x152fecd8, 0xf70e5939,
-             0x67332667, 0xffc00b31,
-             0x8eb44a87, 0x68581511,
-             0xdb0c2e0d, 0x64f98fa7,
-             0x47b5481d, 0xbefa4fa4 ];
-}
-utils.inherits(SHA384, SHA512);
-exports.sha384 = SHA384;
-
-SHA384.blockSize = 1024;
-SHA384.outSize = 384;
-SHA384.hmacStrength = 192;
-SHA384.padLength = 128;
-
-SHA384.prototype._digest = function digest(enc) {
-  if (enc === 'hex')
-    return utils.toHex32(this.h.slice(0, 12), 'big');
-  else
-    return utils.split32(this.h.slice(0, 12), 'big');
-};
-
-function SHA1() {
-  if (!(this instanceof SHA1))
-    return new SHA1();
-
-  BlockHash.call(this);
-  this.h = [ 0x67452301, 0xefcdab89, 0x98badcfe,
-             0x10325476, 0xc3d2e1f0 ];
-  this.W = new Array(80);
-}
-
-utils.inherits(SHA1, BlockHash);
-exports.sha1 = SHA1;
-
-SHA1.blockSize = 512;
-SHA1.outSize = 160;
-SHA1.hmacStrength = 80;
-SHA1.padLength = 64;
-
-SHA1.prototype._update = function _update(msg, start) {
-  var W = this.W;
-
-  for (var i = 0; i < 16; i++)
-    W[i] = msg[start + i];
-
-  for(; i < W.length; i++)
-    W[i] = rotl32(W[i - 3] ^ W[i - 8] ^ W[i - 14] ^ W[i - 16], 1);
-
-  var a = this.h[0];
-  var b = this.h[1];
-  var c = this.h[2];
-  var d = this.h[3];
-  var e = this.h[4];
-
-  for (var i = 0; i < W.length; i++) {
-    var s = ~~(i / 20);
-    var t = sum32_5(rotl32(a, 5), ft_1(s, b, c, d), e, W[i], sha1_K[s]);
-    e = d;
-    d = c;
-    c = rotl32(b, 30);
-    b = a;
-    a = t;
-  }
-
-  this.h[0] = sum32(this.h[0], a);
-  this.h[1] = sum32(this.h[1], b);
-  this.h[2] = sum32(this.h[2], c);
-  this.h[3] = sum32(this.h[3], d);
-  this.h[4] = sum32(this.h[4], e);
-};
-
-SHA1.prototype._digest = function digest(enc) {
-  if (enc === 'hex')
-    return utils.toHex32(this.h, 'big');
-  else
-    return utils.split32(this.h, 'big');
-};
-
-function ch32(x, y, z) {
-  return (x & y) ^ ((~x) & z);
-}
-
-function maj32(x, y, z) {
-  return (x & y) ^ (x & z) ^ (y & z);
-}
-
-function p32(x, y, z) {
-  return x ^ y ^ z;
-}
-
-function s0_256(x) {
-  return rotr32(x, 2) ^ rotr32(x, 13) ^ rotr32(x, 22);
-}
-
-function s1_256(x) {
-  return rotr32(x, 6) ^ rotr32(x, 11) ^ rotr32(x, 25);
-}
-
-function g0_256(x) {
-  return rotr32(x, 7) ^ rotr32(x, 18) ^ (x >>> 3);
-}
-
-function g1_256(x) {
-  return rotr32(x, 17) ^ rotr32(x, 19) ^ (x >>> 10);
-}
-
-function ft_1(s, x, y, z) {
-  if (s === 0)
-    return ch32(x, y, z);
-  if (s === 1 || s === 3)
-    return p32(x, y, z);
-  if (s === 2)
-    return maj32(x, y, z);
-}
-
-function ch64_hi(xh, xl, yh, yl, zh, zl) {
+function ch64_hi(xh, xl, yh, yl, zh) {
   var r = (xh & yh) ^ ((~xh) & zh);
   if (r < 0)
     r += 0x100000000;
@@ -8553,7 +8370,7 @@ function ch64_lo(xh, xl, yh, yl, zh, zl) {
   return r;
 }
 
-function maj64_hi(xh, xl, yh, yl, zh, zl) {
+function maj64_hi(xh, xl, yh, yl, zh) {
   var r = (xh & yh) ^ (xh & zh) ^ (yh & zh);
   if (r < 0)
     r += 0x100000000;
@@ -8655,9 +8472,64 @@ function g1_512_lo(xh, xl) {
   return r;
 }
 
-},{"../hash":38}],43:[function(require,module,exports){
-var utils = exports;
+},{"../common":39,"../utils":49,"minimalistic-assert":52}],48:[function(require,module,exports){
+'use strict';
+
+var utils = require('../utils');
+var rotr32 = utils.rotr32;
+
+function ft_1(s, x, y, z) {
+  if (s === 0)
+    return ch32(x, y, z);
+  if (s === 1 || s === 3)
+    return p32(x, y, z);
+  if (s === 2)
+    return maj32(x, y, z);
+}
+exports.ft_1 = ft_1;
+
+function ch32(x, y, z) {
+  return (x & y) ^ ((~x) & z);
+}
+exports.ch32 = ch32;
+
+function maj32(x, y, z) {
+  return (x & y) ^ (x & z) ^ (y & z);
+}
+exports.maj32 = maj32;
+
+function p32(x, y, z) {
+  return x ^ y ^ z;
+}
+exports.p32 = p32;
+
+function s0_256(x) {
+  return rotr32(x, 2) ^ rotr32(x, 13) ^ rotr32(x, 22);
+}
+exports.s0_256 = s0_256;
+
+function s1_256(x) {
+  return rotr32(x, 6) ^ rotr32(x, 11) ^ rotr32(x, 25);
+}
+exports.s1_256 = s1_256;
+
+function g0_256(x) {
+  return rotr32(x, 7) ^ rotr32(x, 18) ^ (x >>> 3);
+}
+exports.g0_256 = g0_256;
+
+function g1_256(x) {
+  return rotr32(x, 17) ^ rotr32(x, 19) ^ (x >>> 10);
+}
+exports.g1_256 = g1_256;
+
+},{"../utils":49}],49:[function(require,module,exports){
+'use strict';
+
+var assert = require('minimalistic-assert');
 var inherits = require('inherits');
+
+exports.inherits = inherits;
 
 function toArray(msg, enc) {
   if (Array.isArray(msg))
@@ -8680,16 +8552,16 @@ function toArray(msg, enc) {
       msg = msg.replace(/[^a-z0-9]+/ig, '');
       if (msg.length % 2 !== 0)
         msg = '0' + msg;
-      for (var i = 0; i < msg.length; i += 2)
+      for (i = 0; i < msg.length; i += 2)
         res.push(parseInt(msg[i] + msg[i + 1], 16));
     }
   } else {
-    for (var i = 0; i < msg.length; i++)
+    for (i = 0; i < msg.length; i++)
       res[i] = msg[i] | 0;
   }
   return res;
 }
-utils.toArray = toArray;
+exports.toArray = toArray;
 
 function toHex(msg) {
   var res = '';
@@ -8697,7 +8569,7 @@ function toHex(msg) {
     res += zero2(msg[i].toString(16));
   return res;
 }
-utils.toHex = toHex;
+exports.toHex = toHex;
 
 function htonl(w) {
   var res = (w >>> 24) |
@@ -8706,7 +8578,7 @@ function htonl(w) {
             ((w & 0xff) << 24);
   return res >>> 0;
 }
-utils.htonl = htonl;
+exports.htonl = htonl;
 
 function toHex32(msg, endian) {
   var res = '';
@@ -8718,7 +8590,7 @@ function toHex32(msg, endian) {
   }
   return res;
 }
-utils.toHex32 = toHex32;
+exports.toHex32 = toHex32;
 
 function zero2(word) {
   if (word.length === 1)
@@ -8726,7 +8598,7 @@ function zero2(word) {
   else
     return word;
 }
-utils.zero2 = zero2;
+exports.zero2 = zero2;
 
 function zero8(word) {
   if (word.length === 7)
@@ -8746,7 +8618,7 @@ function zero8(word) {
   else
     return word;
 }
-utils.zero8 = zero8;
+exports.zero8 = zero8;
 
 function join32(msg, start, end, endian) {
   var len = end - start;
@@ -8762,7 +8634,7 @@ function join32(msg, start, end, endian) {
   }
   return res;
 }
-utils.join32 = join32;
+exports.join32 = join32;
 
 function split32(msg, endian) {
   var res = new Array(msg.length * 4);
@@ -8782,45 +8654,37 @@ function split32(msg, endian) {
   }
   return res;
 }
-utils.split32 = split32;
+exports.split32 = split32;
 
 function rotr32(w, b) {
   return (w >>> b) | (w << (32 - b));
 }
-utils.rotr32 = rotr32;
+exports.rotr32 = rotr32;
 
 function rotl32(w, b) {
   return (w << b) | (w >>> (32 - b));
 }
-utils.rotl32 = rotl32;
+exports.rotl32 = rotl32;
 
 function sum32(a, b) {
   return (a + b) >>> 0;
 }
-utils.sum32 = sum32;
+exports.sum32 = sum32;
 
 function sum32_3(a, b, c) {
   return (a + b + c) >>> 0;
 }
-utils.sum32_3 = sum32_3;
+exports.sum32_3 = sum32_3;
 
 function sum32_4(a, b, c, d) {
   return (a + b + c + d) >>> 0;
 }
-utils.sum32_4 = sum32_4;
+exports.sum32_4 = sum32_4;
 
 function sum32_5(a, b, c, d, e) {
   return (a + b + c + d + e) >>> 0;
 }
-utils.sum32_5 = sum32_5;
-
-function assert(cond, msg) {
-  if (!cond)
-    throw new Error(msg || 'Assertion failed');
-}
-utils.assert = assert;
-
-utils.inherits = inherits;
+exports.sum32_5 = sum32_5;
 
 function sum64(buf, pos, ah, al) {
   var bh = buf[pos];
@@ -8837,13 +8701,13 @@ function sum64_hi(ah, al, bh, bl) {
   var lo = (al + bl) >>> 0;
   var hi = (lo < al ? 1 : 0) + ah + bh;
   return hi >>> 0;
-};
+}
 exports.sum64_hi = sum64_hi;
 
 function sum64_lo(ah, al, bh, bl) {
   var lo = al + bl;
   return lo >>> 0;
-};
+}
 exports.sum64_lo = sum64_lo;
 
 function sum64_4_hi(ah, al, bh, bl, ch, cl, dh, dl) {
@@ -8858,13 +8722,13 @@ function sum64_4_hi(ah, al, bh, bl, ch, cl, dh, dl) {
 
   var hi = ah + bh + ch + dh + carry;
   return hi >>> 0;
-};
+}
 exports.sum64_4_hi = sum64_4_hi;
 
 function sum64_4_lo(ah, al, bh, bl, ch, cl, dh, dl) {
   var lo = al + bl + cl + dl;
   return lo >>> 0;
-};
+}
 exports.sum64_4_lo = sum64_4_lo;
 
 function sum64_5_hi(ah, al, bh, bl, ch, cl, dh, dl, eh, el) {
@@ -8881,40 +8745,40 @@ function sum64_5_hi(ah, al, bh, bl, ch, cl, dh, dl, eh, el) {
 
   var hi = ah + bh + ch + dh + eh + carry;
   return hi >>> 0;
-};
+}
 exports.sum64_5_hi = sum64_5_hi;
 
 function sum64_5_lo(ah, al, bh, bl, ch, cl, dh, dl, eh, el) {
   var lo = al + bl + cl + dl + el;
 
   return lo >>> 0;
-};
+}
 exports.sum64_5_lo = sum64_5_lo;
 
 function rotr64_hi(ah, al, num) {
   var r = (al << (32 - num)) | (ah >>> num);
   return r >>> 0;
-};
+}
 exports.rotr64_hi = rotr64_hi;
 
 function rotr64_lo(ah, al, num) {
   var r = (ah << (32 - num)) | (al >>> num);
   return r >>> 0;
-};
+}
 exports.rotr64_lo = rotr64_lo;
 
 function shr64_hi(ah, al, num) {
   return ah >>> num;
-};
+}
 exports.shr64_hi = shr64_hi;
 
 function shr64_lo(ah, al, num) {
   var r = (ah << (32 - num)) | (al >>> num);
   return r >>> 0;
-};
+}
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":44}],44:[function(require,module,exports){
+},{"inherits":50,"minimalistic-assert":52}],50:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -8939,7 +8803,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],45:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -9418,7 +9282,22 @@ if (typeof Object.create === 'function') {
 })();
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":1}],46:[function(require,module,exports){
+},{"_process":53}],52:[function(require,module,exports){
+module.exports = assert;
+
+function assert(val, msg) {
+  if (!val)
+    throw new Error(msg || 'Assertion failed');
+}
+
+assert.equal = function assertEqual(l, r, msg) {
+  if (l != r)
+    throw new Error(msg || ('Assertion failed: ' + l + ' != ' + r));
+};
+
+},{}],53:[function(require,module,exports){
+arguments[4][17][0].apply(exports,arguments)
+},{"dup":17}],54:[function(require,module,exports){
 "use strict";
 
 (function(root) {
@@ -9872,7 +9751,7 @@ if (typeof Object.create === 'function') {
 
 })(this);
 
-},{}],47:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 (function (process,global){
 (function (global, undefined) {
     "use strict";
@@ -10051,7 +9930,7 @@ if (typeof Object.create === 'function') {
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":1}],48:[function(require,module,exports){
+},{"_process":53}],56:[function(require,module,exports){
 (function (global){
 
 var rng;
@@ -10086,7 +9965,7 @@ module.exports = rng;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],49:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 //     uuid.js
 //
 //     Copyright (c) 2010-2012 Robert Kieffer
@@ -10271,7 +10150,285 @@ uuid.unparse = unparse;
 
 module.exports = uuid;
 
-},{"./rng":48}],50:[function(require,module,exports){
+},{"./rng":56}],58:[function(require,module,exports){
+// See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+// See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
+
+var secp256k1 = new (require('elliptic')).ec('secp256k1');
+
+var wordlist = (function() {
+    var words = require('./words.json');
+    return words.replace(/([A-Z])/g, ' $1').toLowerCase().substring(1).split(' ');
+})();
+
+var utils = (function() {
+    var convert = require('ethers-utils/convert.js');
+
+    var sha2 = require('ethers-utils/sha2');
+
+    var hmac = require('ethers-utils/hmac');
+
+    return {
+        defineProperty: require('ethers-utils/properties.js').defineProperty,
+
+        arrayify: convert.arrayify,
+        bigNumberify: require('ethers-utils/bignumber.js').bigNumberify,
+        hexlify: convert.hexlify,
+
+        toUtf8Bytes: require('ethers-utils/utf8.js').toUtf8Bytes,
+
+        sha256: sha2.sha256,
+        createSha512Hmac: hmac.createSha512Hmac,
+
+        pbkdf2: require('ethers-utils/pbkdf2.js'),
+    }
+})();
+
+// "Bitcoin seed"
+var MasterSecret = utils.toUtf8Bytes('Bitcoin seed');
+
+var HardenedBit = 0x80000000;
+
+// Returns a byte with the MSB bits set
+function getUpperMask(bits) {
+   return ((1 << bits) - 1) << (8 - bits);
+}
+
+// Returns a byte with the LSB bits set
+function getLowerMask(bits) {
+   return (1 << bits) - 1;
+}
+
+function HDNode(keyPair, chainCode, index, depth) {
+    if (!(this instanceof HDNode)) { throw new Error('missing new'); }
+
+    utils.defineProperty(this, '_keyPair', keyPair);
+
+    utils.defineProperty(this, 'privateKey', utils.hexlify(keyPair.priv.toArray('be', 32)));
+    utils.defineProperty(this, 'publicKey', '0x' + keyPair.getPublic(true, 'hex'));
+
+    utils.defineProperty(this, 'chainCode', utils.hexlify(chainCode));
+
+    utils.defineProperty(this, 'index', index);
+    utils.defineProperty(this, 'depth', depth);
+}
+
+utils.defineProperty(HDNode.prototype, '_derive', function(index) {
+
+    // Public parent key -> public child key
+    if (!this.privateKey) {
+        if (index >= HardenedBit) { throw new Error('cannot derive child of neutered node'); }
+        throw new Error('not implemented');
+    }
+
+    var data = new Uint8Array(37);
+
+    if (index & HardenedBit) {
+        // Data = 0x00 || ser_256(k_par)
+        data.set(utils.arrayify(this.privateKey), 1);
+
+    } else {
+        // Data = ser_p(point(k_par))
+        data.set(this._keyPair.getPublic().encode(null, true));
+    }
+
+    // Data += ser_32(i)
+    for (var i = 24; i >= 0; i -= 8) { data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff); }
+
+    var I = utils.arrayify(utils.createSha512Hmac(this.chainCode).update(data).digest());
+    var IL = utils.bigNumberify(I.slice(0, 32));
+    var IR = I.slice(32);
+
+    var ki = IL.add('0x' + this._keyPair.getPrivate('hex')).mod('0x' + secp256k1.curve.n.toString(16));
+
+    return new HDNode(secp256k1.keyFromPrivate(utils.arrayify(ki)), I.slice(32), index, this.depth + 1);
+});
+
+utils.defineProperty(HDNode.prototype, 'derivePath', function(path) {
+    var components = path.split('/');
+
+    if (components.length === 0 || (components[0] === 'm' && this.depth !== 0)) {
+        throw new Error('invalid path');
+    }
+
+    if (components[0] === 'm') { components.shift(); }
+
+    var result = this;
+    for (var i = 0; i < components.length; i++) {
+        var component = components[i];
+        if (component.match(/^[0-9]+'$/)) {
+            var index = parseInt(component.substring(0, component.length - 1));
+            if (index >= HardenedBit) { throw new Error('invalid path index - ' + component); }
+            result = result._derive(HardenedBit + index);
+        } else if (component.match(/^[0-9]+$/)) {
+            var index = parseInt(component);
+            if (index >= HardenedBit) { throw new Error('invalid path index - ' + component); }
+            result = result._derive(index);
+        } else {
+            throw new Error('invlaid path component - ' + component);
+        }
+    }
+
+    return result;
+});
+
+utils.defineProperty(HDNode, 'fromMnemonic', function(mnemonic) {
+    // Check that the checksum s valid (will throw an error)
+    mnemonicToEntropy(mnemonic);
+
+    return HDNode.fromSeed(mnemonicToSeed(mnemonic));
+});
+
+utils.defineProperty(HDNode, 'fromSeed', function(seed) {
+    seed = utils.arrayify(seed);
+    if (seed.length < 16 || seed.length > 64) { throw new Error('invalid seed'); }
+
+    var I = utils.arrayify(utils.createSha512Hmac(MasterSecret).update(seed).digest());
+
+    return new HDNode(secp256k1.keyFromPrivate(I.slice(0, 32)), I.slice(32), 0, 0, 0);
+});
+
+function mnemonicToSeed(mnemonic, password) {
+
+    if (!password) {
+        password = '';
+
+    } else if (password.normalize) {
+        password = password.normalize('NFKD');
+
+    } else {
+        for (var i = 0; i < password.length; i++) {
+            var c = password.charCodeAt(i);
+            if (c < 32 || c > 127) { throw new Error('passwords with non-ASCII characters not supported in this environment'); }
+        }
+    }
+
+    mnemonic = utils.toUtf8Bytes(mnemonic, 'NFKD');
+    var salt = utils.toUtf8Bytes('mnemonic' + password, 'NFKD');
+
+    return utils.hexlify(utils.pbkdf2(mnemonic, salt, 2048, 64, utils.createSha512Hmac));
+}
+
+function mnemonicToEntropy(mnemonic) {
+   var words = mnemonic.toLowerCase().split(' ');
+   if ((words.length % 3) !== 0) { throw new Error('invalid mnemonic'); }
+
+   var entropy = utils.arrayify(new Uint8Array(Math.ceil(11 * words.length / 8)));
+
+   var offset = 0;
+   for (var i = 0; i < words.length; i++) {
+       var index = wordlist.indexOf(words[i]);
+       if (index === -1) { throw new Error('invalid mnemonic'); }
+
+       for (var bit = 0; bit < 11; bit++) {
+           if (index & (1 << (10 - bit))) {
+               entropy[offset >> 3] |= (1 << (7 - (offset % 8)));
+           }
+           offset++;
+       }
+   }
+
+   var entropyBits = 32 * words.length / 3;
+
+   var checksumBits = words.length / 3;
+   var checksumMask = getUpperMask(checksumBits);
+
+   var checksum = utils.arrayify(utils.sha256(entropy.slice(0, entropyBits / 8)))[0];
+   checksum &= checksumMask;
+
+   if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
+       throw new Error('invalid checksum');
+   }
+
+   return utils.hexlify(entropy.slice(0, entropyBits / 8));
+}
+
+function entropyToMnemonic(entropy) {
+    entropy = utils.arrayify(entropy);
+
+    if ((entropy.length % 4) !== 0 || entropy.length < 16 || entropy.length > 32) {
+        throw new Error('invalid entropy');
+    }
+
+    var words = [0];
+
+    var remainingBits = 11;
+    for (var i = 0; i < entropy.length; i++) {
+
+        // Consume the whole byte (with still more to go)
+        if (remainingBits > 8) {
+            words[words.length - 1] <<= 8;
+            words[words.length - 1] |= entropy[i];
+
+            remainingBits -= 8;
+
+        // This byte will complete an 11-bit index
+        } else {
+            words[words.length - 1] <<= remainingBits;
+            words[words.length - 1] |= entropy[i] >> (8 - remainingBits);
+
+            // Start the next word
+            words.push(entropy[i] & getLowerMask(8 - remainingBits));
+
+            remainingBits += 3;
+        }
+    }
+
+    // Compute the checksum bits
+    var checksum = utils.arrayify(utils.sha256(entropy))[0];
+    var checksumBits = entropy.length / 4;
+    checksum &= getUpperMask(checksumBits);
+
+    // Shift the checksum into the word indices
+    words[words.length - 1] <<= checksumBits;
+    words[words.length - 1] |= (checksum >> (8 - checksumBits));
+
+    // Convert indices into words
+    for (var i = 0; i < words.length; i++) {
+        words[i] = wordlist[words[i]];
+    }
+
+    return words.join(' ');
+}
+
+function isValidMnemonic(mnemonic) {
+    try {
+        mnemonicToEntropy(mnemonic);
+        return true;
+    } catch (error) { }
+
+    return false;
+}
+
+module.exports = {
+    fromMnemonic: HDNode.fromMnemonic,
+    fromSeed: HDNode.fromSeed,
+
+    mnemonicToEntropy: mnemonicToEntropy,
+    entropyToMnemonic: entropyToMnemonic,
+    mnemonicToSeed: mnemonicToSeed,
+
+    isValidMnemonic: isValidMnemonic,
+};
+
+},{"./words.json":63,"elliptic":5,"ethers-utils/bignumber.js":21,"ethers-utils/convert.js":24,"ethers-utils/hmac":25,"ethers-utils/pbkdf2.js":30,"ethers-utils/properties.js":31,"ethers-utils/sha2":33,"ethers-utils/utf8.js":37}],59:[function(require,module,exports){
+'use strict';
+
+var Wallet = require('./wallet');
+var HDNode = require('./hdnode');
+var SigningKey = require('./signing-key');
+
+module.exports = {
+    HDNode: HDNode,
+    Wallet: Wallet,
+
+    SigningKey: SigningKey,
+    _SigningKey: SigningKey,
+}
+
+require('ethers-utils/standalone.js')(module.exports);
+
+},{"./hdnode":58,"./signing-key":61,"./wallet":62,"ethers-utils/standalone.js":34}],60:[function(require,module,exports){
 'use strict';
 
 var aes = require('aes-js');
@@ -10644,7 +10801,7 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
 
 module.exports = secretStorage;
 
-},{"./signing-key.js":51,"aes-js":4,"ethers-utils":28,"ethers-utils/hmac":27,"ethers-utils/pbkdf2":30,"scrypt-js":46,"uuid":49}],51:[function(require,module,exports){
+},{"./signing-key.js":61,"aes-js":1,"ethers-utils":27,"ethers-utils/hmac":25,"ethers-utils/pbkdf2":30,"scrypt-js":54,"uuid":57}],61:[function(require,module,exports){
 'use strict';
 
 /**
@@ -10721,7 +10878,7 @@ utils.defineProperty(SigningKey, 'publicKeyToAddress', function(publicKey) {
 
 module.exports = SigningKey;
 
-},{"elliptic":7,"ethers-utils":28}],52:[function(require,module,exports){
+},{"elliptic":5,"ethers-utils":27}],62:[function(require,module,exports){
 'use strict';
 
 var scrypt = require('scrypt-js');
@@ -11157,7 +11314,7 @@ utils.defineProperty(Wallet, 'fromBrainWallet', function(username, password, pro
 
 module.exports = Wallet;
 
-},{"./hdnode":2,"./secret-storage":50,"./signing-key":51,"ethers-utils":28,"scrypt-js":46,"setimmediate":47}],53:[function(require,module,exports){
+},{"./hdnode":58,"./secret-storage":60,"./signing-key":61,"ethers-utils":27,"scrypt-js":54,"setimmediate":55}],63:[function(require,module,exports){
 module.exports="AbandonAbilityAbleAboutAboveAbsentAbsorbAbstractAbsurdAbuseAccessAccidentAccountAccuseAchieveAcidAcousticAcquireAcrossActActionActorActressActualAdaptAddAddictAddressAdjustAdmitAdultAdvanceAdviceAerobicAffairAffordAfraidAgainAgeAgentAgreeAheadAimAirAirportAisleAlarmAlbumAlcoholAlertAlienAllAlleyAllowAlmostAloneAlphaAlreadyAlsoAlterAlwaysAmateurAmazingAmongAmountAmusedAnalystAnchorAncientAngerAngleAngryAnimalAnkleAnnounceAnnualAnotherAnswerAntennaAntiqueAnxietyAnyApartApologyAppearAppleApproveAprilArchArcticAreaArenaArgueArmArmedArmorArmyAroundArrangeArrestArriveArrowArtArtefactArtistArtworkAskAspectAssaultAssetAssistAssumeAsthmaAthleteAtomAttackAttendAttitudeAttractAuctionAuditAugustAuntAuthorAutoAutumnAverageAvocadoAvoidAwakeAwareAwayAwesomeAwfulAwkwardAxisBabyBachelorBaconBadgeBagBalanceBalconyBallBambooBananaBannerBarBarelyBargainBarrelBaseBasicBasketBattleBeachBeanBeautyBecauseBecomeBeefBeforeBeginBehaveBehindBelieveBelowBeltBenchBenefitBestBetrayBetterBetweenBeyondBicycleBidBikeBindBiologyBirdBirthBitterBlackBladeBlameBlanketBlastBleakBlessBlindBloodBlossomBlouseBlueBlurBlushBoardBoatBodyBoilBombBoneBonusBookBoostBorderBoringBorrowBossBottomBounceBoxBoyBracketBrainBrandBrassBraveBreadBreezeBrickBridgeBriefBrightBringBriskBroccoliBrokenBronzeBroomBrotherBrownBrushBubbleBuddyBudgetBuffaloBuildBulbBulkBulletBundleBunkerBurdenBurgerBurstBusBusinessBusyButterBuyerBuzzCabbageCabinCableCactusCageCakeCallCalmCameraCampCanCanalCancelCandyCannonCanoeCanvasCanyonCapableCapitalCaptainCarCarbonCardCargoCarpetCarryCartCaseCashCasinoCastleCasualCatCatalogCatchCategoryCattleCaughtCauseCautionCaveCeilingCeleryCementCensusCenturyCerealCertainChairChalkChampionChangeChaosChapterChargeChaseChatCheapCheckCheeseChefCherryChestChickenChiefChildChimneyChoiceChooseChronicChuckleChunkChurnCigarCinnamonCircleCitizenCityCivilClaimClapClarifyClawClayCleanClerkCleverClickClientCliffClimbClinicClipClockClogCloseClothCloudClownClubClumpClusterClutchCoachCoastCoconutCodeCoffeeCoilCoinCollectColorColumnCombineComeComfortComicCommonCompanyConcertConductConfirmCongressConnectConsiderControlConvinceCookCoolCopperCopyCoralCoreCornCorrectCostCottonCouchCountryCoupleCourseCousinCoverCoyoteCrackCradleCraftCramCraneCrashCraterCrawlCrazyCreamCreditCreekCrewCricketCrimeCrispCriticCropCrossCrouchCrowdCrucialCruelCruiseCrumbleCrunchCrushCryCrystalCubeCultureCupCupboardCuriousCurrentCurtainCurveCushionCustomCuteCycleDadDamageDampDanceDangerDaringDashDaughterDawnDayDealDebateDebrisDecadeDecemberDecideDeclineDecorateDecreaseDeerDefenseDefineDefyDegreeDelayDeliverDemandDemiseDenialDentistDenyDepartDependDepositDepthDeputyDeriveDescribeDesertDesignDeskDespairDestroyDetailDetectDevelopDeviceDevoteDiagramDialDiamondDiaryDiceDieselDietDifferDigitalDignityDilemmaDinnerDinosaurDirectDirtDisagreeDiscoverDiseaseDishDismissDisorderDisplayDistanceDivertDivideDivorceDizzyDoctorDocumentDogDollDolphinDomainDonateDonkeyDonorDoorDoseDoubleDoveDraftDragonDramaDrasticDrawDreamDressDriftDrillDrinkDripDriveDropDrumDryDuckDumbDuneDuringDustDutchDutyDwarfDynamicEagerEagleEarlyEarnEarthEasilyEastEasyEchoEcologyEconomyEdgeEditEducateEffortEggEightEitherElbowElderElectricElegantElementElephantElevatorEliteElseEmbarkEmbodyEmbraceEmergeEmotionEmployEmpowerEmptyEnableEnactEndEndlessEndorseEnemyEnergyEnforceEngageEngineEnhanceEnjoyEnlistEnoughEnrichEnrollEnsureEnterEntireEntryEnvelopeEpisodeEqualEquipEraEraseErodeErosionErrorEruptEscapeEssayEssenceEstateEternalEthicsEvidenceEvilEvokeEvolveExactExampleExcessExchangeExciteExcludeExcuseExecuteExerciseExhaustExhibitExileExistExitExoticExpandExpectExpireExplainExposeExpressExtendExtraEyeEyebrowFabricFaceFacultyFadeFaintFaithFallFalseFameFamilyFamousFanFancyFantasyFarmFashionFatFatalFatherFatigueFaultFavoriteFeatureFebruaryFederalFeeFeedFeelFemaleFenceFestivalFetchFeverFewFiberFictionFieldFigureFileFilmFilterFinalFindFineFingerFinishFireFirmFirstFiscalFishFitFitnessFixFlagFlameFlashFlatFlavorFleeFlightFlipFloatFlockFloorFlowerFluidFlushFlyFoamFocusFogFoilFoldFollowFoodFootForceForestForgetForkFortuneForumForwardFossilFosterFoundFoxFragileFrameFrequentFreshFriendFringeFrogFrontFrostFrownFrozenFruitFuelFunFunnyFurnaceFuryFutureGadgetGainGalaxyGalleryGameGapGarageGarbageGardenGarlicGarmentGasGaspGateGatherGaugeGazeGeneralGeniusGenreGentleGenuineGestureGhostGiantGiftGiggleGingerGiraffeGirlGiveGladGlanceGlareGlassGlideGlimpseGlobeGloomGloryGloveGlowGlueGoatGoddessGoldGoodGooseGorillaGospelGossipGovernGownGrabGraceGrainGrantGrapeGrassGravityGreatGreenGridGriefGritGroceryGroupGrowGruntGuardGuessGuideGuiltGuitarGunGymHabitHairHalfHammerHamsterHandHappyHarborHardHarshHarvestHatHaveHawkHazardHeadHealthHeartHeavyHedgehogHeightHelloHelmetHelpHenHeroHiddenHighHillHintHipHireHistoryHobbyHockeyHoldHoleHolidayHollowHomeHoneyHoodHopeHornHorrorHorseHospitalHostHotelHourHoverHubHugeHumanHumbleHumorHundredHungryHuntHurdleHurryHurtHusbandHybridIceIconIdeaIdentifyIdleIgnoreIllIllegalIllnessImageImitateImmenseImmuneImpactImposeImproveImpulseInchIncludeIncomeIncreaseIndexIndicateIndoorIndustryInfantInflictInformInhaleInheritInitialInjectInjuryInmateInnerInnocentInputInquiryInsaneInsectInsideInspireInstallIntactInterestIntoInvestInviteInvolveIronIslandIsolateIssueItemIvoryJacketJaguarJarJazzJealousJeansJellyJewelJobJoinJokeJourneyJoyJudgeJuiceJumpJungleJuniorJunkJustKangarooKeenKeepKetchupKeyKickKidKidneyKindKingdomKissKitKitchenKiteKittenKiwiKneeKnifeKnockKnowLabLabelLaborLadderLadyLakeLampLanguageLaptopLargeLaterLatinLaughLaundryLavaLawLawnLawsuitLayerLazyLeaderLeafLearnLeaveLectureLeftLegLegalLegendLeisureLemonLendLengthLensLeopardLessonLetterLevelLiarLibertyLibraryLicenseLifeLiftLightLikeLimbLimitLinkLionLiquidListLittleLiveLizardLoadLoanLobsterLocalLockLogicLonelyLongLoopLotteryLoudLoungeLoveLoyalLuckyLuggageLumberLunarLunchLuxuryLyricsMachineMadMagicMagnetMaidMailMainMajorMakeMammalManManageMandateMangoMansionManualMapleMarbleMarchMarginMarineMarketMarriageMaskMassMasterMatchMaterialMathMatrixMatterMaximumMazeMeadowMeanMeasureMeatMechanicMedalMediaMelodyMeltMemberMemoryMentionMenuMercyMergeMeritMerryMeshMessageMetalMethodMiddleMidnightMilkMillionMimicMindMinimumMinorMinuteMiracleMirrorMiseryMissMistakeMixMixedMixtureMobileModelModifyMomMomentMonitorMonkeyMonsterMonthMoonMoralMoreMorningMosquitoMotherMotionMotorMountainMouseMoveMovieMuchMuffinMuleMultiplyMuscleMuseumMushroomMusicMustMutualMyselfMysteryMythNaiveNameNapkinNarrowNastyNationNatureNearNeckNeedNegativeNeglectNeitherNephewNerveNestNetNetworkNeutralNeverNewsNextNiceNightNobleNoiseNomineeNoodleNormalNorthNoseNotableNoteNothingNoticeNovelNowNuclearNumberNurseNutOakObeyObjectObligeObscureObserveObtainObviousOccurOceanOctoberOdorOffOfferOfficeOftenOilOkayOldOliveOlympicOmitOnceOneOnionOnlineOnlyOpenOperaOpinionOpposeOptionOrangeOrbitOrchardOrderOrdinaryOrganOrientOriginalOrphanOstrichOtherOutdoorOuterOutputOutsideOvalOvenOverOwnOwnerOxygenOysterOzonePactPaddlePagePairPalacePalmPandaPanelPanicPantherPaperParadeParentParkParrotPartyPassPatchPathPatientPatrolPatternPausePavePaymentPeacePeanutPearPeasantPelicanPenPenaltyPencilPeoplePepperPerfectPermitPersonPetPhonePhotoPhrasePhysicalPianoPicnicPicturePiecePigPigeonPillPilotPinkPioneerPipePistolPitchPizzaPlacePlanetPlasticPlatePlayPleasePledgePluckPlugPlungePoemPoetPointPolarPolePolicePondPonyPoolPopularPortionPositionPossiblePostPotatoPotteryPovertyPowderPowerPracticePraisePredictPreferPreparePresentPrettyPreventPricePridePrimaryPrintPriorityPrisonPrivatePrizeProblemProcessProduceProfitProgramProjectPromoteProofPropertyProsperProtectProudProvidePublicPuddingPullPulpPulsePumpkinPunchPupilPuppyPurchasePurityPurposePursePushPutPuzzlePyramidQualityQuantumQuarterQuestionQuickQuitQuizQuoteRabbitRaccoonRaceRackRadarRadioRailRainRaiseRallyRampRanchRandomRangeRapidRareRateRatherRavenRawRazorReadyRealReasonRebelRebuildRecallReceiveRecipeRecordRecycleReduceReflectReformRefuseRegionRegretRegularRejectRelaxReleaseReliefRelyRemainRememberRemindRemoveRenderRenewRentReopenRepairRepeatReplaceReportRequireRescueResembleResistResourceResponseResultRetireRetreatReturnReunionRevealReviewRewardRhythmRibRibbonRiceRichRideRidgeRifleRightRigidRingRiotRippleRiskRitualRivalRiverRoadRoastRobotRobustRocketRomanceRoofRookieRoomRoseRotateRoughRoundRouteRoyalRubberRudeRugRuleRunRunwayRuralSadSaddleSadnessSafeSailSaladSalmonSalonSaltSaluteSameSampleSandSatisfySatoshiSauceSausageSaveSayScaleScanScareScatterSceneSchemeSchoolScienceScissorsScorpionScoutScrapScreenScriptScrubSeaSearchSeasonSeatSecondSecretSectionSecuritySeedSeekSegmentSelectSellSeminarSeniorSenseSentenceSeriesServiceSessionSettleSetupSevenShadowShaftShallowShareShedShellSheriffShieldShiftShineShipShiverShockShoeShootShopShortShoulderShoveShrimpShrugShuffleShySiblingSickSideSiegeSightSignSilentSilkSillySilverSimilarSimpleSinceSingSirenSisterSituateSixSizeSkateSketchSkiSkillSkinSkirtSkullSlabSlamSleepSlenderSliceSlideSlightSlimSloganSlotSlowSlushSmallSmartSmileSmokeSmoothSnackSnakeSnapSniffSnowSoapSoccerSocialSockSodaSoftSolarSoldierSolidSolutionSolveSomeoneSongSoonSorrySortSoulSoundSoupSourceSouthSpaceSpareSpatialSpawnSpeakSpecialSpeedSpellSpendSphereSpiceSpiderSpikeSpinSpiritSplitSpoilSponsorSpoonSportSpotSpraySpreadSpringSpySquareSqueezeSquirrelStableStadiumStaffStageStairsStampStandStartStateStaySteakSteelStemStepStereoStickStillStingStockStomachStoneStoolStoryStoveStrategyStreetStrikeStrongStruggleStudentStuffStumbleStyleSubjectSubmitSubwaySuccessSuchSuddenSufferSugarSuggestSuitSummerSunSunnySunsetSuperSupplySupremeSureSurfaceSurgeSurpriseSurroundSurveySuspectSustainSwallowSwampSwapSwarmSwearSweetSwiftSwimSwingSwitchSwordSymbolSymptomSyrupSystemTableTackleTagTailTalentTalkTankTapeTargetTaskTasteTattooTaxiTeachTeamTellTenTenantTennisTentTermTestTextThankThatThemeThenTheoryThereTheyThingThisThoughtThreeThriveThrowThumbThunderTicketTideTigerTiltTimberTimeTinyTipTiredTissueTitleToastTobaccoTodayToddlerToeTogetherToiletTokenTomatoTomorrowToneTongueTonightToolToothTopTopicToppleTorchTornadoTortoiseTossTotalTouristTowardTowerTownToyTrackTradeTrafficTragicTrainTransferTrapTrashTravelTrayTreatTreeTrendTrialTribeTrickTriggerTrimTripTrophyTroubleTruckTrueTrulyTrumpetTrustTruthTryTubeTuitionTumbleTunaTunnelTurkeyTurnTurtleTwelveTwentyTwiceTwinTwistTwoTypeTypicalUglyUmbrellaUnableUnawareUncleUncoverUnderUndoUnfairUnfoldUnhappyUniformUniqueUnitUniverseUnknownUnlockUntilUnusualUnveilUpdateUpgradeUpholdUponUpperUpsetUrbanUrgeUsageUseUsedUsefulUselessUsualUtilityVacantVacuumVagueValidValleyValveVanVanishVaporVariousVastVaultVehicleVelvetVendorVentureVenueVerbVerifyVersionVeryVesselVeteranViableVibrantViciousVictoryVideoViewVillageVintageViolinVirtualVirusVisaVisitVisualVitalVividVocalVoiceVoidVolcanoVolumeVoteVoyageWageWagonWaitWalkWallWalnutWantWarfareWarmWarriorWashWaspWasteWaterWaveWayWealthWeaponWearWeaselWeatherWebWeddingWeekendWeirdWelcomeWestWetWhaleWhatWheatWheelWhenWhereWhipWhisperWideWidthWifeWildWillWinWindowWineWingWinkWinnerWinterWireWisdomWiseWishWitnessWolfWomanWonderWoodWoolWordWorkWorldWorryWorthWrapWreckWrestleWristWriteWrongYardYearYellowYouYoungYouthZebraZeroZoneZoo"
 
-},{}]},{},[3]);
+},{}]},{},[59]);

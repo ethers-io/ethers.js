@@ -12,6 +12,7 @@ ellipticPackage = JSON.stringify({ version: ellipticPackage.version });
     var npmVersion = require('./node_modules/ethers-' + name + '/package.json').version;
     var liveVersion = require('./' + name + '/package.json').version;
     if (npmVersion !== liveVersion) {
+        console.log(name, ('npm=' + npmVersion), ('live=' + liveVersion));
         throw new Error('version mismatch for ' + name + ' - redo npm install');
     }
 

@@ -1,475 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-module.exports = undefined;
-},{}],2:[function(require,module,exports){
-'use strict';
-
-try {
-    module.exports.XMLHttpRequest = XMLHttpRequest;
-} catch(error) {
-    console.log('Warning: XMLHttpRequest is not defined');
-    module.exports.XMLHttpRequest = null;
-}
-
-},{}],3:[function(require,module,exports){
-'use strict';
-
-var Provider = require('./provider.js');
-
-var utils = (function() {
-    var convert = require('ethers-utils/convert.js');
-    return {
-        defineProperty: require('ethers-utils/properties.js').defineProperty,
-
-        hexlify: convert.hexlify,
-    };
-})();
-
-function getTransactionString(transaction) {
-    var result = [];
-    for (var key in transaction) {
-        if (transaction[key] == null) { continue; }
-        result.push(key + '=' + utils.hexlify(transaction[key]));
-    }
-    return result.join('&');
-}
-
-function EtherscanProvider(testnet, apiKey) {
-    Provider.call(this, testnet);
-
-    utils.defineProperty(this, 'apiKey', apiKey || null);
-}
-Provider.inherits(EtherscanProvider);
-
-utils.defineProperty(EtherscanProvider.prototype, '_call', function() {
-});
-
-utils.defineProperty(EtherscanProvider.prototype, '_callProxy', function() {
-});
-
-function getResult(result) {
-    // getLogs has weird success responses
-    if (result.status == 0 && result.message === 'No records found') {
-        return result.result;
-    }
-
-    if (result.status != 1 || result.message != 'OK') {
-        var error = new Error('invalid response');
-        error.result = JSON.stringify(result);
-        throw error;
-    }
-
-    return result.result;
-}
-
-function getJsonResult(result) {
-    if (result.jsonrpc != '2.0') {
-        var error = new Error('invalid response');
-        error.result = JSON.stringify(result);
-        throw error;
-    }
-
-    if (result.error) {
-        var error = new Error(result.error.message || 'unknown error');
-        if (result.error.code) { error.code = result.error.code; }
-        if (result.error.data) { error.data = result.error.data; }
-        throw error;
-    }
-
-    return result.result;
-}
-
-function checkLogTag(blockTag) {
-    if (blockTag === 'pending') { throw new Error('pending not supported'); }
-    if (blockTag === 'latest') { return blockTag; }
-
-    return parseInt(blockTag.substring(2), 16);
-}
-
-utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, params) {
-    if (!params) { params = {}; }
-
-    var url = this.testnet ? 'https://ropsten.etherscan.io': 'https://api.etherscan.io';
-
-    var apiKey = '';
-    if (this.apiKey) { apiKey += '&apikey=' + this.apiKey; }
-
-    switch (method) {
-        case 'getBlockNumber':
-            url += '/api?module=proxy&action=eth_blockNumber' + apiKey;
-            return Provider.fetchJSON(url, null, getJsonResult);
-
-        case 'getGasPrice':
-            url += '/api?module=proxy&action=eth_gasPrice' + apiKey;
-            return Provider.fetchJSON(url, null, getJsonResult);
-
-
-        case 'getBalance':
-            // Returns base-10 result
-            url += '/api?module=account&action=balance&address=' + params.address;
-            url += '&tag=' + params.blockTag + apiKey;
-            return Provider.fetchJSON(url, null, getResult);
-
-        case 'getTransactionCount':
-            url += '/api?module=proxy&action=eth_getTransactionCount&address=' + params.address;
-            url += '&tag=' + params.blockTag + apiKey;
-            return Provider.fetchJSON(url, null, getJsonResult);
-
-        case 'getCode':
-            url += '/api?module=proxy&action=eth_getCode&address=' + params.address;
-            url += '&tag=' + params.blockTag + apiKey;
-            return Provider.fetchJSON(url, null, getJsonResult);
-
-        case 'getStorageAt':
-            url += '/api?module=proxy&action=eth_getStorageAt&address=' + params.address;
-            url += '&position=' + params.position;
-            url += '&tag=' + params.blockTag + apiKey;
-            return Provider.fetchJSON(url, null, getJsonResult);
-
-        case 'sendTransaction':
-            url += '/api?module=proxy&action=eth_sendRawTransaction&hex=' + params.signedTransaction;
-            url += apiKey;
-            return Provider.fetchJSON(url, null, getJsonResult);
-
-
-        case 'getBlock':
-            if (params.blockTag) {
-                url += '/api?module=proxy&action=eth_getBlockByNumber&tag=' + params.blockTag;
-                url += '&boolean=false';
-                url += apiKey;
-                return Provider.fetchJSON(url, null, getJsonResult);
-            }
-            throw new Error('getBlock by blockHash not implmeneted');
-
-        case 'getTransaction':
-            url += '/api?module=proxy&action=eth_getTransactionByHash&txhash=' + params.transactionHash;
-            url += apiKey;
-            return Provider.fetchJSON(url, null, getJsonResult);
-
-        case 'getTransactionReceipt':
-            url += '/api?module=proxy&action=eth_getTransactionReceipt&txhash=' + params.transactionHash;
-            url += apiKey;
-            return Provider.fetchJSON(url, null, getJsonResult);
-
-
-        case 'call':
-            var transaction = getTransactionString(params.transaction);
-            if (transaction) { transaction = '&' + transaction; }
-            url += '/api?module=proxy&action=eth_call' + transaction;
-            url += apiKey;
-            return Provider.fetchJSON(url, null, getJsonResult);
-
-        case 'estimateGas':
-            var transaction = getTransactionString(params.transaction);
-            if (transaction) { transaction = '&' + transaction; }
-            url += '/api?module=proxy&action=eth_estimateGas&' + transaction;
-            url += apiKey;
-            return Provider.fetchJSON(url, null, getJsonResult);
-
-        case 'getLogs':
-            url += '/api?module=logs&action=getLogs';
-            try {
-                if (params.filter.fromBlock) {
-                    url += '&fromBlock=' + checkLogTag(params.filter.fromBlock);
-                }
-
-                if (params.filter.toBlock) {
-                    url += '&toBlock=' + checkLogTag(params.filter.toBlock);
-                }
-
-                if (params.filter.address) {
-                    url += '&address=' + params.filter.address;
-                }
-
-                // @TODO: We can handle slightly more complicated logs using the logs API
-                if (params.filter.topics && params.filter.topics.length > 0) {
-                    if (params.filter.topics.length > 1) {
-                        throw new Error('unsupported topic format');
-                    }
-                    var topic0 = params.filter.topics[0];
-                    if (typeof(topic0) !== 'string' || topic0.length !== 66) {
-                        throw new Error('unsupported topic0 format');
-                    }
-                    url += '&topic0=' + topic0;
-                }
-            } catch (error) {
-                return Promise.reject(error);
-            }
-
-
-            url += apiKey;
-            return Provider.fetchJSON(url, null, getResult);
-
-        default:
-            break;
-    }
-
-    return Promise.reject(new Error('not implemented - ' + method));
-});
-
-module.exports = EtherscanProvider;;
-
-},{"./provider.js":22,"ethers-utils/convert.js":12,"ethers-utils/properties.js":15}],4:[function(require,module,exports){
-'use strict';
-
-var inherits = require('inherits');
-
-var Provider = require('./provider.js');
-
-var utils = (function() {
-    return {
-        defineProperty: require('ethers-utils/properties.js').defineProperty,
-    };
-})();
-
-
-function FallbackProvider(providers) {
-    if (providers.length === 0) { throw new Error('no providers'); }
-
-    for (var i = 1; i < providers.length; i++) {
-        if (providers[0].chainId !== providers[i].chainId) {
-            throw new Error('incompatible providers - chainId mismatch');
-        }
-
-        if (providers[0].testnet !== providers[i].testnet) {
-            throw new Error('incompatible providers - testnet mismatch');
-        }
-    }
-
-    if (!(this instanceof FallbackProvider)) { throw new Error('missing new'); }
-    Provider.call(this, providers[0].testnet, providers[0].chainId);
-
-    providers = providers.slice(0);
-    Object.defineProperty(this, 'providers', {
-        get: function() {
-            return providers.slice(0);
-        }
-    });
-}
-inherits(FallbackProvider, Provider);
-
-
-utils.defineProperty(FallbackProvider.prototype, 'perform', function(method, params) {
-    var providers = this.providers;
-    return new Promise(function(resolve, reject) {
-        var firstError = null;
-        function next() {
-            if (!providers.length) {
-                reject(firstError);
-                return;
-            }
-
-            var provider = providers.shift();
-            provider.perform(method, params).then(function(result) {
-                resolve(result);
-            }, function (error) {
-                if (!firstError) { firstError = error; }
-                next();
-            });
-        }
-        next();
-    });
-});
-
-module.exports = FallbackProvider;
-
-},{"./provider.js":22,"ethers-utils/properties.js":15,"inherits":20}],5:[function(require,module,exports){
-'use strict';
-
-var Provider = require('./provider.js');
-
-var EtherscanProvider = require('./etherscan-provider.js');
-var FallbackProvider = require('./fallback-provider.js');
-var InfuraProvider = require('./infura-provider.js');
-var JsonRpcProvider = require('./json-rpc-provider.js');
-
-function getDefaultProvider(testnet) {
-    return new FallbackProvider([
-        new InfuraProvider(testnet),
-        new EtherscanProvider(testnet),
-    ]);
-}
-
-module.exports = {
-    EtherscanProvider: EtherscanProvider,
-    FallbackProvider: FallbackProvider,
-    InfuraProvider: InfuraProvider,
-    JsonRpcProvider: JsonRpcProvider,
-
-    isProvder: Provider.isProvider,
-
-    getDefaultProvider:getDefaultProvider,
-
-    Provider: Provider,
-}
-
-require('ethers-utils/standalone.js')({
-    providers: module.exports
-});
-
-
-},{"./etherscan-provider.js":3,"./fallback-provider.js":4,"./infura-provider.js":6,"./json-rpc-provider.js":7,"./provider.js":22,"ethers-utils/standalone.js":17}],6:[function(require,module,exports){
-var JsonRpcProvider = require('./json-rpc-provider.js');
-
-var utils = (function() {
-    return {
-        defineProperty: require('ethers-utils/properties.js').defineProperty
-    }
-})();
-
-function InfuraProvider(testnet, apiAccessToken) {
-    if (!(this instanceof InfuraProvider)) { throw new Error('missing new'); }
-
-    var host = (testnet ? "ropsten": "mainnet") + '.infura.io';
-    var url = 'https://' + host + '/' + (apiAccessToken || '');
-
-    JsonRpcProvider.call(this, url, testnet);
-
-    utils.defineProperty(this, 'apiAccessToken', apiAccessToken || null);
-}
-JsonRpcProvider.inherits(InfuraProvider);
-
-module.exports = InfuraProvider;
-
-},{"./json-rpc-provider.js":7,"ethers-utils/properties.js":15}],7:[function(require,module,exports){
-'use strict';
-
-// See: https://github.com/ethereum/wiki/wiki/JSON-RPC
-
-var Provider = require('./provider.js');
-
-var utils = (function() {
-    var convert = require('ethers-utils/convert');
-    return {
-        defineProperty: require('ethers-utils/properties').defineProperty,
-
-        hexlify: convert.hexlify,
-        isHexString: convert.isHexString,
-    }
-})();
-
-function getResult(payload) {
-    if (payload.error) {
-        var error = new Error(payload.error.message);
-        error.code = payload.error.code;
-        error.data = payload.error.data;
-        throw error;
-    }
-
-    return payload.result;
-}
-
-function stripHexZeros(value) {
-    while (value.length > 3 && value.substring(0, 3) === '0x0') {
-        value = '0x' + value.substring(3);
-    }
-    return value;
-}
-
-function getTransaction(transaction) {
-    var result = {};
-
-    for (var key in transaction) {
-        result[key] = utils.hexlify(transaction[key]);
-    }
-
-    // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
-    ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function(key) {
-        if (!result[key]) { return; }
-        result[key] = stripHexZeros(result[key]);
-    });
-
-    return result;
-}
-
-function JsonRpcProvider(url, testnet, chainId) {
-    if (!(this instanceof JsonRpcProvider)) { throw new Error('missing new'); }
-
-    Provider.call(this, testnet, chainId);
-
-    if (!url) { url = 'http://localhost:8545'; }
-
-    utils.defineProperty(this, 'url', url);
-}
-Provider.inherits(JsonRpcProvider);
-
-utils.defineProperty(JsonRpcProvider.prototype, 'send', function(method, params) {
-    var request = {
-        method: method,
-        params: params,
-        id: 42,
-        jsonrpc: "2.0"
-    };
-    return Provider.fetchJSON(this.url, JSON.stringify(request), getResult);
-});
-
-utils.defineProperty(JsonRpcProvider.prototype, 'perform', function(method, params) {
-    switch (method) {
-        case 'getBlockNumber':
-            return this.send('eth_blockNumber', []);
-
-        case 'getGasPrice':
-            return this.send('eth_gasPrice', []);
-
-        case 'getBalance':
-            var blockTag = params.blockTag;
-            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
-            return this.send('eth_getBalance', [params.address, blockTag]);
-
-        case 'getTransactionCount':
-            var blockTag = params.blockTag;
-            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
-            return this.send('eth_getTransactionCount', [params.address, blockTag]);
-
-        case 'getCode':
-            var blockTag = params.blockTag;
-            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
-            return this.send('eth_getCode', [params.address, blockTag]);
-
-        case 'getStorageAt':
-            var position = params.position;
-            if (utils.isHexString(position)) { position = stripHexZeros(position); }
-            var blockTag = params.blockTag;
-            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
-            return this.send('eth_getStorageAt', [params.address, position, blockTag]);
-
-        case 'sendTransaction':
-            return this.send('eth_sendRawTransaction', [params.signedTransaction]);
-
-        case 'getBlock':
-            if (params.blockTag) {
-                var blockTag = params.blockTag;
-                if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
-                return this.send('eth_getBlockByNumber', [blockTag, false]);
-            } else if (params.blockHash) {
-                return this.send('eth_getBlockByHash', [params.blockHash, false]);
-            }
-            return Promise.reject(new Error('invalid block tag or block hash'));
-
-        case 'getTransaction':
-            return this.send('eth_getTransactionByHash', [params.transactionHash]);
-
-        case 'getTransactionReceipt':
-            return this.send('eth_getTransactionReceipt', [params.transactionHash]);
-
-        case 'call':
-            return this.send('eth_call', [getTransaction(params.transaction), 'latest']);
-
-        case 'estimateGas':
-            return this.send('eth_estimateGas', [getTransaction(params.transaction)]);
-
-        case 'getLogs':
-            return this.send('eth_getLogs', [params.filter]);
-
-        default:
-            break;
-    }
-
-    return Promise.reject(new Error('not implemented - ' + method));
-});
-
-module.exports = JsonRpcProvider;
-
-},{"./provider.js":22,"ethers-utils/convert":12,"ethers-utils/properties":15}],8:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -522,8 +51,7 @@ module.exports = JsonRpcProvider;
 
   var Buffer;
   try {
-    // Obfuscate that we require Buffer, to reduce size
-    Buffer = require('buf' + 'fer').Buffer;
+    Buffer = require('buffer').Buffer;
   } catch (e) {
   }
 
@@ -3899,7 +3427,9 @@ module.exports = JsonRpcProvider;
   };
 })(typeof module === 'undefined' || module, this);
 
-},{}],9:[function(require,module,exports){
+},{"buffer":2}],2:[function(require,module,exports){
+
+},{}],3:[function(require,module,exports){
 
 var BN = require('bn.js');
 
@@ -3933,6 +3463,15 @@ function getChecksumAddress(address) {
     return '0x' + address.join('');
 }
 
+// Shims for environments that are missing some required constants and functions
+var MAX_SAFE_INTEGER = 0x1fffffffffffff;
+
+function log10(x) {
+    if (Math.log10) { return Math.log10(x); }
+    return Math.log(x) / Math.LN10;
+}
+
+
 // See: https://en.wikipedia.org/wiki/International_Bank_Account_Number
 var ibanChecksum = (function() {
 
@@ -3942,7 +3481,7 @@ var ibanChecksum = (function() {
     for (var i = 0; i < 26; i++) { ibanLookup[String.fromCharCode(65 + i)] = String(10 + i); }
 
     // How many decimal digits can we process? (for 64-bit float, this is 15)
-    var safeDigits = Math.floor(Math.log10(Number.MAX_SAFE_INTEGER));
+    var safeDigits = Math.floor(log10(MAX_SAFE_INTEGER));
 
     return function(address) {
         address = address.toUpperCase();
@@ -4016,7 +3555,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert":12,"./keccak256":13,"./throw-error":18,"bn.js":8}],10:[function(require,module,exports){
+},{"./convert":6,"./keccak256":7,"./throw-error":12,"bn.js":1}],4:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -4097,6 +3636,10 @@ defineProperty(BigNumber.prototype, 'mod', function(other) {
     return new BigNumber(this._bn.mod(bigNumberify(other)._bn));
 });
 
+defineProperty(BigNumber.prototype, 'pow', function(other) {
+    return new BigNumber(this._bn.pow(bigNumberify(other)._bn));
+});
+
 
 defineProperty(BigNumber.prototype, 'maskn', function(value) {
     return new BigNumber(this._bn.maskn(value));
@@ -4160,7 +3703,7 @@ module.exports = {
     bigNumberify: bigNumberify
 };
 
-},{"./convert":12,"./properties":15,"./throw-error":18,"bn.js":8}],11:[function(require,module,exports){
+},{"./convert":6,"./properties":9,"./throw-error":12,"bn.js":1}],5:[function(require,module,exports){
 
 var getAddress = require('./address').getAddress;
 var convert = require('./convert');
@@ -4182,7 +3725,7 @@ module.exports = {
     getContractAddress: getContractAddress,
 }
 
-},{"./address":9,"./convert":12,"./keccak256":13,"./rlp":16}],12:[function(require,module,exports){
+},{"./address":3,"./convert":6,"./keccak256":7,"./rlp":10}],6:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
@@ -4190,6 +3733,17 @@ module.exports = {
 
 var defineProperty = require('./properties.js').defineProperty;
 var throwError = require('./throw-error');
+
+function addSlice(array) {
+    if (array.slice) { return array; }
+
+    array.slice = function() {
+        var args = Array.prototype.slice.call(arguments);
+        return new Uint8Array(Array.prototype.slice.apply(array, args));
+    }
+
+    return array;
+}
 
 function isArrayish(value) {
     if (!value || parseInt(value.length) != value.length || typeof(value) === 'string') {
@@ -4221,11 +3775,11 @@ function arrayify(value, name) {
             result.push(parseInt(value.substr(i, 2), 16));
         }
 
-        return new Uint8Array(result);
+        return addSlice(new Uint8Array(result));
     }
 
     if (isArrayish(value)) {
-        return new Uint8Array(value);
+        return addSlice(new Uint8Array(value));
     }
 
     throwError('invalid arrayify value', { name: name, input: value });
@@ -4247,7 +3801,7 @@ function concat(objects) {
         offset += arrays[i].length;
     }
 
-    return result;
+    return addSlice(result);
 }
 function stripZeros(value) {
     value = arrayify(value);
@@ -4273,7 +3827,7 @@ function padZeros(value, length) {
 
     var result = new Uint8Array(length);
     result.set(value, length - value.length);
-    return result;
+    return addSlice(result);
 }
 
 
@@ -4345,7 +3899,7 @@ module.exports = {
     isHexString: isHexString,
 };
 
-},{"./properties.js":15,"./throw-error":18}],13:[function(require,module,exports){
+},{"./properties.js":9,"./throw-error":12}],7:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -4359,7 +3913,7 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":12,"js-sha3":21}],14:[function(require,module,exports){
+},{"./convert.js":6,"js-sha3":15}],8:[function(require,module,exports){
 'use strict';
 
 var convert = require('./convert');
@@ -4399,7 +3953,7 @@ function namehash(name, depth) {
 module.exports = namehash;
 
 
-},{"./convert":12,"./keccak256":13,"./utf8":19}],15:[function(require,module,exports){
+},{"./convert":6,"./keccak256":7,"./utf8":13}],9:[function(require,module,exports){
 function defineProperty(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -4412,7 +3966,7 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],16:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 var convert = require('./convert.js');
@@ -4556,7 +4110,7 @@ module.exports = {
     decode: decode,
 }
 
-},{"./convert.js":12}],17:[function(require,module,exports){
+},{"./convert.js":6}],11:[function(require,module,exports){
 (function (global){
 var defineProperty = require('./properties.js').defineProperty;
 
@@ -4583,7 +4137,7 @@ function defineEthersValues(values) {
 module.exports = defineEthersValues;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./properties.js":15}],18:[function(require,module,exports){
+},{"./properties.js":9}],12:[function(require,module,exports){
 'use strict';
 
 function throwError(message, params) {
@@ -4596,7 +4150,7 @@ function throwError(message, params) {
 
 module.exports = throwError;
 
-},{}],19:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 
 var convert = require('./convert.js');
 
@@ -4711,7 +4265,7 @@ module.exports = {
     toUtf8String: bytesToUtf8,
 };
 
-},{"./convert.js":12}],20:[function(require,module,exports){
+},{"./convert.js":6}],14:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -4736,7 +4290,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],21:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -5215,12 +4769,595 @@ if (typeof Object.create === 'function') {
 })();
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":1}],22:[function(require,module,exports){
+},{"_process":16}],16:[function(require,module,exports){
+module.exports = undefined;
+},{}],17:[function(require,module,exports){
+'use strict';
+
+try {
+    module.exports.XMLHttpRequest = XMLHttpRequest;
+} catch(error) {
+    console.log('Warning: XMLHttpRequest is not defined');
+    module.exports.XMLHttpRequest = null;
+}
+
+},{}],18:[function(require,module,exports){
+'use strict';
+
+var Provider = require('./provider.js');
+
+var utils = (function() {
+    var convert = require('ethers-utils/convert.js');
+    return {
+        defineProperty: require('ethers-utils/properties.js').defineProperty,
+
+        hexlify: convert.hexlify,
+    };
+})();
+
+// @TODO: Add this to utils; lots of things need this now
+function stripHexZeros(value) {
+    while (value.length > 3 && value.substring(0, 3) === '0x0') {
+        value = '0x' + value.substring(3);
+    }
+    return value;
+}
+
+function getTransactionString(transaction) {
+    var result = [];
+    for (var key in transaction) {
+        if (transaction[key] == null) { continue; }
+        var value = utils.hexlify(transaction[key]);
+        if ({ gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
+            value = stripHexZeros(value);
+        }
+        result.push(key + '=' + value);
+    }
+    return result.join('&');
+}
+
+function EtherscanProvider(network, apiKey) {
+    Provider.call(this, network);
+
+    var baseUrl = null;
+    switch(this.name) {
+        case 'homestead':
+            baseUrl = 'https://api.etherscan.io';
+            break;
+        case 'ropsten':
+            baseUrl = 'https://ropsten.etherscan.io';
+            break;
+        case 'rinkeby':
+            baseUrl = 'https://rinkeby.etherscan.io';
+            break;
+        case 'kovan':
+            baseUrl = 'https://kovan.etherscan.io';
+            break;
+        default:
+            throw new Error('unsupported network');
+    }
+    utils.defineProperty(this, 'baseUrl', baseUrl);
+
+    utils.defineProperty(this, 'apiKey', apiKey || null);
+}
+Provider.inherits(EtherscanProvider);
+
+utils.defineProperty(EtherscanProvider.prototype, '_call', function() {
+});
+
+utils.defineProperty(EtherscanProvider.prototype, '_callProxy', function() {
+});
+
+function getResult(result) {
+    // getLogs has weird success responses
+    if (result.status == 0 && result.message === 'No records found') {
+        return result.result;
+    }
+
+    if (result.status != 1 || result.message != 'OK') {
+        var error = new Error('invalid response');
+        error.result = JSON.stringify(result);
+        throw error;
+    }
+
+    return result.result;
+}
+
+function getJsonResult(result) {
+    if (result.jsonrpc != '2.0') {
+        var error = new Error('invalid response');
+        error.result = JSON.stringify(result);
+        throw error;
+    }
+
+    if (result.error) {
+        var error = new Error(result.error.message || 'unknown error');
+        if (result.error.code) { error.code = result.error.code; }
+        if (result.error.data) { error.data = result.error.data; }
+        throw error;
+    }
+
+    return result.result;
+}
+
+function checkLogTag(blockTag) {
+    if (blockTag === 'pending') { throw new Error('pending not supported'); }
+    if (blockTag === 'latest') { return blockTag; }
+
+    return parseInt(blockTag.substring(2), 16);
+}
+
+
+utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, params) {
+    if (!params) { params = {}; }
+
+    var url = this.baseUrl;
+
+    var apiKey = '';
+    if (this.apiKey) { apiKey += '&apikey=' + this.apiKey; }
+
+    switch (method) {
+        case 'getBlockNumber':
+            url += '/api?module=proxy&action=eth_blockNumber' + apiKey;
+            return Provider.fetchJSON(url, null, getJsonResult);
+
+        case 'getGasPrice':
+            url += '/api?module=proxy&action=eth_gasPrice' + apiKey;
+            return Provider.fetchJSON(url, null, getJsonResult);
+
+
+        case 'getBalance':
+            // Returns base-10 result
+            url += '/api?module=account&action=balance&address=' + params.address;
+            url += '&tag=' + params.blockTag + apiKey;
+            return Provider.fetchJSON(url, null, getResult);
+
+        case 'getTransactionCount':
+            url += '/api?module=proxy&action=eth_getTransactionCount&address=' + params.address;
+            url += '&tag=' + params.blockTag + apiKey;
+            return Provider.fetchJSON(url, null, getJsonResult);
+
+        case 'getCode':
+            url += '/api?module=proxy&action=eth_getCode&address=' + params.address;
+            url += '&tag=' + params.blockTag + apiKey;
+            return Provider.fetchJSON(url, null, getJsonResult);
+
+        case 'getStorageAt':
+            url += '/api?module=proxy&action=eth_getStorageAt&address=' + params.address;
+            url += '&position=' + stripHexZeros(params.position);
+            url += '&tag=' + stripHexZeros(params.blockTag) + apiKey;
+            return Provider.fetchJSON(url, null, getJsonResult);
+
+        case 'sendTransaction':
+            url += '/api?module=proxy&action=eth_sendRawTransaction&hex=' + params.signedTransaction;
+            url += apiKey;
+            return Provider.fetchJSON(url, null, getJsonResult);
+
+
+        case 'getBlock':
+            if (params.blockTag) {
+                url += '/api?module=proxy&action=eth_getBlockByNumber&tag=' + stripHexZeros(params.blockTag);
+                url += '&boolean=false';
+                url += apiKey;
+                return Provider.fetchJSON(url, null, getJsonResult);
+            }
+            throw new Error('getBlock by blockHash not implmeneted');
+
+        case 'getTransaction':
+            url += '/api?module=proxy&action=eth_getTransactionByHash&txhash=' + params.transactionHash;
+            url += apiKey;
+            return Provider.fetchJSON(url, null, getJsonResult);
+
+        case 'getTransactionReceipt':
+            url += '/api?module=proxy&action=eth_getTransactionReceipt&txhash=' + params.transactionHash;
+            url += apiKey;
+            return Provider.fetchJSON(url, null, getJsonResult);
+
+
+        case 'call':
+            var transaction = getTransactionString(params.transaction);
+            if (transaction) { transaction = '&' + transaction; }
+            url += '/api?module=proxy&action=eth_call' + transaction;
+            url += apiKey;
+            return Provider.fetchJSON(url, null, getJsonResult);
+
+        case 'estimateGas':
+            var transaction = getTransactionString(params.transaction);
+            if (transaction) { transaction = '&' + transaction; }
+            url += '/api?module=proxy&action=eth_estimateGas&' + transaction;
+            url += apiKey;
+            return Provider.fetchJSON(url, null, getJsonResult);
+
+        case 'getLogs':
+            url += '/api?module=logs&action=getLogs';
+            try {
+                if (params.filter.fromBlock) {
+                    url += '&fromBlock=' + checkLogTag(params.filter.fromBlock);
+                }
+
+                if (params.filter.toBlock) {
+                    url += '&toBlock=' + checkLogTag(params.filter.toBlock);
+                }
+
+                if (params.filter.address) {
+                    url += '&address=' + params.filter.address;
+                }
+
+                // @TODO: We can handle slightly more complicated logs using the logs API
+                if (params.filter.topics && params.filter.topics.length > 0) {
+                    if (params.filter.topics.length > 1) {
+                        throw new Error('unsupported topic format');
+                    }
+                    var topic0 = params.filter.topics[0];
+                    if (typeof(topic0) !== 'string' || topic0.length !== 66) {
+                        throw new Error('unsupported topic0 format');
+                    }
+                    url += '&topic0=' + topic0;
+                }
+            } catch (error) {
+                return Promise.reject(error);
+            }
+
+
+            url += apiKey;
+            return Provider.fetchJSON(url, null, getResult);
+
+        default:
+            break;
+    }
+
+    return Promise.reject(new Error('not implemented - ' + method));
+});
+
+module.exports = EtherscanProvider;;
+
+},{"./provider.js":24,"ethers-utils/convert.js":6,"ethers-utils/properties.js":9}],19:[function(require,module,exports){
+'use strict';
+
+var inherits = require('inherits');
+
+var Provider = require('./provider.js');
+
+var utils = (function() {
+    return {
+        defineProperty: require('ethers-utils/properties.js').defineProperty,
+    };
+})();
+
+
+function FallbackProvider(providers) {
+    if (providers.length === 0) { throw new Error('no providers'); }
+
+    for (var i = 1; i < providers.length; i++) {
+        if (providers[0].chainId !== providers[i].chainId) {
+            throw new Error('incompatible providers - chainId mismatch');
+        }
+
+        if (providers[0].testnet !== providers[i].testnet) {
+            throw new Error('incompatible providers - testnet mismatch');
+        }
+    }
+
+    if (!(this instanceof FallbackProvider)) { throw new Error('missing new'); }
+    Provider.call(this, providers[0].testnet, providers[0].chainId);
+
+    providers = providers.slice(0);
+    Object.defineProperty(this, 'providers', {
+        get: function() {
+            return providers.slice(0);
+        }
+    });
+}
+inherits(FallbackProvider, Provider);
+
+
+utils.defineProperty(FallbackProvider.prototype, 'perform', function(method, params) {
+    var providers = this.providers;
+    return new Promise(function(resolve, reject) {
+        var firstError = null;
+        function next() {
+            if (!providers.length) {
+                reject(firstError);
+                return;
+            }
+
+            var provider = providers.shift();
+            provider.perform(method, params).then(function(result) {
+                resolve(result);
+            }, function (error) {
+                if (!firstError) { firstError = error; }
+                next();
+            });
+        }
+        next();
+    });
+});
+
+module.exports = FallbackProvider;
+
+},{"./provider.js":24,"ethers-utils/properties.js":9,"inherits":14}],20:[function(require,module,exports){
+'use strict';
+
+var Provider = require('./provider.js');
+
+var EtherscanProvider = require('./etherscan-provider.js');
+var FallbackProvider = require('./fallback-provider.js');
+var InfuraProvider = require('./infura-provider.js');
+var JsonRpcProvider = require('./json-rpc-provider.js');
+
+function getDefaultProvider(network) {
+    return new FallbackProvider([
+        new InfuraProvider(network),
+        new EtherscanProvider(network),
+    ]);
+}
+
+module.exports = {
+    EtherscanProvider: EtherscanProvider,
+    FallbackProvider: FallbackProvider,
+    InfuraProvider: InfuraProvider,
+    JsonRpcProvider: JsonRpcProvider,
+
+    isProvider: Provider.isProvider,
+
+    networks: Provider.networks,
+
+    getDefaultProvider:getDefaultProvider,
+
+    Provider: Provider,
+}
+
+require('ethers-utils/standalone.js')({
+    providers: module.exports
+});
+
+
+},{"./etherscan-provider.js":18,"./fallback-provider.js":19,"./infura-provider.js":21,"./json-rpc-provider.js":22,"./provider.js":24,"ethers-utils/standalone.js":11}],21:[function(require,module,exports){
+'use strict';
+
+var Provider = require('./provider');
+var JsonRpcProvider = require('./json-rpc-provider');
+
+var utils = (function() {
+    return {
+        defineProperty: require('ethers-utils/properties.js').defineProperty
+    }
+})();
+
+function InfuraProvider(network, apiAccessToken) {
+    if (!(this instanceof InfuraProvider)) { throw new Error('missing new'); }
+
+    // Legacy constructor (testnet, chainId, apiAccessToken)
+    // @TODO: Remove this in the next major release
+    if (arguments.length === 3) {
+        apiAccessToken = arguments[2];
+        network = Provider._legacyConstructor(network, 2, arguments[0], arguments[1]);
+    } else {
+        apiAccessToken = null;
+        network = Provider._legacyConstructor(network, arguments.length, arguments[0], arguments[1]);
+    }
+
+    var host = null;
+    switch(network.name) {
+        case 'homestead':
+            host = 'mainnet.infura.io';
+            break;
+        case 'ropsten':
+            host = 'ropsten.infura.io';
+            break;
+        case 'rinkeby':
+            host = 'rinkeby.infura.io';
+            break;
+        case 'kovan':
+            host = 'kovan.infura.io';
+            break;
+        default:
+            throw new Error('unsupported network');
+    }
+
+    var url = 'https://' + host + '/' + (apiAccessToken || '');
+
+    JsonRpcProvider.call(this, url, network);
+
+    utils.defineProperty(this, 'apiAccessToken', apiAccessToken || null);
+}
+JsonRpcProvider.inherits(InfuraProvider);
+
+module.exports = InfuraProvider;
+
+},{"./json-rpc-provider":22,"./provider":24,"ethers-utils/properties.js":9}],22:[function(require,module,exports){
+'use strict';
+
+// See: https://github.com/ethereum/wiki/wiki/JSON-RPC
+
+var Provider = require('./provider.js');
+
+var utils = (function() {
+    var convert = require('ethers-utils/convert');
+    return {
+        defineProperty: require('ethers-utils/properties').defineProperty,
+
+        hexlify: convert.hexlify,
+        isHexString: convert.isHexString,
+    }
+})();
+
+function getResult(payload) {
+    if (payload.error) {
+        var error = new Error(payload.error.message);
+        error.code = payload.error.code;
+        error.data = payload.error.data;
+        throw error;
+    }
+
+    return payload.result;
+}
+
+function stripHexZeros(value) {
+    while (value.length > 3 && value.substring(0, 3) === '0x0') {
+        value = '0x' + value.substring(3);
+    }
+    return value;
+}
+
+function getTransaction(transaction) {
+    var result = {};
+
+    for (var key in transaction) {
+        result[key] = utils.hexlify(transaction[key]);
+    }
+
+    // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
+    ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function(key) {
+        if (!result[key]) { return; }
+        result[key] = stripHexZeros(result[key]);
+    });
+
+    return result;
+}
+
+function JsonRpcProvider(url, network) {
+    if (!(this instanceof JsonRpcProvider)) { throw new Error('missing new'); }
+
+    network = Provider._legacyConstructor(network, arguments.length - 1, arguments[1], arguments[2]);
+
+    Provider.call(this, network);
+
+    if (!url) { url = 'http://localhost:8545'; }
+
+    utils.defineProperty(this, 'url', url);
+}
+Provider.inherits(JsonRpcProvider);
+
+utils.defineProperty(JsonRpcProvider.prototype, 'send', function(method, params) {
+    var request = {
+        method: method,
+        params: params,
+        id: 42,
+        jsonrpc: "2.0"
+    };
+    return Provider.fetchJSON(this.url, JSON.stringify(request), getResult);
+});
+
+utils.defineProperty(JsonRpcProvider.prototype, 'perform', function(method, params) {
+    switch (method) {
+        case 'getBlockNumber':
+            return this.send('eth_blockNumber', []);
+
+        case 'getGasPrice':
+            return this.send('eth_gasPrice', []);
+
+        case 'getBalance':
+            var blockTag = params.blockTag;
+            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+            return this.send('eth_getBalance', [params.address, blockTag]);
+
+        case 'getTransactionCount':
+            var blockTag = params.blockTag;
+            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+            return this.send('eth_getTransactionCount', [params.address, blockTag]);
+
+        case 'getCode':
+            var blockTag = params.blockTag;
+            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+            return this.send('eth_getCode', [params.address, blockTag]);
+
+        case 'getStorageAt':
+            var position = params.position;
+            if (utils.isHexString(position)) { position = stripHexZeros(position); }
+            var blockTag = params.blockTag;
+            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+            return this.send('eth_getStorageAt', [params.address, position, blockTag]);
+
+        case 'sendTransaction':
+            return this.send('eth_sendRawTransaction', [params.signedTransaction]);
+
+        case 'getBlock':
+            if (params.blockTag) {
+                var blockTag = params.blockTag;
+                if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+                return this.send('eth_getBlockByNumber', [blockTag, false]);
+            } else if (params.blockHash) {
+                return this.send('eth_getBlockByHash', [params.blockHash, false]);
+            }
+            return Promise.reject(new Error('invalid block tag or block hash'));
+
+        case 'getTransaction':
+            return this.send('eth_getTransactionByHash', [params.transactionHash]);
+
+        case 'getTransactionReceipt':
+            return this.send('eth_getTransactionReceipt', [params.transactionHash]);
+
+        case 'call':
+            return this.send('eth_call', [getTransaction(params.transaction), 'latest']);
+
+        case 'estimateGas':
+            return this.send('eth_estimateGas', [getTransaction(params.transaction)]);
+
+        case 'getLogs':
+            return this.send('eth_getLogs', [params.filter]);
+
+        default:
+            break;
+    }
+
+    return Promise.reject(new Error('not implemented - ' + method));
+});
+
+module.exports = JsonRpcProvider;
+
+},{"./provider.js":24,"ethers-utils/convert":6,"ethers-utils/properties":9}],23:[function(require,module,exports){
+module.exports={
+    "unspecified": {
+        "chainId": 0,
+        "name": "unspecified"
+    },
+
+    "homestead": {
+        "chainId": 1,
+        "ensAddress": "0x314159265dd8dbb310642f98f50c066173c1259b",
+        "name": "homestead"
+    },
+    "mainnet": {
+        "chainId": 1,
+        "ensAddress": "0x314159265dd8dbb310642f98f50c066173c1259b",
+        "name": "homestead"
+    },
+
+    "morden": {
+        "chainId": 2,
+        "name": "morden"
+    },
+
+    "ropsten": {
+        "chainId": 3,
+        "ensAddress": "0x112234455c3a32fd11230c42e7bccd4a84e02010",
+        "name": "ropsten"
+    },
+    "testnet": {
+        "chainId": 3,
+        "ensAddress": "0x112234455c3a32fd11230c42e7bccd4a84e02010",
+        "name": "ropsten"
+    },
+
+    "rinkeby": {
+        "chainId": 4,
+        "name": "rinkeby"
+    },
+    "kovan": {
+        "chainId": 42,
+        "name": "kovan"
+    }
+}
+
+},{}],24:[function(require,module,exports){
 'use strict';
 
 var inherits = require('inherits');
 
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+
+var networks = require('./networks.json');
 
 var utils = (function() {
     var convert = require('ethers-utils/convert');
@@ -5345,8 +5482,8 @@ var formatBlock = {
     number: checkNumber,
 
     timestamp: checkNumber,
-    nonce: utils.hexlify,
-    difficulty: checkNumber,
+    nonce: allowNull(utils.hexlify),
+    difficulty: allowNull(checkNumber),
 
     gasLimit: utils.bigNumberify,
     gasUsed: utils.bigNumberify,
@@ -5388,13 +5525,13 @@ var formatTransaction = {
    nonce: checkNumber,
    data: utils.hexlify,
 
-   r: checkUint256,
-   s: checkUint256,
-   v: checkNumber,
+   r: allowNull(checkUint256),
+   s: allowNull(checkUint256),
+   v: allowNull(checkNumber),
 
    creates: allowNull(utils.getAddress, null),
 
-   raw: utils.hexlify,
+   raw: allowNull(utils.hexlify),
 };
 
 function checkTransaction(transaction) {
@@ -5415,19 +5552,23 @@ function checkTransaction(transaction) {
     }
 
     if (!transaction.raw) {
-        var raw = [
-            utils.hexlify(transaction.nonce),
-            utils.hexlify(transaction.gasPrice),
-            utils.hexlify(transaction.gasLimit),
-            (transaction.to || "0x"),
-            utils.hexlify(transaction.value || '0x'),
-            utils.hexlify(transaction.data || '0x'),
-            utils.hexlify(transaction.v || '0x'),
-            utils.hexlify(transaction.r),
-            utils.hexlify(transaction.s),
-        ];
 
-        transaction.raw = utils.RLP.encode(raw);
+        // Very loose providers (e.g. TestRPC) don't provide a signature or raw
+        if (transaction.v && transaction.r && transaction.s) {
+            var raw = [
+                utils.hexlify(transaction.nonce),
+                utils.hexlify(transaction.gasPrice),
+                utils.hexlify(transaction.gasLimit),
+                (transaction.to || "0x"),
+                utils.hexlify(transaction.value || '0x'),
+                utils.hexlify(transaction.data || '0x'),
+                utils.hexlify(transaction.v || '0x'),
+                utils.hexlify(transaction.r),
+                utils.hexlify(transaction.s),
+            ];
+
+            transaction.raw = utils.RLP.encode(raw);
+        }
     }
 
 
@@ -5439,11 +5580,13 @@ function checkTransaction(transaction) {
         networkId = utils.bigNumberify(networkId).toNumber();
     }
 
-    if (typeof(networkId) !== 'number') {
+    if (typeof(networkId) !== 'number' && result.v != null) {
         networkId = (result.v - 35) / 2;
         if (networkId < 0) { networkId = 0; }
         networkId = parseInt(networkId);
     }
+
+    if (typeof(networkId) !== 'number') { networkId = 0; }
 
     result.networkId = networkId;
 
@@ -5470,13 +5613,14 @@ function checkTransactionRequest(transaction) {
 }
 
 var formatTransactionReceiptLog = {
-    transactionLogIndex: checkNumber,
+    transactionLogIndex: allowNull(checkNumber),
+    transactionIndex: checkNumber,
     blockNumber: checkNumber,
     transactionHash: checkHash,
     address: utils.getAddress,
-    type: checkString,
+    // @TODO: Next major release remove this
+    type: allowNull(checkString),
     topics: arrayOf(checkHash),
-    transactionIndex: checkNumber,
     data: utils.hexlify,
     logIndex: checkNumber,
     blockHash: checkHash,
@@ -5489,7 +5633,7 @@ function checkTransactionReceiptLog(log) {
 var formatTransactionReceipt = {
     contractAddress: allowNull(utils.getAddress, null),
     transactionIndex: checkNumber,
-    root: checkHash,
+    root: allowNull(checkHash),
     gasUsed: utils.bigNumberify,
     logsBloom: utils.hexlify,
     blockHash: checkHash,
@@ -5497,10 +5641,29 @@ var formatTransactionReceipt = {
     logs: arrayOf(checkTransactionReceiptLog),
     blockNumber: checkNumber,
     cumulativeGasUsed: utils.bigNumberify,
+    status: allowNull(checkNumber)
 };
 
 function checkTransactionReceipt(transactionReceipt) {
-    return check(formatTransactionReceipt, transactionReceipt);
+    var status = transactionReceipt.status;
+    var root = transactionReceipt.root;
+    if (!((status != null) ^ (root != null))) {
+        throw new Error('invalid transaction receipt - exactly one of status and root should be present');
+    }
+    var result = check(formatTransactionReceipt, transactionReceipt);
+    result.logs.forEach(function(entry, index) {
+        if (entry.transactionLogIndex == null) {
+            entry.transactionLogIndex = index;
+        }
+        // @TODO: Remove this is next major version
+        if (entry.type == null) {
+            entry.type = 'mined';
+        }
+    });
+    if (transactionReceipt.status != null) {
+        result.byzantium = true;
+    }
+    return result;
 }
 
 function checkTopics(topics) {
@@ -5544,25 +5707,24 @@ function checkLog(log) {
     return check(formatLog, log);
 }
 
-var ensAddressTestnet = '0x112234455c3a32fd11230c42e7bccd4a84e02010';
-var ensAddressMainnet = '0x314159265dd8dbb310642f98f50c066173c1259b';
-
-function Provider(testnet, chainId) {
+function Provider(network) {
     if (!(this instanceof Provider)) { throw new Error('missing new'); }
 
-    testnet = !!testnet;
+    network = Provider._legacyConstructor(network, arguments.length, arguments[0], arguments[1]);
 
-    if (chainId == null) {
-        chainId = (testnet ? Provider.chainId.ropsten: Provider.chainId.homestead);
+    // Check the ensAddress (if any)
+    var ensAddress = null;
+    if (network.ensAddress) {
+        ensAddress = utils.getAddress(network.ensAddress);
     }
 
-    // Figure out which ENS to talk to
-    this.ensAddress = (testnet ? ensAddressTestnet: ensAddressMainnet);
+    // Setup our network properties
+    utils.defineProperty(this, 'chainId', network.chainId);
+    utils.defineProperty(this, 'ensAddress', ensAddress);
+    utils.defineProperty(this, 'name', network.name);
 
-    if (typeof(chainId) !== 'number') { throw new Error('invalid chainId'); }
-
-    utils.defineProperty(this, 'testnet', testnet);
-    utils.defineProperty(this, 'chainId', chainId);
+    // @TODO: Remove in the next major release
+    utils.defineProperty(this, 'testnet', (network.name !== 'homestead'));
 
     var events = {};
     utils.defineProperty(this, '_events', events);
@@ -5670,15 +5832,52 @@ function(child) {
     }
 });
 */
+
+utils.defineProperty(Provider, '_legacyConstructor', function(network, length, arg0, arg1) {
+
+    // Legacy parameters Provider(testnet:boolean, chainId:Number)
+    if (typeof(arg0) === 'boolean' || length === 2) {
+        var testnet = !!arg0;
+        var chainId = arg1;
+
+        // true => testnet, false => mainnet
+        network = networks[testnet ? 'ropsten': 'homestead'];
+
+        // Overriding chain ID
+        if (length === 2 && chainId != null) {
+            network = {
+                chainId: chainId,
+                ensAddress: network.ensAddress,
+                name: network.name
+            };
+        }
+
+    } else if (typeof(network) === 'string') {
+        network = networks[network];
+        if (!network) { throw new Error('unknown network'); }
+
+    } else if (network == null) {
+        network = networks['homestead'];
+    }
+
+    if (typeof(network.chainId) !== 'number') { throw new Error('invalid chainId'); }
+
+    return network;
+});
+// @TODO: Remove in next major version (use networks instead)
 utils.defineProperty(Provider, 'chainId', {
     homestead: 1,
     morden: 2,
     ropsten: 3,
+    rinkeby: 4,
+    kovan: 42
 });
 
 //utils.defineProperty(Provider, 'isProvider', function(object) {
 //    return (object instanceof Provider);
 //});
+
+utils.defineProperty(Provider, 'networks', networks);
 
 utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
 
@@ -6197,4 +6396,4 @@ utils.defineProperty(Provider.prototype, 'removeListener', function(eventName, l
 
 module.exports = Provider;
 
-},{"ethers-utils/address":9,"ethers-utils/bignumber":10,"ethers-utils/contract-address":11,"ethers-utils/convert":12,"ethers-utils/namehash":14,"ethers-utils/properties":15,"ethers-utils/rlp":16,"ethers-utils/utf8":19,"inherits":20,"xmlhttprequest":2}]},{},[5]);
+},{"./networks.json":23,"ethers-utils/address":3,"ethers-utils/bignumber":4,"ethers-utils/contract-address":5,"ethers-utils/convert":6,"ethers-utils/namehash":8,"ethers-utils/properties":9,"ethers-utils/rlp":10,"ethers-utils/utf8":13,"inherits":14,"xmlhttprequest":17}]},{},[20]);
