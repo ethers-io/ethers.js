@@ -7893,18 +7893,18 @@ var utils = (function() {
 function FallbackProvider(providers) {
     if (providers.length === 0) { throw new Error('no providers'); }
 
-    for (var i = 1; i < providers.length; i++) {
-        if (providers[0].chainId !== providers[i].chainId) {
-            throw new Error('incompatible providers - chainId mismatch');
+    var network = {};
+    ['chainId', 'ensAddress', 'name', 'testnet'].forEach(function(key) {
+        for (var i = 1; i < providers.length; i++) {
+            if (providers[0][key] !== providers[i][key]) {
+                throw new Error('incompatible providers - ' + key + ' mismatch');
+            }
         }
-
-        if (providers[0].testnet !== providers[i].testnet) {
-            throw new Error('incompatible providers - testnet mismatch');
-        }
-    }
+        network[key] = providers[0][key];
+    });
 
     if (!(this instanceof FallbackProvider)) { throw new Error('missing new'); }
-    Provider.call(this, providers[0].testnet, providers[0].chainId);
+    Provider.call(this, network);
 
     providers = providers.slice(0);
     Object.defineProperty(this, 'providers', {
@@ -7992,15 +7992,9 @@ var utils = (function() {
 function InfuraProvider(network, apiAccessToken) {
     if (!(this instanceof InfuraProvider)) { throw new Error('missing new'); }
 
-    // Legacy constructor (testnet, chainId, apiAccessToken)
+    // Legacy constructor (testnet, apiAccessToken)
     // @TODO: Remove this in the next major release
-    if (arguments.length === 3) {
-        apiAccessToken = arguments[2];
-        network = Provider._legacyConstructor(network, 2, arguments[0], arguments[1]);
-    } else {
-        apiAccessToken = null;
-        network = Provider._legacyConstructor(network, arguments.length, arguments[0], arguments[1]);
-    }
+    network = Provider._legacyConstructor(network, 1, arguments[0]);
 
     var host = null;
     switch(network.name) {
@@ -8084,9 +8078,30 @@ function getTransaction(transaction) {
 function JsonRpcProvider(url, network) {
     if (!(this instanceof JsonRpcProvider)) { throw new Error('missing new'); }
 
-    network = Provider._legacyConstructor(network, arguments.length - 1, arguments[1], arguments[2]);
+    // Legacy Contructor (url, [ testnet, [ chainId ] ])
+    // @TODO: Remove this in the next major version
 
-    Provider.call(this, network);
+    var args = [];
+
+    // Legacy without a url
+    if (typeof(url) !== 'string' || Provider.networks[url] != null) {
+        // url => network
+        args.push(url);
+
+        // network => chainId
+        if (network != null) { args.push(network); }
+
+        url = null;
+
+    } else if (arguments.length === 2) {
+        args.push(arguments[1]);
+
+    } else if (arguments.length === 3) {
+        args.push(arguments[1]);
+        args.push(arguments[2]);
+    }
+
+    Provider.apply(this, args);
 
     if (!url) { url = 'http://localhost:8545'; }
 
