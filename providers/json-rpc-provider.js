@@ -51,9 +51,30 @@ function getTransaction(transaction) {
 function JsonRpcProvider(url, network) {
     if (!(this instanceof JsonRpcProvider)) { throw new Error('missing new'); }
 
-    network = Provider._legacyConstructor(network, arguments.length - 1, arguments[1], arguments[2]);
+    // Legacy Contructor (url, [ testnet, [ chainId ] ])
+    // @TODO: Remove this in the next major version
 
-    Provider.call(this, network);
+    var args = [];
+
+    // Legacy without a url
+    if (typeof(url) !== 'string' || Provider.networks[url] != null) {
+        // url => network
+        args.push(url);
+
+        // network => chainId
+        if (network != null) { args.push(network); }
+
+        url = null;
+
+    } else if (arguments.length === 2) {
+        args.push(arguments[1]);
+
+    } else if (arguments.length === 3) {
+        args.push(arguments[1]);
+        args.push(arguments[2]);
+    }
+
+    Provider.apply(this, args);
 
     if (!url) { url = 'http://localhost:8545'; }
 

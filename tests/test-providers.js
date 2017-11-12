@@ -3,7 +3,9 @@
 var assert = require('assert');
 
 var providers = require('../providers');
+
 var bigNumberify = require('../utils/bignumber').bigNumberify;
+var getAddress = require('../utils/address').getAddress;
 
 var blockchainData = {
     homestead: {
@@ -310,7 +312,7 @@ function testProvider(providerName, networkName) {
         // - call
         // - getLogs
         //
-        //  Many of these are tested in run-providers, which uses nodeunit, but
+        //  Many of these are tLegacyParametersested in run-providers, which uses nodeunit, but
         //  also creates a local private key which must then be funded to
         //  execute the tests. I am working on a better test contract to deploy
         //  to all the networks to help test these.
@@ -323,3 +325,270 @@ function testProvider(providerName, networkName) {
     });
 });
 
+function getDefaults(network, extra) {
+    var network = providers.networks[network];
+    var result = {
+        chainId: network.chainId,
+        ensAddress: (network.ensAddress ? getAddress(network.ensAddress): null),
+        name: network.name,
+        testnet: (network.name !== 'homestead'),
+    };
+    for (var key in extra) {
+        result[key] = extra[key];
+    }
+    return result;
+}
+
+
+var LegacyParameters = [
+
+    // InfuraProvider
+    {
+        create: function() {
+            return new providers.InfuraProvider();
+        },
+        name: 'InfuraProvider - defaults',
+        properties: getDefaults('homestead', { apiAccessToken: null })
+    },
+    {
+        create: function() {
+            return new providers.InfuraProvider(false);
+        },
+        name: 'InfuraProvider - false',
+        properties: getDefaults('homestead', { apiAccessToken: null })
+    },
+    {
+        create: function() {
+            return new providers.InfuraProvider('homestead');
+        },
+        name: 'InfuraProvider - homestead',
+        properties: getDefaults('homestead', { apiAccessToken: null })
+    },
+    {
+        create: function() {
+            return new providers.InfuraProvider(false, 'abcdefg');
+        },
+        name: 'InfuraProvider - false + API token',
+        properties: getDefaults('homestead', { apiAccessToken: 'abcdefg' })
+    },
+    {
+        create: function() {
+            return new providers.InfuraProvider('homestead', 'abcdefg');
+        },
+        name: 'InfuraProvider - homestead + API token',
+        properties: getDefaults('homestead', { apiAccessToken: 'abcdefg' })
+    },
+    {
+        create: function() {
+            return new providers.InfuraProvider(true);
+        },
+        name: 'InfuraProvider - true',
+        properties: getDefaults('ropsten', { apiAccessToken: null })
+    },
+    {
+        create: function() {
+            return new providers.InfuraProvider(true, 'abcdefg');
+        },
+        name: 'InfuraProvider - true + API token',
+        properties: getDefaults('ropsten', { apiAccessToken: 'abcdefg' })
+    },
+    {
+        create: function() {
+            return new providers.InfuraProvider('ropsten', 'abcdefg');
+        },
+        name: 'InfuraProvider - ropsten + API token',
+        properties: getDefaults('ropsten', { apiAccessToken: 'abcdefg' })
+    },
+    {
+        create: function() {
+            return new providers.InfuraProvider('rinkeby');
+        },
+        name: 'InfuraProvider - rinkeby',
+        properties: getDefaults('rinkeby', { apiAccessToken: null })
+    },
+    {
+        create: function() {
+            return new providers.InfuraProvider('rinkeby', 'abcdefg');
+        },
+        name: 'InfuraProvider - rinkeby + API token',
+        properties: getDefaults('rinkeby', { apiAccessToken: 'abcdefg' })
+    },
+
+    // EtherscanProvider
+    {
+        create: function() {
+            return new providers.EtherscanProvider();
+        },
+        name: 'EtherscanProvider - defaults',
+        properties: getDefaults('homestead', { apiKey: null })
+    },
+    {
+        create: function() {
+            return new providers.EtherscanProvider(false);
+        },
+        name: 'EtherscanProvider - false',
+        properties: getDefaults('homestead', { apiKey: null })
+    },
+    {
+        create: function() {
+            return new providers.EtherscanProvider('homestead');
+        },
+        name: 'EtherscanProvider - homestead',
+        properties: getDefaults('homestead', { apiKey: null })
+    },
+    {
+        create: function() {
+            return new providers.EtherscanProvider(false, 'abcdefg');
+        },
+        name: 'EtherscanProvider - false + API token',
+        properties: getDefaults('homestead', { apiKey: 'abcdefg' })
+    },
+    {
+        create: function() {
+            return new providers.EtherscanProvider('homestead', 'abcdefg');
+        },
+        name: 'EtherscanProvider - homestead + API token',
+        properties: getDefaults('homestead', { apiKey: 'abcdefg' })
+    },
+    {
+        create: function() {
+            return new providers.EtherscanProvider(true);
+        },
+        name: 'EtherscanProvider - true',
+        properties: getDefaults('ropsten', { apiKey: null })
+    },
+    {
+        create: function() {
+            return new providers.EtherscanProvider(true, 'abcdefg');
+        },
+        name: 'EtherscanProvider - true + API token',
+        properties: getDefaults('ropsten', { apiKey: 'abcdefg' })
+    },
+    {
+        create: function() {
+            return new providers.EtherscanProvider('ropsten', 'abcdefg');
+        },
+        name: 'EtherscanProvider - ropsten + API token',
+        properties: getDefaults('ropsten', { apiKey: 'abcdefg' })
+    },
+    {
+        create: function() {
+            return new providers.EtherscanProvider('rinkeby');
+        },
+        name: 'EtherscanProvider - rinkeby',
+        properties: getDefaults('rinkeby', { apiKey: null })
+    },
+    {
+        create: function() {
+            return new providers.EtherscanProvider('rinkeby', 'abcdefg');
+        },
+        name: 'EtherscanProvider - rinkeby + API token',
+        properties: getDefaults('rinkeby', { apiKey: 'abcdefg' })
+    },
+
+    // JsonRpcProvider
+    {
+        create: function() {
+            return new providers.JsonRpcProvider(undefined, 101);
+        },
+        name: 'JsonRpcProvider - undef + chainId',
+        properties: getDefaults('homestead', { chainId: 101, url: 'http://localhost:8545' })
+    },
+    {
+        create: function() {
+            return new providers.JsonRpcProvider('http://something', undefined, 101);
+        },
+        name: 'JsonRpcProvider - URL + undef + chainId',
+        properties: getDefaults('homestead', { chainId: 101, url: 'http://something' })
+    },
+    {
+        create: function() {
+            return new providers.JsonRpcProvider(false, 101);
+        },
+        name: 'JsonRpcProvider - false + chainId',
+        properties: getDefaults('homestead', { chainId: 101, url: 'http://localhost:8545' })
+    },
+    {
+        create: function() {
+            return new providers.JsonRpcProvider('http://something', false, 101);
+        },
+        name: 'JsonRpcProvider - URL + false + chainId',
+        properties: getDefaults('homestead', { chainId: 101, url: 'http://something' })
+    },
+    {
+        create: function() {
+            return new providers.JsonRpcProvider(true, 101);
+        },
+        name: 'JsonRpcProvider - true + chainId',
+        properties: getDefaults('ropsten', { chainId: 101, url: 'http://localhost:8545' })
+    },
+    {
+        create: function() {
+            return new providers.JsonRpcProvider('http://something', true, 101);
+        },
+        name: 'JsonRpcProvider - URL + true + chainId',
+        properties: getDefaults('ropsten', { chainId: 101, url: 'http://something' })
+    },
+];
+
+[true, false, 'default', 'homestead', 'ropsten', 'rinkeby', 'kovan'].forEach(function(networkName) {
+    var defaultsName = networkName;
+    if (networkName === false || networkName === 'default') {
+        defaultsName = 'homestead';
+    } else if (networkName === true) {
+        defaultsName = 'ropsten';
+    }
+
+    LegacyParameters.push({
+        create: function() {
+            if (networkName === 'default') {
+                return providers.getDefaultProvider();
+            }
+            return providers.getDefaultProvider(networkName);
+        },
+        name: ('getDefaultProvider - ' + networkName),
+        properties: getDefaults(defaultsName, { })
+    });
+});
+
+[true, false, 'default', 'homestead', 'ropsten', 'rinkeby', 'kovan'].forEach(function(networkName) {
+    var defaultsName = networkName;
+    if (networkName === false || networkName === 'default') {
+        defaultsName = 'homestead';
+    } else if (networkName === true) {
+        defaultsName = 'ropsten';
+    }
+
+    LegacyParameters.push({
+        create: function() {
+            if (networkName === 'default') {
+                return new providers.JsonRpcProvider();
+            }
+            return new providers.JsonRpcProvider(networkName);
+        },
+        name: ('JsonRpcProvider - ' + networkName),
+        properties: getDefaults(defaultsName, { url: 'http://localhost:8545' })
+    });
+
+    LegacyParameters.push({
+        create: function() {
+            if (networkName === 'default') {
+                return new providers.JsonRpcProvider('http://something');
+            }
+            return new providers.JsonRpcProvider('http://something', networkName);
+        },
+        name: ('JsonRpcProvider - URL + ' + networkName),
+        properties: getDefaults(defaultsName, { url: 'http://something' })
+    });
+});
+
+describe('Test legacy provider arguments', function() {
+    LegacyParameters.forEach(function(test) {
+        it(('creates legacy - ' + test.name), function() {
+            var provider = test.create();
+            for (var key in test.properties) {
+                assert.equal(provider[key], test.properties[key], ('provider equals ' + key));
+            }
+        });
+    });
+});

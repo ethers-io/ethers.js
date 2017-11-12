@@ -12,15 +12,9 @@ var utils = (function() {
 function InfuraProvider(network, apiAccessToken) {
     if (!(this instanceof InfuraProvider)) { throw new Error('missing new'); }
 
-    // Legacy constructor (testnet, chainId, apiAccessToken)
+    // Legacy constructor (testnet, apiAccessToken)
     // @TODO: Remove this in the next major release
-    if (arguments.length === 3) {
-        apiAccessToken = arguments[2];
-        network = Provider._legacyConstructor(network, 2, arguments[0], arguments[1]);
-    } else {
-        apiAccessToken = null;
-        network = Provider._legacyConstructor(network, arguments.length, arguments[0], arguments[1]);
-    }
+    network = Provider._legacyConstructor(network, 1, arguments[0]);
 
     var host = null;
     switch(network.name) {
