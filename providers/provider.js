@@ -493,7 +493,7 @@ utils.defineProperty(Provider, '_legacyConstructor', function(network, length, a
         // Overriding chain ID
         if (length === 2 && chainId != null) {
             network = {
-                chainId: chainId,
+                chainId: typeof(chainId) == 'number' ? chainId : testnet ? 2: 1,
                 ensAddress: network.ensAddress,
                 name: network.name
             };
