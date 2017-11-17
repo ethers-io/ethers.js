@@ -294,9 +294,7 @@ var formatTransactionReceipt = {
 function checkTransactionReceipt(transactionReceipt) {
     var status = transactionReceipt.status;
     var root = transactionReceipt.root;
-    if (!((status != null) ^ (root != null))) {
-        throw new Error('invalid transaction receipt - exactly one of status and root should be present');
-    }
+
     var result = check(formatTransactionReceipt, transactionReceipt);
     result.logs.forEach(function(entry, index) {
         if (entry.transactionLogIndex == null) {
