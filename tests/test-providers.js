@@ -413,6 +413,13 @@ var LegacyParameters = [
         name: 'InfuraProvider - rinkeby + API token',
         properties: getDefaults('rinkeby', { apiAccessToken: 'abcdefg' })
     },
+    {
+        create: function() {
+            return new providers.InfuraProvider(providers.networks.rinkeby, 'abcdefg');
+        },
+        name: 'InfuraProvider - rinkeby + API token',
+        properties: getDefaults('rinkeby', { apiAccessToken: 'abcdefg' })
+    },
 
     // EtherscanProvider
     {
@@ -485,6 +492,13 @@ var LegacyParameters = [
         name: 'EtherscanProvider - rinkeby + API token',
         properties: getDefaults('rinkeby', { apiKey: 'abcdefg' })
     },
+    {
+        create: function() {
+            return new providers.EtherscanProvider(providers.networks.rinkeby, 'abcdefg');
+        },
+        name: 'EtherscanProvider - Network:rinkeby + API token',
+        properties: getDefaults('rinkeby', { apiKey: 'abcdefg' })
+    },
 
     // JsonRpcProvider
     {
@@ -549,6 +563,16 @@ var LegacyParameters = [
         name: ('getDefaultProvider - ' + networkName),
         properties: getDefaults(defaultsName, { })
     });
+
+    if (providers.networks[networkName]) {
+        LegacyParameters.push({
+            create: function() {
+                return providers.getDefaultProvider(providers.networks[networkName]);
+            },
+            name: ('getDefaultProvider - network:' + networkName),
+            properties: getDefaults(defaultsName, { })
+        });
+    }
 });
 
 [true, false, 'default', 'homestead', 'ropsten', 'rinkeby', 'kovan'].forEach(function(networkName) {
