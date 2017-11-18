@@ -5556,6 +5556,12 @@ function checkTransaction(transaction) {
         transaction.gasLimit = transaction.gas;
     }
 
+    // Some clients (TestRPC) do strange things like return 0x0 for the
+    // 0 address; correct this to be a real address
+    if (transaction.to && utils.bigNumberify(transaction.to).isZero) {
+        transaction.to = '0x0000000000000000000000000000000000000000';
+    }
+
     // Rename input to data
     if (transaction.input != null && transaction.data == null) {
         transaction.data = transaction.input;
@@ -5662,9 +5668,7 @@ var formatTransactionReceipt = {
 function checkTransactionReceipt(transactionReceipt) {
     var status = transactionReceipt.status;
     var root = transactionReceipt.root;
-    if (!((status != null) ^ (root != null))) {
-        throw new Error('invalid transaction receipt - exactly one of status and root should be present');
-    }
+
     var result = check(formatTransactionReceipt, transactionReceipt);
     result.logs.forEach(function(entry, index) {
         if (entry.transactionLogIndex == null) {

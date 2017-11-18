@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "ethers-contracts": "^2.1.5",
-    "ethers-providers": "^2.1.9",
+    "ethers-providers": "^2.1.11",
     "ethers-utils": "^2.1.6",
     "ethers-wallet": "^2.1.4"
   },
