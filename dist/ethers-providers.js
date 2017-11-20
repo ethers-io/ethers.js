@@ -3700,7 +3700,8 @@ function bigNumberify(value) {
 
 module.exports = {
     isBigNumber: isBigNumber,
-    bigNumberify: bigNumberify
+    bigNumberify: bigNumberify,
+    BigNumber: BigNumber
 };
 
 },{"./convert":6,"./properties":9,"./throw-error":12,"bn.js":1}],5:[function(require,module,exports){
