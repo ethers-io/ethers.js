@@ -36,6 +36,7 @@ module.exports = {
     stripZeros: convert.stripZeros,
 
     bigNumberify: bigNumber.bigNumberify,
+    BigNumber: bigNumber.BigNumber,
 
     hexlify: convert.hexlify,
 

@@ -188,6 +188,12 @@ function checkTransaction(transaction) {
         transaction.gasLimit = transaction.gas;
     }
 
+    // Some clients (TestRPC) do strange things like return 0x0 for the
+    // 0 address; correct this to be a real address
+    if (transaction.to && utils.bigNumberify(transaction.to).isZero) {
+        transaction.to = '0x0000000000000000000000000000000000000000';
+    }
+
     // Rename input to data
     if (transaction.input != null && transaction.data == null) {
         transaction.data = transaction.input;

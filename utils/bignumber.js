@@ -142,5 +142,6 @@ function bigNumberify(value) {
 
 module.exports = {
     isBigNumber: isBigNumber,
-    bigNumberify: bigNumberify
+    bigNumberify: bigNumberify,
+    BigNumber: BigNumber
 };
