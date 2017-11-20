@@ -9576,7 +9576,8 @@ function bigNumberify(value) {
 
 module.exports = {
     isBigNumber: isBigNumber,
-    bigNumberify: bigNumberify
+    bigNumberify: bigNumberify,
+    BigNumber: BigNumber
 };
 
 },{"./convert":37,"./properties":44,"./throw-error":48,"bn.js":3}],35:[function(require,module,exports){
@@ -9899,6 +9900,7 @@ module.exports = {
     stripZeros: convert.stripZeros,
 
     bigNumberify: bigNumber.bigNumberify,
+    BigNumber: bigNumber.BigNumber,
 
     hexlify: convert.hexlify,
 
