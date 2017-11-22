@@ -6626,6 +6626,15 @@ var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice:true, to: true, value: true
 }
 
+function copyObject(object) {
+    var result = {};
+    for (var key in object) {
+        result[key] = object[key];
+    }
+    return result;
+}
+
+
 function Contract(addressOrName, contractInterface, signerOrProvider) {
     if (!(this instanceof Contract)) { throw new Error('missing new'); }
 
@@ -6665,6 +6674,7 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                 if (typeof(transaction) !== 'object') {
                     throw new Error('invalid transaction overrides');
                 }
+                transaction = copyObject(transaction);
 
                 // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
                 for (var key in transaction) {
@@ -6758,7 +6768,7 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                     if (transaction.nonce) {
                         noncePromise = Promise.resolve(transaction.nonce)
                     } else if (signer.getTransactionCount) {
-                        noncePromise = signer.getTransactionCount;
+                        noncePromise = signer.getTransactionCount();
                         if (!(noncePromise instanceof Promise)) {
                             noncePromise = Promise.resolve(noncePromise);
                         }
@@ -6940,6 +6950,7 @@ function defineFrozen(object, name, value) {
     });
 }
 
+
 // getKeys([{a: 1, b: 2}, {a: 3, b: 4}], 'a') => [1, 3]
 function getKeys(params, key, allowEmpty) {
     if (!Array.isArray(params)) { throwError('invalid params', {params: params}); }
@@ -6959,6 +6970,32 @@ function getKeys(params, key, allowEmpty) {
     return result;
 }
 
+function parseParams(params) {
+    var names = [];
+    var types = [];
+    params.forEach(function(param) {
+        if (param.components != null) {
+            if (param.type.substring(0, 5) !== 'tuple') {
+                throw new Error('internal error; report on GitHub');
+            }
+            var suffix = '';
+            var arrayBracket = param.type.indexOf('[');
+            if (arrayBracket >= 0) { suffix = param.type.substring(arrayBracket); }
+
+            var result = parseParams(param.components);
+            names.push({ name: (param.name || null), names: result.names });
+            types.push('tuple(' + result.types.join(',') + ')' + suffix)
+        } else {
+            names.push(param.name || null);
+            types.push(param.type);
+        }
+    });
+    return {
+        names: names,
+        types: types
+    }
+}
+
 var coderNull = {
     name: 'null',
     type: '',
@@ -6975,9 +7012,10 @@ var coderNull = {
     dynamic: false
 };
 
-function coderNumber(size, signed) {
+function coderNumber(size, signed, localName) {
     var name = ((signed ? 'int': 'uint') + size);
     return {
+        localName: localName,
         name: name,
         type: name,
         encode: function(value) {
@@ -7008,24 +7046,28 @@ function coderNumber(size, signed) {
 }
 var uint256Coder = coderNumber(32, false);
 
-var coderBoolean = {
-    name: 'boolean',
-    type: 'boolean',
-    encode: function(value) {
-        return uint256Coder.encode(value ? 1: 0);
-    },
-    decode: function(data, offset) {
-        var result = uint256Coder.decode(data, offset);
-        return {
-            consumed: result.consumed,
-            value: !result.value.isZero()
+var coderBoolean = function(localName) {
+    return {
+        localName: localName,
+        name: 'boolean',
+        type: 'boolean',
+        encode: function(value) {
+           return uint256Coder.encode(value ? 1: 0);
+        },
+       decode: function(data, offset) {
+            var result = uint256Coder.decode(data, offset);
+            return {
+                consumed: result.consumed,
+                value: !result.value.isZero()
+            }
         }
     }
 }
 
-function coderFixedBytes(length) {
+function coderFixedBytes(length, localName) {
     var name = ('bytes' + length);
     return {
+        localName: localName,
         name: name,
         type: name,
         encode: function(value) {
@@ -7047,20 +7089,23 @@ function coderFixedBytes(length) {
     };
 }
 
-var coderAddress = {
-    name: 'address',
-    type: 'address',
-    encode: function(value) {
-        value = utils.arrayify(utils.getAddress(value));
-        var result = new Uint8Array(32);
-        result.set(value, 12);
-        return result;
-    },
-    decode: function(data, offset) {
-        if (data.length < offset + 32) { throwError('invalid address'); }
-        return {
-            consumed: 32,
-            value: utils.getAddress(utils.hexlify(data.slice(offset + 12, offset + 32)))
+var coderAddress = function(localName) {
+    return {
+        localName: localName,
+        name: 'address',
+        type: 'address',
+        encode: function(value) {
+            value = utils.arrayify(utils.getAddress(value));
+            var result = new Uint8Array(32);
+            result.set(value, 12);
+            return result;
+        },
+        decode: function(data, offset) {
+            if (data.length < offset + 32) { throwError('invalid address'); }
+            return {
+                consumed: 32,
+                value: utils.getAddress(utils.hexlify(data.slice(offset + 12, offset + 32)))
+           }
         }
     }
 }
@@ -7089,33 +7134,39 @@ function _decodeDynamicBytes(data, offset) {
     }
 }
 
-var coderDynamicBytes = {
-    name: 'bytes',
-    type: 'bytes',
-    encode: function(value) {
-        return _encodeDynamicBytes(utils.arrayify(value));
-    },
-    decode: function(data, offset) {
-        var result = _decodeDynamicBytes(data, offset);
-        result.value = utils.hexlify(result.value);
-        return result;
-    },
-    dynamic: true
-};
+var coderDynamicBytes = function(localName) {
+    return {
+        localName: localName,
+        name: 'bytes',
+        type: 'bytes',
+        encode: function(value) {
+            return _encodeDynamicBytes(utils.arrayify(value));
+        },
+        decode: function(data, offset) {
+            var result = _decodeDynamicBytes(data, offset);
+            result.value = utils.hexlify(result.value);
+            return result;
+        },
+        dynamic: true
+    };
+}
 
-var coderString = {
-    name: 'string',
-    type: 'string',
-    encode: function(value) {
-        return _encodeDynamicBytes(utils.toUtf8Bytes(value));
-    },
-    decode: function(data, offset) {
-        var result = _decodeDynamicBytes(data, offset);
-        result.value = utils.toUtf8String(result.value);
-        return result;
-    },
-    dynamic: true
-};
+var coderString = function(localName) {
+    return {
+        localName: localName,
+        name: 'string',
+        type: 'string',
+        encode: function(value) {
+            return _encodeDynamicBytes(utils.toUtf8Bytes(value));
+        },
+        decode: function(data, offset) {
+            var result = _decodeDynamicBytes(data, offset);
+            result.value = utils.toUtf8String(result.value);
+            return result;
+        },
+        dynamic: true
+    };
+}
 
 function alignSize(size) {
     return parseInt(32 * Math.ceil(size / 32));
@@ -7160,12 +7211,10 @@ function pack(coders, values) {
     return data;
 }
 
-
 function unpack(coders, data, offset) {
     var baseOffset = offset;
     var consumed = 0;
     var value = [];
-
     coders.forEach(function(coder) {
         if (coder.dynamic) {
             var dynamicOffset = uint256Coder.decode(data, offset);
@@ -7184,6 +7233,20 @@ function unpack(coders, data, offset) {
         consumed += result.consumed;
     });
 
+    coders.forEach(function(coder, index) {
+        var name = coder.localName;
+        if (!name) { return; }
+
+        if (typeof(name) === 'object') { name = name.name; }
+        if (!name) { return; }
+
+        if (name === 'length') { name = '_length'; }
+
+        if (value[name] != null) { return; }
+
+        value[name] = value[index];
+    });
+
     return {
         value: value,
         consumed: consumed
@@ -7192,11 +7255,12 @@ function unpack(coders, data, offset) {
     return result;
 }
 
-function coderArray(coder, length) {
+function coderArray(coder, length, localName) {
     var type = (coder.type + '[' + (length >= 0 ? length: '') + ']');
 
     return {
         coder: coder,
+        localName: localName,
         length: length,
         name: 'array',
         type: type,
@@ -7245,7 +7309,7 @@ function coderArray(coder, length) {
 }
 
 
-function coderTuple(coders) {
+function coderTuple(coders, localName) {
     var dynamic = false;
     var types = [];
     coders.forEach(function(coder) {
@@ -7257,12 +7321,19 @@ function coderTuple(coders) {
 
     return {
         coders: coders,
+        localName: localName,
         name: 'tuple',
         type: type,
         encode: function(value) {
+            if (Array.isArray(value)) {
+                if (coders.length !== value.length) {
+                    throwError('types/values mismatch', { type: type, values: values });
+                }
 
-            if (coders.length !== coders.length) {
-                throwError('types/values mismatch', { type: type, values: values });
+            // @TODO: If receiving an object, and we have names, create the array
+
+            } else {
+                throwError('invalid value', { type: types, values: values });
             }
 
             return pack(coders, value);
@@ -7315,10 +7386,9 @@ var paramTypeSimple = {
     bytes: coderDynamicBytes,
 };
 
-function getParamCoder(type) {
-
+function getParamCoder(type, localName) {
     var coder = paramTypeSimple[type];
-    if (coder) { return coder; }
+    if (coder) { return coder(localName); }
 
     var match = type.match(paramTypeNumber);
     if (match) {
@@ -7326,7 +7396,7 @@ function getParamCoder(type) {
         if (size === 0 || size > 256 || (size % 8) !== 0) {
             throwError('invalid type', { type: type });
         }
-        return coderNumber(size / 8, (match[1] === 'int'));
+        return coderNumber(size / 8, (match[1] === 'int'), localName);
     }
 
     var match = type.match(paramTypeBytes);
@@ -7335,21 +7405,26 @@ function getParamCoder(type) {
         if (size === 0 || size > 32) {
             throwError('invalid type ' + type);
         }
-        return coderFixedBytes(size);
+        return coderFixedBytes(size, localName);
     }
 
     var match = type.match(paramTypeArray);
     if (match) {
         var size = parseInt(match[2] || -1);
-        return coderArray(getParamCoder(match[1]), size);
+        return coderArray(getParamCoder(match[1], localName), size, localName);
     }
 
     if (type.substring(0, 6) === 'tuple(' && type.substring(type.length - 1) === ')') {
         var coders = [];
-        splitNesting(type.substring(6, type.length - 1)).forEach(function(type) {
-            coders.push(getParamCoder(type));
+        var names = [];
+        if (localName && typeof(localName) === 'object') {
+            if (Array.isArray(localName.names)) { names = localName.names; }
+            if (typeof(localName.name) === 'string') { localName = localName.name; }
+        }
+        splitNesting(type.substring(6, type.length - 1)).forEach(function(type, index) {
+            coders.push(getParamCoder(type, names[index]));
         });
-        return coderTuple(coders);
+        return coderTuple(coders, localName);
     }
 
     if (type === '') {
@@ -7379,6 +7454,11 @@ utils.defineProperty(TransactionDescription.prototype, 'type', 'transaction');
 function EventDescription() { }
 utils.defineProperty(EventDescription.prototype, 'type', 'event');
 
+function Indexed(value) {
+    utils.defineProperty(this, 'indexed', true);
+    utils.defineProperty(this, 'hash', value);
+}
+
 function Interface(abi) {
     if (!(this instanceof Interface)) { throw new Error('missing new'); }
 
@@ -7403,6 +7483,7 @@ function Interface(abi) {
         switch (method.type) {
             case 'constructor':
                 var func = (function() {
+                    // @TODO: Move to parseParams
                     var inputTypes = getKeys(method.inputs, 'type');
                     var func = function(bytecode) {
                         if (!utils.isHexString(bytecode)) {
@@ -7423,6 +7504,7 @@ function Interface(abi) {
                         return populateDescription(new DeployDescription(), result);
                     }
 
+                    // @TODO: Move to parseParams
                     defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
 
                     return func;
@@ -7434,13 +7516,16 @@ function Interface(abi) {
 
             case 'function':
                 var func = (function() {
-                    var inputTypes = getKeys(method.inputs, 'type');
+                    var inputParams = parseParams(method.inputs);
+                    var outputParams = parseParams(method.outputs);
+
+                    var inputTypes = inputParams.types;
                     if (method.constant) {
-                        var outputTypes = getKeys(method.outputs, 'type');
-                        var outputNames = getKeys(method.outputs, 'name', true);
+                        var outputTypes = outputParams.types;
+                        var outputNames = outputParams.names;
                     }
 
-                    var signature = method.name + '(' + getKeys(method.inputs, 'type').join(',') + ')';
+                    var signature = method.name + '(' + inputParams.types.join(',') + ')';
                     var sighash = utils.keccak256(utils.toUtf8Bytes(signature)).substring(0, 10);
                     var func = function() {
                         var result = {
@@ -7472,6 +7557,7 @@ function Interface(abi) {
                         return populateDescription(new TransactionDescription(), result);
                     }
 
+                    // @TODO: Move the paraseParams
                     defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
                     defineFrozen(func, 'outputs', getKeys(method.outputs, 'name'));
                     utils.defineProperty(func, 'signature', signature);
@@ -7490,8 +7576,10 @@ function Interface(abi) {
 
             case 'event':
                 var func = (function() {
+                    // @TODO: Move to parseParams
                     var inputTypes = getKeys(method.inputs, 'type');
                     var func = function() {
+                        // @TODO: Move to parseParams
                         var signature = method.name + '(' + getKeys(method.inputs, 'type').join(',') + ')';
                         var result = {
                             inputs: method.inputs,
@@ -7501,27 +7589,41 @@ function Interface(abi) {
                         };
 
                         result.parse = function(topics, data) {
+                            if (data == null) {
+                                data = topics;
+                                topics = null;
+                            }
 
                             // Strip the signature off of non-anonymous topics
-                            if (!method.anonymous) { topics = topics.slice(1); }
+                            if (topics != null && !method.anonymous) { topics = topics.slice(1); }
 
                             var inputNamesIndexed = [], inputNamesNonIndexed = [];
                             var inputTypesIndexed = [], inputTypesNonIndexed = [];
+                            var inputDynamic = [];
                             method.inputs.forEach(function(input) {
                                 if (input.indexed) {
+                                    if (input.type === 'string' || input.type === 'bytes' || input.type.indexOf('[') >= 0) {
+                                        inputTypesIndexed.push('bytes32');
+                                        inputDynamic.push(true);
+                                    } else {
+                                        inputTypesIndexed.push(input.type);
+                                        inputDynamic.push(false);
+                                    }
                                     inputNamesIndexed.push(input.name);
-                                    inputTypesIndexed.push(input.type);
                                 } else {
                                     inputNamesNonIndexed.push(input.name);
                                     inputTypesNonIndexed.push(input.type);
+                                    inputDynamic.push(false);
                                 }
                             });
 
-                            var resultIndexed = Interface.decodeParams(
-                                inputNamesIndexed,
-                                inputTypesIndexed,
-                                utils.concat(topics)
-                            );
+                            if (topics != null) {
+                                var resultIndexed = Interface.decodeParams(
+                                    inputNamesIndexed,
+                                    inputTypesIndexed,
+                                    utils.concat(topics)
+                                );
+                            }
 
                             var resultNonIndexed = Interface.decodeParams(
                                 inputNamesNonIndexed,
@@ -7533,7 +7635,19 @@ function Interface(abi) {
                             var nonIndexedIndex = 0, indexedIndex = 0;
                             method.inputs.forEach(function(input, i) {
                                 if (input.indexed) {
-                                    result[i] = resultIndexed[indexedIndex++];
+                                    if (topics == null) {
+                                        result[i] = new Indexed(null);
+
+                                    } else if (inputDynamic[i]) {
+                                        result[i] = new Indexed(resultIndexed[indexedIndex++]);
+                                        /*{
+                                            indexed: true,
+                                            hash: resultIndexed[indexedIndex++]
+                                        };
+                                        */
+                                    } else {
+                                        result[i] = resultIndexed[indexedIndex++];
+                                    }
                                 } else {
                                     result[i] = resultNonIndexed[nonIndexedIndex++];
                                 }
@@ -7547,6 +7661,7 @@ function Interface(abi) {
                         return populateDescription(new EventDescription(), result);
                     }
 
+                    // @TODO: Move to parseParams
                     defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
 
                     return func;
@@ -7599,39 +7714,18 @@ utils.defineProperty(Interface, 'decodeParams', function(names, types, data) {
     if (arguments.length < 3) {
         data = types;
         types = names;
-        names = [];
+        names = null;
     }
 
     data = utils.arrayify(data);
 
     var coders = [];
-    types.forEach(function(type) {
-        coders.push(getParamCoder(type));
+    types.forEach(function(type, index) {
+        coders.push(getParamCoder(type, (names ? names[index]: undefined)));
     });
 
-    var result = coderTuple(coders).decode(data, 0);
-
-    // @TODO: Move this into coderTuple
     var values = new Result();
-    coders.forEach(function(coder, index) {
-        values[index] = result.value[index];
-        if (names && names[index]) {
-            var name = names[index];
-            if (name === 'length') {
-                console.log('WARNING: result length renamed to _length');
-                name = '_length';
-            }
-            if (values[name] == null) {
-                values[name] = values[index];
-            } else {
-                console.log('WARNING: duplicate value - ' + name);
-            }
-        }
-    })
-
-    values.length = types.length;
-
-    return values;
+    return coderTuple(coders).decode(data, 0).value;
 });
 
 module.exports = Interface;
@@ -8279,6 +8373,7 @@ var utils = (function() {
         isHexString: convert.isHexString,
 
         concat: convert.concat,
+        stripZeros: convert.stripZeros,
 
         namehash: require('ethers-utils/namehash'),
 
@@ -8448,7 +8543,7 @@ function checkTransaction(transaction) {
 
     // Some clients (TestRPC) do strange things like return 0x0 for the
     // 0 address; correct this to be a real address
-    if (transaction.to && utils.bigNumberify(transaction.to).isZero) {
+    if (transaction.to && utils.bigNumberify(transaction.to).isZero()) {
         transaction.to = '0x0000000000000000000000000000000000000000';
     }
 
@@ -8467,15 +8562,15 @@ function checkTransaction(transaction) {
         // Very loose providers (e.g. TestRPC) don't provide a signature or raw
         if (transaction.v && transaction.r && transaction.s) {
             var raw = [
-                utils.hexlify(transaction.nonce),
-                utils.hexlify(transaction.gasPrice),
-                utils.hexlify(transaction.gasLimit),
+                utils.stripZeros(utils.hexlify(transaction.nonce)),
+                utils.stripZeros(utils.hexlify(transaction.gasPrice)),
+                utils.stripZeros(utils.hexlify(transaction.gasLimit)),
                 (transaction.to || "0x"),
-                utils.hexlify(transaction.value || '0x'),
+                utils.stripZeros(utils.hexlify(transaction.value || '0x')),
                 utils.hexlify(transaction.data || '0x'),
-                utils.hexlify(transaction.v || '0x'),
-                utils.hexlify(transaction.r),
-                utils.hexlify(transaction.s),
+                utils.stripZeros(utils.hexlify(transaction.v || '0x')),
+                utils.stripZeros(utils.hexlify(transaction.r)),
+                utils.stripZeros(utils.hexlify(transaction.s)),
             ];
 
             transaction.raw = utils.RLP.encode(raw);
