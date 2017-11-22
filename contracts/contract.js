@@ -18,6 +18,15 @@ var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice:true, to: true, value: true
 }
 
+function copyObject(object) {
+    var result = {};
+    for (var key in object) {
+        result[key] = object[key];
+    }
+    return result;
+}
+
+
 function Contract(addressOrName, contractInterface, signerOrProvider) {
     if (!(this instanceof Contract)) { throw new Error('missing new'); }
 
@@ -57,6 +66,7 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                 if (typeof(transaction) !== 'object') {
                     throw new Error('invalid transaction overrides');
                 }
+                transaction = copyObject(transaction);
 
                 // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
                 for (var key in transaction) {
@@ -150,7 +160,7 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                     if (transaction.nonce) {
                         noncePromise = Promise.resolve(transaction.nonce)
                     } else if (signer.getTransactionCount) {
-                        noncePromise = signer.getTransactionCount;
+                        noncePromise = signer.getTransactionCount();
                         if (!(noncePromise instanceof Promise)) {
                             noncePromise = Promise.resolve(noncePromise);
                         }

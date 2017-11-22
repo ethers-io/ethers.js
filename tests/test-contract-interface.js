@@ -24,64 +24,74 @@ if (testEthereumLib) {
     ethereumLibCoder = require('ethereumjs-abi');
 }
 
-function equals(a, b) {
+function equals(actual, expected) {
+
     // Array (treat recursively)
-    if (Array.isArray(a)) {
-        if (!Array.isArray(b) || a.length !== b.length) { return false; }
-        for (var i = 0; i < a.length; i++) {
-            if (!equals(a[i], b[i])) { return false; }
+    if (Array.isArray(actual)) {
+        if (!Array.isArray(expected) || actual.length !== expected.length) { return false; }
+        for (var i = 0; i < actual.length; i++) {
+            if (!equals(actual[i], expected[i])) { return false; }
         }
         return true;
     }
 
     if (testWeb3) {
-        if (a.toJSON && a.minus) { a = utils.bigNumberify(a.toString(10)); }
-        if (b.toJSON && b.minus) { b = utils.bigNumberify(b.toString(10)); }
+        if (actual.toJSON && actual.minus) { actual = utils.bigNumberify(actual.toString(10)); }
+        if (expected.toJSON && expected.minus) { expected = utils.bigNumberify(expected.toString(10)); }
     }
 
     // EthereumLib returns addresses as 160-bit big numbers
     if (testEthereumLib) {
-        if (a.match && a.match(/^0x[0-9A-Fa-f]{40}$/) && b.imul) {
-            a = utils.bigNumberify(a);
+        if (actual.match && actual.match(/^0x[0-9A-Fa-f]{40}$/) && expected.imul) {
+            actual = utils.bigNumberify(actual);
         }
-        if (b.match && b.match(/^0x[0-9A-Fa-f]{40}$/) && a.imul) {
-            b = utils.bigNumberify(a);
+        if (expected.match && expected.match(/^0x[0-9A-Fa-f]{40}$/) && actual.imul) {
+            expected = utils.bigNumberify(actual);
         }
     }
 
+    if (typeof(actual) === 'number') { actual = utils.bigNumberify(actual); }
+    if (typeof(expected) === 'number') { expected = utils.bigNumberify(expected); }
+
     // BigNumber
-    if (a.eq) {
-        if (!a.eq(b)) { return false; }
+    if (actual.eq) {
+        if (typeof(expected) === 'string' && expected.match(/^-?0x[0-9A-Fa-f]*$/)) {
+            var neg = (expected.substring(0, 1) === '-');
+            if (neg) { expected = expected.substring(1); }
+            expected = utils.bigNumberify(expected);
+            if (neg) { expected = expected.mul(-1); }
+        }
+        if (!actual.eq(expected)) { return false; }
         return true;
     }
 
     if (testEthereumLib) {
-        if (a.buffer) { a = '0x' + (new Buffer(a)).toString('hex'); }
-        if (b.buffer) { b = '0x' + (new Buffer(b)).toString('hex'); }
-        if (Buffer.isBuffer(a)) { a = '0x' + a.toString('hex'); }
-        if (Buffer.isBuffer(b)) { b = '0x' + b.toString('hex'); }
+        if (actual.buffer) { a = '0x' + (new Buffer(actual)).toString('hex'); }
+        if (expected.buffer) { b = '0x' + (new Buffer(expected)).toString('hex'); }
+        if (Buffer.isBuffer(actual)) { actual = '0x' + actual.toString('hex'); }
+        if (Buffer.isBuffer(expected)) { expected = '0x' + expected.toString('hex'); }
     }
 
     // Uint8Array
-    if (a.buffer) {
-        if (!utils.isHexString(b)) { return false; }
-        b = utils.arrayify(b);
+    if (expected.buffer) {
+        if (!utils.isHexString(actual)) { return false; }
+        actual = utils.arrayify(actual);
 
-        if (!b.buffer || a.length !== b.length) { return false; }
-        for (var i = 0; i < a.length; i++) {
-            if (a[i] !== b[i]) { return false; }
+        if (!actual.buffer || actual.length !== expected.length) { return false; }
+        for (var i = 0; i < actual.length; i++) {
+            if (actual[i] !== expected[i]) { return false; }
         }
 
         return true;
     }
 
     if (testWeb3 || true) {
-        if (a.match && a.match(/^0x[0-9A-Fa-f]{40}$/)) { a = a.toLowerCase(); }
-        if (b.match && b.match(/^0x[0-9A-Fa-f]{40}$/)) { b = b.toLowerCase(); }
+        if (actual.match && actual.match(/^0x[0-9A-Fa-f]{40}$/)) { actual = actual.toLowerCase(); }
+        if (expected.match && expected.match(/^0x[0-9A-Fa-f]{40}$/)) { expected = expected.toLowerCase(); }
     }
 
     // Something else
-    return a === b;
+    return (actual === expected);
 }
 
 
@@ -171,9 +181,9 @@ describe('Contract Interface ABI Decoding', function() {
 
         it(('decodes parameters - ' + test.name + ' - ' + test.types), function() {
             var decoded = Interface.decodeParams(types, result);
-            var decodedArray = Array.prototype.slice.call(decoded);;
+            //var decodedArray = Array.prototype.slice.call(decoded);;
 
-            assert.ok(equals(values, decodedArray), 'decoded parameters - ' + title);
+            assert.ok(equals(decoded, values), 'decoded parameters - ' + title);
 
             if (testWeb3) {
                 var badWeb3 = [ 'random-1116' ];
@@ -232,11 +242,9 @@ describe('Contract Interface ABI v2 Decoding', function() {
         var result = test.result;
         var title = test.name + ' => (' + test.types + ') = (' + test.values + ')';
 
-        it(('decodes parameters - ' + test.name + ' - ' + test.types), function() {
+        it(('decodes ABIv2 parameters - ' + test.name + ' - ' + test.types), function() {
             var decoded = Interface.decodeParams(types, result);
-            var decodedArray = Array.prototype.slice.call(decoded);
-
-            assert.ok(equals(values, decodedArray), 'decoded parameters - ' + title);
+            assert.ok(equals(decoded, values), 'decoded parameters - ' + title);
         });
     });
 });
@@ -253,20 +261,63 @@ describe('Contract Interface ABI v2 Encoding', function() {
 
         it(('encodes parameters - ' + test.name + ' - ' + test.types), function() {
             var encoded = Interface.encodeParams(types, values);
-
-            /*
-            console.log('Actual:');
-            for (var i = 2; i < encoded.length; i += 64) {
-                console.log('  ', encoded.substring(i, i + 64));
-            }
-
-            console.log('Expected:');
-            for (var i = 2; i < expected.length; i += 64) {
-                console.log('  ', expected.substring(i, i + 64));
-            }
-            */
-
             assert.equal(encoded, expected, 'decoded parameters - ' + title);
         });
     });
+});
+
+describe('Contract Interface ABI v2 Named Decoding', function() {
+    var Interface = require('../contracts').Interface;
+
+    var name = "random-1939";
+
+    var abi = [{"constant":true,"inputs":[],"name":"test","outputs":[{"name":"r0","type":"bytes"},{"components":[{"name":"a","type":"address"},{"components":[{"name":"a","type":"uint168"}],"name":"b","type":"tuple"},{"components":[{"components":[{"name":"a","type":"int40"},{"name":"b","type":"bytes"}],"name":"a","type":"tuple"}],"name":"c","type":"tuple"}],"name":"r1","type":"tuple[2]"}],"payable":false,"stateMutability":"pure","type":"function"}];
+    var result = '0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000001c3b89443bbb68b4c937b8b3a3b973b271eb657a2fd8615546c73c3ee50000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000160000000000000000000000000b446da3c1c4a8418ce5f6201bcceee5069ac73dd0000000000000000000000000000db730a804e1e646d9b132cf899440de4a09a000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000c018ec00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000032b26b4052e530418d47dfde4b67e735e1818a03098ddbb26b050f18961016299e9374f2dea29763411dcb9213c13040a2cc010000000000000000000000000000000000000000000000000000b446da3c1c4a8418ce5f6201bcceee5069ac73dd0000000000000000000000000000db730a804e1e646d9b132cf899440de4a09a000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000c018ec00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000032b26b4052e530418d47dfde4b67e735e1818a03098ddbb26b050f18961016299e9374f2dea29763411dcb9213c13040a2cc010000000000000000000000000000';
+    var types = ["bytes","tuple(address,tuple(uint168),tuple(tuple(int40,bytes)))[2]"]
+    var values = [{"type":"buffer","value":"0x3b89443bbb68b4c937b8b3a3b973b271eb657a2fd8615546c73c3ee5"},[{"type":"tuple","value":[{"type":"string","value":"0xB446dA3C1c4a8418Ce5f6201bCceee5069Ac73DD"},{"type":"tuple","value":[{"type":"number","value":"19116737049729793555492062790071228687491226"}]},{"type":"tuple","value":[{"type":"tuple","value":[{"type":"number","value":"12589292"},{"type":"buffer","value":"0xb26b4052e530418d47dfde4b67e735e1818a03098ddbb26b050f18961016299e9374f2dea29763411dcb9213c13040a2cc01"}]}]}]},{"type":"tuple","value":[{"type":"string","value":"0xB446dA3C1c4a8418Ce5f6201bCceee5069Ac73DD"},{"type":"tuple","value":[{"type":"number","value":"19116737049729793555492062790071228687491226"}]},{"type":"tuple","value":[{"type":"tuple","value":[{"type":"number","value":"12589292"},{"type":"buffer","value":"0xb26b4052e530418d47dfde4b67e735e1818a03098ddbb26b050f18961016299e9374f2dea29763411dcb9213c13040a2cc01"}]}]}]}]];
+
+    it('decodes exporting named values', function() {
+        var iface = new Interface(abi);
+        var info = iface.functions.test();
+        var decoded = info.parse(result);
+        //console.dir(decoded, { depth: null });
+    });
+});
+
+describe('Test Contract Events', function() {
+    var Interface = require('../contracts').Interface;
+
+    var tests = utils.loadTests('contract-events');
+    tests.forEach(function(test, index) {
+        it(('decodes event parameters - ' + test.name + ' - ' + test.types), function() {
+            var contract = new Interface(test.interface);
+            var event = contract.events.testEvent();
+            var parsed = event.parse(test.topics, test.data);
+
+            test.normalizedValues.forEach(function(expected, index) {
+                if (test.hashed[index]) {
+                    assert.ok(equals(parsed[index].hash, expected), 'parsed event indexed parameter matches - ' + index);
+                } else {
+                    assert.ok(equals(parsed[index], expected), 'parsed event parameter matches - ' + index);
+                }
+            });
+        });
+    });
+
+    tests.forEach(function(test, index) {
+        it(('decodes event data - ' + test.name + ' - ' + test.types), function() {
+            var contract = new Interface(test.interface);
+            var event = contract.events.testEvent();
+            var parsed = event.parse(test.data);
+
+            test.normalizedValues.forEach(function(expected, index) {
+                if (test.indexed[index]) {
+                    assert.ok((parsed[index].indexed && parsed[index].hash == null), 'parsed event data has empty Indexed - ' + index);
+                } else {
+                    assert.ok(equals(parsed[index], expected), 'parsed event data matches - ' + index);
+                }
+            });
+        });
+    });
+
 });

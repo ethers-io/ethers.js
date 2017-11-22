@@ -347,6 +347,22 @@ function testContracts(test) {
         test.equal(results[9][0], 'Cherry', 'getMapping(C)');
         test.equal(results[10][0], '', 'getMapping(Nothing)');
 
+        test.ok(results[0].value.eq(42), 'named getUintValue()');
+        test.equal(results[1].value, 'One', 'named getArrayValue(1)');
+        test.equal(results[2].value, 'Two', 'named getArrayValue(2)');
+        test.equal(results[3].value, 'Three', 'named getArrayValue(3)');
+        test.equal(
+            utils.hexlify(results[4].value),
+            utils.keccak256(utils.toUtf8Bytes('TheEmptyString')),
+            'named getBytes32Value()'
+        );
+        test.equal(results[5].value, 'This is not a string.', 'named getStringValue()');
+        test.equal(results[6].value, TestContract.owner, 'named getOwner()');
+        test.equal(results[7].value, 'Apple', 'named getMapping(A)');
+        test.equal(results[8].value, 'Banana', 'named getMapping(B)');
+        test.equal(results[9].value, 'Cherry', 'named getMapping(C)');
+        test.equal(results[10].value, '', 'named getMapping(Nothing)');
+
         var getValue = results[11][0];
         var onvaluechanged = results[12];
 
@@ -422,7 +438,7 @@ function testENSProviderReadOnly(test, provider) {
     });
 
     Promise.all(promises).then(function(results) {
-        console.log(results);
+        //console.log(results);
         test.done();
     }, function(error) {
         console.log(error);
