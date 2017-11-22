@@ -21,6 +21,7 @@ var utils = (function() {
         isHexString: convert.isHexString,
 
         concat: convert.concat,
+        stripZeros: convert.stripZeros,
 
         namehash: require('ethers-utils/namehash'),
 
@@ -190,7 +191,7 @@ function checkTransaction(transaction) {
 
     // Some clients (TestRPC) do strange things like return 0x0 for the
     // 0 address; correct this to be a real address
-    if (transaction.to && utils.bigNumberify(transaction.to).isZero) {
+    if (transaction.to && utils.bigNumberify(transaction.to).isZero()) {
         transaction.to = '0x0000000000000000000000000000000000000000';
     }
 
@@ -209,15 +210,15 @@ function checkTransaction(transaction) {
         // Very loose providers (e.g. TestRPC) don't provide a signature or raw
         if (transaction.v && transaction.r && transaction.s) {
             var raw = [
-                utils.hexlify(transaction.nonce),
-                utils.hexlify(transaction.gasPrice),
-                utils.hexlify(transaction.gasLimit),
+                utils.stripZeros(utils.hexlify(transaction.nonce)),
+                utils.stripZeros(utils.hexlify(transaction.gasPrice)),
+                utils.stripZeros(utils.hexlify(transaction.gasLimit)),
                 (transaction.to || "0x"),
-                utils.hexlify(transaction.value || '0x'),
+                utils.stripZeros(utils.hexlify(transaction.value || '0x')),
                 utils.hexlify(transaction.data || '0x'),
-                utils.hexlify(transaction.v || '0x'),
-                utils.hexlify(transaction.r),
-                utils.hexlify(transaction.s),
+                utils.stripZeros(utils.hexlify(transaction.v || '0x')),
+                utils.stripZeros(utils.hexlify(transaction.r)),
+                utils.stripZeros(utils.hexlify(transaction.s)),
             ];
 
             transaction.raw = utils.RLP.encode(raw);

@@ -26,6 +26,25 @@ var blockchainData = {
             extraData: '0x476574682f76312e302e302d66633739643332642f6c696e75782f676f312e34',
             transactions: []
         },
+        transaction: {
+            hash: '0xccc90ab97a74c952fb3376c4a3efb566a58a10df62eb4d44a61e106fcf10ec61',
+            blockHash: '0x9653f180a5720f3634816eb945a6d722adee52cc47526f6357ac10adaf368135',
+            blockNumber: 4097745,
+            transactionIndex: 18,
+            from: '0x32DEF047DeFd076DB21A2D759aff2A591c972248',
+            gasPrice: bigNumberify('0x4a817c800'),
+            gasLimit: bigNumberify('0x3d090'),
+            to: '0x6fC21092DA55B392b045eD78F4732bff3C580e2c',
+            value: bigNumberify('0x186cc6acd4b0000'),
+            nonce: 0,
+            data: '0xf2c298be000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000067269636d6f6f0000000000000000000000000000000000000000000000000000',
+            r: '0x1e5605197a03e3f0a168f14749168dfeefc44c9228312dacbffdcbbb13263265',
+            s: '0x269c3e5b3558267ad91b0a887d51f9f10098771c67b82ea6cb74f29638754f54',
+            v: 38,
+            creates: null,
+            raw: '0xf8d2808504a817c8008303d090946fc21092da55b392b045ed78f4732bff3c580e2c880186cc6acd4b0000b864f2c298be000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000067269636d6f6f000000000000000000000000000000000000000000000000000026a01e5605197a03e3f0a168f14749168dfeefc44c9228312dacbffdcbbb13263265a0269c3e5b3558267ad91b0a887d51f9f10098771c67b82ea6cb74f29638754f54',
+            networkId: 1
+        },
         transactionReceipt: {
             blockHash: "0x36b4af7f0538559e581c8588f16477df0f676439ea67fe8d7a2ae4abb20e2566",
             blockNumber: 0x3c92b5,
@@ -201,8 +220,8 @@ var blockchainData = {
 }
 
 blockchainData['default'] = blockchainData.homestead;
-
 function equals(name, actual, expected) {
+
     if (expected && expected.eq) {
         if (actual == null) { assert.ok(false, name + ' - actual big number null'); }
         assert.ok(expected.eq(actual), name + ' matches');
@@ -300,6 +319,21 @@ function testProvider(providerName, networkName) {
             });
         }
 
+        function testTransaction(expected) {
+            var title = ('Transaction ' + expected.hash.substring(0, 10) + ' - ');
+            return provider.getTransaction(expected.hash).then(function(tx) {
+                for (var key in tx) {
+                    equals((title + key), tx[key], expected[key]);
+                }
+            });
+        }
+        if (blockchainData[networkName].transaction) {
+            it('fetches transaction', function() {
+                this.timeout(20000);
+                return testTransaction(blockchainData[networkName].transaction);
+            });
+        }
+
         // Obviously many more cases to add here
         // - getTransactionCount
         // - getCode
@@ -308,7 +342,7 @@ function testProvider(providerName, networkName) {
         // - getGasPrice
         // - estimateGas
         // - sendTransaction
-        // - getTransaction
+        // - getTransaction (for other chains)
         // - call
         // - getLogs
         //
