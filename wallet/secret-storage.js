@@ -266,7 +266,7 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
         privateKey = privateKey.privateKey;
     }
     privateKey = utils.arrayify(privateKey, 'private key');
-    if (privateKey.length !== 32) { throw new Erro('invalid private key'); }
+    if (privateKey.length !== 32) { throw new Error('invalid private key'); }
 
     password = getPassword(password);
 
