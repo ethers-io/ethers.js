@@ -3575,6 +3575,8 @@ function BigNumber(value) {
     if (convert.isHexString(value)) {
         if (value == '0x') { value = '0x0'; }
         value = new BN(value.substring(2), 16);
+    } else if (typeof(value) === 'string' && value[0] === '-' && convert.isHexString(value.substring(1))) {
+        value = (new BN(value.substring(3), 16)).mul(BigNumber.constantNegativeOne._bn);
 
     } else if (typeof(value) === 'string' && value.match(/^-?[0-9]*$/)) {
         if (value == '') { value = '0'; }
