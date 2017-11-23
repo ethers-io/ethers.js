@@ -11,6 +11,7 @@ var id = require('./id');
 var keccak256 = require('./keccak256');
 var namehash = require('./namehash');
 var sha256 = require('./sha2').sha256;
+var solidity = require('./solidity');
 var randomBytes = require('./random-bytes');
 var properties = require('./properties');
 var RLP = require('./rlp');
@@ -56,6 +57,10 @@ module.exports = {
     sha256: sha256,
 
     randomBytes: randomBytes,
+
+    solidityPack: solidity.pack,
+    solidityKeccak256: solidity.keccak256,
+    soliditySha256: solidity.sha256,
 }
 
 require('./standalone')({

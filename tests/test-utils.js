@@ -106,7 +106,7 @@ describe('Test Namehash', function() {
     });
 });
 
-describe('Test ID hash function', function () {
+describe('Test ID Hash Function', function () {
     var id = require('../utils/id');
 
     var tests = [
@@ -126,4 +126,36 @@ describe('Test ID hash function', function () {
     });
 });
 
-// @TODO: Cryptographics hashes?
+describe('Test Solidity Hash Functions', function() {
+    var solidity = require('../utils/solidity');
+
+    var tests = utils.loadTests('solidity-hashes');
+    ['keccak256', 'sha256'].forEach(function(funcName) {
+        it(('computes ' + funcName + ' correctly'), function() {
+            tests.forEach(function(test, index) {
+                var result = solidity[funcName](test.types, test.values);
+                assert.equal(result, test[funcName],
+                    ('computes solidity-' + funcName + '(' + JSON.stringify(test.values) + ') - ' + test.types));
+            });
+        });
+    });
+});
+
+describe('Test Hash Functions', function() {
+    var keccak256 = require('../utils/keccak256');
+    var sha256 = require('../utils/sha2').sha256;
+
+    var tests = utils.loadTests('hashes');
+
+    it('computes keccak256 correctly', function() {
+        tests.forEach(function(test) {
+            assert.equal(keccak256(test.data), test.keccak256, ('Keccak256 - ' + test.data));
+        });
+    });
+
+    it('computes sha2566 correctly', function() {
+        tests.forEach(function(test) {
+            assert.equal(sha256(test.data), test.sha256, ('SHA256 - ' + test.data));
+        });
+    });
+});

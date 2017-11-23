@@ -89,10 +89,6 @@ function id(text) {
     return crypto.createHash('sha256').update(text).digest().toString('hex').substring(0, 10).toUpperCase();
 }
 
-function getEventName(types) {
-    return 'testEvent';
-}
-
 function createContractSource(test, comments) {
     var events = '';
     var source = '';
@@ -146,15 +142,12 @@ function createContractSource(test, comments) {
         values.push('s' + index);
     });
 
-    events += (
-        indent(1) +
-        'event ' +
-        getEventName(types) +
-        '(' + named.join(', ') + ')' +
-        (test.anonymous ? ' anonymous': '') +
-        ';\n'
-    );
-    source += indent(2) + getEventName(types) + '(' + values.join(', ') + ');\n';
+    events += indent(1) + 'event testEvent(' + named.join(', ') + ')' + (test.anonymous ? ' anonymous': '') + ';\n';
+    source += indent(2) + 'testEvent(' + values.join(', ') + ');\n';
+    ['keccak256', 'ripemd160', 'sha256'].forEach(function(funcName) {
+        events += indent(1) + 'event test_' + funcName + '(bytes32 value);\n';
+        source += indent(2) + 'test_' + funcName + '(' + funcName + '(' + values.join(', ') + '));\n';
+    });
 
     var sourceInit = '';
 
@@ -313,6 +306,16 @@ function makeTests() {
                 ['0x87', '0x65'],
                 ['0x12', '0x19'],
                 ['0x99', '0x88'],
+            ] }
+        ]
+    });
+
+    tests.push({
+        name: 'bytes5-array',
+        params: [
+            { type: 'bytes5[2]', value: [
+                '0x1122334455',
+                '0x6677889900'
             ] }
         ]
     });
@@ -476,7 +479,7 @@ function makeTests() {
                 });
 
             }).then(function(tx) {
-                if (tx.logs.length !== 1) {
+                if (tx.logs.length !== 4) {
                     console.log('What?', tx);
                     process.exit(1);
                 }
@@ -544,17 +547,27 @@ function makeTests() {
                 });
 
                 resolve({
-                    bytecode: '0x' + contract.bytecode,
-                    data: tx.logs[0].data,
-                    hashed: hashed,
-                    indexed: indexed,
-                    interface: contract.interface,
-                    name: test.name,
-                    source: source,
-                    topics: tx.logs[0].topics,
-                    types: types,
-                    normalizedValues: normalizedValues,
-                    values: values
+                    event: {
+                        bytecode: '0x' + contract.bytecode,
+                        data: tx.logs[0].data,
+                        hashed: hashed,
+                        indexed: indexed,
+                        interface: contract.interface,
+                        name: test.name,
+                        source: source,
+                        topics: tx.logs[0].topics,
+                        types: types,
+                        normalizedValues: normalizedValues,
+                        values: values
+                    },
+                    solidityHash: {
+                        name: test.name,
+                        types: types,
+                        keccak256: tx.logs[1].data,
+                        ripemd160: tx.logs[2].data,
+                        sha256: tx.logs[3].data,
+                        values: values,
+                    }
                 });
             }).catch(function(error) {
                 console.log('TTT', test);
@@ -565,7 +578,14 @@ function makeTests() {
 
     promiseRationing.all(promiseFuncs, 40).then(function(results) {
         console.log('complete', results);
-        utils.saveTests('contract-events', results);
+        var events = [];
+        var solidityHashes = [];
+        results.forEach(function(result) {
+            events.push(result.event);
+            solidityHashes.push(result.solidityHash);
+        });
+        utils.saveTests('contract-events', events);
+        utils.saveTests('solidity-hashes', solidityHashes);
     }, function(error) {
         console.log(error);
     });
