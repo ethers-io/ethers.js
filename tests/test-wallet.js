@@ -153,18 +153,30 @@ describe('Test Transaction Signing and Parsing', function() {
 describe('Test Signing Messages', function() {
     var Wallet = require('../wallet/wallet');
 
+    var arrayify = require('../utils/convert').arrayify;
+
     var tests = [
         // See: https://etherscan.io/verifySig/57
         {
             address: '0x14791697260E4c9A71f18484C9f997B308e59325',
+            name: 'string("hello world")',
             message: 'hello world',
             privateKey: '0x0123456789012345678901234567890123456789012345678901234567890123',
             signature: '0xddd0a7290af9526056b4e35a077b9a11b513aa0028ec6c9880948544508f3c63265e99e47ad31bb2cab9646c504576b3abc6939a1710afc08cbf3034d73214b81c'
+        },
+
+        // See: https://github.com/ethers-io/ethers.js/issues/80
+        {
+            address: '0xD351c7c627ad5531Edb9587f4150CaF393c33E87',
+            name: 'bytes(0x47173285...4cb01fad)',
+            message: arrayify('0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad'),
+            privateKey: '0x51d1d6047622bca92272d36b297799ecc152dc2ef91b229debf84fc41e8c73ee',
+            signature: '0x546f0c996fa4cfbf2b68fd413bfb477f05e44e66545d7782d87d52305831cd055fc9943e513297d0f6755ad1590a5476bf7d1761d4f9dc07dfe473824bbdec751b'
         }
     ];
 
     tests.forEach(function(test) {
-        it(('signs a message "' + test.message + '"'), function() {
+        it(('signs a message "' + test.name + '"'), function() {
             var wallet = new Wallet(test.privateKey);
             var signature = wallet.signMessage(test.message);
             assert.equal(signature, test.signature, 'computes message signature');
@@ -172,7 +184,7 @@ describe('Test Signing Messages', function() {
     });
 
     tests.forEach(function(test) {
-        it(('verifies a message "' + test.message + '"'), function() {
+        it(('verifies a message "' + test.name + '"'), function() {
             var address = Wallet.verifyMessage(test.message, test.signature);
             assert.equal(address, test.address, 'verifies message signature');
         });

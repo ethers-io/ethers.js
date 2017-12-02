@@ -1,6 +1,6 @@
 {
   "name": "ethers-wallet",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "Wallet and signing library for Ethereum.",
   "bugs": {
     "url": "http://github.com/ethers-io/ethers.js/issues",
