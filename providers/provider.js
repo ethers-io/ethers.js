@@ -730,6 +730,7 @@ utils.defineProperty(Provider.prototype, 'getBlock', function(blockHashOrBlockTa
         var blockHash = utils.hexlify(blockHashOrBlockTag);
         if (blockHash.length === 66) {
             return this.perform('getBlock', {blockHash: blockHash}).then(function(block) {
+                if (block == null) { return null; }
                 return checkBlock(block);
             });
         }
@@ -740,6 +741,7 @@ utils.defineProperty(Provider.prototype, 'getBlock', function(blockHashOrBlockTa
     try {
         var blockTag = checkBlockTag(blockHashOrBlockTag);
         return this.perform('getBlock', {blockTag: blockTag}).then(function(block) {
+            if (block == null) { return null; }
             return checkBlock(block);
         });
     } catch (error) {
