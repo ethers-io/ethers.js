@@ -16,7 +16,7 @@ var utils = (function() {
 })();
 
 var allowedTransactionKeys = {
-    data: true, from: true, gasLimit: true, gasPrice:true, to: true, value: true
+    data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
 }
 
 function copyObject(object) {

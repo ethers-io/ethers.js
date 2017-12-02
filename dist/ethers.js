@@ -6623,7 +6623,7 @@ var utils = (function() {
 })();
 
 var allowedTransactionKeys = {
-    data: true, from: true, gasLimit: true, gasPrice:true, to: true, value: true
+    data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
 }
 
 function copyObject(object) {
@@ -9082,6 +9082,7 @@ utils.defineProperty(Provider.prototype, 'getBlock', function(blockHashOrBlockTa
         var blockHash = utils.hexlify(blockHashOrBlockTag);
         if (blockHash.length === 66) {
             return this.perform('getBlock', {blockHash: blockHash}).then(function(block) {
+                if (block == null) { return null; }
                 return checkBlock(block);
             });
         }
@@ -9092,6 +9093,7 @@ utils.defineProperty(Provider.prototype, 'getBlock', function(blockHashOrBlockTa
     try {
         var blockTag = checkBlockTag(blockHashOrBlockTag);
         return this.perform('getBlock', {blockTag: blockTag}).then(function(block) {
+            if (block == null) { return null; }
             return checkBlock(block);
         });
     } catch (error) {
@@ -11190,7 +11192,7 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
         privateKey = privateKey.privateKey;
     }
     privateKey = utils.arrayify(privateKey, 'private key');
-    if (privateKey.length !== 32) { throw new Erro('invalid private key'); }
+    if (privateKey.length !== 32) { throw new Error('invalid private key'); }
 
     password = getPassword(password);
 
@@ -11664,7 +11666,7 @@ function getHash(message) {
     var payload = utils.concat([
         utils.toUtf8Bytes('\x19Ethereum Signed Message:\n'),
         utils.toUtf8Bytes(String(message.length)),
-        utils.toUtf8Bytes(message)
+        ((typeof(message) === 'string') ? utils.toUtf8Bytes(message): message)
     ]);
     return utils.keccak256(payload);
 }

@@ -10,10 +10,10 @@
     "version": "grunt dist"
   },
   "dependencies": {
-    "ethers-contracts": "^2.1.6",
-    "ethers-providers": "^2.1.12",
+    "ethers-contracts": "^2.1.7",
+    "ethers-providers": "^2.1.13",
     "ethers-utils": "^2.1.8",
-    "ethers-wallet": "^2.1.4"
+    "ethers-wallet": "^2.1.5"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

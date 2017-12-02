@@ -11275,7 +11275,7 @@ function getHash(message) {
     var payload = utils.concat([
         utils.toUtf8Bytes('\x19Ethereum Signed Message:\n'),
         utils.toUtf8Bytes(String(message.length)),
-        utils.toUtf8Bytes(message)
+        ((typeof(message) === 'string') ? utils.toUtf8Bytes(message): message)
     ]);
     return utils.keccak256(payload);
 }
