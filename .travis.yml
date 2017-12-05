@@ -2,7 +2,7 @@ language: node_js
 
 node_js:
   - "6"
-  - "8"
+#  - "8"
 
 env:
   - RUN_PHANTOMJS=0
@@ -10,10 +10,8 @@ env:
 
 before_script:
   - "pushd tests && npm install && popd"
-  - '[ "${TRAVIS_NODE_VERSION}" != "0.8" ] || npm install -g npm@1.4.28'
-  - npm install -g npm@latest
 
-matrix:
-  exclude:
-    - node_js: "6"
-      env: RUN_PHANTOMJS=1
+#matrix:
+#  exclude:
+#    - node_js: "6"
+#      env: RUN_PHANTOMJS=1
