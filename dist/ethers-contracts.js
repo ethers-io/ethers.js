@@ -55,6 +55,8 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
     utils.defineProperty(this, 'signer', signer);
     utils.defineProperty(this, 'provider', provider);
 
+    var addressPromise = provider.resolveName(addressOrName);
+
     function runMethod(method, estimateOnly) {
         return function() {
             var transaction = {}
@@ -230,12 +232,28 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
         var eventCallback = null;
 
         function handleEvent(log) {
-            try {
-                var result = eventInfo.parse(log.topics, log.data);
-                eventCallback.apply(log, Array.prototype.slice.call(result));
-            } catch (error) {
-                console.log(error);
-            }
+            addressPromise.then(function(address) {
+
+                // Not meant for us (the topics just has the same name)
+                if (address != log.address) { return; }
+
+                try {
+                    var result = eventInfo.parse(log.topics, log.data);
+
+                    // Some useful things to have with the log
+                    log.args = result;
+                    log.event = eventName;
+                    log.parse = eventInfo.parse;
+                    log.removeListener = function() {
+                        provider.removeListener(eventInfo.topics, handleEvent);
+                    }
+                    log.eventSignature = eventInfo.signature;
+
+                    eventCallback.apply(log, Array.prototype.slice.call(result));
+                } catch (error) {
+                    console.log(error);
+                }
+            });
         }
 
         var property = {
