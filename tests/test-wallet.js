@@ -154,6 +154,8 @@ describe('Test Signing Messages', function() {
     var Wallet = require('../wallet/wallet');
 
     var arrayify = require('../utils/convert').arrayify;
+    var id = require('../utils/id');
+    var toUtf8Bytes = require('../utils/utf8').toUtf8Bytes;
 
     var tests = [
         // See: https://etherscan.io/verifySig/57
@@ -172,6 +174,15 @@ describe('Test Signing Messages', function() {
             message: arrayify('0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad'),
             privateKey: '0x51d1d6047622bca92272d36b297799ecc152dc2ef91b229debf84fc41e8c73ee',
             signature: '0x546f0c996fa4cfbf2b68fd413bfb477f05e44e66545d7782d87d52305831cd055fc9943e513297d0f6755ad1590a5476bf7d1761d4f9dc07dfe473824bbdec751b'
+        },
+
+        // See: https://github.com/ethers-io/ethers.js/issues/85
+        {
+            address: '0xe7deA7e64B62d1Ca52f1716f29cd27d4FE28e3e1',
+            name: 'zero-prefixed signature',
+            message: arrayify(id('0x7f23b5eed5bc7e89f267f339561b2697faab234a2')),
+            privateKey: '0x09a11afa58d6014843fd2c5fd4e21e7fadf96ca2d8ce9934af6b8e204314f25c',
+            signature: '0x7222038446034a0425b6e3f0cc3594f0d979c656206408f937c37a8180bb1bea047d061e4ded4aeac77fa86eb02d42ba7250964ac3eb9da1337090258ce798491c'
         }
     ];
 
