@@ -10,6 +10,8 @@ env:
 
 before_script:
   - "pushd tests && npm install && popd"
+  - '[ "${TRAVIS_NODE_VERSION}" != "0.8" ] || npm install -g npm@1.4.28'
+  - npm install -g npm@latest
 
 matrix:
   exclude:
