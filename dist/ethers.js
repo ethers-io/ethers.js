@@ -6662,6 +6662,8 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
     utils.defineProperty(this, 'signer', signer);
     utils.defineProperty(this, 'provider', provider);
 
+    var addressPromise = provider.resolveName(addressOrName);
+
     function runMethod(method, estimateOnly) {
         return function() {
             var transaction = {}
@@ -6837,12 +6839,28 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
         var eventCallback = null;
 
         function handleEvent(log) {
-            try {
-                var result = eventInfo.parse(log.topics, log.data);
-                eventCallback.apply(log, Array.prototype.slice.call(result));
-            } catch (error) {
-                console.log(error);
-            }
+            addressPromise.then(function(address) {
+
+                // Not meant for us (the topics just has the same name)
+                if (address != log.address) { return; }
+
+                try {
+                    var result = eventInfo.parse(log.topics, log.data);
+
+                    // Some useful things to have with the log
+                    log.args = result;
+                    log.event = eventName;
+                    log.parse = eventInfo.parse;
+                    log.removeListener = function() {
+                        provider.removeListener(eventInfo.topics, handleEvent);
+                    }
+                    log.eventSignature = eventInfo.signature;
+
+                    eventCallback.apply(log, Array.prototype.slice.call(result));
+                } catch (error) {
+                    console.log(error);
+                }
+            });
         }
 
         var property = {
@@ -8443,6 +8461,15 @@ function checkNumber(number) {
     return utils.bigNumberify(number).toNumber();
 }
 
+function checkBoolean(value) {
+    if (typeof(value) === 'boolean') { return value; }
+    if (typeof(value) === 'string') {
+        if (value === 'true') { return true; }
+        if (value === 'false') { return false; }
+    }
+    throw new Error('invaid boolean - ' + value);
+}
+
 function checkUint256(uint256) {
     if (!utils.isHexString(uint256)) {
         throw new Error('invalid uint256');
@@ -8695,8 +8722,11 @@ function checkFilter(filter) {
 }
 
 var formatLog = {
-    blockNumber: checkNumber,
+    blockNumber: allowNull(checkNumber),
+    blockHash: allowNull(checkHash),
     transactionIndex: checkNumber,
+
+    removed: allowNull(checkBoolean),
 
     address: utils.getAddress,
     data: allowFalsish(utils.hexlify, '0x'),
@@ -11675,7 +11705,7 @@ utils.defineProperty(Wallet.prototype, 'signMessage', function(message) {
     var signingKey = new SigningKey(this.privateKey);
     var sig = signingKey.signDigest(getHash(message));
 
-    return (hexPad(sig.r) + hexPad(sig.s).substring(2) + (sig.recoveryParam ? '1c': '1b'));
+    return (hexPad(sig.r, 32) + hexPad(sig.s, 32).substring(2) + (sig.recoveryParam ? '1c': '1b'));
 });
 
 utils.defineProperty(Wallet, 'verifyMessage', function(message, signature) {

@@ -22,7 +22,7 @@ var depVersions = require('./package.json').dependencies;
         console.log(name, ('npm=' + npmVersion), ('live=' + liveVersion));
         throw new Error('version mismatch for ' + name + ' - redo npm install');
     }
-    if ('^' + npmVersion !== depVersion) {
+    if (npmVersion !== depVersion) {
         console.log(name, ('npm=' + npmVersion), ('depVersion=' + depVersion));
         throw new Error('dependency version mismatch for ' + name + ' - update package.json');
     }

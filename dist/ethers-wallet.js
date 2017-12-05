@@ -11284,7 +11284,7 @@ utils.defineProperty(Wallet.prototype, 'signMessage', function(message) {
     var signingKey = new SigningKey(this.privateKey);
     var sig = signingKey.signDigest(getHash(message));
 
-    return (hexPad(sig.r) + hexPad(sig.s).substring(2) + (sig.recoveryParam ? '1c': '1b'));
+    return (hexPad(sig.r, 32) + hexPad(sig.s, 32).substring(2) + (sig.recoveryParam ? '1c': '1b'));
 });
 
 utils.defineProperty(Wallet, 'verifyMessage', function(message, signature) {

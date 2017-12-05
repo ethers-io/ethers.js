@@ -5462,6 +5462,15 @@ function checkNumber(number) {
     return utils.bigNumberify(number).toNumber();
 }
 
+function checkBoolean(value) {
+    if (typeof(value) === 'boolean') { return value; }
+    if (typeof(value) === 'string') {
+        if (value === 'true') { return true; }
+        if (value === 'false') { return false; }
+    }
+    throw new Error('invaid boolean - ' + value);
+}
+
 function checkUint256(uint256) {
     if (!utils.isHexString(uint256)) {
         throw new Error('invalid uint256');
@@ -5714,8 +5723,11 @@ function checkFilter(filter) {
 }
 
 var formatLog = {
-    blockNumber: checkNumber,
+    blockNumber: allowNull(checkNumber),
+    blockHash: allowNull(checkHash),
     transactionIndex: checkNumber,
+
+    removed: allowNull(checkBoolean),
 
     address: utils.getAddress,
     data: allowFalsish(utils.hexlify, '0x'),
