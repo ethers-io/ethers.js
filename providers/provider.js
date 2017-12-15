@@ -23,6 +23,8 @@ var utils = (function() {
         concat: convert.concat,
         stripZeros: convert.stripZeros,
 
+        stripHexZeros: convert.stripHexZeros,
+
         namehash: require('ethers-utils/namehash'),
 
         toUtf8String: require('ethers-utils/utf8').toUtf8String,
@@ -125,10 +127,10 @@ function checkBlockTag(blockTag) {
     }
 
     if (typeof(blockTag) === 'number') {
-        return utils.hexlify(blockTag);
+        return utils.stripHexZeros(utils.hexlify(blockTag));
     }
 
-    if (utils.isHexString(blockTag)) { return blockTag; }
+    if (utils.isHexString(blockTag)) { return utils.stripHexZeros(blockTag); }
 
     throw new Error('invalid blockTag');
 }
