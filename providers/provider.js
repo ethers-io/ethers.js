@@ -215,7 +215,6 @@ function checkTransaction(transaction) {
     }
 
     if (!transaction.raw) {
-
         // Very loose providers (e.g. TestRPC) don't provide a signature or raw
         if (transaction.v && transaction.r && transaction.s) {
             var raw = [
@@ -718,7 +717,7 @@ utils.defineProperty(Provider.prototype, 'sendTransaction', function(signedTrans
 
 utils.defineProperty(Provider.prototype, 'call', function(transaction) {
     var self = this;
-    return this._resolveNames(transaction, ['to', 'from']).then(function(transaction) {
+    return this._resolveNames(transaction, [ 'to', 'from' ]).then(function(transaction) {
         var params = { transaction: checkTransactionRequest(transaction) };
         return self.perform('call', params).then(function(result) {
             return utils.hexlify(result);
@@ -728,7 +727,7 @@ utils.defineProperty(Provider.prototype, 'call', function(transaction) {
 
 utils.defineProperty(Provider.prototype, 'estimateGas', function(transaction) {
     var self = this;
-    return this._resolveNames(transaction, ['to', 'from']).then(function(transaction) {
+    return this._resolveNames(transaction, [ 'to', 'from' ]).then(function(transaction) {
         var params = {transaction: checkTransactionRequest(transaction)};
         return self.perform('estimateGas', params).then(function(result) {
              return utils.bigNumberify(result);
@@ -934,6 +933,9 @@ function getEventString(object) {
     if (object === 'block') {
         return 'block';
 
+    } else if (object === 'pending') {
+        return 'pending';
+
     } else if (utils.isHexString(object)) {
         if (object.length === 66) {
             return 'tx:' + object;
@@ -961,6 +963,9 @@ function parseEventString(string) {
     } else if (string === 'block') {
         return {type: 'block'};
 
+    } else if (string === 'pending') {
+        return {type: 'pending'};
+
     } else if (string.substring(0, 8) === 'address:') {
         return {type: 'address', address: string.substring(8)};
 
@@ -980,10 +985,18 @@ function parseEventString(string) {
     throw new Error('invalid event string');
 }
 
+utils.defineProperty(Provider.prototype, '_startPending', function() {
+    console.log('WARNING: this provider does not support pending events');
+});
+
+utils.defineProperty(Provider.prototype, '_stopPending', function() {
+});
+
 utils.defineProperty(Provider.prototype, 'on', function(eventName, listener) {
     var key = getEventString(eventName);
     if (!this._events[key]) { this._events[key] = []; }
     this._events[key].push({eventName: eventName, listener: listener, type: 'on'});
+    if (key === 'pending') { this._startPending(); }
     this.polling = true;
 });
 
@@ -991,6 +1004,7 @@ utils.defineProperty(Provider.prototype, 'once', function(eventName, listener) {
     var key = getEventString(eventName);
     if (!this._events[key]) { this._events[key] = []; }
     this._events[key].push({eventName: eventName, listener: listener, type: 'once'});
+    if (key === 'pending') { this._startPending(); }
     this.polling = true;
 });
 
@@ -1015,7 +1029,11 @@ utils.defineProperty(Provider.prototype, 'emit', function(eventName) {
         }
     }
 
-    if (listeners.length === 0) { delete this._events[key]; }
+    if (listeners.length === 0) {
+        delete this._events[key];
+        if (key === 'pending') { this._stopPending(); }
+    }
+
     if (this.listenerCount() === 0) { this.polling = false; }
 });
 
@@ -1058,6 +1076,10 @@ utils.defineProperty(Provider.prototype, 'removeListener', function(eventName, l
         }
     }
     if (this.listenerCount() === 0) { this.polling = false; }
+});
+
+utils.defineProperty(Provider, '_formatters', {
+    checkTransactionResponse: checkTransaction
 });
 
 module.exports = Provider;

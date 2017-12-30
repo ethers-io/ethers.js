@@ -14,6 +14,15 @@ var utils = (function() {
     }
 })();
 
+// @TODO: Move this to utils
+function timer(timeout) {
+    return new Promise(function(resolve) {
+        setTimeout(function() {
+            resolve();
+        }, timeout);
+    });
+}
+
 function getResult(payload) {
     if (payload.error) {
         var error = new Error(payload.error.message);
@@ -155,6 +164,48 @@ utils.defineProperty(JsonRpcProvider.prototype, 'perform', function(method, para
     }
 
     return Promise.reject(new Error('not implemented - ' + method));
+});
+
+utils.defineProperty(JsonRpcProvider.prototype, '_startPending', function() {
+    if (this._pendingFilter != null) { return; }
+    var self = this;
+
+    var pendingFilter = this.send('eth_newPendingTransactionFilter', []);
+    this._pendingFilter = pendingFilter;
+
+    pendingFilter.then(function(filterId) {
+        function poll() {
+            self.send('eth_getFilterChanges', [ filterId ]).then(function(hashes) {
+                if (self._pendingFilter != pendingFilter) { return; }
+
+                var seq = Promise.resolve();
+                hashes.forEach(function(hash) {
+                    seq = seq.then(function() {
+                        return self.getTransaction(hash).then(function(tx) {
+                            self.emit('pending', tx);
+                        });
+                    });
+                });
+
+                return seq.then(function() {
+                    return timer(1000);
+                });
+            }).then(function() {
+                if (self._pendingFilter != pendingFilter) {
+                    self.send('eth_uninstallFilter', [ filterIf ]);
+                    return;
+                }
+                setTimeout(function() { poll(); }, 0);
+            });
+        }
+        poll();
+
+        return filterId;
+    });
+});
+
+utils.defineProperty(JsonRpcProvider.prototype, '_stopPending', function() {
+    this._pendingFilter = null;
 });
 
 module.exports = JsonRpcProvider;

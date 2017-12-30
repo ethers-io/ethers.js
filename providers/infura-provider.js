@@ -42,4 +42,11 @@ function InfuraProvider(network, apiAccessToken) {
 }
 JsonRpcProvider.inherits(InfuraProvider);
 
+utils.defineProperty(InfuraProvider.prototype, '_startPending', function() {
+    console.log('WARNING: INFURA does not support pending filters');
+});
+
+utils.defineProperty(InfuraProvider.prototype, '_stopPending', function() {
+});
+
 module.exports = InfuraProvider;
