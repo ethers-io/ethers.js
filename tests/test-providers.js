@@ -362,8 +362,8 @@ function testProvider(providerName, networkName) {
         //if (providerName === 'EtherscanProvider' && networkName !== 'homestead') { return; }
 
         // HACK! INFURA is flakey on homestead right now and the test cases are failing
-        console.log('WARNING: Test cases being skipped! Temporary. Please turn backon soon.');
-        if (providerName === 'InfuraProvider' && networkName === 'homestead') { return; }
+        //console.log('WARNING: Test cases being skipped! Temporary. Please turn backon soon.');
+        //if (providerName === 'InfuraProvider' && networkName === 'homestead') { return; }
 
         testProvider(providerName, networkName);
     });
@@ -657,6 +657,25 @@ describe('Test legacy provider arguments', function() {
             for (var key in test.properties) {
                 assert.equal(provider[key], test.properties[key], ('provider equals ' + key));
             }
+        });
+    });
+});
+
+describe('Test extra Etherscan operations', function() {
+    var providers = require('../providers');
+    var provider = new providers.EtherscanProvider();
+    it('fethces the current price of ether', function() {
+        this.timeout(20000);
+        return provider.getEtherPrice().then(function(price) {
+            assert.ok(typeof(price) === 'number', 'Etherscan price returns a number');
+            assert.ok(price > 0.0, 'Etherscan price returns non-zero');
+        });
+    });
+    it('fetches the history', function() {
+        this.timeout(100000);
+        return provider.getHistory('ricmoo.firefly.eth').then(function(history) {
+            assert.ok(history.length > 40, 'Etherscan history returns results');
+            assert.equal(history[0].hash, '0xd25f550cfdff90c086a6496a84dbb2c4577df15b1416e5b3319a3e4ebb5b25d8', 'Etherscan history returns correct transaction');
         });
     });
 });

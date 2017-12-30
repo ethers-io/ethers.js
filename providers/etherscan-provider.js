@@ -218,11 +218,51 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
             url += apiKey;
             return Provider.fetchJSON(url, null, getResult);
 
+        case 'getEtherPrice':
+            if (this.name !== 'homestead') { return Promise.resolve(0.0); }
+            url += '/api?module=stats&action=ethprice';
+            url += apiKey;
+            return Provider.fetchJSON(url, null, getResult).then(function(result) {
+                return parseFloat(result.ethusd);
+            });
+
         default:
             break;
     }
 
     return Promise.reject(new Error('not implemented - ' + method));
+});
+
+utils.defineProperty(EtherscanProvider.prototype, 'getHistory', function(addressOrName, startBlock, endBlock) {
+
+    var url = this.baseUrl;
+
+    var apiKey = '';
+    if (this.apiKey) { apiKey += '&apikey=' + this.apiKey; }
+
+    if (startBlock == null) { startBlock = 0; }
+    if (endBlock == null) { endBlock = 99999999; }
+
+    return this.resolveName(addressOrName).then(function(address) {
+        url += '/api?module=account&action=txlist&address=' + address;
+        url += '&fromBlock=' + startBlock;
+        url += '&endBlock=' + endBlock;
+        url += '&sort=asc';
+
+        return Provider.fetchJSON(url, null, getResult).then(function(result) {
+            var output = [];
+            result.forEach(function(tx) {
+                ['contractAddress', 'to'].forEach(function(key) {
+                    if (tx[key] == '') { delete tx[key]; }
+                });
+                if (tx.creates == null && tx.contractAddress != null) {
+                    tx.creates = tx.contractAddress;
+                }
+                output.push(Provider._formatters.checkTransactionResponse(tx));
+            });
+            return output;
+        });
+    });
 });
 
 module.exports = EtherscanProvider;;
