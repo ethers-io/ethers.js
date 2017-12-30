@@ -247,6 +247,27 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                     log.removeListener = function() {
                         provider.removeListener(eventInfo.topics, handleEvent);
                     }
+
+                    var poller = function(func, key) {
+                        return new Promise(function(resolve, reject) {
+                            function poll() {
+                                provider[func](log[key]).then(function(value) {
+                                    if (value == null) {
+                                        setTimeout(poll, 1000);
+                                        return;
+                                    }
+                                    resolve(value);
+                                }, function(error) {
+                                    reject(error);
+                                });
+                            }
+                            poll();
+                        });
+                    }
+
+                    log.getBlock = function() { return poller('getBlock', 'blockHash'); }
+                    log.getTransaction = function() { return poller('getTransaction', 'transactionHash'); }
+                    log.getTransactionReceipt = function() { return poller('getTransactionReceipt', 'transactionHash'); }
                     log.eventSignature = eventInfo.signature;
 
                     eventCallback.apply(log, Array.prototype.slice.call(result));

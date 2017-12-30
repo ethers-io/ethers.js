@@ -6854,6 +6854,27 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                     log.removeListener = function() {
                         provider.removeListener(eventInfo.topics, handleEvent);
                     }
+
+                    var poller = function(func, key) {
+                        return new Promise(function(resolve, reject) {
+                            function poll() {
+                                provider[func](log[key]).then(function(value) {
+                                    if (value == null) {
+                                        setTimeout(poll, 1000);
+                                        return;
+                                    }
+                                    resolve(value);
+                                }, function(error) {
+                                    reject(error);
+                                });
+                            }
+                            poll();
+                        });
+                    }
+
+                    log.getBlock = function() { return poller('getBlock', 'blockHash'); }
+                    log.getTransaction = function() { return poller('getTransaction', 'transactionHash'); }
+                    log.getTransactionReceipt = function() { return poller('getTransactionReceipt', 'transactionHash'); }
                     log.eventSignature = eventInfo.signature;
 
                     eventCallback.apply(log, Array.prototype.slice.call(result));
@@ -7979,11 +8000,51 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
             url += apiKey;
             return Provider.fetchJSON(url, null, getResult);
 
+        case 'getEtherPrice':
+            if (this.name !== 'homestead') { return Promise.resolve(0.0); }
+            url += '/api?module=stats&action=ethprice';
+            url += apiKey;
+            return Provider.fetchJSON(url, null, getResult).then(function(result) {
+                return parseFloat(result.ethusd);
+            });
+
         default:
             break;
     }
 
     return Promise.reject(new Error('not implemented - ' + method));
+});
+
+utils.defineProperty(EtherscanProvider.prototype, 'getHistory', function(addressOrName, startBlock, endBlock) {
+
+    var url = this.baseUrl;
+
+    var apiKey = '';
+    if (this.apiKey) { apiKey += '&apikey=' + this.apiKey; }
+
+    if (startBlock == null) { startBlock = 0; }
+    if (endBlock == null) { endBlock = 99999999; }
+
+    return this.resolveName(addressOrName).then(function(address) {
+        url += '/api?module=account&action=txlist&address=' + address;
+        url += '&fromBlock=' + startBlock;
+        url += '&endBlock=' + endBlock;
+        url += '&sort=asc';
+
+        return Provider.fetchJSON(url, null, getResult).then(function(result) {
+            var output = [];
+            result.forEach(function(tx) {
+                ['contractAddress', 'to'].forEach(function(key) {
+                    if (tx[key] == '') { delete tx[key]; }
+                });
+                if (tx.creates == null && tx.contractAddress != null) {
+                    tx.creates = tx.contractAddress;
+                }
+                output.push(Provider._formatters.checkTransactionResponse(tx));
+            });
+            return output;
+        });
+    });
 });
 
 module.exports = EtherscanProvider;;
@@ -8134,6 +8195,13 @@ function InfuraProvider(network, apiAccessToken) {
 }
 JsonRpcProvider.inherits(InfuraProvider);
 
+utils.defineProperty(InfuraProvider.prototype, '_startPending', function() {
+    console.log('WARNING: INFURA does not support pending filters');
+});
+
+utils.defineProperty(InfuraProvider.prototype, '_stopPending', function() {
+});
+
 module.exports = InfuraProvider;
 
 },{"./json-rpc-provider":29,"./provider":32,"ethers-utils/properties.js":44}],29:[function(require,module,exports){
@@ -8152,6 +8220,15 @@ var utils = (function() {
         isHexString: convert.isHexString,
     }
 })();
+
+// @TODO: Move this to utils
+function timer(timeout) {
+    return new Promise(function(resolve) {
+        setTimeout(function() {
+            resolve();
+        }, timeout);
+    });
+}
 
 function getResult(payload) {
     if (payload.error) {
@@ -8294,6 +8371,48 @@ utils.defineProperty(JsonRpcProvider.prototype, 'perform', function(method, para
     }
 
     return Promise.reject(new Error('not implemented - ' + method));
+});
+
+utils.defineProperty(JsonRpcProvider.prototype, '_startPending', function() {
+    if (this._pendingFilter != null) { return; }
+    var self = this;
+
+    var pendingFilter = this.send('eth_newPendingTransactionFilter', []);
+    this._pendingFilter = pendingFilter;
+
+    pendingFilter.then(function(filterId) {
+        function poll() {
+            self.send('eth_getFilterChanges', [ filterId ]).then(function(hashes) {
+                if (self._pendingFilter != pendingFilter) { return; }
+
+                var seq = Promise.resolve();
+                hashes.forEach(function(hash) {
+                    seq = seq.then(function() {
+                        return self.getTransaction(hash).then(function(tx) {
+                            self.emit('pending', tx);
+                        });
+                    });
+                });
+
+                return seq.then(function() {
+                    return timer(1000);
+                });
+            }).then(function() {
+                if (self._pendingFilter != pendingFilter) {
+                    self.send('eth_uninstallFilter', [ filterIf ]);
+                    return;
+                }
+                setTimeout(function() { poll(); }, 0);
+            });
+        }
+        poll();
+
+        return filterId;
+    });
+});
+
+utils.defineProperty(JsonRpcProvider.prototype, '_stopPending', function() {
+    this._pendingFilter = null;
 });
 
 module.exports = JsonRpcProvider;
@@ -8585,7 +8704,6 @@ function checkTransaction(transaction) {
     }
 
     if (!transaction.raw) {
-
         // Very loose providers (e.g. TestRPC) don't provide a signature or raw
         if (transaction.v && transaction.r && transaction.s) {
             var raw = [
@@ -9088,7 +9206,7 @@ utils.defineProperty(Provider.prototype, 'sendTransaction', function(signedTrans
 
 utils.defineProperty(Provider.prototype, 'call', function(transaction) {
     var self = this;
-    return this._resolveNames(transaction, ['to', 'from']).then(function(transaction) {
+    return this._resolveNames(transaction, [ 'to', 'from' ]).then(function(transaction) {
         var params = { transaction: checkTransactionRequest(transaction) };
         return self.perform('call', params).then(function(result) {
             return utils.hexlify(result);
@@ -9098,7 +9216,7 @@ utils.defineProperty(Provider.prototype, 'call', function(transaction) {
 
 utils.defineProperty(Provider.prototype, 'estimateGas', function(transaction) {
     var self = this;
-    return this._resolveNames(transaction, ['to', 'from']).then(function(transaction) {
+    return this._resolveNames(transaction, [ 'to', 'from' ]).then(function(transaction) {
         var params = {transaction: checkTransactionRequest(transaction)};
         return self.perform('estimateGas', params).then(function(result) {
              return utils.bigNumberify(result);
@@ -9304,6 +9422,9 @@ function getEventString(object) {
     if (object === 'block') {
         return 'block';
 
+    } else if (object === 'pending') {
+        return 'pending';
+
     } else if (utils.isHexString(object)) {
         if (object.length === 66) {
             return 'tx:' + object;
@@ -9331,6 +9452,9 @@ function parseEventString(string) {
     } else if (string === 'block') {
         return {type: 'block'};
 
+    } else if (string === 'pending') {
+        return {type: 'pending'};
+
     } else if (string.substring(0, 8) === 'address:') {
         return {type: 'address', address: string.substring(8)};
 
@@ -9350,10 +9474,18 @@ function parseEventString(string) {
     throw new Error('invalid event string');
 }
 
+utils.defineProperty(Provider.prototype, '_startPending', function() {
+    console.log('WARNING: this provider does not support pending events');
+});
+
+utils.defineProperty(Provider.prototype, '_stopPending', function() {
+});
+
 utils.defineProperty(Provider.prototype, 'on', function(eventName, listener) {
     var key = getEventString(eventName);
     if (!this._events[key]) { this._events[key] = []; }
     this._events[key].push({eventName: eventName, listener: listener, type: 'on'});
+    if (key === 'pending') { this._startPending(); }
     this.polling = true;
 });
 
@@ -9361,6 +9493,7 @@ utils.defineProperty(Provider.prototype, 'once', function(eventName, listener) {
     var key = getEventString(eventName);
     if (!this._events[key]) { this._events[key] = []; }
     this._events[key].push({eventName: eventName, listener: listener, type: 'once'});
+    if (key === 'pending') { this._startPending(); }
     this.polling = true;
 });
 
@@ -9385,7 +9518,11 @@ utils.defineProperty(Provider.prototype, 'emit', function(eventName) {
         }
     }
 
-    if (listeners.length === 0) { delete this._events[key]; }
+    if (listeners.length === 0) {
+        delete this._events[key];
+        if (key === 'pending') { this._stopPending(); }
+    }
+
     if (this.listenerCount() === 0) { this.polling = false; }
 });
 
@@ -9428,6 +9565,10 @@ utils.defineProperty(Provider.prototype, 'removeListener', function(eventName, l
         }
     }
     if (this.listenerCount() === 0) { this.polling = false; }
+});
+
+utils.defineProperty(Provider, '_formatters', {
+    checkTransactionResponse: checkTransaction
 });
 
 module.exports = Provider;
@@ -11712,13 +11853,16 @@ utils.defineProperty(Wallet, 'verifyMessage', function(message, signature) {
     signature = utils.hexlify(signature);
     if (signature.length != 132) { throw new Error('invalid signature'); }
     var digest = getHash(message);
-    var recoveryParam = parseInt(signature.substring(130), 16) - 27;
+
+    var recoveryParam = parseInt(signature.substring(130), 16);
+    if (recoveryParam >= 27) { recoveryParam -= 27; }
     if (recoveryParam < 0) { throw new Error('invalid signature'); }
+
     return SigningKey.recover(
         digest,
         signature.substring(0, 66),
         '0x' + signature.substring(66, 130),
-        parseInt(signature.substring(130), 16) - 27
+        recoveryParam
     );
 });
 
