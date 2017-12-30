@@ -306,13 +306,16 @@ utils.defineProperty(Wallet, 'verifyMessage', function(message, signature) {
     signature = utils.hexlify(signature);
     if (signature.length != 132) { throw new Error('invalid signature'); }
     var digest = getHash(message);
-    var recoveryParam = parseInt(signature.substring(130), 16) - 27;
+
+    var recoveryParam = parseInt(signature.substring(130), 16);
+    if (recoveryParam >= 27) { recoveryParam -= 27; }
     if (recoveryParam < 0) { throw new Error('invalid signature'); }
+
     return SigningKey.recover(
         digest,
         signature.substring(0, 66),
         '0x' + signature.substring(66, 130),
-        parseInt(signature.substring(130), 16) - 27
+        recoveryParam
     );
 });
 
