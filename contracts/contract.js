@@ -246,7 +246,8 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                     log.removeListener = function() {
                         provider.removeListener(eventInfo.topics, handleEvent);
                     }
-                    function poller(func, key) {
+
+                    var poller = function(func, key) {
                         return new Promise(function(resolve, reject) {
                             function poll() {
                                 provider[func](log[key]).then(function(value) {
@@ -262,6 +263,7 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                             poll();
                         });
                     }
+
                     log.getBlock = function() { return poller('getBlock', 'blockHash'); }
                     log.getTransaction = function() { return poller('getTransaction', 'transactionHash'); }
                     log.getTransactionReceipt = function() { return poller('getTransactionReceipt', 'transactionHash'); }
