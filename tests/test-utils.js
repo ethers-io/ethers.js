@@ -77,6 +77,7 @@ describe('Test Unit Conversion', function () {
     var bigNumberify = require('../utils/bignumber.js').bigNumberify;
 
     var tests = utils.loadTests('units');
+
     tests.forEach(function(test) {
         var wei = bigNumberify(test.wei);
         var formatting = test.format || {};
@@ -86,13 +87,36 @@ describe('Test Unit Conversion', function () {
                 'parsing ether failed - ' + test.name);
         });
 
-        it (('formats ' + wei.toHexString() + ' wei (options: ' + JSON.stringify(formatting) + ')'), function() {
+        it (('formats ' + wei.toString() + ' wei (options: ' + JSON.stringify(formatting) + ')'), function() {
             assert.equal(units.formatEther(wei, formatting), test.etherFormat,
                    'formatting wei failed - ' + test.name);
         });
     });
 
+    tests.forEach(function(test) {
+        var wei = bigNumberify(test.wei);
+        var formatting = test.format || {};
+
+        ['kwei', 'mwei', 'gwei', 'szabo', 'finny'].forEach(function(name) {
+
+            if (test[name]) {
+                it(('parses ' + test[name] + ' ' + name), function() {
+                    assert.ok(units.parseUnits(test[name], name).eq(wei),
+                        ('parsing ' + name + ' failed - ' + test.name));
+                });
+            }
+
+            if (test[name + '_format']) {
+                it (('formats ' + wei.toString() + ' ' + name + ' (options: ' + JSON.stringify(formatting) + ')'), function() {
+                    assert.equal(units.formatUnits(wei, name, formatting), test[name + '_format'],
+                        ('formats ' + name + ' - ' + test.name));
+                });
+            }
+        });
+    });
+
 });
+
 
 describe('Test Namehash', function() {
     var namehash = require('../utils/namehash');
