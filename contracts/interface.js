@@ -614,7 +614,10 @@ function Interface(abi) {
                         var outputNames = outputParams.names;
                     }
 
-                    var signature = method.name + '(' + inputParams.types.join(',') + ')';
+                    var signature = '(' + inputParams.types.join(',') + ')';
+                    signature = signature.replace(/tuple/g, '');
+                    signature = method.name + signature;
+
                     var sighash = utils.keccak256(utils.toUtf8Bytes(signature)).substring(0, 10);
                     var func = function() {
                         var result = {
@@ -649,6 +652,7 @@ function Interface(abi) {
                     // @TODO: Move the paraseParams
                     defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
                     defineFrozen(func, 'outputs', getKeys(method.outputs, 'name'));
+
                     utils.defineProperty(func, 'signature', signature);
                     utils.defineProperty(func, 'sighash', sighash);
 
@@ -667,9 +671,11 @@ function Interface(abi) {
                 var func = (function() {
                     // @TODO: Move to parseParams
                     var inputTypes = getKeys(method.inputs, 'type');
+
                     var func = function() {
                         // @TODO: Move to parseParams
                         var signature = method.name + '(' + getKeys(method.inputs, 'type').join(',') + ')';
+
                         var result = {
                             inputs: method.inputs,
                             name: method.name,
@@ -747,14 +753,29 @@ function Interface(abi) {
 
                             return result;
                         };
+
                         return populateDescription(new EventDescription(), result);
                     }
+
+                    // Next Major Version: All the event parameters are known and should
+                    // not require a function to be called to get them. We expose them
+                    // here now, and in the future will remove the callable version and
+                    // replace it with the EventDescription object
+
+                    var info = func();
 
                     // @TODO: Move to parseParams
                     defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
 
+                    utils.defineProperty(func, 'name', info.name);
+                    utils.defineProperty(func, 'parse', info.parse);
+                    utils.defineProperty(func, 'signature', info.signature);
+                    utils.defineProperty(func, 'topic', info.topics[0]);
+
                     return func;
                 })();
+
+
 
                 if (method.name && events[method.name] == null) {
                     utils.defineProperty(events, method.name, func);

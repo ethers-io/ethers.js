@@ -321,3 +321,18 @@ describe('Test Contract Events', function() {
     });
 
 });
+
+describe('Test Interface Signatures', function() {
+    var Interface = require('../contracts').Interface;
+
+    var tests = utils.loadTests('contract-signatures');
+    tests.forEach(function(test) {
+        var contract = new Interface(test.abi);
+        it('derives the correct signature - ' + test.name, function() {
+            assert.equal(contract.functions.testSig.signature, test.signature,
+                'derived the correct signature');
+            assert.equal(contract.functions.testSig.sighash, test.sigHash,
+                'derived the correct signature hash');
+        })
+    });
+});
