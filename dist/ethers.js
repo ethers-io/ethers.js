@@ -7564,7 +7564,10 @@ function Interface(abi) {
                         var outputNames = outputParams.names;
                     }
 
-                    var signature = method.name + '(' + inputParams.types.join(',') + ')';
+                    var signature = '(' + inputParams.types.join(',') + ')';
+                    signature = signature.replace(/tuple/g, '');
+                    signature = method.name + signature;
+
                     var sighash = utils.keccak256(utils.toUtf8Bytes(signature)).substring(0, 10);
                     var func = function() {
                         var result = {
@@ -7599,6 +7602,7 @@ function Interface(abi) {
                     // @TODO: Move the paraseParams
                     defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
                     defineFrozen(func, 'outputs', getKeys(method.outputs, 'name'));
+
                     utils.defineProperty(func, 'signature', signature);
                     utils.defineProperty(func, 'sighash', sighash);
 
@@ -7617,9 +7621,11 @@ function Interface(abi) {
                 var func = (function() {
                     // @TODO: Move to parseParams
                     var inputTypes = getKeys(method.inputs, 'type');
+
                     var func = function() {
                         // @TODO: Move to parseParams
                         var signature = method.name + '(' + getKeys(method.inputs, 'type').join(',') + ')';
+
                         var result = {
                             inputs: method.inputs,
                             name: method.name,
@@ -7697,14 +7703,28 @@ function Interface(abi) {
 
                             return result;
                         };
+
                         return populateDescription(new EventDescription(), result);
                     }
+
+                    // Next Major Version: All the event parameters are known and should
+                    // not require a function to be called to get them. We expose them
+                    // here now, and in the future will remove the callable version and
+                    // replace it with the EventDescription object
+
+                    var info = func();
 
                     // @TODO: Move to parseParams
                     defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
 
+                    utils.defineProperty(func, 'parse', info.parse);
+                    utils.defineProperty(func, 'signature', info.signature);
+                    utils.defineProperty(func, 'topic', info.topics[0]);
+
                     return func;
                 })();
+
+
 
                 if (method.name && events[method.name] == null) {
                     utils.defineProperty(events, method.name, func);
@@ -9334,6 +9354,8 @@ utils.defineProperty(Provider.prototype, 'resolveName', function(name) {
         return Promise.resolve(utils.getAddress(name));
     } catch (error) { }
 
+    if (!this.ensAddress) { throw new Error('network does not have ENS deployed'); }
+
     var self = this;
 
     var nodeHash = utils.namehash(name);
@@ -9356,6 +9378,8 @@ utils.defineProperty(Provider.prototype, 'resolveName', function(name) {
 });
 
 utils.defineProperty(Provider.prototype, 'lookupAddress', function(address) {
+    if (!this.ensAddress) { throw new Error('network does not have ENS deployed'); }
+
     address = utils.getAddress(address);
 
     var name = address.substring(2) + '.addr.reverse'
@@ -10632,24 +10656,63 @@ var throwError = require('./throw-error');
 
 var zero = new bigNumberify(0);
 var negative1 = new bigNumberify(-1);
-var tenPower18 = new bigNumberify('1000000000000000000');
 
-function formatEther(wei, options) {
-    wei = bigNumberify(wei);
+var names = [
+    'wei',
+    'kwei',
+    'Mwei',
+    'Gwei',
+    'szabo',
+    'finny',
+    'ether',
+];
+
+var getUnitInfo = (function() {
+    var unitInfos = {};
+
+    var value = '1';
+    names.forEach(function(name) {
+        var info = {
+            decimals: value.length - 1,
+            tenPower: bigNumberify(value),
+            name: name
+        };
+        unitInfos[name.toLowerCase()] = info;
+        unitInfos[String(info.decimals)] = info;
+        value += '000';
+    });
+
+    return function(name) {
+        return unitInfos[String(name).toLowerCase()];
+    }
+})();
+
+function formatUnits(value, unitType, options) {
+    if (typeof(unitType) === 'object' && !options) {
+        options = unitType;
+        unitType = undefined;
+    }
+    if (unitType == null) {  unitType = 18; }
+
+    var unitInfo = getUnitInfo(unitType);
+
+    // Make sure wei is a big number (convert as necessary)
+    value = bigNumberify(value);
 
     if (!options) { options = {}; }
 
-    var negative = wei.lt(zero);
-    if (negative) { wei = wei.mul(negative1); }
+    var negative = value.lt(zero);
+    if (negative) { value = value.mul(negative1); }
 
-    var fraction = wei.mod(tenPower18).toString(10);
-    while (fraction.length < 18) { fraction = '0' + fraction; }
+    var fraction = value.mod(unitInfo.tenPower).toString(10);
+    while (fraction.length < unitInfo.decimals) { fraction = '0' + fraction; }
 
+    // Strip off trailing zeros (but keep one if would otherwise be bare decimal point)
     if (!options.pad) {
         fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
     }
 
-    var whole = wei.div(tenPower18).toString(10);
+    var whole = value.div(unitInfo.tenPower).toString(10);
 
     if (options.commify) {
         whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
@@ -10662,43 +10725,75 @@ function formatEther(wei, options) {
     return value;
 }
 
-function parseEther(ether) {
-    if (typeof(ether) !== 'string' || !ether.match(/^-?[0-9.,]+$/)) {
-        throwError('invalid value', { input: ether });
+function parseUnits(value, unitType) {
+    var unitInfo = getUnitInfo(unitType || 18);
+    if (!unitInfo) { throwError('invalid unitType', { unitType: unitType }); }
+
+    if (typeof(value) !== 'string' || !value.match(/^-?[0-9.,]+$/)) {
+        throwError('invalid value', { input: value });
     }
 
-    var value = ether.replace(/,/g,'');
+    // Remove commas
+    var value = value.replace(/,/g,'');
 
     // Is it negative?
     var negative = (value.substring(0, 1) === '-');
     if (negative) { value = value.substring(1); }
 
-    if (value === '.') { throwError('invalid value', { input: ether }); }
+    if (value === '.') { throwError('invalid value', { input: value }); }
 
     // Split it into a whole and fractional part
     var comps = value.split('.');
-    if (comps.length > 2) { throwError('too many decimal points', { input: ether }); }
+    if (comps.length > 2) { throwError('too many decimal points', { input: value }); }
 
     var whole = comps[0], fraction = comps[1];
     if (!whole) { whole = '0'; }
     if (!fraction) { fraction = '0'; }
-    if (fraction.length > 18) { throwError('too many decimal places', { input: ether, decimals: fraction.length }); }
 
-    while (fraction.length < 18) { fraction += '0'; }
+    // Prevent underflow
+    if (fraction.length > unitInfo.decimals) {
+        throwError('too many decimal places', { input: value, decimals: fraction.length });
+    }
+
+    // Fully pad the string with zeros to get to wei
+    while (fraction.length < unitInfo.decimals) { fraction += '0'; }
 
     whole = bigNumberify(whole);
     fraction = bigNumberify(fraction);
 
-    var wei = (whole.mul(tenPower18)).add(fraction);
+    var wei = (whole.mul(unitInfo.tenPower)).add(fraction);
 
     if (negative) { wei = wei.mul(negative1); }
 
     return wei;
 }
 
+function formatEther(wei, options) {
+    return formatUnits(wei, 18, options);
+}
+
+function parseEther(ether) {
+    return parseUnits(ether, 18);
+}
+
+/*
+function convert(value, fromUnit, toUnit) {
+    var fromUnitInfo = getUnitInfo(fromUnit);
+    if (!fromUnitInfo) { throwError('invalid unit name', { unitType: fromUnit }); }
+    var toUnitInfo = getUnitInfo(toUnit);
+    if (!fromUnitInfo) { throwError('invalid unit name', { unitType: toUnit }); }
+    // @TODO: Is 
+}
+*/
+
 module.exports = {
     formatEther: formatEther,
     parseEther: parseEther,
+
+    formatUnits: formatUnits,
+    parseUnits: parseUnits,
+
+//    convert: convert,
 }
 
 },{"./bignumber.js":34,"./throw-error":49}],51:[function(require,module,exports){

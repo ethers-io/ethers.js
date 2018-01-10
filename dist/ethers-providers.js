@@ -6314,6 +6314,8 @@ utils.defineProperty(Provider.prototype, 'resolveName', function(name) {
         return Promise.resolve(utils.getAddress(name));
     } catch (error) { }
 
+    if (!this.ensAddress) { throw new Error('network does not have ENS deployed'); }
+
     var self = this;
 
     var nodeHash = utils.namehash(name);
@@ -6336,6 +6338,8 @@ utils.defineProperty(Provider.prototype, 'resolveName', function(name) {
 });
 
 utils.defineProperty(Provider.prototype, 'lookupAddress', function(address) {
+    if (!this.ensAddress) { throw new Error('network does not have ENS deployed'); }
+
     address = utils.getAddress(address);
 
     var name = address.substring(2) + '.addr.reverse'
