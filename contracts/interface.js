@@ -767,7 +767,6 @@ function Interface(abi) {
                     // @TODO: Move to parseParams
                     defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
 
-                    utils.defineProperty(func, 'name', info.name);
                     utils.defineProperty(func, 'parse', info.parse);
                     utils.defineProperty(func, 'signature', info.signature);
                     utils.defineProperty(func, 'topic', info.topics[0]);
