@@ -7212,11 +7212,27 @@ function alignSize(size) {
 }
 
 function pack(coders, values) {
+    if (Array.isArray(values)) {
+        if (coders.length !== values.length) {
+            throwError('types/values mismatch', { type: type, values: values });
+        }
+
+    } else if (values && typeof(values) === 'object') {
+        var arrayValues = [];
+        coders.forEach(function(coder) {
+            arrayValues.push(values[coder.localName]);
+        });
+        values = arrayValues;
+
+    } else {
+        throwError('invalid value', { type: 'tuple', values: values });
+    }
+
     var parts = [];
 
     coders.forEach(function(coder, index) {
         parts.push({ dynamic: coder.dynamic, value: coder.encode(values[index]) });
-    })
+    });
 
     var staticSize = 0, dynamicSize = 0;
     parts.forEach(function(part, index) {
@@ -7364,17 +7380,6 @@ function coderTuple(coders, localName) {
         name: 'tuple',
         type: type,
         encode: function(value) {
-            if (Array.isArray(value)) {
-                if (coders.length !== value.length) {
-                    throwError('types/values mismatch', { type: type, values: values });
-                }
-
-            // @TODO: If receiving an object, and we have names, create the array
-
-            } else {
-                throwError('invalid value', { type: types, values: values });
-            }
-
             return pack(coders, value);
         },
         decode: function(data, offset) {
@@ -7522,29 +7527,27 @@ function Interface(abi) {
         switch (method.type) {
             case 'constructor':
                 var func = (function() {
-                    // @TODO: Move to parseParams
-                    var inputTypes = getKeys(method.inputs, 'type');
+                    var inputParams = parseParams(method.inputs);
                     var func = function(bytecode) {
                         if (!utils.isHexString(bytecode)) {
-                            throwError('invalid bytecode', {input: bytecode});
+                            throwError('invalid bytecode', { input: bytecode });
                         }
 
                         var params = Array.prototype.slice.call(arguments, 1);
-                        if (params.length < inputTypes.length) {
+                        if (params.length < inputParams.types.length) {
                             throwError('missing parameter');
-                        } else if (params.length > inputTypes.length) {
+                        } else if (params.length > inputParams.types.length) {
                             throwError('too many parameters');
                         }
 
                         var result = {
-                            bytecode: bytecode + Interface.encodeParams(inputTypes, params).substring(2),
+                            bytecode: bytecode + Interface.encodeParams(inputParams.names, inputParams.types, params).substring(2),
                         }
 
                         return populateDescription(new DeployDescription(), result);
                     }
 
-                    // @TODO: Move to parseParams
-                    defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
+                    defineFrozen(func, 'inputs', inputParams);
 
                     return func;
                 })();
@@ -7558,7 +7561,6 @@ function Interface(abi) {
                     var inputParams = parseParams(method.inputs);
                     var outputParams = parseParams(method.outputs);
 
-                    var inputTypes = inputParams.types;
                     if (method.constant) {
                         var outputTypes = outputParams.types;
                         var outputNames = outputParams.names;
@@ -7578,13 +7580,13 @@ function Interface(abi) {
 
                         var params = Array.prototype.slice.call(arguments, 0);
 
-                        if (params.length < inputTypes.length) {
+                        if (params.length < inputParams.types.length) {
                             throwError('missing parameter');
-                        } else if (params.length > inputTypes.length) {
+                        } else if (params.length > inputParams.types.length) {
                             throwError('too many parameters');
                         }
 
-                        result.data = sighash + Interface.encodeParams(inputTypes, params).substring(2);
+                        result.data = sighash + Interface.encodeParams(inputParams.names, inputParams.types, params).substring(2);
                         if (method.constant) {
                             result.parse = function(data) {
                                 return Interface.decodeParams(
@@ -7599,9 +7601,8 @@ function Interface(abi) {
                         return populateDescription(new TransactionDescription(), result);
                     }
 
-                    // @TODO: Move the paraseParams
-                    defineFrozen(func, 'inputs', getKeys(method.inputs, 'name'));
-                    defineFrozen(func, 'outputs', getKeys(method.outputs, 'name'));
+                    defineFrozen(func, 'inputs', inputParams);
+                    defineFrozen(func, 'outputs', outputParams);
 
                     utils.defineProperty(func, 'signature', signature);
                     utils.defineProperty(func, 'sighash', sighash);
@@ -7753,12 +7754,20 @@ function Interface(abi) {
 }
 
 
-utils.defineProperty(Interface, 'encodeParams', function(types, values) {
+utils.defineProperty(Interface, 'encodeParams', function(names, types, values) {
+
+    // Names is optional, so shift over all the parameters if not provided
+    if (arguments.length < 3) {
+        values = types;
+        types = names;
+        names = null;
+    }
+
     if (types.length !== values.length) { throwError('types/values mismatch', {types: types, values: values}); }
 
     var coders = [];
-    types.forEach(function(type) {
-        coders.push(getParamCoder(type));
+    types.forEach(function(type, index) {
+        coders.push(getParamCoder(type, (names ? names[index]: undefined)));
     });
 
     return utils.hexlify(coderTuple(coders).encode(values));
