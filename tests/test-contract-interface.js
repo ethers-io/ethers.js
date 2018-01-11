@@ -95,11 +95,11 @@ function equals(actual, expected) {
 }
 
 
-function getValues(object, format) {
+function getValues(object, format, named) {
    if (Array.isArray(object)) {
        var result = [];
        object.forEach(function(object) {
-           result.push(getValues(object, format));
+           result.push(getValues(object, format, named));
        });
        return result;
    }
@@ -137,7 +137,15 @@ function getValues(object, format) {
            return utils.arrayify(object.value);
 
        case 'tuple':
-           return getValues(object.value, format);
+           var result = getValues(object.value, format, named);
+           if (named) {
+               var namedResult = {};
+               result.forEach(function(value, index) {
+                   namedResult['r' + String(index)] = value;
+               });
+               return namedResult;
+           }
+           return result;
 
        default:
            throw new Error('invalid type - ' + object.type);
@@ -236,6 +244,7 @@ describe('Contract Interface ABI v2 Decoding', function() {
     var Interface = require('../contracts/index.js').Interface;
 
     var tests = utils.loadTests('contract-interface-abi2');
+
     tests.forEach(function(test) {
         var values = getValues(JSON.parse(test.values));
         var types = JSON.parse(test.types);
@@ -255,17 +264,24 @@ describe('Contract Interface ABI v2 Encoding', function() {
     var tests = utils.loadTests('contract-interface-abi2');
     tests.forEach(function(test) {
         var values = getValues(JSON.parse(test.values));
+        var namedValues = getValues(JSON.parse(test.values), undefined, true);
         var types = JSON.parse(test.types);
         var expected = test.result;
         var title = test.name + ' => (' + test.types + ') = (' + test.value + ')';
 
-        it(('encodes parameters - ' + test.name + ' - ' + test.types), function() {
+        it(('encodes ABIv2 parameters - ' + test.name + ' - ' + test.types), function() {
             var encoded = Interface.encodeParams(types, values);
-            assert.equal(encoded, expected, 'decoded parameters - ' + title);
+            assert.equal(encoded, expected, 'encoded positional parameters - ' + title);
+
+            var contractInterface = new Interface(test.interface);
+            var outputNames = contractInterface.functions.test.outputs.names;
+            var namedEncoded = Interface.encodeParams(outputNames, types, values);
+            assert.equal(namedEncoded, expected, 'encoded named parameters - ' + title);
         });
     });
 });
 
+/*
 describe('Contract Interface ABI v2 Named Decoding', function() {
     var Interface = require('../contracts').Interface;
 
@@ -283,6 +299,7 @@ describe('Contract Interface ABI v2 Named Decoding', function() {
         //console.dir(decoded, { depth: null });
     });
 });
+*/
 
 describe('Test Contract Events', function() {
     var Interface = require('../contracts').Interface;
