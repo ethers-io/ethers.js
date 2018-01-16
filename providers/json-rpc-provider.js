@@ -54,6 +54,12 @@ function getTransaction(transaction) {
         result[key] = stripHexZeros(result[key]);
     });
 
+    // Transform "gasLimit" to "gas"
+    if (result.gasLimit != null && result.gas == null) {
+        result.gas = result.gasLimit;
+        delete result.gasLimit;
+    }
+
     return result;
 }
 
@@ -206,6 +212,10 @@ utils.defineProperty(JsonRpcProvider.prototype, '_startPending', function() {
 
 utils.defineProperty(JsonRpcProvider.prototype, '_stopPending', function() {
     this._pendingFilter = null;
+});
+
+utils.defineProperty(JsonRpcProvider, '_hexlifyTransaction', function(transaction) {
+    return getTransaction(transaction);
 });
 
 module.exports = JsonRpcProvider;

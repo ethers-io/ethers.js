@@ -1,6 +1,7 @@
 'use strict';
 
 var assert = require('assert');
+var web3 = require('web3');
 
 var providers = require('../providers');
 
@@ -258,12 +259,18 @@ function testProvider(providerName, networkName) {
         if (networkName === 'default') {
             if (providerName === 'getDefaultProvider') {
                 provider = providers.getDefaultProvider();
+            } else if (providerName === 'Web3Provider') {
+                var infuraUrl = (new providers.InfuraProvider()).url;
+                provider = new providers.Web3Provider(new web3.providers.HttpProvider(infuraUrl));
             } else {
                 provider = new providers[providerName]();
             }
         } else {
             if (providerName === 'getDefaultProvider') {
                 provider = providers.getDefaultProvider(networkName);
+            } else if (providerName === 'Web3Provider') {
+                var infuraUrl = (new providers.InfuraProvider(networkName)).url;
+                provider = new providers.Web3Provider(new web3.providers.HttpProvider(infuraUrl), networkName);
             } else {
                 provider = new providers[providerName](networkName);
             }
@@ -354,7 +361,7 @@ function testProvider(providerName, networkName) {
 }
 
 ['default', 'homestead', 'ropsten', 'rinkeby', 'kovan'].forEach(function(networkName) {
-    ['getDefaultProvider', 'InfuraProvider', 'EtherscanProvider'].forEach(function(providerName) {
+    ['getDefaultProvider', 'InfuraProvider', 'EtherscanProvider', 'Web3Provider'].forEach(function(providerName) {
 
         // HACK! Etherscan is being cloudflare heavy right now and I need
         // to release a new version; temporarily turning off these tests
