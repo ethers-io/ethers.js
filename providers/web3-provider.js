@@ -55,7 +55,7 @@ utils.defineProperty(Web3Signer.prototype, 'sendTransaction', function(transacti
     var provider = this.provider;
     transaction = JsonRpcProvider._hexlifyTransaction(transaction);
     return this.getAddress().then(function(address) {
-        transaction.from = address;
+        transaction.from = address.toLowerCase();
         return provider.send('eth_sendTransaction', [ transaction ]).then(function(hash) {
             return new Promise(function(resolve, reject) {
                 function check() {
@@ -81,13 +81,13 @@ utils.defineProperty(Web3Signer.prototype, 'signMessage', function(message) {
 
         // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
         var method = 'eth_sign';
-        var params = [ address, utils.hexlify(data) ];
+        var params = [ address.toLowerCase(), utils.hexlify(data) ];
 
         // Metamask complains about eth_sign (and on some versions hangs)
         if (provider._web3Provider.isMetaMask) {
             // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
             method = 'personal_sign';
-            params = [ utils.hexlify(data), address ];
+            params = [ utils.hexlify(data), address.toLowerCase() ];
         }
 
         return provider.send(method, params);
@@ -98,7 +98,7 @@ utils.defineProperty(Web3Signer.prototype, 'unlock', function(password) {
     var provider = this.provider;
 
     return this.getAddress().then(function(address) {
-        return provider.send('personal_unlockAccount', [ address, password, null ]);
+        return provider.send('personal_unlockAccount', [ address.toLowerCase(), password, null ]);
     });
 });
 
