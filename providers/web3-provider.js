@@ -20,8 +20,7 @@ function Web3Signer(provider, address) {
             enumerable: true,
             get: function() {
                 throw new Error('unsupported sync operation; use getAddress');
-            },
-            writable: false
+            }
         });
         utils.defineProperty(this, '_syncAddress', false);
     }
@@ -79,7 +78,19 @@ utils.defineProperty(Web3Signer.prototype, 'signMessage', function(message) {
 
     var data = ((typeof(message) === 'string') ? utils.toUtf8Bytes(message): message);
     return this.getAddress().then(function(address) {
-        return provider.send('eth_sign', [ address, utils.hexlify(data) ]);
+
+        // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
+        var method = 'eth_sign';
+        var params = [ address, utils.hexlify(data) ];
+
+        // Metamask complains about eth_sign (and on some versions hangs)
+        if (provider.isMetamask) {
+            // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
+            method = 'personal_sign';
+            params = [ utils.hexlify(data), address ];
+        }
+
+        return provider.send(method, params);
     });
 });
 
