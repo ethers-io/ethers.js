@@ -84,7 +84,7 @@ utils.defineProperty(Web3Signer.prototype, 'signMessage', function(message) {
         var params = [ address, utils.hexlify(data) ];
 
         // Metamask complains about eth_sign (and on some versions hangs)
-        if (provider.isMetamask) {
+        if (provider._web3Provider.isMetaMask) {
             // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
             method = 'personal_sign';
             params = [ utils.hexlify(data), address ];
