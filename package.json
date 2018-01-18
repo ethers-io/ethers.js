@@ -1,6 +1,6 @@
 {
   "name": "ethers",
-  "version": "2.2.1",
+  "version": "2.2.3",
   "description": "Ethereum wallet library.",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "ethers-contracts": "2.2.0",
-    "ethers-providers": "2.1.17",
+    "ethers-providers": "2.1.19",
     "ethers-utils": "2.1.9",
     "ethers-wallet": "2.1.7"
   },
