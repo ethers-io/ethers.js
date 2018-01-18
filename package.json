@@ -3,6 +3,7 @@
   "version": "2.2.3",
   "description": "Ethereum wallet library.",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
     "test-node": "./node_modules/.bin/mocha tests/test-*.js",
