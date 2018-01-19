@@ -49,23 +49,23 @@ declare module 'ethers' {
     readonly contractInterface: Interface
     readonly signer: any
     readonly provider: providers.JsonRpcProvider
-    readonly estimate: {}
-    readonly functions: {}
-    readonly events: {}
+    readonly estimate: any
+    readonly functions: any
+    readonly events: any
 
     connect(signerOrProvider: any): Contract
-    getDeployTransaction(bytecode: any, contractInterface: Interface): {}
+    getDeployTransaction(bytecode: any, contractInterface: Interface): any
   }
 
   class Interface {
-    public constructor(abi: {})
+    public constructor(abi: any)
 
     static encodeParams(names: any[], types: any[], values: any[]): string
     static decodeParams(names: any[], types: any[], values: any[]): any
 
-    readonly abi: {}
-    readonly functions: {}
-    readonly events: {}
+    readonly abi: any
+    readonly functions: any
+    readonly events: any
     readonly deployFunction: Function
   }
 
@@ -107,9 +107,9 @@ declare module 'ethers' {
       sendTransaction(signedTransaction: string): Promise<string>
       call(transaction: Transaction): Promise<string>
       estimateGas(transaction: Transaction): Promise<utils.BigNumber>
-      getBlock(blockHashOrBlockTag: string): Promise<{}>
+      getBlock(blockHashOrBlockTag: string): Promise<any>
       getTransaction(transactionHash: string): Promise<Transaction>
-      getTransactionReceipt(transactionHash: string): Promise<{}>
+      getTransactionReceipt(transactionHash: string): Promise<any>
       getLogs(filter: any): Promise<string[]>
       getEtherPrice(): Promise<number>
       resolveName(name: string): Promise<string>
