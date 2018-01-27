@@ -9641,8 +9641,7 @@ function Web3Signer(provider, address) {
             enumerable: true,
             get: function() {
                 throw new Error('unsupported sync operation; use getAddress');
-            },
-            writable: false
+            }
         });
         utils.defineProperty(this, '_syncAddress', false);
     }
@@ -9677,7 +9676,7 @@ utils.defineProperty(Web3Signer.prototype, 'sendTransaction', function(transacti
     var provider = this.provider;
     transaction = JsonRpcProvider._hexlifyTransaction(transaction);
     return this.getAddress().then(function(address) {
-        transaction.from = address;
+        transaction.from = address.toLowerCase();
         return provider.send('eth_sendTransaction', [ transaction ]).then(function(hash) {
             return new Promise(function(resolve, reject) {
                 function check() {
@@ -9700,7 +9699,19 @@ utils.defineProperty(Web3Signer.prototype, 'signMessage', function(message) {
 
     var data = ((typeof(message) === 'string') ? utils.toUtf8Bytes(message): message);
     return this.getAddress().then(function(address) {
-        return provider.send('eth_sign', [ address, utils.hexlify(data) ]);
+
+        // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
+        var method = 'eth_sign';
+        var params = [ address.toLowerCase(), utils.hexlify(data) ];
+
+        // Metamask complains about eth_sign (and on some versions hangs)
+        if (provider._web3Provider.isMetaMask) {
+            // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
+            method = 'personal_sign';
+            params = [ utils.hexlify(data), address.toLowerCase() ];
+        }
+
+        return provider.send(method, params);
     });
 });
 
@@ -9708,7 +9719,7 @@ utils.defineProperty(Web3Signer.prototype, 'unlock', function(password) {
     var provider = this.provider;
 
     return this.getAddress().then(function(address) {
-        return provider.send('personal_unlockAccount', [ address, password, null ]);
+        return provider.send('personal_unlockAccount', [ address.toLowerCase(), password, null ]);
     });
 });
 
