@@ -331,6 +331,17 @@ utils.defineProperty(Wallet.prototype, 'encrypt', function(password, options, pr
 
     if (!options) { options = {}; }
 
+    if (this.mnemonic) {
+        // Make sure we don't accidentally bubble the mnemonic up the call-stack
+        var safeOptions = {};
+        for (var key in options) { safeOptions[key] = options[key]; }
+        options = safeOptions;
+
+        // Set the mnemonic and path
+        options.mnemonic = this.mnemonic;
+        options.path = this.path
+    }
+
     return secretStorage.encrypt(this.privateKey, password, options, progressCallback);
 });
 
@@ -349,6 +360,7 @@ utils.defineProperty(Wallet, 'createRandom', function(options) {
     if (options.extraEntropy) {
         entropy = utils.keccak256(utils.concat([entropy, options.extraEntropy])).substring(0, 34);
     }
+
     var mnemonic = HDNode.entropyToMnemonic(entropy);
     return Wallet.fromMnemonic(mnemonic, options.path);
 });
@@ -372,7 +384,12 @@ utils.defineProperty(Wallet, 'fromEncryptedWallet', function(json, password, pro
         } else if (secretStorage.isValidWallet(json)) {
 
             secretStorage.decrypt(json, password, progressCallback).then(function(signingKey) {
-                resolve(new Wallet(signingKey));
+                var wallet = new Wallet(signingKey);
+                if (signingKey.mnemonic && signingKey.path) {
+                    utils.defineProperty(wallet, 'mnemonic', signingKey.mnemonic);
+                    utils.defineProperty(wallet, 'path', signingKey.path);
+                }
+                resolve(wallet);
             }, function(error) {
                 reject(error);
             });

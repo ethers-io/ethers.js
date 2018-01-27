@@ -41,6 +41,10 @@ describe('Test JSON Wallets', function() {
                     'generated correct private key - ' + wallet.privateKey);
                 assert.equal(wallet.address.toLowerCase(), test.address,
                     'generate correct address - '  + wallet.address);
+                if (test.mnemonic) {
+                    assert.equal(wallet.mnemonic, test.mnemonic,
+                        'mnemonic enabled encrypted wallet has a mnemonic');
+                }
             });
         });
     });
