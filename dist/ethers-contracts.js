@@ -64,7 +64,7 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
             var params = Array.prototype.slice.call(arguments);
 
             // If 1 extra parameter was passed in, it contains overrides
-            if (params.length == method.inputs.length + 1) {
+            if (params.length == method.inputs.types.length + 1) {
                 transaction = params.pop();
                 if (typeof(transaction) !== 'object') {
                     throw new Error('invalid transaction overrides');
