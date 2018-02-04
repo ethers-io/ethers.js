@@ -6671,7 +6671,7 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
             var params = Array.prototype.slice.call(arguments);
 
             // If 1 extra parameter was passed in, it contains overrides
-            if (params.length == method.inputs.length + 1) {
+            if (params.length == method.inputs.types.length + 1) {
                 transaction = params.pop();
                 if (typeof(transaction) !== 'object') {
                     throw new Error('invalid transaction overrides');
@@ -11393,13 +11393,23 @@ var hmac = require('ethers-utils/hmac');
 var pbkdf2 = require('ethers-utils/pbkdf2');
 var utils = require('ethers-utils');
 
-var SigningKey = require('./signing-key.js');
+var SigningKey = require('./signing-key');
+var HDNode = require('./hdnode');
+
+// @TODO: Maybe move this to HDNode?
+var defaultPath = "m/44'/60'/0'/0/0";
 
 function arrayify(hexString) {
     if (typeof(hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
         hexString = '0x' + hexString;
     }
     return utils.arrayify(hexString);
+}
+
+function zpad(value, length) {
+    value = String(value);
+    while (value.length < length) { value = '0' + value; }
+    return value;
 }
 
 function getPassword(password) {
@@ -11518,7 +11528,7 @@ utils.defineProperty(secretStorage, 'decrypt', function(json, password, progress
 
             var aesCtr = new aes.ModeOfOperation.ctr(key, counter);
 
-            return new arrayify(aesCtr.decrypt(ciphertext));
+            return arrayify(aesCtr.decrypt(ciphertext));
         }
 
         return null;
@@ -11538,6 +11548,7 @@ utils.defineProperty(secretStorage, 'decrypt', function(json, password, progress
         }
 
         var privateKey = decrypt(key.slice(0, 16), ciphertext);
+        var mnemonicKey = key.slice(32, 64);
 
         if (!privateKey) {
             reject(new Error('unsupported cipher'));
@@ -11548,6 +11559,28 @@ utils.defineProperty(secretStorage, 'decrypt', function(json, password, progress
         if (signingKey.address !== utils.getAddress(data.address)) {
             reject(new Error('address mismatch'));
             return null;
+        }
+
+        // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
+        if (searchPath(data, 'x-ethers/version') === '0.1') {
+            var mnemonicCiphertext = arrayify(searchPath(data, 'x-ethers/mnemonicCiphertext'), 'x-ethers/mnemonicCiphertext');
+            var mnemonicIv = arrayify(searchPath(data, 'x-ethers/mnemonicCounter'), 'x-ethers/mnemonicCounter');
+
+            var mnemonicCounter = new aes.Counter(mnemonicIv);
+            var mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
+
+            var path = searchPath(data, 'x-ethers/path') || defaultPath;
+
+            var entropy = arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
+            var mnemonic = HDNode.entropyToMnemonic(entropy);
+
+            if (HDNode.fromMnemonic(mnemonic).derivePath(path).privateKey != utils.hexlify(privateKey)) {
+                reject(new Error('mnemonic mismatch'));
+                return null;
+            }
+
+            signingKey.mnemonic = mnemonic;
+            signingKey.path = path;
         }
 
         return signingKey;
@@ -11579,7 +11612,7 @@ utils.defineProperty(secretStorage, 'decrypt', function(json, password, progress
                     return;
                 }
 
-                scrypt(password, salt, N, r, p, dkLen, function(error, progress, key) {
+                scrypt(password, salt, N, r, p, 64, function(error, progress, key) {
                     if (error) {
                         error.progress = progress;
                         reject(error);
@@ -11650,10 +11683,32 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
     if (privateKey instanceof SigningKey) {
         privateKey = privateKey.privateKey;
     }
-    privateKey = utils.arrayify(privateKey, 'private key');
+    privateKey = arrayify(privateKey, 'private key');
     if (privateKey.length !== 32) { throw new Error('invalid private key'); }
 
     password = getPassword(password);
+
+    var entropy = options.entropy;
+    if (options.mnemonic) {
+        if (entropy) {
+            if (HDNode.entropyToMnemonic(entropy) !== options.mnemonic) {
+                throw new Error('entropy and mnemonic mismatch');
+            }
+        } else {
+            entropy = HDNode.mnemonicToEntropy(options.mnemonic);
+        }
+    }
+    if (entropy) {
+        entropy = arrayify(entropy, 'entropy');
+    }
+
+    var path = options.path;
+    if (entropy && !path) {
+        path = defaultPath;
+    }
+
+    var client = options.client;
+    if (!client) { client = "ethers.js"; }
 
     // Check/generate the salt
     var salt = options.salt;
@@ -11668,13 +11723,17 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
     if (options.iv) {
         iv = arrayify(options.iv, 'iv');
         if (iv.length !== 16) { throw new Error('invalid iv'); }
+    } else {
+       iv = utils.randomBytes(16);
     }
 
     // Override the uuid
     var uuidRandom = options.uuid;
     if (uuidRandom) {
-        uuidRandom = utils.arrayify(uuidRandom, 'uuid');
+        uuidRandom = arrayify(uuidRandom, 'uuid');
         if (uuidRandom.length !== 16) { throw new Error('invalid uuid'); }
+    } else {
+        uuidRandom = utils.randomBytes(16);
     }
 
     // Override the scrypt password-based key derivation function parameters
@@ -11689,8 +11748,7 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
 
         // We take 64 bytes:
         //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
-        //   - 16 bytes   The initialization vector
-        //   - 16 bytes   The UUID random bytes
+        //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
         scrypt(password, salt, N, r, p, 64, function(error, progress, key) {
             if (error) {
                 error.progress = progress;
@@ -11699,15 +11757,12 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
             } else if (key) {
                 key = arrayify(key);
 
-                // These will be used to encrypt the wallet (as per Web3 secret storage)
+                // This will be used to encrypt the wallet (as per Web3 secret storage)
                 var derivedKey = key.slice(0, 16);
                 var macPrefix = key.slice(16, 32);
 
-                // Get the initialization vector
-                if (!iv) { iv = key.slice(32, 48); }
-
-                // Get the UUID random data
-                if (!uuidRandom) { uuidRandom = key.slice(48, 64); }
+                // This will be used to encrypt the mnemonic phrase (if any)
+                var mnemonicKey = key.slice(32, 64);
 
                 // Get the address for this private key
                 var address = (new SigningKey(privateKey)).address;
@@ -11723,7 +11778,7 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
                 // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
                 var data = {
                     address: address.substring(2).toLowerCase(),
-                    id: uuid.v4({random: uuidRandom}),
+                    id: uuid.v4({ random: uuidRandom }),
                     version: 3,
                     Crypto: {
                         cipher: 'aes-128-ctr',
@@ -11743,6 +11798,29 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
                     }
                 };
 
+                // If we have a mnemonic, encrypt it into the JSON wallet
+                if (entropy) {
+                    var mnemonicIv = utils.randomBytes(16);
+                    var mnemonicCounter = new aes.Counter(mnemonicIv);
+                    var mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
+                    var mnemonicCiphertext = utils.arrayify(mnemonicAesCtr.encrypt(entropy));
+                    var now = new Date();
+                    var timestamp = (now.getUTCFullYear() + '-' +
+                                     zpad(now.getUTCMonth() + 1, 2) + '-' +
+                                     zpad(now.getUTCDate(), 2) + 'T' +
+                                     zpad(now.getUTCHours(), 2) + '-' +
+                                     zpad(now.getUTCMinutes(), 2) + '-' +
+                                     zpad(now.getUTCSeconds(), 2) + '.0Z'
+                                    );
+                    data['x-ethers'] = {
+                        client: client,
+                        gethFilename: ('UTC--' + timestamp + '--' + data.address),
+                        mnemonicCounter: utils.hexlify(mnemonicIv).substring(2),
+                        mnemonicCiphertext: utils.hexlify(mnemonicCiphertext).substring(2),
+                        version: "0.1"
+                    };
+                }
+
                 if (progressCallback) { progressCallback(1); }
                 resolve(JSON.stringify(data));
 
@@ -11755,7 +11833,7 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
 
 module.exports = secretStorage;
 
-},{"./signing-key.js":56,"aes-js":2,"ethers-utils":41,"ethers-utils/hmac":39,"ethers-utils/pbkdf2":44,"scrypt-js":75,"uuid":78}],56:[function(require,module,exports){
+},{"./hdnode":53,"./signing-key":56,"aes-js":2,"ethers-utils":41,"ethers-utils/hmac":39,"ethers-utils/pbkdf2":44,"scrypt-js":75,"uuid":78}],56:[function(require,module,exports){
 'use strict';
 
 /**
@@ -12166,6 +12244,17 @@ utils.defineProperty(Wallet.prototype, 'encrypt', function(password, options, pr
 
     if (!options) { options = {}; }
 
+    if (this.mnemonic) {
+        // Make sure we don't accidentally bubble the mnemonic up the call-stack
+        var safeOptions = {};
+        for (var key in options) { safeOptions[key] = options[key]; }
+        options = safeOptions;
+
+        // Set the mnemonic and path
+        options.mnemonic = this.mnemonic;
+        options.path = this.path
+    }
+
     return secretStorage.encrypt(this.privateKey, password, options, progressCallback);
 });
 
@@ -12184,6 +12273,7 @@ utils.defineProperty(Wallet, 'createRandom', function(options) {
     if (options.extraEntropy) {
         entropy = utils.keccak256(utils.concat([entropy, options.extraEntropy])).substring(0, 34);
     }
+
     var mnemonic = HDNode.entropyToMnemonic(entropy);
     return Wallet.fromMnemonic(mnemonic, options.path);
 });
@@ -12207,7 +12297,12 @@ utils.defineProperty(Wallet, 'fromEncryptedWallet', function(json, password, pro
         } else if (secretStorage.isValidWallet(json)) {
 
             secretStorage.decrypt(json, password, progressCallback).then(function(signingKey) {
-                resolve(new Wallet(signingKey));
+                var wallet = new Wallet(signingKey);
+                if (signingKey.mnemonic && signingKey.path) {
+                    utils.defineProperty(wallet, 'mnemonic', signingKey.mnemonic);
+                    utils.defineProperty(wallet, 'path', signingKey.path);
+                }
+                resolve(wallet);
             }, function(error) {
                 reject(error);
             });

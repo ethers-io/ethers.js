@@ -5667,6 +5667,8 @@ module.exports = namehash;
 
 
 },{"./convert":23,"./keccak256":26,"./utf8":35}],28:[function(require,module,exports){
+'use strict';
+
 function defineProperty(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
