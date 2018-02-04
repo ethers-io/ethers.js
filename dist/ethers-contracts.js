@@ -5088,6 +5088,8 @@ function keccak256(data) {
 module.exports = keccak256;
 
 },{"./convert.js":8,"js-sha3":14}],10:[function(require,module,exports){
+'use strict';
+
 function defineProperty(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,

@@ -4087,6 +4087,8 @@ module.exports = namehash;
 
 
 },{"./convert":7,"./keccak256":10,"./utf8":19}],12:[function(require,module,exports){
+'use strict';
+
 function defineProperty(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -4293,6 +4295,10 @@ function _pack(type, value, isArray) {
         case 'string':
             return utf8.toUtf8Bytes(value);
         case 'bytes':
+            return convert.arrayify(value);
+        case 'bool':
+            value = (value ? '0x01': '0x00');
+            if (isArray) { return convert.padZeros(value, 32); }
             return convert.arrayify(value);
     }
 
