@@ -43,7 +43,7 @@ declare module 'ethers' {
   }
 
   class Contract {
-    public constructor(addressOrENSName: string, contractInterface: Interface, signerOrProvider: any)
+    public constructor(addressOrENSName: string, contractInterface: string | object | Interface, signerOrProvider: any)
 
     readonly address: string
     readonly contractInterface: Interface
