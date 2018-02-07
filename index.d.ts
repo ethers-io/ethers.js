@@ -55,6 +55,8 @@ declare module 'ethers' {
 
     connect(signerOrProvider: any): Contract
     getDeployTransaction(bytecode: any, contractInterface: Interface): any
+
+    [key: string]: any
   }
 
   class Interface {
