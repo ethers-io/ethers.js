@@ -10404,6 +10404,9 @@ module.exports = {
     formatEther: units.formatEther,
     parseEther: units.parseEther,
 
+    formatUnits: units.formatUnits,
+    parseUnits: units.parseUnits,
+
     keccak256: keccak256,
     sha256: sha256,
 
