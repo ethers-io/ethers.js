@@ -157,6 +157,13 @@ function hexlify(value, name) {
     throwError('invalid hexlify value', { name: name, input: value });
 }
 
+function stripHexZeros(value) {
+    while (value.length > 3 && value.substring(0, 3) === '0x0') {
+        value = '0x' + value.substring(3);
+    }
+    return value;
+}
+
 
 module.exports = {
     arrayify: arrayify,
@@ -169,4 +176,6 @@ module.exports = {
 
     hexlify: hexlify,
     isHexString: isHexString,
+
+    stripHexZeros: stripHexZeros,
 };

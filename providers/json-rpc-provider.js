@@ -11,6 +11,8 @@ var utils = (function() {
 
         hexlify: convert.hexlify,
         isHexString: convert.isHexString,
+
+        stripHexZeros: convert.stripHexZeros,
     }
 })();
 
@@ -34,13 +36,6 @@ function getResult(payload) {
     return payload.result;
 }
 
-function stripHexZeros(value) {
-    while (value.length > 3 && value.substring(0, 3) === '0x0') {
-        value = '0x' + value.substring(3);
-    }
-    return value;
-}
-
 function getTransaction(transaction) {
     var result = {};
 
@@ -51,7 +46,7 @@ function getTransaction(transaction) {
     // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
     ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function(key) {
         if (!result[key]) { return; }
-        result[key] = stripHexZeros(result[key]);
+        result[key] = utils.stripHexZeros(result[key]);
     });
 
     // Transform "gasLimit" to "gas"
@@ -117,24 +112,24 @@ utils.defineProperty(JsonRpcProvider.prototype, 'perform', function(method, para
 
         case 'getBalance':
             var blockTag = params.blockTag;
-            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+            if (utils.isHexString(blockTag)) { blockTag = utils.stripHexZeros(blockTag); }
             return this.send('eth_getBalance', [params.address, blockTag]);
 
         case 'getTransactionCount':
             var blockTag = params.blockTag;
-            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+            if (utils.isHexString(blockTag)) { blockTag = utils.stripHexZeros(blockTag); }
             return this.send('eth_getTransactionCount', [params.address, blockTag]);
 
         case 'getCode':
             var blockTag = params.blockTag;
-            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+            if (utils.isHexString(blockTag)) { blockTag = utils.stripHexZeros(blockTag); }
             return this.send('eth_getCode', [params.address, blockTag]);
 
         case 'getStorageAt':
             var position = params.position;
-            if (utils.isHexString(position)) { position = stripHexZeros(position); }
+            if (utils.isHexString(position)) { position = utils.stripHexZeros(position); }
             var blockTag = params.blockTag;
-            if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+            if (utils.isHexString(blockTag)) { blockTag = utils.stripHexZeros(blockTag); }
             return this.send('eth_getStorageAt', [params.address, position, blockTag]);
 
         case 'sendTransaction':
@@ -143,7 +138,7 @@ utils.defineProperty(JsonRpcProvider.prototype, 'perform', function(method, para
         case 'getBlock':
             if (params.blockTag) {
                 var blockTag = params.blockTag;
-                if (utils.isHexString(blockTag)) { blockTag = stripHexZeros(blockTag); }
+                if (utils.isHexString(blockTag)) { blockTag = utils.stripHexZeros(blockTag); }
                 return this.send('eth_getBlockByNumber', [blockTag, false]);
             } else if (params.blockHash) {
                 return this.send('eth_getBlockByHash', [params.blockHash, false]);
