@@ -173,7 +173,7 @@ declare module 'ethers' {
     from: string
     to: string
     data: any
-    nounce: utils.BigNumber
+    nonce: utils.BigNumber
     gasPrice: utils.BigNumber
     gasLimit: utils.BigNumber
     value: utils.BigNumber
