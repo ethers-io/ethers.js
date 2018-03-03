@@ -151,7 +151,7 @@ var blockchainData = {
     ropsten: {
         balance: {
             address: '0x03a6F7a5ce5866d9A0CCC1D4C980b8d523f80480',
-            balance: bigNumberify('21991148575128552666')
+            balance: bigNumberify('15861113897828552666')
         },
         block3: {
             hash: '0xaf2f2d55e6514389bcc388ccaf40c6ebf7b3814a199a214f1203fb674076e6df',
@@ -222,7 +222,6 @@ var blockchainData = {
 
 blockchainData['default'] = blockchainData.homestead;
 function equals(name, actual, expected) {
-
     if (expected && expected.eq) {
         if (actual == null) { assert.ok(false, name + ' - actual big number null'); }
         assert.ok(expected.eq(actual), name + ' matches');
