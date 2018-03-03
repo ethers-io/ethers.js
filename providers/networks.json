@@ -35,8 +35,14 @@
         "chainId": 4,
         "name": "rinkeby"
     },
+
     "kovan": {
         "chainId": 42,
         "name": "kovan"
+    },
+
+    "classic": {
+        "chainId": 61,
+        "name": "classic"
     }
 }
