@@ -1,19 +1,25 @@
 {
   "name": "ethers",
-  "version": "2.2.6",
+  "version": "3.0.0",
   "description": "Ethereum wallet library.",
   "main": "index.js",
   "scripts": {
     "test": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
     "test-node": "./node_modules/.bin/mocha tests/test-*.js",
-    "test-phantomjs": "./node_modules/.bin/grunt --gruntfile tests/Gruntfile.js dist && phantomjs ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",
+    "test-phantomjs": "./node_modules/.bin/grunt --gruntfile tests/Gruntfile.js dist && phantomjs --web-security=false ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",
     "version": "grunt dist"
   },
   "dependencies": {
-    "ethers-contracts": "2.2.1",
-    "ethers-providers": "2.1.19",
-    "ethers-utils": "2.1.11",
-    "ethers-wallet": "2.1.8"
+    "aes-js": "3.0.0",
+    "bn.js": "^4.4.0",
+    "elliptic": "6.3.3",
+    "hash.js": "^1.0.0",
+    "inherits": "2.0.1",
+    "js-sha3": "0.5.7",
+    "scrypt-js": "2.0.3",
+    "setimmediate": "1.0.4",
+    "uuid": "2.0.1",
+    "xmlhttprequest": "1.8.0"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
@@ -21,7 +27,13 @@
     "grunt-cli": "1.2.0",
     "grunt-contrib-uglify": "^1.0.1",
     "mocha": "^3.2.0",
-    "mocha-phantomjs-core": "2.1.2"
+    "mocha-phantomjs-core": "2.1.2",
+    "solc": "0.4.20",
+    "web3": "0.20.2"
+  },
+  "browser": {
+    "./utils/random-bytes.js": "./utils/browser-random-bytes.js",
+    "xmlhttprequest": "./providers/browser-xmlhttprequest.js"
   },
   "keywords": [
     "ethereum",

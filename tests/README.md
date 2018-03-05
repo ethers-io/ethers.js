@@ -12,38 +12,37 @@ Running Tests
 **Node.js:**
 
 ```
-# Test everything
-> npm test
+# Test everything (in node)
+/Users/ricmoo/ethers.js> npm test
+
+# Test everything (in phantomjs)
+/Users/ricmoo/ethers.js> npm run-script test-phantomjs
 
 
 # Test just one specific package
 
 # Test the Solidity ABI coder
 # - See tests/contract-interface.json.gz
-> ./node_modules/.bin/mocha test-contract-interface.js
+/Users/ricmoo/ethers.js> ./node_modules/.bin/mocha test-contract-interface.js
 
 # Test HD Wallet derivations
 # - See tests/hdnode.json.gz
-> ./node_modules/.bin/mocha test-hdnode.js
+/Users/ricmoo/ethers.js> ./node_modules/.bin/mocha test-hdnode.js
 
 # Test general utilities
 # - See tests/namehash.json.gz
 # - See tests/rlp-coder.json.gz
 # - See tests/units.json.gz
-> ./node_modules/.bin/mocha test-utils.js
+/Users/ricmoo/ethers.js> ./node_modules/.bin/mocha test-utils.js
 
 # Test accounts and addresses
 # - See tests/accounts.json.gz
-> ./node_modules/.bin/mocha test-account.js
+/Users/ricmoo/ethers.js> ./node_modules/.bin/mocha test-account.js
 
 # Test encrypting/decrypting JSON wallets and transaction parsing/signing
 # - See tests/transactions.json.gz
 # - See tests/wallets.json.gz
-> ./node_modules/.bin/mocha --timeout 100000 test-wallet.js
-
-
-# This test case has not yet been migrated to mocha
-> nodeunit run-provider.js
+/Users/ricmoo/ethers.js> ./node_modules/.bin/mocha test-wallet.js
 ```
 
 
@@ -51,12 +50,12 @@ Test Cases
 ----------
 
 The testcases take up a large amount of space, so they are gzipped in the
-`tests/` folder. See `./utils.js` for saving and loading.
+`/tests/tests/` folder. See `/tests/utils.js` for saving and loading.
 
 To dump a test case from the terminal, you can use:
 
 ```
-/Users/ethers> cat ./tests/accounts.json.gz | gunzip
+/Users/ricmoo/ethers.js> cat ./tests/accounts.json.gz | gunzip
 ```
 
 

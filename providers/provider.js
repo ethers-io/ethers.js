@@ -7,14 +7,14 @@ var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 var networks = require('./networks.json');
 
 var utils = (function() {
-    var convert = require('ethers-utils/convert');
+    var convert = require('../utils/convert');
     return {
-        defineProperty: require('ethers-utils/properties').defineProperty,
+        defineProperty: require('../utils/properties').defineProperty,
 
-        getAddress: require('ethers-utils/address').getAddress,
-        getContractAddress: require('ethers-utils/contract-address').getContractAddress,
+        getAddress: require('../utils/address').getAddress,
+        getContractAddress: require('../utils/contract-address').getContractAddress,
 
-        bigNumberify: require('ethers-utils/bignumber').bigNumberify,
+        bigNumberify: require('../utils/bignumber').bigNumberify,
         arrayify: convert.arrayify,
 
         hexlify: convert.hexlify,
@@ -23,11 +23,11 @@ var utils = (function() {
         concat: convert.concat,
         stripZeros: convert.stripZeros,
 
-        namehash: require('ethers-utils/namehash'),
+        namehash: require('../utils/namehash'),
 
-        toUtf8String: require('ethers-utils/utf8').toUtf8String,
+        toUtf8String: require('../utils/utf8').toUtf8String,
 
-        RLP: require('ethers-utils/rlp'),
+        RLP: require('../utils/rlp'),
     }
 })();
 
@@ -280,8 +280,6 @@ var formatTransactionReceiptLog = {
     blockNumber: checkNumber,
     transactionHash: checkHash,
     address: utils.getAddress,
-    // @TODO: Next major release remove this
-    type: allowNull(checkString),
     topics: arrayOf(checkHash),
     data: utils.hexlify,
     logIndex: checkNumber,
@@ -314,10 +312,6 @@ function checkTransactionReceipt(transactionReceipt) {
     result.logs.forEach(function(entry, index) {
         if (entry.transactionLogIndex == null) {
             entry.transactionLogIndex = index;
-        }
-        // @TODO: Remove this is next major version
-        if (entry.type == null) {
-            entry.type = 'mined';
         }
     });
     if (transactionReceipt.status != null) {
@@ -373,7 +367,7 @@ function checkLog(log) {
 function Provider(network) {
     if (!(this instanceof Provider)) { throw new Error('missing new'); }
 
-    network = Provider._legacyConstructor(network, arguments.length, arguments[0], arguments[1]);
+    network = Provider.getNetwork(network);
 
     // Check the ensAddress (if any)
     var ensAddress = null;
@@ -385,9 +379,6 @@ function Provider(network) {
     utils.defineProperty(this, 'chainId', network.chainId);
     utils.defineProperty(this, 'ensAddress', ensAddress);
     utils.defineProperty(this, 'name', network.name);
-
-    // @TODO: Remove in the next major release
-    utils.defineProperty(this, 'testnet', (network.name !== 'homestead'));
 
     var events = {};
     utils.defineProperty(this, '_events', events);
@@ -496,26 +487,9 @@ function(child) {
 });
 */
 
-utils.defineProperty(Provider, '_legacyConstructor', function(network, length, arg0, arg1) {
+utils.defineProperty(Provider, 'getNetwork', function(network) {
 
-    // Legacy parameters Provider(testnet:boolean, chainId:Number)
-    if (typeof(arg0) === 'boolean' || length === 2) {
-        var testnet = !!arg0;
-        var chainId = arg1;
-
-        // true => testnet, false => mainnet
-        network = networks[testnet ? 'ropsten': 'homestead'];
-
-        // Overriding chain ID
-        if (length === 2 && chainId != null) {
-            network = {
-                chainId: chainId,
-                ensAddress: network.ensAddress,
-                name: network.name
-            };
-        }
-
-    } else if (typeof(network) === 'string') {
+    if (typeof(network) === 'string') {
         network = networks[network];
         if (!network) { throw new Error('unknown network'); }
 
@@ -527,18 +501,6 @@ utils.defineProperty(Provider, '_legacyConstructor', function(network, length, a
 
     return network;
 });
-// @TODO: Remove in next major version (use networks instead)
-utils.defineProperty(Provider, 'chainId', {
-    homestead: 1,
-    morden: 2,
-    ropsten: 3,
-    rinkeby: 4,
-    kovan: 42
-});
-
-//utils.defineProperty(Provider, 'isProvider', function(object) {
-//    return (object instanceof Provider);
-//});
 
 utils.defineProperty(Provider, 'networks', networks);
 
@@ -1071,15 +1033,19 @@ utils.defineProperty(Provider.prototype, 'removeAllListeners', function(eventNam
 });
 
 utils.defineProperty(Provider.prototype, 'removeListener', function(eventName, listener) {
-    var listeners = this._events[getEventString(eventName)];
+    var eventNameString = getEventString(eventName);
+    var listeners = this._events[eventNameString];
     if (!listeners) { return 0; }
     for (var i = 0; i < listeners.length; i++) {
         if (listeners[i].listener === listener) {
             listeners.splice(i, 1);
-            return;
+            break;
         }
     }
-    if (this.listenerCount() === 0) { this.polling = false; }
+
+    if (listeners.length === 0) {
+        this.removeAllListeners(eventName);
+    }
 });
 
 utils.defineProperty(Provider, '_formatters', {

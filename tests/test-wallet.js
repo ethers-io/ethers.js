@@ -3,8 +3,15 @@
 var assert = require('assert');
 var utils = require('./utils');
 
+if (global.ethers) {
+    console.log('Using global ethers; ' + __filename);
+    var ethers = global.ethers;
+} else {
+    var ethers = require('..');
+}
+
 describe('Test Brain Wallets', function() {
-    var Wallet = require('../wallet/wallet');
+    var Wallet = ethers.Wallet;
 
     var tests = [
         {
@@ -27,7 +34,7 @@ describe('Test Brain Wallets', function() {
 });
 
 describe('Test JSON Wallets', function() {
-    var Wallet = require('../wallet/wallet');
+    var Wallet = ethers.Wallet;
     var tests = utils.loadTests('wallets');
     tests.forEach(function(test) {
         it(('decrypts wallet - ' + test.name), function() {
@@ -72,11 +79,9 @@ describe('Test JSON Wallets', function() {
 });
 
 describe('Test Transaction Signing and Parsing', function() {
-    var Wallet = require('../wallet/wallet');
+    var Wallet = ethers.Wallet;
 
-    var bigNumber = require('../utils/bignumber.js');
-    var convert = require('../utils/convert.js');
-    var getAddress = require('../utils/address.js').getAddress;
+    var getAddress = ethers.utils.getAddress;
 
     var tests = utils.loadTests('transactions');
     tests.forEach(function(test) {
@@ -155,11 +160,11 @@ describe('Test Transaction Signing and Parsing', function() {
 });
 
 describe('Test Signing Messages', function() {
-    var Wallet = require('../wallet/wallet');
+    var Wallet = ethers.Wallet;
 
-    var arrayify = require('../utils/convert').arrayify;
-    var id = require('../utils/id');
-    var toUtf8Bytes = require('../utils/utf8').toUtf8Bytes;
+    var arrayify = ethers.utils.arrayify;
+    var id = ethers.utils.id;
+    var toUtf8Bytes = ethers.utils.toUtf8Bytes;
 
     var tests = [
         // See: https://etherscan.io/verifySig/57

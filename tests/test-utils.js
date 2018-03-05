@@ -2,6 +2,13 @@
 
 var assert = require('assert');
 
+if (global.ethers) {
+    console.log('Using global ethers; ' + __filename);
+    var ethers = global.ethers;
+} else {
+    var ethers = require('..');
+}
+
 var utils = require('./utils');
 
 function equals(a, b) {
@@ -22,7 +29,7 @@ describe('Test Contract Address Generation', function() {
 
     // @TODO: Mine a large collection of these from the blockchain
 
-    var getContractAddress = require('../utils/contract-address.js').getContractAddress;
+    var getContractAddress = ethers.utils.getContractAddress;
 
     // Transaction: 0x939aa17985bc2a52a0c1cba9497ef09e092355a805a8150e30e24b753bac6864
     var Tests = [
@@ -54,7 +61,7 @@ describe('Test Contract Address Generation', function() {
 });
 
 describe('Test RLP Coder', function () {
-    var rlp = require('../utils/rlp.js');
+    var rlp = ethers.utils.RLP;
 
     var tests = utils.loadTests('rlp-coder');
 
@@ -73,42 +80,40 @@ describe('Test RLP Coder', function () {
 });
 
 describe('Test Unit Conversion', function () {
-    var units = require('../utils/units.js');
-    var bigNumberify = require('../utils/bignumber.js').bigNumberify;
 
     var tests = utils.loadTests('units');
 
     tests.forEach(function(test) {
-        var wei = bigNumberify(test.wei);
+        var wei = ethers.utils.bigNumberify(test.wei);
         var formatting = test.format || {};
 
         it (('parses ' + test.ether + ' ether'), function() {
-            assert.ok(units.parseEther(test.ether).eq(wei),
+            assert.ok(ethers.utils.parseEther(test.ether).eq(wei),
                 'parsing ether failed - ' + test.name);
         });
 
         it (('formats ' + wei.toString() + ' wei (options: ' + JSON.stringify(formatting) + ')'), function() {
-            assert.equal(units.formatEther(wei, formatting), test.etherFormat,
+            assert.equal(ethers.utils.formatEther(wei, formatting), test.etherFormat,
                    'formatting wei failed - ' + test.name);
         });
     });
 
     tests.forEach(function(test) {
-        var wei = bigNumberify(test.wei);
+        var wei = ethers.utils.bigNumberify(test.wei);
         var formatting = test.format || {};
 
         ['kwei', 'mwei', 'gwei', 'szabo', 'finny'].forEach(function(name) {
 
             if (test[name]) {
                 it(('parses ' + test[name] + ' ' + name), function() {
-                    assert.ok(units.parseUnits(test[name], name).eq(wei),
+                    assert.ok(ethers.utils.parseUnits(test[name], name).eq(wei),
                         ('parsing ' + name + ' failed - ' + test.name));
                 });
             }
 
             if (test[name + '_format']) {
                 it (('formats ' + wei.toString() + ' ' + name + ' (options: ' + JSON.stringify(formatting) + ')'), function() {
-                    assert.equal(units.formatUnits(wei, name, formatting), test[name + '_format'],
+                    assert.equal(ethers.utils.formatUnits(wei, name, formatting), test[name + '_format'],
                         ('formats ' + name + ' - ' + test.name));
                 });
             }
@@ -119,20 +124,16 @@ describe('Test Unit Conversion', function () {
 
 
 describe('Test Namehash', function() {
-    var namehash = require('../utils/namehash');
-
     var tests = utils.loadTests('namehash');
     tests.forEach(function(test) {
         it(('computes namehash - "' + test.name + '"'), function() {
-            assert.equal(namehash(test.name), test.expected,
+            assert.equal(ethers.utils.namehash(test.name), test.expected,
                 'computes namehash(' + test.name + ')');
         });
     });
 });
 
 describe('Test ID Hash Function', function () {
-    var id = require('../utils/id');
-
     var tests = [
         {
             name: 'setAddr signature hash',
@@ -143,7 +144,7 @@ describe('Test ID Hash Function', function () {
 
     tests.forEach(function(test) {
         it(('computes id - ' + test.name), function() {
-            var value = id(test.text);
+            var value = ethers.utils.id(test.text);
             assert.equal(value, test.expected,
                 'computes id(' + test.text + ')');
         });
@@ -151,14 +152,12 @@ describe('Test ID Hash Function', function () {
 });
 
 describe('Test Solidity Hash Functions', function() {
-    var solidity = require('../utils/solidity');
-
     var tests = utils.loadTests('solidity-hashes');
-    ['keccak256', 'sha256'].forEach(function(funcName) {
+    ['Keccak256', 'Sha256'].forEach(function(funcName) {
         it(('computes ' + funcName + ' correctly'), function() {
             tests.forEach(function(test, index) {
-                var result = solidity[funcName](test.types, test.values);
-                assert.equal(result, test[funcName],
+                var result = ethers.utils['solidity' + funcName](test.types, test.values);
+                assert.equal(result, test[funcName.toLowerCase()],
                     ('computes solidity-' + funcName + '(' + JSON.stringify(test.values) + ') - ' + test.types));
             });
         });
@@ -166,20 +165,18 @@ describe('Test Solidity Hash Functions', function() {
 });
 
 describe('Test Hash Functions', function() {
-    var keccak256 = require('../utils/keccak256');
-    var sha256 = require('../utils/sha2').sha256;
 
     var tests = utils.loadTests('hashes');
 
     it('computes keccak256 correctly', function() {
         tests.forEach(function(test) {
-            assert.equal(keccak256(test.data), test.keccak256, ('Keccak256 - ' + test.data));
+            assert.equal(ethers.utils.keccak256(test.data), test.keccak256, ('Keccak256 - ' + test.data));
         });
     });
 
     it('computes sha2566 correctly', function() {
         tests.forEach(function(test) {
-            assert.equal(sha256(test.data), test.sha256, ('SHA256 - ' + test.data));
+            assert.equal(ethers.utils.sha256(test.data), test.sha256, ('SHA256 - ' + test.data));
         });
     });
 });

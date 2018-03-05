@@ -1,10 +1,19 @@
 'use strict';
 
-var utils = require('ethers-utils');
-
 var Provider = require('./provider');
 var JsonRpcProvider = require('./json-rpc-provider');
 
+var utils = (function() {
+    return {
+        defineProperty: require('../utils/properties').defineProperty,
+
+        getAddress: require('../utils/address').getAddress,
+
+        toUtf8Bytes: require('../utils/utf8').toUtf8Bytes,
+
+        hexlify: require('../utils/convert').hexlify
+    }
+})();
 
 function Web3Signer(provider, address) {
     if (!(this instanceof Web3Signer)) { throw new Error('missing new'); }
@@ -114,14 +123,6 @@ function Web3Provider(web3Provider, network) {
 
     // HTTP has a host; IPC has a path.
     var url = web3Provider.host || web3Provider.path || 'unknown';
-
-    // No need to support legacy parameters since this is post-legacy network
-    if (network == null) {
-        network = Provider.networks.homestead;
-    } else if (typeof(network) === 'string') {
-        network = Provider.networks[network];
-        if (!network) { throw new Error('invalid network'); }
-    }
 
     JsonRpcProvider.call(this, url, network);
     utils.defineProperty(this, '_web3Provider', web3Provider);

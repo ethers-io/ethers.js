@@ -9,7 +9,4 @@ module.exports = {
     Wallet: Wallet,
 
     SigningKey: SigningKey,
-    _SigningKey: SigningKey,
 }
-
-require('ethers-utils/standalone.js')(module.exports);

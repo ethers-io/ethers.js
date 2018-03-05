@@ -5,16 +5,14 @@ var JsonRpcProvider = require('./json-rpc-provider');
 
 var utils = (function() {
     return {
-        defineProperty: require('ethers-utils/properties.js').defineProperty
+        defineProperty: require('../utils/properties.js').defineProperty
     }
 })();
 
 function InfuraProvider(network, apiAccessToken) {
     if (!(this instanceof InfuraProvider)) { throw new Error('missing new'); }
 
-    // Legacy constructor (testnet, apiAccessToken)
-    // @TODO: Remove this in the next major release
-    network = Provider._legacyConstructor(network, 1, arguments[0]);
+    network = Provider.getNetwork(network);
 
     var host = null;
     switch(network.name) {

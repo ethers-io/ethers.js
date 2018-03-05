@@ -3,21 +3,15 @@
 var Provider = require('./provider.js');
 
 var utils = (function() {
-    var convert = require('ethers-utils/convert.js');
+    var convert = require('../utils/convert.js');
     return {
-        defineProperty: require('ethers-utils/properties.js').defineProperty,
+        defineProperty: require('../utils/properties.js').defineProperty,
 
         hexlify: convert.hexlify,
+        hexStripZeros: convert.hexStripZeros,
     };
 })();
 
-// @TODO: Add this to utils; lots of things need this now
-function stripHexZeros(value) {
-    while (value.length > 3 && value.substring(0, 3) === '0x0') {
-        value = '0x' + value.substring(3);
-    }
-    return value;
-}
 
 function getTransactionString(transaction) {
     var result = [];
@@ -25,7 +19,7 @@ function getTransactionString(transaction) {
         if (transaction[key] == null) { continue; }
         var value = utils.hexlify(transaction[key]);
         if ({ gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
-            value = stripHexZeros(value);
+            value = utils.hexStripZeros(value);
         }
         result.push(key + '=' + value);
     }
@@ -140,8 +134,8 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
 
         case 'getStorageAt':
             url += '/api?module=proxy&action=eth_getStorageAt&address=' + params.address;
-            url += '&position=' + stripHexZeros(params.position);
-            url += '&tag=' + stripHexZeros(params.blockTag) + apiKey;
+            url += '&position=' + utils.hexStripZeros(params.position);
+            url += '&tag=' + utils.hexStripZeros(params.blockTag) + apiKey;
             return Provider.fetchJSON(url, null, getJsonResult);
 
         case 'sendTransaction':
@@ -152,7 +146,7 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
 
         case 'getBlock':
             if (params.blockTag) {
-                url += '/api?module=proxy&action=eth_getBlockByNumber&tag=' + stripHexZeros(params.blockTag);
+                url += '/api?module=proxy&action=eth_getBlockByNumber&tag=' + utils.hexStripZeros(params.blockTag);
                 url += '&boolean=false';
                 url += apiKey;
                 return Provider.fetchJSON(url, null, getJsonResult);

@@ -6,7 +6,7 @@ var Provider = require('./provider.js');
 
 var utils = (function() {
     return {
-        defineProperty: require('ethers-utils/properties.js').defineProperty,
+        defineProperty: require('../utils/properties.js').defineProperty,
     };
 })();
 

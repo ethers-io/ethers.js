@@ -1,7 +1,32 @@
 'use strict';
 
 var scrypt = require('scrypt-js');
-var utils = require('ethers-utils');
+
+var utils = (function() {
+    var convert = require('../utils/convert');
+    return {
+        defineProperty: require('../utils/properties').defineProperty,
+
+        arrayify: convert.arrayify,
+        concat: convert.concat,
+        hexlify: convert.hexlify,
+        stripZeros: convert.stripZeros,
+        hexZeroPad: convert.hexZeroPad,
+
+        bigNumberify: require('../utils/bignumber').bigNumberify,
+
+        toUtf8Bytes: require('../utils/utf8').toUtf8Bytes,
+
+        getAddress: require('../utils/address').getAddress,
+
+        keccak256: require('../utils/keccak256'),
+
+        //randomBytes: require('../utils/random-bytes'),
+        randomBytes: require('../utils').randomBytes,
+
+        RLP: require('../utils/rlp')
+    };
+})();
 
 var HDNode = require('./hdnode');
 
@@ -261,6 +286,9 @@ utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) 
         return self.provider.sendTransaction(signedTransaction).then(function(hash) {
             var transaction = Wallet.parseTransaction(signedTransaction);
             transaction.hash = hash;
+            transaction.wait = function() {
+                return self.provider.waitForTransaction(hash);
+            };
             return transaction;
         });
     });
@@ -278,14 +306,6 @@ utils.defineProperty(Wallet.prototype, 'send', function(addressOrName, amountWei
     });
 });
 
-// @TODO: this is starting to get used various places; move to utils?
-function hexPad(value, length) {
-    while (value.length < 2 * length + 2) {
-        value = '0x0' + value.substring(2);
-    }
-    return value;
-}
-
 function getHash(message) {
     var payload = utils.concat([
         utils.toUtf8Bytes('\x19Ethereum Signed Message:\n'),
@@ -299,7 +319,7 @@ utils.defineProperty(Wallet.prototype, 'signMessage', function(message) {
     var signingKey = new SigningKey(this.privateKey);
     var sig = signingKey.signDigest(getHash(message));
 
-    return (hexPad(sig.r, 32) + hexPad(sig.s, 32).substring(2) + (sig.recoveryParam ? '1c': '1b'));
+    return (utils.hexZeroPad(sig.r, 32) + utils.hexZeroPad(sig.s, 32).substring(2) + (sig.recoveryParam ? '1c': '1b'));
 });
 
 utils.defineProperty(Wallet, 'verifyMessage', function(message, signature) {

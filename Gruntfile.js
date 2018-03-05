@@ -6,42 +6,19 @@ var through = require('through');
 var ellipticPackage = require('elliptic/package.json');
 ellipticPackage = JSON.stringify({ version: ellipticPackage.version });
 
-var versions = {
-    'ethers': require('./package.json').version,
-};
-
-var depVersions = require('./package.json').dependencies;
-
-// Make sure the versions we are building a dist from are the most rescent
-[ 'contracts', 'providers', 'utils', 'wallet'].forEach(function(name) {
-    var npmVersion = require('./node_modules/ethers-' + name + '/package.json').version;
-    var liveVersion = require('./' + name + '/package.json').version;
-    var depVersion = depVersions['ethers-' + name];
-
-    if (npmVersion !== liveVersion) {
-        console.log(name, ('npm=' + npmVersion), ('live=' + liveVersion));
-        throw new Error('version mismatch for ' + name + ' - redo npm install');
-    }
-    if (npmVersion !== depVersion) {
-        console.log(name, ('npm=' + npmVersion), ('depVersion=' + depVersion));
-        throw new Error('dependency version mismatch for ' + name + ' - update package.json');
-    }
-
-    versions[name] = liveVersion;
-
-    console.log('Including: ', name + '@' + npmVersion);
-});
-
-
+var version = require('./package.json').version;
 
 
 var undef = "module.exports = undefined;";
 var empty = "module.exports = {};";
 
 // We already have a random Uint8Array browser/node safe source
-var brorand = "var randomBytes = require('ethers-utils').randomBytes; module.exports = function(length) { return randomBytes(length); };";
+// @TODO: Use path construction instead of ../..
+var brorand = "var randomBytes = require('../../utils').randomBytes; module.exports = function(length) { return randomBytes(length); };";
 
 var transforms = {
+    'ethers.js/package.json': JSON.stringify({ version: version }),
+
     // Remove the precomputed secp256k1 points
     "elliptic/lib/elliptic/precomputed/secp256k1.js": undef,
 
@@ -55,6 +32,9 @@ var transforms = {
 
     // Remove RIPEMD160
     "hash.js/lib/hash/ripemd.js": "module.exports = {ripemd160: null}",
+    "hash.js/lib/hash/sha/1.js": empty,
+    "hash.js/lib/hash/sha/224.js": empty,
+    "hash.js/lib/hash/sha/384.js": empty,
 
     // Swap out borland for the random bytes we already have
     "brorand/index.js": brorand,
@@ -84,6 +64,7 @@ function transform(path, options) {
     }, function () {
         var transformed = transformFile(path);
         if (transformed != null) {
+            console.log('Transformed:' + path);
             data = transformed;
         } else {
             unmodified[path] = true;
@@ -103,15 +84,8 @@ function postBundle(error, source, next) {
     if (error) {
         console.log(error);
 
-    } else {
-        // We setup the utils instance to be able to create a stand-alone package
-        source = source.toString();
-        var lengthBefore = source.length;
-        var source = source.replace(/"__STAND_ALONE_FALSE__"/g, '"__STAND_ALONE_TRUE__"');
-        if (lengthBefore - source.length !== 1) {
-            next(new Error('multiple stand-alone variables changed'));
-            return;
-        }
+//    } else {
+//        source = source.toString();
     }
 
     inflight--
@@ -169,7 +143,7 @@ module.exports = function(grunt) {
               [ transform, { global: true } ],
           ],
           browserifyOptions: {
-            //standalone: '_ethers',
+            standalone: 'ethers',
           },
           preBundleCB: preBundle,
           postBundleCB: postBundle

@@ -157,6 +157,19 @@ function hexlify(value, name) {
     throwError('invalid hexlify value', { name: name, input: value });
 }
 
+function hexStripZeros(value) {
+    while (value.length > 3 && value.substring(0, 3) === '0x0') {
+        value = '0x' + value.substring(3);
+    }
+    return value;
+}
+
+function hexZeroPad(value, length) {
+    while (value.length < 2 * length + 2) {
+        value = '0x0' + value.substring(2);
+    }
+    return value;
+}
 
 module.exports = {
     arrayify: arrayify,
@@ -169,4 +182,6 @@ module.exports = {
 
     hexlify: hexlify,
     isHexString: isHexString,
+    hexStripZeros: hexStripZeros,
+    hexZeroPad: hexZeroPad,
 };

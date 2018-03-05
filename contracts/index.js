@@ -8,5 +8,3 @@ module.exports = {
     Interface: Interface,
 }
 
-require('ethers-utils/standalone.js')(module.exports);
-

@@ -4,9 +4,9 @@ var aes = require('aes-js');
 var scrypt = require('scrypt-js');
 var uuid = require('uuid');
 
-var hmac = require('ethers-utils/hmac');
-var pbkdf2 = require('ethers-utils/pbkdf2');
-var utils = require('ethers-utils');
+var hmac = require('../utils/hmac');
+var pbkdf2 = require('../utils/pbkdf2');
+var utils = require('../utils');
 
 var SigningKey = require('./signing-key');
 var HDNode = require('./hdnode');

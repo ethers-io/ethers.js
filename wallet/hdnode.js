@@ -9,25 +9,25 @@ var wordlist = (function() {
 })();
 
 var utils = (function() {
-    var convert = require('ethers-utils/convert.js');
+    var convert = require('../utils/convert.js');
 
-    var sha2 = require('ethers-utils/sha2');
+    var sha2 = require('../utils/sha2');
 
-    var hmac = require('ethers-utils/hmac');
+    var hmac = require('../utils/hmac');
 
     return {
-        defineProperty: require('ethers-utils/properties.js').defineProperty,
+        defineProperty: require('../utils/properties.js').defineProperty,
 
         arrayify: convert.arrayify,
-        bigNumberify: require('ethers-utils/bignumber.js').bigNumberify,
+        bigNumberify: require('../utils/bignumber.js').bigNumberify,
         hexlify: convert.hexlify,
 
-        toUtf8Bytes: require('ethers-utils/utf8.js').toUtf8Bytes,
+        toUtf8Bytes: require('../utils/utf8.js').toUtf8Bytes,
 
         sha256: sha2.sha256,
         createSha512Hmac: hmac.createSha512Hmac,
 
-        pbkdf2: require('ethers-utils/pbkdf2.js'),
+        pbkdf2: require('../utils/pbkdf2.js'),
     }
 })();
 

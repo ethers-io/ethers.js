@@ -7,7 +7,19 @@
  */
 
 var secp256k1 = new (require('elliptic')).ec('secp256k1');
-var utils = require('ethers-utils');
+var utils = (function() {
+    var convert = require('../utils/convert');
+    return {
+        defineProperty: require('../utils/properties').defineProperty,
+
+        arrayify: convert.arrayify,
+        hexlify: convert.hexlify,
+
+        getAddress: require('../utils/address').getAddress,
+
+        keccak256: require('../utils/keccak256')
+    };
+})();
 
 
 

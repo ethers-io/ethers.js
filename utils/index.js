@@ -4,6 +4,7 @@
 //var unorm = require('unorm');
 
 var address = require('./address');
+var AbiCoder = require('./abi-coder');
 var bigNumber = require('./bignumber');
 var contractAddress = require('./contract-address');
 var convert = require('./convert');
@@ -20,6 +21,8 @@ var units = require('./units');
 
 
 module.exports = {
+    AbiCoder: AbiCoder,
+
     RLP: RLP,
 
     defineProperty: properties.defineProperty,
@@ -65,8 +68,3 @@ module.exports = {
     solidityKeccak256: solidity.keccak256,
     soliditySha256: solidity.sha256,
 }
-
-require('./standalone')({
-    utils: module.exports
-});
-

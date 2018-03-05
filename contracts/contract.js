@@ -4,13 +4,13 @@ var Interface = require('./interface.js');
 
 var utils = (function() {
     return {
-        defineProperty: require('ethers-utils/properties.js').defineProperty,
+        defineProperty: require('../utils/properties.js').defineProperty,
 
-        getAddress: require('ethers-utils/address.js').getAddress,
+        getAddress: require('../utils/address.js').getAddress,
 
-        bigNumberify: require('ethers-utils/bignumber.js').bigNumberify,
+        bigNumberify: require('../utils/bignumber.js').bigNumberify,
 
-        hexlify: require('ethers-utils/convert.js').hexlify,
+        hexlify: require('../utils/convert.js').hexlify,
     };
 })();
 
@@ -125,7 +125,11 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                         return provider.call(transaction);
 
                     }).then(function(value) {
-                        return call.parse(value);
+                        var result = call.parse(value);
+                        if (method.outputs.types.length === 1) {
+                             result = result[0];
+                        }
+                        return result;
                     });
 
                 case 'transaction':
@@ -226,7 +230,7 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
     }, this);
 
     Object.keys(contractInterface.events).forEach(function(eventName) {
-        var eventInfo = contractInterface.events[eventName]();
+        var eventInfo = contractInterface.events[eventName];
 
         var eventCallback = null;
 

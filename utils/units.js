@@ -123,22 +123,10 @@ function parseEther(ether) {
     return parseUnits(ether, 18);
 }
 
-/*
-function convert(value, fromUnit, toUnit) {
-    var fromUnitInfo = getUnitInfo(fromUnit);
-    if (!fromUnitInfo) { throwError('invalid unit name', { unitType: fromUnit }); }
-    var toUnitInfo = getUnitInfo(toUnit);
-    if (!fromUnitInfo) { throwError('invalid unit name', { unitType: toUnit }); }
-    // @TODO: Is 
-}
-*/
-
 module.exports = {
     formatEther: formatEther,
     parseEther: parseEther,
 
     formatUnits: formatUnits,
     parseUnits: parseUnits,
-
-//    convert: convert,
 }
