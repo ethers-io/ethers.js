@@ -39,7 +39,7 @@ declare module 'ethers' {
     readonly publicKey: string
     readonly address: string
 
-    scanDigest(digest: any): any
+    signDigest(digest: any): any
   }
 
   class Contract {
