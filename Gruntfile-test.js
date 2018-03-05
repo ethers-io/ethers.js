@@ -4,11 +4,12 @@ var fs = require('fs');
 
 // Create a mock-fs module that can load our gzipped test cases
 var data = {};
-fs.readdirSync('tests').forEach(function(filename) {
-    filename = 'tests/' + filename;
+fs.readdirSync('tests/tests').forEach(function(filename) {
+    if (!filename.match(/\.json\.gz$/)) { return; }
+    filename = 'tests/tests/' + filename;
     data['/' + filename] = fs.readFileSync(filename).toString('base64');
 });
-fs.writeFileSync('./dist/tests.json', JSON.stringify(data));
+fs.writeFileSync('./tests/dist/tests.json', JSON.stringify(data));
 
 
 module.exports = function(grunt) {
@@ -16,7 +17,7 @@ module.exports = function(grunt) {
     browserify: {
       dist: {
         files: {
-            'dist/tests.js': './browser.js',
+            'tests/dist/tests.js': './tests/browser.js',
         },
         options: {
           browserifyOptions: {

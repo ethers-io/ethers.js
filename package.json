@@ -6,7 +6,7 @@
   "scripts": {
     "test": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
     "test-node": "./node_modules/.bin/mocha tests/test-*.js",
-    "test-phantomjs": "./node_modules/.bin/grunt --gruntfile tests/Gruntfile.js dist && phantomjs --web-security=false ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",
+    "test-phantomjs": "./node_modules/.bin/grunt --gruntfile Gruntfile-test.js dist && phantomjs --web-security=false ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",
     "version": "grunt dist"
   },
   "dependencies": {
@@ -22,6 +22,7 @@
     "xmlhttprequest": "1.8.0"
   },
   "devDependencies": {
+    "browserify-zlib": "^0.2.0",
     "grunt": "^0.4.5",
     "grunt-browserify": "^5.0.0",
     "grunt-cli": "1.2.0",
@@ -32,6 +33,8 @@
     "web3": "0.20.2"
   },
   "browser": {
+    "fs": "./tests/browser-fs.js",
+    "zlib": "browserify-zlib",
     "./utils/random-bytes.js": "./utils/browser-random-bytes.js",
     "xmlhttprequest": "./providers/browser-xmlhttprequest.js"
   },
