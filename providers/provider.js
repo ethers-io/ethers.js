@@ -21,6 +21,7 @@ var utils = (function() {
         isHexString: convert.isHexString,
 
         concat: convert.concat,
+        hexStripZeros: convert.hexStripZeros,
         stripZeros: convert.stripZeros,
 
         namehash: require('../utils/namehash'),
@@ -125,10 +126,10 @@ function checkBlockTag(blockTag) {
     }
 
     if (typeof(blockTag) === 'number') {
-        return utils.hexlify(blockTag);
+        return utils.hexStripZeros(utils.hexlify(blockTag));
     }
 
-    if (utils.isHexString(blockTag)) { return blockTag; }
+    if (utils.isHexString(blockTag)) { return utils.hexStripZeros(blockTag); }
 
     throw new Error('invalid blockTag');
 }
@@ -655,7 +656,7 @@ utils.defineProperty(Provider.prototype, 'getStorageAt', function(addressOrName,
         var params = {
             address: address,
             blockTag: checkBlockTag(blockTag),
-            position: utils.hexlify(position),
+            position: utils.hexStripZeros(utils.hexlify(position)),
         };
         return self.perform('getStorageAt', params).then(function(result) {
             return utils.hexlify(result);

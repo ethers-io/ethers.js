@@ -134,8 +134,8 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
 
         case 'getStorageAt':
             url += '/api?module=proxy&action=eth_getStorageAt&address=' + params.address;
-            url += '&position=' + utils.hexStripZeros(params.position);
-            url += '&tag=' + utils.hexStripZeros(params.blockTag) + apiKey;
+            url += '&position=' + params.position;
+            url += '&tag=' + params.blockTag + apiKey;
             return Provider.fetchJSON(url, null, getJsonResult);
 
         case 'sendTransaction':
@@ -146,7 +146,7 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
 
         case 'getBlock':
             if (params.blockTag) {
-                url += '/api?module=proxy&action=eth_getBlockByNumber&tag=' + utils.hexStripZeros(params.blockTag);
+                url += '/api?module=proxy&action=eth_getBlockByNumber&tag=' + params.blockTag;
                 url += '&boolean=false';
                 url += apiKey;
                 return Provider.fetchJSON(url, null, getJsonResult);

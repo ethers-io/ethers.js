@@ -9585,7 +9585,7 @@ uuid.unparse = unparse;
 module.exports = uuid;
 
 },{"./rng":43}],45:[function(require,module,exports){
-module.exports={"version":"3.0.1"}
+module.exports={"version":"3.0.2"}
 },{}],46:[function(require,module,exports){
 'use strict';
 
@@ -9733,8 +9733,8 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
 
         case 'getStorageAt':
             url += '/api?module=proxy&action=eth_getStorageAt&address=' + params.address;
-            url += '&position=' + utils.hexStripZeros(params.position);
-            url += '&tag=' + utils.hexStripZeros(params.blockTag) + apiKey;
+            url += '&position=' + params.position;
+            url += '&tag=' + params.blockTag + apiKey;
             return Provider.fetchJSON(url, null, getJsonResult);
 
         case 'sendTransaction':
@@ -9745,7 +9745,7 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
 
         case 'getBlock':
             if (params.blockTag) {
-                url += '/api?module=proxy&action=eth_getBlockByNumber&tag=' + utils.hexStripZeros(params.blockTag);
+                url += '/api?module=proxy&action=eth_getBlockByNumber&tag=' + params.blockTag;
                 url += '&boolean=false';
                 url += apiKey;
                 return Provider.fetchJSON(url, null, getJsonResult);
@@ -10111,35 +10111,23 @@ utils.defineProperty(JsonRpcProvider.prototype, 'perform', function(method, para
             return this.send('eth_gasPrice', []);
 
         case 'getBalance':
-            var blockTag = params.blockTag;
-            if (utils.isHexString(blockTag)) { blockTag = utils.hexStripZeros(blockTag); }
-            return this.send('eth_getBalance', [params.address, blockTag]);
+            return this.send('eth_getBalance', [params.address, params.blockTag]);
 
         case 'getTransactionCount':
-            var blockTag = params.blockTag;
-            if (utils.isHexString(blockTag)) { blockTag = utils.hexStripZeros(blockTag); }
-            return this.send('eth_getTransactionCount', [params.address, blockTag]);
+            return this.send('eth_getTransactionCount', [params.address, params.blockTag]);
 
         case 'getCode':
-            var blockTag = params.blockTag;
-            if (utils.isHexString(blockTag)) { blockTag = utils.hexStripZeros(blockTag); }
-            return this.send('eth_getCode', [params.address, blockTag]);
+            return this.send('eth_getCode', [params.address, params.blockTag]);
 
         case 'getStorageAt':
-            var position = params.position;
-            if (utils.isHexString(position)) { position = utils.hexStripZeros(position); }
-            var blockTag = params.blockTag;
-            if (utils.isHexString(blockTag)) { blockTag = utils.hexStripZeros(blockTag); }
-            return this.send('eth_getStorageAt', [params.address, position, blockTag]);
+            return this.send('eth_getStorageAt', [params.address, params.position, params.blockTag]);
 
         case 'sendTransaction':
             return this.send('eth_sendRawTransaction', [params.signedTransaction]);
 
         case 'getBlock':
             if (params.blockTag) {
-                var blockTag = params.blockTag;
-                if (utils.isHexString(blockTag)) { blockTag = utils.hexStripZeros(blockTag); }
-                return this.send('eth_getBlockByNumber', [blockTag, false]);
+                return this.send('eth_getBlockByNumber', [params.blockTag, false]);
             } else if (params.blockHash) {
                 return this.send('eth_getBlockByHash', [params.blockHash, false]);
             }
@@ -10289,6 +10277,7 @@ var utils = (function() {
         isHexString: convert.isHexString,
 
         concat: convert.concat,
+        hexStripZeros: convert.hexStripZeros,
         stripZeros: convert.stripZeros,
 
         namehash: require('../utils/namehash'),
@@ -10393,10 +10382,10 @@ function checkBlockTag(blockTag) {
     }
 
     if (typeof(blockTag) === 'number') {
-        return utils.hexlify(blockTag);
+        return utils.hexStripZeros(utils.hexlify(blockTag));
     }
 
-    if (utils.isHexString(blockTag)) { return blockTag; }
+    if (utils.isHexString(blockTag)) { return utils.hexStripZeros(blockTag); }
 
     throw new Error('invalid blockTag');
 }
@@ -10923,7 +10912,7 @@ utils.defineProperty(Provider.prototype, 'getStorageAt', function(addressOrName,
         var params = {
             address: address,
             blockTag: checkBlockTag(blockTag),
-            position: utils.hexlify(position),
+            position: utils.hexStripZeros(utils.hexlify(position)),
         };
         return self.perform('getStorageAt', params).then(function(result) {
             return utils.hexlify(result);
