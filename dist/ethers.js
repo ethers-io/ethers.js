@@ -9585,7 +9585,7 @@ uuid.unparse = unparse;
 module.exports = uuid;
 
 },{"./rng":43}],45:[function(require,module,exports){
-module.exports={"version":"3.0.0"}
+module.exports={"version":"3.0.1"}
 },{}],46:[function(require,module,exports){
 'use strict';
 

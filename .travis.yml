@@ -2,16 +2,13 @@ language: node_js
 
 node_js:
   - "6"
-#  - "8"
+  - "8"
 
 env:
   - RUN_PHANTOMJS=0
   - RUN_PHANTOMJS=1
 
-before_script:
-  - "pushd tests && npm install && popd"
-
-#matrix:
-#  exclude:
-#    - node_js: "6"
-#      env: RUN_PHANTOMJS=1
+matrix:
+  exclude:
+    - node_js: "6"
+      env: RUN_PHANTOMJS=1
