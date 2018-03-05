@@ -13,7 +13,7 @@ Complete Ethereum wallet implementation and utilities in JavaScript.
 - Meta-classes create JavaScript objects from any contract ABI
 - Connect to Ethereum nodes over [JSON-RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC), [INFURA](https://infura.io), [Etherscan](https://etherscan.io), or [MetaMask](https://metamask.io)
 - ENS names are first-class citizens; they can almost always used instead of Ethereum addresses
-- **Tiny** (~77kb compressed; 227kb uncompressed)
+- **Tiny** (~79kb compressed; 242kb uncompressed)
 - **Complete** functionality for all your Ethereum needs
 - Extensive [documentation](https://docs.ethers.io/ethers.js/html/)
 - Large collection of test cases which are maintained and added to
