@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
 'use strict';
 
 var Interface = require('./interface.js');
@@ -252,26 +252,9 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                         provider.removeListener(eventInfo.topics, handleEvent);
                     }
 
-                    var poller = function(func, key) {
-                        return new Promise(function(resolve, reject) {
-                            function poll() {
-                                provider[func](log[key]).then(function(value) {
-                                    if (value == null) {
-                                        setTimeout(poll, 1000);
-                                        return;
-                                    }
-                                    resolve(value);
-                                }, function(error) {
-                                    reject(error);
-                                });
-                            }
-                            poll();
-                        });
-                    }
-
-                    log.getBlock = function() { return poller('getBlock', 'blockHash'); }
-                    log.getTransaction = function() { return poller('getTransaction', 'transactionHash'); }
-                    log.getTransactionReceipt = function() { return poller('getTransactionReceipt', 'transactionHash'); }
+                    log.getBlock = function() { return provider.getBlock(log.blockHash);; }
+                    log.getTransaction = function() { return provider.getTransaction(log.transactionHash); }
+                    log.getTransactionReceipt = function() { return provider.getTransactionReceipt(log.transactionHash); }
                     log.eventSignature = eventInfo.signature;
 
                     eventCallback.apply(log, Array.prototype.slice.call(result));
@@ -9585,7 +9568,7 @@ uuid.unparse = unparse;
 module.exports = uuid;
 
 },{"./rng":43}],45:[function(require,module,exports){
-module.exports={"version":"3.0.3"}
+module.exports={"version":"3.0.4"}
 },{}],46:[function(require,module,exports){
 'use strict';
 
@@ -10640,6 +10623,12 @@ function Provider(network) {
     var events = {};
     utils.defineProperty(this, '_events', events);
 
+    // We use this to track recent emitted events; for example, if we emit a "block" of 100
+    // and we get a `getBlock(100)` request which would result in null, we should retry
+    // until we get a response. This provides devs with a consistent view. Similarly for
+    // transaction hashes.
+    utils.defineProperty(this, '_emitted', { block: -1 });
+
     var self = this;
 
     var lastBlockNumber = null;
@@ -10656,6 +10645,19 @@ function Provider(network) {
 
             // Notify all listener for each block that has passed
             for (var i = lastBlockNumber + 1; i <= blockNumber; i++) {
+                if (self._emitted.block < i) {
+                    self._emitted.block = i;
+
+                    // Evict any transaction hashes or block hashes over 12 blocks
+                    // old, since they should not return null anyways
+                    Object.keys(self._emitted).forEach(function(key) {
+                        if (key === 'block') { return; }
+
+                        if (self._emitted[key] > i + 12) {
+                            delete self._emitted[key];
+                        }
+                    });
+                }
                 self.emit('block', i);
             }
 
@@ -10668,7 +10670,8 @@ function Provider(network) {
 
                 if (event.type === 'transaction') {
                     self.getTransaction(event.hash).then(function(transaction) {
-                        if (!transaction || !transaction.blockNumber) { return; }
+                        if (!transaction || transaction.blockNumber == null) { return; }
+                        self._emitted['t:' + transaction.hash.toLowerCase()] = transaction.blockNumber;
                         self.emit(event.hash, transaction);
                     });
 
@@ -10691,6 +10694,8 @@ function Provider(network) {
                     }).then(function(logs) {
                         if (logs.length === 0) { return; }
                         logs.forEach(function(log) {
+                            self._emitted['b:' + log.blockHash.toLowerCase()] = log.blockNumber;
+                            self._emitted['t:' + log.transactionHash.toLowerCase()] = log.blockNumber;
                             self.emit(event.topic, log);
                         });
                     });
@@ -10954,39 +10959,76 @@ utils.defineProperty(Provider.prototype, 'estimateGas', function(transaction) {
     });
 });
 
+function stallPromise(allowNullFunc, executeFunc) {
+    return new Promise(function(resolve, reject) {
+        var attempt = 0;
+        function check() {
+            executeFunc().then(function(result) {
+                // If we have a result, or are allowed null then we're done
+                if (result || allowNullFunc()) {
+                    resolve(result);
+
+                // Otherwise, exponential back-off (up to 10s) our next request
+                } else {
+                    attempt++;
+                    var timeout = 500 + 250 * parseInt(Math.random() * (1 << attempt));
+                    if (timeout > 10000) { timeout = 10000; }
+                    setTimeout(check, timeout);
+                }
+            }, function(error) {
+                reject(error);
+            });
+        }
+        check();
+    });
+}
 
 utils.defineProperty(Provider.prototype, 'getBlock', function(blockHashOrBlockTag) {
+    var self = this;
     try {
         var blockHash = utils.hexlify(blockHashOrBlockTag);
         if (blockHash.length === 66) {
-            return this.perform('getBlock', {blockHash: blockHash}).then(function(block) {
-                if (block == null) { return null; }
-                return checkBlock(block);
+            return stallPromise(function() {
+                return (self._emitted['b:' + blockHash.toLowerCase()] == null);
+            }, function() {
+                return self.perform('getBlock', {blockHash: blockHash}).then(function(block) {
+                    if (block == null) { return null; }
+                    return checkBlock(block);
+                });
             });
         }
-    } catch (error) {
-        console.log('DEBUG', error);
-    }
+    } catch (error) { }
 
     try {
         var blockTag = checkBlockTag(blockHashOrBlockTag);
-        return this.perform('getBlock', {blockTag: blockTag}).then(function(block) {
-            if (block == null) { return null; }
-            return checkBlock(block);
+        return stallPromise(function() {
+            if (utils.isHexString(blockTag)) {
+                var blockNumber = parseInt(blockTag.substring(2), 16);
+                return blockNumber > self._emitted.block;
+            }
+            return true;
+        }, function() {
+            return self.perform('getBlock', { blockTag: blockTag }).then(function(block) {
+                if (block == null) { return null; }
+                return checkBlock(block);
+            });
         });
-    } catch (error) {
-        console.log('DEBUG', error);
-    }
+    } catch (error) { }
 
     return Promise.reject(new Error('invalid block hash or block tag'));
 });
 
 utils.defineProperty(Provider.prototype, 'getTransaction', function(transactionHash) {
+    var self = this;
     try {
         var params = { transactionHash: checkHash(transactionHash) };
-        return this.perform('getTransaction', params).then(function(result) {
-            if (result != null) { result = checkTransaction(result); }
-            return result;
+        return stallPromise(function() {
+            return (self._emitted['t:' + transactionHash.toLowerCase()] == null);
+        }, function() {
+            return self.perform('getTransaction', params).then(function(result) {
+                if (result != null) { result = checkTransaction(result); }
+                return result;
+            });
         });
     } catch (error) {
         return Promise.reject(error);
@@ -10994,11 +11036,17 @@ utils.defineProperty(Provider.prototype, 'getTransaction', function(transactionH
 });
 
 utils.defineProperty(Provider.prototype, 'getTransactionReceipt', function(transactionHash) {
+    var self = this;
+
     try {
         var params = { transactionHash: checkHash(transactionHash) };
-        return this.perform('getTransactionReceipt', params).then(function(result) {
-            if (result != null) { result = checkTransactionReceipt(result); }
-            return result;
+        return stallPromise(function() {
+            return (self._emitted['t:' + transactionHash.toLowerCase()] == null);
+        }, function() {
+            return self.perform('getTransactionReceipt', params).then(function(result) {
+                if (result != null) { result = checkTransactionReceipt(result); }
+                return result;
+            });
         });
     } catch (error) {
         return Promise.reject(error);
