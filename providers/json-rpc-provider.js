@@ -59,7 +59,7 @@ function getTransaction(transaction) {
 function JsonRpcProvider(url, network) {
     if (!(this instanceof JsonRpcProvider)) { throw new Error('missing new'); }
 
-    if (arguments.lengt == 1) {
+    if (arguments.length == 1) {
         if (typeof(url) === 'string') {
             try {
                 network = Provider.getNetwork(url);
