@@ -56,7 +56,7 @@ function getTransaction(transaction) {
     return result;
 }
 
-function JsonRpcProvider(url, network) {
+function JsonRpcProvider(url, network, options) {
     if (!(this instanceof JsonRpcProvider)) { throw new Error('missing new'); }
 
     if (arguments.lengt == 1) {
@@ -71,7 +71,7 @@ function JsonRpcProvider(url, network) {
         }
     }
 
-    Provider.call(this, network);
+    Provider.call(this, network, options);
 
     if (!url) { url = 'http://localhost:8545'; }
 
