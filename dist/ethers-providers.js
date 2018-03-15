@@ -4187,8 +4187,8 @@ utils.defineProperty(EtherscanProvider.prototype, 'getHistory', function(address
 
     return this.resolveName(addressOrName).then(function(address) {
         url += '/api?module=account&action=txlist&address=' + address;
-        url += '&fromBlock=' + startBlock;
-        url += '&endBlock=' + endBlock;
+        url += '&startblock=' + startBlock;
+        url += '&endblock=' + endBlock;
         url += '&sort=asc';
 
         return Provider.fetchJSON(url, null, getResult).then(function(result) {
@@ -5081,13 +5081,15 @@ function Provider(network) {
         self.doPoll();
     });
 
+    var pollingInterval = 4000;
+
     var poller = null;
     Object.defineProperty(this, 'polling', {
         get: function() { return (poller != null); },
         set: function(value) {
             setTimeout(function() {
                 if (value && !poller) {
-                    poller = setInterval(doPoll, 4000);
+                    poller = setInterval(doPoll, pollingInterval);
 
                 } else if (!value && poller) {
                     clearInterval(poller);
@@ -5096,6 +5098,25 @@ function Provider(network) {
             }, 0);
         }
     });
+
+    Object.defineProperty(this, 'pollingInterval', {
+        get: function() { return pollingInterval; },
+        set: function(value) {
+            if (typeof(value) !== 'number' || value <= 0 || parseInt(value) != value) {
+                throw new Error('invalid polling interval');
+            }
+
+            pollingInterval = value;
+
+            if (poller) {
+                clearInterval(poller);
+                poller = setInterval(doPoll, pollingInterval);
+            }
+        }
+    });
+
+    // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
+    //        this will be used once we move to the WebSocket or other alternatives to polling
 }
 
 function inheritable(parent) {
