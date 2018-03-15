@@ -239,8 +239,8 @@ utils.defineProperty(EtherscanProvider.prototype, 'getHistory', function(address
 
     return this.resolveName(addressOrName).then(function(address) {
         url += '/api?module=account&action=txlist&address=' + address;
-        url += '&fromBlock=' + startBlock;
-        url += '&endBlock=' + endBlock;
+        url += '&startblock=' + startBlock;
+        url += '&endblock=' + endBlock;
         url += '&sort=asc';
 
         return Provider.fetchJSON(url, null, getResult).then(function(result) {
