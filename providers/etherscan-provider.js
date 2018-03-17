@@ -26,8 +26,8 @@ function getTransactionString(transaction) {
     return result.join('&');
 }
 
-function EtherscanProvider(network, apiKey) {
-    Provider.call(this, network);
+function EtherscanProvider(network, apiKey, options) {
+    Provider.call(this, network, options);
 
     var baseUrl = null;
     switch(this.name) {

@@ -365,7 +365,7 @@ function checkLog(log) {
     return check(formatLog, log);
 }
 
-function Provider(network) {
+function Provider(network, options) {
     if (!(this instanceof Provider)) { throw new Error('missing new'); }
 
     network = Provider.getNetwork(network);
@@ -374,6 +374,11 @@ function Provider(network) {
     var ensAddress = null;
     if (network.ensAddress) {
         ensAddress = utils.getAddress(network.ensAddress);
+    }
+
+    var pollingInterval = 4000; //Default to 4 seconds
+    if (options && options.pollingInterval) {
+        pollingInterval = options.pollingInterval;
     }
 
     // Setup our network properties

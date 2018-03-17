@@ -118,13 +118,13 @@ utils.defineProperty(Web3Signer, 'onchange', {
 });
 */
 
-function Web3Provider(web3Provider, network) {
+function Web3Provider(web3Provider, network, options) {
     if (!(this instanceof Web3Provider)) { throw new Error('missing new'); }
 
     // HTTP has a host; IPC has a path.
     var url = web3Provider.host || web3Provider.path || 'unknown';
 
-    JsonRpcProvider.call(this, url, network);
+    JsonRpcProvider.call(this, url, network, options);
     utils.defineProperty(this, '_web3Provider', web3Provider);
 }
 JsonRpcProvider.inherits(Web3Provider);

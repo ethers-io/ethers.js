@@ -9,7 +9,7 @@ var utils = (function() {
     }
 })();
 
-function InfuraProvider(network, apiAccessToken) {
+function InfuraProvider(network, apiAccessToken, options) {
     if (!(this instanceof InfuraProvider)) { throw new Error('missing new'); }
 
     network = Provider.getNetwork(network);
@@ -34,7 +34,7 @@ function InfuraProvider(network, apiAccessToken) {
 
     var url = 'https://' + host + '/' + (apiAccessToken || '');
 
-    JsonRpcProvider.call(this, url, network);
+    JsonRpcProvider.call(this, url, network, options);
 
     utils.defineProperty(this, 'apiAccessToken', apiAccessToken || null);
 }
