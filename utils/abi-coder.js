@@ -70,6 +70,7 @@ var coderNumber = function(coerceFunc, size, signed, localName) {
             return utils.padZeros(utils.arrayify(value), 32);
         },
         decode: function(data, offset) {
+            if (data.length < offset + 32) { throwError('invalid ' + name); }
             var junkLength = 32 - size;
             var value = utils.bigNumberify(data.slice(offset + junkLength, offset + 32));
             if (signed) {
@@ -98,7 +99,14 @@ var coderBoolean = function(coerceFunc, localName) {
            return uint256Coder.encode(value ? 1: 0);
         },
        decode: function(data, offset) {
-            var result = uint256Coder.decode(data, offset);
+            try {
+                var result = uint256Coder.decode(data, offset);
+            } catch (error) {
+                if (error.message === 'invalid uint256') {
+                    throwError('invalid bool');
+                }
+                throw error;
+            }
             return {
                 consumed: result.consumed,
                 value: coerceFunc('boolean', !result.value.isZero())

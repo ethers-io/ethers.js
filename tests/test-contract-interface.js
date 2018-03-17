@@ -228,3 +228,16 @@ describe('Test Interface Signatures', function() {
         })
     });
 });
+
+describe('Test Invalid Input', function() {
+    var coder = ethers.utils.AbiCoder.defaultCoder;
+    it('null input failed', function() {
+        assert.throws(function() {
+            var result = coder.decode([ 'bool' ], '0x');
+            console.log(result);
+        }, function(error) {
+            assert.equal(error.message, 'invalid bool', 'got invalid bool');
+            return true;
+        }, 'null bytes throws an error');
+    });
+});
