@@ -296,7 +296,7 @@ var formatTransactionReceipt = {
     transactionIndex: checkNumber,
     root: allowNull(checkHash),
     gasUsed: utils.bigNumberify,
-    logsBloom: utils.hexlify,
+    logsBloom: allowNull(utils.hexlify),
     blockHash: checkHash,
     transactionHash: checkHash,
     logs: arrayOf(checkTransactionReceiptLog),
