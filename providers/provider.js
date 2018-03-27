@@ -569,6 +569,7 @@ utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
                 var jsonError = new Error('invalid json response');
                 jsonError.orginialError = error;
                 jsonError.responseText = request.responseText;
+                jsonError.url = url;
                 reject(jsonError);
                 return;
             }
