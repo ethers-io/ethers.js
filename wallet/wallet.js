@@ -82,7 +82,7 @@ function Wallet(privateKey, provider) {
 
     utils.defineProperty(this, 'sign', function(transaction) {
         var chainId = transaction.chainId;
-        if (!chainId && this.provider) { chainId = this.provider.chainId; }
+        if (chainId == null && this.provider) { chainId = this.provider.chainId; }
         if (!chainId) { chainId = 0; }
 
         var raw = [];
@@ -240,6 +240,10 @@ utils.defineProperty(Wallet.prototype, 'estimateGas', function(transaction) {
 
 utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) {
     if (!this.provider) { throw new Error('missing provider'); }
+
+    if (!transaction || typeof(transaction) !== 'object') {
+        throw new Error('invalid transaction object');
+    }
 
     var gasLimit = transaction.gasLimit;
     if (gasLimit == null) { gasLimit = this.defaultGasLimit; }
