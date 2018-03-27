@@ -160,6 +160,14 @@ function Interface(abi) {
                     signature = signature.replace(/tuple/g, '');
                     signature = method.name + signature;
 
+                    var parse = function(data) {
+                        return utils.coder.decode(
+                            outputParams.names,
+                            outputParams.types,
+                            utils.arrayify(data)
+                        );
+                    };
+
                     var sighash = utils.keccak256(utils.toUtf8Bytes(signature)).substring(0, 10);
                     var func = function() {
                         var result = {
@@ -178,13 +186,7 @@ function Interface(abi) {
                         }
 
                         result.data = sighash + utils.coder.encode(inputParams.names, inputParams.types, params).substring(2);
-                        result.parse = function(data) {
-                            return utils.coder.decode(
-                                outputParams.names,
-                                outputParams.types,
-                                utils.arrayify(data)
-                            );
-                        };
+                        result.parse = parse;
 
                         return populateDescription(new FunctionDescription(), result);
                     }
@@ -193,6 +195,8 @@ function Interface(abi) {
                     utils.defineFrozen(func, 'outputs', outputParams);
 
                     utils.defineProperty(func, 'payable', (method.payable == null || !!method.payable))
+
+                    utils.defineProperty(func, 'parseResult', parse);
 
                     utils.defineProperty(func, 'signature', signature);
                     utils.defineProperty(func, 'sighash', sighash);
