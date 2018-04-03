@@ -111,6 +111,14 @@ describe('Test Unit Conversion', function () {
                 });
             }
 
+            it(("parses 8 decimals"), () => {
+             let value = wei * Math.pow(10, 8)
+             assert.ok(
+              ethers.utils.parseUnits(wei, 8),
+              ('failed to parse 8 decimals')
+             )
+            })
+
             if (test[name + '_format']) {
                 it (('formats ' + wei.toString() + ' ' + name + ' (options: ' + JSON.stringify(formatting) + ')'), function() {
                     assert.equal(ethers.utils.formatUnits(wei, name, formatting), test[name + '_format'],

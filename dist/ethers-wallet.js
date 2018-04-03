@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 
 (function(root) {
@@ -4247,7 +4247,7 @@ elliptic.curves = require('./elliptic/curves');
 elliptic.ec = require('./elliptic/ec');
 elliptic.eddsa = require('./elliptic/eddsa');
 
-},{"../package.json":19,"./elliptic/curve":8,"./elliptic/curves":11,"./elliptic/ec":12,"./elliptic/eddsa":15,"./elliptic/hmac-drbg":16,"./elliptic/utils":18,"brorand":3}],6:[function(require,module,exports){
+},{"../package.json":20,"./elliptic/curve":8,"./elliptic/curves":11,"./elliptic/ec":12,"./elliptic/eddsa":15,"./elliptic/hmac-drbg":16,"./elliptic/utils":18,"brorand":3}],6:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -5578,7 +5578,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../../elliptic":5,"../curve":8,"bn.js":2,"inherits":33}],11:[function(require,module,exports){
+},{"../../elliptic":5,"../curve":8,"bn.js":2,"inherits":19}],11:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -5785,7 +5785,7 @@ defineCurve('secp256k1', {
   ]
 });
 
-},{"../elliptic":5,"./precomputed/secp256k1":17,"hash.js":20}],12:[function(require,module,exports){
+},{"../elliptic":5,"./precomputed/secp256k1":17,"hash.js":21}],12:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -6400,7 +6400,7 @@ HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
   return utils.encode(res, enc);
 };
 
-},{"../elliptic":5,"hash.js":20}],17:[function(require,module,exports){
+},{"../elliptic":5,"hash.js":21}],17:[function(require,module,exports){
 module.exports = undefined;
 },{}],18:[function(require,module,exports){
 'use strict';
@@ -6577,8 +6577,33 @@ utils.intFromLE = intFromLE;
 
 
 },{"bn.js":2}],19:[function(require,module,exports){
-module.exports={"version":"6.3.3"}
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
 },{}],20:[function(require,module,exports){
+module.exports={"version":"6.3.3"}
+},{}],21:[function(require,module,exports){
 var hash = exports;
 
 hash.utils = require('./hash/utils');
@@ -6595,7 +6620,7 @@ hash.sha384 = hash.sha.sha384;
 hash.sha512 = hash.sha.sha512;
 hash.ripemd160 = hash.ripemd.ripemd160;
 
-},{"./hash/common":21,"./hash/hmac":22,"./hash/ripemd":23,"./hash/sha":24,"./hash/utils":31}],21:[function(require,module,exports){
+},{"./hash/common":22,"./hash/hmac":23,"./hash/ripemd":24,"./hash/sha":25,"./hash/utils":32}],22:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -6689,7 +6714,7 @@ BlockHash.prototype._pad = function pad() {
   return res;
 };
 
-},{"./utils":31,"minimalistic-assert":35}],22:[function(require,module,exports){
+},{"./utils":32,"minimalistic-assert":35}],23:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -6738,9 +6763,9 @@ Hmac.prototype.digest = function digest(enc) {
   return this.outer.digest(enc);
 };
 
-},{"./utils":31,"minimalistic-assert":35}],23:[function(require,module,exports){
+},{"./utils":32,"minimalistic-assert":35}],24:[function(require,module,exports){
 module.exports = {ripemd160: null}
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 'use strict';
 
 exports.sha1 = require('./sha/1');
@@ -6749,11 +6774,11 @@ exports.sha256 = require('./sha/256');
 exports.sha384 = require('./sha/384');
 exports.sha512 = require('./sha/512');
 
-},{"./sha/1":25,"./sha/224":26,"./sha/256":27,"./sha/384":28,"./sha/512":29}],25:[function(require,module,exports){
-arguments[4][7][0].apply(exports,arguments)
-},{"dup":7}],26:[function(require,module,exports){
+},{"./sha/1":26,"./sha/224":27,"./sha/256":28,"./sha/384":29,"./sha/512":30}],26:[function(require,module,exports){
 arguments[4][7][0].apply(exports,arguments)
 },{"dup":7}],27:[function(require,module,exports){
+arguments[4][7][0].apply(exports,arguments)
+},{"dup":7}],28:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -6860,9 +6885,9 @@ SHA256.prototype._digest = function digest(enc) {
     return utils.split32(this.h, 'big');
 };
 
-},{"../common":21,"../utils":31,"./common":30,"minimalistic-assert":35}],28:[function(require,module,exports){
+},{"../common":22,"../utils":32,"./common":31,"minimalistic-assert":35}],29:[function(require,module,exports){
 arguments[4][7][0].apply(exports,arguments)
-},{"dup":7}],29:[function(require,module,exports){
+},{"dup":7}],30:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -7194,7 +7219,7 @@ function g1_512_lo(xh, xl) {
   return r;
 }
 
-},{"../common":21,"../utils":31,"minimalistic-assert":35}],30:[function(require,module,exports){
+},{"../common":22,"../utils":32,"minimalistic-assert":35}],31:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -7245,7 +7270,7 @@ function g1_256(x) {
 }
 exports.g1_256 = g1_256;
 
-},{"../utils":31}],31:[function(require,module,exports){
+},{"../utils":32}],32:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -7500,34 +7525,9 @@ function shr64_lo(ah, al, num) {
 }
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":32,"minimalistic-assert":35}],32:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],33:[function(require,module,exports){
-arguments[4][32][0].apply(exports,arguments)
-},{"dup":32}],34:[function(require,module,exports){
+},{"inherits":33,"minimalistic-assert":35}],33:[function(require,module,exports){
+arguments[4][19][0].apply(exports,arguments)
+},{"dup":19}],34:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -8947,6 +8947,7 @@ var coderNumber = function(coerceFunc, size, signed, localName) {
             return utils.padZeros(utils.arrayify(value), 32);
         },
         decode: function(data, offset) {
+            if (data.length < offset + 32) { throwError('invalid ' + name); }
             var junkLength = 32 - size;
             var value = utils.bigNumberify(data.slice(offset + junkLength, offset + 32));
             if (signed) {
@@ -8975,7 +8976,14 @@ var coderBoolean = function(coerceFunc, localName) {
            return uint256Coder.encode(value ? 1: 0);
         },
        decode: function(data, offset) {
-            var result = uint256Coder.decode(data, offset);
+            try {
+                var result = uint256Coder.decode(data, offset);
+            } catch (error) {
+                if (error.message === 'invalid uint256') {
+                    throwError('invalid bool');
+                }
+                throw error;
+            }
             return {
                 consumed: result.consumed,
                 value: coerceFunc('boolean', !result.value.isZero())
@@ -9969,7 +9977,7 @@ module.exports = {
     createSha512Hmac: createSha512Hmac,
 };
 
-},{"./convert.js":46,"./sha2.js":55,"hash.js":20}],48:[function(require,module,exports){
+},{"./convert.js":46,"./sha2.js":55,"hash.js":21}],48:[function(require,module,exports){
 'use strict';
 
 var keccak256 = require('./keccak256');
@@ -10353,7 +10361,7 @@ module.exports = {
     createSha512: hash.sha512,
 }
 
-},{"./convert.js":46,"hash.js":20}],56:[function(require,module,exports){
+},{"./convert.js":46,"hash.js":21}],56:[function(require,module,exports){
 'use strict';
 
 var bigNumberify = require('./bignumber').bigNumberify;
@@ -10542,7 +10550,10 @@ function formatUnits(value, unitType, options) {
 
 function parseUnits(value, unitType) {
     var unitInfo = getUnitInfo(unitType || 18);
-    if (!unitInfo) { throwError('invalid unitType', { unitType: unitType }); }
+    
+    if (!unitInfo) {
+     if (typeof(unitType) === 'string') throwError('invalid unitType', { unitType: unitType });
+    }
 
     if (typeof(value) !== 'string' || !value.match(/^-?[0-9.,]+$/)) {
         throwError('invalid value', { input: value });
@@ -11614,7 +11625,7 @@ function Wallet(privateKey, provider) {
 
     utils.defineProperty(this, 'sign', function(transaction) {
         var chainId = transaction.chainId;
-        if (!chainId && this.provider) { chainId = this.provider.chainId; }
+        if (chainId == null && this.provider) { chainId = this.provider.chainId; }
         if (!chainId) { chainId = 0; }
 
         var raw = [];
@@ -11772,6 +11783,10 @@ utils.defineProperty(Wallet.prototype, 'estimateGas', function(transaction) {
 
 utils.defineProperty(Wallet.prototype, 'sendTransaction', function(transaction) {
     if (!this.provider) { throw new Error('missing provider'); }
+
+    if (!transaction || typeof(transaction) !== 'object') {
+        throw new Error('invalid transaction object');
+    }
 
     var gasLimit = transaction.gasLimit;
     if (gasLimit == null) { gasLimit = this.defaultGasLimit; }
