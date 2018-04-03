@@ -2,13 +2,11 @@ language: node_js
 
 node_js:
   - "6"
-#  - "8"
 
-env:
-  - RUN_PHANTOMJS=0
-  - RUN_PHANTOMJS=1
+before_script:
+  - npm install -g yarn grunt
 
-#matrix:
-#  exclude:
-#    - node_js: "6"
-#      env: RUN_PHANTOMJS=1
+script:
+  - yarn install
+  - grunt dist
+  - yarn run test

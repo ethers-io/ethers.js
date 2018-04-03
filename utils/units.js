@@ -74,7 +74,15 @@ function formatUnits(value, unitType, options) {
 
 function parseUnits(value, unitType) {
     var unitInfo = getUnitInfo(unitType || 18);
-    if (!unitInfo) { throwError('invalid unitType', { unitType: unitType }); }
+
+    if (!unitInfo) {
+     if (typeof(unitType) === 'string') {
+      throwError('invalid unitType', { unitType: unitType });
+     } else {
+      var wei = bigNumberify(value).mul(Math.pow(10, parseInt(unitType)))
+      return wei
+     }
+    }
 
     if (typeof(value) !== 'string' || !value.match(/^-?[0-9.,]+$/)) {
         throwError('invalid value', { input: value });

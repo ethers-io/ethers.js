@@ -98,6 +98,14 @@ describe('Test Unit Conversion', function () {
         });
     });
 
+    it(("parses 8 decimals"), () => {
+     let value = 100 * Math.pow(10, 8)
+     assert.ok(
+      ethers.utils.parseUnits(100, 8),
+      ('failed to parse 8 decimals')
+     )
+    })
+
     tests.forEach(function(test) {
         var wei = ethers.utils.bigNumberify(test.wei);
         var formatting = test.format || {};

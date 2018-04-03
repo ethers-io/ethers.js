@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict';
 
 var Interface = require('./interface.js');
@@ -488,6 +488,14 @@ function Interface(abi) {
                     signature = signature.replace(/tuple/g, '');
                     signature = method.name + signature;
 
+                    var parse = function(data) {
+                        return utils.coder.decode(
+                            outputParams.names,
+                            outputParams.types,
+                            utils.arrayify(data)
+                        );
+                    };
+
                     var sighash = utils.keccak256(utils.toUtf8Bytes(signature)).substring(0, 10);
                     var func = function() {
                         var result = {
@@ -506,13 +514,7 @@ function Interface(abi) {
                         }
 
                         result.data = sighash + utils.coder.encode(inputParams.names, inputParams.types, params).substring(2);
-                        result.parse = function(data) {
-                            return utils.coder.decode(
-                                outputParams.names,
-                                outputParams.types,
-                                utils.arrayify(data)
-                            );
-                        };
+                        result.parse = parse;
 
                         return populateDescription(new FunctionDescription(), result);
                     }
@@ -521,6 +523,8 @@ function Interface(abi) {
                     utils.defineFrozen(func, 'outputs', outputParams);
 
                     utils.defineProperty(func, 'payable', (method.payable == null || !!method.payable))
+
+                    utils.defineProperty(func, 'parseResult', parse);
 
                     utils.defineProperty(func, 'signature', signature);
                     utils.defineProperty(func, 'sighash', sighash);
@@ -4649,6 +4653,7 @@ var coderNumber = function(coerceFunc, size, signed, localName) {
             return utils.padZeros(utils.arrayify(value), 32);
         },
         decode: function(data, offset) {
+            if (data.length < offset + 32) { throwError('invalid ' + name); }
             var junkLength = 32 - size;
             var value = utils.bigNumberify(data.slice(offset + junkLength, offset + 32));
             if (signed) {
@@ -4677,7 +4682,14 @@ var coderBoolean = function(coerceFunc, localName) {
            return uint256Coder.encode(value ? 1: 0);
         },
        decode: function(data, offset) {
-            var result = uint256Coder.decode(data, offset);
+            try {
+                var result = uint256Coder.decode(data, offset);
+            } catch (error) {
+                if (error.message === 'invalid uint256') {
+                    throwError('invalid bool');
+                }
+                throw error;
+            }
             return {
                 consumed: result.consumed,
                 value: coerceFunc('boolean', !result.value.isZero())
