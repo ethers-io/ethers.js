@@ -4,8 +4,9 @@ node_js:
   - "6"
 
 before_script:
-  - npm install -g yarn
+  - npm install -g yarn grunt
 
 script:
   - yarn install
+  - grunt dist
   - yarn run test
