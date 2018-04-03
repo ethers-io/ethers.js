@@ -2,13 +2,14 @@ language: node_js
 
 node_js:
   - "6"
-#  - "8"
 
 env:
   - RUN_PHANTOMJS=0
   - RUN_PHANTOMJS=1
 
-#matrix:
-#  exclude:
-#    - node_js: "6"
-#      env: RUN_PHANTOMJS=1
+before_script:
+  - npm install -g yarn
+
+script:
+  - yarn install
+  - yarn run test
