@@ -92,6 +92,18 @@ function checkNumber(number) {
     return utils.bigNumberify(number).toNumber();
 }
 
+function checkDifficulty(number) {
+    var value = utils.bigNumberify(number);
+
+    try {
+        value = value.toNumber();
+    } catch (error) {
+        value = null;
+    }
+
+    return value;
+}
+
 function checkBoolean(value) {
     if (typeof(value) === 'boolean') { return value; }
     if (typeof(value) === 'string') {
@@ -141,7 +153,7 @@ var formatBlock = {
 
     timestamp: checkNumber,
     nonce: allowNull(utils.hexlify),
-    difficulty: allowNull(checkNumber),
+    difficulty: checkDifficulty,
 
     gasLimit: utils.bigNumberify,
     gasUsed: utils.bigNumberify,
