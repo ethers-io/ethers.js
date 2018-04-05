@@ -76,6 +76,10 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                         throw new Error('unknown transaction override ' + key);
                     }
                 }
+            } else if (params.length > method.inputs.types.length) {
+                throw new Error('too many parameters');
+            } else if (params.length < method.inputs.types.length) {
+                throw new Error('too few parameters');
             }
 
             // Check overrides make sense
