@@ -102,18 +102,21 @@ describe('Test Unit Conversion', function () {
         var wei = ethers.utils.bigNumberify(test.wei);
         var formatting = test.format || {};
 
-        ['kwei', 'mwei', 'gwei', 'szabo', 'finny'].forEach(function(name) {
+        ['kwei', 'mwei', 'gwei', 'szabo', 'finny', 'satoshi'].forEach(function(name) {
+
+            var unitName = name;
+            if (name === 'satoshi') { unitName = 8; }
 
             if (test[name]) {
                 it(('parses ' + test[name] + ' ' + name), function() {
-                    assert.ok(ethers.utils.parseUnits(test[name], name).eq(wei),
+                    assert.ok(ethers.utils.parseUnits(test[name], unitName).eq(wei),
                         ('parsing ' + name + ' failed - ' + test.name));
                 });
             }
 
             if (test[name + '_format']) {
                 it (('formats ' + wei.toString() + ' ' + name + ' (options: ' + JSON.stringify(formatting) + ')'), function() {
-                    assert.equal(ethers.utils.formatUnits(wei, name, formatting), test[name + '_format'],
+                    assert.equal(ethers.utils.formatUnits(wei, unitName, formatting), test[name + '_format'],
                         ('formats ' + name + ' - ' + test.name));
                 });
             }
