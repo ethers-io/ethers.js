@@ -77,6 +77,10 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                         throw new Error('unknown transaction override ' + key);
                     }
                 }
+            } else if (params.length > method.inputs.types.length) {
+                throw new Error('too many parameters');
+            } else if (params.length < method.inputs.types.length) {
+                throw new Error('too few parameters');
             }
 
             // Check overrides make sense
@@ -488,6 +492,14 @@ function Interface(abi) {
                     signature = signature.replace(/tuple/g, '');
                     signature = method.name + signature;
 
+                    var parse = function(data) {
+                        return utils.coder.decode(
+                            outputParams.names,
+                            outputParams.types,
+                            utils.arrayify(data)
+                        );
+                    };
+
                     var sighash = utils.keccak256(utils.toUtf8Bytes(signature)).substring(0, 10);
                     var func = function() {
                         var result = {
@@ -506,13 +518,7 @@ function Interface(abi) {
                         }
 
                         result.data = sighash + utils.coder.encode(inputParams.names, inputParams.types, params).substring(2);
-                        result.parse = function(data) {
-                            return utils.coder.decode(
-                                outputParams.names,
-                                outputParams.types,
-                                utils.arrayify(data)
-                            );
-                        };
+                        result.parse = parse;
 
                         return populateDescription(new FunctionDescription(), result);
                     }
@@ -521,6 +527,8 @@ function Interface(abi) {
                     utils.defineFrozen(func, 'outputs', outputParams);
 
                     utils.defineProperty(func, 'payable', (method.payable == null || !!method.payable))
+
+                    utils.defineProperty(func, 'parseResult', parse);
 
                     utils.defineProperty(func, 'signature', signature);
                     utils.defineProperty(func, 'sighash', sighash);
@@ -4649,6 +4657,7 @@ var coderNumber = function(coerceFunc, size, signed, localName) {
             return utils.padZeros(utils.arrayify(value), 32);
         },
         decode: function(data, offset) {
+            if (data.length < offset + 32) { throwError('invalid ' + name); }
             var junkLength = 32 - size;
             var value = utils.bigNumberify(data.slice(offset + junkLength, offset + 32));
             if (signed) {
@@ -4677,7 +4686,14 @@ var coderBoolean = function(coerceFunc, localName) {
            return uint256Coder.encode(value ? 1: 0);
         },
        decode: function(data, offset) {
-            var result = uint256Coder.decode(data, offset);
+            try {
+                var result = uint256Coder.decode(data, offset);
+            } catch (error) {
+                if (error.message === 'invalid uint256') {
+                    throwError('invalid bool');
+                }
+                throw error;
+            }
             return {
                 consumed: result.consumed,
                 value: coerceFunc('boolean', !result.value.isZero())

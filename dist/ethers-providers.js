@@ -4158,7 +4158,29 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
 
 
             url += apiKey;
-            return Provider.fetchJSON(url, null, getResult);
+
+            var self = this;
+            return Provider.fetchJSON(url, null, getResult).then(function(logs) {
+                var txs = {};
+
+                var seq = Promise.resolve();
+                logs.forEach(function(log) {
+                    seq = seq.then(function() {
+                        if (log.blockHash != null) { return; }
+                        log.blockHash = txs[log.transactionHash];
+                        if (log.blockHash == null) {
+                            return self.getTransaction(log.transactionHash).then(function(tx) {
+                                txs[log.transactionHash] = tx.blockHash;
+                                log.blockHash = tx.blockHash;
+                            });
+                        }
+                    });
+                })
+
+                return seq.then(function() {
+                    return logs;
+                });
+            });
 
         case 'getEtherPrice':
             if (this.name !== 'homestead') { return Promise.resolve(0.0); }
@@ -4697,6 +4719,18 @@ function checkNumber(number) {
     return utils.bigNumberify(number).toNumber();
 }
 
+function checkDifficulty(number) {
+    var value = utils.bigNumberify(number);
+
+    try {
+        value = value.toNumber();
+    } catch (error) {
+        value = null;
+    }
+
+    return value;
+}
+
 function checkBoolean(value) {
     if (typeof(value) === 'boolean') { return value; }
     if (typeof(value) === 'string') {
@@ -4746,7 +4780,7 @@ var formatBlock = {
 
     timestamp: checkNumber,
     nonce: allowNull(utils.hexlify),
-    difficulty: allowNull(checkNumber),
+    difficulty: checkDifficulty,
 
     gasLimit: utils.bigNumberify,
     gasUsed: utils.bigNumberify,
@@ -4901,7 +4935,7 @@ var formatTransactionReceipt = {
     transactionIndex: checkNumber,
     root: allowNull(checkHash),
     gasUsed: utils.bigNumberify,
-    logsBloom: utils.hexlify,
+    logsBloom: allowNull(utils.hexlify),
     blockHash: checkHash,
     transactionHash: checkHash,
     logs: arrayOf(checkTransactionReceiptLog),
@@ -5174,6 +5208,7 @@ utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
                 var jsonError = new Error('invalid json response');
                 jsonError.orginialError = error;
                 jsonError.responseText = request.responseText;
+                jsonError.url = url;
                 reject(jsonError);
                 return;
             }

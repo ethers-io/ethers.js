@@ -4943,6 +4943,7 @@ var coderNumber = function(coerceFunc, size, signed, localName) {
             return utils.padZeros(utils.arrayify(value), 32);
         },
         decode: function(data, offset) {
+            if (data.length < offset + 32) { throwError('invalid ' + name); }
             var junkLength = 32 - size;
             var value = utils.bigNumberify(data.slice(offset + junkLength, offset + 32));
             if (signed) {
@@ -4971,7 +4972,14 @@ var coderBoolean = function(coerceFunc, localName) {
            return uint256Coder.encode(value ? 1: 0);
         },
        decode: function(data, offset) {
-            var result = uint256Coder.decode(data, offset);
+            try {
+                var result = uint256Coder.decode(data, offset);
+            } catch (error) {
+                if (error.message === 'invalid uint256') {
+                    throwError('invalid bool');
+                }
+                throw error;
+            }
             return {
                 consumed: result.consumed,
                 value: coerceFunc('boolean', !result.value.isZero())
@@ -6402,20 +6410,36 @@ var names = [
 var getUnitInfo = (function() {
     var unitInfos = {};
 
+    function getUnitInfo(value) {
+        return {
+            decimals: value.length - 1,
+            tenPower: bigNumberify(value)
+        };
+    }
+
+    // Cache the common units
     var value = '1';
     names.forEach(function(name) {
-        var info = {
-            decimals: value.length - 1,
-            tenPower: bigNumberify(value),
-            name: name
-        };
+        var info = getUnitInfo(value);
         unitInfos[name.toLowerCase()] = info;
         unitInfos[String(info.decimals)] = info;
         value += '000';
     });
 
     return function(name) {
-        return unitInfos[String(name).toLowerCase()];
+        // Try the cache
+        var info = unitInfos[String(name).toLowerCase()];
+
+        if (!info && typeof(name) === 'number' && parseInt(name) == name && name >= 0 && name <= 256) {
+            var value = '1';
+            for (var i = 0; i < name; i++) { value += '0'; }
+            info = getUnitInfo(value);
+        }
+
+        // Make sure we got something
+        if (!info) { throwError('invalid unitType', { unitType: name }); }
+
+        return info;
     }
 })();
 
@@ -6424,8 +6448,8 @@ function formatUnits(value, unitType, options) {
         options = unitType;
         unitType = undefined;
     }
-    if (unitType == null) {  unitType = 18; }
 
+    if (unitType == null) { unitType = 18; }
     var unitInfo = getUnitInfo(unitType);
 
     // Make sure wei is a big number (convert as necessary)
@@ -6458,8 +6482,8 @@ function formatUnits(value, unitType, options) {
 }
 
 function parseUnits(value, unitType) {
-    var unitInfo = getUnitInfo(unitType || 18);
-    if (!unitInfo) { throwError('invalid unitType', { unitType: unitType }); }
+    if (unitType == null) { unitType = 18; }
+    var unitInfo = getUnitInfo(unitType);
 
     if (typeof(value) !== 'string' || !value.match(/^-?[0-9.,]+$/)) {
         throwError('invalid value', { input: value });
