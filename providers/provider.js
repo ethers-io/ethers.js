@@ -6,6 +6,8 @@ var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 var networks = require('./networks.json');
 
+var BN = require('bn.js');
+
 var utils = (function() {
     var convert = require('../utils/convert');
     return {
@@ -58,6 +60,15 @@ function allowNull(check, nullValue) {
         if (value == null) { return nullValue; }
         return check(value);
     });
+}
+
+function allowTooBigNumber(check) {
+  return function(value) {
+    if (utils.bigNumberify(value).gte(new BN('0x20000000000000', 'hex'))) {
+      return value;
+    }
+    return check(value);
+  };
 }
 
 function allowFalsish(check, replaceValue) {
@@ -141,7 +152,7 @@ var formatBlock = {
 
     timestamp: checkNumber,
     nonce: allowNull(utils.hexlify),
-    difficulty: allowNull(checkNumber),
+    difficulty: allowNull(allowTooBigNumber(checkNumber)),
 
     gasLimit: utils.bigNumberify,
     gasUsed: utils.bigNumberify,
