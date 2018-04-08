@@ -185,6 +185,7 @@ var formatTransaction = {
    blockHash: allowNull(checkHash, null),
    blockNumber: allowNull(checkNumber, null),
    transactionIndex: allowNull(checkNumber, null),
+   confirmations: allowNull(checkNumber, null),
 
    from: utils.getAddress,
 
