@@ -180,8 +180,8 @@ utils.defineProperty(Wallet, 'parseTransaction', function(rawTransaction) {
     var r = utils.arrayify(signedTransaction[7]);
     var s = utils.arrayify(signedTransaction[8]);
 
-    if (v.length === 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
-        transaction.v = v[0];
+    if (v.length >= 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
+        transaction.v = utils.bigNumberify(v).toNumber();
         transaction.r = signedTransaction[7];
         transaction.s = signedTransaction[8];
 
