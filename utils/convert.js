@@ -4,7 +4,8 @@
  */
 
 var defineProperty = require('./properties.js').defineProperty;
-var throwError = require('./throw-error');
+
+var errors = require('./errors');
 
 function addSlice(array) {
     if (array.slice) { return array; }
@@ -32,7 +33,10 @@ function isArrayish(value) {
     return true;
 }
 
-function arrayify(value, name) {
+function arrayify(value) {
+    if (value == null) {
+        errors.throwError('cannot convert null value to array', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
+    }
 
     if (value && value.toHexString) {
         value = value.toHexString();
@@ -48,13 +52,19 @@ function arrayify(value, name) {
         }
 
         return addSlice(new Uint8Array(result));
+
+    } else if (typeof(value) === 'string') {
+        if (value.match(/^[0-9a-fA-F]*$/)) {
+             errors.throwError('hex string must have 0x prefix', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
+        }
+        errors.throwError('invalid hexidecimal string', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
     }
 
     if (isArrayish(value)) {
         return addSlice(new Uint8Array(value));
     }
 
-    throwError('invalid arrayify value', { name: name, input: value });
+    errors.throwError('invalid arrayify value', { arg: 'value', value: value, type: typeof(value) });
 }
 
 function concat(objects) {
@@ -113,7 +123,7 @@ function isHexString(value, length) {
 
 var HexCharacters = '0123456789abcdef';
 
-function hexlify(value, name) {
+function hexlify(value) {
 
     if (value && value.toHexString) {
         return value.toHexString();
@@ -121,7 +131,7 @@ function hexlify(value, name) {
 
     if (typeof(value) === 'number') {
         if (value < 0) {
-            throwError('cannot hexlify negative value', { name: name, input: value });
+            errors.throwError('cannot hexlify negative value', errors.INVALID_ARG, { arg: 'value', value: value });
         }
 
         var hex = '';
@@ -154,7 +164,7 @@ function hexlify(value, name) {
         return '0x' + result.join('');
     }
 
-    throwError('invalid hexlify value', { name: name, input: value });
+    errors.throwError('invalid hexlify value', { arg: 'value', value: value });
 }
 
 function hexStripZeros(value) {
@@ -171,6 +181,31 @@ function hexZeroPad(value, length) {
     return value;
 }
 
+/* @TODO: Add something like this to make slicing code easier to understand
+function hexSlice(hex, start, end) {
+    hex = hexlify(hex);
+    return '0x' + hex.substring(2 + start * 2, 2 + end * 2);
+}
+*/
+
+function splitSignature(signature) {
+    signature = arrayify(signature);
+    if (signature.length !== 65) {
+        throw new Error('invalid signature');
+    }
+
+    var v = signature[64];
+    if (v !== 27 && v !== 28) {
+        v = 27 + (v % 2);
+    }
+
+    return {
+        r: hexlify(signature.slice(0, 32)),
+        s: hexlify(signature.slice(32, 64)),
+        v: v
+    }
+}
+
 module.exports = {
     arrayify: arrayify,
     isArrayish: isArrayish,
@@ -179,6 +214,8 @@ module.exports = {
 
     padZeros: padZeros,
     stripZeros: stripZeros,
+
+    splitSignature: splitSignature,
 
     hexlify: hexlify,
     isHexString: isHexString,

@@ -183,3 +183,31 @@ describe('Test Hash Functions', function() {
         });
     });
 });
+
+describe('Test Solidity splitSignature', function() {
+    var convert = require('../utils/convert');
+
+    it('splits a canonical signature', function() {
+        var r = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
+        var s = '0xcafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7e';
+        for (var v = 27; v <= 28; v++) {
+            var signature = convert.concat([ r, s, [ v ] ]);
+            var sig = convert.splitSignature(signature);
+            assert.equal(sig.r, r, 'split r correctly');
+            assert.equal(sig.s, s, 'split s correctly');
+            assert.equal(sig.v, v, 'split v correctly');
+        }
+    });
+
+    it('splits a legacy signature', function() {
+        var r = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
+        var s = '0xcafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7e';
+        for (var v = 27; v <= 28; v++) {
+            var signature = convert.concat([ r, s, [ v - 27 ] ]);
+            var sig = convert.splitSignature(signature);
+            assert.equal(sig.r, r, 'split r correctly');
+            assert.equal(sig.s, s, 'split s correctly');
+            assert.equal(sig.v, v, 'split v correctly');
+        }
+    });
+});

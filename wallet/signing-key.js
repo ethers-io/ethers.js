@@ -21,15 +21,28 @@ var utils = (function() {
     };
 })();
 
+var errors = require('../utils/errors');
 
 
 function SigningKey(privateKey) {
-    if (!(this instanceof SigningKey)) { throw new Error('missing new'); }
+    errors.checkNew(this, SigningKey);
 
-    privateKey = utils.arrayify(privateKey);
-    if (privateKey.length !== 32) {
-        throw new Error('invalid private key');
+    try {
+        privateKey = utils.arrayify(privateKey);
+        if (privateKey.length !== 32) {
+            errors.throwError('exactly 32 bytes required', errors.INVALID_ARGUMENT, { value: privateKey });
+        }
+    } catch(error) {
+        var params = { reason: error.reason, value: '[REDACTED]' }
+        if (error.value) {
+            if(typeof(error.value.length) === 'number') {
+                params.length = error.value.length;
+            }
+            params.type = typeof(error.value);
+        }
+        errors.throwError('invalid private key', error.code, params);
     }
+
     utils.defineProperty(this, 'privateKey', utils.hexlify(privateKey))
 
     var keyPair = secp256k1.keyFromPrivate(privateKey);

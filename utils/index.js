@@ -67,4 +67,6 @@ module.exports = {
     solidityPack: solidity.pack,
     solidityKeccak256: solidity.keccak256,
     soliditySha256: solidity.sha256,
+
+    splitSignature: convert.splitSignature,
 }

@@ -28,6 +28,8 @@ var utils = (function() {
     };
 })();
 
+var errors = require('../utils/errors');
+
 var HDNode = require('./hdnode');
 
 var secretStorage = require('./secret-storage');
@@ -49,7 +51,7 @@ var transactionFields = [
 ];
 
 function Wallet(privateKey, provider) {
-    if (!(this instanceof Wallet)) { throw new Error('missing new'); }
+    errors.checkNew(this, Wallet);
 
     // Make sure we have a valid signing key
     var signingKey = privateKey;
