@@ -33,7 +33,7 @@ function SigningKey(privateKey) {
             errors.throwError('exactly 32 bytes required', errors.INVALID_ARGUMENT, { value: privateKey });
         }
     } catch(error) {
-        var params = { reason: error.reason, value: '[REDACTED]' }
+        var params = { arg: 'privateKey', reason: error.reason, value: '[REDACTED]' }
         if (error.value) {
             if(typeof(error.value.length) === 'number') {
                 params.length = error.value.length;
