@@ -5412,7 +5412,7 @@ utils.defineProperty(Coder, 'defaultCoder', new Coder());
 
 module.exports = Coder
 
-},{"../utils/address":20,"../utils/bignumber.js":21,"../utils/convert.js":24,"../utils/properties.js":29,"../utils/throw-error":33,"../utils/utf8.js":35}],20:[function(require,module,exports){
+},{"../utils/address":20,"../utils/bignumber.js":21,"../utils/convert.js":24,"../utils/properties.js":30,"../utils/throw-error":34,"../utils/utf8.js":36}],20:[function(require,module,exports){
 
 var BN = require('bn.js');
 
@@ -5538,7 +5538,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert":24,"./keccak256":27,"./throw-error":33,"bn.js":1}],21:[function(require,module,exports){
+},{"./convert":24,"./keccak256":28,"./throw-error":34,"bn.js":1}],21:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -5689,7 +5689,7 @@ module.exports = {
     BigNumber: BigNumber
 };
 
-},{"./convert":24,"./properties":29,"./throw-error":33,"bn.js":1}],22:[function(require,module,exports){
+},{"./convert":24,"./properties":30,"./throw-error":34,"bn.js":1}],22:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -5736,7 +5736,7 @@ if (crypto._weakCrypto === true) {
 module.exports = randomBytes;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./convert":24,"./properties":29}],23:[function(require,module,exports){
+},{"./convert":24,"./properties":30}],23:[function(require,module,exports){
 
 var getAddress = require('./address').getAddress;
 var convert = require('./convert');
@@ -5758,14 +5758,15 @@ module.exports = {
     getContractAddress: getContractAddress,
 }
 
-},{"./address":20,"./convert":24,"./keccak256":27,"./rlp":30}],24:[function(require,module,exports){
+},{"./address":20,"./convert":24,"./keccak256":28,"./rlp":31}],24:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
  */
 
 var defineProperty = require('./properties.js').defineProperty;
-var throwError = require('./throw-error');
+
+var errors = require('./errors');
 
 function addSlice(array) {
     if (array.slice) { return array; }
@@ -5793,7 +5794,10 @@ function isArrayish(value) {
     return true;
 }
 
-function arrayify(value, name) {
+function arrayify(value) {
+    if (value == null) {
+        errors.throwError('cannot convert null value to array', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
+    }
 
     if (value && value.toHexString) {
         value = value.toHexString();
@@ -5809,13 +5813,19 @@ function arrayify(value, name) {
         }
 
         return addSlice(new Uint8Array(result));
+
+    } else if (typeof(value) === 'string') {
+        if (value.match(/^[0-9a-fA-F]*$/)) {
+             errors.throwError('hex string must have 0x prefix', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
+        }
+        errors.throwError('invalid hexidecimal string', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
     }
 
     if (isArrayish(value)) {
         return addSlice(new Uint8Array(value));
     }
 
-    throwError('invalid arrayify value', { name: name, input: value });
+    errors.throwError('invalid arrayify value', { arg: 'value', value: value, type: typeof(value) });
 }
 
 function concat(objects) {
@@ -5874,7 +5884,7 @@ function isHexString(value, length) {
 
 var HexCharacters = '0123456789abcdef';
 
-function hexlify(value, name) {
+function hexlify(value) {
 
     if (value && value.toHexString) {
         return value.toHexString();
@@ -5882,7 +5892,7 @@ function hexlify(value, name) {
 
     if (typeof(value) === 'number') {
         if (value < 0) {
-            throwError('cannot hexlify negative value', { name: name, input: value });
+            errors.throwError('cannot hexlify negative value', errors.INVALID_ARG, { arg: 'value', value: value });
         }
 
         var hex = '';
@@ -5915,7 +5925,7 @@ function hexlify(value, name) {
         return '0x' + result.join('');
     }
 
-    throwError('invalid hexlify value', { name: name, input: value });
+    errors.throwError('invalid hexlify value', { arg: 'value', value: value });
 }
 
 function hexStripZeros(value) {
@@ -5932,6 +5942,31 @@ function hexZeroPad(value, length) {
     return value;
 }
 
+/* @TODO: Add something like this to make slicing code easier to understand
+function hexSlice(hex, start, end) {
+    hex = hexlify(hex);
+    return '0x' + hex.substring(2 + start * 2, 2 + end * 2);
+}
+*/
+
+function splitSignature(signature) {
+    signature = arrayify(signature);
+    if (signature.length !== 65) {
+        throw new Error('invalid signature');
+    }
+
+    var v = signature[64];
+    if (v !== 27 && v !== 28) {
+        v = 27 + (v % 2);
+    }
+
+    return {
+        r: hexlify(signature.slice(0, 32)),
+        s: hexlify(signature.slice(32, 64)),
+        v: v
+    }
+}
+
 module.exports = {
     arrayify: arrayify,
     isArrayish: isArrayish,
@@ -5941,13 +5976,71 @@ module.exports = {
     padZeros: padZeros,
     stripZeros: stripZeros,
 
+    splitSignature: splitSignature,
+
     hexlify: hexlify,
     isHexString: isHexString,
     hexStripZeros: hexStripZeros,
     hexZeroPad: hexZeroPad,
 };
 
-},{"./properties.js":29,"./throw-error":33}],25:[function(require,module,exports){
+},{"./errors":25,"./properties.js":30}],25:[function(require,module,exports){
+'use strict';
+
+var defineProperty = require('./properties').defineProperty;
+
+var codes = { };
+
+[
+    // Unknown Error
+    'UNKNOWN_ERROR',
+
+    // Missing new operator to an object
+    //  - name: The name of the class
+    'MISSING_NEW',
+
+    // Invalid argument to a function:
+    //   - arg: The argument name that was invalid
+    'INVALID_ARGUMENT'
+
+].forEach(function(code) {
+    defineProperty(codes, code, code);
+});
+
+
+defineProperty(codes, 'throwError', function(message, code, params) {
+    if (!code) { code = codes.UNKNOWN_ERROR; }
+    if (!params) { params = {}; }
+
+    var messageDetails = [];
+    Object.keys(params).forEach(function(key) {
+        messageDetails.push(key + '=' + JSON.stringify(params[key]));
+    });
+    var reason = message;
+    if (messageDetails.length) {
+        message += ' (' + messageDetails.join(', ') + ')';
+    }
+
+    var error = new Error(message);
+    error.reason = reason;
+    error.code = code
+
+    Object.keys(params).forEach(function(key) {
+        error[key] = params[key];
+    });
+
+    throw error;
+});
+
+defineProperty(codes, 'checkNew', function(self, kind) {
+    if (!(self instanceof kind)) {
+        codes.throwError('missing new', codes.MISSING_NEW, { name: kind.name });
+    }
+});
+
+module.exports = codes;
+
+},{"./properties":30}],26:[function(require,module,exports){
 'use strict';
 
 var keccak256 = require('./keccak256');
@@ -5959,7 +6052,7 @@ function id(text) {
 
 module.exports = id;
 
-},{"./keccak256":27,"./utf8":35}],26:[function(require,module,exports){
+},{"./keccak256":28,"./utf8":36}],27:[function(require,module,exports){
 'use strict';
 
 // This is SUPER useful, but adds 140kb (even zipped, adds 40kb)
@@ -6029,9 +6122,11 @@ module.exports = {
     solidityPack: solidity.pack,
     solidityKeccak256: solidity.keccak256,
     soliditySha256: solidity.sha256,
+
+    splitSignature: convert.splitSignature,
 }
 
-},{"./abi-coder":19,"./address":20,"./bignumber":21,"./contract-address":23,"./convert":24,"./id":25,"./keccak256":27,"./namehash":28,"./properties":29,"./random-bytes":22,"./rlp":30,"./sha2":31,"./solidity":32,"./units":34,"./utf8":35}],27:[function(require,module,exports){
+},{"./abi-coder":19,"./address":20,"./bignumber":21,"./contract-address":23,"./convert":24,"./id":26,"./keccak256":28,"./namehash":29,"./properties":30,"./random-bytes":22,"./rlp":31,"./sha2":32,"./solidity":33,"./units":35,"./utf8":36}],28:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -6045,7 +6140,7 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":24,"js-sha3":16}],28:[function(require,module,exports){
+},{"./convert.js":24,"js-sha3":16}],29:[function(require,module,exports){
 'use strict';
 
 var convert = require('./convert');
@@ -6085,7 +6180,7 @@ function namehash(name, depth) {
 module.exports = namehash;
 
 
-},{"./convert":24,"./keccak256":27,"./utf8":35}],29:[function(require,module,exports){
+},{"./convert":24,"./keccak256":28,"./utf8":36}],30:[function(require,module,exports){
 'use strict';
 
 function defineProperty(object, name, value) {
@@ -6109,7 +6204,7 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 var convert = require('./convert.js');
@@ -6253,7 +6348,7 @@ module.exports = {
     decode: decode,
 }
 
-},{"./convert.js":24}],31:[function(require,module,exports){
+},{"./convert.js":24}],32:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -6278,7 +6373,7 @@ module.exports = {
     createSha512: hash.sha512,
 }
 
-},{"./convert.js":24,"hash.js":3}],32:[function(require,module,exports){
+},{"./convert.js":24,"hash.js":3}],33:[function(require,module,exports){
 'use strict';
 
 var bigNumberify = require('./bignumber').bigNumberify;
@@ -6377,7 +6472,7 @@ module.exports = {
     sha256: sha256,
 }
 
-},{"./address":20,"./bignumber":21,"./convert":24,"./keccak256":27,"./sha2":31,"./utf8":35}],33:[function(require,module,exports){
+},{"./address":20,"./bignumber":21,"./convert":24,"./keccak256":28,"./sha2":32,"./utf8":36}],34:[function(require,module,exports){
 'use strict';
 
 function throwError(message, params) {
@@ -6390,7 +6485,7 @@ function throwError(message, params) {
 
 module.exports = throwError;
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 var bigNumberify = require('./bignumber.js').bigNumberify;
 var throwError = require('./throw-error');
 
@@ -6540,7 +6635,7 @@ module.exports = {
     parseUnits: parseUnits,
 }
 
-},{"./bignumber.js":21,"./throw-error":33}],35:[function(require,module,exports){
+},{"./bignumber.js":21,"./throw-error":34}],36:[function(require,module,exports){
 
 var convert = require('./convert.js');
 
@@ -6655,5 +6750,5 @@ module.exports = {
     toUtf8String: bytesToUtf8,
 };
 
-},{"./convert.js":24}]},{},[26])(26)
+},{"./convert.js":24}]},{},[27])(27)
 });
