@@ -4,6 +4,7 @@ var version = require('./package.json').version;
 
 var contracts = require('./contracts');
 var providers = require('./providers');
+var errors = require('./utils/errors');
 var utils = require('./utils');
 var wallet = require('./wallet');
 
@@ -19,6 +20,7 @@ module.exports = {
     networks: providers.networks,
     providers: providers,
 
+    errors: errors,
     utils: utils,
 
     version: version,

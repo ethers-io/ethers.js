@@ -12,8 +12,14 @@ var utils = (function() {
         hexlify: convert.hexlify,
         isHexString: convert.isHexString,
         hexStripZeros: convert.hexStripZeros,
+
+        toUtf8Bytes: require('../utils/utf8').toUtf8Bytes,
+
+        getAddress: require('../utils/address').getAddress,
     }
 })();
+
+var errors = require('../utils/errors');
 
 function timer(timeout) {
     return new Promise(function(resolve) {
@@ -56,8 +62,96 @@ function getTransaction(transaction) {
     return result;
 }
 
+function JsonRpcSigner(provider, address) {
+    errors.checkNew(this, JsonRpcSigner);
+
+    utils.defineProperty(this, 'provider', provider);
+
+    // Statically attach to a given address
+    if (address) {
+        utils.defineProperty(this, 'address', address);
+        utils.defineProperty(this, '_syncAddress', true);
+
+    } else {
+        Object.defineProperty(this, 'address', {
+            enumerable: true,
+            get: function() {
+                errors.throwError('no sync sync address available; use getAddress', errors.UNSUPPORTED_OPERATION, { operation: 'address' });
+            }
+        });
+        utils.defineProperty(this, '_syncAddress', false);
+    }
+}
+
+utils.defineProperty(JsonRpcSigner.prototype, 'getAddress', function() {
+    if (this._syncAddress) { return Promise.resolve(this.address); }
+
+    return this.provider.send('eth_accounts', []).then(function(accounts) {
+        if (accounts.length === 0) {
+            errors.throwError('no accounts', errors.UNSUPPORTED_OPERATION, { operation: 'getAddress' });
+        }
+        return utils.getAddress(accounts[0]);
+    });
+});
+
+utils.defineProperty(JsonRpcSigner.prototype, 'getBalance', function(blockTag) {
+    var provider = this.provider;
+    return this.getAddress().then(function(address) {
+        return provider.getBalance(address, blockTag);
+    });
+});
+
+utils.defineProperty(JsonRpcSigner.prototype, 'getTransactionCount', function(blockTag) {
+    var provider = this.provider;
+    return this.getAddress().then(function(address) {
+        return provider.getTransactionCount(address, blockTag);
+    });
+});
+
+utils.defineProperty(JsonRpcSigner.prototype, 'sendTransaction', function(transaction) {
+    var provider = this.provider;
+    transaction = getTransaction(transaction);
+    return this.getAddress().then(function(address) {
+        transaction.from = address.toLowerCase();
+        return provider.send('eth_sendTransaction', [ transaction ]).then(function(hash) {
+            return new Promise(function(resolve, reject) {
+                function check() {
+                    provider.getTransaction(hash).then(function(transaction) {
+                        if (!transaction) {
+                            setTimeout(check, 1000);
+                            return;
+                        }
+                        resolve(transaction);
+                    });
+                }
+                check();
+            });
+        });
+    });
+});
+
+utils.defineProperty(JsonRpcSigner.prototype, 'signMessage', function(message) {
+    var provider = this.provider;
+
+    var data = ((typeof(message) === 'string') ? utils.toUtf8Bytes(message): message);
+    return this.getAddress().then(function(address) {
+
+        // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
+        return provider.send('eth_sign', [ address.toLowerCase(), utils.hexlify(data) ]);
+    });
+});
+
+utils.defineProperty(JsonRpcSigner.prototype, 'unlock', function(password) {
+    var provider = this.provider;
+
+    return this.getAddress().then(function(address) {
+        return provider.send('personal_unlockAccount', [ address.toLowerCase(), password, null ]);
+    });
+});
+
+
 function JsonRpcProvider(url, network) {
-    if (!(this instanceof JsonRpcProvider)) { throw new Error('missing new'); }
+    errors.checkNew(this, JsonRpcProvider);
 
     if (arguments.length == 1) {
         if (typeof(url) === 'string') {
@@ -78,6 +172,19 @@ function JsonRpcProvider(url, network) {
     utils.defineProperty(this, 'url', url);
 }
 Provider.inherits(JsonRpcProvider);
+
+utils.defineProperty(JsonRpcProvider.prototype, 'getSigner', function(address) {
+    return new JsonRpcSigner(this, address);
+});
+
+utils.defineProperty(JsonRpcProvider.prototype, 'listAccounts', function() {
+    return this.send('eth_accounts', []).then(function(accounts) {
+        accounts.forEach(function(address, index) {
+            accounts[index] = utils.getAddress(address);
+        });
+        return accounts;
+    });
+});
 
 utils.defineProperty(JsonRpcProvider.prototype, 'send', function(method, params) {
     var request = {

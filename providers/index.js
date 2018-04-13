@@ -1,12 +1,13 @@
 'use strict';
 
-var Provider = require('./provider.js');
+var Provider = require('./provider');
 
-var EtherscanProvider = require('./etherscan-provider.js');
-var FallbackProvider = require('./fallback-provider.js');
-var InfuraProvider = require('./infura-provider.js');
-var JsonRpcProvider = require('./json-rpc-provider.js');
-var Web3Provider = require('./web3-provider.js');
+var EtherscanProvider = require('./etherscan-provider');
+var FallbackProvider = require('./fallback-provider');
+var IpcProvider = require('./ipc-provider');
+var InfuraProvider = require('./infura-provider');
+var JsonRpcProvider = require('./json-rpc-provider');
+var Web3Provider = require('./web3-provider');
 
 function getDefaultProvider(network) {
     return new FallbackProvider([
@@ -15,7 +16,7 @@ function getDefaultProvider(network) {
     ]);
 }
 
-module.exports = {
+var exports = {
     EtherscanProvider: EtherscanProvider,
     FallbackProvider: FallbackProvider,
     InfuraProvider: InfuraProvider,
@@ -30,3 +31,10 @@ module.exports = {
 
     Provider: Provider,
 }
+
+// Only available in node, so we do not include it in browsers
+if (IpcProvider) {
+    exports.IpcProvider = IpcProvider;
+}
+
+module.exports = exports;

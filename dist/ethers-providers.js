@@ -4231,7 +4231,7 @@ utils.defineProperty(EtherscanProvider.prototype, 'getHistory', function(address
 
 module.exports = EtherscanProvider;;
 
-},{"../utils/convert.js":18,"../utils/properties.js":22,"./provider.js":13}],8:[function(require,module,exports){
+},{"../utils/convert.js":18,"../utils/properties.js":23,"./provider.js":13}],8:[function(require,module,exports){
 'use strict';
 
 var inherits = require('inherits');
@@ -4295,16 +4295,17 @@ utils.defineProperty(FallbackProvider.prototype, 'perform', function(method, par
 
 module.exports = FallbackProvider;
 
-},{"../utils/properties.js":22,"./provider.js":13,"inherits":3}],9:[function(require,module,exports){
+},{"../utils/properties.js":23,"./provider.js":13,"inherits":3}],9:[function(require,module,exports){
 'use strict';
 
-var Provider = require('./provider.js');
+var Provider = require('./provider');
 
-var EtherscanProvider = require('./etherscan-provider.js');
-var FallbackProvider = require('./fallback-provider.js');
-var InfuraProvider = require('./infura-provider.js');
-var JsonRpcProvider = require('./json-rpc-provider.js');
-var Web3Provider = require('./web3-provider.js');
+var EtherscanProvider = require('./etherscan-provider');
+var FallbackProvider = require('./fallback-provider');
+var IpcProvider = require('./ipc-provider');
+var InfuraProvider = require('./infura-provider');
+var JsonRpcProvider = require('./json-rpc-provider');
+var Web3Provider = require('./web3-provider');
 
 function getDefaultProvider(network) {
     return new FallbackProvider([
@@ -4313,7 +4314,7 @@ function getDefaultProvider(network) {
     ]);
 }
 
-module.exports = {
+var exports = {
     EtherscanProvider: EtherscanProvider,
     FallbackProvider: FallbackProvider,
     InfuraProvider: InfuraProvider,
@@ -4329,7 +4330,14 @@ module.exports = {
     Provider: Provider,
 }
 
-},{"./etherscan-provider.js":7,"./fallback-provider.js":8,"./infura-provider.js":10,"./json-rpc-provider.js":11,"./provider.js":13,"./web3-provider.js":14}],10:[function(require,module,exports){
+// Only available in node, so we do not include it in browsers
+if (IpcProvider) {
+    exports.IpcProvider = IpcProvider;
+}
+
+module.exports = exports;
+
+},{"./etherscan-provider":7,"./fallback-provider":8,"./infura-provider":10,"./ipc-provider":19,"./json-rpc-provider":11,"./provider":13,"./web3-provider":14}],10:[function(require,module,exports){
 'use strict';
 
 var Provider = require('./provider');
@@ -4337,12 +4345,14 @@ var JsonRpcProvider = require('./json-rpc-provider');
 
 var utils = (function() {
     return {
-        defineProperty: require('../utils/properties.js').defineProperty
+        defineProperty: require('../utils/properties').defineProperty
     }
 })();
 
+var errors = require('../utils/errors');
+
 function InfuraProvider(network, apiAccessToken) {
-    if (!(this instanceof InfuraProvider)) { throw new Error('missing new'); }
+    errors.checkNew(this, InfuraProvider);
 
     network = Provider.getNetwork(network);
 
@@ -4379,9 +4389,17 @@ utils.defineProperty(InfuraProvider.prototype, '_startPending', function() {
 utils.defineProperty(InfuraProvider.prototype, '_stopPending', function() {
 });
 
+utils.defineProperty(InfuraProvider.prototype, 'getSigner', function(address) {
+    errors.throwError('INFURA does not support signing', errors.UNSUPPORTED_OPERATION, { operation: 'getSigner' });
+});
+
+utils.defineProperty(InfuraProvider.prototype, 'listAccounts', function() {
+    return Promise.resolve([]);
+});
+
 module.exports = InfuraProvider;
 
-},{"../utils/properties.js":22,"./json-rpc-provider":11,"./provider":13}],11:[function(require,module,exports){
+},{"../utils/errors":20,"../utils/properties":23,"./json-rpc-provider":11,"./provider":13}],11:[function(require,module,exports){
 'use strict';
 
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
@@ -4396,8 +4414,14 @@ var utils = (function() {
         hexlify: convert.hexlify,
         isHexString: convert.isHexString,
         hexStripZeros: convert.hexStripZeros,
+
+        toUtf8Bytes: require('../utils/utf8').toUtf8Bytes,
+
+        getAddress: require('../utils/address').getAddress,
     }
 })();
+
+var errors = require('../utils/errors');
 
 function timer(timeout) {
     return new Promise(function(resolve) {
@@ -4440,8 +4464,96 @@ function getTransaction(transaction) {
     return result;
 }
 
+function JsonRpcSigner(provider, address) {
+    errors.checkNew(this, JsonRpcSigner);
+
+    utils.defineProperty(this, 'provider', provider);
+
+    // Statically attach to a given address
+    if (address) {
+        utils.defineProperty(this, 'address', address);
+        utils.defineProperty(this, '_syncAddress', true);
+
+    } else {
+        Object.defineProperty(this, 'address', {
+            enumerable: true,
+            get: function() {
+                errors.throwError('no sync sync address available; use getAddress', errors.UNSUPPORTED_OPERATION, { operation: 'address' });
+            }
+        });
+        utils.defineProperty(this, '_syncAddress', false);
+    }
+}
+
+utils.defineProperty(JsonRpcSigner.prototype, 'getAddress', function() {
+    if (this._syncAddress) { return Promise.resolve(this.address); }
+
+    return this.provider.send('eth_accounts', []).then(function(accounts) {
+        if (accounts.length === 0) {
+            errors.throwError('no accounts', errors.UNSUPPORTED_OPERATION, { operation: 'getAddress' });
+        }
+        return utils.getAddress(accounts[0]);
+    });
+});
+
+utils.defineProperty(JsonRpcSigner.prototype, 'getBalance', function(blockTag) {
+    var provider = this.provider;
+    return this.getAddress().then(function(address) {
+        return provider.getBalance(address, blockTag);
+    });
+});
+
+utils.defineProperty(JsonRpcSigner.prototype, 'getTransactionCount', function(blockTag) {
+    var provider = this.provider;
+    return this.getAddress().then(function(address) {
+        return provider.getTransactionCount(address, blockTag);
+    });
+});
+
+utils.defineProperty(JsonRpcSigner.prototype, 'sendTransaction', function(transaction) {
+    var provider = this.provider;
+    transaction = getTransaction(transaction);
+    return this.getAddress().then(function(address) {
+        transaction.from = address.toLowerCase();
+        return provider.send('eth_sendTransaction', [ transaction ]).then(function(hash) {
+            return new Promise(function(resolve, reject) {
+                function check() {
+                    provider.getTransaction(hash).then(function(transaction) {
+                        if (!transaction) {
+                            setTimeout(check, 1000);
+                            return;
+                        }
+                        resolve(transaction);
+                    });
+                }
+                check();
+            });
+        });
+    });
+});
+
+utils.defineProperty(JsonRpcSigner.prototype, 'signMessage', function(message) {
+    var provider = this.provider;
+
+    var data = ((typeof(message) === 'string') ? utils.toUtf8Bytes(message): message);
+    return this.getAddress().then(function(address) {
+
+        // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
+        return provider.send('eth_sign', [ address.toLowerCase(), utils.hexlify(data) ]);
+    });
+});
+
+utils.defineProperty(JsonRpcSigner.prototype, 'unlock', function(password) {
+    var provider = this.provider;
+
+    return this.getAddress().then(function(address) {
+        return provider.send('personal_unlockAccount', [ address.toLowerCase(), password, null ]);
+    });
+});
+
+
 function JsonRpcProvider(url, network) {
-    if (!(this instanceof JsonRpcProvider)) { throw new Error('missing new'); }
+    errors.checkNew(this, JsonRpcProvider);
 
     if (arguments.length == 1) {
         if (typeof(url) === 'string') {
@@ -4462,6 +4574,19 @@ function JsonRpcProvider(url, network) {
     utils.defineProperty(this, 'url', url);
 }
 Provider.inherits(JsonRpcProvider);
+
+utils.defineProperty(JsonRpcProvider.prototype, 'getSigner', function(address) {
+    return new JsonRpcSigner(this, address);
+});
+
+utils.defineProperty(JsonRpcProvider.prototype, 'listAccounts', function() {
+    return this.send('eth_accounts', []).then(function(accounts) {
+        accounts.forEach(function(address, index) {
+            accounts[index] = utils.getAddress(address);
+        });
+        return accounts;
+    });
+});
 
 utils.defineProperty(JsonRpcProvider.prototype, 'send', function(method, params) {
     var request = {
@@ -4574,7 +4699,7 @@ utils.defineProperty(JsonRpcProvider, '_hexlifyTransaction', function(transactio
 
 module.exports = JsonRpcProvider;
 
-},{"../utils/convert":18,"../utils/properties":22,"./provider.js":13}],12:[function(require,module,exports){
+},{"../utils/address":15,"../utils/convert":18,"../utils/errors":20,"../utils/properties":23,"../utils/utf8":26,"./provider.js":13}],12:[function(require,module,exports){
 module.exports={
     "unspecified": {
         "chainId": 0,
@@ -5781,7 +5906,7 @@ utils.defineProperty(Provider, '_formatters', {
 
 module.exports = Provider;
 
-},{"../utils/address":15,"../utils/bignumber":16,"../utils/contract-address":17,"../utils/convert":18,"../utils/namehash":21,"../utils/properties":22,"../utils/rlp":23,"../utils/utf8":25,"./networks.json":12,"inherits":3,"xmlhttprequest":6}],14:[function(require,module,exports){
+},{"../utils/address":15,"../utils/bignumber":16,"../utils/contract-address":17,"../utils/convert":18,"../utils/namehash":22,"../utils/properties":23,"../utils/rlp":24,"../utils/utf8":26,"./networks.json":12,"inherits":3,"xmlhttprequest":6}],14:[function(require,module,exports){
 'use strict';
 
 var Provider = require('./provider');
@@ -5790,110 +5915,10 @@ var JsonRpcProvider = require('./json-rpc-provider');
 var utils = (function() {
     return {
         defineProperty: require('../utils/properties').defineProperty,
-
-        getAddress: require('../utils/address').getAddress,
-
-        toUtf8Bytes: require('../utils/utf8').toUtf8Bytes,
-
-        hexlify: require('../utils/convert').hexlify
     }
 })();
 
-function Web3Signer(provider, address) {
-    if (!(this instanceof Web3Signer)) { throw new Error('missing new'); }
-    utils.defineProperty(this, 'provider', provider);
-
-    // Statically attach to a given address
-    if (address) {
-        utils.defineProperty(this, 'address', address);
-        utils.defineProperty(this, '_syncAddress', true);
-
-    } else {
-        Object.defineProperty(this, 'address', {
-            enumerable: true,
-            get: function() {
-                throw new Error('unsupported sync operation; use getAddress');
-            }
-        });
-        utils.defineProperty(this, '_syncAddress', false);
-    }
-}
-
-utils.defineProperty(Web3Signer.prototype, 'getAddress', function() {
-    if (this._syncAddress) { return Promise.resolve(this.address); }
-
-    return this.provider.send('eth_accounts', []).then(function(accounts) {
-        if (accounts.length === 0) {
-            throw new Error('no account');
-        }
-        return utils.getAddress(accounts[0]);
-    });
-});
-
-utils.defineProperty(Web3Signer.prototype, 'getBalance', function(blockTag) {
-    var provider = this.provider;
-    return this.getAddress().then(function(address) {
-        return provider.getBalance(address, blockTag);
-    });
-});
-
-utils.defineProperty(Web3Signer.prototype, 'getTransactionCount', function(blockTag) {
-    var provider = this.provider;
-    return this.getAddress().then(function(address) {
-        return provider.getTransactionCount(address, blockTag);
-    });
-});
-
-utils.defineProperty(Web3Signer.prototype, 'sendTransaction', function(transaction) {
-    var provider = this.provider;
-    transaction = JsonRpcProvider._hexlifyTransaction(transaction);
-    return this.getAddress().then(function(address) {
-        transaction.from = address.toLowerCase();
-        return provider.send('eth_sendTransaction', [ transaction ]).then(function(hash) {
-            return new Promise(function(resolve, reject) {
-                function check() {
-                    provider.getTransaction(hash).then(function(transaction) {
-                        if (!transaction) {
-                            setTimeout(check, 1000);
-                            return;
-                        }
-                        resolve(transaction);
-                    });
-                }
-                check();
-            });
-        });
-    });
-});
-
-utils.defineProperty(Web3Signer.prototype, 'signMessage', function(message) {
-    var provider = this.provider;
-
-    var data = ((typeof(message) === 'string') ? utils.toUtf8Bytes(message): message);
-    return this.getAddress().then(function(address) {
-
-        // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
-        var method = 'eth_sign';
-        var params = [ address.toLowerCase(), utils.hexlify(data) ];
-
-        // Metamask complains about eth_sign (and on some versions hangs)
-        if (provider._web3Provider.isMetaMask) {
-            // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
-            method = 'personal_sign';
-            params = [ utils.hexlify(data), address.toLowerCase() ];
-        }
-
-        return provider.send(method, params);
-    });
-});
-
-utils.defineProperty(Web3Signer.prototype, 'unlock', function(password) {
-    var provider = this.provider;
-
-    return this.getAddress().then(function(address) {
-        return provider.send('personal_unlockAccount', [ address.toLowerCase(), password, null ]);
-    });
-});
+var errors = require('../utils/errors');
 
 /*
 @TODO
@@ -5903,30 +5928,27 @@ utils.defineProperty(Web3Signer, 'onchange', {
 */
 
 function Web3Provider(web3Provider, network) {
-    if (!(this instanceof Web3Provider)) { throw new Error('missing new'); }
+    errors.checkNew(this, Web3Provider);
 
     // HTTP has a host; IPC has a path.
     var url = web3Provider.host || web3Provider.path || 'unknown';
+
+    if (network == null) { network = 'homestead'; }
 
     JsonRpcProvider.call(this, url, network);
     utils.defineProperty(this, '_web3Provider', web3Provider);
 }
 JsonRpcProvider.inherits(Web3Provider);
 
-utils.defineProperty(Web3Provider.prototype, 'getSigner', function(address) {
-    return new Web3Signer(this, address);
-});
-
-utils.defineProperty(Web3Provider.prototype, 'listAccounts', function() {
-    return this.send('eth_accounts', []).then(function(accounts) {
-        accounts.forEach(function(address, index) {
-            accounts[index] = utils.getAddress(address);
-        });
-        return accounts;
-    });
-});
-
 utils.defineProperty(Web3Provider.prototype, 'send', function(method, params) {
+
+    // Metamask complains about eth_sign (and on some versions hangs)
+    if (method == 'eth_sign' && this._web3Provider.isMetaMask) {
+        // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
+        method = 'personal_sign';
+        params = [ params[1], params[0] ];
+    }
+
     var provider = this._web3Provider;
     return new Promise(function(resolve, reject) {
         var request = {
@@ -5954,7 +5976,7 @@ utils.defineProperty(Web3Provider.prototype, 'send', function(method, params) {
 
 module.exports = Web3Provider;
 
-},{"../utils/address":15,"../utils/convert":18,"../utils/properties":22,"../utils/utf8":25,"./json-rpc-provider":11,"./provider":13}],15:[function(require,module,exports){
+},{"../utils/errors":20,"../utils/properties":23,"./json-rpc-provider":11,"./provider":13}],15:[function(require,module,exports){
 
 var BN = require('bn.js');
 
@@ -6080,7 +6102,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert":18,"./keccak256":20,"./throw-error":24,"bn.js":1}],16:[function(require,module,exports){
+},{"./convert":18,"./keccak256":21,"./throw-error":25,"bn.js":1}],16:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -6231,7 +6253,7 @@ module.exports = {
     BigNumber: BigNumber
 };
 
-},{"./convert":18,"./properties":22,"./throw-error":24,"bn.js":1}],17:[function(require,module,exports){
+},{"./convert":18,"./properties":23,"./throw-error":25,"bn.js":1}],17:[function(require,module,exports){
 
 var getAddress = require('./address').getAddress;
 var convert = require('./convert');
@@ -6253,7 +6275,7 @@ module.exports = {
     getContractAddress: getContractAddress,
 }
 
-},{"./address":15,"./convert":18,"./keccak256":20,"./rlp":23}],18:[function(require,module,exports){
+},{"./address":15,"./convert":18,"./keccak256":21,"./rlp":24}],18:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
@@ -6479,7 +6501,10 @@ module.exports = {
     hexZeroPad: hexZeroPad,
 };
 
-},{"./errors":19,"./properties.js":22}],19:[function(require,module,exports){
+},{"./errors":20,"./properties.js":23}],19:[function(require,module,exports){
+module.exports = undefined;
+
+},{}],20:[function(require,module,exports){
 'use strict';
 
 var defineProperty = require('./properties').defineProperty;
@@ -6490,13 +6515,30 @@ var codes = { };
     // Unknown Error
     'UNKNOWN_ERROR',
 
+    // Not implemented
+    'NOT_IMPLEMENTED',
+
     // Missing new operator to an object
     //  - name: The name of the class
     'MISSING_NEW',
 
-    // Invalid argument to a function:
+
+    // Invalid argument (e.g. type) to a function:
     //   - arg: The argument name that was invalid
-    'INVALID_ARGUMENT'
+    'INVALID_ARGUMENT',
+
+    // Missing argument to a function:
+    //   - arg: The argument name that is required
+    'MISSING_ARGUMENT',
+
+    // Too many arguments
+    'UNEXPECTED_ARGUMENT',
+
+
+    // Unsupported operation
+    //   - operation
+    'UNSUPPORTED_OPERATION',
+
 
 ].forEach(function(code) {
     defineProperty(codes, code, code);
@@ -6535,7 +6577,7 @@ defineProperty(codes, 'checkNew', function(self, kind) {
 
 module.exports = codes;
 
-},{"./properties":22}],20:[function(require,module,exports){
+},{"./properties":23}],21:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -6549,7 +6591,7 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":18,"js-sha3":4}],21:[function(require,module,exports){
+},{"./convert.js":18,"js-sha3":4}],22:[function(require,module,exports){
 'use strict';
 
 var convert = require('./convert');
@@ -6589,7 +6631,7 @@ function namehash(name, depth) {
 module.exports = namehash;
 
 
-},{"./convert":18,"./keccak256":20,"./utf8":25}],22:[function(require,module,exports){
+},{"./convert":18,"./keccak256":21,"./utf8":26}],23:[function(require,module,exports){
 'use strict';
 
 function defineProperty(object, name, value) {
@@ -6613,7 +6655,7 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 var convert = require('./convert.js');
@@ -6757,7 +6799,7 @@ module.exports = {
     decode: decode,
 }
 
-},{"./convert.js":18}],24:[function(require,module,exports){
+},{"./convert.js":18}],25:[function(require,module,exports){
 'use strict';
 
 function throwError(message, params) {
@@ -6770,7 +6812,7 @@ function throwError(message, params) {
 
 module.exports = throwError;
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 
 var convert = require('./convert.js');
 

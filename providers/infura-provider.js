@@ -5,12 +5,14 @@ var JsonRpcProvider = require('./json-rpc-provider');
 
 var utils = (function() {
     return {
-        defineProperty: require('../utils/properties.js').defineProperty
+        defineProperty: require('../utils/properties').defineProperty
     }
 })();
 
+var errors = require('../utils/errors');
+
 function InfuraProvider(network, apiAccessToken) {
-    if (!(this instanceof InfuraProvider)) { throw new Error('missing new'); }
+    errors.checkNew(this, InfuraProvider);
 
     network = Provider.getNetwork(network);
 
@@ -45,6 +47,14 @@ utils.defineProperty(InfuraProvider.prototype, '_startPending', function() {
 });
 
 utils.defineProperty(InfuraProvider.prototype, '_stopPending', function() {
+});
+
+utils.defineProperty(InfuraProvider.prototype, 'getSigner', function(address) {
+    errors.throwError('INFURA does not support signing', errors.UNSUPPORTED_OPERATION, { operation: 'getSigner' });
+});
+
+utils.defineProperty(InfuraProvider.prototype, 'listAccounts', function() {
+    return Promise.resolve([]);
 });
 
 module.exports = InfuraProvider;

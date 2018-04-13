@@ -9999,13 +9999,30 @@ var codes = { };
     // Unknown Error
     'UNKNOWN_ERROR',
 
+    // Not implemented
+    'NOT_IMPLEMENTED',
+
     // Missing new operator to an object
     //  - name: The name of the class
     'MISSING_NEW',
 
-    // Invalid argument to a function:
+
+    // Invalid argument (e.g. type) to a function:
     //   - arg: The argument name that was invalid
-    'INVALID_ARGUMENT'
+    'INVALID_ARGUMENT',
+
+    // Missing argument to a function:
+    //   - arg: The argument name that is required
+    'MISSING_ARGUMENT',
+
+    // Too many arguments
+    'UNEXPECTED_ARGUMENT',
+
+
+    // Unsupported operation
+    //   - operation
+    'UNSUPPORTED_OPERATION',
+
 
 ].forEach(function(code) {
     defineProperty(codes, code, code);
