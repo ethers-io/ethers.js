@@ -59,8 +59,8 @@ utils.defineProperty(EtherscanProvider.prototype, '_callProxy', function() {
 });
 
 function getResult(result) {
-    // getLogs has weird success responses
-    if (result.status == 0 && result.message === 'No records found') {
+    // getLogs, getHistory have weird success responses
+    if (result.status == 0 && (result.message === 'No records found' || result.message === 'No transactions found')) {
         return result.result;
     }
 
