@@ -159,7 +159,7 @@ function JsonRpcProvider(url, network) {
                 network = Provider.getNetwork(url);
                 url = null;
             } catch (error) { }
-        } else {
+        } else if (url && url.url == null) {
             network = url;
             url = null;
         }

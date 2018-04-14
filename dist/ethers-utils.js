@@ -5412,7 +5412,7 @@ utils.defineProperty(Coder, 'defaultCoder', new Coder());
 
 module.exports = Coder
 
-},{"../utils/address":20,"../utils/bignumber.js":21,"../utils/convert.js":24,"../utils/properties.js":30,"../utils/throw-error":34,"../utils/utf8.js":36}],20:[function(require,module,exports){
+},{"../utils/address":20,"../utils/bignumber.js":21,"../utils/convert.js":25,"../utils/properties.js":31,"../utils/throw-error":35,"../utils/utf8.js":37}],20:[function(require,module,exports){
 
 var BN = require('bn.js');
 
@@ -5538,7 +5538,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert":24,"./keccak256":28,"./throw-error":34,"bn.js":1}],21:[function(require,module,exports){
+},{"./convert":25,"./keccak256":29,"./throw-error":35,"bn.js":1}],21:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -5689,7 +5689,33 @@ module.exports = {
     BigNumber: BigNumber
 };
 
-},{"./convert":24,"./properties":30,"./throw-error":34,"bn.js":1}],22:[function(require,module,exports){
+},{"./convert":25,"./properties":31,"./throw-error":35,"bn.js":1}],22:[function(require,module,exports){
+'use strict';
+
+var convert = require('./convert');
+
+module.exports = {
+    decode: function(textData) {
+         textData = atob(textData);
+         var data = [];
+         for (var i = 0; i < textData.length; i++) {
+             data.push(textData.charCodeAt(i));
+         }
+         return convert.arrayify(data);
+    },
+    encode: function(data) {
+        data = convert.arrayify(data);
+        var textData = '';
+        for (var i = 0; i < data.length; i++) {
+            textData += String.fromCharCode(data[i]);
+        }
+        return btoa(textData);
+    }
+};
+
+
+
+},{"./convert":25}],23:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -5736,7 +5762,7 @@ if (crypto._weakCrypto === true) {
 module.exports = randomBytes;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./convert":24,"./properties":30}],23:[function(require,module,exports){
+},{"./convert":25,"./properties":31}],24:[function(require,module,exports){
 
 var getAddress = require('./address').getAddress;
 var convert = require('./convert');
@@ -5758,7 +5784,7 @@ module.exports = {
     getContractAddress: getContractAddress,
 }
 
-},{"./address":20,"./convert":24,"./keccak256":28,"./rlp":31}],24:[function(require,module,exports){
+},{"./address":20,"./convert":25,"./keccak256":29,"./rlp":32}],25:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
@@ -5984,7 +6010,7 @@ module.exports = {
     hexZeroPad: hexZeroPad,
 };
 
-},{"./errors":25,"./properties.js":30}],25:[function(require,module,exports){
+},{"./errors":26,"./properties.js":31}],26:[function(require,module,exports){
 'use strict';
 
 var defineProperty = require('./properties').defineProperty;
@@ -6057,7 +6083,7 @@ defineProperty(codes, 'checkNew', function(self, kind) {
 
 module.exports = codes;
 
-},{"./properties":30}],26:[function(require,module,exports){
+},{"./properties":31}],27:[function(require,module,exports){
 'use strict';
 
 var keccak256 = require('./keccak256');
@@ -6069,7 +6095,7 @@ function id(text) {
 
 module.exports = id;
 
-},{"./keccak256":28,"./utf8":36}],27:[function(require,module,exports){
+},{"./keccak256":29,"./utf8":37}],28:[function(require,module,exports){
 'use strict';
 
 // This is SUPER useful, but adds 140kb (even zipped, adds 40kb)
@@ -6077,6 +6103,7 @@ module.exports = id;
 
 var address = require('./address');
 var AbiCoder = require('./abi-coder');
+var base64 = require('./base64');
 var bigNumber = require('./bignumber');
 var contractAddress = require('./contract-address');
 var convert = require('./convert');
@@ -6111,6 +6138,8 @@ module.exports = {
     padZeros: convert.padZeros,
     stripZeros: convert.stripZeros,
 
+    base64: base64,
+
     bigNumberify: bigNumber.bigNumberify,
     BigNumber: bigNumber.BigNumber,
 
@@ -6143,7 +6172,7 @@ module.exports = {
     splitSignature: convert.splitSignature,
 }
 
-},{"./abi-coder":19,"./address":20,"./bignumber":21,"./contract-address":23,"./convert":24,"./id":26,"./keccak256":28,"./namehash":29,"./properties":30,"./random-bytes":22,"./rlp":31,"./sha2":32,"./solidity":33,"./units":35,"./utf8":36}],28:[function(require,module,exports){
+},{"./abi-coder":19,"./address":20,"./base64":22,"./bignumber":21,"./contract-address":24,"./convert":25,"./id":27,"./keccak256":29,"./namehash":30,"./properties":31,"./random-bytes":23,"./rlp":32,"./sha2":33,"./solidity":34,"./units":36,"./utf8":37}],29:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -6157,7 +6186,7 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":24,"js-sha3":16}],29:[function(require,module,exports){
+},{"./convert.js":25,"js-sha3":16}],30:[function(require,module,exports){
 'use strict';
 
 var convert = require('./convert');
@@ -6197,7 +6226,7 @@ function namehash(name, depth) {
 module.exports = namehash;
 
 
-},{"./convert":24,"./keccak256":28,"./utf8":36}],30:[function(require,module,exports){
+},{"./convert":25,"./keccak256":29,"./utf8":37}],31:[function(require,module,exports){
 'use strict';
 
 function defineProperty(object, name, value) {
@@ -6221,7 +6250,7 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 var convert = require('./convert.js');
@@ -6365,7 +6394,7 @@ module.exports = {
     decode: decode,
 }
 
-},{"./convert.js":24}],32:[function(require,module,exports){
+},{"./convert.js":25}],33:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -6390,7 +6419,7 @@ module.exports = {
     createSha512: hash.sha512,
 }
 
-},{"./convert.js":24,"hash.js":3}],33:[function(require,module,exports){
+},{"./convert.js":25,"hash.js":3}],34:[function(require,module,exports){
 'use strict';
 
 var bigNumberify = require('./bignumber').bigNumberify;
@@ -6489,7 +6518,7 @@ module.exports = {
     sha256: sha256,
 }
 
-},{"./address":20,"./bignumber":21,"./convert":24,"./keccak256":28,"./sha2":32,"./utf8":36}],34:[function(require,module,exports){
+},{"./address":20,"./bignumber":21,"./convert":25,"./keccak256":29,"./sha2":33,"./utf8":37}],35:[function(require,module,exports){
 'use strict';
 
 function throwError(message, params) {
@@ -6502,7 +6531,7 @@ function throwError(message, params) {
 
 module.exports = throwError;
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 var bigNumberify = require('./bignumber.js').bigNumberify;
 var throwError = require('./throw-error');
 
@@ -6652,7 +6681,7 @@ module.exports = {
     parseUnits: parseUnits,
 }
 
-},{"./bignumber.js":21,"./throw-error":34}],36:[function(require,module,exports){
+},{"./bignumber.js":21,"./throw-error":35}],37:[function(require,module,exports){
 
 var convert = require('./convert.js');
 
@@ -6767,5 +6796,5 @@ module.exports = {
     toUtf8String: bytesToUtf8,
 };
 
-},{"./convert.js":24}]},{},[27])(27)
+},{"./convert.js":25}]},{},[28])(28)
 });

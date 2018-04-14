@@ -1,6 +1,6 @@
 {
   "name": "ethers",
-  "version": "3.0.11",
+  "version": "3.0.12",
   "description": "Ethereum wallet library.",
   "main": "index.js",
   "scripts": {
@@ -35,6 +35,7 @@
   "browser": {
     "fs": "./tests/browser-fs.js",
     "zlib": "browserify-zlib",
+    "./utils/base64.js": "./utils/browser-base64.js",
     "./utils/random-bytes.js": "./utils/browser-random-bytes.js",
     "./providers/ipc-provider.js": "./utils/empty.js",
     "xmlhttprequest": "./providers/browser-xmlhttprequest.js"

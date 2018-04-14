@@ -4231,7 +4231,7 @@ utils.defineProperty(EtherscanProvider.prototype, 'getHistory', function(address
 
 module.exports = EtherscanProvider;;
 
-},{"../utils/convert.js":18,"../utils/properties.js":23,"./provider.js":13}],8:[function(require,module,exports){
+},{"../utils/convert.js":19,"../utils/properties.js":24,"./provider.js":13}],8:[function(require,module,exports){
 'use strict';
 
 var inherits = require('inherits');
@@ -4295,7 +4295,7 @@ utils.defineProperty(FallbackProvider.prototype, 'perform', function(method, par
 
 module.exports = FallbackProvider;
 
-},{"../utils/properties.js":23,"./provider.js":13,"inherits":3}],9:[function(require,module,exports){
+},{"../utils/properties.js":24,"./provider.js":13,"inherits":3}],9:[function(require,module,exports){
 'use strict';
 
 var Provider = require('./provider');
@@ -4337,7 +4337,7 @@ if (IpcProvider) {
 
 module.exports = exports;
 
-},{"./etherscan-provider":7,"./fallback-provider":8,"./infura-provider":10,"./ipc-provider":19,"./json-rpc-provider":11,"./provider":13,"./web3-provider":14}],10:[function(require,module,exports){
+},{"./etherscan-provider":7,"./fallback-provider":8,"./infura-provider":10,"./ipc-provider":20,"./json-rpc-provider":11,"./provider":13,"./web3-provider":14}],10:[function(require,module,exports){
 'use strict';
 
 var Provider = require('./provider');
@@ -4399,7 +4399,7 @@ utils.defineProperty(InfuraProvider.prototype, 'listAccounts', function() {
 
 module.exports = InfuraProvider;
 
-},{"../utils/errors":20,"../utils/properties":23,"./json-rpc-provider":11,"./provider":13}],11:[function(require,module,exports){
+},{"../utils/errors":21,"../utils/properties":24,"./json-rpc-provider":11,"./provider":13}],11:[function(require,module,exports){
 'use strict';
 
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
@@ -4561,7 +4561,7 @@ function JsonRpcProvider(url, network) {
                 network = Provider.getNetwork(url);
                 url = null;
             } catch (error) { }
-        } else {
+        } else if (url && url.url == null) {
             network = url;
             url = null;
         }
@@ -4699,7 +4699,7 @@ utils.defineProperty(JsonRpcProvider, '_hexlifyTransaction', function(transactio
 
 module.exports = JsonRpcProvider;
 
-},{"../utils/address":15,"../utils/convert":18,"../utils/errors":20,"../utils/properties":23,"../utils/utf8":26,"./provider.js":13}],12:[function(require,module,exports){
+},{"../utils/address":15,"../utils/convert":19,"../utils/errors":21,"../utils/properties":24,"../utils/utf8":27,"./provider.js":13}],12:[function(require,module,exports){
 module.exports={
     "unspecified": {
         "chainId": 0,
@@ -4760,6 +4760,7 @@ var networks = require('./networks.json');
 
 var utils = (function() {
     var convert = require('../utils/convert');
+    var utf8 = require('../utils/utf8');
     return {
         defineProperty: require('../utils/properties').defineProperty,
 
@@ -4776,13 +4777,18 @@ var utils = (function() {
         hexStripZeros: convert.hexStripZeros,
         stripZeros: convert.stripZeros,
 
+        base64: require('../utils/base64'),
+
         namehash: require('../utils/namehash'),
 
-        toUtf8String: require('../utils/utf8').toUtf8String,
+        toUtf8String: utf8.toUtf8String,
+        toUtf8Bytes: utf8.toUtf8Bytes,
 
         RLP: require('../utils/rlp'),
     }
 })();
+
+var errors = require('../utils/errors');
 
 function copyObject(obj) {
     var result = {};
@@ -5313,16 +5319,35 @@ utils.defineProperty(Provider, 'getNetwork', function(network) {
 utils.defineProperty(Provider, 'networks', networks);
 
 utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
+    var headers = [ ];
+
+    if (typeof(url) === 'object' && url.url != null && url.user != null && url.password != null) {
+        if (url.url.substring(0, 6) !== 'https:' && url.forceInsecure !== true) {
+            errors.throwError('basic authentication requires a secure https url', errors.INVALID_ARGUMENT, { arg: 'url', url: url.url, user: url.user, password: '[REDACTED]' });
+        }
+
+        var authorization = url.user + ':' + url.password;
+        headers.push({
+            key: 'Authorization',
+            value: 'Basic ' + utils.base64.encode(utils.toUtf8Bytes(authorization))
+        });
+
+        url = url.url;
+    }
 
     return new Promise(function(resolve, reject) {
         var request = new XMLHttpRequest();
 
         if (json) {
             request.open('POST', url, true);
-            request.setRequestHeader('Content-Type','application/json');
+            headers.push({ key: 'Content-Type', value: 'application/json' });
         } else {
             request.open('GET', url, true);
         }
+
+        headers.forEach(function(header) {
+            request.setRequestHeader(header.key, header.value);
+        });
 
         request.onreadystatechange = function() {
             if (request.readyState !== 4) { return; }
@@ -5906,7 +5931,7 @@ utils.defineProperty(Provider, '_formatters', {
 
 module.exports = Provider;
 
-},{"../utils/address":15,"../utils/bignumber":16,"../utils/contract-address":17,"../utils/convert":18,"../utils/namehash":22,"../utils/properties":23,"../utils/rlp":24,"../utils/utf8":26,"./networks.json":12,"inherits":3,"xmlhttprequest":6}],14:[function(require,module,exports){
+},{"../utils/address":15,"../utils/base64":17,"../utils/bignumber":16,"../utils/contract-address":18,"../utils/convert":19,"../utils/errors":21,"../utils/namehash":23,"../utils/properties":24,"../utils/rlp":25,"../utils/utf8":27,"./networks.json":12,"inherits":3,"xmlhttprequest":6}],14:[function(require,module,exports){
 'use strict';
 
 var Provider = require('./provider');
@@ -5976,7 +6001,7 @@ utils.defineProperty(Web3Provider.prototype, 'send', function(method, params) {
 
 module.exports = Web3Provider;
 
-},{"../utils/errors":20,"../utils/properties":23,"./json-rpc-provider":11,"./provider":13}],15:[function(require,module,exports){
+},{"../utils/errors":21,"../utils/properties":24,"./json-rpc-provider":11,"./provider":13}],15:[function(require,module,exports){
 
 var BN = require('bn.js');
 
@@ -6102,7 +6127,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert":18,"./keccak256":21,"./throw-error":25,"bn.js":1}],16:[function(require,module,exports){
+},{"./convert":19,"./keccak256":22,"./throw-error":26,"bn.js":1}],16:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -6253,7 +6278,33 @@ module.exports = {
     BigNumber: BigNumber
 };
 
-},{"./convert":18,"./properties":23,"./throw-error":25,"bn.js":1}],17:[function(require,module,exports){
+},{"./convert":19,"./properties":24,"./throw-error":26,"bn.js":1}],17:[function(require,module,exports){
+'use strict';
+
+var convert = require('./convert');
+
+module.exports = {
+    decode: function(textData) {
+         textData = atob(textData);
+         var data = [];
+         for (var i = 0; i < textData.length; i++) {
+             data.push(textData.charCodeAt(i));
+         }
+         return convert.arrayify(data);
+    },
+    encode: function(data) {
+        data = convert.arrayify(data);
+        var textData = '';
+        for (var i = 0; i < data.length; i++) {
+            textData += String.fromCharCode(data[i]);
+        }
+        return btoa(textData);
+    }
+};
+
+
+
+},{"./convert":19}],18:[function(require,module,exports){
 
 var getAddress = require('./address').getAddress;
 var convert = require('./convert');
@@ -6275,7 +6326,7 @@ module.exports = {
     getContractAddress: getContractAddress,
 }
 
-},{"./address":15,"./convert":18,"./keccak256":21,"./rlp":24}],18:[function(require,module,exports){
+},{"./address":15,"./convert":19,"./keccak256":22,"./rlp":25}],19:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
@@ -6501,10 +6552,10 @@ module.exports = {
     hexZeroPad: hexZeroPad,
 };
 
-},{"./errors":20,"./properties.js":23}],19:[function(require,module,exports){
+},{"./errors":21,"./properties.js":24}],20:[function(require,module,exports){
 module.exports = undefined;
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 
 var defineProperty = require('./properties').defineProperty;
@@ -6577,7 +6628,7 @@ defineProperty(codes, 'checkNew', function(self, kind) {
 
 module.exports = codes;
 
-},{"./properties":23}],21:[function(require,module,exports){
+},{"./properties":24}],22:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -6591,7 +6642,7 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":18,"js-sha3":4}],22:[function(require,module,exports){
+},{"./convert.js":19,"js-sha3":4}],23:[function(require,module,exports){
 'use strict';
 
 var convert = require('./convert');
@@ -6631,7 +6682,7 @@ function namehash(name, depth) {
 module.exports = namehash;
 
 
-},{"./convert":18,"./keccak256":21,"./utf8":26}],23:[function(require,module,exports){
+},{"./convert":19,"./keccak256":22,"./utf8":27}],24:[function(require,module,exports){
 'use strict';
 
 function defineProperty(object, name, value) {
@@ -6655,7 +6706,7 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 var convert = require('./convert.js');
@@ -6799,7 +6850,7 @@ module.exports = {
     decode: decode,
 }
 
-},{"./convert.js":18}],25:[function(require,module,exports){
+},{"./convert.js":19}],26:[function(require,module,exports){
 'use strict';
 
 function throwError(message, params) {
@@ -6812,7 +6863,7 @@ function throwError(message, params) {
 
 module.exports = throwError;
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 
 var convert = require('./convert.js');
 
@@ -6927,5 +6978,5 @@ module.exports = {
     toUtf8String: bytesToUtf8,
 };
 
-},{"./convert.js":18}]},{},[9])(9)
+},{"./convert.js":19}]},{},[9])(9)
 });

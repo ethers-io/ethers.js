@@ -8,6 +8,7 @@ var networks = require('./networks.json');
 
 var utils = (function() {
     var convert = require('../utils/convert');
+    var utf8 = require('../utils/utf8');
     return {
         defineProperty: require('../utils/properties').defineProperty,
 
@@ -24,13 +25,18 @@ var utils = (function() {
         hexStripZeros: convert.hexStripZeros,
         stripZeros: convert.stripZeros,
 
+        base64: require('../utils/base64'),
+
         namehash: require('../utils/namehash'),
 
-        toUtf8String: require('../utils/utf8').toUtf8String,
+        toUtf8String: utf8.toUtf8String,
+        toUtf8Bytes: utf8.toUtf8Bytes,
 
         RLP: require('../utils/rlp'),
     }
 })();
+
+var errors = require('../utils/errors');
 
 function copyObject(obj) {
     var result = {};
@@ -561,16 +567,35 @@ utils.defineProperty(Provider, 'getNetwork', function(network) {
 utils.defineProperty(Provider, 'networks', networks);
 
 utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
+    var headers = [ ];
+
+    if (typeof(url) === 'object' && url.url != null && url.user != null && url.password != null) {
+        if (url.url.substring(0, 6) !== 'https:' && url.forceInsecure !== true) {
+            errors.throwError('basic authentication requires a secure https url', errors.INVALID_ARGUMENT, { arg: 'url', url: url.url, user: url.user, password: '[REDACTED]' });
+        }
+
+        var authorization = url.user + ':' + url.password;
+        headers.push({
+            key: 'Authorization',
+            value: 'Basic ' + utils.base64.encode(utils.toUtf8Bytes(authorization))
+        });
+
+        url = url.url;
+    }
 
     return new Promise(function(resolve, reject) {
         var request = new XMLHttpRequest();
 
         if (json) {
             request.open('POST', url, true);
-            request.setRequestHeader('Content-Type','application/json');
+            headers.push({ key: 'Content-Type', value: 'application/json' });
         } else {
             request.open('GET', url, true);
         }
+
+        headers.forEach(function(header) {
+            request.setRequestHeader(header.key, header.value);
+        });
 
         request.onreadystatechange = function() {
             if (request.readyState !== 4) { return; }

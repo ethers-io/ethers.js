@@ -5,6 +5,7 @@
 
 var address = require('./address');
 var AbiCoder = require('./abi-coder');
+var base64 = require('./base64');
 var bigNumber = require('./bignumber');
 var contractAddress = require('./contract-address');
 var convert = require('./convert');
@@ -38,6 +39,8 @@ module.exports = {
     concat: convert.concat,
     padZeros: convert.padZeros,
     stripZeros: convert.stripZeros,
+
+    base64: base64,
 
     bigNumberify: bigNumber.bigNumberify,
     BigNumber: bigNumber.BigNumber,

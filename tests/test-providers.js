@@ -407,3 +407,47 @@ describe('Test extra Etherscan operations', function() {
         });
     });
 });
+
+describe('Test Basic Authentication', function() {
+    // https://stackoverflow.com/questions/6509278/authentication-test-servers#16756383
+
+    var Provider = require('..').providers.Provider;
+
+    function test(name, url) {
+        it('tests ' + name, function() {
+            return Provider.fetchJSON(url).then(function(data) {
+                assert.equal(data.authenticated, true, 'authenticates user');
+            });
+        });
+    }
+
+    var secure = {
+        url: 'https://httpbin.org/basic-auth/user/passwd',
+        user: 'user',
+        password: 'passwd'
+    };
+
+    var insecure = {
+        url: 'http://httpbin.org/basic-auth/user/passwd',
+        user: 'user',
+        password: 'passwd'
+    };
+
+    var insecureForced = {
+        url: 'http://httpbin.org/basic-auth/user/passwd',
+        user: 'user',
+        password: 'passwd',
+        forceInsecure: true
+    };
+
+    test('secure url', secure);
+    test('insecure url', insecureForced);
+
+    it('tests insecure connections fail', function() {
+        assert.throws(function() {
+            Provider.fetchJSON(insecure);
+        }, function(error) {
+            return (error.reason === 'basic authentication requires a secure https url');
+        }, 'throws an exception for insecure connections');
+    })
+});
