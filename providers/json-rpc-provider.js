@@ -62,6 +62,11 @@ function getTransaction(transaction) {
     return result;
 }
 
+function getLowerCase(value) {
+    if (value) { return value.toLowerCase(); }
+    return value;
+}
+
 function JsonRpcSigner(provider, address) {
     errors.checkNew(this, JsonRpcSigner);
 
@@ -205,16 +210,16 @@ utils.defineProperty(JsonRpcProvider.prototype, 'perform', function(method, para
             return this.send('eth_gasPrice', []);
 
         case 'getBalance':
-            return this.send('eth_getBalance', [params.address, params.blockTag]);
+            return this.send('eth_getBalance', [getLowerCase(params.address), params.blockTag]);
 
         case 'getTransactionCount':
-            return this.send('eth_getTransactionCount', [params.address, params.blockTag]);
+            return this.send('eth_getTransactionCount', [getLowerCase(params.address), params.blockTag]);
 
         case 'getCode':
-            return this.send('eth_getCode', [params.address, params.blockTag]);
+            return this.send('eth_getCode', [getLowerCase(params.address), params.blockTag]);
 
         case 'getStorageAt':
-            return this.send('eth_getStorageAt', [params.address, params.position, params.blockTag]);
+            return this.send('eth_getStorageAt', [getLowerCase(params.address), params.position, params.blockTag]);
 
         case 'sendTransaction':
             return this.send('eth_sendRawTransaction', [params.signedTransaction]);
@@ -240,6 +245,9 @@ utils.defineProperty(JsonRpcProvider.prototype, 'perform', function(method, para
             return this.send('eth_estimateGas', [getTransaction(params.transaction)]);
 
         case 'getLogs':
+            if (params.filter && params.filter.address != null) {
+                params.filter.address = getLowerCase(params.filter.address);
+            }
             return this.send('eth_getLogs', [params.filter]);
 
         default:
