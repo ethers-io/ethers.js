@@ -14,6 +14,8 @@ var utils = (function() {
     };
 })();
 
+var errors = require('../utils/errors');
+
 var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
 }
@@ -63,12 +65,8 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
             var params = Array.prototype.slice.call(arguments);
 
             // If 1 extra parameter was passed in, it contains overrides
-            if (params.length == method.inputs.types.length + 1) {
-                transaction = params.pop();
-                if (typeof(transaction) !== 'object') {
-                    throw new Error('invalid transaction overrides');
-                }
-                transaction = copyObject(transaction);
+            if (params.length === method.inputs.types.length + 1 && typeof(params[params.length - 1]) === 'object') {
+                transaction = copyObject(params.pop());
 
                 // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
                 for (var key in transaction) {
@@ -76,10 +74,6 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                         throw new Error('unknown transaction override ' + key);
                     }
                 }
-            } else if (params.length > method.inputs.types.length) {
-                throw new Error('too many parameters');
-            } else if (params.length < method.inputs.types.length) {
-                throw new Error('too few parameters');
             }
 
             // Check overrides make sense
@@ -129,7 +123,18 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                         return provider.call(transaction);
 
                     }).then(function(value) {
-                        var result = call.parse(value);
+                        try {
+                            var result = call.parse(value);
+                        } catch (error) {
+                            if (value === '0x' && method.inputs.types.length > 0) {
+                                errors.throwError('call exception', errors.CALL_EXCEPTION, {
+                                    address: addressOrName,
+                                    method: call.signature,
+                                    value: params
+                                });
+                            }
+                            throw error;
+                        }
                         if (method.outputs.types.length === 1) {
                              result = result[0];
                         }

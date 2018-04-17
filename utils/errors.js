@@ -16,15 +16,31 @@ var codes = { };
     'MISSING_NEW',
 
 
+    // Call exception
+    'CALL_EXCEPTION',
+
+
+    // Response from a server was invalid
+    //   - response: The body of the response
+    //'BAD_RESPONSE',
+
+
     // Invalid argument (e.g. type) to a function:
     //   - arg: The argument name that was invalid
+    //   - value: The value of the argument
+    //   - type: The type of the argument
+    //   - expected: What was expected
     'INVALID_ARGUMENT',
 
     // Missing argument to a function:
     //   - arg: The argument name that is required
+    //   - count: The number of arguments received
+    //   - expectedCount: The number of arguments expected
     'MISSING_ARGUMENT',
 
     // Too many arguments
+    //   - count: The number of arguments received
+    //   - expectedCount: The number of arguments expected
     'UNEXPECTED_ARGUMENT',
 
 
@@ -44,7 +60,11 @@ defineProperty(codes, 'throwError', function(message, code, params) {
 
     var messageDetails = [];
     Object.keys(params).forEach(function(key) {
-        messageDetails.push(key + '=' + JSON.stringify(params[key]));
+        try {
+            messageDetails.push(key + '=' + JSON.stringify(params[key]));
+        } catch (error) {
+            messageDetails.push(key + '=' + JSON.stringify(params[key].toString()));
+        }
     });
     var reason = message;
     if (messageDetails.length) {

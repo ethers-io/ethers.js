@@ -2,8 +2,6 @@
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
-var throwError = require('../utils/throw-error');
-
 var utils = (function() {
     var convert = require('../utils/convert');
     var properties = require('../utils/properties');
@@ -24,6 +22,8 @@ var utils = (function() {
         keccak256: require('../utils/keccak256'),
     };
 })();
+
+var errors = require('../utils/errors');
 
 function parseParams(params) {
     var names = [];
@@ -103,7 +103,11 @@ function Interface(abi) {
         try {
             abi = JSON.parse(abi);
         } catch (error) {
-            throwError('invalid abi', { input: abi });
+            errors.throwError('could not parse ABI JSON', errors.INVALID_ARGUMENT, {
+                arg: 'abi',
+                errorMessage: error.message,
+                value: abi
+            });
         }
     }
 
@@ -123,18 +127,39 @@ function Interface(abi) {
 
                     var func = function(bytecode) {
                         if (!utils.isHexString(bytecode)) {
-                            throwError('invalid bytecode', { input: bytecode });
+                            errors.throwError('invalid contract bytecode', errors.INVALID_ARGUMENT, {
+                                arg: 'bytecode',
+                                type: typeof(bytecode),
+                                value: bytecode
+                            });
                         }
 
                         var params = Array.prototype.slice.call(arguments, 1);
                         if (params.length < inputParams.types.length) {
-                            throwError('missing parameter');
+                            errors.throwError('missing constructor argument', errors.MISSING_ARGUMENT, {
+                                arg: (inputParams.names[params.length] || 'unknown'),
+                                count: params.length,
+                                expectedCount: inputParams.types.length
+                            });
                         } else if (params.length > inputParams.types.length) {
-                            throwError('too many parameters');
+                            errors.throwError('too many constructor arguments', errors.UNEXPECTED_ARGUMENT, {
+                                count: params.length,
+                                expectedCount: inputParams.types.length
+                            });
+                        }
+
+                        try {
+                            var encodedParams = utils.coder.encode(inputParams.names, inputParams.types, params)
+                        } catch (error) {
+                            errors.throwError('invalid constructor argument', errors.INVALID_ARGUMENT, {
+                                arg: error.arg,
+                                reason: error.reason,
+                                value: error.value
+                            });
                         }
 
                         var result = {
-                            bytecode: bytecode + utils.coder.encode(inputParams.names, inputParams.types, params).substring(2),
+                            bytecode: bytecode + encodedParams.substring(2),
                             type: 'deploy'
                         }
 
@@ -161,11 +186,21 @@ function Interface(abi) {
                     signature = method.name + signature;
 
                     var parse = function(data) {
-                        return utils.coder.decode(
-                            outputParams.names,
-                            outputParams.types,
-                            utils.arrayify(data)
-                        );
+                        try {
+                            return utils.coder.decode(
+                                outputParams.names,
+                                outputParams.types,
+                                utils.arrayify(data)
+                            );
+                        } catch(error) {
+                            errors.throwError('invalid data for function output', errors.INVALID_ARGUMENT, {
+                                arg: 'data',
+                                errorArg: error.arg,
+                                errorValue: error.value,
+                                value: data,
+                                reason: error.reason
+                            });
+                        }
                     };
 
                     var sighash = utils.keccak256(utils.toUtf8Bytes(signature)).substring(0, 10);
@@ -180,12 +215,30 @@ function Interface(abi) {
                         var params = Array.prototype.slice.call(arguments, 0);
 
                         if (params.length < inputParams.types.length) {
-                            throwError('missing parameter');
+                            errors.throwError('missing input argument', errors.MISSING_ARGUMENT, {
+                                arg: (inputParams.names[params.length] || 'unknown'),
+                                count: params.length,
+                                expectedCount: inputParams.types.length,
+                                name: method.name
+                            });
                         } else if (params.length > inputParams.types.length) {
-                            throwError('too many parameters');
+                            errors.throwError('too many input arguments', errors.UNEXPECTED_ARGUMENT, {
+                                count: params.length,
+                                expectedCount: inputParams.types.length
+                            });
                         }
 
-                        result.data = sighash + utils.coder.encode(inputParams.names, inputParams.types, params).substring(2);
+                        try {
+                            var encodedParams = utils.coder.encode(inputParams.names, inputParams.types, params);
+                        } catch (error) {
+                            errors.throwError('invalid input argument', errors.INVALID_ARGUMENT, {
+                                arg: error.arg,
+                                reason: error.reason,
+                                value: error.value
+                            });
+                        }
+
+                        result.data = sighash + encodedParams.substring(2);
                         result.parse = parse;
 
                         return populateDescription(new FunctionDescription(), result);

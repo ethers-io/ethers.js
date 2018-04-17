@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
 'use strict';
 
 var Interface = require('./interface.js');
@@ -14,6 +14,8 @@ var utils = (function() {
         hexlify: require('../utils/convert.js').hexlify,
     };
 })();
+
+var errors = require('../utils/errors');
 
 var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
@@ -64,12 +66,8 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
             var params = Array.prototype.slice.call(arguments);
 
             // If 1 extra parameter was passed in, it contains overrides
-            if (params.length == method.inputs.types.length + 1) {
-                transaction = params.pop();
-                if (typeof(transaction) !== 'object') {
-                    throw new Error('invalid transaction overrides');
-                }
-                transaction = copyObject(transaction);
+            if (params.length === method.inputs.types.length + 1 && typeof(params[params.length - 1]) === 'object') {
+                transaction = copyObject(params.pop());
 
                 // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
                 for (var key in transaction) {
@@ -77,10 +75,6 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                         throw new Error('unknown transaction override ' + key);
                     }
                 }
-            } else if (params.length > method.inputs.types.length) {
-                throw new Error('too many parameters');
-            } else if (params.length < method.inputs.types.length) {
-                throw new Error('too few parameters');
             }
 
             // Check overrides make sense
@@ -130,7 +124,18 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                         return provider.call(transaction);
 
                     }).then(function(value) {
-                        var result = call.parse(value);
+                        try {
+                            var result = call.parse(value);
+                        } catch (error) {
+                            if (value === '0x' && method.inputs.types.length > 0) {
+                                errors.throwError('call exception', errors.CALL_EXCEPTION, {
+                                    address: addressOrName,
+                                    method: call.signature,
+                                    value: params
+                                });
+                            }
+                            throw error;
+                        }
                         if (method.outputs.types.length === 1) {
                              result = result[0];
                         }
@@ -317,7 +322,7 @@ utils.defineProperty(Contract, 'getDeployTransaction', function(bytecode, contra
 
 module.exports = Contract;
 
-},{"../utils/address.js":9,"../utils/bignumber.js":10,"../utils/convert.js":11,"../utils/properties.js":14,"./interface.js":3}],2:[function(require,module,exports){
+},{"../utils/address.js":9,"../utils/bignumber.js":10,"../utils/convert.js":11,"../utils/errors":12,"../utils/properties.js":14,"./interface.js":3}],2:[function(require,module,exports){
 'use strict';
 
 var Contract = require('./contract.js');
@@ -333,8 +338,6 @@ module.exports = {
 'use strict';
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
-
-var throwError = require('../utils/throw-error');
 
 var utils = (function() {
     var convert = require('../utils/convert');
@@ -356,6 +359,8 @@ var utils = (function() {
         keccak256: require('../utils/keccak256'),
     };
 })();
+
+var errors = require('../utils/errors');
 
 function parseParams(params) {
     var names = [];
@@ -435,7 +440,11 @@ function Interface(abi) {
         try {
             abi = JSON.parse(abi);
         } catch (error) {
-            throwError('invalid abi', { input: abi });
+            errors.throwError('could not parse ABI JSON', errors.INVALID_ARGUMENT, {
+                arg: 'abi',
+                errorMessage: error.message,
+                value: abi
+            });
         }
     }
 
@@ -455,18 +464,39 @@ function Interface(abi) {
 
                     var func = function(bytecode) {
                         if (!utils.isHexString(bytecode)) {
-                            throwError('invalid bytecode', { input: bytecode });
+                            errors.throwError('invalid contract bytecode', errors.INVALID_ARGUMENT, {
+                                arg: 'bytecode',
+                                type: typeof(bytecode),
+                                value: bytecode
+                            });
                         }
 
                         var params = Array.prototype.slice.call(arguments, 1);
                         if (params.length < inputParams.types.length) {
-                            throwError('missing parameter');
+                            errors.throwError('missing constructor argument', errors.MISSING_ARGUMENT, {
+                                arg: (inputParams.names[params.length] || 'unknown'),
+                                count: params.length,
+                                expectedCount: inputParams.types.length
+                            });
                         } else if (params.length > inputParams.types.length) {
-                            throwError('too many parameters');
+                            errors.throwError('too many constructor arguments', errors.UNEXPECTED_ARGUMENT, {
+                                count: params.length,
+                                expectedCount: inputParams.types.length
+                            });
+                        }
+
+                        try {
+                            var encodedParams = utils.coder.encode(inputParams.names, inputParams.types, params)
+                        } catch (error) {
+                            errors.throwError('invalid constructor argument', errors.INVALID_ARGUMENT, {
+                                arg: error.arg,
+                                reason: error.reason,
+                                value: error.value
+                            });
                         }
 
                         var result = {
-                            bytecode: bytecode + utils.coder.encode(inputParams.names, inputParams.types, params).substring(2),
+                            bytecode: bytecode + encodedParams.substring(2),
                             type: 'deploy'
                         }
 
@@ -493,11 +523,21 @@ function Interface(abi) {
                     signature = method.name + signature;
 
                     var parse = function(data) {
-                        return utils.coder.decode(
-                            outputParams.names,
-                            outputParams.types,
-                            utils.arrayify(data)
-                        );
+                        try {
+                            return utils.coder.decode(
+                                outputParams.names,
+                                outputParams.types,
+                                utils.arrayify(data)
+                            );
+                        } catch(error) {
+                            errors.throwError('invalid data for function output', errors.INVALID_ARGUMENT, {
+                                arg: 'data',
+                                errorArg: error.arg,
+                                errorValue: error.value,
+                                value: data,
+                                reason: error.reason
+                            });
+                        }
                     };
 
                     var sighash = utils.keccak256(utils.toUtf8Bytes(signature)).substring(0, 10);
@@ -512,12 +552,30 @@ function Interface(abi) {
                         var params = Array.prototype.slice.call(arguments, 0);
 
                         if (params.length < inputParams.types.length) {
-                            throwError('missing parameter');
+                            errors.throwError('missing input argument', errors.MISSING_ARGUMENT, {
+                                arg: (inputParams.names[params.length] || 'unknown'),
+                                count: params.length,
+                                expectedCount: inputParams.types.length,
+                                name: method.name
+                            });
                         } else if (params.length > inputParams.types.length) {
-                            throwError('too many parameters');
+                            errors.throwError('too many input arguments', errors.UNEXPECTED_ARGUMENT, {
+                                count: params.length,
+                                expectedCount: inputParams.types.length
+                            });
                         }
 
-                        result.data = sighash + utils.coder.encode(inputParams.names, inputParams.types, params).substring(2);
+                        try {
+                            var encodedParams = utils.coder.encode(inputParams.names, inputParams.types, params);
+                        } catch (error) {
+                            errors.throwError('invalid input argument', errors.INVALID_ARGUMENT, {
+                                arg: error.arg,
+                                reason: error.reason,
+                                value: error.value
+                            });
+                        }
+
+                        result.data = sighash + encodedParams.substring(2);
                         result.parse = parse;
 
                         return populateDescription(new FunctionDescription(), result);
@@ -672,7 +730,7 @@ function Interface(abi) {
 
 module.exports = Interface;
 
-},{"../utils/abi-coder":8,"../utils/convert":11,"../utils/keccak256":13,"../utils/properties":14,"../utils/throw-error":15,"../utils/utf8":16}],4:[function(require,module,exports){
+},{"../utils/abi-coder":8,"../utils/convert":11,"../utils/errors":12,"../utils/keccak256":13,"../utils/properties":14,"../utils/utf8":16}],4:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -4589,8 +4647,6 @@ module.exports = undefined;
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
-var throwError = require('../utils/throw-error');
-
 var utils = (function() {
     var convert = require('../utils/convert.js');
     var utf8 = require('../utils/utf8.js');
@@ -4613,6 +4669,8 @@ var utils = (function() {
         hexlify: convert.hexlify,
     };
 })();
+
+var errors = require('./errors');
 
 var paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 var paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
@@ -4649,7 +4707,16 @@ var coderNumber = function(coerceFunc, size, signed, localName) {
         name: name,
         type: name,
         encode: function(value) {
-            value = utils.bigNumberify(value).toTwos(size * 8).maskn(size * 8);
+            try {
+                value = utils.bigNumberify(value)
+            } catch (error) {
+                errors.throwError('invalid number value', errors.INVALID_ARGUMENT, {
+                    arg: localName,
+                    type: typeof(value),
+                    value: value
+                });
+            }
+            value = value.toTwos(size * 8).maskn(size * 8);
             //value = value.toTwos(size * 8).maskn(size * 8);
             if (signed) {
                 value = value.fromTwos(size * 8).toTwos(256);
@@ -4657,7 +4724,13 @@ var coderNumber = function(coerceFunc, size, signed, localName) {
             return utils.padZeros(utils.arrayify(value), 32);
         },
         decode: function(data, offset) {
-            if (data.length < offset + 32) { throwError('invalid ' + name); }
+            if (data.length < offset + 32) {
+                errors.throwError('insufficient data for ' + name + ' type', errors.INVALID_ARGUMENT, {
+                    arg: localName,
+                    coderType: name,
+                    value: utils.hexlify(data.slice(offset, offset + 32))
+                });
+            }
             var junkLength = 32 - size;
             var value = utils.bigNumberify(data.slice(offset + junkLength, offset + 32));
             if (signed) {
@@ -4683,14 +4756,18 @@ var coderBoolean = function(coerceFunc, localName) {
         name: 'boolean',
         type: 'boolean',
         encode: function(value) {
-           return uint256Coder.encode(value ? 1: 0);
+           return uint256Coder.encode(!!value ? 1: 0);
         },
        decode: function(data, offset) {
             try {
                 var result = uint256Coder.decode(data, offset);
             } catch (error) {
-                if (error.message === 'invalid uint256') {
-                    throwError('invalid bool');
+                if (error.reason === 'insufficient data for uint256 type') {
+                    errors.throwError('insufficient data for boolean type', errors.INVALID_ARGUMENT, {
+                        arg: localName,
+                        coderType: 'boolean',
+                        value: error.value
+                    });
                 }
                 throw error;
             }
@@ -4709,7 +4786,15 @@ var coderFixedBytes = function(coerceFunc, length, localName) {
         name: name,
         type: name,
         encode: function(value) {
-            value = utils.arrayify(value);
+            try {
+                value = utils.arrayify(value);
+            } catch (error) {
+                errors.throwError('invalid ' + name + ' value', errors.INVALID_ARGUMENT, {
+                    arg: localName,
+                    type: typeof(value),
+                    value: error.value
+                });
+            }
             if (length === 32) { return value; }
 
             var result = new Uint8Array(32);
@@ -4717,7 +4802,13 @@ var coderFixedBytes = function(coerceFunc, length, localName) {
             return result;
         },
         decode: function(data, offset) {
-            if (data.length < offset + 32) { throwError('invalid bytes' + length); }
+            if (data.length < offset + 32) {
+                errors.throwError('insufficient data for ' + name + ' type', errors.INVALID_ARGUMENT, {
+                    arg: localName,
+                    coderType: name,
+                    value: utils.hexlify(data.slice(offset, offset + 32))
+                });
+            }
 
             return {
                 consumed: 32,
@@ -4733,13 +4824,27 @@ var coderAddress = function(coerceFunc, localName) {
         name: 'address',
         type: 'address',
         encode: function(value) {
-            value = utils.arrayify(utils.getAddress(value));
+            try {
+                value = utils.arrayify(utils.getAddress(value));
+            } catch (error) {
+                errors.throwError('invalid address', errors.INVALID_ARGUMENT, {
+                    arg: localName,
+                    type: typeof(value),
+                    value: value
+                });
+            }
             var result = new Uint8Array(32);
             result.set(value, 12);
             return result;
         },
         decode: function(data, offset) {
-            if (data.length < offset + 32) { throwError('invalid address'); }
+            if (data.length < offset + 32) {
+                errors.throwError('insufficuent data for address type', errors.INVALID_ARGUMENT, {
+                    arg: localName,
+                    coderType: 'address',
+                    value: utils.hexlify(data.slice(offset, offset + 32))
+                });
+            }
             return {
                 consumed: 32,
                 value: coerceFunc('address', utils.getAddress(utils.hexlify(data.slice(offset + 12, offset + 32))))
@@ -4759,12 +4864,33 @@ function _encodeDynamicBytes(value) {
     ]);
 }
 
-function _decodeDynamicBytes(data, offset) {
-    if (data.length < offset + 32) { throwError('invalid bytes'); }
+function _decodeDynamicBytes(data, offset, localName) {
+    if (data.length < offset + 32) {
+        errors.throwError('insufficient data for dynamicBytes length', errors.INVALID_ARGUMENT, {
+            arg: localName,
+            coderType: 'dynamicBytes',
+            value: utils.hexlify(data.slice(offset, offset + 32))
+        });
+    }
 
     var length = uint256Coder.decode(data, offset).value;
-    length = length.toNumber();
-    if (data.length < offset + 32 + length) { throwError('invalid bytes'); }
+    try {
+        length = length.toNumber();
+    } catch (error) {
+        errors.throwError('dynamic bytes count too large', errors.INVALID_ARGUMENT, {
+            arg: localName,
+            coderType: 'dynamicBytes',
+            value: length.toString()
+        });
+    }
+
+    if (data.length < offset + 32 + length) {
+        errors.throwError('insufficient data for dynamicBytes type', errors.INVALID_ARGUMENT, {
+            arg: localName,
+            coderType: 'dynamicBytes',
+            value: utils.hexlify(data.slice(offset, offset + 32 + length))
+        });
+    }
 
     return {
         consumed: parseInt(32 + 32 * Math.ceil(length / 32)),
@@ -4778,10 +4904,19 @@ var coderDynamicBytes = function(coerceFunc, localName) {
         name: 'bytes',
         type: 'bytes',
         encode: function(value) {
-            return _encodeDynamicBytes(utils.arrayify(value));
+            try {
+                value = utils.arrayify(value);
+            } catch (error) {
+                errors.throwError('invalid bytes value', errors.INVALID_ARGUMENT, {
+                    arg: localName,
+                    type: typeof(value),
+                    value: error.value
+                });
+            }
+            return _encodeDynamicBytes(value);
         },
         decode: function(data, offset) {
-            var result = _decodeDynamicBytes(data, offset);
+            var result = _decodeDynamicBytes(data, offset, localName);
             result.value = coerceFunc('bytes', utils.hexlify(result.value));
             return result;
         },
@@ -4795,10 +4930,17 @@ var coderString = function(coerceFunc, localName) {
         name: 'string',
         type: 'string',
         encode: function(value) {
+            if (typeof(value) !== 'string') {
+                errors.throwError('invalid string value', errors.INVALID_ARGUMENT, {
+                    arg: localName,
+                    type: typeof(value),
+                    value: value
+                });
+            }
             return _encodeDynamicBytes(utils.toUtf8Bytes(value));
         },
         decode: function(data, offset) {
-            var result = _decodeDynamicBytes(data, offset);
+            var result = _decodeDynamicBytes(data, offset, localName);
             result.value = coerceFunc('string', utils.toUtf8String(result.value));
             return result;
         },
@@ -4811,10 +4953,9 @@ function alignSize(size) {
 }
 
 function pack(coders, values) {
+
     if (Array.isArray(values)) {
-        if (coders.length !== values.length) {
-            throwError('types/values mismatch', { type: type, values: values });
-        }
+       // do nothing
 
     } else if (values && typeof(values) === 'object') {
         var arrayValues = [];
@@ -4824,7 +4965,18 @@ function pack(coders, values) {
         values = arrayValues;
 
     } else {
-        throwError('invalid value', { type: 'tuple', values: values });
+        errors.throwError('invalid tuple value', errors.INVALID_ARGUMENT, {
+            coderType: 'tuple',
+            type: typeof(values),
+            value: values
+        });
+    }
+
+    if (coders.length !== values.length) {
+        errors.throwError('types/value length mismatch', errors.INVALID_ARGUMENT, {
+            coderType: 'tuple',
+            value: values
+        });
     }
 
     var parts = [];
@@ -4919,7 +5071,14 @@ function coderArray(coerceFunc, coder, length, localName) {
         name: 'array',
         type: type,
         encode: function(value) {
-            if (!Array.isArray(value)) { throwError('invalid array'); }
+            if (!Array.isArray(value)) {
+                errors.throwError('expected array value', errors.INVALID_ARGUMENT, {
+                    arg: localName,
+                    coderType: 'array',
+                    type: typeof(value),
+                    value: value
+                });
+            }
 
             var count = length;
 
@@ -4929,7 +5088,15 @@ function coderArray(coerceFunc, coder, length, localName) {
                 result = uint256Coder.encode(count);
             }
 
-            if (count !== value.length) { throwError('size mismatch'); }
+            if (count !== value.length) {
+                error.throwError('array value length mismatch', errors.INVALID_ARGUMENT, {
+                    arg: localName,
+                    coderType: 'array',
+                    count: value.length,
+                    expectedCount: count,
+                    value: value
+                });
+            }
 
             var coders = [];
             value.forEach(function(value) { coders.push(coder); });
@@ -4945,8 +5112,24 @@ function coderArray(coerceFunc, coder, length, localName) {
             var count = length;
 
             if (count === -1) {
-                 var decodedLength = uint256Coder.decode(data, offset);
-                 count = decodedLength.value.toNumber();
+                 try {
+                      var decodedLength = uint256Coder.decode(data, offset);
+                 } catch (error) {
+                     errors.throwError('insufficient data for dynamic array length', errors.INVALID_ARGUMENT, {
+                         arg: localName,
+                         coderType: 'array',
+                         value: error.value
+                     });
+                 }
+                 try {
+                     count = decodedLength.value.toNumber();
+                 } catch (error) {
+                     errors.throwError('array count too large', errors.INVALID_ARGUMENT, {
+                         arg: localName,
+                         coderType: 'array',
+                         value: decodedLength.value.toString()
+                     });
+                 }
                  consumed += decodedLength.consumed;
                  offset += decodedLength.consumed;
             }
@@ -5037,7 +5220,10 @@ function getParamCoder(coerceFunc, type, localName) {
     if (match) {
         var size = parseInt(match[2] || 256);
         if (size === 0 || size > 256 || (size % 8) !== 0) {
-            throwError('invalid type', { type: type });
+            errors.throwError('invalid ' + match[1] + ' bit length', errors.INVALID_ARGUMENT, {
+                arg: 'type',
+                value: type
+            });
         }
         return coderNumber(coerceFunc, size / 8, (match[1] === 'int'), localName);
     }
@@ -5046,7 +5232,10 @@ function getParamCoder(coerceFunc, type, localName) {
     if (match) {
         var size = parseInt(match[1]);
         if (size === 0 || size > 32) {
-            throwError('invalid type ' + type);
+            errors.throwError('invalid bytes length', errors.INVALID_ARGUMENT, {
+                arg: 'type',
+                value: type
+            });
         }
         return coderFixedBytes(coerceFunc, size, localName);
     }
@@ -5074,7 +5263,10 @@ function getParamCoder(coerceFunc, type, localName) {
         return coderNull(coerceFunc);
     }
 
-    throwError('invalid type', { type: type });
+    errors.throwError('invalid type', errors.INVALID_ARGUMENT, {
+        arg: 'type',
+        value: type
+    });
 }
 
 function Coder(coerceFunc) {
@@ -5092,7 +5284,19 @@ utils.defineProperty(Coder.prototype, 'encode', function(names, types, values) {
         names = null;
     }
 
-    if (types.length !== values.length) { throwError('types/values mismatch', {types: types, values: values}); }
+    if (types.length !== values.length) {
+        errors.throwError('types/values length mismatch', errors.INVALID_ARGUMENT, {
+            count: { types: types.length, values: values.length },
+            value: { types: types, values: values }
+        });
+    }
+
+    if (names && names.length != types.length) {
+        errors.throwError('names/types length mismatch', errors.INVALID_ARGUMENT, {
+            count: { names: names.length, types: types.length },
+            value: { names: names, types: types }
+        });
+    }
 
     var coders = [];
     types.forEach(function(type, index) {
@@ -5126,7 +5330,7 @@ utils.defineProperty(Coder, 'defaultCoder', new Coder());
 
 module.exports = Coder
 
-},{"../utils/address":9,"../utils/bignumber.js":10,"../utils/convert.js":11,"../utils/properties.js":14,"../utils/throw-error":15,"../utils/utf8.js":16}],9:[function(require,module,exports){
+},{"../utils/address":9,"../utils/bignumber.js":10,"../utils/convert.js":11,"../utils/properties.js":14,"../utils/utf8.js":16,"./errors":12}],9:[function(require,module,exports){
 
 var BN = require('bn.js');
 
@@ -5648,15 +5852,31 @@ var codes = { };
     'MISSING_NEW',
 
 
+    // Call exception
+    'CALL_EXCEPTION',
+
+
+    // Response from a server was invalid
+    //   - response: The body of the response
+    //'BAD_RESPONSE',
+
+
     // Invalid argument (e.g. type) to a function:
     //   - arg: The argument name that was invalid
+    //   - value: The value of the argument
+    //   - type: The type of the argument
+    //   - expected: What was expected
     'INVALID_ARGUMENT',
 
     // Missing argument to a function:
     //   - arg: The argument name that is required
+    //   - count: The number of arguments received
+    //   - expectedCount: The number of arguments expected
     'MISSING_ARGUMENT',
 
     // Too many arguments
+    //   - count: The number of arguments received
+    //   - expectedCount: The number of arguments expected
     'UNEXPECTED_ARGUMENT',
 
 
@@ -5676,7 +5896,11 @@ defineProperty(codes, 'throwError', function(message, code, params) {
 
     var messageDetails = [];
     Object.keys(params).forEach(function(key) {
-        messageDetails.push(key + '=' + JSON.stringify(params[key]));
+        try {
+            messageDetails.push(key + '=' + JSON.stringify(params[key]));
+        } catch (error) {
+            messageDetails.push(key + '=' + JSON.stringify(params[key].toString()));
+        }
     });
     var reason = message;
     if (messageDetails.length) {

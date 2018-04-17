@@ -236,7 +236,7 @@ describe('Test Invalid Input', function() {
             var result = coder.decode([ 'bool' ], '0x');
             console.log(result);
         }, function(error) {
-            assert.equal(error.message, 'invalid bool', 'got invalid bool');
+            assert.equal(error.reason, 'insufficient data for boolean type', 'got invalid bool');
             return true;
         }, 'null bytes throws an error');
     });
