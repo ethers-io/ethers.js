@@ -274,7 +274,9 @@ utils.defineProperty(EtherscanProvider.prototype, 'getHistory', function(address
                 if (tx.creates == null && tx.contractAddress != null) {
                     tx.creates = tx.contractAddress;
                 }
-                output.push(Provider._formatters.checkTransactionResponse(tx));
+                var item = Provider._formatters.checkTransactionResponse(tx);
+                if (tx.timeStamp) { item.timestamp = parseInt(tx.timeStamp); }
+                output.push(item);
             });
             return output;
         });
