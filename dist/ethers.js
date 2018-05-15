@@ -9636,7 +9636,7 @@ uuid.unparse = unparse;
 module.exports = uuid;
 
 },{"./rng":43}],45:[function(require,module,exports){
-module.exports={"version":"3.0.16"}
+module.exports={"version":"3.0.17"}
 },{}],46:[function(require,module,exports){
 'use strict';
 
@@ -10232,6 +10232,9 @@ utils.defineProperty(JsonRpcSigner.prototype, 'sendTransaction', function(transa
                             setTimeout(check, 1000);
                             return;
                         }
+                        transaction.wait = function() {
+                            return provider.waitForTransaction(hash);
+                        };
                         resolve(transaction);
                     });
                 }

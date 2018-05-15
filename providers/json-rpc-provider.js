@@ -126,6 +126,9 @@ utils.defineProperty(JsonRpcSigner.prototype, 'sendTransaction', function(transa
                             setTimeout(check, 1000);
                             return;
                         }
+                        transaction.wait = function() {
+                            return provider.waitForTransaction(hash);
+                        };
                         resolve(transaction);
                     });
                 }
