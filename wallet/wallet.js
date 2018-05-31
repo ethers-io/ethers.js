@@ -312,18 +312,18 @@ utils.defineProperty(Wallet.prototype, 'send', function(addressOrName, amountWei
     });
 });
 
-function getHash(message) {
+utils.defineProperty(Wallet, 'hashMessage', function (message) {
     var payload = utils.concat([
         utils.toUtf8Bytes('\x19Ethereum Signed Message:\n'),
         utils.toUtf8Bytes(String(message.length)),
         ((typeof(message) === 'string') ? utils.toUtf8Bytes(message): message)
     ]);
     return utils.keccak256(payload);
-}
+});
 
 utils.defineProperty(Wallet.prototype, 'signMessage', function(message) {
     var signingKey = new SigningKey(this.privateKey);
-    var sig = signingKey.signDigest(getHash(message));
+    var sig = signingKey.signDigest(Wallet.hashMessage(message));
 
     return (utils.hexZeroPad(sig.r, 32) + utils.hexZeroPad(sig.s, 32).substring(2) + (sig.recoveryParam ? '1c': '1b'));
 });
@@ -331,7 +331,7 @@ utils.defineProperty(Wallet.prototype, 'signMessage', function(message) {
 utils.defineProperty(Wallet, 'verifyMessage', function(message, signature) {
     signature = utils.hexlify(signature);
     if (signature.length != 132) { throw new Error('invalid signature'); }
-    var digest = getHash(message);
+    var digest = Wallet.hashMessage(message);
 
     var recoveryParam = parseInt(signature.substring(130), 16);
     if (recoveryParam >= 27) { recoveryParam -= 27; }
