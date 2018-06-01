@@ -676,9 +676,9 @@ utils.defineProperty(Coder.prototype, 'decode', function(names, types, data) {
     // EIP 838.
     if (data && utils.hexlify(data.slice(0, 4)) === '0x08c379a0') {
         var result = coderTuple(this.coerceFunc, [
-            getParamCoder(this.coerceFunc, 'string', names ? names[0] : undefined),
+            getParamCoder(this.coerceFunc, 'string', undefined),
         ]).decode(data.slice(4), 0);
-        errors.throwError(result.value.result, errors.REVERT_REASON);
+        errors.throwError(result.value[0], errors.REVERT_REASON);
     }
 
     var coders = [];
