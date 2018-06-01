@@ -672,6 +672,15 @@ utils.defineProperty(Coder.prototype, 'decode', function(names, types, data) {
 
     data = utils.arrayify(data);
 
+    // If the first four bytes are '08c379a0', it indicates a revert reason. See
+    // EIP 838.
+    if (data && utils.hexlify(data.slice(0, 4)) === '0x08c379a0') {
+        var result = coderTuple(this.coerceFunc, [
+            getParamCoder(this.coerceFunc, 'string', names ? names[0] : undefined),
+        ]).decode(data.slice(4), 0);
+        errors.throwError(result.value.result, errors.REVERT_REASON);
+    }
+
     var coders = [];
     types.forEach(function(type, index) {
         coders.push(getParamCoder(this.coerceFunc, type, (names ? names[index]: undefined)));
