@@ -226,3 +226,19 @@ describe('Test Base64 coder', function() {
         assert.equal(utf8.toUtf8String(base64.decode(encoded)), decodedText, 'decodes from base64 sstring');
     });
 });
+
+describe('Test revert reasons decoder', function() {
+    it('throws with a decoded revert reason', function() {
+        var rawData = utils.arrayify('0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002b4c656e677468206d7573742062652067726561746572207468616e206f7220657175616c20746f2032302e000000000000000000000000000000000000000000');
+        var coder = utils.AbiCoder.defaultCoder;
+        var didThrow = false;
+        try {
+            coder.decode(['result'], ['address'], rawData);
+        } catch (e) {
+            didThrow = true;
+            assert.equal(e.message, 'Length must be greater than or equal to 20.');
+        }
+        assert.equal(didThrow, true, 'decode throws an error');
+    });
+});
+
