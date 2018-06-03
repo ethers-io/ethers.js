@@ -391,4 +391,23 @@ function Interface(abi) {
     utils.defineProperty(this, 'deployFunction', deploy);
 }
 
+utils.defineProperty(Interface.prototype, 'parseTransaction', function(tx) {
+    var sighash = tx.data.substring(0, 10).toLowerCase();
+    for (var name in this.functions) {
+        if (name.indexOf('(') === -1) { continue; }
+        var func = this.functions[name];
+        if (func.sighash === sighash) {
+            var result = utils.coder.decode(func.inputs.types, '0x' + tx.data.substring(10));
+            return {
+                args: result,
+                signature: func.signature,
+                sighash: func.sighash,
+                parse: func.parseResult,
+                value: tx.value,
+            };
+        }
+    }
+    return null;
+});
+
 module.exports = Interface;
