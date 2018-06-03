@@ -27,7 +27,7 @@ To use in a browser:
 
 ```html
 <script charset="utf-8"
-        src="https://cdn.ethers.io/scripts/ethers-v2.min.js"
+        src="https://cdn.ethers.io/scripts/ethers-v3.min.js"
         type="text/javascript">
 </script>
 ```
