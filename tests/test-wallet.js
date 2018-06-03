@@ -200,6 +200,7 @@ describe('Test Signing Messages', function() {
 
     tests.forEach(function(test) {
         it(('signs a message "' + test.name + '"'), function() {
+            this.timeout(1000000);
             var wallet = new Wallet(test.privateKey);
             var signature = wallet.signMessage(test.message);
             assert.equal(signature, test.signature, 'computes message signature');
@@ -208,6 +209,7 @@ describe('Test Signing Messages', function() {
 
     tests.forEach(function(test) {
         it(('verifies a message "' + test.name + '"'), function() {
+            this.timeout(1000000);
             var address = Wallet.verifyMessage(test.message, test.signature);
             assert.equal(address, test.address, 'verifies message signature');
         });
@@ -215,6 +217,7 @@ describe('Test Signing Messages', function() {
 
     tests.forEach(function(test) {
       it(('hashes a message "' + test.name + '"'), function() {
+          this.timeout(1000000);
           var hash = Wallet.hashMessage(test.message);
           assert.equal(hash, test.messageHash, 'calculates message hash');
       });
