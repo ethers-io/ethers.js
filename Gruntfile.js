@@ -40,7 +40,7 @@ var transforms = {
     "brorand/index.js": brorand,
 
     // Used by sha3 if it exists; (so make it no exist)
-    "process/.*": undef,
+//    "process/.*": undef,
 };
 
 var modified = {};
