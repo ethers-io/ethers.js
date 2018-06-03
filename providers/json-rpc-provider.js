@@ -274,6 +274,7 @@ utils.defineProperty(JsonRpcProvider.prototype, '_startPending', function() {
 
                 var seq = Promise.resolve();
                 hashes.forEach(function(hash) {
+                    self._emitted['t:' + hash.toLowerCase()] = 'pending';
                     seq = seq.then(function() {
                         return self.getTransaction(hash).then(function(tx) {
                             self.emit('pending', tx);
