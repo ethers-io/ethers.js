@@ -19,10 +19,11 @@
         <script src="./dist/es6-promise.auto.js"></script>
 
         <!--
-           Shim for PhantomJS:
-             - ArrayBuffer.isView
+           Shims for PhantomJS
         -->
         <script type="text/javascript">
+
+            // ArrayBuffer.isView
             if (!ArrayBuffer.isView) {
                  ArrayBuffer.isView = function(obj) {
                      // @TODO: This should probably check various instanceof aswell
@@ -30,10 +31,16 @@
                  }
             }
 
+            // nextTick
+            if (!window.nextTick) {
+                window.nextTick = function (callback) { setTimeout(callback, 0); }
+            }
+
             // https://github.com/nathanboktae/mocha-phantomjs-core#usage
             if (typeof(initMochaPhantomJS) === 'function') {
                 initMochaPhantomJS();
             }
+
 
         </script>
 
@@ -48,7 +55,8 @@
 
         <!-- Run the test cases! -->
         <script type="text/javascript">
-            //mocha.grep(new RegExp('...')).run();
+            // Use this to focus on specific test cases
+            //mocha.grep(new RegExp('Test Brain Wallets')).run();
             mocha.run();
         </script>
     </body>
