@@ -37,6 +37,246 @@ var defaultCoerceFunc = function(type, value) {
     return value;
 }
 
+
+///////////////////////////////////
+// Parsing for Solidity Signatures
+
+var regexParen = new RegExp("^([^)(]*)\\((.*)\\)([^)(]*)$");
+var regexIdentifier = new RegExp("^[A-Za-z_][A-Za-z0-9_]*$");
+
+var close = { "(": ")", "[": "]" };
+
+function parseParam(param, allowIndexed) {
+    function throwError(i) {
+        throw new Error('unexpected character "' + param[i] + '" at position ' + i + ' in "' + param + '"');
+    }
+
+    var parent = { type: '', name: '', state: { allowType: true } };
+    var node = parent;
+
+    for (var i = 0; i < param.length; i++) {
+        var c = param[i];
+        switch (c) {
+            case '(':
+                if (!node.state.allowParams) { throwError(i); }
+                delete node.state.allowType;
+                node.components = [ { type: '', name: '', parent: node, state: { allowType: true } } ];
+                node = node.components[0];
+                break;
+
+            case ')':
+                delete node.state;
+                var child = node;
+                node = node.parent;
+                delete child.parent;
+                delete node.state.allowParams;
+                node.state.allowName = true;
+                node.state.allowArray = true;
+                break;
+
+            case ',':
+                delete node.state;
+
+                var sibling = { type: '', name: '', parent: node.parent, state: { allowType: true } };
+                node.parent.components.push(sibling);
+                delete node.parent;
+                node = sibling;
+                break;
+
+            // Hit a space...
+            case ' ':
+
+                // If reading type, the type is done and may read a param or name
+                if (node.state.allowType) {
+                    if (node.type !== '') {
+                        delete node.state.allowType;
+                        node.state.allowName = true;
+                        node.state.allowParams = true;
+                    }
+                }
+
+                // If reading name, the name is done
+                if (node.state.allowName) {
+                    if (node.name !== '') {
+                        if (allowIndexed && node.name === 'indexed') {
+                            node.indexed = true;
+                            node.name = '';
+                        } else {
+                            delete node.state.allowName;
+                        }
+                    }
+                }
+
+                break;
+
+            case '[':
+                if (!node.state.allowArray) { throwError(i); }
+
+                //if (!node.array) { node.array = ''; }
+                //node.array += c;
+                node.type += c;
+
+                delete node.state.allowArray;
+                delete node.state.allowName;
+                node.state.readArray = true;
+                break;
+
+            case ']':
+                if (!node.state.readArray) { throwError(i); }
+
+                //node.array += c;
+                node.type += c;
+
+                delete node.state.readArray;
+                node.state.allowArray = true;
+                node.state.allowName = true;
+                break;
+
+            default:
+                if (node.state.allowType) {
+                    node.type += c;
+                    node.state.allowParams = true;
+                    node.state.allowArray = true;
+                } else if (node.state.allowName) {
+                    node.name += c;
+                    delete node.state.allowArray;
+                } else if (node.state.readArray) {
+                    //node.array += c;
+                    node.type += c;
+                } else {
+                    throwError(i);
+                }
+        }
+    }
+
+    delete parent.state;
+
+    return parent;
+}
+
+function parseSignatureEvent(fragment) {
+
+    var abi = {
+        anonymous: false,
+        inputs: [],
+        type: 'event'
+    }
+
+    var match = fragment.match(regexParen);
+    if (!match) { throw new Error('invalid event: ' + fragment); }
+
+    abi.name = match[1].trim();
+
+    splitNesting(match[2]).forEach(function(param) {
+        param = parseParam(param, true);
+        param.indexed = !!param.indexed;
+        abi.inputs.push(param);
+    });
+
+    match[3].split(' ').forEach(function(modifier) {
+        switch(modifier) {
+            case 'anonymous':
+                abi.anonymous = true;
+                break;
+            case '':
+                break;
+            default:
+                console.log('unknown modifier: ' + mdifier);
+        }
+    });
+
+    if (abi.name && !abi.name.match(regexIdentifier)) {
+        throw new Error('invalid identifier: "' + result.name + '"');
+    }
+
+    return abi;
+}
+
+function parseSignatureFunction(fragment) {
+    var abi = {
+        constant: false,
+        inputs: [],
+        outputs: [],
+        payable: false,
+        type: 'function'
+    };
+
+    var comps = fragment.split(' returns ');
+    var left = comps[0].match(regexParen);
+    if (!left) { throw new Error('invalid signature'); }
+
+    abi.name = left[1].trim();
+    if (!abi.name.match(regexIdentifier)) {
+        throw new Error('invalid identifier: "' + left[1] + '"');
+    }
+
+    splitNesting(left[2]).forEach(function(param) {
+        abi.inputs.push(parseParam(param));
+    });
+
+    left[3].split(' ').forEach(function(modifier) {
+        switch (modifier) {
+            case 'constant':
+                abi.constant = true;
+                break;
+            case 'payable':
+                abi.payable = true;
+                break;
+            case 'pure':
+                abi.constant = true;
+                abi.stateMutability = 'pure';
+                break;
+            case 'view':
+                abi.constant = true;
+                abi.stateMutability = 'view';
+                break;
+            case '':
+                break;
+            default:
+                console.log('unknown modifier: ' + modifier);
+        }
+    });
+
+    // We have outputs
+    if (comps.length > 1) {
+        var right = comps[1].match(regexParen);
+        if (right[1].trim() != '' || right[3].trim() != '') {
+            throw new Error('unexpected tokens');
+        }
+
+        splitNesting(right[2]).forEach(function(param) {
+            abi.outputs.push(parseParam(param));
+        });
+    }
+
+    return abi;
+}
+
+
+function parseSignature(fragment) {
+    if(typeof(fragment) === 'string') {
+        // Make sure the "returns" is surrounded by a space and all whitespace is exactly one space
+        fragment = fragment.replace(/\(/g, ' (').replace(/\)/g, ') ').replace(/\s+/g, ' ');
+        fragment = fragment.trim();
+
+        if (fragment.substring(0, 6) === 'event ') {
+           return parseSignatureEvent(fragment.substring(6).trim());
+
+        } else {
+            if (fragment.substring(0, 9) === 'function ') {
+                fragment = fragment.substring(9);
+            }
+            return parseSignatureFunction(fragment.trim());
+        }
+    }
+
+    throw new Error('unknown fragment');
+}
+
+
+///////////////////////////////////
+// Coders
+
 var coderNull = function(coerceFunc) {
     return {
         name: 'null',
@@ -567,7 +807,29 @@ var paramTypeSimple = {
     bytes: coderDynamicBytes,
 };
 
+function getTupleParamCoder(coerceFunc, components, localName) {
+    var coders = [];
+    components.forEach(function(component) {
+        coders.push(getParamCoder(coerceFunc, component));
+    });
+    return coderTuple(coerceFunc, coders, localName);
+}
+
 function getParamCoder(coerceFunc, type, localName) {
+
+    // Support passing in { name: "foo", type: "uint" } and { components: [ ... ] }
+    var components = null;
+    if (typeof(type) !== 'string') {
+        if (!localName && type.name) { localName = type.name; }
+
+        // Tuple
+        if (type.components) {
+            components = type.components;
+        }
+
+        type = type.type;
+    }
+
     var coder = paramTypeSimple[type];
     if (coder) { return coder(coerceFunc, localName); }
 
@@ -598,20 +860,24 @@ function getParamCoder(coerceFunc, type, localName) {
     var match = type.match(paramTypeArray);
     if (match) {
         var size = parseInt(match[2] || -1);
-        return coderArray(coerceFunc, getParamCoder(coerceFunc, match[1], localName), size, localName);
+        type = match[1];
+        if (components) {
+            type = {
+                components: components,
+                name: localName,
+                type: type
+            };
+        }
+        return coderArray(coerceFunc, getParamCoder(coerceFunc, type, localName), size, localName);
     }
 
-    if (type.substring(0, 6) === 'tuple(' && type.substring(type.length - 1) === ')') {
-        var coders = [];
-        var names = [];
-        if (localName && typeof(localName) === 'object') {
-            if (Array.isArray(localName.names)) { names = localName.names; }
-            if (typeof(localName.name) === 'string') { localName = localName.name; }
+    if (type.substring(0, 5) === 'tuple') {
+        if (!components) {
+            type = parseParam(type);
+            components = type.components;
+            localName = type.localName;
         }
-        splitNesting(type.substring(6, type.length - 1)).forEach(function(type, index) {
-            coders.push(getParamCoder(coerceFunc, type, names[index]));
-        });
-        return coderTuple(coerceFunc, coders, localName);
+        return getTupleParamCoder(coerceFunc, components, localName);
     }
 
     if (type === '') {
@@ -682,5 +948,8 @@ utils.defineProperty(Coder.prototype, 'decode', function(names, types, data) {
 });
 
 utils.defineProperty(Coder, 'defaultCoder', new Coder());
+
+utils.defineProperty(Coder, 'parseSignature', parseSignature);
+
 
 module.exports = Coder

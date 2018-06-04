@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
 'use strict';
 
 var Interface = require('./interface.js');
@@ -340,6 +340,7 @@ module.exports = {
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
 var utils = (function() {
+    var AbiCoder = require('../utils/abi-coder');
     var convert = require('../utils/convert');
     var properties = require('../utils/properties');
     var utf8 = require('../utils/utf8');
@@ -348,7 +349,8 @@ var utils = (function() {
         defineFrozen: properties.defineFrozen,
         defineProperty: properties.defineProperty,
 
-        coder: require('../utils/abi-coder').defaultCoder,
+        coder: AbiCoder.defaultCoder,
+        parseSignature: AbiCoder.parseSignature,
 
         arrayify: convert.arrayify,
         concat: convert.concat,
@@ -448,7 +450,15 @@ function Interface(abi) {
         }
     }
 
-    utils.defineFrozen(this, 'abi', abi);
+    var _abi = [];
+    abi.forEach(function(fragment) {
+        if (typeof(fragment) === 'string') {
+            fragment = utils.parseSignature(fragment);
+        }
+        _abi.push(fragment);
+    });
+
+    utils.defineFrozen(this, 'abi', _abi);
 
     var methods = {}, events = {}, deploy = null;
 
@@ -718,7 +728,7 @@ function Interface(abi) {
         }
     };
 
-    this.abi.forEach(addMethod, this);
+    _abi.forEach(addMethod, this);
 
     // If there wasn't a constructor, create the default constructor
     if (!deploy) {
@@ -727,6 +737,25 @@ function Interface(abi) {
 
     utils.defineProperty(this, 'deployFunction', deploy);
 }
+
+utils.defineProperty(Interface.prototype, 'parseTransaction', function(tx) {
+    var sighash = tx.data.substring(0, 10).toLowerCase();
+    for (var name in this.functions) {
+        if (name.indexOf('(') === -1) { continue; }
+        var func = this.functions[name];
+        if (func.sighash === sighash) {
+            var result = utils.coder.decode(func.inputs.types, '0x' + tx.data.substring(10));
+            return {
+                args: result,
+                signature: func.signature,
+                sighash: func.sighash,
+                parse: func.parseResult,
+                value: tx.value,
+            };
+        }
+    }
+    return null;
+});
 
 module.exports = Interface;
 
@@ -4641,7 +4670,191 @@ module.exports = Interface;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"_process":7}],7:[function(require,module,exports){
-module.exports = undefined;
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
 },{}],8:[function(require,module,exports){
 'use strict';
 
@@ -4681,6 +4894,246 @@ var defaultCoerceFunc = function(type, value) {
     if (match && parseInt(match[2]) <= 48) { return value.toNumber(); }
     return value;
 }
+
+
+///////////////////////////////////
+// Parsing for Solidity Signatures
+
+var regexParen = new RegExp("^([^)(]*)\\((.*)\\)([^)(]*)$");
+var regexIdentifier = new RegExp("^[A-Za-z_][A-Za-z0-9_]*$");
+
+var close = { "(": ")", "[": "]" };
+
+function parseParam(param, allowIndexed) {
+    function throwError(i) {
+        throw new Error('unexpected character "' + param[i] + '" at position ' + i + ' in "' + param + '"');
+    }
+
+    var parent = { type: '', name: '', state: { allowType: true } };
+    var node = parent;
+
+    for (var i = 0; i < param.length; i++) {
+        var c = param[i];
+        switch (c) {
+            case '(':
+                if (!node.state.allowParams) { throwError(i); }
+                delete node.state.allowType;
+                node.components = [ { type: '', name: '', parent: node, state: { allowType: true } } ];
+                node = node.components[0];
+                break;
+
+            case ')':
+                delete node.state;
+                var child = node;
+                node = node.parent;
+                delete child.parent;
+                delete node.state.allowParams;
+                node.state.allowName = true;
+                node.state.allowArray = true;
+                break;
+
+            case ',':
+                delete node.state;
+
+                var sibling = { type: '', name: '', parent: node.parent, state: { allowType: true } };
+                node.parent.components.push(sibling);
+                delete node.parent;
+                node = sibling;
+                break;
+
+            // Hit a space...
+            case ' ':
+
+                // If reading type, the type is done and may read a param or name
+                if (node.state.allowType) {
+                    if (node.type !== '') {
+                        delete node.state.allowType;
+                        node.state.allowName = true;
+                        node.state.allowParams = true;
+                    }
+                }
+
+                // If reading name, the name is done
+                if (node.state.allowName) {
+                    if (node.name !== '') {
+                        if (allowIndexed && node.name === 'indexed') {
+                            node.indexed = true;
+                            node.name = '';
+                        } else {
+                            delete node.state.allowName;
+                        }
+                    }
+                }
+
+                break;
+
+            case '[':
+                if (!node.state.allowArray) { throwError(i); }
+
+                //if (!node.array) { node.array = ''; }
+                //node.array += c;
+                node.type += c;
+
+                delete node.state.allowArray;
+                delete node.state.allowName;
+                node.state.readArray = true;
+                break;
+
+            case ']':
+                if (!node.state.readArray) { throwError(i); }
+
+                //node.array += c;
+                node.type += c;
+
+                delete node.state.readArray;
+                node.state.allowArray = true;
+                node.state.allowName = true;
+                break;
+
+            default:
+                if (node.state.allowType) {
+                    node.type += c;
+                    node.state.allowParams = true;
+                    node.state.allowArray = true;
+                } else if (node.state.allowName) {
+                    node.name += c;
+                    delete node.state.allowArray;
+                } else if (node.state.readArray) {
+                    //node.array += c;
+                    node.type += c;
+                } else {
+                    throwError(i);
+                }
+        }
+    }
+
+    delete parent.state;
+
+    return parent;
+}
+
+function parseSignatureEvent(fragment) {
+
+    var abi = {
+        anonymous: false,
+        inputs: [],
+        type: 'event'
+    }
+
+    var match = fragment.match(regexParen);
+    if (!match) { throw new Error('invalid event: ' + fragment); }
+
+    abi.name = match[1].trim();
+
+    splitNesting(match[2]).forEach(function(param) {
+        param = parseParam(param, true);
+        param.indexed = !!param.indexed;
+        abi.inputs.push(param);
+    });
+
+    match[3].split(' ').forEach(function(modifier) {
+        switch(modifier) {
+            case 'anonymous':
+                abi.anonymous = true;
+                break;
+            case '':
+                break;
+            default:
+                console.log('unknown modifier: ' + mdifier);
+        }
+    });
+
+    if (abi.name && !abi.name.match(regexIdentifier)) {
+        throw new Error('invalid identifier: "' + result.name + '"');
+    }
+
+    return abi;
+}
+
+function parseSignatureFunction(fragment) {
+    var abi = {
+        constant: false,
+        inputs: [],
+        outputs: [],
+        payable: false,
+        type: 'function'
+    };
+
+    var comps = fragment.split(' returns ');
+    var left = comps[0].match(regexParen);
+    if (!left) { throw new Error('invalid signature'); }
+
+    abi.name = left[1].trim();
+    if (!abi.name.match(regexIdentifier)) {
+        throw new Error('invalid identifier: "' + left[1] + '"');
+    }
+
+    splitNesting(left[2]).forEach(function(param) {
+        abi.inputs.push(parseParam(param));
+    });
+
+    left[3].split(' ').forEach(function(modifier) {
+        switch (modifier) {
+            case 'constant':
+                abi.constant = true;
+                break;
+            case 'payable':
+                abi.payable = true;
+                break;
+            case 'pure':
+                abi.constant = true;
+                abi.stateMutability = 'pure';
+                break;
+            case 'view':
+                abi.constant = true;
+                abi.stateMutability = 'view';
+                break;
+            case '':
+                break;
+            default:
+                console.log('unknown modifier: ' + modifier);
+        }
+    });
+
+    // We have outputs
+    if (comps.length > 1) {
+        var right = comps[1].match(regexParen);
+        if (right[1].trim() != '' || right[3].trim() != '') {
+            throw new Error('unexpected tokens');
+        }
+
+        splitNesting(right[2]).forEach(function(param) {
+            abi.outputs.push(parseParam(param));
+        });
+    }
+
+    return abi;
+}
+
+
+function parseSignature(fragment) {
+    if(typeof(fragment) === 'string') {
+        // Make sure the "returns" is surrounded by a space and all whitespace is exactly one space
+        fragment = fragment.replace(/\(/g, ' (').replace(/\)/g, ') ').replace(/\s+/g, ' ');
+        fragment = fragment.trim();
+
+        if (fragment.substring(0, 6) === 'event ') {
+           return parseSignatureEvent(fragment.substring(6).trim());
+
+        } else {
+            if (fragment.substring(0, 9) === 'function ') {
+                fragment = fragment.substring(9);
+            }
+            return parseSignatureFunction(fragment.trim());
+        }
+    }
+
+    throw new Error('unknown fragment');
+}
+
+
+///////////////////////////////////
+// Coders
 
 var coderNull = function(coerceFunc) {
     return {
@@ -5212,7 +5665,29 @@ var paramTypeSimple = {
     bytes: coderDynamicBytes,
 };
 
+function getTupleParamCoder(coerceFunc, components, localName) {
+    var coders = [];
+    components.forEach(function(component) {
+        coders.push(getParamCoder(coerceFunc, component));
+    });
+    return coderTuple(coerceFunc, coders, localName);
+}
+
 function getParamCoder(coerceFunc, type, localName) {
+
+    // Support passing in { name: "foo", type: "uint" } and { components: [ ... ] }
+    var components = null;
+    if (typeof(type) !== 'string') {
+        if (!localName && type.name) { localName = type.name; }
+
+        // Tuple
+        if (type.components) {
+            components = type.components;
+        }
+
+        type = type.type;
+    }
+
     var coder = paramTypeSimple[type];
     if (coder) { return coder(coerceFunc, localName); }
 
@@ -5243,20 +5718,24 @@ function getParamCoder(coerceFunc, type, localName) {
     var match = type.match(paramTypeArray);
     if (match) {
         var size = parseInt(match[2] || -1);
-        return coderArray(coerceFunc, getParamCoder(coerceFunc, match[1], localName), size, localName);
+        type = match[1];
+        if (components) {
+            type = {
+                components: components,
+                name: localName,
+                type: type
+            };
+        }
+        return coderArray(coerceFunc, getParamCoder(coerceFunc, type, localName), size, localName);
     }
 
-    if (type.substring(0, 6) === 'tuple(' && type.substring(type.length - 1) === ')') {
-        var coders = [];
-        var names = [];
-        if (localName && typeof(localName) === 'object') {
-            if (Array.isArray(localName.names)) { names = localName.names; }
-            if (typeof(localName.name) === 'string') { localName = localName.name; }
+    if (type.substring(0, 5) === 'tuple') {
+        if (!components) {
+            type = parseParam(type);
+            components = type.components;
+            localName = type.localName;
         }
-        splitNesting(type.substring(6, type.length - 1)).forEach(function(type, index) {
-            coders.push(getParamCoder(coerceFunc, type, names[index]));
-        });
-        return coderTuple(coerceFunc, coders, localName);
+        return getTupleParamCoder(coerceFunc, components, localName);
     }
 
     if (type === '') {
@@ -5327,6 +5806,9 @@ utils.defineProperty(Coder.prototype, 'decode', function(names, types, data) {
 });
 
 utils.defineProperty(Coder, 'defaultCoder', new Coder());
+
+utils.defineProperty(Coder, 'parseSignature', parseSignature);
+
 
 module.exports = Coder
 

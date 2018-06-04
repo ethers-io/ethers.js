@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
 "use strict";
 
 (function(root) {
@@ -4229,7 +4229,7 @@
 
 },{"buffer":4}],3:[function(require,module,exports){
 var randomBytes = require('../../utils').randomBytes; module.exports = function(length) { return randomBytes(length); };
-},{"../../utils":52}],4:[function(require,module,exports){
+},{"../../utils":51}],4:[function(require,module,exports){
 
 },{}],5:[function(require,module,exports){
 'use strict';
@@ -8020,9 +8020,192 @@ assert.equal = function assertEqual(l, r, msg) {
 };
 
 },{}],36:[function(require,module,exports){
-arguments[4][17][0].apply(exports,arguments)
-},{"dup":17}],37:[function(require,module,exports){
-(function (setImmediate){
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],37:[function(require,module,exports){
 "use strict";
 
 (function(root) {
@@ -8476,8 +8659,7 @@ arguments[4][17][0].apply(exports,arguments)
 
 })(this);
 
-}).call(this,require("timers").setImmediate)
-},{"timers":39}],38:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 (function (process,global){
 (function (global, undefined) {
     "use strict";
@@ -8657,85 +8839,6 @@ arguments[4][17][0].apply(exports,arguments)
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"_process":36}],39:[function(require,module,exports){
-(function (setImmediate,clearImmediate){
-var nextTick = require('process/browser.js').nextTick;
-var apply = Function.prototype.apply;
-var slice = Array.prototype.slice;
-var immediateIds = {};
-var nextImmediateId = 0;
-
-// DOM APIs, for completeness
-
-exports.setTimeout = function() {
-  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
-};
-exports.setInterval = function() {
-  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
-};
-exports.clearTimeout =
-exports.clearInterval = function(timeout) { timeout.close(); };
-
-function Timeout(id, clearFn) {
-  this._id = id;
-  this._clearFn = clearFn;
-}
-Timeout.prototype.unref = Timeout.prototype.ref = function() {};
-Timeout.prototype.close = function() {
-  this._clearFn.call(window, this._id);
-};
-
-// Does not start the time, just sets up the members needed.
-exports.enroll = function(item, msecs) {
-  clearTimeout(item._idleTimeoutId);
-  item._idleTimeout = msecs;
-};
-
-exports.unenroll = function(item) {
-  clearTimeout(item._idleTimeoutId);
-  item._idleTimeout = -1;
-};
-
-exports._unrefActive = exports.active = function(item) {
-  clearTimeout(item._idleTimeoutId);
-
-  var msecs = item._idleTimeout;
-  if (msecs >= 0) {
-    item._idleTimeoutId = setTimeout(function onTimeout() {
-      if (item._onTimeout)
-        item._onTimeout();
-    }, msecs);
-  }
-};
-
-// That's not how node.js implements it but the exposed api is the same.
-exports.setImmediate = typeof setImmediate === "function" ? setImmediate : function(fn) {
-  var id = nextImmediateId++;
-  var args = arguments.length < 2 ? false : slice.call(arguments, 1);
-
-  immediateIds[id] = true;
-
-  nextTick(function onNextTick() {
-    if (immediateIds[id]) {
-      // fn.call() is faster so we optimize for the common use-case
-      // @see http://jsperf.com/call-apply-segu
-      if (args) {
-        fn.apply(null, args);
-      } else {
-        fn.call(null);
-      }
-      // Prevent ids from leaking
-      exports.clearImmediate(id);
-    }
-  });
-
-  return id;
-};
-
-exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
-  delete immediateIds[id];
-};
-}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":36,"timers":39}],40:[function(require,module,exports){
 (function (global){
 
 var rng;
@@ -8770,7 +8873,7 @@ module.exports = rng;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],41:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 //     uuid.js
 //
 //     Copyright (c) 2010-2012 Robert Kieffer
@@ -8955,7 +9058,7 @@ uuid.unparse = unparse;
 
 module.exports = uuid;
 
-},{"./rng":40}],42:[function(require,module,exports){
+},{"./rng":39}],41:[function(require,module,exports){
 'use strict';
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
@@ -8994,6 +9097,246 @@ var defaultCoerceFunc = function(type, value) {
     if (match && parseInt(match[2]) <= 48) { return value.toNumber(); }
     return value;
 }
+
+
+///////////////////////////////////
+// Parsing for Solidity Signatures
+
+var regexParen = new RegExp("^([^)(]*)\\((.*)\\)([^)(]*)$");
+var regexIdentifier = new RegExp("^[A-Za-z_][A-Za-z0-9_]*$");
+
+var close = { "(": ")", "[": "]" };
+
+function parseParam(param, allowIndexed) {
+    function throwError(i) {
+        throw new Error('unexpected character "' + param[i] + '" at position ' + i + ' in "' + param + '"');
+    }
+
+    var parent = { type: '', name: '', state: { allowType: true } };
+    var node = parent;
+
+    for (var i = 0; i < param.length; i++) {
+        var c = param[i];
+        switch (c) {
+            case '(':
+                if (!node.state.allowParams) { throwError(i); }
+                delete node.state.allowType;
+                node.components = [ { type: '', name: '', parent: node, state: { allowType: true } } ];
+                node = node.components[0];
+                break;
+
+            case ')':
+                delete node.state;
+                var child = node;
+                node = node.parent;
+                delete child.parent;
+                delete node.state.allowParams;
+                node.state.allowName = true;
+                node.state.allowArray = true;
+                break;
+
+            case ',':
+                delete node.state;
+
+                var sibling = { type: '', name: '', parent: node.parent, state: { allowType: true } };
+                node.parent.components.push(sibling);
+                delete node.parent;
+                node = sibling;
+                break;
+
+            // Hit a space...
+            case ' ':
+
+                // If reading type, the type is done and may read a param or name
+                if (node.state.allowType) {
+                    if (node.type !== '') {
+                        delete node.state.allowType;
+                        node.state.allowName = true;
+                        node.state.allowParams = true;
+                    }
+                }
+
+                // If reading name, the name is done
+                if (node.state.allowName) {
+                    if (node.name !== '') {
+                        if (allowIndexed && node.name === 'indexed') {
+                            node.indexed = true;
+                            node.name = '';
+                        } else {
+                            delete node.state.allowName;
+                        }
+                    }
+                }
+
+                break;
+
+            case '[':
+                if (!node.state.allowArray) { throwError(i); }
+
+                //if (!node.array) { node.array = ''; }
+                //node.array += c;
+                node.type += c;
+
+                delete node.state.allowArray;
+                delete node.state.allowName;
+                node.state.readArray = true;
+                break;
+
+            case ']':
+                if (!node.state.readArray) { throwError(i); }
+
+                //node.array += c;
+                node.type += c;
+
+                delete node.state.readArray;
+                node.state.allowArray = true;
+                node.state.allowName = true;
+                break;
+
+            default:
+                if (node.state.allowType) {
+                    node.type += c;
+                    node.state.allowParams = true;
+                    node.state.allowArray = true;
+                } else if (node.state.allowName) {
+                    node.name += c;
+                    delete node.state.allowArray;
+                } else if (node.state.readArray) {
+                    //node.array += c;
+                    node.type += c;
+                } else {
+                    throwError(i);
+                }
+        }
+    }
+
+    delete parent.state;
+
+    return parent;
+}
+
+function parseSignatureEvent(fragment) {
+
+    var abi = {
+        anonymous: false,
+        inputs: [],
+        type: 'event'
+    }
+
+    var match = fragment.match(regexParen);
+    if (!match) { throw new Error('invalid event: ' + fragment); }
+
+    abi.name = match[1].trim();
+
+    splitNesting(match[2]).forEach(function(param) {
+        param = parseParam(param, true);
+        param.indexed = !!param.indexed;
+        abi.inputs.push(param);
+    });
+
+    match[3].split(' ').forEach(function(modifier) {
+        switch(modifier) {
+            case 'anonymous':
+                abi.anonymous = true;
+                break;
+            case '':
+                break;
+            default:
+                console.log('unknown modifier: ' + mdifier);
+        }
+    });
+
+    if (abi.name && !abi.name.match(regexIdentifier)) {
+        throw new Error('invalid identifier: "' + result.name + '"');
+    }
+
+    return abi;
+}
+
+function parseSignatureFunction(fragment) {
+    var abi = {
+        constant: false,
+        inputs: [],
+        outputs: [],
+        payable: false,
+        type: 'function'
+    };
+
+    var comps = fragment.split(' returns ');
+    var left = comps[0].match(regexParen);
+    if (!left) { throw new Error('invalid signature'); }
+
+    abi.name = left[1].trim();
+    if (!abi.name.match(regexIdentifier)) {
+        throw new Error('invalid identifier: "' + left[1] + '"');
+    }
+
+    splitNesting(left[2]).forEach(function(param) {
+        abi.inputs.push(parseParam(param));
+    });
+
+    left[3].split(' ').forEach(function(modifier) {
+        switch (modifier) {
+            case 'constant':
+                abi.constant = true;
+                break;
+            case 'payable':
+                abi.payable = true;
+                break;
+            case 'pure':
+                abi.constant = true;
+                abi.stateMutability = 'pure';
+                break;
+            case 'view':
+                abi.constant = true;
+                abi.stateMutability = 'view';
+                break;
+            case '':
+                break;
+            default:
+                console.log('unknown modifier: ' + modifier);
+        }
+    });
+
+    // We have outputs
+    if (comps.length > 1) {
+        var right = comps[1].match(regexParen);
+        if (right[1].trim() != '' || right[3].trim() != '') {
+            throw new Error('unexpected tokens');
+        }
+
+        splitNesting(right[2]).forEach(function(param) {
+            abi.outputs.push(parseParam(param));
+        });
+    }
+
+    return abi;
+}
+
+
+function parseSignature(fragment) {
+    if(typeof(fragment) === 'string') {
+        // Make sure the "returns" is surrounded by a space and all whitespace is exactly one space
+        fragment = fragment.replace(/\(/g, ' (').replace(/\)/g, ') ').replace(/\s+/g, ' ');
+        fragment = fragment.trim();
+
+        if (fragment.substring(0, 6) === 'event ') {
+           return parseSignatureEvent(fragment.substring(6).trim());
+
+        } else {
+            if (fragment.substring(0, 9) === 'function ') {
+                fragment = fragment.substring(9);
+            }
+            return parseSignatureFunction(fragment.trim());
+        }
+    }
+
+    throw new Error('unknown fragment');
+}
+
+
+///////////////////////////////////
+// Coders
 
 var coderNull = function(coerceFunc) {
     return {
@@ -9525,7 +9868,29 @@ var paramTypeSimple = {
     bytes: coderDynamicBytes,
 };
 
+function getTupleParamCoder(coerceFunc, components, localName) {
+    var coders = [];
+    components.forEach(function(component) {
+        coders.push(getParamCoder(coerceFunc, component));
+    });
+    return coderTuple(coerceFunc, coders, localName);
+}
+
 function getParamCoder(coerceFunc, type, localName) {
+
+    // Support passing in { name: "foo", type: "uint" } and { components: [ ... ] }
+    var components = null;
+    if (typeof(type) !== 'string') {
+        if (!localName && type.name) { localName = type.name; }
+
+        // Tuple
+        if (type.components) {
+            components = type.components;
+        }
+
+        type = type.type;
+    }
+
     var coder = paramTypeSimple[type];
     if (coder) { return coder(coerceFunc, localName); }
 
@@ -9556,20 +9921,24 @@ function getParamCoder(coerceFunc, type, localName) {
     var match = type.match(paramTypeArray);
     if (match) {
         var size = parseInt(match[2] || -1);
-        return coderArray(coerceFunc, getParamCoder(coerceFunc, match[1], localName), size, localName);
+        type = match[1];
+        if (components) {
+            type = {
+                components: components,
+                name: localName,
+                type: type
+            };
+        }
+        return coderArray(coerceFunc, getParamCoder(coerceFunc, type, localName), size, localName);
     }
 
-    if (type.substring(0, 6) === 'tuple(' && type.substring(type.length - 1) === ')') {
-        var coders = [];
-        var names = [];
-        if (localName && typeof(localName) === 'object') {
-            if (Array.isArray(localName.names)) { names = localName.names; }
-            if (typeof(localName.name) === 'string') { localName = localName.name; }
+    if (type.substring(0, 5) === 'tuple') {
+        if (!components) {
+            type = parseParam(type);
+            components = type.components;
+            localName = type.localName;
         }
-        splitNesting(type.substring(6, type.length - 1)).forEach(function(type, index) {
-            coders.push(getParamCoder(coerceFunc, type, names[index]));
-        });
-        return coderTuple(coerceFunc, coders, localName);
+        return getTupleParamCoder(coerceFunc, components, localName);
     }
 
     if (type === '') {
@@ -9641,9 +10010,12 @@ utils.defineProperty(Coder.prototype, 'decode', function(names, types, data) {
 
 utils.defineProperty(Coder, 'defaultCoder', new Coder());
 
+utils.defineProperty(Coder, 'parseSignature', parseSignature);
+
+
 module.exports = Coder
 
-},{"../utils/address":43,"../utils/bignumber.js":44,"../utils/convert.js":48,"../utils/properties.js":56,"../utils/utf8.js":62,"./errors":49}],43:[function(require,module,exports){
+},{"../utils/address":42,"../utils/bignumber.js":43,"../utils/convert.js":47,"../utils/properties.js":55,"../utils/utf8.js":61,"./errors":48}],42:[function(require,module,exports){
 
 var BN = require('bn.js');
 
@@ -9769,7 +10141,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert":48,"./keccak256":53,"./throw-error":60,"bn.js":2}],44:[function(require,module,exports){
+},{"./convert":47,"./keccak256":52,"./throw-error":59,"bn.js":2}],43:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -9920,7 +10292,7 @@ module.exports = {
     BigNumber: BigNumber
 };
 
-},{"./convert":48,"./properties":56,"./throw-error":60,"bn.js":2}],45:[function(require,module,exports){
+},{"./convert":47,"./properties":55,"./throw-error":59,"bn.js":2}],44:[function(require,module,exports){
 'use strict';
 
 var convert = require('./convert');
@@ -9946,7 +10318,7 @@ module.exports = {
 
 
 
-},{"./convert":48}],46:[function(require,module,exports){
+},{"./convert":47}],45:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -9993,7 +10365,7 @@ if (crypto._weakCrypto === true) {
 module.exports = randomBytes;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./convert":48,"./properties":56}],47:[function(require,module,exports){
+},{"./convert":47,"./properties":55}],46:[function(require,module,exports){
 
 var getAddress = require('./address').getAddress;
 var convert = require('./convert');
@@ -10015,7 +10387,7 @@ module.exports = {
     getContractAddress: getContractAddress,
 }
 
-},{"./address":43,"./convert":48,"./keccak256":53,"./rlp":57}],48:[function(require,module,exports){
+},{"./address":42,"./convert":47,"./keccak256":52,"./rlp":56}],47:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
@@ -10241,7 +10613,7 @@ module.exports = {
     hexZeroPad: hexZeroPad,
 };
 
-},{"./errors":49,"./properties.js":56}],49:[function(require,module,exports){
+},{"./errors":48,"./properties.js":55}],48:[function(require,module,exports){
 'use strict';
 
 var defineProperty = require('./properties').defineProperty;
@@ -10334,7 +10706,7 @@ defineProperty(codes, 'checkNew', function(self, kind) {
 
 module.exports = codes;
 
-},{"./properties":56}],50:[function(require,module,exports){
+},{"./properties":55}],49:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -10360,7 +10732,7 @@ module.exports = {
     createSha512Hmac: createSha512Hmac,
 };
 
-},{"./convert.js":48,"./sha2.js":58,"hash.js":20}],51:[function(require,module,exports){
+},{"./convert.js":47,"./sha2.js":57,"hash.js":20}],50:[function(require,module,exports){
 'use strict';
 
 var keccak256 = require('./keccak256');
@@ -10372,7 +10744,7 @@ function id(text) {
 
 module.exports = id;
 
-},{"./keccak256":53,"./utf8":62}],52:[function(require,module,exports){
+},{"./keccak256":52,"./utf8":61}],51:[function(require,module,exports){
 'use strict';
 
 // This is SUPER useful, but adds 140kb (even zipped, adds 40kb)
@@ -10449,7 +10821,7 @@ module.exports = {
     splitSignature: convert.splitSignature,
 }
 
-},{"./abi-coder":42,"./address":43,"./base64":45,"./bignumber":44,"./contract-address":47,"./convert":48,"./id":51,"./keccak256":53,"./namehash":54,"./properties":56,"./random-bytes":46,"./rlp":57,"./sha2":58,"./solidity":59,"./units":61,"./utf8":62}],53:[function(require,module,exports){
+},{"./abi-coder":41,"./address":42,"./base64":44,"./bignumber":43,"./contract-address":46,"./convert":47,"./id":50,"./keccak256":52,"./namehash":53,"./properties":55,"./random-bytes":45,"./rlp":56,"./sha2":57,"./solidity":58,"./units":60,"./utf8":61}],52:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -10463,7 +10835,7 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":48,"js-sha3":34}],54:[function(require,module,exports){
+},{"./convert.js":47,"js-sha3":34}],53:[function(require,module,exports){
 'use strict';
 
 var convert = require('./convert');
@@ -10503,7 +10875,7 @@ function namehash(name, depth) {
 module.exports = namehash;
 
 
-},{"./convert":48,"./keccak256":53,"./utf8":62}],55:[function(require,module,exports){
+},{"./convert":47,"./keccak256":52,"./utf8":61}],54:[function(require,module,exports){
 'use strict';
 
 var convert = require('./convert');
@@ -10556,7 +10928,7 @@ function pbkdf2(password, salt, iterations, keylen, createHmac) {
 
 module.exports = pbkdf2;
 
-},{"./convert":48}],56:[function(require,module,exports){
+},{"./convert":47}],55:[function(require,module,exports){
 'use strict';
 
 function defineProperty(object, name, value) {
@@ -10580,7 +10952,7 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],57:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 var convert = require('./convert.js');
@@ -10724,7 +11096,7 @@ module.exports = {
     decode: decode,
 }
 
-},{"./convert.js":48}],58:[function(require,module,exports){
+},{"./convert.js":47}],57:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -10749,7 +11121,7 @@ module.exports = {
     createSha512: hash.sha512,
 }
 
-},{"./convert.js":48,"hash.js":20}],59:[function(require,module,exports){
+},{"./convert.js":47,"hash.js":20}],58:[function(require,module,exports){
 'use strict';
 
 var bigNumberify = require('./bignumber').bigNumberify;
@@ -10848,7 +11220,7 @@ module.exports = {
     sha256: sha256,
 }
 
-},{"./address":43,"./bignumber":44,"./convert":48,"./keccak256":53,"./sha2":58,"./utf8":62}],60:[function(require,module,exports){
+},{"./address":42,"./bignumber":43,"./convert":47,"./keccak256":52,"./sha2":57,"./utf8":61}],59:[function(require,module,exports){
 'use strict';
 
 function throwError(message, params) {
@@ -10861,7 +11233,7 @@ function throwError(message, params) {
 
 module.exports = throwError;
 
-},{}],61:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 var bigNumberify = require('./bignumber.js').bigNumberify;
 var throwError = require('./throw-error');
 
@@ -11011,7 +11383,7 @@ module.exports = {
     parseUnits: parseUnits,
 }
 
-},{"./bignumber.js":44,"./throw-error":60}],62:[function(require,module,exports){
+},{"./bignumber.js":43,"./throw-error":59}],61:[function(require,module,exports){
 
 var convert = require('./convert.js');
 
@@ -11126,7 +11498,7 @@ module.exports = {
     toUtf8String: bytesToUtf8,
 };
 
-},{"./convert.js":48}],63:[function(require,module,exports){
+},{"./convert.js":47}],62:[function(require,module,exports){
 // See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 // See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
@@ -11387,7 +11759,7 @@ module.exports = {
     isValidMnemonic: isValidMnemonic,
 };
 
-},{"../utils/bignumber.js":44,"../utils/convert.js":48,"../utils/hmac":50,"../utils/pbkdf2.js":55,"../utils/properties.js":56,"../utils/sha2":58,"../utils/utf8.js":62,"./words.json":68,"elliptic":5}],64:[function(require,module,exports){
+},{"../utils/bignumber.js":43,"../utils/convert.js":47,"../utils/hmac":49,"../utils/pbkdf2.js":54,"../utils/properties.js":55,"../utils/sha2":57,"../utils/utf8.js":61,"./words.json":67,"elliptic":5}],63:[function(require,module,exports){
 'use strict';
 
 var Wallet = require('./wallet');
@@ -11401,7 +11773,7 @@ module.exports = {
     SigningKey: SigningKey,
 }
 
-},{"./hdnode":63,"./signing-key":66,"./wallet":67}],65:[function(require,module,exports){
+},{"./hdnode":62,"./signing-key":65,"./wallet":66}],64:[function(require,module,exports){
 'use strict';
 
 var aes = require('aes-js');
@@ -11852,7 +12224,7 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
 
 module.exports = secretStorage;
 
-},{"../utils":52,"../utils/hmac":50,"../utils/pbkdf2":55,"./hdnode":63,"./signing-key":66,"aes-js":1,"scrypt-js":37,"uuid":41}],66:[function(require,module,exports){
+},{"../utils":51,"../utils/hmac":49,"../utils/pbkdf2":54,"./hdnode":62,"./signing-key":65,"aes-js":1,"scrypt-js":37,"uuid":40}],65:[function(require,module,exports){
 'use strict';
 
 /**
@@ -11954,7 +12326,7 @@ utils.defineProperty(SigningKey, 'publicKeyToAddress', function(publicKey) {
 
 module.exports = SigningKey;
 
-},{"../utils/address":43,"../utils/convert":48,"../utils/errors":49,"../utils/keccak256":53,"../utils/properties":56,"elliptic":5}],67:[function(require,module,exports){
+},{"../utils/address":42,"../utils/convert":47,"../utils/errors":48,"../utils/keccak256":52,"../utils/properties":55,"elliptic":5}],66:[function(require,module,exports){
 'use strict';
 
 var scrypt = require('scrypt-js');
@@ -12436,8 +12808,8 @@ utils.defineProperty(Wallet, 'fromBrainWallet', function(username, password, pro
 
 module.exports = Wallet;
 
-},{"../utils":52,"../utils/address":43,"../utils/bignumber":44,"../utils/convert":48,"../utils/errors":49,"../utils/keccak256":53,"../utils/properties":56,"../utils/rlp":57,"../utils/utf8":62,"./hdnode":63,"./secret-storage":65,"./signing-key":66,"scrypt-js":37,"setimmediate":38}],68:[function(require,module,exports){
+},{"../utils":51,"../utils/address":42,"../utils/bignumber":43,"../utils/convert":47,"../utils/errors":48,"../utils/keccak256":52,"../utils/properties":55,"../utils/rlp":56,"../utils/utf8":61,"./hdnode":62,"./secret-storage":64,"./signing-key":65,"scrypt-js":37,"setimmediate":38}],67:[function(require,module,exports){
 module.exports="AbandonAbilityAbleAboutAboveAbsentAbsorbAbstractAbsurdAbuseAccessAccidentAccountAccuseAchieveAcidAcousticAcquireAcrossActActionActorActressActualAdaptAddAddictAddressAdjustAdmitAdultAdvanceAdviceAerobicAffairAffordAfraidAgainAgeAgentAgreeAheadAimAirAirportAisleAlarmAlbumAlcoholAlertAlienAllAlleyAllowAlmostAloneAlphaAlreadyAlsoAlterAlwaysAmateurAmazingAmongAmountAmusedAnalystAnchorAncientAngerAngleAngryAnimalAnkleAnnounceAnnualAnotherAnswerAntennaAntiqueAnxietyAnyApartApologyAppearAppleApproveAprilArchArcticAreaArenaArgueArmArmedArmorArmyAroundArrangeArrestArriveArrowArtArtefactArtistArtworkAskAspectAssaultAssetAssistAssumeAsthmaAthleteAtomAttackAttendAttitudeAttractAuctionAuditAugustAuntAuthorAutoAutumnAverageAvocadoAvoidAwakeAwareAwayAwesomeAwfulAwkwardAxisBabyBachelorBaconBadgeBagBalanceBalconyBallBambooBananaBannerBarBarelyBargainBarrelBaseBasicBasketBattleBeachBeanBeautyBecauseBecomeBeefBeforeBeginBehaveBehindBelieveBelowBeltBenchBenefitBestBetrayBetterBetweenBeyondBicycleBidBikeBindBiologyBirdBirthBitterBlackBladeBlameBlanketBlastBleakBlessBlindBloodBlossomBlouseBlueBlurBlushBoardBoatBodyBoilBombBoneBonusBookBoostBorderBoringBorrowBossBottomBounceBoxBoyBracketBrainBrandBrassBraveBreadBreezeBrickBridgeBriefBrightBringBriskBroccoliBrokenBronzeBroomBrotherBrownBrushBubbleBuddyBudgetBuffaloBuildBulbBulkBulletBundleBunkerBurdenBurgerBurstBusBusinessBusyButterBuyerBuzzCabbageCabinCableCactusCageCakeCallCalmCameraCampCanCanalCancelCandyCannonCanoeCanvasCanyonCapableCapitalCaptainCarCarbonCardCargoCarpetCarryCartCaseCashCasinoCastleCasualCatCatalogCatchCategoryCattleCaughtCauseCautionCaveCeilingCeleryCementCensusCenturyCerealCertainChairChalkChampionChangeChaosChapterChargeChaseChatCheapCheckCheeseChefCherryChestChickenChiefChildChimneyChoiceChooseChronicChuckleChunkChurnCigarCinnamonCircleCitizenCityCivilClaimClapClarifyClawClayCleanClerkCleverClickClientCliffClimbClinicClipClockClogCloseClothCloudClownClubClumpClusterClutchCoachCoastCoconutCodeCoffeeCoilCoinCollectColorColumnCombineComeComfortComicCommonCompanyConcertConductConfirmCongressConnectConsiderControlConvinceCookCoolCopperCopyCoralCoreCornCorrectCostCottonCouchCountryCoupleCourseCousinCoverCoyoteCrackCradleCraftCramCraneCrashCraterCrawlCrazyCreamCreditCreekCrewCricketCrimeCrispCriticCropCrossCrouchCrowdCrucialCruelCruiseCrumbleCrunchCrushCryCrystalCubeCultureCupCupboardCuriousCurrentCurtainCurveCushionCustomCuteCycleDadDamageDampDanceDangerDaringDashDaughterDawnDayDealDebateDebrisDecadeDecemberDecideDeclineDecorateDecreaseDeerDefenseDefineDefyDegreeDelayDeliverDemandDemiseDenialDentistDenyDepartDependDepositDepthDeputyDeriveDescribeDesertDesignDeskDespairDestroyDetailDetectDevelopDeviceDevoteDiagramDialDiamondDiaryDiceDieselDietDifferDigitalDignityDilemmaDinnerDinosaurDirectDirtDisagreeDiscoverDiseaseDishDismissDisorderDisplayDistanceDivertDivideDivorceDizzyDoctorDocumentDogDollDolphinDomainDonateDonkeyDonorDoorDoseDoubleDoveDraftDragonDramaDrasticDrawDreamDressDriftDrillDrinkDripDriveDropDrumDryDuckDumbDuneDuringDustDutchDutyDwarfDynamicEagerEagleEarlyEarnEarthEasilyEastEasyEchoEcologyEconomyEdgeEditEducateEffortEggEightEitherElbowElderElectricElegantElementElephantElevatorEliteElseEmbarkEmbodyEmbraceEmergeEmotionEmployEmpowerEmptyEnableEnactEndEndlessEndorseEnemyEnergyEnforceEngageEngineEnhanceEnjoyEnlistEnoughEnrichEnrollEnsureEnterEntireEntryEnvelopeEpisodeEqualEquipEraEraseErodeErosionErrorEruptEscapeEssayEssenceEstateEternalEthicsEvidenceEvilEvokeEvolveExactExampleExcessExchangeExciteExcludeExcuseExecuteExerciseExhaustExhibitExileExistExitExoticExpandExpectExpireExplainExposeExpressExtendExtraEyeEyebrowFabricFaceFacultyFadeFaintFaithFallFalseFameFamilyFamousFanFancyFantasyFarmFashionFatFatalFatherFatigueFaultFavoriteFeatureFebruaryFederalFeeFeedFeelFemaleFenceFestivalFetchFeverFewFiberFictionFieldFigureFileFilmFilterFinalFindFineFingerFinishFireFirmFirstFiscalFishFitFitnessFixFlagFlameFlashFlatFlavorFleeFlightFlipFloatFlockFloorFlowerFluidFlushFlyFoamFocusFogFoilFoldFollowFoodFootForceForestForgetForkFortuneForumForwardFossilFosterFoundFoxFragileFrameFrequentFreshFriendFringeFrogFrontFrostFrownFrozenFruitFuelFunFunnyFurnaceFuryFutureGadgetGainGalaxyGalleryGameGapGarageGarbageGardenGarlicGarmentGasGaspGateGatherGaugeGazeGeneralGeniusGenreGentleGenuineGestureGhostGiantGiftGiggleGingerGiraffeGirlGiveGladGlanceGlareGlassGlideGlimpseGlobeGloomGloryGloveGlowGlueGoatGoddessGoldGoodGooseGorillaGospelGossipGovernGownGrabGraceGrainGrantGrapeGrassGravityGreatGreenGridGriefGritGroceryGroupGrowGruntGuardGuessGuideGuiltGuitarGunGymHabitHairHalfHammerHamsterHandHappyHarborHardHarshHarvestHatHaveHawkHazardHeadHealthHeartHeavyHedgehogHeightHelloHelmetHelpHenHeroHiddenHighHillHintHipHireHistoryHobbyHockeyHoldHoleHolidayHollowHomeHoneyHoodHopeHornHorrorHorseHospitalHostHotelHourHoverHubHugeHumanHumbleHumorHundredHungryHuntHurdleHurryHurtHusbandHybridIceIconIdeaIdentifyIdleIgnoreIllIllegalIllnessImageImitateImmenseImmuneImpactImposeImproveImpulseInchIncludeIncomeIncreaseIndexIndicateIndoorIndustryInfantInflictInformInhaleInheritInitialInjectInjuryInmateInnerInnocentInputInquiryInsaneInsectInsideInspireInstallIntactInterestIntoInvestInviteInvolveIronIslandIsolateIssueItemIvoryJacketJaguarJarJazzJealousJeansJellyJewelJobJoinJokeJourneyJoyJudgeJuiceJumpJungleJuniorJunkJustKangarooKeenKeepKetchupKeyKickKidKidneyKindKingdomKissKitKitchenKiteKittenKiwiKneeKnifeKnockKnowLabLabelLaborLadderLadyLakeLampLanguageLaptopLargeLaterLatinLaughLaundryLavaLawLawnLawsuitLayerLazyLeaderLeafLearnLeaveLectureLeftLegLegalLegendLeisureLemonLendLengthLensLeopardLessonLetterLevelLiarLibertyLibraryLicenseLifeLiftLightLikeLimbLimitLinkLionLiquidListLittleLiveLizardLoadLoanLobsterLocalLockLogicLonelyLongLoopLotteryLoudLoungeLoveLoyalLuckyLuggageLumberLunarLunchLuxuryLyricsMachineMadMagicMagnetMaidMailMainMajorMakeMammalManManageMandateMangoMansionManualMapleMarbleMarchMarginMarineMarketMarriageMaskMassMasterMatchMaterialMathMatrixMatterMaximumMazeMeadowMeanMeasureMeatMechanicMedalMediaMelodyMeltMemberMemoryMentionMenuMercyMergeMeritMerryMeshMessageMetalMethodMiddleMidnightMilkMillionMimicMindMinimumMinorMinuteMiracleMirrorMiseryMissMistakeMixMixedMixtureMobileModelModifyMomMomentMonitorMonkeyMonsterMonthMoonMoralMoreMorningMosquitoMotherMotionMotorMountainMouseMoveMovieMuchMuffinMuleMultiplyMuscleMuseumMushroomMusicMustMutualMyselfMysteryMythNaiveNameNapkinNarrowNastyNationNatureNearNeckNeedNegativeNeglectNeitherNephewNerveNestNetNetworkNeutralNeverNewsNextNiceNightNobleNoiseNomineeNoodleNormalNorthNoseNotableNoteNothingNoticeNovelNowNuclearNumberNurseNutOakObeyObjectObligeObscureObserveObtainObviousOccurOceanOctoberOdorOffOfferOfficeOftenOilOkayOldOliveOlympicOmitOnceOneOnionOnlineOnlyOpenOperaOpinionOpposeOptionOrangeOrbitOrchardOrderOrdinaryOrganOrientOriginalOrphanOstrichOtherOutdoorOuterOutputOutsideOvalOvenOverOwnOwnerOxygenOysterOzonePactPaddlePagePairPalacePalmPandaPanelPanicPantherPaperParadeParentParkParrotPartyPassPatchPathPatientPatrolPatternPausePavePaymentPeacePeanutPearPeasantPelicanPenPenaltyPencilPeoplePepperPerfectPermitPersonPetPhonePhotoPhrasePhysicalPianoPicnicPicturePiecePigPigeonPillPilotPinkPioneerPipePistolPitchPizzaPlacePlanetPlasticPlatePlayPleasePledgePluckPlugPlungePoemPoetPointPolarPolePolicePondPonyPoolPopularPortionPositionPossiblePostPotatoPotteryPovertyPowderPowerPracticePraisePredictPreferPreparePresentPrettyPreventPricePridePrimaryPrintPriorityPrisonPrivatePrizeProblemProcessProduceProfitProgramProjectPromoteProofPropertyProsperProtectProudProvidePublicPuddingPullPulpPulsePumpkinPunchPupilPuppyPurchasePurityPurposePursePushPutPuzzlePyramidQualityQuantumQuarterQuestionQuickQuitQuizQuoteRabbitRaccoonRaceRackRadarRadioRailRainRaiseRallyRampRanchRandomRangeRapidRareRateRatherRavenRawRazorReadyRealReasonRebelRebuildRecallReceiveRecipeRecordRecycleReduceReflectReformRefuseRegionRegretRegularRejectRelaxReleaseReliefRelyRemainRememberRemindRemoveRenderRenewRentReopenRepairRepeatReplaceReportRequireRescueResembleResistResourceResponseResultRetireRetreatReturnReunionRevealReviewRewardRhythmRibRibbonRiceRichRideRidgeRifleRightRigidRingRiotRippleRiskRitualRivalRiverRoadRoastRobotRobustRocketRomanceRoofRookieRoomRoseRotateRoughRoundRouteRoyalRubberRudeRugRuleRunRunwayRuralSadSaddleSadnessSafeSailSaladSalmonSalonSaltSaluteSameSampleSandSatisfySatoshiSauceSausageSaveSayScaleScanScareScatterSceneSchemeSchoolScienceScissorsScorpionScoutScrapScreenScriptScrubSeaSearchSeasonSeatSecondSecretSectionSecuritySeedSeekSegmentSelectSellSeminarSeniorSenseSentenceSeriesServiceSessionSettleSetupSevenShadowShaftShallowShareShedShellSheriffShieldShiftShineShipShiverShockShoeShootShopShortShoulderShoveShrimpShrugShuffleShySiblingSickSideSiegeSightSignSilentSilkSillySilverSimilarSimpleSinceSingSirenSisterSituateSixSizeSkateSketchSkiSkillSkinSkirtSkullSlabSlamSleepSlenderSliceSlideSlightSlimSloganSlotSlowSlushSmallSmartSmileSmokeSmoothSnackSnakeSnapSniffSnowSoapSoccerSocialSockSodaSoftSolarSoldierSolidSolutionSolveSomeoneSongSoonSorrySortSoulSoundSoupSourceSouthSpaceSpareSpatialSpawnSpeakSpecialSpeedSpellSpendSphereSpiceSpiderSpikeSpinSpiritSplitSpoilSponsorSpoonSportSpotSpraySpreadSpringSpySquareSqueezeSquirrelStableStadiumStaffStageStairsStampStandStartStateStaySteakSteelStemStepStereoStickStillStingStockStomachStoneStoolStoryStoveStrategyStreetStrikeStrongStruggleStudentStuffStumbleStyleSubjectSubmitSubwaySuccessSuchSuddenSufferSugarSuggestSuitSummerSunSunnySunsetSuperSupplySupremeSureSurfaceSurgeSurpriseSurroundSurveySuspectSustainSwallowSwampSwapSwarmSwearSweetSwiftSwimSwingSwitchSwordSymbolSymptomSyrupSystemTableTackleTagTailTalentTalkTankTapeTargetTaskTasteTattooTaxiTeachTeamTellTenTenantTennisTentTermTestTextThankThatThemeThenTheoryThereTheyThingThisThoughtThreeThriveThrowThumbThunderTicketTideTigerTiltTimberTimeTinyTipTiredTissueTitleToastTobaccoTodayToddlerToeTogetherToiletTokenTomatoTomorrowToneTongueTonightToolToothTopTopicToppleTorchTornadoTortoiseTossTotalTouristTowardTowerTownToyTrackTradeTrafficTragicTrainTransferTrapTrashTravelTrayTreatTreeTrendTrialTribeTrickTriggerTrimTripTrophyTroubleTruckTrueTrulyTrumpetTrustTruthTryTubeTuitionTumbleTunaTunnelTurkeyTurnTurtleTwelveTwentyTwiceTwinTwistTwoTypeTypicalUglyUmbrellaUnableUnawareUncleUncoverUnderUndoUnfairUnfoldUnhappyUniformUniqueUnitUniverseUnknownUnlockUntilUnusualUnveilUpdateUpgradeUpholdUponUpperUpsetUrbanUrgeUsageUseUsedUsefulUselessUsualUtilityVacantVacuumVagueValidValleyValveVanVanishVaporVariousVastVaultVehicleVelvetVendorVentureVenueVerbVerifyVersionVeryVesselVeteranViableVibrantViciousVictoryVideoViewVillageVintageViolinVirtualVirusVisaVisitVisualVitalVividVocalVoiceVoidVolcanoVolumeVoteVoyageWageWagonWaitWalkWallWalnutWantWarfareWarmWarriorWashWaspWasteWaterWaveWayWealthWeaponWearWeaselWeatherWebWeddingWeekendWeirdWelcomeWestWetWhaleWhatWheatWheelWhenWhereWhipWhisperWideWidthWifeWildWillWinWindowWineWingWinkWinnerWinterWireWisdomWiseWishWitnessWolfWomanWonderWoodWoolWordWorkWorldWorryWorthWrapWreckWrestleWristWriteWrongYardYearYellowYouYoungYouthZebraZeroZoneZoo"
 
-},{}]},{},[64])(64)
+},{}]},{},[63])(63)
 });

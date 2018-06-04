@@ -3,6 +3,7 @@
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
 var utils = (function() {
+    var AbiCoder = require('../utils/abi-coder');
     var convert = require('../utils/convert');
     var properties = require('../utils/properties');
     var utf8 = require('../utils/utf8');
@@ -11,7 +12,8 @@ var utils = (function() {
         defineFrozen: properties.defineFrozen,
         defineProperty: properties.defineProperty,
 
-        coder: require('../utils/abi-coder').defaultCoder,
+        coder: AbiCoder.defaultCoder,
+        parseSignature: AbiCoder.parseSignature,
 
         arrayify: convert.arrayify,
         concat: convert.concat,
@@ -111,7 +113,15 @@ function Interface(abi) {
         }
     }
 
-    utils.defineFrozen(this, 'abi', abi);
+    var _abi = [];
+    abi.forEach(function(fragment) {
+        if (typeof(fragment) === 'string') {
+            fragment = utils.parseSignature(fragment);
+        }
+        _abi.push(fragment);
+    });
+
+    utils.defineFrozen(this, 'abi', _abi);
 
     var methods = {}, events = {}, deploy = null;
 
@@ -381,7 +391,7 @@ function Interface(abi) {
         }
     };
 
-    this.abi.forEach(addMethod, this);
+    _abi.forEach(addMethod, this);
 
     // If there wasn't a constructor, create the default constructor
     if (!deploy) {
