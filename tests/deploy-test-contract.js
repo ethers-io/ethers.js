@@ -6,7 +6,7 @@ var ethers = require('..');
 
 var solc = require('solc');
 
-var provider = ethers.providers.getDefaultProvider('ropsten');
+var provider = ethers.providers.getDefaultProvider('rinkeby');
 var wallet = new ethers.Wallet(fs.readFileSync('.account.key').toString().trim(), provider);
 
 var result = {

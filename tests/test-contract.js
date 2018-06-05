@@ -9,12 +9,13 @@ if (global.ethers) {
     var ethers = require('..');
 }
 
-var provider = ethers.providers.getDefaultProvider('ropsten');
+var provider = new ethers.providers.InfuraProvider('rinkeby');
 
 var contract = (function() {
     var data = require('./test-contract.json');
     return new ethers.Contract(data.contractAddress, data.interface, provider);
 })();
+
 
 function equals(name, actual, expected) {
     if (Array.isArray(expected)) {
