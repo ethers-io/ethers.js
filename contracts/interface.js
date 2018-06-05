@@ -129,7 +129,6 @@ function Interface(abi) {
     utils.defineProperty(this, 'events', events);
 
     function addMethod(method) {
-
         switch (method.type) {
             case 'constructor':
                 var func = (function() {
@@ -159,7 +158,7 @@ function Interface(abi) {
                         }
 
                         try {
-                            var encodedParams = utils.coder.encode(inputParams.names, inputParams.types, params)
+                            var encodedParams = utils.coder.encode(method.inputs, params)
                         } catch (error) {
                             errors.throwError('invalid constructor argument', errors.INVALID_ARGUMENT, {
                                 arg: error.arg,
@@ -197,11 +196,7 @@ function Interface(abi) {
 
                     var parse = function(data) {
                         try {
-                            return utils.coder.decode(
-                                outputParams.names,
-                                outputParams.types,
-                                utils.arrayify(data)
-                            );
+                            return utils.coder.decode(method.outputs, utils.arrayify(data));
                         } catch(error) {
                             errors.throwError('invalid data for function output', errors.INVALID_ARGUMENT, {
                                 arg: 'data',
@@ -239,7 +234,7 @@ function Interface(abi) {
                         }
 
                         try {
-                            var encodedParams = utils.coder.encode(inputParams.names, inputParams.types, params);
+                            var encodedParams = utils.coder.encode(method.inputs, params);
                         } catch (error) {
                             errors.throwError('invalid input argument', errors.INVALID_ARGUMENT, {
                                 arg: error.arg,
@@ -303,40 +298,33 @@ function Interface(abi) {
                         // Strip the signature off of non-anonymous topics
                         if (topics != null && !method.anonymous) { topics = topics.slice(1); }
 
-                        var inputNamesIndexed = [], inputNamesNonIndexed = [];
-                        var inputTypesIndexed = [], inputTypesNonIndexed = [];
+                        var inputIndexed = [], inputNonIndexed = [];
                         var inputDynamic = [];
-                        method.inputs.forEach(function(input, index) {
-                            var type = inputParams.types[index];
-                            var name = inputParams.names[index];
+                        method.inputs.forEach(function(param, index) {
 
-                            if (input.indexed) {
-                                if (type === 'string' || type === 'bytes' || type.indexOf('[') >= 0 || type.substring(0, 5) === 'tuple') {
-                                    inputTypesIndexed.push('bytes32');
+                            if (param.indexed) {
+                                if (param.type === 'string' || param.type === 'bytes' || param.type.indexOf('[') >= 0 || param.type.substring(0, 5) === 'tuple') {
+                                    inputIndexed.push({ type: 'bytes32', name: (param.name || '')});
                                     inputDynamic.push(true);
                                 } else {
-                                    inputTypesIndexed.push(type);
+                                    inputIndexed.push(param);
                                     inputDynamic.push(false);
                                 }
-                                inputNamesIndexed.push(name);
                             } else {
-                                inputNamesNonIndexed.push(name);
-                                inputTypesNonIndexed.push(type);
+                                inputNonIndexed.push(param);
                                 inputDynamic.push(false);
                             }
                         });
 
                         if (topics != null) {
                             var resultIndexed = utils.coder.decode(
-                                inputNamesIndexed,
-                                inputTypesIndexed,
+                                inputIndexed,
                                 utils.concat(topics)
                             );
                         }
 
                         var resultNonIndexed = utils.coder.decode(
-                            inputNamesNonIndexed,
-                            inputTypesNonIndexed,
+                            inputNonIndexed,
                             utils.arrayify(data)
                         );
 

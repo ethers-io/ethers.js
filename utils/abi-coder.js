@@ -68,6 +68,7 @@ function parseParam(param, allowIndexed) {
                 delete node.state;
                 var child = node;
                 node = node.parent;
+                if (!node) { throwError(i); }
                 delete child.parent;
                 delete node.state.allowParams;
                 node.state.allowName = true;
@@ -148,6 +149,8 @@ function parseParam(param, allowIndexed) {
                 }
         }
     }
+
+    if (node.parent) { throw new Error("unexpected eof"); }
 
     delete parent.state;
 
@@ -743,6 +746,7 @@ function coderArray(coerceFunc, coder, length, localName) {
 
 
 function coderTuple(coerceFunc, coders, localName) {
+
     var dynamic = false;
     var types = [];
     coders.forEach(function(coder) {
@@ -812,72 +816,48 @@ function getTupleParamCoder(coerceFunc, components, localName) {
     components.forEach(function(component) {
         coders.push(getParamCoder(coerceFunc, component));
     });
+
     return coderTuple(coerceFunc, coders, localName);
 }
 
-function getParamCoder(coerceFunc, type, localName) {
+function getParamCoder(coerceFunc, param) {
 
-    // Support passing in { name: "foo", type: "uint" } and { components: [ ... ] }
-    var components = null;
-    if (typeof(type) !== 'string') {
-        if (!localName && type.name) { localName = type.name; }
+    var coder = paramTypeSimple[param.type];
+    if (coder) { return coder(coerceFunc, param.name); }
 
-        // Tuple
-        if (type.components) {
-            components = type.components;
-        }
-
-        type = type.type;
-    }
-
-    var coder = paramTypeSimple[type];
-    if (coder) { return coder(coerceFunc, localName); }
-
-    var match = type.match(paramTypeNumber);
+    var match = param.type.match(paramTypeNumber);
     if (match) {
         var size = parseInt(match[2] || 256);
         if (size === 0 || size > 256 || (size % 8) !== 0) {
             errors.throwError('invalid ' + match[1] + ' bit length', errors.INVALID_ARGUMENT, {
-                arg: 'type',
-                value: type
+                arg: 'param',
+                value: param
             });
         }
-        return coderNumber(coerceFunc, size / 8, (match[1] === 'int'), localName);
+        return coderNumber(coerceFunc, size / 8, (match[1] === 'int'), param.name);
     }
 
-    var match = type.match(paramTypeBytes);
+    var match = param.type.match(paramTypeBytes);
     if (match) {
         var size = parseInt(match[1]);
         if (size === 0 || size > 32) {
             errors.throwError('invalid bytes length', errors.INVALID_ARGUMENT, {
-                arg: 'type',
-                value: type
+                arg: 'param',
+                value: param
             });
         }
-        return coderFixedBytes(coerceFunc, size, localName);
+        return coderFixedBytes(coerceFunc, size, param.name);
     }
 
-    var match = type.match(paramTypeArray);
+    var match = param.type.match(paramTypeArray);
     if (match) {
         var size = parseInt(match[2] || -1);
-        type = match[1];
-        if (components) {
-            type = {
-                components: components,
-                name: localName,
-                type: type
-            };
-        }
-        return coderArray(coerceFunc, getParamCoder(coerceFunc, type, localName), size, localName);
+        param.type = match[1];
+        return coderArray(coerceFunc, getParamCoder(coerceFunc, param), size, param.name);
     }
 
-    if (type.substring(0, 5) === 'tuple') {
-        if (!components) {
-            type = parseParam(type);
-            components = type.components;
-            localName = type.localName;
-        }
-        return getTupleParamCoder(coerceFunc, components, localName);
+    if (param.type.substring(0, 5) === 'tuple') {
+        return getTupleParamCoder(coerceFunc, param.components, param.name);
     }
 
     if (type === '') {
@@ -896,13 +876,38 @@ function Coder(coerceFunc) {
     utils.defineProperty(this, 'coerceFunc', coerceFunc);
 }
 
+// Legacy name support
+// @TODO: In the next major version, remove names from decode/encode and don't do this
+function populateNames(type, name) {
+    if (!name) { return; }
+
+    if (type.type.substring(0, 5) === 'tuple' && typeof(name) !== 'string') {
+        if (type.components.length != name.names.length) {
+            errors.throwError('names/types length mismatch', errors.INVALID_ARGUMENT, {
+                count: { names: name.names.length, types: type.components.length },
+                value: { names: name.names, types: type.components }
+            });
+        }
+
+        name.names.forEach(function(name, index) {
+            populateNames(type.components[index], name);
+        });
+
+        name = (name.name || '');
+    }
+
+    if (!type.name && typeof(name) === 'string') {
+        type.name = name;
+    }
+}
+
 utils.defineProperty(Coder.prototype, 'encode', function(names, types, values) {
 
     // Names is optional, so shift over all the parameters if not provided
     if (arguments.length < 3) {
         values = types;
         types = names;
-        names = null;
+        names = [];
     }
 
     if (types.length !== values.length) {
@@ -912,16 +917,19 @@ utils.defineProperty(Coder.prototype, 'encode', function(names, types, values) {
         });
     }
 
-    if (names && names.length != types.length) {
-        errors.throwError('names/types length mismatch', errors.INVALID_ARGUMENT, {
-            count: { names: names.length, types: types.length },
-            value: { names: names, types: types }
-        });
-    }
-
     var coders = [];
     types.forEach(function(type, index) {
-        coders.push(getParamCoder(this.coerceFunc, type, (names ? names[index]: undefined)));
+        // Convert types to type objects
+        //   - "uint foo" => { type: "uint", name: "foo" }
+        //   - "tuple(uint, uint)" => { type: "tuple", components: [ { type: "uint" }, { type: "uint" }, ] }
+        if (typeof(type) === 'string') {
+            type = parseParam(type);
+        }
+
+        // Legacy support for passing in names (this is going away in the next major version)
+        populateNames(type, names[index]);
+
+        coders.push(getParamCoder(this.coerceFunc, type));
     }, this);
 
     return utils.hexlify(coderTuple(this.coerceFunc, coders).encode(values));
@@ -933,14 +941,23 @@ utils.defineProperty(Coder.prototype, 'decode', function(names, types, data) {
     if (arguments.length < 3) {
         data = types;
         types = names;
-        names = null;
+        names = [];
     }
 
     data = utils.arrayify(data);
 
     var coders = [];
     types.forEach(function(type, index) {
-        coders.push(getParamCoder(this.coerceFunc, type, (names ? names[index]: undefined)));
+
+        // See encode for details
+        if (typeof(type) === 'string') {
+            type = parseParam(type);
+        }
+
+        // Legacy; going away in the next major version
+        populateNames(type, names[index]);
+
+        coders.push(getParamCoder(this.coerceFunc, type));
     }, this);
 
     return coderTuple(this.coerceFunc, coders).decode(data, 0).value;

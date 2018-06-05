@@ -126,7 +126,7 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                         try {
                             var result = call.parse(value);
                         } catch (error) {
-                            if (value === '0x' && method.inputs.types.length > 0) {
+                            if (value === '0x' && method.outputs.types.length > 0) {
                                 errors.throwError('call exception', errors.CALL_EXCEPTION, {
                                     address: addressOrName,
                                     method: call.signature,
