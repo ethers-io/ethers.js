@@ -4167,13 +4167,13 @@ function EtherscanProvider(network, apiKey) {
             baseUrl = 'https://api.etherscan.io';
             break;
         case 'ropsten':
-            baseUrl = 'https://ropsten.etherscan.io';
+            baseUrl = 'https://api-ropsten.etherscan.io';
             break;
         case 'rinkeby':
-            baseUrl = 'https://rinkeby.etherscan.io';
+            baseUrl = 'https://api-rinkeby.etherscan.io';
             break;
         case 'kovan':
-            baseUrl = 'https://kovan.etherscan.io';
+            baseUrl = 'https://api-kovan.etherscan.io';
             break;
         default:
             throw new Error('unsupported network');

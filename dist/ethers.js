@@ -127,7 +127,7 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                         try {
                             var result = call.parse(value);
                         } catch (error) {
-                            if (value === '0x' && method.inputs.types.length > 0) {
+                            if (value === '0x' && method.outputs.types.length > 0) {
                                 errors.throwError('call exception', errors.CALL_EXCEPTION, {
                                     address: addressOrName,
                                     method: call.signature,
@@ -466,7 +466,6 @@ function Interface(abi) {
     utils.defineProperty(this, 'events', events);
 
     function addMethod(method) {
-
         switch (method.type) {
             case 'constructor':
                 var func = (function() {
@@ -496,7 +495,7 @@ function Interface(abi) {
                         }
 
                         try {
-                            var encodedParams = utils.coder.encode(inputParams.names, inputParams.types, params)
+                            var encodedParams = utils.coder.encode(method.inputs, params)
                         } catch (error) {
                             errors.throwError('invalid constructor argument', errors.INVALID_ARGUMENT, {
                                 arg: error.arg,
@@ -534,11 +533,7 @@ function Interface(abi) {
 
                     var parse = function(data) {
                         try {
-                            return utils.coder.decode(
-                                outputParams.names,
-                                outputParams.types,
-                                utils.arrayify(data)
-                            );
+                            return utils.coder.decode(method.outputs, utils.arrayify(data));
                         } catch(error) {
                             errors.throwError('invalid data for function output', errors.INVALID_ARGUMENT, {
                                 arg: 'data',
@@ -576,7 +571,7 @@ function Interface(abi) {
                         }
 
                         try {
-                            var encodedParams = utils.coder.encode(inputParams.names, inputParams.types, params);
+                            var encodedParams = utils.coder.encode(method.inputs, params);
                         } catch (error) {
                             errors.throwError('invalid input argument', errors.INVALID_ARGUMENT, {
                                 arg: error.arg,
@@ -640,40 +635,33 @@ function Interface(abi) {
                         // Strip the signature off of non-anonymous topics
                         if (topics != null && !method.anonymous) { topics = topics.slice(1); }
 
-                        var inputNamesIndexed = [], inputNamesNonIndexed = [];
-                        var inputTypesIndexed = [], inputTypesNonIndexed = [];
+                        var inputIndexed = [], inputNonIndexed = [];
                         var inputDynamic = [];
-                        method.inputs.forEach(function(input, index) {
-                            var type = inputParams.types[index];
-                            var name = inputParams.names[index];
+                        method.inputs.forEach(function(param, index) {
 
-                            if (input.indexed) {
-                                if (type === 'string' || type === 'bytes' || type.indexOf('[') >= 0 || type.substring(0, 5) === 'tuple') {
-                                    inputTypesIndexed.push('bytes32');
+                            if (param.indexed) {
+                                if (param.type === 'string' || param.type === 'bytes' || param.type.indexOf('[') >= 0 || param.type.substring(0, 5) === 'tuple') {
+                                    inputIndexed.push({ type: 'bytes32', name: (param.name || '')});
                                     inputDynamic.push(true);
                                 } else {
-                                    inputTypesIndexed.push(type);
+                                    inputIndexed.push(param);
                                     inputDynamic.push(false);
                                 }
-                                inputNamesIndexed.push(name);
                             } else {
-                                inputNamesNonIndexed.push(name);
-                                inputTypesNonIndexed.push(type);
+                                inputNonIndexed.push(param);
                                 inputDynamic.push(false);
                             }
                         });
 
                         if (topics != null) {
                             var resultIndexed = utils.coder.decode(
-                                inputNamesIndexed,
-                                inputTypesIndexed,
+                                inputIndexed,
                                 utils.concat(topics)
                             );
                         }
 
                         var resultNonIndexed = utils.coder.decode(
-                            inputNamesNonIndexed,
-                            inputTypesNonIndexed,
+                            inputNonIndexed,
                             utils.arrayify(data)
                         );
 
@@ -9849,7 +9837,7 @@ uuid.unparse = unparse;
 module.exports = uuid;
 
 },{"./rng":43}],45:[function(require,module,exports){
-module.exports={"version":"3.0.19"}
+module.exports={"version":"3.0.20"}
 },{}],46:[function(require,module,exports){
 'use strict';
 
@@ -9898,13 +9886,13 @@ function EtherscanProvider(network, apiKey) {
             baseUrl = 'https://api.etherscan.io';
             break;
         case 'ropsten':
-            baseUrl = 'https://ropsten.etherscan.io';
+            baseUrl = 'https://api-ropsten.etherscan.io';
             break;
         case 'rinkeby':
-            baseUrl = 'https://rinkeby.etherscan.io';
+            baseUrl = 'https://api-rinkeby.etherscan.io';
             break;
         case 'kovan':
-            baseUrl = 'https://kovan.etherscan.io';
+            baseUrl = 'https://api-kovan.etherscan.io';
             break;
         default:
             throw new Error('unsupported network');
@@ -12001,6 +11989,7 @@ function parseParam(param, allowIndexed) {
                 delete node.state;
                 var child = node;
                 node = node.parent;
+                if (!node) { throwError(i); }
                 delete child.parent;
                 delete node.state.allowParams;
                 node.state.allowName = true;
@@ -12081,6 +12070,8 @@ function parseParam(param, allowIndexed) {
                 }
         }
     }
+
+    if (node.parent) { throw new Error("unexpected eof"); }
 
     delete parent.state;
 
@@ -12676,6 +12667,7 @@ function coderArray(coerceFunc, coder, length, localName) {
 
 
 function coderTuple(coerceFunc, coders, localName) {
+
     var dynamic = false;
     var types = [];
     coders.forEach(function(coder) {
@@ -12745,72 +12737,48 @@ function getTupleParamCoder(coerceFunc, components, localName) {
     components.forEach(function(component) {
         coders.push(getParamCoder(coerceFunc, component));
     });
+
     return coderTuple(coerceFunc, coders, localName);
 }
 
-function getParamCoder(coerceFunc, type, localName) {
+function getParamCoder(coerceFunc, param) {
 
-    // Support passing in { name: "foo", type: "uint" } and { components: [ ... ] }
-    var components = null;
-    if (typeof(type) !== 'string') {
-        if (!localName && type.name) { localName = type.name; }
+    var coder = paramTypeSimple[param.type];
+    if (coder) { return coder(coerceFunc, param.name); }
 
-        // Tuple
-        if (type.components) {
-            components = type.components;
-        }
-
-        type = type.type;
-    }
-
-    var coder = paramTypeSimple[type];
-    if (coder) { return coder(coerceFunc, localName); }
-
-    var match = type.match(paramTypeNumber);
+    var match = param.type.match(paramTypeNumber);
     if (match) {
         var size = parseInt(match[2] || 256);
         if (size === 0 || size > 256 || (size % 8) !== 0) {
             errors.throwError('invalid ' + match[1] + ' bit length', errors.INVALID_ARGUMENT, {
-                arg: 'type',
-                value: type
+                arg: 'param',
+                value: param
             });
         }
-        return coderNumber(coerceFunc, size / 8, (match[1] === 'int'), localName);
+        return coderNumber(coerceFunc, size / 8, (match[1] === 'int'), param.name);
     }
 
-    var match = type.match(paramTypeBytes);
+    var match = param.type.match(paramTypeBytes);
     if (match) {
         var size = parseInt(match[1]);
         if (size === 0 || size > 32) {
             errors.throwError('invalid bytes length', errors.INVALID_ARGUMENT, {
-                arg: 'type',
-                value: type
+                arg: 'param',
+                value: param
             });
         }
-        return coderFixedBytes(coerceFunc, size, localName);
+        return coderFixedBytes(coerceFunc, size, param.name);
     }
 
-    var match = type.match(paramTypeArray);
+    var match = param.type.match(paramTypeArray);
     if (match) {
         var size = parseInt(match[2] || -1);
-        type = match[1];
-        if (components) {
-            type = {
-                components: components,
-                name: localName,
-                type: type
-            };
-        }
-        return coderArray(coerceFunc, getParamCoder(coerceFunc, type, localName), size, localName);
+        param.type = match[1];
+        return coderArray(coerceFunc, getParamCoder(coerceFunc, param), size, param.name);
     }
 
-    if (type.substring(0, 5) === 'tuple') {
-        if (!components) {
-            type = parseParam(type);
-            components = type.components;
-            localName = type.localName;
-        }
-        return getTupleParamCoder(coerceFunc, components, localName);
+    if (param.type.substring(0, 5) === 'tuple') {
+        return getTupleParamCoder(coerceFunc, param.components, param.name);
     }
 
     if (type === '') {
@@ -12829,13 +12797,38 @@ function Coder(coerceFunc) {
     utils.defineProperty(this, 'coerceFunc', coerceFunc);
 }
 
+// Legacy name support
+// @TODO: In the next major version, remove names from decode/encode and don't do this
+function populateNames(type, name) {
+    if (!name) { return; }
+
+    if (type.type.substring(0, 5) === 'tuple' && typeof(name) !== 'string') {
+        if (type.components.length != name.names.length) {
+            errors.throwError('names/types length mismatch', errors.INVALID_ARGUMENT, {
+                count: { names: name.names.length, types: type.components.length },
+                value: { names: name.names, types: type.components }
+            });
+        }
+
+        name.names.forEach(function(name, index) {
+            populateNames(type.components[index], name);
+        });
+
+        name = (name.name || '');
+    }
+
+    if (!type.name && typeof(name) === 'string') {
+        type.name = name;
+    }
+}
+
 utils.defineProperty(Coder.prototype, 'encode', function(names, types, values) {
 
     // Names is optional, so shift over all the parameters if not provided
     if (arguments.length < 3) {
         values = types;
         types = names;
-        names = null;
+        names = [];
     }
 
     if (types.length !== values.length) {
@@ -12845,16 +12838,19 @@ utils.defineProperty(Coder.prototype, 'encode', function(names, types, values) {
         });
     }
 
-    if (names && names.length != types.length) {
-        errors.throwError('names/types length mismatch', errors.INVALID_ARGUMENT, {
-            count: { names: names.length, types: types.length },
-            value: { names: names, types: types }
-        });
-    }
-
     var coders = [];
     types.forEach(function(type, index) {
-        coders.push(getParamCoder(this.coerceFunc, type, (names ? names[index]: undefined)));
+        // Convert types to type objects
+        //   - "uint foo" => { type: "uint", name: "foo" }
+        //   - "tuple(uint, uint)" => { type: "tuple", components: [ { type: "uint" }, { type: "uint" }, ] }
+        if (typeof(type) === 'string') {
+            type = parseParam(type);
+        }
+
+        // Legacy support for passing in names (this is going away in the next major version)
+        populateNames(type, names[index]);
+
+        coders.push(getParamCoder(this.coerceFunc, type));
     }, this);
 
     return utils.hexlify(coderTuple(this.coerceFunc, coders).encode(values));
@@ -12866,14 +12862,23 @@ utils.defineProperty(Coder.prototype, 'decode', function(names, types, data) {
     if (arguments.length < 3) {
         data = types;
         types = names;
-        names = null;
+        names = [];
     }
 
     data = utils.arrayify(data);
 
     var coders = [];
     types.forEach(function(type, index) {
-        coders.push(getParamCoder(this.coerceFunc, type, (names ? names[index]: undefined)));
+
+        // See encode for details
+        if (typeof(type) === 'string') {
+            type = parseParam(type);
+        }
+
+        // Legacy; going away in the next major version
+        populateNames(type, names[index]);
+
+        coders.push(getParamCoder(this.coerceFunc, type));
     }, this);
 
     return coderTuple(this.coerceFunc, coders).decode(data, 0).value;
