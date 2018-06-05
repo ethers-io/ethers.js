@@ -94,11 +94,27 @@ describe('Test Contract Objects', function() {
         var p1_0f = 0x42 + 0x0f;
         var p1_f0 = 0x42 + 0xf0;
 
-        var posStruct = [p0, p1, [ p0, p1 ] ];
         var expectedPosStruct = [ p0_f0, p1_f0, [ p0_0f, p1_0f ] ];
-        return contract.testV2(posStruct).then(function(result) {
-            equals('position input', result, expectedPosStruct);
+
+        var seq = Promise.resolve();
+        [
+            [p0, p1, [ p0, p1 ] ],
+            { p0: p0, p1: p1, child: [ p0, p1 ] },
+            [ p0, p1, { p0: p0, p1: p1 } ],
+            { p0: p0, p1: p1, child: { p0: p0, p1: p1 } }
+        ].forEach(function(struct) {
+            seq = seq.then(function() {
+                return contract.testV2(struct).then(function(result) {
+                    equals('position input', result, expectedPosStruct);
+                    equals('keyword input p0', result.p0, expectedPosStruct[0]);
+                    equals('keyword input p1', result.p1, expectedPosStruct[1]);
+                    equals('keyword input child.p0', result.child.p0, expectedPosStruct[2][0]);
+                    equals('keyword input child.p1', result.child.p1, expectedPosStruct[2][1]);
+                });
+            });
         });
+
+        return seq;
     });
 
     it('collapses single argument solidity methods', function() {
