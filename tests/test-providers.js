@@ -295,6 +295,12 @@ function testProvider(providerName, networkName) {
             //         assert(_owner.send(this.balance - 0.0000314159 ether));
             //     }
             //  }
+
+            // @TODO: Remove this! Temporary because Etehrscan is down
+            if (networkName === 'ropsten' && (providerName === 'getDefaultProvider' || providerName === 'EtherscanProvider' || providerName === 'Web3Provider')) {
+                console.log("******** Remove this soon! Etherscan is down for ropsten.");
+                return;
+            }
             this.timeout(100000);
             var test = blockchainData[networkName].balance;
             return provider.getBalance(test.address).then(function(balance) {
