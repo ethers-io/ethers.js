@@ -296,9 +296,9 @@ function testProvider(providerName, networkName) {
             //     }
             //  }
 
-            // @TODO: Remove this! Temporary because Etehrscan is down
-            if (networkName === 'ropsten' && (providerName === 'getDefaultProvider' || providerName === 'EtherscanProvider' || providerName === 'Web3Provider')) {
-                console.log("******** Remove this soon! Etherscan is down for ropsten.");
+            // @TODO: Remove this! Temporary because Ropsten seems unhappy
+            if (networkName === 'ropsten') {
+                console.log("******** Remove this soon! Ropsten is having issues.");
                 return;
             }
             this.timeout(100000);
