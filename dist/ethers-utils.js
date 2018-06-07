@@ -5103,6 +5103,18 @@ var regexIdentifier = new RegExp("^[A-Za-z_][A-Za-z0-9_]*$");
 
 var close = { "(": ")", "[": "]" };
 
+function verifyType(type) {
+
+    // These need to be transformed to their full description
+    if (type.match(/^uint($|[^1-9])/)) {
+        type = 'uint256' + type.substring(4);
+    } else if (type.match(/^int($|[^1-9])/)) {
+        type = 'int256' + type.substring(3);
+    }
+
+    return type;
+}
+
 function parseParam(param, allowIndexed) {
     function throwError(i) {
         throw new Error('unexpected character "' + param[i] + '" at position ' + i + ' in "' + param + '"');
@@ -5117,12 +5129,15 @@ function parseParam(param, allowIndexed) {
             case '(':
                 if (!node.state.allowParams) { throwError(i); }
                 delete node.state.allowType;
+                node.type = verifyType(node.type);
                 node.components = [ { type: '', name: '', parent: node, state: { allowType: true } } ];
                 node = node.components[0];
                 break;
 
             case ')':
                 delete node.state;
+                node.type = verifyType(node.type);
+
                 var child = node;
                 node = node.parent;
                 if (!node) { throwError(i); }
@@ -5134,6 +5149,7 @@ function parseParam(param, allowIndexed) {
 
             case ',':
                 delete node.state;
+                node.type = verifyType(node.type);
 
                 var sibling = { type: '', name: '', parent: node.parent, state: { allowType: true } };
                 node.parent.components.push(sibling);
@@ -5147,6 +5163,7 @@ function parseParam(param, allowIndexed) {
                 // If reading type, the type is done and may read a param or name
                 if (node.state.allowType) {
                     if (node.type !== '') {
+                        node.type = verifyType(node.type);
                         delete node.state.allowType;
                         node.state.allowName = true;
                         node.state.allowParams = true;
@@ -5210,6 +5227,9 @@ function parseParam(param, allowIndexed) {
     if (node.parent) { throw new Error("unexpected eof"); }
 
     delete parent.state;
+    parent.type = verifyType(parent.type);
+
+    //verifyType(parent);
 
     return parent;
 }
@@ -5408,8 +5428,8 @@ var uint256Coder = coderNumber(function(type, value) { return value; }, 32, fals
 var coderBoolean = function(coerceFunc, localName) {
     return {
         localName: localName,
-        name: 'boolean',
-        type: 'boolean',
+        name: 'bool',
+        type: 'bool',
         encode: function(value) {
            return uint256Coder.encode(!!value ? 1: 0);
         },
@@ -5869,6 +5889,7 @@ var paramTypeSimple = {
 };
 
 function getTupleParamCoder(coerceFunc, components, localName) {
+    if (!components) { components = []; }
     var coders = [];
     components.forEach(function(component) {
         coders.push(getParamCoder(coerceFunc, component));
@@ -5878,7 +5899,6 @@ function getTupleParamCoder(coerceFunc, components, localName) {
 }
 
 function getParamCoder(coerceFunc, param) {
-
     var coder = paramTypeSimple[param.type];
     if (coder) { return coder(coerceFunc, param.name); }
 
