@@ -27,7 +27,7 @@
     "grunt-browserify": "^5.0.0",
     "grunt-cli": "1.2.0",
     "grunt-contrib-uglify": "^1.0.1",
-    "mocha": "^3.2.0",
+    "mocha": "^5.2.0",
     "mocha-phantomjs-core": "2.1.2",
     "solc": "0.4.20",
     "web3": "0.20.2"
