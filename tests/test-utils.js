@@ -6,7 +6,7 @@ if (global.ethers) {
     console.log('Using global ethers; ' + __filename);
     var ethers = global.ethers;
 } else {
-    var ethers = require('..');
+    var ethers = require('../src');
 }
 
 var utils = require('./utils');
@@ -185,14 +185,13 @@ describe('Test Hash Functions', function() {
 });
 
 describe('Test Solidity splitSignature', function() {
-    var convert = require('../utils/convert');
 
     it('splits a canonical signature', function() {
         var r = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
         var s = '0xcafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7e';
         for (var v = 27; v <= 28; v++) {
-            var signature = convert.concat([ r, s, [ v ] ]);
-            var sig = convert.splitSignature(signature);
+            var signature = ethers.utils.concat([ r, s, [ v ] ]);
+            var sig = ethers.utils.splitSignature(signature);
             assert.equal(sig.r, r, 'split r correctly');
             assert.equal(sig.s, s, 'split s correctly');
             assert.equal(sig.v, v, 'split v correctly');
@@ -203,8 +202,8 @@ describe('Test Solidity splitSignature', function() {
         var r = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
         var s = '0xcafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7e';
         for (var v = 27; v <= 28; v++) {
-            var signature = convert.concat([ r, s, [ v - 27 ] ]);
-            var sig = convert.splitSignature(signature);
+            var signature = ethers.utils.concat([ r, s, [ v - 27 ] ]);
+            var sig = ethers.utils.splitSignature(signature);
             assert.equal(sig.r, r, 'split r correctly');
             assert.equal(sig.s, s, 'split s correctly');
             assert.equal(sig.v, v, 'split v correctly');
@@ -214,15 +213,12 @@ describe('Test Solidity splitSignature', function() {
 
 describe('Test Base64 coder', function() {
 
-    var utf8 = require('../utils/utf8')
-    var base64 = require('../utils').base64;
-
     // https://en.wikipedia.org/wiki/Base64#Examples
     it('encodes and decodes the example from wikipedia', function() {
         var decodedText = 'Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure.';
-        var decoded = utf8.toUtf8Bytes(decodedText);
+        var decoded = ethers.utils.toUtf8Bytes(decodedText);
         var encoded = 'TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=';
-        assert.equal(base64.encode(decoded), encoded, 'encodes to base64 string');
-        assert.equal(utf8.toUtf8String(base64.decode(encoded)), decodedText, 'decodes from base64 sstring');
+        assert.equal(ethers.utils.base64.encode(decoded), encoded, 'encodes to base64 string');
+        assert.equal(ethers.utils.toUtf8String(ethers.utils.base64.decode(encoded)), decodedText, 'decodes from base64 sstring');
     });
 });

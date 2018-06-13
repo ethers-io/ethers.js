@@ -6,7 +6,7 @@ if (global.ethers) {
     console.log('Using global ethers; ' + __filename);
     var ethers = global.ethers;
 } else {
-    var ethers = require('..');
+    var ethers = require('../src');
 }
 
 var provider = new ethers.providers.InfuraProvider('rinkeby');
@@ -44,7 +44,7 @@ function equals(name, actual, expected) {
 }
 
 function TestContractEvents() {
-    return ethers.providers.Provider.fetchJSON('https://api.ethers.io/api/v1/?action=triggerTest&address=' + contract.address).then(function(data) {
+    return ethers.utils.fetchJson('https://api.ethers.io/api/v1/?action=triggerTest&address=' + contract.address).then(function(data) {
         console.log('  Triggered Transaction Hash: ' + data.hash);
 
         function waitForEvent(eventName, expected) {

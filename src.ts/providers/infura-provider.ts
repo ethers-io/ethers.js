@@ -1,0 +1,54 @@
+'use strict';
+
+import { JsonRpcProvider, JsonRpcSigner } from './json-rpc-provider';
+import { getNetwork, Network } from './networks';
+
+import * as errors from '../utils/errors';
+
+export class InfuraProvider extends JsonRpcProvider {
+    readonly apiAccessToken: string;
+
+    constructor(network?: Network | string, apiAccessToken?: string) {
+        //errors.checkNew(this, InfuraProvider);
+
+        network = getNetwork(network || 'homestead');
+
+        var host = null;
+        switch(network.name) {
+            case 'homestead':
+                host = 'mainnet.infura.io';
+                break;
+            case 'ropsten':
+                host = 'ropsten.infura.io';
+                break;
+            case 'rinkeby':
+                host = 'rinkeby.infura.io';
+                break;
+            case 'kovan':
+                host = 'kovan.infura.io';
+                break;
+            default:
+                throw new Error('unsupported network');
+        }
+
+        super('https://' + host + '/' + (apiAccessToken || ''), network);
+        this.apiAccessToken = (apiAccessToken || null);
+    }
+
+    _startPending() {
+        console.log('WARNING: INFURA does not support pending filters');
+    }
+
+    getSigner(address?: string): JsonRpcSigner {
+        errors.throwError(
+            'INFURA does not support signing',
+            errors.UNSUPPORTED_OPERATION,
+            { operation: 'getSigner' }
+        );
+        return null;
+    }
+
+    listAccounts() {
+        return Promise.resolve([]);
+    }
+}

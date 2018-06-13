@@ -7,7 +7,7 @@ if (global.ethers) {
     console.log('Using global ethers; ' + __filename);
     var ethers = global.ethers;
 } else {
-    var ethers = require('..');
+    var ethers = require('../src');
 }
 
 var providers = ethers.providers;
@@ -260,7 +260,7 @@ function testProvider(providerName, networkName) {
             if (providerName === 'getDefaultProvider') {
                 provider = providers.getDefaultProvider();
             } else if (providerName === 'Web3Provider') {
-                var infuraUrl = (new providers.InfuraProvider()).url;
+                var infuraUrl = (new providers.InfuraProvider()).connection.url;
                 provider = new providers.Web3Provider(new web3.providers.HttpProvider(infuraUrl));
             } else {
                 provider = new providers[providerName]();
@@ -269,7 +269,7 @@ function testProvider(providerName, networkName) {
             if (providerName === 'getDefaultProvider') {
                 provider = providers.getDefaultProvider(networkName);
             } else if (providerName === 'Web3Provider') {
-                var infuraUrl = (new providers.InfuraProvider(networkName)).url;
+                var infuraUrl = (new providers.InfuraProvider(networkName)).connection.url;
                 provider = new providers.Web3Provider(new web3.providers.HttpProvider(infuraUrl), networkName);
             } else {
                 provider = new providers[providerName](networkName);
@@ -417,11 +417,11 @@ describe('Test extra Etherscan operations', function() {
 describe('Test Basic Authentication', function() {
     // https://stackoverflow.com/questions/6509278/authentication-test-servers#16756383
 
-    var Provider = require('..').providers.Provider;
+    var Provider = ethers.providers.Provider;
 
     function test(name, url) {
         it('tests ' + name, function() {
-            return Provider.fetchJSON(url).then(function(data) {
+            return ethers.utils.fetchJson(url).then(function(data) {
                 assert.equal(data.authenticated, true, 'authenticates user');
             });
         });
@@ -443,7 +443,7 @@ describe('Test Basic Authentication', function() {
         url: 'http://httpbin.org/basic-auth/user/passwd',
         user: 'user',
         password: 'passwd',
-        forceInsecure: true
+        allowInsecure: true
     };
 
     test('secure url', secure);
@@ -451,7 +451,7 @@ describe('Test Basic Authentication', function() {
 
     it('tests insecure connections fail', function() {
         assert.throws(function() {
-            Provider.fetchJSON(insecure);
+            ethers.utils.fetchJson(insecure);
         }, function(error) {
             return (error.reason === 'basic authentication requires a secure https url');
         }, 'throws an exception for insecure connections');

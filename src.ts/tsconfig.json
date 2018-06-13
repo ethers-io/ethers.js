@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+
+    "declaration": true,
+    "esModuleInterop": true,
+    "lib": [ "es2015", "es5", "dom" ],
+    "module": "commonjs",
+    "outDir": "../src/",
+    "target": "es5",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+
+    "preserveSymlinks": true,
+
+    "preserveWatchOutput": true,
+    "pretty": false,
+    "forceConsistentCasingInFileNames": true,
+    "removeComments": false,
+
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true
+  }
+}
+

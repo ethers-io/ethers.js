@@ -7,7 +7,7 @@ if (global.ethers) {
     console.log('Using global ethers; ' + __filename);
     var ethers = global.ethers;
 } else {
-    var ethers = require('..');
+    var ethers = require('../src');
 }
 
 describe('Test Brain Wallets', function() {
