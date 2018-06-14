@@ -3,7 +3,7 @@
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 
 import { getNetwork, Network } from './networks';
-import { BlockTag, Provider, TransactionRequest, TransactionResponse } from './provider.js';
+import { BlockTag, Provider, TransactionRequest, TransactionResponse } from './provider';
 
 import { getAddress } from '../utils/address';
 import { BigNumber } from '../utils/bignumber';

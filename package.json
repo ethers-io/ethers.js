@@ -4,12 +4,13 @@
   "description": "Ethereum wallet library.",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -p ./src.ts",
-    "autobuild": "npm run build -- -w",
+    "build": "tsc -p ./tsconfig.json",
+    "auto-build": "npm run build -- -w",
+    "dist": "gulp default minified",
     "test": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
-    "test-node": "./node_modules/.bin/mocha tests/test-*.js",
-    "test-phantomjs": "./node_modules/.bin/grunt dist && ./node_modules/.bin/grunt --gruntfile Gruntfile-test.js dist && phantomjs --web-security=false ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",
-    "version": "grunt dist"
+    "test-node": "mocha tests/test-*.js",
+    "test-phantomjs": "gulp minified tests && phantomjs --web-security=false ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",
+    "version": "npm dist"
   },
   "dependencies": {
     "@types/node": "^10.3.2",
@@ -24,25 +25,30 @@
     "xmlhttprequest": "1.8.0"
   },
   "devDependencies": {
+    "browserify": "^16.2.2",
     "browserify-zlib": "^0.2.0",
-    "grunt": "^0.4.5",
-    "grunt-browserify": "^5.0.0",
-    "grunt-cli": "1.2.0",
-    "grunt-contrib-uglify": "^1.0.1",
+    "gulp": "^3.9.1",
+    "gulp-cli": "^2.0.1",
+    "gulp-sourcemaps": "^2.6.4",
+    "gulp-typescript": "^5.0.0-alpha.1",
+    "gulp-uglify": "^3.0.0",
     "mocha": "^3.2.0",
     "mocha-phantomjs-core": "2.1.2",
     "solc": "0.4.20",
+    "tsify": "^4.0.0",
     "tslint": "^5.10.0",
     "typescript": "^2.9.1",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0",
     "web3": "0.20.2"
   },
   "browser": {
     "fs": "./tests/browser-fs.js",
     "zlib": "browserify-zlib",
-    "./utils/base64.js": "./utils/browser-base64.js",
-    "./utils/random-bytes.js": "./utils/browser-random-bytes.js",
+    "./src.ts/utils/base64.ts": "./src.browser/browser-base64.ts",
+    "./src.ts/utils/random-bytes.js": "./src.browser/browser-random-bytes.js",
     "./providers/ipc-provider.js": "./utils/empty.js",
-    "xmlhttprequest": "./providers/browser-xmlhttprequest.js"
+    "xmlhttprequest": "./src.browser/browser-xmlhttprequest.ts"
   },
   "keywords": [
     "ethereum",

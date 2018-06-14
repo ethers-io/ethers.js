@@ -1,7 +1,7 @@
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 
-import { arrayify, Arrayish, hexlify } from './convert.js';
+import { arrayify, Arrayish, hexlify } from './convert';
 
 function arrayifyInteger(value: number): Array<number> {
     var result = [];

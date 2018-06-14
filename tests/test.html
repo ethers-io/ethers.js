@@ -31,6 +31,12 @@
                  }
             }
 
+            if (!Math.tunc) {
+                Math.trunc = function(v) {
+                    return parseInt(v);
+                }
+            }
+
             // nextTick
             if (!window.nextTick) {
                 window.nextTick = function (callback) { setTimeout(callback, 0); }
@@ -48,7 +54,7 @@
         <script type="text/javascript">mocha.setup('bdd')</script>
 
         <!-- Load the browser dist ethers package -->
-        <script type="text/javascript" src="../dist/ethers.js"></script>
+        <script type="text/javascript" src="../dist/ethers.min.js"></script>
 
         <!-- Our test cases; compiled by browserify -->
         <script src="./dist/tests.js" type="text/javascript"></script>

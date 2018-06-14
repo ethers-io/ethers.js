@@ -1,6 +1,6 @@
 'use strict';
 
-import { bigNumberify, ConstantZero, ConstantNegativeOne } from './bignumber.js';
+import { bigNumberify, ConstantZero, ConstantNegativeOne } from './bignumber';
 
 import * as errors from './errors';
 

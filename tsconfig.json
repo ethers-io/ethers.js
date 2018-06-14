@@ -5,7 +5,7 @@
     "esModuleInterop": true,
     "lib": [ "es2015", "es5", "dom" ],
     "module": "commonjs",
-    "outDir": "../src/",
+    "outDir": "./src/",
     "target": "es5",
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -20,6 +20,10 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true
-  }
+  },
+  "include": [
+    "src.ts/*.ts",
+    "src.ts/**/*.ts"
+  ]
 }
 
