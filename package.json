@@ -17,6 +17,7 @@
     "inherits": "2.0.1",
     "js-sha3": "0.5.7",
     "scrypt-js": "2.0.3",
+    "react-native-scrypt": "1.0.0",
     "setimmediate": "1.0.4",
     "uuid": "2.0.1",
     "xmlhttprequest": "1.8.0"
