@@ -2,6 +2,7 @@
 
 var aes = require('aes-js');
 var scrypt = require('scrypt-js');
+import RNscrypt from 'react-native-scrypt'; 
 var uuid = require('uuid');
 
 var hmac = require('../utils/hmac');
@@ -395,7 +396,7 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
                     address: address.substring(2).toLowerCase(),
                     id: uuid.v4({ random: uuidRandom }),
                     version: 3,
-                    Crypto: {
+                    crypto: {
                         cipher: 'aes-128-ctr',
                         cipherparams: {
                             iv: utils.hexlify(iv).substring(2),
@@ -443,6 +444,156 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
                 return progressCallback(progress);
             }
         });
+    });
+});
+
+utils.defineProperty(secretStorage, 'RNencrypt', function(privateKey, password, options, progressCallback) {
+
+    // the options are optional, so adjust the call as needed
+    if (typeof(options) === 'function' && !progressCallback) {
+        progressCallback = options;
+        options = {};
+    }
+    if (!options) { options = {}; }
+
+    // Check the private key
+    if (privateKey instanceof SigningKey) {
+        privateKey = privateKey.privateKey;
+    }
+    privateKey = arrayify(privateKey, 'private key');
+    if (privateKey.length !== 32) { throw new Error('invalid private key'); }
+    
+    var entropy = options.entropy;
+    if (options.mnemonic) {
+        if (entropy) {
+            if (HDNode.entropyToMnemonic(entropy) !== options.mnemonic) {
+                throw new Error('entropy and mnemonic mismatch');
+            }
+        } else {
+            entropy = HDNode.mnemonicToEntropy(options.mnemonic);
+        }
+    }
+    if (entropy) {
+        entropy = arrayify(entropy, 'entropy');
+    }
+
+    var path = options.path;
+    if (entropy && !path) {
+        path = defaultPath;
+    }
+
+    var client = options.client;
+    if (!client) { client = "ethers.js"; }
+
+    // Check/generate the salt
+    var salt = options.salt;
+    if (salt) {
+        salt = arrayify(salt, 'salt');
+    } else {
+        salt = utils.randomBytes(32);;
+    }
+
+    // Override initialization vector
+    var iv = null;
+    if (options.iv) {
+        iv = arrayify(options.iv, 'iv');
+        if (iv.length !== 16) { throw new Error('invalid iv'); }
+    } else {
+       iv = utils.randomBytes(16);
+    }
+
+    // Override the uuid
+    var uuidRandom = options.uuid;
+    if (uuidRandom) {
+        uuidRandom = arrayify(uuidRandom, 'uuid');
+        if (uuidRandom.length !== 16) { throw new Error('invalid uuid'); }
+    } else {
+        uuidRandom = utils.randomBytes(16);
+    }
+
+    // Override the scrypt password-based key derivation function parameters
+    var N = (1 << 17), r = 8, p = 1;
+    if (options.scrypt) {
+        if (options.scrypt.N) { N = options.scrypt.N; }
+        if (options.scrypt.r) { r = options.scrypt.r; }
+        if (options.scrypt.p) { p = options.scrypt.p; }
+    }
+
+    return new Promise(function(resolve, reject) {
+
+        // We take 64 bytes:
+        //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
+        //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
+        scrypt(password, salt, N, r, p, 64, function(error, progress, key) {
+            if (error) {
+                error.progress = progress;
+                reject(error);
+
+            } else if (key) {
+               
+
+            } else if (progressCallback) {
+                return progressCallback(progress);
+            }
+        });
+        
+        var int_array_salt = Object.values(salt);        
+        const result = RNscrypt(password, int_array_salt, N, r, p, 64);
+        result.then(key => {           
+            if (key) {
+                key = arrayify(key);
+
+                // This will be used to encrypt the wallet (as per Web3 secret storage)
+                var derivedKey = key.slice(0, 16);
+                var macPrefix = key.slice(16, 32);
+
+                // This will be used to encrypt the mnemonic phrase (if any)
+                var mnemonicKey = key.slice(32, 64);
+
+                // Get the address for this private key
+                var address = (new SigningKey(privateKey)).address;
+
+                // Encrypt the private key
+                var counter = new aes.Counter(iv);
+                var aesCtr = new aes.ModeOfOperation.ctr(derivedKey, counter);
+                var ciphertext = utils.arrayify(aesCtr.encrypt(privateKey));
+
+                // Compute the message authentication code, used to check the password
+                var mac = utils.keccak256(utils.concat([macPrefix, ciphertext]))
+
+                // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
+                var data = {
+                    address: address.substring(2).toLowerCase(),
+                    id: uuid.v4({ random: uuidRandom }),
+                    version: 3,
+                    crypto: {
+                        cipher: 'aes-128-ctr',
+                        cipherparams: {
+                            iv: utils.hexlify(iv).substring(2),
+                        },
+                        ciphertext: utils.hexlify(ciphertext).substring(2),
+                        kdf: 'scrypt',
+                        kdfparams: {
+                            salt: utils.hexlify(salt).substring(2),
+                            n: N,
+                            dklen: 32,
+                            p: p,
+                            r: r
+                        },
+                        mac: mac.substring(2)
+                    }
+                };                
+                if (progressCallback) { progressCallback(1); }
+                resolve(JSON.stringify(data));
+
+            } else if (progressCallback) {
+                return progressCallback();
+            }
+        });
+        result.catch (error => {            
+            reject(error);           
+        });
+
     });
 });
 
