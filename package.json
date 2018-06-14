@@ -17,7 +17,7 @@
     "aes-js": "3.0.0",
     "bn.js": "^4.4.0",
     "elliptic": "6.3.3",
-    "hash.js": "^1.0.0",
+    "hash.js": "1.1.3",
     "js-sha3": "0.5.7",
     "scrypt-js": "2.0.3",
     "setimmediate": "1.0.4",
@@ -45,10 +45,10 @@
   "browser": {
     "fs": "./tests/browser-fs.js",
     "zlib": "browserify-zlib",
-    "./src.ts/utils/base64.ts": "./src.browser/browser-base64.ts",
-    "./src.ts/utils/random-bytes.js": "./src.browser/browser-random-bytes.js",
+    "./src.ts/utils/base64.ts": "./src.browser/base64.ts",
+    "./src.ts/utils/random-bytes.js": "./src.browser/random-bytes.js",
     "./providers/ipc-provider.js": "./utils/empty.js",
-    "xmlhttprequest": "./src.browser/browser-xmlhttprequest.ts"
+    "xmlhttprequest": "./src.browser/xmlhttprequest.ts"
   },
   "keywords": [
     "ethereum",

@@ -1,7 +1,7 @@
 "use strict";
 //See: https://github.com/ethereum/wiki/wiki/RLP
 Object.defineProperty(exports, "__esModule", { value: true });
-var convert_js_1 = require("./convert.js");
+var convert_1 = require("./convert");
 function arrayifyInteger(value) {
     var result = [];
     while (value) {
@@ -32,7 +32,7 @@ function _encode(object) {
         return length.concat(payload);
     }
     else {
-        var data = Array.prototype.slice.call(convert_js_1.arrayify(object));
+        var data = Array.prototype.slice.call(convert_1.arrayify(object));
         if (data.length === 1 && data[0] <= 0x7f) {
             return data;
         }
@@ -46,7 +46,7 @@ function _encode(object) {
     }
 }
 function encode(object) {
-    return convert_js_1.hexlify(_encode(object));
+    return convert_1.hexlify(_encode(object));
 }
 exports.encode = encode;
 function _decodeChildren(data, offset, childOffset, length) {
@@ -94,7 +94,7 @@ function _decode(data, offset) {
         if (offset + 1 + lengthLength + length > data.length) {
             throw new Error('invalid rlp data');
         }
-        var result = convert_js_1.hexlify(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length));
+        var result = convert_1.hexlify(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length));
         return { consumed: (1 + lengthLength + length), result: result };
     }
     else if (data[offset] >= 0x80) {
@@ -102,13 +102,13 @@ function _decode(data, offset) {
         if (offset + 1 + length > data.length) {
             throw new Error('invlaid rlp data');
         }
-        var result = convert_js_1.hexlify(data.slice(offset + 1, offset + 1 + length));
+        var result = convert_1.hexlify(data.slice(offset + 1, offset + 1 + length));
         return { consumed: (1 + length), result: result };
     }
-    return { consumed: 1, result: convert_js_1.hexlify(data[offset]) };
+    return { consumed: 1, result: convert_1.hexlify(data[offset]) };
 }
 function decode(data) {
-    var bytes = convert_js_1.arrayify(data);
+    var bytes = convert_1.arrayify(data);
     var decoded = _decode(bytes, 0);
     if (decoded.consumed !== bytes.length) {
         throw new Error('invalid rlp data');

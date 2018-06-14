@@ -1,2 +1,2 @@
-import { Arrayish } from './convert.js';
+import { Arrayish } from './convert';
 export declare function keccak256(data: Arrayish): string;

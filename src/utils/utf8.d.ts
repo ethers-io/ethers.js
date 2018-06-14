@@ -1,4 +1,4 @@
-import { Arrayish } from './convert.js';
+import { Arrayish } from './convert';
 export declare enum UnicodeNormalizationForm {
     current = "",
     NFC = "NFC",
