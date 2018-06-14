@@ -24,7 +24,6 @@ export class Web3Provider extends JsonRpcProvider {
     readonly _web3Provider: AsyncProvider;
 
     constructor(web3Provider: AsyncProvider, network?: Network | string) {
-        //errors.checkNew(this, Web3Provider);
 
         if (!web3Provider || !web3Provider.sendAsync) {
             errors.throwError(
@@ -38,6 +37,8 @@ export class Web3Provider extends JsonRpcProvider {
         var url = web3Provider.host || web3Provider.path || 'unknown';
 
         super(url, network);
+        errors.checkNew(this, Web3Provider);
+
         this._web3Provider = web3Provider;
     }
 

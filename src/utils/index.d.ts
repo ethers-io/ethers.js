@@ -1,8 +1,7 @@
-import { getAddress } from './address';
+import { getAddress, getContractAddress } from './address';
 import { AbiCoder, parseSignature } from './abi-coder';
 import * as base64 from './base64';
 import * as bigNumber from './bignumber';
-import { getContractAddress } from './contract-address';
 import * as convert from './convert';
 import { id } from './id';
 import { keccak256 } from './keccak256';

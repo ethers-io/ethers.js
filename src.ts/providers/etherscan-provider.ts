@@ -5,6 +5,7 @@ import { Network } from './networks';
 import { hexlify, hexStripZeros } from '../utils/convert';
 import { fetchJson } from '../utils/web';
 
+import * as errors from '../utils/errors';
 
 // The transaction has already been sanitized by the calls in Provider
 function getTransactionString(transaction: TransactionRequest): string {
@@ -70,6 +71,7 @@ export class EtherscanProvider extends Provider{
     constructor(network?: Network | string, apiKey?: string) {
 
         super(network || 'homestead');
+        errors.checkNew(this, EtherscanProvider);
 
         let name = 'invalid';
         if (this.network) { name = this.network.name; }

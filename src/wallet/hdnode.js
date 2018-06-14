@@ -21,6 +21,7 @@ var utf8_1 = require("../utils/utf8");
 var pbkdf2_1 = require("../utils/pbkdf2");
 var hmac_1 = require("../utils/hmac");
 var sha2_1 = require("../utils/sha2");
+var errors = __importStar(require("../utils/errors"));
 // "Bitcoin seed"
 var MasterSecret = utf8_1.toUtf8Bytes('Bitcoin seed');
 var HardenedBit = 0x80000000;
@@ -35,7 +36,7 @@ function getLowerMask(bits) {
 var HDNode = /** @class */ (function () {
     // @TODO: Private constructor?
     function HDNode(keyPair, chainCode, index, depth, mnemonic, path) {
-        //if (!(this instanceof HDNode)) { throw new Error('missing new'); }
+        errors.checkNew(this, HDNode);
         this.keyPair = keyPair;
         this.privateKey = convert_1.hexlify(keyPair.priv.toArray('be', 32));
         this.publicKey = '0x' + keyPair.getPublic(true, 'hex');

@@ -2,11 +2,8 @@
 
 //import inherits = require('inherits');
 
-//import networks = require('./networks.json');
-
-import { getAddress } from '../utils/address';
+import { getAddress, getContractAddress } from '../utils/address';
 import { BigNumber, bigNumberify, BigNumberish } from '../utils/bignumber';
-import { getContractAddress } from '../utils/contract-address';
 import { Arrayish, hexlify, hexStripZeros, isHexString, stripZeros } from '../utils/convert';
 import { toUtf8String } from '../utils/utf8';
 import { decode as rlpDecode, encode as rlpEncode } from '../utils/rlp';
@@ -604,7 +601,7 @@ export class Provider {
      */
 
     constructor(network: string | Network) {
-        //if (!(this instanceof Provider)) { throw new Error('missing new'); }
+        errors.checkNew(this, Provider);
 
         network = getNetwork(network);
 
@@ -803,7 +800,7 @@ export class Provider {
     }
 
 
-    getBalance(addressOrName: string | Promise<string>, blockTag: BlockTag | Promise<BlockTag>): Promise<BigNumber> {
+    getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber> {
         return this.ready.then(() => {
             return resolveProperties({ addressOrName: addressOrName, blockTag: blockTag }).then(({ addressOrName, blockTag }) => {
                 return this.resolveName(addressOrName).then((address) => {
@@ -816,7 +813,7 @@ export class Provider {
         });
     }
 
-    getTransactionCount(addressOrName: string | Promise<string>, blockTag: BlockTag | Promise<BlockTag>): Promise<number> {
+    getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number> {
         return this.ready.then(() => {
             return resolveProperties({ addressOrName: addressOrName, blockTag: blockTag }).then(({ addressOrName, blockTag }) => {
                 return this.resolveName(addressOrName).then((address) => {
@@ -831,7 +828,7 @@ export class Provider {
         });
     }
 
-    getCode(addressOrName: string | Promise<string>, blockTag: BlockTag | Promise<BlockTag>): Promise<string> {
+    getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
         return this.ready.then(() => {
             return resolveProperties({ addressOrName: addressOrName, blockTag: blockTag }).then(({ addressOrName, blockTag }) => {
                 return this.resolveName(addressOrName).then((address) => {
@@ -844,7 +841,7 @@ export class Provider {
         });
     }
 
-    getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag: BlockTag | Promise<BlockTag>): Promise<string> {
+    getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
         return this.ready.then(() => {
             return resolveProperties({ addressOrName: addressOrName, position: position, blockTag: blockTag }).then(({ addressOrName, position, blockTag }) => {
                 return this.resolveName(addressOrName).then((address) => {

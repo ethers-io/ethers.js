@@ -13,7 +13,6 @@ var address_1 = require("./address");
 var abi_coder_1 = require("./abi-coder");
 var base64 = __importStar(require("./base64"));
 var bigNumber = __importStar(require("./bignumber"));
-var contract_address_1 = require("./contract-address");
 var convert = __importStar(require("./convert"));
 var id_1 = require("./id");
 var keccak256_1 = require("./keccak256");
@@ -50,7 +49,7 @@ exports.default = {
     namehash: namehash_1.namehash,
     id: id_1.id,
     getAddress: address_1.getAddress,
-    getContractAddress: contract_address_1.getContractAddress,
+    getContractAddress: address_1.getContractAddress,
     formatEther: units.formatEther,
     parseEther: units.parseEther,
     formatUnits: units.formatUnits,

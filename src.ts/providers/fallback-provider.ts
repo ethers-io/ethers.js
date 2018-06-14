@@ -46,15 +46,16 @@ export class FallbackProvider extends Provider {
     private _providers: Array<Provider>;
 
     constructor(providers: Array<Provider>) {
-        //if (!(this instanceof FallbackProvider)) { throw new Error('missing new'); }
 
         if (providers.length === 0) { throw new Error('no providers'); }
 
         let ready = checkNetworks(providers.map((p) => p.network));
         if (ready) {
             super(providers[0].network);
+            errors.checkNew(this, FallbackProvider);
         } else {
             super(null);
+            errors.checkNew(this, FallbackProvider);
 
             // We re-assign the ready function to make sure all networks actually match
             this.ready = Promise.all(providers.map((p) => p.getNetwork())).then((networks) => {
@@ -64,6 +65,7 @@ export class FallbackProvider extends Provider {
                 return networks[0];
             });
         }
+
 
         this._providers = providers.slice(0);
     }

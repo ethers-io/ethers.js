@@ -23,7 +23,6 @@ var errors = __importStar(require("../utils/errors"));
 var InfuraProvider = /** @class */ (function (_super) {
     __extends(InfuraProvider, _super);
     function InfuraProvider(network, apiAccessToken) {
-        //errors.checkNew(this, InfuraProvider);
         var _this = this;
         network = networks_1.getNetwork(network || 'homestead');
         var host = null;
@@ -44,6 +43,7 @@ var InfuraProvider = /** @class */ (function (_super) {
                 throw new Error('unsupported network');
         }
         _this = _super.call(this, 'https://' + host + '/' + (apiAccessToken || ''), network) || this;
+        errors.checkNew(_this, InfuraProvider);
         _this.apiAccessToken = (apiAccessToken || null);
         return _this;
     }

@@ -3,11 +3,10 @@
 // This is SUPER useful, but adds 140kb (even zipped, adds 40kb)
 //var unorm = require('unorm');
 
-import { getAddress } from './address';
+import { getAddress, getContractAddress } from './address';
 import { AbiCoder, defaultAbiCoder, parseSignature } from './abi-coder';
 import * as base64 from './base64';
 import * as bigNumber from './bignumber';
-import { getContractAddress } from './contract-address';
 import * as convert from './convert';
 import { id } from './id';
 import { keccak256 } from './keccak256';

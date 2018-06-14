@@ -303,9 +303,7 @@ function addMethod(method) {
 var Interface = /** @class */ (function () {
     function Interface(abi) {
         var _this = this;
-        if (!(this instanceof Interface)) {
-            throw new Error('missing new');
-        }
+        errors.checkNew(this, Interface);
         if (typeof (abi) === 'string') {
             try {
                 abi = JSON.parse(abi);

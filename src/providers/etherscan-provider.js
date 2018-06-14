@@ -9,10 +9,18 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var provider_1 = require("./provider");
 var convert_1 = require("../utils/convert");
 var web_1 = require("../utils/web");
+var errors = __importStar(require("../utils/errors"));
 // The transaction has already been sanitized by the calls in Provider
 function getTransactionString(transaction) {
     var result = [];
@@ -75,6 +83,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
     __extends(EtherscanProvider, _super);
     function EtherscanProvider(network, apiKey) {
         var _this = _super.call(this, network || 'homestead') || this;
+        errors.checkNew(_this, EtherscanProvider);
         var name = 'invalid';
         if (_this.network) {
             name = _this.network.name;

@@ -26,12 +26,12 @@ var errors = __importStar(require("../utils/errors"));
 var IpcProvider = /** @class */ (function (_super) {
     __extends(IpcProvider, _super);
     function IpcProvider(path, network) {
-        //errors.checkNew(this, IpcProvider);
         var _this = this;
         if (path == null) {
             errors.throwError('missing path', errors.MISSING_ARGUMENT, { arg: 'path' });
         }
         _this = _super.call(this, 'ipc://' + path, network) || this;
+        errors.checkNew(_this, IpcProvider);
         _this.path = path;
         return _this;
     }

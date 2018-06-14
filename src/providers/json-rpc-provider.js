@@ -77,7 +77,7 @@ function getLowerCase(value) {
 var JsonRpcSigner = /** @class */ (function () {
     //    private _syncAddress: boolean;
     function JsonRpcSigner(provider, address) {
-        //errors.checkNew(this, JsonRpcSigner);
+        errors.checkNew(this, JsonRpcSigner);
         this.provider = provider;
         // Statically attach to a given address
         if (address) {
@@ -165,7 +165,6 @@ exports.JsonRpcSigner = JsonRpcSigner;
 var JsonRpcProvider = /** @class */ (function (_super) {
     __extends(JsonRpcProvider, _super);
     function JsonRpcProvider(url, network) {
-        //errors.checkNew(this, JsonRpcProvider);
         var _this = this;
         // One parameter, but it is a network name, so swap it with the URL
         if (typeof (url) === 'string') {
@@ -175,6 +174,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             }
         }
         _this = _super.call(this, network) || this;
+        errors.checkNew(_this, JsonRpcProvider);
         // Default URL
         if (!url) {
             url = 'http://localhost:8545';

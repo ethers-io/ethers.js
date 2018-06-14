@@ -1,20 +1,12 @@
 import { Interface } from './interface';
-import { TransactionResponse } from '../providers/provider';
-import { Network } from '../providers/networks';
+import { Provider, TransactionResponse } from '../providers/provider';
 import { ParamType } from '../utils/abi-coder';
 import { BigNumber } from '../utils/bignumber';
-interface Provider {
-    getNetwork(): Promise<Network>;
-    getGasPrice(): Promise<BigNumber>;
-    getTransactionCount(address: string | Promise<string>): Promise<number>;
-    call(data: string): Promise<string>;
-    estimateGas(tx: any): Promise<BigNumber>;
-    sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
-}
 interface Signer {
     defaultGasLimit?: BigNumber;
     defaultGasPrice?: BigNumber;
     address?: string;
+    provider?: Provider;
     getAddress(): Promise<string>;
     getTransactionCount(): Promise<number>;
     estimateGas(tx: any): Promise<BigNumber>;
@@ -37,8 +29,9 @@ export declare class Contract {
     readonly functions: Bucket<ContractFunction>;
     readonly events: Bucket<ContractEvent>;
     readonly addressPromise: Promise<string>;
-    constructor(addressOrName: string, contractInterface: Contractish, signerOrProvider: any);
-    connect(signerOrProvider: any): Contract;
-    deploy(bytecode: string, ...args: any[]): Promise<TransactionResponse>;
+    readonly deployTransaction: TransactionResponse;
+    constructor(addressOrName: string, contractInterface: Contractish, signerOrProvider: Signer | Provider);
+    connect(signerOrProvider: Signer | Provider): Contract;
+    deploy(bytecode: string, ...args: Array<any>): Promise<Contract>;
 }
 export {};

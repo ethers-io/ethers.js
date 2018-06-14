@@ -19,7 +19,7 @@ var keccak256_1 = require("../utils/keccak256");
 var errors = require("../utils/errors");
 var SigningKey = /** @class */ (function () {
     function SigningKey(privateKey) {
-        //errors.checkNew(this, SigningKey);
+        errors.checkNew(this, SigningKey);
         if (privateKey.privateKey) {
             this.mnemonic = privateKey.mnemonic;
             this.path = privateKey.path;

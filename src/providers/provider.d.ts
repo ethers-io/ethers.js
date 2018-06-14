@@ -98,10 +98,10 @@ export declare class Provider {
     waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionResponse>;
     getBlockNumber(): Promise<number>;
     getGasPrice(): Promise<BigNumber>;
-    getBalance(addressOrName: string | Promise<string>, blockTag: BlockTag | Promise<BlockTag>): Promise<BigNumber>;
-    getTransactionCount(addressOrName: string | Promise<string>, blockTag: BlockTag | Promise<BlockTag>): Promise<number>;
-    getCode(addressOrName: string | Promise<string>, blockTag: BlockTag | Promise<BlockTag>): Promise<string>;
-    getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag: BlockTag | Promise<BlockTag>): Promise<string>;
+    getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber>;
+    getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number>;
+    getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
+    getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
     sendTransaction(signedTransaction: string | Promise<string>): Promise<string>;
     call(transaction: TransactionRequest): Promise<string>;
     estimateGas(transaction: TransactionRequest): Promise<BigNumber>;

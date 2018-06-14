@@ -9,13 +9,13 @@ import * as errors from '../utils/errors';
 export class IpcProvider extends JsonRpcProvider {
     readonly path: string;
     constructor(path: string, network?: Network | string) {
-        //errors.checkNew(this, IpcProvider);
-
         if (path == null) {
             errors.throwError('missing path', errors.MISSING_ARGUMENT, { arg: 'path' });
         }
 
         super('ipc://' + path, network);
+        errors.checkNew(this, IpcProvider);
+
         this.path = path;
     }
 

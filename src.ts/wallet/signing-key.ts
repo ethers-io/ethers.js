@@ -27,7 +27,7 @@ export class SigningKey {
     private readonly keyPair: secp256k1.KeyPair;
 
     constructor(privateKey: any) {
-        //errors.checkNew(this, SigningKey);
+        errors.checkNew(this, SigningKey);
 
         if (privateKey.privateKey) {
             this.mnemonic = privateKey.mnemonic;

@@ -8,10 +8,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 //import inherits = require('inherits');
-//import networks = require('./networks.json');
 var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
-var contract_address_1 = require("../utils/contract-address");
 var convert_1 = require("../utils/convert");
 var utf8_1 = require("../utils/utf8");
 var rlp_1 = require("../utils/rlp");
@@ -194,7 +192,7 @@ function checkTransactionResponse(transaction) {
     }
     // If to and creates are empty, populate the creates from the transaction
     if (transaction.to == null && transaction.creates == null) {
-        transaction.creates = contract_address_1.getContractAddress(transaction);
+        transaction.creates = address_1.getContractAddress(transaction);
     }
     if (!transaction.raw) {
         // Very loose providers (e.g. TestRPC) don't provide a signature or raw
@@ -438,7 +436,7 @@ var Provider = /** @class */ (function () {
      *    - Otherwise, the sub-class must assign a Promise to ready
      */
     function Provider(network) {
-        //if (!(this instanceof Provider)) { throw new Error('missing new'); }
+        errors.checkNew(this, Provider);
         network = networks_1.getNetwork(network);
         if (network) {
             this._network = network;

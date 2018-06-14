@@ -67,7 +67,7 @@ export class JsonRpcSigner {
 //    private _syncAddress: boolean;
 
     constructor(provider: JsonRpcProvider, address?: string) {
-        //errors.checkNew(this, JsonRpcSigner);
+        errors.checkNew(this, JsonRpcSigner);
 
         this.provider = provider;
 
@@ -161,7 +161,6 @@ export class JsonRpcProvider extends Provider {
     private _pendingFilter: Promise<number>;
 
     constructor(url?: ConnectionInfo | string, network?: Network | string) {
-        //errors.checkNew(this, JsonRpcProvider);
 
         // One parameter, but it is a network name, so swap it with the URL
         if (typeof(url) === 'string') {
@@ -172,6 +171,7 @@ export class JsonRpcProvider extends Provider {
         }
 
         super(network);
+        errors.checkNew(this, JsonRpcProvider);
 
         // Default URL
         if (!url) { url = 'http://localhost:8545'; }

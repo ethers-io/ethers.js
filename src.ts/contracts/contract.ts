@@ -2,10 +2,9 @@
 
 import { Interface } from './interface';
 
-// @TODO: Move to utils?
-import { TransactionResponse } from '../providers/provider';
-import { Network } from '../providers/networks';
+import { Provider, TransactionResponse } from '../providers/provider';
 
+import { getContractAddress } from '../utils/address';
 import { ParamType } from '../utils/abi-coder';
 import { BigNumber, ConstantZero } from '../utils/bignumber';
 import { defineReadOnly, resolveProperties } from '../utils/properties';
@@ -211,6 +210,7 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
         throw new Error('unsupport type - ' + method.type);
     }
 }
+/*
 interface Provider {
     getNetwork(): Promise<Network>;
     getGasPrice(): Promise<BigNumber>;
@@ -219,17 +219,22 @@ interface Provider {
     estimateGas(tx: any): Promise<BigNumber>;
     sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
 }
-
+*/
 interface Signer {
     defaultGasLimit?: BigNumber;
     defaultGasPrice?: BigNumber;
     address?: string;
+    provider?: Provider;
 
     getAddress(): Promise<string>;
     getTransactionCount(): Promise<number>;
     estimateGas(tx: any): Promise<BigNumber>;
     sendTransaction(tx: any): Promise<any>; // @TODO:
     sign(tx: any): string | Promise<string>;
+}
+
+function isSigner(value: any): value is Signer {
+    return (value && value.provider != null);
 }
 
 export type ContractEstimate = (...params: Array<any>) => Promise<BigNumber>;
@@ -253,11 +258,14 @@ export class Contract {
 
     readonly addressPromise: Promise<string>;
 
+    // This is only set if the contract was created with a call to deploy
+    readonly deployTransaction: TransactionResponse;
+
     // https://github.com/Microsoft/TypeScript/issues/5453
     // Once this issue is resolved (there are open PR) we can do this nicer. :)
 
-    constructor(addressOrName: string, contractInterface: Contractish, signerOrProvider: any) {
-        //if (!(this instanceof Contract)) { throw new Error('missing new'); }
+    constructor(addressOrName: string, contractInterface: Contractish, signerOrProvider: Signer | Provider) {
+        errors.checkNew(this, Contract);
 
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
@@ -269,27 +277,28 @@ export class Contract {
 
         if (!signerOrProvider) { throw new Error('missing signer or provider'); }
 
-        var signer = signerOrProvider;
-        var provider = null;
-
-        if (signerOrProvider.provider) {
-            provider = signerOrProvider.provider;
+        if (isSigner(signerOrProvider)) {
+            defineReadOnly(this, 'provider', signerOrProvider.provider);
+            defineReadOnly(this, 'signer', signerOrProvider);
         } else {
-            provider = signerOrProvider;
-            signer = null;
+            defineReadOnly(this, 'provider', signerOrProvider);
+            defineReadOnly(this, 'signer', null);
         }
 
-        defineReadOnly(this, 'signer', signer);
-        defineReadOnly(this, 'provider', provider);
-
-        if (!addressOrName) { return; }
-
-        defineReadOnly(this, 'address', addressOrName);
-        defineReadOnly(this, 'addressPromise', provider.resolveName(addressOrName));
 
         defineReadOnly(this, 'estimate', { });
         defineReadOnly(this, 'events', { });
         defineReadOnly(this, 'functions', { });
+
+        // Not connected to an on-chain instance, so do not connect functions and events
+        if (!addressOrName) {
+            defineReadOnly(this, 'address', null);
+            defineReadOnly(this, 'addressPromise', Promise.resolve(null));
+            return;
+        }
+
+        defineReadOnly(this, 'address', addressOrName || null);
+        defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName || null));
 
         Object.keys(this.interface.functions).forEach((name) => {
             var run = runMethod(this, name, false);
@@ -311,9 +320,9 @@ export class Contract {
 
             let eventCallback = null;
 
-            let addressPromise = this.addressPromise;
+            let contract = this;
             function handleEvent(log) {
-                addressPromise.then((address) => {
+                contract.addressPromise.then((address) => {
                     // Not meant for us (the topics just has the same name)
                     if (address != log.address) { return; }
 
@@ -325,12 +334,12 @@ export class Contract {
                         log.event = eventName;
                         log.parse = eventInfo.parse;
                         log.removeListener = function() {
-                            provider.removeListener(eventInfo.topics, handleEvent);
+                            contract.provider.removeListener(eventInfo.topics, handleEvent);
                         }
 
-                        log.getBlock = function() { return provider.getBlock(log.blockHash);; }
-                        log.getTransaction = function() { return provider.getTransaction(log.transactionHash); }
-                        log.getTransactionReceipt = function() { return provider.getTransactionReceipt(log.transactionHash); }
+                        log.getBlock = function() { return contract.provider.getBlock(log.blockHash);; }
+                        log.getTransaction = function() { return contract.provider.getTransaction(log.transactionHash); }
+                        log.getTransactionReceipt = function() { return contract.provider.getTransactionReceipt(log.transactionHash); }
                         log.eventSignature = eventInfo.signature;
 
                         eventCallback.apply(log, Array.prototype.slice.call(result));
@@ -349,10 +358,10 @@ export class Contract {
                     if (!value) { value = null; }
 
                     if (!value && eventCallback) {
-                        provider.removeListener(eventInfo.topics, handleEvent);
+                        contract.provider.removeListener(eventInfo.topics, handleEvent);
 
                     } else if (value && !eventCallback) {
-                        provider.on(eventInfo.topics, handleEvent);
+                        contract.provider.on(eventInfo.topics, handleEvent);
                     }
 
                     eventCallback = value;
@@ -369,11 +378,15 @@ export class Contract {
         }, this);
     }
 
-    connect(signerOrProvider) {
+    // Reconnect to a different signer or provider
+    connect(signerOrProvider: Signer | Provider): Contract {
         return new Contract(this.address, this.interface, signerOrProvider);
     }
 
-    deploy(bytecode: string, ...args): Promise<TransactionResponse> {
+    // Deploy the contract with the bytecode, resolving to the deployed address.
+    // Use contract.deployTransaction.wait() to wait until the contract has
+    // been mined.
+    deploy(bytecode: string, ...args: Array<any>): Promise<Contract> {
         if (this.signer == null) {
             throw new Error('missing signer'); // @TODO: errors.throwError
         }
@@ -381,6 +394,10 @@ export class Contract {
         // @TODO: overrides of args.length = this.interface.deployFunction.inputs.length + 1
         return this.signer.sendTransaction({
             data: this.interface.deployFunction.encode(bytecode, args)
+        }).then((tx) => {
+            let contract = new Contract(getContractAddress(tx), this.interface, this.provider);
+            defineReadOnly(contract, 'deployTransaction', tx);
+            return contract;
         });
     }
 }

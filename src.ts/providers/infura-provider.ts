@@ -9,7 +9,6 @@ export class InfuraProvider extends JsonRpcProvider {
     readonly apiAccessToken: string;
 
     constructor(network?: Network | string, apiAccessToken?: string) {
-        //errors.checkNew(this, InfuraProvider);
 
         network = getNetwork(network || 'homestead');
 
@@ -32,6 +31,8 @@ export class InfuraProvider extends JsonRpcProvider {
         }
 
         super('https://' + host + '/' + (apiAccessToken || ''), network);
+        errors.checkNew(this, InfuraProvider);
+
         this.apiAccessToken = (apiAccessToken || null);
     }
 

@@ -50,7 +50,6 @@ function checkNetworks(networks) {
 var FallbackProvider = /** @class */ (function (_super) {
     __extends(FallbackProvider, _super);
     function FallbackProvider(providers) {
-        //if (!(this instanceof FallbackProvider)) { throw new Error('missing new'); }
         var _this = this;
         if (providers.length === 0) {
             throw new Error('no providers');
@@ -58,9 +57,11 @@ var FallbackProvider = /** @class */ (function (_super) {
         var ready = checkNetworks(providers.map(function (p) { return p.network; }));
         if (ready) {
             _this = _super.call(this, providers[0].network) || this;
+            errors.checkNew(_this, FallbackProvider);
         }
         else {
             _this = _super.call(this, null) || this;
+            errors.checkNew(_this, FallbackProvider);
             // We re-assign the ready function to make sure all networks actually match
             _this.ready = Promise.all(providers.map(function (p) { return p.getNetwork(); })).then(function (networks) {
                 if (!checkNetworks(networks)) {

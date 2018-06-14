@@ -331,7 +331,7 @@ export class Interface {
     readonly deployFunction: DeployDescription;
 
     constructor(abi: Array<string | ParamType> | string) {
-        if (!(this instanceof Interface)) { throw new Error('missing new'); }
+        errors.checkNew(this, Interface);
 
         if (typeof(abi) === 'string') {
             try {

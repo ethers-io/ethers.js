@@ -22,7 +22,6 @@ var errors = __importStar(require("../utils/errors"));
 var Web3Provider = /** @class */ (function (_super) {
     __extends(Web3Provider, _super);
     function Web3Provider(web3Provider, network) {
-        //errors.checkNew(this, Web3Provider);
         var _this = this;
         if (!web3Provider || !web3Provider.sendAsync) {
             errors.throwError('invalid web3Provider', errors.INVALID_ARGUMENT, { arg: 'web3Provider', value: web3Provider });
@@ -30,6 +29,7 @@ var Web3Provider = /** @class */ (function (_super) {
         // HTTP has a host; IPC has a path.
         var url = web3Provider.host || web3Provider.path || 'unknown';
         _this = _super.call(this, url, network) || this;
+        errors.checkNew(_this, Web3Provider);
         _this._web3Provider = web3Provider;
         return _this;
     }

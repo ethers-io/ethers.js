@@ -15,6 +15,8 @@ import { pbkdf2 } from '../utils/pbkdf2';
 import { createSha512Hmac } from '../utils/hmac';
 import { sha256 } from '../utils/sha2';
 
+import * as errors from '../utils/errors';
+
 // "Bitcoin seed"
 var MasterSecret = toUtf8Bytes('Bitcoin seed');
 
@@ -46,7 +48,7 @@ export class HDNode {
 
     // @TODO: Private constructor?
     constructor(keyPair: secp256k1.KeyPair, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string) {
-        //if (!(this instanceof HDNode)) { throw new Error('missing new'); }
+        errors.checkNew(this, HDNode);
 
         this.keyPair = keyPair;
 

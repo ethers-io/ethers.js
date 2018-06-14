@@ -1,8 +1,10 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+// We use this for base 36 maths
 var BN = require("bn.js");
 var convert_1 = require("./convert");
 var keccak256_1 = require("./keccak256");
+var rlp_1 = require("./rlp");
 var errors = require("./errors");
 function getChecksumAddress(address) {
     if (typeof (address) !== 'string' || !address.match(/^0x[0-9A-Fa-f]{40}$/)) {
@@ -104,3 +106,15 @@ function getAddress(address, icapFormat) {
     return result;
 }
 exports.getAddress = getAddress;
+// http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
+function getContractAddress(transaction) {
+    if (!transaction.from) {
+        throw new Error('missing from address');
+    }
+    var nonce = transaction.nonce;
+    return getAddress('0x' + keccak256_1.keccak256(rlp_1.encode([
+        getAddress(transaction.from),
+        convert_1.stripZeros(convert_1.hexlify(nonce))
+    ])).substring(26));
+}
+exports.getContractAddress = getContractAddress;

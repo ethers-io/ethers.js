@@ -8,6 +8,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var interface_1 = require("./interface");
+var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
 var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
@@ -193,12 +194,15 @@ function runMethod(contract, functionName, estimateOnly) {
         throw new Error('unsupport type - ' + method.type);
     };
 }
+function isSigner(value) {
+    return (value && value.provider != null);
+}
 var Contract = /** @class */ (function () {
     // https://github.com/Microsoft/TypeScript/issues/5453
     // Once this issue is resolved (there are open PR) we can do this nicer. :)
     function Contract(addressOrName, contractInterface, signerOrProvider) {
-        //if (!(this instanceof Contract)) { throw new Error('missing new'); }
         var _this = this;
+        errors.checkNew(this, Contract);
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
         if (contractInterface instanceof interface_1.Interface) {
@@ -210,25 +214,25 @@ var Contract = /** @class */ (function () {
         if (!signerOrProvider) {
             throw new Error('missing signer or provider');
         }
-        var signer = signerOrProvider;
-        var provider = null;
-        if (signerOrProvider.provider) {
-            provider = signerOrProvider.provider;
+        if (isSigner(signerOrProvider)) {
+            properties_1.defineReadOnly(this, 'provider', signerOrProvider.provider);
+            properties_1.defineReadOnly(this, 'signer', signerOrProvider);
         }
         else {
-            provider = signerOrProvider;
-            signer = null;
+            properties_1.defineReadOnly(this, 'provider', signerOrProvider);
+            properties_1.defineReadOnly(this, 'signer', null);
         }
-        properties_1.defineReadOnly(this, 'signer', signer);
-        properties_1.defineReadOnly(this, 'provider', provider);
-        if (!addressOrName) {
-            return;
-        }
-        properties_1.defineReadOnly(this, 'address', addressOrName);
-        properties_1.defineReadOnly(this, 'addressPromise', provider.resolveName(addressOrName));
         properties_1.defineReadOnly(this, 'estimate', {});
         properties_1.defineReadOnly(this, 'events', {});
         properties_1.defineReadOnly(this, 'functions', {});
+        // Not connected to an on-chain instance, so do not connect functions and events
+        if (!addressOrName) {
+            properties_1.defineReadOnly(this, 'address', null);
+            properties_1.defineReadOnly(this, 'addressPromise', Promise.resolve(null));
+            return;
+        }
+        properties_1.defineReadOnly(this, 'address', addressOrName || null);
+        properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName || null));
         Object.keys(this.interface.functions).forEach(function (name) {
             var run = runMethod(_this, name, false);
             if (_this[name] == null) {
@@ -245,9 +249,9 @@ var Contract = /** @class */ (function () {
         Object.keys(this.interface.events).forEach(function (eventName) {
             var eventInfo = _this.interface.events[eventName];
             var eventCallback = null;
-            var addressPromise = _this.addressPromise;
+            var contract = _this;
             function handleEvent(log) {
-                addressPromise.then(function (address) {
+                contract.addressPromise.then(function (address) {
                     // Not meant for us (the topics just has the same name)
                     if (address != log.address) {
                         return;
@@ -259,11 +263,11 @@ var Contract = /** @class */ (function () {
                         log.event = eventName;
                         log.parse = eventInfo.parse;
                         log.removeListener = function () {
-                            provider.removeListener(eventInfo.topics, handleEvent);
+                            contract.provider.removeListener(eventInfo.topics, handleEvent);
                         };
-                        log.getBlock = function () { return provider.getBlock(log.blockHash); ; };
-                        log.getTransaction = function () { return provider.getTransaction(log.transactionHash); };
-                        log.getTransactionReceipt = function () { return provider.getTransactionReceipt(log.transactionHash); };
+                        log.getBlock = function () { return contract.provider.getBlock(log.blockHash); ; };
+                        log.getTransaction = function () { return contract.provider.getTransaction(log.transactionHash); };
+                        log.getTransactionReceipt = function () { return contract.provider.getTransactionReceipt(log.transactionHash); };
                         log.eventSignature = eventInfo.signature;
                         eventCallback.apply(log, Array.prototype.slice.call(result));
                     }
@@ -282,10 +286,10 @@ var Contract = /** @class */ (function () {
                         value = null;
                     }
                     if (!value && eventCallback) {
-                        provider.removeListener(eventInfo.topics, handleEvent);
+                        contract.provider.removeListener(eventInfo.topics, handleEvent);
                     }
                     else if (value && !eventCallback) {
-                        provider.on(eventInfo.topics, handleEvent);
+                        contract.provider.on(eventInfo.topics, handleEvent);
                     }
                     eventCallback = value;
                 }
@@ -297,10 +301,15 @@ var Contract = /** @class */ (function () {
             Object.defineProperty(_this.events, eventName, property);
         }, this);
     }
+    // Reconnect to a different signer or provider
     Contract.prototype.connect = function (signerOrProvider) {
         return new Contract(this.address, this.interface, signerOrProvider);
     };
+    // Deploy the contract with the bytecode, resolving to the deployed address.
+    // Use contract.deployTransaction.wait() to wait until the contract has
+    // been mined.
     Contract.prototype.deploy = function (bytecode) {
+        var _this = this;
         var args = [];
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
@@ -311,6 +320,10 @@ var Contract = /** @class */ (function () {
         // @TODO: overrides of args.length = this.interface.deployFunction.inputs.length + 1
         return this.signer.sendTransaction({
             data: this.interface.deployFunction.encode(bytecode, args)
+        }).then(function (tx) {
+            var contract = new Contract(address_1.getContractAddress(tx), _this.interface, _this.provider);
+            properties_1.defineReadOnly(contract, 'deployTransaction', tx);
+            return contract;
         });
     };
     return Contract;
