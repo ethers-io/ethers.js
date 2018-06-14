@@ -542,7 +542,7 @@ utils.defineProperty(secretStorage, 'RNdecrypt', function(json, password, progre
                     return;
                 }
                 
-                var RNsalt = Object.values(salt);
+                var RNsalt = Object.values(salt).filter(v => Number.isInteger(v));
                 const result = RNscrypt(password, RNsalt, N, r, p, 64);
                 result.then(key => {
                     key = arrayify(key);
@@ -674,8 +674,8 @@ utils.defineProperty(secretStorage, 'RNencrypt', function(privateKey, password, 
         // We take 64 bytes:
         //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
         //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)        
-        var int_array_salt = Object.values(salt);        
-        const result = RNscrypt(password, int_array_salt, N, r, p, 64);
+        var RNsalt = Object.values(salt).filter(v => Number.isInteger(v));        
+        const result = RNscrypt(password, RNsalt, N, r, p, 64);
         result.then(key => {           
             if (key) {
                 key = arrayify(key);
