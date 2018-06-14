@@ -9098,6 +9098,12 @@ var defaultCoerceFunc = function(type, value) {
     return value;
 }
 
+// Recursively copies any serial
+function shallowCopy(object) {
+    var result = {};
+    for (var key in object) { result[key] = object[key]; }
+    return result;
+}
 
 ///////////////////////////////////
 // Parsing for Solidity Signatures
@@ -9932,6 +9938,7 @@ function getParamCoder(coerceFunc, param) {
 
     var match = param.type.match(paramTypeArray);
     if (match) {
+        param = shallowCopy(param);
         var size = parseInt(match[2] || -1);
         param.type = match[1];
         return coderArray(coerceFunc, getParamCoder(coerceFunc, param), size, param.name);
