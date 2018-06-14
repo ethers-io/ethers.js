@@ -426,6 +426,40 @@ utils.defineProperty(Wallet, 'fromEncryptedWallet', function(json, password, pro
     });
 });
 
+utils.defineProperty(Wallet, 'RNfromEncryptedWallet', function(json, password, progressCallback) {
+    if (progressCallback && typeof(progressCallback) !== 'function') {
+        throw new Error('invalid callback');
+    }
+
+    return new Promise(function(resolve, reject) {
+
+        if (secretStorage.isCrowdsaleWallet(json)) {
+            try {
+                var privateKey = secretStorage.decryptCrowdsale(json, password);
+                resolve(new Wallet(privateKey));
+            } catch (error) {
+                reject(error);
+            }
+
+        } else if (secretStorage.isValidWallet(json)) {
+
+            secretStorage.RNdecrypt(json, password, progressCallback).then(function(signingKey) {
+                var wallet = new Wallet(signingKey);
+                if (signingKey.mnemonic && signingKey.path) {
+                    utils.defineProperty(wallet, 'mnemonic', signingKey.mnemonic);
+                    utils.defineProperty(wallet, 'path', signingKey.path);
+                }
+                resolve(wallet);
+            }, function(error) {
+                reject(error);
+            });
+
+        } else {
+            reject('invalid wallet JSON');
+        }
+    });
+});
+
 utils.defineProperty(Wallet, 'fromMnemonic', function(mnemonic, path) {
     if (!path) { path = defaultPath; }
 
