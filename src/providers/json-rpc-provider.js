@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 var networks_1 = require("./networks");
-var provider_js_1 = require("./provider.js");
+var provider_1 = require("./provider");
 var address_1 = require("../utils/address");
 var convert_1 = require("../utils/convert");
 var utf8_1 = require("../utils/utf8");
@@ -308,5 +308,5 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         this._pendingFilter = null;
     };
     return JsonRpcProvider;
-}(provider_js_1.Provider));
+}(provider_1.Provider));
 exports.JsonRpcProvider = JsonRpcProvider;

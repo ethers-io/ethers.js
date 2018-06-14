@@ -1,5 +1,5 @@
 import { Network } from './networks';
-import { BlockTag, Provider, TransactionRequest } from './provider.js';
+import { BlockTag, Provider, TransactionRequest } from './provider';
 import { BigNumber } from '../utils/bignumber';
 import { Arrayish } from '../utils/convert';
 import { ConnectionInfo } from '../utils/web';

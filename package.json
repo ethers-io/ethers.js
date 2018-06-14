@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc -p ./tsconfig.json",
     "auto-build": "npm run build -- -w",
-    "dist": "gulp default minified",
+    "dist": "gulp default minified types",
     "test": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
     "test-node": "mocha tests/test-*.js",
     "test-phantomjs": "gulp minified tests && phantomjs --web-security=false ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",

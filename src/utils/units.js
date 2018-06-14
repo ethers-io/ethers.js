@@ -7,7 +7,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var bignumber_js_1 = require("./bignumber.js");
+var bignumber_1 = require("./bignumber");
 var errors = __importStar(require("./errors"));
 var names = [
     'wei',
@@ -23,7 +23,7 @@ var getUnitInfo = (function () {
     function getUnitInfo(value) {
         return {
             decimals: value.length - 1,
-            tenPower: bignumber_js_1.bigNumberify(value)
+            tenPower: bignumber_1.bigNumberify(value)
         };
     }
     // Cache the common units
@@ -64,10 +64,10 @@ function formatUnits(value, unitType, options) {
     }
     var unitInfo = getUnitInfo(unitType);
     // Make sure wei is a big number (convert as necessary)
-    value = bignumber_js_1.bigNumberify(value);
-    var negative = value.lt(bignumber_js_1.ConstantZero);
+    value = bignumber_1.bigNumberify(value);
+    var negative = value.lt(bignumber_1.ConstantZero);
     if (negative) {
-        value = value.mul(bignumber_js_1.ConstantNegativeOne);
+        value = value.mul(bignumber_1.ConstantNegativeOne);
     }
     var fraction = value.mod(unitInfo.tenPower).toString(10);
     while (fraction.length < unitInfo.decimals) {
@@ -126,11 +126,11 @@ function parseUnits(value, unitType) {
     while (fraction.length < unitInfo.decimals) {
         fraction += '0';
     }
-    whole = bignumber_js_1.bigNumberify(whole);
-    fraction = bignumber_js_1.bigNumberify(fraction);
+    whole = bignumber_1.bigNumberify(whole);
+    fraction = bignumber_1.bigNumberify(fraction);
     var wei = (whole.mul(unitInfo.tenPower)).add(fraction);
     if (negative) {
-        wei = wei.mul(bignumber_js_1.ConstantNegativeOne);
+        wei = wei.mul(bignumber_1.ConstantNegativeOne);
     }
     return wei;
 }

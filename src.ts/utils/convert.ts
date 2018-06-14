@@ -3,15 +3,14 @@
  *
  */
 
+import { BigNumber } from './bignumber';
+
 import errors = require('./errors');
 
 export type Arrayish = string | ArrayLike<number>;
 
 export type Signature = { r: string, s: string, v: number };
 
-declare class BigNumber {
-    toHexString(): string;
-}
 
 function isBigNumber(value: any): value is BigNumber {
     return !!value._bn;

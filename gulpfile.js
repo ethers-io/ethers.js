@@ -106,7 +106,7 @@ function task(name, options) {
 
     if (options.minify) {
         result = result.pipe(buffer())
-        .pipe(sourcemaps.init({loadMaps: true}))
+        .pipe(sourcemaps.init({ loadMaps: true }))
         .pipe(uglify())
         .pipe(sourcemaps.write('./'))
     }
@@ -117,11 +117,17 @@ function task(name, options) {
   });
 }
 
+// Creates dist/ethers.js
 task("default", { filename: "ethers.js", debug: false, minify: false });
-task("debug", { filename: "ethers-debug.js", debug: true, minify: false });
+
+// Creates dist/ethers-debug.js
+//task("debug", { filename: "ethers-debug.js", debug: true, minify: false });
+
+// Creates dist/ethers.min/js
 task("minified", { filename: "ethers.min.js", debug: false, minify: true });
 
 
+// Package up all the test cases into tests/dist/tests.json
 gulp.task("tests", function() {
 
     // Create a mock-fs module that can load our gzipped test cases
@@ -144,4 +150,22 @@ gulp.task("tests", function() {
     .bundle()
     .pipe(source("tests.js"))
     .pipe(gulp.dest("tests/dist/"));
+});
+
+
+// Crearte a single definition file in dist/
+gulp.task("types", function() {
+    return ts.createProject("tsconfig.json")
+    .src()
+    .pipe(ts({
+        declaration: true,
+        esModuleInterop: true,
+        moduleResolution: "node",
+        outFile: 'ethers.js',
+        lib: [ "es2015", "es5", "dom" ],
+        module: "amd",
+        target: "es5"
+    }))
+    .dts
+    .pipe(gulp.dest("dist"))
 });

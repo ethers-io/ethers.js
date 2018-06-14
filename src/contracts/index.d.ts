@@ -1,3 +1,3 @@
-import { Contract } from './contract.js';
-import { Interface } from './interface.js';
+import { Contract } from './contract';
+import { Interface } from './interface';
 export { Contract, Interface };

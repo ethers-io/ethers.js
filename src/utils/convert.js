@@ -5,6 +5,11 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 var errors = require("./errors");
+/*
+declare class BigNumber {
+    toHexString(): string;
+}
+*/
 function isBigNumber(value) {
     return !!value._bn;
 }
