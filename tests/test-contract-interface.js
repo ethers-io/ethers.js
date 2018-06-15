@@ -173,6 +173,26 @@ describe('ABI Coder ABIv2 Decoding', function() {
         it(('decodes ABIv2 parameters - ' + test.name + ' - ' + test.types), function() {
             var decoded = coder.decode(types, result);
             assert.ok(equals(decoded, values), 'decoded positional parameters - ' + title);
+
+            // Test for mutation
+            // https://github.com/ethers-io/ethers.js/issues/200
+            // https://github.com/ethers-io/ethers.js/issues/201
+
+            // @TODO: Expose parseParameter
+            // Check that it works with objects as well as strings
+            var expandedTypes = [];
+            types.forEach(function(type) {
+                var sig = 'function foo(' + type + ' foo)';
+                var abi = ethers.utils.AbiCoder.parseSignature(sig);
+                expandedTypes.push(abi.inputs[0]);
+            });
+
+            var typesBefore = JSON.stringify(expandedTypes);
+
+            decoded = coder.decode(expandedTypes, result);
+            assert.ok(equals(decoded, values), 'decoded positional parameters - ' + title);
+
+            assert.equal(typesBefore, JSON.stringify(expandedTypes), 'decoding does not modify the types');
         });
     });
 });
