@@ -58,6 +58,7 @@ export type TransactionRequest = {
 export type TransactionResponse = {
     blockNumber?: number,
     blockHash?: string,
+    timestamp?: number,
 
     hash: string,
 
@@ -291,7 +292,7 @@ var formatTransaction = {
    raw: allowNull(hexlify),
 };
 
-export function checkTransactionResponse(transaction) {
+export function checkTransactionResponse(transaction: any): TransactionResponse {
 
     // Rename gas to gasLimit
     if (transaction.gas != null && transaction.gasLimit == null) {
@@ -632,7 +633,7 @@ export class Provider {
         this._emitted = { block: this._lastBlockNumber };
     }
 
-    private _doPoll() {
+    private _doPoll(): void {
         this.getBlockNumber().then((blockNumber) => {
 
             // If the block hasn't changed, meh.
@@ -706,12 +707,12 @@ export class Provider {
         this.doPoll();
     }
 
-    resetEventsBlock(blockNumber) {
+    resetEventsBlock(blockNumber: number): void {
         this._lastBlockNumber = this.blockNumber;
         this._doPoll();
     }
 
-    get network() {
+    get network(): Network {
         return this._network;
     }
 
@@ -724,11 +725,11 @@ export class Provider {
         return this._lastBlockNumber;
     }
 
-    get polling() {
+    get polling(): boolean {
         return (this._poller != null);
     }
 
-    set polling(value) {
+    set polling(value: boolean) {
         setTimeout(() => {
             if (value && !this._poller) {
                 this._poller = setInterval(this._doPoll.bind(this), this.pollingInterval);
@@ -740,7 +741,7 @@ export class Provider {
         }, 0);
     }
 
-    get pollingInterval() {
+    get pollingInterval(): number {
         return this._pollingInterval;
     }
 
@@ -992,7 +993,7 @@ export class Provider {
         });
     }
 
-    _resolveNames(object, keys) {
+    _resolveNames(object: any, keys: Array<string>): Promise<any> {
         var promises = [];
 
         var result = copyObject(object);
@@ -1007,7 +1008,7 @@ export class Provider {
         return Promise.all(promises).then(function() { return result; });
     }
 
-    _getResolver(name) {
+    _getResolver(name: string): Promise<string> {
         // Get the resolver from the blockchain
         return this.getNetwork().then((network) => {
 
@@ -1115,7 +1116,7 @@ export class Provider {
         });
     }
 
-    doPoll() {
+    doPoll(): void {
     }
 
     perform(method: string, params: any): Promise<any> {

@@ -6,8 +6,23 @@ export declare type ParamType = {
     indexed?: boolean;
     components?: Array<any>;
 };
-export declare function defaultCoerceFunc(type: string, value: any): any;
-export declare function parseSignature(fragment: string): any;
+export declare const defaultCoerceFunc: CoerceFunc;
+export declare type EventFragment = {
+    type: string;
+    name: string;
+    anonymous: boolean;
+    inputs: Array<ParamType>;
+};
+export declare type FunctionFragment = {
+    type: string;
+    name: string;
+    constant: boolean;
+    inputs: Array<ParamType>;
+    outputs: Array<ParamType>;
+    payable: boolean;
+    stateMutability: string;
+};
+export declare function parseSignature(fragment: string): EventFragment | FunctionFragment;
 export declare class AbiCoder {
     readonly coerceFunc: CoerceFunc;
     constructor(coerceFunc?: CoerceFunc);

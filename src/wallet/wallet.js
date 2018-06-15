@@ -11,6 +11,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var scrypt_js_1 = __importDefault(require("scrypt-js"));
+var hdnode_1 = require("./hdnode");
+var secretStorage = __importStar(require("./secret-storage"));
+var signing_key_1 = require("./signing-key");
 var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
 var convert_1 = require("../utils/convert");
@@ -19,9 +22,6 @@ var random_bytes_1 = require("../utils/random-bytes");
 var RLP = __importStar(require("../utils/rlp"));
 var utf8_1 = require("../utils/utf8");
 var errors = __importStar(require("../utils/errors"));
-var hdnode_1 = require("./hdnode");
-var secretStorage = __importStar(require("./secret-storage"));
-var signing_key_1 = require("./signing-key");
 // This ensures we inject a setImmediate into the global space, which
 // dramatically improves the performance of the scrypt PBKDF.
 console.log("Fix this! Setimmediate");
@@ -177,7 +177,7 @@ var Wallet = /** @class */ (function () {
             }
             var digest = keccak256_1.keccak256(RLP.encode(raw));
             try {
-                transaction.from = signing_key_1.SigningKey.recover(digest, r, s, recoveryParam);
+                transaction.from = signing_key_1.recoverAddress(digest, { r: convert_1.hexlify(r), s: convert_1.hexlify(s), recoveryParam: recoveryParam });
             }
             catch (error) {
                 console.log(error);
@@ -310,7 +310,11 @@ var Wallet = /** @class */ (function () {
         if (recoveryParam < 0) {
             throw new Error('invalid signature');
         }
-        return signing_key_1.SigningKey.recover(digest, signature.substring(0, 66), '0x' + signature.substring(66, 130), recoveryParam);
+        return signing_key_1.recoverAddress(digest, {
+            r: signature.substring(0, 66),
+            s: '0x' + signature.substring(66, 130),
+            recoveryParam: recoveryParam
+        });
     };
     Wallet.prototype.encrypt = function (password, options, progressCallback) {
         if (typeof (options) === 'function' && !progressCallback) {

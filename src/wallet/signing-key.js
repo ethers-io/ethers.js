@@ -1,33 +1,31 @@
 'use strict';
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  *  SigningKey
  *
  *
  */
-var secp256k1 = __importStar(require("./secp256k1"));
+var secp256k1_1 = require("./secp256k1");
 var address_1 = require("../utils/address");
 var convert_1 = require("../utils/convert");
+var hdnode_1 = require("./hdnode");
 var keccak256_1 = require("../utils/keccak256");
+var properties_1 = require("../utils/properties");
 var errors = require("../utils/errors");
 var SigningKey = /** @class */ (function () {
     function SigningKey(privateKey) {
         errors.checkNew(this, SigningKey);
-        if (privateKey.privateKey) {
-            this.mnemonic = privateKey.mnemonic;
-            this.path = privateKey.path;
-            privateKey = privateKey.privateKey;
+        var privateKeyBytes = null;
+        if (privateKey instanceof hdnode_1.HDNode) {
+            properties_1.defineReadOnly(this, 'mnemonic', privateKey.mnemonic);
+            properties_1.defineReadOnly(this, 'path', privateKey.path);
+            privateKeyBytes = convert_1.arrayify(privateKey.privateKey);
+        }
+        else {
+            privateKeyBytes = convert_1.arrayify(privateKey);
         }
         try {
-            privateKey = convert_1.arrayify(privateKey);
-            if (privateKey.length !== 32) {
+            if (privateKeyBytes.length !== 32) {
                 errors.throwError('exactly 32 bytes required', errors.INVALID_ARGUMENT, { value: privateKey });
             }
         }
@@ -41,49 +39,24 @@ var SigningKey = /** @class */ (function () {
             }
             errors.throwError('invalid private key', error.code, params);
         }
-        this.privateKey = convert_1.hexlify(privateKey);
-        this.keyPair = secp256k1.curve.keyFromPrivate(privateKey);
-        //utils.defineProperty(this, 'publicKey', '0x' + keyPair.getPublic(true, 'hex'))
-        this.publicKey = '0x' + this.keyPair.getPublic(true, 'hex');
-        this.address = SigningKey.publicKeyToAddress('0x' + this.keyPair.getPublic(false, 'hex'));
+        properties_1.defineReadOnly(this, 'privateKey', convert_1.hexlify(privateKeyBytes));
+        properties_1.defineReadOnly(this, 'keyPair', new secp256k1_1.KeyPair(privateKeyBytes));
+        properties_1.defineReadOnly(this, 'publicKey', this.keyPair.publicKey);
+        properties_1.defineReadOnly(this, 'address', computeAddress(this.keyPair.publicKey));
     }
     SigningKey.prototype.signDigest = function (digest) {
-        var signature = this.keyPair.sign(convert_1.arrayify(digest), { canonical: true });
-        return {
-            recoveryParam: signature.recoveryParam,
-            r: '0x' + signature.r.toString(16),
-            s: '0x' + signature.s.toString(16)
-        };
-    };
-    SigningKey.recover = function (digest, r, s, recoveryParam) {
-        var signature = {
-            r: convert_1.arrayify(r),
-            s: convert_1.arrayify(s)
-        };
-        var publicKey = secp256k1.curve.recoverPubKey(convert_1.arrayify(digest), signature, recoveryParam);
-        return SigningKey.publicKeyToAddress('0x' + publicKey.encode('hex', false));
-    };
-    SigningKey.getPublicKey = function (value, compressed) {
-        value = convert_1.arrayify(value);
-        compressed = !!compressed;
-        if (value.length === 32) {
-            var keyPair = secp256k1.curve.keyFromPrivate(value);
-            return '0x' + keyPair.getPublic(compressed, 'hex');
-        }
-        else if (value.length === 33) {
-            var keyPair = secp256k1.curve.keyFromPublic(value);
-            return '0x' + keyPair.getPublic(compressed, 'hex');
-        }
-        else if (value.length === 65) {
-            var keyPair = secp256k1.curve.keyFromPublic(value);
-            return '0x' + keyPair.getPublic(compressed, 'hex');
-        }
-        throw new Error('invalid value');
-    };
-    SigningKey.publicKeyToAddress = function (publicKey) {
-        publicKey = '0x' + SigningKey.getPublicKey(publicKey, false).slice(4);
-        return address_1.getAddress('0x' + keccak256_1.keccak256(publicKey).substring(26));
+        return this.keyPair.sign(digest);
     };
     return SigningKey;
 }());
 exports.SigningKey = SigningKey;
+function recoverAddress(digest, signature) {
+    return computeAddress(secp256k1_1.recoverPublicKey(digest, signature));
+}
+exports.recoverAddress = recoverAddress;
+function computeAddress(key) {
+    // Strip off the leading "0x04"
+    var publicKey = '0x' + secp256k1_1.computePublicKey(key).slice(4);
+    return address_1.getAddress('0x' + keccak256_1.keccak256(publicKey).substring(26));
+}
+exports.computeAddress = computeAddress;

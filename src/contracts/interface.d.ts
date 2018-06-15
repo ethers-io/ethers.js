@@ -2,7 +2,7 @@ import { ParamType } from '../utils/abi-coder';
 import { BigNumber, BigNumberish } from '../utils/bignumber';
 export declare class Indexed {
     readonly hash: string;
-    constructor(value: any);
+    constructor(value: string);
 }
 export declare class Description {
     readonly type: string;
@@ -37,7 +37,7 @@ export declare class EventDescription extends Description {
     decode(data: string, topics?: Array<string>): any;
 }
 export declare class Interface {
-    readonly _abi: Array<any>;
+    readonly abi: Array<any>;
     readonly functions: Array<FunctionDescription>;
     readonly events: Array<EventDescription>;
     readonly deployFunction: DeployDescription;

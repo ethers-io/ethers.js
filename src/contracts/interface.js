@@ -54,7 +54,6 @@ function parseParams(params) {
 }
 var Indexed = /** @class */ (function () {
     function Indexed(value) {
-        properties_1.defineReadOnly(this, 'indexed', true);
         properties_1.defineReadOnly(this, 'hash', value);
     }
     return Indexed;
@@ -302,7 +301,6 @@ function addMethod(method) {
 }
 var Interface = /** @class */ (function () {
     function Interface(abi) {
-        var _this = this;
         errors.checkNew(this, Interface);
         if (typeof (abi) === 'string') {
             try {
@@ -323,14 +321,15 @@ var Interface = /** @class */ (function () {
         properties_1.defineReadOnly(this, 'functions', {});
         properties_1.defineReadOnly(this, 'events', {});
         // Convert any supported ABI format into a standard ABI format
-        this._abi = [];
+        var _abi = [];
         abi.forEach(function (fragment) {
             if (typeof (fragment) === 'string') {
                 fragment = abi_coder_1.parseSignature(fragment);
             }
-            _this._abi.push(fragment);
+            _abi.push(fragment);
         });
-        this._abi.forEach(addMethod, this);
+        properties_1.defineFrozen(this, 'abi', _abi);
+        _abi.forEach(addMethod, this);
         // If there wasn't a constructor, create the default constructor
         if (!this.deployFunction) {
             addMethod.call(this, { type: 'constructor', inputs: [] });

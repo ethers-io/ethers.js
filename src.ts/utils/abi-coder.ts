@@ -6,6 +6,7 @@ import { getAddress } from  './address';
 import { bigNumberify, BigNumberish } from './bignumber';
 import { arrayify, Arrayish, concat, hexlify, padZeros } from './convert';
 import { toUtf8Bytes, toUtf8String } from './utf8';
+import { defineReadOnly, jsonCopy } from './properties';
 
 import * as errors from './errors';
 
@@ -17,7 +18,7 @@ const paramTypeArray = new RegExp(/^(.*)\[([0-9]*)\]$/);
 export type CoerceFunc = (type: string, value: any) => any;
 export type ParamType = { name?: string, type: string, indexed?: boolean, components?: Array<any> };
 
-export function defaultCoerceFunc(type: string, value: any): any {
+export const defaultCoerceFunc: CoerceFunc = function(type: string, value: any): any {
     var match = type.match(paramTypeNumber)
     if (match && parseInt(match[2]) <= 48) { return value.toNumber(); }
     return value;
@@ -173,8 +174,32 @@ function parseParam(param: string, allowIndexed?: boolean): ParamType {
     return (<ParamType>parent);
 }
 
+// @TODO: should this just be a combined Fragment?
+
+export type EventFragment = {
+    type: string
+    name: string,
+
+    anonymous: boolean,
+
+    inputs: Array<ParamType>,
+};
+
+export type FunctionFragment = {
+    type: string
+    name: string,
+
+    constant: boolean,
+
+    inputs: Array<ParamType>,
+    outputs: Array<ParamType>,
+
+    payable: boolean,
+    stateMutability: string,
+};
+
 // @TODO: Better return type
-function parseSignatureEvent(fragment: string): any {
+function parseSignatureEvent(fragment: string): EventFragment {
 
     var abi = {
         anonymous: false,
@@ -213,7 +238,7 @@ function parseSignatureEvent(fragment: string): any {
     return abi;
 }
 
-function parseSignatureFunction(fragment: string): any {
+function parseSignatureFunction(fragment: string): FunctionFragment {
     var abi = {
         constant: false,
         inputs: [],
@@ -276,7 +301,7 @@ function parseSignatureFunction(fragment: string): any {
 }
 
 
-export function parseSignature(fragment: string): any {
+export function parseSignature(fragment: string): EventFragment | FunctionFragment {
     if(typeof(fragment) === 'string') {
         // Make sure the "returns" is surrounded by a space and all whitespace is exactly one space
         fragment = fragment.replace(/\(/g, ' (').replace(/\)/g, ') ').replace(/\s+/g, ' ');
@@ -293,7 +318,7 @@ export function parseSignature(fragment: string): any {
         }
     }
 
-    throw new Error('unknown fragment');
+    throw new Error('unknown signature');
 }
 
 
@@ -908,10 +933,10 @@ function getParamCoder(coerceFunc: CoerceFunc, param: ParamType): Coder {
 export class AbiCoder {
     readonly coerceFunc: CoerceFunc;
     constructor(coerceFunc?: CoerceFunc) {
-        //if (!(this instanceof Coder)) { throw new Error('missing new'); }
+        errors.checkNew(this, AbiCoder);
+
         if (!coerceFunc) { coerceFunc = defaultCoerceFunc; }
-        // @TODO: readonly
-        this.coerceFunc = coerceFunc;
+        defineReadOnly(this, 'coerceFunc', coerceFunc);
     }
 
     encode(types: Array<string | ParamType>, values: Array<any>): string {
@@ -928,11 +953,16 @@ export class AbiCoder {
             // Convert types to type objects
             //   - "uint foo" => { type: "uint", name: "foo" }
             //   - "tuple(uint, uint)" => { type: "tuple", components: [ { type: "uint" }, { type: "uint" }, ] }
+
+            let typeObject: ParamType = null;
             if (typeof(type) === 'string') {
-                type = parseParam(type);
+                typeObject = parseParam(type);
+            } else {
+                typeObject = jsonCopy(type);
             }
 
-            coders.push(getParamCoder(this.coerceFunc, type));
+            coders.push(getParamCoder(this.coerceFunc, typeObject));
+
         }, this);
 
         return hexlify(new CoderTuple(this.coerceFunc, coders, '_').encode(values));
@@ -944,11 +974,14 @@ export class AbiCoder {
         types.forEach(function(type) {
 
             // See encode for details
+            let typeObject: ParamType = null;
             if (typeof(type) === 'string') {
-                type = parseParam(type);
+                typeObject = parseParam(type);
+            } else {
+                typeObject = jsonCopy(type);
             }
 
-            coders.push(getParamCoder(this.coerceFunc, type));
+            coders.push(getParamCoder(this.coerceFunc, typeObject));
         }, this);
 
         return new CoderTuple(this.coerceFunc, coders, '_').decode(arrayify(data), 0).value;

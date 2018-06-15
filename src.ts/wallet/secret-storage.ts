@@ -292,7 +292,7 @@ export function decrypt(json: string, password: any, progressCallback?: Progress
 }
 
 // @TOOD: Options
-export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: any, progressCallback?: ProgressCallback) {
+export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: any, progressCallback?: ProgressCallback): Promise<string> {
 
     // the options are optional, so adjust the call as needed
     if (typeof(options) === 'function' && !progressCallback) {
@@ -302,11 +302,13 @@ export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | 
     if (!options) { options = {}; }
 
     // Check the private key
+    let privateKeyBytes = null;
     if (privateKey instanceof SigningKey) {
-        privateKey = privateKey.privateKey;
+        privateKeyBytes = arrayify(privateKey.privateKey);
+    } else {
+        privateKeyBytes = arrayify(privateKey);
     }
-    privateKey = arrayify(privateKey);
-    if (privateKey.length !== 32) { throw new Error('invalid private key'); }
+    if (privateKeyBytes.length !== 32) { throw new Error('invalid private key'); }
 
     password = getPassword(password);
 
@@ -387,12 +389,12 @@ export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | 
                 var mnemonicKey = key.slice(32, 64);
 
                 // Get the address for this private key
-                var address = (new SigningKey(privateKey)).address;
+                var address = (new SigningKey(privateKeyBytes)).address;
 
                 // Encrypt the private key
                 var counter = new aes.Counter(iv);
                 var aesCtr = new aes.ModeOfOperation.ctr(derivedKey, counter);
-                var ciphertext = arrayify(aesCtr.encrypt(privateKey));
+                var ciphertext = arrayify(aesCtr.encrypt(privateKeyBytes));
 
                 // Compute the message authentication code, used to check the password
                 var mac = keccak256(concat([macPrefix, ciphertext]))

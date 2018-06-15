@@ -41,8 +41,7 @@ function parseParams(params: Array<ParamType>): { names: Array<any>, types: Arra
 
 export class Indexed {
     readonly hash: string;
-    constructor(value) {
-        defineReadOnly(this, 'indexed', true);
+    constructor(value: string) {
         defineReadOnly(this, 'hash', value);
     }
 }
@@ -325,7 +324,7 @@ function addMethod(method: any): void {
 }
 
 export class Interface {
-    readonly _abi: Array<any>;
+    readonly abi: Array<any>;
     readonly functions: Array<FunctionDescription>;
     readonly events: Array<EventDescription>;
     readonly deployFunction: DeployDescription;
@@ -354,15 +353,17 @@ export class Interface {
         defineReadOnly(this, 'events', { });
 
         // Convert any supported ABI format into a standard ABI format
-        this._abi = [];
+        let _abi = [];
         abi.forEach((fragment) => {
             if (typeof(fragment) === 'string') {
                 fragment = parseSignature(fragment);
             }
-            this._abi.push(fragment);
+            _abi.push(fragment);
         });
 
-        this._abi.forEach(addMethod, this);
+        defineFrozen(this, 'abi', _abi);
+
+        _abi.forEach(addMethod, this);
 
         // If there wasn't a constructor, create the default constructor
         if (!this.deployFunction) {
@@ -388,6 +389,7 @@ export class Interface {
         }
         return null;
     }
+
+    // @TODO:
+    //parseEvent(log: { }): Lo
 }
-
-

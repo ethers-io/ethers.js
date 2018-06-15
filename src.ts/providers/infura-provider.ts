@@ -36,7 +36,7 @@ export class InfuraProvider extends JsonRpcProvider {
         this.apiAccessToken = (apiAccessToken || null);
     }
 
-    _startPending() {
+    _startPending(): void {
         console.log('WARNING: INFURA does not support pending filters');
     }
 
@@ -49,7 +49,7 @@ export class InfuraProvider extends JsonRpcProvider {
         return null;
     }
 
-    listAccounts() {
+    listAccounts(): Promise<Array<string>> {
         return Promise.resolve([]);
     }
 }

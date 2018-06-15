@@ -1,7 +1,9 @@
-import { BigNumber } from '../utils/bignumber';
-import { Arrayish } from '../utils/convert';
 import { HDNode } from './hdnode';
+import { ProgressCallback } from './secret-storage';
 import { SigningKey } from './signing-key';
+import { BlockTag } from '../providers/provider';
+import { BigNumber, BigNumberish } from '../utils/bignumber';
+import { Arrayish } from '../utils/convert';
 interface Provider {
     chainId: number;
     getBalance(address: string, blockTag: number | string): Promise<BigNumber>;
@@ -43,19 +45,19 @@ export declare class Wallet {
     sign(transaction: TransactionRequest): string;
     static parseTransaction(rawTransaction: Arrayish): TransactionRequest;
     getAddress(): Promise<string>;
-    getBalance(blockTag: any): any;
-    getTransactionCount(blockTag: any): any;
-    estimateGas(transaction: TransactionRequest): any;
-    sendTransaction(transaction: any): Promise<any>;
-    send(addressOrName: any, amountWei: any, options: any): Promise<any>;
-    static hashMessage(message: any): string;
-    signMessage(message: any): string;
-    static verifyMessage(message: any, signature: any): string;
-    encrypt(password: any, options: any, progressCallback: any): Promise<{}>;
+    getBalance(blockTag: BlockTag): Promise<BigNumber>;
+    getTransactionCount(blockTag: BlockTag): Promise<number>;
+    estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
+    sendTransaction(transaction: any): Promise<TransactionResponse>;
+    send(addressOrName: string, amountWei: BigNumberish, options: any): Promise<TransactionResponse>;
+    static hashMessage(message: Arrayish | string): string;
+    signMessage(message: Arrayish | string): string;
+    static verifyMessage(message: Arrayish | string, signature: string): string;
+    encrypt(password: Arrayish | string, options: any, progressCallback: ProgressCallback): Promise<string>;
     static createRandom(options: any): Wallet;
     static isEncryptedWallet(json: string): boolean;
-    static fromEncryptedWallet(json: any, password: any, progressCallback: any): Promise<{}>;
+    static fromEncryptedWallet(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet>;
     static fromMnemonic(mnemonic: string, path?: string): Wallet;
-    static fromBrainWallet(username: Arrayish | string, password: Arrayish | string, progressCallback: any): Promise<{}>;
+    static fromBrainWallet(username: Arrayish | string, password: Arrayish | string, progressCallback: ProgressCallback): Promise<Wallet>;
 }
 export {};

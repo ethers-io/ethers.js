@@ -22,18 +22,18 @@ var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
 var convert_1 = require("./convert");
 var utf8_1 = require("./utf8");
+var properties_1 = require("./properties");
 var errors = __importStar(require("./errors"));
 var paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 var paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 var paramTypeArray = new RegExp(/^(.*)\[([0-9]*)\]$/);
-function defaultCoerceFunc(type, value) {
+exports.defaultCoerceFunc = function (type, value) {
     var match = type.match(paramTypeNumber);
     if (match && parseInt(match[2]) <= 48) {
         return value.toNumber();
     }
     return value;
-}
-exports.defaultCoerceFunc = defaultCoerceFunc;
+};
 ///////////////////////////////////
 // Parsing for Solidity Signatures
 var regexParen = new RegExp("^([^)(]*)\\((.*)\\)([^)(]*)$");
@@ -259,7 +259,7 @@ function parseSignature(fragment) {
             return parseSignatureFunction(fragment.trim());
         }
     }
-    throw new Error('unknown fragment');
+    throw new Error('unknown signature');
 }
 exports.parseSignature = parseSignature;
 var Coder = /** @class */ (function () {
@@ -837,12 +837,11 @@ function getParamCoder(coerceFunc, param) {
 }
 var AbiCoder = /** @class */ (function () {
     function AbiCoder(coerceFunc) {
-        //if (!(this instanceof Coder)) { throw new Error('missing new'); }
+        errors.checkNew(this, AbiCoder);
         if (!coerceFunc) {
-            coerceFunc = defaultCoerceFunc;
+            coerceFunc = exports.defaultCoerceFunc;
         }
-        // @TODO: readonly
-        this.coerceFunc = coerceFunc;
+        properties_1.defineReadOnly(this, 'coerceFunc', coerceFunc);
     }
     AbiCoder.prototype.encode = function (types, values) {
         if (types.length !== values.length) {
@@ -856,10 +855,14 @@ var AbiCoder = /** @class */ (function () {
             // Convert types to type objects
             //   - "uint foo" => { type: "uint", name: "foo" }
             //   - "tuple(uint, uint)" => { type: "tuple", components: [ { type: "uint" }, { type: "uint" }, ] }
+            var typeObject = null;
             if (typeof (type) === 'string') {
-                type = parseParam(type);
+                typeObject = parseParam(type);
             }
-            coders.push(getParamCoder(this.coerceFunc, type));
+            else {
+                typeObject = properties_1.jsonCopy(type);
+            }
+            coders.push(getParamCoder(this.coerceFunc, typeObject));
         }, this);
         return convert_1.hexlify(new CoderTuple(this.coerceFunc, coders, '_').encode(values));
     };
@@ -867,10 +870,14 @@ var AbiCoder = /** @class */ (function () {
         var coders = [];
         types.forEach(function (type) {
             // See encode for details
+            var typeObject = null;
             if (typeof (type) === 'string') {
-                type = parseParam(type);
+                typeObject = parseParam(type);
             }
-            coders.push(getParamCoder(this.coerceFunc, type));
+            else {
+                typeObject = properties_1.jsonCopy(type);
+            }
+            coders.push(getParamCoder(this.coerceFunc, typeObject));
         }, this);
         return new CoderTuple(this.coerceFunc, coders, '_').decode(convert_1.arrayify(data), 0).value;
     };

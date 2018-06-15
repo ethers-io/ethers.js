@@ -13,6 +13,7 @@ utils.defineProperty(Web3Signer, 'onchange', {
 */
 
 export type Callback = (error: any, response: any) => void;
+
 export type AsyncProvider = {
     isMetaMask: boolean;
     host?: string;
@@ -42,7 +43,7 @@ export class Web3Provider extends JsonRpcProvider {
         this._web3Provider = web3Provider;
     }
 
-    send(method, params) {
+    send(method: string, params: any): Promise<any> {
 
         // Metamask complains about eth_sign (and on some versions hangs)
         if (method == 'eth_sign' && this._web3Provider.isMetaMask) {

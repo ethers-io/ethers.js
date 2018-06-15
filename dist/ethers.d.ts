@@ -105,6 +105,15 @@ declare module "utils/utf8" {
     export function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm): Uint8Array;
     export function toUtf8String(bytes: Arrayish): string;
 }
+declare module "utils/properties" {
+    export function defineReadOnly(object: any, name: any, value: any): void;
+    export function defineFrozen(object: any, name: any, value: any): void;
+    export type DeferredSetter = (value: any) => void;
+    export function defineDeferredReadOnly(object: any, name: any, value: any): DeferredSetter;
+    export function resolveProperties(object: any): Promise<any>;
+    export function shallowCopy(object: any): any;
+    export function jsonCopy(object: any): any;
+}
 declare module "utils/abi-coder" {
     import { Arrayish } from "utils/convert";
     export type CoerceFunc = (type: string, value: any) => any;
@@ -114,8 +123,23 @@ declare module "utils/abi-coder" {
         indexed?: boolean;
         components?: Array<any>;
     };
-    export function defaultCoerceFunc(type: string, value: any): any;
-    export function parseSignature(fragment: string): any;
+    export const defaultCoerceFunc: CoerceFunc;
+    export type EventFragment = {
+        type: string;
+        name: string;
+        anonymous: boolean;
+        inputs: Array<ParamType>;
+    };
+    export type FunctionFragment = {
+        type: string;
+        name: string;
+        constant: boolean;
+        inputs: Array<ParamType>;
+        outputs: Array<ParamType>;
+        payable: boolean;
+        stateMutability: string;
+    };
+    export function parseSignature(fragment: string): EventFragment | FunctionFragment;
     export class AbiCoder {
         readonly coerceFunc: CoerceFunc;
         constructor(coerceFunc?: CoerceFunc);
@@ -124,19 +148,12 @@ declare module "utils/abi-coder" {
     }
     export const defaultAbiCoder: AbiCoder;
 }
-declare module "utils/properties" {
-    export function defineReadOnly(object: any, name: any, value: any): void;
-    export function defineFrozen(object: any, name: any, value: any): void;
-    export type DeferredSetter = (value: any) => void;
-    export function defineDeferredReadOnly(object: any, name: any, value: any): DeferredSetter;
-    export function resolveProperties(object: any): Promise<any>;
-}
 declare module "contracts/interface" {
     import { ParamType } from "utils/abi-coder";
     import { BigNumber, BigNumberish } from "utils/bignumber";
     export class Indexed {
         readonly hash: string;
-        constructor(value: any);
+        constructor(value: string);
     }
     export class Description {
         readonly type: string;
@@ -171,7 +188,7 @@ declare module "contracts/interface" {
         decode(data: string, topics?: Array<string>): any;
     }
     export class Interface {
-        readonly _abi: Array<any>;
+        readonly abi: Array<any>;
         readonly functions: Array<FunctionDescription>;
         readonly events: Array<EventDescription>;
         readonly deployFunction: DeployDescription;
@@ -274,6 +291,7 @@ declare module "providers/provider" {
     export type TransactionResponse = {
         blockNumber?: number;
         blockHash?: string;
+        timestamp?: number;
         hash: string;
         to?: string;
         from?: string;
@@ -318,7 +336,7 @@ declare module "providers/provider" {
         transactionHash?: string;
         logIndex?: number;
     };
-    export function checkTransactionResponse(transaction: any): any;
+    export function checkTransactionResponse(transaction: any): TransactionResponse;
     export class Provider {
         private _network;
         protected ready: Promise<Network>;
@@ -335,7 +353,7 @@ declare module "providers/provider" {
          */
         constructor(network: string | Network);
         private _doPoll;
-        resetEventsBlock(blockNumber: any): void;
+        resetEventsBlock(blockNumber: number): void;
         readonly network: Network;
         getNetwork(): Promise<Network>;
         readonly blockNumber: number;
@@ -356,8 +374,8 @@ declare module "providers/provider" {
         getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
         getLogs(filter: Filter): Promise<Array<Log>>;
         getEtherPrice(): Promise<number>;
-        _resolveNames(object: any, keys: any): Promise<{}>;
-        _getResolver(name: any): Promise<string>;
+        _resolveNames(object: any, keys: Array<string>): Promise<any>;
+        _getResolver(name: string): Promise<string>;
         resolveName(name: string | Promise<string>): Promise<string>;
         lookupAddress(address: string | Promise<string>): Promise<string>;
         doPoll(): void;
@@ -474,10 +492,10 @@ declare module "providers/json-rpc-provider" {
         readonly connection: ConnectionInfo;
         private _pendingFilter;
         constructor(url?: ConnectionInfo | string, network?: Network | string);
-        getSigner(address: any): JsonRpcSigner;
-        listAccounts(): Promise<any>;
-        send(method: any, params: any): Promise<any>;
-        perform(method: any, params: any): Promise<any>;
+        getSigner(address: string): JsonRpcSigner;
+        listAccounts(): Promise<Array<string>>;
+        send(method: string, params: any): Promise<any>;
+        perform(method: string, params: any): Promise<any>;
         _startPending(): void;
         _stopPending(): void;
     }
@@ -490,7 +508,7 @@ declare module "providers/infura-provider" {
         constructor(network?: Network | string, apiAccessToken?: string);
         _startPending(): void;
         getSigner(address?: string): JsonRpcSigner;
-        listAccounts(): Promise<any[]>;
+        listAccounts(): Promise<Array<string>>;
     }
 }
 declare module "providers/web3-provider" {
@@ -506,7 +524,7 @@ declare module "providers/web3-provider" {
     export class Web3Provider extends JsonRpcProvider {
         readonly _web3Provider: AsyncProvider;
         constructor(web3Provider: AsyncProvider, network?: Network | string);
-        send(method: any, params: any): Promise<{}>;
+        send(method: string, params: any): Promise<any>;
     }
 }
 declare module "providers/index" {
@@ -524,8 +542,9 @@ declare module "utils/id" {
     export function id(text: string): string;
 }
 declare module "utils/sha2" {
-    export function sha256(data: any): string;
-    export function sha512(data: any): string;
+    import { Arrayish } from "utils/convert";
+    export function sha256(data: Arrayish): string;
+    export function sha512(data: Arrayish): string;
 }
 declare module "utils/solidity" {
     export function pack(types: Array<string>, values: Array<any>): string;
@@ -533,13 +552,14 @@ declare module "utils/solidity" {
     export function sha256(types: Array<string>, values: Array<any>): string;
 }
 declare module "utils/random-bytes" {
-    export function randomBytes(length: any): Uint8Array;
+    export function randomBytes(length: number): Uint8Array;
 }
 declare module "utils/units" {
-    export function formatUnits(value: any, unitType: string | number, options?: any): string;
-    export function parseUnits(value: any, unitType: any): any;
-    export function formatEther(wei: any, options: any): string;
-    export function parseEther(ether: any): any;
+    import { BigNumber, BigNumberish } from "utils/bignumber";
+    export function formatUnits(value: BigNumberish, unitType?: string | number, options?: any): string;
+    export function parseUnits(value: string, unitType?: string | number): BigNumber;
+    export function formatEther(wei: BigNumberish, options: any): string;
+    export function parseEther(ether: string): BigNumber;
 }
 declare module "utils/index" {
     import { getAddress, getContractAddress } from "utils/address";
@@ -593,41 +613,27 @@ declare module "utils/index" {
     export default _default;
 }
 declare module "wallet/secp256k1" {
-    export interface BN {
-        toString(radix: number): string;
-        encode(encoding: string, compact: boolean): Uint8Array;
-        toArray(endian: string, width: number): Uint8Array;
-    }
-    export interface Signature {
-        r: BN;
-        s: BN;
+    import { Arrayish } from "utils/convert";
+    export type Signature = {
+        r: string;
+        s: string;
         recoveryParam: number;
+    };
+    export class KeyPair {
+        readonly privateKey: string;
+        readonly publicKey: string;
+        readonly compressedPublicKey: string;
+        readonly publicKeyBytes: Uint8Array;
+        constructor(privateKey: Arrayish);
+        sign(digest: Arrayish): Signature;
     }
-    export interface KeyPair {
-        sign(message: Uint8Array, options: {
-            canonical?: boolean;
-        }): Signature;
-        getPublic(compressed: boolean, encoding?: string): string;
-        getPublic(): BN;
-        getPrivate(encoding?: string): string;
-        encode(encoding: string, compressed: boolean): string;
-        priv: BN;
-    }
-    export interface EC {
-        constructor(curve: string): any;
-        n: BN;
-        keyFromPublic(publicKey: string | Uint8Array): KeyPair;
-        keyFromPrivate(privateKey: string | Uint8Array): KeyPair;
-        recoverPubKey(data: Uint8Array, signature: {
-            r: Uint8Array;
-            s: Uint8Array;
-        }, recoveryParam: number): KeyPair;
-    }
-    export const curve: EC;
+    export function recoverPublicKey(digest: Arrayish, signature: Signature): string;
+    export function computePublicKey(key: Arrayish, compressed?: boolean): string;
+    export const N: string;
 }
 declare module "wallet/words" {
-    const words = "AbandonAbilityAbleAboutAboveAbsentAbsorbAbstractAbsurdAbuseAccessAccidentAccountAccuseAchieveAcidAcousticAcquireAcrossActActionActorActressActualAdaptAddAddictAddressAdjustAdmitAdultAdvanceAdviceAerobicAffairAffordAfraidAgainAgeAgentAgreeAheadAimAirAirportAisleAlarmAlbumAlcoholAlertAlienAllAlleyAllowAlmostAloneAlphaAlreadyAlsoAlterAlwaysAmateurAmazingAmongAmountAmusedAnalystAnchorAncientAngerAngleAngryAnimalAnkleAnnounceAnnualAnotherAnswerAntennaAntiqueAnxietyAnyApartApologyAppearAppleApproveAprilArchArcticAreaArenaArgueArmArmedArmorArmyAroundArrangeArrestArriveArrowArtArtefactArtistArtworkAskAspectAssaultAssetAssistAssumeAsthmaAthleteAtomAttackAttendAttitudeAttractAuctionAuditAugustAuntAuthorAutoAutumnAverageAvocadoAvoidAwakeAwareAwayAwesomeAwfulAwkwardAxisBabyBachelorBaconBadgeBagBalanceBalconyBallBambooBananaBannerBarBarelyBargainBarrelBaseBasicBasketBattleBeachBeanBeautyBecauseBecomeBeefBeforeBeginBehaveBehindBelieveBelowBeltBenchBenefitBestBetrayBetterBetweenBeyondBicycleBidBikeBindBiologyBirdBirthBitterBlackBladeBlameBlanketBlastBleakBlessBlindBloodBlossomBlouseBlueBlurBlushBoardBoatBodyBoilBombBoneBonusBookBoostBorderBoringBorrowBossBottomBounceBoxBoyBracketBrainBrandBrassBraveBreadBreezeBrickBridgeBriefBrightBringBriskBroccoliBrokenBronzeBroomBrotherBrownBrushBubbleBuddyBudgetBuffaloBuildBulbBulkBulletBundleBunkerBurdenBurgerBurstBusBusinessBusyButterBuyerBuzzCabbageCabinCableCactusCageCakeCallCalmCameraCampCanCanalCancelCandyCannonCanoeCanvasCanyonCapableCapitalCaptainCarCarbonCardCargoCarpetCarryCartCaseCashCasinoCastleCasualCatCatalogCatchCategoryCattleCaughtCauseCautionCaveCeilingCeleryCementCensusCenturyCerealCertainChairChalkChampionChangeChaosChapterChargeChaseChatCheapCheckCheeseChefCherryChestChickenChiefChildChimneyChoiceChooseChronicChuckleChunkChurnCigarCinnamonCircleCitizenCityCivilClaimClapClarifyClawClayCleanClerkCleverClickClientCliffClimbClinicClipClockClogCloseClothCloudClownClubClumpClusterClutchCoachCoastCoconutCodeCoffeeCoilCoinCollectColorColumnCombineComeComfortComicCommonCompanyConcertConductConfirmCongressConnectConsiderControlConvinceCookCoolCopperCopyCoralCoreCornCorrectCostCottonCouchCountryCoupleCourseCousinCoverCoyoteCrackCradleCraftCramCraneCrashCraterCrawlCrazyCreamCreditCreekCrewCricketCrimeCrispCriticCropCrossCrouchCrowdCrucialCruelCruiseCrumbleCrunchCrushCryCrystalCubeCultureCupCupboardCuriousCurrentCurtainCurveCushionCustomCuteCycleDadDamageDampDanceDangerDaringDashDaughterDawnDayDealDebateDebrisDecadeDecemberDecideDeclineDecorateDecreaseDeerDefenseDefineDefyDegreeDelayDeliverDemandDemiseDenialDentistDenyDepartDependDepositDepthDeputyDeriveDescribeDesertDesignDeskDespairDestroyDetailDetectDevelopDeviceDevoteDiagramDialDiamondDiaryDiceDieselDietDifferDigitalDignityDilemmaDinnerDinosaurDirectDirtDisagreeDiscoverDiseaseDishDismissDisorderDisplayDistanceDivertDivideDivorceDizzyDoctorDocumentDogDollDolphinDomainDonateDonkeyDonorDoorDoseDoubleDoveDraftDragonDramaDrasticDrawDreamDressDriftDrillDrinkDripDriveDropDrumDryDuckDumbDuneDuringDustDutchDutyDwarfDynamicEagerEagleEarlyEarnEarthEasilyEastEasyEchoEcologyEconomyEdgeEditEducateEffortEggEightEitherElbowElderElectricElegantElementElephantElevatorEliteElseEmbarkEmbodyEmbraceEmergeEmotionEmployEmpowerEmptyEnableEnactEndEndlessEndorseEnemyEnergyEnforceEngageEngineEnhanceEnjoyEnlistEnoughEnrichEnrollEnsureEnterEntireEntryEnvelopeEpisodeEqualEquipEraEraseErodeErosionErrorEruptEscapeEssayEssenceEstateEternalEthicsEvidenceEvilEvokeEvolveExactExampleExcessExchangeExciteExcludeExcuseExecuteExerciseExhaustExhibitExileExistExitExoticExpandExpectExpireExplainExposeExpressExtendExtraEyeEyebrowFabricFaceFacultyFadeFaintFaithFallFalseFameFamilyFamousFanFancyFantasyFarmFashionFatFatalFatherFatigueFaultFavoriteFeatureFebruaryFederalFeeFeedFeelFemaleFenceFestivalFetchFeverFewFiberFictionFieldFigureFileFilmFilterFinalFindFineFingerFinishFireFirmFirstFiscalFishFitFitnessFixFlagFlameFlashFlatFlavorFleeFlightFlipFloatFlockFloorFlowerFluidFlushFlyFoamFocusFogFoilFoldFollowFoodFootForceForestForgetForkFortuneForumForwardFossilFosterFoundFoxFragileFrameFrequentFreshFriendFringeFrogFrontFrostFrownFrozenFruitFuelFunFunnyFurnaceFuryFutureGadgetGainGalaxyGalleryGameGapGarageGarbageGardenGarlicGarmentGasGaspGateGatherGaugeGazeGeneralGeniusGenreGentleGenuineGestureGhostGiantGiftGiggleGingerGiraffeGirlGiveGladGlanceGlareGlassGlideGlimpseGlobeGloomGloryGloveGlowGlueGoatGoddessGoldGoodGooseGorillaGospelGossipGovernGownGrabGraceGrainGrantGrapeGrassGravityGreatGreenGridGriefGritGroceryGroupGrowGruntGuardGuessGuideGuiltGuitarGunGymHabitHairHalfHammerHamsterHandHappyHarborHardHarshHarvestHatHaveHawkHazardHeadHealthHeartHeavyHedgehogHeightHelloHelmetHelpHenHeroHiddenHighHillHintHipHireHistoryHobbyHockeyHoldHoleHolidayHollowHomeHoneyHoodHopeHornHorrorHorseHospitalHostHotelHourHoverHubHugeHumanHumbleHumorHundredHungryHuntHurdleHurryHurtHusbandHybridIceIconIdeaIdentifyIdleIgnoreIllIllegalIllnessImageImitateImmenseImmuneImpactImposeImproveImpulseInchIncludeIncomeIncreaseIndexIndicateIndoorIndustryInfantInflictInformInhaleInheritInitialInjectInjuryInmateInnerInnocentInputInquiryInsaneInsectInsideInspireInstallIntactInterestIntoInvestInviteInvolveIronIslandIsolateIssueItemIvoryJacketJaguarJarJazzJealousJeansJellyJewelJobJoinJokeJourneyJoyJudgeJuiceJumpJungleJuniorJunkJustKangarooKeenKeepKetchupKeyKickKidKidneyKindKingdomKissKitKitchenKiteKittenKiwiKneeKnifeKnockKnowLabLabelLaborLadderLadyLakeLampLanguageLaptopLargeLaterLatinLaughLaundryLavaLawLawnLawsuitLayerLazyLeaderLeafLearnLeaveLectureLeftLegLegalLegendLeisureLemonLendLengthLensLeopardLessonLetterLevelLiarLibertyLibraryLicenseLifeLiftLightLikeLimbLimitLinkLionLiquidListLittleLiveLizardLoadLoanLobsterLocalLockLogicLonelyLongLoopLotteryLoudLoungeLoveLoyalLuckyLuggageLumberLunarLunchLuxuryLyricsMachineMadMagicMagnetMaidMailMainMajorMakeMammalManManageMandateMangoMansionManualMapleMarbleMarchMarginMarineMarketMarriageMaskMassMasterMatchMaterialMathMatrixMatterMaximumMazeMeadowMeanMeasureMeatMechanicMedalMediaMelodyMeltMemberMemoryMentionMenuMercyMergeMeritMerryMeshMessageMetalMethodMiddleMidnightMilkMillionMimicMindMinimumMinorMinuteMiracleMirrorMiseryMissMistakeMixMixedMixtureMobileModelModifyMomMomentMonitorMonkeyMonsterMonthMoonMoralMoreMorningMosquitoMotherMotionMotorMountainMouseMoveMovieMuchMuffinMuleMultiplyMuscleMuseumMushroomMusicMustMutualMyselfMysteryMythNaiveNameNapkinNarrowNastyNationNatureNearNeckNeedNegativeNeglectNeitherNephewNerveNestNetNetworkNeutralNeverNewsNextNiceNightNobleNoiseNomineeNoodleNormalNorthNoseNotableNoteNothingNoticeNovelNowNuclearNumberNurseNutOakObeyObjectObligeObscureObserveObtainObviousOccurOceanOctoberOdorOffOfferOfficeOftenOilOkayOldOliveOlympicOmitOnceOneOnionOnlineOnlyOpenOperaOpinionOpposeOptionOrangeOrbitOrchardOrderOrdinaryOrganOrientOriginalOrphanOstrichOtherOutdoorOuterOutputOutsideOvalOvenOverOwnOwnerOxygenOysterOzonePactPaddlePagePairPalacePalmPandaPanelPanicPantherPaperParadeParentParkParrotPartyPassPatchPathPatientPatrolPatternPausePavePaymentPeacePeanutPearPeasantPelicanPenPenaltyPencilPeoplePepperPerfectPermitPersonPetPhonePhotoPhrasePhysicalPianoPicnicPicturePiecePigPigeonPillPilotPinkPioneerPipePistolPitchPizzaPlacePlanetPlasticPlatePlayPleasePledgePluckPlugPlungePoemPoetPointPolarPolePolicePondPonyPoolPopularPortionPositionPossiblePostPotatoPotteryPovertyPowderPowerPracticePraisePredictPreferPreparePresentPrettyPreventPricePridePrimaryPrintPriorityPrisonPrivatePrizeProblemProcessProduceProfitProgramProjectPromoteProofPropertyProsperProtectProudProvidePublicPuddingPullPulpPulsePumpkinPunchPupilPuppyPurchasePurityPurposePursePushPutPuzzlePyramidQualityQuantumQuarterQuestionQuickQuitQuizQuoteRabbitRaccoonRaceRackRadarRadioRailRainRaiseRallyRampRanchRandomRangeRapidRareRateRatherRavenRawRazorReadyRealReasonRebelRebuildRecallReceiveRecipeRecordRecycleReduceReflectReformRefuseRegionRegretRegularRejectRelaxReleaseReliefRelyRemainRememberRemindRemoveRenderRenewRentReopenRepairRepeatReplaceReportRequireRescueResembleResistResourceResponseResultRetireRetreatReturnReunionRevealReviewRewardRhythmRibRibbonRiceRichRideRidgeRifleRightRigidRingRiotRippleRiskRitualRivalRiverRoadRoastRobotRobustRocketRomanceRoofRookieRoomRoseRotateRoughRoundRouteRoyalRubberRudeRugRuleRunRunwayRuralSadSaddleSadnessSafeSailSaladSalmonSalonSaltSaluteSameSampleSandSatisfySatoshiSauceSausageSaveSayScaleScanScareScatterSceneSchemeSchoolScienceScissorsScorpionScoutScrapScreenScriptScrubSeaSearchSeasonSeatSecondSecretSectionSecuritySeedSeekSegmentSelectSellSeminarSeniorSenseSentenceSeriesServiceSessionSettleSetupSevenShadowShaftShallowShareShedShellSheriffShieldShiftShineShipShiverShockShoeShootShopShortShoulderShoveShrimpShrugShuffleShySiblingSickSideSiegeSightSignSilentSilkSillySilverSimilarSimpleSinceSingSirenSisterSituateSixSizeSkateSketchSkiSkillSkinSkirtSkullSlabSlamSleepSlenderSliceSlideSlightSlimSloganSlotSlowSlushSmallSmartSmileSmokeSmoothSnackSnakeSnapSniffSnowSoapSoccerSocialSockSodaSoftSolarSoldierSolidSolutionSolveSomeoneSongSoonSorrySortSoulSoundSoupSourceSouthSpaceSpareSpatialSpawnSpeakSpecialSpeedSpellSpendSphereSpiceSpiderSpikeSpinSpiritSplitSpoilSponsorSpoonSportSpotSpraySpreadSpringSpySquareSqueezeSquirrelStableStadiumStaffStageStairsStampStandStartStateStaySteakSteelStemStepStereoStickStillStingStockStomachStoneStoolStoryStoveStrategyStreetStrikeStrongStruggleStudentStuffStumbleStyleSubjectSubmitSubwaySuccessSuchSuddenSufferSugarSuggestSuitSummerSunSunnySunsetSuperSupplySupremeSureSurfaceSurgeSurpriseSurroundSurveySuspectSustainSwallowSwampSwapSwarmSwearSweetSwiftSwimSwingSwitchSwordSymbolSymptomSyrupSystemTableTackleTagTailTalentTalkTankTapeTargetTaskTasteTattooTaxiTeachTeamTellTenTenantTennisTentTermTestTextThankThatThemeThenTheoryThereTheyThingThisThoughtThreeThriveThrowThumbThunderTicketTideTigerTiltTimberTimeTinyTipTiredTissueTitleToastTobaccoTodayToddlerToeTogetherToiletTokenTomatoTomorrowToneTongueTonightToolToothTopTopicToppleTorchTornadoTortoiseTossTotalTouristTowardTowerTownToyTrackTradeTrafficTragicTrainTransferTrapTrashTravelTrayTreatTreeTrendTrialTribeTrickTriggerTrimTripTrophyTroubleTruckTrueTrulyTrumpetTrustTruthTryTubeTuitionTumbleTunaTunnelTurkeyTurnTurtleTwelveTwentyTwiceTwinTwistTwoTypeTypicalUglyUmbrellaUnableUnawareUncleUncoverUnderUndoUnfairUnfoldUnhappyUniformUniqueUnitUniverseUnknownUnlockUntilUnusualUnveilUpdateUpgradeUpholdUponUpperUpsetUrbanUrgeUsageUseUsedUsefulUselessUsualUtilityVacantVacuumVagueValidValleyValveVanVanishVaporVariousVastVaultVehicleVelvetVendorVentureVenueVerbVerifyVersionVeryVesselVeteranViableVibrantViciousVictoryVideoViewVillageVintageViolinVirtualVirusVisaVisitVisualVitalVividVocalVoiceVoidVolcanoVolumeVoteVoyageWageWagonWaitWalkWallWalnutWantWarfareWarmWarriorWashWaspWasteWaterWaveWayWealthWeaponWearWeaselWeatherWebWeddingWeekendWeirdWelcomeWestWetWhaleWhatWheatWheelWhenWhereWhipWhisperWideWidthWifeWildWillWinWindowWineWingWinkWinnerWinterWireWisdomWiseWishWitnessWolfWomanWonderWoodWoolWordWorkWorldWorryWorthWrapWreckWrestleWristWriteWrongYardYearYellowYouYoungYouthZebraZeroZoneZoo";
-    export default words;
+    export function getWord(index: number): string;
+    export function getWordIndex(word: string): number;
 }
 declare module "utils/hmac" {
     import { Arrayish } from "utils/convert";
@@ -652,7 +658,8 @@ declare module "utils/pbkdf2" {
     export function pbkdf2(password: Arrayish, salt: Arrayish, iterations: number, keylen: number, createHmac: CreateHmacFunc): Uint8Array;
 }
 declare module "wallet/hdnode" {
-    import * as secp256k1 from "wallet/secp256k1";
+    import { KeyPair } from "wallet/secp256k1";
+    import { Arrayish } from "utils/convert";
     export class HDNode {
         private readonly keyPair;
         readonly privateKey: string;
@@ -662,18 +669,26 @@ declare module "wallet/hdnode" {
         readonly chainCode: string;
         readonly index: number;
         readonly depth: number;
-        constructor(keyPair: secp256k1.KeyPair, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string);
+        constructor(keyPair: KeyPair, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string);
         private _derive;
         derivePath(path: string): HDNode;
     }
     export function fromMnemonic(mnemonic: string): HDNode;
-    export function fromSeed(seed: any): HDNode;
+    export function fromSeed(seed: Arrayish): HDNode;
     export function mnemonicToSeed(mnemonic: string, password?: string): string;
     export function mnemonicToEntropy(mnemonic: string): string;
-    export function entropyToMnemonic(entropy: any): string;
+    export function entropyToMnemonic(entropy: Arrayish): string;
     export function isValidMnemonic(mnemonic: string): boolean;
 }
 declare module "wallet/signing-key" {
+    /**
+     *  SigningKey
+     *
+     *
+     */
+    import { Signature } from "wallet/secp256k1";
+    import { Arrayish } from "utils/convert";
+    import { HDNode } from "wallet/hdnode";
     export class SigningKey {
         readonly privateKey: string;
         readonly publicKey: string;
@@ -681,16 +696,11 @@ declare module "wallet/signing-key" {
         readonly mnemonic: string;
         readonly path: string;
         private readonly keyPair;
-        constructor(privateKey: any);
-        signDigest(digest: any): {
-            recoveryParam: number;
-            r: string;
-            s: string;
-        };
-        static recover(digest: any, r: any, s: any, recoveryParam: any): string;
-        static getPublicKey(value: any, compressed: any): string;
-        static publicKeyToAddress(publicKey: any): string;
+        constructor(privateKey: Arrayish | HDNode);
+        signDigest(digest: Arrayish): Signature;
     }
+    export function recoverAddress(digest: Arrayish, signature: Signature): string;
+    export function computeAddress(key: string): string;
 }
 declare module "wallet/secret-storage" {
     import { Arrayish } from "utils/convert";
@@ -702,13 +712,15 @@ declare module "wallet/secret-storage" {
     export function isValidWallet(json: string): boolean;
     export function decryptCrowdsale(json: string, password: Arrayish | string): SigningKey;
     export function decrypt(json: string, password: any, progressCallback?: ProgressCallback): Promise<SigningKey>;
-    export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: any, progressCallback?: ProgressCallback): Promise<{}>;
+    export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: any, progressCallback?: ProgressCallback): Promise<string>;
 }
 declare module "wallet/wallet" {
-    import { BigNumber } from "utils/bignumber";
-    import { Arrayish } from "utils/convert";
     import { HDNode } from "wallet/hdnode";
+    import { ProgressCallback } from "wallet/secret-storage";
     import { SigningKey } from "wallet/signing-key";
+    import { BlockTag } from "providers/provider";
+    import { BigNumber, BigNumberish } from "utils/bignumber";
+    import { Arrayish } from "utils/convert";
     interface Provider {
         chainId: number;
         getBalance(address: string, blockTag: number | string): Promise<BigNumber>;
@@ -750,20 +762,20 @@ declare module "wallet/wallet" {
         sign(transaction: TransactionRequest): string;
         static parseTransaction(rawTransaction: Arrayish): TransactionRequest;
         getAddress(): Promise<string>;
-        getBalance(blockTag: any): any;
-        getTransactionCount(blockTag: any): any;
-        estimateGas(transaction: TransactionRequest): any;
-        sendTransaction(transaction: any): Promise<any>;
-        send(addressOrName: any, amountWei: any, options: any): Promise<any>;
-        static hashMessage(message: any): string;
-        signMessage(message: any): string;
-        static verifyMessage(message: any, signature: any): string;
-        encrypt(password: any, options: any, progressCallback: any): Promise<{}>;
+        getBalance(blockTag: BlockTag): Promise<BigNumber>;
+        getTransactionCount(blockTag: BlockTag): Promise<number>;
+        estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
+        sendTransaction(transaction: any): Promise<TransactionResponse>;
+        send(addressOrName: string, amountWei: BigNumberish, options: any): Promise<TransactionResponse>;
+        static hashMessage(message: Arrayish | string): string;
+        signMessage(message: Arrayish | string): string;
+        static verifyMessage(message: Arrayish | string, signature: string): string;
+        encrypt(password: Arrayish | string, options: any, progressCallback: ProgressCallback): Promise<string>;
         static createRandom(options: any): Wallet;
         static isEncryptedWallet(json: string): boolean;
-        static fromEncryptedWallet(json: any, password: any, progressCallback: any): Promise<{}>;
+        static fromEncryptedWallet(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet>;
         static fromMnemonic(mnemonic: string, path?: string): Wallet;
-        static fromBrainWallet(username: Arrayish | string, password: Arrayish | string, progressCallback: any): Promise<{}>;
+        static fromBrainWallet(username: Arrayish | string, password: Arrayish | string, progressCallback: ProgressCallback): Promise<Wallet>;
     }
 }
 declare module "wallet/index" {
@@ -776,9 +788,10 @@ declare module "index" {
     import { Contract, Interface } from "contracts/index";
     import * as providers from "providers/index";
     import * as errors from "utils/errors";
+    import { networks } from "providers/networks";
     import utils from "utils/index";
     import { HDNode, SigningKey, Wallet } from "wallet/index";
-    export { Wallet, HDNode, SigningKey, Contract, Interface, providers, errors, utils, };
+    export { Wallet, HDNode, SigningKey, Contract, Interface, networks, providers, errors, utils, };
 }
 declare module "providers/ipc-provider" {
     import { JsonRpcProvider } from "providers/json-rpc-provider";
@@ -786,7 +799,7 @@ declare module "providers/ipc-provider" {
     export class IpcProvider extends JsonRpcProvider {
         readonly path: string;
         constructor(path: string, network?: Network | string);
-        send(method: any, params: any): Promise<{}>;
+        send(method: string, params: any): Promise<any>;
     }
 }
 //# sourceMappingURL=ethers.d.ts.map

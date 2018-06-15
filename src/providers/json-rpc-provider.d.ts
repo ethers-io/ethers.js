@@ -20,10 +20,10 @@ export declare class JsonRpcProvider extends Provider {
     readonly connection: ConnectionInfo;
     private _pendingFilter;
     constructor(url?: ConnectionInfo | string, network?: Network | string);
-    getSigner(address: any): JsonRpcSigner;
-    listAccounts(): Promise<any>;
-    send(method: any, params: any): Promise<any>;
-    perform(method: any, params: any): Promise<any>;
+    getSigner(address: string): JsonRpcSigner;
+    listAccounts(): Promise<Array<string>>;
+    send(method: string, params: any): Promise<any>;
+    perform(method: string, params: any): Promise<any>;
     _startPending(): void;
     _stopPending(): void;
 }

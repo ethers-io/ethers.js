@@ -56,9 +56,7 @@ function _isBigNumber(value) {
 }
 var BigNumber = /** @class */ (function () {
     function BigNumber(value) {
-        if (!(this instanceof BigNumber)) {
-            throw new Error('missing new');
-        }
+        errors.checkNew(this, BigNumber);
         if (typeof (value) === 'string') {
             if (convert_1.isHexString(value)) {
                 if (value == '0x') {

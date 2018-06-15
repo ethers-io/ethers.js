@@ -28,6 +28,7 @@ export declare type TransactionRequest = {
 export declare type TransactionResponse = {
     blockNumber?: number;
     blockHash?: string;
+    timestamp?: number;
     hash: string;
     to?: string;
     from?: string;
@@ -72,7 +73,7 @@ export declare type Log = {
     transactionHash?: string;
     logIndex?: number;
 };
-export declare function checkTransactionResponse(transaction: any): any;
+export declare function checkTransactionResponse(transaction: any): TransactionResponse;
 export declare class Provider {
     private _network;
     protected ready: Promise<Network>;
@@ -89,7 +90,7 @@ export declare class Provider {
      */
     constructor(network: string | Network);
     private _doPoll;
-    resetEventsBlock(blockNumber: any): void;
+    resetEventsBlock(blockNumber: number): void;
     readonly network: Network;
     getNetwork(): Promise<Network>;
     readonly blockNumber: number;
@@ -110,8 +111,8 @@ export declare class Provider {
     getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
     getLogs(filter: Filter): Promise<Array<Log>>;
     getEtherPrice(): Promise<number>;
-    _resolveNames(object: any, keys: any): Promise<{}>;
-    _getResolver(name: any): Promise<string>;
+    _resolveNames(object: any, keys: Array<string>): Promise<any>;
+    _getResolver(name: string): Promise<string>;
     resolveName(name: string | Promise<string>): Promise<string>;
     lookupAddress(address: string | Promise<string>): Promise<string>;
     doPoll(): void;

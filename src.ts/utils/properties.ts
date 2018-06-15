@@ -51,3 +51,13 @@ export function resolveProperties(object: any) {
         return object;
     });
 }
+
+export function shallowCopy(object: any): any {
+    let result = {};
+    for (var key in object) { result[key] = object[key]; }
+    return result;
+}
+
+export function jsonCopy(object: any): any {
+    return JSON.parse(JSON.stringify(object));
+}

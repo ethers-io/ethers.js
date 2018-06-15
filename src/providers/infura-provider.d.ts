@@ -5,5 +5,5 @@ export declare class InfuraProvider extends JsonRpcProvider {
     constructor(network?: Network | string, apiAccessToken?: string);
     _startPending(): void;
     getSigner(address?: string): JsonRpcSigner;
-    listAccounts(): Promise<any[]>;
+    listAccounts(): Promise<Array<string>>;
 }

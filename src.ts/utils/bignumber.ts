@@ -82,7 +82,7 @@ export type BigNumberish = BigNumber | string | number | Arrayish;
 export class BigNumber {
     readonly _bn: _BN.BN;
     constructor(value: BigNumberish) {
-        if (!(this instanceof BigNumber)) { throw new Error('missing new'); }
+        errors.checkNew(this, BigNumber);
 
         if (typeof(value) === 'string') {
             if (isHexString(value)) {

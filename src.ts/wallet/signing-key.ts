@@ -6,14 +6,15 @@
  *
  */
 
-import * as secp256k1 from './secp256k1';
+import { computePublicKey, KeyPair, recoverPublicKey, Signature } from './secp256k1';
 
 import { getAddress } from '../utils/address';
-import { arrayify, hexlify } from '../utils/convert';
+import { arrayify, Arrayish, hexlify } from '../utils/convert';
+import { HDNode } from './hdnode';
 import { keccak256 } from '../utils/keccak256';
+import { defineReadOnly } from '../utils/properties';
 
 import errors = require('../utils/errors');
-
 
 export class SigningKey {
 
@@ -24,20 +25,23 @@ export class SigningKey {
     readonly mnemonic: string;
     readonly path: string;
 
-    private readonly keyPair: secp256k1.KeyPair;
+    private readonly keyPair: KeyPair;
 
-    constructor(privateKey: any) {
+    constructor(privateKey: Arrayish | HDNode) {
         errors.checkNew(this, SigningKey);
 
-        if (privateKey.privateKey) {
-            this.mnemonic = privateKey.mnemonic;
-            this.path = privateKey.path;
-            privateKey = privateKey.privateKey;
+        let privateKeyBytes = null;
+
+        if (privateKey instanceof HDNode) {
+            defineReadOnly(this, 'mnemonic', privateKey.mnemonic);
+            defineReadOnly(this, 'path', privateKey.path);
+            privateKeyBytes = arrayify(privateKey.privateKey);
+        } else {
+            privateKeyBytes = arrayify(privateKey);
         }
 
         try {
-            privateKey = arrayify(privateKey);
-            if (privateKey.length !== 32) {
+            if (privateKeyBytes.length !== 32) {
                 errors.throwError('exactly 32 bytes required', errors.INVALID_ARGUMENT, { value: privateKey });
             }
         } catch(error) {
@@ -51,59 +55,23 @@ export class SigningKey {
             errors.throwError('invalid private key', error.code, params);
         }
 
-        this.privateKey = hexlify(privateKey);
-
-        this.keyPair = secp256k1.curve.keyFromPrivate(privateKey);
-
-        //utils.defineProperty(this, 'publicKey', '0x' + keyPair.getPublic(true, 'hex'))
-        this.publicKey = '0x' + this.keyPair.getPublic(true, 'hex');
-
-        this.address = SigningKey.publicKeyToAddress('0x' + this.keyPair.getPublic(false, 'hex'));
+        defineReadOnly(this, 'privateKey', hexlify(privateKeyBytes));
+        defineReadOnly(this, 'keyPair', new KeyPair(privateKeyBytes));
+        defineReadOnly(this, 'publicKey', this.keyPair.publicKey);
+        defineReadOnly(this, 'address', computeAddress(this.keyPair.publicKey));
     }
 
-    signDigest(digest) {
-        var signature = this.keyPair.sign(arrayify(digest), {canonical: true});
-        return {
-            recoveryParam: signature.recoveryParam,
-            r: '0x' + signature.r.toString(16),
-            s: '0x' + signature.s.toString(16)
-        }
-    }
-
-    static recover(digest, r, s, recoveryParam) {
-        var signature = {
-            r: arrayify(r),
-            s: arrayify(s)
-        };
-        var publicKey = secp256k1.curve.recoverPubKey(arrayify(digest), signature, recoveryParam);
-        return SigningKey.publicKeyToAddress('0x' + publicKey.encode('hex', false));
-    }
-
-
-    static getPublicKey(value, compressed) {
-        value = arrayify(value);
-        compressed = !!compressed;
-
-        if (value.length === 32) {
-            var keyPair = secp256k1.curve.keyFromPrivate(value);
-            return '0x' + keyPair.getPublic(compressed, 'hex');
-
-        } else if (value.length === 33) {
-            var keyPair = secp256k1.curve.keyFromPublic(value);
-            return '0x' + keyPair.getPublic(compressed, 'hex');
-
-        } else if (value.length === 65) {
-            var keyPair = secp256k1.curve.keyFromPublic(value);
-            return '0x' + keyPair.getPublic(compressed, 'hex');
-        }
-
-        throw new Error('invalid value');
-    }
-
-    static publicKeyToAddress(publicKey) {
-        publicKey = '0x' + SigningKey.getPublicKey(publicKey, false).slice(4);
-        return getAddress('0x' + keccak256(publicKey).substring(26));
+    signDigest(digest: Arrayish): Signature {
+        return this.keyPair.sign(digest);
     }
 }
 
-//export default SigningKey;
+export function recoverAddress(digest: Arrayish, signature: Signature): string {
+    return computeAddress(recoverPublicKey(digest, signature));
+}
+
+export function computeAddress(key: string): string {
+    // Strip off the leading "0x04"
+    let publicKey = '0x' + computePublicKey(key).slice(4);
+    return getAddress('0x' + keccak256(publicKey).substring(26));
+}

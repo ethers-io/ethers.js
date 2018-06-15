@@ -6,15 +6,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 // See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
-var secp256k1 = __importStar(require("./secp256k1"));
-var words_1 = __importDefault(require("./words"));
-var wordlist = words_1.default.replace(/([A-Z])/g, ' $1').toLowerCase().substring(1).split(' ');
+var secp256k1_1 = require("./secp256k1");
+var words_1 = require("./words");
 var convert_1 = require("../utils/convert");
 var bignumber_1 = require("../utils/bignumber");
 var utf8_1 = require("../utils/utf8");
@@ -38,8 +34,8 @@ var HDNode = /** @class */ (function () {
     function HDNode(keyPair, chainCode, index, depth, mnemonic, path) {
         errors.checkNew(this, HDNode);
         this.keyPair = keyPair;
-        this.privateKey = convert_1.hexlify(keyPair.priv.toArray('be', 32));
-        this.publicKey = '0x' + keyPair.getPublic(true, 'hex');
+        this.privateKey = keyPair.privateKey;
+        this.publicKey = keyPair.compressedPublicKey;
         this.chainCode = convert_1.hexlify(chainCode);
         this.index = index;
         this.depth = depth;
@@ -71,7 +67,7 @@ var HDNode = /** @class */ (function () {
         }
         else {
             // Data = ser_p(point(k_par))
-            data.set(this.keyPair.getPublic().encode(null, true));
+            data.set(this.keyPair.publicKeyBytes);
         }
         // Data += ser_32(i)
         for (var i = 24; i >= 0; i -= 8) {
@@ -80,8 +76,8 @@ var HDNode = /** @class */ (function () {
         var I = convert_1.arrayify(hmac_1.createSha512Hmac(this.chainCode).update(data).digest());
         var IL = bignumber_1.bigNumberify(I.slice(0, 32));
         var IR = I.slice(32);
-        var ki = IL.add('0x' + this.keyPair.getPrivate('hex')).mod('0x' + secp256k1.curve.n.toString(16));
-        return new HDNode(secp256k1.curve.keyFromPrivate(convert_1.arrayify(ki)), IR, index, this.depth + 1, mnemonic, path);
+        var ki = IL.add(this.keyPair.privateKey).mod(secp256k1_1.N);
+        return new HDNode(new secp256k1_1.KeyPair(convert_1.arrayify(ki)), IR, index, this.depth + 1, mnemonic, path);
     };
     HDNode.prototype.derivePath = function (path) {
         var components = path.split('/');
@@ -118,12 +114,12 @@ var HDNode = /** @class */ (function () {
 }());
 exports.HDNode = HDNode;
 function _fromSeed(seed, mnemonic) {
-    seed = convert_1.arrayify(seed);
-    if (seed.length < 16 || seed.length > 64) {
+    var seedArray = convert_1.arrayify(seed);
+    if (seedArray.length < 16 || seedArray.length > 64) {
         throw new Error('invalid seed');
     }
-    var I = convert_1.arrayify(hmac_1.createSha512Hmac(MasterSecret).update(seed).digest());
-    return new HDNode(secp256k1.curve.keyFromPrivate(I.slice(0, 32)), I.slice(32), 0, 0, mnemonic, 'm');
+    var I = convert_1.arrayify(hmac_1.createSha512Hmac(MasterSecret).update(seedArray).digest());
+    return new HDNode(new secp256k1_1.KeyPair(I.slice(0, 32)), I.slice(32), 0, 0, mnemonic, 'm');
 }
 function fromMnemonic(mnemonic) {
     // Check that the checksum s valid (will throw an error)
@@ -162,7 +158,7 @@ function mnemonicToEntropy(mnemonic) {
     var entropy = convert_1.arrayify(new Uint8Array(Math.ceil(11 * words.length / 8)));
     var offset = 0;
     for (var i = 0; i < words.length; i++) {
-        var index = wordlist.indexOf(words[i]);
+        var index = words_1.getWordIndex(words[i]);
         if (index === -1) {
             throw new Error('invalid mnemonic');
         }
@@ -189,21 +185,21 @@ function entropyToMnemonic(entropy) {
     if ((entropy.length % 4) !== 0 || entropy.length < 16 || entropy.length > 32) {
         throw new Error('invalid entropy');
     }
-    var words = [0];
+    var indices = [0];
     var remainingBits = 11;
     for (var i = 0; i < entropy.length; i++) {
         // Consume the whole byte (with still more to go)
         if (remainingBits > 8) {
-            words[words.length - 1] <<= 8;
-            words[words.length - 1] |= entropy[i];
+            indices[indices.length - 1] <<= 8;
+            indices[indices.length - 1] |= entropy[i];
             remainingBits -= 8;
             // This byte will complete an 11-bit index
         }
         else {
-            words[words.length - 1] <<= remainingBits;
-            words[words.length - 1] |= entropy[i] >> (8 - remainingBits);
+            indices[indices.length - 1] <<= remainingBits;
+            indices[indices.length - 1] |= entropy[i] >> (8 - remainingBits);
             // Start the next word
-            words.push(entropy[i] & getLowerMask(8 - remainingBits));
+            indices.push(entropy[i] & getLowerMask(8 - remainingBits));
             remainingBits += 3;
         }
     }
@@ -212,14 +208,9 @@ function entropyToMnemonic(entropy) {
     var checksumBits = entropy.length / 4;
     checksum &= getUpperMask(checksumBits);
     // Shift the checksum into the word indices
-    words[words.length - 1] <<= checksumBits;
-    words[words.length - 1] |= (checksum >> (8 - checksumBits));
-    // Convert indices into words
-    var result = [];
-    for (var i = 0; i < words.length; i++) {
-        result.push(wordlist[words[i]]);
-    }
-    return result.join(' ');
+    indices[indices.length - 1] <<= checksumBits;
+    indices[indices.length - 1] |= (checksum >> (8 - checksumBits));
+    return indices.map(function (index) { return words_1.getWord(index); }).join(' ');
 }
 exports.entropyToMnemonic = entropyToMnemonic;
 function isValidMnemonic(mnemonic) {

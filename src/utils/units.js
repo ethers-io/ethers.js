@@ -69,7 +69,7 @@ function formatUnits(value, unitType, options) {
     if (negative) {
         value = value.mul(bignumber_1.ConstantNegativeOne);
     }
-    var fraction = value.mod(unitInfo.tenPower).toString(10);
+    var fraction = value.mod(unitInfo.tenPower).toString();
     while (fraction.length < unitInfo.decimals) {
         fraction = '0' + fraction;
     }
@@ -77,7 +77,7 @@ function formatUnits(value, unitType, options) {
     if (!options.pad) {
         fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
     }
-    var whole = value.div(unitInfo.tenPower).toString(10);
+    var whole = value.div(unitInfo.tenPower).toString();
     if (options.commify) {
         whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
@@ -126,9 +126,9 @@ function parseUnits(value, unitType) {
     while (fraction.length < unitInfo.decimals) {
         fraction += '0';
     }
-    whole = bignumber_1.bigNumberify(whole);
-    fraction = bignumber_1.bigNumberify(fraction);
-    var wei = (whole.mul(unitInfo.tenPower)).add(fraction);
+    var wholeValue = bignumber_1.bigNumberify(whole);
+    var fractionValue = bignumber_1.bigNumberify(fraction);
+    var wei = (wholeValue.mul(unitInfo.tenPower)).add(fractionValue);
     if (negative) {
         wei = wei.mul(bignumber_1.ConstantNegativeOne);
     }

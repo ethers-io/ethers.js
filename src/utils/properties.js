@@ -46,3 +46,15 @@ function resolveProperties(object) {
     });
 }
 exports.resolveProperties = resolveProperties;
+function shallowCopy(object) {
+    var result = {};
+    for (var key in object) {
+        result[key] = object[key];
+    }
+    return result;
+}
+exports.shallowCopy = shallowCopy;
+function jsonCopy(object) {
+    return JSON.parse(JSON.stringify(object));
+}
+exports.jsonCopy = jsonCopy;

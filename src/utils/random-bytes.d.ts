@@ -1,1 +1,1 @@
-export declare function randomBytes(length: any): Uint8Array;
+export declare function randomBytes(length: number): Uint8Array;

@@ -2,8 +2,15 @@
 
 import scrypt from 'scrypt-js';
 
+import { entropyToMnemonic, fromMnemonic, HDNode } from './hdnode';
+import * as secretStorage from './secret-storage';
+import { ProgressCallback } from './secret-storage';
+import { recoverAddress, SigningKey } from './signing-key';
+
+import { BlockTag } from '../providers/provider';
+
 import { getAddress } from '../utils/address';
-import { BigNumber, bigNumberify, ConstantZero } from '../utils/bignumber';
+import { BigNumber, bigNumberify, BigNumberish, ConstantZero } from '../utils/bignumber';
 import { arrayify, Arrayish, concat, hexlify, stripZeros, hexZeroPad } from '../utils/convert';
 import { keccak256 } from '../utils/keccak256';
 import { randomBytes } from '../utils/random-bytes';
@@ -12,9 +19,6 @@ import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
 
 import * as errors from '../utils/errors';
 
-import { entropyToMnemonic, fromMnemonic, HDNode } from './hdnode';
-import * as secretStorage from './secret-storage';
-import { SigningKey } from './signing-key';
 
 // This ensures we inject a setImmediate into the global space, which
 // dramatically improves the performance of the scrypt PBKDF.
@@ -113,7 +117,7 @@ export class Wallet {
         });
     }
 
-    sign(transaction: TransactionRequest) {
+    sign(transaction: TransactionRequest): string {
         var chainId = transaction.chainId;
         if (chainId == null && this.provider) { chainId = this.provider.chainId; }
         if (!chainId) { chainId = 0; }
@@ -238,7 +242,7 @@ export class Wallet {
 
             var digest = keccak256(RLP.encode(raw));
             try {
-                transaction.from = SigningKey.recover(digest, r, s, recoveryParam);
+                transaction.from = recoverAddress(digest, { r: hexlify(r), s: hexlify(s), recoveryParam });
             } catch (error) {
                 console.log(error);
             }
@@ -247,21 +251,21 @@ export class Wallet {
         return transaction;
     }
 
-    getAddress() {
+    getAddress(): Promise<string> {
         return Promise.resolve(this.address);
     }
 
-    getBalance(blockTag) {
+    getBalance(blockTag: BlockTag): Promise<BigNumber> {
         if (!this.provider) { throw new Error('missing provider'); }
         return this.provider.getBalance(this.address, blockTag);
     }
 
-    getTransactionCount(blockTag) {
+    getTransactionCount(blockTag: BlockTag): Promise<number> {
         if (!this.provider) { throw new Error('missing provider'); }
         return this.provider.getTransactionCount(this.address, blockTag);
     }
 
-    estimateGas(transaction: TransactionRequest) {
+    estimateGas(transaction: TransactionRequest): Promise<BigNumber> {
         if (!this.provider) { throw new Error('missing provider'); }
 
         var calculate: TransactionRequest = {};
@@ -275,7 +279,7 @@ export class Wallet {
         return this.provider.estimateGas(calculate);
     }
 
-    sendTransaction(transaction) {
+    sendTransaction(transaction: any): Promise<TransactionResponse> {
         if (!this.provider) { throw new Error('missing provider'); }
 
         if (!transaction || typeof(transaction) !== 'object') {
@@ -335,7 +339,7 @@ export class Wallet {
         });
     }
 
-    send(addressOrName, amountWei, options) {
+    send(addressOrName: string, amountWei: BigNumberish, options: any): Promise<TransactionResponse> {
         if (!options) { options = {}; }
 
         return this.sendTransaction({
@@ -348,7 +352,7 @@ export class Wallet {
     }
 
 
-    static hashMessage(message) {
+    static hashMessage(message: Arrayish | string): string {
         var payload = concat([
             toUtf8Bytes('\x19Ethereum Signed Message:\n'),
             toUtf8Bytes(String(message.length)),
@@ -357,14 +361,14 @@ export class Wallet {
         return keccak256(payload);
     }
 
-    signMessage(message) {
+    signMessage(message: Arrayish | string): string {
         var signingKey = new SigningKey(this.privateKey);
         var sig = signingKey.signDigest(Wallet.hashMessage(message));
 
         return (hexZeroPad(sig.r, 32) + hexZeroPad(sig.s, 32).substring(2) + (sig.recoveryParam ? '1c': '1b'));
     }
 
-    static verifyMessage(message, signature) {
+    static verifyMessage(message: Arrayish | string, signature: string): string {
         signature = hexlify(signature);
         if (signature.length != 132) { throw new Error('invalid signature'); }
         var digest = Wallet.hashMessage(message);
@@ -373,15 +377,17 @@ export class Wallet {
         if (recoveryParam >= 27) { recoveryParam -= 27; }
         if (recoveryParam < 0) { throw new Error('invalid signature'); }
 
-        return SigningKey.recover(
+        return recoverAddress(
             digest,
-            signature.substring(0, 66),
-            '0x' + signature.substring(66, 130),
-            recoveryParam
+            {
+                r: signature.substring(0, 66),
+                s: '0x' + signature.substring(66, 130),
+                recoveryParam: recoveryParam
+            }
         );
     }
 
-    encrypt(password, options, progressCallback) {
+    encrypt(password: Arrayish | string, options: any, progressCallback: ProgressCallback): Promise<string> {
         if (typeof(options) === 'function' && !progressCallback) {
             progressCallback = options;
             options = {};
@@ -408,7 +414,7 @@ export class Wallet {
     }
 
 
-    static createRandom(options) {
+    static createRandom(options: any): Wallet {
         var entropy: Uint8Array = randomBytes(16);
 
         if (!options) { options = { }; }
@@ -422,12 +428,12 @@ export class Wallet {
     }
 
 
-    static isEncryptedWallet(json: string) {
+    static isEncryptedWallet(json: string): boolean {
         return (secretStorage.isValidWallet(json) || secretStorage.isCrowdsaleWallet(json));
     }
 
 
-    static fromEncryptedWallet(json, password, progressCallback) {
+    static fromEncryptedWallet(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet> {
         if (progressCallback && typeof(progressCallback) !== 'function') {
             throw new Error('invalid callback');
         }
@@ -463,13 +469,13 @@ export class Wallet {
         });
     }
 
-    static fromMnemonic(mnemonic: string, path?: string) {
+    static fromMnemonic(mnemonic: string, path?: string): Wallet {
         if (!path) { path = defaultPath; }
         return new Wallet(fromMnemonic(mnemonic).derivePath(path));
     }
 
 
-    static fromBrainWallet(username: Arrayish | string, password: Arrayish | string, progressCallback) {
+    static fromBrainWallet(username: Arrayish | string, password: Arrayish | string, progressCallback: ProgressCallback): Promise<Wallet> {
         if (progressCallback && typeof(progressCallback) !== 'function') {
             throw new Error('invalid callback');
         }

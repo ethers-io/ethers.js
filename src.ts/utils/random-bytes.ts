@@ -2,30 +2,11 @@
 
 import { arrayify } from './convert';
 
-//import * as crypto from 'crypto';
+import { randomBytes as _randomBytes } from 'crypto';
 
-//@TODO: Figure out how to fix crypto
-function getRandomValues(buffer) {
-            for (var round = 0; round < 20; round++) {
-                for (var i = 0; i < buffer.length; i++) {
-                    if (round) {
-                        buffer[i] ^= Math.trunc(256 * Math.random());
-                    } else {
-                        buffer[i] = Math.trunc(256 * Math.random());
-                    }
-                }
-            }
+//function _randomBytes(length) { return "0x00"; }
 
-            return buffer;
-        }
-
-export function randomBytes(length) {
-    if (length <= 0 || length > 1024 || parseInt(length) != length) {
-        throw new Error('invalid length');
-    }
-
-    var result = new Uint8Array(length);
-    getRandomValues(result);
-    return arrayify(result);
-};
+export function randomBytes(length: number): Uint8Array {
+    return arrayify(_randomBytes(length));
+}
 

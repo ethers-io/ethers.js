@@ -3,6 +3,7 @@
 import { Contract, Interface } from './contracts';
 import * as providers from './providers';
 import * as errors from './utils/errors';
+import { networks } from './providers/networks';
 import utils from './utils';
 import { HDNode, SigningKey, Wallet } from './wallet';
 
@@ -19,6 +20,7 @@ export {
     Contract,
     Interface,
 
+    networks,
     providers,
 
     errors,

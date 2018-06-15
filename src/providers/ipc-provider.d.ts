@@ -3,5 +3,5 @@ import { Network } from './networks';
 export declare class IpcProvider extends JsonRpcProvider {
     readonly path: string;
     constructor(path: string, network?: Network | string);
-    send(method: any, params: any): Promise<{}>;
+    send(method: string, params: any): Promise<any>;
 }

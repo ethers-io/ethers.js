@@ -1,6 +1,6 @@
 'use strict';
 
-import { bigNumberify, ConstantZero, ConstantNegativeOne } from './bignumber';
+import { BigNumber, bigNumberify, BigNumberish, ConstantZero, ConstantNegativeOne } from './bignumber';
 
 import * as errors from './errors';
 
@@ -56,7 +56,7 @@ var getUnitInfo = (function() {
     }
 })();
 
-export function formatUnits(value: any, unitType: string | number, options?: any): string {
+export function formatUnits(value: BigNumberish, unitType?: string | number, options?: any): string {
     /*
     if (typeof(unitType) === 'object' && !options) {
         options = unitType;
@@ -75,7 +75,7 @@ export function formatUnits(value: any, unitType: string | number, options?: any
     var negative = value.lt(ConstantZero);
     if (negative) { value = value.mul(ConstantNegativeOne); }
 
-    var fraction = value.mod(unitInfo.tenPower).toString(10);
+    var fraction = value.mod(unitInfo.tenPower).toString();
     while (fraction.length < unitInfo.decimals) { fraction = '0' + fraction; }
 
     // Strip off trailing zeros (but keep one if would otherwise be bare decimal point)
@@ -83,7 +83,7 @@ export function formatUnits(value: any, unitType: string | number, options?: any
         fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
     }
 
-    var whole = value.div(unitInfo.tenPower).toString(10);
+    var whole = value.div(unitInfo.tenPower).toString();
 
     if (options.commify) {
         whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
@@ -96,7 +96,7 @@ export function formatUnits(value: any, unitType: string | number, options?: any
     return value;
 }
 
-export function parseUnits(value, unitType) {
+export function parseUnits(value: string, unitType?: string | number): BigNumber {
     if (unitType == null) { unitType = 18; }
     var unitInfo = getUnitInfo(unitType);
 
@@ -116,12 +116,12 @@ export function parseUnits(value, unitType) {
     }
 
     // Split it into a whole and fractional part
-    var comps = value.split('.');
+    let comps = value.split('.');
     if (comps.length > 2) {
         errors.throwError('too many decimal points', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
     }
 
-    var whole = comps[0], fraction = comps[1];
+    let whole = comps[0], fraction = comps[1];
     if (!whole) { whole = '0'; }
     if (!fraction) { fraction = '0'; }
 
@@ -137,21 +137,21 @@ export function parseUnits(value, unitType) {
     // Fully pad the string with zeros to get to wei
     while (fraction.length < unitInfo.decimals) { fraction += '0'; }
 
-    whole = bigNumberify(whole);
-    fraction = bigNumberify(fraction);
+    let wholeValue = bigNumberify(whole);
+    let fractionValue = bigNumberify(fraction);
 
-    var wei = (whole.mul(unitInfo.tenPower)).add(fraction);
+    let wei = (wholeValue.mul(unitInfo.tenPower)).add(fractionValue);
 
     if (negative) { wei = wei.mul(ConstantNegativeOne); }
 
     return wei;
 }
 
-export function formatEther(wei, options) {
+export function formatEther(wei: BigNumberish, options: any): string {
     return formatUnits(wei, 18, options);
 }
 
-export function parseEther(ether) {
+export function parseEther(ether: string): BigNumber {
     return parseUnits(ether, 18);
 }
 

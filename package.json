@@ -46,7 +46,7 @@
     "fs": "./tests/browser-fs.js",
     "zlib": "browserify-zlib",
     "./src.ts/utils/base64.ts": "./src.browser/base64.ts",
-    "./src.ts/utils/random-bytes.js": "./src.browser/random-bytes.js",
+    "./src.ts/utils/random-bytes.ts": "./src.browser/random-bytes.ts",
     "./providers/ipc-provider.js": "./utils/empty.js",
     "xmlhttprequest": "./src.browser/xmlhttprequest.ts"
   },

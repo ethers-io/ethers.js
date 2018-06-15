@@ -10,5 +10,5 @@ export declare type AsyncProvider = {
 export declare class Web3Provider extends JsonRpcProvider {
     readonly _web3Provider: AsyncProvider;
     constructor(web3Provider: AsyncProvider, network?: Network | string);
-    send(method: any, params: any): Promise<{}>;
+    send(method: string, params: any): Promise<any>;
 }

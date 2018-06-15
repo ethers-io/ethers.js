@@ -262,11 +262,14 @@ function encrypt(privateKey, password, options, progressCallback) {
         options = {};
     }
     // Check the private key
+    var privateKeyBytes = null;
     if (privateKey instanceof signing_key_1.SigningKey) {
-        privateKey = privateKey.privateKey;
+        privateKeyBytes = convert_1.arrayify(privateKey.privateKey);
     }
-    privateKey = convert_1.arrayify(privateKey);
-    if (privateKey.length !== 32) {
+    else {
+        privateKeyBytes = convert_1.arrayify(privateKey);
+    }
+    if (privateKeyBytes.length !== 32) {
         throw new Error('invalid private key');
     }
     password = getPassword(password);
@@ -353,11 +356,11 @@ function encrypt(privateKey, password, options, progressCallback) {
                 // This will be used to encrypt the mnemonic phrase (if any)
                 var mnemonicKey = key.slice(32, 64);
                 // Get the address for this private key
-                var address = (new signing_key_1.SigningKey(privateKey)).address;
+                var address = (new signing_key_1.SigningKey(privateKeyBytes)).address;
                 // Encrypt the private key
                 var counter = new aes.Counter(iv);
                 var aesCtr = new aes.ModeOfOperation.ctr(derivedKey, counter);
-                var ciphertext = convert_1.arrayify(aesCtr.encrypt(privateKey));
+                var ciphertext = convert_1.arrayify(aesCtr.encrypt(privateKeyBytes));
                 // Compute the message authentication code, used to check the password
                 var mac = keccak256_1.keccak256(convert_1.concat([macPrefix, ciphertext]));
                 // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition

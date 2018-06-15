@@ -3,12 +3,11 @@
 // See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 // See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
-import * as secp256k1 from './secp256k1';
+import { KeyPair, N } from './secp256k1';
 
-import words from './words';
-var wordlist: Array<string> = words.replace(/([A-Z])/g, ' $1').toLowerCase().substring(1).split(' ');
+import { getWord, getWordIndex } from './words';
 
-import { arrayify, hexlify } from '../utils/convert';
+import { arrayify, Arrayish, hexlify } from '../utils/convert';
 import { bigNumberify } from '../utils/bignumber';
 import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
 import { pbkdf2 } from '../utils/pbkdf2';
@@ -33,7 +32,7 @@ function getLowerMask(bits: number): number {
 }
 
 export class HDNode {
-    private readonly keyPair: secp256k1.KeyPair;
+    private readonly keyPair: KeyPair;
 
     readonly privateKey: string;
     readonly publicKey: string;
@@ -47,13 +46,13 @@ export class HDNode {
     readonly depth: number;
 
     // @TODO: Private constructor?
-    constructor(keyPair: secp256k1.KeyPair, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string) {
+    constructor(keyPair: KeyPair, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string) {
         errors.checkNew(this, HDNode);
 
         this.keyPair = keyPair;
 
-        this.privateKey = hexlify(keyPair.priv.toArray('be', 32));
-        this.publicKey = '0x' + keyPair.getPublic(true, 'hex');
+        this.privateKey = keyPair.privateKey;
+        this.publicKey = keyPair.compressedPublicKey;
 
         this.chainCode = hexlify(chainCode);
 
@@ -88,7 +87,7 @@ export class HDNode {
 
         } else {
             // Data = ser_p(point(k_par))
-            data.set(this.keyPair.getPublic().encode(null, true));
+            data.set(this.keyPair.publicKeyBytes);
         }
 
         // Data += ser_32(i)
@@ -98,9 +97,9 @@ export class HDNode {
         var IL = bigNumberify(I.slice(0, 32));
         var IR = I.slice(32);
 
-        var ki = IL.add('0x' + this.keyPair.getPrivate('hex')).mod('0x' + secp256k1.curve.n.toString(16));
+        var ki = IL.add(this.keyPair.privateKey).mod(N);
 
-        return new HDNode(secp256k1.curve.keyFromPrivate(arrayify(ki)), IR, index, this.depth + 1, mnemonic, path);
+        return new HDNode(new KeyPair(arrayify(ki)), IR, index, this.depth + 1, mnemonic, path);
     }
 
     derivePath(path: string): HDNode {
@@ -132,13 +131,13 @@ export class HDNode {
     }
 }
 
-function _fromSeed(seed: any, mnemonic: string): HDNode {
-    seed = arrayify(seed);
-    if (seed.length < 16 || seed.length > 64) { throw new Error('invalid seed'); }
+function _fromSeed(seed: Arrayish, mnemonic: string): HDNode {
+    let seedArray: Uint8Array = arrayify(seed);
+    if (seedArray.length < 16 || seedArray.length > 64) { throw new Error('invalid seed'); }
 
-    var I = arrayify(createSha512Hmac(MasterSecret).update(seed).digest());
+    var I: Uint8Array = arrayify(createSha512Hmac(MasterSecret).update(seedArray).digest());
 
-    return new HDNode(secp256k1.curve.keyFromPrivate(I.slice(0, 32)), I.slice(32), 0, 0, mnemonic, 'm');
+    return new HDNode(new KeyPair(I.slice(0, 32)), I.slice(32), 0, 0, mnemonic, 'm');
 }
 
 export function fromMnemonic(mnemonic: string): HDNode {
@@ -148,7 +147,7 @@ export function fromMnemonic(mnemonic: string): HDNode {
     return _fromSeed(mnemonicToSeed(mnemonic), mnemonic);
 }
 
-export function fromSeed(seed: any): HDNode {
+export function fromSeed(seed: Arrayish): HDNode {
     return _fromSeed(seed, null);
 }
 
@@ -180,7 +179,7 @@ export function mnemonicToEntropy(mnemonic: string): string {
 
     var offset = 0;
     for (var i = 0; i < words.length; i++) {
-        var index = wordlist.indexOf(words[i]);
+        var index = getWordIndex(words[i]);
         if (index === -1) { throw new Error('invalid mnemonic'); }
 
         for (var bit = 0; bit < 11; bit++) {
@@ -206,32 +205,32 @@ export function mnemonicToEntropy(mnemonic: string): string {
     return hexlify(entropy.slice(0, entropyBits / 8));
 }
 
-export function entropyToMnemonic(entropy: any): string {
+export function entropyToMnemonic(entropy: Arrayish): string {
     entropy = arrayify(entropy);
 
     if ((entropy.length % 4) !== 0 || entropy.length < 16 || entropy.length > 32) {
         throw new Error('invalid entropy');
     }
 
-    var words: Array<number> = [ 0 ];
+    var indices: Array<number> = [ 0 ];
 
     var remainingBits = 11;
     for (var i = 0; i < entropy.length; i++) {
 
         // Consume the whole byte (with still more to go)
         if (remainingBits > 8) {
-            words[words.length - 1] <<= 8;
-            words[words.length - 1] |= entropy[i];
+            indices[indices.length - 1] <<= 8;
+            indices[indices.length - 1] |= entropy[i];
 
             remainingBits -= 8;
 
         // This byte will complete an 11-bit index
         } else {
-            words[words.length - 1] <<= remainingBits;
-            words[words.length - 1] |= entropy[i] >> (8 - remainingBits);
+            indices[indices.length - 1] <<= remainingBits;
+            indices[indices.length - 1] |= entropy[i] >> (8 - remainingBits);
 
             // Start the next word
-            words.push(entropy[i] & getLowerMask(8 - remainingBits));
+            indices.push(entropy[i] & getLowerMask(8 - remainingBits));
 
             remainingBits += 3;
         }
@@ -243,16 +242,10 @@ export function entropyToMnemonic(entropy: any): string {
     checksum &= getUpperMask(checksumBits);
 
     // Shift the checksum into the word indices
-    words[words.length - 1] <<= checksumBits;
-    words[words.length - 1] |= (checksum >> (8 - checksumBits));
+    indices[indices.length - 1] <<= checksumBits;
+    indices[indices.length - 1] |= (checksum >> (8 - checksumBits));
 
-    // Convert indices into words
-    var result = [];
-    for (var i = 0; i < words.length; i++) {
-        result.push(wordlist[words[i]]);
-    }
-
-    return result.join(' ');
+    return indices.map((index) => getWord(index)).join(' ');
 }
 
 export function isValidMnemonic(mnemonic: string): boolean {
@@ -262,22 +255,3 @@ export function isValidMnemonic(mnemonic: string): boolean {
     } catch (error) { }
     return false;
 }
-
-// Exporting
-/*
-const exporting = {
-    HDNode: HDNode,
-    fromMnemonic: fromMnemonic,
-    fromSeed: fromSeed,
-    mnemonicToSeed: mnemonicToSeed,
-    mnemonicToEntropy: mnemonicToEntropy,
-    entropyToMnemonic: entropyToMnemonic,
-    isValidMnemonic: isValidMnemonic
-}
-*/
-// Default TypeScript
-//export default exporting;
-
-// Node exports
-//declare var module: any;
-//(module).exports = exporting;

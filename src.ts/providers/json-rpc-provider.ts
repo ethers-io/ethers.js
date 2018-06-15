@@ -206,27 +206,28 @@ export class JsonRpcProvider extends Provider {
         }
     }
 
-    getSigner(address) {
+    getSigner(address: string): JsonRpcSigner {
         return new JsonRpcSigner(this, address);
     }
 
-    listAccounts() {
+    listAccounts(): Promise<Array<string>> {
         return this.send('eth_accounts', []).then((accounts) => {
             return accounts.map((a) => getAddress(a));
         });
     }
 
-    send(method, params) {
+    send(method: string, params: any): Promise<any> {
         var request = {
             method: method,
             params: params,
             id: 42,
             jsonrpc: "2.0"
         };
+
         return fetchJson(this.connection, JSON.stringify(request), getResult);
     }
 
-    perform(method, params) {
+    perform(method: string, params: any): Promise<any> {
         switch (method) {
             case 'getBlockNumber':
                 return this.send('eth_blockNumber', []);
@@ -283,7 +284,7 @@ export class JsonRpcProvider extends Provider {
         return null;
     }
 
-    _startPending() {
+    _startPending(): void {
         if (this._pendingFilter != null) { return; }
         var self = this;
 
@@ -322,7 +323,7 @@ export class JsonRpcProvider extends Provider {
         });
     }
 
-    _stopPending() {
+    _stopPending(): void {
         this._pendingFilter = null;
     }
 }
