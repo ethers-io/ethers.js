@@ -36,6 +36,7 @@ To use in [node.js](https://nodejs.org/):
 
 ```
 /Users/ethers/my-app> npm install --save ethers
+/Users/ethers/my-app> react-native link react-native-scrypt
 ```
 
 
