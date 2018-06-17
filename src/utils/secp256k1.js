@@ -7,11 +7,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var address_1 = require("./address");
 var convert_1 = require("../utils/convert");
+var keccak256_1 = require("./keccak256");
 var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
 var elliptic = __importStar(require("elliptic"));
 var curve = new elliptic.ec('secp256k1');
+exports.N = '0x' + curve.n.toString(16);
 var KeyPair = /** @class */ (function () {
     function KeyPair(privateKey) {
         var keyPair = curve.keyFromPrivate(convert_1.arrayify(privateKey));
@@ -26,7 +29,8 @@ var KeyPair = /** @class */ (function () {
         return {
             recoveryParam: signature.recoveryParam,
             r: '0x' + signature.r.toString(16),
-            s: '0x' + signature.s.toString(16)
+            s: '0x' + signature.s.toString(16),
+            v: 27 + signature.recoveryParam
         };
     };
     return KeyPair;
@@ -65,4 +69,13 @@ function computePublicKey(key, compressed) {
     return null;
 }
 exports.computePublicKey = computePublicKey;
-exports.N = '0x' + curve.n.toString(16);
+function recoverAddress(digest, signature) {
+    return computeAddress(recoverPublicKey(digest, signature));
+}
+exports.recoverAddress = recoverAddress;
+function computeAddress(key) {
+    // Strip off the leading "0x04"
+    var publicKey = '0x' + computePublicKey(key).slice(4);
+    return address_1.getAddress('0x' + keccak256_1.keccak256(publicKey).substring(26));
+}
+exports.computeAddress = computeAddress;

@@ -22,6 +22,7 @@ export declare type FunctionFragment = {
     payable: boolean;
     stateMutability: string;
 };
+export declare function parseParamType(type: string): ParamType;
 export declare function parseSignature(fragment: string): EventFragment | FunctionFragment;
 export declare class AbiCoder {
     readonly coerceFunc: CoerceFunc;

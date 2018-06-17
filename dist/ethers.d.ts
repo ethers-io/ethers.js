@@ -1,3 +1,16 @@
+declare module "utils/keccak256" {
+    import { Arrayish } from "utils/convert";
+    export function keccak256(data: Arrayish): string;
+}
+declare module "utils/properties" {
+    export function defineReadOnly(object: any, name: any, value: any): void;
+    export function defineFrozen(object: any, name: any, value: any): void;
+    export type DeferredSetter = (value: any) => void;
+    export function defineDeferredReadOnly(object: any, name: any, value: any): DeferredSetter;
+    export function resolveProperties(object: any): Promise<any>;
+    export function shallowCopy(object: any): any;
+    export function jsonCopy(object: any): any;
+}
 declare module "utils/errors" {
     export const UNKNOWN_ERROR = "UNKNOWN_ERROR";
     export const NOT_IMPLEMENTED = "NOT_IMPLEMENTED";
@@ -11,18 +24,36 @@ declare module "utils/errors" {
     export function throwError(message: string, code: string, params: any): never;
     export function checkNew(self: any, kind: any): void;
 }
+declare module "utils/secp256k1" {
+    import { Arrayish } from "utils/convert";
+    export const N: string;
+    export interface Signature {
+        r: string;
+        s: string;
+        recoveryParam: number;
+        v?: number;
+    }
+    export class KeyPair {
+        readonly privateKey: string;
+        readonly publicKey: string;
+        readonly compressedPublicKey: string;
+        readonly publicKeyBytes: Uint8Array;
+        constructor(privateKey: Arrayish);
+        sign(digest: Arrayish): Signature;
+    }
+    export function recoverPublicKey(digest: Arrayish, signature: Signature): string;
+    export function computePublicKey(key: Arrayish, compressed?: boolean): string;
+    export function recoverAddress(digest: Arrayish, signature: Signature): string;
+    export function computeAddress(key: string): string;
+}
 declare module "utils/convert" {
     /**
      *  Conversion Utilities
      *
      */
     import { BigNumber } from "utils/bignumber";
+    import { Signature } from "utils/secp256k1";
     export type Arrayish = string | ArrayLike<number>;
-    export type Signature = {
-        r: string;
-        s: string;
-        v: number;
-    };
     export function isArrayish(value: any): boolean;
     export function arrayify(value: Arrayish | BigNumber): Uint8Array;
     export function concat(objects: Array<Arrayish>): Uint8Array;
@@ -30,23 +61,17 @@ declare module "utils/convert" {
     export function padZeros(value: Arrayish, length: number): Uint8Array;
     export function isHexString(value: any, length?: number): boolean;
     export function hexlify(value: Arrayish | BigNumber | number): string;
+    export function hexDataLength(data: string): number;
+    export function hexDataSlice(data: string, offset: number, length?: number): string;
     export function hexStripZeros(value: string): string;
     export function hexZeroPad(value: string, length: number): string;
     export function splitSignature(signature: Arrayish): Signature;
 }
 declare module "utils/bignumber" {
-    /**
-     *  BigNumber
-     *
-     *  A wrapper around the BN.js object. We use the BN.js library
-     *  because it is used by elliptic, so it is required regardles.
-     *
-     */
-    import _BN from 'bn.js';
     import { Arrayish } from "utils/convert";
     export type BigNumberish = BigNumber | string | number | Arrayish;
     export class BigNumber {
-        readonly _bn: _BN.BN;
+        private readonly _bn;
         constructor(value: BigNumberish);
         fromTwos(value: BigNumberish): BigNumber;
         toTwos(value: BigNumberish): BigNumber;
@@ -75,10 +100,6 @@ declare module "utils/bignumber" {
     export const ConstantTwo: BigNumber;
     export const ConstantWeiPerEther: BigNumber;
 }
-declare module "utils/keccak256" {
-    import { Arrayish } from "utils/convert";
-    export function keccak256(data: Arrayish): string;
-}
 declare module "utils/rlp" {
     import { Arrayish } from "utils/convert";
     export function encode(object: any): string;
@@ -87,7 +108,8 @@ declare module "utils/rlp" {
 declare module "utils/address" {
     import { BigNumber } from "utils/bignumber";
     import { Arrayish } from "utils/convert";
-    export function getAddress(address: string, icapFormat?: boolean): string;
+    export function getAddress(address: string): string;
+    export function getIcapAddress(address: string): string;
     export function getContractAddress(transaction: {
         from: string;
         nonce: Arrayish | BigNumber | number;
@@ -104,15 +126,6 @@ declare module "utils/utf8" {
     }
     export function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm): Uint8Array;
     export function toUtf8String(bytes: Arrayish): string;
-}
-declare module "utils/properties" {
-    export function defineReadOnly(object: any, name: any, value: any): void;
-    export function defineFrozen(object: any, name: any, value: any): void;
-    export type DeferredSetter = (value: any) => void;
-    export function defineDeferredReadOnly(object: any, name: any, value: any): DeferredSetter;
-    export function resolveProperties(object: any): Promise<any>;
-    export function shallowCopy(object: any): any;
-    export function jsonCopy(object: any): any;
 }
 declare module "utils/abi-coder" {
     import { Arrayish } from "utils/convert";
@@ -139,6 +152,7 @@ declare module "utils/abi-coder" {
         payable: boolean;
         stateMutability: string;
     };
+    export function parseParamType(type: string): ParamType;
     export function parseSignature(fragment: string): EventFragment | FunctionFragment;
     export class AbiCoder {
         readonly coerceFunc: CoerceFunc;
@@ -151,14 +165,15 @@ declare module "utils/abi-coder" {
 declare module "contracts/interface" {
     import { ParamType } from "utils/abi-coder";
     import { BigNumber, BigNumberish } from "utils/bignumber";
-    export class Indexed {
-        readonly hash: string;
-        constructor(value: string);
-    }
     export class Description {
         readonly type: string;
         readonly inputs: Array<ParamType>;
         constructor(info: any);
+    }
+    export class Indexed {
+        readonly type: string;
+        readonly hash: string;
+        constructor(value: string);
     }
     export class DeployDescription extends Description {
         readonly payable: boolean;
@@ -260,12 +275,44 @@ declare module "providers/networks" {
      */
     export function getNetwork(network: Network | string | number): Network;
 }
+declare module "utils/transaction" {
+    import { BigNumber, BigNumberish } from "utils/bignumber";
+    import { Arrayish } from "utils/convert";
+    import { Signature } from "utils/secp256k1";
+    export interface UnsignedTransaction {
+        to?: string;
+        nonce?: number;
+        gasLimit?: BigNumberish;
+        gasPrice?: BigNumberish;
+        data?: Arrayish;
+        value?: BigNumberish;
+        chainId?: number;
+    }
+    export interface Transaction {
+        hash?: string;
+        to?: string;
+        from?: string;
+        nonce: number;
+        gasLimit: BigNumber;
+        gasPrice: BigNumber;
+        data: string;
+        value: BigNumber;
+        chainId: number;
+        r?: string;
+        s?: string;
+        v?: number;
+    }
+    export type SignDigestFunc = (digest: Arrayish) => Signature;
+    export function sign(transaction: UnsignedTransaction, signDigest: SignDigestFunc): string;
+    export function parse(rawTransaction: Arrayish): Transaction;
+}
 declare module "providers/provider" {
     import { BigNumber, BigNumberish } from "utils/bignumber";
     import { Arrayish } from "utils/convert";
     import { Network } from "providers/networks";
+    import { Transaction } from "utils/transaction";
     export type BlockTag = string | number;
-    export type Block = {
+    export interface Block {
         hash: string;
         parentHash: string;
         number: number;
@@ -277,7 +324,7 @@ declare module "providers/provider" {
         miner: string;
         extraData: string;
         transactions: Array<string>;
-    };
+    }
     export type TransactionRequest = {
         to?: string | Promise<string>;
         from?: string | Promise<string>;
@@ -288,25 +335,14 @@ declare module "providers/provider" {
         value?: BigNumberish | Promise<BigNumberish>;
         chainId?: number | Promise<number>;
     };
-    export type TransactionResponse = {
+    export interface TransactionResponse extends Transaction {
         blockNumber?: number;
         blockHash?: string;
         timestamp?: number;
-        hash: string;
-        to?: string;
-        from?: string;
-        nonce?: number;
-        gasLimit?: BigNumber;
-        gasPrice?: BigNumber;
-        data?: string;
-        value: BigNumber;
-        chainId?: number;
-        r?: string;
-        s?: string;
-        v?: number;
-        wait?: (timeout?: number) => Promise<TransactionResponse>;
-    };
-    export type TransactionReceipt = {
+        from: string;
+        wait: (timeout?: number) => Promise<TransactionResponse>;
+    }
+    export interface TransactionReceipt {
         contractAddress?: string;
         transactionIndex?: number;
         root?: string;
@@ -318,14 +354,14 @@ declare module "providers/provider" {
         blockNumber?: number;
         cumulativeGasUsed?: BigNumber;
         status?: number;
-    };
+    }
     export type Filter = {
         fromBlock?: BlockTag;
         toBlock?: BlockTag;
         address?: string;
         topics?: Array<any>;
     };
-    export type Log = {
+    export interface Log {
         blockNumber?: number;
         blockHash?: string;
         transactionIndex?: number;
@@ -335,11 +371,10 @@ declare module "providers/provider" {
         topics?: Array<string>;
         transactionHash?: string;
         logIndex?: number;
-    };
+    }
     export function checkTransactionResponse(transaction: any): TransactionResponse;
     export class Provider {
         private _network;
-        protected ready: Promise<Network>;
         private _events;
         protected _emitted: any;
         private _pollingInterval;
@@ -347,10 +382,15 @@ declare module "providers/provider" {
         private _lastBlockNumber;
         private _balances;
         /**
-         *  Sub-classing notes
-         *    - If the network is standard or fully specified, ready will resolve
-         *    - Otherwise, the sub-class must assign a Promise to ready
+         *  ready
+         *
+         *  A Promise<Network> that resolves only once the provider is ready.
+         *
+         *  Sub-classes that call the super with a network without a chainId
+         *  MUST set this. Standard named networks have a known chainId.
+         *
          */
+        protected ready: Promise<Network>;
         constructor(network: string | Network);
         private _doPoll;
         resetEventsBlock(blockNumber: number): void;
@@ -366,7 +406,7 @@ declare module "providers/provider" {
         getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number>;
         getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
         getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
-        sendTransaction(signedTransaction: string | Promise<string>): Promise<string>;
+        sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
         call(transaction: TransactionRequest): Promise<string>;
         estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
         getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block>;
@@ -391,22 +431,144 @@ declare module "providers/provider" {
         removeListener(eventName: any, listener: any): Provider;
     }
 }
+declare module "wallet/words" {
+    export function getWord(index: number): string;
+    export function getWordIndex(word: string): number;
+}
+declare module "utils/hmac" {
+    import { Arrayish } from "utils/convert";
+    interface HashFunc {
+        (): HashFunc;
+        update(chunk: Uint8Array): HashFunc;
+        digest(encoding: string): string;
+        digest(): Uint8Array;
+    }
+    export interface HmacFunc extends HashFunc {
+        (hashFunc: HashFunc, key: Arrayish): HmacFunc;
+    }
+    export function createSha256Hmac(key: Arrayish): HmacFunc;
+    export function createSha512Hmac(key: Arrayish): HmacFunc;
+}
+declare module "utils/pbkdf2" {
+    import { Arrayish } from "utils/convert";
+    import { HmacFunc } from "utils/hmac";
+    export interface CreateHmacFunc {
+        (key: Arrayish): HmacFunc;
+    }
+    export function pbkdf2(password: Arrayish, salt: Arrayish, iterations: number, keylen: number, createHmac: CreateHmacFunc): Uint8Array;
+}
+declare module "utils/sha2" {
+    import { Arrayish } from "utils/convert";
+    export function sha256(data: Arrayish): string;
+    export function sha512(data: Arrayish): string;
+}
+declare module "wallet/hdnode" {
+    import { Arrayish } from "utils/convert";
+    import { KeyPair } from "utils/secp256k1";
+    export class HDNode {
+        private readonly keyPair;
+        readonly privateKey: string;
+        readonly publicKey: string;
+        readonly mnemonic: string;
+        readonly path: string;
+        readonly chainCode: string;
+        readonly index: number;
+        readonly depth: number;
+        constructor(keyPair: KeyPair, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string);
+        private _derive;
+        derivePath(path: string): HDNode;
+    }
+    export function fromMnemonic(mnemonic: string): HDNode;
+    export function fromSeed(seed: Arrayish): HDNode;
+    export function mnemonicToSeed(mnemonic: string, password?: string): string;
+    export function mnemonicToEntropy(mnemonic: string): string;
+    export function entropyToMnemonic(entropy: Arrayish): string;
+    export function isValidMnemonic(mnemonic: string): boolean;
+}
+declare module "utils/random-bytes" {
+    export function randomBytes(length: number): Uint8Array;
+}
+declare module "wallet/signing-key" {
+    import { Arrayish } from "utils/convert";
+    import { HDNode } from "wallet/hdnode";
+    import { Signature } from "utils/secp256k1";
+    export class SigningKey {
+        readonly privateKey: string;
+        readonly publicKey: string;
+        readonly address: string;
+        readonly mnemonic: string;
+        readonly path: string;
+        private readonly keyPair;
+        constructor(privateKey: Arrayish | HDNode);
+        signDigest(digest: Arrayish): Signature;
+    }
+    export function recoverAddress(digest: Arrayish, signature: Signature): string;
+    export function computeAddress(key: string): string;
+}
+declare module "wallet/secret-storage" {
+    import { Arrayish } from "utils/convert";
+    import { SigningKey } from "wallet/signing-key";
+    export interface ProgressCallback {
+        (percent: number): void;
+    }
+    export function isCrowdsaleWallet(json: string): boolean;
+    export function isValidWallet(json: string): boolean;
+    export function decryptCrowdsale(json: string, password: Arrayish | string): SigningKey;
+    export function decrypt(json: string, password: any, progressCallback?: ProgressCallback): Promise<SigningKey>;
+    export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: any, progressCallback?: ProgressCallback): Promise<string>;
+}
+declare module "wallet/wallet" {
+    import { HDNode } from "wallet/hdnode";
+    import { ProgressCallback } from "wallet/secret-storage";
+    import { SigningKey } from "wallet/signing-key";
+    import { BlockTag, Provider, TransactionRequest, TransactionResponse } from "providers/provider";
+    import { BigNumber, BigNumberish } from "utils/bignumber";
+    import { Arrayish } from "utils/convert";
+    import { UnsignedTransaction } from "utils/transaction";
+    export interface Signer {
+        address?: string;
+        getAddress(): Promise<string>;
+        sendTransaction(transaction: UnsignedTransaction): Promise<TransactionResponse>;
+        provider: Provider;
+        sign(transaction: UnsignedTransaction): string;
+        getTransactionCount(blockTag?: BlockTag): Promise<number>;
+        estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
+        getGasPrice(transaction?: TransactionRequest): Promise<BigNumber>;
+    }
+    export class Wallet implements Signer {
+        readonly address: string;
+        readonly privateKey: string;
+        private mnemonic;
+        private path;
+        private readonly signingKey;
+        provider: Provider;
+        defaultGasLimit: number;
+        constructor(privateKey: SigningKey | HDNode | Arrayish, provider?: Provider);
+        sign(transaction: UnsignedTransaction): string;
+        getAddress(): Promise<string>;
+        getBalance(blockTag?: BlockTag): Promise<BigNumber>;
+        getTransactionCount(blockTag?: BlockTag): Promise<number>;
+        getGasPrice(): Promise<BigNumber>;
+        estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
+        sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
+        send(addressOrName: string, amountWei: BigNumberish, options: any): Promise<TransactionResponse>;
+        static hashMessage(message: Arrayish | string): string;
+        signMessage(message: Arrayish | string): string;
+        static verifyMessage(message: Arrayish | string, signature: string): string;
+        encrypt(password: Arrayish | string, options: any, progressCallback: ProgressCallback): Promise<string>;
+        static createRandom(options: any): Wallet;
+        static isEncryptedWallet(json: string): boolean;
+        static fromEncryptedWallet(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet>;
+        static fromMnemonic(mnemonic: string, path?: string): Wallet;
+        static fromBrainWallet(username: Arrayish | string, password: Arrayish | string, progressCallback: ProgressCallback): Promise<Wallet>;
+    }
+}
 declare module "contracts/contract" {
     import { Interface } from "contracts/interface";
     import { Provider, TransactionResponse } from "providers/provider";
+    import { Signer } from "wallet/wallet";
     import { ParamType } from "utils/abi-coder";
     import { BigNumber } from "utils/bignumber";
-    interface Signer {
-        defaultGasLimit?: BigNumber;
-        defaultGasPrice?: BigNumber;
-        address?: string;
-        provider?: Provider;
-        getAddress(): Promise<string>;
-        getTransactionCount(): Promise<number>;
-        estimateGas(tx: any): Promise<BigNumber>;
-        sendTransaction(tx: any): Promise<any>;
-        sign(tx: any): string | Promise<string>;
-    }
     export type ContractEstimate = (...params: Array<any>) => Promise<BigNumber>;
     export type ContractFunction = (...params: Array<any>) => Promise<any>;
     export type ContractEvent = (...params: Array<any>) => void;
@@ -541,18 +703,10 @@ declare module "providers/index" {
 declare module "utils/id" {
     export function id(text: string): string;
 }
-declare module "utils/sha2" {
-    import { Arrayish } from "utils/convert";
-    export function sha256(data: Arrayish): string;
-    export function sha512(data: Arrayish): string;
-}
 declare module "utils/solidity" {
     export function pack(types: Array<string>, values: Array<any>): string;
     export function keccak256(types: Array<string>, values: Array<any>): string;
     export function sha256(types: Array<string>, values: Array<any>): string;
-}
-declare module "utils/random-bytes" {
-    export function randomBytes(length: number): Uint8Array;
 }
 declare module "utils/units" {
     import { BigNumber, BigNumberish } from "utils/bignumber";
@@ -562,7 +716,7 @@ declare module "utils/units" {
     export function parseEther(ether: string): BigNumber;
 }
 declare module "utils/index" {
-    import { getAddress, getContractAddress } from "utils/address";
+    import { getAddress, getContractAddress, getIcapAddress } from "utils/address";
     import { AbiCoder, parseSignature } from "utils/abi-coder";
     import * as base64 from "utils/base64";
     import * as bigNumber from "utils/bignumber";
@@ -577,6 +731,7 @@ declare module "utils/index" {
     import * as utf8 from "utils/utf8";
     import * as units from "utils/units";
     import { fetchJson } from "utils/web";
+    import { parse as parseTransaction } from "utils/transaction";
     const _default: {
         AbiCoder: typeof AbiCoder;
         defaultAbiCoder: AbiCoder;
@@ -597,6 +752,7 @@ declare module "utils/index" {
         namehash: typeof namehash;
         id: typeof id;
         getAddress: typeof getAddress;
+        getIcapAddress: typeof getIcapAddress;
         getContractAddress: typeof getContractAddress;
         formatEther: typeof units.formatEther;
         parseEther: typeof units.parseEther;
@@ -609,174 +765,9 @@ declare module "utils/index" {
         solidityKeccak256: typeof solidity.keccak256;
         soliditySha256: typeof solidity.sha256;
         splitSignature: typeof convert.splitSignature;
+        parseTransaction: typeof parseTransaction;
     };
     export default _default;
-}
-declare module "wallet/secp256k1" {
-    import { Arrayish } from "utils/convert";
-    export type Signature = {
-        r: string;
-        s: string;
-        recoveryParam: number;
-    };
-    export class KeyPair {
-        readonly privateKey: string;
-        readonly publicKey: string;
-        readonly compressedPublicKey: string;
-        readonly publicKeyBytes: Uint8Array;
-        constructor(privateKey: Arrayish);
-        sign(digest: Arrayish): Signature;
-    }
-    export function recoverPublicKey(digest: Arrayish, signature: Signature): string;
-    export function computePublicKey(key: Arrayish, compressed?: boolean): string;
-    export const N: string;
-}
-declare module "wallet/words" {
-    export function getWord(index: number): string;
-    export function getWordIndex(word: string): number;
-}
-declare module "utils/hmac" {
-    import { Arrayish } from "utils/convert";
-    interface HashFunc {
-        (): HashFunc;
-        update(chunk: Uint8Array): HashFunc;
-        digest(encoding: string): string;
-        digest(): Uint8Array;
-    }
-    export interface HmacFunc extends HashFunc {
-        (hashFunc: HashFunc, key: Arrayish): HmacFunc;
-    }
-    export function createSha256Hmac(key: Arrayish): HmacFunc;
-    export function createSha512Hmac(key: Arrayish): HmacFunc;
-}
-declare module "utils/pbkdf2" {
-    import { Arrayish } from "utils/convert";
-    import { HmacFunc } from "utils/hmac";
-    export interface CreateHmacFunc {
-        (key: Arrayish): HmacFunc;
-    }
-    export function pbkdf2(password: Arrayish, salt: Arrayish, iterations: number, keylen: number, createHmac: CreateHmacFunc): Uint8Array;
-}
-declare module "wallet/hdnode" {
-    import { KeyPair } from "wallet/secp256k1";
-    import { Arrayish } from "utils/convert";
-    export class HDNode {
-        private readonly keyPair;
-        readonly privateKey: string;
-        readonly publicKey: string;
-        readonly mnemonic: string;
-        readonly path: string;
-        readonly chainCode: string;
-        readonly index: number;
-        readonly depth: number;
-        constructor(keyPair: KeyPair, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string);
-        private _derive;
-        derivePath(path: string): HDNode;
-    }
-    export function fromMnemonic(mnemonic: string): HDNode;
-    export function fromSeed(seed: Arrayish): HDNode;
-    export function mnemonicToSeed(mnemonic: string, password?: string): string;
-    export function mnemonicToEntropy(mnemonic: string): string;
-    export function entropyToMnemonic(entropy: Arrayish): string;
-    export function isValidMnemonic(mnemonic: string): boolean;
-}
-declare module "wallet/signing-key" {
-    /**
-     *  SigningKey
-     *
-     *
-     */
-    import { Signature } from "wallet/secp256k1";
-    import { Arrayish } from "utils/convert";
-    import { HDNode } from "wallet/hdnode";
-    export class SigningKey {
-        readonly privateKey: string;
-        readonly publicKey: string;
-        readonly address: string;
-        readonly mnemonic: string;
-        readonly path: string;
-        private readonly keyPair;
-        constructor(privateKey: Arrayish | HDNode);
-        signDigest(digest: Arrayish): Signature;
-    }
-    export function recoverAddress(digest: Arrayish, signature: Signature): string;
-    export function computeAddress(key: string): string;
-}
-declare module "wallet/secret-storage" {
-    import { Arrayish } from "utils/convert";
-    import { SigningKey } from "wallet/signing-key";
-    export interface ProgressCallback {
-        (percent: number): void;
-    }
-    export function isCrowdsaleWallet(json: string): boolean;
-    export function isValidWallet(json: string): boolean;
-    export function decryptCrowdsale(json: string, password: Arrayish | string): SigningKey;
-    export function decrypt(json: string, password: any, progressCallback?: ProgressCallback): Promise<SigningKey>;
-    export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: any, progressCallback?: ProgressCallback): Promise<string>;
-}
-declare module "wallet/wallet" {
-    import { HDNode } from "wallet/hdnode";
-    import { ProgressCallback } from "wallet/secret-storage";
-    import { SigningKey } from "wallet/signing-key";
-    import { BlockTag } from "providers/provider";
-    import { BigNumber, BigNumberish } from "utils/bignumber";
-    import { Arrayish } from "utils/convert";
-    interface Provider {
-        chainId: number;
-        getBalance(address: string, blockTag: number | string): Promise<BigNumber>;
-        getTransactionCount(address: string, blockTag: number | string): Promise<number>;
-        estimateGas(transaction: any): Promise<BigNumber>;
-        getGasPrice(): Promise<BigNumber>;
-        sendTransaction(Bytes: any): Promise<string>;
-        resolveName(address: string): Promise<string>;
-        waitForTransaction(Bytes32: any): Promise<TransactionResponse>;
-    }
-    interface TransactionRequest {
-        nonce?: number;
-        to?: string;
-        from?: string;
-        data?: string;
-        gasLimit?: BigNumber;
-        gasPrice?: BigNumber;
-        r?: string;
-        s?: string;
-        chainId?: number;
-        v?: number;
-        value?: BigNumber;
-    }
-    interface TransactionResponse extends TransactionRequest {
-        hash?: string;
-        blockHash?: string;
-        block?: number;
-        wait?: (timeout?: number) => Promise<TransactionResponse>;
-    }
-    export class Wallet {
-        readonly address: string;
-        readonly privateKey: string;
-        private mnemonic;
-        private path;
-        private readonly signingKey;
-        provider: any;
-        defaultGasLimit: number;
-        constructor(privateKey: SigningKey | HDNode | Arrayish, provider?: Provider);
-        sign(transaction: TransactionRequest): string;
-        static parseTransaction(rawTransaction: Arrayish): TransactionRequest;
-        getAddress(): Promise<string>;
-        getBalance(blockTag: BlockTag): Promise<BigNumber>;
-        getTransactionCount(blockTag: BlockTag): Promise<number>;
-        estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
-        sendTransaction(transaction: any): Promise<TransactionResponse>;
-        send(addressOrName: string, amountWei: BigNumberish, options: any): Promise<TransactionResponse>;
-        static hashMessage(message: Arrayish | string): string;
-        signMessage(message: Arrayish | string): string;
-        static verifyMessage(message: Arrayish | string, signature: string): string;
-        encrypt(password: Arrayish | string, options: any, progressCallback: ProgressCallback): Promise<string>;
-        static createRandom(options: any): Wallet;
-        static isEncryptedWallet(json: string): boolean;
-        static fromEncryptedWallet(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet>;
-        static fromMnemonic(mnemonic: string, path?: string): Wallet;
-        static fromBrainWallet(username: Arrayish | string, password: Arrayish | string, progressCallback: ProgressCallback): Promise<Wallet>;
-    }
 }
 declare module "wallet/index" {
     import { Wallet } from "wallet/wallet";

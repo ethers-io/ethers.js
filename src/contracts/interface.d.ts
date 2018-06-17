@@ -1,13 +1,14 @@
 import { ParamType } from '../utils/abi-coder';
 import { BigNumber, BigNumberish } from '../utils/bignumber';
-export declare class Indexed {
-    readonly hash: string;
-    constructor(value: string);
-}
 export declare class Description {
     readonly type: string;
     readonly inputs: Array<ParamType>;
     constructor(info: any);
+}
+export declare class Indexed {
+    readonly type: string;
+    readonly hash: string;
+    constructor(value: string);
 }
 export declare class DeployDescription extends Description {
     readonly payable: boolean;

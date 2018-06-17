@@ -1,4 +1,4 @@
-import { getAddress, getContractAddress } from './address';
+import { getAddress, getContractAddress, getIcapAddress } from './address';
 import { AbiCoder, parseSignature } from './abi-coder';
 import * as base64 from './base64';
 import * as bigNumber from './bignumber';
@@ -13,6 +13,7 @@ import * as RLP from './rlp';
 import * as utf8 from './utf8';
 import * as units from './units';
 import { fetchJson } from './web';
+import { parse as parseTransaction } from './transaction';
 declare const _default: {
     AbiCoder: typeof AbiCoder;
     defaultAbiCoder: AbiCoder;
@@ -33,6 +34,7 @@ declare const _default: {
     namehash: typeof namehash;
     id: typeof id;
     getAddress: typeof getAddress;
+    getIcapAddress: typeof getIcapAddress;
     getContractAddress: typeof getContractAddress;
     formatEther: typeof units.formatEther;
     parseEther: typeof units.parseEther;
@@ -45,5 +47,6 @@ declare const _default: {
     solidityKeccak256: typeof solidity.keccak256;
     soliditySha256: typeof solidity.sha256;
     splitSignature: typeof convert.splitSignature;
+    parseTransaction: typeof parseTransaction;
 };
 export default _default;

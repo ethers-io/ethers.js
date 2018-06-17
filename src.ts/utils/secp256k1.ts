@@ -1,6 +1,8 @@
 'use strict';
 
+import { getAddress } from './address';
 import { arrayify, Arrayish, hexlify } from '../utils/convert';
+import { keccak256 } from './keccak256';
 import { defineReadOnly } from '../utils/properties';
 
 import * as errors from '../utils/errors';
@@ -41,10 +43,13 @@ import * as elliptic from 'elliptic';
 const curve:_EC = new elliptic.ec('secp256k1');
 
 
-export type Signature = {
+export const N = '0x' + curve.n.toString(16);
+
+export interface Signature {
     r: string;
     s: string;
     recoveryParam: number;
+    v?: number;
 }
 
 export class KeyPair {
@@ -71,7 +76,8 @@ export class KeyPair {
         return {
             recoveryParam: signature.recoveryParam,
             r: '0x' + signature.r.toString(16),
-            s: '0x' + signature.s.toString(16)
+            s: '0x' + signature.s.toString(16),
+            v: 27 + signature.recoveryParam
         }
 
     }
@@ -82,8 +88,7 @@ export function recoverPublicKey(digest: Arrayish, signature: Signature): string
         r: arrayify(signature.r),
         s: arrayify(signature.s)
     };
-
-    return '0x' + curve.recoverPubKey(arrayify(digest), sig, signature.recoveryParam).getPublic(false, 'hex');
+    return '0x' + curve.recoverPubKey(arrayify(digest), sig, signature.recoveryParam).encode('hex', false);
 }
 
 export function computePublicKey(key: Arrayish, compressed?: boolean): string {
@@ -110,4 +115,13 @@ export function computePublicKey(key: Arrayish, compressed?: boolean): string {
     return null;
 }
 
-export const N = '0x' + curve.n.toString(16);
+export function recoverAddress(digest: Arrayish, signature: Signature): string {
+    return computeAddress(recoverPublicKey(digest, signature));
+}
+
+export function computeAddress(key: string): string {
+    // Strip off the leading "0x04"
+    let publicKey = '0x' + computePublicKey(key).slice(4);
+    return getAddress('0x' + keccak256(publicKey).substring(26));
+}
+

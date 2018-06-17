@@ -1,15 +1,7 @@
-/**
- *  BigNumber
- *
- *  A wrapper around the BN.js object. We use the BN.js library
- *  because it is used by elliptic, so it is required regardles.
- *
- */
-import _BN from 'bn.js';
 import { Arrayish } from './convert';
 export declare type BigNumberish = BigNumber | string | number | Arrayish;
 export declare class BigNumber {
-    readonly _bn: _BN.BN;
+    private readonly _bn;
     constructor(value: BigNumberish);
     fromTwos(value: BigNumberish): BigNumber;
     toTwos(value: BigNumberish): BigNumber;

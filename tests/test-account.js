@@ -29,15 +29,15 @@ describe('Checksum and ICAP address generation', function() {
         it(('correctly transforms address - ' + test.name), function() {
             assert.equal(ethers.utils.getAddress(test.address), test.checksumAddress,
                 'correctly computes checksum address from address');
-            assert.equal(ethers.utils.getAddress(test.address, true), test.icapAddress,
+            assert.equal(ethers.utils.getIcapAddress(test.address), test.icapAddress,
                 'correctly computes ICAP address from address');
             assert.equal(ethers.utils.getAddress(test.checksumAddress), test.checksumAddress,
                 'correctly computes checksum address from checksum address');
-            assert.equal(ethers.utils.getAddress(test.checksumAddress, true), test.icapAddress,
+            assert.equal(ethers.utils.getIcapAddress(test.checksumAddress), test.icapAddress,
                 'correctly computes ICAP address from checksum address');
             assert.equal(ethers.utils.getAddress(test.icapAddress), test.checksumAddress,
                 'correctly computes checksum address from icap address');
-            assert.equal(ethers.utils.getAddress(test.icapAddress, true), test.icapAddress,
+            assert.equal(ethers.utils.getIcapAddress(test.icapAddress), test.icapAddress,
                 'correctly computes ICAP address from icap address');
         });
     });

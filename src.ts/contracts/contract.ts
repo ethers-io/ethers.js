@@ -3,8 +3,10 @@
 import { Interface } from './interface';
 
 import { Provider, TransactionResponse } from '../providers/provider';
+import { Signer } from '../wallet/wallet';
 
 import { getContractAddress } from '../utils/address';
+import { isHexString } from '../utils/convert';
 import { ParamType } from '../utils/abi-coder';
 import { BigNumber, ConstantZero } from '../utils/bignumber';
 import { defineReadOnly, resolveProperties } from '../utils/properties';
@@ -170,10 +172,10 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                 }
 
                 if (transaction.gasLimit == null) {
-                    if (contract.signer.defaultGasLimit) {
-                        transaction.gasLimit = contract.signer.defaultGasLimit;
+                    if (contract.signer.estimateGas) {
+                        transaction.gasLimit = contract.signer.estimateGas(transaction);
                     } else {
-                        transaction.gasLimit = 200000;
+                        transaction.gasLimit = contract.provider.estimateGas(transaction);
                     }
                 }
 
@@ -190,8 +192,8 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                 }
 
                 if (!transaction.gasPrice) {
-                    if (contract.signer.defaultGasPrice) {
-                        transaction.gasPrice = contract.signer.defaultGasPrice;
+                    if (contract.signer.getGasPrice) {
+                        transaction.gasPrice = contract.signer.getGasPrice(transaction);
                     } else {
                         transaction.gasPrice = contract.provider.getGasPrice();
                     }
@@ -209,28 +211,6 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
 
         throw new Error('unsupport type - ' + method.type);
     }
-}
-/*
-interface Provider {
-    getNetwork(): Promise<Network>;
-    getGasPrice(): Promise<BigNumber>;
-    getTransactionCount(address: string | Promise<string>): Promise<number>;
-    call(data: string): Promise<string>;
-    estimateGas(tx: any): Promise<BigNumber>;
-    sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
-}
-*/
-interface Signer {
-    defaultGasLimit?: BigNumber;
-    defaultGasPrice?: BigNumber;
-    address?: string;
-    provider?: Provider;
-
-    getAddress(): Promise<string>;
-    getTransactionCount(): Promise<number>;
-    estimateGas(tx: any): Promise<BigNumber>;
-    sendTransaction(tx: any): Promise<any>; // @TODO:
-    sign(tx: any): string | Promise<string>;
 }
 
 function isSigner(value: any): value is Signer {
@@ -389,6 +369,14 @@ export class Contract {
     deploy(bytecode: string, ...args: Array<any>): Promise<Contract> {
         if (this.signer == null) {
             throw new Error('missing signer'); // @TODO: errors.throwError
+        }
+
+        if (!isHexString(bytecode)) {
+            errors.throwError('bytecode must be a valid hex string', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
+        }
+
+        if ((bytecode.length % 2) !== 0) {
+            errors.throwError('bytecode must be valid data (even length)', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
         }
 
         // @TODO: overrides of args.length = this.interface.deployFunction.inputs.length + 1

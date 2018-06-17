@@ -7,14 +7,14 @@ import * as secretStorage from './secret-storage';
 import { ProgressCallback } from './secret-storage';
 import { recoverAddress, SigningKey } from './signing-key';
 
-import { BlockTag } from '../providers/provider';
+import { BlockTag, Provider, TransactionRequest, TransactionResponse } from '../providers/provider';
 
-import { getAddress } from '../utils/address';
-import { BigNumber, bigNumberify, BigNumberish, ConstantZero } from '../utils/bignumber';
-import { arrayify, Arrayish, concat, hexlify, stripZeros, hexZeroPad } from '../utils/convert';
+import { BigNumber, BigNumberish } from '../utils/bignumber';
+import { arrayify, Arrayish, concat, hexlify, hexZeroPad } from '../utils/convert';
 import { keccak256 } from '../utils/keccak256';
+import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { randomBytes } from '../utils/random-bytes';
-import * as RLP from '../utils/rlp';
+import { sign as signTransaction, UnsignedTransaction } from '../utils/transaction';
 import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
 
 import * as errors from '../utils/errors';
@@ -25,53 +25,28 @@ import * as errors from '../utils/errors';
 console.log("Fix this! Setimmediate");
 //import _setimmediate = require('setimmediate');
 
+export interface Signer {
+    // One of these MUST be specified
+    address?: string;
+    getAddress(): Promise<string>
 
-interface Provider {
-    chainId: number;
-    getBalance(address: string, blockTag: number | string): Promise<BigNumber>;
-    getTransactionCount(address: string, blockTag: number | string): Promise<number>;
-    estimateGas(transaction: any): Promise<BigNumber>;
-    getGasPrice(): Promise<BigNumber>;
-    sendTransaction(Bytes): Promise<string>;
-    resolveName(address: string): Promise<string>
-    waitForTransaction(Bytes32): Promise<TransactionResponse>;
+    sendTransaction(transaction: UnsignedTransaction): Promise<TransactionResponse>;
+
+    // If sendTransaction is not implemented, the following MUST be
+    provider: Provider;
+    sign(transaction: UnsignedTransaction): string;
+
+    // The following MAY be i,plemented
+    getTransactionCount(blockTag?: BlockTag): Promise<number>;
+    estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
+    getGasPrice(transaction?: TransactionRequest): Promise<BigNumber>
 }
 
-interface TransactionRequest {
-    nonce?: number;
-    to?: string;
-    from?: string;
-    data?: string;
-    gasLimit?: BigNumber;
-    gasPrice?: BigNumber;
-    r?: string;
-    s?: string;
-    chainId?: number;
-    v?: number;
-    value?: BigNumber;
-}
-
-interface TransactionResponse extends TransactionRequest {
-    hash?: string;
-    blockHash?: string;
-    block?: number;
-    wait?: (timeout?: number) => Promise<TransactionResponse>;
-}
-
-
+// @TODO: Move to HDNode
 var defaultPath = "m/44'/60'/0'/0/0";
 
-var transactionFields = [
-    {name: 'nonce',    maxLength: 32, },
-    {name: 'gasPrice', maxLength: 32, },
-    {name: 'gasLimit', maxLength: 32, },
-    {name: 'to',          length: 20, },
-    {name: 'value',    maxLength: 32, },
-    {name: 'data'},
-];
 
-// @TODO: Bytes32 or SigningKey
-export class Wallet {
+export class Wallet implements Signer {
     readonly address: string;
     readonly privateKey: string;
 
@@ -80,7 +55,7 @@ export class Wallet {
 
     private readonly signingKey: SigningKey;
 
-    provider: any;
+    provider: Provider;
 
     //private _provider;
 
@@ -93,176 +68,42 @@ export class Wallet {
         if (privateKey instanceof SigningKey) {
             this.signingKey = privateKey;
             if (this.signingKey.mnemonic) {
-                Object.defineProperty(this, 'mnemonic', {
-                    enumerable: true,
-                    value: this.signingKey.mnemonic,
-                    writable: false
-                });
-                //this.mnemonic = this.signingKey.mnemonic;
-                this.path = this.signingKey.path;
+                defineReadOnly(this, 'mnemonic', privateKey.mnemonic);
+                defineReadOnly(this, 'path', privateKey.path);
             }
         } else {
             this.signingKey = new SigningKey(privateKey);
         }
 
-        this.privateKey = this.signingKey.privateKey
+        defineReadOnly(this, 'privateKey', this.signingKey.privateKey);
 
         this.provider = provider;
 
-        //this.address = this.signingKey.address;
-        Object.defineProperty(this, 'address', {
-            enumerable: true,
-            value: this.signingKey.address,
-            writable: false
-        });
+        defineReadOnly(this, 'address', this.signingKey.address);
     }
 
-    sign(transaction: TransactionRequest): string {
-        var chainId = transaction.chainId;
-        if (chainId == null && this.provider) { chainId = this.provider.chainId; }
-        if (!chainId) { chainId = 0; }
-
-        var raw = [];
-        transactionFields.forEach(function(fieldInfo) {
-            let value = transaction[fieldInfo.name] || ([]);
-            value = arrayify(hexlify(value));
-
-            // Fixed-width field
-            if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
-                let error: any = new Error('invalid ' + fieldInfo.name);
-                error.reason = 'wrong length';
-                error.value = value;
-                throw error;
-            }
-
-            // Variable-width (with a maximum)
-            if (fieldInfo.maxLength) {
-                value = stripZeros(value);
-                if (value.length > fieldInfo.maxLength) {
-                    let error: any = new Error('invalid ' + fieldInfo.name);
-                    error.reason = 'too long';
-                    error.value = value;
-                    throw error;
-                }
-            }
-
-            raw.push(hexlify(value));
-        });
-
-        if (chainId) {
-            raw.push(hexlify(chainId));
-            raw.push('0x');
-            raw.push('0x');
-        }
-
-        var digest = keccak256(RLP.encode(raw));
-
-        var signature = this.signingKey.signDigest(digest);
-
-        var v = 27 + signature.recoveryParam
-        if (chainId) {
-            raw.pop();
-            raw.pop();
-            raw.pop();
-            v += chainId * 2 + 8;
-        }
-
-        raw.push(hexlify(v));
-        raw.push(signature.r);
-        raw.push(signature.s);
-
-        return RLP.encode(raw);
-    }
-/*
-    set provider(provider: Provider) {
-        this._provider = provider;
-    }
-
-    get provider() {
-        return this._provider;
-    }
-*/
-    static parseTransaction(rawTransaction: Arrayish): TransactionRequest {
-        rawTransaction = hexlify(rawTransaction);
-        var signedTransaction = RLP.decode(rawTransaction);
-        if (signedTransaction.length !== 9) { throw new Error('invalid transaction'); }
-
-        var raw = [];
-
-        var transaction: any = { }
-
-        transactionFields.forEach(function(fieldInfo, index) {
-            transaction[fieldInfo.name] = signedTransaction[index];
-            raw.push(signedTransaction[index]);
-        });
-
-        if (transaction.to) {
-            if (transaction.to == '0x') {
-                delete transaction.to;
-            } else {
-                transaction.to = getAddress(transaction.to);
-            }
-        }
-
-        ['gasPrice', 'gasLimit', 'nonce', 'value'].forEach(function(name: string) {
-            if (!transaction[name]) { return; }
-            let value: BigNumber = ConstantZero;
-            if (transaction[name].length > 0) {
-                value = bigNumberify(transaction[name]);
-            }
-            transaction[name] = value;
-        });
-
-        transaction.nonce = transaction.nonce.toNumber();
-
-
-        var v = arrayify(signedTransaction[6]);
-        var r = arrayify(signedTransaction[7]);
-        var s = arrayify(signedTransaction[8]);
-
-        if (v.length >= 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
-            transaction.v = bigNumberify(v).toNumber();
-            transaction.r = signedTransaction[7];
-            transaction.s = signedTransaction[8];
-
-            var chainId = (transaction.v - 35) / 2;
-            if (chainId < 0) { chainId = 0; }
-            chainId = Math.trunc(chainId);
-
-            transaction.chainId = chainId;
-
-            var recoveryParam = transaction.v - 27;
-
-            if (chainId) {
-                raw.push(hexlify(chainId));
-                raw.push('0x');
-                raw.push('0x');
-                recoveryParam -= chainId * 2 + 8;
-            }
-
-            var digest = keccak256(RLP.encode(raw));
-            try {
-                transaction.from = recoverAddress(digest, { r: hexlify(r), s: hexlify(s), recoveryParam });
-            } catch (error) {
-                console.log(error);
-            }
-        }
-
-        return transaction;
+    sign(transaction: UnsignedTransaction): string {
+        return signTransaction(transaction, this.signingKey.signDigest.bind(this.signingKey));
     }
 
     getAddress(): Promise<string> {
         return Promise.resolve(this.address);
     }
 
-    getBalance(blockTag: BlockTag): Promise<BigNumber> {
+    getBalance(blockTag?: BlockTag): Promise<BigNumber> {
         if (!this.provider) { throw new Error('missing provider'); }
         return this.provider.getBalance(this.address, blockTag);
     }
 
-    getTransactionCount(blockTag: BlockTag): Promise<number> {
+    getTransactionCount(blockTag?: BlockTag): Promise<number> {
         if (!this.provider) { throw new Error('missing provider'); }
         return this.provider.getTransactionCount(this.address, blockTag);
+    }
+
+    getGasPrice(): Promise<BigNumber> {
+        if (!this.provider) { throw new Error('missing provider'); }
+
+        return this.provider.getGasPrice();
     }
 
     estimateGas(transaction: TransactionRequest): Promise<BigNumber> {
@@ -279,64 +120,40 @@ export class Wallet {
         return this.provider.estimateGas(calculate);
     }
 
-    sendTransaction(transaction: any): Promise<TransactionResponse> {
+    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
         if (!this.provider) { throw new Error('missing provider'); }
 
         if (!transaction || typeof(transaction) !== 'object') {
             throw new Error('invalid transaction object');
         }
 
-        var gasLimit = transaction.gasLimit;
-        if (gasLimit == null) { gasLimit = this.defaultGasLimit; }
+        var tx = shallowCopy(transaction);
 
-        var self = this;
-
-        var gasPricePromise = null;
-        if (transaction.gasPrice) {
-            gasPricePromise = Promise.resolve(transaction.gasPrice);
-        } else {
-            gasPricePromise = this.provider.getGasPrice();
+        if (tx.to != null) {
+            tx.to = this.provider.resolveName(tx.to);
         }
 
-        var noncePromise = null;
-        if (transaction.nonce) {
-            noncePromise = Promise.resolve(transaction.nonce);
-        } else {
-            noncePromise = this.provider.getTransactionCount(self.address, 'pending');
+        if (tx.gasLimit == null) {
+            tx.gasLimit = this.estimateGas(tx);
         }
 
-        var chainId: number = this.provider.chainId;
-
-        var toPromise = null;
-        if (transaction.to) {
-            toPromise = this.provider.resolveName(transaction.to);
-        } else {
-            toPromise = Promise.resolve(undefined);
+        if (tx.gasPrice == null) {
+            tx.gasPrice = this.getGasPrice();
         }
 
-        var data = hexlify(transaction.data || '0x');
-        var value = ConstantZero;
+        if (tx.nonce == null) {
+            tx.nonce = this.getTransactionCount();
+        }
 
-        return Promise.all([gasPricePromise, noncePromise, toPromise]).then(function(results: [ BigNumber, number, string]) {
-            var signedTransaction = self.sign({
-                to: results[2],
-                data: data,
-                gasLimit: gasLimit,
-                gasPrice: results[0],
-                nonce: results[1],
-                value: value,
-                chainId: chainId
-            });
+        if (tx.chainId == null) {
+            tx.chainId = this.provider.getNetwork().then((network) => network.chainId);
+        }
 
-            return self.provider.sendTransaction(signedTransaction).then(function(hash) {
-                var transaction: TransactionResponse = Wallet.parseTransaction(signedTransaction);
-                transaction.hash = hash;
-                transaction.wait = function() {
-                    return self.provider.waitForTransaction(hash);
-                };
-                return transaction;
-            });
+        return resolveProperties(tx).then((tx) => {
+            console.log('To Sign', tx);
+            return this.provider.sendTransaction(this.sign(tx));
         });
+
     }
 
     send(addressOrName: string, amountWei: BigNumberish, options: any): Promise<TransactionResponse> {

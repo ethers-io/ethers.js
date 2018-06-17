@@ -1,18 +1,8 @@
 import { Interface } from './interface';
 import { Provider, TransactionResponse } from '../providers/provider';
+import { Signer } from '../wallet/wallet';
 import { ParamType } from '../utils/abi-coder';
 import { BigNumber } from '../utils/bignumber';
-interface Signer {
-    defaultGasLimit?: BigNumber;
-    defaultGasPrice?: BigNumber;
-    address?: string;
-    provider?: Provider;
-    getAddress(): Promise<string>;
-    getTransactionCount(): Promise<number>;
-    estimateGas(tx: any): Promise<BigNumber>;
-    sendTransaction(tx: any): Promise<any>;
-    sign(tx: any): string | Promise<string>;
-}
 export declare type ContractEstimate = (...params: Array<any>) => Promise<BigNumber>;
 export declare type ContractFunction = (...params: Array<any>) => Promise<any>;
 export declare type ContractEvent = (...params: Array<any>) => void;

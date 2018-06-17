@@ -9,13 +9,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 // See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
-var secp256k1_1 = require("./secp256k1");
 var words_1 = require("./words");
 var convert_1 = require("../utils/convert");
 var bignumber_1 = require("../utils/bignumber");
 var utf8_1 = require("../utils/utf8");
 var pbkdf2_1 = require("../utils/pbkdf2");
 var hmac_1 = require("../utils/hmac");
+var secp256k1_1 = require("../utils/secp256k1");
 var sha2_1 = require("../utils/sha2");
 var errors = __importStar(require("../utils/errors"));
 // "Bitcoin seed"

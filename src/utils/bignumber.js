@@ -18,38 +18,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  */
 var bn_js_1 = __importDefault(require("bn.js"));
-/*
-declare module _BN {
-
-class BN {
-    constructor(number: string | number, base?: number);
-
-
-    toString(radix?: number): string;
-    toNumber(): number;
-
-    fromTwos(value: any): BN;
-    toTwos(value: any): BN;
-    add(other: any): BN;
-    sub(other: any): BN;
-    div(other: any): BN;
-    mul(other: any): BN;
-    mod(modulo: any): BN;
-    pow(exponent: any): BN;
-    maskn(bits: number): BN;
-
-    eq(other: BN): boolean;
-    gte(other: BN): boolean;
-    gt(other: BN): boolean;
-    lte(other: BN): boolean;
-    lt(other: BN): boolean;
-    isZero(): boolean;
-
-    static isBN(value: any): boolean;
-}
-}
-*/
 var convert_1 = require("./convert");
+var properties_1 = require("./properties");
 var errors = __importStar(require("../utils/errors"));
 function _isBigNumber(value) {
     return isBigNumber(value);
@@ -62,16 +32,16 @@ var BigNumber = /** @class */ (function () {
                 if (value == '0x') {
                     value = '0x0';
                 }
-                this._bn = new bn_js_1.default.BN(value.substring(2), 16);
+                properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(value.substring(2), 16));
             }
             else if (value[0] === '-' && convert_1.isHexString(value.substring(1))) {
-                this._bn = (new bn_js_1.default.BN(value.substring(3), 16)).mul(exports.ConstantNegativeOne._bn);
+                properties_1.defineReadOnly(this, '_bn', (new bn_js_1.default.BN(value.substring(3), 16)).mul(exports.ConstantNegativeOne._bn));
             }
             else if (value.match(/^-?[0-9]*$/)) {
                 if (value == '') {
                     value = '0';
                 }
-                this._bn = new bn_js_1.default.BN(value);
+                properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(value));
             }
         }
         else if (typeof (value) === 'number') {
@@ -79,20 +49,20 @@ var BigNumber = /** @class */ (function () {
                 errors.throwError('underflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'underflow', value: value, outputValue: Math.trunc(value) });
             }
             try {
-                this._bn = new bn_js_1.default.BN(value);
+                properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(value));
             }
             catch (error) {
                 errors.throwError('overflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'overflow', details: error.message });
             }
         }
         else if (bn_js_1.default.BN.isBN(value)) {
-            this._bn = value;
+            properties_1.defineReadOnly(this, '_bn', value);
         }
         else if (_isBigNumber(value)) {
-            this._bn = value._bn;
+            properties_1.defineReadOnly(this, '_bn', value._bn);
         }
         else if (convert_1.isArrayish(value)) {
-            this._bn = new bn_js_1.default.BN(convert_1.hexlify(value).substring(2), 16);
+            properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(convert_1.hexlify(value).substring(2), 16));
         }
         else {
             errors.throwError('invalid BigNumber value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });

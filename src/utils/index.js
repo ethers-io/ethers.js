@@ -25,6 +25,7 @@ var RLP = __importStar(require("./rlp"));
 var utf8 = __importStar(require("./utf8"));
 var units = __importStar(require("./units"));
 var web_1 = require("./web");
+var transaction_1 = require("./transaction");
 exports.default = {
     AbiCoder: abi_coder_1.AbiCoder,
     defaultAbiCoder: abi_coder_1.defaultAbiCoder,
@@ -49,6 +50,7 @@ exports.default = {
     namehash: namehash_1.namehash,
     id: id_1.id,
     getAddress: address_1.getAddress,
+    getIcapAddress: address_1.getIcapAddress,
     getContractAddress: address_1.getContractAddress,
     formatEther: units.formatEther,
     parseEther: units.parseEther,
@@ -61,4 +63,5 @@ exports.default = {
     solidityKeccak256: solidity.keccak256,
     soliditySha256: solidity.sha256,
     splitSignature: convert.splitSignature,
+    parseTransaction: transaction_1.parse
 };

@@ -3,8 +3,6 @@
 // See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 // See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
-import { KeyPair, N } from './secp256k1';
-
 import { getWord, getWordIndex } from './words';
 
 import { arrayify, Arrayish, hexlify } from '../utils/convert';
@@ -12,6 +10,7 @@ import { bigNumberify } from '../utils/bignumber';
 import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
 import { pbkdf2 } from '../utils/pbkdf2';
 import { createSha512Hmac } from '../utils/hmac';
+import { KeyPair, N } from '../utils/secp256k1';
 import { sha256 } from '../utils/sha2';
 
 import * as errors from '../utils/errors';

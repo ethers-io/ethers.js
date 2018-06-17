@@ -6,13 +6,12 @@
  *
  */
 
-import { computePublicKey, KeyPair, recoverPublicKey, Signature } from './secp256k1';
-
 import { getAddress } from '../utils/address';
 import { arrayify, Arrayish, hexlify } from '../utils/convert';
 import { HDNode } from './hdnode';
 import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly } from '../utils/properties';
+import { computePublicKey, KeyPair, recoverPublicKey, Signature } from '../utils/secp256k1';
 
 import errors = require('../utils/errors');
 

@@ -52,13 +52,6 @@ function parseParams(params) {
         types: types
     };
 }
-var Indexed = /** @class */ (function () {
-    function Indexed(value) {
-        properties_1.defineReadOnly(this, 'hash', value);
-    }
-    return Indexed;
-}());
-exports.Indexed = Indexed;
 var Description = /** @class */ (function () {
     function Description(info) {
         for (var key in info) {
@@ -74,6 +67,15 @@ var Description = /** @class */ (function () {
     return Description;
 }());
 exports.Description = Description;
+// @TOOD: Make this a description
+var Indexed = /** @class */ (function () {
+    function Indexed(value) {
+        properties_1.defineReadOnly(this, 'type', 'indexed');
+        properties_1.defineReadOnly(this, 'hash', value);
+    }
+    return Indexed;
+}());
+exports.Indexed = Indexed;
 var DeployDescription = /** @class */ (function (_super) {
     __extends(DeployDescription, _super);
     function DeployDescription() {
@@ -164,7 +166,7 @@ var FunctionDescription = /** @class */ (function (_super) {
     return FunctionDescription;
 }(Description));
 exports.FunctionDescription = FunctionDescription;
-// @TODO: Make this a class
+// @TODO: Make this a description
 function Result() { }
 var EventDescription = /** @class */ (function (_super) {
     __extends(EventDescription, _super);

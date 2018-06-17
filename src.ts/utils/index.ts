@@ -3,7 +3,7 @@
 // This is SUPER useful, but adds 140kb (even zipped, adds 40kb)
 //var unorm = require('unorm');
 
-import { getAddress, getContractAddress } from './address';
+import { getAddress, getContractAddress, getIcapAddress } from './address';
 import { AbiCoder, defaultAbiCoder, parseSignature } from './abi-coder';
 import * as base64 from './base64';
 import * as bigNumber from './bignumber';
@@ -19,7 +19,7 @@ import * as RLP from './rlp';
 import * as utf8 from './utf8';
 import * as units from './units';
 import { fetchJson } from './web';
-
+import { parse as parseTransaction } from './transaction';
 
 export default {
     AbiCoder: AbiCoder,
@@ -58,6 +58,7 @@ export default {
     id: id,
 
     getAddress: getAddress,
+    getIcapAddress: getIcapAddress,
     getContractAddress: getContractAddress,
 
     formatEther: units.formatEther,
@@ -76,4 +77,6 @@ export default {
     soliditySha256: solidity.sha256,
 
     splitSignature: convert.splitSignature,
+
+    parseTransaction: parseTransaction
 }

@@ -90,7 +90,7 @@ describe('Test Transaction Signing and Parsing', function() {
 
             var transaction = {};
 
-            var parsedTransaction = Wallet.parseTransaction(test.signedTransaction);
+            var parsedTransaction = ethers.utils.parseTransaction(test.signedTransaction);
 
             ['nonce', 'gasLimit', 'gasPrice', 'to', 'value', 'data'].forEach(function(key) {
                 var expected = test[key];
@@ -139,7 +139,7 @@ describe('Test Transaction Signing and Parsing', function() {
 
             // EIP155
 
-            var parsedTransactionChainId5 = Wallet.parseTransaction(test.signedTransactionChainId5);
+            var parsedTransactionChainId5 = ethers.utils.parseTransaction(test.signedTransactionChainId5);
             ['data', 'from', 'nonce', 'to'].forEach(function (key) {
                 assert.equal(parsedTransaction[key], parsedTransactionChainId5[key],
                     'eip155 parsed ' + key);

@@ -1,8 +1,9 @@
 import { BigNumber, BigNumberish } from '../utils/bignumber';
 import { Arrayish } from '../utils/convert';
 import { Network } from './networks';
+import { Transaction } from '../utils/transaction';
 export declare type BlockTag = string | number;
-export declare type Block = {
+export interface Block {
     hash: string;
     parentHash: string;
     number: number;
@@ -14,7 +15,7 @@ export declare type Block = {
     miner: string;
     extraData: string;
     transactions: Array<string>;
-};
+}
 export declare type TransactionRequest = {
     to?: string | Promise<string>;
     from?: string | Promise<string>;
@@ -25,25 +26,14 @@ export declare type TransactionRequest = {
     value?: BigNumberish | Promise<BigNumberish>;
     chainId?: number | Promise<number>;
 };
-export declare type TransactionResponse = {
+export interface TransactionResponse extends Transaction {
     blockNumber?: number;
     blockHash?: string;
     timestamp?: number;
-    hash: string;
-    to?: string;
-    from?: string;
-    nonce?: number;
-    gasLimit?: BigNumber;
-    gasPrice?: BigNumber;
-    data?: string;
-    value: BigNumber;
-    chainId?: number;
-    r?: string;
-    s?: string;
-    v?: number;
-    wait?: (timeout?: number) => Promise<TransactionResponse>;
-};
-export declare type TransactionReceipt = {
+    from: string;
+    wait: (timeout?: number) => Promise<TransactionResponse>;
+}
+export interface TransactionReceipt {
     contractAddress?: string;
     transactionIndex?: number;
     root?: string;
@@ -55,14 +45,14 @@ export declare type TransactionReceipt = {
     blockNumber?: number;
     cumulativeGasUsed?: BigNumber;
     status?: number;
-};
+}
 export declare type Filter = {
     fromBlock?: BlockTag;
     toBlock?: BlockTag;
     address?: string;
     topics?: Array<any>;
 };
-export declare type Log = {
+export interface Log {
     blockNumber?: number;
     blockHash?: string;
     transactionIndex?: number;
@@ -72,11 +62,10 @@ export declare type Log = {
     topics?: Array<string>;
     transactionHash?: string;
     logIndex?: number;
-};
+}
 export declare function checkTransactionResponse(transaction: any): TransactionResponse;
 export declare class Provider {
     private _network;
-    protected ready: Promise<Network>;
     private _events;
     protected _emitted: any;
     private _pollingInterval;
@@ -84,10 +73,15 @@ export declare class Provider {
     private _lastBlockNumber;
     private _balances;
     /**
-     *  Sub-classing notes
-     *    - If the network is standard or fully specified, ready will resolve
-     *    - Otherwise, the sub-class must assign a Promise to ready
+     *  ready
+     *
+     *  A Promise<Network> that resolves only once the provider is ready.
+     *
+     *  Sub-classes that call the super with a network without a chainId
+     *  MUST set this. Standard named networks have a known chainId.
+     *
      */
+    protected ready: Promise<Network>;
     constructor(network: string | Network);
     private _doPoll;
     resetEventsBlock(blockNumber: number): void;
@@ -103,7 +97,7 @@ export declare class Provider {
     getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number>;
     getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
     getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
-    sendTransaction(signedTransaction: string | Promise<string>): Promise<string>;
+    sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
     call(transaction: TransactionRequest): Promise<string>;
     estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
     getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block>;

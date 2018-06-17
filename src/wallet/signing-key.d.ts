@@ -1,11 +1,6 @@
-/**
- *  SigningKey
- *
- *
- */
-import { Signature } from './secp256k1';
 import { Arrayish } from '../utils/convert';
 import { HDNode } from './hdnode';
+import { Signature } from '../utils/secp256k1';
 export declare class SigningKey {
     readonly privateKey: string;
     readonly publicKey: string;

@@ -28,7 +28,7 @@ function equals(name, actual, expected) {
 
     if (typeof(actual) === 'object') {
         if (expected.indexed) {
-            assert.ok(!!actual.indexed, 'index property has index - ' + name);
+            assert.ok(actual.type === 'indexed', 'index property has index - ' + name);
             if (expected.hash) {
                 assert.equal(actual.hash, expected.hash, 'index property with known hash matches - ' + name);
             }

@@ -16,6 +16,7 @@ var rlp_1 = require("../utils/rlp");
 var namehash_1 = require("../utils/namehash");
 var networks_1 = require("./networks");
 var properties_1 = require("../utils/properties");
+var transaction_1 = require("../utils/transaction");
 var errors = __importStar(require("../utils/errors"));
 function copyObject(obj) {
     var result = {};
@@ -24,6 +25,8 @@ function copyObject(obj) {
     }
     return result;
 }
+;
+;
 //////////////////////////////
 // Request and Response Checking
 // @TODO: not any?
@@ -73,7 +76,7 @@ function arrayOf(check) {
     });
 }
 function checkHash(hash) {
-    if (typeof (hash) === 'string' && convert_1.isHexString(hash, 32)) {
+    if (typeof (hash) === 'string' && convert_1.hexDataLength(hash) === 32) {
         return hash;
     }
     errors.throwError('invalid hash', errors.INVALID_ARGUMENT, { arg: 'hash', value: hash });
@@ -369,10 +372,8 @@ function getEventString(object) {
     else if (object === 'pending') {
         return 'pending';
     }
-    else if (convert_1.isHexString(object)) {
-        if (object.length === 66) {
-            return 'tx:' + object;
-        }
+    else if (convert_1.hexDataLength(object) === 32) {
+        return 'tx:' + object;
     }
     else if (Array.isArray(object)) {
         object = recurse(object, function (object) {
@@ -430,11 +431,6 @@ type Event = {
 }
 */
 var Provider = /** @class */ (function () {
-    /**
-     *  Sub-classing notes
-     *    - If the network is standard or fully specified, ready will resolve
-     *    - Otherwise, the sub-class must assign a Promise to ready
-     */
     function Provider(network) {
         errors.checkNew(this, Provider);
         network = networks_1.getNetwork(network);
@@ -701,20 +697,27 @@ var Provider = /** @class */ (function () {
             });
         });
     };
-    // @TODO: Shold this return the full tx instead of the hash? If so, that requires
-    // the inclusion of secp256k1, which might be overkill for many applications...
     Provider.prototype.sendTransaction = function (signedTransaction) {
         var _this = this;
         return this.ready.then(function () {
             return properties_1.resolveProperties({ signedTransaction: signedTransaction }).then(function (_a) {
                 var signedTransaction = _a.signedTransaction;
                 var params = { signedTransaction: convert_1.hexlify(signedTransaction) };
-                return _this.perform('sendTransaction', params).then(function (result) {
-                    result = convert_1.hexlify(result);
-                    if (result.length !== 66) {
+                return _this.perform('sendTransaction', params).then(function (hash) {
+                    if (convert_1.hexDataLength(hash) !== 32) {
                         throw new Error('invalid response - sendTransaction');
                     }
-                    return result;
+                    // A signed transaction always has a from (and we add wait below)
+                    var tx = transaction_1.parse(signedTransaction);
+                    // Check the hash we expect is the same as the hash the server reported
+                    if (tx.hash !== hash) {
+                        errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
+                    }
+                    _this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
+                    tx.wait = function (timeout) {
+                        return _this.waitForTransaction(hash, timeout);
+                    };
+                    return tx;
                 });
             });
         });
@@ -752,7 +755,7 @@ var Provider = /** @class */ (function () {
                 var blockHashOrBlockTag = _a.blockHashOrBlockTag;
                 try {
                     var blockHash = convert_1.hexlify(blockHashOrBlockTag);
-                    if (blockHash.length === 66) {
+                    if (convert_1.hexDataLength(blockHash) === 32) {
                         return stallPromise(function () {
                             return (_this._emitted['b:' + blockHash.toLowerCase()] == null);
                         }, function () {
@@ -874,10 +877,10 @@ var Provider = /** @class */ (function () {
             var transaction = { to: network.ensAddress, data: data };
             return _this.call(transaction).then(function (data) {
                 // extract the address from the data
-                if (data.length != 66) {
+                if (convert_1.hexDataLength(data) !== 32) {
                     return null;
                 }
-                return address_1.getAddress('0x' + data.substring(26));
+                return address_1.getAddress(convert_1.hexDataSlice(data, 12));
             });
         });
     };
@@ -904,10 +907,10 @@ var Provider = /** @class */ (function () {
             return self.call(transaction);
             // extract the address from the data
         }).then(function (data) {
-            if (data.length != 66) {
+            if (convert_1.hexDataLength(data) !== 32) {
                 return null;
             }
-            var address = address_1.getAddress('0x' + data.substring(26));
+            var address = address_1.getAddress(convert_1.hexDataSlice(data, 12));
             if (address === '0x0000000000000000000000000000000000000000') {
                 return null;
             }

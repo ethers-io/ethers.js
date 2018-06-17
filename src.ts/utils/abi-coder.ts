@@ -300,6 +300,9 @@ function parseSignatureFunction(fragment: string): FunctionFragment {
     return abi;
 }
 
+export function parseParamType(type: string): ParamType {
+    return parseParam(type, true);
+}
 
 export function parseSignature(fragment: string): EventFragment | FunctionFragment {
     if(typeof(fragment) === 'string') {

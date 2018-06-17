@@ -78,7 +78,7 @@ function ibanChecksum(address: string): string {
     return checksum;
 };
 
-export function getAddress(address: string, icapFormat?: boolean): string {
+export function getAddress(address: string): string {
     var result = null;
 
     if (typeof(address) !== 'string') {
@@ -113,13 +113,13 @@ export function getAddress(address: string, icapFormat?: boolean): string {
         errors.throwError('invalid address', errors.INVALID_ARGUMENT, { arg: 'address', value: address });
     }
 
-    if (icapFormat) {
-        var base36 = (new BN(result.substring(2), 16)).toString(36).toUpperCase();
-        while (base36.length < 30) { base36 = '0' + base36; }
-        return 'XE' + ibanChecksum('XE00' + base36) + base36;
-    }
-
     return result;
+}
+
+export function getIcapAddress(address: string): string {
+    var base36 = (new BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
+    while (base36.length < 30) { base36 = '0' + base36; }
+    return 'XE' + ibanChecksum('XE00' + base36) + base36;
 }
 
 // http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed

@@ -1,5 +1,5 @@
-import { KeyPair } from './secp256k1';
 import { Arrayish } from '../utils/convert';
+import { KeyPair } from '../utils/secp256k1';
 export declare class HDNode {
     private readonly keyPair;
     readonly privateKey: string;

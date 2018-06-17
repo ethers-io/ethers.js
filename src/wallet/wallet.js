@@ -14,27 +14,18 @@ var scrypt_js_1 = __importDefault(require("scrypt-js"));
 var hdnode_1 = require("./hdnode");
 var secretStorage = __importStar(require("./secret-storage"));
 var signing_key_1 = require("./signing-key");
-var address_1 = require("../utils/address");
-var bignumber_1 = require("../utils/bignumber");
 var convert_1 = require("../utils/convert");
 var keccak256_1 = require("../utils/keccak256");
+var properties_1 = require("../utils/properties");
 var random_bytes_1 = require("../utils/random-bytes");
-var RLP = __importStar(require("../utils/rlp"));
+var transaction_1 = require("../utils/transaction");
 var utf8_1 = require("../utils/utf8");
 var errors = __importStar(require("../utils/errors"));
 // This ensures we inject a setImmediate into the global space, which
 // dramatically improves the performance of the scrypt PBKDF.
 console.log("Fix this! Setimmediate");
+// @TODO: Move to HDNode
 var defaultPath = "m/44'/60'/0'/0/0";
-var transactionFields = [
-    { name: 'nonce', maxLength: 32, },
-    { name: 'gasPrice', maxLength: 32, },
-    { name: 'gasLimit', maxLength: 32, },
-    { name: 'to', length: 20, },
-    { name: 'value', maxLength: 32, },
-    { name: 'data' },
-];
-// @TODO: Bytes32 or SigningKey
 var Wallet = /** @class */ (function () {
     function Wallet(privateKey, provider) {
         //private _provider;
@@ -44,146 +35,19 @@ var Wallet = /** @class */ (function () {
         if (privateKey instanceof signing_key_1.SigningKey) {
             this.signingKey = privateKey;
             if (this.signingKey.mnemonic) {
-                Object.defineProperty(this, 'mnemonic', {
-                    enumerable: true,
-                    value: this.signingKey.mnemonic,
-                    writable: false
-                });
-                //this.mnemonic = this.signingKey.mnemonic;
-                this.path = this.signingKey.path;
+                properties_1.defineReadOnly(this, 'mnemonic', privateKey.mnemonic);
+                properties_1.defineReadOnly(this, 'path', privateKey.path);
             }
         }
         else {
             this.signingKey = new signing_key_1.SigningKey(privateKey);
         }
-        this.privateKey = this.signingKey.privateKey;
+        properties_1.defineReadOnly(this, 'privateKey', this.signingKey.privateKey);
         this.provider = provider;
-        //this.address = this.signingKey.address;
-        Object.defineProperty(this, 'address', {
-            enumerable: true,
-            value: this.signingKey.address,
-            writable: false
-        });
+        properties_1.defineReadOnly(this, 'address', this.signingKey.address);
     }
     Wallet.prototype.sign = function (transaction) {
-        var chainId = transaction.chainId;
-        if (chainId == null && this.provider) {
-            chainId = this.provider.chainId;
-        }
-        if (!chainId) {
-            chainId = 0;
-        }
-        var raw = [];
-        transactionFields.forEach(function (fieldInfo) {
-            var value = transaction[fieldInfo.name] || ([]);
-            value = convert_1.arrayify(convert_1.hexlify(value));
-            // Fixed-width field
-            if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
-                var error = new Error('invalid ' + fieldInfo.name);
-                error.reason = 'wrong length';
-                error.value = value;
-                throw error;
-            }
-            // Variable-width (with a maximum)
-            if (fieldInfo.maxLength) {
-                value = convert_1.stripZeros(value);
-                if (value.length > fieldInfo.maxLength) {
-                    var error = new Error('invalid ' + fieldInfo.name);
-                    error.reason = 'too long';
-                    error.value = value;
-                    throw error;
-                }
-            }
-            raw.push(convert_1.hexlify(value));
-        });
-        if (chainId) {
-            raw.push(convert_1.hexlify(chainId));
-            raw.push('0x');
-            raw.push('0x');
-        }
-        var digest = keccak256_1.keccak256(RLP.encode(raw));
-        var signature = this.signingKey.signDigest(digest);
-        var v = 27 + signature.recoveryParam;
-        if (chainId) {
-            raw.pop();
-            raw.pop();
-            raw.pop();
-            v += chainId * 2 + 8;
-        }
-        raw.push(convert_1.hexlify(v));
-        raw.push(signature.r);
-        raw.push(signature.s);
-        return RLP.encode(raw);
-    };
-    /*
-        set provider(provider: Provider) {
-            this._provider = provider;
-        }
-    
-        get provider() {
-            return this._provider;
-        }
-    */
-    Wallet.parseTransaction = function (rawTransaction) {
-        rawTransaction = convert_1.hexlify(rawTransaction);
-        var signedTransaction = RLP.decode(rawTransaction);
-        if (signedTransaction.length !== 9) {
-            throw new Error('invalid transaction');
-        }
-        var raw = [];
-        var transaction = {};
-        transactionFields.forEach(function (fieldInfo, index) {
-            transaction[fieldInfo.name] = signedTransaction[index];
-            raw.push(signedTransaction[index]);
-        });
-        if (transaction.to) {
-            if (transaction.to == '0x') {
-                delete transaction.to;
-            }
-            else {
-                transaction.to = address_1.getAddress(transaction.to);
-            }
-        }
-        ['gasPrice', 'gasLimit', 'nonce', 'value'].forEach(function (name) {
-            if (!transaction[name]) {
-                return;
-            }
-            var value = bignumber_1.ConstantZero;
-            if (transaction[name].length > 0) {
-                value = bignumber_1.bigNumberify(transaction[name]);
-            }
-            transaction[name] = value;
-        });
-        transaction.nonce = transaction.nonce.toNumber();
-        var v = convert_1.arrayify(signedTransaction[6]);
-        var r = convert_1.arrayify(signedTransaction[7]);
-        var s = convert_1.arrayify(signedTransaction[8]);
-        if (v.length >= 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
-            transaction.v = bignumber_1.bigNumberify(v).toNumber();
-            transaction.r = signedTransaction[7];
-            transaction.s = signedTransaction[8];
-            var chainId = (transaction.v - 35) / 2;
-            if (chainId < 0) {
-                chainId = 0;
-            }
-            chainId = Math.trunc(chainId);
-            transaction.chainId = chainId;
-            var recoveryParam = transaction.v - 27;
-            if (chainId) {
-                raw.push(convert_1.hexlify(chainId));
-                raw.push('0x');
-                raw.push('0x');
-                recoveryParam -= chainId * 2 + 8;
-            }
-            var digest = keccak256_1.keccak256(RLP.encode(raw));
-            try {
-                transaction.from = signing_key_1.recoverAddress(digest, { r: convert_1.hexlify(r), s: convert_1.hexlify(s), recoveryParam: recoveryParam });
-            }
-            catch (error) {
-                console.log(error);
-            }
-        }
-        return transaction;
+        return transaction_1.sign(transaction, this.signingKey.signDigest.bind(this.signingKey));
     };
     Wallet.prototype.getAddress = function () {
         return Promise.resolve(this.address);
@@ -199,6 +63,12 @@ var Wallet = /** @class */ (function () {
             throw new Error('missing provider');
         }
         return this.provider.getTransactionCount(this.address, blockTag);
+    };
+    Wallet.prototype.getGasPrice = function () {
+        if (!this.provider) {
+            throw new Error('missing provider');
+        }
+        return this.provider.getGasPrice();
     };
     Wallet.prototype.estimateGas = function (transaction) {
         if (!this.provider) {
@@ -217,59 +87,32 @@ var Wallet = /** @class */ (function () {
         return this.provider.estimateGas(calculate);
     };
     Wallet.prototype.sendTransaction = function (transaction) {
+        var _this = this;
         if (!this.provider) {
             throw new Error('missing provider');
         }
         if (!transaction || typeof (transaction) !== 'object') {
             throw new Error('invalid transaction object');
         }
-        var gasLimit = transaction.gasLimit;
-        if (gasLimit == null) {
-            gasLimit = this.defaultGasLimit;
+        var tx = properties_1.shallowCopy(transaction);
+        if (tx.to != null) {
+            tx.to = this.provider.resolveName(tx.to);
         }
-        var self = this;
-        var gasPricePromise = null;
-        if (transaction.gasPrice) {
-            gasPricePromise = Promise.resolve(transaction.gasPrice);
+        if (tx.gasLimit == null) {
+            tx.gasLimit = this.estimateGas(tx);
         }
-        else {
-            gasPricePromise = this.provider.getGasPrice();
+        if (tx.gasPrice == null) {
+            tx.gasPrice = this.getGasPrice();
         }
-        var noncePromise = null;
-        if (transaction.nonce) {
-            noncePromise = Promise.resolve(transaction.nonce);
+        if (tx.nonce == null) {
+            tx.nonce = this.getTransactionCount();
         }
-        else {
-            noncePromise = this.provider.getTransactionCount(self.address, 'pending');
+        if (tx.chainId == null) {
+            tx.chainId = this.provider.getNetwork().then(function (network) { return network.chainId; });
         }
-        var chainId = this.provider.chainId;
-        var toPromise = null;
-        if (transaction.to) {
-            toPromise = this.provider.resolveName(transaction.to);
-        }
-        else {
-            toPromise = Promise.resolve(undefined);
-        }
-        var data = convert_1.hexlify(transaction.data || '0x');
-        var value = bignumber_1.ConstantZero;
-        return Promise.all([gasPricePromise, noncePromise, toPromise]).then(function (results) {
-            var signedTransaction = self.sign({
-                to: results[2],
-                data: data,
-                gasLimit: gasLimit,
-                gasPrice: results[0],
-                nonce: results[1],
-                value: value,
-                chainId: chainId
-            });
-            return self.provider.sendTransaction(signedTransaction).then(function (hash) {
-                var transaction = Wallet.parseTransaction(signedTransaction);
-                transaction.hash = hash;
-                transaction.wait = function () {
-                    return self.provider.waitForTransaction(hash);
-                };
-                return transaction;
-            });
+        return properties_1.resolveProperties(tx).then(function (tx) {
+            console.log('To Sign', tx);
+            return _this.provider.sendTransaction(_this.sign(tx));
         });
     };
     Wallet.prototype.send = function (addressOrName, amountWei, options) {

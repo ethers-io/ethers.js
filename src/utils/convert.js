@@ -120,7 +120,6 @@ function isHexString(value, length) {
 }
 exports.isHexString = isHexString;
 var HexCharacters = '0123456789abcdef';
-// @TODO: Do not use any here
 function hexlify(value) {
     if (isBigNumber(value)) {
         return value.toHexString();
@@ -167,6 +166,27 @@ function hexlify(value) {
     return 'never';
 }
 exports.hexlify = hexlify;
+function hexDataLength(data) {
+    if (!isHexString(data) || (data.length % 2) !== 0) {
+        return null;
+    }
+    return (data.length - 2) / 2;
+}
+exports.hexDataLength = hexDataLength;
+function hexDataSlice(data, offset, length) {
+    if (!isHexString(data)) {
+        errors.throwError('invalid hex data', errors.INVALID_ARGUMENT, { arg: 'value', value: data });
+    }
+    if ((data.length % 2) !== 0) {
+        errors.throwError('hex data length must be even', errors.INVALID_ARGUMENT, { arg: 'value', value: data });
+    }
+    offset = 2 + 2 * offset;
+    if (length != null) {
+        return '0x' + data.substring(offset, offset + 2 * length);
+    }
+    return '0x' + data.substring(offset);
+}
+exports.hexDataSlice = hexDataSlice;
 function hexStripZeros(value) {
     if (!isHexString(value)) {
         errors.throwError('invalid hex string', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
@@ -187,12 +207,6 @@ function hexZeroPad(value, length) {
     return value;
 }
 exports.hexZeroPad = hexZeroPad;
-/* @TODO: Add something like this to make slicing code easier to understand
-function hexSlice(hex, start, end) {
-    hex = hexlify(hex);
-    return '0x' + hex.substring(2 + start * 2, 2 + end * 2);
-}
-*/
 function splitSignature(signature) {
     var bytes = arrayify(signature);
     if (bytes.length !== 65) {
@@ -205,6 +219,7 @@ function splitSignature(signature) {
     return {
         r: hexlify(bytes.slice(0, 32)),
         s: hexlify(bytes.slice(32, 64)),
+        recoveryParam: (v - 27),
         v: v
     };
 }

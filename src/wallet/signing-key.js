@@ -5,12 +5,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  *
  */
-var secp256k1_1 = require("./secp256k1");
 var address_1 = require("../utils/address");
 var convert_1 = require("../utils/convert");
 var hdnode_1 = require("./hdnode");
 var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
+var secp256k1_1 = require("../utils/secp256k1");
 var errors = require("../utils/errors");
 var SigningKey = /** @class */ (function () {
     function SigningKey(privateKey) {

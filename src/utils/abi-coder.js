@@ -244,6 +244,10 @@ function parseSignatureFunction(fragment) {
     }
     return abi;
 }
+function parseParamType(type) {
+    return parseParam(type, true);
+}
+exports.parseParamType = parseParamType;
 function parseSignature(fragment) {
     if (typeof (fragment) === 'string') {
         // Make sure the "returns" is surrounded by a space and all whitespace is exactly one space

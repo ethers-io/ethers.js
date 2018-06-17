@@ -4,12 +4,13 @@
 
 import { getAddress, getContractAddress } from '../utils/address';
 import { BigNumber, bigNumberify, BigNumberish } from '../utils/bignumber';
-import { Arrayish, hexlify, hexStripZeros, isHexString, stripZeros } from '../utils/convert';
+import { Arrayish, hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, stripZeros } from '../utils/convert';
 import { toUtf8String } from '../utils/utf8';
 import { decode as rlpDecode, encode as rlpEncode } from '../utils/rlp';
 import { namehash } from '../utils/namehash';
 import { getNetwork, Network } from './networks';
 import { resolveProperties } from '../utils/properties';
+import { parse as parseTransaction, Transaction } from '../utils/transaction';
 
 import * as errors from '../utils/errors';
 
@@ -24,22 +25,22 @@ function copyObject(obj) {
 
 export type BlockTag = string | number;
 
-export type Block = {
-    hash: string,
-    parentHash: string,
-    number: number,
+export interface Block {
+    hash: string;
+    parentHash: string;
+    number: number;
 
-    timestamp: number,
-    nonce: string,
-    difficulty: string,
+    timestamp: number;
+    nonce: string;
+    difficulty: string;
 
-    gasLimit: BigNumber,
-    gasUsed: BigNumber,
+    gasLimit: BigNumber;
+    gasUsed: BigNumber;
 
-    miner: string,
-    extraData: string,
+    miner: string;
+    extraData: string;
 
-    transactions: Array<string>
+    transactions: Array<string>;
 }
 
 export type TransactionRequest = {
@@ -55,32 +56,20 @@ export type TransactionRequest = {
     chainId?: number | Promise<number>,
 }
 
-export type TransactionResponse = {
+export interface TransactionResponse extends Transaction {
+    // Only if a transaction has been mined
     blockNumber?: number,
     blockHash?: string,
     timestamp?: number,
 
-    hash: string,
+    // Not optional (as it is in Transaction)
+    from: string;
 
-    to?: string,
-    from?: string,
-    nonce?: number,
+    // This function waits until the transaction has been mined
+    wait: (timeout?: number) => Promise<TransactionResponse>
+};
 
-    gasLimit?: BigNumber,
-    gasPrice?: BigNumber,
-
-    data?: string,
-    value: BigNumber,
-    chainId?: number,
-
-    r?: string,
-    s?: string,
-    v?: number,
-
-    wait?: (timeout?: number) => Promise<TransactionResponse>;
-}
-
-export type TransactionReceipt  = {
+export interface TransactionReceipt {
     contractAddress?: string,
     transactionIndex?: number,
     root?: string,
@@ -102,20 +91,20 @@ export type Filter = {
 }
 
 // @TODO: Some of these are not options; force them?
-export type Log = {
-    blockNumber?: number,
-    blockHash?: string,
-    transactionIndex?: number,
+export interface Log {
+    blockNumber?: number;
+    blockHash?: string;
+    transactionIndex?: number;
 
-    removed?: boolean,
+    removed?: boolean;
 
-    address: string,
-    data?: string,
+    address: string;
+    data?: string;
 
-    topics?: Array<string>,
+    topics?: Array<string>;
 
-    transactionHash?: string,
-    logIndex?: number,
+    transactionHash?: string;
+    logIndex?: number;
 }
 
 //////////////////////////////
@@ -168,7 +157,7 @@ function arrayOf(check: CheckFunc): CheckFunc {
 }
 
 function checkHash(hash: any): string {
-    if (typeof(hash) === 'string' && isHexString(hash, 32)) {
+    if (typeof(hash) === 'string' && hexDataLength(hash) === 32) {
        return hash;
     }
     errors.throwError('invalid hash', errors.INVALID_ARGUMENT, { arg: 'hash', value: hash });
@@ -199,7 +188,7 @@ function checkBoolean(value): boolean {
     throw new Error('invaid boolean - ' + value);
 }
 
-function checkUint256(uint256): string {
+function checkUint256(uint256: string): string {
     if (!isHexString(uint256)) {
         throw new Error('invalid uint256');
     }
@@ -519,10 +508,9 @@ function getEventString(object) {
     } else if (object === 'pending') {
         return 'pending';
 
-    } else if (isHexString(object)) {
-        if (object.length === 66) {
-            return 'tx:' + object;
-        }
+    } else if (hexDataLength(object) === 32) {
+        return 'tx:' + object;
+
     } else if (Array.isArray(object)) {
         object = recurse(object, function(object) {
             if (object == null) { object = '0x'; }
@@ -581,7 +569,6 @@ type Event = {
 
 export class Provider {
     private _network: Network;
-    protected ready: Promise<Network>;
 
     // string => Event
     private _events: any;
@@ -595,11 +582,17 @@ export class Provider {
     // string => BigNumber
     private _balances: any;
 
+
     /**
-     *  Sub-classing notes
-     *    - If the network is standard or fully specified, ready will resolve
-     *    - Otherwise, the sub-class must assign a Promise to ready
+     *  ready
+     *
+     *  A Promise<Network> that resolves only once the provider is ready.
+     *
+     *  Sub-classes that call the super with a network without a chainId
+     *  MUST set this. Standard named networks have a known chainId.
+     *
      */
+    protected ready: Promise<Network>;
 
     constructor(network: string | Network) {
         errors.checkNew(this, Provider);
@@ -859,16 +852,26 @@ export class Provider {
         });
     }
 
-    // @TODO: Shold this return the full tx instead of the hash? If so, that requires
-    // the inclusion of secp256k1, which might be overkill for many applications...
-    sendTransaction(signedTransaction: string | Promise<string>): Promise<string> {
+    sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse> {
         return this.ready.then(() => {
             return resolveProperties({ signedTransaction: signedTransaction }).then(({ signedTransaction }) => {
                 var params = { signedTransaction: hexlify(signedTransaction) };
-                return this.perform('sendTransaction', params).then((result) => {
-                    result = hexlify(result);
-                    if (result.length !== 66) { throw new Error('invalid response - sendTransaction'); }
-                    return result;
+                return this.perform('sendTransaction', params).then((hash) => {
+                    if (hexDataLength(hash) !== 32) { throw new Error('invalid response - sendTransaction'); }
+
+                    // A signed transaction always has a from (and we add wait below)
+                    var tx = <TransactionResponse>parseTransaction(signedTransaction);
+
+                    // Check the hash we expect is the same as the hash the server reported
+                    if (tx.hash !== hash) {
+                        errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
+                    }
+                    this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
+                    tx.wait = (timeout?: number) => {
+                        return this.waitForTransaction(hash, timeout);
+                    };
+
+                    return tx;
                 });
             });
         });
@@ -906,7 +909,7 @@ export class Provider {
             return resolveProperties({ blockHashOrBlockTag: blockHashOrBlockTag }).then(({ blockHashOrBlockTag }) => {
                 try {
                     var blockHash = hexlify(blockHashOrBlockTag);
-                    if (blockHash.length === 66) {
+                    if (hexDataLength(blockHash) === 32) {
                         return stallPromise(() => {
                             return (this._emitted['b:' + blockHash.toLowerCase()] == null);
                         }, () => {
@@ -1028,8 +1031,8 @@ export class Provider {
             return this.call(transaction).then((data) => {
 
                 // extract the address from the data
-                if (data.length != 66) { return null; }
-                return getAddress('0x' + data.substring(26));
+                if (hexDataLength(data) !== 32) { return null; }
+                return getAddress(hexDataSlice(data, 12));
             });
         });
     }
@@ -1062,8 +1065,8 @@ export class Provider {
 
         // extract the address from the data
         }).then(function(data) {
-            if (data.length != 66) { return null; }
-            var address = getAddress('0x' + data.substring(26));
+            if (hexDataLength(data) !== 32) { return null; }
+            var address = getAddress(hexDataSlice(data, 12));
             if (address === '0x0000000000000000000000000000000000000000') { return null; }
             return address;
         });

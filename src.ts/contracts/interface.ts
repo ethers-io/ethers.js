@@ -39,13 +39,6 @@ function parseParams(params: Array<ParamType>): { names: Array<any>, types: Arra
     }
 }
 
-export class Indexed {
-    readonly hash: string;
-    constructor(value: string) {
-        defineReadOnly(this, 'hash', value);
-    }
-}
-
 export class Description {
     readonly type: string;
     readonly inputs: Array<ParamType>;
@@ -58,6 +51,16 @@ export class Description {
                 defineReadOnly(this, key, info[key]);
             }
         }
+    }
+}
+
+// @TOOD: Make this a description
+export class Indexed {
+    readonly type: string;
+    readonly hash: string;
+    constructor(value: string) {
+        defineReadOnly(this, 'type', 'indexed');
+        defineReadOnly(this, 'hash', value);
     }
 }
 
@@ -160,7 +163,7 @@ export type CallTransaction = {
     value: BigNumber
 }
 
-// @TODO: Make this a class
+// @TODO: Make this a description
 function Result() {}
 
 export class EventDescription extends Description {

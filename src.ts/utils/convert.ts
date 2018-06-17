@@ -4,12 +4,13 @@
  */
 
 import { BigNumber } from './bignumber';
+import { Signature } from './secp256k1';
 
 import errors = require('./errors');
 
-export type Arrayish = string | ArrayLike<number>;
 
-export type Signature = { r: string, s: string, v: number };
+
+export type Arrayish = string | ArrayLike<number>;
 
 
 function isBigNumber(value: any): value is BigNumber {
@@ -140,7 +141,6 @@ export function isHexString(value: any, length?: number): boolean {
 
 const HexCharacters: string = '0123456789abcdef';
 
-// @TODO: Do not use any here
 export function hexlify(value: Arrayish | BigNumber | number): string {
 
     if (isBigNumber(value)) {
@@ -196,6 +196,29 @@ export function hexlify(value: Arrayish | BigNumber | number): string {
     return 'never';
 }
 
+export function hexDataLength(data: string) {
+    if (!isHexString(data) || (data.length % 2) !== 0) {
+        return null;
+    }
+    return (data.length - 2) / 2;
+}
+
+export function hexDataSlice(data: string, offset: number, length?: number): string {
+    if (!isHexString(data)) {
+        errors.throwError('invalid hex data', errors.INVALID_ARGUMENT, { arg: 'value', value: data });
+    }
+    if ((data.length % 2) !== 0) {
+        errors.throwError('hex data length must be even', errors.INVALID_ARGUMENT, { arg: 'value', value: data });
+    }
+    offset = 2 + 2 * offset;
+
+    if (length != null) {
+        return '0x' + data.substring(offset, offset + 2 * length);
+    }
+
+    return '0x' + data.substring(offset);
+}
+
 export function hexStripZeros(value: string): string {
     if (!isHexString(value)) {
         errors.throwError('invalid hex string', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
@@ -217,13 +240,6 @@ export function hexZeroPad(value: string, length: number): string {
     return value;
 }
 
-/* @TODO: Add something like this to make slicing code easier to understand
-function hexSlice(hex, start, end) {
-    hex = hexlify(hex);
-    return '0x' + hex.substring(2 + start * 2, 2 + end * 2);
-}
-*/
-
 export function splitSignature(signature: Arrayish): Signature {
     let bytes: Uint8Array = arrayify(signature);
     if (bytes.length !== 65) {
@@ -238,6 +254,7 @@ export function splitSignature(signature: Arrayish): Signature {
     return {
         r: hexlify(bytes.slice(0, 32)),
         s: hexlify(bytes.slice(32, 64)),
+        recoveryParam: (v - 27),
         v: v
     }
 }

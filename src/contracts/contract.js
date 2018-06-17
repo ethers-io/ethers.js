@@ -9,6 +9,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var interface_1 = require("./interface");
 var address_1 = require("../utils/address");
+var convert_1 = require("../utils/convert");
 var bignumber_1 = require("../utils/bignumber");
 var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
@@ -154,11 +155,11 @@ function runMethod(contract, functionName, estimateOnly) {
                     });
                 }
                 if (transaction.gasLimit == null) {
-                    if (contract.signer.defaultGasLimit) {
-                        transaction.gasLimit = contract.signer.defaultGasLimit;
+                    if (contract.signer.estimateGas) {
+                        transaction.gasLimit = contract.signer.estimateGas(transaction);
                     }
                     else {
-                        transaction.gasLimit = 200000;
+                        transaction.gasLimit = contract.provider.estimateGas(transaction);
                     }
                 }
                 if (!transaction.nonce) {
@@ -176,8 +177,8 @@ function runMethod(contract, functionName, estimateOnly) {
                     }
                 }
                 if (!transaction.gasPrice) {
-                    if (contract.signer.defaultGasPrice) {
-                        transaction.gasPrice = contract.signer.defaultGasPrice;
+                    if (contract.signer.getGasPrice) {
+                        transaction.gasPrice = contract.signer.getGasPrice(transaction);
                     }
                     else {
                         transaction.gasPrice = contract.provider.getGasPrice();
@@ -316,6 +317,12 @@ var Contract = /** @class */ (function () {
         }
         if (this.signer == null) {
             throw new Error('missing signer'); // @TODO: errors.throwError
+        }
+        if (!convert_1.isHexString(bytecode)) {
+            errors.throwError('bytecode must be a valid hex string', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
+        }
+        if ((bytecode.length % 2) !== 0) {
+            errors.throwError('bytecode must be valid data (even length)', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
         }
         // @TODO: overrides of args.length = this.interface.deployFunction.inputs.length + 1
         return this.signer.sendTransaction({

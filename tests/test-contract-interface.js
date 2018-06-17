@@ -200,7 +200,7 @@ describe('Test Contract Events', function() {
 
             test.normalizedValues.forEach(function(expected, index) {
                 if (test.indexed[index]) {
-                    assert.ok((parsed[index].indexed && parsed[index].hash == null), 'parsed event data has empty Indexed - ' + index);
+                    assert.ok((parsed[index].type === 'indexed' && parsed[index].hash == null), 'parsed event data has empty Indexed - ' + index);
                 } else {
                     assert.ok(equals(parsed[index], expected), 'parsed event data matches - ' + index);
                 }
