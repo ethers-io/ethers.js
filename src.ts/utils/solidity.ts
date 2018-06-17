@@ -1,7 +1,7 @@
 'use strict';
 
 import { bigNumberify } from './bignumber';
-import { arrayify, concat, hexlify, padZeros} from './convert';
+import { arrayify, concat, hexlify, padZeros} from './bytes';
 import { toUtf8Bytes } from './utf8';
 
 import { keccak256 as hashKeccak256 } from './keccak256';

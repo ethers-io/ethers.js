@@ -1,6 +1,6 @@
 'use strict';
 
-import { concat, hexlify } from './convert';
+import { concat, hexlify } from './bytes';
 import { toUtf8Bytes } from './utf8';
 import { keccak256 } from './keccak256';
 

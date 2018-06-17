@@ -1,9 +1,9 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
-var convert_1 = require("./convert");
+var bytes_1 = require("./bytes");
 function pbkdf2(password, salt, iterations, keylen, createHmac) {
-    password = convert_1.arrayify(password);
-    salt = convert_1.arrayify(salt);
+    password = bytes_1.arrayify(password);
+    salt = bytes_1.arrayify(salt);
     var hLen;
     var l = 1;
     var DK = new Uint8Array(keylen);
@@ -35,8 +35,8 @@ function pbkdf2(password, salt, iterations, keylen, createHmac) {
         var destPos = (i - 1) * hLen;
         var len = (i === l ? r : hLen);
         //T.copy(DK, destPos, 0, len)
-        DK.set(convert_1.arrayify(T).slice(0, len), destPos);
+        DK.set(bytes_1.arrayify(T).slice(0, len), destPos);
     }
-    return convert_1.arrayify(DK);
+    return bytes_1.arrayify(DK);
 }
 exports.pbkdf2 = pbkdf2;

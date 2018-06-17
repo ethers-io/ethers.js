@@ -14,7 +14,7 @@ var scrypt_js_1 = __importDefault(require("scrypt-js"));
 var hdnode_1 = require("./hdnode");
 var secretStorage = __importStar(require("./secret-storage"));
 var signing_key_1 = require("./signing-key");
-var convert_1 = require("../utils/convert");
+var bytes_1 = require("../utils/bytes");
 var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
 var random_bytes_1 = require("../utils/random-bytes");
@@ -128,7 +128,7 @@ var Wallet = /** @class */ (function () {
         });
     };
     Wallet.hashMessage = function (message) {
-        var payload = convert_1.concat([
+        var payload = bytes_1.concat([
             utf8_1.toUtf8Bytes('\x19Ethereum Signed Message:\n'),
             utf8_1.toUtf8Bytes(String(message.length)),
             ((typeof (message) === 'string') ? utf8_1.toUtf8Bytes(message) : message)
@@ -138,10 +138,10 @@ var Wallet = /** @class */ (function () {
     Wallet.prototype.signMessage = function (message) {
         var signingKey = new signing_key_1.SigningKey(this.privateKey);
         var sig = signingKey.signDigest(Wallet.hashMessage(message));
-        return (convert_1.hexZeroPad(sig.r, 32) + convert_1.hexZeroPad(sig.s, 32).substring(2) + (sig.recoveryParam ? '1c' : '1b'));
+        return (bytes_1.hexZeroPad(sig.r, 32) + bytes_1.hexZeroPad(sig.s, 32).substring(2) + (sig.recoveryParam ? '1c' : '1b'));
     };
     Wallet.verifyMessage = function (message, signature) {
-        signature = convert_1.hexlify(signature);
+        signature = bytes_1.hexlify(signature);
         if (signature.length != 132) {
             throw new Error('invalid signature');
         }
@@ -189,7 +189,7 @@ var Wallet = /** @class */ (function () {
             options = {};
         }
         if (options.extraEntropy) {
-            entropy = convert_1.arrayify(keccak256_1.keccak256(convert_1.concat([entropy, options.extraEntropy])).substring(0, 34));
+            entropy = bytes_1.arrayify(keccak256_1.keccak256(bytes_1.concat([entropy, options.extraEntropy])).substring(0, 34));
         }
         var mnemonic = hdnode_1.entropyToMnemonic(entropy);
         return Wallet.fromMnemonic(mnemonic, options.path);
@@ -244,13 +244,13 @@ var Wallet = /** @class */ (function () {
             username = utf8_1.toUtf8Bytes(username, utf8_1.UnicodeNormalizationForm.NFKC);
         }
         else {
-            username = convert_1.arrayify(username);
+            username = bytes_1.arrayify(username);
         }
         if (typeof (password) === 'string') {
             password = utf8_1.toUtf8Bytes(password, utf8_1.UnicodeNormalizationForm.NFKC);
         }
         else {
-            password = convert_1.arrayify(password);
+            password = bytes_1.arrayify(password);
         }
         return new Promise(function (resolve, reject) {
             scrypt_js_1.default(password, username, (1 << 18), 8, 1, 32, function (error, progress, key) {
@@ -258,7 +258,7 @@ var Wallet = /** @class */ (function () {
                     reject(error);
                 }
                 else if (key) {
-                    resolve(new Wallet(convert_1.hexlify(key)));
+                    resolve(new Wallet(bytes_1.hexlify(key)));
                 }
                 else if (progressCallback) {
                     return progressCallback(progress);

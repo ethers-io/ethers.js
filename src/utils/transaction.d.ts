@@ -1,5 +1,5 @@
 import { BigNumber, BigNumberish } from './bignumber';
-import { Arrayish } from './convert';
+import { Arrayish } from './bytes';
 import { Signature } from './secp256k1';
 export interface UnsignedTransaction {
     to?: string;

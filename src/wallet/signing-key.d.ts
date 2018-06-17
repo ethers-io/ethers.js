@@ -1,4 +1,4 @@
-import { Arrayish } from '../utils/convert';
+import { Arrayish } from '../utils/bytes';
 import { HDNode } from './hdnode';
 import { Signature } from '../utils/secp256k1';
 export declare class SigningKey {

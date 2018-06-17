@@ -7,7 +7,7 @@ import { getAddress, getContractAddress, getIcapAddress } from './address';
 import { AbiCoder, defaultAbiCoder, parseSignature } from './abi-coder';
 import * as base64 from './base64';
 import * as bigNumber from './bignumber';
-import * as convert from './convert';
+import * as bytes from './bytes';
 import { id } from './id';
 import { keccak256 } from './keccak256';
 import { namehash } from './namehash';
@@ -38,18 +38,18 @@ export default {
     // NFKC (composed)
     etherSymbol: '\u039e',
 
-    arrayify: convert.arrayify,
+    arrayify: bytes.arrayify,
 
-    concat: convert.concat,
-    padZeros: convert.padZeros,
-    stripZeros: convert.stripZeros,
+    concat: bytes.concat,
+    padZeros: bytes.padZeros,
+    stripZeros: bytes.stripZeros,
 
     base64: base64,
 
     bigNumberify: bigNumber.bigNumberify,
     BigNumber: bigNumber.BigNumber,
 
-    hexlify: convert.hexlify,
+    hexlify: bytes.hexlify,
 
     toUtf8Bytes: utf8.toUtf8Bytes,
     toUtf8String: utf8.toUtf8String,
@@ -76,7 +76,7 @@ export default {
     solidityKeccak256: solidity.keccak256,
     soliditySha256: solidity.sha256,
 
-    splitSignature: convert.splitSignature,
+    splitSignature: bytes.splitSignature,
 
     parseTransaction: parseTransaction
 }

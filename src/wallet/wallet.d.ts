@@ -3,7 +3,7 @@ import { ProgressCallback } from './secret-storage';
 import { SigningKey } from './signing-key';
 import { BlockTag, Provider, TransactionRequest, TransactionResponse } from '../providers/provider';
 import { BigNumber, BigNumberish } from '../utils/bignumber';
-import { Arrayish } from '../utils/convert';
+import { Arrayish } from '../utils/bytes';
 import { UnsignedTransaction } from '../utils/transaction';
 export interface Signer {
     address?: string;

@@ -1,4 +1,4 @@
-import { Arrayish } from './convert';
+import { Arrayish } from './bytes';
 import { HmacFunc } from './hmac';
 export interface CreateHmacFunc {
     (key: Arrayish): HmacFunc;

@@ -1,6 +1,6 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
-var convert_1 = require("./convert");
+var bytes_1 = require("./bytes");
 var UnicodeNormalizationForm;
 (function (UnicodeNormalizationForm) {
     UnicodeNormalizationForm["current"] = "";
@@ -43,13 +43,13 @@ function toUtf8Bytes(str, form) {
             result[offset++] = (c & 63) | 128;
         }
     }
-    return convert_1.arrayify(result);
+    return bytes_1.arrayify(result);
 }
 exports.toUtf8Bytes = toUtf8Bytes;
 ;
 // http://stackoverflow.com/questions/13356493/decode-utf-8-with-javascript#13691499
 function toUtf8String(bytes) {
-    bytes = convert_1.arrayify(bytes);
+    bytes = bytes_1.arrayify(bytes);
     var result = '';
     var i = 0;
     // Invalid bytes are ignored

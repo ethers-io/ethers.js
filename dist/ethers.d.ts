@@ -1,5 +1,5 @@
 declare module "utils/keccak256" {
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     export function keccak256(data: Arrayish): string;
 }
 declare module "utils/properties" {
@@ -25,7 +25,7 @@ declare module "utils/errors" {
     export function checkNew(self: any, kind: any): void;
 }
 declare module "utils/secp256k1" {
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     export const N: string;
     export interface Signature {
         r: string;
@@ -46,7 +46,7 @@ declare module "utils/secp256k1" {
     export function recoverAddress(digest: Arrayish, signature: Signature): string;
     export function computeAddress(key: string): string;
 }
-declare module "utils/convert" {
+declare module "utils/bytes" {
     /**
      *  Conversion Utilities
      *
@@ -68,7 +68,7 @@ declare module "utils/convert" {
     export function splitSignature(signature: Arrayish): Signature;
 }
 declare module "utils/bignumber" {
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     export type BigNumberish = BigNumber | string | number | Arrayish;
     export class BigNumber {
         private readonly _bn;
@@ -101,13 +101,13 @@ declare module "utils/bignumber" {
     export const ConstantWeiPerEther: BigNumber;
 }
 declare module "utils/rlp" {
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     export function encode(object: any): string;
     export function decode(data: Arrayish): any;
 }
 declare module "utils/address" {
     import { BigNumber } from "utils/bignumber";
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     export function getAddress(address: string): string;
     export function getIcapAddress(address: string): string;
     export function getContractAddress(transaction: {
@@ -116,7 +116,7 @@ declare module "utils/address" {
     }): string;
 }
 declare module "utils/utf8" {
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     export enum UnicodeNormalizationForm {
         current = "",
         NFC = "NFC",
@@ -128,7 +128,7 @@ declare module "utils/utf8" {
     export function toUtf8String(bytes: Arrayish): string;
 }
 declare module "utils/abi-coder" {
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     export type CoerceFunc = (type: string, value: any) => any;
     export type ParamType = {
         name?: string;
@@ -277,7 +277,7 @@ declare module "providers/networks" {
 }
 declare module "utils/transaction" {
     import { BigNumber, BigNumberish } from "utils/bignumber";
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     import { Signature } from "utils/secp256k1";
     export interface UnsignedTransaction {
         to?: string;
@@ -308,7 +308,7 @@ declare module "utils/transaction" {
 }
 declare module "providers/provider" {
     import { BigNumber, BigNumberish } from "utils/bignumber";
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     import { Network } from "providers/networks";
     import { Transaction } from "utils/transaction";
     export type BlockTag = string | number;
@@ -436,7 +436,7 @@ declare module "wallet/words" {
     export function getWordIndex(word: string): number;
 }
 declare module "utils/hmac" {
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     interface HashFunc {
         (): HashFunc;
         update(chunk: Uint8Array): HashFunc;
@@ -450,7 +450,7 @@ declare module "utils/hmac" {
     export function createSha512Hmac(key: Arrayish): HmacFunc;
 }
 declare module "utils/pbkdf2" {
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     import { HmacFunc } from "utils/hmac";
     export interface CreateHmacFunc {
         (key: Arrayish): HmacFunc;
@@ -458,12 +458,12 @@ declare module "utils/pbkdf2" {
     export function pbkdf2(password: Arrayish, salt: Arrayish, iterations: number, keylen: number, createHmac: CreateHmacFunc): Uint8Array;
 }
 declare module "utils/sha2" {
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     export function sha256(data: Arrayish): string;
     export function sha512(data: Arrayish): string;
 }
 declare module "wallet/hdnode" {
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     import { KeyPair } from "utils/secp256k1";
     export class HDNode {
         private readonly keyPair;
@@ -489,7 +489,7 @@ declare module "utils/random-bytes" {
     export function randomBytes(length: number): Uint8Array;
 }
 declare module "wallet/signing-key" {
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     import { HDNode } from "wallet/hdnode";
     import { Signature } from "utils/secp256k1";
     export class SigningKey {
@@ -506,7 +506,7 @@ declare module "wallet/signing-key" {
     export function computeAddress(key: string): string;
 }
 declare module "wallet/secret-storage" {
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     import { SigningKey } from "wallet/signing-key";
     export interface ProgressCallback {
         (percent: number): void;
@@ -523,7 +523,7 @@ declare module "wallet/wallet" {
     import { SigningKey } from "wallet/signing-key";
     import { BlockTag, Provider, TransactionRequest, TransactionResponse } from "providers/provider";
     import { BigNumber, BigNumberish } from "utils/bignumber";
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     import { UnsignedTransaction } from "utils/transaction";
     export interface Signer {
         address?: string;
@@ -597,7 +597,7 @@ declare module "contracts/index" {
     export { Contract, Interface };
 }
 declare module "utils/base64" {
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     export function decode(textData: string): Uint8Array;
     export function encode(data: Arrayish): string;
 }
@@ -635,7 +635,7 @@ declare module "providers/json-rpc-provider" {
     import { Network } from "providers/networks";
     import { BlockTag, Provider, TransactionRequest } from "providers/provider";
     import { BigNumber } from "utils/bignumber";
-    import { Arrayish } from "utils/convert";
+    import { Arrayish } from "utils/bytes";
     import { ConnectionInfo } from "utils/web";
     export function hexlifyTransaction(transaction: TransactionRequest): any;
     export class JsonRpcSigner {
@@ -720,7 +720,7 @@ declare module "utils/index" {
     import { AbiCoder, parseSignature } from "utils/abi-coder";
     import * as base64 from "utils/base64";
     import * as bigNumber from "utils/bignumber";
-    import * as convert from "utils/convert";
+    import * as bytes from "utils/bytes";
     import { id } from "utils/id";
     import { keccak256 } from "utils/keccak256";
     import { namehash } from "utils/namehash";
@@ -739,14 +739,14 @@ declare module "utils/index" {
         RLP: typeof RLP;
         fetchJson: typeof fetchJson;
         etherSymbol: string;
-        arrayify: typeof convert.arrayify;
-        concat: typeof convert.concat;
-        padZeros: typeof convert.padZeros;
-        stripZeros: typeof convert.stripZeros;
+        arrayify: typeof bytes.arrayify;
+        concat: typeof bytes.concat;
+        padZeros: typeof bytes.padZeros;
+        stripZeros: typeof bytes.stripZeros;
         base64: typeof base64;
         bigNumberify: typeof bigNumber.bigNumberify;
         BigNumber: typeof bigNumber.BigNumber;
-        hexlify: typeof convert.hexlify;
+        hexlify: typeof bytes.hexlify;
         toUtf8Bytes: typeof utf8.toUtf8Bytes;
         toUtf8String: typeof utf8.toUtf8String;
         namehash: typeof namehash;
@@ -764,7 +764,7 @@ declare module "utils/index" {
         solidityPack: typeof solidity.pack;
         solidityKeccak256: typeof solidity.keccak256;
         soliditySha256: typeof solidity.sha256;
-        splitSignature: typeof convert.splitSignature;
+        splitSignature: typeof bytes.splitSignature;
         parseTransaction: typeof parseTransaction;
     };
     export default _default;

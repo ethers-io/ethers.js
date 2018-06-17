@@ -4,7 +4,7 @@
 import BN = require('bn.js');
 
 import { BigNumber } from './bignumber';
-import { arrayify, Arrayish, stripZeros, hexlify } from './convert';
+import { arrayify, Arrayish, stripZeros, hexlify } from './bytes';
 import { keccak256 } from './keccak256';
 import { encode } from './rlp';
 

@@ -1,6 +1,6 @@
 'use strict';
 
-import { arrayify } from '../src.ts/utils/convert';
+import { arrayify } from '../src.ts/utils/bytes';
 import { defineReadOnly } from '../src.ts/utils/properties';
 
 let crypto: any = global['crypto'] || global['msCrypto'];

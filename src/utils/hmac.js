@@ -8,21 +8,21 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var _hash = __importStar(require("hash.js"));
-var convert_1 = require("./convert");
+var bytes_1 = require("./bytes");
 var _hmac = _hash['hmac'];
 var _sha256 = _hash['sha256'];
 var _sha512 = _hash['sha512'];
 // @TODO: Make this use create-hmac in node
 function createSha256Hmac(key) {
     if (!key['buffer']) {
-        key = convert_1.arrayify(key);
+        key = bytes_1.arrayify(key);
     }
     return _hmac(_sha256, key);
 }
 exports.createSha256Hmac = createSha256Hmac;
 function createSha512Hmac(key) {
     if (!key['buffer']) {
-        key = convert_1.arrayify(key);
+        key = bytes_1.arrayify(key);
     }
     return _hmac(_sha512, key);
 }

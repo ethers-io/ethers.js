@@ -1,4 +1,4 @@
-import { Arrayish } from '../utils/convert';
+import { Arrayish } from './bytes';
 export declare const N: string;
 export interface Signature {
     r: string;

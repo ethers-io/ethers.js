@@ -1,4 +1,4 @@
-import { Arrayish } from './convert';
+import { Arrayish } from './bytes';
 export declare type BigNumberish = BigNumber | string | number | Arrayish;
 export declare class BigNumber {
     private readonly _bn;

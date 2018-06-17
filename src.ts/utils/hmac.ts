@@ -2,7 +2,7 @@
 
 import * as _hash from 'hash.js';
 
-import { arrayify, Arrayish } from './convert';
+import { arrayify, Arrayish } from './bytes';
 
 interface HashFunc {
     (): HashFunc;

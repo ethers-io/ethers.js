@@ -1,6 +1,6 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
-var convert_1 = require("./convert");
+var bytes_1 = require("./bytes");
 var utf8_1 = require("./utf8");
 var keccak256_1 = require("./keccak256");
 var Zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
@@ -19,9 +19,9 @@ function namehash(name) {
     while (name.length) {
         var partition = name.match(Partition);
         var label = utf8_1.toUtf8Bytes(partition[3]);
-        result = keccak256_1.keccak256(convert_1.concat([result, keccak256_1.keccak256(label)]));
+        result = keccak256_1.keccak256(bytes_1.concat([result, keccak256_1.keccak256(label)]));
         name = partition[2] || '';
     }
-    return convert_1.hexlify(result);
+    return bytes_1.hexlify(result);
 }
 exports.namehash = namehash;

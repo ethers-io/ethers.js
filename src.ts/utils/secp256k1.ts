@@ -1,11 +1,11 @@
 'use strict';
 
 import { getAddress } from './address';
-import { arrayify, Arrayish, hexlify } from '../utils/convert';
+import { arrayify, Arrayish, hexlify } from './bytes';
 import { keccak256 } from './keccak256';
-import { defineReadOnly } from '../utils/properties';
+import { defineReadOnly } from './properties';
 
-import * as errors from '../utils/errors';
+import * as errors from './errors';
 
 interface _BN {
     toString(radix: number): string;

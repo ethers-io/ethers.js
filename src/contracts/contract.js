@@ -9,7 +9,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var interface_1 = require("./interface");
 var address_1 = require("../utils/address");
-var convert_1 = require("../utils/convert");
+var bytes_1 = require("../utils/bytes");
 var bignumber_1 = require("../utils/bignumber");
 var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
@@ -318,7 +318,7 @@ var Contract = /** @class */ (function () {
         if (this.signer == null) {
             throw new Error('missing signer'); // @TODO: errors.throwError
         }
-        if (!convert_1.isHexString(bytecode)) {
+        if (!bytes_1.isHexString(bytecode)) {
             errors.throwError('bytecode must be a valid hex string', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
         }
         if ((bytecode.length % 2) !== 0) {

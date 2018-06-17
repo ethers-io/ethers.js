@@ -2,7 +2,7 @@
 import { checkTransactionResponse, Provider, TransactionRequest } from './provider';
 import { Network } from './networks';
 
-import { hexlify, hexStripZeros } from '../utils/convert';
+import { hexlify, hexStripZeros } from '../utils/bytes';
 import { fetchJson } from '../utils/web';
 
 import * as errors from '../utils/errors';

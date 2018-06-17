@@ -5,7 +5,7 @@
 
 import { getWord, getWordIndex } from './words';
 
-import { arrayify, Arrayish, hexlify } from '../utils/convert';
+import { arrayify, Arrayish, hexlify } from '../utils/bytes';
 import { bigNumberify } from '../utils/bignumber';
 import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
 import { pbkdf2 } from '../utils/pbkdf2';

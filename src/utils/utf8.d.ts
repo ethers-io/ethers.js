@@ -1,4 +1,4 @@
-import { Arrayish } from './convert';
+import { Arrayish } from './bytes';
 export declare enum UnicodeNormalizationForm {
     current = "",
     NFC = "NFC",

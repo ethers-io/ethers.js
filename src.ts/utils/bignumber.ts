@@ -10,7 +10,7 @@
 
 import _BN from 'bn.js';
 
-import { Arrayish, hexlify, isArrayish, isHexString } from './convert';
+import { Arrayish, hexlify, isArrayish, isHexString } from './bytes';
 import { defineReadOnly } from './properties';
 import * as errors from '../utils/errors';
 

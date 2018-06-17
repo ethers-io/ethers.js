@@ -4,7 +4,7 @@
 
 import { getAddress } from  './address';
 import { bigNumberify, BigNumberish } from './bignumber';
-import { arrayify, Arrayish, concat, hexlify, padZeros } from './convert';
+import { arrayify, Arrayish, concat, hexlify, padZeros } from './bytes';
 import { toUtf8Bytes, toUtf8String } from './utf8';
 import { defineReadOnly, jsonCopy } from './properties';
 

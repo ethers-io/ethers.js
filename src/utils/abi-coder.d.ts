@@ -1,4 +1,4 @@
-import { Arrayish } from './convert';
+import { Arrayish } from './bytes';
 export declare type CoerceFunc = (type: string, value: any) => any;
 export declare type ParamType = {
     name?: string;

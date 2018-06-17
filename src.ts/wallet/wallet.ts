@@ -10,7 +10,7 @@ import { recoverAddress, SigningKey } from './signing-key';
 import { BlockTag, Provider, TransactionRequest, TransactionResponse } from '../providers/provider';
 
 import { BigNumber, BigNumberish } from '../utils/bignumber';
-import { arrayify, Arrayish, concat, hexlify, hexZeroPad } from '../utils/convert';
+import { arrayify, Arrayish, concat, hexlify, hexZeroPad } from '../utils/bytes';
 import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { randomBytes } from '../utils/random-bytes';

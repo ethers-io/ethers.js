@@ -20,7 +20,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 var abi_coder_1 = require("../utils/abi-coder");
 var bignumber_1 = require("../utils/bignumber");
-var convert_1 = require("../utils/convert");
+var bytes_1 = require("../utils/bytes");
 var keccak256_1 = require("../utils/keccak256");
 var utf8_1 = require("../utils/utf8");
 var properties_1 = require("../utils/properties");
@@ -82,7 +82,7 @@ var DeployDescription = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     DeployDescription.prototype.encode = function (bytecode, params) {
-        if (!convert_1.isHexString(bytecode)) {
+        if (!bytes_1.isHexString(bytecode)) {
             errors.throwError('invalid contract bytecode', errors.INVALID_ARGUMENT, {
                 arg: 'bytecode',
                 type: typeof (bytecode),
@@ -151,7 +151,7 @@ var FunctionDescription = /** @class */ (function (_super) {
     };
     FunctionDescription.prototype.decode = function (data) {
         try {
-            return abi_coder_1.defaultAbiCoder.decode(this.outputs, convert_1.arrayify(data));
+            return abi_coder_1.defaultAbiCoder.decode(this.outputs, bytes_1.arrayify(data));
         }
         catch (error) {
             errors.throwError('invalid data for function output', errors.INVALID_ARGUMENT, {
@@ -197,9 +197,9 @@ var EventDescription = /** @class */ (function (_super) {
             }
         });
         if (topics != null) {
-            var resultIndexed = abi_coder_1.defaultAbiCoder.decode(inputIndexed, convert_1.concat(topics));
+            var resultIndexed = abi_coder_1.defaultAbiCoder.decode(inputIndexed, bytes_1.concat(topics));
         }
-        var resultNonIndexed = abi_coder_1.defaultAbiCoder.decode(inputNonIndexed, convert_1.arrayify(data));
+        var resultNonIndexed = abi_coder_1.defaultAbiCoder.decode(inputNonIndexed, bytes_1.arrayify(data));
         var result = new Result();
         var nonIndexedIndex = 0, indexedIndex = 0;
         this.inputs.forEach(function (input, index) {

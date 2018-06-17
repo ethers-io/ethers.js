@@ -1,6 +1,6 @@
 'use strict';
 
-import { arrayify, Arrayish } from './convert';
+import { arrayify, Arrayish } from './bytes';
 import { HmacFunc } from './hmac';
 
 export interface CreateHmacFunc {

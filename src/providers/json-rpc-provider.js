@@ -21,7 +21,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var networks_1 = require("./networks");
 var provider_1 = require("./provider");
 var address_1 = require("../utils/address");
-var convert_1 = require("../utils/convert");
+var bytes_1 = require("../utils/bytes");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
@@ -53,7 +53,7 @@ function hexlifyTransaction(transaction) {
         if (transaction[key] == null) {
             return;
         }
-        var value = convert_1.hexStripZeros(convert_1.hexlify(transaction[key]));
+        var value = bytes_1.hexStripZeros(bytes_1.hexlify(transaction[key]));
         if (key === 'gasLimit') {
             key = 'gas';
         }
@@ -63,7 +63,7 @@ function hexlifyTransaction(transaction) {
         if (transaction[key] == null) {
             return;
         }
-        result[key] = convert_1.hexlify(transaction[key]);
+        result[key] = bytes_1.hexlify(transaction[key]);
     });
     return result;
 }
@@ -150,7 +150,7 @@ var JsonRpcSigner = /** @class */ (function () {
         var data = ((typeof (message) === 'string') ? utf8_1.toUtf8Bytes(message) : message);
         return this.getAddress().then(function (address) {
             // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
-            return _this.provider.send('eth_sign', [address.toLowerCase(), convert_1.hexlify(data)]);
+            return _this.provider.send('eth_sign', [address.toLowerCase(), bytes_1.hexlify(data)]);
         });
     };
     JsonRpcSigner.prototype.unlock = function (password) {

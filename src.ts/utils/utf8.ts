@@ -1,6 +1,6 @@
 'use strict';
 
-import { arrayify, Arrayish } from './convert';
+import { arrayify, Arrayish } from './bytes';
 
 export enum UnicodeNormalizationForm {
     current  = '',

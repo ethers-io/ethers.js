@@ -10,7 +10,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 //import inherits = require('inherits');
 var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
-var convert_1 = require("../utils/convert");
+var bytes_1 = require("../utils/bytes");
 var utf8_1 = require("../utils/utf8");
 var rlp_1 = require("../utils/rlp");
 var namehash_1 = require("../utils/namehash");
@@ -76,7 +76,7 @@ function arrayOf(check) {
     });
 }
 function checkHash(hash) {
-    if (typeof (hash) === 'string' && convert_1.hexDataLength(hash) === 32) {
+    if (typeof (hash) === 'string' && bytes_1.hexDataLength(hash) === 32) {
         return hash;
     }
     errors.throwError('invalid hash', errors.INVALID_ARGUMENT, { arg: 'hash', value: hash });
@@ -109,7 +109,7 @@ function checkBoolean(value) {
     throw new Error('invaid boolean - ' + value);
 }
 function checkUint256(uint256) {
-    if (!convert_1.isHexString(uint256)) {
+    if (!bytes_1.isHexString(uint256)) {
         throw new Error('invalid uint256');
     }
     while (uint256.length < 66) {
@@ -134,10 +134,10 @@ function checkBlockTag(blockTag) {
         return blockTag;
     }
     if (typeof (blockTag) === 'number') {
-        return convert_1.hexStripZeros(convert_1.hexlify(blockTag));
+        return bytes_1.hexStripZeros(bytes_1.hexlify(blockTag));
     }
-    if (convert_1.isHexString(blockTag)) {
-        return convert_1.hexStripZeros(blockTag);
+    if (bytes_1.isHexString(blockTag)) {
+        return bytes_1.hexStripZeros(blockTag);
     }
     throw new Error('invalid blockTag');
 }
@@ -146,12 +146,12 @@ var formatBlock = {
     parentHash: checkHash,
     number: checkNumber,
     timestamp: checkNumber,
-    nonce: allowNull(convert_1.hexlify),
+    nonce: allowNull(bytes_1.hexlify),
     difficulty: checkDifficulty,
     gasLimit: bignumber_1.bigNumberify,
     gasUsed: bignumber_1.bigNumberify,
     miner: address_1.getAddress,
-    extraData: convert_1.hexlify,
+    extraData: bytes_1.hexlify,
     //transactions: allowNull(arrayOf(checkTransaction)),
     transactions: allowNull(arrayOf(checkHash)),
 };
@@ -172,12 +172,12 @@ var formatTransaction = {
     to: allowNull(address_1.getAddress, null),
     value: bignumber_1.bigNumberify,
     nonce: checkNumber,
-    data: convert_1.hexlify,
+    data: bytes_1.hexlify,
     r: allowNull(checkUint256),
     s: allowNull(checkUint256),
     v: allowNull(checkNumber),
     creates: allowNull(address_1.getAddress, null),
-    raw: allowNull(convert_1.hexlify),
+    raw: allowNull(bytes_1.hexlify),
 };
 function checkTransactionResponse(transaction) {
     // Rename gas to gasLimit
@@ -201,22 +201,22 @@ function checkTransactionResponse(transaction) {
         // Very loose providers (e.g. TestRPC) don't provide a signature or raw
         if (transaction.v && transaction.r && transaction.s) {
             var raw = [
-                convert_1.stripZeros(convert_1.hexlify(transaction.nonce)),
-                convert_1.stripZeros(convert_1.hexlify(transaction.gasPrice)),
-                convert_1.stripZeros(convert_1.hexlify(transaction.gasLimit)),
+                bytes_1.stripZeros(bytes_1.hexlify(transaction.nonce)),
+                bytes_1.stripZeros(bytes_1.hexlify(transaction.gasPrice)),
+                bytes_1.stripZeros(bytes_1.hexlify(transaction.gasLimit)),
                 (transaction.to || "0x"),
-                convert_1.stripZeros(convert_1.hexlify(transaction.value || '0x')),
-                convert_1.hexlify(transaction.data || '0x'),
-                convert_1.stripZeros(convert_1.hexlify(transaction.v || '0x')),
-                convert_1.stripZeros(convert_1.hexlify(transaction.r)),
-                convert_1.stripZeros(convert_1.hexlify(transaction.s)),
+                bytes_1.stripZeros(bytes_1.hexlify(transaction.value || '0x')),
+                bytes_1.hexlify(transaction.data || '0x'),
+                bytes_1.stripZeros(bytes_1.hexlify(transaction.v || '0x')),
+                bytes_1.stripZeros(bytes_1.hexlify(transaction.r)),
+                bytes_1.stripZeros(bytes_1.hexlify(transaction.s)),
             ];
             transaction.raw = rlp_1.encode(raw);
         }
     }
     var result = check(formatTransaction, transaction);
     var networkId = transaction.networkId;
-    if (convert_1.isHexString(networkId)) {
+    if (bytes_1.isHexString(networkId)) {
         networkId = bignumber_1.bigNumberify(networkId).toNumber();
     }
     if (typeof (networkId) !== 'number' && result.v != null) {
@@ -244,7 +244,7 @@ var formatTransactionRequest = {
     gasPrice: allowNull(bignumber_1.bigNumberify),
     to: allowNull(address_1.getAddress),
     value: allowNull(bignumber_1.bigNumberify),
-    data: allowNull(convert_1.hexlify),
+    data: allowNull(bytes_1.hexlify),
 };
 function checkTransactionRequest(transaction) {
     return check(formatTransactionRequest, transaction);
@@ -256,7 +256,7 @@ var formatTransactionReceiptLog = {
     transactionHash: checkHash,
     address: address_1.getAddress,
     topics: arrayOf(checkHash),
-    data: convert_1.hexlify,
+    data: bytes_1.hexlify,
     logIndex: checkNumber,
     blockHash: checkHash,
 };
@@ -268,7 +268,7 @@ var formatTransactionReceipt = {
     transactionIndex: checkNumber,
     root: allowNull(checkHash),
     gasUsed: bignumber_1.bigNumberify,
-    logsBloom: allowNull(convert_1.hexlify),
+    logsBloom: allowNull(bytes_1.hexlify),
     blockHash: checkHash,
     transactionHash: checkHash,
     logs: arrayOf(checkTransactionReceiptLog),
@@ -316,7 +316,7 @@ var formatLog = {
     transactionIndex: checkNumber,
     removed: allowNull(checkBoolean),
     address: address_1.getAddress,
-    data: allowFalsish(convert_1.hexlify, '0x'),
+    data: allowFalsish(bytes_1.hexlify, '0x'),
     topics: arrayOf(checkHash),
     transactionHash: checkHash,
     logIndex: checkNumber,
@@ -372,7 +372,7 @@ function getEventString(object) {
     else if (object === 'pending') {
         return 'pending';
     }
-    else if (convert_1.hexDataLength(object) === 32) {
+    else if (bytes_1.hexDataLength(object) === 32) {
         return 'tx:' + object;
     }
     else if (Array.isArray(object)) {
@@ -673,7 +673,7 @@ var Provider = /** @class */ (function () {
                 return _this.resolveName(addressOrName).then(function (address) {
                     var params = { address: address, blockTag: checkBlockTag(blockTag) };
                     return _this.perform('getCode', params).then(function (result) {
-                        return convert_1.hexlify(result);
+                        return bytes_1.hexlify(result);
                     });
                 });
             });
@@ -688,10 +688,10 @@ var Provider = /** @class */ (function () {
                     var params = {
                         address: address,
                         blockTag: checkBlockTag(blockTag),
-                        position: convert_1.hexStripZeros(convert_1.hexlify(position)),
+                        position: bytes_1.hexStripZeros(bytes_1.hexlify(position)),
                     };
                     return _this.perform('getStorageAt', params).then(function (result) {
-                        return convert_1.hexlify(result);
+                        return bytes_1.hexlify(result);
                     });
                 });
             });
@@ -702,9 +702,9 @@ var Provider = /** @class */ (function () {
         return this.ready.then(function () {
             return properties_1.resolveProperties({ signedTransaction: signedTransaction }).then(function (_a) {
                 var signedTransaction = _a.signedTransaction;
-                var params = { signedTransaction: convert_1.hexlify(signedTransaction) };
+                var params = { signedTransaction: bytes_1.hexlify(signedTransaction) };
                 return _this.perform('sendTransaction', params).then(function (hash) {
-                    if (convert_1.hexDataLength(hash) !== 32) {
+                    if (bytes_1.hexDataLength(hash) !== 32) {
                         throw new Error('invalid response - sendTransaction');
                     }
                     // A signed transaction always has a from (and we add wait below)
@@ -729,7 +729,7 @@ var Provider = /** @class */ (function () {
                 return _this._resolveNames(transaction, ['to', 'from']).then(function (transaction) {
                     var params = { transaction: checkTransactionRequest(transaction) };
                     return _this.perform('call', params).then(function (result) {
-                        return convert_1.hexlify(result);
+                        return bytes_1.hexlify(result);
                     });
                 });
             });
@@ -754,8 +754,8 @@ var Provider = /** @class */ (function () {
             return properties_1.resolveProperties({ blockHashOrBlockTag: blockHashOrBlockTag }).then(function (_a) {
                 var blockHashOrBlockTag = _a.blockHashOrBlockTag;
                 try {
-                    var blockHash = convert_1.hexlify(blockHashOrBlockTag);
-                    if (convert_1.hexDataLength(blockHash) === 32) {
+                    var blockHash = bytes_1.hexlify(blockHashOrBlockTag);
+                    if (bytes_1.hexDataLength(blockHash) === 32) {
                         return stallPromise(function () {
                             return (_this._emitted['b:' + blockHash.toLowerCase()] == null);
                         }, function () {
@@ -772,7 +772,7 @@ var Provider = /** @class */ (function () {
                 try {
                     var blockTag = checkBlockTag(blockHashOrBlockTag);
                     return stallPromise(function () {
-                        if (convert_1.isHexString(blockTag)) {
+                        if (bytes_1.isHexString(blockTag)) {
                             var blockNumber = parseInt(blockTag.substring(2), 16);
                             return blockNumber > _this._emitted.block;
                         }
@@ -877,10 +877,10 @@ var Provider = /** @class */ (function () {
             var transaction = { to: network.ensAddress, data: data };
             return _this.call(transaction).then(function (data) {
                 // extract the address from the data
-                if (convert_1.hexDataLength(data) !== 32) {
+                if (bytes_1.hexDataLength(data) !== 32) {
                     return null;
                 }
-                return address_1.getAddress(convert_1.hexDataSlice(data, 12));
+                return address_1.getAddress(bytes_1.hexDataSlice(data, 12));
             });
         });
     };
@@ -907,10 +907,10 @@ var Provider = /** @class */ (function () {
             return self.call(transaction);
             // extract the address from the data
         }).then(function (data) {
-            if (convert_1.hexDataLength(data) !== 32) {
+            if (bytes_1.hexDataLength(data) !== 32) {
                 return null;
             }
-            var address = address_1.getAddress(convert_1.hexDataSlice(data, 12));
+            var address = address_1.getAddress(bytes_1.hexDataSlice(data, 12));
             if (address === '0x0000000000000000000000000000000000000000') {
                 return null;
             }

@@ -5,7 +5,7 @@ import scrypt = require('scrypt-js');
 import uuid = require('uuid');
 
 import { getAddress } from '../utils/address';
-import { arrayify, Arrayish, concat, hexlify } from '../utils/convert';
+import { arrayify, Arrayish, concat, hexlify } from '../utils/bytes';
 
 import * as hmac from '../utils/hmac';
 import { pbkdf2 } from '../utils/pbkdf2';

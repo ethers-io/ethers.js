@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  */
 var address_1 = require("../utils/address");
-var convert_1 = require("../utils/convert");
+var bytes_1 = require("../utils/bytes");
 var hdnode_1 = require("./hdnode");
 var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
@@ -19,10 +19,10 @@ var SigningKey = /** @class */ (function () {
         if (privateKey instanceof hdnode_1.HDNode) {
             properties_1.defineReadOnly(this, 'mnemonic', privateKey.mnemonic);
             properties_1.defineReadOnly(this, 'path', privateKey.path);
-            privateKeyBytes = convert_1.arrayify(privateKey.privateKey);
+            privateKeyBytes = bytes_1.arrayify(privateKey.privateKey);
         }
         else {
-            privateKeyBytes = convert_1.arrayify(privateKey);
+            privateKeyBytes = bytes_1.arrayify(privateKey);
         }
         try {
             if (privateKeyBytes.length !== 32) {
@@ -39,7 +39,7 @@ var SigningKey = /** @class */ (function () {
             }
             errors.throwError('invalid private key', error.code, params);
         }
-        properties_1.defineReadOnly(this, 'privateKey', convert_1.hexlify(privateKeyBytes));
+        properties_1.defineReadOnly(this, 'privateKey', bytes_1.hexlify(privateKeyBytes));
         properties_1.defineReadOnly(this, 'keyPair', new secp256k1_1.KeyPair(privateKeyBytes));
         properties_1.defineReadOnly(this, 'publicKey', this.keyPair.publicKey);
         properties_1.defineReadOnly(this, 'address', computeAddress(this.keyPair.publicKey));

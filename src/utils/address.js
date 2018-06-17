@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // We use this for base 36 maths
 var BN = require("bn.js");
-var convert_1 = require("./convert");
+var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
 var rlp_1 = require("./rlp");
 var errors = require("./errors");
@@ -16,7 +16,7 @@ function getChecksumAddress(address) {
     for (var i_1 = 0; i_1 < 40; i_1++) {
         hashed[i_1] = chars[i_1].charCodeAt(0);
     }
-    hashed = convert_1.arrayify(keccak256_1.keccak256(hashed));
+    hashed = bytes_1.arrayify(keccak256_1.keccak256(hashed));
     for (var i = 0; i < 40; i += 2) {
         if ((hashed[i >> 1] >> 4) >= 8) {
             chars[i] = chars[i].toUpperCase();
@@ -115,7 +115,7 @@ function getContractAddress(transaction) {
     var nonce = transaction.nonce;
     return getAddress('0x' + keccak256_1.keccak256(rlp_1.encode([
         getAddress(transaction.from),
-        convert_1.stripZeros(convert_1.hexlify(nonce))
+        bytes_1.stripZeros(bytes_1.hexlify(nonce))
     ])).substring(26));
 }
 exports.getContractAddress = getContractAddress;

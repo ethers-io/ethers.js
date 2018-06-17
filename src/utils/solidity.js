@@ -1,7 +1,7 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("./bignumber");
-var convert_1 = require("./convert");
+var bytes_1 = require("./bytes");
 var utf8_1 = require("./utf8");
 var keccak256_1 = require("./keccak256");
 var sha2_1 = require("./sha2");
@@ -13,19 +13,19 @@ function _pack(type, value, isArray) {
     switch (type) {
         case 'address':
             if (isArray) {
-                return convert_1.padZeros(value, 32);
+                return bytes_1.padZeros(value, 32);
             }
-            return convert_1.arrayify(value);
+            return bytes_1.arrayify(value);
         case 'string':
             return utf8_1.toUtf8Bytes(value);
         case 'bytes':
-            return convert_1.arrayify(value);
+            return bytes_1.arrayify(value);
         case 'bool':
             value = (value ? '0x01' : '0x00');
             if (isArray) {
-                return convert_1.padZeros(value, 32);
+                return bytes_1.padZeros(value, 32);
             }
-            return convert_1.arrayify(value);
+            return bytes_1.arrayify(value);
     }
     var match = type.match(regexNumber);
     if (match) {
@@ -38,7 +38,7 @@ function _pack(type, value, isArray) {
             size = 256;
         }
         value = bignumber_1.bigNumberify(value).toTwos(size);
-        return convert_1.padZeros(value, size / 8);
+        return bytes_1.padZeros(value, size / 8);
     }
     match = type.match(regexBytes);
     if (match) {
@@ -46,11 +46,11 @@ function _pack(type, value, isArray) {
         if (String(size) != match[1] || size === 0 || size > 32) {
             throw new Error('invalid number type - ' + type);
         }
-        if (convert_1.arrayify(value).byteLength !== size) {
+        if (bytes_1.arrayify(value).byteLength !== size) {
             throw new Error('invalid value for ' + type);
         }
         if (isArray) {
-            return convert_1.arrayify((value + Zeros).substring(0, 66));
+            return bytes_1.arrayify((value + Zeros).substring(0, 66));
         }
         return value;
     }
@@ -66,7 +66,7 @@ function _pack(type, value, isArray) {
             value = _pack(baseType, value, true);
             result.push(value);
         });
-        return convert_1.concat(result);
+        return bytes_1.concat(result);
     }
     throw new Error('unknown type - ' + type);
 }
@@ -79,7 +79,7 @@ function pack(types, values) {
     types.forEach(function (type, index) {
         tight.push(_pack(type, values[index]));
     });
-    return convert_1.hexlify(convert_1.concat(tight));
+    return bytes_1.hexlify(bytes_1.concat(tight));
 }
 exports.pack = pack;
 function keccak256(types, values) {

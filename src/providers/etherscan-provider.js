@@ -18,7 +18,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var provider_1 = require("./provider");
-var convert_1 = require("../utils/convert");
+var bytes_1 = require("../utils/bytes");
 var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
 // The transaction has already been sanitized by the calls in Provider
@@ -28,9 +28,9 @@ function getTransactionString(transaction) {
         if (transaction[key] == null) {
             continue;
         }
-        var value = convert_1.hexlify(transaction[key]);
+        var value = bytes_1.hexlify(transaction[key]);
         if ({ gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
-            value = convert_1.hexStripZeros(value);
+            value = bytes_1.hexStripZeros(value);
         }
         result.push(key + '=' + value);
     }

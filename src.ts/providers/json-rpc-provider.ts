@@ -7,7 +7,7 @@ import { BlockTag, Provider, TransactionRequest, TransactionResponse } from './p
 
 import { getAddress } from '../utils/address';
 import { BigNumber } from '../utils/bignumber';
-import { Arrayish, hexlify, hexStripZeros } from '../utils/convert';
+import { Arrayish, hexlify, hexStripZeros } from '../utils/bytes';
 import { toUtf8Bytes } from '../utils/utf8';
 import { ConnectionInfo, fetchJson } from '../utils/web';
 

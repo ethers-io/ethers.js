@@ -1,4 +1,4 @@
-import { Arrayish } from '../utils/convert';
+import { Arrayish } from '../utils/bytes';
 import { SigningKey } from './signing-key';
 export interface ProgressCallback {
     (percent: number): void;

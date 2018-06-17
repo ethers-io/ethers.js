@@ -1,7 +1,7 @@
 import { Network } from './networks';
 import { BlockTag, Provider, TransactionRequest } from './provider';
 import { BigNumber } from '../utils/bignumber';
-import { Arrayish } from '../utils/convert';
+import { Arrayish } from '../utils/bytes';
 import { ConnectionInfo } from '../utils/web';
 export declare function hexlifyTransaction(transaction: TransactionRequest): any;
 export declare class JsonRpcSigner {

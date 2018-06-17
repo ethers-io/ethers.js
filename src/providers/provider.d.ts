@@ -1,5 +1,5 @@
 import { BigNumber, BigNumberish } from '../utils/bignumber';
-import { Arrayish } from '../utils/convert';
+import { Arrayish } from '../utils/bytes';
 import { Network } from './networks';
 import { Transaction } from '../utils/transaction';
 export declare type BlockTag = string | number;

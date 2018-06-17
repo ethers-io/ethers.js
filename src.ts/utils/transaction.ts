@@ -1,7 +1,7 @@
 
 import { getAddress } from './address';
 import { BigNumber, bigNumberify, BigNumberish,ConstantZero } from './bignumber';
-import { arrayify, Arrayish, hexlify, stripZeros, } from './convert';
+import { arrayify, Arrayish, hexlify, stripZeros, } from './bytes';
 import { keccak256 } from './keccak256';
 import { recoverAddress, Signature } from './secp256k1';
 import * as RLP from './rlp';

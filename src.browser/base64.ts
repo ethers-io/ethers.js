@@ -1,6 +1,6 @@
 'use strict';
 
-import { arrayify } from '../src.ts/utils/convert';
+import { arrayify } from '../src.ts/utils/bytes';
 
 module.exports = {
     decode: function(textData) {

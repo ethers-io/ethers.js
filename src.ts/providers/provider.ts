@@ -4,7 +4,7 @@
 
 import { getAddress, getContractAddress } from '../utils/address';
 import { BigNumber, bigNumberify, BigNumberish } from '../utils/bignumber';
-import { Arrayish, hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, stripZeros } from '../utils/convert';
+import { Arrayish, hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, stripZeros } from '../utils/bytes';
 import { toUtf8String } from '../utils/utf8';
 import { decode as rlpDecode, encode as rlpEncode } from '../utils/rlp';
 import { namehash } from '../utils/namehash';

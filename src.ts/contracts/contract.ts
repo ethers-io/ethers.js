@@ -6,7 +6,7 @@ import { Provider, TransactionResponse } from '../providers/provider';
 import { Signer } from '../wallet/wallet';
 
 import { getContractAddress } from '../utils/address';
-import { isHexString } from '../utils/convert';
+import { isHexString } from '../utils/bytes';
 import { ParamType } from '../utils/abi-coder';
 import { BigNumber, ConstantZero } from '../utils/bignumber';
 import { defineReadOnly, resolveProperties } from '../utils/properties';

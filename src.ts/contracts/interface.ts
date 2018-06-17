@@ -4,7 +4,7 @@
 
 import { defaultAbiCoder, ParamType, parseSignature } from '../utils/abi-coder';
 import { BigNumber, bigNumberify, BigNumberish } from '../utils/bignumber';
-import { arrayify, concat, isHexString } from '../utils/convert';
+import { arrayify, concat, isHexString } from '../utils/bytes';
 import { keccak256 } from '../utils/keccak256';
 import { toUtf8Bytes } from '../utils/utf8';
 import { defineReadOnly, defineFrozen } from '../utils/properties';

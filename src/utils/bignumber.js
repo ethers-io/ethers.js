@@ -18,7 +18,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  */
 var bn_js_1 = __importDefault(require("bn.js"));
-var convert_1 = require("./convert");
+var bytes_1 = require("./bytes");
 var properties_1 = require("./properties");
 var errors = __importStar(require("../utils/errors"));
 function _isBigNumber(value) {
@@ -28,13 +28,13 @@ var BigNumber = /** @class */ (function () {
     function BigNumber(value) {
         errors.checkNew(this, BigNumber);
         if (typeof (value) === 'string') {
-            if (convert_1.isHexString(value)) {
+            if (bytes_1.isHexString(value)) {
                 if (value == '0x') {
                     value = '0x0';
                 }
                 properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(value.substring(2), 16));
             }
-            else if (value[0] === '-' && convert_1.isHexString(value.substring(1))) {
+            else if (value[0] === '-' && bytes_1.isHexString(value.substring(1))) {
                 properties_1.defineReadOnly(this, '_bn', (new bn_js_1.default.BN(value.substring(3), 16)).mul(exports.ConstantNegativeOne._bn));
             }
             else if (value.match(/^-?[0-9]*$/)) {
@@ -61,8 +61,8 @@ var BigNumber = /** @class */ (function () {
         else if (_isBigNumber(value)) {
             properties_1.defineReadOnly(this, '_bn', value._bn);
         }
-        else if (convert_1.isArrayish(value)) {
-            properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(convert_1.hexlify(value).substring(2), 16));
+        else if (bytes_1.isArrayish(value)) {
+            properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(bytes_1.hexlify(value).substring(2), 16));
         }
         else {
             errors.throwError('invalid BigNumber value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });

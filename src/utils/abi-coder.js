@@ -20,7 +20,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
-var convert_1 = require("./convert");
+var bytes_1 = require("./bytes");
 var utf8_1 = require("./utf8");
 var properties_1 = require("./properties");
 var errors = __importStar(require("./errors"));
@@ -282,7 +282,7 @@ var CoderNull = /** @class */ (function (_super) {
         return _super.call(this, coerceFunc, 'null', '', localName, false) || this;
     }
     CoderNull.prototype.encode = function (value) {
-        return convert_1.arrayify([]);
+        return bytes_1.arrayify([]);
     };
     CoderNull.prototype.decode = function (data, offset) {
         if (offset > data.length) {
@@ -313,7 +313,7 @@ var CoderNumber = /** @class */ (function (_super) {
             if (this.signed) {
                 v = v.fromTwos(this.size * 8).toTwos(256);
             }
-            return convert_1.padZeros(convert_1.arrayify(v), 32);
+            return bytes_1.padZeros(bytes_1.arrayify(v), 32);
         }
         catch (error) {
             errors.throwError('invalid number value', errors.INVALID_ARGUMENT, {
@@ -329,7 +329,7 @@ var CoderNumber = /** @class */ (function (_super) {
             errors.throwError('insufficient data for ' + this.name + ' type', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
                 coderType: this.name,
-                value: convert_1.hexlify(data.slice(offset, offset + 32))
+                value: bytes_1.hexlify(data.slice(offset, offset + 32))
             });
         }
         var junkLength = 32 - this.size;
@@ -389,7 +389,7 @@ var CoderFixedBytes = /** @class */ (function (_super) {
     CoderFixedBytes.prototype.encode = function (value) {
         var result = new Uint8Array(32);
         try {
-            var data = convert_1.arrayify(value);
+            var data = bytes_1.arrayify(value);
             if (data.length > 32) {
                 throw new Error();
             }
@@ -409,12 +409,12 @@ var CoderFixedBytes = /** @class */ (function (_super) {
             errors.throwError('insufficient data for ' + name + ' type', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
                 coderType: this.name,
-                value: convert_1.hexlify(data.slice(offset, offset + 32))
+                value: bytes_1.hexlify(data.slice(offset, offset + 32))
             });
         }
         return {
             consumed: 32,
-            value: this.coerceFunc(this.name, convert_1.hexlify(data.slice(offset, offset + this.length)))
+            value: this.coerceFunc(this.name, bytes_1.hexlify(data.slice(offset, offset + this.length)))
         };
     };
     return CoderFixedBytes;
@@ -427,7 +427,7 @@ var CoderAddress = /** @class */ (function (_super) {
     CoderAddress.prototype.encode = function (value) {
         var result = new Uint8Array(32);
         try {
-            result.set(convert_1.arrayify(address_1.getAddress(value)), 12);
+            result.set(bytes_1.arrayify(address_1.getAddress(value)), 12);
         }
         catch (error) {
             errors.throwError('invalid address', errors.INVALID_ARGUMENT, {
@@ -443,12 +443,12 @@ var CoderAddress = /** @class */ (function (_super) {
             errors.throwError('insufficuent data for address type', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
                 coderType: 'address',
-                value: convert_1.hexlify(data.slice(offset, offset + 32))
+                value: bytes_1.hexlify(data.slice(offset, offset + 32))
             });
         }
         return {
             consumed: 32,
-            value: this.coerceFunc('address', address_1.getAddress(convert_1.hexlify(data.slice(offset + 12, offset + 32))))
+            value: this.coerceFunc('address', address_1.getAddress(bytes_1.hexlify(data.slice(offset + 12, offset + 32))))
         };
     };
     return CoderAddress;
@@ -456,7 +456,7 @@ var CoderAddress = /** @class */ (function (_super) {
 function _encodeDynamicBytes(value) {
     var dataLength = Math.trunc(32 * Math.ceil(value.length / 32));
     var padding = new Uint8Array(dataLength - value.length);
-    return convert_1.concat([
+    return bytes_1.concat([
         uint256Coder.encode(value.length),
         value,
         padding
@@ -467,7 +467,7 @@ function _decodeDynamicBytes(data, offset, localName) {
         errors.throwError('insufficient data for dynamicBytes length', errors.INVALID_ARGUMENT, {
             arg: localName,
             coderType: 'dynamicBytes',
-            value: convert_1.hexlify(data.slice(offset, offset + 32))
+            value: bytes_1.hexlify(data.slice(offset, offset + 32))
         });
     }
     var length = uint256Coder.decode(data, offset).value;
@@ -485,7 +485,7 @@ function _decodeDynamicBytes(data, offset, localName) {
         errors.throwError('insufficient data for dynamicBytes type', errors.INVALID_ARGUMENT, {
             arg: localName,
             coderType: 'dynamicBytes',
-            value: convert_1.hexlify(data.slice(offset, offset + 32 + length))
+            value: bytes_1.hexlify(data.slice(offset, offset + 32 + length))
         });
     }
     return {
@@ -500,7 +500,7 @@ var CoderDynamicBytes = /** @class */ (function (_super) {
     }
     CoderDynamicBytes.prototype.encode = function (value) {
         try {
-            return _encodeDynamicBytes(convert_1.arrayify(value));
+            return _encodeDynamicBytes(bytes_1.arrayify(value));
         }
         catch (error) {
             errors.throwError('invalid bytes value', errors.INVALID_ARGUMENT, {
@@ -513,7 +513,7 @@ var CoderDynamicBytes = /** @class */ (function (_super) {
     };
     CoderDynamicBytes.prototype.decode = function (data, offset) {
         var result = _decodeDynamicBytes(data, offset, this.localName);
-        result.value = this.coerceFunc('bytes', convert_1.hexlify(result.value));
+        result.value = this.coerceFunc('bytes', bytes_1.hexlify(result.value));
         return result;
     };
     return CoderDynamicBytes;
@@ -677,7 +677,7 @@ var CoderArray = /** @class */ (function (_super) {
         for (var i = 0; i < value.length; i++) {
             coders.push(this.coder);
         }
-        return convert_1.concat([result, pack(coders, value)]);
+        return bytes_1.concat([result, pack(coders, value)]);
     };
     CoderArray.prototype.decode = function (data, offset) {
         // @TODO:
@@ -868,7 +868,7 @@ var AbiCoder = /** @class */ (function () {
             }
             coders.push(getParamCoder(this.coerceFunc, typeObject));
         }, this);
-        return convert_1.hexlify(new CoderTuple(this.coerceFunc, coders, '_').encode(values));
+        return bytes_1.hexlify(new CoderTuple(this.coerceFunc, coders, '_').encode(values));
     };
     AbiCoder.prototype.decode = function (types, data) {
         var coders = [];
@@ -883,7 +883,7 @@ var AbiCoder = /** @class */ (function () {
             }
             coders.push(getParamCoder(this.coerceFunc, typeObject));
         }, this);
-        return new CoderTuple(this.coerceFunc, coders, '_').decode(convert_1.arrayify(data), 0).value;
+        return new CoderTuple(this.coerceFunc, coders, '_').decode(bytes_1.arrayify(data), 0).value;
     };
     return AbiCoder;
 }());

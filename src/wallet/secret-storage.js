@@ -11,7 +11,7 @@ var aes = require("aes-js");
 var scrypt = require("scrypt-js");
 var uuid = require("uuid");
 var address_1 = require("../utils/address");
-var convert_1 = require("../utils/convert");
+var bytes_1 = require("../utils/bytes");
 var hmac = __importStar(require("../utils/hmac"));
 var pbkdf2_1 = require("../utils/pbkdf2");
 var keccak256_1 = require("../utils/keccak256");
@@ -25,7 +25,7 @@ function looseArrayify(hexString) {
     if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
         hexString = '0x' + hexString;
     }
-    return convert_1.arrayify(hexString);
+    return bytes_1.arrayify(hexString);
 }
 function zpad(value, length) {
     value = String(value);
@@ -38,7 +38,7 @@ function getPassword(password) {
     if (typeof (password) === 'string') {
         return utf8_1.toUtf8Bytes(password, utf8_1.UnicodeNormalizationForm.NFKC);
     }
-    return convert_1.arrayify(password);
+    return bytes_1.arrayify(password);
 }
 // Search an Object and its children recursively, caselessly.
 function searchPath(object, path) {
@@ -103,7 +103,7 @@ function decryptCrowdsale(json, password) {
     var encryptedSeed = encseed.slice(16);
     // Decrypt the seed
     var aesCbc = new aes.ModeOfOperation.cbc(key, iv);
-    var seed = convert_1.arrayify(aesCbc.decrypt(encryptedSeed));
+    var seed = bytes_1.arrayify(aesCbc.decrypt(encryptedSeed));
     seed = aes.padding.pkcs7.strip(seed);
     // This wallet format is weird... Convert the binary encoded hex to a string.
     var seedHex = '';
@@ -128,16 +128,16 @@ function decrypt(json, password, progressCallback) {
             var iv = looseArrayify(searchPath(data, 'crypto/cipherparams/iv'));
             var counter = new aes.Counter(iv);
             var aesCtr = new aes.ModeOfOperation.ctr(key, counter);
-            return convert_1.arrayify(aesCtr.decrypt(ciphertext));
+            return bytes_1.arrayify(aesCtr.decrypt(ciphertext));
         }
         return null;
     };
     var computeMAC = function (derivedHalf, ciphertext) {
-        return keccak256_1.keccak256(convert_1.concat([derivedHalf, ciphertext]));
+        return keccak256_1.keccak256(bytes_1.concat([derivedHalf, ciphertext]));
     };
     var getSigningKey = function (key, reject) {
         var ciphertext = looseArrayify(searchPath(data, 'crypto/ciphertext'));
-        var computedMAC = convert_1.hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
+        var computedMAC = bytes_1.hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
         if (computedMAC !== searchPath(data, 'crypto/mac').toLowerCase()) {
             reject(new Error('invalid password'));
             return null;
@@ -160,10 +160,10 @@ function decrypt(json, password, progressCallback) {
             var mnemonicCounter = new aes.Counter(mnemonicIv);
             var mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
             var path = searchPath(data, 'x-ethers/path') || defaultPath;
-            var entropy = convert_1.arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
+            var entropy = bytes_1.arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
             var mnemonic = HDNode.entropyToMnemonic(entropy);
             var node = HDNode.fromMnemonic(mnemonic).derivePath(path);
-            if (node.privateKey != convert_1.hexlify(privateKey)) {
+            if (node.privateKey != bytes_1.hexlify(privateKey)) {
                 reject(new Error('mnemonic mismatch'));
                 return null;
             }
@@ -199,7 +199,7 @@ function decrypt(json, password, progressCallback) {
                         reject(error);
                     }
                     else if (key) {
-                        key = convert_1.arrayify(key);
+                        key = bytes_1.arrayify(key);
                         var signingKey = getSigningKey(key, reject);
                         if (!signingKey) {
                             return;
@@ -264,10 +264,10 @@ function encrypt(privateKey, password, options, progressCallback) {
     // Check the private key
     var privateKeyBytes = null;
     if (privateKey instanceof signing_key_1.SigningKey) {
-        privateKeyBytes = convert_1.arrayify(privateKey.privateKey);
+        privateKeyBytes = bytes_1.arrayify(privateKey.privateKey);
     }
     else {
-        privateKeyBytes = convert_1.arrayify(privateKey);
+        privateKeyBytes = bytes_1.arrayify(privateKey);
     }
     if (privateKeyBytes.length !== 32) {
         throw new Error('invalid private key');
@@ -285,7 +285,7 @@ function encrypt(privateKey, password, options, progressCallback) {
         }
     }
     if (entropy) {
-        entropy = convert_1.arrayify(entropy);
+        entropy = bytes_1.arrayify(entropy);
     }
     var path = options.path;
     if (entropy && !path) {
@@ -298,7 +298,7 @@ function encrypt(privateKey, password, options, progressCallback) {
     // Check/generate the salt
     var salt = options.salt;
     if (salt) {
-        salt = convert_1.arrayify(salt);
+        salt = bytes_1.arrayify(salt);
     }
     else {
         salt = random_bytes_1.randomBytes(32);
@@ -307,7 +307,7 @@ function encrypt(privateKey, password, options, progressCallback) {
     // Override initialization vector
     var iv = null;
     if (options.iv) {
-        iv = convert_1.arrayify(options.iv);
+        iv = bytes_1.arrayify(options.iv);
         if (iv.length !== 16) {
             throw new Error('invalid iv');
         }
@@ -318,7 +318,7 @@ function encrypt(privateKey, password, options, progressCallback) {
     // Override the uuid
     var uuidRandom = options.uuid;
     if (uuidRandom) {
-        uuidRandom = convert_1.arrayify(uuidRandom);
+        uuidRandom = bytes_1.arrayify(uuidRandom);
         if (uuidRandom.length !== 16) {
             throw new Error('invalid uuid');
         }
@@ -349,7 +349,7 @@ function encrypt(privateKey, password, options, progressCallback) {
                 reject(error);
             }
             else if (key) {
-                key = convert_1.arrayify(key);
+                key = bytes_1.arrayify(key);
                 // This will be used to encrypt the wallet (as per Web3 secret storage)
                 var derivedKey = key.slice(0, 16);
                 var macPrefix = key.slice(16, 32);
@@ -360,9 +360,9 @@ function encrypt(privateKey, password, options, progressCallback) {
                 // Encrypt the private key
                 var counter = new aes.Counter(iv);
                 var aesCtr = new aes.ModeOfOperation.ctr(derivedKey, counter);
-                var ciphertext = convert_1.arrayify(aesCtr.encrypt(privateKeyBytes));
+                var ciphertext = bytes_1.arrayify(aesCtr.encrypt(privateKeyBytes));
                 // Compute the message authentication code, used to check the password
-                var mac = keccak256_1.keccak256(convert_1.concat([macPrefix, ciphertext]));
+                var mac = keccak256_1.keccak256(bytes_1.concat([macPrefix, ciphertext]));
                 // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
                 var data = {
                     address: address.substring(2).toLowerCase(),
@@ -371,12 +371,12 @@ function encrypt(privateKey, password, options, progressCallback) {
                     Crypto: {
                         cipher: 'aes-128-ctr',
                         cipherparams: {
-                            iv: convert_1.hexlify(iv).substring(2),
+                            iv: bytes_1.hexlify(iv).substring(2),
                         },
-                        ciphertext: convert_1.hexlify(ciphertext).substring(2),
+                        ciphertext: bytes_1.hexlify(ciphertext).substring(2),
                         kdf: 'scrypt',
                         kdfparams: {
-                            salt: convert_1.hexlify(salt).substring(2),
+                            salt: bytes_1.hexlify(salt).substring(2),
                             n: N,
                             dklen: 32,
                             p: p,
@@ -390,7 +390,7 @@ function encrypt(privateKey, password, options, progressCallback) {
                     var mnemonicIv = random_bytes_1.randomBytes(16);
                     var mnemonicCounter = new aes.Counter(mnemonicIv);
                     var mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-                    var mnemonicCiphertext = convert_1.arrayify(mnemonicAesCtr.encrypt(entropy));
+                    var mnemonicCiphertext = bytes_1.arrayify(mnemonicAesCtr.encrypt(entropy));
                     var now = new Date();
                     var timestamp = (now.getUTCFullYear() + '-' +
                         zpad(now.getUTCMonth() + 1, 2) + '-' +
@@ -401,8 +401,8 @@ function encrypt(privateKey, password, options, progressCallback) {
                     data['x-ethers'] = {
                         client: client,
                         gethFilename: ('UTC--' + timestamp + '--' + data.address),
-                        mnemonicCounter: convert_1.hexlify(mnemonicIv).substring(2),
-                        mnemonicCiphertext: convert_1.hexlify(mnemonicCiphertext).substring(2),
+                        mnemonicCounter: bytes_1.hexlify(mnemonicIv).substring(2),
+                        mnemonicCiphertext: bytes_1.hexlify(mnemonicCiphertext).substring(2),
                         version: "0.1"
                     };
                 }

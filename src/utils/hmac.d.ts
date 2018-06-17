@@ -1,4 +1,4 @@
-import { Arrayish } from './convert';
+import { Arrayish } from './bytes';
 interface HashFunc {
     (): HashFunc;
     update(chunk: Uint8Array): HashFunc;

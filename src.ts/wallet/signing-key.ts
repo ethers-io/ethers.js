@@ -7,7 +7,7 @@
  */
 
 import { getAddress } from '../utils/address';
-import { arrayify, Arrayish, hexlify } from '../utils/convert';
+import { arrayify, Arrayish, hexlify } from '../utils/bytes';
 import { HDNode } from './hdnode';
 import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly } from '../utils/properties';

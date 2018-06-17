@@ -13,7 +13,7 @@ var address_1 = require("./address");
 var abi_coder_1 = require("./abi-coder");
 var base64 = __importStar(require("./base64"));
 var bigNumber = __importStar(require("./bignumber"));
-var convert = __importStar(require("./convert"));
+var bytes = __importStar(require("./bytes"));
 var id_1 = require("./id");
 var keccak256_1 = require("./keccak256");
 var namehash_1 = require("./namehash");
@@ -37,14 +37,14 @@ exports.default = {
     //etherSymbol: '\uD835\uDF63',
     // NFKC (composed)
     etherSymbol: '\u039e',
-    arrayify: convert.arrayify,
-    concat: convert.concat,
-    padZeros: convert.padZeros,
-    stripZeros: convert.stripZeros,
+    arrayify: bytes.arrayify,
+    concat: bytes.concat,
+    padZeros: bytes.padZeros,
+    stripZeros: bytes.stripZeros,
     base64: base64,
     bigNumberify: bigNumber.bigNumberify,
     BigNumber: bigNumber.BigNumber,
-    hexlify: convert.hexlify,
+    hexlify: bytes.hexlify,
     toUtf8Bytes: utf8.toUtf8Bytes,
     toUtf8String: utf8.toUtf8String,
     namehash: namehash_1.namehash,
@@ -62,6 +62,6 @@ exports.default = {
     solidityPack: solidity.pack,
     solidityKeccak256: solidity.keccak256,
     soliditySha256: solidity.sha256,
-    splitSignature: convert.splitSignature,
+    splitSignature: bytes.splitSignature,
     parseTransaction: transaction_1.parse
 };

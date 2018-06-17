@@ -9,7 +9,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
-var convert_1 = require("./convert");
+var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
 var secp256k1_1 = require("./secp256k1");
 var RLP = __importStar(require("./rlp"));
@@ -37,7 +37,7 @@ function sign(transaction, signDigest) {
     var raw = [];
     transactionFields.forEach(function (fieldInfo) {
         var value = transaction[fieldInfo.name] || ([]);
-        value = convert_1.arrayify(convert_1.hexlify(value));
+        value = bytes_1.arrayify(bytes_1.hexlify(value));
         // Fixed-width field
         if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
             var error = new Error('invalid ' + fieldInfo.name);
@@ -47,7 +47,7 @@ function sign(transaction, signDigest) {
         }
         // Variable-width (with a maximum)
         if (fieldInfo.maxLength) {
-            value = convert_1.stripZeros(value);
+            value = bytes_1.stripZeros(value);
             if (value.length > fieldInfo.maxLength) {
                 var error = new Error('invalid ' + fieldInfo.name);
                 error.reason = 'too long';
@@ -55,10 +55,10 @@ function sign(transaction, signDigest) {
                 throw error;
             }
         }
-        raw.push(convert_1.hexlify(value));
+        raw.push(bytes_1.hexlify(value));
     });
     if (transaction.chainId) {
-        raw.push(convert_1.hexlify(transaction.chainId));
+        raw.push(bytes_1.hexlify(transaction.chainId));
         raw.push('0x');
         raw.push('0x');
     }
@@ -71,7 +71,7 @@ function sign(transaction, signDigest) {
         raw.pop();
         v += transaction.chainId * 2 + 8;
     }
-    raw.push(convert_1.hexlify(v));
+    raw.push(bytes_1.hexlify(v));
     raw.push(signature.r);
     raw.push(signature.s);
     return RLP.encode(raw);
@@ -91,9 +91,9 @@ function parse(rawTransaction) {
         data: signedTransaction[5],
         chainId: 0
     };
-    var v = convert_1.arrayify(signedTransaction[6]);
-    var r = convert_1.arrayify(signedTransaction[7]);
-    var s = convert_1.arrayify(signedTransaction[8]);
+    var v = bytes_1.arrayify(signedTransaction[6]);
+    var r = bytes_1.arrayify(signedTransaction[7]);
+    var s = bytes_1.arrayify(signedTransaction[8]);
     if (v.length >= 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
         tx.v = bignumber_1.bigNumberify(v).toNumber();
         tx.r = signedTransaction[7];
@@ -107,14 +107,14 @@ function parse(rawTransaction) {
         var recoveryParam = tx.v - 27;
         var raw = signedTransaction.slice(0, 6);
         if (chainId) {
-            raw.push(convert_1.hexlify(chainId));
+            raw.push(bytes_1.hexlify(chainId));
             raw.push('0x');
             raw.push('0x');
             recoveryParam -= chainId * 2 + 8;
         }
         var digest = keccak256_1.keccak256(RLP.encode(raw));
         try {
-            tx.from = secp256k1_1.recoverAddress(digest, { r: convert_1.hexlify(r), s: convert_1.hexlify(s), recoveryParam: recoveryParam });
+            tx.from = secp256k1_1.recoverAddress(digest, { r: bytes_1.hexlify(r), s: bytes_1.hexlify(s), recoveryParam: recoveryParam });
         }
         catch (error) {
             console.log(error);
