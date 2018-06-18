@@ -85,7 +85,7 @@ describe('Test Transaction Signing and Parsing', function() {
 
     var tests = utils.loadTests('transactions');
     tests.forEach(function(test) {
-        it(('parses and signs transaction - ' + test.name), async function() {
+        it(('parses and signs transaction - ' + test.name), function() {
             var wallet = new Wallet(test.privateKey);
 
             var transaction = {};
@@ -133,8 +133,14 @@ describe('Test Transaction Signing and Parsing', function() {
 
             assert.equal(parsedTransaction.chainId, 0, 'parsed chainId');
 
-            var signedTransaction = await wallet.sign(transaction);
-            assert.equal(signedTransaction, test.signedTransaction, 'signed transaction');
+            var seq = Promise.resolve();
+
+            var async1 = ethers.utils.shallowCopy(transaction);
+            seq = seq.then(function() {
+                var signedTransaction = wallet.sign(async1).then(function(signedTransaction) {
+                    assert.equal(signedTransaction, test.signedTransaction, 'signed transaction');
+                });
+            });
 
             // EIP155
 
@@ -150,9 +156,16 @@ describe('Test Transaction Signing and Parsing', function() {
             assert.equal(parsedTransactionChainId5.chainId, 5,
                 'eip155 parsed chainId');
 
-            transaction.chainId = 5;
-            var signedTransactionChainId5 = await wallet.sign(transaction);
-            assert.equal(signedTransactionChainId5, test.signedTransactionChainId5, 'eip155 signed transaction');
+
+            var async2 = ethers.utils.shallowCopy(transaction);
+            seq = seq.then(function() {
+                async2.chainId = 5;
+                var signedTransaction = wallet.sign(async2).then(function(signedTransactionChainId5) {
+                    assert.equal(signedTransactionChainId5, test.signedTransactionChainId5, 'eip155 signed transaction');
+                });
+            });
+
+            return seq;
         });
     });
 });
