@@ -28,8 +28,8 @@ var KeyPair = /** @class */ (function () {
         var signature = keyPair.sign(bytes_1.arrayify(digest), { canonical: true });
         return {
             recoveryParam: signature.recoveryParam,
-            r: '0x' + signature.r.toString(16),
-            s: '0x' + signature.s.toString(16),
+            r: bytes_1.hexZeroPad('0x' + signature.r.toString(16), 32),
+            s: bytes_1.hexZeroPad('0x' + signature.s.toString(16), 32),
             v: 27 + signature.recoveryParam
         };
     };

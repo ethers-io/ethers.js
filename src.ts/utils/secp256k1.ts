@@ -1,7 +1,7 @@
 'use strict';
 
 import { getAddress } from './address';
-import { arrayify, Arrayish, hexlify } from './bytes';
+import { arrayify, Arrayish, hexlify, hexZeroPad } from './bytes';
 import { keccak256 } from './keccak256';
 import { defineReadOnly } from './properties';
 
@@ -75,8 +75,8 @@ export class KeyPair {
         let signature = keyPair.sign(arrayify(digest), {canonical: true});
         return {
             recoveryParam: signature.recoveryParam,
-            r: '0x' + signature.r.toString(16),
-            s: '0x' + signature.s.toString(16),
+            r: hexZeroPad('0x' + signature.r.toString(16), 32),
+            s: hexZeroPad('0x' + signature.s.toString(16), 32),
             v: 27 + signature.recoveryParam
         }
 

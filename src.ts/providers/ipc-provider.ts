@@ -2,13 +2,16 @@
 import net from 'net';
 
 import { JsonRpcProvider } from './json-rpc-provider';
-import { Network } from './networks';
+import { Networkish } from './networks';
+
+import { defineReadOnly } from '../utils/properties';
 
 import * as errors from '../utils/errors';
 
 export class IpcProvider extends JsonRpcProvider {
     readonly path: string;
-    constructor(path: string, network?: Network | string) {
+
+    constructor(path: string, network?: Networkish) {
         if (path == null) {
             errors.throwError('missing path', errors.MISSING_ARGUMENT, { arg: 'path' });
         }
@@ -16,7 +19,7 @@ export class IpcProvider extends JsonRpcProvider {
         super('ipc://' + path, network);
         errors.checkNew(this, IpcProvider);
 
-        this.path = path;
+        defineReadOnly(this, 'path', path);
     }
 
     // @TODO: Create a connection to the IPC path and use filters instead of polling for block

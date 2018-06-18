@@ -19,6 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var provider_1 = require("./provider");
 var bytes_1 = require("../utils/bytes");
+var properties_1 = require("../utils/properties");
 var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
 // The transaction has already been sanitized by the calls in Provider
@@ -82,7 +83,7 @@ function checkLogTag(blockTag) {
 var EtherscanProvider = /** @class */ (function (_super) {
     __extends(EtherscanProvider, _super);
     function EtherscanProvider(network, apiKey) {
-        var _this = _super.call(this, network || 'homestead') || this;
+        var _this = _super.call(this, network) || this;
         errors.checkNew(_this, EtherscanProvider);
         var name = 'invalid';
         if (_this.network) {
@@ -105,8 +106,8 @@ var EtherscanProvider = /** @class */ (function (_super) {
             default:
                 throw new Error('unsupported network');
         }
-        _this.baseUrl = baseUrl;
-        _this.apiKey = apiKey;
+        properties_1.defineReadOnly(_this, 'baseUrl', baseUrl);
+        properties_1.defineReadOnly(_this, 'apiKey', apiKey);
         return _this;
     }
     EtherscanProvider.prototype.perform = function (method, params) {

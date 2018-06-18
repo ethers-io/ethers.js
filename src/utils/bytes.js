@@ -224,3 +224,11 @@ function splitSignature(signature) {
     };
 }
 exports.splitSignature = splitSignature;
+function joinSignature(signature) {
+    return hexlify(concat([
+        hexZeroPad(signature.r, 32),
+        hexZeroPad(signature.s, 32),
+        (signature.recoveryParam ? '0x1c' : '0x1b')
+    ]));
+}
+exports.joinSignature = joinSignature;

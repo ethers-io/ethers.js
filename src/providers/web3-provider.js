@@ -18,6 +18,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var json_rpc_provider_1 = require("./json-rpc-provider");
+var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
 var Web3Provider = /** @class */ (function (_super) {
     __extends(Web3Provider, _super);
@@ -30,7 +31,7 @@ var Web3Provider = /** @class */ (function (_super) {
         var url = web3Provider.host || web3Provider.path || 'unknown';
         _this = _super.call(this, url, network) || this;
         errors.checkNew(_this, Web3Provider);
-        _this._web3Provider = web3Provider;
+        properties_1.defineReadOnly(_this, '_web3Provider', web3Provider);
         return _this;
     }
     Web3Provider.prototype.send = function (method, params) {

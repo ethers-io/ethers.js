@@ -22,6 +22,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var net_1 = __importDefault(require("net"));
 var json_rpc_provider_1 = require("./json-rpc-provider");
+var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
 var IpcProvider = /** @class */ (function (_super) {
     __extends(IpcProvider, _super);
@@ -32,7 +33,7 @@ var IpcProvider = /** @class */ (function (_super) {
         }
         _this = _super.call(this, 'ipc://' + path, network) || this;
         errors.checkNew(_this, IpcProvider);
-        _this.path = path;
+        properties_1.defineReadOnly(_this, 'path', path);
         return _this;
     }
     // @TODO: Create a connection to the IPC path and use filters instead of polling for block

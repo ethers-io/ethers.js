@@ -32,6 +32,8 @@ var empty = "module.exports = {};";
 // @TODO: Use path construction instead of ../..
 var brorand = "var randomBytes = require('../../src.ts/utils').randomBytes; module.exports = function(length) { return randomBytes(length); };";
 
+var process = "if (!global.setImmediate) { global.setImmedaite = setTimeout; };";
+
 var transforms = {
 //    'ethers.js/package.json': JSON.stringify({ version: version }),
 
@@ -57,6 +59,8 @@ var transforms = {
 
     // Used by sha3 if it exists; (so make it no exist)
 //    "process/.*": undef,
+    "process/browser.js": process,
+    "timers-browserify/main.js": empty,
 };
 
 function transformFile(path) {
@@ -123,7 +127,7 @@ task("default", { filename: "ethers.js", debug: false, minify: false });
 // Creates dist/ethers-debug.js
 //task("debug", { filename: "ethers-debug.js", debug: true, minify: false });
 
-// Creates dist/ethers.min/js
+// Creates dist/ethers.min.js
 task("minified", { filename: "ethers.min.js", debug: false, minify: true });
 
 
@@ -153,7 +157,7 @@ gulp.task("tests", function() {
 });
 
 
-// Crearte a single definition file in dist/
+// Crearte a single definition file and its map as dist/ethers.d.ts[.map]
 gulp.task("types", function() {
     return ts.createProject("tsconfig.json")
     .src()
@@ -167,5 +171,6 @@ gulp.task("types", function() {
         target: "es5"
     }))
     .dts
+    .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest("dist"))
 });

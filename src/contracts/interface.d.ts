@@ -2,15 +2,13 @@ import { ParamType } from '../utils/abi-coder';
 import { BigNumber, BigNumberish } from '../utils/bignumber';
 export declare class Description {
     readonly type: string;
-    readonly inputs: Array<ParamType>;
     constructor(info: any);
 }
-export declare class Indexed {
-    readonly type: string;
+export declare class Indexed extends Description {
     readonly hash: string;
-    constructor(value: string);
 }
 export declare class DeployDescription extends Description {
+    readonly inputs: Array<ParamType>;
     readonly payable: boolean;
     encode(bytecode: string, params: Array<any>): string;
 }
@@ -18,24 +16,33 @@ export declare class FunctionDescription extends Description {
     readonly name: string;
     readonly signature: string;
     readonly sighash: string;
+    readonly inputs: Array<ParamType>;
     readonly outputs: Array<ParamType>;
     readonly payable: boolean;
     encode(params: Array<any>): string;
     decode(data: string): any;
 }
-export declare type CallTransaction = {
-    args: Array<any>;
-    signature: string;
-    sighash: string;
-    decode: (data: string) => any;
-    value: BigNumber;
-};
 export declare class EventDescription extends Description {
     readonly name: string;
     readonly signature: string;
+    readonly inputs: Array<ParamType>;
     readonly anonymous: boolean;
     readonly topic: string;
     decode(data: string, topics?: Array<string>): any;
+}
+declare class TransactionDescription extends Description {
+    readonly name: string;
+    readonly args: Array<any>;
+    readonly signature: string;
+    readonly sighash: string;
+    readonly decode: (data: string) => any;
+    readonly value: BigNumber;
+}
+declare class LogDescription extends Description {
+    readonly name: string;
+    readonly signature: string;
+    readonly topic: string;
+    readonly values: Array<any>;
 }
 export declare class Interface {
     readonly abi: Array<any>;
@@ -46,5 +53,10 @@ export declare class Interface {
     parseTransaction(tx: {
         data: string;
         value?: BigNumberish;
-    }): CallTransaction;
+    }): TransactionDescription;
+    parseLog(log: {
+        topics: Array<string>;
+        data: string;
+    }): LogDescription;
 }
+export {};

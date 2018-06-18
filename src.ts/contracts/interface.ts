@@ -41,7 +41,6 @@ function parseParams(params: Array<ParamType>): { names: Array<any>, types: Arra
 
 export class Description {
     readonly type: string;
-    readonly inputs: Array<ParamType>;
     constructor(info: any) {
         for (var key in info) {
             let value = info[key];
@@ -55,51 +54,48 @@ export class Description {
 }
 
 // @TOOD: Make this a description
-export class Indexed {
-    readonly type: string;
+export class Indexed extends Description {
     readonly hash: string;
-    constructor(value: string) {
-        defineReadOnly(this, 'type', 'indexed');
-        defineReadOnly(this, 'hash', value);
-    }
 }
 
 export class DeployDescription extends Description {
+    readonly inputs: Array<ParamType>;
     readonly payable: boolean;
 
     encode(bytecode: string, params: Array<any>): string {
-                    if (!isHexString(bytecode)) {
-                        errors.throwError('invalid contract bytecode', errors.INVALID_ARGUMENT, {
-                            arg: 'bytecode',
-                            type: typeof(bytecode),
-                            value: bytecode
-                        });
-                    }
+        if (!isHexString(bytecode)) {
+            errors.throwError('invalid contract bytecode', errors.INVALID_ARGUMENT, {
+                arg: 'bytecode',
+                type: typeof(bytecode),
+                value: bytecode
+            });
+        }
 
-                    if (params.length < this.inputs.length) {
-                        errors.throwError('missing constructor argument', errors.MISSING_ARGUMENT, {
-                            arg: (this.inputs[params.length].name || 'unknown'),
-                            count: params.length,
-                            expectedCount: this.inputs.length
-                        });
-                    } else if (params.length > this.inputs.length) {
-                        errors.throwError('too many constructor arguments', errors.UNEXPECTED_ARGUMENT, {
-                            count: params.length,
-                            expectedCount: this.inputs.length
-                        });
-                    }
+        if (params.length < this.inputs.length) {
+            errors.throwError('missing constructor argument', errors.MISSING_ARGUMENT, {
+                arg: (this.inputs[params.length].name || 'unknown'),
+                count: params.length,
+                expectedCount: this.inputs.length
+            });
 
-                    try {
-                        return (bytecode + defaultAbiCoder.encode(this.inputs, params).substring(2));
-                    } catch (error) {
-                        errors.throwError('invalid constructor argument', errors.INVALID_ARGUMENT, {
-                            arg: error.arg,
-                            reason: error.reason,
-                            value: error.value
-                        });
-                    }
+        } else if (params.length > this.inputs.length) {
+            errors.throwError('too many constructor arguments', errors.UNEXPECTED_ARGUMENT, {
+                count: params.length,
+                expectedCount: this.inputs.length
+            });
+        }
 
-                    return null;
+        try {
+            return (bytecode + defaultAbiCoder.encode(this.inputs, params).substring(2));
+        } catch (error) {
+            errors.throwError('invalid constructor argument', errors.INVALID_ARGUMENT, {
+                arg: error.arg,
+                reason: error.reason,
+                value: error.value
+            });
+        }
+
+        return null;
     }
 }
 
@@ -108,68 +104,63 @@ export class FunctionDescription extends Description {
     readonly signature: string;
     readonly sighash: string;
 
+    readonly inputs: Array<ParamType>;
     readonly outputs: Array<ParamType>;
     readonly payable: boolean;
 
     encode(params: Array<any>): string {
-                    if (params.length < this.inputs.length) {
-                        errors.throwError('missing input argument', errors.MISSING_ARGUMENT, {
-                            arg: (this.inputs[params.length].name || 'unknown'),
-                            count: params.length,
-                            expectedCount: this.inputs.length,
-                            name: this.name
-                        });
-                    } else if (params.length > this.inputs.length) {
-                        errors.throwError('too many input arguments', errors.UNEXPECTED_ARGUMENT, {
-                            count: params.length,
-                            expectedCount: this.inputs.length
-                        });
-                    }
+        if (params.length < this.inputs.length) {
+            errors.throwError('missing input argument', errors.MISSING_ARGUMENT, {
+                arg: (this.inputs[params.length].name || 'unknown'),
+                count: params.length,
+                expectedCount: this.inputs.length,
+                name: this.name
+            });
+        } else if (params.length > this.inputs.length) {
+            errors.throwError('too many input arguments', errors.UNEXPECTED_ARGUMENT, {
+                count: params.length,
+                expectedCount: this.inputs.length
+            });
+        }
 
-                    try {
-                        return this.sighash + defaultAbiCoder.encode(this.inputs, params).substring(2);
-                    } catch (error) {
-                        errors.throwError('invalid input argument', errors.INVALID_ARGUMENT, {
-                            arg: error.arg,
-                            reason: error.reason,
-                            value: error.value
-                        });
-                    }
+        try {
+            return this.sighash + defaultAbiCoder.encode(this.inputs, params).substring(2);
+        } catch (error) {
+            errors.throwError('invalid input argument', errors.INVALID_ARGUMENT, {
+                arg: error.arg,
+                reason: error.reason,
+                value: error.value
+            });
+        }
 
-                    return null;
+        return null;
     }
 
     decode(data: string): any {
-                    try {
-                        return defaultAbiCoder.decode(this.outputs, arrayify(data));
-                    } catch(error) {
-                        errors.throwError('invalid data for function output', errors.INVALID_ARGUMENT, {
-                            arg: 'data',
-                            errorArg: error.arg,
-                            errorValue: error.value,
-                            value: data,
-                            reason: error.reason
-                        });
-                    }
+        try {
+            return defaultAbiCoder.decode(this.outputs, arrayify(data));
+        } catch(error) {
+            errors.throwError('invalid data for function output', errors.INVALID_ARGUMENT, {
+                arg: 'data',
+                errorArg: error.arg,
+                errorValue: error.value,
+                value: data,
+                reason: error.reason
+            });
+        }
     }
 }
 
-// @TODO: sub-class a description
-export type CallTransaction = {
-    args: Array<any>,
-    signature: string,
-    sighash: string,
-    decode: (data: string) => any,
-    value: BigNumber
+class Result extends Description {
+    [key: string]: any;
+    [key: number]: any;
 }
-
-// @TODO: Make this a description
-function Result() {}
 
 export class EventDescription extends Description {
     readonly name: string;
     readonly signature: string;
 
+    readonly inputs: Array<ParamType>;
     readonly anonymous: boolean;
     readonly topic: string;
 
@@ -207,15 +198,15 @@ export class EventDescription extends Description {
             arrayify(data)
         );
 
-        var result = new Result();
+        var result = new Result({});
         var nonIndexedIndex = 0, indexedIndex = 0;
         this.inputs.forEach(function(input, index) {
             if (input.indexed) {
                 if (topics == null) {
-                    result[index] = new Indexed(null);
+                    result[index] = new Indexed({ type: 'indexed', hash: null });
 
                 } else if (inputDynamic[index]) {
-                    result[index] = new Indexed(resultIndexed[indexedIndex++]);
+                    result[index] = new Indexed({ type: 'indexed', hash: resultIndexed[indexedIndex++] });
                 } else {
                     result[index] = resultIndexed[indexedIndex++];
                 }
@@ -231,10 +222,22 @@ export class EventDescription extends Description {
     }
 }
 
-// @TODO:
-//export class Result {
-//    [prop: string]: any;
-//}
+class TransactionDescription extends Description {
+    readonly name: string;
+    readonly args: Array<any>;
+    readonly signature: string;
+    readonly sighash: string;
+    readonly decode: (data: string) => any;
+    readonly value: BigNumber;
+}
+
+class LogDescription extends Description {
+    readonly name: string;
+    readonly signature: string;
+    readonly topic: string;
+    readonly values: Array<any>
+}
+
 
 function addMethod(method: any): void {
     switch (method.type) {
@@ -296,7 +299,7 @@ function addMethod(method: any): void {
                 signature: signature,
 
                 inputs: method.inputs,
-                topics: [ keccak256(toUtf8Bytes(signature)) ],
+                topic: keccak256(toUtf8Bytes(signature)),
                 anonymous: (!!method.anonymous),
 
                 type: 'event'
@@ -374,25 +377,46 @@ export class Interface {
         }
     }
 
-    parseTransaction(tx: { data: string, value?: BigNumberish }): CallTransaction {
+    parseTransaction(tx: { data: string, value?: BigNumberish }): TransactionDescription {
         var sighash = tx.data.substring(0, 10).toLowerCase();
         for (var name in this.functions) {
             if (name.indexOf('(') === -1) { continue; }
             var func = this.functions[name];
             if (func.sighash === sighash) {
                 var result = defaultAbiCoder.decode(func.inputs, '0x' + tx.data.substring(10));
-                return {
+                return new TransactionDescription({
                     args: result,
+                    decode: func.decode,
+                    name: name,
                     signature: func.signature,
                     sighash: func.sighash,
-                    decode: func.decode,
+                    type: 'transaction',
                     value: bigNumberify(tx.value || 0),
-                }
+                });
             }
         }
+
         return null;
     }
 
-    // @TODO:
-    //parseEvent(log: { }): Lo
+    parseLog(log: { topics: Array<string>, data: string}): LogDescription {
+        for (var name in this.events) {
+            if (name.indexOf('(') === -1) { continue; }
+            var event = this.events[name];
+            if (event.anonymous) { continue; }
+            if (event.topic !== log.topics[0]) { continue; }
+
+            // @TODO: If anonymous, and the only method, and the input count matches, should we parse and return it?
+
+            return new LogDescription({
+                name: event.name,
+                signature: event.signature,
+                topic: event.topic,
+                type: 'log',
+                values: event.decode(log.data, log.topics)
+            });
+        }
+
+        return null;
+    }
 }

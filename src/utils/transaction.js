@@ -72,8 +72,8 @@ function sign(transaction, signDigest) {
         v += transaction.chainId * 2 + 8;
     }
     raw.push(bytes_1.hexlify(v));
-    raw.push(signature.r);
-    raw.push(signature.s);
+    raw.push(bytes_1.stripZeros(bytes_1.arrayify(signature.r)));
+    raw.push(bytes_1.stripZeros(bytes_1.arrayify(signature.s)));
     return RLP.encode(raw);
 }
 exports.sign = sign;
@@ -96,8 +96,8 @@ function parse(rawTransaction) {
     var s = bytes_1.arrayify(signedTransaction[8]);
     if (v.length >= 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
         tx.v = bignumber_1.bigNumberify(v).toNumber();
-        tx.r = signedTransaction[7];
-        tx.s = signedTransaction[8];
+        tx.r = bytes_1.hexZeroPad(signedTransaction[7], 32);
+        tx.s = bytes_1.hexZeroPad(signedTransaction[8], 32);
         var chainId = (tx.v - 35) / 2;
         if (chainId < 0) {
             chainId = 0;

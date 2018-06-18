@@ -3,48 +3,7 @@ export declare type Network = {
     chainId: number;
     ensAddress?: string;
 };
-export declare const networks: {
-    "unspecified": {
-        "chainId": number;
-        "name": string;
-    };
-    "homestead": {
-        "chainId": number;
-        "ensAddress": string;
-        "name": string;
-    };
-    "mainnet": {
-        "chainId": number;
-        "ensAddress": string;
-        "name": string;
-    };
-    "morden": {
-        "chainId": number;
-        "name": string;
-    };
-    "ropsten": {
-        "chainId": number;
-        "ensAddress": string;
-        "name": string;
-    };
-    "testnet": {
-        "chainId": number;
-        "ensAddress": string;
-        "name": string;
-    };
-    "rinkeby": {
-        "chainId": number;
-        "name": string;
-    };
-    "kovan": {
-        "chainId": number;
-        "name": string;
-    };
-    "classic": {
-        "chainId": number;
-        "name": string;
-    };
-};
+export declare type Networkish = Network | string | number;
 /**
  *  getNetwork
  *
@@ -53,4 +12,4 @@ export declare const networks: {
  *  for that network. Otherwise, return the network.
  *
  */
-export declare function getNetwork(network: Network | string | number): Network;
+export declare function getNetwork(network: Networkish): Network;

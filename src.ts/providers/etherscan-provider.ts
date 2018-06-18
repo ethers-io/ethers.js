@@ -1,8 +1,9 @@
 
 import { checkTransactionResponse, Provider, TransactionRequest } from './provider';
-import { Network } from './networks';
+import { Networkish } from './networks';
 
 import { hexlify, hexStripZeros } from '../utils/bytes';
+import { defineReadOnly } from '../utils/properties';
 import { fetchJson } from '../utils/web';
 
 import * as errors from '../utils/errors';
@@ -68,9 +69,8 @@ function checkLogTag(blockTag: string): number | "latest" {
 export class EtherscanProvider extends Provider{
     readonly baseUrl: string;
     readonly apiKey: string;
-    constructor(network?: Network | string, apiKey?: string) {
-
-        super(network || 'homestead');
+    constructor(network?: Networkish, apiKey?: string) {
+        super(network);
         errors.checkNew(this, EtherscanProvider);
 
         let name = 'invalid';
@@ -94,8 +94,8 @@ export class EtherscanProvider extends Provider{
                 throw new Error('unsupported network');
         }
 
-        this.baseUrl = baseUrl;
-        this.apiKey = apiKey;
+        defineReadOnly(this, 'baseUrl', baseUrl);
+        defineReadOnly(this, 'apiKey', apiKey);
     }
 
 

@@ -20,8 +20,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 var networks_1 = require("./networks");
 var provider_1 = require("./provider");
+var wallet_1 = require("../wallet/wallet");
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
+var properties_1 = require("../utils/properties");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
@@ -74,16 +76,17 @@ function getLowerCase(value) {
     }
     return value;
 }
-var JsonRpcSigner = /** @class */ (function () {
-    //    private _syncAddress: boolean;
+var JsonRpcSigner = /** @class */ (function (_super) {
+    __extends(JsonRpcSigner, _super);
     function JsonRpcSigner(provider, address) {
-        errors.checkNew(this, JsonRpcSigner);
-        this.provider = provider;
+        var _this = _super.call(this) || this;
+        errors.checkNew(_this, JsonRpcSigner);
+        properties_1.defineReadOnly(_this, 'provider', provider);
         // Statically attach to a given address
         if (address) {
-            this._address = address;
-            //this._syncAddress = true;
+            properties_1.defineReadOnly(_this, '_address', address);
         }
+        return _this;
     }
     Object.defineProperty(JsonRpcSigner.prototype, "address", {
         get: function () {
@@ -107,42 +110,24 @@ var JsonRpcSigner = /** @class */ (function () {
         });
     };
     JsonRpcSigner.prototype.getBalance = function (blockTag) {
-        var _this = this;
-        return this.getAddress().then(function (address) {
-            return _this.provider.getBalance(address, blockTag);
-        });
+        return this.provider.getBalance(this.getAddress(), blockTag);
     };
     JsonRpcSigner.prototype.getTransactionCount = function (blockTag) {
-        var _this = this;
-        return this.getAddress().then(function (address) {
-            return _this.provider.getTransactionCount(address, blockTag);
-        });
+        return this.provider.getTransactionCount(this.getAddress(), blockTag);
     };
-    // @TODO:
-    //sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
     JsonRpcSigner.prototype.sendTransaction = function (transaction) {
         var _this = this;
-        transaction = hexlifyTransaction(transaction);
-        return this.getAddress().then(function (address) {
-            transaction.from = address.toLowerCase();
-            return _this.provider.send('eth_sendTransaction', [transaction]).then(function (hash) {
-                // @TODO: Use secp256k1 to fill this in instead...
-                return new Promise(function (resolve, reject) {
-                    function check() {
-                        this.provider.getTransaction(hash).then(function (transaction) {
-                            if (!transaction) {
-                                setTimeout(check, 1000);
-                                return;
-                            }
-                            transaction.wait = function (timeout) {
-                                return this.provider.waitForTransaction(hash, timeout);
-                            };
-                            resolve(transaction);
-                        });
-                    }
-                    check();
-                });
+        var tx = hexlifyTransaction(transaction);
+        if (tx.from == null) {
+            tx.from = this.getAddress().then(function (address) {
+                if (!address) {
+                    return null;
+                }
+                return address.toLowerCase();
             });
+        }
+        return properties_1.resolveProperties(tx).then(function (tx) {
+            return _this.provider.send('eth_sendTransaction', [transaction]);
         });
     };
     JsonRpcSigner.prototype.signMessage = function (message) {
@@ -160,7 +145,7 @@ var JsonRpcSigner = /** @class */ (function () {
         });
     };
     return JsonRpcSigner;
-}());
+}(wallet_1.Signer));
 exports.JsonRpcSigner = JsonRpcSigner;
 var JsonRpcProvider = /** @class */ (function (_super) {
     __extends(JsonRpcProvider, _super);
@@ -173,7 +158,22 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                 url = null;
             }
         }
-        _this = _super.call(this, network) || this;
+        if (network) {
+            // The network has been specified explicitly, we can use it
+            _this = _super.call(this, network) || this;
+        }
+        else {
+            // The network is unknown, query the JSON-RPC for it
+            var ready = new Promise(function (resolve, reject) {
+                setTimeout(function () {
+                    _this.send('net_version', []).then(function (result) {
+                        var chainId = parseInt(result);
+                        resolve(networks_1.getNetwork(chainId));
+                    });
+                });
+            });
+            _this = _super.call(this, ready) || this;
+        }
         errors.checkNew(_this, JsonRpcProvider);
         // Default URL
         if (!url) {
@@ -186,24 +186,6 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         }
         else {
             _this.connection = url;
-        }
-        // The network is unknown, query the JSON-RPC for it
-        if (!_this.network) {
-            _this.ready = new Promise(function (resolve, reject) {
-                setTimeout(function () {
-                    _this.send('net_version', []).then(function (result) {
-                        var chainId = parseInt(result);
-                        var network = networks_1.getNetwork(chainId);
-                        if (network) {
-                            return resolve(network);
-                        }
-                        resolve({
-                            name: 'custom',
-                            chainId: chainId
-                        });
-                    });
-                });
-            });
         }
         return _this;
     }

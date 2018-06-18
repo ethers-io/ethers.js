@@ -47,7 +47,7 @@
     "zlib": "browserify-zlib",
     "./src.ts/utils/base64.ts": "./src.browser/base64.ts",
     "./src.ts/utils/random-bytes.ts": "./src.browser/random-bytes.ts",
-    "./providers/ipc-provider.js": "./utils/empty.js",
+    "./src.ts/providers/ipc-provider.ts": "./src.browser/empty.ts",
     "xmlhttprequest": "./src.browser/xmlhttprequest.ts"
   },
   "keywords": [

@@ -1,4 +1,4 @@
-import { Network } from './networks';
+import { Networkish } from './networks';
 import { JsonRpcProvider } from './json-rpc-provider';
 export declare type Callback = (error: any, response: any) => void;
 export declare type AsyncProvider = {
@@ -9,6 +9,6 @@ export declare type AsyncProvider = {
 };
 export declare class Web3Provider extends JsonRpcProvider {
     readonly _web3Provider: AsyncProvider;
-    constructor(web3Provider: AsyncProvider, network?: Network | string);
+    constructor(web3Provider: AsyncProvider, network?: Networkish);
     send(method: string, params: any): Promise<any>;
 }

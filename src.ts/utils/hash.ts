@@ -1,6 +1,6 @@
 'use strict';
 
-import { concat, hexlify } from './bytes';
+import { Arrayish, concat, hexlify } from './bytes';
 import { toUtf8Bytes } from './utf8';
 import { keccak256 } from './keccak256';
 
@@ -31,4 +31,17 @@ export function namehash(name: string): string {
     return hexlify(result);
 }
 
+
+export function id(text: string): string {
+    return keccak256(toUtf8Bytes(text));
+}
+
+export function hashMessage(message: Arrayish | string): string {
+    var payload = concat([
+        toUtf8Bytes('\x19Ethereum Signed Message:\n'),
+        toUtf8Bytes(String(message.length)),
+        ((typeof(message) === 'string') ? toUtf8Bytes(message): message)
+    ]);
+    return keccak256(payload);
+}
 

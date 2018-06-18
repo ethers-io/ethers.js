@@ -17,3 +17,4 @@ export declare function hexDataSlice(data: string, offset: number, length?: numb
 export declare function hexStripZeros(value: string): string;
 export declare function hexZeroPad(value: string, length: number): string;
 export declare function splitSignature(signature: Arrayish): Signature;
+export declare function joinSignature(signature: Signature): string;

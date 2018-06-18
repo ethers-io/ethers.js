@@ -1,7 +1,9 @@
 'use strict';
 
-import { Network } from './networks';
+import { Networkish } from './networks';
 import { JsonRpcProvider } from './json-rpc-provider';
+
+import { defineReadOnly } from '../utils/properties';
 
 import * as errors from '../utils/errors';
 
@@ -24,7 +26,7 @@ export type AsyncProvider = {
 export class Web3Provider extends JsonRpcProvider {
     readonly _web3Provider: AsyncProvider;
 
-    constructor(web3Provider: AsyncProvider, network?: Network | string) {
+    constructor(web3Provider: AsyncProvider, network?: Networkish) {
 
         if (!web3Provider || !web3Provider.sendAsync) {
             errors.throwError(
@@ -40,7 +42,7 @@ export class Web3Provider extends JsonRpcProvider {
         super(url, network);
         errors.checkNew(this, Web3Provider);
 
-        this._web3Provider = web3Provider;
+        defineReadOnly(this, '_web3Provider', web3Provider);
     }
 
     send(method: string, params: any): Promise<any> {

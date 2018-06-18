@@ -8,47 +8,36 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var errors = __importStar(require("../utils/errors"));
-// @TODO: Make these all read-only with defineProperty
-exports.networks = {
-    "unspecified": {
-        "chainId": 0,
-        "name": "unspecified"
+var homestead = {
+    chainId: 1,
+    ensAddress: "0x314159265dd8dbb310642f98f50c066173c1259b",
+    name: "homestead"
+};
+var ropsten = {
+    chainId: 3,
+    ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
+    name: "ropsten"
+};
+var networks = {
+    unspecified: {
+        chainId: 0
     },
-    "homestead": {
-        "chainId": 1,
-        "ensAddress": "0x314159265dd8dbb310642f98f50c066173c1259b",
-        "name": "homestead"
+    homestead: homestead,
+    mainnet: homestead,
+    morden: {
+        chainId: 2
     },
-    "mainnet": {
-        "chainId": 1,
-        "ensAddress": "0x314159265dd8dbb310642f98f50c066173c1259b",
-        "name": "homestead"
+    ropsten: ropsten,
+    testnet: ropsten,
+    rinkeby: {
+        chainId: 4,
+        ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A"
     },
-    "morden": {
-        "chainId": 2,
-        "name": "morden"
+    kovan: {
+        chainId: 42
     },
-    "ropsten": {
-        "chainId": 3,
-        "ensAddress": "0x112234455c3a32fd11230c42e7bccd4a84e02010",
-        "name": "ropsten"
-    },
-    "testnet": {
-        "chainId": 3,
-        "ensAddress": "0x112234455c3a32fd11230c42e7bccd4a84e02010",
-        "name": "ropsten"
-    },
-    "rinkeby": {
-        "chainId": 4,
-        "name": "rinkeby"
-    },
-    "kovan": {
-        "chainId": 42,
-        "name": "kovan"
-    },
-    "classic": {
-        "chainId": 61,
-        "name": "classic"
+    classic: {
+        chainId: 61
     }
 };
 /**
@@ -65,29 +54,49 @@ function getNetwork(network) {
         return null;
     }
     if (typeof (network) === 'number') {
-        for (var key in exports.networks) {
-            var n = exports.networks[key];
-            if (n.chainId === network) {
-                return n;
+        for (var name in networks) {
+            var n_1 = networks[name];
+            if (n_1.chainId === network) {
+                return {
+                    name: name,
+                    chainId: n_1.chainId,
+                    ensAddress: n_1.ensAddress
+                };
             }
         }
-        return null;
+        return {
+            chainId: network,
+            name: 'unknown'
+        };
     }
     if (typeof (network) === 'string') {
-        return exports.networks[network] || null;
+        var n_2 = networks[network];
+        if (n_2 == null) {
+            return null;
+        }
+        return {
+            name: network,
+            chainId: n_2.chainId,
+            ensAddress: n_2.ensAddress
+        };
     }
-    var networkObj = exports.networks[network.name];
+    var n = networks[network.name];
     // Not a standard network; check that it is a valid network in general
-    if (!networkObj) {
-        if (typeof (network.chainId) !== 'number') {
+    if (!n) {
+        if (typeof (n.chainId) !== 'number') {
             errors.throwError('invalid network chainId', errors.INVALID_ARGUMENT, { name: 'network', value: network });
         }
         return network;
     }
     // Make sure the chainId matches the expected network chainId (or is 0; disable EIP-155)
-    if (network.chainId != 0 && network.chainId !== networkObj.chainId) {
+    if (network.chainId !== 0 && network.chainId !== n.chainId) {
         errors.throwError('network chainId mismatch', errors.INVALID_ARGUMENT, { name: 'network', value: network });
     }
-    return networkObj;
+    // Standard Network
+    return {
+        name: network.name,
+        chainId: n.chainId,
+        ensAddress: n.ensAddress
+    };
 }
 exports.getNetwork = getNetwork;

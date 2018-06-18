@@ -29,6 +29,7 @@ function getUpperMask(bits) {
 function getLowerMask(bits) {
     return (1 << bits) - 1;
 }
+exports.defaultPath = "m/44'/60'/0'/0/0";
 var HDNode = /** @class */ (function () {
     // @TODO: Private constructor?
     function HDNode(keyPair, chainCode, index, depth, mnemonic, path) {

@@ -19,12 +19,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var json_rpc_provider_1 = require("./json-rpc-provider");
 var networks_1 = require("./networks");
+var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
 var InfuraProvider = /** @class */ (function (_super) {
     __extends(InfuraProvider, _super);
     function InfuraProvider(network, apiAccessToken) {
         var _this = this;
-        network = networks_1.getNetwork(network || 'homestead');
+        network = networks_1.getNetwork((network == null) ? 'homestead' : network);
         var host = null;
         switch (network.name) {
             case 'homestead':
@@ -44,7 +45,7 @@ var InfuraProvider = /** @class */ (function (_super) {
         }
         _this = _super.call(this, 'https://' + host + '/' + (apiAccessToken || ''), network) || this;
         errors.checkNew(_this, InfuraProvider);
-        _this.apiAccessToken = (apiAccessToken || null);
+        properties_1.defineReadOnly(_this, 'apiAccessToken', apiAccessToken || null);
         return _this;
     }
     InfuraProvider.prototype._startPending = function () {

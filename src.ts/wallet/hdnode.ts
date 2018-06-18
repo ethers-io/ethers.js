@@ -30,6 +30,9 @@ function getLowerMask(bits: number): number {
    return (1 << bits) - 1;
 }
 
+
+export const defaultPath = "m/44'/60'/0'/0/0";
+
 export class HDNode {
     private readonly keyPair: KeyPair;
 
@@ -254,3 +257,4 @@ export function isValidMnemonic(mnemonic: string): boolean {
     } catch (error) { }
     return false;
 }
+

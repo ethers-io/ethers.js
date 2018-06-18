@@ -1,4 +1,14 @@
 'use strict';
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -15,6 +25,7 @@ var hdnode_1 = require("./hdnode");
 var secretStorage = __importStar(require("./secret-storage"));
 var signing_key_1 = require("./signing-key");
 var bytes_1 = require("../utils/bytes");
+var hash_1 = require("../utils/hash");
 var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
 var random_bytes_1 = require("../utils/random-bytes");
@@ -24,33 +35,49 @@ var errors = __importStar(require("../utils/errors"));
 // This ensures we inject a setImmediate into the global space, which
 // dramatically improves the performance of the scrypt PBKDF.
 console.log("Fix this! Setimmediate");
-// @TODO: Move to HDNode
-var defaultPath = "m/44'/60'/0'/0/0";
-var Wallet = /** @class */ (function () {
+//import _setimmediate = require('setimmediate');
+var Signer = /** @class */ (function () {
+    function Signer() {
+    }
+    return Signer;
+}());
+exports.Signer = Signer;
+var Wallet = /** @class */ (function (_super) {
+    __extends(Wallet, _super);
     function Wallet(privateKey, provider) {
-        //private _provider;
-        this.defaultGasLimit = 1500000;
-        errors.checkNew(this, Wallet);
+        var _this = _super.call(this) || this;
+        _this.defaultGasLimit = 1500000;
+        errors.checkNew(_this, Wallet);
         // Make sure we have a valid signing key
         if (privateKey instanceof signing_key_1.SigningKey) {
-            this.signingKey = privateKey;
-            if (this.signingKey.mnemonic) {
-                properties_1.defineReadOnly(this, 'mnemonic', privateKey.mnemonic);
-                properties_1.defineReadOnly(this, 'path', privateKey.path);
+            properties_1.defineReadOnly(_this, 'signingKey', privateKey);
+            if (_this.signingKey.mnemonic) {
+                properties_1.defineReadOnly(_this, 'mnemonic', privateKey.mnemonic);
+                properties_1.defineReadOnly(_this, 'path', privateKey.path);
             }
         }
         else {
-            this.signingKey = new signing_key_1.SigningKey(privateKey);
+            properties_1.defineReadOnly(_this, 'signingKey', new signing_key_1.SigningKey(privateKey));
         }
-        properties_1.defineReadOnly(this, 'privateKey', this.signingKey.privateKey);
-        this.provider = provider;
-        properties_1.defineReadOnly(this, 'address', this.signingKey.address);
+        properties_1.defineReadOnly(_this, 'privateKey', _this.signingKey.privateKey);
+        properties_1.defineReadOnly(_this, 'provider', provider);
+        properties_1.defineReadOnly(_this, 'address', _this.signingKey.address);
+        return _this;
     }
-    Wallet.prototype.sign = function (transaction) {
-        return transaction_1.sign(transaction, this.signingKey.signDigest.bind(this.signingKey));
+    Wallet.prototype.connect = function (provider) {
+        return new Wallet(this.signingKey, provider);
     };
     Wallet.prototype.getAddress = function () {
         return Promise.resolve(this.address);
+    };
+    Wallet.prototype.sign = function (transaction) {
+        var _this = this;
+        return properties_1.resolveProperties(transaction).then(function (tx) {
+            return transaction_1.sign(tx, _this.signingKey.signDigest.bind(_this.signingKey));
+        });
+    };
+    Wallet.prototype.signMessage = function (message) {
+        return Promise.resolve(bytes_1.joinSignature(this.signingKey.signDigest(hash_1.hashMessage(message))));
     };
     Wallet.prototype.getBalance = function (blockTag) {
         if (!this.provider) {
@@ -63,28 +90,6 @@ var Wallet = /** @class */ (function () {
             throw new Error('missing provider');
         }
         return this.provider.getTransactionCount(this.address, blockTag);
-    };
-    Wallet.prototype.getGasPrice = function () {
-        if (!this.provider) {
-            throw new Error('missing provider');
-        }
-        return this.provider.getGasPrice();
-    };
-    Wallet.prototype.estimateGas = function (transaction) {
-        if (!this.provider) {
-            throw new Error('missing provider');
-        }
-        var calculate = {};
-        ['from', 'to', 'data', 'value'].forEach(function (key) {
-            if (transaction[key] == null) {
-                return;
-            }
-            calculate[key] = transaction[key];
-        });
-        if (transaction.from == null) {
-            calculate.from = this.address;
-        }
-        return this.provider.estimateGas(calculate);
     };
     Wallet.prototype.sendTransaction = function (transaction) {
         var _this = this;
@@ -99,10 +104,10 @@ var Wallet = /** @class */ (function () {
             tx.to = this.provider.resolveName(tx.to);
         }
         if (tx.gasLimit == null) {
-            tx.gasLimit = this.estimateGas(tx);
+            tx.gasLimit = this.provider.estimateGas(tx);
         }
         if (tx.gasPrice == null) {
-            tx.gasPrice = this.getGasPrice();
+            tx.gasPrice = this.provider.getGasPrice();
         }
         if (tx.nonce == null) {
             tx.nonce = this.getTransactionCount();
@@ -125,38 +130,6 @@ var Wallet = /** @class */ (function () {
             gasPrice: options.gasPrice,
             nonce: options.nonce,
             value: amountWei,
-        });
-    };
-    Wallet.hashMessage = function (message) {
-        var payload = bytes_1.concat([
-            utf8_1.toUtf8Bytes('\x19Ethereum Signed Message:\n'),
-            utf8_1.toUtf8Bytes(String(message.length)),
-            ((typeof (message) === 'string') ? utf8_1.toUtf8Bytes(message) : message)
-        ]);
-        return keccak256_1.keccak256(payload);
-    };
-    Wallet.prototype.signMessage = function (message) {
-        var signingKey = new signing_key_1.SigningKey(this.privateKey);
-        var sig = signingKey.signDigest(Wallet.hashMessage(message));
-        return (bytes_1.hexZeroPad(sig.r, 32) + bytes_1.hexZeroPad(sig.s, 32).substring(2) + (sig.recoveryParam ? '1c' : '1b'));
-    };
-    Wallet.verifyMessage = function (message, signature) {
-        signature = bytes_1.hexlify(signature);
-        if (signature.length != 132) {
-            throw new Error('invalid signature');
-        }
-        var digest = Wallet.hashMessage(message);
-        var recoveryParam = parseInt(signature.substring(130), 16);
-        if (recoveryParam >= 27) {
-            recoveryParam -= 27;
-        }
-        if (recoveryParam < 0) {
-            throw new Error('invalid signature');
-        }
-        return signing_key_1.recoverAddress(digest, {
-            r: signature.substring(0, 66),
-            s: '0x' + signature.substring(66, 130),
-            recoveryParam: recoveryParam
         });
     };
     Wallet.prototype.encrypt = function (password, options, progressCallback) {
@@ -232,7 +205,7 @@ var Wallet = /** @class */ (function () {
     };
     Wallet.fromMnemonic = function (mnemonic, path) {
         if (!path) {
-            path = defaultPath;
+            path = hdnode_1.defaultPath;
         }
         return new Wallet(hdnode_1.fromMnemonic(mnemonic).derivePath(path));
     };
@@ -266,6 +239,25 @@ var Wallet = /** @class */ (function () {
             });
         });
     };
+    Wallet.verifyMessage = function (message, signature) {
+        signature = bytes_1.hexlify(signature);
+        if (signature.length != 132) {
+            throw new Error('invalid signature');
+        }
+        var digest = hash_1.hashMessage(message);
+        var recoveryParam = parseInt(signature.substring(130), 16);
+        if (recoveryParam >= 27) {
+            recoveryParam -= 27;
+        }
+        if (recoveryParam < 0) {
+            throw new Error('invalid signature');
+        }
+        return signing_key_1.recoverAddress(digest, {
+            r: signature.substring(0, 66),
+            s: '0x' + signature.substring(66, 130),
+            recoveryParam: recoveryParam
+        });
+    };
     return Wallet;
-}());
+}(Signer));
 exports.Wallet = Wallet;

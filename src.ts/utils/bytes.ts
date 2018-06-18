@@ -259,3 +259,10 @@ export function splitSignature(signature: Arrayish): Signature {
     }
 }
 
+export function joinSignature(signature: Signature): string {
+    return hexlify(concat([
+         hexZeroPad(signature.r, 32),
+         hexZeroPad(signature.s, 32),
+         (signature.recoveryParam ? '0x1c': '0x1b')
+    ]));
+}

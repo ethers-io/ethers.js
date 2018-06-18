@@ -1,7 +1,8 @@
+import { Signer } from '../wallet/wallet';
 import { BigNumber, BigNumberish } from '../utils/bignumber';
 import { Arrayish } from '../utils/bytes';
-import { Network } from './networks';
-import { Transaction } from '../utils/transaction';
+import { Network, Networkish } from './networks';
+import { SignDigestFunc, Transaction } from '../utils/transaction';
 export declare type BlockTag = string | number;
 export interface Block {
     hash: string;
@@ -9,7 +10,7 @@ export interface Block {
     number: number;
     timestamp: number;
     nonce: string;
-    difficulty: string;
+    difficulty: number;
     gasLimit: BigNumber;
     gasUsed: BigNumber;
     miner: string;
@@ -64,6 +65,17 @@ export interface Log {
     logIndex?: number;
 }
 export declare function checkTransactionResponse(transaction: any): TransactionResponse;
+export declare class ProviderSigner extends Signer {
+    readonly provider: Provider;
+    readonly signDigest: SignDigestFunc;
+    private _addressPromise;
+    constructor(address: string | Promise<string>, signDigest: SignDigestFunc, provider: Provider);
+    getAddress(): Promise<string>;
+    signMessage(message: Arrayish | string): Promise<string>;
+    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
+    estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
+    call(transaction: TransactionRequest): Promise<string>;
+}
 export declare class Provider {
     private _network;
     private _events;
@@ -82,7 +94,7 @@ export declare class Provider {
      *
      */
     protected ready: Promise<Network>;
-    constructor(network: string | Network);
+    constructor(network: Networkish | Promise<Network>);
     private _doPoll;
     resetEventsBlock(blockNumber: number): void;
     readonly network: Network;

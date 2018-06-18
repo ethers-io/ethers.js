@@ -8,6 +8,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var interface_1 = require("./interface");
+var provider_1 = require("../providers/provider");
+var wallet_1 = require("../wallet/wallet");
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var bignumber_1 = require("../utils/bignumber");
@@ -16,13 +18,8 @@ var errors = __importStar(require("../utils/errors"));
 var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
 };
-function copyObject(object) {
-    var result = {};
-    for (var key in object) {
-        result[key] = object[key];
-    }
-    return result;
-}
+// Recursively replaces ENS names with promises to resolve the name and
+// stalls until all promises have returned
 // @TODO: Expand this to resolve any promises too
 function resolveAddresses(provider, value, paramType) {
     if (Array.isArray(paramType)) {
@@ -54,12 +51,12 @@ function runMethod(contract, functionName, estimateOnly) {
         for (var _i = 0; _i < arguments.length; _i++) {
             params[_i] = arguments[_i];
         }
-        var transaction = {};
+        var tx = {};
         // If 1 extra parameter was passed in, it contains overrides
         if (params.length === method.inputs.length + 1 && typeof (params[params.length - 1]) === 'object') {
-            transaction = copyObject(params.pop());
+            tx = properties_1.shallowCopy(params.pop());
             // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
-            for (var key in transaction) {
+            for (var key in tx) {
                 if (!allowedTransactionKeys[key]) {
                     throw new Error('unknown transaction override ' + key);
                 }
@@ -70,137 +67,80 @@ function runMethod(contract, functionName, estimateOnly) {
         }
         // Check overrides make sense
         ['data', 'to'].forEach(function (key) {
-            if (transaction[key] != null) {
-                throw new Error('cannot override ' + key);
+            if (tx[key] != null) {
+                errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
             }
         });
         // Send to the contract address
-        transaction.to = contract.addressPromise;
+        tx.to = contract.addressPromise;
         return resolveAddresses(contract.provider, params, method.inputs).then(function (params) {
-            transaction.data = method.encode(params);
+            tx.data = method.encode(params);
             if (method.type === 'call') {
                 // Call (constant functions) always cost 0 ether
                 if (estimateOnly) {
                     return Promise.resolve(bignumber_1.ConstantZero);
                 }
+                if (!contract.provider) {
+                    errors.throwError('call (constant functions) require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'call' });
+                }
                 // Check overrides make sense
                 ['gasLimit', 'gasPrice', 'value'].forEach(function (key) {
-                    if (transaction[key] != null) {
+                    if (tx[key] != null) {
                         throw new Error('call cannot override ' + key);
                     }
                 });
-                if (transaction.from == null && contract.signer) {
-                    if (contract.signer.address) {
-                        transaction.from = contract.signer.address;
-                    }
-                    else if (contract.signer.getAddress) {
-                        transaction.from = contract.signer.getAddress();
-                    }
+                if (tx.from == null && contract.signer) {
+                    tx.from = contract.signer.getAddress();
                 }
-                return properties_1.resolveProperties(transaction).then(function (transaction) {
-                    return contract.provider.call(transaction).then(function (value) {
-                        try {
-                            var result = method.decode(value);
-                            if (method.outputs.length === 1) {
-                                result = result[0];
-                            }
-                            return result;
+                return contract.provider.call(tx).then(function (value) {
+                    try {
+                        var result = method.decode(value);
+                        if (method.outputs.length === 1) {
+                            result = result[0];
                         }
-                        catch (error) {
-                            if (value === '0x' && method.outputs.length > 0) {
-                                errors.throwError('call exception', errors.CALL_EXCEPTION, {
-                                    address: contract.address,
-                                    method: method.signature,
-                                    value: params
-                                });
-                            }
-                            throw error;
+                        return result;
+                    }
+                    catch (error) {
+                        if (value === '0x' && method.outputs.length > 0) {
+                            errors.throwError('call exception', errors.CALL_EXCEPTION, {
+                                address: contract.address,
+                                method: method.signature,
+                                value: params
+                            });
                         }
-                    });
+                        throw error;
+                    }
                 });
             }
             else if (method.type === 'transaction') {
-                if (!contract.signer) {
-                    return Promise.reject(new Error('missing signer'));
-                }
-                // Make sure they aren't overriding something they shouldn't
-                if (transaction.from != null) {
-                    throw new Error('transaction cannot override from');
-                }
                 // Only computing the transaction estimate
                 if (estimateOnly) {
-                    if (contract.signer.estimateGas) {
-                        return contract.signer.estimateGas(transaction);
+                    if (!contract.provider) {
+                        errors.throwError('estimate gas require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'estimateGas' });
                     }
-                    if (contract.signer.address) {
-                        transaction.from = contract.signer.address;
+                    if (tx.from == null && contract.signer) {
+                        tx.from = contract.signer.getAddress();
                     }
-                    else if (contract.signer.getAddress) {
-                        transaction.from = contract.signer.getAddress();
-                    }
-                    return properties_1.resolveProperties(transaction).then(function (transaction) {
-                        return contract.provider.estimateGas(transaction);
-                    });
+                    return contract.provider.estimateGas(tx);
                 }
-                // If the signer supports sendTrasaction, use it
-                if (contract.signer.sendTransaction) {
-                    return contract.signer.sendTransaction(transaction);
+                if (!contract.signer) {
+                    errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' });
                 }
-                if (!contract.signer.sign) {
-                    return Promise.reject(new Error('custom signer does not support signing'));
+                // Make sure they aren't overriding something they shouldn't
+                if (tx.from != null) {
+                    errors.throwError('cannot override from in a transaction', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' });
                 }
-                if (transaction.chainId == null) {
-                    transaction.chainId = contract.provider.getNetwork().then(function (network) {
-                        return network.chainId;
-                    });
-                }
-                if (transaction.gasLimit == null) {
-                    if (contract.signer.estimateGas) {
-                        transaction.gasLimit = contract.signer.estimateGas(transaction);
-                    }
-                    else {
-                        transaction.gasLimit = contract.provider.estimateGas(transaction);
-                    }
-                }
-                if (!transaction.nonce) {
-                    if (contract.signer.getTransactionCount) {
-                        transaction.nonce = contract.signer.getTransactionCount();
-                    }
-                    else if (contract.signer.address) {
-                        transaction.nonce = contract.provider.getTransactionCount(contract.signer.address);
-                    }
-                    else if (contract.signer.getAddress) {
-                        transaction.nonce = contract.provider.getTransactionCount(contract.signer.getAddress());
-                    }
-                    else {
-                        throw new Error('cannot determine nonce');
-                    }
-                }
-                if (!transaction.gasPrice) {
-                    if (contract.signer.getGasPrice) {
-                        transaction.gasPrice = contract.signer.getGasPrice(transaction);
-                    }
-                    else {
-                        transaction.gasPrice = contract.provider.getGasPrice();
-                    }
-                }
-                return properties_1.resolveProperties(transaction).then(function (transaction) {
-                    var signedTransaction = contract.signer.sign(transaction);
-                    return contract.provider.sendTransaction(signedTransaction);
-                });
+                return contract.signer.sendTransaction(tx);
             }
             throw new Error('invalid type - ' + method.type);
             return null;
         });
-        throw new Error('unsupport type - ' + method.type);
     };
-}
-function isSigner(value) {
-    return (value && value.provider != null);
 }
 var Contract = /** @class */ (function () {
     // https://github.com/Microsoft/TypeScript/issues/5453
-    // Once this issue is resolved (there are open PR) we can do this nicer. :)
+    // Once this issue is resolved (there are open PR) we can do this nicer
+    // by making addressOrName default to null for 2 operand calls. :)
     function Contract(addressOrName, contractInterface, signerOrProvider) {
         var _this = this;
         errors.checkNew(this, Contract);
@@ -212,16 +152,16 @@ var Contract = /** @class */ (function () {
         else {
             properties_1.defineReadOnly(this, 'interface', new interface_1.Interface(contractInterface));
         }
-        if (!signerOrProvider) {
-            throw new Error('missing signer or provider');
-        }
-        if (isSigner(signerOrProvider)) {
+        if (signerOrProvider instanceof wallet_1.Signer) {
             properties_1.defineReadOnly(this, 'provider', signerOrProvider.provider);
             properties_1.defineReadOnly(this, 'signer', signerOrProvider);
         }
-        else {
+        else if (signerOrProvider instanceof provider_1.Provider) {
             properties_1.defineReadOnly(this, 'provider', signerOrProvider);
             properties_1.defineReadOnly(this, 'signer', null);
+        }
+        else {
+            errors.throwError('invalid signer or provider', errors.INVALID_ARGUMENT, { arg: 'signerOrProvider', value: signerOrProvider });
         }
         properties_1.defineReadOnly(this, 'estimate', {});
         properties_1.defineReadOnly(this, 'events', {});
@@ -232,8 +172,8 @@ var Contract = /** @class */ (function () {
             properties_1.defineReadOnly(this, 'addressPromise', Promise.resolve(null));
             return;
         }
-        properties_1.defineReadOnly(this, 'address', addressOrName || null);
-        properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName || null));
+        properties_1.defineReadOnly(this, 'address', addressOrName);
+        properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName));
         Object.keys(this.interface.functions).forEach(function (name) {
             var run = runMethod(_this, name, false);
             if (_this[name] == null) {
@@ -264,7 +204,7 @@ var Contract = /** @class */ (function () {
                         log.event = eventName;
                         log.parse = eventInfo.parse;
                         log.removeListener = function () {
-                            contract.provider.removeListener(eventInfo.topics, handleEvent);
+                            contract.provider.removeListener([eventInfo.topic], handleEvent);
                         };
                         log.getBlock = function () { return contract.provider.getBlock(log.blockHash); ; };
                         log.getTransaction = function () { return contract.provider.getTransaction(log.transactionHash); };
@@ -286,11 +226,14 @@ var Contract = /** @class */ (function () {
                     if (!value) {
                         value = null;
                     }
+                    if (!contract.provider) {
+                        errors.throwError('events require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'events' });
+                    }
                     if (!value && eventCallback) {
-                        contract.provider.removeListener(eventInfo.topics, handleEvent);
+                        contract.provider.removeListener([eventInfo.topic], handleEvent);
                     }
                     else if (value && !eventCallback) {
-                        contract.provider.on(eventInfo.topics, handleEvent);
+                        contract.provider.on([eventInfo.topic], handleEvent);
                     }
                     eventCallback = value;
                 }
@@ -328,7 +271,7 @@ var Contract = /** @class */ (function () {
         return this.signer.sendTransaction({
             data: this.interface.deployFunction.encode(bytecode, args)
         }).then(function (tx) {
-            var contract = new Contract(address_1.getContractAddress(tx), _this.interface, _this.provider);
+            var contract = new Contract(address_1.getContractAddress(tx), _this.interface, _this.signer || _this.provider);
             properties_1.defineReadOnly(contract, 'deployTransaction', tx);
             return contract;
         });

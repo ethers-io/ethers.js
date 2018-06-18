@@ -4229,7 +4229,7 @@
 
 },{"buffer":4}],3:[function(require,module,exports){
 var randomBytes = require('../../src.ts/utils').randomBytes; module.exports = function(length) { return randomBytes(length); };
-},{"../../src.ts/utils":61}],4:[function(require,module,exports){
+},{"../../src.ts/utils":62}],4:[function(require,module,exports){
 
 },{}],5:[function(require,module,exports){
 'use strict';
@@ -8018,191 +8018,9 @@ assert.equal = function assertEqual(l, r, msg) {
 };
 
 },{}],35:[function(require,module,exports){
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
+(function (global){
+if (!global.setImmediate) { global.setImmedaite = setTimeout; };
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],36:[function(require,module,exports){
 (function (setImmediate){
 "use strict";
@@ -8660,85 +8478,8 @@ process.umask = function() { return 0; };
 
 }).call(this,require("timers").setImmediate)
 },{"timers":37}],37:[function(require,module,exports){
-(function (setImmediate,clearImmediate){
-var nextTick = require('process/browser.js').nextTick;
-var apply = Function.prototype.apply;
-var slice = Array.prototype.slice;
-var immediateIds = {};
-var nextImmediateId = 0;
-
-// DOM APIs, for completeness
-
-exports.setTimeout = function() {
-  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
-};
-exports.setInterval = function() {
-  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
-};
-exports.clearTimeout =
-exports.clearInterval = function(timeout) { timeout.close(); };
-
-function Timeout(id, clearFn) {
-  this._id = id;
-  this._clearFn = clearFn;
-}
-Timeout.prototype.unref = Timeout.prototype.ref = function() {};
-Timeout.prototype.close = function() {
-  this._clearFn.call(window, this._id);
-};
-
-// Does not start the time, just sets up the members needed.
-exports.enroll = function(item, msecs) {
-  clearTimeout(item._idleTimeoutId);
-  item._idleTimeout = msecs;
-};
-
-exports.unenroll = function(item) {
-  clearTimeout(item._idleTimeoutId);
-  item._idleTimeout = -1;
-};
-
-exports._unrefActive = exports.active = function(item) {
-  clearTimeout(item._idleTimeoutId);
-
-  var msecs = item._idleTimeout;
-  if (msecs >= 0) {
-    item._idleTimeoutId = setTimeout(function onTimeout() {
-      if (item._onTimeout)
-        item._onTimeout();
-    }, msecs);
-  }
-};
-
-// That's not how node.js implements it but the exposed api is the same.
-exports.setImmediate = typeof setImmediate === "function" ? setImmediate : function(fn) {
-  var id = nextImmediateId++;
-  var args = arguments.length < 2 ? false : slice.call(arguments, 1);
-
-  immediateIds[id] = true;
-
-  nextTick(function onNextTick() {
-    if (immediateIds[id]) {
-      // fn.call() is faster so we optimize for the common use-case
-      // @see http://jsperf.com/call-apply-segu
-      if (args) {
-        fn.apply(null, args);
-      } else {
-        fn.call(null);
-      }
-      // Prevent ids from leaking
-      exports.clearImmediate(id);
-    }
-  });
-
-  return id;
-};
-
-exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
-  delete immediateIds[id];
-};
-}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":35,"timers":37}],38:[function(require,module,exports){
+arguments[4][7][0].apply(exports,arguments)
+},{"dup":7}],38:[function(require,module,exports){
 (function (global){
 
 var rng;
@@ -8981,7 +8722,9 @@ module.exports = {
     }
 };
 
-},{"../src.ts/utils/bytes":57}],41:[function(require,module,exports){
+},{"../src.ts/utils/bytes":58}],41:[function(require,module,exports){
+arguments[4][4][0].apply(exports,arguments)
+},{"dup":4}],42:[function(require,module,exports){
 (function (global){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -9022,7 +8765,7 @@ if (crypto._weakCrypto === true) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../src.ts/utils/bytes":57,"../src.ts/utils/properties":65}],42:[function(require,module,exports){
+},{"../src.ts/utils/bytes":58,"../src.ts/utils/properties":65}],43:[function(require,module,exports){
 'use strict';
 try {
     module.exports.XMLHttpRequest = XMLHttpRequest;
@@ -9032,7 +8775,7 @@ catch (error) {
     module.exports.XMLHttpRequest = null;
 }
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -9043,6 +8786,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var interface_1 = require("./interface");
+var provider_1 = require("../providers/provider");
+var wallet_1 = require("../wallet/wallet");
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var bignumber_1 = require("../utils/bignumber");
@@ -9051,13 +8796,8 @@ var errors = __importStar(require("../utils/errors"));
 var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
 };
-function copyObject(object) {
-    var result = {};
-    for (var key in object) {
-        result[key] = object[key];
-    }
-    return result;
-}
+// Recursively replaces ENS names with promises to resolve the name and
+// stalls until all promises have returned
 // @TODO: Expand this to resolve any promises too
 function resolveAddresses(provider, value, paramType) {
     if (Array.isArray(paramType)) {
@@ -9089,12 +8829,12 @@ function runMethod(contract, functionName, estimateOnly) {
         for (var _i = 0; _i < arguments.length; _i++) {
             params[_i] = arguments[_i];
         }
-        var transaction = {};
+        var tx = {};
         // If 1 extra parameter was passed in, it contains overrides
         if (params.length === method.inputs.length + 1 && typeof (params[params.length - 1]) === 'object') {
-            transaction = copyObject(params.pop());
+            tx = properties_1.shallowCopy(params.pop());
             // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
-            for (var key in transaction) {
+            for (var key in tx) {
                 if (!allowedTransactionKeys[key]) {
                     throw new Error('unknown transaction override ' + key);
                 }
@@ -9105,137 +8845,80 @@ function runMethod(contract, functionName, estimateOnly) {
         }
         // Check overrides make sense
         ['data', 'to'].forEach(function (key) {
-            if (transaction[key] != null) {
-                throw new Error('cannot override ' + key);
+            if (tx[key] != null) {
+                errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
             }
         });
         // Send to the contract address
-        transaction.to = contract.addressPromise;
+        tx.to = contract.addressPromise;
         return resolveAddresses(contract.provider, params, method.inputs).then(function (params) {
-            transaction.data = method.encode(params);
+            tx.data = method.encode(params);
             if (method.type === 'call') {
                 // Call (constant functions) always cost 0 ether
                 if (estimateOnly) {
                     return Promise.resolve(bignumber_1.ConstantZero);
                 }
+                if (!contract.provider) {
+                    errors.throwError('call (constant functions) require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'call' });
+                }
                 // Check overrides make sense
                 ['gasLimit', 'gasPrice', 'value'].forEach(function (key) {
-                    if (transaction[key] != null) {
+                    if (tx[key] != null) {
                         throw new Error('call cannot override ' + key);
                     }
                 });
-                if (transaction.from == null && contract.signer) {
-                    if (contract.signer.address) {
-                        transaction.from = contract.signer.address;
-                    }
-                    else if (contract.signer.getAddress) {
-                        transaction.from = contract.signer.getAddress();
-                    }
+                if (tx.from == null && contract.signer) {
+                    tx.from = contract.signer.getAddress();
                 }
-                return properties_1.resolveProperties(transaction).then(function (transaction) {
-                    return contract.provider.call(transaction).then(function (value) {
-                        try {
-                            var result = method.decode(value);
-                            if (method.outputs.length === 1) {
-                                result = result[0];
-                            }
-                            return result;
+                return contract.provider.call(tx).then(function (value) {
+                    try {
+                        var result = method.decode(value);
+                        if (method.outputs.length === 1) {
+                            result = result[0];
                         }
-                        catch (error) {
-                            if (value === '0x' && method.outputs.length > 0) {
-                                errors.throwError('call exception', errors.CALL_EXCEPTION, {
-                                    address: contract.address,
-                                    method: method.signature,
-                                    value: params
-                                });
-                            }
-                            throw error;
+                        return result;
+                    }
+                    catch (error) {
+                        if (value === '0x' && method.outputs.length > 0) {
+                            errors.throwError('call exception', errors.CALL_EXCEPTION, {
+                                address: contract.address,
+                                method: method.signature,
+                                value: params
+                            });
                         }
-                    });
+                        throw error;
+                    }
                 });
             }
             else if (method.type === 'transaction') {
-                if (!contract.signer) {
-                    return Promise.reject(new Error('missing signer'));
-                }
-                // Make sure they aren't overriding something they shouldn't
-                if (transaction.from != null) {
-                    throw new Error('transaction cannot override from');
-                }
                 // Only computing the transaction estimate
                 if (estimateOnly) {
-                    if (contract.signer.estimateGas) {
-                        return contract.signer.estimateGas(transaction);
+                    if (!contract.provider) {
+                        errors.throwError('estimate gas require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'estimateGas' });
                     }
-                    if (contract.signer.address) {
-                        transaction.from = contract.signer.address;
+                    if (tx.from == null && contract.signer) {
+                        tx.from = contract.signer.getAddress();
                     }
-                    else if (contract.signer.getAddress) {
-                        transaction.from = contract.signer.getAddress();
-                    }
-                    return properties_1.resolveProperties(transaction).then(function (transaction) {
-                        return contract.provider.estimateGas(transaction);
-                    });
+                    return contract.provider.estimateGas(tx);
                 }
-                // If the signer supports sendTrasaction, use it
-                if (contract.signer.sendTransaction) {
-                    return contract.signer.sendTransaction(transaction);
+                if (!contract.signer) {
+                    errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' });
                 }
-                if (!contract.signer.sign) {
-                    return Promise.reject(new Error('custom signer does not support signing'));
+                // Make sure they aren't overriding something they shouldn't
+                if (tx.from != null) {
+                    errors.throwError('cannot override from in a transaction', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' });
                 }
-                if (transaction.chainId == null) {
-                    transaction.chainId = contract.provider.getNetwork().then(function (network) {
-                        return network.chainId;
-                    });
-                }
-                if (transaction.gasLimit == null) {
-                    if (contract.signer.estimateGas) {
-                        transaction.gasLimit = contract.signer.estimateGas(transaction);
-                    }
-                    else {
-                        transaction.gasLimit = contract.provider.estimateGas(transaction);
-                    }
-                }
-                if (!transaction.nonce) {
-                    if (contract.signer.getTransactionCount) {
-                        transaction.nonce = contract.signer.getTransactionCount();
-                    }
-                    else if (contract.signer.address) {
-                        transaction.nonce = contract.provider.getTransactionCount(contract.signer.address);
-                    }
-                    else if (contract.signer.getAddress) {
-                        transaction.nonce = contract.provider.getTransactionCount(contract.signer.getAddress());
-                    }
-                    else {
-                        throw new Error('cannot determine nonce');
-                    }
-                }
-                if (!transaction.gasPrice) {
-                    if (contract.signer.getGasPrice) {
-                        transaction.gasPrice = contract.signer.getGasPrice(transaction);
-                    }
-                    else {
-                        transaction.gasPrice = contract.provider.getGasPrice();
-                    }
-                }
-                return properties_1.resolveProperties(transaction).then(function (transaction) {
-                    var signedTransaction = contract.signer.sign(transaction);
-                    return contract.provider.sendTransaction(signedTransaction);
-                });
+                return contract.signer.sendTransaction(tx);
             }
             throw new Error('invalid type - ' + method.type);
             return null;
         });
-        throw new Error('unsupport type - ' + method.type);
     };
-}
-function isSigner(value) {
-    return (value && value.provider != null);
 }
 var Contract = /** @class */ (function () {
     // https://github.com/Microsoft/TypeScript/issues/5453
-    // Once this issue is resolved (there are open PR) we can do this nicer. :)
+    // Once this issue is resolved (there are open PR) we can do this nicer
+    // by making addressOrName default to null for 2 operand calls. :)
     function Contract(addressOrName, contractInterface, signerOrProvider) {
         var _this = this;
         errors.checkNew(this, Contract);
@@ -9247,16 +8930,16 @@ var Contract = /** @class */ (function () {
         else {
             properties_1.defineReadOnly(this, 'interface', new interface_1.Interface(contractInterface));
         }
-        if (!signerOrProvider) {
-            throw new Error('missing signer or provider');
-        }
-        if (isSigner(signerOrProvider)) {
+        if (signerOrProvider instanceof wallet_1.Signer) {
             properties_1.defineReadOnly(this, 'provider', signerOrProvider.provider);
             properties_1.defineReadOnly(this, 'signer', signerOrProvider);
         }
-        else {
+        else if (signerOrProvider instanceof provider_1.Provider) {
             properties_1.defineReadOnly(this, 'provider', signerOrProvider);
             properties_1.defineReadOnly(this, 'signer', null);
+        }
+        else {
+            errors.throwError('invalid signer or provider', errors.INVALID_ARGUMENT, { arg: 'signerOrProvider', value: signerOrProvider });
         }
         properties_1.defineReadOnly(this, 'estimate', {});
         properties_1.defineReadOnly(this, 'events', {});
@@ -9267,8 +8950,8 @@ var Contract = /** @class */ (function () {
             properties_1.defineReadOnly(this, 'addressPromise', Promise.resolve(null));
             return;
         }
-        properties_1.defineReadOnly(this, 'address', addressOrName || null);
-        properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName || null));
+        properties_1.defineReadOnly(this, 'address', addressOrName);
+        properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName));
         Object.keys(this.interface.functions).forEach(function (name) {
             var run = runMethod(_this, name, false);
             if (_this[name] == null) {
@@ -9299,7 +8982,7 @@ var Contract = /** @class */ (function () {
                         log.event = eventName;
                         log.parse = eventInfo.parse;
                         log.removeListener = function () {
-                            contract.provider.removeListener(eventInfo.topics, handleEvent);
+                            contract.provider.removeListener([eventInfo.topic], handleEvent);
                         };
                         log.getBlock = function () { return contract.provider.getBlock(log.blockHash); ; };
                         log.getTransaction = function () { return contract.provider.getTransaction(log.transactionHash); };
@@ -9321,11 +9004,14 @@ var Contract = /** @class */ (function () {
                     if (!value) {
                         value = null;
                     }
+                    if (!contract.provider) {
+                        errors.throwError('events require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'events' });
+                    }
                     if (!value && eventCallback) {
-                        contract.provider.removeListener(eventInfo.topics, handleEvent);
+                        contract.provider.removeListener([eventInfo.topic], handleEvent);
                     }
                     else if (value && !eventCallback) {
-                        contract.provider.on(eventInfo.topics, handleEvent);
+                        contract.provider.on([eventInfo.topic], handleEvent);
                     }
                     eventCallback = value;
                 }
@@ -9363,7 +9049,7 @@ var Contract = /** @class */ (function () {
         return this.signer.sendTransaction({
             data: this.interface.deployFunction.encode(bytecode, args)
         }).then(function (tx) {
-            var contract = new Contract(address_1.getContractAddress(tx), _this.interface, _this.provider);
+            var contract = new Contract(address_1.getContractAddress(tx), _this.interface, _this.signer || _this.provider);
             properties_1.defineReadOnly(contract, 'deployTransaction', tx);
             return contract;
         });
@@ -9372,7 +9058,7 @@ var Contract = /** @class */ (function () {
 }());
 exports.Contract = Contract;
 
-},{"../utils/address":55,"../utils/bignumber":56,"../utils/bytes":57,"../utils/errors":58,"../utils/properties":65,"./interface":45}],44:[function(require,module,exports){
+},{"../providers/provider":53,"../utils/address":56,"../utils/bignumber":57,"../utils/bytes":58,"../utils/errors":59,"../utils/properties":65,"../wallet/wallet":78,"./interface":46}],45:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var contract_1 = require("./contract");
@@ -9380,7 +9066,7 @@ exports.Contract = contract_1.Contract;
 var interface_1 = require("./interface");
 exports.Interface = interface_1.Interface;
 
-},{"./contract":43,"./interface":45}],45:[function(require,module,exports){
+},{"./contract":44,"./interface":46}],46:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -9451,13 +9137,13 @@ var Description = /** @class */ (function () {
 }());
 exports.Description = Description;
 // @TOOD: Make this a description
-var Indexed = /** @class */ (function () {
-    function Indexed(value) {
-        properties_1.defineReadOnly(this, 'type', 'indexed');
-        properties_1.defineReadOnly(this, 'hash', value);
+var Indexed = /** @class */ (function (_super) {
+    __extends(Indexed, _super);
+    function Indexed() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     return Indexed;
-}());
+}(Description));
 exports.Indexed = Indexed;
 var DeployDescription = /** @class */ (function (_super) {
     __extends(DeployDescription, _super);
@@ -9549,8 +9235,13 @@ var FunctionDescription = /** @class */ (function (_super) {
     return FunctionDescription;
 }(Description));
 exports.FunctionDescription = FunctionDescription;
-// @TODO: Make this a description
-function Result() { }
+var Result = /** @class */ (function (_super) {
+    __extends(Result, _super);
+    function Result() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return Result;
+}(Description));
 var EventDescription = /** @class */ (function (_super) {
     __extends(EventDescription, _super);
     function EventDescription() {
@@ -9583,15 +9274,15 @@ var EventDescription = /** @class */ (function (_super) {
             var resultIndexed = abi_coder_1.defaultAbiCoder.decode(inputIndexed, bytes_1.concat(topics));
         }
         var resultNonIndexed = abi_coder_1.defaultAbiCoder.decode(inputNonIndexed, bytes_1.arrayify(data));
-        var result = new Result();
+        var result = new Result({});
         var nonIndexedIndex = 0, indexedIndex = 0;
         this.inputs.forEach(function (input, index) {
             if (input.indexed) {
                 if (topics == null) {
-                    result[index] = new Indexed(null);
+                    result[index] = new Indexed({ type: 'indexed', hash: null });
                 }
                 else if (inputDynamic[index]) {
-                    result[index] = new Indexed(resultIndexed[indexedIndex++]);
+                    result[index] = new Indexed({ type: 'indexed', hash: resultIndexed[indexedIndex++] });
                 }
                 else {
                     result[index] = resultIndexed[indexedIndex++];
@@ -9610,10 +9301,20 @@ var EventDescription = /** @class */ (function (_super) {
     return EventDescription;
 }(Description));
 exports.EventDescription = EventDescription;
-// @TODO:
-//export class Result {
-//    [prop: string]: any;
-//}
+var TransactionDescription = /** @class */ (function (_super) {
+    __extends(TransactionDescription, _super);
+    function TransactionDescription() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return TransactionDescription;
+}(Description));
+var LogDescription = /** @class */ (function (_super) {
+    __extends(LogDescription, _super);
+    function LogDescription() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return LogDescription;
+}(Description));
 function addMethod(method) {
     switch (method.type) {
         case 'constructor': {
@@ -9662,7 +9363,7 @@ function addMethod(method) {
                 name: method.name,
                 signature: signature,
                 inputs: method.inputs,
-                topics: [keccak256_1.keccak256(utf8_1.toUtf8Bytes(signature))],
+                topic: keccak256_1.keccak256(utf8_1.toUtf8Bytes(signature)),
                 anonymous: (!!method.anonymous),
                 type: 'event'
             });
@@ -9729,14 +9430,39 @@ var Interface = /** @class */ (function () {
             var func = this.functions[name];
             if (func.sighash === sighash) {
                 var result = abi_coder_1.defaultAbiCoder.decode(func.inputs, '0x' + tx.data.substring(10));
-                return {
+                return new TransactionDescription({
                     args: result,
+                    decode: func.decode,
+                    name: name,
                     signature: func.signature,
                     sighash: func.sighash,
-                    decode: func.decode,
+                    type: 'transaction',
                     value: bignumber_1.bigNumberify(tx.value || 0),
-                };
+                });
             }
+        }
+        return null;
+    };
+    Interface.prototype.parseLog = function (log) {
+        for (var name in this.events) {
+            if (name.indexOf('(') === -1) {
+                continue;
+            }
+            var event = this.events[name];
+            if (event.anonymous) {
+                continue;
+            }
+            if (event.topic !== log.topics[0]) {
+                continue;
+            }
+            // @TODO: If anonymous, and the only method, and the input count matches, should we parse and return it?
+            return new LogDescription({
+                name: event.name,
+                signature: event.signature,
+                topic: event.topic,
+                type: 'log',
+                values: event.decode(log.data, log.topics)
+            });
         }
         return null;
     };
@@ -9744,7 +9470,7 @@ var Interface = /** @class */ (function () {
 }());
 exports.Interface = Interface;
 
-},{"../utils/abi-coder":54,"../utils/bignumber":56,"../utils/bytes":57,"../utils/errors":58,"../utils/keccak256":62,"../utils/properties":65,"../utils/utf8":72}],46:[function(require,module,exports){
+},{"../utils/abi-coder":55,"../utils/bignumber":57,"../utils/bytes":58,"../utils/errors":59,"../utils/keccak256":63,"../utils/properties":65,"../utils/utf8":72}],47:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -9766,6 +9492,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var provider_1 = require("./provider");
 var bytes_1 = require("../utils/bytes");
+var properties_1 = require("../utils/properties");
 var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
 // The transaction has already been sanitized by the calls in Provider
@@ -9829,7 +9556,7 @@ function checkLogTag(blockTag) {
 var EtherscanProvider = /** @class */ (function (_super) {
     __extends(EtherscanProvider, _super);
     function EtherscanProvider(network, apiKey) {
-        var _this = _super.call(this, network || 'homestead') || this;
+        var _this = _super.call(this, network) || this;
         errors.checkNew(_this, EtherscanProvider);
         var name = 'invalid';
         if (_this.network) {
@@ -9852,8 +9579,8 @@ var EtherscanProvider = /** @class */ (function (_super) {
             default:
                 throw new Error('unsupported network');
         }
-        _this.baseUrl = baseUrl;
-        _this.apiKey = apiKey;
+        properties_1.defineReadOnly(_this, 'baseUrl', baseUrl);
+        properties_1.defineReadOnly(_this, 'apiKey', apiKey);
         return _this;
     }
     EtherscanProvider.prototype.perform = function (method, params) {
@@ -10031,7 +9758,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
 }(provider_1.Provider));
 exports.EtherscanProvider = EtherscanProvider;
 
-},{"../utils/bytes":57,"../utils/errors":58,"../utils/web":73,"./provider":52}],47:[function(require,module,exports){
+},{"../utils/bytes":58,"../utils/errors":59,"../utils/properties":65,"../utils/web":73,"./provider":53}],48:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10088,27 +9815,29 @@ var FallbackProvider = /** @class */ (function (_super) {
         if (providers.length === 0) {
             throw new Error('no providers');
         }
+        // All networks are ready, we can know the network for certain
         var ready = checkNetworks(providers.map(function (p) { return p.network; }));
         if (ready) {
             _this = _super.call(this, providers[0].network) || this;
-            errors.checkNew(_this, FallbackProvider);
         }
         else {
-            _this = _super.call(this, null) || this;
-            errors.checkNew(_this, FallbackProvider);
-            // We re-assign the ready function to make sure all networks actually match
-            _this.ready = Promise.all(providers.map(function (p) { return p.getNetwork(); })).then(function (networks) {
+            // The network won't be known until all child providers know
+            var ready_1 = Promise.all(providers.map(function (p) { return p.getNetwork(); })).then(function (networks) {
                 if (!checkNetworks(networks)) {
                     errors.throwError('getNetwork returned null', errors.UNKNOWN_ERROR, {});
                 }
                 return networks[0];
             });
+            _this = _super.call(this, ready_1) || this;
         }
+        errors.checkNew(_this, FallbackProvider);
+        // Preserve a copy, so we don't get mutated
         _this._providers = providers.slice(0);
         return _this;
     }
     Object.defineProperty(FallbackProvider.prototype, "providers", {
         get: function () {
+            // Return a copy, so we don't get mutated
             return this._providers.slice(0);
         },
         enumerable: true,
@@ -10141,16 +9870,18 @@ var FallbackProvider = /** @class */ (function (_super) {
 }(provider_1.Provider));
 exports.FallbackProvider = FallbackProvider;
 
-},{"../utils/errors":58,"./provider":52}],48:[function(require,module,exports){
+},{"../utils/errors":59,"./provider":53}],49:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var provider_1 = require("./provider");
 exports.Provider = provider_1.Provider;
+exports.ProviderSigner = provider_1.ProviderSigner;
 var etherscan_provider_1 = require("./etherscan-provider");
 exports.EtherscanProvider = etherscan_provider_1.EtherscanProvider;
 var fallback_provider_1 = require("./fallback-provider");
 exports.FallbackProvider = fallback_provider_1.FallbackProvider;
-//import { IpcProvider } from './ipc-provider';
+var ipc_provider_1 = require("./ipc-provider");
+exports.IpcProvider = ipc_provider_1.IpcProvider;
 var infura_provider_1 = require("./infura-provider");
 exports.InfuraProvider = infura_provider_1.InfuraProvider;
 var json_rpc_provider_1 = require("./json-rpc-provider");
@@ -10165,7 +9896,7 @@ function getDefaultProvider(network) {
 }
 exports.getDefaultProvider = getDefaultProvider;
 
-},{"./etherscan-provider":46,"./fallback-provider":47,"./infura-provider":49,"./json-rpc-provider":50,"./provider":52,"./web3-provider":53}],49:[function(require,module,exports){
+},{"./etherscan-provider":47,"./fallback-provider":48,"./infura-provider":50,"./ipc-provider":41,"./json-rpc-provider":51,"./provider":53,"./web3-provider":54}],50:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10187,12 +9918,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var json_rpc_provider_1 = require("./json-rpc-provider");
 var networks_1 = require("./networks");
+var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
 var InfuraProvider = /** @class */ (function (_super) {
     __extends(InfuraProvider, _super);
     function InfuraProvider(network, apiAccessToken) {
         var _this = this;
-        network = networks_1.getNetwork(network || 'homestead');
+        network = networks_1.getNetwork((network == null) ? 'homestead' : network);
         var host = null;
         switch (network.name) {
             case 'homestead':
@@ -10212,7 +9944,7 @@ var InfuraProvider = /** @class */ (function (_super) {
         }
         _this = _super.call(this, 'https://' + host + '/' + (apiAccessToken || ''), network) || this;
         errors.checkNew(_this, InfuraProvider);
-        _this.apiAccessToken = (apiAccessToken || null);
+        properties_1.defineReadOnly(_this, 'apiAccessToken', apiAccessToken || null);
         return _this;
     }
     InfuraProvider.prototype._startPending = function () {
@@ -10229,7 +9961,7 @@ var InfuraProvider = /** @class */ (function (_super) {
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.InfuraProvider = InfuraProvider;
 
-},{"../utils/errors":58,"./json-rpc-provider":50,"./networks":51}],50:[function(require,module,exports){
+},{"../utils/errors":59,"../utils/properties":65,"./json-rpc-provider":51,"./networks":52}],51:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10252,8 +9984,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 var networks_1 = require("./networks");
 var provider_1 = require("./provider");
+var wallet_1 = require("../wallet/wallet");
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
+var properties_1 = require("../utils/properties");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
@@ -10306,16 +10040,17 @@ function getLowerCase(value) {
     }
     return value;
 }
-var JsonRpcSigner = /** @class */ (function () {
-    //    private _syncAddress: boolean;
+var JsonRpcSigner = /** @class */ (function (_super) {
+    __extends(JsonRpcSigner, _super);
     function JsonRpcSigner(provider, address) {
-        errors.checkNew(this, JsonRpcSigner);
-        this.provider = provider;
+        var _this = _super.call(this) || this;
+        errors.checkNew(_this, JsonRpcSigner);
+        properties_1.defineReadOnly(_this, 'provider', provider);
         // Statically attach to a given address
         if (address) {
-            this._address = address;
-            //this._syncAddress = true;
+            properties_1.defineReadOnly(_this, '_address', address);
         }
+        return _this;
     }
     Object.defineProperty(JsonRpcSigner.prototype, "address", {
         get: function () {
@@ -10339,42 +10074,24 @@ var JsonRpcSigner = /** @class */ (function () {
         });
     };
     JsonRpcSigner.prototype.getBalance = function (blockTag) {
-        var _this = this;
-        return this.getAddress().then(function (address) {
-            return _this.provider.getBalance(address, blockTag);
-        });
+        return this.provider.getBalance(this.getAddress(), blockTag);
     };
     JsonRpcSigner.prototype.getTransactionCount = function (blockTag) {
-        var _this = this;
-        return this.getAddress().then(function (address) {
-            return _this.provider.getTransactionCount(address, blockTag);
-        });
+        return this.provider.getTransactionCount(this.getAddress(), blockTag);
     };
-    // @TODO:
-    //sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
     JsonRpcSigner.prototype.sendTransaction = function (transaction) {
         var _this = this;
-        transaction = hexlifyTransaction(transaction);
-        return this.getAddress().then(function (address) {
-            transaction.from = address.toLowerCase();
-            return _this.provider.send('eth_sendTransaction', [transaction]).then(function (hash) {
-                // @TODO: Use secp256k1 to fill this in instead...
-                return new Promise(function (resolve, reject) {
-                    function check() {
-                        this.provider.getTransaction(hash).then(function (transaction) {
-                            if (!transaction) {
-                                setTimeout(check, 1000);
-                                return;
-                            }
-                            transaction.wait = function (timeout) {
-                                return this.provider.waitForTransaction(hash, timeout);
-                            };
-                            resolve(transaction);
-                        });
-                    }
-                    check();
-                });
+        var tx = hexlifyTransaction(transaction);
+        if (tx.from == null) {
+            tx.from = this.getAddress().then(function (address) {
+                if (!address) {
+                    return null;
+                }
+                return address.toLowerCase();
             });
+        }
+        return properties_1.resolveProperties(tx).then(function (tx) {
+            return _this.provider.send('eth_sendTransaction', [transaction]);
         });
     };
     JsonRpcSigner.prototype.signMessage = function (message) {
@@ -10392,7 +10109,7 @@ var JsonRpcSigner = /** @class */ (function () {
         });
     };
     return JsonRpcSigner;
-}());
+}(wallet_1.Signer));
 exports.JsonRpcSigner = JsonRpcSigner;
 var JsonRpcProvider = /** @class */ (function (_super) {
     __extends(JsonRpcProvider, _super);
@@ -10405,7 +10122,22 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                 url = null;
             }
         }
-        _this = _super.call(this, network) || this;
+        if (network) {
+            // The network has been specified explicitly, we can use it
+            _this = _super.call(this, network) || this;
+        }
+        else {
+            // The network is unknown, query the JSON-RPC for it
+            var ready = new Promise(function (resolve, reject) {
+                setTimeout(function () {
+                    _this.send('net_version', []).then(function (result) {
+                        var chainId = parseInt(result);
+                        resolve(networks_1.getNetwork(chainId));
+                    });
+                });
+            });
+            _this = _super.call(this, ready) || this;
+        }
         errors.checkNew(_this, JsonRpcProvider);
         // Default URL
         if (!url) {
@@ -10418,24 +10150,6 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         }
         else {
             _this.connection = url;
-        }
-        // The network is unknown, query the JSON-RPC for it
-        if (!_this.network) {
-            _this.ready = new Promise(function (resolve, reject) {
-                setTimeout(function () {
-                    _this.send('net_version', []).then(function (result) {
-                        var chainId = parseInt(result);
-                        var network = networks_1.getNetwork(chainId);
-                        if (network) {
-                            return resolve(network);
-                        }
-                        resolve({
-                            name: 'custom',
-                            chainId: chainId
-                        });
-                    });
-                });
-            });
         }
         return _this;
     }
@@ -10543,7 +10257,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
 }(provider_1.Provider));
 exports.JsonRpcProvider = JsonRpcProvider;
 
-},{"../utils/address":55,"../utils/bytes":57,"../utils/errors":58,"../utils/utf8":72,"../utils/web":73,"./networks":51,"./provider":52}],51:[function(require,module,exports){
+},{"../utils/address":56,"../utils/bytes":58,"../utils/errors":59,"../utils/properties":65,"../utils/utf8":72,"../utils/web":73,"../wallet/wallet":78,"./networks":52,"./provider":53}],52:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -10554,47 +10268,36 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var errors = __importStar(require("../utils/errors"));
-// @TODO: Make these all read-only with defineProperty
-exports.networks = {
-    "unspecified": {
-        "chainId": 0,
-        "name": "unspecified"
+var homestead = {
+    chainId: 1,
+    ensAddress: "0x314159265dd8dbb310642f98f50c066173c1259b",
+    name: "homestead"
+};
+var ropsten = {
+    chainId: 3,
+    ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
+    name: "ropsten"
+};
+var networks = {
+    unspecified: {
+        chainId: 0
     },
-    "homestead": {
-        "chainId": 1,
-        "ensAddress": "0x314159265dd8dbb310642f98f50c066173c1259b",
-        "name": "homestead"
+    homestead: homestead,
+    mainnet: homestead,
+    morden: {
+        chainId: 2
     },
-    "mainnet": {
-        "chainId": 1,
-        "ensAddress": "0x314159265dd8dbb310642f98f50c066173c1259b",
-        "name": "homestead"
+    ropsten: ropsten,
+    testnet: ropsten,
+    rinkeby: {
+        chainId: 4,
+        ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A"
     },
-    "morden": {
-        "chainId": 2,
-        "name": "morden"
+    kovan: {
+        chainId: 42
     },
-    "ropsten": {
-        "chainId": 3,
-        "ensAddress": "0x112234455c3a32fd11230c42e7bccd4a84e02010",
-        "name": "ropsten"
-    },
-    "testnet": {
-        "chainId": 3,
-        "ensAddress": "0x112234455c3a32fd11230c42e7bccd4a84e02010",
-        "name": "ropsten"
-    },
-    "rinkeby": {
-        "chainId": 4,
-        "name": "rinkeby"
-    },
-    "kovan": {
-        "chainId": 42,
-        "name": "kovan"
-    },
-    "classic": {
-        "chainId": 61,
-        "name": "classic"
+    classic: {
+        chainId: 61
     }
 };
 /**
@@ -10611,35 +10314,65 @@ function getNetwork(network) {
         return null;
     }
     if (typeof (network) === 'number') {
-        for (var key in exports.networks) {
-            var n = exports.networks[key];
-            if (n.chainId === network) {
-                return n;
+        for (var name in networks) {
+            var n_1 = networks[name];
+            if (n_1.chainId === network) {
+                return {
+                    name: name,
+                    chainId: n_1.chainId,
+                    ensAddress: n_1.ensAddress
+                };
             }
         }
-        return null;
+        return {
+            chainId: network,
+            name: 'unknown'
+        };
     }
     if (typeof (network) === 'string') {
-        return exports.networks[network] || null;
+        var n_2 = networks[network];
+        if (n_2 == null) {
+            return null;
+        }
+        return {
+            name: network,
+            chainId: n_2.chainId,
+            ensAddress: n_2.ensAddress
+        };
     }
-    var networkObj = exports.networks[network.name];
+    var n = networks[network.name];
     // Not a standard network; check that it is a valid network in general
-    if (!networkObj) {
-        if (typeof (network.chainId) !== 'number') {
+    if (!n) {
+        if (typeof (n.chainId) !== 'number') {
             errors.throwError('invalid network chainId', errors.INVALID_ARGUMENT, { name: 'network', value: network });
         }
         return network;
     }
     // Make sure the chainId matches the expected network chainId (or is 0; disable EIP-155)
-    if (network.chainId != 0 && network.chainId !== networkObj.chainId) {
+    if (network.chainId !== 0 && network.chainId !== n.chainId) {
         errors.throwError('network chainId mismatch', errors.INVALID_ARGUMENT, { name: 'network', value: network });
     }
-    return networkObj;
+    // Standard Network
+    return {
+        name: network.name,
+        chainId: n.chainId,
+        ensAddress: n.ensAddress
+    };
 }
 exports.getNetwork = getNetwork;
 
-},{"../utils/errors":58}],52:[function(require,module,exports){
+},{"../utils/errors":59}],53:[function(require,module,exports){
 'use strict';
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -10649,12 +10382,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 //import inherits = require('inherits');
+var wallet_1 = require("../wallet/wallet");
 var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
 var utf8_1 = require("../utils/utf8");
 var rlp_1 = require("../utils/rlp");
-var namehash_1 = require("../utils/namehash");
+var hash_1 = require("../utils/hash");
 var networks_1 = require("./networks");
 var properties_1 = require("../utils/properties");
 var transaction_1 = require("../utils/transaction");
@@ -11030,6 +10764,12 @@ function getEventString(object) {
             console.log(error);
         }
     }
+    try {
+        throw new Error();
+    }
+    catch (e) {
+        console.log(e.stack);
+    }
     throw new Error('invalid event - ' + object);
 }
 function parseEventString(string) {
@@ -11071,18 +10811,87 @@ type Event = {
    type: string,
 }
 */
+// @TODO: Perhaps allow a SignDigestAsyncFunc?
+// Enable a simple signing function and provider to provide a full Signer
+var ProviderSigner = /** @class */ (function (_super) {
+    __extends(ProviderSigner, _super);
+    function ProviderSigner(address, signDigest, provider) {
+        var _this = _super.call(this) || this;
+        errors.checkNew(_this, ProviderSigner);
+        properties_1.defineReadOnly(_this, '_addressPromise', Promise.resolve(address));
+        properties_1.defineReadOnly(_this, 'signDigest', signDigest);
+        properties_1.defineReadOnly(_this, 'provider', provider);
+        return _this;
+    }
+    ProviderSigner.prototype.getAddress = function () {
+        return this._addressPromise;
+    };
+    ProviderSigner.prototype.signMessage = function (message) {
+        return Promise.resolve(bytes_1.joinSignature(this.signDigest(hash_1.hashMessage(message))));
+    };
+    ProviderSigner.prototype.sendTransaction = function (transaction) {
+        var _this = this;
+        transaction = properties_1.shallowCopy(transaction);
+        if (transaction.chainId == null) {
+            transaction.chainId = this.provider.getNetwork().then(function (network) {
+                return network.chainId;
+            });
+        }
+        if (transaction.from == null) {
+            transaction.from = this.getAddress();
+        }
+        if (transaction.gasLimit == null) {
+            transaction.gasLimit = this.provider.estimateGas(transaction);
+        }
+        if (transaction.gasPrice == null) {
+            transaction.gasPrice = this.provider.getGasPrice();
+        }
+        return properties_1.resolveProperties(transaction).then(function (tx) {
+            var signedTx = transaction_1.sign(tx, _this.signDigest);
+            return _this._addressPromise.then(function (address) {
+                if (transaction_1.parse(signedTx).from !== address) {
+                    errors.throwError('signing address does not match expected address', errors.UNKNOWN_ERROR, { address: transaction_1.parse(signedTx).from, expectedAddress: address, signedTransaction: signedTx });
+                }
+                return _this.provider.sendTransaction(signedTx);
+            });
+        });
+    };
+    ProviderSigner.prototype.estimateGas = function (transaction) {
+        transaction = properties_1.shallowCopy(transaction);
+        if (transaction.from == null) {
+            transaction.from = this.getAddress();
+        }
+        return this.provider.estimateGas(transaction);
+    };
+    ProviderSigner.prototype.call = function (transaction) {
+        transaction = properties_1.shallowCopy(transaction);
+        if (transaction.from == null) {
+            transaction.from = this.getAddress();
+        }
+        return this.provider.call(transaction);
+    };
+    return ProviderSigner;
+}(wallet_1.Signer));
+exports.ProviderSigner = ProviderSigner;
 var Provider = /** @class */ (function () {
     function Provider(network) {
+        var _this = this;
         errors.checkNew(this, Provider);
-        network = networks_1.getNetwork(network);
-        if (network) {
-            this._network = network;
-            // Sub-classes MAY re-assign a Promise if a standard network name is provided
-            this.ready = Promise.resolve(this._network);
+        if (network instanceof Promise) {
+            properties_1.defineReadOnly(this, 'ready', network.then(function (network) {
+                properties_1.defineReadOnly(_this, '_network', network);
+                return network;
+            }));
         }
         else {
-            // Sub-classes MUST re-assign a Promise to "ready" that returns a Network
-            this.ready = new Promise(function (resolve, reject) { });
+            var knownNetwork = networks_1.getNetwork((network == null) ? 'homestead' : network);
+            if (knownNetwork) {
+                properties_1.defineReadOnly(this, '_network', knownNetwork);
+                properties_1.defineReadOnly(this, 'ready', Promise.resolve(this._network));
+            }
+            else {
+                errors.throwError('invalid network', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
+            }
         }
         this._lastBlockNumber = -2;
         // Balances being watched for changes
@@ -11514,7 +11323,7 @@ var Provider = /** @class */ (function () {
                 errors.throwError('network does support ENS', errors.UNSUPPORTED_OPERATION, { operation: 'ENS', network: network.name });
             }
             // keccak256('resolver(bytes32)')
-            var data = '0x0178b8bf' + namehash_1.namehash(name).substring(2);
+            var data = '0x0178b8bf' + hash_1.namehash(name).substring(2);
             var transaction = { to: network.ensAddress, data: data };
             return _this.call(transaction).then(function (data) {
                 // extract the address from the data
@@ -11539,7 +11348,7 @@ var Provider = /** @class */ (function () {
         }
         catch (error) { }
         var self = this;
-        var nodeHash = namehash_1.namehash(name);
+        var nodeHash = hash_1.namehash(name);
         // Get the addr from the resovler
         return this._getResolver(name).then(function (resolverAddress) {
             // keccak256('addr(bytes32)')
@@ -11567,7 +11376,7 @@ var Provider = /** @class */ (function () {
         }
         address = address_1.getAddress(address);
         var name = address.substring(2) + '.addr.reverse';
-        var nodehash = namehash_1.namehash(name);
+        var nodehash = hash_1.namehash(name);
         var self = this;
         return this._getResolver(name).then(function (resolverAddress) {
             if (!resolverAddress) {
@@ -11730,7 +11539,7 @@ var Provider = /** @class */ (function () {
 }());
 exports.Provider = Provider;
 
-},{"../utils/address":55,"../utils/bignumber":56,"../utils/bytes":57,"../utils/errors":58,"../utils/namehash":63,"../utils/properties":65,"../utils/rlp":66,"../utils/transaction":70,"../utils/utf8":72,"./networks":51}],53:[function(require,module,exports){
+},{"../utils/address":56,"../utils/bignumber":57,"../utils/bytes":58,"../utils/errors":59,"../utils/hash":60,"../utils/properties":65,"../utils/rlp":66,"../utils/transaction":70,"../utils/utf8":72,"../wallet/wallet":78,"./networks":52}],54:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -11751,6 +11560,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var json_rpc_provider_1 = require("./json-rpc-provider");
+var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
 var Web3Provider = /** @class */ (function (_super) {
     __extends(Web3Provider, _super);
@@ -11763,7 +11573,7 @@ var Web3Provider = /** @class */ (function (_super) {
         var url = web3Provider.host || web3Provider.path || 'unknown';
         _this = _super.call(this, url, network) || this;
         errors.checkNew(_this, Web3Provider);
-        _this._web3Provider = web3Provider;
+        properties_1.defineReadOnly(_this, '_web3Provider', web3Provider);
         return _this;
     }
     Web3Provider.prototype.send = function (method, params) {
@@ -11802,7 +11612,7 @@ var Web3Provider = /** @class */ (function (_super) {
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.Web3Provider = Web3Provider;
 
-},{"../utils/errors":58,"./json-rpc-provider":50}],54:[function(require,module,exports){
+},{"../utils/errors":59,"../utils/properties":65,"./json-rpc-provider":51}],55:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -12695,7 +12505,7 @@ var AbiCoder = /** @class */ (function () {
 exports.AbiCoder = AbiCoder;
 exports.defaultAbiCoder = new AbiCoder();
 
-},{"./address":55,"./bignumber":56,"./bytes":57,"./errors":58,"./properties":65,"./utf8":72}],55:[function(require,module,exports){
+},{"./address":56,"./bignumber":57,"./bytes":58,"./errors":59,"./properties":65,"./utf8":72}],56:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 // We use this for base 36 maths
@@ -12818,7 +12628,7 @@ function getContractAddress(transaction) {
 }
 exports.getContractAddress = getContractAddress;
 
-},{"./bytes":57,"./errors":58,"./keccak256":62,"./rlp":66,"bn.js":2}],56:[function(require,module,exports){
+},{"./bytes":58,"./errors":59,"./keccak256":63,"./rlp":66,"bn.js":2}],57:[function(require,module,exports){
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -12977,7 +12787,7 @@ exports.ConstantOne = bigNumberify(1);
 exports.ConstantTwo = bigNumberify(2);
 exports.ConstantWeiPerEther = bigNumberify(new bn_js_1.default.BN('1000000000000000000'));
 
-},{"../utils/errors":58,"./bytes":57,"./properties":65,"bn.js":2}],57:[function(require,module,exports){
+},{"../utils/errors":59,"./bytes":58,"./properties":65,"bn.js":2}],58:[function(require,module,exports){
 "use strict";
 /**
  *  Conversion Utilities
@@ -13204,8 +13014,16 @@ function splitSignature(signature) {
     };
 }
 exports.splitSignature = splitSignature;
+function joinSignature(signature) {
+    return hexlify(concat([
+        hexZeroPad(signature.r, 32),
+        hexZeroPad(signature.s, 32),
+        (signature.recoveryParam ? '0x1c' : '0x1b')
+    ]));
+}
+exports.joinSignature = joinSignature;
 
-},{"./errors":58}],58:[function(require,module,exports){
+},{"./errors":59}],59:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 // Unknown Error
@@ -13280,7 +13098,49 @@ function checkNew(self, kind) {
 }
 exports.checkNew = checkNew;
 
-},{}],59:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
+'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
+var bytes_1 = require("./bytes");
+var utf8_1 = require("./utf8");
+var keccak256_1 = require("./keccak256");
+var Zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+var Partition = new RegExp("^((.*)\\.)?([^.]+)$");
+var UseSTD3ASCIIRules = new RegExp("^[a-z0-9.-]*$");
+function namehash(name) {
+    name = name.toLowerCase();
+    // Supporting the full UTF-8 space requires additional (and large)
+    // libraries, so for now we simply do not support them.
+    // It should be fairly easy in the future to support systems with
+    // String.normalize, but that is future work.
+    if (!name.match(UseSTD3ASCIIRules)) {
+        throw new Error('contains invalid UseSTD3ASCIIRules characters');
+    }
+    var result = Zeros;
+    while (name.length) {
+        var partition = name.match(Partition);
+        var label = utf8_1.toUtf8Bytes(partition[3]);
+        result = keccak256_1.keccak256(bytes_1.concat([result, keccak256_1.keccak256(label)]));
+        name = partition[2] || '';
+    }
+    return bytes_1.hexlify(result);
+}
+exports.namehash = namehash;
+function id(text) {
+    return keccak256_1.keccak256(utf8_1.toUtf8Bytes(text));
+}
+exports.id = id;
+function hashMessage(message) {
+    var payload = bytes_1.concat([
+        utf8_1.toUtf8Bytes('\x19Ethereum Signed Message:\n'),
+        utf8_1.toUtf8Bytes(String(message.length)),
+        ((typeof (message) === 'string') ? utf8_1.toUtf8Bytes(message) : message)
+    ]);
+    return keccak256_1.keccak256(payload);
+}
+exports.hashMessage = hashMessage;
+
+},{"./bytes":58,"./keccak256":63,"./utf8":72}],61:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13311,17 +13171,7 @@ function createSha512Hmac(key) {
 }
 exports.createSha512Hmac = createSha512Hmac;
 
-},{"./bytes":57,"hash.js":20}],60:[function(require,module,exports){
-'use strict';
-Object.defineProperty(exports, "__esModule", { value: true });
-var keccak256_1 = require("./keccak256");
-var utf8_1 = require("./utf8");
-function id(text) {
-    return keccak256_1.keccak256(utf8_1.toUtf8Bytes(text));
-}
-exports.id = id;
-
-},{"./keccak256":62,"./utf8":72}],61:[function(require,module,exports){
+},{"./bytes":58,"hash.js":20}],62:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13338,13 +13188,12 @@ var abi_coder_1 = require("./abi-coder");
 var base64 = __importStar(require("./base64"));
 var bigNumber = __importStar(require("./bignumber"));
 var bytes = __importStar(require("./bytes"));
-var id_1 = require("./id");
+var hash_1 = require("./hash");
 var keccak256_1 = require("./keccak256");
-var namehash_1 = require("./namehash");
 var sha2 = __importStar(require("./sha2"));
 var solidity = __importStar(require("./solidity"));
 var random_bytes_1 = require("./random-bytes");
-//import properties = require('./properties');
+var properties = require("./properties");
 var RLP = __importStar(require("./rlp"));
 var utf8 = __importStar(require("./utf8"));
 var units = __importStar(require("./units"));
@@ -13356,7 +13205,10 @@ exports.default = {
     parseSignature: abi_coder_1.parseSignature,
     RLP: RLP,
     fetchJson: web_1.fetchJson,
-    //defineProperty: properties.defineProperty,
+    defineReadOnly: properties.defineReadOnly,
+    defineFrozen: properties.defineFrozen,
+    resolveProperties: properties.resolveProperties,
+    shallowCopy: properties.shallowCopy,
     // NFKD (decomposed)
     //etherSymbol: '\uD835\uDF63',
     // NFKC (composed)
@@ -13371,8 +13223,9 @@ exports.default = {
     hexlify: bytes.hexlify,
     toUtf8Bytes: utf8.toUtf8Bytes,
     toUtf8String: utf8.toUtf8String,
-    namehash: namehash_1.namehash,
-    id: id_1.id,
+    hashMessage: hash_1.hashMessage,
+    namehash: hash_1.namehash,
+    id: hash_1.id,
     getAddress: address_1.getAddress,
     getIcapAddress: address_1.getIcapAddress,
     getContractAddress: address_1.getContractAddress,
@@ -13387,10 +13240,11 @@ exports.default = {
     solidityKeccak256: solidity.keccak256,
     soliditySha256: solidity.sha256,
     splitSignature: bytes.splitSignature,
+    joinSignature: bytes.joinSignature,
     parseTransaction: transaction_1.parse
 };
 
-},{"./abi-coder":54,"./address":55,"./base64":40,"./bignumber":56,"./bytes":57,"./id":60,"./keccak256":62,"./namehash":63,"./random-bytes":41,"./rlp":66,"./sha2":68,"./solidity":69,"./transaction":70,"./units":71,"./utf8":72,"./web":73}],62:[function(require,module,exports){
+},{"./abi-coder":55,"./address":56,"./base64":40,"./bignumber":57,"./bytes":58,"./hash":60,"./keccak256":63,"./properties":65,"./random-bytes":42,"./rlp":66,"./sha2":68,"./solidity":69,"./transaction":70,"./units":71,"./utf8":72,"./web":73}],63:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var sha3 = require("js-sha3");
@@ -13400,36 +13254,7 @@ function keccak256(data) {
 }
 exports.keccak256 = keccak256;
 
-},{"./bytes":57,"js-sha3":33}],63:[function(require,module,exports){
-'use strict';
-Object.defineProperty(exports, "__esModule", { value: true });
-var bytes_1 = require("./bytes");
-var utf8_1 = require("./utf8");
-var keccak256_1 = require("./keccak256");
-var Zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-var Partition = new RegExp("^((.*)\\.)?([^.]+)$");
-var UseSTD3ASCIIRules = new RegExp("^[a-z0-9.-]*$");
-function namehash(name) {
-    name = name.toLowerCase();
-    // Supporting the full UTF-8 space requires additional (and large)
-    // libraries, so for now we simply do not support them.
-    // It should be fairly easy in the future to support systems with
-    // String.normalize, but that is future work.
-    if (!name.match(UseSTD3ASCIIRules)) {
-        throw new Error('contains invalid UseSTD3ASCIIRules characters');
-    }
-    var result = Zeros;
-    while (name.length) {
-        var partition = name.match(Partition);
-        var label = utf8_1.toUtf8Bytes(partition[3]);
-        result = keccak256_1.keccak256(bytes_1.concat([result, keccak256_1.keccak256(label)]));
-        name = partition[2] || '';
-    }
-    return bytes_1.hexlify(result);
-}
-exports.namehash = namehash;
-
-},{"./bytes":57,"./keccak256":62,"./utf8":72}],64:[function(require,module,exports){
+},{"./bytes":58,"js-sha3":33}],64:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
@@ -13473,7 +13298,7 @@ function pbkdf2(password, salt, iterations, keylen, createHmac) {
 }
 exports.pbkdf2 = pbkdf2;
 
-},{"./bytes":57}],65:[function(require,module,exports){
+},{"./bytes":58}],65:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 function defineReadOnly(object, name, value) {
@@ -13492,19 +13317,6 @@ function defineFrozen(object, name, value) {
     });
 }
 exports.defineFrozen = defineFrozen;
-function defineDeferredReadOnly(object, name, value) {
-    var _value = value;
-    var setter = function (value) {
-        _value = value;
-    };
-    Object.defineProperty(object, name, {
-        enumerable: true,
-        get: function () { return _value; },
-        set: setter
-    });
-    return setter;
-}
-exports.defineDeferredReadOnly = defineDeferredReadOnly;
 function resolveProperties(object) {
     var result = {};
     var promises = [];
@@ -13655,7 +13467,7 @@ function decode(data) {
 }
 exports.decode = decode;
 
-},{"./bytes":57}],67:[function(require,module,exports){
+},{"./bytes":58}],67:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13686,8 +13498,8 @@ var KeyPair = /** @class */ (function () {
         var signature = keyPair.sign(bytes_1.arrayify(digest), { canonical: true });
         return {
             recoveryParam: signature.recoveryParam,
-            r: '0x' + signature.r.toString(16),
-            s: '0x' + signature.s.toString(16),
+            r: bytes_1.hexZeroPad('0x' + signature.r.toString(16), 32),
+            s: bytes_1.hexZeroPad('0x' + signature.s.toString(16), 32),
             v: 27 + signature.recoveryParam
         };
     };
@@ -13738,7 +13550,7 @@ function computeAddress(key) {
 }
 exports.computeAddress = computeAddress;
 
-},{"./address":55,"./bytes":57,"./errors":58,"./keccak256":62,"./properties":65,"elliptic":5}],68:[function(require,module,exports){
+},{"./address":56,"./bytes":58,"./errors":59,"./keccak256":63,"./properties":65,"elliptic":5}],68:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13761,7 +13573,7 @@ function sha512(data) {
 }
 exports.sha512 = sha512;
 
-},{"./bytes":57,"hash.js":20}],69:[function(require,module,exports){
+},{"./bytes":58,"hash.js":20}],69:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("./bignumber");
@@ -13855,7 +13667,7 @@ function sha256(types, values) {
 }
 exports.sha256 = sha256;
 
-},{"./bignumber":56,"./bytes":57,"./keccak256":62,"./sha2":68,"./utf8":72}],70:[function(require,module,exports){
+},{"./bignumber":57,"./bytes":58,"./keccak256":63,"./sha2":68,"./utf8":72}],70:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13930,8 +13742,8 @@ function sign(transaction, signDigest) {
         v += transaction.chainId * 2 + 8;
     }
     raw.push(bytes_1.hexlify(v));
-    raw.push(signature.r);
-    raw.push(signature.s);
+    raw.push(bytes_1.stripZeros(bytes_1.arrayify(signature.r)));
+    raw.push(bytes_1.stripZeros(bytes_1.arrayify(signature.s)));
     return RLP.encode(raw);
 }
 exports.sign = sign;
@@ -13954,8 +13766,8 @@ function parse(rawTransaction) {
     var s = bytes_1.arrayify(signedTransaction[8]);
     if (v.length >= 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
         tx.v = bignumber_1.bigNumberify(v).toNumber();
-        tx.r = signedTransaction[7];
-        tx.s = signedTransaction[8];
+        tx.r = bytes_1.hexZeroPad(signedTransaction[7], 32);
+        tx.s = bytes_1.hexZeroPad(signedTransaction[8], 32);
         var chainId = (tx.v - 35) / 2;
         if (chainId < 0) {
             chainId = 0;
@@ -13983,7 +13795,7 @@ function parse(rawTransaction) {
 }
 exports.parse = parse;
 
-},{"./address":55,"./bignumber":56,"./bytes":57,"./keccak256":62,"./rlp":66,"./secp256k1":67}],71:[function(require,module,exports){
+},{"./address":56,"./bignumber":57,"./bytes":58,"./keccak256":63,"./rlp":66,"./secp256k1":67}],71:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14130,7 +13942,7 @@ function parseEther(ether) {
 }
 exports.parseEther = parseEther;
 
-},{"./bignumber":56,"./errors":58}],72:[function(require,module,exports){
+},{"./bignumber":57,"./errors":59}],72:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
@@ -14257,7 +14069,7 @@ function toUtf8String(bytes) {
 }
 exports.toUtf8String = toUtf8String;
 
-},{"./bytes":57}],73:[function(require,module,exports){
+},{"./bytes":58}],73:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14359,7 +14171,7 @@ function fetchJson(url, json, processFunc) {
 }
 exports.fetchJson = fetchJson;
 
-},{"./base64":40,"./errors":58,"./utf8":72,"xmlhttprequest":42}],74:[function(require,module,exports){
+},{"./base64":40,"./errors":59,"./utf8":72,"xmlhttprequest":43}],74:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14391,6 +14203,7 @@ function getUpperMask(bits) {
 function getLowerMask(bits) {
     return (1 << bits) - 1;
 }
+exports.defaultPath = "m/44'/60'/0'/0/0";
 var HDNode = /** @class */ (function () {
     // @TODO: Private constructor?
     function HDNode(keyPair, chainCode, index, depth, mnemonic, path) {
@@ -14585,7 +14398,7 @@ function isValidMnemonic(mnemonic) {
 }
 exports.isValidMnemonic = isValidMnemonic;
 
-},{"../utils/bignumber":56,"../utils/bytes":57,"../utils/errors":58,"../utils/hmac":59,"../utils/pbkdf2":64,"../utils/secp256k1":67,"../utils/sha2":68,"../utils/utf8":72,"./words":79}],75:[function(require,module,exports){
+},{"../utils/bignumber":57,"../utils/bytes":58,"../utils/errors":59,"../utils/hmac":61,"../utils/pbkdf2":64,"../utils/secp256k1":67,"../utils/sha2":68,"../utils/utf8":72,"./words":79}],75:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -15024,7 +14837,7 @@ function encrypt(privateKey, password, options, progressCallback) {
 }
 exports.encrypt = encrypt;
 
-},{"../utils/address":55,"../utils/bytes":57,"../utils/hmac":59,"../utils/keccak256":62,"../utils/pbkdf2":64,"../utils/random-bytes":41,"../utils/utf8":72,"./hdnode":74,"./signing-key":77,"aes-js":1,"scrypt-js":36,"uuid":39}],77:[function(require,module,exports){
+},{"../utils/address":56,"../utils/bytes":58,"../utils/hmac":61,"../utils/keccak256":63,"../utils/pbkdf2":64,"../utils/random-bytes":42,"../utils/utf8":72,"./hdnode":74,"./signing-key":77,"aes-js":1,"scrypt-js":36,"uuid":39}],77:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -15088,8 +14901,18 @@ function computeAddress(key) {
 }
 exports.computeAddress = computeAddress;
 
-},{"../utils/address":55,"../utils/bytes":57,"../utils/errors":58,"../utils/keccak256":62,"../utils/properties":65,"../utils/secp256k1":67,"./hdnode":74}],78:[function(require,module,exports){
+},{"../utils/address":56,"../utils/bytes":58,"../utils/errors":59,"../utils/keccak256":63,"../utils/properties":65,"../utils/secp256k1":67,"./hdnode":74}],78:[function(require,module,exports){
 'use strict';
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -15106,6 +14929,7 @@ var hdnode_1 = require("./hdnode");
 var secretStorage = __importStar(require("./secret-storage"));
 var signing_key_1 = require("./signing-key");
 var bytes_1 = require("../utils/bytes");
+var hash_1 = require("../utils/hash");
 var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
 var random_bytes_1 = require("../utils/random-bytes");
@@ -15115,33 +14939,49 @@ var errors = __importStar(require("../utils/errors"));
 // This ensures we inject a setImmediate into the global space, which
 // dramatically improves the performance of the scrypt PBKDF.
 console.log("Fix this! Setimmediate");
-// @TODO: Move to HDNode
-var defaultPath = "m/44'/60'/0'/0/0";
-var Wallet = /** @class */ (function () {
+//import _setimmediate = require('setimmediate');
+var Signer = /** @class */ (function () {
+    function Signer() {
+    }
+    return Signer;
+}());
+exports.Signer = Signer;
+var Wallet = /** @class */ (function (_super) {
+    __extends(Wallet, _super);
     function Wallet(privateKey, provider) {
-        //private _provider;
-        this.defaultGasLimit = 1500000;
-        errors.checkNew(this, Wallet);
+        var _this = _super.call(this) || this;
+        _this.defaultGasLimit = 1500000;
+        errors.checkNew(_this, Wallet);
         // Make sure we have a valid signing key
         if (privateKey instanceof signing_key_1.SigningKey) {
-            this.signingKey = privateKey;
-            if (this.signingKey.mnemonic) {
-                properties_1.defineReadOnly(this, 'mnemonic', privateKey.mnemonic);
-                properties_1.defineReadOnly(this, 'path', privateKey.path);
+            properties_1.defineReadOnly(_this, 'signingKey', privateKey);
+            if (_this.signingKey.mnemonic) {
+                properties_1.defineReadOnly(_this, 'mnemonic', privateKey.mnemonic);
+                properties_1.defineReadOnly(_this, 'path', privateKey.path);
             }
         }
         else {
-            this.signingKey = new signing_key_1.SigningKey(privateKey);
+            properties_1.defineReadOnly(_this, 'signingKey', new signing_key_1.SigningKey(privateKey));
         }
-        properties_1.defineReadOnly(this, 'privateKey', this.signingKey.privateKey);
-        this.provider = provider;
-        properties_1.defineReadOnly(this, 'address', this.signingKey.address);
+        properties_1.defineReadOnly(_this, 'privateKey', _this.signingKey.privateKey);
+        properties_1.defineReadOnly(_this, 'provider', provider);
+        properties_1.defineReadOnly(_this, 'address', _this.signingKey.address);
+        return _this;
     }
-    Wallet.prototype.sign = function (transaction) {
-        return transaction_1.sign(transaction, this.signingKey.signDigest.bind(this.signingKey));
+    Wallet.prototype.connect = function (provider) {
+        return new Wallet(this.signingKey, provider);
     };
     Wallet.prototype.getAddress = function () {
         return Promise.resolve(this.address);
+    };
+    Wallet.prototype.sign = function (transaction) {
+        var _this = this;
+        return properties_1.resolveProperties(transaction).then(function (tx) {
+            return transaction_1.sign(tx, _this.signingKey.signDigest.bind(_this.signingKey));
+        });
+    };
+    Wallet.prototype.signMessage = function (message) {
+        return Promise.resolve(bytes_1.joinSignature(this.signingKey.signDigest(hash_1.hashMessage(message))));
     };
     Wallet.prototype.getBalance = function (blockTag) {
         if (!this.provider) {
@@ -15154,28 +14994,6 @@ var Wallet = /** @class */ (function () {
             throw new Error('missing provider');
         }
         return this.provider.getTransactionCount(this.address, blockTag);
-    };
-    Wallet.prototype.getGasPrice = function () {
-        if (!this.provider) {
-            throw new Error('missing provider');
-        }
-        return this.provider.getGasPrice();
-    };
-    Wallet.prototype.estimateGas = function (transaction) {
-        if (!this.provider) {
-            throw new Error('missing provider');
-        }
-        var calculate = {};
-        ['from', 'to', 'data', 'value'].forEach(function (key) {
-            if (transaction[key] == null) {
-                return;
-            }
-            calculate[key] = transaction[key];
-        });
-        if (transaction.from == null) {
-            calculate.from = this.address;
-        }
-        return this.provider.estimateGas(calculate);
     };
     Wallet.prototype.sendTransaction = function (transaction) {
         var _this = this;
@@ -15190,10 +15008,10 @@ var Wallet = /** @class */ (function () {
             tx.to = this.provider.resolveName(tx.to);
         }
         if (tx.gasLimit == null) {
-            tx.gasLimit = this.estimateGas(tx);
+            tx.gasLimit = this.provider.estimateGas(tx);
         }
         if (tx.gasPrice == null) {
-            tx.gasPrice = this.getGasPrice();
+            tx.gasPrice = this.provider.getGasPrice();
         }
         if (tx.nonce == null) {
             tx.nonce = this.getTransactionCount();
@@ -15216,38 +15034,6 @@ var Wallet = /** @class */ (function () {
             gasPrice: options.gasPrice,
             nonce: options.nonce,
             value: amountWei,
-        });
-    };
-    Wallet.hashMessage = function (message) {
-        var payload = bytes_1.concat([
-            utf8_1.toUtf8Bytes('\x19Ethereum Signed Message:\n'),
-            utf8_1.toUtf8Bytes(String(message.length)),
-            ((typeof (message) === 'string') ? utf8_1.toUtf8Bytes(message) : message)
-        ]);
-        return keccak256_1.keccak256(payload);
-    };
-    Wallet.prototype.signMessage = function (message) {
-        var signingKey = new signing_key_1.SigningKey(this.privateKey);
-        var sig = signingKey.signDigest(Wallet.hashMessage(message));
-        return (bytes_1.hexZeroPad(sig.r, 32) + bytes_1.hexZeroPad(sig.s, 32).substring(2) + (sig.recoveryParam ? '1c' : '1b'));
-    };
-    Wallet.verifyMessage = function (message, signature) {
-        signature = bytes_1.hexlify(signature);
-        if (signature.length != 132) {
-            throw new Error('invalid signature');
-        }
-        var digest = Wallet.hashMessage(message);
-        var recoveryParam = parseInt(signature.substring(130), 16);
-        if (recoveryParam >= 27) {
-            recoveryParam -= 27;
-        }
-        if (recoveryParam < 0) {
-            throw new Error('invalid signature');
-        }
-        return signing_key_1.recoverAddress(digest, {
-            r: signature.substring(0, 66),
-            s: '0x' + signature.substring(66, 130),
-            recoveryParam: recoveryParam
         });
     };
     Wallet.prototype.encrypt = function (password, options, progressCallback) {
@@ -15323,7 +15109,7 @@ var Wallet = /** @class */ (function () {
     };
     Wallet.fromMnemonic = function (mnemonic, path) {
         if (!path) {
-            path = defaultPath;
+            path = hdnode_1.defaultPath;
         }
         return new Wallet(hdnode_1.fromMnemonic(mnemonic).derivePath(path));
     };
@@ -15357,11 +15143,30 @@ var Wallet = /** @class */ (function () {
             });
         });
     };
+    Wallet.verifyMessage = function (message, signature) {
+        signature = bytes_1.hexlify(signature);
+        if (signature.length != 132) {
+            throw new Error('invalid signature');
+        }
+        var digest = hash_1.hashMessage(message);
+        var recoveryParam = parseInt(signature.substring(130), 16);
+        if (recoveryParam >= 27) {
+            recoveryParam -= 27;
+        }
+        if (recoveryParam < 0) {
+            throw new Error('invalid signature');
+        }
+        return signing_key_1.recoverAddress(digest, {
+            r: signature.substring(0, 66),
+            s: '0x' + signature.substring(66, 130),
+            recoveryParam: recoveryParam
+        });
+    };
     return Wallet;
-}());
+}(Signer));
 exports.Wallet = Wallet;
 
-},{"../utils/bytes":57,"../utils/errors":58,"../utils/keccak256":62,"../utils/properties":65,"../utils/random-bytes":41,"../utils/transaction":70,"../utils/utf8":72,"./hdnode":74,"./secret-storage":76,"./signing-key":77,"scrypt-js":36}],79:[function(require,module,exports){
+},{"../utils/bytes":58,"../utils/errors":59,"../utils/hash":60,"../utils/keccak256":63,"../utils/properties":65,"../utils/random-bytes":42,"../utils/transaction":70,"../utils/utf8":72,"./hdnode":74,"./secret-storage":76,"./signing-key":77,"scrypt-js":36}],79:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -15394,7 +15199,7 @@ function getWordIndex(word) {
 }
 exports.getWordIndex = getWordIndex;
 
-},{"../utils/errors":58}],80:[function(require,module,exports){
+},{"../utils/errors":59}],80:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -15415,7 +15220,7 @@ exports.providers = providers;
 var errors = __importStar(require("./utils/errors"));
 exports.errors = errors;
 var networks_1 = require("./providers/networks");
-exports.networks = networks_1.networks;
+exports.getNetwork = networks_1.getNetwork;
 var utils_1 = __importDefault(require("./utils"));
 exports.utils = utils_1.default;
 var wallet_1 = require("./wallet");
@@ -15423,5 +15228,5 @@ exports.HDNode = wallet_1.HDNode;
 exports.SigningKey = wallet_1.SigningKey;
 exports.Wallet = wallet_1.Wallet;
 
-},{"./contracts":44,"./providers":48,"./providers/networks":51,"./utils":61,"./utils/errors":58,"./wallet":75}]},{},[80])(80)
+},{"./contracts":45,"./providers":49,"./providers/networks":52,"./utils":62,"./utils/errors":59,"./wallet":75}]},{},[80])(80)
 });

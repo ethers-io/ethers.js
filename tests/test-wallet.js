@@ -85,7 +85,7 @@ describe('Test Transaction Signing and Parsing', function() {
 
     var tests = utils.loadTests('transactions');
     tests.forEach(function(test) {
-        it(('parses and signs transaction - ' + test.name), function() {
+        it(('parses and signs transaction - ' + test.name), async function() {
             var wallet = new Wallet(test.privateKey);
 
             var transaction = {};
@@ -133,9 +133,8 @@ describe('Test Transaction Signing and Parsing', function() {
 
             assert.equal(parsedTransaction.chainId, 0, 'parsed chainId');
 
-            var signedTransaction = wallet.sign(transaction);
-            assert.equal(signedTransaction, test.signedTransaction,
-                'signed transaction');
+            var signedTransaction = await wallet.sign(transaction);
+            assert.equal(signedTransaction, test.signedTransaction, 'signed transaction');
 
             // EIP155
 
@@ -152,9 +151,8 @@ describe('Test Transaction Signing and Parsing', function() {
                 'eip155 parsed chainId');
 
             transaction.chainId = 5;
-            var signedTransactionChainId5 = wallet.sign(transaction);
-            assert.equal(signedTransactionChainId5, test.signedTransactionChainId5,
-                'eip155 signed transaction');
+            var signedTransactionChainId5 = await wallet.sign(transaction);
+            assert.equal(signedTransactionChainId5, test.signedTransactionChainId5, 'eip155 signed transaction');
         });
     });
 });
@@ -202,8 +200,9 @@ describe('Test Signing Messages', function() {
         it(('signs a message "' + test.name + '"'), function() {
             this.timeout(1000000);
             var wallet = new Wallet(test.privateKey);
-            var signature = wallet.signMessage(test.message);
-            assert.equal(signature, test.signature, 'computes message signature');
+            return wallet.signMessage(test.message).then(function(signature) {
+                assert.equal(signature, test.signature, 'computes message signature');
+            });
         });
     });
 
@@ -218,7 +217,7 @@ describe('Test Signing Messages', function() {
     tests.forEach(function(test) {
       it(('hashes a message "' + test.name + '"'), function() {
           this.timeout(1000000);
-          var hash = Wallet.hashMessage(test.message);
+          var hash = ethers.utils.hashMessage(test.message);
           assert.equal(hash, test.messageHash, 'calculates message hash');
       });
   });

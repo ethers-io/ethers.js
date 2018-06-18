@@ -8,13 +8,12 @@ import { AbiCoder, defaultAbiCoder, parseSignature } from './abi-coder';
 import * as base64 from './base64';
 import * as bigNumber from './bignumber';
 import * as bytes from './bytes';
-import { id } from './id';
+import { hashMessage, id, namehash } from './hash';
 import { keccak256 } from './keccak256';
-import { namehash } from './namehash';
 import * as sha2 from './sha2';
 import * as solidity from './solidity';
 import { randomBytes } from './random-bytes';
-//import properties = require('./properties');
+import properties = require('./properties');
 import * as RLP from './rlp';
 import * as utf8 from './utf8';
 import * as units from './units';
@@ -30,7 +29,10 @@ export default {
 
     fetchJson: fetchJson,
 
-    //defineProperty: properties.defineProperty,
+    defineReadOnly: properties.defineReadOnly,
+    defineFrozen: properties.defineFrozen,
+    resolveProperties: properties.resolveProperties,
+    shallowCopy: properties.shallowCopy,
 
     // NFKD (decomposed)
     //etherSymbol: '\uD835\uDF63',
@@ -54,6 +56,7 @@ export default {
     toUtf8Bytes: utf8.toUtf8Bytes,
     toUtf8String: utf8.toUtf8String,
 
+    hashMessage: hashMessage,
     namehash: namehash,
     id: id,
 
@@ -77,6 +80,7 @@ export default {
     soliditySha256: solidity.sha256,
 
     splitSignature: bytes.splitSignature,
+    joinSignature: bytes.joinSignature,
 
     parseTransaction: parseTransaction
 }

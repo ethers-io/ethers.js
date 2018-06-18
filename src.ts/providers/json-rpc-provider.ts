@@ -2,12 +2,14 @@
 
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 
-import { getNetwork, Network } from './networks';
+import { getNetwork, Network, Networkish } from './networks';
 import { BlockTag, Provider, TransactionRequest, TransactionResponse } from './provider';
+import { Signer } from '../wallet/wallet';
 
 import { getAddress } from '../utils/address';
 import { BigNumber } from '../utils/bignumber';
 import { Arrayish, hexlify, hexStripZeros } from '../utils/bytes';
+import { defineReadOnly, resolveProperties } from '../utils/properties';
 import { toUtf8Bytes } from '../utils/utf8';
 import { ConnectionInfo, fetchJson } from '../utils/web';
 
@@ -61,20 +63,19 @@ function getLowerCase(value: string): string {
     return value;
 }
 
-export class JsonRpcSigner {
+export class JsonRpcSigner extends Signer {
     readonly provider: JsonRpcProvider;
     readonly _address: string;
-//    private _syncAddress: boolean;
 
     constructor(provider: JsonRpcProvider, address?: string) {
+        super();
         errors.checkNew(this, JsonRpcSigner);
 
-        this.provider = provider;
+        defineReadOnly(this, 'provider', provider);
 
         // Statically attach to a given address
         if (address) {
-            this._address = address;
-            //this._syncAddress = true;
+            defineReadOnly(this, '_address', address);
         }
     }
 
@@ -99,41 +100,25 @@ export class JsonRpcSigner {
     }
 
     getBalance(blockTag?: BlockTag): Promise<BigNumber> {
-        return this.getAddress().then((address) => {
-            return this.provider.getBalance(address, blockTag);
-        });
+        return this.provider.getBalance(this.getAddress(), blockTag);
     }
 
     getTransactionCount(blockTag): Promise<number> {
-        return this.getAddress().then((address) => {
-            return this.provider.getTransactionCount(address, blockTag);
-        });
+        return this.provider.getTransactionCount(this.getAddress(), blockTag);
     }
 
-    // @TODO:
-    //sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
-    sendTransaction(transaction: TransactionRequest): Promise<any> {
-        transaction = hexlifyTransaction(transaction);
-        return this.getAddress().then((address) => {
-            transaction.from = address.toLowerCase();
-            return this.provider.send('eth_sendTransaction', [ transaction ]).then((hash) => {
-                // @TODO: Use secp256k1 to fill this in instead...
-                return new Promise(function(resolve, reject) {
-                    function check() {
-                        this.provider.getTransaction(hash).then((transaction: TransactionResponse) => {
-                            if (!transaction) {
-                                setTimeout(check, 1000);
-                                return;
-                            }
-                            transaction.wait = function(timeout?: number): Promise<TransactionResponse> {
-                                return this.provider.waitForTransaction(hash, timeout);
-                            };
-                            resolve(transaction);
-                        });
-                    }
-                    check();
-                });
+    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
+        let tx = hexlifyTransaction(transaction);
+
+        if (tx.from == null) {
+            tx.from = this.getAddress().then((address) => {
+                if (!address) { return null; }
+                return address.toLowerCase();
             });
+        }
+
+        return resolveProperties(tx).then((tx) => {
+            return this.provider.send('eth_sendTransaction', [ transaction ]);
         });
     }
 
@@ -160,7 +145,7 @@ export class JsonRpcProvider extends Provider {
 
     private _pendingFilter: Promise<number>;
 
-    constructor(url?: ConnectionInfo | string, network?: Network | string) {
+    constructor(url?: ConnectionInfo | string, network?: Networkish) {
 
         // One parameter, but it is a network name, so swap it with the URL
         if (typeof(url) === 'string') {
@@ -170,7 +155,25 @@ export class JsonRpcProvider extends Provider {
             }
         }
 
-        super(network);
+        if (network) {
+            // The network has been specified explicitly, we can use it
+            super(network);
+
+        } else {
+
+            // The network is unknown, query the JSON-RPC for it
+            let ready: Promise<Network> = new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    this.send('net_version', [ ]).then((result) => {
+                        let chainId = parseInt(result);
+
+                        resolve(getNetwork(chainId));
+                    });
+                });
+            });
+            super(ready);
+        }
+
         errors.checkNew(this, JsonRpcProvider);
 
         // Default URL
@@ -184,26 +187,6 @@ export class JsonRpcProvider extends Provider {
             this.connection = url;
         }
 
-        // The network is unknown, query the JSON-RPC for it
-        if (!this.network) {
-            this.ready = new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    this.send('net_version', [ ]).then((result) => {
-                        let chainId = parseInt(result);
-
-                        let network = getNetwork(chainId);
-                        if (network) {
-                            return resolve(network);
-                        }
-
-                        resolve({
-                            name: 'custom',
-                            chainId: chainId
-                        });
-                    });
-                });
-            });
-        }
     }
 
     getSigner(address: string): JsonRpcSigner {

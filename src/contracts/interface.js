@@ -68,13 +68,13 @@ var Description = /** @class */ (function () {
 }());
 exports.Description = Description;
 // @TOOD: Make this a description
-var Indexed = /** @class */ (function () {
-    function Indexed(value) {
-        properties_1.defineReadOnly(this, 'type', 'indexed');
-        properties_1.defineReadOnly(this, 'hash', value);
+var Indexed = /** @class */ (function (_super) {
+    __extends(Indexed, _super);
+    function Indexed() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     return Indexed;
-}());
+}(Description));
 exports.Indexed = Indexed;
 var DeployDescription = /** @class */ (function (_super) {
     __extends(DeployDescription, _super);
@@ -166,8 +166,13 @@ var FunctionDescription = /** @class */ (function (_super) {
     return FunctionDescription;
 }(Description));
 exports.FunctionDescription = FunctionDescription;
-// @TODO: Make this a description
-function Result() { }
+var Result = /** @class */ (function (_super) {
+    __extends(Result, _super);
+    function Result() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return Result;
+}(Description));
 var EventDescription = /** @class */ (function (_super) {
     __extends(EventDescription, _super);
     function EventDescription() {
@@ -200,15 +205,15 @@ var EventDescription = /** @class */ (function (_super) {
             var resultIndexed = abi_coder_1.defaultAbiCoder.decode(inputIndexed, bytes_1.concat(topics));
         }
         var resultNonIndexed = abi_coder_1.defaultAbiCoder.decode(inputNonIndexed, bytes_1.arrayify(data));
-        var result = new Result();
+        var result = new Result({});
         var nonIndexedIndex = 0, indexedIndex = 0;
         this.inputs.forEach(function (input, index) {
             if (input.indexed) {
                 if (topics == null) {
-                    result[index] = new Indexed(null);
+                    result[index] = new Indexed({ type: 'indexed', hash: null });
                 }
                 else if (inputDynamic[index]) {
-                    result[index] = new Indexed(resultIndexed[indexedIndex++]);
+                    result[index] = new Indexed({ type: 'indexed', hash: resultIndexed[indexedIndex++] });
                 }
                 else {
                     result[index] = resultIndexed[indexedIndex++];
@@ -227,10 +232,20 @@ var EventDescription = /** @class */ (function (_super) {
     return EventDescription;
 }(Description));
 exports.EventDescription = EventDescription;
-// @TODO:
-//export class Result {
-//    [prop: string]: any;
-//}
+var TransactionDescription = /** @class */ (function (_super) {
+    __extends(TransactionDescription, _super);
+    function TransactionDescription() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return TransactionDescription;
+}(Description));
+var LogDescription = /** @class */ (function (_super) {
+    __extends(LogDescription, _super);
+    function LogDescription() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return LogDescription;
+}(Description));
 function addMethod(method) {
     switch (method.type) {
         case 'constructor': {
@@ -279,7 +294,7 @@ function addMethod(method) {
                 name: method.name,
                 signature: signature,
                 inputs: method.inputs,
-                topics: [keccak256_1.keccak256(utf8_1.toUtf8Bytes(signature))],
+                topic: keccak256_1.keccak256(utf8_1.toUtf8Bytes(signature)),
                 anonymous: (!!method.anonymous),
                 type: 'event'
             });
@@ -346,14 +361,39 @@ var Interface = /** @class */ (function () {
             var func = this.functions[name];
             if (func.sighash === sighash) {
                 var result = abi_coder_1.defaultAbiCoder.decode(func.inputs, '0x' + tx.data.substring(10));
-                return {
+                return new TransactionDescription({
                     args: result,
+                    decode: func.decode,
+                    name: name,
                     signature: func.signature,
                     sighash: func.sighash,
-                    decode: func.decode,
+                    type: 'transaction',
                     value: bignumber_1.bigNumberify(tx.value || 0),
-                };
+                });
             }
+        }
+        return null;
+    };
+    Interface.prototype.parseLog = function (log) {
+        for (var name in this.events) {
+            if (name.indexOf('(') === -1) {
+                continue;
+            }
+            var event = this.events[name];
+            if (event.anonymous) {
+                continue;
+            }
+            if (event.topic !== log.topics[0]) {
+                continue;
+            }
+            // @TODO: If anonymous, and the only method, and the input count matches, should we parse and return it?
+            return new LogDescription({
+                name: event.name,
+                signature: event.signature,
+                topic: event.topic,
+                type: 'log',
+                values: event.decode(log.data, log.topics)
+            });
         }
         return null;
     };

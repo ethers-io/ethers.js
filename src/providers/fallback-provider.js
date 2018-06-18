@@ -54,27 +54,29 @@ var FallbackProvider = /** @class */ (function (_super) {
         if (providers.length === 0) {
             throw new Error('no providers');
         }
+        // All networks are ready, we can know the network for certain
         var ready = checkNetworks(providers.map(function (p) { return p.network; }));
         if (ready) {
             _this = _super.call(this, providers[0].network) || this;
-            errors.checkNew(_this, FallbackProvider);
         }
         else {
-            _this = _super.call(this, null) || this;
-            errors.checkNew(_this, FallbackProvider);
-            // We re-assign the ready function to make sure all networks actually match
-            _this.ready = Promise.all(providers.map(function (p) { return p.getNetwork(); })).then(function (networks) {
+            // The network won't be known until all child providers know
+            var ready_1 = Promise.all(providers.map(function (p) { return p.getNetwork(); })).then(function (networks) {
                 if (!checkNetworks(networks)) {
                     errors.throwError('getNetwork returned null', errors.UNKNOWN_ERROR, {});
                 }
                 return networks[0];
             });
+            _this = _super.call(this, ready_1) || this;
         }
+        errors.checkNew(_this, FallbackProvider);
+        // Preserve a copy, so we don't get mutated
         _this._providers = providers.slice(0);
         return _this;
     }
     Object.defineProperty(FallbackProvider.prototype, "providers", {
         get: function () {
+            // Return a copy, so we don't get mutated
             return this._providers.slice(0);
         },
         enumerable: true,

@@ -2,11 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var provider_1 = require("./provider");
 exports.Provider = provider_1.Provider;
+exports.ProviderSigner = provider_1.ProviderSigner;
 var etherscan_provider_1 = require("./etherscan-provider");
 exports.EtherscanProvider = etherscan_provider_1.EtherscanProvider;
 var fallback_provider_1 = require("./fallback-provider");
 exports.FallbackProvider = fallback_provider_1.FallbackProvider;
-//import { IpcProvider } from './ipc-provider';
+var ipc_provider_1 = require("./ipc-provider");
+exports.IpcProvider = ipc_provider_1.IpcProvider;
 var infura_provider_1 = require("./infura-provider");
 exports.InfuraProvider = infura_provider_1.InfuraProvider;
 var json_rpc_provider_1 = require("./json-rpc-provider");

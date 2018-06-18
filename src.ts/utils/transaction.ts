@@ -1,7 +1,7 @@
 
 import { getAddress } from './address';
 import { BigNumber, bigNumberify, BigNumberish,ConstantZero } from './bignumber';
-import { arrayify, Arrayish, hexlify, stripZeros, } from './bytes';
+import { arrayify, Arrayish, hexlify, hexZeroPad, stripZeros, } from './bytes';
 import { keccak256 } from './keccak256';
 import { recoverAddress, Signature } from './secp256k1';
 import * as RLP from './rlp';
@@ -110,8 +110,8 @@ export function sign(transaction: UnsignedTransaction, signDigest: SignDigestFun
     }
 
     raw.push(hexlify(v));
-    raw.push(signature.r);
-    raw.push(signature.s);
+    raw.push(stripZeros(arrayify(signature.r)));
+    raw.push(stripZeros(arrayify(signature.s)));
 
     return RLP.encode(raw);
 }
@@ -136,8 +136,8 @@ export function parse(rawTransaction: Arrayish): Transaction {
 
     if (v.length >= 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
         tx.v = bigNumberify(v).toNumber();
-        tx.r = signedTransaction[7];
-        tx.s = signedTransaction[8];
+        tx.r = hexZeroPad(signedTransaction[7], 32);
+        tx.s = hexZeroPad(signedTransaction[8], 32);
 
         var chainId = (tx.v - 35) / 2;
         if (chainId < 0) { chainId = 0; }

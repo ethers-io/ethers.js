@@ -1,10 +1,11 @@
-import { Network } from './networks';
-import { BlockTag, Provider, TransactionRequest } from './provider';
+import { Networkish } from './networks';
+import { BlockTag, Provider, TransactionRequest, TransactionResponse } from './provider';
+import { Signer } from '../wallet/wallet';
 import { BigNumber } from '../utils/bignumber';
 import { Arrayish } from '../utils/bytes';
 import { ConnectionInfo } from '../utils/web';
 export declare function hexlifyTransaction(transaction: TransactionRequest): any;
-export declare class JsonRpcSigner {
+export declare class JsonRpcSigner extends Signer {
     readonly provider: JsonRpcProvider;
     readonly _address: string;
     constructor(provider: JsonRpcProvider, address?: string);
@@ -12,14 +13,14 @@ export declare class JsonRpcSigner {
     getAddress(): Promise<string>;
     getBalance(blockTag?: BlockTag): Promise<BigNumber>;
     getTransactionCount(blockTag: any): Promise<number>;
-    sendTransaction(transaction: TransactionRequest): Promise<any>;
+    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
     signMessage(message: Arrayish | string): Promise<string>;
     unlock(password: any): Promise<boolean>;
 }
 export declare class JsonRpcProvider extends Provider {
     readonly connection: ConnectionInfo;
     private _pendingFilter;
-    constructor(url?: ConnectionInfo | string, network?: Network | string);
+    constructor(url?: ConnectionInfo | string, network?: Networkish);
     getSigner(address: string): JsonRpcSigner;
     listAccounts(): Promise<Array<string>>;
     send(method: string, params: any): Promise<any>;

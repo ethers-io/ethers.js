@@ -2,7 +2,7 @@
 
 import scrypt from 'scrypt-js';
 
-import { entropyToMnemonic, fromMnemonic, HDNode } from './hdnode';
+import { defaultPath, entropyToMnemonic, fromMnemonic, HDNode } from './hdnode';
 import * as secretStorage from './secret-storage';
 import { ProgressCallback } from './secret-storage';
 import { recoverAddress, SigningKey } from './signing-key';
@@ -10,11 +10,12 @@ import { recoverAddress, SigningKey } from './signing-key';
 import { BlockTag, Provider, TransactionRequest, TransactionResponse } from '../providers/provider';
 
 import { BigNumber, BigNumberish } from '../utils/bignumber';
-import { arrayify, Arrayish, concat, hexlify, hexZeroPad } from '../utils/bytes';
+import { arrayify, Arrayish, concat, hexlify, joinSignature } from '../utils/bytes';
+import { hashMessage } from '../utils/hash';
 import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { randomBytes } from '../utils/random-bytes';
-import { sign as signTransaction, UnsignedTransaction } from '../utils/transaction';
+import { sign as signTransaction } from '../utils/transaction';
 import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
 
 import * as errors from '../utils/errors';
@@ -25,70 +26,72 @@ import * as errors from '../utils/errors';
 console.log("Fix this! Setimmediate");
 //import _setimmediate = require('setimmediate');
 
-export interface Signer {
-    // One of these MUST be specified
-    address?: string;
-    getAddress(): Promise<string>
+export abstract class Signer {
+    provider?: Provider;
 
-    sendTransaction(transaction: UnsignedTransaction): Promise<TransactionResponse>;
+    abstract getAddress(): Promise<string>
 
-    // If sendTransaction is not implemented, the following MUST be
-    provider: Provider;
-    sign(transaction: UnsignedTransaction): string;
-
-    // The following MAY be i,plemented
-    getTransactionCount(blockTag?: BlockTag): Promise<number>;
-    estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
-    getGasPrice(transaction?: TransactionRequest): Promise<BigNumber>
+    abstract signMessage(transaction: Arrayish | string): Promise<string>;
+    abstract sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
 }
 
-// @TODO: Move to HDNode
-var defaultPath = "m/44'/60'/0'/0/0";
 
+export class Wallet extends Signer {
 
-export class Wallet implements Signer {
     readonly address: string;
     readonly privateKey: string;
+
+    readonly provider: Provider;
+
 
     private mnemonic: string;
     private path: string;
 
     private readonly signingKey: SigningKey;
 
-    provider: Provider;
-
-    //private _provider;
-
     public defaultGasLimit: number = 1500000;
 
     constructor(privateKey: SigningKey | HDNode | Arrayish, provider?: Provider) {
+        super();
         errors.checkNew(this, Wallet);
 
         // Make sure we have a valid signing key
         if (privateKey instanceof SigningKey) {
-            this.signingKey = privateKey;
+            defineReadOnly(this, 'signingKey', privateKey);
             if (this.signingKey.mnemonic) {
                 defineReadOnly(this, 'mnemonic', privateKey.mnemonic);
                 defineReadOnly(this, 'path', privateKey.path);
             }
         } else {
-            this.signingKey = new SigningKey(privateKey);
+            defineReadOnly(this, 'signingKey', new SigningKey(privateKey));
         }
 
         defineReadOnly(this, 'privateKey', this.signingKey.privateKey);
 
-        this.provider = provider;
+        defineReadOnly(this, 'provider', provider);
 
         defineReadOnly(this, 'address', this.signingKey.address);
     }
 
-    sign(transaction: UnsignedTransaction): string {
-        return signTransaction(transaction, this.signingKey.signDigest.bind(this.signingKey));
+    connect(provider: Provider): Wallet {
+        return new Wallet(this.signingKey, provider);
     }
+
 
     getAddress(): Promise<string> {
         return Promise.resolve(this.address);
     }
+
+    sign(transaction: TransactionRequest): Promise<string> {
+        return resolveProperties(transaction).then((tx) => {
+            return signTransaction(tx, this.signingKey.signDigest.bind(this.signingKey));
+        });
+    }
+
+    signMessage(message: Arrayish | string): Promise<string> {
+        return Promise.resolve(joinSignature(this.signingKey.signDigest(hashMessage(message))));
+    }
+
 
     getBalance(blockTag?: BlockTag): Promise<BigNumber> {
         if (!this.provider) { throw new Error('missing provider'); }
@@ -98,26 +101,6 @@ export class Wallet implements Signer {
     getTransactionCount(blockTag?: BlockTag): Promise<number> {
         if (!this.provider) { throw new Error('missing provider'); }
         return this.provider.getTransactionCount(this.address, blockTag);
-    }
-
-    getGasPrice(): Promise<BigNumber> {
-        if (!this.provider) { throw new Error('missing provider'); }
-
-        return this.provider.getGasPrice();
-    }
-
-    estimateGas(transaction: TransactionRequest): Promise<BigNumber> {
-        if (!this.provider) { throw new Error('missing provider'); }
-
-        var calculate: TransactionRequest = {};
-        ['from', 'to', 'data', 'value'].forEach(function(key) {
-            if (transaction[key] == null) { return; }
-            calculate[key] = transaction[key];
-        });
-
-        if (transaction.from == null) { calculate.from = this.address; }
-
-        return this.provider.estimateGas(calculate);
     }
 
     sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
@@ -134,11 +117,11 @@ export class Wallet implements Signer {
         }
 
         if (tx.gasLimit == null) {
-            tx.gasLimit = this.estimateGas(tx);
+            tx.gasLimit = this.provider.estimateGas(tx);
         }
 
         if (tx.gasPrice == null) {
-            tx.gasPrice = this.getGasPrice();
+            tx.gasPrice = this.provider.getGasPrice();
         }
 
         if (tx.nonce == null) {
@@ -168,41 +151,6 @@ export class Wallet implements Signer {
         });
     }
 
-
-    static hashMessage(message: Arrayish | string): string {
-        var payload = concat([
-            toUtf8Bytes('\x19Ethereum Signed Message:\n'),
-            toUtf8Bytes(String(message.length)),
-            ((typeof(message) === 'string') ? toUtf8Bytes(message): message)
-        ]);
-        return keccak256(payload);
-    }
-
-    signMessage(message: Arrayish | string): string {
-        var signingKey = new SigningKey(this.privateKey);
-        var sig = signingKey.signDigest(Wallet.hashMessage(message));
-
-        return (hexZeroPad(sig.r, 32) + hexZeroPad(sig.s, 32).substring(2) + (sig.recoveryParam ? '1c': '1b'));
-    }
-
-    static verifyMessage(message: Arrayish | string, signature: string): string {
-        signature = hexlify(signature);
-        if (signature.length != 132) { throw new Error('invalid signature'); }
-        var digest = Wallet.hashMessage(message);
-
-        var recoveryParam = parseInt(signature.substring(130), 16);
-        if (recoveryParam >= 27) { recoveryParam -= 27; }
-        if (recoveryParam < 0) { throw new Error('invalid signature'); }
-
-        return recoverAddress(
-            digest,
-            {
-                r: signature.substring(0, 66),
-                s: '0x' + signature.substring(66, 130),
-                recoveryParam: recoveryParam
-            }
-        );
-    }
 
     encrypt(password: Arrayish | string, options: any, progressCallback: ProgressCallback): Promise<string> {
         if (typeof(options) === 'function' && !progressCallback) {
@@ -323,4 +271,25 @@ export class Wallet implements Signer {
             });
         });
     }
+
+
+    static verifyMessage(message: Arrayish | string, signature: string): string {
+        signature = hexlify(signature);
+        if (signature.length != 132) { throw new Error('invalid signature'); }
+        var digest = hashMessage(message);
+
+        var recoveryParam = parseInt(signature.substring(130), 16);
+        if (recoveryParam >= 27) { recoveryParam -= 27; }
+        if (recoveryParam < 0) { throw new Error('invalid signature'); }
+
+        return recoverAddress(
+            digest,
+            {
+                r: signature.substring(0, 66),
+                s: '0x' + signature.substring(66, 130),
+                recoveryParam: recoveryParam
+            }
+        );
+    }
+
 }

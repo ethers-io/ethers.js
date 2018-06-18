@@ -1,4 +1,14 @@
 'use strict';
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -8,12 +18,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 //import inherits = require('inherits');
+var wallet_1 = require("../wallet/wallet");
 var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
 var utf8_1 = require("../utils/utf8");
 var rlp_1 = require("../utils/rlp");
-var namehash_1 = require("../utils/namehash");
+var hash_1 = require("../utils/hash");
 var networks_1 = require("./networks");
 var properties_1 = require("../utils/properties");
 var transaction_1 = require("../utils/transaction");
@@ -389,6 +400,12 @@ function getEventString(object) {
             console.log(error);
         }
     }
+    try {
+        throw new Error();
+    }
+    catch (e) {
+        console.log(e.stack);
+    }
     throw new Error('invalid event - ' + object);
 }
 function parseEventString(string) {
@@ -430,18 +447,87 @@ type Event = {
    type: string,
 }
 */
+// @TODO: Perhaps allow a SignDigestAsyncFunc?
+// Enable a simple signing function and provider to provide a full Signer
+var ProviderSigner = /** @class */ (function (_super) {
+    __extends(ProviderSigner, _super);
+    function ProviderSigner(address, signDigest, provider) {
+        var _this = _super.call(this) || this;
+        errors.checkNew(_this, ProviderSigner);
+        properties_1.defineReadOnly(_this, '_addressPromise', Promise.resolve(address));
+        properties_1.defineReadOnly(_this, 'signDigest', signDigest);
+        properties_1.defineReadOnly(_this, 'provider', provider);
+        return _this;
+    }
+    ProviderSigner.prototype.getAddress = function () {
+        return this._addressPromise;
+    };
+    ProviderSigner.prototype.signMessage = function (message) {
+        return Promise.resolve(bytes_1.joinSignature(this.signDigest(hash_1.hashMessage(message))));
+    };
+    ProviderSigner.prototype.sendTransaction = function (transaction) {
+        var _this = this;
+        transaction = properties_1.shallowCopy(transaction);
+        if (transaction.chainId == null) {
+            transaction.chainId = this.provider.getNetwork().then(function (network) {
+                return network.chainId;
+            });
+        }
+        if (transaction.from == null) {
+            transaction.from = this.getAddress();
+        }
+        if (transaction.gasLimit == null) {
+            transaction.gasLimit = this.provider.estimateGas(transaction);
+        }
+        if (transaction.gasPrice == null) {
+            transaction.gasPrice = this.provider.getGasPrice();
+        }
+        return properties_1.resolveProperties(transaction).then(function (tx) {
+            var signedTx = transaction_1.sign(tx, _this.signDigest);
+            return _this._addressPromise.then(function (address) {
+                if (transaction_1.parse(signedTx).from !== address) {
+                    errors.throwError('signing address does not match expected address', errors.UNKNOWN_ERROR, { address: transaction_1.parse(signedTx).from, expectedAddress: address, signedTransaction: signedTx });
+                }
+                return _this.provider.sendTransaction(signedTx);
+            });
+        });
+    };
+    ProviderSigner.prototype.estimateGas = function (transaction) {
+        transaction = properties_1.shallowCopy(transaction);
+        if (transaction.from == null) {
+            transaction.from = this.getAddress();
+        }
+        return this.provider.estimateGas(transaction);
+    };
+    ProviderSigner.prototype.call = function (transaction) {
+        transaction = properties_1.shallowCopy(transaction);
+        if (transaction.from == null) {
+            transaction.from = this.getAddress();
+        }
+        return this.provider.call(transaction);
+    };
+    return ProviderSigner;
+}(wallet_1.Signer));
+exports.ProviderSigner = ProviderSigner;
 var Provider = /** @class */ (function () {
     function Provider(network) {
+        var _this = this;
         errors.checkNew(this, Provider);
-        network = networks_1.getNetwork(network);
-        if (network) {
-            this._network = network;
-            // Sub-classes MAY re-assign a Promise if a standard network name is provided
-            this.ready = Promise.resolve(this._network);
+        if (network instanceof Promise) {
+            properties_1.defineReadOnly(this, 'ready', network.then(function (network) {
+                properties_1.defineReadOnly(_this, '_network', network);
+                return network;
+            }));
         }
         else {
-            // Sub-classes MUST re-assign a Promise to "ready" that returns a Network
-            this.ready = new Promise(function (resolve, reject) { });
+            var knownNetwork = networks_1.getNetwork((network == null) ? 'homestead' : network);
+            if (knownNetwork) {
+                properties_1.defineReadOnly(this, '_network', knownNetwork);
+                properties_1.defineReadOnly(this, 'ready', Promise.resolve(this._network));
+            }
+            else {
+                errors.throwError('invalid network', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
+            }
         }
         this._lastBlockNumber = -2;
         // Balances being watched for changes
@@ -873,7 +959,7 @@ var Provider = /** @class */ (function () {
                 errors.throwError('network does support ENS', errors.UNSUPPORTED_OPERATION, { operation: 'ENS', network: network.name });
             }
             // keccak256('resolver(bytes32)')
-            var data = '0x0178b8bf' + namehash_1.namehash(name).substring(2);
+            var data = '0x0178b8bf' + hash_1.namehash(name).substring(2);
             var transaction = { to: network.ensAddress, data: data };
             return _this.call(transaction).then(function (data) {
                 // extract the address from the data
@@ -898,7 +984,7 @@ var Provider = /** @class */ (function () {
         }
         catch (error) { }
         var self = this;
-        var nodeHash = namehash_1.namehash(name);
+        var nodeHash = hash_1.namehash(name);
         // Get the addr from the resovler
         return this._getResolver(name).then(function (resolverAddress) {
             // keccak256('addr(bytes32)')
@@ -926,7 +1012,7 @@ var Provider = /** @class */ (function () {
         }
         address = address_1.getAddress(address);
         var name = address.substring(2) + '.addr.reverse';
-        var nodehash = namehash_1.namehash(name);
+        var nodehash = hash_1.namehash(name);
         var self = this;
         return this._getResolver(name).then(function (resolverAddress) {
             if (!resolverAddress) {

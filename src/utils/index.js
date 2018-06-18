@@ -14,13 +14,12 @@ var abi_coder_1 = require("./abi-coder");
 var base64 = __importStar(require("./base64"));
 var bigNumber = __importStar(require("./bignumber"));
 var bytes = __importStar(require("./bytes"));
-var id_1 = require("./id");
+var hash_1 = require("./hash");
 var keccak256_1 = require("./keccak256");
-var namehash_1 = require("./namehash");
 var sha2 = __importStar(require("./sha2"));
 var solidity = __importStar(require("./solidity"));
 var random_bytes_1 = require("./random-bytes");
-//import properties = require('./properties');
+var properties = require("./properties");
 var RLP = __importStar(require("./rlp"));
 var utf8 = __importStar(require("./utf8"));
 var units = __importStar(require("./units"));
@@ -32,7 +31,10 @@ exports.default = {
     parseSignature: abi_coder_1.parseSignature,
     RLP: RLP,
     fetchJson: web_1.fetchJson,
-    //defineProperty: properties.defineProperty,
+    defineReadOnly: properties.defineReadOnly,
+    defineFrozen: properties.defineFrozen,
+    resolveProperties: properties.resolveProperties,
+    shallowCopy: properties.shallowCopy,
     // NFKD (decomposed)
     //etherSymbol: '\uD835\uDF63',
     // NFKC (composed)
@@ -47,8 +49,9 @@ exports.default = {
     hexlify: bytes.hexlify,
     toUtf8Bytes: utf8.toUtf8Bytes,
     toUtf8String: utf8.toUtf8String,
-    namehash: namehash_1.namehash,
-    id: id_1.id,
+    hashMessage: hash_1.hashMessage,
+    namehash: hash_1.namehash,
+    id: hash_1.id,
     getAddress: address_1.getAddress,
     getIcapAddress: address_1.getIcapAddress,
     getContractAddress: address_1.getContractAddress,
@@ -63,5 +66,6 @@ exports.default = {
     solidityKeccak256: solidity.keccak256,
     soliditySha256: solidity.sha256,
     splitSignature: bytes.splitSignature,
+    joinSignature: bytes.joinSignature,
     parseTransaction: transaction_1.parse
 };

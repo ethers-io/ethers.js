@@ -2,15 +2,17 @@
 
 //import inherits = require('inherits');
 
+import { Signer } from '../wallet/wallet';
+
 import { getAddress, getContractAddress } from '../utils/address';
 import { BigNumber, bigNumberify, BigNumberish } from '../utils/bignumber';
-import { Arrayish, hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, stripZeros } from '../utils/bytes';
+import { Arrayish, hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, joinSignature, stripZeros } from '../utils/bytes';
 import { toUtf8String } from '../utils/utf8';
 import { decode as rlpDecode, encode as rlpEncode } from '../utils/rlp';
-import { namehash } from '../utils/namehash';
-import { getNetwork, Network } from './networks';
-import { resolveProperties } from '../utils/properties';
-import { parse as parseTransaction, Transaction } from '../utils/transaction';
+import { hashMessage, namehash } from '../utils/hash';
+import { getNetwork, Network, Networkish } from './networks';
+import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
+import { parse as parseTransaction, sign as signTransaction, SignDigestFunc, Transaction } from '../utils/transaction';
 
 import * as errors from '../utils/errors';
 
@@ -32,7 +34,7 @@ export interface Block {
 
     timestamp: number;
     nonce: string;
-    difficulty: string;
+    difficulty: number;
 
     gasLimit: BigNumber;
     gasUsed: BigNumber;
@@ -523,6 +525,11 @@ function getEventString(object) {
             console.log(error);
         }
     }
+    try {
+        throw new Error();
+    } catch(e) {
+        console.log(e.stack);
+    }
 
     throw new Error('invalid event - ' + object);
 }
@@ -567,6 +574,84 @@ type Event = {
 }
 */
 
+// @TODO: Perhaps allow a SignDigestAsyncFunc?
+
+// Enable a simple signing function and provider to provide a full Signer
+export class ProviderSigner extends Signer {
+    readonly provider: Provider;
+    readonly signDigest: SignDigestFunc;
+
+    private _addressPromise: Promise<string>;
+
+    constructor(address: string | Promise<string>, signDigest: SignDigestFunc, provider: Provider) {
+        super();
+        errors.checkNew(this, ProviderSigner);
+        defineReadOnly(this, '_addressPromise', Promise.resolve(address));
+        defineReadOnly(this, 'signDigest', signDigest);
+        defineReadOnly(this, 'provider', provider);
+    }
+
+    getAddress(): Promise<string> {
+        return this._addressPromise;
+    }
+
+    signMessage(message: Arrayish | string): Promise<string> {
+        return Promise.resolve(joinSignature(this.signDigest(hashMessage(message))));
+    }
+
+    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
+        transaction = shallowCopy(transaction);
+
+        if (transaction.chainId == null) {
+            transaction.chainId = this.provider.getNetwork().then((network) => {
+                return network.chainId;
+            });
+        }
+
+        if (transaction.from == null) {
+            transaction.from = this.getAddress();
+        }
+
+        if (transaction.gasLimit == null) {
+            transaction.gasLimit = this.provider.estimateGas(transaction);
+        }
+
+        if (transaction.gasPrice == null) {
+            transaction.gasPrice = this.provider.getGasPrice();
+        }
+
+        return resolveProperties(transaction).then((tx) => {
+            let signedTx = signTransaction(tx, this.signDigest);
+            return this._addressPromise.then((address) => {
+                if (parseTransaction(signedTx).from !== address) {
+                    errors.throwError('signing address does not match expected address', errors.UNKNOWN_ERROR, { address: parseTransaction(signedTx).from, expectedAddress: address, signedTransaction: signedTx });
+                }
+                return this.provider.sendTransaction(signedTx);
+            });
+        });
+    }
+
+    estimateGas(transaction: TransactionRequest): Promise<BigNumber> {
+        transaction = shallowCopy(transaction);
+
+        if (transaction.from == null) {
+            transaction.from = this.getAddress();
+        }
+
+        return this.provider.estimateGas(transaction);
+    }
+
+    call(transaction: TransactionRequest): Promise<string> {
+        transaction = shallowCopy(transaction);
+
+        if (transaction.from == null) {
+            transaction.from = this.getAddress();
+        }
+
+        return this.provider.call(transaction);
+    }
+}
+
 export class Provider {
     private _network: Network;
 
@@ -594,19 +679,24 @@ export class Provider {
      */
     protected ready: Promise<Network>;
 
-    constructor(network: string | Network) {
+    constructor(network: Networkish | Promise<Network>) {
         errors.checkNew(this, Provider);
 
-        network = getNetwork(network);
-
-        if (network) {
-            this._network = network;
-            // Sub-classes MAY re-assign a Promise if a standard network name is provided
-            this.ready = Promise.resolve(this._network);
+        if (network instanceof Promise) {
+            defineReadOnly(this, 'ready', network.then((network) => {
+                defineReadOnly(this, '_network', network);
+                return network;
+            }));
 
         } else {
-            // Sub-classes MUST re-assign a Promise to "ready" that returns a Network
-            this.ready = new Promise((resolve, reject) => { });
+            let knownNetwork = getNetwork((network == null) ? 'homestead': network);
+            if (knownNetwork) {
+                defineReadOnly(this, '_network', knownNetwork);
+                defineReadOnly(this, 'ready', Promise.resolve(this._network));
+
+            } else {
+                errors.throwError('invalid network', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
+            }
         }
 
         this._lastBlockNumber = -2;

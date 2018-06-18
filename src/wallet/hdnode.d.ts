@@ -1,5 +1,6 @@
 import { Arrayish } from '../utils/bytes';
 import { KeyPair } from '../utils/secp256k1';
+export declare const defaultPath = "m/44'/60'/0'/0/0";
 export declare class HDNode {
     private readonly keyPair;
     readonly privateKey: string;

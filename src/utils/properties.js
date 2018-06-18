@@ -16,19 +16,6 @@ function defineFrozen(object, name, value) {
     });
 }
 exports.defineFrozen = defineFrozen;
-function defineDeferredReadOnly(object, name, value) {
-    var _value = value;
-    var setter = function (value) {
-        _value = value;
-    };
-    Object.defineProperty(object, name, {
-        enumerable: true,
-        get: function () { return _value; },
-        set: setter
-    });
-    return setter;
-}
-exports.defineDeferredReadOnly = defineDeferredReadOnly;
 function resolveProperties(object) {
     var result = {};
     var promises = [];

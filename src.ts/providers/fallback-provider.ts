@@ -49,28 +49,30 @@ export class FallbackProvider extends Provider {
 
         if (providers.length === 0) { throw new Error('no providers'); }
 
+        // All networks are ready, we can know the network for certain
         let ready = checkNetworks(providers.map((p) => p.network));
         if (ready) {
             super(providers[0].network);
-            errors.checkNew(this, FallbackProvider);
-        } else {
-            super(null);
-            errors.checkNew(this, FallbackProvider);
 
-            // We re-assign the ready function to make sure all networks actually match
-            this.ready = Promise.all(providers.map((p) => p.getNetwork())).then((networks) => {
+        } else {
+            // The network won't be known until all child providers know
+            let ready = Promise.all(providers.map((p) => p.getNetwork())).then((networks) => {
                 if (!checkNetworks(networks)) {
                     errors.throwError('getNetwork returned null', errors.UNKNOWN_ERROR, { })
                 }
                 return networks[0];
             });
+
+            super(ready);
         }
+        errors.checkNew(this, FallbackProvider);
 
-
+        // Preserve a copy, so we don't get mutated
         this._providers = providers.slice(0);
     }
 
     get providers() {
+        // Return a copy, so we don't get mutated
         return this._providers.slice(0);
     }
 

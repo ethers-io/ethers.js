@@ -1,6 +1,6 @@
 'use strict';
 
-export function defineReadOnly(object, name, value) {
+export function defineReadOnly(object: any, name: string, value: any): void {
     Object.defineProperty(object, name, {
         enumerable: true,
         value: value,
@@ -8,7 +8,7 @@ export function defineReadOnly(object, name, value) {
     });
 }
 
-export function defineFrozen(object, name, value) {
+export function defineFrozen(object: any, name: string, value: any): void {
     var frozen = JSON.stringify(value);
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -16,23 +16,7 @@ export function defineFrozen(object, name, value) {
     });
 }
 
-export type DeferredSetter = (value: any) => void;
-export function defineDeferredReadOnly(object, name, value): DeferredSetter {
-    var _value = value;
-    var setter = function(value: any): void {
-        _value = value;
-    }
-
-    Object.defineProperty(object, name, {
-        enumerable: true,
-        get: function(): any { return _value; },
-        set: setter
-    });
-
-    return setter;
-}
-
-export function resolveProperties(object: any) {
+export function resolveProperties(object: any): Promise<any> {
     let result: any = {};
 
     let promises: Array<Promise<any>> = [];
