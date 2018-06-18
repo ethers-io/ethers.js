@@ -7,7 +7,7 @@ import { ConnectionInfo } from '../utils/web';
 export declare function hexlifyTransaction(transaction: TransactionRequest): any;
 export declare class JsonRpcSigner extends Signer {
     readonly provider: JsonRpcProvider;
-    readonly _address: string;
+    private _address;
     constructor(provider: JsonRpcProvider, address?: string);
     readonly address: string;
     getAddress(): Promise<string>;

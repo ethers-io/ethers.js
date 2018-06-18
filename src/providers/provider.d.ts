@@ -73,8 +73,6 @@ export declare class ProviderSigner extends Signer {
     getAddress(): Promise<string>;
     signMessage(message: Arrayish | string): Promise<string>;
     sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
-    estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
-    call(transaction: TransactionRequest): Promise<string>;
 }
 export declare class Provider {
     private _network;

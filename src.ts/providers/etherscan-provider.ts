@@ -1,5 +1,5 @@
 
-import { checkTransactionResponse, Provider, TransactionRequest } from './provider';
+import { BlockTag, checkTransactionResponse, Provider, TransactionRequest, TransactionResponse } from './provider';
 import { Networkish } from './networks';
 
 import { hexlify, hexStripZeros } from '../utils/bytes';
@@ -251,32 +251,33 @@ export class EtherscanProvider extends Provider{
         return super.perform(method, params);
     }
 
-    getHistory(addressOrName, startBlock, endBlock) {
+    // @TODO: Allow startBlock and endBlock to be Promises
+    getHistory(addressOrName: string | Promise<string>, startBlock?: BlockTag, endBlock?: BlockTag): Promise<Array<TransactionResponse>> {
 
-        var url = this.baseUrl;
+        let url = this.baseUrl;
 
-        var apiKey = '';
+        let apiKey = '';
         if (this.apiKey) { apiKey += '&apikey=' + this.apiKey; }
 
         if (startBlock == null) { startBlock = 0; }
         if (endBlock == null) { endBlock = 99999999; }
 
-        return this.resolveName(addressOrName).then(function(address) {
+        return this.resolveName(addressOrName).then((address) => {
             url += '/api?module=account&action=txlist&address=' + address;
             url += '&startblock=' + startBlock;
             url += '&endblock=' + endBlock;
             url += '&sort=asc' + apiKey;
 
-            return fetchJson(url, null, getResult).then(function(result) {
-                var output = [];
-                result.forEach(function(tx) {
+            return fetchJson(url, null, getResult).then((result) => {
+                var output: Array<TransactionResponse> = [];
+                result.forEach((tx) => {
                     ['contractAddress', 'to'].forEach(function(key) {
                         if (tx[key] == '') { delete tx[key]; }
                     });
                     if (tx.creates == null && tx.contractAddress != null) {
                         tx.creates = tx.contractAddress;
                     }
-                    var item = checkTransactionResponse(tx);
+                    let item = checkTransactionResponse(tx);
                     if (tx.timeStamp) { item.timestamp = parseInt(tx.timeStamp); }
                     output.push(item);
                 });

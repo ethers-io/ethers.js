@@ -243,6 +243,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
         }
         return _super.prototype.perform.call(this, method, params);
     };
+    // @TODO: Allow startBlock and endBlock to be Promises
     EtherscanProvider.prototype.getHistory = function (addressOrName, startBlock, endBlock) {
         var url = this.baseUrl;
         var apiKey = '';

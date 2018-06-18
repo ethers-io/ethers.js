@@ -65,7 +65,7 @@ function getLowerCase(value: string): string {
 
 export class JsonRpcSigner extends Signer {
     readonly provider: JsonRpcProvider;
-    readonly _address: string;
+    private _address: string;
 
     constructor(provider: JsonRpcProvider, address?: string) {
         super();

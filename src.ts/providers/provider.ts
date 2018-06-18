@@ -630,26 +630,6 @@ export class ProviderSigner extends Signer {
             });
         });
     }
-
-    estimateGas(transaction: TransactionRequest): Promise<BigNumber> {
-        transaction = shallowCopy(transaction);
-
-        if (transaction.from == null) {
-            transaction.from = this.getAddress();
-        }
-
-        return this.provider.estimateGas(transaction);
-    }
-
-    call(transaction: TransactionRequest): Promise<string> {
-        transaction = shallowCopy(transaction);
-
-        if (transaction.from == null) {
-            transaction.from = this.getAddress();
-        }
-
-        return this.provider.call(transaction);
-    }
 }
 
 export class Provider {
@@ -1348,14 +1328,4 @@ function(child) {
         inherits(grandchild, child)
     }
 });
-*/
-
-//defineProperty(Provider, 'networks', networks);
-
-/*
-defineProperty(Provider, '_formatters', {
-    checkTransactionResponse: checkTransaction
-});
-
-module.exports = Provider;
 */

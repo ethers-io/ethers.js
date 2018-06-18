@@ -492,20 +492,6 @@ var ProviderSigner = /** @class */ (function (_super) {
             });
         });
     };
-    ProviderSigner.prototype.estimateGas = function (transaction) {
-        transaction = properties_1.shallowCopy(transaction);
-        if (transaction.from == null) {
-            transaction.from = this.getAddress();
-        }
-        return this.provider.estimateGas(transaction);
-    };
-    ProviderSigner.prototype.call = function (transaction) {
-        transaction = properties_1.shallowCopy(transaction);
-        if (transaction.from == null) {
-            transaction.from = this.getAddress();
-        }
-        return this.provider.call(transaction);
-    };
     return ProviderSigner;
 }(wallet_1.Signer));
 exports.ProviderSigner = ProviderSigner;
