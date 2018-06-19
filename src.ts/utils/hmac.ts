@@ -1,35 +1,17 @@
 'use strict';
 
-import * as _hash from 'hash.js';
+import { createHmac } from 'crypto';
 
 import { arrayify, Arrayish } from './bytes';
 
-interface HashFunc {
-    (): HashFunc;
-    update(chunk: Uint8Array): HashFunc;
+import * as errors from './errors';
 
-    // This is cheating, but safe for our purposes
-    digest(encoding: string): string;
-    digest(): Uint8Array;
+const supportedAlgorithms = { sha256: true, sha512: true };
+export function computeHmac(algorithm: string, key: Arrayish, data: Arrayish): Uint8Array {
+    if (!supportedAlgorithms[algorithm]) {
+        errors.throwError('unsupported algorithm ' + algorithm, errors.UNSUPPORTED_OPERATION, { operation: 'hmac', algorithm: algorithm });
+    }
+    //return arrayify(_hmac(_hash[algorithm], arrayify(key)).update(arrayify(data)).digest());
+    return arrayify(createHmac(algorithm, new Buffer(arrayify(key))).update(new Buffer(arrayify(data))).digest());
 }
 
-export interface HmacFunc extends HashFunc{
-    (hashFunc: HashFunc, key: Arrayish): HmacFunc;
-}
-
-const _hmac: HmacFunc = _hash['hmac'];
-const _sha256: HashFunc = _hash['sha256'];
-const _sha512: HashFunc = _hash['sha512'];
-
-
-// @TODO: Make this use create-hmac in node
-
-export function createSha256Hmac(key: Arrayish): HmacFunc {
-    if (!key['buffer']) { key = arrayify(key); }
-    return _hmac(_sha256, key);
-}
-
-export function createSha512Hmac(key: Arrayish): HmacFunc {
-    if (!key['buffer']) { key = arrayify(key); }
-    return _hmac(_sha512, key);
-}

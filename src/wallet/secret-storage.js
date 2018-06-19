@@ -12,7 +12,6 @@ var scrypt = require("scrypt-js");
 var uuid = require("uuid");
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
-var hmac = __importStar(require("../utils/hmac"));
 var pbkdf2_1 = require("../utils/pbkdf2");
 var keccak256_1 = require("../utils/keccak256");
 var utf8_1 = require("../utils/utf8");
@@ -98,7 +97,7 @@ function decryptCrowdsale(json, password) {
     if (!encseed || (encseed.length % 16) !== 0) {
         throw new Error('invalid encseed');
     }
-    var key = pbkdf2_1.pbkdf2(password, password, 2000, 32, hmac.createSha256Hmac).slice(0, 16);
+    var key = pbkdf2_1.pbkdf2(password, password, 2000, 32, 'sha256').slice(0, 16);
     var iv = encseed.slice(0, 16);
     var encryptedSeed = encseed.slice(16);
     // Decrypt the seed
@@ -219,10 +218,10 @@ function decrypt(json, password, progressCallback) {
                 var prfFunc = null;
                 var prf = searchPath(data, 'crypto/kdfparams/prf');
                 if (prf === 'hmac-sha256') {
-                    prfFunc = hmac.createSha256Hmac;
+                    prfFunc = 'sha256';
                 }
                 else if (prf === 'hmac-sha512') {
-                    prfFunc = hmac.createSha512Hmac;
+                    prfFunc = 'sha512';
                 }
                 else {
                     reject(new Error('unsupported prf'));

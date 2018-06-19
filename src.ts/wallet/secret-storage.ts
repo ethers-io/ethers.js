@@ -7,7 +7,6 @@ import uuid = require('uuid');
 import { getAddress } from '../utils/address';
 import { arrayify, Arrayish, concat, hexlify } from '../utils/bytes';
 
-import * as hmac from '../utils/hmac';
 import { pbkdf2 } from '../utils/pbkdf2';
 import { keccak256 } from '../utils/keccak256';
 import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
@@ -108,7 +107,7 @@ export function decryptCrowdsale(json: string, password: Arrayish | string): Sig
         throw new Error('invalid encseed');
     }
 
-    let key = pbkdf2(password, password, 2000, 32, hmac.createSha256Hmac).slice(0, 16);
+    let key = pbkdf2(password, password, 2000, 32, 'sha256').slice(0, 16);
 
     var iv = encseed.slice(0, 16);
     var encryptedSeed = encseed.slice(16);
@@ -258,9 +257,9 @@ export function decrypt(json: string, password: any, progressCallback?: Progress
                 var prfFunc = null;
                 var prf = searchPath(data, 'crypto/kdfparams/prf');
                 if (prf === 'hmac-sha256') {
-                    prfFunc = hmac.createSha256Hmac;
+                    prfFunc = 'sha256';
                 } else if (prf === 'hmac-sha512') {
-                    prfFunc = hmac.createSha512Hmac;
+                    prfFunc = 'sha512';
                 } else {
                     reject(new Error('unsupported prf'));
                     return;

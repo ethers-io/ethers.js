@@ -55,10 +55,8 @@ const networks = {
 /**
  *  getNetwork
  *
- *  If the network is a the name of a common network, return that network.
- *  Otherwise, if it is a network object, verify the chain ID is valid
- *  for that network. Otherwise, return the network.
- *
+ *  Converts a named common networks or chain ID (network ID) to a Network
+ *  and verifies a network is a valid Network..
  */
 export function getNetwork(network: Networkish): Network {
     // No network (null) or unspecified (chainId = 0)

@@ -25,3 +25,8 @@ var wallet_1 = require("./wallet");
 exports.HDNode = wallet_1.HDNode;
 exports.SigningKey = wallet_1.SigningKey;
 exports.Wallet = wallet_1.Wallet;
+//import info from '../package.json';
+//console.log(info);
+console.log("@TODO: Get version");
+var version = "4.0.0";
+exports.version = version;

@@ -6,7 +6,7 @@ import { keccak256 } from './keccak256';
 import { recoverAddress, Signature } from './secp256k1';
 import * as RLP from './rlp';
 
-export interface UnsignedTransaction {
+export type UnsignedTransaction = {
     to?: string;
     nonce?: number;
 

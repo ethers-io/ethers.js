@@ -45,9 +45,12 @@
   "browser": {
     "fs": "./tests/browser-fs.js",
     "zlib": "browserify-zlib",
-    "./src.ts/utils/base64.ts": "./src.browser/base64.ts",
-    "./src.ts/utils/random-bytes.ts": "./src.browser/random-bytes.ts",
+
     "./src.ts/providers/ipc-provider.ts": "./src.browser/empty.ts",
+    "./src.ts/utils/base64.ts": "./src.browser/base64.ts",
+    "./src.ts/utils/hmac.ts": "./src.browser/hmac.ts",
+    "./src.ts/utils/pbkdf2.ts": "./src.browser/pbkdf2.ts",
+    "./src.ts/utils/random-bytes.ts": "./src.browser/random-bytes.ts",
     "xmlhttprequest": "./src.browser/xmlhttprequest.ts"
   },
   "keywords": [

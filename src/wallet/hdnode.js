@@ -15,6 +15,7 @@ var bignumber_1 = require("../utils/bignumber");
 var utf8_1 = require("../utils/utf8");
 var pbkdf2_1 = require("../utils/pbkdf2");
 var hmac_1 = require("../utils/hmac");
+var properties_1 = require("../utils/properties");
 var secp256k1_1 = require("../utils/secp256k1");
 var sha2_1 = require("../utils/sha2");
 var errors = __importStar(require("../utils/errors"));
@@ -31,17 +32,23 @@ function getLowerMask(bits) {
 }
 exports.defaultPath = "m/44'/60'/0'/0/0";
 var HDNode = /** @class */ (function () {
-    // @TODO: Private constructor?
-    function HDNode(keyPair, chainCode, index, depth, mnemonic, path) {
+    /**
+     *  This constructor should not be called directly.
+     *
+     *  Please use:
+     *   - fromMnemonic
+     *   - fromSeed
+     */
+    function HDNode(privateKey, chainCode, index, depth, mnemonic, path) {
         errors.checkNew(this, HDNode);
-        this.keyPair = keyPair;
-        this.privateKey = keyPair.privateKey;
-        this.publicKey = keyPair.compressedPublicKey;
-        this.chainCode = bytes_1.hexlify(chainCode);
-        this.index = index;
-        this.depth = depth;
-        this.mnemonic = mnemonic;
-        this.path = path;
+        properties_1.defineReadOnly(this, 'keyPair', new secp256k1_1.KeyPair(privateKey));
+        properties_1.defineReadOnly(this, 'privateKey', this.keyPair.privateKey);
+        properties_1.defineReadOnly(this, 'publicKey', this.keyPair.compressedPublicKey);
+        properties_1.defineReadOnly(this, 'chainCode', bytes_1.hexlify(chainCode));
+        properties_1.defineReadOnly(this, 'index', index);
+        properties_1.defineReadOnly(this, 'depth', depth);
+        properties_1.defineReadOnly(this, 'mnemonic', mnemonic);
+        properties_1.defineReadOnly(this, 'path', path);
     }
     HDNode.prototype._derive = function (index) {
         // Public parent key -> public child key
@@ -74,11 +81,11 @@ var HDNode = /** @class */ (function () {
         for (var i = 24; i >= 0; i -= 8) {
             data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff);
         }
-        var I = bytes_1.arrayify(hmac_1.createSha512Hmac(this.chainCode).update(data).digest());
+        var I = hmac_1.computeHmac('sha512', this.chainCode, data);
         var IL = bignumber_1.bigNumberify(I.slice(0, 32));
         var IR = I.slice(32);
         var ki = IL.add(this.keyPair.privateKey).mod(secp256k1_1.N);
-        return new HDNode(new secp256k1_1.KeyPair(bytes_1.arrayify(ki)), IR, index, this.depth + 1, mnemonic, path);
+        return new HDNode(bytes_1.arrayify(ki), IR, index, this.depth + 1, mnemonic, path);
     };
     HDNode.prototype.derivePath = function (path) {
         var components = path.split('/');
@@ -119,8 +126,8 @@ function _fromSeed(seed, mnemonic) {
     if (seedArray.length < 16 || seedArray.length > 64) {
         throw new Error('invalid seed');
     }
-    var I = bytes_1.arrayify(hmac_1.createSha512Hmac(MasterSecret).update(seedArray).digest());
-    return new HDNode(new secp256k1_1.KeyPair(I.slice(0, 32)), I.slice(32), 0, 0, mnemonic, 'm');
+    var I = bytes_1.arrayify(hmac_1.computeHmac('sha512', MasterSecret, seedArray));
+    return new HDNode(I.slice(0, 32), I.slice(32), 0, 0, mnemonic, 'm');
 }
 function fromMnemonic(mnemonic) {
     // Check that the checksum s valid (will throw an error)
@@ -148,7 +155,7 @@ function mnemonicToSeed(mnemonic, password) {
         }
     }
     var salt = utf8_1.toUtf8Bytes('mnemonic' + password, utf8_1.UnicodeNormalizationForm.NFKD);
-    return bytes_1.hexlify(pbkdf2_1.pbkdf2(utf8_1.toUtf8Bytes(mnemonic, utf8_1.UnicodeNormalizationForm.NFKD), salt, 2048, 64, hmac_1.createSha512Hmac));
+    return bytes_1.hexlify(pbkdf2_1.pbkdf2(utf8_1.toUtf8Bytes(mnemonic, utf8_1.UnicodeNormalizationForm.NFKD), salt, 2048, 64, 'sha512'));
 }
 exports.mnemonicToSeed = mnemonicToSeed;
 function mnemonicToEntropy(mnemonic) {

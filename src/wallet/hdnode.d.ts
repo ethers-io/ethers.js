@@ -1,5 +1,4 @@
 import { Arrayish } from '../utils/bytes';
-import { KeyPair } from '../utils/secp256k1';
 export declare const defaultPath = "m/44'/60'/0'/0/0";
 export declare class HDNode {
     private readonly keyPair;
@@ -10,7 +9,14 @@ export declare class HDNode {
     readonly chainCode: string;
     readonly index: number;
     readonly depth: number;
-    constructor(keyPair: KeyPair, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string);
+    /**
+     *  This constructor should not be called directly.
+     *
+     *  Please use:
+     *   - fromMnemonic
+     *   - fromSeed
+     */
+    constructor(privateKey: Arrayish, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string);
     private _derive;
     derivePath(path: string): HDNode;
 }

@@ -9,7 +9,8 @@ import { HDNode, SigningKey, Wallet } from './wallet';
 
 //import info from '../package.json';
 //console.log(info);
-//const version = 4; //info.version;
+console.log("@TODO: Get version");
+const version = "4.0.0";
 
 export {
     Wallet,
@@ -26,7 +27,7 @@ export {
     errors,
     utils,
 
-//    version
+    version
 };
 
 /*

@@ -1,7 +1,7 @@
 import { BigNumber, BigNumberish } from './bignumber';
 import { Arrayish } from './bytes';
 import { Signature } from './secp256k1';
-export interface UnsignedTransaction {
+export declare type UnsignedTransaction = {
     to?: string;
     nonce?: number;
     gasLimit?: BigNumberish;
@@ -9,7 +9,7 @@ export interface UnsignedTransaction {
     data?: Arrayish;
     value?: BigNumberish;
     chainId?: number;
-}
+};
 export interface Transaction {
     hash?: string;
     to?: string;

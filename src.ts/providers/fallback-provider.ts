@@ -71,7 +71,7 @@ export class FallbackProvider extends Provider {
         this._providers = providers.slice(0);
     }
 
-    get providers() {
+    get providers(): Array<Provider> {
         // Return a copy, so we don't get mutated
         return this._providers.slice(0);
     }

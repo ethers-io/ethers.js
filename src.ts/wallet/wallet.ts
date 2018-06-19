@@ -38,18 +38,9 @@ export abstract class Signer {
 
 export class Wallet extends Signer {
 
-    readonly address: string;
-    readonly privateKey: string;
-
     readonly provider: Provider;
 
-
-    private mnemonic: string;
-    private path: string;
-
     private readonly signingKey: SigningKey;
-
-    public defaultGasLimit: number = 1500000;
 
     constructor(privateKey: SigningKey | HDNode | Arrayish, provider?: Provider) {
         super();
@@ -58,21 +49,24 @@ export class Wallet extends Signer {
         // Make sure we have a valid signing key
         if (privateKey instanceof SigningKey) {
             defineReadOnly(this, 'signingKey', privateKey);
-            if (this.signingKey.mnemonic) {
-                defineReadOnly(this, 'mnemonic', privateKey.mnemonic);
-                defineReadOnly(this, 'path', privateKey.path);
-            }
         } else {
             defineReadOnly(this, 'signingKey', new SigningKey(privateKey));
         }
 
-        defineReadOnly(this, 'privateKey', this.signingKey.privateKey);
-
         defineReadOnly(this, 'provider', provider);
-
-        defineReadOnly(this, 'address', this.signingKey.address);
     }
 
+    get address(): string { return this.signingKey.address; }
+
+    get mnemonic(): string { return this.signingKey.mnemonic; }
+    get path(): string { return this.signingKey.mnemonic; }
+
+    get privateKey(): string { return this.signingKey.privateKey; }
+
+
+    /**
+     *  Create a new instance of this Wallet connected to provider.
+     */
     connect(provider: Provider): Wallet {
         return new Wallet(this.signingKey, provider);
     }
@@ -179,6 +173,9 @@ export class Wallet extends Signer {
     }
 
 
+    /**
+     *  Static methods to create Wallet instances.
+     */
     static createRandom(options: any): Wallet {
         var entropy: Uint8Array = randomBytes(16);
 
@@ -191,12 +188,6 @@ export class Wallet extends Signer {
         var mnemonic = entropyToMnemonic(entropy);
         return Wallet.fromMnemonic(mnemonic, options.path);
     }
-
-
-    static isEncryptedWallet(json: string): boolean {
-        return (secretStorage.isValidWallet(json) || secretStorage.isCrowdsaleWallet(json));
-    }
-
 
     static fromEncryptedWallet(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet> {
         if (progressCallback && typeof(progressCallback) !== 'function') {
@@ -273,6 +264,17 @@ export class Wallet extends Signer {
     }
 
 
+    /**
+     *  Determine if this is an encryped JSON wallet.
+     */
+    static isEncryptedWallet(json: string): boolean {
+        return (secretStorage.isValidWallet(json) || secretStorage.isCrowdsaleWallet(json));
+    }
+
+
+    /**
+     *  Verify a signed message, returning the address of the signer.
+     */
     static verifyMessage(message: Arrayish | string, signature: string): string {
         signature = hexlify(signature);
         if (signature.length != 132) { throw new Error('invalid signature'); }
@@ -291,5 +293,4 @@ export class Wallet extends Signer {
             }
         );
     }
-
 }

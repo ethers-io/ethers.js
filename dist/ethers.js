@@ -4229,7 +4229,7 @@
 
 },{"buffer":4}],3:[function(require,module,exports){
 var randomBytes = require('../../src.ts/utils').randomBytes; module.exports = function(length) { return randomBytes(length); };
-},{"../../src.ts/utils":62}],4:[function(require,module,exports){
+},{"../../src.ts/utils":63}],4:[function(require,module,exports){
 
 },{}],5:[function(require,module,exports){
 'use strict';
@@ -8722,9 +8722,79 @@ module.exports = {
     }
 };
 
-},{"../src.ts/utils/bytes":58}],41:[function(require,module,exports){
+},{"../src.ts/utils/bytes":60}],41:[function(require,module,exports){
 arguments[4][4][0].apply(exports,arguments)
 },{"dup":4}],42:[function(require,module,exports){
+"use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hash = __importStar(require("hash.js"));
+var bytes_1 = require("../src.ts/utils/bytes");
+var errors = __importStar(require("../src.ts/utils/errors"));
+var hmac = hash['hmac'];
+var supportedAlgorithms = { sha256: true, sha512: true };
+function computeHmac(algorithm, key, data) {
+    if (!supportedAlgorithms[algorithm]) {
+        errors.throwError('unsupported algorithm ' + algorithm, errors.UNSUPPORTED_OPERATION, { operation: 'hmac', algorithm: algorithm });
+    }
+    return bytes_1.arrayify(hmac(hash[algorithm], bytes_1.arrayify(key)).update(bytes_1.arrayify(data)).digest());
+}
+exports.computeHmac = computeHmac;
+
+},{"../src.ts/utils/bytes":60,"../src.ts/utils/errors":61,"hash.js":20}],43:[function(require,module,exports){
+'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
+var bytes_1 = require("../src.ts/utils/bytes");
+var hmac_1 = require("../src.ts/utils/hmac");
+function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
+    password = bytes_1.arrayify(password);
+    salt = bytes_1.arrayify(salt);
+    var hLen;
+    var l = 1;
+    var DK = new Uint8Array(keylen);
+    var block1 = new Uint8Array(salt.length + 4);
+    block1.set(salt);
+    //salt.copy(block1, 0, 0, salt.length)
+    var r;
+    var T;
+    for (var i = 1; i <= l; i++) {
+        //block1.writeUInt32BE(i, salt.length)
+        block1[salt.length] = (i >> 24) & 0xff;
+        block1[salt.length + 1] = (i >> 16) & 0xff;
+        block1[salt.length + 2] = (i >> 8) & 0xff;
+        block1[salt.length + 3] = i & 0xff;
+        //var U = createHmac(password).update(block1).digest();
+        var U = hmac_1.computeHmac(hashAlgorithm, password, block1);
+        if (!hLen) {
+            hLen = U.length;
+            T = new Uint8Array(hLen);
+            l = Math.ceil(keylen / hLen);
+            r = keylen - (l - 1) * hLen;
+        }
+        //U.copy(T, 0, 0, hLen)
+        T.set(U);
+        for (var j = 1; j < iterations; j++) {
+            //U = createHmac(password).update(U).digest();
+            U = hmac_1.computeHmac(hashAlgorithm, password, U);
+            for (var k = 0; k < hLen; k++)
+                T[k] ^= U[k];
+        }
+        var destPos = (i - 1) * hLen;
+        var len = (i === l ? r : hLen);
+        //T.copy(DK, destPos, 0, len)
+        DK.set(bytes_1.arrayify(T).slice(0, len), destPos);
+    }
+    return bytes_1.arrayify(DK);
+}
+exports.pbkdf2 = pbkdf2;
+
+},{"../src.ts/utils/bytes":60,"../src.ts/utils/hmac":42}],44:[function(require,module,exports){
 (function (global){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -8765,7 +8835,7 @@ if (crypto._weakCrypto === true) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../src.ts/utils/bytes":58,"../src.ts/utils/properties":65}],43:[function(require,module,exports){
+},{"../src.ts/utils/bytes":60,"../src.ts/utils/properties":65}],45:[function(require,module,exports){
 'use strict';
 try {
     module.exports.XMLHttpRequest = XMLHttpRequest;
@@ -8775,7 +8845,7 @@ catch (error) {
     module.exports.XMLHttpRequest = null;
 }
 
-},{}],44:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -9058,7 +9128,7 @@ var Contract = /** @class */ (function () {
 }());
 exports.Contract = Contract;
 
-},{"../providers/provider":53,"../utils/address":56,"../utils/bignumber":57,"../utils/bytes":58,"../utils/errors":59,"../utils/properties":65,"../wallet/wallet":78,"./interface":46}],45:[function(require,module,exports){
+},{"../providers/provider":55,"../utils/address":58,"../utils/bignumber":59,"../utils/bytes":60,"../utils/errors":61,"../utils/properties":65,"../wallet/wallet":78,"./interface":48}],47:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var contract_1 = require("./contract");
@@ -9066,7 +9136,7 @@ exports.Contract = contract_1.Contract;
 var interface_1 = require("./interface");
 exports.Interface = interface_1.Interface;
 
-},{"./contract":44,"./interface":46}],46:[function(require,module,exports){
+},{"./contract":46,"./interface":48}],48:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -9470,7 +9540,7 @@ var Interface = /** @class */ (function () {
 }());
 exports.Interface = Interface;
 
-},{"../utils/abi-coder":55,"../utils/bignumber":57,"../utils/bytes":58,"../utils/errors":59,"../utils/keccak256":63,"../utils/properties":65,"../utils/utf8":72}],47:[function(require,module,exports){
+},{"../utils/abi-coder":57,"../utils/bignumber":59,"../utils/bytes":60,"../utils/errors":61,"../utils/keccak256":64,"../utils/properties":65,"../utils/utf8":72}],49:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -9716,6 +9786,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
         }
         return _super.prototype.perform.call(this, method, params);
     };
+    // @TODO: Allow startBlock and endBlock to be Promises
     EtherscanProvider.prototype.getHistory = function (addressOrName, startBlock, endBlock) {
         var url = this.baseUrl;
         var apiKey = '';
@@ -9758,7 +9829,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
 }(provider_1.Provider));
 exports.EtherscanProvider = EtherscanProvider;
 
-},{"../utils/bytes":58,"../utils/errors":59,"../utils/properties":65,"../utils/web":73,"./provider":53}],48:[function(require,module,exports){
+},{"../utils/bytes":60,"../utils/errors":61,"../utils/properties":65,"../utils/web":73,"./provider":55}],50:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -9870,7 +9941,7 @@ var FallbackProvider = /** @class */ (function (_super) {
 }(provider_1.Provider));
 exports.FallbackProvider = FallbackProvider;
 
-},{"../utils/errors":59,"./provider":53}],49:[function(require,module,exports){
+},{"../utils/errors":61,"./provider":55}],51:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var provider_1 = require("./provider");
@@ -9896,7 +9967,7 @@ function getDefaultProvider(network) {
 }
 exports.getDefaultProvider = getDefaultProvider;
 
-},{"./etherscan-provider":47,"./fallback-provider":48,"./infura-provider":50,"./ipc-provider":41,"./json-rpc-provider":51,"./provider":53,"./web3-provider":54}],50:[function(require,module,exports){
+},{"./etherscan-provider":49,"./fallback-provider":50,"./infura-provider":52,"./ipc-provider":41,"./json-rpc-provider":53,"./provider":55,"./web3-provider":56}],52:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -9961,7 +10032,7 @@ var InfuraProvider = /** @class */ (function (_super) {
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.InfuraProvider = InfuraProvider;
 
-},{"../utils/errors":59,"../utils/properties":65,"./json-rpc-provider":51,"./networks":52}],51:[function(require,module,exports){
+},{"../utils/errors":61,"../utils/properties":65,"./json-rpc-provider":53,"./networks":54}],53:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10257,7 +10328,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
 }(provider_1.Provider));
 exports.JsonRpcProvider = JsonRpcProvider;
 
-},{"../utils/address":56,"../utils/bytes":58,"../utils/errors":59,"../utils/properties":65,"../utils/utf8":72,"../utils/web":73,"../wallet/wallet":78,"./networks":52,"./provider":53}],52:[function(require,module,exports){
+},{"../utils/address":58,"../utils/bytes":60,"../utils/errors":61,"../utils/properties":65,"../utils/utf8":72,"../utils/web":73,"../wallet/wallet":78,"./networks":54,"./provider":55}],54:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -10303,10 +10374,8 @@ var networks = {
 /**
  *  getNetwork
  *
- *  If the network is a the name of a common network, return that network.
- *  Otherwise, if it is a network object, verify the chain ID is valid
- *  for that network. Otherwise, return the network.
- *
+ *  Converts a named common networks or chain ID (network ID) to a Network
+ *  and verifies a network is a valid Network..
  */
 function getNetwork(network) {
     // No network (null) or unspecified (chainId = 0)
@@ -10361,7 +10430,7 @@ function getNetwork(network) {
 }
 exports.getNetwork = getNetwork;
 
-},{"../utils/errors":59}],53:[function(require,module,exports){
+},{"../utils/errors":61}],55:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10855,20 +10924,6 @@ var ProviderSigner = /** @class */ (function (_super) {
                 return _this.provider.sendTransaction(signedTx);
             });
         });
-    };
-    ProviderSigner.prototype.estimateGas = function (transaction) {
-        transaction = properties_1.shallowCopy(transaction);
-        if (transaction.from == null) {
-            transaction.from = this.getAddress();
-        }
-        return this.provider.estimateGas(transaction);
-    };
-    ProviderSigner.prototype.call = function (transaction) {
-        transaction = properties_1.shallowCopy(transaction);
-        if (transaction.from == null) {
-            transaction.from = this.getAddress();
-        }
-        return this.provider.call(transaction);
     };
     return ProviderSigner;
 }(wallet_1.Signer));
@@ -11539,7 +11594,7 @@ var Provider = /** @class */ (function () {
 }());
 exports.Provider = Provider;
 
-},{"../utils/address":56,"../utils/bignumber":57,"../utils/bytes":58,"../utils/errors":59,"../utils/hash":60,"../utils/properties":65,"../utils/rlp":66,"../utils/transaction":70,"../utils/utf8":72,"../wallet/wallet":78,"./networks":52}],54:[function(require,module,exports){
+},{"../utils/address":58,"../utils/bignumber":59,"../utils/bytes":60,"../utils/errors":61,"../utils/hash":62,"../utils/properties":65,"../utils/rlp":66,"../utils/transaction":70,"../utils/utf8":72,"../wallet/wallet":78,"./networks":54}],56:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -11612,7 +11667,7 @@ var Web3Provider = /** @class */ (function (_super) {
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.Web3Provider = Web3Provider;
 
-},{"../utils/errors":59,"../utils/properties":65,"./json-rpc-provider":51}],55:[function(require,module,exports){
+},{"../utils/errors":61,"../utils/properties":65,"./json-rpc-provider":53}],57:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -12505,7 +12560,7 @@ var AbiCoder = /** @class */ (function () {
 exports.AbiCoder = AbiCoder;
 exports.defaultAbiCoder = new AbiCoder();
 
-},{"./address":56,"./bignumber":57,"./bytes":58,"./errors":59,"./properties":65,"./utf8":72}],56:[function(require,module,exports){
+},{"./address":58,"./bignumber":59,"./bytes":60,"./errors":61,"./properties":65,"./utf8":72}],58:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 // We use this for base 36 maths
@@ -12628,7 +12683,7 @@ function getContractAddress(transaction) {
 }
 exports.getContractAddress = getContractAddress;
 
-},{"./bytes":58,"./errors":59,"./keccak256":63,"./rlp":66,"bn.js":2}],57:[function(require,module,exports){
+},{"./bytes":60,"./errors":61,"./keccak256":64,"./rlp":66,"bn.js":2}],59:[function(require,module,exports){
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -12787,7 +12842,7 @@ exports.ConstantOne = bigNumberify(1);
 exports.ConstantTwo = bigNumberify(2);
 exports.ConstantWeiPerEther = bigNumberify(new bn_js_1.default.BN('1000000000000000000'));
 
-},{"../utils/errors":59,"./bytes":58,"./properties":65,"bn.js":2}],58:[function(require,module,exports){
+},{"../utils/errors":61,"./bytes":60,"./properties":65,"bn.js":2}],60:[function(require,module,exports){
 "use strict";
 /**
  *  Conversion Utilities
@@ -13023,7 +13078,7 @@ function joinSignature(signature) {
 }
 exports.joinSignature = joinSignature;
 
-},{"./errors":59}],59:[function(require,module,exports){
+},{"./errors":61}],61:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 // Unknown Error
@@ -13098,7 +13153,7 @@ function checkNew(self, kind) {
 }
 exports.checkNew = checkNew;
 
-},{}],60:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
@@ -13140,38 +13195,7 @@ function hashMessage(message) {
 }
 exports.hashMessage = hashMessage;
 
-},{"./bytes":58,"./keccak256":63,"./utf8":72}],61:[function(require,module,exports){
-'use strict';
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var _hash = __importStar(require("hash.js"));
-var bytes_1 = require("./bytes");
-var _hmac = _hash['hmac'];
-var _sha256 = _hash['sha256'];
-var _sha512 = _hash['sha512'];
-// @TODO: Make this use create-hmac in node
-function createSha256Hmac(key) {
-    if (!key['buffer']) {
-        key = bytes_1.arrayify(key);
-    }
-    return _hmac(_sha256, key);
-}
-exports.createSha256Hmac = createSha256Hmac;
-function createSha512Hmac(key) {
-    if (!key['buffer']) {
-        key = bytes_1.arrayify(key);
-    }
-    return _hmac(_sha512, key);
-}
-exports.createSha512Hmac = createSha512Hmac;
-
-},{"./bytes":58,"hash.js":20}],62:[function(require,module,exports){
+},{"./bytes":60,"./keccak256":64,"./utf8":72}],63:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13244,7 +13268,7 @@ exports.default = {
     parseTransaction: transaction_1.parse
 };
 
-},{"./abi-coder":55,"./address":56,"./base64":40,"./bignumber":57,"./bytes":58,"./hash":60,"./keccak256":63,"./properties":65,"./random-bytes":42,"./rlp":66,"./sha2":68,"./solidity":69,"./transaction":70,"./units":71,"./utf8":72,"./web":73}],63:[function(require,module,exports){
+},{"./abi-coder":57,"./address":58,"./base64":40,"./bignumber":59,"./bytes":60,"./hash":62,"./keccak256":64,"./properties":65,"./random-bytes":44,"./rlp":66,"./sha2":68,"./solidity":69,"./transaction":70,"./units":71,"./utf8":72,"./web":73}],64:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var sha3 = require("js-sha3");
@@ -13254,51 +13278,7 @@ function keccak256(data) {
 }
 exports.keccak256 = keccak256;
 
-},{"./bytes":58,"js-sha3":33}],64:[function(require,module,exports){
-'use strict';
-Object.defineProperty(exports, "__esModule", { value: true });
-var bytes_1 = require("./bytes");
-function pbkdf2(password, salt, iterations, keylen, createHmac) {
-    password = bytes_1.arrayify(password);
-    salt = bytes_1.arrayify(salt);
-    var hLen;
-    var l = 1;
-    var DK = new Uint8Array(keylen);
-    var block1 = new Uint8Array(salt.length + 4);
-    block1.set(salt);
-    //salt.copy(block1, 0, 0, salt.length)
-    var r;
-    var T;
-    for (var i = 1; i <= l; i++) {
-        //block1.writeUInt32BE(i, salt.length)
-        block1[salt.length] = (i >> 24) & 0xff;
-        block1[salt.length + 1] = (i >> 16) & 0xff;
-        block1[salt.length + 2] = (i >> 8) & 0xff;
-        block1[salt.length + 3] = i & 0xff;
-        var U = createHmac(password).update(block1).digest();
-        if (!hLen) {
-            hLen = U.length;
-            T = new Uint8Array(hLen);
-            l = Math.ceil(keylen / hLen);
-            r = keylen - (l - 1) * hLen;
-        }
-        //U.copy(T, 0, 0, hLen)
-        T.set(U);
-        for (var j = 1; j < iterations; j++) {
-            U = createHmac(password).update(U).digest();
-            for (var k = 0; k < hLen; k++)
-                T[k] ^= U[k];
-        }
-        var destPos = (i - 1) * hLen;
-        var len = (i === l ? r : hLen);
-        //T.copy(DK, destPos, 0, len)
-        DK.set(bytes_1.arrayify(T).slice(0, len), destPos);
-    }
-    return bytes_1.arrayify(DK);
-}
-exports.pbkdf2 = pbkdf2;
-
-},{"./bytes":58}],65:[function(require,module,exports){
+},{"./bytes":60,"js-sha3":33}],65:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 function defineReadOnly(object, name, value) {
@@ -13467,7 +13447,7 @@ function decode(data) {
 }
 exports.decode = decode;
 
-},{"./bytes":58}],67:[function(require,module,exports){
+},{"./bytes":60}],67:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13550,7 +13530,7 @@ function computeAddress(key) {
 }
 exports.computeAddress = computeAddress;
 
-},{"./address":56,"./bytes":58,"./errors":59,"./keccak256":63,"./properties":65,"elliptic":5}],68:[function(require,module,exports){
+},{"./address":58,"./bytes":60,"./errors":61,"./keccak256":64,"./properties":65,"elliptic":5}],68:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13573,7 +13553,7 @@ function sha512(data) {
 }
 exports.sha512 = sha512;
 
-},{"./bytes":58,"hash.js":20}],69:[function(require,module,exports){
+},{"./bytes":60,"hash.js":20}],69:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("./bignumber");
@@ -13667,7 +13647,7 @@ function sha256(types, values) {
 }
 exports.sha256 = sha256;
 
-},{"./bignumber":57,"./bytes":58,"./keccak256":63,"./sha2":68,"./utf8":72}],70:[function(require,module,exports){
+},{"./bignumber":59,"./bytes":60,"./keccak256":64,"./sha2":68,"./utf8":72}],70:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13795,7 +13775,7 @@ function parse(rawTransaction) {
 }
 exports.parse = parse;
 
-},{"./address":56,"./bignumber":57,"./bytes":58,"./keccak256":63,"./rlp":66,"./secp256k1":67}],71:[function(require,module,exports){
+},{"./address":58,"./bignumber":59,"./bytes":60,"./keccak256":64,"./rlp":66,"./secp256k1":67}],71:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13942,7 +13922,7 @@ function parseEther(ether) {
 }
 exports.parseEther = parseEther;
 
-},{"./bignumber":57,"./errors":59}],72:[function(require,module,exports){
+},{"./bignumber":59,"./errors":61}],72:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
@@ -14069,7 +14049,7 @@ function toUtf8String(bytes) {
 }
 exports.toUtf8String = toUtf8String;
 
-},{"./bytes":58}],73:[function(require,module,exports){
+},{"./bytes":60}],73:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14171,7 +14151,7 @@ function fetchJson(url, json, processFunc) {
 }
 exports.fetchJson = fetchJson;
 
-},{"./base64":40,"./errors":59,"./utf8":72,"xmlhttprequest":43}],74:[function(require,module,exports){
+},{"./base64":40,"./errors":61,"./utf8":72,"xmlhttprequest":45}],74:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14189,6 +14169,7 @@ var bignumber_1 = require("../utils/bignumber");
 var utf8_1 = require("../utils/utf8");
 var pbkdf2_1 = require("../utils/pbkdf2");
 var hmac_1 = require("../utils/hmac");
+var properties_1 = require("../utils/properties");
 var secp256k1_1 = require("../utils/secp256k1");
 var sha2_1 = require("../utils/sha2");
 var errors = __importStar(require("../utils/errors"));
@@ -14205,17 +14186,23 @@ function getLowerMask(bits) {
 }
 exports.defaultPath = "m/44'/60'/0'/0/0";
 var HDNode = /** @class */ (function () {
-    // @TODO: Private constructor?
-    function HDNode(keyPair, chainCode, index, depth, mnemonic, path) {
+    /**
+     *  This constructor should not be called directly.
+     *
+     *  Please use:
+     *   - fromMnemonic
+     *   - fromSeed
+     */
+    function HDNode(privateKey, chainCode, index, depth, mnemonic, path) {
         errors.checkNew(this, HDNode);
-        this.keyPair = keyPair;
-        this.privateKey = keyPair.privateKey;
-        this.publicKey = keyPair.compressedPublicKey;
-        this.chainCode = bytes_1.hexlify(chainCode);
-        this.index = index;
-        this.depth = depth;
-        this.mnemonic = mnemonic;
-        this.path = path;
+        properties_1.defineReadOnly(this, 'keyPair', new secp256k1_1.KeyPair(privateKey));
+        properties_1.defineReadOnly(this, 'privateKey', this.keyPair.privateKey);
+        properties_1.defineReadOnly(this, 'publicKey', this.keyPair.compressedPublicKey);
+        properties_1.defineReadOnly(this, 'chainCode', bytes_1.hexlify(chainCode));
+        properties_1.defineReadOnly(this, 'index', index);
+        properties_1.defineReadOnly(this, 'depth', depth);
+        properties_1.defineReadOnly(this, 'mnemonic', mnemonic);
+        properties_1.defineReadOnly(this, 'path', path);
     }
     HDNode.prototype._derive = function (index) {
         // Public parent key -> public child key
@@ -14248,11 +14235,11 @@ var HDNode = /** @class */ (function () {
         for (var i = 24; i >= 0; i -= 8) {
             data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff);
         }
-        var I = bytes_1.arrayify(hmac_1.createSha512Hmac(this.chainCode).update(data).digest());
+        var I = hmac_1.computeHmac('sha512', this.chainCode, data);
         var IL = bignumber_1.bigNumberify(I.slice(0, 32));
         var IR = I.slice(32);
         var ki = IL.add(this.keyPair.privateKey).mod(secp256k1_1.N);
-        return new HDNode(new secp256k1_1.KeyPair(bytes_1.arrayify(ki)), IR, index, this.depth + 1, mnemonic, path);
+        return new HDNode(bytes_1.arrayify(ki), IR, index, this.depth + 1, mnemonic, path);
     };
     HDNode.prototype.derivePath = function (path) {
         var components = path.split('/');
@@ -14293,8 +14280,8 @@ function _fromSeed(seed, mnemonic) {
     if (seedArray.length < 16 || seedArray.length > 64) {
         throw new Error('invalid seed');
     }
-    var I = bytes_1.arrayify(hmac_1.createSha512Hmac(MasterSecret).update(seedArray).digest());
-    return new HDNode(new secp256k1_1.KeyPair(I.slice(0, 32)), I.slice(32), 0, 0, mnemonic, 'm');
+    var I = bytes_1.arrayify(hmac_1.computeHmac('sha512', MasterSecret, seedArray));
+    return new HDNode(I.slice(0, 32), I.slice(32), 0, 0, mnemonic, 'm');
 }
 function fromMnemonic(mnemonic) {
     // Check that the checksum s valid (will throw an error)
@@ -14322,7 +14309,7 @@ function mnemonicToSeed(mnemonic, password) {
         }
     }
     var salt = utf8_1.toUtf8Bytes('mnemonic' + password, utf8_1.UnicodeNormalizationForm.NFKD);
-    return bytes_1.hexlify(pbkdf2_1.pbkdf2(utf8_1.toUtf8Bytes(mnemonic, utf8_1.UnicodeNormalizationForm.NFKD), salt, 2048, 64, hmac_1.createSha512Hmac));
+    return bytes_1.hexlify(pbkdf2_1.pbkdf2(utf8_1.toUtf8Bytes(mnemonic, utf8_1.UnicodeNormalizationForm.NFKD), salt, 2048, 64, 'sha512'));
 }
 exports.mnemonicToSeed = mnemonicToSeed;
 function mnemonicToEntropy(mnemonic) {
@@ -14398,7 +14385,7 @@ function isValidMnemonic(mnemonic) {
 }
 exports.isValidMnemonic = isValidMnemonic;
 
-},{"../utils/bignumber":57,"../utils/bytes":58,"../utils/errors":59,"../utils/hmac":61,"../utils/pbkdf2":64,"../utils/secp256k1":67,"../utils/sha2":68,"../utils/utf8":72,"./words":79}],75:[function(require,module,exports){
+},{"../utils/bignumber":59,"../utils/bytes":60,"../utils/errors":61,"../utils/hmac":42,"../utils/pbkdf2":43,"../utils/properties":65,"../utils/secp256k1":67,"../utils/sha2":68,"../utils/utf8":72,"./words":79}],75:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14430,7 +14417,6 @@ var scrypt = require("scrypt-js");
 var uuid = require("uuid");
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
-var hmac = __importStar(require("../utils/hmac"));
 var pbkdf2_1 = require("../utils/pbkdf2");
 var keccak256_1 = require("../utils/keccak256");
 var utf8_1 = require("../utils/utf8");
@@ -14516,7 +14502,7 @@ function decryptCrowdsale(json, password) {
     if (!encseed || (encseed.length % 16) !== 0) {
         throw new Error('invalid encseed');
     }
-    var key = pbkdf2_1.pbkdf2(password, password, 2000, 32, hmac.createSha256Hmac).slice(0, 16);
+    var key = pbkdf2_1.pbkdf2(password, password, 2000, 32, 'sha256').slice(0, 16);
     var iv = encseed.slice(0, 16);
     var encryptedSeed = encseed.slice(16);
     // Decrypt the seed
@@ -14637,10 +14623,10 @@ function decrypt(json, password, progressCallback) {
                 var prfFunc = null;
                 var prf = searchPath(data, 'crypto/kdfparams/prf');
                 if (prf === 'hmac-sha256') {
-                    prfFunc = hmac.createSha256Hmac;
+                    prfFunc = 'sha256';
                 }
                 else if (prf === 'hmac-sha512') {
-                    prfFunc = hmac.createSha512Hmac;
+                    prfFunc = 'sha512';
                 }
                 else {
                     reject(new Error('unsupported prf'));
@@ -14837,7 +14823,7 @@ function encrypt(privateKey, password, options, progressCallback) {
 }
 exports.encrypt = encrypt;
 
-},{"../utils/address":56,"../utils/bytes":58,"../utils/hmac":61,"../utils/keccak256":63,"../utils/pbkdf2":64,"../utils/random-bytes":42,"../utils/utf8":72,"./hdnode":74,"./signing-key":77,"aes-js":1,"scrypt-js":36,"uuid":39}],77:[function(require,module,exports){
+},{"../utils/address":58,"../utils/bytes":60,"../utils/keccak256":64,"../utils/pbkdf2":43,"../utils/random-bytes":44,"../utils/utf8":72,"./hdnode":74,"./signing-key":77,"aes-js":1,"scrypt-js":36,"uuid":39}],77:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -14901,7 +14887,7 @@ function computeAddress(key) {
 }
 exports.computeAddress = computeAddress;
 
-},{"../utils/address":56,"../utils/bytes":58,"../utils/errors":59,"../utils/keccak256":63,"../utils/properties":65,"../utils/secp256k1":67,"./hdnode":74}],78:[function(require,module,exports){
+},{"../utils/address":58,"../utils/bytes":60,"../utils/errors":61,"../utils/keccak256":64,"../utils/properties":65,"../utils/secp256k1":67,"./hdnode":74}],78:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -14950,24 +14936,40 @@ var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);
     function Wallet(privateKey, provider) {
         var _this = _super.call(this) || this;
-        _this.defaultGasLimit = 1500000;
         errors.checkNew(_this, Wallet);
         // Make sure we have a valid signing key
         if (privateKey instanceof signing_key_1.SigningKey) {
             properties_1.defineReadOnly(_this, 'signingKey', privateKey);
-            if (_this.signingKey.mnemonic) {
-                properties_1.defineReadOnly(_this, 'mnemonic', privateKey.mnemonic);
-                properties_1.defineReadOnly(_this, 'path', privateKey.path);
-            }
         }
         else {
             properties_1.defineReadOnly(_this, 'signingKey', new signing_key_1.SigningKey(privateKey));
         }
-        properties_1.defineReadOnly(_this, 'privateKey', _this.signingKey.privateKey);
         properties_1.defineReadOnly(_this, 'provider', provider);
-        properties_1.defineReadOnly(_this, 'address', _this.signingKey.address);
         return _this;
     }
+    Object.defineProperty(Wallet.prototype, "address", {
+        get: function () { return this.signingKey.address; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Wallet.prototype, "mnemonic", {
+        get: function () { return this.signingKey.mnemonic; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Wallet.prototype, "path", {
+        get: function () { return this.signingKey.mnemonic; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Wallet.prototype, "privateKey", {
+        get: function () { return this.signingKey.privateKey; },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     *  Create a new instance of this Wallet connected to provider.
+     */
     Wallet.prototype.connect = function (provider) {
         return new Wallet(this.signingKey, provider);
     };
@@ -15060,6 +15062,9 @@ var Wallet = /** @class */ (function (_super) {
         }
         return secretStorage.encrypt(this.privateKey, password, options, progressCallback);
     };
+    /**
+     *  Static methods to create Wallet instances.
+     */
     Wallet.createRandom = function (options) {
         var entropy = random_bytes_1.randomBytes(16);
         if (!options) {
@@ -15070,9 +15075,6 @@ var Wallet = /** @class */ (function (_super) {
         }
         var mnemonic = hdnode_1.entropyToMnemonic(entropy);
         return Wallet.fromMnemonic(mnemonic, options.path);
-    };
-    Wallet.isEncryptedWallet = function (json) {
-        return (secretStorage.isValidWallet(json) || secretStorage.isCrowdsaleWallet(json));
     };
     Wallet.fromEncryptedWallet = function (json, password, progressCallback) {
         if (progressCallback && typeof (progressCallback) !== 'function') {
@@ -15143,6 +15145,15 @@ var Wallet = /** @class */ (function (_super) {
             });
         });
     };
+    /**
+     *  Determine if this is an encryped JSON wallet.
+     */
+    Wallet.isEncryptedWallet = function (json) {
+        return (secretStorage.isValidWallet(json) || secretStorage.isCrowdsaleWallet(json));
+    };
+    /**
+     *  Verify a signed message, returning the address of the signer.
+     */
     Wallet.verifyMessage = function (message, signature) {
         signature = bytes_1.hexlify(signature);
         if (signature.length != 132) {
@@ -15166,7 +15177,7 @@ var Wallet = /** @class */ (function (_super) {
 }(Signer));
 exports.Wallet = Wallet;
 
-},{"../utils/bytes":58,"../utils/errors":59,"../utils/hash":60,"../utils/keccak256":63,"../utils/properties":65,"../utils/random-bytes":42,"../utils/transaction":70,"../utils/utf8":72,"./hdnode":74,"./secret-storage":76,"./signing-key":77,"scrypt-js":36}],79:[function(require,module,exports){
+},{"../utils/bytes":60,"../utils/errors":61,"../utils/hash":62,"../utils/keccak256":64,"../utils/properties":65,"../utils/random-bytes":44,"../utils/transaction":70,"../utils/utf8":72,"./hdnode":74,"./secret-storage":76,"./signing-key":77,"scrypt-js":36}],79:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -15199,7 +15210,7 @@ function getWordIndex(word) {
 }
 exports.getWordIndex = getWordIndex;
 
-},{"../utils/errors":59}],80:[function(require,module,exports){
+},{"../utils/errors":61}],80:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -15227,6 +15238,11 @@ var wallet_1 = require("./wallet");
 exports.HDNode = wallet_1.HDNode;
 exports.SigningKey = wallet_1.SigningKey;
 exports.Wallet = wallet_1.Wallet;
+//import info from '../package.json';
+//console.log(info);
+console.log("@TODO: Get version");
+var version = "4.0.0";
+exports.version = version;
 
-},{"./contracts":45,"./providers":49,"./providers/networks":52,"./utils":62,"./utils/errors":59,"./wallet":75}]},{},[80])(80)
+},{"./contracts":47,"./providers":51,"./providers/networks":54,"./utils":63,"./utils/errors":61,"./wallet":75}]},{},[80])(80)
 });

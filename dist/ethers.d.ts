@@ -228,27 +228,13 @@ declare module "wallet/words" {
     export function getWord(index: number): string;
     export function getWordIndex(word: string): number;
 }
-declare module "utils/hmac" {
-    import { Arrayish } from "utils/bytes";
-    interface HashFunc {
-        (): HashFunc;
-        update(chunk: Uint8Array): HashFunc;
-        digest(encoding: string): string;
-        digest(): Uint8Array;
-    }
-    export interface HmacFunc extends HashFunc {
-        (hashFunc: HashFunc, key: Arrayish): HmacFunc;
-    }
-    export function createSha256Hmac(key: Arrayish): HmacFunc;
-    export function createSha512Hmac(key: Arrayish): HmacFunc;
-}
 declare module "utils/pbkdf2" {
     import { Arrayish } from "utils/bytes";
-    import { HmacFunc } from "utils/hmac";
-    export interface CreateHmacFunc {
-        (key: Arrayish): HmacFunc;
-    }
-    export function pbkdf2(password: Arrayish, salt: Arrayish, iterations: number, keylen: number, createHmac: CreateHmacFunc): Uint8Array;
+    export function pbkdf2(password: Arrayish, salt: Arrayish, iterations: number, keylen: number, hashAlgorithm: string): Uint8Array;
+}
+declare module "utils/hmac" {
+    import { Arrayish } from "utils/bytes";
+    export function computeHmac(algorithm: string, key: Arrayish, data: Arrayish): Uint8Array;
 }
 declare module "utils/sha2" {
     import { Arrayish } from "utils/bytes";
@@ -257,7 +243,6 @@ declare module "utils/sha2" {
 }
 declare module "wallet/hdnode" {
     import { Arrayish } from "utils/bytes";
-    import { KeyPair } from "utils/secp256k1";
     export const defaultPath = "m/44'/60'/0'/0/0";
     export class HDNode {
         private readonly keyPair;
@@ -268,7 +253,14 @@ declare module "wallet/hdnode" {
         readonly chainCode: string;
         readonly index: number;
         readonly depth: number;
-        constructor(keyPair: KeyPair, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string);
+        /**
+         *  This constructor should not be called directly.
+         *
+         *  Please use:
+         *   - fromMnemonic
+         *   - fromSeed
+         */
+        constructor(privateKey: Arrayish, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string);
         private _derive;
         derivePath(path: string): HDNode;
     }
@@ -321,7 +313,7 @@ declare module "utils/transaction" {
     import { BigNumber, BigNumberish } from "utils/bignumber";
     import { Arrayish } from "utils/bytes";
     import { Signature } from "utils/secp256k1";
-    export interface UnsignedTransaction {
+    export type UnsignedTransaction = {
         to?: string;
         nonce?: number;
         gasLimit?: BigNumberish;
@@ -329,7 +321,7 @@ declare module "utils/transaction" {
         data?: Arrayish;
         value?: BigNumberish;
         chainId?: number;
-    }
+    };
     export interface Transaction {
         hash?: string;
         to?: string;
@@ -362,14 +354,16 @@ declare module "wallet/wallet" {
         abstract sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
     }
     export class Wallet extends Signer {
-        readonly address: string;
-        readonly privateKey: string;
         readonly provider: Provider;
-        private mnemonic;
-        private path;
         private readonly signingKey;
-        defaultGasLimit: number;
         constructor(privateKey: SigningKey | HDNode | Arrayish, provider?: Provider);
+        readonly address: string;
+        readonly mnemonic: string;
+        readonly path: string;
+        readonly privateKey: string;
+        /**
+         *  Create a new instance of this Wallet connected to provider.
+         */
         connect(provider: Provider): Wallet;
         getAddress(): Promise<string>;
         sign(transaction: TransactionRequest): Promise<string>;
@@ -379,11 +373,20 @@ declare module "wallet/wallet" {
         sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
         send(addressOrName: string, amountWei: BigNumberish, options: any): Promise<TransactionResponse>;
         encrypt(password: Arrayish | string, options: any, progressCallback: ProgressCallback): Promise<string>;
+        /**
+         *  Static methods to create Wallet instances.
+         */
         static createRandom(options: any): Wallet;
-        static isEncryptedWallet(json: string): boolean;
         static fromEncryptedWallet(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet>;
         static fromMnemonic(mnemonic: string, path?: string): Wallet;
         static fromBrainWallet(username: Arrayish | string, password: Arrayish | string, progressCallback: ProgressCallback): Promise<Wallet>;
+        /**
+         *  Determine if this is an encryped JSON wallet.
+         */
+        static isEncryptedWallet(json: string): boolean;
+        /**
+         *  Verify a signed message, returning the address of the signer.
+         */
         static verifyMessage(message: Arrayish | string, signature: string): string;
     }
 }
@@ -397,10 +400,8 @@ declare module "providers/networks" {
     /**
      *  getNetwork
      *
-     *  If the network is a the name of a common network, return that network.
-     *  Otherwise, if it is a network object, verify the chain ID is valid
-     *  for that network. Otherwise, return the network.
-     *
+     *  Converts a named common networks or chain ID (network ID) to a Network
+     *  and verifies a network is a valid Network..
      */
     export function getNetwork(network: Networkish): Network;
 }
@@ -480,8 +481,6 @@ declare module "providers/provider" {
         getAddress(): Promise<string>;
         signMessage(message: Arrayish | string): Promise<string>;
         sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
-        estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
-        call(transaction: TransactionRequest): Promise<string>;
     }
     export class Provider {
         private _network;
@@ -590,14 +589,14 @@ declare module "utils/web" {
     export function fetchJson(url: string | ConnectionInfo, json: string, processFunc: ProcessFunc): Promise<any>;
 }
 declare module "providers/etherscan-provider" {
-    import { Provider } from "providers/provider";
+    import { BlockTag, Provider, TransactionResponse } from "providers/provider";
     import { Networkish } from "providers/networks";
     export class EtherscanProvider extends Provider {
         readonly baseUrl: string;
         readonly apiKey: string;
         constructor(network?: Networkish, apiKey?: string);
         perform(method: string, params: any): Promise<any>;
-        getHistory(addressOrName: any, startBlock: any, endBlock: any): Promise<any[]>;
+        getHistory(addressOrName: string | Promise<string>, startBlock?: BlockTag, endBlock?: BlockTag): Promise<Array<TransactionResponse>>;
     }
 }
 declare module "providers/fallback-provider" {
@@ -605,7 +604,7 @@ declare module "providers/fallback-provider" {
     export class FallbackProvider extends Provider {
         private _providers;
         constructor(providers: Array<Provider>);
-        readonly providers: Provider[];
+        readonly providers: Array<Provider>;
         perform(method: string, params: any): any;
     }
 }
@@ -619,7 +618,7 @@ declare module "providers/json-rpc-provider" {
     export function hexlifyTransaction(transaction: TransactionRequest): any;
     export class JsonRpcSigner extends Signer {
         readonly provider: JsonRpcProvider;
-        readonly _address: string;
+        private _address;
         constructor(provider: JsonRpcProvider, address?: string);
         readonly address: string;
         getAddress(): Promise<string>;
@@ -774,6 +773,7 @@ declare module "index" {
     import { getNetwork } from "providers/networks";
     import utils from "utils/index";
     import { HDNode, SigningKey, Wallet } from "wallet/index";
-    export { Wallet, HDNode, SigningKey, Contract, Interface, getNetwork, providers, errors, utils, };
+    const version = "4.0.0";
+    export { Wallet, HDNode, SigningKey, Contract, Interface, getNetwork, providers, errors, utils, version };
 }
 //# sourceMappingURL=ethers.d.ts.map

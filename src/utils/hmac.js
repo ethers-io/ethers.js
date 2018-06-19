@@ -7,23 +7,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var _hash = __importStar(require("hash.js"));
+var crypto_1 = require("crypto");
 var bytes_1 = require("./bytes");
-var _hmac = _hash['hmac'];
-var _sha256 = _hash['sha256'];
-var _sha512 = _hash['sha512'];
-// @TODO: Make this use create-hmac in node
-function createSha256Hmac(key) {
-    if (!key['buffer']) {
-        key = bytes_1.arrayify(key);
+var errors = __importStar(require("./errors"));
+var supportedAlgorithms = { sha256: true, sha512: true };
+function computeHmac(algorithm, key, data) {
+    if (!supportedAlgorithms[algorithm]) {
+        errors.throwError('unsupported algorithm ' + algorithm, errors.UNSUPPORTED_OPERATION, { operation: 'hmac', algorithm: algorithm });
     }
-    return _hmac(_sha256, key);
+    //return arrayify(_hmac(_hash[algorithm], arrayify(key)).update(arrayify(data)).digest());
+    return bytes_1.arrayify(crypto_1.createHmac(algorithm, new Buffer(bytes_1.arrayify(key))).update(new Buffer(bytes_1.arrayify(data))).digest());
 }
-exports.createSha256Hmac = createSha256Hmac;
-function createSha512Hmac(key) {
-    if (!key['buffer']) {
-        key = bytes_1.arrayify(key);
-    }
-    return _hmac(_sha512, key);
-}
-exports.createSha512Hmac = createSha512Hmac;
+exports.computeHmac = computeHmac;

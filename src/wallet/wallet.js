@@ -46,24 +46,40 @@ var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);
     function Wallet(privateKey, provider) {
         var _this = _super.call(this) || this;
-        _this.defaultGasLimit = 1500000;
         errors.checkNew(_this, Wallet);
         // Make sure we have a valid signing key
         if (privateKey instanceof signing_key_1.SigningKey) {
             properties_1.defineReadOnly(_this, 'signingKey', privateKey);
-            if (_this.signingKey.mnemonic) {
-                properties_1.defineReadOnly(_this, 'mnemonic', privateKey.mnemonic);
-                properties_1.defineReadOnly(_this, 'path', privateKey.path);
-            }
         }
         else {
             properties_1.defineReadOnly(_this, 'signingKey', new signing_key_1.SigningKey(privateKey));
         }
-        properties_1.defineReadOnly(_this, 'privateKey', _this.signingKey.privateKey);
         properties_1.defineReadOnly(_this, 'provider', provider);
-        properties_1.defineReadOnly(_this, 'address', _this.signingKey.address);
         return _this;
     }
+    Object.defineProperty(Wallet.prototype, "address", {
+        get: function () { return this.signingKey.address; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Wallet.prototype, "mnemonic", {
+        get: function () { return this.signingKey.mnemonic; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Wallet.prototype, "path", {
+        get: function () { return this.signingKey.mnemonic; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Wallet.prototype, "privateKey", {
+        get: function () { return this.signingKey.privateKey; },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     *  Create a new instance of this Wallet connected to provider.
+     */
     Wallet.prototype.connect = function (provider) {
         return new Wallet(this.signingKey, provider);
     };
@@ -156,6 +172,9 @@ var Wallet = /** @class */ (function (_super) {
         }
         return secretStorage.encrypt(this.privateKey, password, options, progressCallback);
     };
+    /**
+     *  Static methods to create Wallet instances.
+     */
     Wallet.createRandom = function (options) {
         var entropy = random_bytes_1.randomBytes(16);
         if (!options) {
@@ -166,9 +185,6 @@ var Wallet = /** @class */ (function (_super) {
         }
         var mnemonic = hdnode_1.entropyToMnemonic(entropy);
         return Wallet.fromMnemonic(mnemonic, options.path);
-    };
-    Wallet.isEncryptedWallet = function (json) {
-        return (secretStorage.isValidWallet(json) || secretStorage.isCrowdsaleWallet(json));
     };
     Wallet.fromEncryptedWallet = function (json, password, progressCallback) {
         if (progressCallback && typeof (progressCallback) !== 'function') {
@@ -239,6 +255,15 @@ var Wallet = /** @class */ (function (_super) {
             });
         });
     };
+    /**
+     *  Determine if this is an encryped JSON wallet.
+     */
+    Wallet.isEncryptedWallet = function (json) {
+        return (secretStorage.isValidWallet(json) || secretStorage.isCrowdsaleWallet(json));
+    };
+    /**
+     *  Verify a signed message, returning the address of the signer.
+     */
     Wallet.verifyMessage = function (message, signature) {
         signature = bytes_1.hexlify(signature);
         if (signature.length != 132) {

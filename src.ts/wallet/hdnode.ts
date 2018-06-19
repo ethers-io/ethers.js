@@ -9,7 +9,8 @@ import { arrayify, Arrayish, hexlify } from '../utils/bytes';
 import { bigNumberify } from '../utils/bignumber';
 import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
 import { pbkdf2 } from '../utils/pbkdf2';
-import { createSha512Hmac } from '../utils/hmac';
+import { computeHmac } from '../utils/hmac';
+import { defineReadOnly } from '../utils/properties';
 import { KeyPair, N } from '../utils/secp256k1';
 import { sha256 } from '../utils/sha2';
 
@@ -47,22 +48,28 @@ export class HDNode {
     readonly index: number;
     readonly depth: number;
 
-    // @TODO: Private constructor?
-    constructor(keyPair: KeyPair, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string) {
+    /**
+     *  This constructor should not be called directly.
+     *
+     *  Please use:
+     *   - fromMnemonic
+     *   - fromSeed
+     */
+    constructor(privateKey: Arrayish, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string) {
         errors.checkNew(this, HDNode);
 
-        this.keyPair = keyPair;
+        defineReadOnly(this, 'keyPair', new KeyPair(privateKey));
 
-        this.privateKey = keyPair.privateKey;
-        this.publicKey = keyPair.compressedPublicKey;
+        defineReadOnly(this, 'privateKey', this.keyPair.privateKey);
+        defineReadOnly(this, 'publicKey', this.keyPair.compressedPublicKey);
 
-        this.chainCode = hexlify(chainCode);
+        defineReadOnly(this, 'chainCode', hexlify(chainCode));
 
-        this.index = index;
-        this.depth = depth;
+        defineReadOnly(this, 'index', index);
+        defineReadOnly(this, 'depth', depth);
 
-        this.mnemonic = mnemonic;
-        this.path = path;
+        defineReadOnly(this, 'mnemonic', mnemonic);
+        defineReadOnly(this, 'path', path);
     }
 
     private _derive(index: number): HDNode {
@@ -95,13 +102,13 @@ export class HDNode {
         // Data += ser_32(i)
         for (var i = 24; i >= 0; i -= 8) { data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff); }
 
-        var I = arrayify(createSha512Hmac(this.chainCode).update(data).digest());
+        var I = computeHmac('sha512', this.chainCode, data);
         var IL = bigNumberify(I.slice(0, 32));
         var IR = I.slice(32);
 
         var ki = IL.add(this.keyPair.privateKey).mod(N);
 
-        return new HDNode(new KeyPair(arrayify(ki)), IR, index, this.depth + 1, mnemonic, path);
+        return new HDNode(arrayify(ki), IR, index, this.depth + 1, mnemonic, path);
     }
 
     derivePath(path: string): HDNode {
@@ -137,9 +144,9 @@ function _fromSeed(seed: Arrayish, mnemonic: string): HDNode {
     let seedArray: Uint8Array = arrayify(seed);
     if (seedArray.length < 16 || seedArray.length > 64) { throw new Error('invalid seed'); }
 
-    var I: Uint8Array = arrayify(createSha512Hmac(MasterSecret).update(seedArray).digest());
+    var I: Uint8Array = arrayify(computeHmac('sha512', MasterSecret, seedArray));
 
-    return new HDNode(new KeyPair(I.slice(0, 32)), I.slice(32), 0, 0, mnemonic, 'm');
+    return new HDNode(I.slice(0, 32), I.slice(32), 0, 0, mnemonic, 'm');
 }
 
 export function fromMnemonic(mnemonic: string): HDNode {
@@ -170,7 +177,7 @@ export function mnemonicToSeed(mnemonic: string, password?: string): string {
 
     var salt = toUtf8Bytes('mnemonic' + password, UnicodeNormalizationForm.NFKD);
 
-    return hexlify(pbkdf2(toUtf8Bytes(mnemonic, UnicodeNormalizationForm.NFKD), salt, 2048, 64, createSha512Hmac));
+    return hexlify(pbkdf2(toUtf8Bytes(mnemonic, UnicodeNormalizationForm.NFKD), salt, 2048, 64, 'sha512'));
 }
 
 export function mnemonicToEntropy(mnemonic: string): string {
