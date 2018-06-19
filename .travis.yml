@@ -6,7 +6,7 @@ node_js:
 
 env:
   - RUN_PHANTOMJS=0
-#  - RUN_PHANTOMJS=1
+  - RUN_PHANTOMJS=1
 
 #matrix:
 #  exclude:
