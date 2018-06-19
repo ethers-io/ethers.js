@@ -296,11 +296,6 @@ function testProvider(providerName, networkName) {
             //     }
             //  }
 
-            // @TODO: Remove this! Temporary because Ropsten seems unhappy
-            if (networkName === 'ropsten') {
-                console.log("******** Remove this soon! Ropsten is having issues.");
-                return;
-            }
             this.timeout(100000);
             var test = blockchainData[networkName].balance;
             return provider.getBalance(test.address).then(function(balance) {
@@ -369,14 +364,11 @@ function testProvider(providerName, networkName) {
 ['default', 'homestead', 'ropsten', 'rinkeby', 'kovan'].forEach(function(networkName) {
     ['getDefaultProvider', 'InfuraProvider', 'EtherscanProvider', 'Web3Provider'].forEach(function(providerName) {
 
-        // HACK! Etherscan is being cloudflare heavy right now and I need
-        // to release a new version; temporarily turning off these tests
-        //console.log('WARNING: Test cases being skipped! Temporary. Please turn backon soon.');
-        //if (providerName === 'EtherscanProvider' && networkName !== 'homestead') { return; }
-
-        // HACK! INFURA is flakey on homestead right now and the test cases are failing
-        //console.log('WARNING: Test cases being skipped! Temporary. Please turn backon soon.');
-        //if (providerName === 'InfuraProvider' && networkName === 'homestead') { return; }
+        // @TODO: Remove this! Temporary because Etherscan is down
+        if (providerName === 'EtherscanProvider') {
+            console.log("******** Remove this soon! Etherscan is having issues.");
+            return;
+        }
 
         testProvider(providerName, networkName);
     });
@@ -396,6 +388,7 @@ function getDefaults(network, extra) {
     return result;
 }
 
+/*
 describe('Test extra Etherscan operations', function() {
     var provider = new providers.EtherscanProvider();
     it('fethces the current price of ether', function() {
@@ -413,7 +406,7 @@ describe('Test extra Etherscan operations', function() {
         });
     });
 });
-
+*/
 describe('Test Basic Authentication', function() {
     // https://stackoverflow.com/questions/6509278/authentication-test-servers#16756383
 
