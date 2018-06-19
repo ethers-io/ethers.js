@@ -72,6 +72,11 @@ function transformFile(path) {
     return null;
 }
 
+function padding(length) {
+    let pad = '';
+    while (pad.length < length) { pad += ' '; }
+    return pad;
+}
 function transform(path, options) {
     var data = '';
 
@@ -79,12 +84,16 @@ function transform(path, options) {
         data += chunk;
     }, function () {
         var transformed = transformFile(path);
+        var shortPath = path;
+        if (shortPath.substring(0, __dirname.length) == __dirname) {
+            shortPath = shortPath.substring(__dirname.length);
+        }
+        var size = fs.readFileSync(path).length;
         if (transformed != null) {
-            console.log('Transformed:', path);
+            console.log('Transformed:', shortPath, padding(70 - shortPath.length), size, padding(6 - String(size).length), '=>', transformed.length);
             data = transformed;
         } else {
-            var size = fs.readFileSync(path).length;
-            console.log('Preserved:', path, size);
+            console.log('Preserved:  ', shortPath, padding(70 - shortPath.length), size);
         }
         this.queue(data);
         this.queue(null);
