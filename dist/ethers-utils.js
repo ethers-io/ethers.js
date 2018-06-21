@@ -5094,7 +5094,7 @@ var defaultCoerceFunc = function(type, value) {
     return value;
 }
 
-// Recursively copies any serial
+// Shallow copy object (will move to utils/properties in v4)
 function shallowCopy(object) {
     var result = {};
     for (var key in object) { result[key] = object[key]; }
@@ -5439,7 +5439,7 @@ var coderBoolean = function(coerceFunc, localName) {
         encode: function(value) {
            return uint256Coder.encode(!!value ? 1: 0);
         },
-       decode: function(data, offset) {
+        decode: function(data, offset) {
             try {
                 var result = uint256Coder.decode(data, offset);
             } catch (error) {
@@ -5815,8 +5815,17 @@ function coderArray(coerceFunc, coder, length, localName) {
                  offset += decodedLength.consumed;
             }
 
+            // We don't want the children to have a localName
+            var subCoder = {
+                name: coder.name,
+                type: coder.type,
+                encode: coder.encode,
+                decode: coder.decode,
+                dynamic: coder.dynamic
+            };
+
             var coders = [];
-            for (var i = 0; i < count; i++) { coders.push(coder); }
+            for (var i = 0; i < count; i++) { coders.push(subCoder); }
 
             var result = unpack(coders, data, offset);
             result.consumed += consumed;
