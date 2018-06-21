@@ -55,8 +55,8 @@ function SigningKey(privateKey) {
 
     utils.defineProperty(this, 'signDigest', function(digest) {
         var signature = keyPair.sign(utils.arrayify(digest), {canonical: true});
-        const r = '0x' + signature.r.toString(16);
-        const s = '0x' + signature.s.toString(16);
+        var r = '0x' + signature.r.toString(16);
+        var s = '0x' + signature.s.toString(16);
 
         return {
             recoveryParam: signature.recoveryParam,
