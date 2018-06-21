@@ -25,5 +25,5 @@ export interface Transaction {
     v?: number;
 }
 export declare type SignDigestFunc = (digest: Arrayish) => Signature;
-export declare function sign(transaction: UnsignedTransaction, signDigest?: SignDigestFunc): string;
+export declare function sign(transaction: UnsignedTransaction, signDigest: SignDigestFunc): string;
 export declare function parse(rawTransaction: Arrayish): Transaction;

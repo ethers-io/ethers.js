@@ -355,7 +355,7 @@ declare module "utils/transaction" {
         v?: number;
     }
     export type SignDigestFunc = (digest: Arrayish) => Signature;
-    export function sign(transaction: UnsignedTransaction, signDigest?: SignDigestFunc): string;
+    export function sign(transaction: UnsignedTransaction, signDigest: SignDigestFunc): string;
     export function parse(rawTransaction: Arrayish): Transaction;
 }
 declare module "wallet/wallet" {
