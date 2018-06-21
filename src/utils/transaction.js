@@ -57,6 +57,19 @@ function sign(transaction, signDigest) {
         }
         raw.push(bytes_1.hexlify(value));
     });
+    // @TOOD:
+    throw new Error('implement');
+    // Requesting an unsigned transation
+    if (!signDigest) {
+        var v_1 = 27 + signature.recoveryParam;
+        if (transaction.chainId) {
+            v_1 += transaction.chainId * 2 + 8;
+        }
+        //raw.push(hexlify(transaction.chainId));
+        raw.push(bytes_1.hexlify(v_1));
+        raw.push('0x');
+        raw.push('0x');
+    }
     if (transaction.chainId) {
         raw.push(bytes_1.hexlify(transaction.chainId));
         raw.push('0x');

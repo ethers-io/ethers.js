@@ -1,0 +1,317 @@
+[
+	{
+		"entropy": "00000000000000000000000000000000",
+		"mnemonic": "abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abete",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "b71e2ec6581532f698d078694711674b8598cee8f80bc45fa520f2049a6adb4a8ab1382f605ba8f4c1ac5223cd2aa88da1fd9f55ebe99ba5d8b9c0f5ceb43442",
+		"bip32_xprv": "xprv9s21ZrQH143K4RDxCEYrbop5UxQ5koWkqyB8eVDryEZosxmQYELDGbJbFqzt2iUw6cEoNJ7YX99JvnRAVMXQ9cFoSsZR61RxtyGs5c8kRTH"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000",
+		"mnemonic": "abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco affabile",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "138c32ed781301d293960d9278e844a45cbbe49a7f53ce52c68e18202b86d53a9c0727c232f4dea73b5575dc9339a809b696bbae72b58fb13010f3910c3c436e",
+		"bip32_xprv": "xprv9s21ZrQH143K4ZnDPSNde9Pkogav4GJhRZGczutjfAq52uqFm1pWzzyhdqFZijGXi7ZuCXChfNgDbpHJyt9EJyvpmfdGF7Bpmv8hH68DQPw"
+	},
+	{
+		"entropy": "000000000000000000000000000000000000000000000000",
+		"mnemonic": "abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco agitare",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "9650301a94b116668143554a2785ed93c7cd5a51bb0b5ab911560c4921946f03ae981be3f1256f5f78095b4ea112026b5a7c3f6cf751ebf0262b1affa7e6db51",
+		"bip32_xprv": "xprv9s21ZrQH143K2ix2F42mRnuLwMpKtgsuyKA6a3RCwTbRjr4RPh8LaMzUyEQuX374RjfJLtfVTdDRwo7FQmrvdWUyJnFMJ8gGvP5dGyumkWr"
+	},
+	{
+		"entropy": "00000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco affisso",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "e77e09351459a2ba6174954ff6c4d6ec4cfc8e5aa76a0e4b590ab2ec94f9f7020da7bc2e840625c749d431cc0738040a2d61b8e9ccfc9b2aaaa3814e8e25cbe3",
+		"bip32_xprv": "xprv9s21ZrQH143K2gm46Ad4K8yGRrvqxhjLqdJxwRbtEWJffEP6dqVgpuBgryGnwULKfS9CfUfZNas3yPW5mvvwF9EgK1fyzXEEnKK2vNqMFsG"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco abaco angelo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "ba43ad35efa5871261adf628e8c340052028acd1ba5c30f2425552df277636d0366a190fb3902af9513dd473d8ed491daaa483e5fea9f6d30a85451baecbbb6c",
+		"bip32_xprv": "xprv9s21ZrQH143K2SE3HHdDNmmu5H5wGN1jipSGCGK588mzzhXqnCXZnT6RLFZFPENFDKa6npHKAzSebtSAAe2LPcARBfSdCyy2cAvQpkXphtP"
+	},
+	{
+		"entropy": "01010101010101010101010101010101",
+		"mnemonic": "accadere alogeno dottore acrilico arazzo misurare afoso bravura accadere alogeno dottore affetto",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "a02d476cab313eaf0d51516677389ee262dfcb0cb4efe844e86012ebec1775c1b93465a4edb34630bd56085deff71f5a0151f3b4fee36100df544f073693b65b",
+		"bip32_xprv": "xprv9s21ZrQH143K3wUo2sznkeXA5iuWcW7DA5q2TjViuEz9YSvLyoZpgcPteQP1df77bGVQqGJKfTe3qJTHQpRYhSqaD46veWLRpPcYQWAKAEG"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101",
+		"mnemonic": "accadere alogeno dottore acrilico arazzo misurare afoso bravura accadere alogeno dottore acrilico arazzo misurare alcolico",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "900c6bb05f520af72f1d4554e0e35e9cf1d1cc053a15d16f8b01775780a9a4e3ce3e36b7685ead1c05d200ad3519c15b9b7018f4dc562a639d5e17ab29ac693b",
+		"bip32_xprv": "xprv9s21ZrQH143K47mk2bkzwGbhvGnMCkZ18KdB5yBG7BCWKioWZ9ZbZbSZ7ne56Ye9njyRaB8zAADdfM5vsE1CcNaJZ5rhdfr15MSfuPd6R8q"
+	},
+	{
+		"entropy": "010101010101010101010101010101010101010101010101",
+		"mnemonic": "accadere alogeno dottore acrilico arazzo misurare afoso bravura accadere alogeno dottore acrilico arazzo misurare afoso bravura accadere ammonito",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "780c5cb70b240c5200a99f41f267a4e385480898370810ad78d9c5c6f22a6ce7cd6a58f508c6e998d66452fcda9f000be52d2b32fd2af2c99bd756a98d60be33",
+		"bip32_xprv": "xprv9s21ZrQH143K32AbLsANv4NG7KvYx6oDkfep32b16KBAX5Z5BBhd7jrGtchVfacXo4dkfvAthsnx8hEBvkcsA2czsnqpikDG9jhq9DAT11D"
+	},
+	{
+		"entropy": "01010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "accadere alogeno dottore acrilico arazzo misurare afoso bravura accadere alogeno dottore acrilico arazzo misurare afoso bravura accadere alogeno dottore acrilico arzillo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "f91a9cbe5edcd17212ff50834c0ca4bfcb17a025007acaf5a01269c9e4b91b0e0b7cc7fed75a6b183ea87a5df3e2a5f6db049e82767537e883c77ab5be5e2308",
+		"bip32_xprv": "xprv9s21ZrQH143K4UNpXcBNB1Y13coUHduX1NEqRBDnLgCkwDqK7UWxpQKMKhnLb56KMsRqKq5faWY9cqhPZiuMZds2Ksf2v4KkErvZ21nD5Cq"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "accadere alogeno dottore acrilico arazzo misurare afoso bravura accadere alogeno dottore acrilico arazzo misurare afoso bravura accadere alogeno dottore acrilico arazzo misurare afoso cognome",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "84d362e70d7a833ca2de7f628bb7b346e61a55af76d75e0332fe0f46923f280d52c1043e44e4a5e1f15c2d43e5c83997da75acf5d6e9848ad911920e66043769",
+		"bip32_xprv": "xprv9s21ZrQH143K2xWcmvbLtv1EssxxSd4VpaKM26MnLWvjr2A1rHTQMoNU1uPfZzmNkzAPnaMNegjoGNnkRCPTqUcaucC82JdRdVsMschmDX6"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "mimosa vita sussurro zinco vero saltare zattera ulisse mimosa vita sussurro zircone",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "7292b151c95709310ed4f053600a8af4afcd4c7f96a5c27d1a1e2db6f4104bf54dab591b534655752359911a829bf87fb5c42cd642f6d3df2cb55e2e06bf14f1",
+		"bip32_xprv": "xprv9s21ZrQH143K4WdAkECyLfzt7AWHNeTD3uGUThMVgHq3Es9YopuNwwcSbw3vM2RusNM9QpaM4xtALLFevyp1kWuWqHZ9M5d4Rk5VXCSVN3d"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "mimosa vita sussurro zinco vero saltare zattera ulisse mimosa vita sussurro zinco vero saltare vivido",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "f00c8ddfcf207f972e04141ece7a289b2d467fe1129fef9c286c8e55f0e593cbe4d5643c4ee46fb2272cfcd4e7d2c9d69f9381405a521c7facf96e47a686086c",
+		"bip32_xprv": "xprv9s21ZrQH143K4XvAhiaXHeXNqL1NNhcjLNR8o7vZbG4hVmvXsjBfeFmqR4Wg9ZJMwkPaE8nsru5TSXCCwRq8DASwmaKvbgJaTEL4ddZNx1S"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "mimosa vita sussurro zinco vero saltare zattera ulisse mimosa vita sussurro zinco vero saltare zattera ulisse mimosa virulento",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "53dfe03f01076fb6fdc0f2516d336a2a288ed49d671e6c8183c987cc236a734fc168d18cc5142dc38f9ae0c0745c0b9a712772718d6cef90584017be63220032",
+		"bip32_xprv": "xprv9s21ZrQH143K3J7rvhxELMdwaz8HhaAtLDD7UCCHVdPSY69yZ3rvr6ZtBwM92qhQJqJ1xFi9LBKo4VJmGpmHjyZojBdUbTB8BwbK6KQxWuU"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "mimosa vita sussurro zinco vero saltare zattera ulisse mimosa vita sussurro zinco vero saltare zattera ulisse mimosa vita sussurro zinco vaccinato",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "262e5015670e15ecb723088a68c9b77a21f84360a746dc720771a6269148fcd6931b6a074d65cf86e623e7796a0f735cf643e6aa30a9ac5e4660afaffad76013",
+		"bip32_xprv": "xprv9s21ZrQH143K3fZM8BaWH84asxcFWfUDw37ap8W79dmeorUumo1YMZ7PXwUaYzJoGt8aUKWPufi2kWD33F51C79BtKppZVu9CzjiPu9jsqT"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "mimosa vita sussurro zinco vero saltare zattera ulisse mimosa vita sussurro zinco vero saltare zattera ulisse mimosa vita sussurro zinco vero saltare zattera tarpare",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "261a34e9b43f71c04326b92d51ce75e6584a8fc3c2135369585c18b0f7e5d3d5ca32cf48d2ff53d3d8645c8413b74bb81232e160e440655f5fdc2d86133073eb",
+		"bip32_xprv": "xprv9s21ZrQH143K4XBePc9y2FBwjKZDxWLgg4jS9kawuN6BA852fHU7TajWfAjmau9Qo7phk27vYM6LX7ucoD1fSp3Mnof2451ZvUegMAtZsYZ"
+	},
+	{
+		"entropy": "80808080808080808080808080808080",
+		"mnemonic": "misurare afoso bravura accadere alogeno dottore acrilico arazzo misurare afoso bravura abisso",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "815b0d731057c8d8f81c598895f4c761b11cd927521fc5b91fccb64592a3d834fe975f544aaea8c82ae8c2f26f37293b3fe427b43e47a0b39267409750d7ce3e",
+		"bip32_xprv": "xprv9s21ZrQH143K3qikt5HJ9XSipGLNiWGDeRYoV9JXPSaT2JrmEEtDFXT5Hj7Wq62Q4Lz7ZiNeDwhHstNqMVnQpKHRSfutieaB3tEzcZFjZTB"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080",
+		"mnemonic": "misurare afoso bravura accadere alogeno dottore acrilico arazzo misurare afoso bravura accadere alogeno dottore acetone",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "350820751402078e84e734957541cc1b6fe46e57751f6e65aa4b03ab8533b5b14c86841782a652c50344fe3b0ab2ce0d43e7adff6c9f886d6d3147efb0cb38df",
+		"bip32_xprv": "xprv9s21ZrQH143K3q14VAowzQat8e5ronYtw7Y5gytXtYxKU8RPQCBcTgs8Tzgp6zYjihfKE5oUuzb9VnnyB29777qhBHzxKfcZsujNrddLe7C"
+	},
+	{
+		"entropy": "808080808080808080808080808080808080808080808080",
+		"mnemonic": "misurare afoso bravura accadere alogeno dottore acrilico arazzo misurare afoso bravura accadere alogeno dottore acrilico arazzo misurare allievo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "e6725203984fa12a3cf8d882e887e3b046d61ce0dbe6a302df990ab4c470be59bc2c1bbfc8ee0426521d8e3dcc720de5ada2d1a4c3e00f1799034b0c49fcefa8",
+		"bip32_xprv": "xprv9s21ZrQH143K3JJcY29dYFFE2aRzvACkcGf1ttc95s3CN8BYCVBKNy1d4hncV8kNguoTPgJNUJPopx9auhpqAGqz8Dz3DvA8aewwpgwuAN1"
+	},
+	{
+		"entropy": "80808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "misurare afoso bravura accadere alogeno dottore acrilico arazzo misurare afoso bravura accadere alogeno dottore acrilico arazzo misurare afoso bravura accadere amico",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "18a44f4dc4daaaf6ef7c560909644329d0352068ced24eefaae1182ddae88bed47029833065304502163a7d178ed0bbfc2fde190af6cfd7adc21be1d333cddb8",
+		"bip32_xprv": "xprv9s21ZrQH143K4Wbr78VmyWYSDo5vtmhLYfewbZZ8A92r96Wxnw43r2zY5qsdMgdiqWfpmE9bGhRfiNqCtPBYpFs3RW1m9ZokFk5YHCPVhfv"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "misurare afoso bravura accadere alogeno dottore acrilico arazzo misurare afoso bravura accadere alogeno dottore acrilico arazzo misurare afoso bravura accadere alogeno dottore acrilico baco",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "5eedaf16f78e320dc244cf5e68b5c69202fc5f02a195adcdf7bf47cf3c5832955aaccb32bd6cd32e1b794077b70b0612661d2a5a58dfb8ea6ef5102f9a48949d",
+		"bip32_xprv": "xprv9s21ZrQH143K2zPDMnVr3peFX9s2ETKymKNBsNoxFUZfE4ARmT5WMh2jAMDV2BStRtGE4k3unL5xG1FA6PcFDYmbQ8pxB1zWzBGv3JDzJBj"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefe",
+		"mnemonic": "zinco vero saltare zattera ulisse mimosa vita sussurro zinco vero saltare viziare",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "52ed6161d457fadbc4b955ae153a8d03c34f4b947255398d81620241ed6a6a02551e2fa1018d5f018831a0928d3f3ee6501a9081f3b2739386b84c91606a9e70",
+		"bip32_xprv": "xprv9s21ZrQH143K2j4uV3aWJAComxWu9NbFVFK4N9qxR96BGsq61cq2PmVeW8AaNST2Nx24niMFwCqaWCxjUX65zaRjhCMatrkaPby4mbfYpVo"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "zinco vero saltare zattera ulisse mimosa vita sussurro zinco vero saltare zattera ulisse mimosa virgola",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "09b53cb30b15655cc789c8b5f16aa6aef616cc31104c80a5b95b5818e1e47034310abbf3b8796e606941c9bc33bb46ab8caa64449af1e4bdce27da62aae271d3",
+		"bip32_xprv": "xprv9s21ZrQH143K3fMRZG1CDfawvot42JjC5gy3LDD3JGaapt3GZpcvXRReM833n1dHpR5tVmrWpB7r15VxNpDkqPAzauX9RAzZSkie4e6xoYo"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "zinco vero saltare zattera ulisse mimosa vita sussurro zinco vero saltare zattera ulisse mimosa vita sussurro zinco veloce",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "372974e9179ad6e7e8ab0b66a05dcc5efd5c1d0ff27985d40647dd7c39a575fe6c48f0ca196284a14a19e876e55fe42b92fc4a25f4394913134198ba2d8c91cd",
+		"bip32_xprv": "xprv9s21ZrQH143K3e1ACWW1HdmKuADaU1xSD7fEqVx8x7tkzYxFkxGJ2uofptAY9DxLfwQJMTUSpjZLP93oU9ersHLQT476XASP3KZyZmyQKoG"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "zinco vero saltare zattera ulisse mimosa vita sussurro zinco vero saltare zattera ulisse mimosa vita sussurro zinco vero saltare zattera tipografo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "96a4ef2b57eced071d3870336c93e214d86047608c25c402c4cb79e6c4ef3c002876b312adf3597dc9b9362f1ddc51a0dafc94d1cfb6806a39961733613a1a10",
+		"bip32_xprv": "xprv9s21ZrQH143K3K4BXJj6mR6UhdL72BfVwAvFYvJiew2HHSposu2tvxGhQScHohWiybRbU4ZEaEdogyXPTRufzTUJYY44qMo921iQ6rtxXeP"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "zinco vero saltare zattera ulisse mimosa vita sussurro zinco vero saltare zattera ulisse mimosa vita sussurro zinco vero saltare zattera ulisse mimosa vita spirale",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "cd4940fd1931d79a0c30cf0185e582ec1e2c80c306001976b3cb53e8ab127c3f7297b24b1fb2532f8e9f08fcc34ef643bcbfa883c4caecf0550c57ef4c99b98e",
+		"bip32_xprv": "xprv9s21ZrQH143K2p4gZRE3x417uoQaZn1SJgzud5CTMa5bmVHE6ejpixV3Vmvo11FTiFf5ywVkLkmmg3ak7ir3rDdwTdFZQop4HZLN2mxirZD"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffff",
+		"mnemonic": "zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zerbino",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "576a78d9d776e12434689b568bd4bae9de12df1a3614ef05024b4212834022b11b353cf250fc9d9349dba4603d10e18e9f51a0a6eb6e855410aac5aea0d09b87",
+		"bip32_xprv": "xprv9s21ZrQH143K4NnQ9RP1pLkXsS3yVY74UryRHWCQu3cFZKHkfHS31bCnGVPTCW4SUPkLRK3mavAtqiawepJYtgqP3bGH7v7QMqehSWzvrfi"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zelo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "a4f2926c9fd0037f375777910ecb9fc330dc523a0c602d156f54176c226a3dab22e7dacb19784bb57cfc7a1d3e31342c97371f73acafd01ea8949116c1cd9021",
+		"bip32_xprv": "xprv9s21ZrQH143K2jM91iH9T49FzBwni8HtNMvy9sbs4hDNmRW35XMTxwvhmy2oHe4azG8bpX7MyYriDF8tzYfiDysyPi7nqF6YvDXqoEmC1Li"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa vile",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "c5a3104bf43a792c50e3b6ca284a36655d3ae8271b5e3a38062b086dcf6e4d0876632ae57fb3ab695f8935284940622722f88f277ea2d6191d48792dd1b06430",
+		"bip32_xprv": "xprv9s21ZrQH143K3HYc5Qyvfb8yQyACDWXuqqvYvigVsYSZAFQaipwwzQm1kY42TL2JjftiFzPvH1oSY2AMrUaE6JfGYLNBcqGUn8RWK6AwZP1"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa vacante",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "e310056c3652b01fcc6777cb9b488e389db20eacc11915e42f505954927eafde62b151c4e33230e35c504592eae4238407e3bd619540d2ce8399344285ff44a6",
+		"bip32_xprv": "xprv9s21ZrQH143K3QzzEdM3bZvS8X9F3k5w3JejSTJwts6VoQfKiH2GWBywwih7kpiJDLooMcaQgidT9qna7FiGKPZG6ajbhXQR29mcoA2VBb5"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa zuppa vedetta",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "efd9c8d765ae9375fdd8ed51c0687b5c3fd7b40b3e11d0d42ba13b36e1600681a28235166daa37310191d8ede94980a85a0c85f2002f900549b1ac46c873ea51",
+		"bip32_xprv": "xprv9s21ZrQH143K45gAxzmzMGkWU3vg7f1vHjEMwdvMnpNJLDfQx6AUkEi3QPW771tWTcMmXqkhSMTfZHLVMNssETxv6nxXMU585z1CtYatEHf"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forchetta",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "d63139e4c8574a6ba958e984a29154cf564c335d24eb7f7614e36aed7d9d55267370f20e51260cad029b35b43a5c368f237e7d47263375835d99bc72d3b80c4a",
+		"bip32_xprv": "xprv9s21ZrQH143K3AgePfzhk3kN1oRYEjwEmqsQ7vFcjW5Cgf1s6R8TkoeCGRKCtcdjaPEmYvYbk7RT4H6nCC9j1cfNG7GEW2ZtXtRETnog387"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito promessa",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "23974bc88e54783e4e2e5bf0140c65880fb1e1157dfffb632587fd7ff7cba6e4c2258b050b89479125a75ccd618d04cb31e642d142a90d701df04697f189fb9a",
+		"bip32_xprv": "xprv9s21ZrQH143K3RrQSwZeoAiB45ED3rv12k6YPnxb5vpHK2xHHfo1T5UfdzLA1wRpWjYck4kC8FEYvBJaetZV2XV25955d6dS2bTbo4KdCsk"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna fontana",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "9b06525657ef3b0d517822e2f8b58e69e930a189d049ce4baa44be78bf8cfe2ba98da1970f54c9811b3456c76d3abebf482c98a33a2341e20f036b1dd394f967",
+		"bip32_xprv": "xprv9s21ZrQH143K3RETaJFYYmJvX6pnyxxrYqu1r3pDAWS2WEVZjnaTZgYpAHQDDdqwQ3dBEhNxgwDwvE1BAyouNKD1VF8zuBJmMTpfeZQ1Mxb"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito randagio",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "8c4d9dbbad50f1719ca951c9574ca1ef74f87bd0e718f5dc437ec9c1956d2ee1f88f17e7add7e46285542e4763b60a0f95de342267042ead4cb86befc6e9b269",
+		"bip32_xprv": "xprv9s21ZrQH143K4APgTrWtfqkfzo2XcmQYh3KoCmN2VbjLm3fQpk2aLmd6iVcuZcmviWsjQezxE7uR9Mm4y6ed2zeuuimYKfgM5NvmmHZNAiD"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna gazebo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "35875c0e6ef7f04872ed47b3c0b710bb520870b3f0f519c5de7ab67ebf64ae14e73d57bb5dc4afc7f48856a2720f02b3843f5b48232c40a27b6ea44f972a8265",
+		"bip32_xprv": "xprv9s21ZrQH143K26kdZySK2gwEm2ZWMAqDEjpYH6b6FS71m4HDP4WaHyijMSBryqEoCBpUtbvhZWdB9ccKGq9mDHMCRa3LvdUfTS2Fgty8MJd"
+	},
+	{
+		"entropy": "55555555555555555555555555555555",
+		"mnemonic": "forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito pugno",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "c916ae8698c0383501fd7601871fdf161535013288ea9e4a810e1e9d23b4861374d6ee83aef77e346d16358943d8d9cfaa74398cc10057c870c8d4cc8af48b7f",
+		"bip32_xprv": "xprv9s21ZrQH143K3K2iUdaNiBXE2C8tLm6PY3s8woMavFscvwrj7rqV42c5EbFW2FskbyP5oF9ihSVD3dqMbGYRqQ9NREBXfb9TY69H2mtFgwQ"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555",
+		"mnemonic": "forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna fondente",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "33cdd3d9619c172762adab8c5ca9693bcc8cfb052f08594a7be21639ccced112b95c462f4d2e0a9c6bedacfc694853f4fb95867d4fe9e81ba633167e7a4b4d3b",
+		"bip32_xprv": "xprv9s21ZrQH143K3xNNpZ5RoE4cdn9htnYtkZtG4pwp2MvChyYz62tDN4Ywn6BdS47LyC2y7KzTg1fQq3oohLNF3VzyKaT1oYbCHxdiFpHQiXr"
+	},
+	{
+		"entropy": "555555555555555555555555555555555555555555555555",
+		"mnemonic": "forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito puntare",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "add7f1348c56564ebb89ea67f65b0a8214319e3e37f8a8592b4d6f40e163a40565668daca205f6f9a3915ad2891107b4fa508bbf294aff42c39810099926ddb8",
+		"bip32_xprv": "xprv9s21ZrQH143K4RXBYWbz1hzonwvDn8S1YtsP5rcR3RNyPTBqVDCrcLMjCEDtwMNHSBqgVbbbxRxMoMJ5ds4W5HVmueQRupP1eeEsm2JKXvb"
+	},
+	{
+		"entropy": "55555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna fondente",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "458a31495e941bdeed46235007a2d7039e91dbffe33f7b84393eaaf28dbc6fceadb38a1fc1bc998822f23e38e496e38be4883c2d918e6fe81752c91a080cb99b",
+		"bip32_xprv": "xprv9s21ZrQH143K2qE5vVTWgxgSRDPHxSeCoQGhrrnQym11j4bDxJX1iHqaKBPrLwsmQsC4jz5wcUMSm56UTqxsBci2taJfiBSQq8EqcwaHrLm"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito prugna forbito recupero",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "859f8acd49d40e8ec5a8e7a4999a817cfaca0536b3ebcb307bb67a71e44d418408867ebae069026da1ce0a32068331b334f60ca4c8b4a0a95cf2b74bee559cb2",
+		"bip32_xprv": "xprv9s21ZrQH143K33weKQkCss8hkVgdtau5WQJo71y3iWK732WnwKctVrs9XbKJqmvmZX6M4SCXqMyHtLk3FuTDyNkLKrnfcnCPZuEdpA18gvE"
+	},
+	{
+		"entropy": "9e885d952ad362caeb4efe34a8e91bd2",
+		"mnemonic": "pesista educare imballo formica curvo imbevuto raddoppio sussurro croce eppure epilogo poligono",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "4b7b646f5b221258d13a7840c1908891798e7ad24a49f5cb6b8912e656d969176d0dea1d34a8c1ab3b5d265a0a4aa3dbdc5f83f4f1e5fa3d9456a70cad3afe04",
+		"bip32_xprv": "xprv9s21ZrQH143K2gR1FbrfSHjLSR9SYz8BxoGPrnpErammgKrDrXqqvoi1AnZwTTHt54mMqRNGuYp9rjt8vauE4p7F7ZvBN4tPKxtGUqCafSY"
+	},
+	{
+		"entropy": "6610b25967cdcca9d59875f5cb50b0ea75433311869e930b",
+		"mnemonic": "immolato mummia oviparo sigla stirpe fonetico fosso appetito vasca galoppo cigno solubile foderato pargolo enduro sociale ormeggio galateo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "4d7d7262a55fba18c6521725d2e7d57d0152f6894b20289522ee299e7d823d60e4f28fcd91e44a345157cf9e700beed55e2d245383657b8574501ade0611a6c5",
+		"bip32_xprv": "xprv9s21ZrQH143K48iCupSpsXteUFAzPB7hQPyrCftbuDVFRxW1BHQf6AgTd7hZZWvgRVN5hJvLTYfdGWPGgHPoz99R65GhiurukDAjxvqjgge"
+	},
+	{
+		"entropy": "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+		"mnemonic": "infatti dire pudica elica camola deposito pudica nobile servire taverna restauro baritono inflitto flacone ilare suonare nastrare dito montato vulcano scrutinio lisca deposito mirtillo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "c4712589ad960f5f24dfcd28e9b15e2b7ce3c5bc217d6f90eafc9d08b8de375327f5311cceea5481067a964d8d48fc21ea3f1eaf7cbbe8e27b08e2c2b981ab15",
+		"bip32_xprv": "xprv9s21ZrQH143K3tAAQw6t5RWBBRk5wqkGyvM5YMeCWb8Xwb1VUdpG8Rr4s9iN8nQUFAMvJuHdyUJAcWgc1upQXY2cCh7uM2kakEsQMUota2e"
+	},
+	{
+		"entropy": "b3ffe8f56d54805218090de337779328a3a2e758",
+		"mnemonic": "ricarica zolla disagio squillo eremita cefalo gomito bubbone tasto roditore tensione feudo derivare litigio gonfio",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "116800c2198b7b7d2e428631a397e17694bbde71bd8076c1fe13173e857538bbffa2b4fe539bca1c631e132acc30ff577bff06246feea36bd7b6039f7a6efc76",
+		"bip32_xprv": "xprv9s21ZrQH143K4AyD8DApU1SXGPn7W8LFWKMF4e4wBmNZoiVYUgQUU28pb8eGZeYH6Hs9sKjdVfKWt1cKSVab4aZuzGqhjJWqcgi1aKgYS7d"
+	},
+	{
+		"entropy": "437dd688276ceb711cda3a126eab879a188a30b097b769a931bea6fe",
+		"mnemonic": "egregio tuta piramide fastoso sgonfiare rischio lisca eppure ascolto lucidato tale criceto neofita balcone sbattere veloce innesco esercito latenza fango turchino",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Italiano",
+		"seed": "45503d7826c8ccf7cee8be6a00d2d11bf1221afe9271c3b4212f5a6f6860b78f160cb47c1305a6c508a8439cb9d86f19ec68b2720c6acf333bf6886a0add1e22",
+		"bip32_xprv": "xprv9s21ZrQH143K3rTkokDa2AB18t9JFQ9ieqxwbEZHZKACXBNjwGJiZWj2BSrLH8x6vmKhEb8XqnnUgpgdgWi3fmeygRLHUe16rc2hM5CL6zJ"
+	}
+]

@@ -98,6 +98,12 @@ function loadTests(tag) {
    return JSON.parse(zlib.gunzipSync(fs.readFileSync(filename)));
 }
 
+function loadJson(filename) {
+   var filename = path.resolve(__dirname, 'tests', filename);
+   return JSON.parse(fs.readFileSync(filename).toString());
+}
+
+
 module.exports = {
     randomBytes: randomBytes,
     randomHexString: randomHexString,
@@ -112,4 +118,6 @@ module.exports = {
 
     loadTests: loadTests,
     saveTests: saveTests,
+
+    loadJson: loadJson,
 }

@@ -183,8 +183,8 @@ var Wallet = /** @class */ (function (_super) {
         if (options.extraEntropy) {
             entropy = bytes_1.arrayify(keccak256_1.keccak256(bytes_1.concat([entropy, options.extraEntropy])).substring(0, 34));
         }
-        var mnemonic = hdnode_1.entropyToMnemonic(entropy);
-        return Wallet.fromMnemonic(mnemonic, options.path);
+        var mnemonic = hdnode_1.entropyToMnemonic(entropy, options.locale);
+        return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
     };
     Wallet.fromEncryptedWallet = function (json, password, progressCallback) {
         if (progressCallback && typeof (progressCallback) !== 'function') {
@@ -219,11 +219,11 @@ var Wallet = /** @class */ (function (_super) {
             }
         });
     };
-    Wallet.fromMnemonic = function (mnemonic, path) {
+    Wallet.fromMnemonic = function (mnemonic, path, wordlist) {
         if (!path) {
             path = hdnode_1.defaultPath;
         }
-        return new Wallet(hdnode_1.fromMnemonic(mnemonic).derivePath(path));
+        return new Wallet(hdnode_1.fromMnemonic(mnemonic, wordlist).derivePath(path));
     };
     Wallet.fromBrainWallet = function (username, password, progressCallback) {
         if (progressCallback && typeof (progressCallback) !== 'function') {

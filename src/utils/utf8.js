@@ -14,9 +14,7 @@ var UnicodeNormalizationForm;
 function toUtf8Bytes(str, form) {
     if (form === void 0) { form = UnicodeNormalizationForm.current; }
     if (form != UnicodeNormalizationForm.current) {
-        if (str.normalize) {
-            str = str.normalize(form);
-        }
+        str = str.normalize(form);
     }
     var result = [];
     var offset = 0;

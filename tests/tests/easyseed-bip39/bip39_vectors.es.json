@@ -1,0 +1,317 @@
+[
+	{
+		"entropy": "00000000000000000000000000000000",
+		"mnemonic": "ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco abierto",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "190f7940ceacd781f50b4c96e22a76d73db76a298f408cc0b5c3328c29aa8be62a7b9f7f650a1a2dc070a1d7acba48476b7449666648b026a66a9e1b0e0aa088",
+		"bip32_xprv": "xprv9s21ZrQH143K4R6v3FDQQEJiapUFyCADAXBJDpByQMgCR8WJm5kW5GR9erJcUcDGecQ2ePc5htEFhteQPDSgCXNwtxrJWBuoLFikwzRyQDY"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000",
+		"mnemonic": "ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco actuar",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "36e4cfe1733f1edd89361eca02fd2c9abe563b4d431aa849d7636643f40aa0db7b5f42c6c82c9add583737282d679e78f7703ac4682698236395fe26088fb428",
+		"bip32_xprv": "xprv9s21ZrQH143K3Ud1fWhtF6xj9Lc8B7t4SaVJVHX76NcKKxxqfjU5BqFCMvWocDciVbGG1vaKsoArUKtipxpnK2QvN4LQ5hm8k2eZ7PcuUw6"
+	},
+	{
+		"entropy": "000000000000000000000000000000000000000000000000",
+		"mnemonic": "ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco afición",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "c137d4868c17f87ac43db1551a666f378dca8ed0b4c1796d8e0cfe8734a222bbbd8637200d565c8a77da2f1783ff9c9d38bc427495d887eed8af3dddde8a1ded",
+		"bip32_xprv": "xprv9s21ZrQH143K2iTSJPtqUEbwtDbazRkGLd2JdC6Jnr2daVioeR7aK9gqoWyMLL6q3hjQ41NnZnCE8P9bY37oBTs4pUDu7BbmFM1Z6R5KXe3"
+	},
+	{
+		"entropy": "00000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco acuerdo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "0c278bf458db0f0c7cfe42e8904b461db0bf13978433e9193cdb1ead376d298516a0e41367ab3e2ab205a9f1bc25fed3a1b00315a8c5abb13a7e4a0643c83b81",
+		"bip32_xprv": "xprv9s21ZrQH143K4KhyTsQFLiQZstXF8jG3ep8RbN2V6BydcC65GVRRurrXSBwMgofYFcACNVE1Xhm5TvaEJviDLXeNj1qMfVHQKXqyKNULsfr"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ábaco ancla",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "1ba12bc175839af985ae5d82a6f93fa8384bd4837573f924b3e034e2282886635cd9a1a07ccf4372ecb9ff808fb2451a2aa9fa321cc719f18716339149e4f45a",
+		"bip32_xprv": "xprv9s21ZrQH143K479nbLHG3wyJdoDAWLw29QT83yEwh53DCk6t2z4XwqqUirfGJSr5Uxp5Q61VqQjjweMZboNQ8RDMfpxsFsXsrGoB8P5wJ8g"
+	},
+	{
+		"entropy": "01010101010101010101010101010101",
+		"mnemonic": "abrir álbum dejar acelga aprender lino admitir bolero abrir álbum dejar acudir",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "2e47528c4cf5fa95edacbe5a58634d6b8d68acd58583ef1c93d30f81549a9011636705465f140c8b35a857d24a912434b5d641fec327b9fb1230f075ce195d2c",
+		"bip32_xprv": "xprv9s21ZrQH143K3LgTWaXKvEUCU3VeVZiVY89Hb7wDw2FsWXFuiT2BUnv2LJn4nG99rjszSmEWSVogmh6cLUjtwamRQhpVGkfj5uHfuTECKd7"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101",
+		"mnemonic": "abrir álbum dejar acelga aprender lino admitir bolero abrir álbum dejar acelga aprender lino águila",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "038527382d6384e97849469ab4a539a31c8d6e502067b5a2cdee7bef074e163aa05c82e04a4244dcafc37f4d0d344253c1d00a1abb40214357b97d441cfefcad",
+		"bip32_xprv": "xprv9s21ZrQH143K2C26N8aRiZjW52cPdwVZ4EzT54LyzFyPP72vrwxHFTA3duojwLsKky3JQVHBpfHGC6E6KkLLMgBPr2to4DtpAUWN7TzqwGg"
+	},
+	{
+		"entropy": "010101010101010101010101010101010101010101010101",
+		"mnemonic": "abrir álbum dejar acelga aprender lino admitir bolero abrir álbum dejar acelga aprender lino admitir bolero abrir alzar",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "c38808bd3718d818b2cfb3d4dd8c472258680c80c1705447da8102ba376d76060e5c303447d8ca04551f7714496cd272c1e5582dcc0a042e7fbdb70d4ef54243",
+		"bip32_xprv": "xprv9s21ZrQH143K2NofFh2xFP6tsUmCuPoghqUpADa24HPhkgMBKcZwfanaQQ65FFd7TkVPv1hxrHvTQjpwphvsADDPfcneMuBpZfoY3Tx2qfJ"
+	},
+	{
+		"entropy": "01010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "abrir álbum dejar acelga aprender lino admitir bolero abrir álbum dejar acelga aprender lino admitir bolero abrir álbum dejar acelga aries",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "20be236898b0f2db3118fbdec98414b5260cd0a8412c598dfdc6407105cf8f5146eb5516fcabb68dfdf94ac693b0e770009fa71f26d4635d2e6b63a9b5914eec",
+		"bip32_xprv": "xprv9s21ZrQH143K4AX1Frf7Up5Py65dxAW1FNiob5Sxi5vaUgJVuiGqjg7m4G2hfuM4xHUqbS8QpNaxMHzueuEGGjKVUr1ywoNxqFB7PmZW5Mk"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "abrir álbum dejar acelga aprender lino admitir bolero abrir álbum dejar acelga aprender lino admitir bolero abrir álbum dejar acelga aprender lino admitir ceniza",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "bd749f6868aa3a79712af648aebf5849d63663c8d6ebb290538848262b969d7467800f5b37cc79badef852661d83d6ee65011cfa6bb48b28a836db4dfb41adeb",
+		"bip32_xprv": "xprv9s21ZrQH143K3jJsrTyvRcUaNFbJ6ag3T5XvWTDNbNGQzvcqpLFv36VhxS8ZUX3fqy4FxYq8wgcBzgckUi4S4Rms7HrNaPuvueLFLwG852M"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "ligero vista talar yogur venta queso yacer trozo ligero vista talar zafiro",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "de29dbcf678e84df4d54a0fbda4a1b11951cf6a8d347f6c231ad42d94338ddd82e4f1c1c9f3a75a8b5aa7bbc8507134c0d7c5e65c5b9995caf20315b125fcb0e",
+		"bip32_xprv": "xprv9s21ZrQH143K3cf9mCPy4adBoKWD6wVGHcBYAU6MzdgrzX7aqEbkTkWVrbQh4eZtZ6GdtHYqxiv8D3fAf9jWMAuqMM8BHHkfwjrjnX8QMwT"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "ligero vista talar yogur venta queso yacer trozo ligero vista talar yogur venta queso vivero",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "885cadaa8ee751bd2a18db87a3ace66a7f16b78fc7ecc1cf43b932105342a30f386ea550737999ff1f46284b22137e4f92d51d364673586a613baf9f6df9e46f",
+		"bip32_xprv": "xprv9s21ZrQH143K4PFWKwCXRh5DwYNdapAhvFzB3oRrE2juWYXySanMv65HVrWx52HrfkFGywjT6PqrSRJoNUcZaokhnmB2bfY9tTKTWQYauc5"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "ligero vista talar yogur venta queso yacer trozo ligero vista talar yogur venta queso yacer trozo ligero violín",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "a11ad2f6c046684bd63be4018daca2e19b8765cd1b0bb9fa0d832df41879350e9098f1abc445ad3e05af643182e95633275a5f5a5a15452234a8754eeeecb54f",
+		"bip32_xprv": "xprv9s21ZrQH143K3CGDvYtboB79WZMiNjeKPbvDymZ88QnkFtq1DyWcJhXkQMHzYwQWuqzoN2wMh2k9xG7oMyfd86kWpM7eXLFY86p6nzTath6"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "ligero vista talar yogur venta queso yacer trozo ligero vista talar yogur venta queso yacer trozo ligero vista talar yogur urna",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "6fe47df0f94ae6a75e4ff4ac168376de69e7040d8da57241de3c247297d4e13f15d6d2561b9edd9daae9955a780df2609ee26b09b318447a8ffbffbc9af92d9b",
+		"bip32_xprv": "xprv9s21ZrQH143K3go4PbSso9hntfj52bpsaXy5vJdr8QtTUZtEPWjti1Faie9EkKTHyTqGdgsKirDGneh9uPP9Um68z36jjLdhrDWJzZ5WtkZ"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "ligero vista talar yogur venta queso yacer trozo ligero vista talar yogur venta queso yacer trozo ligero vista talar yogur venta queso yacer teatro",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "275e5cddb06446b441cbe8dd38b31e8dedf559d9fb511712eed9045ce2f8573550324de8421f225296f0b91cefed705cbf7f42639955089d779f04de8371badd",
+		"bip32_xprv": "xprv9s21ZrQH143K2FM1mrvGCqVqB7ne8nfWpyTDfr7MckdT91gZcXmp8zRwCNj467Usqe6bcnof1BUVnr8NSpbbDjAdrbRKcACVCjJDCMwGZmB"
+	},
+	{
+		"entropy": "80808080808080808080808080808080",
+		"mnemonic": "lino admitir bolero abrir álbum dejar acelga aprender lino admitir bolero abogado",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "5fc66c336878b55787dc08e39bf921e2a05e1790006d012598505f2df0a4ee51263f5d1bfab4709467b1a6ae7c0c5820935703885cfef54c386cdb03f7093725",
+		"bip32_xprv": "xprv9s21ZrQH143K2iBjMXkRwZ1bjQ3KftjUnovyHg77P5K1VBFZU7i2MX8eZXDsh2j9J8azXdb6ADLee7SanxdK8xeK9Z2gbtx82cMLg8ptJtQ"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080",
+		"mnemonic": "lino admitir bolero abrir álbum dejar acelga aprender lino admitir bolero abrir álbum dejar acabar",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "98310b73b6c1632e03982d0f0c1bb3877b79921b29fd8729844d6027043436d95a166ce4743d5ce9515973681fdbd60fb7c8a6575a7c3f6f484b9c2611ae219f",
+		"bip32_xprv": "xprv9s21ZrQH143K29vBJQpwQFBn57aXUUrJn6o95TLNWfa66tm2hMRk5HkX8ftFpqsxpkMSZzYgwZsJxS9oExz62dh1tS79Fq8HqvNhXwNwDsF"
+	},
+	{
+		"entropy": "808080808080808080808080808080808080808080808080",
+		"mnemonic": "lino admitir bolero abrir álbum dejar acelga aprender lino admitir bolero abrir álbum dejar acelga aprender lino alacrán",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "905ea56b236ced7208760739b839cd6bfa5c76165d1b8daeaf482d7f39f158de265c2d31e43b9450e04116db851a4125941b611f38c8bf142f480a19b783cd5d",
+		"bip32_xprv": "xprv9s21ZrQH143K2LcavQUzccX9MYdLVpHE8N7VRiASb8qD6VU2hTfNe1HTaHUeySRW4rXaixbvBWLpApNVQcRcUY2PGh396dTYRQAukyT4cF5"
+	},
+	{
+		"entropy": "80808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "lino admitir bolero abrir álbum dejar acelga aprender lino admitir bolero abrir álbum dejar acelga aprender lino admitir bolero abrir altivo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "cb3e4d11a1c208eb888315956a484502e1ed1c142b69fa2cae41decab64506c97f6a3ab8518306db651f34c940e600946bf0a6b67b63b019076ace393a3fb010",
+		"bip32_xprv": "xprv9s21ZrQH143K29XCRuN2LXcd8SecANNvQp47gow65yL2edEkrSP89JiikEu3fZsoCFmRSMM8f1HBiiSYXmdXfgAoMuNMPfesyVX8MdHy9La"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "lino admitir bolero abrir álbum dejar acelga aprender lino admitir bolero abrir álbum dejar acelga aprender lino admitir bolero abrir álbum dejar acelga aumento",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "56301e9c9940b78247c0d236a2aff557a65a5d8d8466c5de7e9d8f4f05db1b3f0b42da04b2ca3413b03b375b206902bd769585d08d6b792351239a019cccda9b",
+		"bip32_xprv": "xprv9s21ZrQH143K3GkRLEkok8uENdcSVsRkYBfQGzdrhPnGXzmbitUVbT2Fx6EdNqkCvT1coymBfDVKsmjZiM5wtxZzn97AAR33CrFarTkvUwv"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefe",
+		"mnemonic": "yogur venta queso yacer trozo ligero vista talar yogur venta queso vivir",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "da28ad825736bbdd2f26d92edd779e3ca4faae65740bc43c9245608ead1ba8de86d4f00d4ac39e42cf3f8f445632aed4910bc1c659e7128b668ec6c6f86f0019",
+		"bip32_xprv": "xprv9s21ZrQH143K3UqtViyBUvmPT9Ns6CSfwdpiZHTvQvkwsHN6BUN93BkQe2wv7k39YYSRpA581SGpzSPPqNGGHwAHANTbHAb4jwCCv6oDFqz"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "yogur venta queso yacer trozo ligero vista talar yogur venta queso yacer trozo ligero vino",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "f46c329b3ad725162565d6ce360fd6579a66db8648d275679efbdd49ab7b9a7348efe92ed4f1175c7fcddace59fe6508140701baf34f4e15a5283e33df68ffc1",
+		"bip32_xprv": "xprv9s21ZrQH143K4FNaaCc838ZW31uicG3svcyeowazGCAru9URRJGx9s8o5aA5sbqzd567SGzA2tJHSd6FdUdh8NVmSggmbdo6MgjgdVikMa1"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "yogur venta queso yacer trozo ligero vista talar yogur venta queso yacer trozo ligero vista talar yogur velero",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "dbd92f950bf43e661ebc14a7820b80c7cff62e1d071082dfcd5cb012b3e89239d7dff7aace1f4f34e05c1f0dc1e7abf17368d0523f845f682ba711de2cc701e0",
+		"bip32_xprv": "xprv9s21ZrQH143K3SRyaqWspi29DkQfmnE8dLALpZNQoUApKtRXNCZwUjuysAn5ZhedycAyajZF7Wa1QWF9AuDByYDwvUSjGstxZqVLaJUFfMZ"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "yogur venta queso yacer trozo ligero vista talar yogur venta queso yacer trozo ligero vista talar yogur venta queso yacer tiempo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "699545b91f1359664af13d8628744dd9e638ada3824c545af0e787df19880c798547a11f8af700dec454c36ded926c4182ffeb46e2e98520e4583f2916a39be7",
+		"bip32_xprv": "xprv9s21ZrQH143K4aafQBE6J2RscWNeq5g5i2Ez8tJ9zyrVYRyPnJXuRhsFAWBQshvMckq8rtMF5ketzw7ZKbVMKaqDzcFMzPhFwkhdkTGpp2h"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "yogur venta queso yacer trozo ligero vista talar yogur venta queso yacer trozo ligero vista talar yogur venta queso yacer trozo ligero vista sodio",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "5b19ec032bfd025a23c71a55cf277cbeaa42fce01fd3da48e86e6f5a2a89ec681a8554b47298ad2005e29388de04025c76d36aa28cf1dc7ef938fc9e12d3adc1",
+		"bip32_xprv": "xprv9s21ZrQH143K35LRfuhaFwwE5zky643LW5J8rf6R8PSkHCRrfWSG1ecjszTSCAYzoq7qMAMeZwmZ4QvWx6s5CEHbmvXNgXwqjg1Q6vgqGya"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffff",
+		"mnemonic": "zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo yodo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "30ca4481d75f036aab14dd7dd3413481fb1a04a35a0a6c97adf3a6979a637a1526ca80b35c0f1112bb26f3861ce957675b90a8351a0319c7eeb3029e344cb962",
+		"bip32_xprv": "xprv9s21ZrQH143K49baDsrcNDYuut6yLHp153N3JmdzCB2fCbB5ep3MURr6MXcxTGkrjJbeMfHH8sFvSGNMyhY2Dnybx763MdrRQggRYtqZpRL"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo yerno",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "4814ff9865f0dd9ffe9d007857b3b8d36eead26ce0c97865d9e904f521594b97ed8365eea1aae4533345aa91deca59e3f2aa4405330192938990c6c7e734c39d",
+		"bip32_xprv": "xprv9s21ZrQH143K41KSx675Lizb8q1RxNPUEiJCrwd3KYx46ZVKqV7DN2ST43qvENvGTRKbYTYuiPXpkEt1RG9NLFiskE7Rzfu6u8dLhbuR9aN"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo viejo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "51dbdff61933f87c5318799ca67a64a53afb77da42cd1ca7fcfcff88b925e320a2861de30383cfadede08eb03cbfd04661054d44f01bd88dcb0a2cd2920996ea",
+		"bip32_xprv": "xprv9s21ZrQH143K4SRQ89YFRSEbkyQ9YLbg3STahxA1Sh5DKoX5cMUi1bfkK1PtGdYwhpwCkH83yULYfkxWmkRwyUPBac7J5PA4uTHjMxAujip"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo urgente",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "83fd36ff5b9107f05424f23d9ad32f3d7fc668f4612c24317b5c3494b7091605605408cc6d963b5f70ba514c79d81f9a3361d0190dabcc54e433f67920448cf5",
+		"bip32_xprv": "xprv9s21ZrQH143K3x8SXr2bHnEzdBuxszpwjE7SALE6hgzJmisWQQ4pnW58pF2sQjh1ee9onGFdFNp5qzSCstjyAZZTnjdm6kGpneLJm6EByz1"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo zurdo varón",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "30a09def2634ee790d22dfea2e0cf5500b759f8fc5183ec77d468585cb03627b8bcfa88f4f5fbb983eb149147c0ebc0a58467a3b289de430929561ae8dfc0340",
+		"bip32_xprv": "xprv9s21ZrQH143K4VcfCScHJih2LrGHe4SWcN3TPqNCEGkG44fJx1pJTsqUdm6gAUmVjd5XpmJBx74Q5kWT8gfAALupPxEFRnj8g9cLsiMY9kZ"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "papel familia papel familia papel familia papel familia papel familia papel famoso",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "6d2876c7b57e641d943e76f34f6c0c57d071400dd7f9a5e9b1a3a43212bbd4dcf54ba27f5ec149f47d1e2d5cd9e5045a9d839b7a737997cfac02ad036abe837b",
+		"bip32_xprv": "xprv9s21ZrQH143K3YnvitBYuhnJBcCuAEJ6JqaK4V5QbFXYBNhwHfYRCMpujcHytRGteUMUugja51NjSw4nM8DHvZGQg6cxtiUqMKQjyMx7EPR"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "papel familia papel familia papel familia papel familia papel familia papel familia papel familia palpar",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "f6fc8f4c4986297bd8c3567f49e6b7bce8a1c1b5ac2c4208ef92057657a84493a8d8e1a045189a2666bf4b10cda42fcd4b3693b9937573f63fdf140f065b97da",
+		"bip32_xprv": "xprv9s21ZrQH143K4WvS2uBsBdNxbEFmk9UnXvjMmeHCpyGxyYSPhysinBGg3G9BQHL6aQSzSHzH86FNtZzLaTrZAk8VqSjoKrUByRA1n9mC9za"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel fama",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "2dd2f7ef8028fa8d96031e67779c5fdb9d6800311f001f01bd911f0c149d6797063828d1d2d1a374eb1642aac76ae2a8b81ab7ee30a5444fbfb7555567e3bd0c",
+		"bip32_xprv": "xprv9s21ZrQH143K3WotSK65SqxsEnWWN88qDVUKayfXgZ9fLGBjZXqBGnffvuJwdUkgkGk9cRGmy2ouPpaHNH9j6ng6kBt29z4EgHbVs2bgy3f"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia pegar",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "31978fe34540f0b4669039dfea35f80903a203aaae05a32693bcdc7642bbdfc4964f1408b9059c3fe3e578d77aa63a2f7678c46d8eb6f859508d74ac8de6acbc",
+		"bip32_xprv": "xprv9s21ZrQH143K3QTBSVLX6KpGk38vCczwMG62M8kA3Fq4Lqtt7EAmBfDfBd7wi8GDL2MywrDJS5oGb87ovGJcfnYFTGz1fVz3ydrFtNpbApY"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel fogón",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "834fb6b3649df29b55f381c89c8ee0e71ebd4d1e80bebaeab82514d02523a031cebd5833179e5140ba09398d459ab66904d8143a9a565d4327396ed7c7f5e969",
+		"bip32_xprv": "xprv9s21ZrQH143K3k5UnxZCmJWFX4wC3ckKfNgZgWFV1VBs2utGed5bvd9U7JhRKqkicSsWdPETC8bJPfjHYac9veWawprX3JSnJVfhNjTS4bt"
+	},
+	{
+		"entropy": "55555555555555555555555555555555",
+		"mnemonic": "familia papel familia papel familia papel familia papel familia papel familia parir",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "35dd33950dd6d065ea2b0637cdf1b47af7d05e0ad54246f2d591ff3c5275af30622bf64233d0904812525eee75a3a13e5f0366767e87f8dab4bd6617cf4f8b9c",
+		"bip32_xprv": "xprv9s21ZrQH143K4BPNac8DZydbqoYV9rNev4mbEaawfuTkqZscvUJtVbJLVHaAV1UFYxqbpVt2xAsDcPiDfYdYEri81b9EMHc6vrzGFpvmdp5"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555",
+		"mnemonic": "familia papel familia papel familia papel familia papel familia papel familia papel familia papel fallo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "294d982e41a25466adb226bb8283de9fb2e846b71730f372bf9f9fd9678a82779a767118edb4342940401ef16f10fc7af7d779515fa2f88ddf5f817f7a2717e9",
+		"bip32_xprv": "xprv9s21ZrQH143K3JhueB1xzcVozqs69pzoQyH9mhmdPMDszWJWZjsUkt2GxPwpqJ7xcGraUvedcipF225QMmygLHyTeYDBhEy2zT6kgZoBAmE"
+	},
+	{
+		"entropy": "555555555555555555555555555555555555555555555555",
+		"mnemonic": "familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia párrafo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "e653471b2123607f2ba35ce3b962000a25ecdacf3fc8fc5f5da15aadc0fe9c065b908478d201ec8b7872121dfcf1b531f30011590a7abb7044ba07d1c6976c3b",
+		"bip32_xprv": "xprv9s21ZrQH143K3MiKRYtzFUzeYGsAnTVLYevcVpt7CcEfm9qpSAzmGa3RqBRGV6xUeqdsQEAU9sqvXfTbm5KPsbqX12WMv3Gc3tJsNC3EfqX"
+	},
+	{
+		"entropy": "55555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel fallo",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "d26e90ee9efc07b87a6a9eb7ba4c6a8fc984421656063dca616baa6497dd6a724da4245e259bbcfbbfc9f016bf0c90e1ed7141cdf43c98997d02229f29888736",
+		"bip32_xprv": "xprv9s21ZrQH143K3K1fTQmzMGCn8xJ2ukJ1e1Un8jXLaoEqRRVSTAma9KeG51LvNkireroi6wufNHuDqfgTMcnTxpjMVDPxHpHLm96BDkwpSRb"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia papel familia percha",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "423bdd701283857b4967c110208c0a350959f0b2d25730d09638aacff985c2a144c1f478dfedce8e35db57b8aa38941b9227c15fac2cd9219e231dd142db58ac",
+		"bip32_xprv": "xprv9s21ZrQH143K3WSLTiK94sHygvcCA9WPUpipT9kbZoLm6npYt4WC3fuiaK7NkDT65y2R8rDNRE5vDZ3U1qEfspdajaWZYXqTuzymaterjgs"
+	},
+	{
+		"entropy": "9e885d952ad362caeb4efe34a8e91bd2",
+		"mnemonic": "obra diadema gorila farmacia colgar gorra pausa talar cocina duda dragón optar",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "0115cbe36078c6af47c834532f31b28a44192c86bf51e217787662bfea1f91133367e9e997993c10a9bbcda6847c32a212eb907317c1d221d3f759051a5c144e",
+		"bip32_xprv": "xprv9s21ZrQH143K3SkuWbCCMjQ6aQtqJj5hzXihsRW54JHUMwLjc5XoVnjWwnfq5HsBePGgDNizRmfZp7KDRFMKwHPdikTrdXpW8hNUTfPYqDJ"
+	},
+	{
+		"entropy": "6610b25967cdcca9d59875f5cb50b0ea75433311869e930b",
+		"mnemonic": "gráfico madera muro rutina suelo falso favor añadir variar firma casco semana fácil neón don sección morder fingir",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "452306c655923d7303950308b50f03aaeb9570386b6d3eaf80581668bd27fd1fe81c1e24dba71a3bd2527c99dea439d546d369260ba23ec8bd30e481f0e1a50f",
+		"bip32_xprv": "xprv9s21ZrQH143K46HLo25x4HHvYj1tKSbR8xH6NV3WbqzddUsoChKe8gsC36pGKAH3HsxVTUKZXQfETUGnWRs5VZnCh7SVPRWKffTAmVAZ8f7"
+	},
+	{
+		"entropy": "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+		"mnemonic": "guion culebra parcela diluir buitre crecer parcela marzo roce tejado picar azafrán guitarra exilio goloso tabla mando curar loco voto reparto insecto crecer lince",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "68d721650bbd7a3cc9b24e29e234c96f983566ff331d1432a8519e8a8f2fcc5a0d4e338b62d79335bb590129451b59e32fa79b3f084cbe1282294ecd6c9c784b",
+		"bip32_xprv": "xprv9s21ZrQH143K2wrk44kBjXni3WjnVckkwRimQWjGhh1k9d1rxf2KAf4jxxz7Y8QnarPfBxQnn1XpxDE77MRBKx9LcY3yuYAW64boyhgp5D3"
+	},
+	{
+		"entropy": "b3ffe8f56d54805218090de337779328a3a2e758",
+		"mnemonic": "pino zapato cumbre sondeo durar candil gacela bóveda tecla producto tenis eterno crema interés gaita",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "3949db5e4767e6144609a5f4fef2255c24cfd91722a61bc5bf631dc2d69f1efc5921692128eb707882a8db8614738926c9f52c35d0b7d371540086ce7a6e0aa1",
+		"bip32_xprv": "xprv9s21ZrQH143K2uwN6UE1UHw2PhYYiAyxNBhjNE2brGBMRYjH4QJgiTvTxB9MaBHwq9SRRgg7zeoVa6MfuvnSXJCjWwdLGRQ1xpvtUwq6CQC"
+	},
+	{
+		"entropy": "437dd688276ceb711cda3a126eab879a188a30b097b769a931bea6fe",
+		"mnemonic": "dibujo tribu ojo erizo ruina pompa insecto duda arnés jarabe tarjeta clínica mapa avaro rayo velero hacer educar humo enseñar tres",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Español",
+		"seed": "171c7fcf63aa803b96133dc4eaa9b8c542a634e319188740ca3abfe18f0b2550de2853947126aa66642a18f132cfebd4633b99059a2da705b610d61301ce9d0b",
+		"bip32_xprv": "xprv9s21ZrQH143K35dL5Ka552YxmsdNhsNsE5aMPo2qjFUXm2XN2ATuJvZ1nNpMryTzajpiMxVswtb1uUdw7bTS8SqHM7ApH4F3dDrRfoGVRPT"
+	}
+]

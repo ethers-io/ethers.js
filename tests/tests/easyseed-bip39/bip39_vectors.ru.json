@@ -1,0 +1,317 @@
+[
+	{
+		"entropy": "00000000000000000000000000000000",
+		"mnemonic": "абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абордаж",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "f3efa28c32fccc90865a82f5a53248d487a789bee332cd9a27a73f85b1b5a9291798403a45e26f09136324d563a4b6ffedb3aa0b872f3072aa2695f69e1f3039",
+		"bip32_xprv": "xprv9s21ZrQH143K2n5bLkMeqW9QNVt8cNjHoRzLU3QyUPGLm6vZj2g2cPrCnVeiu2LG4ukScnekMEvPrTFS2khLQ2Fu1S5MkgqWY4CA91wHN1W"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000",
+		"mnemonic": "абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур айсберг",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "c6942140871a832443edeee7b89429275fc490686fbc5935d73ef1b61fe8df475604e1c40b0f739a77722d8debb55a34058ba75202ed912a9144923bdaae3509",
+		"bip32_xprv": "xprv9s21ZrQH143K2sPZ9BwnJszFCyCZumrJB3ShSNXqxGzaQSkjRbDGw3rmXTngQfTVbAtQdUNNfMrWUYzdkCXkidtUSN9u9GR9zNMNEng8mLj"
+	},
+	{
+		"entropy": "000000000000000000000000000000000000000000000000",
+		"mnemonic": "абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур алгебра",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "775a9dfb00ab8a5428e020438ba4c1dc3aad41fcb62f548e22b9099268a0112841dfe6e31a959c6a52fbe93c29b1ab045f89e6f4e474ebd8b0203ae183229f51",
+		"bip32_xprv": "xprv9s21ZrQH143K3qxqUGBLaG8MN4k7i2oBTz46wZT9ZoyjCJfib4vUFCoM2nWekjkvt276bZe7o7K94w52qFu4MjQUtU2peB2yZK5p8rPUdJ5"
+	},
+	{
+		"entropy": "00000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур аквариум",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "bb021fdce52dccdf29b75c778591ffcb89f3f7b485f834c2e6dacaa1107c0e82eda13aeaa77fff75f6314e7d55e2974de67ef360df992aba69633da775e2206a",
+		"bip32_xprv": "xprv9s21ZrQH143K47QEoTFRczVHARJSo53Q5uMWsfBPxnZqo73f3GH51bxpBDtQEtziW1sGbXCYvFspvKBTBzzyGNdy5qYKWkgAGWZF3rreXfR"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур абажур афоризм",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "b1a55eb90cf1da6f1c8ac039c4902525dbdec8c43e17af5d5926fe1e207852d034150ef30aeca6b8246639c51aeef57a8d2c52812ac8429251006b3d2f808240",
+		"bip32_xprv": "xprv9s21ZrQH143K4BLCoYUGj97sH3QsDhYD1K6iubymee7wtQrZfToZY1raZcuhzJrY4vZSCUFfa5Vo9hvrUtUvaLo55rMC7VeYGDoAXn9fewc"
+	},
+	{
+		"entropy": "01010101010101010101010101010101",
+		"mnemonic": "август ансамбль драка адажио батон мера акробат версия август ансамбль драка академия",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "17d178fd57c61fdcc4aac25940af1f844954979ec01aa64ebaf07c2ca28b9457d91de4cf2b66bc3ee459a2075fb3f02d10b2a40afb083ec62651e1bb9f79b58d",
+		"bip32_xprv": "xprv9s21ZrQH143K3ocipedXPYp4QE8kupWV5AkFebpVJSVZ1K3fDDmgFmrRE66dCAF1vWrTsKd1ajeFT4Kf1TZbPWqZsYE8KJvVgQS8kuxpbiD"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101",
+		"mnemonic": "август ансамбль драка адажио батон мера акробат версия август ансамбль драка адажио батон мера амбар",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "0b85493b219806287ad0792b9dc84faf133bed2e3bd054bdf3721cc6f3b5a35cbb122ac7b6bb9627700cff08334b4b81e1e834a1c4abd6e2bb1df4c4042bbc8e",
+		"bip32_xprv": "xprv9s21ZrQH143K45yTeU4AnQsyhWCyfM3WcXis75FCaQVdoS4hgFocLtnjw34VpCsHuP6iBEYKvkCtsgt55fka2dhFHKmRzgkniXfj9JaWM5w"
+	},
+	{
+		"entropy": "010101010101010101010101010101010101010101010101",
+		"mnemonic": "август ансамбль драка адажио батон мера акробат версия август ансамбль драка адажио батон мера акробат версия август архив",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "b8914ef5d8acc3f59acb94d78e5933c4ae8007a37d1baeec0b4b0dfa7c4e1a4587a324bdd4b43a8f59cc878323d36d27a178f9fc41ed9d8d7c3a0af26ebc3943",
+		"bip32_xprv": "xprv9s21ZrQH143K48y6jKDckZ6VggkqwEywm4gvKtj8XnDUk6Mz3v1tVeHtT11zC2heNceSaBVJJ5m2RDQVKyjuvXdoEuvw2hwpu6GkuZPXqh6"
+	},
+	{
+		"entropy": "01010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "август ансамбль драка адажио батон мера акробат версия август ансамбль драка адажио батон мера акробат версия август ансамбль драка адажио берег",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "b7dcbd5723daf8aded08823768e8c9db8fea674f881a174b56570b2f02ba397dbc54d635c629fb8616647c79c3b7bef568e0434f1f9a7301048a679dad463cc7",
+		"bip32_xprv": "xprv9s21ZrQH143K3qZDAXUeFj76Yh1a3b2K5rodJhL7fAYWjs1ZymG7SQMYXrV6JMMsY4uU5ciDQFADLWyTzw4NuhwBQaw7YzCSp9Xe91R6gd1"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "август ансамбль драка адажио батон мера акробат версия август ансамбль драка адажио батон мера акробат версия август ансамбль драка адажио батон мера акробат гепард",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "1089ca1a34071e79027b316445bc9db494e3a9876f00963140a0389784f144fb667d7c07e8a9512cc6930a5a8c5d269b49370c4890969d00b2457f0eb6140b45",
+		"bip32_xprv": "xprv9s21ZrQH143K3cxyQRk4ZxmsPX2REGLuV3J6Gmap4C8YjuL1DWRPcS4HPbmjiBPjxxZNoskLKbH2KAC8DQmA3ngcf14WUBP9fY1cranLBST"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "машина этика туман ярость шоколад рыба ягуар целина машина этика туман ярус",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "12b0d2fe62108e60275868147c5907cb320d950f7870ed40ab6cf8329a88805f3a6773c759d072e4ef8211a0f306670ab28e525b4e18f1904ea24783fc1b4dd2",
+		"bip32_xprv": "xprv9s21ZrQH143K2yRii1P7UErbWbRJJUAZa5AiVbVye4KzRqut6CRitHZxqJvSRyfmPBjSSSgcupvsGhAJrmJnMTrSuKUvT6rEyqcQcbkdizv"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "машина этика туман ярость шоколад рыба ягуар целина машина этика туман ярость шоколад рыба эшелон",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "03c27896340255ad6e43033d4fd6eb1314cead2c4f3f482d32d175f4f95e4542ea2ba5e1d0f3db9cd1ad84c83e3645d5c7c2d786f5578468f1744592078c55a3",
+		"bip32_xprv": "xprv9s21ZrQH143K4NRV3imj8Hi5bZ4VK1Ei1aPxBjFV6XAtH8fVzyU2tva681KoPhUQrHp81qG3LHacT5viv5ynepDp2CPS8Fd6yA5hkqMbtGC"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "машина этика туман ярость шоколад рыба ягуар целина машина этика туман ярость шоколад рыба ягуар целина машина эпизод",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "b5511027c449ef565884fc514f4b92f07378a5edbd081d5f9e0726727fa8102ff4651ac8d643171f75c5f8a4b93364c548cd00a024374e31ff41546ce3e9a9fa",
+		"bip32_xprv": "xprv9s21ZrQH143K4CVQxXcCJ8RBW3jRYVmabpWVnbseNhYW1aCsdLVhw2ALxs7wN1DKxDecSdoVX4HgQ9HvWMxanazpniDMdZtMmSNmzAwkuoY"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "машина этика туман ярость шоколад рыба ягуар целина машина этика туман ярость шоколад рыба ягуар целина машина этика туман ярость чеснок",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "42f5671705c84f935678d5b946b76f60356de86717ac774e94c1601a38456448a773978896e5ac94d8bd5c7ecce6d1c3db785861fb2c16ea6cc85bb5789b9d9a",
+		"bip32_xprv": "xprv9s21ZrQH143K2HUeV5PY4MdHiWqhKzEYmesRrDJUXih5BpmcT1263ehnd5Zp4Ei8ZtKeFms2xMdPFcPd5MYDMid98g2HTeknUKsqEZnKuMp"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "машина этика туман ярость шоколад рыба ягуар целина машина этика туман ярость шоколад рыба ягуар целина машина этика туман ярость шоколад рыба ягуар улыбка",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "6d11fec7dda8917cf0fef6488f046ffe5af16895d33767c7e45229e08d5235e4d597ef8946c438fcf9a25f5c72bd21dd648f231d50fbfb83e47f87ac263c6f1e",
+		"bip32_xprv": "xprv9s21ZrQH143K254BR4wXnrY9oTZtQFgy5dcf8eSBvwE9pR3XnoPeiThy97VyiP1spEvYjPJ3aDGNR8Gcb4HQMvCDZdpFGn7KeBssdeRJppU"
+	},
+	{
+		"entropy": "80808080808080808080808080808080",
+		"mnemonic": "мера акробат версия август ансамбль драка адажио батон мера акробат версия абрикос",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "a2d7be1dd1a46718544a63d25f77b9c2961eb74a3491bf82ee8f7081e682b39949bc364f3edb1eedc417a43cabd92584ab6792cd84bae7cb5022986cf6de74e1",
+		"bip32_xprv": "xprv9s21ZrQH143K45oPLZWkuPLzES7Cf4aJjEfPmDENnAoru2oZiYXqQxZ3TqcB7T5q9NuJ5KSVFnoyncFUqq7tVACcmQ5X9mVnADgDRWpYjYy"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080",
+		"mnemonic": "мера акробат версия август ансамбль драка адажио батон мера акробат версия август ансамбль драка аврал",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "1ffee57510701716ecae9e044f8d4a45050626bce7d90d99c44347ccf6c452898c87b6d6a00b9ddc8f3602cc80abb5aea8ab7bc0ad3d951ea505bc3cb4dea700",
+		"bip32_xprv": "xprv9s21ZrQH143K2D7aEc3SDhozGxsktVrehDbTFUBXa739cbuLk2jrQSrQHZArC4ftvkezVP4wtbPiEbUeD3xDoZT6dEp1r3GtYwVbJjGxmMG"
+	},
+	{
+		"entropy": "808080808080808080808080808080808080808080808080",
+		"mnemonic": "мера акробат версия август ансамбль драка адажио батон мера акробат версия август ансамбль драка адажио батон мера анекдот",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "4cc288b3ff44d6e8b26553e7bc0c68bac71b90d8ef3d9bec85003833a3930530046b8fe8d10770caadf2b1aea0e94dbe134583a5ac06ffa48e643821363a24b5",
+		"bip32_xprv": "xprv9s21ZrQH143K4ALDYteknpwMeEBoZgt3my6K4jd1WFiEsokqehvdpqETRWUPSKyo8QdSGRthhvbEmYcK7KHkKqgV4U5YUdb2Xu6VGFcYNEv"
+	},
+	{
+		"entropy": "80808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "мера акробат версия август ансамбль драка адажио батон мера акробат версия август ансамбль драка адажио батон мера акробат версия август аромат",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "e9ece339b8c9ebf2d36391f5c89cdd66e97017fac6ff19948ccdb9fc6effcaa09f0eeac63a86b008d114dcd99514c5a699219c1e611cf2f4293fd150a9ea1942",
+		"bip32_xprv": "xprv9s21ZrQH143K3q4V83vjtKETxR35Penwze1PvFZmsR21rDF4BRyYJS3j6FyQkjEWjHVLbEunTTB1qe1jCAZqaKeAhZiHV9DJKFAQ9FZRxsi"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "мера акробат версия август ансамбль драка адажио батон мера акробат версия август ансамбль драка адажио батон мера акробат версия август ансамбль драка адажио бревно",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "09e7c2d02658d3dea7be035368af80316ced29487e388f4ca81d81f893b5f78f57f2173e943f598f21eaff5d52dc4f7307e91697d1590ccba611994c2d9ee9ba",
+		"bip32_xprv": "xprv9s21ZrQH143K4ZVcsTJRtHTfRX285bvwJWcQvTdCmKkBrVSvB9pLXMEisAWA69AjLkqysXX8ZnUEjWaoZLb8cXiqUREBfUwQR3JxaTpuSQL"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefe",
+		"mnemonic": "ярость шоколад рыба ягуар целина машина этика туман ярость шоколад рыба юбилей",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "8ae7e497c2830d77779e7c145e225b1fdac469a711181c47a4dcf7df362dbfd01d76604128dbb8e2fc69221400cba7e728f3fb10f38eab874e454cdd3fb68be4",
+		"bip32_xprv": "xprv9s21ZrQH143K46UAGvCMhDiVDRPeM5FkmbrHmwMbQE5aPKD4B9qPchHzfwo32PNgYfCan97y5eMTTqvDRUHvp4ChFL3TE2SmVYs7LVQPJEW"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "ярость шоколад рыба ягуар целина машина этика туман ярость шоколад рыба ягуар целина машина энергия",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "c831dae45f046e6b9441f9e36e62b27ec6a848acfde3124dee8a6a7f8c936a1e2337d08b0db6a7b390ba6ebd6104d9594439a02dcb759a4aa9c880a2e3df1b43",
+		"bip32_xprv": "xprv9s21ZrQH143K4Mwg3tvgWyMt1zKytDDYoMBKJckYMFgNVHG5B3unP5XroWCsrZTp9CpnyUgDmmkc4UJdzjYN7n4GtCEpLPzfZBfcSJhMy64"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "ярость шоколад рыба ягуар целина машина этика туман ярость шоколад рыба ягуар целина машина этика туман ярость шкаф",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "dc7d6e2be22d3a578b7791640726d80511e8ce88afce45a3574c6049839cfebe6b14a745fceb5ec77e2cfbbfce19d5c86b1e6b87b904a40386cf16775f2919fd",
+		"bip32_xprv": "xprv9s21ZrQH143K3Z7oBTuYic8gSSYqoAZ5s63VJE9n2ZVj33K3Nn4v1WGwe8XXFRtts3MmfmcaxKMjWMdGTgQg1RGyJyMQvRcgBmyVjv73ntc"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "ярость шоколад рыба ягуар целина машина этика туман ярость шоколад рыба ягуар целина машина этика туман ярость шоколад рыба ягуар фабула",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "904f98663e1ba59a2c7b1a13b12013fc7b3d2244df50a04ee02acffdab10a5767b88a0386d3b849888c9fe41844907e93891f8701510cc484ee9e85c0109ec55",
+		"bip32_xprv": "xprv9s21ZrQH143K2UA9FLFyeMEquczhYuUyD8zapxGnpns4pUNKqApvVjXkihr1RgCiuFZwzNJHTt4YWgqwF1DpYKHxsDgh3fAgWBrdihevVBR"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "ярость шоколад рыба ягуар целина машина этика туман ярость шоколад рыба ягуар целина машина этика туман ярость шоколад рыба ягуар целина машина этика текст",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "56d1e292407057602d099d362f33bda32976f71572d2b8b09a625bedb577af131b55dae043be59a6623ccbe39fcca07c2a6213bd5793b10528e2165318640d4b",
+		"bip32_xprv": "xprv9s21ZrQH143K3tQbgTJdMgZ22ZVdBAaGqy62PCfiWsnjrZnxH51wT19XyYP3EBaDZajShtu4VidsWHrAAY7M8grgtRySK3rsRsSoRMRiBtQ"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffff",
+		"mnemonic": "ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик яркий",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "532b63d62f1d83799bb98a9a6442710996de11d288609f736a279c470193c797661fcad0ddc24cab1e68f8b87adcf52d7d5899608872f73ae460ff787d95a334",
+		"bip32_xprv": "xprv9s21ZrQH143K48SWrVQWe8dtXnfLBVzRk25v4mTrnw2KenhSJfcd7PyuEHegS4NN2j7KPbMTrdK2hBLpQveLe4Xb2eqkJVMCZ3F3KGQKdNM"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик якорь",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "8aed5b5f6125fed141757407b9e20c58f12dd48eea4c111021354086791675e4329475a2290e8765b12d51b36754c21180891dfbd02fee20b44bf5577dba704c",
+		"bip32_xprv": "xprv9s21ZrQH143K2Vt7foXq7mqE13gyy9v8a8cXQYqPxMeuUmAQKNk5GcM265f9JeHnML1fGW6kEYwL8xsBJCd7rr2TbW2c843hugoWfXmqsHf"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик экран",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "7193e25bef8cd4192d5d3b631b2a59efb55371f0d1cb4f4ac201c1e4c1f79ed292b0dbd674b3490eb730684bf4a8c7e21a77853209c792e88f40fb668e8562a7",
+		"bip32_xprv": "xprv9s21ZrQH143K2GmQSF6JG2yjXU2EVZY2biu9T8aKeUHNWrxAT4qPN98B8J1aWtUN5r3SXuddySZxiJEB762RNozoV2JpQiidKtcZHuNtdLe"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик черта",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "db90c4e129ec5f70520873828c75501a4a4d35e9089879215838193dcc94d474db8f2c3ccc13d90645785bec008357dc32ffc196a48431e948658138260e8c53",
+		"bip32_xprv": "xprv9s21ZrQH143K4VFtCbCKnsWRJ9yNpbVYADHmZLQ6u2kc46mNzGbGKBp8bd9bUBQNyn8hKCLqQcJhq9mrZNCt6SAPDYKuwgHP8gZHNxGE5ng"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик ящик шатер",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "7a8566e3ffaee87816c830d74ed8065f7137c6857094d808cbe14a298da5c82489da489000360a844d3f3a336e6b4cb4e2427e415deafcf838c20e1dd0ef8a8f",
+		"bip32_xprv": "xprv9s21ZrQH143K3aqdKK5aSPBDrSCsEEx1GUyYkHUvwuG8WLXWxuVVjRoC4HKdwmCpoewrGoaZHGkUwR9ZiHEQJ3Hb4AC29Zakoyz6rQ9syjf"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "пони известие пони известие пони известие пони известие пони известие пони изгиб",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "76ea1a49f9a840e03e443abde35dff033bbd8b26a369c49aec0bacb0e210e8e48ab39f91a8287a806af85af7919b707c934ccb09a38e0959b65618d6291e9387",
+		"bip32_xprv": "xprv9s21ZrQH143K2SDSuxYg5c9tr96Niv4kjmkTj4XqjxehiSmyvmKh2LVSwAis3wn936Bw3yRNBUYRQ2j6B1pvmmQb7ZTTEQGtUAb7nezHT9C"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "пони известие пони известие пони известие пони известие пони известие пони известие пони известие получка",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "3f53feb954662fb5f17d3d3c964246589065f5725d90061cae7c0f9adb74c504173c7bb0fb919546c774b8c726935bf5ad00c128456c3bc56042d2763eb0819b",
+		"bip32_xprv": "xprv9s21ZrQH143K2HS4ZX9n18uESGo7qtcnz6XERipvdfvYW6fv38W7HfUvuQqruUmZiK86TWrFA4eVxAhaPQLHhQBMBkja4LVMwe24fWSQkhL"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони изба",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "77d0a20e374bb786e1f047bd5c5df9e518d3f9ce1a3db3229c88d59e015605d8d52cb516824984c1c676b9a87038087397c46632b906e28331be5a5b6a43dde8",
+		"bip32_xprv": "xprv9s21ZrQH143K37xa7U8vox1igr9LjyiMMhKBYE5uL3RckPHhw2fN1M1ViP6kyDfkwQpxyBADXa7bqHVoxFzNw7WTW8jrHf6b1GCpJnhLR6R"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие привет",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "91ef9351c97b3aeb0d06b312113d5e8d24641d04bec1017cd4e093f26d2b36d34215339ca0407ef52564853493b80b3401e3b3007e5ac6873cbc0dfe3030b40b",
+		"bip32_xprv": "xprv9s21ZrQH143K2pED9kc2pqAwRvooFPUGY5gDafQQtnUkGihGoEvS2HPEhcRmrbjJKCJhDPehpsUHsfZarREN6oSpRroZ3kEi5tVX36gmDVc"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони камин",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "e453c50a03e7424b0304606e27494d2cff879a3e9e5129ef290668ef624768bbbc7737328a1d187301d9a299b11f3378d1f17095050777061c960e1a76926b65",
+		"bip32_xprv": "xprv9s21ZrQH143K3fTqHBLB3x1qvgZvX7MP2YhYSe8oS5he3tstgvSJgsVB6z8WGzSxcotG1WCSFK1Yq9PCqt1FC78KzvQL5Wd7nGL6KiSLEPA"
+	},
+	{
+		"entropy": "55555555555555555555555555555555",
+		"mnemonic": "известие пони известие пони известие пони известие пони известие пони известие порыв",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "55eb87c5577169e1c9ecdf9409029c0ec45b44db971b734803381ca5ac1d52dc743962e93099a9bd940c37aaeb33f4754ea86ea53dd9f8eaa2bbc10c67df0d3e",
+		"bip32_xprv": "xprv9s21ZrQH143K4Wrg4Xabf1wH5s9dPshot3yhPznrsDw7a6o1aUqFJkYm79MTdNi59zPhvYgW9PbEZi2BHCBZsPGMqUSJaDbUdNxRda4Nuiu"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555",
+		"mnemonic": "известие пони известие пони известие пони известие пони известие пони известие пони известие пони идти",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "fc76acc15faa250bb1ebbca0b4da13a47352e6caaac2cb2bb06df3d5c37546f792726de10a9201456066a702dc181d95c2113ab7326280ccca6a8dc14e7b1bf5",
+		"bip32_xprv": "xprv9s21ZrQH143K2QpQPsNQ8QB63uKi9Guhr3aTqudPXpVj1bxz3xDMwMtPVY7P1vZtFtSt6adL5DgWSRAzLKPVLcsfyvEyder3iGM95NvyRCV"
+	},
+	{
+		"entropy": "555555555555555555555555555555555555555555555555",
+		"mnemonic": "известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие посох",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "c8db817d009d62a4d33f2631c9e041d9ce457f87fb3a56839434c6d7b40f38861638c64a2ce2a3149bd1f5bef0f00b95b8d4356e6fc87547f84bd392c464c070",
+		"bip32_xprv": "xprv9s21ZrQH143K2JTPhbR9ymFPr2bsgXBZfr42gNEiwaWRvca7YSPJ6wKHw9tzFRSn769vmTWLxhJvr12UWDkGNwQS9WNYmNthfo73grYMdfJ"
+	},
+	{
+		"entropy": "55555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони идти",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "5a0f8013d511993252e340ac274ce888605aa87373a2e29c550d23d200227186eb1815cd715431fb09564018c71a888f7ed4e7df51016316a973701484c70cbd",
+		"bip32_xprv": "xprv9s21ZrQH143K2VsCNs75rnPDDqpDxGV5Vi8ayMVMyWRx7ExYuVgL8M6Ao7KizUWjUvvES8RBwRMnT5uWQChsvQYsJiB9UeSn2Q43DxiR8oJ"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие пони известие проза",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "bd9ebc40f442024cfc033fd2b5f5b2a6449748e75d46900a4c6c6b91a03b1c35df913732c3b47feceb3469c2285a1e275f402432d0298502f611e26115d400f9",
+		"bip32_xprv": "xprv9s21ZrQH143K4WzzS6FLgvKau1vuhGGpnDKqMnX8buhwbAJVxDYB3wDFoC7sjd8gDzcCPr35eSHzquyeeuAHSB9gjWdfSurMFdjjTMyNw9o"
+	},
+	{
+		"entropy": "9e885d952ad362caeb4efe34a8e91bd2",
+		"mnemonic": "панель дятел клуб изделие давление клумба пояс туман группа жердь жемчуг писатель",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "2a1882ef4a4d53bbbf62d15ba8f56471c318abf52881071d7712f681b051f26fa5feb579bf4731e70b6928d4b4911429edf41658b04b9b82a62a0e1eb4dd8045",
+		"bip32_xprv": "xprv9s21ZrQH143K2G3QNJk5Z9Am39ToonjoFk7RVW76iPUBoJRF7LMrh6sHNNR4TmAkbXU7CaP7ToXDRUgHmGcSGSuRQ9mnF4DhfLw7dJuB1ed"
+	},
+	{
+		"entropy": "6610b25967cdcca9d59875f5cb50b0ea75433311869e930b",
+		"mnemonic": "клякса моряк оппонент спина тонна иерархия имение банк шапка казино гамбит суета идеал отдел жаровня стыд овраг кадык",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "2f2603c39b16c87a4d4ddd67b07ee09f226a6f69f6005b512748799ce2227f2b64a5f340c8a09015a479c7a91c803e0369781fa0e8520259abbd7c6b2dcf0842",
+		"bip32_xprv": "xprv9s21ZrQH143K3PxQ61Lnvn9cDvtzJGhVLa5ApzssrT4pqcxhbEQyUtmSuhLquwYwPN1sx2wA9tJxFfRDawy8Hy8j5nA5FTYKP63KPn33oV1"
+	},
+	{
+		"entropy": "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+		"mnemonic": "колдун дисплей портрет ермолка внимание детство портрет напиток случай унция пузырь буйвол коллаж зрачок клинок труба мысль договор минута юрта сиденье лаваш детство медведь",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "8c0a429ba14a73954ad2031d7dc8461e8ad2fa0da21ca40d8e77f27279825f81a89262cef0d3de8071d3663e442577c37aaa80da3f0f876fbf7c2761c2717c24",
+		"bip32_xprv": "xprv9s21ZrQH143K32MaFJE6krKJdPwc5SL8P91bJGyWC56WVn8nKK9s4oWhboM5pM6xCLFcd1w1EbWK39izpBea2nBGrZgdBRwEPtJoR9rRAJK"
+	},
+	{
+		"entropy": "b3ffe8f56d54805218090de337779328a3a2e758",
+		"mnemonic": "пшеница ястреб дичь терять жилет вызов каюта взбучка умный ресурс усмешка зима деятель лавка квант",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "64d231788f709ae3d6e41497e40a82d1dee38cfc2014f0e4bff54387fb105fca187e2fdb645bf07ef824832e1c6adb1d1c312121b450c2cb1e4958a131af0e1b",
+		"bip32_xprv": "xprv9s21ZrQH143K4KcUsZ2HQkVrfJty21XrzB2h2Jc8zSE2faUV7pepKoJwEFihvonR3K31UdFUc5RCeRvePeq3R4V6tdbxcx1De6JUnfEvzcW"
+	},
+	{
+		"entropy": "437dd688276ceb711cda3a126eab879a188a30b097b769a931bea6fe",
+		"mnemonic": "единица хребет песня захват состав рация лаваш жердь беседа лауреат ужин грохот навар брокер сарказм шкаф комбайн забрало кризис засада хохот",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Русский",
+		"seed": "b27275d872e9287ac1b3aa8f0150e88dbd54e83e338f7818db24e3dbe8a78373b834680675787c014a86c1844cc6dd6ffbcf7567bfb320d464ee983ef6492c87",
+		"bip32_xprv": "xprv9s21ZrQH143K4ES7c7pwTFrXEAn25m3HbC86U9xucURNsGzozRhA3oGrYJnnzeWKFVRgRhuJWjtokwwJgbmGU5U7p91W76GcyjYWrSXp8tz"
+	}
+]

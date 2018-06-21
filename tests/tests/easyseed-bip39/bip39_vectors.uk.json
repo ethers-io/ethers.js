@@ -1,0 +1,317 @@
+[
+	{
+		"entropy": "00000000000000000000000000000000",
+		"mnemonic": "абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абрикос",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "c5a72ab3dcd69e357bdc40adb612a25d9d44a196cc91d2692b55803229a1ee7105c2cddfc0c9ce34e4a76e260c09e5546fd2360bb6b1c36b7594d48b135dd139",
+		"bip32_xprv": "xprv9s21ZrQH143K2k5KWzxsSygkXoPzBKcDjs5iNikvMqhXzH1bgiGQs6e3RgfVa21MdsvS6Su6Z3jQUViD3YL6LnJPsNprw5p48LWeM1wfDoJ"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000",
+		"mnemonic": "абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка актив",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "507663bd1212c2ba8854e75d4f194594c91b9219b8909a0b0d9d2184e787fdd66dc694bb337eb17cc7f346459a2190d401a273bcf2aa7cb68697d2a51c800576",
+		"bip32_xprv": "xprv9s21ZrQH143K2WKsDsThVSHUnDuyk1PK2XdUbiwGrHduzRGxJ2irqLP2dVZBwp3kHThBichkH65m4TMheEaKK3hnYp9a5YSMCkGiT64VKjf"
+	},
+	{
+		"entropy": "000000000000000000000000000000000000000000000000",
+		"mnemonic": "абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка алмаз",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "878e9fbac36fef21a1f147d882d15220b3629e8c34582fe384ed4236b6475e8f02ea20ddd3e982a3bbcf46ef21d150bb3c782f3a18a8c1323d9ca903e02e2c35",
+		"bip32_xprv": "xprv9s21ZrQH143K4JY5MrWGAbbwWB7DbowUnSewDp5rPGFcs8pBLVYdKkKWftEgYhR9Zp9hoeQeNJxS8oz8aQVmhdxEAb4DE5YWmWkPC2ah6VF"
+	},
+	{
+		"entropy": "00000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка актриса",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "e7dcb5b056661f3c99caf45ba50003d0b361191a876d60d08aa1817b580bb7472ab022838a20b208f779cdbf8c5da617a9b41c2d4ff1b0db76e39b4a3f70a826",
+		"bip32_xprv": "xprv9s21ZrQH143K3z4rJwghzvxhdSKVgyFTmbmVu6y2mEk8fNeuBgHMCGKoM14fxSjPSUz5dyyVMZApjgQJ4YSomFyP6DSKHgqNrA85Cqp688Q"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка абетка бджола",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "f8be2f274b86798d4d9e2e81b755dae3df161a7786101920bdb3c28f6c1af3028b6939875de5aa6c750d61ee52be00c79f78b3a6fb17785c283e022997444829",
+		"bip32_xprv": "xprv9s21ZrQH143K2UrExPonrB6b9DftkdRDN8UtVViv3TiDB8LisyMgYJk7oxp2fMK5tZ8aSY8gAeTQjZCvmaN6kZHPNgHH1gotcvz5kbz5gzF"
+	},
+	{
+		"entropy": "01010101010101010101010101010101",
+		"mnemonic": "агент асфальт драма адреса бокс минуле акція висота агент асфальт драма актор",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "38763f63ecc7731a9cd0bcae897a73d8a44f610a1da8bb9ab02fa9b3c85f3a65aa2e52842434e715ac28c4c9497c716aa0a8e94f5e68599809033d78e437d4fc",
+		"bip32_xprv": "xprv9s21ZrQH143K2VP2AWLC1HPnYLdNVC8mXC1L9LF62g7bZrkEV2EPahr4YbXLz1pS2w7Sim1n7GA3vhR9jXHE3gaeSbHZCiXLHjwpspsRAJL"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101",
+		"mnemonic": "агент асфальт драма адреса бокс минуле акція висота агент асфальт драма адреса бокс минуле апельсин",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "79c05d3217c9233cf4c3380b9b894aa5a693d5ba8bb0e315d18cb6c87a4ab2d66d5a1a0d1d858aeec8670a95ae8ab5eadca5effb343e6c44fe713f8b4aa11c0b",
+		"bip32_xprv": "xprv9s21ZrQH143K42WYMJkJdUsz9RDThEYz6JTvGfapGxf8DvNsKNUmXjt68ZNh8Xv7Zq3jiL5sifrSGqTRiBHY5o5LXCrpshuUNefx3fwpTPM"
+	},
+	{
+		"entropy": "010101010101010101010101010101010101010101010101",
+		"mnemonic": "агент асфальт драма адреса бокс минуле акція висота агент асфальт драма адреса бокс минуле акція висота агент бали",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "918893f1a4ab740da4c5848cb26cbee59623cb7344bbd7280d9059efc7da50ec339d2d62f74eb8a3238dd29399c3fb98e3fccb3aa79e8ff4334cd12f183a6afb",
+		"bip32_xprv": "xprv9s21ZrQH143K47xfVF91FkG55kZBCi6pvG6wnhJCqddDDm6hZJpejbauG9vDPFzTFmQhKSQbE3GT7TYZh5FRGdn7M5vgLLGk81N9QoC4zQa"
+	},
+	{
+		"entropy": "01010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "агент асфальт драма адреса бокс минуле акція висота агент асфальт драма адреса бокс минуле акція висота агент асфальт драма адреса брокер",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "f276d42722c215b973b0916e929f6e8fe4ce77d54bb56e9e12d0676d8b03f5060ee04c3c2ab16c044f655f0c95434cb7ff9253f97f0aa9e9764834492cc7e050",
+		"bip32_xprv": "xprv9s21ZrQH143K35Hhna4WQMPShsJNovnSwDEoWADcKvySoFco2UrT2Ur1GY3fHoMmtz6jdEx2S5pxZ3fQAM7wMkDyZr67fFvrd1EuN82quSk"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "агент асфальт драма адреса бокс минуле акція висота агент асфальт драма адреса бокс минуле акція висота агент асфальт драма адреса бокс минуле акція гепард",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "21bd9c2cdf1c70c3d4a2aa90280cfd58058a8e178c938a58b7c714d42854e6771365e7008e03c7641108b02d2517122ceb0fae406786866235ff3db9e6ec5d1f",
+		"bip32_xprv": "xprv9s21ZrQH143K4FKZVNFyJr5zuu9fcHi7285HProsHAvbfDKYkk86Sf7kicFSJio4JawWG437AP3wANPHAS2V5xxzY95hauW2RMRvmAzz7F9"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "мета ялинка флора іноді щедрий сова їсти через мета ялинка флора інститут",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "64216f5c4d37967f3f46f3343bba8d008e700037530f6bac8bab7d49cf220e420ca1aaa78420f6b0eb20db77bb84ae97c689b3f006c43e0521582af70cd1e0b2",
+		"bip32_xprv": "xprv9s21ZrQH143K292timxhymabjqzE5BJcmuXivijcXAsm5MfgM8BK9h1PWbS9yuzAbZrZ4Ejic7JZAbW96Yb9PaPuT2PsRhcg4Xdf8EWk7n9"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "мета ялинка флора іноді щедрий сова їсти через мета ялинка флора іноді щедрий сова ярус",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "6731d537ab540d45f8a176fd6dd144257ec86401d01bf362cc90f7589406fb8f2ec20a33d58b20b36a566a81a014bfbd74286840a8d774156c76b7f80944ad21",
+		"bip32_xprv": "xprv9s21ZrQH143K2xSEoEL7tZ3QTAy186YASSbVatxfhs9525HJ82jcrG3KsefjZESz5pru4nb3cTBndMXyGGPM4nJ1zk2H2Khp361i73kvDcn"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "мета ялинка флора іноді щедрий сова їсти через мета ялинка флора іноді щедрий сова їсти через мета язик",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "c09f285050b8cfae3ccdc99b95f321f212a2d4c470879d4c1b6ee36ab5c9d3e3d67d1e5af13aa2c4738b90e59a1728705a23af8824b633b08abc83275d546bd4",
+		"bip32_xprv": "xprv9s21ZrQH143K2qiqH965BCRhnSpb9QLLvDHVRJhTJuBHVn9H8JCmKfju2JfUdUe93LvB9HRPBB3ZYveGSJChEmpq7wUq4kBScqH6MpKAVsN"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "мета ялинка флора іноді щедрий сова їсти через мета ялинка флора іноді щедрий сова їсти через мета ялинка флора іноді чіпси",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "f84c7bda242bed4afc8f7bd8d141b29dde4f3709c4220712bf1a38060f325807d6dffd58865796b4c006e4c8a94dda28c590ab8b71187b17059a70bea96b722d",
+		"bip32_xprv": "xprv9s21ZrQH143K2v2N8pxDwJ4F7UYBsu3rBV9bAq4wDrdzV6WHXi4qC3iYGNspgcxw4kS7rDLHxrDsWoYngRnSDHCNBtz7vqLsXTWNivVB8vw"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "мета ялинка флора іноді щедрий сова їсти через мета ялинка флора іноді щедрий сова їсти через мета ялинка флора іноді щедрий сова їсти філе",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "bf7269ecdcbc35d3494edf09b1e0817b9c31fea3d417eb8561c40454028dfd29794ed71a65daeabd17781778b9697bae619ded23e4a62476a589c7d3da2e01cd",
+		"bip32_xprv": "xprv9s21ZrQH143K3NxojcQwrChVbJDpMEjGCqTocrCGQ1VR9YJpvpUtu4gF3aNWorteAqQT3eVMTwFYW2WNFJFAXrPoHdt2WEA6xLyWrySYZy4"
+	},
+	{
+		"entropy": "80808080808080808080808080808080",
+		"mnemonic": "минуле акція висота агент асфальт драма адреса бокс минуле акція висота аванс",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "e568f2a6c418b0aa1790218f81ac54241ead8e4b80c7ff1a6e5c4f861825a866304f7651eb8d5b51c5d37eb23a5eb795b39be55f1d6d57c9c8a6dd9f9240584d",
+		"bip32_xprv": "xprv9s21ZrQH143K3caXCjz98XCMZRjRhfJJBnohHduhZuBD3HvDwW7yM9RAk7nKC8tAfRVYCcMgzAo8GUtzuVBVEJf1nUEpSLrGG4HmvCGvBWe"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080",
+		"mnemonic": "минуле акція висота агент асфальт драма адреса бокс минуле акція висота агент асфальт драма агітатор",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "44b9bde9d9bc96045811dba0ed4daf35cc31fad4e33563ff4e23c44b4314b37e2623e27dda387d86f05ee335c3e9774bb79e7b740f93727a9bbff3bc142db892",
+		"bip32_xprv": "xprv9s21ZrQH143K3ytFHE35KNH5CL5CJgKzJwhQLMxPfSqPjEaErr6Edkk7N9SptcoCJKu9HPdv4wZbuEmfVae5gM27zqJb8ozvaf1Rm8focnL"
+	},
+	{
+		"entropy": "808080808080808080808080808080808080808080808080",
+		"mnemonic": "минуле акція висота агент асфальт драма адреса бокс минуле акція висота агент асфальт драма адреса бокс минуле архів",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "59c0922bf01c77dbfffaa1b94b337a8ac96a64c068c625a1147894f2c1b5d1f456f47ad25bc4edf1fab1e50cc9e82b289e2bca36ab40c92462640051f553eed5",
+		"bip32_xprv": "xprv9s21ZrQH143K3RsL1J4ivGo7QJMdWfV2bwggRLMTu9ZXh6Fuh6WF2yEv7Vo99i1NjBHYWadMMu5FX3vJk5RVo3g1mccewUpcUcBp9FAgzcD"
+	},
+	{
+		"entropy": "80808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "минуле акція висота агент асфальт драма адреса бокс минуле акція висота агент асфальт драма адреса бокс минуле акція висота агент байка",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "c42816f40f8ffc18632df55e9e44eb3a3fb6856654595d03e9cd82804777083caa0f2df037e4c41ebe85fb6534db0fce944f6ca2f928652a4d57b9f56e25e3d7",
+		"bip32_xprv": "xprv9s21ZrQH143K2p2b65u2EdHiGPfj1K1cAX5yv419oyooMpKn18aTyK1XV7hmgmSwDWBmnD7N5Whro8jHkb2RwNZiewgqSGSmW7erRj9cpw8"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "минуле акція висота агент асфальт драма адреса бокс минуле акція висота агент асфальт драма адреса бокс минуле акція висота агент асфальт драма адреса вагон",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "ff9eb6bfa966f18d0cfb3b57f2703c995f58d605358eb83e3582ebf378cf14dd9e46669996bdd983cddd281b7388b2ef1b421a09f00f75431520eb2e9e0bdbd2",
+		"bip32_xprv": "xprv9s21ZrQH143K2mLK7rsQoSrjKD4qdmFE6vxA9SL8gknjppFKxL1MZTp8yk59EhJSDWR9c5uCauyUU5LHZGvRLKJXtmBDyEHyXCediXtnu4b"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefe",
+		"mnemonic": "іноді щедрий сова їсти через мета ялинка флора іноді щедрий сова ясла",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "58634be818dfcb0f05981f935176e4531e44674a35184a9e3204500ebf6221521393ab2541812550071f2e54d9fadff7234622991fe5dfe92bee0678f726513f",
+		"bip32_xprv": "xprv9s21ZrQH143K4ArGb7L6idr9J6Zb7aNK6PfRnt5ecfnjMqWfRJGcfNzYPoFme8bckCyYjTqGT671dhiwe87qfpyVjazsSNCa4pWgx2QTCLp"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "іноді щедрий сова їсти через мета ялинка флора іноді щедрий сова їсти через мета ягуар",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "456de95f0fd9cf28e78580c70fa54a23d2b4020bba05704bb6b44fe8df9cf72e0363d0c2fa732479c7660343eaaebcd360f4b66dbd5f8d6bbc4807754e8a5c63",
+		"bip32_xprv": "xprv9s21ZrQH143K2ufwRTHi6fkByidKXztAzKtDRkSiyejR4X6quXg2aQkCVbHkrxfqDoWDNL32s5EqxSmYqQTsFtacif4KTSxho73NEQKML7v"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "іноді щедрий сова їсти через мета ялинка флора іноді щедрий сова їсти через мета ялинка флора іноді штани",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "b6098c61f7bde2eb99c887261db5b1eb23ad28144ad65b33ce33ad3bada626f5e74db3aac8f5c915896b0dfe8458a4674fb8bcb0cf625029dd4e03396487d3e1",
+		"bip32_xprv": "xprv9s21ZrQH143K3LstoSLc49oRWhhEVJmewEfDrozohnB1ByLwJjsjxdZDG2zKz9qeQFyVtPE4hHcXjCu6egRTcp5j9Pvx4Cmnxkgomh82DSL"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "іноді щедрий сова їсти через мета ялинка флора іноді щедрий сова їсти через мета ялинка флора іноді щедрий сова їсти хлів",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "75e0651ce0b9ccc09c3a8eb070506f12289f280269aad539585b96492f9ed2424236dcef91b3fa3281101f9bc66a07ec8b80665d663880166e530828e84e473d",
+		"bip32_xprv": "xprv9s21ZrQH143K2YY2bLYnNpHV1DRrsa6yQDfvM7iUvqR6FS4tTQ49Lisc1sH2HX9gjmjSLzFrD5RKQ4rTA4Lo9foiMXd4NDroTDJLYyLqNQz"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "іноді щедрий сова їсти через мета ялинка флора іноді щедрий сова їсти через мета ялинка флора іноді щедрий сова їсти через мета ялинка узлісок",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "19970134412f35a0bd10fd1ccc55ad32e62a2a429016a1bb0487d73859831b1f4d311aa98b496d49d53487cdf13bf4ff6eba5e70c071a4fd15edba6d66a10261",
+		"bip32_xprv": "xprv9s21ZrQH143K4JyE4aoMymhWXBBC2VrFvc4RfLhksGxaTfVPx6idsd7tSDK4xasYWoaiR7jSknvkMnhFXWNwDk4QqrFWitCqc9FbeFaEAqj"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffff",
+		"mnemonic": "істота істота істота істота істота істота істота істота істота істота істота індус",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "fa752580d3fd4a97504a56270919f3efa28f6ddb8fa90495ba70d4ac59c58dd86e578d11b4da85c40989b17d54c6ca9550e964f241564a6e018644ded67782a5",
+		"bip32_xprv": "xprv9s21ZrQH143K4RV2aGYLqSo4jYP1AUYxQ8yP5bWvokoFcLZ76Z38kFtBW6YxPXCtgQVTPPcHrHHfSJtfatA2Ca8mTj6UzmPaof58d9FBaFi"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "істота істота істота істота істота істота істота істота істота істота істота істота істота істота індекс",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "ee5b2a75826745f55a2117f6398babf83ed187c8574c612ddf0f9a28ad5799cef6e87506fdd5987d06c5d364f53c61c54b2983d3a52b2eacc2ebc8e5016ed9c3",
+		"bip32_xprv": "xprv9s21ZrQH143K3NxNZ8yuLBNUVnQ6FgeMq3sdU1eJ2m5HFmnBrb2mHbmr89ubdbpFS8ieVs2988W3A2gz9KpvHovKChSd54YEuWQDacGmJHf"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота явище",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "006acb406cdd035e5a7dc089ca506ffc865afa709eca05d5d012ab198f9bb6d277ec1000e4355fa938291189b3889eb326bcbac90338c0cc3362fbc553f5024d",
+		"bip32_xprv": "xprv9s21ZrQH143K3oYhcESn1YhMSSMioLVXCiYCzhdab4U1x3ondxr8yZM3zSFxLfFZUHh5sZBx3vfQKid85cwC8fqbJ334TjSrbu8iLhxmy52"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота чіпати",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "1e6b6715fe5faa6c61d974d9d348c96cbedd9f3b741531af766da2d50075e5674a9b42c42adb8035022833680d01f9bb19e821d3ce5708085277ab0e38e2d19d",
+		"bip32_xprv": "xprv9s21ZrQH143K3T3vfjQ2kV9hZ2s8X4xwd8rkWtvWfYg4Zu6TiwNkUM7gKvFVgt4wsQPPYtqEBScmJPkPjUijthoveijsq41xgFKULKsDB2o"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота істота шкіра",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "470b13a569c704169361dc7a5eefd862fb815d6ad855932c60e44a57c07cf727d448532721328f7d36a6e4f2f54ea066f62a9dca48c23f7cfac0ca18f5b46265",
+		"bip32_xprv": "xprv9s21ZrQH143K3RU4XdtsuRYJZV5Cx99fNminkLFWpTLaGQA3mjEdVWiBe3kjZ8ct3BqHGhmitHZsb9H4p14BcB1WYCJFrBYoDvvS7VwJ2uh"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "птах злий птах злий птах злий птах злий птах злий птах зло",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "05cfcc0f54c6f6944609f826a88d0a7c0e442023ae5460bddb1ea82cf4f2a3842f72f63e3df9883b7d0dfd1126037fbf7cf61cdfd000b354a0d5e2c7d17c17c0",
+		"bip32_xprv": "xprv9s21ZrQH143K2qE6H9zPqKXVwk8EmHVCiyBEVDASn1jJa5KD68BzSDVP5RrttGZSdt7QMe6qpsBDcTWjzBPiQjMyA2T5GtH8S7CWHGThfxL"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "птах злий птах злий птах злий птах злий птах злий птах злий птах злий профі",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "11663f63269af0b8c03383c6b579547ce598f20cdb2f6e607fe8035b57500afa3600b529346ce50ea8fe26bc7eba5ebcbc0bec1474e24f3ce204ab52be50dc20",
+		"bip32_xprv": "xprv9s21ZrQH143K2LTT2iBRtpoGCnvxcFQVVmSSvz5ypcvwxBwfyG6QWH7kSgBcxJneyLNtfLwRPRZJNjnz7MPLMCSdjUbUK2SnAQoMjNMVDkV"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злива",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "f5c15f1a4f0d6356d5f8d8e4567120fbe4c9d9d4e80ed3f46ca3a24da624e4aab6f589def76c9eabd4bd0e6a4a3d437e9ad451c2ee3d29e8de79540bbcd97ebe",
+		"bip32_xprv": "xprv9s21ZrQH143K3FmkbCddRKAWoi3LMfqkneuesWoBfLRZ6oVZCynkZxjMrxF15XzZtpTBc3Mq5EZfsVWzrPEjFBxDwFN9dLq7Sxhbv1zqKZi"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий піч",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "e3674fe0a24e7b716b479647b5b2e5e203455fd195b2b659ddcadb5094653e3a703ea5bdf0a6461bef12526f83a5bd1f64dfb0bcd3e2f1bc8dc5b80b83c7c838",
+		"bip32_xprv": "xprv9s21ZrQH143K25UMssaifGuystTVhCr1GAYEAYEw6Qwud5xhuJRkt1GeWsD8ngQAhhqAgLUA6is5WnQu7YYjpVR2EmnYSjB7htBLwEEUW9v"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах каплиця",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "c164e6062c30fa714e320d94b61851d3d3f2bbf037041c8e0f3bdb18545f0856e488215ad59c14b686c9ac0892a470a69725bc2ad6895bfcc0946c17c6beb733",
+		"bip32_xprv": "xprv9s21ZrQH143K3UgNb27S8JWZJWyT8u8roDZFpuzBV1XUyN83VqZvE12m6cFth1xFWNYypEG9LERGpkxCFTxaAKX6yxZJ8kFgSrQ5bw9Tz9P"
+	},
+	{
+		"entropy": "55555555555555555555555555555555",
+		"mnemonic": "злий птах злий птах злий птах злий птах злий птах злий путь",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "bff431a5fcfa55ff732b1a8ed48cceeb76d6cb1772f633742cfc312be23bfcd01bfcfacee4f4bda73ecbaca085dd7ccf71261fbbeae1049b1706cd0e96b30bf3",
+		"bip32_xprv": "xprv9s21ZrQH143K24YebQSRRnaqNL5wBxS6RuUU56VrWQhM5eWc5HFuKqoyQ9FLJhWhNVkEhnEAgSLoB9mK9EUFowFRch97d7wk3DzSP8p5Yhv"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555",
+		"mnemonic": "злий птах злий птах злий птах злий птах злий птах злий птах злий птах зима",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "9c4c3394ddd1def07ed9ee75c10b2ec27291b94cdc2e820f0d7f927108482644a8965929d331c4831d94c47ac5d4234bc93b868001b8942b4492521b9095ad35",
+		"bip32_xprv": "xprv9s21ZrQH143K3VeuvATouNWeVkWsQYEkj691DDjBYHNJ2wfVYzF98PCaSiJhfPKJ7g8u6a12PH9TgivEMrydDUc4AxRMZF6Nvs8GbcPSyju"
+	},
+	{
+		"entropy": "555555555555555555555555555555555555555555555555",
+		"mnemonic": "злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий південь",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "8a24438a5a1a6241b78ad62dc2ee2dd5d55a0641276a3a934a2dd76ecbc74f66be69fad77726ce0ca02bd89ecd350d73c74bd878a47b21ef63544b25dfb3c6e0",
+		"bip32_xprv": "xprv9s21ZrQH143K38nhyPm14veVAu4SRUkVaevcBWBB8zugzDUu3pUQfRg5QjFTpLrfZv3iesXP41oYoG1A8SMQC9diSEnrCrPSxkhQFxsWpnj"
+	},
+	{
+		"entropy": "55555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах зима",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "cff0215d72d6cf33ff290922dbcb6bb4d2ac5f062a8cbb22774fe2d080bd55afdac8a9510043d05d8dfc90c4042a7fe3a4b62f7f7f1476ccdeaf25a96525e270",
+		"bip32_xprv": "xprv9s21ZrQH143K4Ykmpo1G1BvizXcH1sX8cF37XLmhXpnzXrzEnTYi91iPp68cgrVHtcUmSVunih9JaRTAYS931JJTXp6sUmVrBuNrbm1vUAa"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий птах злий реалізм",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "9e1c7571cc9cc3a8e79f411c932601b2ecd847a223591ebf7540df0be6e7c5b0ec174dcddf2041070760db527921163e6311c96043db034a8511a5aaf2e7b6cd",
+		"bip32_xprv": "xprv9s21ZrQH143K3L16ujhS4iqu1D2Zdr6vxwHAwvAF7RDsDs2ojTEnRnEHq2Bfu6GjLA6FR3RJu88bVGFJS6xLcBR7KrWugW5d3XFNGqd8Ub8"
+	},
+	{
+		"entropy": "9e885d952ad362caeb4efe34a8e91bd2",
+		"mnemonic": "пляж діва копія злочин дах корабель пізно флора гігант епілог епоха посол",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "9f91e7e1f19a79120c0d6cd7f72aa34c6bc800dabd23912971d506379812ce663384340ad483ca335297dceeae3808b1651c4a9d1b166a975b5ea1bef47c5115",
+		"bip32_xprv": "xprv9s21ZrQH143K33VtkWwPeGdHzgZuCyonryG8bS1FynAoJUE8aXF6jy9HpeW9jdrmkiiLCwVDiNUebxVSGFRrPhP5NsQivL3C8nSBo2RixoX"
+	},
+	{
+		"entropy": "6610b25967cdcca9d59875f5cb50b0ea75433311869e930b",
+		"mnemonic": "корінь міра отара теча утрата зимно знання блогер школа казка гальма тримати здатний парад емаль точно олія казати",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "1c3633cd35f8c7088bbd67d4c7a0d2bebc028edf749415a2cd01f2dde21f04f8750dbf90b2c65c10b41b871bd97af257d1aeb2b968bf72a9a8a6517f1c6ba160",
+		"bip32_xprv": "xprv9s21ZrQH143K4ZxReS1Hc7Eoe3nooDKLRSXg57FJfsbaoEwy7TBBYcUoQhbambGMCUqNZVJ65jYvPaJutBXE2CWnMaRpTfskXwCp12YTVFf"
+	},
+	{
+		"entropy": "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+		"mnemonic": "крило договір пункт екзотика вперше диван пункт натяк танго фінік рис варіант крок званий контакт ферма нагляд домкрат морква євнух сукня лопух диван мийка",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "ee4a0bee4c128c50a5bbdcc1b64eb4be253e427ba86ac03b588ee3f976b46b1c7640e1f515a05c87b7efa32d5256ea89c7390f1827923b80031fc8c2fedbb49d",
+		"bip32_xprv": "xprv9s21ZrQH143K3qxPyAg5CdSA46qQy29XmvyMAsrBbB3rqDo6s4Ud8A9z3TjYt2QeLSrxExCMGsxHwDtdKM9eYVXDKbnW5uQmdkMVFcUMNr7"
+	},
+	{
+		"entropy": "b3ffe8f56d54805218090de337779328a3a2e758",
+		"mnemonic": "розум інші доказ унікум ескорт візит клапан влада філія сильно харч застава диво лось клен",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "ebb1ae276ea6eb5365cbccf1cffa291c735ac79fe8486487061d5036a30b4d2688ba254f25c0a4844a3772d943e981fe1d7c9d6bc9d2a23bd1005a269b3a8653",
+		"bip32_xprv": "xprv9s21ZrQH143K2r69mXjc6FS5A7cgrmA37jfJ1mJQxUzgr11K8TMchjqzm5jf4H9WMYxJPodDYDWc72uj4TUyGWnyMxnrpxbW9SfTR1He2rc"
+	},
+	{
+		"entropy": "437dd688276ceb711cda3a126eab879a188a30b097b769a931bea6fe",
+		"mnemonic": "дідусь часто помідор задача теорія сафарі лопух епілог брошура люкс фтор гурман намір валовий спокій штани куля жага ледве забутий часник",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Українська",
+		"seed": "c8fc44f3756895ce7bdd158015275bd59d2f84e3607a4fb63246b7531910903e125b8585dbdf3c8bae9580698df5aa0fe5d7e275e846021a194daacb6edfdce6",
+		"bip32_xprv": "xprv9s21ZrQH143K2YkNeM3WUSVofn6AEuyEYHss6ThG8s5x4WY43q3bQEbVn2qWk84YFDFwvXFiS2MERNsqgGUfUkwdWiDrTr2r7yPkcKT6WSt"
+	}
+]

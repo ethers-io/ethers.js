@@ -19,6 +19,12 @@
         <script src="./dist/es6-promise.auto.js"></script>
 
         <!--
+           Shim for String.prototype.normalize
+           See: https://github.com/walling/unorm
+        -->
+        <script src="./dist/unorm.js"></script>
+
+        <!--
            Shims for PhantomJS
         -->
         <script type="text/javascript">
@@ -47,7 +53,6 @@
                 initMochaPhantomJS();
             }
 
-
         </script>
 
         <!-- Inject the mocha describe and it functions -->
@@ -62,7 +67,7 @@
         <!-- Run the test cases! -->
         <script type="text/javascript">
             // Use this to focus on specific test cases
-            //mocha.grep(new RegExp('Test Brain Wallets')).run();
+            //mocha.grep(new RegExp('easyseed')).run();
             mocha.run();
         </script>
     </body>

@@ -91,6 +91,21 @@ export function sign(transaction: UnsignedTransaction, signDigest: SignDigestFun
         raw.push(hexlify(value));
     });
 
+    // @TOOD:
+    /*
+    // Requesting an unsigned transation
+    if (!signDigest) {
+        let v = 27 + signature.recoveryParam
+        if (transaction.chainId) {
+            v += transaction.chainId * 2 + 8;
+        }
+        //raw.push(hexlify(transaction.chainId));
+        raw.push(hexlify(v));
+        raw.push('0x');
+        raw.push('0x');
+    }
+    */
+
     if (transaction.chainId) {
         raw.push(hexlify(transaction.chainId));
         raw.push('0x');

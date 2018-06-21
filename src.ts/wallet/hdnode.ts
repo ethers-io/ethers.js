@@ -3,7 +3,11 @@
 // See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 // See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
-import { getWord, getWordIndex } from './words';
+// The English language word list.
+// For additional word lists, please see /src.tc/wordlists/
+import { langEn } from '../wordlists/lang-en';
+
+import { Wordlist } from '../wordlists/wordlist';
 
 import { arrayify, Arrayish, hexlify } from '../utils/bytes';
 import { bigNumberify } from '../utils/bignumber';
@@ -30,7 +34,6 @@ function getUpperMask(bits: number): number {
 function getLowerMask(bits: number): number {
    return (1 << bits) - 1;
 }
-
 
 export const defaultPath = "m/44'/60'/0'/0/0";
 
@@ -149,9 +152,9 @@ function _fromSeed(seed: Arrayish, mnemonic: string): HDNode {
     return new HDNode(I.slice(0, 32), I.slice(32), 0, 0, mnemonic, 'm');
 }
 
-export function fromMnemonic(mnemonic: string): HDNode {
+export function fromMnemonic(mnemonic: string, wordlist?: Wordlist): HDNode {
     // Check that the checksum s valid (will throw an error)
-    mnemonicToEntropy(mnemonic);
+    mnemonicToEntropy(mnemonic, wordlist);
 
     return _fromSeed(mnemonicToSeed(mnemonic), mnemonic);
 }
@@ -161,34 +164,24 @@ export function fromSeed(seed: Arrayish): HDNode {
 }
 
 export function mnemonicToSeed(mnemonic: string, password?: string): string {
-
-    if (!password) {
-        password = '';
-
-    } else if (password.normalize) {
-        password = password.normalize('NFKD');
-
-    } else {
-        for (var i = 0; i < password.length; i++) {
-            var c = password.charCodeAt(i);
-            if (c < 32 || c > 127) { throw new Error('passwords with non-ASCII characters not supported in this environment'); }
-        }
-    }
+    if (!password) { password = ''; }
 
     var salt = toUtf8Bytes('mnemonic' + password, UnicodeNormalizationForm.NFKD);
 
     return hexlify(pbkdf2(toUtf8Bytes(mnemonic, UnicodeNormalizationForm.NFKD), salt, 2048, 64, 'sha512'));
 }
 
-export function mnemonicToEntropy(mnemonic: string): string {
-    var words = mnemonic.toLowerCase().split(' ');
+export function mnemonicToEntropy(mnemonic: string, wordlist?: Wordlist): string {
+    if (!wordlist) { wordlist = langEn; }
+
+    var words = wordlist.split(mnemonic);
     if ((words.length % 3) !== 0) { throw new Error('invalid mnemonic'); }
 
     var entropy = arrayify(new Uint8Array(Math.ceil(11 * words.length / 8)));
 
     var offset = 0;
     for (var i = 0; i < words.length; i++) {
-        var index = getWordIndex(words[i]);
+        var index = wordlist.getWordIndex(words[i].normalize('NFKD'));
         if (index === -1) { throw new Error('invalid mnemonic'); }
 
         for (var bit = 0; bit < 11; bit++) {
@@ -214,7 +207,7 @@ export function mnemonicToEntropy(mnemonic: string): string {
     return hexlify(entropy.slice(0, entropyBits / 8));
 }
 
-export function entropyToMnemonic(entropy: Arrayish): string {
+export function entropyToMnemonic(entropy: Arrayish, wordlist?: Wordlist): string {
     entropy = arrayify(entropy);
 
     if ((entropy.length % 4) !== 0 || entropy.length < 16 || entropy.length > 32) {
@@ -254,12 +247,14 @@ export function entropyToMnemonic(entropy: Arrayish): string {
     indices[indices.length - 1] <<= checksumBits;
     indices[indices.length - 1] |= (checksum >> (8 - checksumBits));
 
-    return indices.map((index) => getWord(index)).join(' ');
+    if (!wordlist) { wordlist = langEn; }
+
+    return wordlist.join(indices.map((index) => wordlist.getWord(index)));
 }
 
-export function isValidMnemonic(mnemonic: string): boolean {
+export function isValidMnemonic(mnemonic: string, wordlist?: Wordlist): boolean {
     try {
-        mnemonicToEntropy(mnemonic);
+        mnemonicToEntropy(mnemonic, wordlist);
         return true;
     } catch (error) { }
     return false;

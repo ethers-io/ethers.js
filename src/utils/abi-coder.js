@@ -389,11 +389,11 @@ var CoderFixedBytes = /** @class */ (function (_super) {
     CoderFixedBytes.prototype.encode = function (value) {
         var result = new Uint8Array(32);
         try {
-            var data = bytes_1.arrayify(value);
-            if (data.length > 32) {
+            var data_1 = bytes_1.arrayify(value);
+            if (data_1.length > 32) {
                 throw new Error();
             }
-            result.set(data);
+            result.set(data_1);
         }
         catch (error) {
             errors.throwError('invalid ' + this.name + ' value', errors.INVALID_ARGUMENT, {

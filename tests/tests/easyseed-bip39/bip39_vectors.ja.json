@@ -1,0 +1,317 @@
+[
+	{
+		"entropy": "00000000000000000000000000000000",
+		"mnemonic": "あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あおぞら",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "62fc5b9fa8172c3a6ea57ba02e0598c8ffcb4e81961dbd0813acf44dc7db369e06185415fd37b76bb51054970eece4ef7d6448b8a77e6ff978fa1e04aa87dac0",
+		"bip32_xprv": "xprv9s21ZrQH143K4bdkZK5DFM4GBTL8d5qGUJUQLeYLr3mpxRjVbc9YtN16BtHtGAgDCzZpuGNEVQFbjoUia1cC2QmNN9uzWyvejKzr8otjoif"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000",
+		"mnemonic": "あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あひる",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "4ecf149d16b98698de079b2a7e72143a0c884a482842ee432b9dbed741279784288fd47427233f253390dfc417dcfe1df7be2f80e7567c914eadf633e575cc19",
+		"bip32_xprv": "xprv9s21ZrQH143K4U8WFtFEZ6GBr6JuPYB2E86RXEQmy1rutfdSyN74coTa1AiH6ha89NwDsP9kxF4pq339ppU9FZxsEbQQCq147GgM2oLY4TZ"
+	},
+	{
+		"entropy": "000000000000000000000000000000000000000000000000",
+		"mnemonic": "あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あらいぐま",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "5655d19b6e1f44c24244ed52899023ff35f661a2b5ff38f95c3d561094be21688714f9ee05dff886bf2365d8b2c548c7867e9bb60f895134ebf5a7489edee426",
+		"bip32_xprv": "xprv9s21ZrQH143K3jVy8yD5kje3euquyGLf4MeRFYkBkN2oukffU9dgkqLc3vz5JvCG6BSFQD1JFM2z9heqMHVGDpwiB71EwD81uzkrq8S8F6i"
+	},
+	{
+		"entropy": "00000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あぶる",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "622f69030a9534b60e015955e9f0388f07e880df17b239dc200ed07a7d8d11f325c1b0f03a477437173a4df113d753914b9ca9db2c88115cab2736da0cda2ecc",
+		"bip32_xprv": "xprv9s21ZrQH143K3GpzUwtpQBYhnB9azGc8MoqcH4wa3xP4L8QNK1PAQJLBjPZqwu5Uq1yBYWgfEHnNULcE2F3hetQ1L61i3dbDYCMAfqj3L1K"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　いってい",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "f9f7f4d0a30285ac7a3290e9ea6cd9fe4006462842c9ad73e01a77ec0e318d26837bc3c5a9a9c3b963a1f5d7fd4a46ea6b0a7ac86207dd1ee008e26abb300fae",
+		"bip32_xprv": "xprv9s21ZrQH143K2BviDq8v63e1jGUS5mSfdkUjSTFmKTp7M4ojp6vcDBU1pHmmESD6Sq1HBskW6q1nNNTDi321GCEBsn9Xh3Xk3PCUBJq6MRT"
+	},
+	{
+		"entropy": "01010101010101010101010101010101",
+		"mnemonic": "あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あぶら",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "89d24a909fbb4b7dcc97166c254eba63c158897908d281f5e9ef0ec985d5930fb30bbe508595a03b59d8e530119521b61bfa6581ae5acbc39ec8945636255967",
+		"bip32_xprv": "xprv9s21ZrQH143K3AfSC36z8PbjP96qGMQ1a61RWshPq3i4YFrkaGPPyzwMYMemtUfgzVzaWf5f2Vm5piyXXFeQsWsTfd96oFwxbtyWwVRgQ7g"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101",
+		"mnemonic": "あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あんぜん",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "bdddf688c225899e5cb16c84d8cc790b351f6589702b797c365d356b3abd567618273734188121d2689167ec28b3d2a735db637ad13ce2649c6ba688cb781a6d",
+		"bip32_xprv": "xprv9s21ZrQH143K3ZhWkXK1RY2pgCLnZqcSiHvZQpNUXFpDCw7EDLQfbXWEmx46LEx6XBoP2Bqe9YFR2PszgSkosoQpxUyuaeW5UawMveWERD5"
+	},
+	{
+		"entropy": "010101010101010101010101010101010101010101010101",
+		"mnemonic": "あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あこがれる　いだく",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "a2bbc448abef42b7edb8fea4cb6a4e2c2c0f3866851019c0dcbb365bb23be7248ef896837924b723842af2f085837d9fdee155d667b849542190b841a4d46cf1",
+		"bip32_xprv": "xprv9s21ZrQH143K3t94M4mJJbH92S6wCB3Uznv3L1EVX5WaHVGbo1ztbTSuyiJFn4fpstz1wCifk8DaS4njCVfbnZx7ps2k86dYQSC8tdmechk"
+	},
+	{
+		"entropy": "01010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　いんよう",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "57697145297a2a3ae5f470759c77c12dcf28a3ff7f024e8a48352413047734fab4005ec71610ec2f1c593bc462e38c45b1305be2b1e9844ccab6764804a94bb8",
+		"bip32_xprv": "xprv9s21ZrQH143K2qocnFa1XhnfLvsSRbybSFuLrzoJgTnbEGnW8gPYQP2karroenGLbLF122Smcmn59oPkte4Je1pbmKBYDrd8DmSsJ6TEHVd"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　かんしゃ",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "9eb4bb4b0846e0d5932758f849df2a9f7c6ddf3258b5676820f56b9a553b1a53ba1d7ff8ed5091cbabf556133c7c7d2a1b455f354bffb110169b22ffda069fd5",
+		"bip32_xprv": "xprv9s21ZrQH143K4aVxmBzkxrWZDa6a3RL3yNLwD3hHDDLvJwNLXgVsTkmao8VbehKPR24hqebmHj7a34AEXncBw7Qo39EY1y7fGFxHFi7y2D3"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかめ",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "0e694178b4b8f880d2444018a7147436117c33bd8a6dc8905926b4157cbdce3e7ef6be077ca5d5a23cfbcf446add48cd31759865edd3927fd4dbc942e25180ca",
+		"bip32_xprv": "xprv9s21ZrQH143K4XRjHcmbM28vYX1fgfSeGnkgpLGBFohsLPDgQSPuvENmxCkDMhByouTUzrhw3HmSWxwurwigj9FhsGiGkED2KRyjDe5Hpuu"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかす　りくつ　ばいか　れんさい",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "50b9989e9ae761332d771e3650e1bc21072ff6a248adbc53e4cb41f916886697941cc778ce05a6e950e5a4eacb37055d1296596c72390dc143ec1317cde0fc69",
+		"bip32_xprv": "xprv9s21ZrQH143K3L16QUrJ1faHMKHpQCYeZzQtV8P8RPLatBXaZppNGEeEha8DHa4y2Q1qCCWzKiq5AUEVR2aWEv4gYyiQsW9N5CEJnP82tao"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　やちん　そつう　れいぎ",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "a7d2209ae96c89c9f00142379471a40485bad4c00b433dcc8d45281cd81027633b58e74fbabac331d45d8a9def34caa920b09463bd780ff13737ed91078f22e8",
+		"bip32_xprv": "xprv9s21ZrQH143K4Y1hE6272demta4GAXyX6bb4muBGU2yH5URpTSE9XMLNN9qXhfSxyGbVH5pBSB9wicZnnaCePPCnF8731xZSnvQkYe9Gf3m"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかす　ようす",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "daf8520fbf56655bae0f6b163a511b9ba706ac1a92fd83ed89ab243c3284ded518255934c96dc9f253c55015107b666d5d96a3da9a5fc783162e85622415869d",
+		"bip32_xprv": "xprv9s21ZrQH143K2wXjCLc6zfNyVS5iKVbKqbd8WbJcnxixrwQJ5tisB4A1N8gc6ikjAu3ZNUEu5W2JHrgqGVHPKGq37esiiqe4UeazzkWWkas"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　まんきつ",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "096e815284e19d4e5b08f46a00c330c7c375d19a3fe063a70818e94a010d1e1889e88a7eb810308f625adf2e2704e89aaf65bb08d0316497d7308b893c7321ef",
+		"bip32_xprv": "xprv9s21ZrQH143K3nTNx8ftoY39YxeAzupwmSqdSxzQw1NugrYqDAJH7oWkWnMtqoguQguUbt291XyeqY41BBm3hA5BXtKGvdKPaVqHJanS9Mb"
+	},
+	{
+		"entropy": "80808080808080808080808080808080",
+		"mnemonic": "そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あかちゃん",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "490366170b998c6e5069118472d6a64d7035f9b53a4da83d5bf68ce98ab265b3b4a776f3381cdf5905d14892bad804dd5127474448bb8635936a87e7db9b7445",
+		"bip32_xprv": "xprv9s21ZrQH143K2LnusLMAz1mHJPhFL31WrHJjdXkoF2sqQ9nZbZ4w7vXGDw1eQuGhjkjhtsPsWKxnUbPEsgUvGVuPQwr5fATuTog7JKsdsCP"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080",
+		"mnemonic": "そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あしあと",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "8af743ab1eafe407c5990fe4e7de3e2fc7742c192ec09ac6f5e807e1516dd4da685cc21a3ccc49b03d7c3c0ed93ac2e9113495f934c4ba321c98c559f1cb87dd",
+		"bip32_xprv": "xprv9s21ZrQH143K2ptuSWuqKv3yo9Tcm1f7Fk6pZQ4hcMSQGWFwRo5mNnhCNZjZDUooMuBjmRpZUCUBSqJhbaXccPKCy6htTV9NfXAZApBA3Q1"
+	},
+	{
+		"entropy": "808080808080808080808080808080808080808080808080",
+		"mnemonic": "そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　いきなり",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "14af25d73037c52c06cdf40a5e909e39439e9f528c399d65d3c23e4200755854b466999816a898571c16ed64cf520f749dab33c078fdd1e790c97861db0899c8",
+		"bip32_xprv": "xprv9s21ZrQH143K3rfNro1e4iRDKW6yCKDtSxjcmeTHuMjNsv8BSS74i4ydrBgPdm1uHTZ1GFo6aiPWWSuw6QZmaQeYWi7tWUZbGivYBx7F9uH"
+	},
+	{
+		"entropy": "80808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あこがれる　いぜん",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "c8ac15fc6c7b805b6f03509eaa3d05a70f9bcfb6c5d545c559294609060b2c72a6f1e56a8e6ef7250a5513778cda0563eedbb9521f1e4345191a2323c9119ee7",
+		"bip32_xprv": "xprv9s21ZrQH143K2ayVrrpNDpXkxYRHadfjeVewSVMRQb2kmfrrA17nXGr8EXZPzfmYaaZmByAgjU5T6Dp2iMAtf9gr3D2esohwUSZVvuXFbRa"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　いよく　そとづら　あまど　おおう　あこがれる　いくぶん　けいけん　あたえる　うめる",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "f0f72b6b6eff88a273d8b9676acb42f83440d2c74dce76325b1c16ad7eb2a32dfc2419349666e241dbfc88e1f595f01659a0dd875888be39d457ea3687ad59e6",
+		"bip32_xprv": "xprv9s21ZrQH143K2JsweaDj87HoVZWxQ9oeowPKkBSf6pca3D6g1hrybiMrHPFNm55CdW2xuLzzPotEHfuAPJJRT9m7p3gFZj55vi7f3Jy8can"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefe",
+		"mnemonic": "わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかす　りくつ　ばいか　れんしゅう",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "80914ff73de8d0859728c54b26702fa33a2c63d21c863374e55e846ffedf1f514a13954538fdf0118d313277abd33b51afbeacd241a913aafb9d5b9b00969cce",
+		"bip32_xprv": "xprv9s21ZrQH143K3ztPW8575A2CuWNce8ph6Cv9KaxjTzCtE2fjcz6dumiiCABKPtssB7VPhvaGBg6ykpCjjiyC3ZRjCR41gnKhxYK6UzWBBBG"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　やちん　そつう　るりがわら",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "80788cd987fd5b42810209ee6f686c605345c04432e417abd1649a185ce68fe7371e54eca6b3eff77066cdb14c56b293b63130b0a44beb32747be39ae34e004d",
+		"bip32_xprv": "xprv9s21ZrQH143K3ZJKDpkvJNjgVhKDN6jUBjbwqsQLx3RAefJeAYDEVDMfdHg9Z7DeeorUq3yRADraWQvbYKMjSKmKzeaDt6KDtZ6kLMxq1jA"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかす　らたい",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "5e6d5a781dd44feb4c45aa456f48735242e05405c5c047bbfa0f28a5201a9bb9f70557f06a702804f343e00bc85856238da400cb19f14b5913c64498fed73f9e",
+		"bip32_xprv": "xprv9s21ZrQH143K38uU4gxWwjN7Ae63rKvMFeuuyfu9rTcaJkwp84kxyBSpPiu7fYMCkJHzSn4wkzYQRdqgeGB5yN9aYZBaF9jGAhxxkiZV1Gb"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　みんか",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "85e1e841069181c21f59ca0fdb9b975f4ef182225f95c419378c08f571ee3ab4e2803be7391f32b7d84a2930800a8c826dafae6fb11af620551b32bb9824fab1",
+		"bip32_xprv": "xprv9s21ZrQH143K414oPeFSvdbAQ9nr3jRtG5gFLQ6JcFdFGia7KXChDD9d5tEoTcmEh4jAb54iSwu9Dd1LfPC7ZJiqG8czy1EnPhhXKGQJpGH"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　ほんやく　わかす　りくつ　ばいか　ろせん　やちん　そつう　れきだい　へいねつ",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "59fc94a1be1b3405da093c0655b0dc8656a471c5385831d8488e5fcd77005ab8af0e262dc2ba9f0fd82be5ef0996350b35122c4e972f2f3267176d28b999c4bc",
+		"bip32_xprv": "xprv9s21ZrQH143K2QyFQ2bvbWvGd9eHcvpimF3aPbJMCScuEPoEfMN5JR4y3L6GJ1M2veKNvbeJNAb7jjZ2T9rEY4Xc15e7bRP9X4g8cSGPiAS"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffff",
+		"mnemonic": "われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　ろんぶん",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "6b5e2b1d3ce9a2e88a95c331d19b6d4d602a89a8bb165224225e5e6e25b0228eaac5833f83f827b3278bc32bedb5c272724d3867b93500bf33722801f84d1d02",
+		"bip32_xprv": "xprv9s21ZrQH143K25qZrhxDTnPR637GyQCimxaZgrgGiX4FHwafdnNzdfo7Up6x71s2xU6RMxzHckjdXgDrH1PCrTrVUcpGwJDeBMRXTqacehW"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　ろんぎ",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "472555705994cfa9cb3838d0d1411cbdd05cb945033b4692669875f35891548dc442d93ac2a8d15e1b8b42f1285b595eeee019b9caf319b27fd3d1bc75ca8501",
+		"bip32_xprv": "xprv9s21ZrQH143K3u6G89Ev3W2rffrMvK2zJ2MwJ1inYKGXnHWFg6TcXgFzA4x3oSjQu1cswB1AB3enmPLWo4ioxBoCJHJYm3xJxRKmsQ5TZPN"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　りんご",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "753fe8c4f0e788758a1415b7e1486a168270316966d28eb916f392e1e48e3654b9c87f0a54165d9e8d68a8d02c604a4b7050020775ddd6f3b7e4dbe4871cc6bc",
+		"bip32_xprv": "xprv9s21ZrQH143K4Xmj3WcLFJzhrwZMDYjUPynLeLNZgyXAxCi3wZ4p3jDgmTvagaifETBjJLjsrrNJqHUHbwNtDVTYL8LfcfwSbUpGCHSqyKd"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　ようじ",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "b4ea9159204a85069eb1a59fed6197a12f7436a7e87a8c125ae0d30cfed1baec513d660b945c29175e44b56f4bb862668fdfb9e51bfde849c121c7e84f307563",
+		"bip32_xprv": "xprv9s21ZrQH143K46d27YPmtL6wcQvRTXbnPsDjcEcpTaFYs3woJ7JzZ3tufoj4ZiUpZsG7nET2ftp5tyYcum7YxxqG9CDqFc2oaDxtLCreHQ8"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　われる　らいう",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "58dac86d6e70ce29ca277ebea4da00efe162696ade0dff7a7436541263dd3450dc82084cd427eaee5c6ade8fbfe3c0f8c46121ad30b6dafe21af2d4cb764dd4d",
+		"bip32_xprv": "xprv9s21ZrQH143K3jb5dmYx4sPbHJsS4cithM6PbYUSyXpeG5muVbFw9XjV4zbQNELrHo6HQjsgkFzqJ9DCRjNBkhxwxZRpURAjBKvV7ajT2ML"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こよい",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "5daf74b7180ba3132842b927cd3140c5098a1f4c0a428af5bf0a9296c058d50f8ce5a7202e7584e13f9b82f0299476321f41e0f6fad044639532132c558eabb0",
+		"bip32_xprv": "xprv9s21ZrQH143K2iovjgr73F3nBXs1PtxWoL6eP6qw9RtBDqbbfXmvbaGGXkKBBDC8GzctXQotiohr9a4vsgfJ5Rfcb6BBz8r3uT8CVK2bm8E"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　とのさま",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "6988034570d17b564c206fac4cd28e32d21d0d96fa504572610ea12fd2f4a3742d65a56be6d9de74278b610e58d218e55752d99fdd37b6a44e8cfb9d9619cb35",
+		"bip32_xprv": "xprv9s21ZrQH143K3aHu3fF6VMTzGWFAEEEzdSVRs3NSRX4p4fAXVLuGHqGmWQs5WuHGzBZamcTRS4pkvuuK5wzjVWzePQY8d2qsUAtkZf2z8VF"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆう",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "23a65b7f39ccc3cf72b46cf2c6a678eb1370e4392c9cb54f3b2cad58ff07d6c919b8779ad0d7a79a45ab6349fb6b4570835beb88d09773076f31a3ef7a6b85d8",
+		"bip32_xprv": "xprv9s21ZrQH143K3xNMKRv6SjEUENe8nNePTeQGPgAniZsiuNYefCfnY1enUFSnCGboa4PJXphSadCMWPxC9bjDL4hvwS1Fje3ha2t4aEXzCw2"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　なめらか",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "48b15b9f394d88b8a38c0a9ac16d7cdcdb2aa7adfcf34204fef42adcd05234428d3f6ad48ae75ecbf9a2569c3ce5315222756a956f10df0c6e071709491b8b31",
+		"bip32_xprv": "xprv9s21ZrQH143K2SoiR65oV8pnFPJ4uACCUZf2JEKXpTQywvqja6xtqQEQQi645W4Q6ftLcE8sb2xaAdyjDrW1PHJxCiKefCm6hVrTdhjswqa"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　さつじん",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "734862297b95972bd20b578f5b8cddfbc541dffb9633949a5158eb654850ef532373fbb81f1a62cb06792f90be8b0b4f6bd1d2d20f7d07a60f02ab3089fc0819",
+		"bip32_xprv": "xprv9s21ZrQH143K45vkfTt8F1dVMvhL8AQDUJDpKJw5XVnGBozTyb7eTYBnCh8Rn3jtBHQmuijzKS6BpWcHPqDCCfFYX7qDr7x1hCRrmGgHMtD"
+	},
+	{
+		"entropy": "55555555555555555555555555555555",
+		"mnemonic": "こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ないこう",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "7beee73c13efe33aa485ad3092f428dd81aa7d0908bd557cade15617ee1051d784a79b765ee337faea2862ae37dbb2addc68b0f65109c81da63dc80de461a982",
+		"bip32_xprv": "xprv9s21ZrQH143K4WKfx6rCtjUy4o9H8anpN76eshyNNtqCpVNhXqwjSx1zUDhwr5YcxPX5iuJFu9ttPZ128EsETPigPcAqu5H2bh95pR675rX"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555",
+		"mnemonic": "こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こもん",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "59ecc57ab519a55086f00c611b8812283500da9a2527a51d34bdb3b03a495b63bb9cd939509524a6f7d52c90248a438dae5ce98072ccec56ba5b08cee9e94a6d",
+		"bip32_xprv": "xprv9s21ZrQH143K3fJrnWRX1nZa5EFKJ58HuvqPCBmTbffA3i7uwrepnJWRKbESyZxeJaqJQnAqLgiRcSjo94zt8rgdKSsPu67K1cGRzXSUHrd"
+	},
+	{
+		"entropy": "555555555555555555555555555555555555555555555555",
+		"mnemonic": "こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ないそう",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "4ca1e9196341e9606811a5de16e1919064283dce94c3acab8438faf6b6bf1c026d6db0c1db9f8955d41b3ae6134a42bec306f0d77214a01af08b4d0a11b1783c",
+		"bip32_xprv": "xprv9s21ZrQH143K3mA5jBuiD9W8q2bWrJEJmY7VFcQXePNiKUrbMizjUG76tUDWUpudD3PeTorenPDWRGtWqFa8gYp8Jr53zss8p3ASGwFd5Kh"
+	},
+	{
+		"entropy": "55555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こもん",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "ab1f45ca7c219e43d579e765e4e749c08613b0e51485369f2058535d7a3492b2852b235b78a5a0d8daccc799905c4d78fc98060edd6a7e2a70e089ae5ae97f14",
+		"bip32_xprv": "xprv9s21ZrQH143K3USt5wmMWsRbLSfmtr7JQ7af37KiQw5dABp3Kza86rg2fjNf1y6rbg22tnPrBkbPgFgtdJE1Lt3BhL1u5m6PqEd5HcaarKG"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　ともる　こゆび　にくまん",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "2eba136280d19de862d7be4cb0328c35b3244e6a81e360ebffe7dc9f8215ab2adb16bd9b5fc72a9d299b43bafc2a1a3b9baa985e24b61daa43a15cd05d016a95",
+		"bip32_xprv": "xprv9s21ZrQH143K2JG9NST7XinmGT2R8NHqwRgfuT1KzkpPNSUbCr6xQdkyaFTQRinXYEjv9dxBVnuxJHKdcZewhQuSKEsyFxU42niQ86q88aw"
+	},
+	{
+		"entropy": "9e885d952ad362caeb4efe34a8e91bd2",
+		"mnemonic": "ておくれ　げざん　しねま　こりる　きぼう　しねん　ななおし　ほんやく　きない　けむり　けまり　てんない",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "0615dd97d1faf733e8a5968ef543236eea6e582742af8f7516120ed7fd285093dd33b7c03ae442675da02b913cf8729667bf126d3f6fb4c4137ada8a5b08563d",
+		"bip32_xprv": "xprv9s21ZrQH143K2t7e6smJEw5h3yf3v6jGv9pbiJHhsDWsvsRpDQcyiTaQm6yXAeL5kWpJmcPp1QjWrhUSRbDgYr66CdUAXXMFf12kizmGh7J"
+	},
+	{
+		"entropy": "6610b25967cdcca9d59875f5cb50b0ea75433311869e930b",
+		"mnemonic": "しはつ　たいちょう　ちめいど　ひりつ　ほくろ　こやく　こんかい　いひん　よろしい　さくら　がはく　ふっかつ　こまる　つごう　けぬき　ふすま　ちから　さくし",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "8a8c8ea1e91775e0aa762f85b54e015618dfd767f4ac2f4a2b53cb894d587908a2f161372b5aab529413ddadd4375c4461f4f9a8ff52296b8185a9dafc95855a",
+		"bip32_xprv": "xprv9s21ZrQH143K3MPmRFEQmYSNgSXrpa7T9jAhYmJKTE412tZwHzKYK6hB5DaHt3AtpiXEkKDSQbmkYRXrrbdvSJPhzNuyEFqGLRupP1wPTjd"
+	},
+	{
+		"entropy": "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+		"mnemonic": "しやくしょ　くちこみ　どんぶり　けつじょ　おとしもの　くうぐん　どんぶり　たずさわる　ひたむき　みうち　にほん　うわさ　しゃけん　このよ　じどう　ほめる　たいよう　くふう　そんちょう　ろくが　はんこ　せあぶら　くうぐん　そっこう",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "ec7dec67fa6f4d2210458440da5d83a5918326fb319d4aeb11817f2bfc166e5e1e752b42797df312068f1ab7be108f2d030124239a92dfc480cad3f6b3d72fcb",
+		"bip32_xprv": "xprv9s21ZrQH143K2Dyvj2KQuqbmye6qCrKVkxJyg2srr97vfhCCPcgDDe1mEaFyTnxgnxbc4fC44aRnBUvBKbvWmW71ycn28ZoQSyHBJ3yb6kD"
+	},
+	{
+		"entropy": "b3ffe8f56d54805218090de337779328a3a2e758",
+		"mnemonic": "にんげん　わかれる　ぐっすり　べんごし　けんえつ　かいふく　さんさい　おくりがな　まんなか　ねんぶつ　みっか　こつこつ　ぐうせい　せいげん　さんすう",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "983a1ddfc052c2113a2c63e8487154ab3e06c0891764da9fbc6abf0fb44945a2ca42084134b03b9ebb0bfbd3e15f9e5fd0a101f19e6f70327b15786bcf562bdc",
+		"bip32_xprv": "xprv9s21ZrQH143K4KUgjCWjCaF3qPNnJcN6KkfpNkRk2MzoixqCAhB3Emsc61qmBteRsR5rif5svNKbdZ9WDGfBFnCkjnyKJMDejYVUXJ8JaSD"
+	},
+	{
+		"entropy": "437dd688276ceb711cda3a126eab879a188a30b097b769a931bea6fe",
+		"mnemonic": "げすと　やおや　てらす　こくとう　ひめじし　ねっしん　せあぶら　けむり　うえる　せたけ　まもる　きつね　たおれる　うらぐち　はしご　らたい　しゃたい　けんとう　すすむ　こえる　もんだい",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 日本語",
+		"seed": "093dcb95119b38bf717bd2d90ff3679033a8193913d0c1c9ad9b7312d0cc765a954da765eea14c6c25197a62f2fdbc14a792dc42dc52f4fb52f1addadf2c2155",
+		"bip32_xprv": "xprv9s21ZrQH143K4PokGcq3gjhrwZsXskueq1vrKPDppF2fQ7f3gBDY581QHkKqF5NVmuwoLHrVXpmGHdmkPvakG3KxG4dSAh6x3yZKCHae5Vo"
+	}
+]

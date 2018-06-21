@@ -4,7 +4,7 @@ import { Contract, Interface } from './contracts';
 import * as providers from './providers';
 import * as errors from './utils/errors';
 import { getNetwork } from './providers/networks';
-import utils from './utils';
+import * as utils from './utils';
 import { HDNode, SigningKey, Wallet } from './wallet';
 
 //import info from '../package.json';

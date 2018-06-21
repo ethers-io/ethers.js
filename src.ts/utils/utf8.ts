@@ -12,9 +12,11 @@ export enum UnicodeNormalizationForm {
 
 // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
 export function toUtf8Bytes(str: string, form: UnicodeNormalizationForm = UnicodeNormalizationForm.current): Uint8Array {
+
     if (form != UnicodeNormalizationForm.current) {
-        if (str.normalize) { str = str.normalize(form); }
+        str = str.normalize(form);
     }
+
     var result = [];
     var offset = 0;
     for (var i = 0; i < str.length; i++) {

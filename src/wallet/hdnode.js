@@ -9,7 +9,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 // See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
-var words_1 = require("./words");
+// The English language word list.
+// For additional word lists, please see /src.tc/wordlists/
+var lang_en_1 = require("../wordlists/lang-en");
 var bytes_1 = require("../utils/bytes");
 var bignumber_1 = require("../utils/bignumber");
 var utf8_1 = require("../utils/utf8");
@@ -129,9 +131,9 @@ function _fromSeed(seed, mnemonic) {
     var I = bytes_1.arrayify(hmac_1.computeHmac('sha512', MasterSecret, seedArray));
     return new HDNode(I.slice(0, 32), I.slice(32), 0, 0, mnemonic, 'm');
 }
-function fromMnemonic(mnemonic) {
+function fromMnemonic(mnemonic, wordlist) {
     // Check that the checksum s valid (will throw an error)
-    mnemonicToEntropy(mnemonic);
+    mnemonicToEntropy(mnemonic, wordlist);
     return _fromSeed(mnemonicToSeed(mnemonic), mnemonic);
 }
 exports.fromMnemonic = fromMnemonic;
@@ -143,30 +145,22 @@ function mnemonicToSeed(mnemonic, password) {
     if (!password) {
         password = '';
     }
-    else if (password.normalize) {
-        password = password.normalize('NFKD');
-    }
-    else {
-        for (var i = 0; i < password.length; i++) {
-            var c = password.charCodeAt(i);
-            if (c < 32 || c > 127) {
-                throw new Error('passwords with non-ASCII characters not supported in this environment');
-            }
-        }
-    }
     var salt = utf8_1.toUtf8Bytes('mnemonic' + password, utf8_1.UnicodeNormalizationForm.NFKD);
     return bytes_1.hexlify(pbkdf2_1.pbkdf2(utf8_1.toUtf8Bytes(mnemonic, utf8_1.UnicodeNormalizationForm.NFKD), salt, 2048, 64, 'sha512'));
 }
 exports.mnemonicToSeed = mnemonicToSeed;
-function mnemonicToEntropy(mnemonic) {
-    var words = mnemonic.toLowerCase().split(' ');
+function mnemonicToEntropy(mnemonic, wordlist) {
+    if (!wordlist) {
+        wordlist = lang_en_1.langEn;
+    }
+    var words = wordlist.split(mnemonic);
     if ((words.length % 3) !== 0) {
         throw new Error('invalid mnemonic');
     }
     var entropy = bytes_1.arrayify(new Uint8Array(Math.ceil(11 * words.length / 8)));
     var offset = 0;
     for (var i = 0; i < words.length; i++) {
-        var index = words_1.getWordIndex(words[i]);
+        var index = wordlist.getWordIndex(words[i].normalize('NFKD'));
         if (index === -1) {
             throw new Error('invalid mnemonic');
         }
@@ -188,7 +182,7 @@ function mnemonicToEntropy(mnemonic) {
     return bytes_1.hexlify(entropy.slice(0, entropyBits / 8));
 }
 exports.mnemonicToEntropy = mnemonicToEntropy;
-function entropyToMnemonic(entropy) {
+function entropyToMnemonic(entropy, wordlist) {
     entropy = bytes_1.arrayify(entropy);
     if ((entropy.length % 4) !== 0 || entropy.length < 16 || entropy.length > 32) {
         throw new Error('invalid entropy');
@@ -218,12 +212,15 @@ function entropyToMnemonic(entropy) {
     // Shift the checksum into the word indices
     indices[indices.length - 1] <<= checksumBits;
     indices[indices.length - 1] |= (checksum >> (8 - checksumBits));
-    return indices.map(function (index) { return words_1.getWord(index); }).join(' ');
+    if (!wordlist) {
+        wordlist = lang_en_1.langEn;
+    }
+    return wordlist.join(indices.map(function (index) { return wordlist.getWord(index); }));
 }
 exports.entropyToMnemonic = entropyToMnemonic;
-function isValidMnemonic(mnemonic) {
+function isValidMnemonic(mnemonic, wordlist) {
     try {
-        mnemonicToEntropy(mnemonic);
+        mnemonicToEntropy(mnemonic, wordlist);
         return true;
     }
     catch (error) { }

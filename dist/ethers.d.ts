@@ -224,9 +224,26 @@ declare module "contracts/interface" {
         }): LogDescription;
     }
 }
-declare module "wallet/words" {
-    export function getWord(index: number): string;
-    export function getWordIndex(word: string): number;
+declare module "wordlists/wordlist" {
+    export abstract class Wordlist {
+        locale: string;
+        constructor(locale: string);
+        abstract getWord(index: number): string;
+        abstract getWordIndex(word: string): number;
+        split(mnemonic: string): Array<string>;
+        join(words: Array<string>): string;
+    }
+    export function register(lang: any): void;
+}
+declare module "wordlists/lang-en" {
+    import { Wordlist } from "wordlists/wordlist";
+    class LangEn extends Wordlist {
+        constructor();
+        getWord(index: number): string;
+        getWordIndex(word: string): number;
+    }
+    const langEn: LangEn;
+    export { langEn };
 }
 declare module "utils/pbkdf2" {
     import { Arrayish } from "utils/bytes";
@@ -242,6 +259,7 @@ declare module "utils/sha2" {
     export function sha512(data: Arrayish): string;
 }
 declare module "wallet/hdnode" {
+    import { Wordlist } from "wordlists/wordlist";
     import { Arrayish } from "utils/bytes";
     export const defaultPath = "m/44'/60'/0'/0/0";
     export class HDNode {
@@ -264,12 +282,12 @@ declare module "wallet/hdnode" {
         private _derive;
         derivePath(path: string): HDNode;
     }
-    export function fromMnemonic(mnemonic: string): HDNode;
+    export function fromMnemonic(mnemonic: string, wordlist?: Wordlist): HDNode;
     export function fromSeed(seed: Arrayish): HDNode;
     export function mnemonicToSeed(mnemonic: string, password?: string): string;
-    export function mnemonicToEntropy(mnemonic: string): string;
-    export function entropyToMnemonic(entropy: Arrayish): string;
-    export function isValidMnemonic(mnemonic: string): boolean;
+    export function mnemonicToEntropy(mnemonic: string, wordlist?: Wordlist): string;
+    export function entropyToMnemonic(entropy: Arrayish, wordlist?: Wordlist): string;
+    export function isValidMnemonic(mnemonic: string, wordlist?: Wordlist): boolean;
 }
 declare module "utils/random-bytes" {
     export function randomBytes(length: number): Uint8Array;
@@ -337,7 +355,7 @@ declare module "utils/transaction" {
         v?: number;
     }
     export type SignDigestFunc = (digest: Arrayish) => Signature;
-    export function sign(transaction: UnsignedTransaction, signDigest: SignDigestFunc): string;
+    export function sign(transaction: UnsignedTransaction, signDigest?: SignDigestFunc): string;
     export function parse(rawTransaction: Arrayish): Transaction;
 }
 declare module "wallet/wallet" {
@@ -345,6 +363,7 @@ declare module "wallet/wallet" {
     import { ProgressCallback } from "wallet/secret-storage";
     import { SigningKey } from "wallet/signing-key";
     import { BlockTag, Provider, TransactionRequest, TransactionResponse } from "providers/provider";
+    import { Wordlist } from "wordlists/wordlist";
     import { BigNumber, BigNumberish } from "utils/bignumber";
     import { Arrayish } from "utils/bytes";
     export abstract class Signer {
@@ -378,7 +397,7 @@ declare module "wallet/wallet" {
          */
         static createRandom(options: any): Wallet;
         static fromEncryptedWallet(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet>;
-        static fromMnemonic(mnemonic: string, path?: string): Wallet;
+        static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet;
         static fromBrainWallet(username: Arrayish | string, password: Arrayish | string, progressCallback: ProgressCallback): Promise<Wallet>;
         /**
          *  Determine if this is an encryped JSON wallet.
@@ -702,63 +721,24 @@ declare module "utils/units" {
 }
 declare module "utils/index" {
     import { getAddress, getContractAddress, getIcapAddress } from "utils/address";
-    import { AbiCoder, parseSignature } from "utils/abi-coder";
+    import { AbiCoder, defaultAbiCoder, parseSignature, parseParamType } from "utils/abi-coder";
     import * as base64 from "utils/base64";
-    import * as bigNumber from "utils/bignumber";
-    import * as bytes from "utils/bytes";
+    import { BigNumber, bigNumberify } from "utils/bignumber";
+    import { arrayify, concat, hexlify, joinSignature, padZeros, splitSignature, stripZeros } from "utils/bytes";
     import { hashMessage, id, namehash } from "utils/hash";
     import { keccak256 } from "utils/keccak256";
-    import * as sha2 from "utils/sha2";
-    import * as solidity from "utils/solidity";
+    import { sha256 } from "utils/sha2";
+    import { keccak256 as solidityKeccak256, pack as solidityPack, sha256 as soliditySha256 } from "utils/solidity";
     import { randomBytes } from "utils/random-bytes";
-    import properties = require("utils/properties");
+    import { defineFrozen, defineReadOnly, resolveProperties, shallowCopy } from "utils/properties";
     import * as RLP from "utils/rlp";
-    import * as utf8 from "utils/utf8";
-    import * as units from "utils/units";
+    import { toUtf8Bytes, toUtf8String } from "utils/utf8";
+    import { formatEther, parseEther, formatUnits, parseUnits } from "utils/units";
     import { fetchJson } from "utils/web";
     import { parse as parseTransaction } from "utils/transaction";
-    const _default: {
-        AbiCoder: typeof AbiCoder;
-        defaultAbiCoder: AbiCoder;
-        parseSignature: typeof parseSignature;
-        RLP: typeof RLP;
-        fetchJson: typeof fetchJson;
-        defineReadOnly: typeof properties.defineReadOnly;
-        defineFrozen: typeof properties.defineFrozen;
-        resolveProperties: typeof properties.resolveProperties;
-        shallowCopy: typeof properties.shallowCopy;
-        etherSymbol: string;
-        arrayify: typeof bytes.arrayify;
-        concat: typeof bytes.concat;
-        padZeros: typeof bytes.padZeros;
-        stripZeros: typeof bytes.stripZeros;
-        base64: typeof base64;
-        bigNumberify: typeof bigNumber.bigNumberify;
-        BigNumber: typeof bigNumber.BigNumber;
-        hexlify: typeof bytes.hexlify;
-        toUtf8Bytes: typeof utf8.toUtf8Bytes;
-        toUtf8String: typeof utf8.toUtf8String;
-        hashMessage: typeof hashMessage;
-        namehash: typeof namehash;
-        id: typeof id;
-        getAddress: typeof getAddress;
-        getIcapAddress: typeof getIcapAddress;
-        getContractAddress: typeof getContractAddress;
-        formatEther: typeof units.formatEther;
-        parseEther: typeof units.parseEther;
-        formatUnits: typeof units.formatUnits;
-        parseUnits: typeof units.parseUnits;
-        keccak256: typeof keccak256;
-        sha256: typeof sha2.sha256;
-        randomBytes: typeof randomBytes;
-        solidityPack: typeof solidity.pack;
-        solidityKeccak256: typeof solidity.keccak256;
-        soliditySha256: typeof solidity.sha256;
-        splitSignature: typeof bytes.splitSignature;
-        joinSignature: typeof bytes.joinSignature;
-        parseTransaction: typeof parseTransaction;
-    };
-    export default _default;
+    import * as errors from "utils/errors";
+    const etherSymbol = "\u039E";
+    export { AbiCoder, defaultAbiCoder, parseSignature, parseParamType, RLP, fetchJson, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, etherSymbol, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, BigNumber, hexlify, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, errors };
 }
 declare module "wallet/index" {
     import { Wallet } from "wallet/wallet";
@@ -771,9 +751,54 @@ declare module "index" {
     import * as providers from "providers/index";
     import * as errors from "utils/errors";
     import { getNetwork } from "providers/networks";
-    import utils from "utils/index";
+    import * as utils from "utils/index";
     import { HDNode, SigningKey, Wallet } from "wallet/index";
     const version = "4.0.0";
     export { Wallet, HDNode, SigningKey, Contract, Interface, getNetwork, providers, errors, utils, version };
+}
+declare module "wordlists/lang-it" {
+    import { Wordlist } from "wordlists/wordlist";
+    class LangIt extends Wordlist {
+        constructor();
+        getWord(index: number): string;
+        getWordIndex(word: string): number;
+    }
+    const langIt: LangIt;
+    export { langIt };
+}
+declare module "wordlists/lang-ja" {
+    import { Wordlist } from "wordlists/wordlist";
+    class LangJa extends Wordlist {
+        constructor();
+        getWord(index: any): string;
+        getWordIndex(word: any): number;
+        split(mnemonic: string): Array<string>;
+        join(words: Array<string>): string;
+    }
+    const langJa: LangJa;
+    export { langJa };
+}
+declare module "wordlists/lang-ko" {
+    import { Wordlist } from "wordlists/wordlist";
+    class LangKo extends Wordlist {
+        constructor();
+        getWord(index: number): string;
+        getWordIndex(word: string): number;
+    }
+    const langKo: LangKo;
+    export { langKo };
+}
+declare module "wordlists/lang-zh" {
+    import { Wordlist } from "wordlists/wordlist";
+    class LangZh extends Wordlist {
+        private _country;
+        constructor(country: any);
+        getWord(index: number): string;
+        getWordIndex(word: string): number;
+        split(mnemonic: string): Array<string>;
+    }
+    const langZhCn: LangZh;
+    const langZhTw: LangZh;
+    export { langZhCn, langZhTw };
 }
 //# sourceMappingURL=ethers.d.ts.map

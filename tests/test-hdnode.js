@@ -48,3 +48,28 @@ describe('Test HD Mnemonic Phrases', function testMnemonic() {
         });
     });
 });
+
+// See: https://github.com/nym-zone/easyseed
+function testEasySeed(lang, locale) {
+    describe('Test easyseed BIP39 Test cases - ' + locale, function() {
+        var tests = utils.loadJson('easyseed-bip39/bip39_vectors.' + locale + '.json');
+        tests.forEach(function(test) {
+            it('test - ' + test.entropy, function() {
+                var seed = ethers.HDNode.mnemonicToSeed(test.mnemonic, test.passphrase);
+                assert.equal(seed, '0x' + test.seed, 'seeds match');
+
+                var entropy = ethers.HDNode.mnemonicToEntropy(test.mnemonic, lang);
+                assert.equal(entropy, '0x' + test.entropy, 'entropy match');
+
+                var mnemonic = ethers.HDNode.entropyToMnemonic('0x' + test.entropy, lang);
+                assert.equal(mnemonic.normalize('NFKD'), test.mnemonic.normalize('NFKD'), 'mnemonic match');
+            });
+        });
+    });
+}
+
+testEasySeed(require('../src/wordlists/lang-ja').langJa, 'ja');
+testEasySeed(require('../src/wordlists/lang-zh').langZhCn, 'zh_cn');
+testEasySeed(require('../src/wordlists/lang-zh').langZhTw, 'zh_tw');
+testEasySeed(require('../src/wordlists/lang-it').langIt, 'it');
+testEasySeed(require('../src/wordlists/lang-ko').langKo, 'ko');

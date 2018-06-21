@@ -6,9 +6,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var contracts_1 = require("./contracts");
 exports.Contract = contracts_1.Contract;
@@ -19,8 +16,8 @@ var errors = __importStar(require("./utils/errors"));
 exports.errors = errors;
 var networks_1 = require("./providers/networks");
 exports.getNetwork = networks_1.getNetwork;
-var utils_1 = __importDefault(require("./utils"));
-exports.utils = utils_1.default;
+var utils = __importStar(require("./utils"));
+exports.utils = utils;
 var wallet_1 = require("./wallet");
 exports.HDNode = wallet_1.HDNode;
 exports.SigningKey = wallet_1.SigningKey;

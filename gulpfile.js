@@ -92,9 +92,60 @@ function transform(path, options) {
         if (transformed != null) {
             console.log('Transformed:', shortPath, padding(70 - shortPath.length), size, padding(6 - String(size).length), '=>', transformed.length);
             data = transformed;
+        } else if (shortPath === '/src.ts/wordlists/wordlist.ts') {
+            data += '\n\nexportWordlist = true;'
         } else {
             console.log('Preserved:  ', shortPath, padding(70 - shortPath.length), size);
         }
+        this.queue(data);
+        this.queue(null);
+    });
+}
+
+function createDefer(map) {
+    var output = "const map = " + JSON.stringify(map) + ';\n';
+    output += 'const defer = new Object();\n';
+    for (var key in map) {
+        output += 'Object.defineProperty(defer, "' + key + '", { get: function() { return ' + map[key] + '; } });\n';
+    }
+    output += 'module.exports = defer;\n';
+    return output
+}
+
+function transformBip39(path, options) {
+    var data = '';
+
+    return through(function(chunk) {
+        data += chunk;
+    }, function () {
+        var transformed = transformFile(path);
+        var shortPath = path;
+        if (shortPath.substring(0, __dirname.length) == __dirname) {
+            shortPath = shortPath.substring(__dirname.length);
+        }
+        var size = fs.readFileSync(path).length;
+
+        if (shortPath.match(/^\/src\.ts\/wordlists\//)) {
+            if (shortPath === '/src.ts/wordlists/wordlist.ts') {
+                data += '\n\nexportWordlist = true;'
+            }
+            shortPath = '/';
+        }
+
+        switch (shortPath) {
+            case '/src.ts/utils/errors.ts':
+                data = "module.exports = global.ethers.utils.errors";
+                break;
+            case '/src.ts/utils/bytes.ts':
+            case '/src.ts/utils/properties.ts':
+            case '/src.ts/utils/utf8.ts':
+                data = "module.exports = global.ethers.utils";
+                break;
+            case '/': break;
+            default:
+                throw new Error('unhandled file: ' + shortPath);
+        }
+
         this.queue(data);
         this.queue(null);
     });
@@ -139,33 +190,6 @@ task("default", { filename: "ethers.js", debug: false, minify: false });
 // Creates dist/ethers.min.js
 task("minified", { filename: "ethers.min.js", debug: false, minify: true });
 
-
-// Package up all the test cases into tests/dist/tests.json
-gulp.task("tests", function() {
-
-    // Create a mock-fs module that can load our gzipped test cases
-    var data = {};
-    fs.readdirSync('tests/tests').forEach(function(filename) {
-        if (!filename.match(/\.json\.gz$/)) { return; }
-        filename = 'tests/tests/' + filename;
-        data['/' + filename] = fs.readFileSync(filename).toString('base64');
-    });
-    fs.writeFileSync('./tests/dist/tests.json', JSON.stringify(data));
-
-    return browserify({
-        basedir: './',
-        debug: false,
-        entries: [ "./tests/browser.js" ],
-        cache: {},
-        packageCache: {},
-        standalone: "tests"
-    })
-    .bundle()
-    .pipe(source("tests.js"))
-    .pipe(gulp.dest("tests/dist/"));
-});
-
-
 // Crearte a single definition file and its map as dist/ethers.d.ts[.map]
 gulp.task("types", function() {
     return ts.createProject("tsconfig.json")
@@ -183,3 +207,62 @@ gulp.task("types", function() {
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest("dist"))
 });
+
+function taskLang(locale) {
+    gulp.task("bip39-" + locale, function() {
+        return browserify({
+            basedir: '.',
+            debug: false,
+            entries: [ 'src.ts/wordlists/lang-' + locale + ".ts" ],
+            cache: {},
+            packageCache: {},
+            transform: [ [ transformBip39, { global: true } ] ],
+        })
+        .plugin(tsify)
+        .bundle()
+        .pipe(source("wordlist-" + locale + ".js"))
+        .pipe(buffer())
+        .pipe(uglify())
+        .pipe(gulp.dest("dist"));
+    });
+}
+
+taskLang("it");
+taskLang("ja");
+taskLang("ko");
+taskLang("zh");
+
+// Package up all the test cases into tests/dist/tests.json
+gulp.task("tests", function() {
+
+    // Create a mock-fs module that can load our gzipped test cases
+    var data = {};
+
+    fs.readdirSync('tests/tests').forEach(function(filename) {
+        if (!filename.match(/\.json\.gz$/)) { return; }
+        filename = 'tests/tests/' + filename;
+        data['/' + filename] = fs.readFileSync(filename).toString('base64');
+    });
+
+    fs.readdirSync('tests/tests/easyseed-bip39').forEach(function(filename) {
+        if (!filename.match(/\.json$/)) { return; }
+        filename = 'tests/tests/easyseed-bip39/' + filename;
+        data['/' + filename] = fs.readFileSync(filename).toString('base64');
+    });
+
+    fs.writeFileSync('./tests/dist/tests.json', JSON.stringify(data));
+
+    return browserify({
+        basedir: './',
+        debug: false,
+        entries: [ "./tests/browser.js" ],
+        cache: {},
+        packageCache: {},
+        standalone: "tests"
+    })
+    .bundle()
+    .pipe(source("tests.js"))
+    .pipe(gulp.dest("tests/dist/"));
+});
+
+

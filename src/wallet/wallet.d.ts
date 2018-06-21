@@ -2,6 +2,7 @@ import { HDNode } from './hdnode';
 import { ProgressCallback } from './secret-storage';
 import { SigningKey } from './signing-key';
 import { BlockTag, Provider, TransactionRequest, TransactionResponse } from '../providers/provider';
+import { Wordlist } from '../wordlists/wordlist';
 import { BigNumber, BigNumberish } from '../utils/bignumber';
 import { Arrayish } from '../utils/bytes';
 export declare abstract class Signer {
@@ -35,7 +36,7 @@ export declare class Wallet extends Signer {
      */
     static createRandom(options: any): Wallet;
     static fromEncryptedWallet(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet>;
-    static fromMnemonic(mnemonic: string, path?: string): Wallet;
+    static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet;
     static fromBrainWallet(username: Arrayish | string, password: Arrayish | string, progressCallback: ProgressCallback): Promise<Wallet>;
     /**
      *  Determine if this is an encryped JSON wallet.

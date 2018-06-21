@@ -8,6 +8,7 @@ import { ProgressCallback } from './secret-storage';
 import { recoverAddress, SigningKey } from './signing-key';
 
 import { BlockTag, Provider, TransactionRequest, TransactionResponse } from '../providers/provider';
+import { Wordlist } from '../wordlists/wordlist';
 
 import { BigNumber, BigNumberish } from '../utils/bignumber';
 import { arrayify, Arrayish, concat, hexlify, joinSignature } from '../utils/bytes';
@@ -185,8 +186,8 @@ export class Wallet extends Signer {
             entropy = arrayify(keccak256(concat([entropy, options.extraEntropy])).substring(0, 34));
         }
 
-        var mnemonic = entropyToMnemonic(entropy);
-        return Wallet.fromMnemonic(mnemonic, options.path);
+        var mnemonic = entropyToMnemonic(entropy, options.locale);
+        return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
     }
 
     static fromEncryptedWallet(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet> {
@@ -225,9 +226,9 @@ export class Wallet extends Signer {
         });
     }
 
-    static fromMnemonic(mnemonic: string, path?: string): Wallet {
+    static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet {
         if (!path) { path = defaultPath; }
-        return new Wallet(fromMnemonic(mnemonic).derivePath(path));
+        return new Wallet(fromMnemonic(mnemonic, wordlist).derivePath(path));
     }
 
 

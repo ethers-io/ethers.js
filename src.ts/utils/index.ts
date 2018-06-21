@@ -4,83 +4,90 @@
 //var unorm = require('unorm');
 
 import { getAddress, getContractAddress, getIcapAddress } from './address';
-import { AbiCoder, defaultAbiCoder, parseSignature } from './abi-coder';
+import { AbiCoder, defaultAbiCoder, parseSignature, parseParamType } from './abi-coder';
 import * as base64 from './base64';
-import * as bigNumber from './bignumber';
-import * as bytes from './bytes';
+import { BigNumber, bigNumberify } from './bignumber';
+import { arrayify, concat, hexlify, joinSignature, padZeros, splitSignature, stripZeros } from './bytes';
 import { hashMessage, id, namehash } from './hash';
 import { keccak256 } from './keccak256';
-import * as sha2 from './sha2';
-import * as solidity from './solidity';
+import { sha256 } from './sha2';
+import { keccak256 as solidityKeccak256, pack as solidityPack, sha256 as soliditySha256 } from './solidity';
 import { randomBytes } from './random-bytes';
-import properties = require('./properties');
+import { defineFrozen, defineReadOnly, resolveProperties, shallowCopy } from './properties';
 import * as RLP from './rlp';
-import * as utf8 from './utf8';
-import * as units from './units';
+import { toUtf8Bytes, toUtf8String } from './utf8';
+import { formatEther, parseEther, formatUnits, parseUnits } from './units';
 import { fetchJson } from './web';
 import { parse as parseTransaction } from './transaction';
 
-export default {
-    AbiCoder: AbiCoder,
-    defaultAbiCoder: defaultAbiCoder,
-    parseSignature: parseSignature,
+import * as errors from './errors';
 
-    RLP: RLP,
+// NFKD (decomposed)
+//const etherSymbol = '\uD835\uDF63';
 
-    fetchJson: fetchJson,
+// NFKC (composed)
+const etherSymbol = '\u039e';
 
-    defineReadOnly: properties.defineReadOnly,
-    defineFrozen: properties.defineFrozen,
-    resolveProperties: properties.resolveProperties,
-    shallowCopy: properties.shallowCopy,
+export {
+    AbiCoder,
+    defaultAbiCoder,
+    parseSignature,
+    parseParamType,
 
-    // NFKD (decomposed)
-    //etherSymbol: '\uD835\uDF63',
+    RLP,
 
-    // NFKC (composed)
-    etherSymbol: '\u039e',
+    fetchJson,
 
-    arrayify: bytes.arrayify,
+    defineReadOnly,
+    defineFrozen,
+    resolveProperties,
+    shallowCopy,
 
-    concat: bytes.concat,
-    padZeros: bytes.padZeros,
-    stripZeros: bytes.stripZeros,
+    etherSymbol,
 
-    base64: base64,
+    arrayify,
 
-    bigNumberify: bigNumber.bigNumberify,
-    BigNumber: bigNumber.BigNumber,
+    concat,
+    padZeros,
+    stripZeros,
 
-    hexlify: bytes.hexlify,
+    base64,
 
-    toUtf8Bytes: utf8.toUtf8Bytes,
-    toUtf8String: utf8.toUtf8String,
+    bigNumberify,
+    BigNumber,
 
-    hashMessage: hashMessage,
-    namehash: namehash,
-    id: id,
+    hexlify,
 
-    getAddress: getAddress,
-    getIcapAddress: getIcapAddress,
-    getContractAddress: getContractAddress,
+    toUtf8Bytes,
+    toUtf8String,
 
-    formatEther: units.formatEther,
-    parseEther: units.parseEther,
+    hashMessage,
+    namehash,
+    id,
 
-    formatUnits: units.formatUnits,
-    parseUnits: units.parseUnits,
+    getAddress,
+    getIcapAddress,
+    getContractAddress,
 
-    keccak256: keccak256,
-    sha256: sha2.sha256,
+    formatEther,
+    parseEther,
 
-    randomBytes: randomBytes,
+    formatUnits,
+    parseUnits,
 
-    solidityPack: solidity.pack,
-    solidityKeccak256: solidity.keccak256,
-    soliditySha256: solidity.sha256,
+    keccak256,
+    sha256,
 
-    splitSignature: bytes.splitSignature,
-    joinSignature: bytes.joinSignature,
+    randomBytes,
 
-    parseTransaction: parseTransaction
+    solidityPack,
+    solidityKeccak256,
+    soliditySha256,
+
+    splitSignature,
+    joinSignature,
+
+    parseTransaction,
+
+    errors
 }
