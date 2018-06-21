@@ -9098,7 +9098,7 @@ var defaultCoerceFunc = function(type, value) {
     return value;
 }
 
-// Recursively copies any serial
+// Shallow copy object (will move to utils/properties in v4)
 function shallowCopy(object) {
     var result = {};
     for (var key in object) { result[key] = object[key]; }
@@ -9443,7 +9443,7 @@ var coderBoolean = function(coerceFunc, localName) {
         encode: function(value) {
            return uint256Coder.encode(!!value ? 1: 0);
         },
-       decode: function(data, offset) {
+        decode: function(data, offset) {
             try {
                 var result = uint256Coder.decode(data, offset);
             } catch (error) {
@@ -9819,8 +9819,17 @@ function coderArray(coerceFunc, coder, length, localName) {
                  offset += decodedLength.consumed;
             }
 
+            // We don't want the children to have a localName
+            var subCoder = {
+                name: coder.name,
+                type: coder.type,
+                encode: coder.encode,
+                decode: coder.decode,
+                dynamic: coder.dynamic
+            };
+
             var coders = [];
-            for (var i = 0; i < count; i++) { coders.push(coder); }
+            for (var i = 0; i < count; i++) { coders.push(subCoder); }
 
             var result = unpack(coders, data, offset);
             result.consumed += consumed;
@@ -12285,6 +12294,7 @@ var utils = (function() {
 
         arrayify: convert.arrayify,
         hexlify: convert.hexlify,
+        padZeros: convert.padZeros,
 
         getAddress: require('../utils/address').getAddress,
 
@@ -12325,10 +12335,13 @@ function SigningKey(privateKey) {
 
     utils.defineProperty(this, 'signDigest', function(digest) {
         var signature = keyPair.sign(utils.arrayify(digest), {canonical: true});
+        var r = '0x' + signature.r.toString(16);
+        var s = '0x' + signature.s.toString(16);
+
         return {
             recoveryParam: signature.recoveryParam,
-            r: '0x' + signature.r.toString(16),
-            s: '0x' + signature.s.toString(16)
+            r: utils.hexlify(utils.padZeros(r, 32)),
+            s: utils.hexlify(utils.padZeros(s, 32))
         }
     });
 }
@@ -12506,8 +12519,8 @@ function Wallet(privateKey, provider) {
         }
 
         raw.push(utils.hexlify(v));
-        raw.push(signature.r);
-        raw.push(signature.s);
+        raw.push(utils.stripZeros(utils.arrayify(signature.r)));
+        raw.push(utils.stripZeros(utils.arrayify(signature.s)));
 
         return utils.RLP.encode(raw);
     });

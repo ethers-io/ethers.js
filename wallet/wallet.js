@@ -133,8 +133,8 @@ function Wallet(privateKey, provider) {
         }
 
         raw.push(utils.hexlify(v));
-        raw.push(signature.r);
-        raw.push(signature.s);
+        raw.push(utils.stripZeros(utils.arrayify(signature.r)));
+        raw.push(utils.stripZeros(utils.arrayify(signature.s)));
 
         return utils.RLP.encode(raw);
     });

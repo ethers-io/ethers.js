@@ -14,6 +14,7 @@ var utils = (function() {
 
         arrayify: convert.arrayify,
         hexlify: convert.hexlify,
+        padZeros: convert.padZeros,
 
         getAddress: require('../utils/address').getAddress,
 
@@ -54,10 +55,13 @@ function SigningKey(privateKey) {
 
     utils.defineProperty(this, 'signDigest', function(digest) {
         var signature = keyPair.sign(utils.arrayify(digest), {canonical: true});
+        var r = '0x' + signature.r.toString(16);
+        var s = '0x' + signature.s.toString(16);
+
         return {
             recoveryParam: signature.recoveryParam,
-            r: '0x' + signature.r.toString(16),
-            s: '0x' + signature.s.toString(16)
+            r: utils.hexlify(utils.padZeros(r, 32)),
+            s: utils.hexlify(utils.padZeros(s, 32))
         }
     });
 }
