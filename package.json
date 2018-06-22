@@ -53,6 +53,7 @@
     "./src.ts/utils/hmac.ts": "./src.browser/hmac.ts",
     "./src.ts/utils/pbkdf2.ts": "./src.browser/pbkdf2.ts",
     "./src.ts/utils/random-bytes.ts": "./src.browser/random-bytes.ts",
+    "./src.ts/utils/shims.ts": "./src.browser/shims.ts",
     "xmlhttprequest": "./src.browser/xmlhttprequest.ts"
   },
   "keywords": [
