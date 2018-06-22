@@ -108,7 +108,6 @@ var Wallet = /** @class */ (function (_super) {
         return this.provider.getTransactionCount(this.address, blockTag);
     };
     Wallet.prototype.sendTransaction = function (transaction) {
-        var _this = this;
         if (!this.provider) {
             throw new Error('missing provider');
         }
@@ -131,10 +130,7 @@ var Wallet = /** @class */ (function (_super) {
         if (tx.chainId == null) {
             tx.chainId = this.provider.getNetwork().then(function (network) { return network.chainId; });
         }
-        return properties_1.resolveProperties(tx).then(function (tx) {
-            console.log('To Sign', tx);
-            return _this.provider.sendTransaction(_this.sign(tx));
-        });
+        return this.provider.sendTransaction(this.sign(tx));
     };
     Wallet.prototype.send = function (addressOrName, amountWei, options) {
         if (!options) {

@@ -29,7 +29,7 @@ function resolveProperties(object) {
         }
     });
     return Promise.all(promises).then(function () {
-        return object;
+        return result;
     });
 }
 exports.resolveProperties = resolveProperties;

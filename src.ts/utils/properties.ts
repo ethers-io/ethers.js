@@ -32,7 +32,7 @@ export function resolveProperties(object: any): Promise<any> {
     });
 
     return Promise.all(promises).then(() => {
-        return object;
+        return result;
     });
 }
 

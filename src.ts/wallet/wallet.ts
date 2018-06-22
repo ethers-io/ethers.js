@@ -127,11 +127,7 @@ export class Wallet extends Signer {
             tx.chainId = this.provider.getNetwork().then((network) => network.chainId);
         }
 
-        return resolveProperties(tx).then((tx) => {
-            console.log('To Sign', tx);
-            return this.provider.sendTransaction(this.sign(tx));
-        });
-
+        return this.provider.sendTransaction(this.sign(tx));
     }
 
     send(addressOrName: string, amountWei: BigNumberish, options: any): Promise<TransactionResponse> {
