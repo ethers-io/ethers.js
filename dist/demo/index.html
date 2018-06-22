@@ -241,33 +241,22 @@
                     fileReader.onload = function(e) {
                         var json = e.target.result;
 
-                        if (ethers.Wallet.isCrowdsaleWallet(json)) {
-                            showWallet(Wallet.decryptCrowdsale(json, password));
-
-                        } else if (ethers.Wallet.isValidWallet(json)) {
+                        if (ethers.Wallet.isEncryptedWallet(json)) {
                             showLoading('Decrypting Wallet...');
-                            var password = new ethers.Wallet.utils.Buffer(inputPassword.value);
 
                             cancelScrypt = false;
 
-                            ethers.Wallet.decrypt(json, password, function(error, wallet, progress) {
-                                if (error) {
-                                    if (error.message === 'invalid password') {
-                                        alert('Wrong Password');
-                                    } else {
-                                        console.log(error);
-                                        alert('Error Decrypting Wallet');
-                                    }
-                                    showSelect();
+                            ethers.Wallet.fromEncryptedJson(json, inputPassword.value, updateLoading).then(function(wallet) {
+                                showWallet(wallet);
 
-                                } else if (wallet) {
-                                    showWallet(wallet);
-
+                            }, function(error) {
+                                if (error.message === 'invalid password') {
+                                    alert('Wrong Password');
                                 } else {
-                                    updateLoading(progress);
+                                    console.log(error);
+                                    alert('Error Decrypting Wallet');
                                 }
-
-                                return cancelScrypt;
+                                showSelect();
                             });
                         } else {
                             alert('Unknown JSON wallet format');
