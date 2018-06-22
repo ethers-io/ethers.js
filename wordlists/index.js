@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var lang_ja_1 = require("./lang-ja");
+exports.ja = lang_ja_1.langJa;
+var lang_ko_1 = require("./lang-ko");
+exports.ko = lang_ko_1.langKo;
+var lang_it_1 = require("./lang-it");
+exports.it = lang_it_1.langIt;
+var lang_en_1 = require("./lang-en");
+exports.en = lang_en_1.langEn;
+var lang_zh_1 = require("./lang-zh");
+exports.zh_cn = lang_zh_1.langZhCn;
+exports.zh_tw = lang_zh_1.langZhTw;
+var zh = lang_zh_1.langZhCn;
+exports.zh = zh;

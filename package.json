@@ -2,7 +2,7 @@
   "name": "ethers",
   "version": "4.0.0",
   "description": "Ethereum wallet library.",
-  "main": "./src/index.js",
+  "main": "./index.js",
   "types": "./dist/ethers.d.ts",
   "scripts": {
     "build": "tsc -p ./tsconfig.json",

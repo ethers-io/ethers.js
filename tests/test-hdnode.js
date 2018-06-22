@@ -6,7 +6,7 @@ if (global.ethers) {
     console.log('Using global ethers; ' + __filename);
     var ethers = global.ethers;
 } else {
-    var ethers = require('../src');
+    var ethers = require('..');
 }
 
 var utils = require('./utils');
@@ -68,8 +68,8 @@ function testEasySeed(lang, locale) {
     });
 }
 
-testEasySeed(require('../src/wordlists/lang-ja').langJa, 'ja');
-testEasySeed(require('../src/wordlists/lang-zh').langZhCn, 'zh_cn');
-testEasySeed(require('../src/wordlists/lang-zh').langZhTw, 'zh_tw');
-testEasySeed(require('../src/wordlists/lang-it').langIt, 'it');
-testEasySeed(require('../src/wordlists/lang-ko').langKo, 'ko');
+testEasySeed(require('../wordlists/lang-ja').langJa, 'ja');
+testEasySeed(require('../wordlists/lang-zh').langZhCn, 'zh_cn');
+testEasySeed(require('../wordlists/lang-zh').langZhTw, 'zh_tw');
+testEasySeed(require('../wordlists/lang-it').langIt, 'it');
+testEasySeed(require('../wordlists/lang-ko').langKo, 'ko');

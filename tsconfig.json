@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-
-    "declaration": true,
+    "declaration": false,
     "esModuleInterop": true,
     "lib": [ "es2015", "es5", "dom" ],
     "module": "commonjs",
-    "outDir": "./src/",
+    "outDir": "./",
     "target": "es5",
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -21,9 +20,9 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true
   },
-  "include": [
-    "src.ts/*.ts",
-    "src.ts/**/*.ts"
+  "files": [
+      "./src.ts/index.ts",
+      "./src.ts/wordlists/index.ts"
   ]
 }
 

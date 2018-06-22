@@ -7,7 +7,7 @@ if (global.ethers) {
     console.log('Using global ethers; ' + __filename);
     var ethers = global.ethers;
 } else {
-    var ethers = require('../src');
+    var ethers = require('..');
 }
 
 var providers = ethers.providers;

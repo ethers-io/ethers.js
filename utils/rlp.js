@@ -32,17 +32,17 @@ function _encode(object) {
         return length.concat(payload);
     }
     else {
-        var data_1 = Array.prototype.slice.call(bytes_1.arrayify(object));
-        if (data_1.length === 1 && data_1[0] <= 0x7f) {
-            return data_1;
+        var data = Array.prototype.slice.call(bytes_1.arrayify(object));
+        if (data.length === 1 && data[0] <= 0x7f) {
+            return data;
         }
-        else if (data_1.length <= 55) {
-            data_1.unshift(0x80 + data_1.length);
-            return data_1;
+        else if (data.length <= 55) {
+            data.unshift(0x80 + data.length);
+            return data;
         }
-        var length = arrayifyInteger(data_1.length);
+        var length = arrayifyInteger(data.length);
         length.unshift(0xb7 + length.length);
-        return length.concat(data_1);
+        return length.concat(data);
     }
 }
 function encode(object) {

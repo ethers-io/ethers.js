@@ -756,16 +756,6 @@ declare module "index" {
     const version = "4.0.0";
     export { Wallet, HDNode, SigningKey, Contract, Interface, getNetwork, providers, errors, utils, version };
 }
-declare module "wordlists/lang-it" {
-    import { Wordlist } from "wordlists/wordlist";
-    class LangIt extends Wordlist {
-        constructor();
-        getWord(index: number): string;
-        getWordIndex(word: string): number;
-    }
-    const langIt: LangIt;
-    export { langIt };
-}
 declare module "wordlists/lang-ja" {
     import { Wordlist } from "wordlists/wordlist";
     class LangJa extends Wordlist {
@@ -788,6 +778,16 @@ declare module "wordlists/lang-ko" {
     const langKo: LangKo;
     export { langKo };
 }
+declare module "wordlists/lang-it" {
+    import { Wordlist } from "wordlists/wordlist";
+    class LangIt extends Wordlist {
+        constructor();
+        getWord(index: number): string;
+        getWordIndex(word: string): number;
+    }
+    const langIt: LangIt;
+    export { langIt };
+}
 declare module "wordlists/lang-zh" {
     import { Wordlist } from "wordlists/wordlist";
     class LangZh extends Wordlist {
@@ -800,5 +800,15 @@ declare module "wordlists/lang-zh" {
     const langZhCn: LangZh;
     const langZhTw: LangZh;
     export { langZhCn, langZhTw };
+}
+declare module "wordlists/index" {
+    import { Wordlist } from "wordlists/wordlist";
+    import { langJa as ja } from "wordlists/lang-ja";
+    import { langKo as ko } from "wordlists/lang-ko";
+    import { langIt as it } from "wordlists/lang-it";
+    import { langEn as en } from "wordlists/lang-en";
+    import { langZhCn as zh_cn, langZhTw as zh_tw } from "wordlists/lang-zh";
+    const zh: Wordlist;
+    export { en, it, ja, ko, zh, zh_cn, zh_tw };
 }
 //# sourceMappingURL=ethers.d.ts.map

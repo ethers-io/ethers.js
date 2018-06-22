@@ -15,6 +15,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
 var buffer = require('vinyl-buffer');
 
+
 /////////////////////////
 // Transforms
 
@@ -77,6 +78,17 @@ function padding(length) {
     while (pad.length < length) { pad += ' '; }
     return pad;
 }
+
+/**
+ *  Browser Library
+ *
+ *  Source: src.ts/index.ts src.ts/{contracts,providers,utils,wallet}/*.ts
+ *  Target: dist/ethers{.min,}.js
+ *
+ *  See the above transform tables which maps regular expressions to
+ *  replacement source for largely libraries we only require parts of.
+ *
+ */
 function transform(path, options) {
     var data = '';
 
@@ -102,30 +114,32 @@ function transform(path, options) {
     });
 }
 
-function createDefer(map) {
-    var output = "const map = " + JSON.stringify(map) + ';\n';
-    output += 'const defer = new Object();\n';
-    for (var key in map) {
-        output += 'Object.defineProperty(defer, "' + key + '", { get: function() { return ' + map[key] + '; } });\n';
-    }
-    output += 'module.exports = defer;\n';
-    return output
-}
-
+/**
+ *  Browser Wordlist files
+ *
+ *  Source: src.ts/wordlists/lang-*.ts.
+ *  Target: dist/wordlist-*.js
+ *
+ *  Since all of the functions these wordlists use is already
+ *  available from the global ethers library, we use this to
+ *  target the global ethers functions directly, rather than
+ *  re-include them.
+ *
+ */
 function transformBip39(path, options) {
     var data = '';
 
     return through(function(chunk) {
         data += chunk;
     }, function () {
-        var transformed = transformFile(path);
         var shortPath = path;
         if (shortPath.substring(0, __dirname.length) == __dirname) {
             shortPath = shortPath.substring(__dirname.length);
         }
-        var size = fs.readFileSync(path).length;
 
+        // Word list files...
         if (shortPath.match(/^\/src\.ts\/wordlists\//)) {
+            // If it is the wordlist class, register should export the wordlist
             if (shortPath === '/src.ts/wordlists/wordlist.ts') {
                 data += '\n\nexportWordlist = true;'
             }
@@ -151,13 +165,14 @@ function transformBip39(path, options) {
     });
 }
 
-function task(name, options) {
+
+function taskBundle(name, options) {
 
   gulp.task(name, function () {
 
     var result = browserify({
         basedir: '.',
-        debug: options.debug,
+        debug: false,
         entries: [ 'src.ts/' ],
         cache: {},
         packageCache: {},
@@ -182,18 +197,14 @@ function task(name, options) {
 }
 
 // Creates dist/ethers.js
-task("default", { filename: "ethers.js", debug: false, minify: false });
-
-// Creates dist/ethers-debug.js
-//task("debug", { filename: "ethers-debug.js", debug: true, minify: false });
+taskBundle("default", { filename: "ethers.js", minify: false });
 
 // Creates dist/ethers.min.js
-task("minified", { filename: "ethers.min.js", debug: false, minify: true });
+taskBundle("minified", { filename: "ethers.min.js", minify: true });
 
 // Crearte a single definition file and its map as dist/ethers.d.ts[.map]
 gulp.task("types", function() {
-    return ts.createProject("tsconfig.json")
-    .src()
+    return gulp.src(['./src.ts/index.ts', './src.ts/**/*.ts'])
     .pipe(ts({
         declaration: true,
         esModuleInterop: true,
@@ -208,6 +219,13 @@ gulp.task("types", function() {
     .pipe(gulp.dest("dist"))
 });
 
+/**
+ *  Browser Friendly BIP39 Wordlists
+ *
+ *  source: src.ts/wordlist/lang-*.ts
+ *  target: dist/wordlist-*.js
+ *
+ */
 function taskLang(locale) {
     gulp.task("bip39-" + locale, function() {
         return browserify({
