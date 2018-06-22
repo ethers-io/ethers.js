@@ -5,5 +5,7 @@ gulpfile.js
 src.browser/
 src.ts/
 
+tsconfig.json
+
 # To run tests, checkout GitHub
 tests/
