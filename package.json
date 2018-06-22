@@ -57,12 +57,13 @@
   },
   "keywords": [
     "ethereum",
+    "library",
     "wallet"
   ],
   "author": "Richard Moore <me@ricmoo.com>",
   "repository": {
     "type": "git",
-    "url": "git://github.com/ethers-io/ethers-wallet.git"
+    "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "license": "MIT"
 }

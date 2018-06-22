@@ -1,8 +1,9 @@
-Gruntfile.js
-Gruntfile-test.js
+# This is only needed for building dist and library files
+gulpfile.js
 
-# If you need these, checkout GitHub
-examples/
+# We do not need the TypeScipt source in deployments
+src.browser/
+src.ts/
 
 # To run tests, checkout GitHub
 tests/
