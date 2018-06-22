@@ -33,7 +33,9 @@ var empty = "module.exports = {};";
 // @TODO: Use path construction instead of ../..
 var brorand = "var randomBytes = require('../../src.ts/utils').randomBytes; module.exports = function(length) { return randomBytes(length); };";
 
-var process = "if (!global.setImmediate) { global.setImmedaite = setTimeout; };";
+// setImmediate is installed globally by our src.browser/shims.ts, loaded from src.ts/index.ts
+var process = "module.exports = { };";
+var timers = "module.exports = { setImmediate: global.setImmediate }; ";
 
 var transforms = {
 //    'ethers.js/package.json': JSON.stringify({ version: version }),
@@ -61,7 +63,7 @@ var transforms = {
     // Used by sha3 if it exists; (so make it no exist)
 //    "process/.*": undef,
     "process/browser.js": process,
-    "timers-browserify/main.js": empty,
+    "timers-browserify/main.js": timers,
 };
 
 function transformFile(path) {
