@@ -34,7 +34,7 @@ for (var i = 0; i < 2048; i++) {
 
 class LangZh extends Wordlist {
     private _country: string
-    constructor(country) {
+    constructor(country: string) {
         super('zh_' + country);
         defineReadOnly(this, '_country', country);
     }

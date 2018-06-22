@@ -36,6 +36,10 @@ export class SigningKey {
             defineReadOnly(this, 'path', privateKey.path);
             privateKeyBytes = arrayify(privateKey.privateKey);
         } else {
+            // A lot of common tools do not prefix private keys with a 0x
+            if (typeof(privateKey) === 'string' && privateKey.match(/^[0-9a-f]*$/i) && privateKey.length === 64) {
+                privateKey = '0x' + privateKey;
+            }
             privateKeyBytes = arrayify(privateKey);
         }
 

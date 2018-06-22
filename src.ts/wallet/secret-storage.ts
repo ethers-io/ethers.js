@@ -135,7 +135,7 @@ export function decryptCrowdsale(json: string, password: Arrayish | string): Sig
 }
 
 //@TODO: string or arrayish
-export function decrypt(json: string, password: any, progressCallback?: ProgressCallback): Promise<SigningKey> {
+export function decrypt(json: string, password: Arrayish, progressCallback?: ProgressCallback): Promise<SigningKey> {
     var data = JSON.parse(json);
 
     password = getPassword(password);

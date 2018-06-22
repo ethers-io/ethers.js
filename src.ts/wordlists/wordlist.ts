@@ -25,7 +25,7 @@ export abstract class Wordlist {
     }
 }
 
-export function register(lang) {
+export function register(lang: Wordlist): void {
     if (exportWordlist) {
         if (!global['wordlists']) { defineReadOnly(global, 'wordlists', { }); }
         defineReadOnly(global['wordlists'], lang.locale, lang);

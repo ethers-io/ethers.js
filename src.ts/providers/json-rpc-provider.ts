@@ -39,7 +39,8 @@ function getResult(payload) {
 //  - gasLimit => gas
 //  - All values hexlified
 //  - All numeric values zero-striped
-export function hexlifyTransaction(transaction: TransactionRequest) {
+// @TODO: Not any, a dictionary of string to strings
+export function hexlifyTransaction(transaction: TransactionRequest): any {
     var result: any = {};
 
     // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
@@ -131,7 +132,7 @@ export class JsonRpcSigner extends Signer {
         });
     }
 
-    unlock(password): Promise<boolean> {
+    unlock(password: string): Promise<boolean> {
         var provider = this.provider;
 
         return this.getAddress().then(function(address) {

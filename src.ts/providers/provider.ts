@@ -1066,6 +1066,7 @@ export class Provider {
         });
     }
 
+    // @TODO: Could probably use resolveProperties instead?
     _resolveNames(object: any, keys: Array<string>): Promise<any> {
         var promises = [];
 

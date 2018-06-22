@@ -109,12 +109,12 @@ class LangJa extends Wordlist {
         super('ja');
     }
 
-    getWord(index) {
+    getWord(index: number): string {
         loadWords();
         return words[index];
     }
 
-    getWordIndex(word) {
+    getWordIndex(word: string): number {
         loadWords();
         return words.indexOf(word);
     }
