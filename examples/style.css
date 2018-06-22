@@ -62,14 +62,14 @@ input[type=text] {
     border: 1px solid #555;
     font-size: 16px;
     padding: 10px;
-    width: 500px;
+    width: 501px;
 }
 
 input[type=password] {
     border: 1px solid #555;
     font-size: 16px;
     padding: 10px;
-    width: 500px;
+    width: 501px;
 }
 
 input[type=file] {
@@ -81,7 +81,7 @@ input[type=file] {
     padding: 10px;
     position: relative;
     dvisibility: hidden;
-    width: 500px;
+    width: 501px;
 }
 
 input[type=text].readonly {
@@ -105,15 +105,27 @@ input[type=text].readonly {
     box-shadow: 0px 0px 5px #888;
 }
 
+.clearfix {
+    clear: both;
+}
+
 .option {
     border: 1px solid #999;
+    box-sizing: border-box;
     cursor: pointer;
+    float: left;
     font-size: 16px;
     opacity: 0.3;
     padding: 10px;
+    margin-right: 20px;
     text-align: center;
     transition: opacity 0.1s linear;
-    width: 200px;
+    width: 110px;
+}
+
+.option span {
+    font-size: 0.8em;
+    opacity: 0.5;
 }
 
 .option.selected {

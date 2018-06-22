@@ -8,35 +8,6 @@
             <div class="centered">
                 <h1>Ethereum Wallet Tool</h1>
                 <hr />
-                <h2>Summon Brain Wallet</h2>
-                <p>
-                    A brain wallet generates an <i>Ethereum</i> wallet from a username and a password
-                    without using any servers to store your information. If you lose your username
-                    or password, <b>no one</b> can help you recover them. Anyone who can guess your
-                    username and password can steal your funds. Brain wallets should <b>not</b> be
-                    considered a safe way to store large amounts of ether nor for long periods of time.
-                </p>
-                <table>
-                    <tr>
-                        <th>E-mail Address:</th>
-                        <td><input type="text" placeholder="(e-mail address)" id="select-brainwallet-username" /></td>
-                    </tr>
-                    <tr>
-                        <th>Password:</th>
-                        <td><input type="password" placeholder="(password)" id="select-brainwallet-password" /></td>
-                    </tr>
-                    <tr>
-                        <th>Confirm Password:</th>
-                        <td><input type="password" placeholder="(same password)" id="select-brainwallet-confirm-password" /></td>
-                    </tr>
-                    <tr>
-                        <td> </td>
-                        <td>
-                            <div id="select-submit-brainwallet" class="submit disable">Summon Brain Wallet</div>
-                        </td>
-                    </tr>
-                </table>
-                <hr />
                 <h2>Load JSON Wallet</h2>
                 <p>
                     If you have a JSON wallet file from <i>geth</i> or from the initial <i>Ethereum</i>
@@ -149,8 +120,12 @@
                     <tr>
                         <th>Network:</th>
                         <td>
-                            <div class="option left" id="option-testnet">Testnet (Ropsten)</div>
-                            <div class="option right selected" id="option-mainnet">Mainnet (Homestead)</div>
+                            <div class="clearfix"></div>
+                            <div class="network option" data-network="ropsten">Ropsten<br /><span>testnet</span></div>
+                            <div class="network option" data-network="rinkeby">Rinkeby<br /><span>testnet</span></div>
+                            <div class="network option" data-network="kovan">Kovan<br /><span>testnet</span></div>
+                            <div class="network option last selected" data-network="homestead">Homestead<br /><span>mainnet</span></div>
+                            <div class="clearfix"></div>
                         </td>
                     </tr>
                     <tr>
@@ -202,6 +177,14 @@
 
         <script type="text/javascript" src="../../dist/ethers.js"></script>
         <script type="text/javascript">
+            function query(el, selector) {
+                if (!selector) {
+                    selector = el;
+                    el = document;
+                }
+                return Array.prototype.slice.call(el.querySelectorAll(selector));
+            }
+
             function setEnter(source, target) {
                 source.onkeyup = function(e) {
                     if (e.which === 13) { target.click(); }
@@ -221,51 +204,7 @@
                 });
             })();
 
-            (function() {
-                var inputUsername = document.getElementById('select-brainwallet-username');
-                var inputPassword = document.getElementById('select-brainwallet-password');
-                var inputConfirmPassword = document.getElementById('select-brainwallet-confirm-password');
-                var submit = document.getElementById('select-submit-brainwallet');
-
-                function checkBrainwallet() {
-                    if (inputUsername.value && inputPassword.value && inputPassword.value === inputConfirmPassword.value) {
-                        submit.classList.remove('disable');
-                    } else {
-                        submit.classList.add('disable');
-                    }
-                }
-                inputUsername.oninput = checkBrainwallet;
-                inputPassword.oninput = checkBrainwallet;
-                inputConfirmPassword.oninput = checkBrainwallet;
-
-                setEnter(inputUsername, submit);
-                setEnter(inputPassword, submit);
-                setEnter(inputConfirmPassword, submit);
-
-                submit.onclick = function() {
-                    if (submit.classList.contains('disable')) { return; }
-
-                    var username = new ethers.utils.toUtf8Bytes(inputUsername.value);
-                    var password = new ethers.utils.toUtf8Bytes(inputPassword.value);
-
-                    showLoading('Summoning Brain Wallet...');
-
-                    cancelScrypt = false;
-
-                    ethers.Wallet.fromBrainWallet(username, password, updateLoading).then(function(wallet) {
-                        showWallet(wallet);
-                        document.getElementById('wallet-username').textContent = inputUsername.value;
-
-                    }, function (error) {
-                        if (error.message !== 'cancelled') {
-                            alert('Unknown error');
-                        }
-                        showSelect();
-                    });
-                };
-            })();
-
-
+            // JSON Wallet
             (function() {
                 var inputFile = document.getElementById('select-wallet-file');
                 var targetDrop = document.getElementById('select-wallet-drop');
@@ -339,6 +278,7 @@
 
             })();
 
+            // Raw Private Key
             (function() {
                 var inputPrivatekey = document.getElementById('select-privatekey');
                 var submit = document.getElementById('select-submit-privatekey');
@@ -362,6 +302,31 @@
                 }
             })();
 
+            // Mnemonic Phrase
+            (function() {
+                var inputPhrase = document.getElementById('select-mnemonic-phrase');
+                var inputPath = document.getElementById('select-mnemonic-path');
+                var submit = document.getElementById('select-submit-mnemonic');
+
+                function check() {
+                    if (ethers.HDNode.isValidMnemonic(inputPhrase.value)) {
+                        submit.classList.remove('disable');
+                    } else {
+                        submit.classList.add('disable');
+                    }
+                }
+                inputPhrase.oninput = check;
+                inputPath.oninput = check;
+
+                setEnter(inputPhrase, submit);
+                setEnter(inputPath, submit);
+
+                submit.onclick = function() {
+                    if (submit.classList.contains('disable')) { return; }
+                    showWallet(ethers.Wallet.fromMnemonic(inputPhrase.value, inputPath.value));
+                }
+            })();
+
 
             var activeWallet = null;
 
@@ -379,7 +344,7 @@
                     addActivity('> Refreshing details...');
                     activeWallet.getBalance('pending').then(function(balance) {
                         addActivity('< Balance: ' + balance.toString(10));
-                        inputBalance.value = ethers.utils.formatEther(balance, {commify: true});
+                        inputBalance.value = ethers.utils.formatEther(balance, { commify: true });
                     }, function(error) {
                         showError(error);
                     });
@@ -400,7 +365,10 @@
                 return function(message, url) {
                     var line = document.createElement('a');
                     line.textContent = message;
-                    if (url) { line.setAttribute('href', url); }
+                    if (url) {
+                        line.setAttribute('href', url);
+                        line.setAttribute('target', '_blank');
+                    }
                     activity.appendChild(line);
                 }
             })();
@@ -426,28 +394,18 @@
                 inputTargetAddress.oninput = check;
                 inputAmount.oninput = check;
 
-                var optionTestnet = document.getElementById('option-testnet');
-                var optionMainnet = document.getElementById('option-mainnet');
-
-                // Select the testnet network
-                optionTestnet.onclick = function() {
-                    if (optionTestnet.classList.contains('selected')) { return; }
-                    addActivity('! Switched network: Testnet');
-                    activeWallet.provider = new ethers.providers.getDefaultProvider(true);
-                    optionTestnet.classList.add('selected');
-                    optionMainnet.classList.remove('selected');
-                    refresh();
-                }
-
-                // Select the mainnet network
-                optionMainnet.onclick = function() {
-                    if (optionMainnet.classList.contains('selected')) { return; }
-                    addActivity('! Switched network: Mainnet');
-                    activeWallet.provider = new ethers.providers.getDefaultProvider(false);
-                    optionTestnet.classList.remove('selected');
-                    optionMainnet.classList.add('selected');
-                    refresh();
-                }
+                query('.network.option').forEach(function(el) {
+                    var network = el.getAttribute('data-network');
+                    el.onclick = function() {
+                        addActivity('! Switched network: ' + network);
+                        activeWallet = activeWallet.connect(ethers.providers.getDefaultProvider(network));
+                        query('.network.option.selected').forEach(function(el) {
+                            el.classList.remove('selected');
+                        });
+                        el.classList.add('selected');
+                        refresh();
+                    };
+                });
 
                 // Send ether
                 submit.onclick = function() {
@@ -455,17 +413,22 @@
                     // Matt (from Etherscan) is working on a gasPrice API call, which
                     // should be done within a week or so.
                     // @TODO
-                    var gasPrice = (activeWallet.provider.testnet ? 0x4a817c800: 0xba43b7400);
-                    console.log('GasPrice: ' + gasPrice);
+                    //var gasPrice = (activeWallet.provider.testnet ? 0x4a817c800: 0xba43b7400);
+                    //console.log('GasPrice: ' + gasPrice);
 
                     var targetAddress = ethers.utils.getAddress(inputTargetAddress.value);
                     var amountWei = ethers.utils.parseEther(inputAmount.value);
                     activeWallet.send(targetAddress, amountWei, {
-                        gasPrice: gasPrice,
+                        gasPrice: activeWallet.provider.getGasPrice(),
                         gasLimit: 21000,
-                    }).then(function(txid) {
-                        var url = (activeWallet.provider.testnet ? 'https://testnet.etherscan.io/tx/': 'https://etherscan.io/tx/') + txid;
-                        addActivity('< Transaction sent: ' + txid.substring(0, 20) + '...', url);
+                    }).then(function(tx) {
+                        console.log(tx);
+
+                        // Since we only use standard networks, network will always be known
+                        var tag = activeWallet.provider.network.name + '.';
+                        if (tag === 'homestead.') { tag = ''; }
+                        var url = 'https://' + tag + 'etherscan.io/tx/' + tx.hash;
+                        addActivity('< Transaction sent: ' + tx.hash.substring(0, 20) + '...', url);
                         alert('Success!');
 
                         inputTargetAddress.value = '';
@@ -474,6 +437,7 @@
 
                         refresh();
                     }, function(error) {
+                        console.log(error);
                         showError(error);
                     });
                 }
@@ -494,9 +458,8 @@
             }
 
             function showWallet(wallet) {
-                var testnet = document.getElementById('option-testnet').classList.contains('selected');
-                activeWallet = wallet;
-                activeWallet.provider = new ethers.providers.getDefaultProvider(testnet);
+                var network = document.querySelector('.network.option.selected').getAttribute('data-network');
+                activeWallet = wallet.connect(new ethers.providers.getDefaultProvider(network));
 
                 document.getElementById('screen-select').style.display = 'none';
                 document.getElementById('screen-loading').style.display = 'none';
@@ -512,7 +475,7 @@
             }
 
             //var privateKey = '0x3141592653589793238462643383279502884197169399375105820974944592';
-            //showWallet(new Wallet(privateKey));
+            //showWallet(new ethers.Wallet(privateKey));
 
         </script>
     </body>
