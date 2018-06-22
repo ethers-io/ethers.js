@@ -48,6 +48,7 @@ function getResult(payload) {
 //  - gasLimit => gas
 //  - All values hexlified
 //  - All numeric values zero-striped
+// @TODO: Not any, a dictionary of string to strings
 function hexlifyTransaction(transaction) {
     var result = {};
     // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.

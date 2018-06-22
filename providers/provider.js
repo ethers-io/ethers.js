@@ -923,6 +923,7 @@ var Provider = /** @class */ (function () {
             });
         });
     };
+    // @TODO: Could probably use resolveProperties instead?
     Provider.prototype._resolveNames = function (object, keys) {
         var promises = [];
         var result = copyObject(object);

@@ -233,7 +233,7 @@ declare module "wordlists/wordlist" {
         split(mnemonic: string): Array<string>;
         join(words: Array<string>): string;
     }
-    export function register(lang: any): void;
+    export function register(lang: Wordlist): void;
 }
 declare module "wordlists/lang-en" {
     import { Wordlist } from "wordlists/wordlist";
@@ -318,7 +318,7 @@ declare module "wallet/secret-storage" {
     export function isCrowdsaleWallet(json: string): boolean;
     export function isValidWallet(json: string): boolean;
     export function decryptCrowdsale(json: string, password: Arrayish | string): SigningKey;
-    export function decrypt(json: string, password: any, progressCallback?: ProgressCallback): Promise<SigningKey>;
+    export function decrypt(json: string, password: Arrayish, progressCallback?: ProgressCallback): Promise<SigningKey>;
     export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: any, progressCallback?: ProgressCallback): Promise<string>;
 }
 declare module "utils/hash" {
@@ -364,7 +364,7 @@ declare module "wallet/wallet" {
     import { SigningKey } from "wallet/signing-key";
     import { BlockTag, Provider, TransactionRequest, TransactionResponse } from "providers/provider";
     import { Wordlist } from "wordlists/wordlist";
-    import { BigNumber, BigNumberish } from "utils/bignumber";
+    import { BigNumber } from "utils/bignumber";
     import { Arrayish } from "utils/bytes";
     export abstract class Signer {
         provider?: Provider;
@@ -390,15 +390,13 @@ declare module "wallet/wallet" {
         getBalance(blockTag?: BlockTag): Promise<BigNumber>;
         getTransactionCount(blockTag?: BlockTag): Promise<number>;
         sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
-        send(addressOrName: string, amountWei: BigNumberish, options: any): Promise<TransactionResponse>;
         encrypt(password: Arrayish | string, options: any, progressCallback: ProgressCallback): Promise<string>;
         /**
          *  Static methods to create Wallet instances.
          */
         static createRandom(options: any): Wallet;
-        static fromEncryptedWallet(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet>;
+        static fromEncryptedJson(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet>;
         static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet;
-        static fromBrainWallet(username: Arrayish | string, password: Arrayish | string, progressCallback: ProgressCallback): Promise<Wallet>;
         /**
          *  Determine if this is an encryped JSON wallet.
          */
@@ -561,7 +559,7 @@ declare module "providers/provider" {
 }
 declare module "contracts/contract" {
     import { Interface } from "contracts/interface";
-    import { Provider, TransactionResponse } from "providers/provider";
+    import { Provider, TransactionRequest, TransactionResponse } from "providers/provider";
     import { Signer } from "wallet/wallet";
     import { ParamType } from "utils/abi-coder";
     import { BigNumber } from "utils/bignumber";
@@ -583,6 +581,8 @@ declare module "contracts/contract" {
         readonly addressPromise: Promise<string>;
         readonly deployTransaction: TransactionResponse;
         constructor(addressOrName: string, contractInterface: Contractish, signerOrProvider: Signer | Provider);
+        fallback(overrides?: TransactionRequest): Promise<TransactionResponse>;
+        callFallback(overrides?: TransactionRequest): Promise<string>;
         connect(signerOrProvider: Signer | Provider): Contract;
         deploy(bytecode: string, ...args: Array<any>): Promise<Contract>;
     }
@@ -645,7 +645,7 @@ declare module "providers/json-rpc-provider" {
         getTransactionCount(blockTag: any): Promise<number>;
         sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
         signMessage(message: Arrayish | string): Promise<string>;
-        unlock(password: any): Promise<boolean>;
+        unlock(password: string): Promise<boolean>;
     }
     export class JsonRpcProvider extends Provider {
         readonly connection: ConnectionInfo;
@@ -747,6 +747,7 @@ declare module "wallet/index" {
     export { HDNode, SigningKey, Wallet };
 }
 declare module "index" {
+    import './utils/shims';
     import { Contract, Interface } from "contracts/index";
     import * as providers from "providers/index";
     import * as errors from "utils/errors";
@@ -760,8 +761,8 @@ declare module "wordlists/lang-ja" {
     import { Wordlist } from "wordlists/wordlist";
     class LangJa extends Wordlist {
         constructor();
-        getWord(index: any): string;
-        getWordIndex(word: any): number;
+        getWord(index: number): string;
+        getWordIndex(word: string): number;
         split(mnemonic: string): Array<string>;
         join(words: Array<string>): string;
     }
@@ -792,7 +793,7 @@ declare module "wordlists/lang-zh" {
     import { Wordlist } from "wordlists/wordlist";
     class LangZh extends Wordlist {
         private _country;
-        constructor(country: any);
+        constructor(country: string);
         getWord(index: number): string;
         getWordIndex(word: string): number;
         split(mnemonic: string): Array<string>;

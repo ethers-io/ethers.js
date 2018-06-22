@@ -9,9 +9,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -20,7 +17,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var scrypt_js_1 = __importDefault(require("scrypt-js"));
 var hdnode_1 = require("./hdnode");
 var secretStorage = __importStar(require("./secret-storage"));
 var signing_key_1 = require("./signing-key");
@@ -30,12 +26,7 @@ var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
 var random_bytes_1 = require("../utils/random-bytes");
 var transaction_1 = require("../utils/transaction");
-var utf8_1 = require("../utils/utf8");
 var errors = __importStar(require("../utils/errors"));
-// This ensures we inject a setImmediate into the global space, which
-// dramatically improves the performance of the scrypt PBKDF.
-console.log("Fix this! Setimmediate");
-//import _setimmediate = require('setimmediate');
 var Signer = /** @class */ (function () {
     function Signer() {
     }
@@ -132,18 +123,6 @@ var Wallet = /** @class */ (function (_super) {
         }
         return this.provider.sendTransaction(this.sign(tx));
     };
-    Wallet.prototype.send = function (addressOrName, amountWei, options) {
-        if (!options) {
-            options = {};
-        }
-        return this.sendTransaction({
-            to: addressOrName,
-            gasLimit: options.gasLimit,
-            gasPrice: options.gasPrice,
-            nonce: options.nonce,
-            value: amountWei,
-        });
-    };
     Wallet.prototype.encrypt = function (password, options, progressCallback) {
         if (typeof (options) === 'function' && !progressCallback) {
             progressCallback = options;
@@ -182,7 +161,7 @@ var Wallet = /** @class */ (function (_super) {
         var mnemonic = hdnode_1.entropyToMnemonic(entropy, options.locale);
         return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
     };
-    Wallet.fromEncryptedWallet = function (json, password, progressCallback) {
+    Wallet.fromEncryptedJson = function (json, password, progressCallback) {
         if (progressCallback && typeof (progressCallback) !== 'function') {
             throw new Error('invalid callback');
         }
@@ -220,36 +199,6 @@ var Wallet = /** @class */ (function (_super) {
             path = hdnode_1.defaultPath;
         }
         return new Wallet(hdnode_1.fromMnemonic(mnemonic, wordlist).derivePath(path));
-    };
-    Wallet.fromBrainWallet = function (username, password, progressCallback) {
-        if (progressCallback && typeof (progressCallback) !== 'function') {
-            throw new Error('invalid callback');
-        }
-        if (typeof (username) === 'string') {
-            username = utf8_1.toUtf8Bytes(username, utf8_1.UnicodeNormalizationForm.NFKC);
-        }
-        else {
-            username = bytes_1.arrayify(username);
-        }
-        if (typeof (password) === 'string') {
-            password = utf8_1.toUtf8Bytes(password, utf8_1.UnicodeNormalizationForm.NFKC);
-        }
-        else {
-            password = bytes_1.arrayify(password);
-        }
-        return new Promise(function (resolve, reject) {
-            scrypt_js_1.default(password, username, (1 << 18), 8, 1, 32, function (error, progress, key) {
-                if (error) {
-                    reject(error);
-                }
-                else if (key) {
-                    resolve(new Wallet(bytes_1.hexlify(key)));
-                }
-                else if (progressCallback) {
-                    return progressCallback(progress);
-                }
-            });
-        });
     };
     /**
      *  Determine if this is an encryped JSON wallet.

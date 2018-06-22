@@ -245,6 +245,34 @@ var Contract = /** @class */ (function () {
             Object.defineProperty(_this.events, eventName, property);
         }, this);
     }
+    Contract.prototype.fallback = function (overrides) {
+        if (!this.signer) {
+            errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' });
+        }
+        var tx = properties_1.shallowCopy(overrides || {});
+        ['from', 'to'].forEach(function (key) {
+            if (tx.to == null) {
+                return;
+            }
+            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
+        });
+        tx.to = this.addressPromise;
+        return this.signer.sendTransaction(tx);
+    };
+    Contract.prototype.callFallback = function (overrides) {
+        if (!this.provider) {
+            errors.throwError('call (constant functions) require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'call(fallback)' });
+        }
+        var tx = properties_1.shallowCopy(overrides || {});
+        ['to', 'value'].forEach(function (key) {
+            if (tx.to == null) {
+                return;
+            }
+            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
+        });
+        tx.to = this.addressPromise;
+        return this.provider.call(tx);
+    };
     // Reconnect to a different signer or provider
     Contract.prototype.connect = function (signerOrProvider) {
         return new Contract(this.address, this.interface, signerOrProvider);
@@ -260,6 +288,10 @@ var Contract = /** @class */ (function () {
         }
         if (this.signer == null) {
             throw new Error('missing signer'); // @TODO: errors.throwError
+        }
+        // A lot of common tools do not prefix bytecode with a 0x
+        if (typeof (bytecode) === 'string' && bytecode.match(/^[0-9a-f]*$/i) && (bytecode.length % 2) == 0) {
+            bytecode = '0x' + bytecode;
         }
         if (!bytes_1.isHexString(bytecode)) {
             errors.throwError('bytecode must be a valid hex string', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
