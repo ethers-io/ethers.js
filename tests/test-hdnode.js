@@ -55,6 +55,7 @@ function testEasySeed(lang, locale) {
         var tests = utils.loadJson('easyseed-bip39/bip39_vectors.' + locale + '.json');
         tests.forEach(function(test) {
             it('test - ' + test.entropy, function() {
+                this.timeout(100000);
                 var seed = ethers.HDNode.mnemonicToSeed(test.mnemonic, test.passphrase);
                 assert.equal(seed, '0x' + test.seed, 'seeds match');
 
