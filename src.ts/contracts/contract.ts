@@ -2,7 +2,7 @@
 
 import { Interface } from './interface';
 
-import { Provider, TransactionResponse } from '../providers/provider';
+import { Provider, TransactionRequest, TransactionResponse } from '../providers/provider';
 import { Signer } from '../wallet/wallet';
 
 import { getContractAddress } from '../utils/address';
@@ -303,6 +303,38 @@ export class Contract {
         }, this);
     }
 
+    fallback(overrides?: TransactionRequest): Promise<TransactionResponse> {
+        if (!this.signer) {
+            errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' })
+        }
+
+        var tx: TransactionRequest = shallowCopy(overrides || {});
+
+        ['from', 'to'].forEach(function(key) {
+            if (tx.to == null) { return; }
+            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key })
+        });
+
+        tx.to = this.addressPromise;
+        return this.signer.sendTransaction(tx);
+    }
+
+    callFallback(overrides?: TransactionRequest): Promise<string> {
+        if (!this.provider) {
+            errors.throwError('call (constant functions) require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'call(fallback)' })
+        }
+
+        var tx: TransactionRequest = shallowCopy(overrides || {});
+
+        ['to', 'value'].forEach(function(key) {
+            if (tx.to == null) { return; }
+            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key })
+        });
+
+        tx.to = this.addressPromise;
+        return this.provider.call(tx);
+    }
+
     // Reconnect to a different signer or provider
     connect(signerOrProvider: Signer | Provider): Contract {
         return new Contract(this.address, this.interface, signerOrProvider);
@@ -314,6 +346,11 @@ export class Contract {
     deploy(bytecode: string, ...args: Array<any>): Promise<Contract> {
         if (this.signer == null) {
             throw new Error('missing signer'); // @TODO: errors.throwError
+        }
+
+        // A lot of common tools do not prefix bytecode with a 0x
+        if (typeof(bytecode) === 'string' && bytecode.match(/^[0-9a-f]*$/i) && (bytecode.length % 2) == 0) {
+            bytecode = '0x' + bytecode;
         }
 
         if (!isHexString(bytecode)) {
