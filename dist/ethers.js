@@ -8340,7 +8340,6 @@ module.exports = { };
         var limit = parseInt(1000 / r);
 
         // Trick from scrypt-async; if there is a setImmediate shim in place, use it
-        console.log('SS2', typeof(setImmediate), window);
         var nextTick = (typeof(setImmediate) !== 'undefined') ? setImmediate : setTimeout;
 
         // This is really all I changed; making scryptsy a state machine so we occasionally
