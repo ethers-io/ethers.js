@@ -10,6 +10,7 @@ if (global.ethers) {
     var ethers = require('..');
 }
 
+/* // Brain Wallets are discontinued
 describe('Test Brain Wallets', function() {
     var Wallet = ethers.Wallet;
 
@@ -32,6 +33,7 @@ describe('Test Brain Wallets', function() {
         });
     });
 });
+*/
 
 describe('Test JSON Wallets', function() {
     var Wallet = ethers.Wallet;
@@ -43,7 +45,7 @@ describe('Test JSON Wallets', function() {
             assert.ok(Wallet.isEncryptedWallet(test.json),
                 'detect encrypted JSON wallet');
 
-            return Wallet.fromEncryptedWallet(test.json, test.password).then(function(wallet) {
+            return Wallet.fromEncryptedJson(test.json, test.password).then(function(wallet) {
                 assert.equal(wallet.privateKey, test.privateKey,
                     'generated correct private key - ' + wallet.privateKey);
                 assert.equal(wallet.address.toLowerCase(), test.address,
@@ -64,7 +66,7 @@ describe('Test JSON Wallets', function() {
             this.timeout(1000000);
 
             return wallet.encrypt(password).then(function(json) {
-                return Wallet.fromEncryptedWallet(json, password).then(function(decryptedWallet) {
+                return Wallet.fromEncryptedJson(json, password).then(function(decryptedWallet) {
                     assert.equal(decryptedWallet.address, wallet.address,
                         'decrypted wallet - ' + wallet.privateKey);
                     return decryptedWallet.encrypt(password).then(function(encryptedWallet) {
