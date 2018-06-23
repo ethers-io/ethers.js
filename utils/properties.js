@@ -22,7 +22,9 @@ function resolveProperties(object) {
     Object.keys(object).forEach(function (key) {
         var value = object[key];
         if (value instanceof Promise) {
-            promises.push(value.then(function (value) { result[key] = value; }));
+            promises.push(value.then(function (value) {
+                result[key] = value;
+            }));
         }
         else {
             result[key] = value;

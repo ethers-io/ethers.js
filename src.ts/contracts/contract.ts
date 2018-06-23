@@ -5,8 +5,9 @@ import { EventDescription, Interface } from './interface';
 import { Provider, TransactionRequest, TransactionResponse } from '../providers/provider';
 import { Signer } from '../wallet/wallet';
 
+import { defaultAbiCoder } from '../utils/abi-coder';
 import { getContractAddress } from '../utils/address';
-import { isHexString } from '../utils/bytes';
+import { hexDataLength, hexDataSlice, isHexString } from '../utils/bytes';
 import { ParamType } from '../utils/abi-coder';
 import { BigNumber, ConstantZero } from '../utils/bignumber';
 import { defineReadOnly, shallowCopy } from '../utils/properties';
@@ -105,6 +106,19 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                 }
 
                 return contract.provider.call(tx).then((value) => {
+
+                    if ((hexDataLength(value) % 32) === 4 && hexDataSlice(value, 0, 4) === '0x08c379a0') {
+                        let reason = defaultAbiCoder.decode([ 'string' ], hexDataSlice(value, 4));
+                        errors.throwError('call revert exception', errors.CALL_EXCEPTION, {
+                            address: contract.address,
+                            method: method.signature,
+                            args: params,
+                            errorSignature: 'Error(string)',
+                            errorArgs: [ reason ],
+                            reason: reason
+                        });
+                    }
+
                     try {
                         let result = method.decode(value);
                         if (method.outputs.length === 1) {
@@ -117,7 +131,7 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                             errors.throwError('call exception', errors.CALL_EXCEPTION, {
                                 address: contract.address,
                                 method: method.signature,
-                                value: params
+                                args: params
                             });
                         }
                         throw error;

@@ -877,9 +877,7 @@ export class Provider {
                 return this.resolveName(addressOrName).then((address) => {
                     var params = { address: address, blockTag: checkBlockTag(blockTag) };
                     return this.perform('getTransactionCount', params).then((result) => {
-                        var value = parseInt(result);
-                        if (value != result) { throw new Error('invalid response - getTransactionCount'); }
-                        return value;
+                        return bigNumberify(result).toNumber();
                     });
                 });
             });
@@ -943,10 +941,11 @@ export class Provider {
 
 
     call(transaction: TransactionRequest): Promise<string> {
+        let tx: TransactionRequest = shallowCopy(transaction);
         return this.ready.then(() => {
-            return resolveProperties(transaction).then((transaction) => {
-                return this._resolveNames(transaction, [ 'to', 'from' ]).then((transaction) => {
-                    var params = { transaction: checkTransactionRequest(transaction) };
+            return resolveProperties(tx).then((tx) => {
+                return this._resolveNames(tx, [ 'to', 'from' ]).then((tx) => {
+                    var params = { transaction: checkTransactionRequest(tx) };
                     return this.perform('call', params).then((result) => {
                         return hexlify(result);
                     });
@@ -956,10 +955,16 @@ export class Provider {
     }
 
     estimateGas(transaction: TransactionRequest) {
+        let tx: TransactionRequest = {
+            to: transaction.to,
+            from: transaction.from,
+            data: transaction.data
+        };
+
         return this.ready.then(() => {
-            return resolveProperties(transaction).then((transaction) => {
-                return this._resolveNames(transaction, [ 'to', 'from' ]).then((transaction) => {
-                    var params = {transaction: checkTransactionRequest(transaction)};
+            return resolveProperties(tx).then((tx) => {
+                return this._resolveNames(tx, [ 'to', 'from' ]).then((tx) => {
+                    var params = { transaction: checkTransactionRequest(tx) };
                     return this.perform('estimateGas', params).then((result) => {
                         return bigNumberify(result);
                     });

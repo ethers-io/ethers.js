@@ -714,11 +714,7 @@ var Provider = /** @class */ (function () {
                 return _this.resolveName(addressOrName).then(function (address) {
                     var params = { address: address, blockTag: checkBlockTag(blockTag) };
                     return _this.perform('getTransactionCount', params).then(function (result) {
-                        var value = parseInt(result);
-                        if (value != result) {
-                            throw new Error('invalid response - getTransactionCount');
-                        }
-                        return value;
+                        return bignumber_1.bigNumberify(result).toNumber();
                     });
                 });
             });
@@ -783,10 +779,11 @@ var Provider = /** @class */ (function () {
     };
     Provider.prototype.call = function (transaction) {
         var _this = this;
+        var tx = properties_1.shallowCopy(transaction);
         return this.ready.then(function () {
-            return properties_1.resolveProperties(transaction).then(function (transaction) {
-                return _this._resolveNames(transaction, ['to', 'from']).then(function (transaction) {
-                    var params = { transaction: checkTransactionRequest(transaction) };
+            return properties_1.resolveProperties(tx).then(function (tx) {
+                return _this._resolveNames(tx, ['to', 'from']).then(function (tx) {
+                    var params = { transaction: checkTransactionRequest(tx) };
                     return _this.perform('call', params).then(function (result) {
                         return bytes_1.hexlify(result);
                     });
@@ -796,10 +793,15 @@ var Provider = /** @class */ (function () {
     };
     Provider.prototype.estimateGas = function (transaction) {
         var _this = this;
+        var tx = {
+            to: transaction.to,
+            from: transaction.from,
+            data: transaction.data
+        };
         return this.ready.then(function () {
-            return properties_1.resolveProperties(transaction).then(function (transaction) {
-                return _this._resolveNames(transaction, ['to', 'from']).then(function (transaction) {
-                    var params = { transaction: checkTransactionRequest(transaction) };
+            return properties_1.resolveProperties(tx).then(function (tx) {
+                return _this._resolveNames(tx, ['to', 'from']).then(function (tx) {
+                    var params = { transaction: checkTransactionRequest(tx) };
                     return _this.perform('estimateGas', params).then(function (result) {
                         return bignumber_1.bigNumberify(result);
                     });

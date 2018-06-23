@@ -9039,6 +9039,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var interface_1 = require("./interface");
 var provider_1 = require("../providers/provider");
 var wallet_1 = require("../wallet/wallet");
+var abi_coder_1 = require("../utils/abi-coder");
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var bignumber_1 = require("../utils/bignumber");
@@ -9122,6 +9123,17 @@ function runMethod(contract, functionName, estimateOnly) {
                     tx.from = contract.signer.getAddress();
                 }
                 return contract.provider.call(tx).then(function (value) {
+                    if ((bytes_1.hexDataLength(value) % 32) === 4 && bytes_1.hexDataSlice(value, 0, 4) === '0x08c379a0') {
+                        var reason = abi_coder_1.defaultAbiCoder.decode(['string'], bytes_1.hexDataSlice(value, 4));
+                        errors.throwError('call revert exception', errors.CALL_EXCEPTION, {
+                            address: contract.address,
+                            method: method.signature,
+                            args: params,
+                            errorSignature: 'Error(string)',
+                            errorArgs: [reason],
+                            reason: reason
+                        });
+                    }
                     try {
                         var result = method.decode(value);
                         if (method.outputs.length === 1) {
@@ -9134,7 +9146,7 @@ function runMethod(contract, functionName, estimateOnly) {
                             errors.throwError('call exception', errors.CALL_EXCEPTION, {
                                 address: contract.address,
                                 method: method.signature,
-                                value: params
+                                args: params
                             });
                         }
                         throw error;
@@ -9339,7 +9351,7 @@ var Contract = /** @class */ (function () {
 }());
 exports.Contract = Contract;
 
-},{"../providers/provider":57,"../utils/address":60,"../utils/bignumber":61,"../utils/bytes":62,"../utils/errors":63,"../utils/properties":67,"../wallet/wallet":80,"./interface":50}],49:[function(require,module,exports){
+},{"../providers/provider":57,"../utils/abi-coder":59,"../utils/address":60,"../utils/bignumber":61,"../utils/bytes":62,"../utils/errors":63,"../utils/properties":67,"../wallet/wallet":80,"./interface":50}],49:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var contract_1 = require("./contract");
@@ -11362,11 +11374,7 @@ var Provider = /** @class */ (function () {
                 return _this.resolveName(addressOrName).then(function (address) {
                     var params = { address: address, blockTag: checkBlockTag(blockTag) };
                     return _this.perform('getTransactionCount', params).then(function (result) {
-                        var value = parseInt(result);
-                        if (value != result) {
-                            throw new Error('invalid response - getTransactionCount');
-                        }
-                        return value;
+                        return bignumber_1.bigNumberify(result).toNumber();
                     });
                 });
             });
@@ -11431,10 +11439,11 @@ var Provider = /** @class */ (function () {
     };
     Provider.prototype.call = function (transaction) {
         var _this = this;
+        var tx = properties_1.shallowCopy(transaction);
         return this.ready.then(function () {
-            return properties_1.resolveProperties(transaction).then(function (transaction) {
-                return _this._resolveNames(transaction, ['to', 'from']).then(function (transaction) {
-                    var params = { transaction: checkTransactionRequest(transaction) };
+            return properties_1.resolveProperties(tx).then(function (tx) {
+                return _this._resolveNames(tx, ['to', 'from']).then(function (tx) {
+                    var params = { transaction: checkTransactionRequest(tx) };
                     return _this.perform('call', params).then(function (result) {
                         return bytes_1.hexlify(result);
                     });
@@ -11444,10 +11453,15 @@ var Provider = /** @class */ (function () {
     };
     Provider.prototype.estimateGas = function (transaction) {
         var _this = this;
+        var tx = {
+            to: transaction.to,
+            from: transaction.from,
+            data: transaction.data
+        };
         return this.ready.then(function () {
-            return properties_1.resolveProperties(transaction).then(function (transaction) {
-                return _this._resolveNames(transaction, ['to', 'from']).then(function (transaction) {
-                    var params = { transaction: checkTransactionRequest(transaction) };
+            return properties_1.resolveProperties(tx).then(function (tx) {
+                return _this._resolveNames(tx, ['to', 'from']).then(function (tx) {
+                    var params = { transaction: checkTransactionRequest(tx) };
                     return _this.perform('estimateGas', params).then(function (result) {
                         return bignumber_1.bigNumberify(result);
                     });
@@ -13515,7 +13529,9 @@ function resolveProperties(object) {
     Object.keys(object).forEach(function (key) {
         var value = object[key];
         if (value instanceof Promise) {
-            promises.push(value.then(function (value) { result[key] = value; }));
+            promises.push(value.then(function (value) {
+                result[key] = value;
+            }));
         }
         else {
             result[key] = value;

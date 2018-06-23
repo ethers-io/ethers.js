@@ -19,12 +19,14 @@ export function defineFrozen(object: any, name: string, value: any): void {
 export function resolveProperties(object: any): Promise<any> {
     let result: any = {};
 
-    let promises: Array<Promise<any>> = [];
+    let promises: Array<Promise<void>> = [];
     Object.keys(object).forEach((key) => {
         let value = object[key];
         if (value instanceof Promise) {
             promises.push(
-                value.then((value) => { result[key] = value; })
+                value.then((value) => {
+                    result[key] = value;
+                })
             );
         } else {
             result[key] = value;
