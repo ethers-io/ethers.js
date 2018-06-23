@@ -14,47 +14,55 @@ const names = [
     'ether',
 ];
 
-var getUnitInfo = (function() {
-    var unitInfos = {};
+type UnitInfo = {
+    decimals: number;
+    tenPower: BigNumber;
+};
 
-    function getUnitInfo(value) {
-        return {
-            decimals: value.length - 1,
-            tenPower: bigNumberify(value)
-        };
-    }
+var unitInfos: { [key: string]: UnitInfo } = {};
+
+function _getUnitInfo(value: string): UnitInfo {
+    return {
+        decimals: value.length - 1,
+        tenPower: bigNumberify(value)
+    };
+}
+
+// Build cache of common units
+(function() {
 
     // Cache the common units
-    var value = '1';
+    let value = '1';
     names.forEach(function(name) {
-        var info = getUnitInfo(value);
+        let info = _getUnitInfo(value);
         unitInfos[name.toLowerCase()] = info;
         unitInfos[String(info.decimals)] = info;
         value += '000';
     });
-
-    return function(name) {
-        // Try the cache
-        var info = unitInfos[String(name).toLowerCase()];
-
-        if (!info && typeof(name) === 'number' && Math.trunc(name) == name && name >= 0 && name <= 256) {
-            var value = '1';
-            for (var i = 0; i < name; i++) { value += '0'; }
-            info = getUnitInfo(value);
-        }
-
-        // Make sure we got something
-        if (!info) {
-            errors.throwError(
-                'invalid unitType',
-                errors.INVALID_ARGUMENT,
-                { arg: 'name', value: name }
-           );
-        }
-
-        return info;
-    }
 })();
+
+function getUnitInfo(name: string | number): UnitInfo {
+
+    // Try the cache
+    var info = unitInfos[String(name).toLowerCase()];
+
+    if (!info && typeof(name) === 'number' && parseInt(String(name)) == name && name >= 0 && name <= 256) {
+        var value = '1';
+        for (var i = 0; i < name; i++) { value += '0'; }
+        info = _getUnitInfo(value);
+    }
+
+    // Make sure we got something
+    if (!info) {
+        errors.throwError(
+            'invalid unitType',
+            errors.INVALID_ARGUMENT,
+            { arg: 'name', value: name }
+       );
+    }
+
+    return info;
+}
 
 export function formatUnits(value: BigNumberish, unitType?: string | number, options?: any): string {
     /*

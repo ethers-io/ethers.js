@@ -1,6 +1,6 @@
 'use strict';
 
-import { Interface } from './interface';
+import { EventDescription, Interface } from './interface';
 
 import { Provider, TransactionRequest, TransactionResponse } from '../providers/provider';
 import { Signer } from '../wallet/wallet';
@@ -13,16 +13,16 @@ import { defineReadOnly, shallowCopy } from '../utils/properties';
 
 import * as errors from '../utils/errors';
 
-var allowedTransactionKeys = {
+var allowedTransactionKeys: { [ key: string ]: boolean } = {
     data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
 }
 
 // Recursively replaces ENS names with promises to resolve the name and
 // stalls until all promises have returned
 // @TODO: Expand this to resolve any promises too
-function resolveAddresses(provider, value, paramType): Promise<any> {
+function resolveAddresses(provider: Provider, value: any, paramType: ParamType | Array<ParamType>): Promise<any> {
     if (Array.isArray(paramType)) {
-        var promises = [];
+        var promises: Array<Promise<string>> = [];
         paramType.forEach((paramType, index) => {
             var v = null;
             if (Array.isArray(value)) {
@@ -165,6 +165,7 @@ interface Bucket<T> {
     [name: string]: T;
 }
 
+export type ErrorCallback = (error: Error) => void;
 export type Contractish = Array<string | ParamType> | Interface | string;
 export class Contract {
     readonly address: string;
@@ -181,6 +182,8 @@ export class Contract {
 
     // This is only set if the contract was created with a call to deploy
     readonly deployTransaction: TransactionResponse;
+
+    private _onerror: ErrorCallback;
 
     // https://github.com/Microsoft/TypeScript/issues/5453
     // Once this issue is resolved (there are open PR) we can do this nicer
@@ -224,7 +227,7 @@ export class Contract {
         Object.keys(this.interface.functions).forEach((name) => {
             var run = runMethod(this, name, false);
 
-            if (this[name] == null) {
+            if ((<any>this)[name] == null) {
                 defineReadOnly(this, name, run);
             } else {
                 console.log('WARNING: Multiple definitions for ' + name);
@@ -237,12 +240,13 @@ export class Contract {
         });
 
         Object.keys(this.interface.events).forEach((eventName) => {
-            let eventInfo = this.interface.events[eventName];
+            let eventInfo: EventDescription = this.interface.events[eventName];
 
-            let eventCallback = null;
+            type Callback = (...args: Array<any>) => void;
+            let eventCallback: Callback = null;
 
             let contract = this;
-            function handleEvent(log) {
+            function handleEvent(log: any): void {
                 contract.addressPromise.then((address) => {
                     // Not meant for us (the topics just has the same name)
                     if (address != log.address) { return; }
@@ -253,7 +257,7 @@ export class Contract {
                         // Some useful things to have with the log
                         log.args = result;
                         log.event = eventName;
-                        log.parse = eventInfo.parse;
+                        log.decode = eventInfo.decode;
                         log.removeListener = function() {
                             contract.provider.removeListener([ eventInfo.topic ], handleEvent);
                         }
@@ -266,6 +270,8 @@ export class Contract {
                         eventCallback.apply(log, Array.prototype.slice.call(result));
                     } catch (error) {
                         console.log(error);
+                        let onerror = contract._onerror;
+                        if (onerror) { setTimeout(() => { onerror(error); }); }
                     }
                 });
             }
@@ -275,7 +281,7 @@ export class Contract {
                 get: function() {
                     return eventCallback;
                 },
-                set: function(value) {
+                set: function(value: Callback) {
                     if (!value) { value = null; }
 
                     if (!contract.provider) {
@@ -294,13 +300,19 @@ export class Contract {
             };
 
             var propertyName = 'on' + eventName.toLowerCase();
-            if (this[propertyName] == null) {
+            if ((<any>this)[propertyName] == null) {
                 Object.defineProperty(this, propertyName, property);
             }
 
             Object.defineProperty(this.events, eventName, property);
 
         }, this);
+    }
+
+    get onerror() { return this._onerror; }
+
+    set onerror(callback: ErrorCallback) {
+        this._onerror = callback;
     }
 
     fallback(overrides?: TransactionRequest): Promise<TransactionResponse> {
@@ -317,22 +329,6 @@ export class Contract {
 
         tx.to = this.addressPromise;
         return this.signer.sendTransaction(tx);
-    }
-
-    callFallback(overrides?: TransactionRequest): Promise<string> {
-        if (!this.provider) {
-            errors.throwError('call (constant functions) require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'call(fallback)' })
-        }
-
-        var tx: TransactionRequest = shallowCopy(overrides || {});
-
-        ['to', 'value'].forEach(function(key) {
-            if (tx.to == null) { return; }
-            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key })
-        });
-
-        tx.to = this.addressPromise;
-        return this.provider.call(tx);
     }
 
     // Reconnect to a different signer or provider

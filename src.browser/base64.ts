@@ -3,7 +3,7 @@
 import { arrayify } from '../src.ts/utils/bytes';
 
 module.exports = {
-    decode: function(textData) {
+    decode: function(textData: string): Uint8Array {
          textData = atob(textData);
          var data = [];
          for (var i = 0; i < textData.length; i++) {
@@ -11,7 +11,7 @@ module.exports = {
          }
          return arrayify(data);
     },
-    encode: function(data) {
+    encode: function(data: Uint8Array): string {
         data = arrayify(data);
         var textData = '';
         for (var i = 0; i < data.length; i++) {

@@ -72,15 +72,15 @@ declare module "utils/bignumber" {
     export class BigNumber {
         private readonly _bn;
         constructor(value: BigNumberish);
-        fromTwos(value: BigNumberish): BigNumber;
-        toTwos(value: BigNumberish): BigNumber;
+        fromTwos(value: number): BigNumber;
+        toTwos(value: number): BigNumber;
         add(other: BigNumberish): BigNumber;
         sub(other: BigNumberish): BigNumber;
         div(other: BigNumberish): BigNumber;
         mul(other: BigNumberish): BigNumber;
         mod(other: BigNumberish): BigNumber;
         pow(other: BigNumberish): BigNumber;
-        maskn(value: BigNumberish): BigNumber;
+        maskn(value: number): BigNumber;
         eq(other: BigNumberish): boolean;
         lt(other: BigNumberish): boolean;
         lte(other: BigNumberish): boolean;
@@ -162,7 +162,7 @@ declare module "utils/abi-coder" {
     export const defaultAbiCoder: AbiCoder;
 }
 declare module "contracts/interface" {
-    import { ParamType } from "utils/abi-coder";
+    import { EventFragment, FunctionFragment, ParamType } from "utils/abi-coder";
     import { BigNumber, BigNumberish } from "utils/bignumber";
     export class Description {
         readonly type: string;
@@ -209,9 +209,13 @@ declare module "contracts/interface" {
         readonly values: Array<any>;
     }
     export class Interface {
-        readonly abi: Array<any>;
-        readonly functions: Array<FunctionDescription>;
-        readonly events: Array<EventDescription>;
+        readonly abi: Array<EventFragment | FunctionFragment>;
+        readonly functions: {
+            [name: string]: FunctionDescription;
+        };
+        readonly events: {
+            [name: string]: EventDescription;
+        };
         readonly deployFunction: DeployDescription;
         constructor(abi: Array<string | ParamType> | string);
         parseTransaction(tx: {
@@ -251,7 +255,8 @@ declare module "utils/pbkdf2" {
 }
 declare module "utils/hmac" {
     import { Arrayish } from "utils/bytes";
-    export function computeHmac(algorithm: string, key: Arrayish, data: Arrayish): Uint8Array;
+    export type SupportedAlgorithms = 'sha256' | 'sha512';
+    export function computeHmac(algorithm: SupportedAlgorithms, key: Arrayish, data: Arrayish): Uint8Array;
 }
 declare module "utils/sha2" {
     import { Arrayish } from "utils/bytes";
@@ -319,7 +324,21 @@ declare module "wallet/secret-storage" {
     export function isValidWallet(json: string): boolean;
     export function decryptCrowdsale(json: string, password: Arrayish | string): SigningKey;
     export function decrypt(json: string, password: Arrayish, progressCallback?: ProgressCallback): Promise<SigningKey>;
-    export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: any, progressCallback?: ProgressCallback): Promise<string>;
+    export type EncryptOptions = {
+        iv?: Arrayish;
+        entropy?: Arrayish;
+        mnemonic?: string;
+        path?: string;
+        client?: string;
+        salt?: Arrayish;
+        uuid?: string;
+        scrypt?: {
+            N?: number;
+            r?: number;
+            p?: number;
+        };
+    };
+    export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: EncryptOptions, progressCallback?: ProgressCallback): Promise<string>;
 }
 declare module "utils/hash" {
     import { Arrayish } from "utils/bytes";
@@ -470,6 +489,7 @@ declare module "providers/provider" {
         logs?: Array<Log>;
         blockNumber?: number;
         cumulativeGasUsed?: BigNumber;
+        byzantium: boolean;
         status?: number;
     }
     export type Filter = {
@@ -483,12 +503,14 @@ declare module "providers/provider" {
         blockHash?: string;
         transactionIndex?: number;
         removed?: boolean;
+        transactionLogIndex?: number;
         address: string;
         data?: string;
         topics?: Array<string>;
         transactionHash?: string;
         logIndex?: number;
     }
+    export type Listener = (...args: Array<any>) => void;
     export function checkTransactionResponse(transaction: any): TransactionResponse;
     export class ProviderSigner extends Signer {
         readonly provider: Provider;
@@ -540,7 +562,9 @@ declare module "providers/provider" {
         getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
         getLogs(filter: Filter): Promise<Array<Log>>;
         getEtherPrice(): Promise<number>;
-        _resolveNames(object: any, keys: Array<string>): Promise<any>;
+        _resolveNames(object: any, keys: Array<string>): Promise<{
+            [key: string]: string;
+        }>;
         _getResolver(name: string): Promise<string>;
         resolveName(name: string | Promise<string>): Promise<string>;
         lookupAddress(address: string | Promise<string>): Promise<string>;
@@ -548,13 +572,13 @@ declare module "providers/provider" {
         perform(method: string, params: any): Promise<any>;
         _startPending(): void;
         _stopPending(): void;
-        on(eventName: any, listener: any): Provider;
-        once(eventName: any, listener: any): Provider;
-        emit(eventName: any, ...args: any[]): boolean;
+        on(eventName: any, listener: Listener): Provider;
+        once(eventName: any, listener: Listener): Provider;
+        emit(eventName: any, ...args: Array<any>): boolean;
         listenerCount(eventName?: any): number;
-        listeners(eventName: any): Array<any>;
+        listeners(eventName: any): Array<Listener>;
         removeAllListeners(eventName: any): Provider;
-        removeListener(eventName: any, listener: any): Provider;
+        removeListener(eventName: any, listener: Listener): Provider;
     }
 }
 declare module "contracts/contract" {
@@ -569,6 +593,7 @@ declare module "contracts/contract" {
     interface Bucket<T> {
         [name: string]: T;
     }
+    export type ErrorCallback = (error: Error) => void;
     export type Contractish = Array<string | ParamType> | Interface | string;
     export class Contract {
         readonly address: string;
@@ -580,9 +605,10 @@ declare module "contracts/contract" {
         readonly events: Bucket<ContractEvent>;
         readonly addressPromise: Promise<string>;
         readonly deployTransaction: TransactionResponse;
+        private _onerror;
         constructor(addressOrName: string, contractInterface: Contractish, signerOrProvider: Signer | Provider);
+        onerror: ErrorCallback;
         fallback(overrides?: TransactionRequest): Promise<TransactionResponse>;
-        callFallback(overrides?: TransactionRequest): Promise<string>;
         connect(signerOrProvider: Signer | Provider): Contract;
         deploy(bytecode: string, ...args: Array<any>): Promise<Contract>;
     }
@@ -605,7 +631,7 @@ declare module "utils/web" {
         allowInsecure?: boolean;
     };
     export type ProcessFunc = (value: any) => any;
-    export function fetchJson(url: string | ConnectionInfo, json: string, processFunc: ProcessFunc): Promise<any>;
+    export function fetchJson(connection: string | ConnectionInfo, json: string, processFunc: ProcessFunc): Promise<any>;
 }
 declare module "providers/etherscan-provider" {
     import { BlockTag, Provider, TransactionResponse } from "providers/provider";
@@ -642,7 +668,7 @@ declare module "providers/json-rpc-provider" {
         readonly address: string;
         getAddress(): Promise<string>;
         getBalance(blockTag?: BlockTag): Promise<BigNumber>;
-        getTransactionCount(blockTag: any): Promise<number>;
+        getTransactionCount(blockTag?: BlockTag): Promise<number>;
         sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
         signMessage(message: Arrayish | string): Promise<string>;
         unlock(password: string): Promise<boolean>;

@@ -135,7 +135,7 @@ export class Wallet extends Signer {
 
         if (this.mnemonic) {
             // Make sure we don't accidentally bubble the mnemonic up the call-stack
-            var safeOptions = {};
+            var safeOptions: any = {};
             for (var key in options) { safeOptions[key] = options[key]; }
             options = safeOptions;
 

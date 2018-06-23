@@ -39,7 +39,7 @@ function loadWords() {
     words = [];
 
     // Transforms for normalizing (sort is a not quite UTF-8)
-    var transform = {};
+    var transform: { [key: string]: string | boolean } = {};
 
     // Delete the diacritic marks
     transform[toUtf8String([227, 130, 154])] = false;
@@ -53,20 +53,20 @@ function loadWords() {
 
 
     // Normalize words using the transform
-    function normalize(word) {
+    function normalize(word: string) {
         var result = '';
         for (var i = 0; i < word.length; i++) {
             let kana = word[i];
             var target = transform[kana];
             if (target === false) { continue; }
-            if (target) { kana = target; }
+            if (target) { kana = <string>target; }
             result += kana;
         }
         return result;
     }
 
     // Sort how the Japanese list is sorted
-    function sortJapanese(a, b) {
+    function sortJapanese(a: string, b: string) {
         a = normalize(a);
         b = normalize(b);
         if (a < b) { return -1; }

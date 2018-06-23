@@ -29,13 +29,6 @@ var networks_1 = require("./networks");
 var properties_1 = require("../utils/properties");
 var transaction_1 = require("../utils/transaction");
 var errors = __importStar(require("../utils/errors"));
-function copyObject(obj) {
-    var result = {};
-    for (var key in obj) {
-        result[key] = obj[key];
-    }
-    return result;
-}
 ;
 ;
 //////////////////////////////
@@ -347,7 +340,7 @@ function stallPromise(allowNullFunc, executeFunc) {
                 }
                 else {
                     attempt++;
-                    var timeout = 500 + 250 * Math.trunc(Math.random() * (1 << attempt));
+                    var timeout = 500 + 250 * parseInt(String(Math.random() * (1 << attempt)));
                     if (timeout > 10000) {
                         timeout = 10000;
                     }
@@ -377,24 +370,22 @@ function getEventString(object) {
         return 'address:' + address_1.getAddress(object);
     }
     catch (error) { }
-    if (object === 'block') {
-        return 'block';
-    }
-    else if (object === 'pending') {
-        return 'pending';
+    if (object === 'block' || object === 'pending' || object === 'error') {
+        return object;
     }
     else if (bytes_1.hexDataLength(object) === 32) {
         return 'tx:' + object;
     }
     else if (Array.isArray(object)) {
-        object = recurse(object, function (object) {
+        // Replace null in the structure with '0x'
+        var stringified = recurse(object, function (object) {
             if (object == null) {
                 object = '0x';
             }
             return object;
         });
         try {
-            return 'topic:' + rlp_1.encode(object);
+            return 'topic:' + rlp_1.encode(stringified);
         }
         catch (error) {
             console.log(error);
@@ -408,23 +399,19 @@ function getEventString(object) {
     }
     throw new Error('invalid event - ' + object);
 }
-function parseEventString(string) {
-    if (string.substring(0, 3) === 'tx:') {
-        return { type: 'transaction', hash: string.substring(3) };
+function parseEventString(event) {
+    if (event.substring(0, 3) === 'tx:') {
+        return { type: 'transaction', hash: event.substring(3) };
     }
-    else if (string === 'block') {
-        return { type: 'block' };
+    else if (event === 'block' || event === 'pending' || event === 'error') {
+        return { type: event };
     }
-    else if (string === 'pending') {
-        return { type: 'pending' };
+    else if (event.substring(0, 8) === 'address:') {
+        return { type: 'address', address: event.substring(8) };
     }
-    else if (string.substring(0, 8) === 'address:') {
-        return { type: 'address', address: string.substring(8) };
-    }
-    else if (string.substring(0, 6) === 'topic:') {
+    else if (event.substring(0, 6) === 'topic:') {
         try {
-            var object = rlp_1.decode(string.substring(6));
-            object = recurse(object, function (object) {
+            var object = recurse(rlp_1.decode(event.substring(6)), function (object) {
                 if (object === '0x') {
                     object = null;
                 }
@@ -652,7 +639,7 @@ var Provider = /** @class */ (function () {
         },
         set: function (value) {
             var _this = this;
-            if (typeof (value) !== 'number' || value <= 0 || Math.trunc(value) != value) {
+            if (typeof (value) !== 'number' || value <= 0 || parseInt(String(value)) != value) {
                 throw new Error('invalid polling interval');
             }
             this._pollingInterval = value;
@@ -689,7 +676,7 @@ var Provider = /** @class */ (function () {
         var _this = this;
         return this.ready.then(function () {
             return _this.perform('getBlockNumber', {}).then(function (result) {
-                var value = Math.trunc(result);
+                var value = parseInt(result);
                 if (value != result) {
                     throw new Error('invalid response - getBlockNumber');
                 }
@@ -926,7 +913,7 @@ var Provider = /** @class */ (function () {
     // @TODO: Could probably use resolveProperties instead?
     Provider.prototype._resolveNames = function (object, keys) {
         var promises = [];
-        var result = copyObject(object);
+        var result = properties_1.shallowCopy(object);
         keys.forEach(function (key) {
             if (result[key] === undefined) {
                 return;
@@ -1122,7 +1109,6 @@ var Provider = /** @class */ (function () {
         }
         return listeners.length;
     };
-    // @TODO: func
     Provider.prototype.listeners = function (eventName) {
         var listeners = this._events[getEventString(eventName)];
         if (!listeners) {

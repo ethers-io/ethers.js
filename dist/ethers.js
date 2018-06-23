@@ -8916,13 +8916,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hash = __importStar(require("hash.js"));
 var bytes_1 = require("../src.ts/utils/bytes");
 var errors = __importStar(require("../src.ts/utils/errors"));
-var hmac = hash['hmac'];
 var supportedAlgorithms = { sha256: true, sha512: true };
 function computeHmac(algorithm, key, data) {
     if (!supportedAlgorithms[algorithm]) {
         errors.throwError('unsupported algorithm ' + algorithm, errors.UNSUPPORTED_OPERATION, { operation: 'hmac', algorithm: algorithm });
     }
-    return bytes_1.arrayify(hmac(hash[algorithm], bytes_1.arrayify(key)).update(bytes_1.arrayify(data)).digest());
+    return bytes_1.arrayify(hash.hmac(hash[algorithm], bytes_1.arrayify(key)).update(bytes_1.arrayify(data)).digest());
 }
 exports.computeHmac = computeHmac;
 
@@ -8979,7 +8978,7 @@ exports.pbkdf2 = pbkdf2;
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("../src.ts/utils/bytes");
 var properties_1 = require("../src.ts/utils/properties");
-var crypto = global['crypto'] || global['msCrypto'];
+var crypto = global.crypto || global.msCrypto;
 if (!crypto || !crypto.getRandomValues) {
     console.log('WARNING: Missing strong random number source; using weak randomBytes');
     crypto = {
@@ -9000,7 +8999,7 @@ if (!crypto || !crypto.getRandomValues) {
     };
 }
 function randomBytes(length) {
-    if (length <= 0 || length > 1024 || parseInt(length) != length) {
+    if (length <= 0 || length > 1024 || parseInt(String(length)) != length) {
         throw new Error('invalid length');
     }
     var result = new Uint8Array(length);
@@ -9232,7 +9231,7 @@ var Contract = /** @class */ (function () {
                         // Some useful things to have with the log
                         log.args = result;
                         log.event = eventName;
-                        log.parse = eventInfo.parse;
+                        log.decode = eventInfo.decode;
                         log.removeListener = function () {
                             contract.provider.removeListener([eventInfo.topic], handleEvent);
                         };
@@ -9244,6 +9243,10 @@ var Contract = /** @class */ (function () {
                     }
                     catch (error) {
                         console.log(error);
+                        var onerror_1 = contract._onerror;
+                        if (onerror_1) {
+                            setTimeout(function () { onerror_1(error); });
+                        }
                     }
                 });
             }
@@ -9275,6 +9278,14 @@ var Contract = /** @class */ (function () {
             Object.defineProperty(_this.events, eventName, property);
         }, this);
     }
+    Object.defineProperty(Contract.prototype, "onerror", {
+        get: function () { return this._onerror; },
+        set: function (callback) {
+            this._onerror = callback;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Contract.prototype.fallback = function (overrides) {
         if (!this.signer) {
             errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' });
@@ -9288,20 +9299,6 @@ var Contract = /** @class */ (function () {
         });
         tx.to = this.addressPromise;
         return this.signer.sendTransaction(tx);
-    };
-    Contract.prototype.callFallback = function (overrides) {
-        if (!this.provider) {
-            errors.throwError('call (constant functions) require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'call(fallback)' });
-        }
-        var tx = properties_1.shallowCopy(overrides || {});
-        ['to', 'value'].forEach(function (key) {
-            if (tx.to == null) {
-                return;
-            }
-            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
-        });
-        tx.to = this.addressPromise;
-        return this.provider.call(tx);
     };
     // Reconnect to a different signer or provider
     Contract.prototype.connect = function (signerOrProvider) {
@@ -9378,6 +9375,7 @@ var keccak256_1 = require("../utils/keccak256");
 var utf8_1 = require("../utils/utf8");
 var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
+// @TODO: Replace with a new abiCode.formatSignature method
 function parseParams(params) {
     var names = [];
     var types = [];
@@ -9536,7 +9534,8 @@ var EventDescription = /** @class */ (function (_super) {
         if (topics != null && !this.anonymous) {
             topics = topics.slice(1);
         }
-        var inputIndexed = [], inputNonIndexed = [];
+        var inputIndexed = [];
+        var inputNonIndexed = [];
         var inputDynamic = [];
         this.inputs.forEach(function (param, index) {
             if (param.indexed) {
@@ -9696,6 +9695,7 @@ var Interface = /** @class */ (function () {
             if (typeof (fragment) === 'string') {
                 fragment = abi_coder_1.parseSignature(fragment);
             }
+            // @TODO: We should probable do some validation; create abiCoder.formatSignature for checking
             _abi.push(fragment);
         });
         properties_1.defineFrozen(this, 'abi', _abi);
@@ -10677,13 +10677,6 @@ var networks_1 = require("./networks");
 var properties_1 = require("../utils/properties");
 var transaction_1 = require("../utils/transaction");
 var errors = __importStar(require("../utils/errors"));
-function copyObject(obj) {
-    var result = {};
-    for (var key in obj) {
-        result[key] = obj[key];
-    }
-    return result;
-}
 ;
 ;
 //////////////////////////////
@@ -10995,7 +10988,7 @@ function stallPromise(allowNullFunc, executeFunc) {
                 }
                 else {
                     attempt++;
-                    var timeout = 500 + 250 * Math.trunc(Math.random() * (1 << attempt));
+                    var timeout = 500 + 250 * parseInt(String(Math.random() * (1 << attempt)));
                     if (timeout > 10000) {
                         timeout = 10000;
                     }
@@ -11025,24 +11018,22 @@ function getEventString(object) {
         return 'address:' + address_1.getAddress(object);
     }
     catch (error) { }
-    if (object === 'block') {
-        return 'block';
-    }
-    else if (object === 'pending') {
-        return 'pending';
+    if (object === 'block' || object === 'pending' || object === 'error') {
+        return object;
     }
     else if (bytes_1.hexDataLength(object) === 32) {
         return 'tx:' + object;
     }
     else if (Array.isArray(object)) {
-        object = recurse(object, function (object) {
+        // Replace null in the structure with '0x'
+        var stringified = recurse(object, function (object) {
             if (object == null) {
                 object = '0x';
             }
             return object;
         });
         try {
-            return 'topic:' + rlp_1.encode(object);
+            return 'topic:' + rlp_1.encode(stringified);
         }
         catch (error) {
             console.log(error);
@@ -11056,23 +11047,19 @@ function getEventString(object) {
     }
     throw new Error('invalid event - ' + object);
 }
-function parseEventString(string) {
-    if (string.substring(0, 3) === 'tx:') {
-        return { type: 'transaction', hash: string.substring(3) };
+function parseEventString(event) {
+    if (event.substring(0, 3) === 'tx:') {
+        return { type: 'transaction', hash: event.substring(3) };
     }
-    else if (string === 'block') {
-        return { type: 'block' };
+    else if (event === 'block' || event === 'pending' || event === 'error') {
+        return { type: event };
     }
-    else if (string === 'pending') {
-        return { type: 'pending' };
+    else if (event.substring(0, 8) === 'address:') {
+        return { type: 'address', address: event.substring(8) };
     }
-    else if (string.substring(0, 8) === 'address:') {
-        return { type: 'address', address: string.substring(8) };
-    }
-    else if (string.substring(0, 6) === 'topic:') {
+    else if (event.substring(0, 6) === 'topic:') {
         try {
-            var object = rlp_1.decode(string.substring(6));
-            object = recurse(object, function (object) {
+            var object = recurse(rlp_1.decode(event.substring(6)), function (object) {
                 if (object === '0x') {
                     object = null;
                 }
@@ -11300,7 +11287,7 @@ var Provider = /** @class */ (function () {
         },
         set: function (value) {
             var _this = this;
-            if (typeof (value) !== 'number' || value <= 0 || Math.trunc(value) != value) {
+            if (typeof (value) !== 'number' || value <= 0 || parseInt(String(value)) != value) {
                 throw new Error('invalid polling interval');
             }
             this._pollingInterval = value;
@@ -11337,7 +11324,7 @@ var Provider = /** @class */ (function () {
         var _this = this;
         return this.ready.then(function () {
             return _this.perform('getBlockNumber', {}).then(function (result) {
-                var value = Math.trunc(result);
+                var value = parseInt(result);
                 if (value != result) {
                     throw new Error('invalid response - getBlockNumber');
                 }
@@ -11574,7 +11561,7 @@ var Provider = /** @class */ (function () {
     // @TODO: Could probably use resolveProperties instead?
     Provider.prototype._resolveNames = function (object, keys) {
         var promises = [];
-        var result = copyObject(object);
+        var result = properties_1.shallowCopy(object);
         keys.forEach(function (key) {
             if (result[key] === undefined) {
                 return;
@@ -11770,7 +11757,6 @@ var Provider = /** @class */ (function () {
         }
         return listeners.length;
     };
-    // @TODO: func
     Provider.prototype.listeners = function (eventName) {
         var listeners = this._events[getEventString(eventName)];
         if (!listeners) {
@@ -12340,7 +12326,7 @@ var CoderAddress = /** @class */ (function (_super) {
     return CoderAddress;
 }(Coder));
 function _encodeDynamicBytes(value) {
-    var dataLength = Math.trunc(32 * Math.ceil(value.length / 32));
+    var dataLength = 32 * Math.ceil(value.length / 32);
     var padding = new Uint8Array(dataLength - value.length);
     return bytes_1.concat([
         uint256Coder.encode(value.length),
@@ -12375,7 +12361,7 @@ function _decodeDynamicBytes(data, offset, localName) {
         });
     }
     return {
-        consumed: Math.trunc(32 + 32 * Math.ceil(length / 32)),
+        consumed: 32 + 32 * Math.ceil(length / 32),
         value: data.slice(offset + 32, offset + 32 + length),
     };
 }
@@ -12427,7 +12413,7 @@ var CoderString = /** @class */ (function (_super) {
     return CoderString;
 }(Coder));
 function alignSize(size) {
-    return Math.trunc(32 * Math.ceil(size / 32));
+    return 32 * Math.ceil(size / 32);
 }
 function pack(coders, values) {
     if (Array.isArray(values)) {
@@ -12664,6 +12650,7 @@ function splitNesting(value) {
     result.push(accum);
     return result;
 }
+// @TODO: Is there a way to return "class"?
 var paramTypeSimple = {
     address: CoderAddress,
     bool: CoderBoolean,
@@ -12778,9 +12765,12 @@ exports.defaultAbiCoder = new AbiCoder();
 
 },{"./address":60,"./bignumber":61,"./bytes":62,"./errors":63,"./properties":67,"./utf8":74}],60:[function(require,module,exports){
 'use strict';
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 // We use this for base 36 maths
-var BN = require("bn.js");
+var bn_js_1 = __importDefault(require("bn.js"));
 var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
 var rlp_1 = require("./rlp");
@@ -12866,7 +12856,7 @@ function getAddress(address) {
         if (address.substring(2, 4) !== ibanChecksum(address)) {
             errors.throwError('bad icap checksum', errors.INVALID_ARGUMENT, { arg: 'address', value: address });
         }
-        result = (new BN(address.substring(4), 36)).toString(16);
+        result = (new bn_js_1.default.BN(address.substring(4), 36)).toString(16);
         while (result.length < 40) {
             result = '0' + result;
         }
@@ -12879,7 +12869,7 @@ function getAddress(address) {
 }
 exports.getAddress = getAddress;
 function getIcapAddress(address) {
-    var base36 = (new BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
+    var base36 = (new bn_js_1.default.BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
     while (base36.length < 30) {
         base36 = '0' + base36;
     }
@@ -12926,6 +12916,13 @@ var errors = __importStar(require("../utils/errors"));
 function _isBigNumber(value) {
     return isBigNumber(value);
 }
+function fromBN(bn) {
+    var value = bn.toString(16);
+    if (value[0] === '-') {
+        return new BigNumber("-0x" + value.substring(1));
+    }
+    return new BigNumber('0x' + value);
+}
 var BigNumber = /** @class */ (function () {
     function BigNumber(value) {
         errors.checkNew(this, BigNumber);
@@ -12947,8 +12944,8 @@ var BigNumber = /** @class */ (function () {
             }
         }
         else if (typeof (value) === 'number') {
-            if (Math.trunc(value) !== value) {
-                errors.throwError('underflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'underflow', value: value, outputValue: Math.trunc(value) });
+            if (parseInt(String(value)) !== value) {
+                errors.throwError('underflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'underflow', value: value, outputValue: parseInt(String(value)) });
             }
             try {
                 properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(value));
@@ -12956,9 +12953,6 @@ var BigNumber = /** @class */ (function () {
             catch (error) {
                 errors.throwError('overflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'overflow', details: error.message });
             }
-        }
-        else if (bn_js_1.default.BN.isBN(value)) {
-            properties_1.defineReadOnly(this, '_bn', value);
         }
         else if (_isBigNumber(value)) {
             properties_1.defineReadOnly(this, '_bn', value._bn);
@@ -12971,35 +12965,35 @@ var BigNumber = /** @class */ (function () {
         }
     }
     BigNumber.prototype.fromTwos = function (value) {
-        return new BigNumber(this._bn.fromTwos(value));
+        return fromBN(this._bn.fromTwos(value));
     };
     BigNumber.prototype.toTwos = function (value) {
-        return new BigNumber(this._bn.toTwos(value));
+        return fromBN(this._bn.toTwos(value));
     };
     BigNumber.prototype.add = function (other) {
-        return new BigNumber(this._bn.add(bigNumberify(other)._bn));
+        return fromBN(this._bn.add(bigNumberify(other)._bn));
     };
     BigNumber.prototype.sub = function (other) {
-        return new BigNumber(this._bn.sub(bigNumberify(other)._bn));
+        return fromBN(this._bn.sub(bigNumberify(other)._bn));
     };
     BigNumber.prototype.div = function (other) {
-        var o = bigNumberify(other)._bn;
+        var o = bigNumberify(other);
         if (o.isZero()) {
             errors.throwError('division by zero', errors.NUMERIC_FAULT, { operation: 'divide', fault: 'division by zero' });
         }
-        return new BigNumber(this._bn.div(o));
+        return fromBN(this._bn.div(o._bn));
     };
     BigNumber.prototype.mul = function (other) {
-        return new BigNumber(this._bn.mul(bigNumberify(other)._bn));
+        return fromBN(this._bn.mul(bigNumberify(other)._bn));
     };
     BigNumber.prototype.mod = function (other) {
-        return new BigNumber(this._bn.mod(bigNumberify(other)._bn));
+        return fromBN(this._bn.mod(bigNumberify(other)._bn));
     };
     BigNumber.prototype.pow = function (other) {
-        return new BigNumber(this._bn.pow(bigNumberify(other)._bn));
+        return fromBN(this._bn.pow(bigNumberify(other)._bn));
     };
     BigNumber.prototype.maskn = function (value) {
-        return new BigNumber(this._bn.maskn(value));
+        return fromBN(this._bn.maskn(value));
     };
     BigNumber.prototype.eq = function (other) {
         return this._bn.eq(bigNumberify(other)._bn);
@@ -13056,7 +13050,7 @@ exports.ConstantNegativeOne = bigNumberify(-1);
 exports.ConstantZero = bigNumberify(0);
 exports.ConstantOne = bigNumberify(1);
 exports.ConstantTwo = bigNumberify(2);
-exports.ConstantWeiPerEther = bigNumberify(new bn_js_1.default.BN('1000000000000000000'));
+exports.ConstantWeiPerEther = bigNumberify('1000000000000000000');
 
 },{"../utils/errors":63,"./bytes":62,"./properties":67,"bn.js":2}],62:[function(require,module,exports){
 "use strict";
@@ -13080,12 +13074,12 @@ function addSlice(array) {
     return array;
 }
 function isArrayish(value) {
-    if (!value || parseInt(value.length) != value.length || typeof (value) === 'string') {
+    if (!value || parseInt(String(value.length)) != value.length || typeof (value) === 'string') {
         return false;
     }
     for (var i = 0; i < value.length; i++) {
         var v = value[i];
-        if (v < 0 || v >= 256 || parseInt(v) != v) {
+        if (v < 0 || v >= 256 || parseInt(String(v)) != v) {
             return false;
         }
     }
@@ -13192,7 +13186,7 @@ function hexlify(value) {
         var hex = '';
         while (value) {
             hex = HexCharacters[value & 0x0f] + hex;
-            value = Math.trunc(value / 16);
+            value = Math.floor(value / 16);
         }
         if (hex.length) {
             if (hex.length % 2) {
@@ -13579,19 +13573,17 @@ function _encode(object) {
         length.unshift(0xf7 + length.length);
         return length.concat(payload);
     }
-    else {
-        var data = Array.prototype.slice.call(bytes_1.arrayify(object));
-        if (data.length === 1 && data[0] <= 0x7f) {
-            return data;
-        }
-        else if (data.length <= 55) {
-            data.unshift(0x80 + data.length);
-            return data;
-        }
-        var length = arrayifyInteger(data.length);
-        length.unshift(0xb7 + length.length);
-        return length.concat(data);
+    var data = Array.prototype.slice.call(bytes_1.arrayify(object));
+    if (data.length === 1 && data[0] <= 0x7f) {
+        return data;
     }
+    else if (data.length <= 55) {
+        data.unshift(0x80 + data.length);
+        return data;
+    }
+    var length = arrayifyInteger(data.length);
+    length.unshift(0xb7 + length.length);
+    return length.concat(data);
 }
 function encode(object) {
     return bytes_1.hexlify(_encode(object));
@@ -13675,13 +13667,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var elliptic = __importStar(require("elliptic"));
+var curve = new elliptic.ec('secp256k1');
 var address_1 = require("./address");
 var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
 var properties_1 = require("./properties");
 var errors = __importStar(require("./errors"));
-var elliptic = __importStar(require("elliptic"));
-var curve = new elliptic.ec('secp256k1');
 exports.N = '0x' + curve.n.toString(16);
 var KeyPair = /** @class */ (function () {
     function KeyPair(privateKey) {
@@ -13750,24 +13742,18 @@ exports.computeAddress = computeAddress;
 
 },{"./address":60,"./bytes":62,"./errors":63,"./keccak256":66,"./properties":67,"elliptic":5}],70:[function(require,module,exports){
 'use strict';
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var _hash = __importStar(require("hash.js"));
+var hash_js_1 = __importDefault(require("hash.js"));
 var bytes_1 = require("./bytes");
-var _sha256 = _hash['sha256'];
-var _sha512 = _hash['sha512'];
 function sha256(data) {
-    return '0x' + (_sha256().update(bytes_1.arrayify(data)).digest('hex'));
+    return '0x' + (hash_js_1.default.sha256().update(bytes_1.arrayify(data)).digest('hex'));
 }
 exports.sha256 = sha256;
 function sha512(data) {
-    return '0x' + (_sha512().update(bytes_1.arrayify(data)).digest('hex'));
+    return '0x' + (hash_js_1.default.sha512().update(bytes_1.arrayify(data)).digest('hex'));
 }
 exports.sha512 = sha512;
 
@@ -13829,16 +13815,15 @@ function _pack(type, value, isArray) {
         return value;
     }
     match = type.match(regexArray);
-    if (match) {
+    if (match && Array.isArray(value)) {
         var baseType = match[1];
-        var count = parseInt(match[2] || value.length);
+        var count = parseInt(match[2] || String(value.length));
         if (count != value.length) {
             throw new Error('invalid value for ' + type);
         }
         var result = [];
         value.forEach(function (value) {
-            value = _pack(baseType, value, true);
-            result.push(value);
+            result.push(_pack(baseType, value, true));
         });
         return bytes_1.concat(result);
     }
@@ -13984,7 +13969,7 @@ function parse(rawTransaction) {
         if (chainId < 0) {
             chainId = 0;
         }
-        chainId = Math.trunc(chainId);
+        chainId = Math.floor(chainId);
         tx.chainId = chainId;
         var recoveryParam = tx.v - 27;
         var raw = signedTransaction.slice(0, 6);
@@ -14028,39 +14013,40 @@ var names = [
     'finny',
     'ether',
 ];
-var getUnitInfo = (function () {
-    var unitInfos = {};
-    function getUnitInfo(value) {
-        return {
-            decimals: value.length - 1,
-            tenPower: bignumber_1.bigNumberify(value)
-        };
-    }
+var unitInfos = {};
+function _getUnitInfo(value) {
+    return {
+        decimals: value.length - 1,
+        tenPower: bignumber_1.bigNumberify(value)
+    };
+}
+// Build cache of common units
+(function () {
     // Cache the common units
     var value = '1';
     names.forEach(function (name) {
-        var info = getUnitInfo(value);
+        var info = _getUnitInfo(value);
         unitInfos[name.toLowerCase()] = info;
         unitInfos[String(info.decimals)] = info;
         value += '000';
     });
-    return function (name) {
-        // Try the cache
-        var info = unitInfos[String(name).toLowerCase()];
-        if (!info && typeof (name) === 'number' && Math.trunc(name) == name && name >= 0 && name <= 256) {
-            var value = '1';
-            for (var i = 0; i < name; i++) {
-                value += '0';
-            }
-            info = getUnitInfo(value);
-        }
-        // Make sure we got something
-        if (!info) {
-            errors.throwError('invalid unitType', errors.INVALID_ARGUMENT, { arg: 'name', value: name });
-        }
-        return info;
-    };
 })();
+function getUnitInfo(name) {
+    // Try the cache
+    var info = unitInfos[String(name).toLowerCase()];
+    if (!info && typeof (name) === 'number' && parseInt(String(name)) == name && name >= 0 && name <= 256) {
+        var value = '1';
+        for (var i = 0; i < name; i++) {
+            value += '0';
+        }
+        info = _getUnitInfo(value);
+    }
+    // Make sure we got something
+    if (!info) {
+        errors.throwError('invalid unitType', errors.INVALID_ARGUMENT, { arg: 'name', value: name });
+    }
+    return info;
+}
 function formatUnits(value, unitType, options) {
     /*
     if (typeof(unitType) === 'object' && !options) {
@@ -14293,23 +14279,27 @@ var xmlhttprequest_1 = require("xmlhttprequest");
 var utf8_1 = require("./utf8");
 var base64_1 = require("./base64");
 var errors = __importStar(require("./errors"));
-function fetchJson(url, json, processFunc) {
+function fetchJson(connection, json, processFunc) {
     var headers = [];
-    if (typeof (url) === 'object' && url.url != null) {
-        if (url.url == null) {
+    var url = null;
+    if (typeof (connection) === 'string') {
+        url = connection;
+    }
+    else if (typeof (connection) === 'object') {
+        if (connection.url == null) {
             errors.throwError('missing URL', errors.MISSING_ARGUMENT, { arg: 'url' });
         }
-        if (url.user != null && url.password != null) {
-            if (url.url.substring(0, 6) !== 'https:' && url.allowInsecure !== true) {
-                errors.throwError('basic authentication requires a secure https url', errors.INVALID_ARGUMENT, { arg: 'url', url: url.url, user: url.user, password: '[REDACTED]' });
+        url = connection.url;
+        if (connection.user != null && connection.password != null) {
+            if (url.substring(0, 6) !== 'https:' && connection.allowInsecure !== true) {
+                errors.throwError('basic authentication requires a secure https url', errors.INVALID_ARGUMENT, { arg: 'url', url: url, user: connection.user, password: '[REDACTED]' });
             }
-            var authorization = url.user + ':' + url.password;
+            var authorization = connection.user + ':' + connection.password;
             headers.push({
                 key: 'Authorization',
                 value: 'Basic ' + base64_1.encode(utf8_1.toUtf8Bytes(authorization))
             });
         }
-        url = url.url;
     }
     return new Promise(function (resolve, reject) {
         var request = new xmlhttprequest_1.XMLHttpRequest();
@@ -14354,7 +14344,7 @@ function fetchJson(url, json, processFunc) {
             if (request.status != 200) {
                 // @TODO: not any!
                 var error = new Error('invalid response - ' + request.status);
-                error.statusCode = request.statusCode;
+                error.statusCode = request.status;
                 reject(error);
                 return;
             }
@@ -14631,6 +14621,9 @@ exports.SigningKey = signing_key_1.SigningKey;
 
 },{"./hdnode":76,"./signing-key":79,"./wallet":80}],78:[function(require,module,exports){
 'use strict';
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -14639,9 +14632,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var aes = require("aes-js");
-var scrypt = require("scrypt-js");
-var uuid = require("uuid");
+var aes_js_1 = __importDefault(require("aes-js"));
+var scrypt_js_1 = __importDefault(require("scrypt-js"));
+var uuid_1 = __importDefault(require("uuid"));
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var pbkdf2_1 = require("../utils/pbkdf2");
@@ -14650,8 +14643,6 @@ var utf8_1 = require("../utils/utf8");
 var random_bytes_1 = require("../utils/random-bytes");
 var signing_key_1 = require("./signing-key");
 var HDNode = __importStar(require("./hdnode"));
-// @TODO: Maybe move this to HDNode?
-var defaultPath = "m/44'/60'/0'/0/0";
 function looseArrayify(hexString) {
     if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
         hexString = '0x' + hexString;
@@ -14733,9 +14724,9 @@ function decryptCrowdsale(json, password) {
     var iv = encseed.slice(0, 16);
     var encryptedSeed = encseed.slice(16);
     // Decrypt the seed
-    var aesCbc = new aes.ModeOfOperation.cbc(key, iv);
+    var aesCbc = new aes_js_1.default.ModeOfOperation.cbc(key, iv);
     var seed = bytes_1.arrayify(aesCbc.decrypt(encryptedSeed));
-    seed = aes.padding.pkcs7.strip(seed);
+    seed = aes_js_1.default.padding.pkcs7.strip(seed);
     // This wallet format is weird... Convert the binary encoded hex to a string.
     var seedHex = '';
     for (var i = 0; i < seed.length; i++) {
@@ -14752,13 +14743,13 @@ exports.decryptCrowdsale = decryptCrowdsale;
 //@TODO: string or arrayish
 function decrypt(json, password, progressCallback) {
     var data = JSON.parse(json);
-    password = getPassword(password);
+    var passwordBytes = getPassword(password);
     var decrypt = function (key, ciphertext) {
         var cipher = searchPath(data, 'crypto/cipher');
         if (cipher === 'aes-128-ctr') {
             var iv = looseArrayify(searchPath(data, 'crypto/cipherparams/iv'));
-            var counter = new aes.Counter(iv);
-            var aesCtr = new aes.ModeOfOperation.ctr(key, counter);
+            var counter = new aes_js_1.default.Counter(iv);
+            var aesCtr = new aes_js_1.default.ModeOfOperation.ctr(key, counter);
             return bytes_1.arrayify(aesCtr.decrypt(ciphertext));
         }
         return null;
@@ -14788,9 +14779,9 @@ function decrypt(json, password, progressCallback) {
         if (searchPath(data, 'x-ethers/version') === '0.1') {
             var mnemonicCiphertext = looseArrayify(searchPath(data, 'x-ethers/mnemonicCiphertext'));
             var mnemonicIv = looseArrayify(searchPath(data, 'x-ethers/mnemonicCounter'));
-            var mnemonicCounter = new aes.Counter(mnemonicIv);
-            var mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-            var path = searchPath(data, 'x-ethers/path') || defaultPath;
+            var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
+            var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
+            var path = searchPath(data, 'x-ethers/path') || HDNode.defaultPath;
             var entropy = bytes_1.arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
             var mnemonic = HDNode.entropyToMnemonic(entropy);
             var node = HDNode.fromMnemonic(mnemonic).derivePath(path);
@@ -14824,7 +14815,7 @@ function decrypt(json, password, progressCallback) {
                     reject(new Error('unsupported key-derivation derived-key length'));
                     return;
                 }
-                scrypt(password, salt, N, r, p, 64, function (error, progress, key) {
+                scrypt_js_1.default(passwordBytes, salt, N, r, p, 64, function (error, progress, key) {
                     if (error) {
                         error.progress = progress;
                         reject(error);
@@ -14865,7 +14856,7 @@ function decrypt(json, password, progressCallback) {
                     reject(new Error('unsupported key-derivation derived-key length'));
                     return;
                 }
-                var key = pbkdf2_1.pbkdf2(password, salt, c, dkLen, prfFunc);
+                var key = pbkdf2_1.pbkdf2(passwordBytes, salt, c, dkLen, prfFunc);
                 var signingKey = getSigningKey(key, reject);
                 if (!signingKey) {
                     return;
@@ -14882,7 +14873,6 @@ function decrypt(json, password, progressCallback) {
     });
 }
 exports.decrypt = decrypt;
-// @TOOD: Options
 function encrypt(privateKey, password, options, progressCallback) {
     // the options are optional, so adjust the call as needed
     if (typeof (options) === 'function' && !progressCallback) {
@@ -14903,8 +14893,11 @@ function encrypt(privateKey, password, options, progressCallback) {
     if (privateKeyBytes.length !== 32) {
         throw new Error('invalid private key');
     }
-    password = getPassword(password);
-    var entropy = options.entropy;
+    var passwordBytes = getPassword(password);
+    var entropy = null;
+    if (options.entropy) {
+        entropy = bytes_1.arrayify(options.entropy);
+    }
     if (options.mnemonic) {
         if (entropy) {
             if (HDNode.entropyToMnemonic(entropy) !== options.mnemonic) {
@@ -14912,24 +14905,21 @@ function encrypt(privateKey, password, options, progressCallback) {
             }
         }
         else {
-            entropy = HDNode.mnemonicToEntropy(options.mnemonic);
+            entropy = bytes_1.arrayify(HDNode.mnemonicToEntropy(options.mnemonic));
         }
-    }
-    if (entropy) {
-        entropy = bytes_1.arrayify(entropy);
     }
     var path = options.path;
     if (entropy && !path) {
-        path = defaultPath;
+        path = HDNode.defaultPath;
     }
     var client = options.client;
     if (!client) {
         client = "ethers.js";
     }
     // Check/generate the salt
-    var salt = options.salt;
-    if (salt) {
-        salt = bytes_1.arrayify(salt);
+    var salt = null;
+    if (options.salt) {
+        salt = bytes_1.arrayify(options.salt);
     }
     else {
         salt = random_bytes_1.randomBytes(32);
@@ -14947,9 +14937,9 @@ function encrypt(privateKey, password, options, progressCallback) {
         iv = random_bytes_1.randomBytes(16);
     }
     // Override the uuid
-    var uuidRandom = options.uuid;
-    if (uuidRandom) {
-        uuidRandom = bytes_1.arrayify(uuidRandom);
+    var uuidRandom = null;
+    if (options.uuid) {
+        uuidRandom = bytes_1.arrayify(options.uuid);
         if (uuidRandom.length !== 16) {
             throw new Error('invalid uuid');
         }
@@ -14974,7 +14964,7 @@ function encrypt(privateKey, password, options, progressCallback) {
         // We take 64 bytes:
         //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
         //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
-        scrypt(password, salt, N, r, p, 64, function (error, progress, key) {
+        scrypt_js_1.default(passwordBytes, salt, N, r, p, 64, function (error, progress, key) {
             if (error) {
                 error.progress = progress;
                 reject(error);
@@ -14989,15 +14979,15 @@ function encrypt(privateKey, password, options, progressCallback) {
                 // Get the address for this private key
                 var address = (new signing_key_1.SigningKey(privateKeyBytes)).address;
                 // Encrypt the private key
-                var counter = new aes.Counter(iv);
-                var aesCtr = new aes.ModeOfOperation.ctr(derivedKey, counter);
+                var counter = new aes_js_1.default.Counter(iv);
+                var aesCtr = new aes_js_1.default.ModeOfOperation.ctr(derivedKey, counter);
                 var ciphertext = bytes_1.arrayify(aesCtr.encrypt(privateKeyBytes));
                 // Compute the message authentication code, used to check the password
                 var mac = keccak256_1.keccak256(bytes_1.concat([macPrefix, ciphertext]));
                 // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
                 var data = {
                     address: address.substring(2).toLowerCase(),
-                    id: uuid.v4({ random: uuidRandom }),
+                    id: uuid_1.default.v4({ random: uuidRandom }),
                     version: 3,
                     Crypto: {
                         cipher: 'aes-128-ctr',
@@ -15019,8 +15009,8 @@ function encrypt(privateKey, password, options, progressCallback) {
                 // If we have a mnemonic, encrypt it into the JSON wallet
                 if (entropy) {
                     var mnemonicIv = random_bytes_1.randomBytes(16);
-                    var mnemonicCounter = new aes.Counter(mnemonicIv);
-                    var mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
+                    var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
+                    var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
                     var mnemonicCiphertext = bytes_1.arrayify(mnemonicAesCtr.encrypt(entropy));
                     var now = new Date();
                     var timestamp = (now.getUTCFullYear() + '-' +
@@ -15365,16 +15355,8 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var wordlist_1 = require("./wordlist");
-var errors = __importStar(require("../utils/errors"));
 var words = "AbandonAbilityAbleAboutAboveAbsentAbsorbAbstractAbsurdAbuseAccessAccidentAccountAccuseAchieveAcidAcousticAcquireAcrossActActionActorActressActualAdaptAddAddictAddressAdjustAdmitAdultAdvanceAdviceAerobicAffairAffordAfraidAgainAgeAgentAgreeAheadAimAirAirportAisleAlarmAlbumAlcoholAlertAlienAllAlleyAllowAlmostAloneAlphaAlreadyAlsoAlterAlwaysAmateurAmazingAmongAmountAmusedAnalystAnchorAncientAngerAngleAngryAnimalAnkleAnnounceAnnualAnotherAnswerAntennaAntiqueAnxietyAnyApartApologyAppearAppleApproveAprilArchArcticAreaArenaArgueArmArmedArmorArmyAroundArrangeArrestArriveArrowArtArtefactArtistArtworkAskAspectAssaultAssetAssistAssumeAsthmaAthleteAtomAttackAttendAttitudeAttractAuctionAuditAugustAuntAuthorAutoAutumnAverageAvocadoAvoidAwakeAwareAwayAwesomeAwfulAwkwardAxisBabyBachelorBaconBadgeBagBalanceBalconyBallBambooBananaBannerBarBarelyBargainBarrelBaseBasicBasketBattleBeachBeanBeautyBecauseBecomeBeefBeforeBeginBehaveBehindBelieveBelowBeltBenchBenefitBestBetrayBetterBetweenBeyondBicycleBidBikeBindBiologyBirdBirthBitterBlackBladeBlameBlanketBlastBleakBlessBlindBloodBlossomBlouseBlueBlurBlushBoardBoatBodyBoilBombBoneBonusBookBoostBorderBoringBorrowBossBottomBounceBoxBoyBracketBrainBrandBrassBraveBreadBreezeBrickBridgeBriefBrightBringBriskBroccoliBrokenBronzeBroomBrotherBrownBrushBubbleBuddyBudgetBuffaloBuildBulbBulkBulletBundleBunkerBurdenBurgerBurstBusBusinessBusyButterBuyerBuzzCabbageCabinCableCactusCageCakeCallCalmCameraCampCanCanalCancelCandyCannonCanoeCanvasCanyonCapableCapitalCaptainCarCarbonCardCargoCarpetCarryCartCaseCashCasinoCastleCasualCatCatalogCatchCategoryCattleCaughtCauseCautionCaveCeilingCeleryCementCensusCenturyCerealCertainChairChalkChampionChangeChaosChapterChargeChaseChatCheapCheckCheeseChefCherryChestChickenChiefChildChimneyChoiceChooseChronicChuckleChunkChurnCigarCinnamonCircleCitizenCityCivilClaimClapClarifyClawClayCleanClerkCleverClickClientCliffClimbClinicClipClockClogCloseClothCloudClownClubClumpClusterClutchCoachCoastCoconutCodeCoffeeCoilCoinCollectColorColumnCombineComeComfortComicCommonCompanyConcertConductConfirmCongressConnectConsiderControlConvinceCookCoolCopperCopyCoralCoreCornCorrectCostCottonCouchCountryCoupleCourseCousinCoverCoyoteCrackCradleCraftCramCraneCrashCraterCrawlCrazyCreamCreditCreekCrewCricketCrimeCrispCriticCropCrossCrouchCrowdCrucialCruelCruiseCrumbleCrunchCrushCryCrystalCubeCultureCupCupboardCuriousCurrentCurtainCurveCushionCustomCuteCycleDadDamageDampDanceDangerDaringDashDaughterDawnDayDealDebateDebrisDecadeDecemberDecideDeclineDecorateDecreaseDeerDefenseDefineDefyDegreeDelayDeliverDemandDemiseDenialDentistDenyDepartDependDepositDepthDeputyDeriveDescribeDesertDesignDeskDespairDestroyDetailDetectDevelopDeviceDevoteDiagramDialDiamondDiaryDiceDieselDietDifferDigitalDignityDilemmaDinnerDinosaurDirectDirtDisagreeDiscoverDiseaseDishDismissDisorderDisplayDistanceDivertDivideDivorceDizzyDoctorDocumentDogDollDolphinDomainDonateDonkeyDonorDoorDoseDoubleDoveDraftDragonDramaDrasticDrawDreamDressDriftDrillDrinkDripDriveDropDrumDryDuckDumbDuneDuringDustDutchDutyDwarfDynamicEagerEagleEarlyEarnEarthEasilyEastEasyEchoEcologyEconomyEdgeEditEducateEffortEggEightEitherElbowElderElectricElegantElementElephantElevatorEliteElseEmbarkEmbodyEmbraceEmergeEmotionEmployEmpowerEmptyEnableEnactEndEndlessEndorseEnemyEnergyEnforceEngageEngineEnhanceEnjoyEnlistEnoughEnrichEnrollEnsureEnterEntireEntryEnvelopeEpisodeEqualEquipEraEraseErodeErosionErrorEruptEscapeEssayEssenceEstateEternalEthicsEvidenceEvilEvokeEvolveExactExampleExcessExchangeExciteExcludeExcuseExecuteExerciseExhaustExhibitExileExistExitExoticExpandExpectExpireExplainExposeExpressExtendExtraEyeEyebrowFabricFaceFacultyFadeFaintFaithFallFalseFameFamilyFamousFanFancyFantasyFarmFashionFatFatalFatherFatigueFaultFavoriteFeatureFebruaryFederalFeeFeedFeelFemaleFenceFestivalFetchFeverFewFiberFictionFieldFigureFileFilmFilterFinalFindFineFingerFinishFireFirmFirstFiscalFishFitFitnessFixFlagFlameFlashFlatFlavorFleeFlightFlipFloatFlockFloorFlowerFluidFlushFlyFoamFocusFogFoilFoldFollowFoodFootForceForestForgetForkFortuneForumForwardFossilFosterFoundFoxFragileFrameFrequentFreshFriendFringeFrogFrontFrostFrownFrozenFruitFuelFunFunnyFurnaceFuryFutureGadgetGainGalaxyGalleryGameGapGarageGarbageGardenGarlicGarmentGasGaspGateGatherGaugeGazeGeneralGeniusGenreGentleGenuineGestureGhostGiantGiftGiggleGingerGiraffeGirlGiveGladGlanceGlareGlassGlideGlimpseGlobeGloomGloryGloveGlowGlueGoatGoddessGoldGoodGooseGorillaGospelGossipGovernGownGrabGraceGrainGrantGrapeGrassGravityGreatGreenGridGriefGritGroceryGroupGrowGruntGuardGuessGuideGuiltGuitarGunGymHabitHairHalfHammerHamsterHandHappyHarborHardHarshHarvestHatHaveHawkHazardHeadHealthHeartHeavyHedgehogHeightHelloHelmetHelpHenHeroHiddenHighHillHintHipHireHistoryHobbyHockeyHoldHoleHolidayHollowHomeHoneyHoodHopeHornHorrorHorseHospitalHostHotelHourHoverHubHugeHumanHumbleHumorHundredHungryHuntHurdleHurryHurtHusbandHybridIceIconIdeaIdentifyIdleIgnoreIllIllegalIllnessImageImitateImmenseImmuneImpactImposeImproveImpulseInchIncludeIncomeIncreaseIndexIndicateIndoorIndustryInfantInflictInformInhaleInheritInitialInjectInjuryInmateInnerInnocentInputInquiryInsaneInsectInsideInspireInstallIntactInterestIntoInvestInviteInvolveIronIslandIsolateIssueItemIvoryJacketJaguarJarJazzJealousJeansJellyJewelJobJoinJokeJourneyJoyJudgeJuiceJumpJungleJuniorJunkJustKangarooKeenKeepKetchupKeyKickKidKidneyKindKingdomKissKitKitchenKiteKittenKiwiKneeKnifeKnockKnowLabLabelLaborLadderLadyLakeLampLanguageLaptopLargeLaterLatinLaughLaundryLavaLawLawnLawsuitLayerLazyLeaderLeafLearnLeaveLectureLeftLegLegalLegendLeisureLemonLendLengthLensLeopardLessonLetterLevelLiarLibertyLibraryLicenseLifeLiftLightLikeLimbLimitLinkLionLiquidListLittleLiveLizardLoadLoanLobsterLocalLockLogicLonelyLongLoopLotteryLoudLoungeLoveLoyalLuckyLuggageLumberLunarLunchLuxuryLyricsMachineMadMagicMagnetMaidMailMainMajorMakeMammalManManageMandateMangoMansionManualMapleMarbleMarchMarginMarineMarketMarriageMaskMassMasterMatchMaterialMathMatrixMatterMaximumMazeMeadowMeanMeasureMeatMechanicMedalMediaMelodyMeltMemberMemoryMentionMenuMercyMergeMeritMerryMeshMessageMetalMethodMiddleMidnightMilkMillionMimicMindMinimumMinorMinuteMiracleMirrorMiseryMissMistakeMixMixedMixtureMobileModelModifyMomMomentMonitorMonkeyMonsterMonthMoonMoralMoreMorningMosquitoMotherMotionMotorMountainMouseMoveMovieMuchMuffinMuleMultiplyMuscleMuseumMushroomMusicMustMutualMyselfMysteryMythNaiveNameNapkinNarrowNastyNationNatureNearNeckNeedNegativeNeglectNeitherNephewNerveNestNetNetworkNeutralNeverNewsNextNiceNightNobleNoiseNomineeNoodleNormalNorthNoseNotableNoteNothingNoticeNovelNowNuclearNumberNurseNutOakObeyObjectObligeObscureObserveObtainObviousOccurOceanOctoberOdorOffOfferOfficeOftenOilOkayOldOliveOlympicOmitOnceOneOnionOnlineOnlyOpenOperaOpinionOpposeOptionOrangeOrbitOrchardOrderOrdinaryOrganOrientOriginalOrphanOstrichOtherOutdoorOuterOutputOutsideOvalOvenOverOwnOwnerOxygenOysterOzonePactPaddlePagePairPalacePalmPandaPanelPanicPantherPaperParadeParentParkParrotPartyPassPatchPathPatientPatrolPatternPausePavePaymentPeacePeanutPearPeasantPelicanPenPenaltyPencilPeoplePepperPerfectPermitPersonPetPhonePhotoPhrasePhysicalPianoPicnicPicturePiecePigPigeonPillPilotPinkPioneerPipePistolPitchPizzaPlacePlanetPlasticPlatePlayPleasePledgePluckPlugPlungePoemPoetPointPolarPolePolicePondPonyPoolPopularPortionPositionPossiblePostPotatoPotteryPovertyPowderPowerPracticePraisePredictPreferPreparePresentPrettyPreventPricePridePrimaryPrintPriorityPrisonPrivatePrizeProblemProcessProduceProfitProgramProjectPromoteProofPropertyProsperProtectProudProvidePublicPuddingPullPulpPulsePumpkinPunchPupilPuppyPurchasePurityPurposePursePushPutPuzzlePyramidQualityQuantumQuarterQuestionQuickQuitQuizQuoteRabbitRaccoonRaceRackRadarRadioRailRainRaiseRallyRampRanchRandomRangeRapidRareRateRatherRavenRawRazorReadyRealReasonRebelRebuildRecallReceiveRecipeRecordRecycleReduceReflectReformRefuseRegionRegretRegularRejectRelaxReleaseReliefRelyRemainRememberRemindRemoveRenderRenewRentReopenRepairRepeatReplaceReportRequireRescueResembleResistResourceResponseResultRetireRetreatReturnReunionRevealReviewRewardRhythmRibRibbonRiceRichRideRidgeRifleRightRigidRingRiotRippleRiskRitualRivalRiverRoadRoastRobotRobustRocketRomanceRoofRookieRoomRoseRotateRoughRoundRouteRoyalRubberRudeRugRuleRunRunwayRuralSadSaddleSadnessSafeSailSaladSalmonSalonSaltSaluteSameSampleSandSatisfySatoshiSauceSausageSaveSayScaleScanScareScatterSceneSchemeSchoolScienceScissorsScorpionScoutScrapScreenScriptScrubSeaSearchSeasonSeatSecondSecretSectionSecuritySeedSeekSegmentSelectSellSeminarSeniorSenseSentenceSeriesServiceSessionSettleSetupSevenShadowShaftShallowShareShedShellSheriffShieldShiftShineShipShiverShockShoeShootShopShortShoulderShoveShrimpShrugShuffleShySiblingSickSideSiegeSightSignSilentSilkSillySilverSimilarSimpleSinceSingSirenSisterSituateSixSizeSkateSketchSkiSkillSkinSkirtSkullSlabSlamSleepSlenderSliceSlideSlightSlimSloganSlotSlowSlushSmallSmartSmileSmokeSmoothSnackSnakeSnapSniffSnowSoapSoccerSocialSockSodaSoftSolarSoldierSolidSolutionSolveSomeoneSongSoonSorrySortSoulSoundSoupSourceSouthSpaceSpareSpatialSpawnSpeakSpecialSpeedSpellSpendSphereSpiceSpiderSpikeSpinSpiritSplitSpoilSponsorSpoonSportSpotSpraySpreadSpringSpySquareSqueezeSquirrelStableStadiumStaffStageStairsStampStandStartStateStaySteakSteelStemStepStereoStickStillStingStockStomachStoneStoolStoryStoveStrategyStreetStrikeStrongStruggleStudentStuffStumbleStyleSubjectSubmitSubwaySuccessSuchSuddenSufferSugarSuggestSuitSummerSunSunnySunsetSuperSupplySupremeSureSurfaceSurgeSurpriseSurroundSurveySuspectSustainSwallowSwampSwapSwarmSwearSweetSwiftSwimSwingSwitchSwordSymbolSymptomSyrupSystemTableTackleTagTailTalentTalkTankTapeTargetTaskTasteTattooTaxiTeachTeamTellTenTenantTennisTentTermTestTextThankThatThemeThenTheoryThereTheyThingThisThoughtThreeThriveThrowThumbThunderTicketTideTigerTiltTimberTimeTinyTipTiredTissueTitleToastTobaccoTodayToddlerToeTogetherToiletTokenTomatoTomorrowToneTongueTonightToolToothTopTopicToppleTorchTornadoTortoiseTossTotalTouristTowardTowerTownToyTrackTradeTrafficTragicTrainTransferTrapTrashTravelTrayTreatTreeTrendTrialTribeTrickTriggerTrimTripTrophyTroubleTruckTrueTrulyTrumpetTrustTruthTryTubeTuitionTumbleTunaTunnelTurkeyTurnTurtleTwelveTwentyTwiceTwinTwistTwoTypeTypicalUglyUmbrellaUnableUnawareUncleUncoverUnderUndoUnfairUnfoldUnhappyUniformUniqueUnitUniverseUnknownUnlockUntilUnusualUnveilUpdateUpgradeUpholdUponUpperUpsetUrbanUrgeUsageUseUsedUsefulUselessUsualUtilityVacantVacuumVagueValidValleyValveVanVanishVaporVariousVastVaultVehicleVelvetVendorVentureVenueVerbVerifyVersionVeryVesselVeteranViableVibrantViciousVictoryVideoViewVillageVintageViolinVirtualVirusVisaVisitVisualVitalVividVocalVoiceVoidVolcanoVolumeVoteVoyageWageWagonWaitWalkWallWalnutWantWarfareWarmWarriorWashWaspWasteWaterWaveWayWealthWeaponWearWeaselWeatherWebWeddingWeekendWeirdWelcomeWestWetWhaleWhatWheatWheelWhenWhereWhipWhisperWideWidthWifeWildWillWinWindowWineWingWinkWinnerWinterWireWisdomWiseWishWitnessWolfWomanWonderWoodWoolWordWorkWorldWorryWorthWrapWreckWrestleWristWriteWrongYardYearYellowYouYoungYouthZebraZeroZoneZoo";
 var wordlist = null;
 function loadWords() {
@@ -15390,9 +15372,6 @@ var LangEn = /** @class */ (function (_super) {
     }
     LangEn.prototype.getWord = function (index) {
         loadWords();
-        if (index < 0 || index >= wordlist.length || Math.trunc(index) != index) {
-            errors.throwError('invalid wordlist index', errors.INVALID_ARGUMENT, { arg: 'index', value: index });
-        }
         return wordlist[index];
     };
     LangEn.prototype.getWordIndex = function (word) {
@@ -15405,7 +15384,7 @@ var langEn = new LangEn();
 exports.langEn = langEn;
 wordlist_1.register(langEn);
 
-},{"../utils/errors":63,"./wordlist":82}],82:[function(require,module,exports){
+},{"./wordlist":82}],82:[function(require,module,exports){
 (function (global){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -15429,10 +15408,10 @@ var Wordlist = /** @class */ (function () {
 exports.Wordlist = Wordlist;
 function register(lang) {
     if (exportWordlist) {
-        if (!global['wordlists']) {
+        if (!global.wordlists) {
             properties_1.defineReadOnly(global, 'wordlists', {});
         }
-        properties_1.defineReadOnly(global['wordlists'], lang.locale, lang);
+        properties_1.defineReadOnly(global.wordlists, lang.locale, lang);
     }
 }
 exports.register = register;

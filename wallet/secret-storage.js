@@ -1,4 +1,7 @@
 'use strict';
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -7,9 +10,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var aes = require("aes-js");
-var scrypt = require("scrypt-js");
-var uuid = require("uuid");
+var aes_js_1 = __importDefault(require("aes-js"));
+var scrypt_js_1 = __importDefault(require("scrypt-js"));
+var uuid_1 = __importDefault(require("uuid"));
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var pbkdf2_1 = require("../utils/pbkdf2");
@@ -18,8 +21,6 @@ var utf8_1 = require("../utils/utf8");
 var random_bytes_1 = require("../utils/random-bytes");
 var signing_key_1 = require("./signing-key");
 var HDNode = __importStar(require("./hdnode"));
-// @TODO: Maybe move this to HDNode?
-var defaultPath = "m/44'/60'/0'/0/0";
 function looseArrayify(hexString) {
     if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
         hexString = '0x' + hexString;
@@ -101,9 +102,9 @@ function decryptCrowdsale(json, password) {
     var iv = encseed.slice(0, 16);
     var encryptedSeed = encseed.slice(16);
     // Decrypt the seed
-    var aesCbc = new aes.ModeOfOperation.cbc(key, iv);
+    var aesCbc = new aes_js_1.default.ModeOfOperation.cbc(key, iv);
     var seed = bytes_1.arrayify(aesCbc.decrypt(encryptedSeed));
-    seed = aes.padding.pkcs7.strip(seed);
+    seed = aes_js_1.default.padding.pkcs7.strip(seed);
     // This wallet format is weird... Convert the binary encoded hex to a string.
     var seedHex = '';
     for (var i = 0; i < seed.length; i++) {
@@ -120,13 +121,13 @@ exports.decryptCrowdsale = decryptCrowdsale;
 //@TODO: string or arrayish
 function decrypt(json, password, progressCallback) {
     var data = JSON.parse(json);
-    password = getPassword(password);
+    var passwordBytes = getPassword(password);
     var decrypt = function (key, ciphertext) {
         var cipher = searchPath(data, 'crypto/cipher');
         if (cipher === 'aes-128-ctr') {
             var iv = looseArrayify(searchPath(data, 'crypto/cipherparams/iv'));
-            var counter = new aes.Counter(iv);
-            var aesCtr = new aes.ModeOfOperation.ctr(key, counter);
+            var counter = new aes_js_1.default.Counter(iv);
+            var aesCtr = new aes_js_1.default.ModeOfOperation.ctr(key, counter);
             return bytes_1.arrayify(aesCtr.decrypt(ciphertext));
         }
         return null;
@@ -156,9 +157,9 @@ function decrypt(json, password, progressCallback) {
         if (searchPath(data, 'x-ethers/version') === '0.1') {
             var mnemonicCiphertext = looseArrayify(searchPath(data, 'x-ethers/mnemonicCiphertext'));
             var mnemonicIv = looseArrayify(searchPath(data, 'x-ethers/mnemonicCounter'));
-            var mnemonicCounter = new aes.Counter(mnemonicIv);
-            var mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-            var path = searchPath(data, 'x-ethers/path') || defaultPath;
+            var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
+            var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
+            var path = searchPath(data, 'x-ethers/path') || HDNode.defaultPath;
             var entropy = bytes_1.arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
             var mnemonic = HDNode.entropyToMnemonic(entropy);
             var node = HDNode.fromMnemonic(mnemonic).derivePath(path);
@@ -192,7 +193,7 @@ function decrypt(json, password, progressCallback) {
                     reject(new Error('unsupported key-derivation derived-key length'));
                     return;
                 }
-                scrypt(password, salt, N, r, p, 64, function (error, progress, key) {
+                scrypt_js_1.default(passwordBytes, salt, N, r, p, 64, function (error, progress, key) {
                     if (error) {
                         error.progress = progress;
                         reject(error);
@@ -233,7 +234,7 @@ function decrypt(json, password, progressCallback) {
                     reject(new Error('unsupported key-derivation derived-key length'));
                     return;
                 }
-                var key = pbkdf2_1.pbkdf2(password, salt, c, dkLen, prfFunc);
+                var key = pbkdf2_1.pbkdf2(passwordBytes, salt, c, dkLen, prfFunc);
                 var signingKey = getSigningKey(key, reject);
                 if (!signingKey) {
                     return;
@@ -250,7 +251,6 @@ function decrypt(json, password, progressCallback) {
     });
 }
 exports.decrypt = decrypt;
-// @TOOD: Options
 function encrypt(privateKey, password, options, progressCallback) {
     // the options are optional, so adjust the call as needed
     if (typeof (options) === 'function' && !progressCallback) {
@@ -271,8 +271,11 @@ function encrypt(privateKey, password, options, progressCallback) {
     if (privateKeyBytes.length !== 32) {
         throw new Error('invalid private key');
     }
-    password = getPassword(password);
-    var entropy = options.entropy;
+    var passwordBytes = getPassword(password);
+    var entropy = null;
+    if (options.entropy) {
+        entropy = bytes_1.arrayify(options.entropy);
+    }
     if (options.mnemonic) {
         if (entropy) {
             if (HDNode.entropyToMnemonic(entropy) !== options.mnemonic) {
@@ -280,24 +283,21 @@ function encrypt(privateKey, password, options, progressCallback) {
             }
         }
         else {
-            entropy = HDNode.mnemonicToEntropy(options.mnemonic);
+            entropy = bytes_1.arrayify(HDNode.mnemonicToEntropy(options.mnemonic));
         }
-    }
-    if (entropy) {
-        entropy = bytes_1.arrayify(entropy);
     }
     var path = options.path;
     if (entropy && !path) {
-        path = defaultPath;
+        path = HDNode.defaultPath;
     }
     var client = options.client;
     if (!client) {
         client = "ethers.js";
     }
     // Check/generate the salt
-    var salt = options.salt;
-    if (salt) {
-        salt = bytes_1.arrayify(salt);
+    var salt = null;
+    if (options.salt) {
+        salt = bytes_1.arrayify(options.salt);
     }
     else {
         salt = random_bytes_1.randomBytes(32);
@@ -315,9 +315,9 @@ function encrypt(privateKey, password, options, progressCallback) {
         iv = random_bytes_1.randomBytes(16);
     }
     // Override the uuid
-    var uuidRandom = options.uuid;
-    if (uuidRandom) {
-        uuidRandom = bytes_1.arrayify(uuidRandom);
+    var uuidRandom = null;
+    if (options.uuid) {
+        uuidRandom = bytes_1.arrayify(options.uuid);
         if (uuidRandom.length !== 16) {
             throw new Error('invalid uuid');
         }
@@ -342,7 +342,7 @@ function encrypt(privateKey, password, options, progressCallback) {
         // We take 64 bytes:
         //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
         //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
-        scrypt(password, salt, N, r, p, 64, function (error, progress, key) {
+        scrypt_js_1.default(passwordBytes, salt, N, r, p, 64, function (error, progress, key) {
             if (error) {
                 error.progress = progress;
                 reject(error);
@@ -357,15 +357,15 @@ function encrypt(privateKey, password, options, progressCallback) {
                 // Get the address for this private key
                 var address = (new signing_key_1.SigningKey(privateKeyBytes)).address;
                 // Encrypt the private key
-                var counter = new aes.Counter(iv);
-                var aesCtr = new aes.ModeOfOperation.ctr(derivedKey, counter);
+                var counter = new aes_js_1.default.Counter(iv);
+                var aesCtr = new aes_js_1.default.ModeOfOperation.ctr(derivedKey, counter);
                 var ciphertext = bytes_1.arrayify(aesCtr.encrypt(privateKeyBytes));
                 // Compute the message authentication code, used to check the password
                 var mac = keccak256_1.keccak256(bytes_1.concat([macPrefix, ciphertext]));
                 // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
                 var data = {
                     address: address.substring(2).toLowerCase(),
-                    id: uuid.v4({ random: uuidRandom }),
+                    id: uuid_1.default.v4({ random: uuidRandom }),
                     version: 3,
                     Crypto: {
                         cipher: 'aes-128-ctr',
@@ -387,8 +387,8 @@ function encrypt(privateKey, password, options, progressCallback) {
                 // If we have a mnemonic, encrypt it into the JSON wallet
                 if (entropy) {
                     var mnemonicIv = random_bytes_1.randomBytes(16);
-                    var mnemonicCounter = new aes.Counter(mnemonicIv);
-                    var mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
+                    var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
+                    var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
                     var mnemonicCiphertext = bytes_1.arrayify(mnemonicAesCtr.encrypt(entropy));
                     var now = new Date();
                     var timestamp = (now.getUTCFullYear() + '-' +

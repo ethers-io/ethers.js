@@ -31,19 +31,17 @@ function _encode(object) {
         length.unshift(0xf7 + length.length);
         return length.concat(payload);
     }
-    else {
-        var data = Array.prototype.slice.call(bytes_1.arrayify(object));
-        if (data.length === 1 && data[0] <= 0x7f) {
-            return data;
-        }
-        else if (data.length <= 55) {
-            data.unshift(0x80 + data.length);
-            return data;
-        }
-        var length = arrayifyInteger(data.length);
-        length.unshift(0xb7 + length.length);
-        return length.concat(data);
+    var data = Array.prototype.slice.call(bytes_1.arrayify(object));
+    if (data.length === 1 && data[0] <= 0x7f) {
+        return data;
     }
+    else if (data.length <= 55) {
+        data.unshift(0x80 + data.length);
+        return data;
+    }
+    var length = arrayifyInteger(data.length);
+    length.unshift(0xb7 + length.length);
+    return length.concat(data);
 }
 function encode(object) {
     return bytes_1.hexlify(_encode(object));

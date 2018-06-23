@@ -17,12 +17,14 @@
     "removeComments": false,
 
     "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true
   },
   "files": [
       "./src.ts/index.ts",
-      "./src.ts/wordlists/index.ts"
+      "./src.ts/wordlists/index.ts",
+      "./thirdparty.d.ts"
   ]
 }
 

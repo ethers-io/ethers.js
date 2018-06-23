@@ -51,7 +51,7 @@ var transforms = {
     // We only use the version from this JSON package
     "elliptic/package.json" : ellipticPackage,
 
-    // Remove RIPEMD160
+    // Remove RIPEMD160 and unneeded hashing algorithms
     "hash.js/lib/hash/ripemd.js": "module.exports = {ripemd160: null}",
     "hash.js/lib/hash/sha/1.js": empty,
     "hash.js/lib/hash/sha/224.js": empty,
@@ -61,7 +61,6 @@ var transforms = {
     "brorand/index.js": brorand,
 
     // Used by sha3 if it exists; (so make it no exist)
-//    "process/.*": undef,
     "process/browser.js": process,
     "timers-browserify/main.js": timers,
 };
@@ -175,7 +174,7 @@ function taskBundle(name, options) {
     var result = browserify({
         basedir: '.',
         debug: false,
-        entries: [ 'src.ts/' ],
+        entries: [ './src.ts/' ],
         cache: {},
         packageCache: {},
         standalone: "ethers",

@@ -22,7 +22,7 @@ function unarrayifyInteger(data: Uint8Array, offset: number, length: number): nu
 
 function _encode(object: Array<any> | string): Array<number> {
     if (Array.isArray(object)) {
-        var payload = [];
+        var payload: Array<number> = [];
         object.forEach(function(child) {
             payload = payload.concat(_encode(child));
         });
@@ -37,29 +37,34 @@ function _encode(object: Array<any> | string): Array<number> {
 
         return length.concat(payload);
 
-    } else {
-        let data: Array<number> = Array.prototype.slice.call(arrayify(object));
-
-        if (data.length === 1 && data[0] <= 0x7f) {
-            return data;
-
-        } else if (data.length <= 55) {
-            data.unshift(0x80 + data.length);
-            return data;
-        }
-
-        var length = arrayifyInteger(data.length);
-        length.unshift(0xb7 + length.length);
-
-        return length.concat(data);
     }
+
+    let data: Array<number> = Array.prototype.slice.call(arrayify(object));
+
+    if (data.length === 1 && data[0] <= 0x7f) {
+        return data;
+
+    } else if (data.length <= 55) {
+        data.unshift(0x80 + data.length);
+        return data;
+    }
+
+    var length = arrayifyInteger(data.length);
+    length.unshift(0xb7 + length.length);
+
+    return length.concat(data);
 }
 
 export function encode(object: any): string {
     return hexlify(_encode(object));
 }
 
-function _decodeChildren(data, offset, childOffset, length) {
+type Decoded = {
+    result: any;
+    consumed: number;
+};
+
+function _decodeChildren(data: Uint8Array, offset: number, childOffset: number, length: number): Decoded {
     var result = [];
 
     while (childOffset < offset + 1 + length) {

@@ -12,7 +12,7 @@ import * as errors from '../utils/errors';
 function checkNetworks(networks: Array<Network>): boolean {
     var result = true;
 
-    let check = null;
+    let check: Network = null;
     networks.forEach((network) => {
 
         // Null
@@ -81,7 +81,7 @@ export class FallbackProvider extends Provider {
         var providers = this.providers;
 
         return new Promise((resolve, reject) => {
-            var firstError = null;
+            var firstError: Error = null;
             function next() {
                 if (!providers.length) {
                     reject(firstError);

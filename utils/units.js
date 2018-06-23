@@ -18,39 +18,40 @@ var names = [
     'finny',
     'ether',
 ];
-var getUnitInfo = (function () {
-    var unitInfos = {};
-    function getUnitInfo(value) {
-        return {
-            decimals: value.length - 1,
-            tenPower: bignumber_1.bigNumberify(value)
-        };
-    }
+var unitInfos = {};
+function _getUnitInfo(value) {
+    return {
+        decimals: value.length - 1,
+        tenPower: bignumber_1.bigNumberify(value)
+    };
+}
+// Build cache of common units
+(function () {
     // Cache the common units
     var value = '1';
     names.forEach(function (name) {
-        var info = getUnitInfo(value);
+        var info = _getUnitInfo(value);
         unitInfos[name.toLowerCase()] = info;
         unitInfos[String(info.decimals)] = info;
         value += '000';
     });
-    return function (name) {
-        // Try the cache
-        var info = unitInfos[String(name).toLowerCase()];
-        if (!info && typeof (name) === 'number' && Math.trunc(name) == name && name >= 0 && name <= 256) {
-            var value = '1';
-            for (var i = 0; i < name; i++) {
-                value += '0';
-            }
-            info = getUnitInfo(value);
-        }
-        // Make sure we got something
-        if (!info) {
-            errors.throwError('invalid unitType', errors.INVALID_ARGUMENT, { arg: 'name', value: name });
-        }
-        return info;
-    };
 })();
+function getUnitInfo(name) {
+    // Try the cache
+    var info = unitInfos[String(name).toLowerCase()];
+    if (!info && typeof (name) === 'number' && parseInt(String(name)) == name && name >= 0 && name <= 256) {
+        var value = '1';
+        for (var i = 0; i < name; i++) {
+            value += '0';
+        }
+        info = _getUnitInfo(value);
+    }
+    // Make sure we got something
+    if (!info) {
+        errors.throwError('invalid unitType', errors.INVALID_ARGUMENT, { arg: 'name', value: name });
+    }
+    return info;
+}
 function formatUnits(value, unitType, options) {
     /*
     if (typeof(unitType) === 'object' && !options) {

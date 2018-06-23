@@ -3,13 +3,13 @@
 import { arrayify } from '../src.ts/utils/bytes';
 import { defineReadOnly } from '../src.ts/utils/properties';
 
-let crypto: any = global['crypto'] || global['msCrypto'];
+let crypto: any = (<any>global).crypto || (<any>global).msCrypto;
 if (!crypto || !crypto.getRandomValues) {
 
     console.log('WARNING: Missing strong random number source; using weak randomBytes');
 
     crypto = {
-        getRandomValues: function(buffer: Uint8Array) {
+        getRandomValues: function(buffer: Uint8Array): Uint8Array {
             for (var round = 0; round < 20; round++) {
                 for (var i = 0; i < buffer.length; i++) {
                     if (round) {
@@ -26,8 +26,8 @@ if (!crypto || !crypto.getRandomValues) {
     };
 }
 
-export function randomBytes(length) {
-    if (length <= 0 || length > 1024 || parseInt(length) != length) {
+export function randomBytes(length: number): Uint8Array {
+    if (length <= 0 || length > 1024 || parseInt(String(length)) != length) {
         throw new Error('invalid length');
     }
 

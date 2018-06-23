@@ -37,7 +37,7 @@ export function resolveProperties(object: any): Promise<any> {
 }
 
 export function shallowCopy(object: any): any {
-    let result = {};
+    let result: any = {};
     for (var key in object) { result[key] = object[key]; }
     return result;
 }

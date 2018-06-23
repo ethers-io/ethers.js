@@ -62,7 +62,7 @@ type ParseNode = {
 
 
 function parseParam(param: string, allowIndexed?: boolean): ParamType {
-    function throwError(i) {
+    function throwError(i: number) {
         throw new Error('unexpected character "' + param[i] + '" at position ' + i + ' in "' + param + '"');
     }
 
@@ -201,7 +201,7 @@ export type FunctionFragment = {
 // @TODO: Better return type
 function parseSignatureEvent(fragment: string): EventFragment {
 
-    var abi = {
+    var abi: EventFragment = {
         anonymous: false,
         inputs: [],
         name: '',
@@ -239,7 +239,7 @@ function parseSignatureEvent(fragment: string): EventFragment {
 }
 
 function parseSignatureFunction(fragment: string): FunctionFragment {
-    var abi = {
+    var abi: FunctionFragment = {
         constant: false,
         inputs: [],
         name: '',
@@ -348,7 +348,7 @@ abstract class Coder {
 }
 
 class CoderNull extends Coder {
-    constructor(coerceFunc, localName) {
+    constructor(coerceFunc: CoerceFunc, localName: string) {
         super(coerceFunc, 'null', '', localName, false);
     }
 
@@ -368,7 +368,7 @@ class CoderNull extends Coder {
 class CoderNumber extends Coder {
     readonly size: number;
     readonly signed: boolean;
-    constructor(coerceFunc, size, signed, localName) {
+    constructor(coerceFunc: CoerceFunc, size: number, signed: boolean, localName: string) {
         const name = ((signed ? 'int': 'uint') + (size * 8));
         super(coerceFunc, name, name, localName, false);
 
@@ -418,10 +418,10 @@ class CoderNumber extends Coder {
         }
     }
 }
-var uint256Coder = new CoderNumber(function(type, value) { return value; }, 32, false, 'none');
+var uint256Coder = new CoderNumber(function(type: string, value: any) { return value; }, 32, false, 'none');
 
 class CoderBoolean extends Coder {
-    constructor(coerceFunc, localName) {
+    constructor(coerceFunc: CoerceFunc, localName: string) {
         super(coerceFunc, 'bool', 'bool', localName, false);
     }
 
@@ -451,7 +451,7 @@ class CoderBoolean extends Coder {
 
 class CoderFixedBytes extends Coder {
     readonly length: number;
-    constructor(coerceFunc, length, localName) {
+    constructor(coerceFunc: CoerceFunc, length: number, localName: string) {
         const name = ('bytes' + length);
         super(coerceFunc, name, name, localName, false);
         this.length = length;
@@ -492,7 +492,7 @@ class CoderFixedBytes extends Coder {
 }
 
 class CoderAddress extends Coder {
-    constructor(coerceFunc, localName) {
+    constructor(coerceFunc: CoerceFunc, localName: string) {
         super(coerceFunc, 'address', 'address', localName, false);
     }
     encode(value: string): Uint8Array {
@@ -524,7 +524,7 @@ class CoderAddress extends Coder {
 }
 
 function _encodeDynamicBytes(value: Uint8Array): Uint8Array {
-    var dataLength = Math.trunc(32 * Math.ceil(value.length / 32));
+    var dataLength = 32 * Math.ceil(value.length / 32);
     var padding = new Uint8Array(dataLength - value.length);
 
     return concat([
@@ -563,13 +563,13 @@ function _decodeDynamicBytes(data: Uint8Array, offset: number, localName: string
     }
 
     return {
-        consumed: Math.trunc(32 + 32 * Math.ceil(length / 32)),
+        consumed: 32 + 32 * Math.ceil(length / 32),
         value: data.slice(offset + 32, offset + 32 + length),
     }
 }
 
 class CoderDynamicBytes extends Coder {
-    constructor(coerceFunc, localName) {
+    constructor(coerceFunc: CoerceFunc, localName: string) {
         super(coerceFunc, 'bytes', 'bytes', localName, true);
     }
     encode(value: Arrayish): Uint8Array {
@@ -593,7 +593,7 @@ class CoderDynamicBytes extends Coder {
 }
 
 class CoderString extends Coder {
-    constructor(coerceFunc, localName) {
+    constructor(coerceFunc: CoerceFunc, localName: string) {
         super(coerceFunc, 'string', 'string', localName, true);
     }
 
@@ -616,7 +616,7 @@ class CoderString extends Coder {
 }
 
 function alignSize(size: number): number {
-    return Math.trunc(32 * Math.ceil(size / 32));
+    return 32 * Math.ceil(size / 32);
 }
 
 function pack(coders: Array<Coder>, values: Array<any>): Uint8Array {
@@ -625,9 +625,9 @@ function pack(coders: Array<Coder>, values: Array<any>): Uint8Array {
        // do nothing
 
     } else if (values && typeof(values) === 'object') {
-        var arrayValues = [];
+        var arrayValues: Array<any> = [];
         coders.forEach(function(coder) {
-            arrayValues.push(values[coder.localName]);
+            arrayValues.push((<any>values)[coder.localName]);
         });
         values = arrayValues;
 
@@ -646,7 +646,7 @@ function pack(coders: Array<Coder>, values: Array<any>): Uint8Array {
         });
     }
 
-    var parts = [];
+    var parts: Array<{ dynamic: boolean, value: any }> = [];
 
     coders.forEach(function(coder, index) {
         parts.push({ dynamic: coder.dynamic, value: coder.encode(values[index]) });
@@ -687,7 +687,7 @@ function pack(coders: Array<Coder>, values: Array<any>): Uint8Array {
 function unpack(coders: Array<Coder>, data: Uint8Array, offset: number): DecodedResult {
     var baseOffset = offset;
     var consumed = 0;
-    var value = [];
+    var value: any = [];
     coders.forEach(function(coder) {
         if (coder.dynamic) {
             var dynamicOffset = uint256Coder.decode(data, offset);
@@ -726,7 +726,7 @@ function unpack(coders: Array<Coder>, data: Uint8Array, offset: number): Decoded
 class CoderArray extends Coder {
     readonly coder: Coder;
     readonly length: number;
-    constructor(coerceFunc, coder, length, localName) {
+    constructor(coerceFunc: CoerceFunc, coder: Coder, length: number, localName: string) {
         const type = (coder.type + '[' + (length >= 0 ? length: '') + ']');
         const dynamic = (length === -1 || coder.dynamic);
         super(coerceFunc, 'array', type, localName, dynamic);
@@ -769,7 +769,7 @@ class CoderArray extends Coder {
         return concat([result, pack(coders, value)]);
     }
 
-    decode(data, offset) {
+    decode(data: Uint8Array, offset: number) {
         // @TODO:
         //if (data.length < offset + length * 32) { throw new Error('invalid array'); }
 
@@ -812,9 +812,9 @@ class CoderArray extends Coder {
 
 class CoderTuple extends Coder {
     readonly coders: Array<Coder>;
-    constructor(coerceFunc, coders, localName) {
+    constructor(coerceFunc: CoerceFunc, coders: Array<Coder>, localName: string) {
         var dynamic = false;
-        var types = [];
+        var types: Array<string> = [];
         coders.forEach(function(coder) {
             if (coder.dynamic) { dynamic = true; }
             types.push(coder.type);
@@ -865,7 +865,8 @@ function splitNesting(value: string): Array<any> {
     return result;
 }
 
-const paramTypeSimple = {
+// @TODO: Is there a way to return "class"?
+const paramTypeSimple: { [key: string]: any } = {
     address: CoderAddress,
     bool: CoderBoolean,
     string: CoderString,
@@ -874,7 +875,7 @@ const paramTypeSimple = {
 
 function getTupleParamCoder(coerceFunc: CoerceFunc, components: Array<any>, localName: string): CoderTuple {
     if (!components) { components = []; }
-    var coders = [];
+    var coders: Array<Coder> = [];
     components.forEach(function(component) {
         coders.push(getParamCoder(coerceFunc, component));
     });
@@ -973,7 +974,7 @@ export class AbiCoder {
 
     decode(types: Array<string | ParamType>, data: Arrayish): any {
 
-        var coders = [];
+        var coders: Array<Coder> = [];
         types.forEach(function(type) {
 
             // See encode for details

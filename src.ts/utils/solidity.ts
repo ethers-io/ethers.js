@@ -55,14 +55,13 @@ function _pack(type: string, value: any, isArray?: boolean): Uint8Array {
     }
 
     match = type.match(regexArray);
-    if (match) {
+    if (match && Array.isArray(value)) {
         var baseType = match[1];
-        var count = parseInt(match[2] || value.length);
+        var count = parseInt(match[2] || String(value.length));
         if (count != value.length) { throw new Error('invalid value for ' + type); }
-        var result = [];
+        var result: Array<Uint8Array> = [];
         value.forEach(function(value) {
-            value = _pack(baseType, value, true);
-            result.push(value);
+            result.push(_pack(baseType, value, true));
         });
         return concat(result);
     }
@@ -74,7 +73,7 @@ function _pack(type: string, value: any, isArray?: boolean): Uint8Array {
 
 export function pack(types: Array<string>, values: Array<any>) {
     if (types.length != values.length) { throw new Error('type/value count mismatch'); }
-    var tight = [];
+    var tight: Array<Uint8Array> = [];
     types.forEach(function(type, index) {
         tight.push(_pack(type, values[index]));
     });

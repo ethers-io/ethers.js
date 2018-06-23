@@ -1,9 +1,9 @@
 'use strict';
 
 import { arrayify, Arrayish } from '../src.ts/utils/bytes';
-import { computeHmac } from '../src.ts/utils/hmac';
+import { computeHmac, SupportedAlgorithms } from '../src.ts/utils/hmac';
 
-export function pbkdf2(password: Arrayish, salt: Arrayish, iterations: number, keylen: number, hashAlgorithm: string): Uint8Array {
+export function pbkdf2(password: Arrayish, salt: Arrayish, iterations: number, keylen: number, hashAlgorithm: SupportedAlgorithms): Uint8Array {
     password = arrayify(password);
     salt = arrayify(salt);
     var hLen
@@ -13,8 +13,8 @@ export function pbkdf2(password: Arrayish, salt: Arrayish, iterations: number, k
     block1.set(salt);
     //salt.copy(block1, 0, 0, salt.length)
 
-    var r
-    var T
+    let r: number;
+    let T: Uint8Array;
 
     for (var i = 1; i <= l; i++) {
         //block1.writeUInt32BE(i, salt.length)

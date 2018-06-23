@@ -1,7 +1,10 @@
 'use strict';
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 // We use this for base 36 maths
-var BN = require("bn.js");
+var bn_js_1 = __importDefault(require("bn.js"));
 var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
 var rlp_1 = require("./rlp");
@@ -87,7 +90,7 @@ function getAddress(address) {
         if (address.substring(2, 4) !== ibanChecksum(address)) {
             errors.throwError('bad icap checksum', errors.INVALID_ARGUMENT, { arg: 'address', value: address });
         }
-        result = (new BN(address.substring(4), 36)).toString(16);
+        result = (new bn_js_1.default.BN(address.substring(4), 36)).toString(16);
         while (result.length < 40) {
             result = '0' + result;
         }
@@ -100,7 +103,7 @@ function getAddress(address) {
 }
 exports.getAddress = getAddress;
 function getIcapAddress(address) {
-    var base36 = (new BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
+    var base36 = (new bn_js_1.default.BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
     while (base36.length < 30) {
         base36 = '0' + base36;
     }

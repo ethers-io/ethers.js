@@ -8,7 +8,7 @@
  *
  */
 
-import _BN from 'bn.js';
+import BN from 'bn.js';
 
 import { Arrayish, hexlify, isArrayish, isHexString } from './bytes';
 import { defineReadOnly } from './properties';
@@ -20,86 +20,92 @@ function _isBigNumber(value: any): value is BigNumber {
 
 export type BigNumberish = BigNumber | string | number | Arrayish;
 
+function fromBN(bn: BN.BN) {
+    let value = bn.toString(16);
+    if (value[0] === '-') {
+        return new BigNumber("-0x" + value.substring(1));
+    }
+    return new BigNumber('0x' + value);
+}
+
 export class BigNumber {
-    private readonly _bn: _BN.BN;
+    private readonly _bn: BN.BN;
+
     constructor(value: BigNumberish) {
         errors.checkNew(this, BigNumber);
 
         if (typeof(value) === 'string') {
             if (isHexString(value)) {
                 if (value == '0x') { value = '0x0'; }
-                defineReadOnly(this, '_bn', new _BN.BN(value.substring(2), 16));
+                defineReadOnly(this, '_bn', new BN.BN(value.substring(2), 16));
 
             } else if (value[0] === '-' && isHexString(value.substring(1))) {
-                defineReadOnly(this, '_bn', (new _BN.BN(value.substring(3), 16)).mul(ConstantNegativeOne._bn));
+                defineReadOnly(this, '_bn', (new BN.BN(value.substring(3), 16)).mul(ConstantNegativeOne._bn));
 
             } else if (value.match(/^-?[0-9]*$/)) {
                 if (value == '') { value = '0'; }
-                defineReadOnly(this, '_bn', new _BN.BN(value));
+                defineReadOnly(this, '_bn', new BN.BN(value));
             }
 
         } else if (typeof(value) === 'number') {
-            if (Math.trunc(value) !== value) {
-                errors.throwError('underflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'underflow', value: value, outputValue: Math.trunc(value) });
+            if (parseInt(String(value)) !== value) {
+                errors.throwError('underflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'underflow', value: value, outputValue: parseInt(String(value)) });
             }
             try {
-                defineReadOnly(this, '_bn', new _BN.BN(value));
+                defineReadOnly(this, '_bn', new BN.BN(value));
             } catch (error) {
                 errors.throwError('overflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'overflow', details: error.message });
             }
-
-        } else if (_BN.BN.isBN(value)) {
-            defineReadOnly(this, '_bn', value);
 
         } else if (_isBigNumber(value)) {
             defineReadOnly(this, '_bn', value._bn);
 
         } else if (isArrayish(value)) {
-            defineReadOnly(this, '_bn', new _BN.BN(hexlify(value).substring(2), 16));
+            defineReadOnly(this, '_bn', new BN.BN(hexlify(value).substring(2), 16));
 
         } else {
             errors.throwError('invalid BigNumber value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
         }
     }
 
-    fromTwos(value: BigNumberish): BigNumber {
-        return new BigNumber(this._bn.fromTwos(value));
+    fromTwos(value: number): BigNumber {
+        return fromBN(this._bn.fromTwos(value));
     }
 
-    toTwos(value: BigNumberish): BigNumber {
-        return new BigNumber(this._bn.toTwos(value));
+    toTwos(value: number): BigNumber {
+        return fromBN(this._bn.toTwos(value));
     }
 
     add(other: BigNumberish): BigNumber {
-        return new BigNumber(this._bn.add(bigNumberify(other)._bn));
+        return fromBN(this._bn.add(bigNumberify(other)._bn));
     }
 
     sub(other: BigNumberish): BigNumber {
-        return new BigNumber(this._bn.sub(bigNumberify(other)._bn));
+        return fromBN(this._bn.sub(bigNumberify(other)._bn));
     }
 
     div(other: BigNumberish): BigNumber {
-        let o: BigNumber = bigNumberify(other)._bn;
+        let o: BigNumber = bigNumberify(other);
         if (o.isZero()) {
             errors.throwError('division by zero', errors.NUMERIC_FAULT, { operation: 'divide', fault: 'division by zero' });
         }
-        return new BigNumber(this._bn.div(o));
+        return fromBN(this._bn.div(o._bn));
     }
 
     mul(other: BigNumberish): BigNumber {
-        return new BigNumber(this._bn.mul(bigNumberify(other)._bn));
+        return fromBN(this._bn.mul(bigNumberify(other)._bn));
     }
 
     mod(other: BigNumberish): BigNumber {
-        return new BigNumber(this._bn.mod(bigNumberify(other)._bn));
+        return fromBN(this._bn.mod(bigNumberify(other)._bn));
     }
 
     pow(other: BigNumberish): BigNumber {
-        return new BigNumber(this._bn.pow(bigNumberify(other)._bn));
+        return fromBN(this._bn.pow(bigNumberify(other)._bn));
     }
 
-    maskn(value: BigNumberish): BigNumber {
-        return new BigNumber(this._bn.maskn(value));
+    maskn(value: number): BigNumber {
+        return fromBN(this._bn.maskn(value));
     }
 
     eq(other: BigNumberish): boolean {
@@ -159,4 +165,4 @@ export const ConstantNegativeOne: BigNumber = bigNumberify(-1);
 export const ConstantZero: BigNumber = bigNumberify(0);
 export const ConstantOne: BigNumber = bigNumberify(1);
 export const ConstantTwo: BigNumber = bigNumberify(2);
-export const ConstantWeiPerEther: BigNumber = bigNumberify(new _BN.BN('1000000000000000000'));
+export const ConstantWeiPerEther: BigNumber = bigNumberify('1000000000000000000');

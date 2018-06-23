@@ -116,7 +116,7 @@ function parse(rawTransaction) {
         if (chainId < 0) {
             chainId = 0;
         }
-        chainId = Math.trunc(chainId);
+        chainId = Math.floor(chainId);
         tx.chainId = chainId;
         var recoveryParam = tx.v - 27;
         var raw = signedTransaction.slice(0, 6);

@@ -11,23 +11,27 @@ var xmlhttprequest_1 = require("xmlhttprequest");
 var utf8_1 = require("./utf8");
 var base64_1 = require("./base64");
 var errors = __importStar(require("./errors"));
-function fetchJson(url, json, processFunc) {
+function fetchJson(connection, json, processFunc) {
     var headers = [];
-    if (typeof (url) === 'object' && url.url != null) {
-        if (url.url == null) {
+    var url = null;
+    if (typeof (connection) === 'string') {
+        url = connection;
+    }
+    else if (typeof (connection) === 'object') {
+        if (connection.url == null) {
             errors.throwError('missing URL', errors.MISSING_ARGUMENT, { arg: 'url' });
         }
-        if (url.user != null && url.password != null) {
-            if (url.url.substring(0, 6) !== 'https:' && url.allowInsecure !== true) {
-                errors.throwError('basic authentication requires a secure https url', errors.INVALID_ARGUMENT, { arg: 'url', url: url.url, user: url.user, password: '[REDACTED]' });
+        url = connection.url;
+        if (connection.user != null && connection.password != null) {
+            if (url.substring(0, 6) !== 'https:' && connection.allowInsecure !== true) {
+                errors.throwError('basic authentication requires a secure https url', errors.INVALID_ARGUMENT, { arg: 'url', url: url, user: connection.user, password: '[REDACTED]' });
             }
-            var authorization = url.user + ':' + url.password;
+            var authorization = connection.user + ':' + connection.password;
             headers.push({
                 key: 'Authorization',
                 value: 'Basic ' + base64_1.encode(utf8_1.toUtf8Bytes(authorization))
             });
         }
-        url = url.url;
     }
     return new Promise(function (resolve, reject) {
         var request = new xmlhttprequest_1.XMLHttpRequest();
@@ -72,7 +76,7 @@ function fetchJson(url, json, processFunc) {
             if (request.status != 200) {
                 // @TODO: not any!
                 var error = new Error('invalid response - ' + request.status);
-                error.statusCode = request.statusCode;
+                error.statusCode = request.status;
                 reject(error);
                 return;
             }

@@ -24,6 +24,13 @@ var errors = __importStar(require("../utils/errors"));
 function _isBigNumber(value) {
     return isBigNumber(value);
 }
+function fromBN(bn) {
+    var value = bn.toString(16);
+    if (value[0] === '-') {
+        return new BigNumber("-0x" + value.substring(1));
+    }
+    return new BigNumber('0x' + value);
+}
 var BigNumber = /** @class */ (function () {
     function BigNumber(value) {
         errors.checkNew(this, BigNumber);
@@ -45,8 +52,8 @@ var BigNumber = /** @class */ (function () {
             }
         }
         else if (typeof (value) === 'number') {
-            if (Math.trunc(value) !== value) {
-                errors.throwError('underflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'underflow', value: value, outputValue: Math.trunc(value) });
+            if (parseInt(String(value)) !== value) {
+                errors.throwError('underflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'underflow', value: value, outputValue: parseInt(String(value)) });
             }
             try {
                 properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(value));
@@ -54,9 +61,6 @@ var BigNumber = /** @class */ (function () {
             catch (error) {
                 errors.throwError('overflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'overflow', details: error.message });
             }
-        }
-        else if (bn_js_1.default.BN.isBN(value)) {
-            properties_1.defineReadOnly(this, '_bn', value);
         }
         else if (_isBigNumber(value)) {
             properties_1.defineReadOnly(this, '_bn', value._bn);
@@ -69,35 +73,35 @@ var BigNumber = /** @class */ (function () {
         }
     }
     BigNumber.prototype.fromTwos = function (value) {
-        return new BigNumber(this._bn.fromTwos(value));
+        return fromBN(this._bn.fromTwos(value));
     };
     BigNumber.prototype.toTwos = function (value) {
-        return new BigNumber(this._bn.toTwos(value));
+        return fromBN(this._bn.toTwos(value));
     };
     BigNumber.prototype.add = function (other) {
-        return new BigNumber(this._bn.add(bigNumberify(other)._bn));
+        return fromBN(this._bn.add(bigNumberify(other)._bn));
     };
     BigNumber.prototype.sub = function (other) {
-        return new BigNumber(this._bn.sub(bigNumberify(other)._bn));
+        return fromBN(this._bn.sub(bigNumberify(other)._bn));
     };
     BigNumber.prototype.div = function (other) {
-        var o = bigNumberify(other)._bn;
+        var o = bigNumberify(other);
         if (o.isZero()) {
             errors.throwError('division by zero', errors.NUMERIC_FAULT, { operation: 'divide', fault: 'division by zero' });
         }
-        return new BigNumber(this._bn.div(o));
+        return fromBN(this._bn.div(o._bn));
     };
     BigNumber.prototype.mul = function (other) {
-        return new BigNumber(this._bn.mul(bigNumberify(other)._bn));
+        return fromBN(this._bn.mul(bigNumberify(other)._bn));
     };
     BigNumber.prototype.mod = function (other) {
-        return new BigNumber(this._bn.mod(bigNumberify(other)._bn));
+        return fromBN(this._bn.mod(bigNumberify(other)._bn));
     };
     BigNumber.prototype.pow = function (other) {
-        return new BigNumber(this._bn.pow(bigNumberify(other)._bn));
+        return fromBN(this._bn.pow(bigNumberify(other)._bn));
     };
     BigNumber.prototype.maskn = function (value) {
-        return new BigNumber(this._bn.maskn(value));
+        return fromBN(this._bn.maskn(value));
     };
     BigNumber.prototype.eq = function (other) {
         return this._bn.eq(bigNumberify(other)._bn);
@@ -154,4 +158,4 @@ exports.ConstantNegativeOne = bigNumberify(-1);
 exports.ConstantZero = bigNumberify(0);
 exports.ConstantOne = bigNumberify(1);
 exports.ConstantTwo = bigNumberify(2);
-exports.ConstantWeiPerEther = bigNumberify(new bn_js_1.default.BN('1000000000000000000'));
+exports.ConstantWeiPerEther = bigNumberify('1000000000000000000');

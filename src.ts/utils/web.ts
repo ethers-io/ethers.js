@@ -16,30 +16,36 @@ export type ProcessFunc = (value: any) => any;
 
 type Header = { key: string, value: string };
 
-export function fetchJson(url: string | ConnectionInfo, json: string, processFunc: ProcessFunc): Promise<any> {
+export function fetchJson(connection: string | ConnectionInfo, json: string, processFunc: ProcessFunc): Promise<any> {
     let headers: Array<Header> = [ ];
 
-    if (typeof(url) === 'object' && url.url != null) {
-        if (url.url == null) {
+    let url: string = null;
+
+    if (typeof(connection) === 'string') {
+        url = connection;
+
+    } else if (typeof(connection) === 'object') {
+        if (connection.url == null) {
             errors.throwError('missing URL', errors.MISSING_ARGUMENT, { arg: 'url' });
         }
-        if (url.user != null && url.password != null) {
-            if (url.url.substring(0, 6) !== 'https:' && url.allowInsecure !== true) {
+
+        url = connection.url;
+
+        if (connection.user != null && connection.password != null) {
+            if (url.substring(0, 6) !== 'https:' && connection.allowInsecure !== true) {
                 errors.throwError(
                     'basic authentication requires a secure https url', 
                     errors.INVALID_ARGUMENT,
-                    { arg: 'url', url: url.url, user: url.user, password: '[REDACTED]' }
+                    { arg: 'url', url: url, user: connection.user, password: '[REDACTED]' }
                 );
             }
 
-            var authorization = url.user + ':' + url.password;
+            var authorization = connection.user + ':' + connection.password;
             headers.push({
                 key: 'Authorization',
                 value: 'Basic ' + base64Encode(toUtf8Bytes(authorization))
             });
         }
-
-        url = url.url;
     }
 
     return new Promise(function(resolve, reject) {
@@ -86,7 +92,7 @@ export function fetchJson(url: string | ConnectionInfo, json: string, processFun
             if (request.status != 200) {
                 // @TODO: not any!
                 var error: any = new Error('invalid response - ' + request.status);
-                error.statusCode = request.statusCode;
+                error.statusCode = request.status;
                 reject(error);
                 return;
             }

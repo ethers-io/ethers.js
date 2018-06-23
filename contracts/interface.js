@@ -25,6 +25,7 @@ var keccak256_1 = require("../utils/keccak256");
 var utf8_1 = require("../utils/utf8");
 var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
+// @TODO: Replace with a new abiCode.formatSignature method
 function parseParams(params) {
     var names = [];
     var types = [];
@@ -183,7 +184,8 @@ var EventDescription = /** @class */ (function (_super) {
         if (topics != null && !this.anonymous) {
             topics = topics.slice(1);
         }
-        var inputIndexed = [], inputNonIndexed = [];
+        var inputIndexed = [];
+        var inputNonIndexed = [];
         var inputDynamic = [];
         this.inputs.forEach(function (param, index) {
             if (param.indexed) {
@@ -343,6 +345,7 @@ var Interface = /** @class */ (function () {
             if (typeof (fragment) === 'string') {
                 fragment = abi_coder_1.parseSignature(fragment);
             }
+            // @TODO: We should probable do some validation; create abiCoder.formatSignature for checking
             _abi.push(fragment);
         });
         properties_1.defineFrozen(this, 'abi', _abi);

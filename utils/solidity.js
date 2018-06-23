@@ -55,16 +55,15 @@ function _pack(type, value, isArray) {
         return value;
     }
     match = type.match(regexArray);
-    if (match) {
+    if (match && Array.isArray(value)) {
         var baseType = match[1];
-        var count = parseInt(match[2] || value.length);
+        var count = parseInt(match[2] || String(value.length));
         if (count != value.length) {
             throw new Error('invalid value for ' + type);
         }
         var result = [];
         value.forEach(function (value) {
-            value = _pack(baseType, value, true);
-            result.push(value);
+            result.push(_pack(baseType, value, true));
         });
         return bytes_1.concat(result);
     }

@@ -2,7 +2,7 @@
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
-import { defaultAbiCoder, ParamType, parseSignature } from '../utils/abi-coder';
+import { defaultAbiCoder, EventFragment, FunctionFragment, ParamType, parseSignature } from '../utils/abi-coder';
 import { BigNumber, bigNumberify, BigNumberish } from '../utils/bignumber';
 import { arrayify, concat, isHexString } from '../utils/bytes';
 import { keccak256 } from '../utils/keccak256';
@@ -11,9 +11,10 @@ import { defineReadOnly, defineFrozen } from '../utils/properties';
 
 import * as errors from '../utils/errors';
 
-function parseParams(params: Array<ParamType>): { names: Array<any>, types: Array<any> } {
-    var names = [];
-    var types = [];
+// @TODO: Replace with a new abiCode.formatSignature method
+function parseParams(params: Array<ParamType>): { names: Array<any>, types: Array<string> } {
+    var names: Array<any> = [];
+    var types: Array<string> = [];
 
     params.forEach(function(param) {
         if (param.components != null) {
@@ -168,8 +169,9 @@ export class EventDescription extends Description {
         // Strip the signature off of non-anonymous topics
         if (topics != null && !this.anonymous) { topics = topics.slice(1); }
 
-        let inputIndexed = [], inputNonIndexed = [];
-        let inputDynamic = [];
+        let inputIndexed: Array<ParamType> = [];
+        let inputNonIndexed: Array<ParamType> = [];
+        let inputDynamic: Array<boolean> = [];
         this.inputs.forEach(function(param, index) {
 
             if (param.indexed) {
@@ -330,9 +332,9 @@ function addMethod(method: any): void {
 }
 
 export class Interface {
-    readonly abi: Array<any>;
-    readonly functions: Array<FunctionDescription>;
-    readonly events: Array<EventDescription>;
+    readonly abi: Array<EventFragment | FunctionFragment>;
+    readonly functions: { [ name: string ]: FunctionDescription };
+    readonly events: { [ name: string ]: EventDescription };
     readonly deployFunction: DeployDescription;
 
     constructor(abi: Array<string | ParamType> | string) {
@@ -359,12 +361,13 @@ export class Interface {
         defineReadOnly(this, 'events', { });
 
         // Convert any supported ABI format into a standard ABI format
-        let _abi = [];
+        let _abi: Array<EventFragment | FunctionFragment> = [];
         abi.forEach((fragment) => {
             if (typeof(fragment) === 'string') {
                 fragment = parseSignature(fragment);
             }
-            _abi.push(fragment);
+            // @TODO: We should probable do some validation; create abiCoder.formatSignature for checking
+            _abi.push(<EventFragment | FunctionFragment>fragment);
         });
 
         defineFrozen(this, 'abi', _abi);

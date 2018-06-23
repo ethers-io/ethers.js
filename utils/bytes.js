@@ -19,12 +19,12 @@ function addSlice(array) {
     return array;
 }
 function isArrayish(value) {
-    if (!value || parseInt(value.length) != value.length || typeof (value) === 'string') {
+    if (!value || parseInt(String(value.length)) != value.length || typeof (value) === 'string') {
         return false;
     }
     for (var i = 0; i < value.length; i++) {
         var v = value[i];
-        if (v < 0 || v >= 256 || parseInt(v) != v) {
+        if (v < 0 || v >= 256 || parseInt(String(v)) != v) {
             return false;
         }
     }
@@ -131,7 +131,7 @@ function hexlify(value) {
         var hex = '';
         while (value) {
             hex = HexCharacters[value & 0x0f] + hex;
-            value = Math.trunc(value / 16);
+            value = Math.floor(value / 16);
         }
         if (hex.length) {
             if (hex.length % 2) {

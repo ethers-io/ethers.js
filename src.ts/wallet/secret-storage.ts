@@ -1,8 +1,8 @@
 'use strict';
 
-import aes = require('aes-js');
-import scrypt = require('scrypt-js');
-import uuid = require('uuid');
+import aes from 'aes-js';
+import scrypt from 'scrypt-js';
+import uuid from 'uuid';
 
 import { getAddress } from '../utils/address';
 import { arrayify, Arrayish, concat, hexlify } from '../utils/bytes';
@@ -15,8 +15,6 @@ import { randomBytes } from '../utils/random-bytes';
 import { SigningKey } from './signing-key';
 import * as HDNode from './hdnode';
 
-// @TODO: Maybe move this to HDNode?
-var defaultPath = "m/44'/60'/0'/0/0";
 
 export interface ProgressCallback {
     (percent: number): void
@@ -138,9 +136,9 @@ export function decryptCrowdsale(json: string, password: Arrayish | string): Sig
 export function decrypt(json: string, password: Arrayish, progressCallback?: ProgressCallback): Promise<SigningKey> {
     var data = JSON.parse(json);
 
-    password = getPassword(password);
+    let passwordBytes = getPassword(password);
 
-    var decrypt = function(key, ciphertext) {
+    var decrypt = function(key: Uint8Array, ciphertext: Uint8Array): Uint8Array {
         var cipher = searchPath(data, 'crypto/cipher');
         if (cipher === 'aes-128-ctr') {
             var iv = looseArrayify(searchPath(data, 'crypto/cipherparams/iv'))
@@ -154,11 +152,11 @@ export function decrypt(json: string, password: Arrayish, progressCallback?: Pro
         return null;
     };
 
-    var computeMAC = function(derivedHalf, ciphertext) {
+    var computeMAC = function(derivedHalf: Uint8Array, ciphertext: Uint8Array) {
         return keccak256(concat([derivedHalf, ciphertext]));
     }
 
-    var getSigningKey = function(key, reject) {
+    var getSigningKey = function(key: Uint8Array, reject: (error?: Error) => void) {
         var ciphertext = looseArrayify(searchPath(data, 'crypto/ciphertext'));
 
         var computedMAC = hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
@@ -189,7 +187,7 @@ export function decrypt(json: string, password: Arrayish, progressCallback?: Pro
             var mnemonicCounter = new aes.Counter(mnemonicIv);
             var mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
 
-            var path = searchPath(data, 'x-ethers/path') || defaultPath;
+            var path = searchPath(data, 'x-ethers/path') || HDNode.defaultPath;
 
             var entropy = arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
             var mnemonic = HDNode.entropyToMnemonic(entropy);
@@ -232,7 +230,7 @@ export function decrypt(json: string, password: Arrayish, progressCallback?: Pro
                     return;
                 }
 
-                scrypt(password, salt, N, r, p, 64, function(error, progress, key) {
+                scrypt(passwordBytes, salt, N, r, p, 64, function(error, progress, key) {
                     if (error) {
                         error.progress = progress;
                         reject(error);
@@ -273,7 +271,7 @@ export function decrypt(json: string, password: Arrayish, progressCallback?: Pro
                     return;
                 }
 
-                var key = pbkdf2(password, salt, c, dkLen, prfFunc);
+                var key = pbkdf2(passwordBytes, salt, c, dkLen, prfFunc);
 
                 var signingKey = getSigningKey(key, reject);
                 if (!signingKey) { return; }
@@ -290,8 +288,22 @@ export function decrypt(json: string, password: Arrayish, progressCallback?: Pro
     });
 }
 
-// @TOOD: Options
-export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: any, progressCallback?: ProgressCallback): Promise<string> {
+export type EncryptOptions = {
+   iv?: Arrayish;
+   entropy?: Arrayish;
+   mnemonic?: string;
+   path?: string;
+   client?: string;
+   salt?: Arrayish;
+   uuid?: string;
+   scrypt?: {
+       N?: number;
+       r?: number;
+       p?: number;
+   }
+}
+
+export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: EncryptOptions, progressCallback?: ProgressCallback): Promise<string> {
 
     // the options are optional, so adjust the call as needed
     if (typeof(options) === 'function' && !progressCallback) {
@@ -301,7 +313,7 @@ export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | 
     if (!options) { options = {}; }
 
     // Check the private key
-    let privateKeyBytes = null;
+    let privateKeyBytes: Uint8Array = null;
     if (privateKey instanceof SigningKey) {
         privateKeyBytes = arrayify(privateKey.privateKey);
     } else {
@@ -309,40 +321,42 @@ export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | 
     }
     if (privateKeyBytes.length !== 32) { throw new Error('invalid private key'); }
 
-    password = getPassword(password);
+    let passwordBytes = getPassword(password);
 
-    var entropy = options.entropy;
+    let entropy: Uint8Array = null
+
+    if (options.entropy) {
+        entropy = arrayify(options.entropy);
+    }
+
     if (options.mnemonic) {
         if (entropy) {
             if (HDNode.entropyToMnemonic(entropy) !== options.mnemonic) {
                 throw new Error('entropy and mnemonic mismatch');
             }
         } else {
-            entropy = HDNode.mnemonicToEntropy(options.mnemonic);
+            entropy = arrayify(HDNode.mnemonicToEntropy(options.mnemonic));
         }
     }
-    if (entropy) {
-        entropy = arrayify(entropy);
-    }
 
-    var path = options.path;
+    var path: string = options.path;
     if (entropy && !path) {
-        path = defaultPath;
+        path = HDNode.defaultPath;
     }
 
     var client = options.client;
     if (!client) { client = "ethers.js"; }
 
     // Check/generate the salt
-    var salt = options.salt;
-    if (salt) {
-        salt = arrayify(salt);
+    let salt: Uint8Array = null;
+    if (options.salt) {
+        salt = arrayify(options.salt);
     } else {
         salt = randomBytes(32);;
     }
 
     // Override initialization vector
-    var iv = null;
+    let iv: Uint8Array = null;
     if (options.iv) {
         iv = arrayify(options.iv);
         if (iv.length !== 16) { throw new Error('invalid iv'); }
@@ -351,9 +365,9 @@ export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | 
     }
 
     // Override the uuid
-    var uuidRandom = options.uuid;
-    if (uuidRandom) {
-        uuidRandom = arrayify(uuidRandom);
+    var uuidRandom: Uint8Array = null;
+    if (options.uuid) {
+        uuidRandom = arrayify(options.uuid);
         if (uuidRandom.length !== 16) { throw new Error('invalid uuid'); }
     } else {
         uuidRandom = randomBytes(16);
@@ -372,7 +386,7 @@ export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | 
         // We take 64 bytes:
         //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
         //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
-        scrypt(password, salt, N, r, p, 64, function(error, progress, key) {
+        scrypt(passwordBytes, salt, N, r, p, 64, function(error, progress, key) {
             if (error) {
                 error.progress = progress;
                 reject(error);
@@ -399,7 +413,7 @@ export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | 
                 var mac = keccak256(concat([macPrefix, ciphertext]))
 
                 // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
-                var data = {
+                var data: { [key: string]: any } = {
                     address: address.substring(2).toLowerCase(),
                     id: uuid.v4({ random: uuidRandom }),
                     version: 3,

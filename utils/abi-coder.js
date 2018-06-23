@@ -454,7 +454,7 @@ var CoderAddress = /** @class */ (function (_super) {
     return CoderAddress;
 }(Coder));
 function _encodeDynamicBytes(value) {
-    var dataLength = Math.trunc(32 * Math.ceil(value.length / 32));
+    var dataLength = 32 * Math.ceil(value.length / 32);
     var padding = new Uint8Array(dataLength - value.length);
     return bytes_1.concat([
         uint256Coder.encode(value.length),
@@ -489,7 +489,7 @@ function _decodeDynamicBytes(data, offset, localName) {
         });
     }
     return {
-        consumed: Math.trunc(32 + 32 * Math.ceil(length / 32)),
+        consumed: 32 + 32 * Math.ceil(length / 32),
         value: data.slice(offset + 32, offset + 32 + length),
     };
 }
@@ -541,7 +541,7 @@ var CoderString = /** @class */ (function (_super) {
     return CoderString;
 }(Coder));
 function alignSize(size) {
-    return Math.trunc(32 * Math.ceil(size / 32));
+    return 32 * Math.ceil(size / 32);
 }
 function pack(coders, values) {
     if (Array.isArray(values)) {
@@ -778,6 +778,7 @@ function splitNesting(value) {
     result.push(accum);
     return result;
 }
+// @TODO: Is there a way to return "class"?
 var paramTypeSimple = {
     address: CoderAddress,
     bool: CoderBoolean,

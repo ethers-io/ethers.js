@@ -50,7 +50,7 @@ export function throwError(message: string, code: string, params: any): never {
     if (!code) { code = UNKNOWN_ERROR; }
     if (!params) { params = {}; }
 
-    var messageDetails = [];
+    var messageDetails: Array<string> = [];
     Object.keys(params).forEach(function(key) {
         try {
             messageDetails.push(key + '=' + JSON.stringify(params[key]));

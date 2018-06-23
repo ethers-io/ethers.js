@@ -20,10 +20,10 @@ var Wordlist = /** @class */ (function () {
 exports.Wordlist = Wordlist;
 function register(lang) {
     if (exportWordlist) {
-        if (!global['wordlists']) {
+        if (!global.wordlists) {
             properties_1.defineReadOnly(global, 'wordlists', {});
         }
-        properties_1.defineReadOnly(global['wordlists'], lang.locale, lang);
+        properties_1.defineReadOnly(global.wordlists, lang.locale, lang);
     }
 }
 exports.register = register;

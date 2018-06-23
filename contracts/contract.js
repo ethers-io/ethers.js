@@ -202,7 +202,7 @@ var Contract = /** @class */ (function () {
                         // Some useful things to have with the log
                         log.args = result;
                         log.event = eventName;
-                        log.parse = eventInfo.parse;
+                        log.decode = eventInfo.decode;
                         log.removeListener = function () {
                             contract.provider.removeListener([eventInfo.topic], handleEvent);
                         };
@@ -214,6 +214,10 @@ var Contract = /** @class */ (function () {
                     }
                     catch (error) {
                         console.log(error);
+                        var onerror_1 = contract._onerror;
+                        if (onerror_1) {
+                            setTimeout(function () { onerror_1(error); });
+                        }
                     }
                 });
             }
@@ -245,6 +249,14 @@ var Contract = /** @class */ (function () {
             Object.defineProperty(_this.events, eventName, property);
         }, this);
     }
+    Object.defineProperty(Contract.prototype, "onerror", {
+        get: function () { return this._onerror; },
+        set: function (callback) {
+            this._onerror = callback;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Contract.prototype.fallback = function (overrides) {
         if (!this.signer) {
             errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' });
@@ -258,20 +270,6 @@ var Contract = /** @class */ (function () {
         });
         tx.to = this.addressPromise;
         return this.signer.sendTransaction(tx);
-    };
-    Contract.prototype.callFallback = function (overrides) {
-        if (!this.provider) {
-            errors.throwError('call (constant functions) require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'call(fallback)' });
-        }
-        var tx = properties_1.shallowCopy(overrides || {});
-        ['to', 'value'].forEach(function (key) {
-            if (tx.to == null) {
-                return;
-            }
-            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
-        });
-        tx.to = this.addressPromise;
-        return this.provider.call(tx);
     };
     // Reconnect to a different signer or provider
     Contract.prototype.connect = function (signerOrProvider) {

@@ -12,9 +12,9 @@ import * as errors from '../utils/errors';
 function getTransactionString(transaction: TransactionRequest): string {
     var result = [];
     for (var key in transaction) {
-        if (transaction[key] == null) { continue; }
-        var value = hexlify(transaction[key]);
-        if ({ gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
+        if ((<any>transaction)[key] == null) { continue; }
+        var value = hexlify((<any>transaction)[key]);
+        if ((<any>{ gasLimit: true, gasPrice: true, nonce: true, value: true })[key]) {
             value = hexStripZeros(value);
         }
         result.push(key + '=' + value);
@@ -22,7 +22,7 @@ function getTransactionString(transaction: TransactionRequest): string {
     return result.join('&');
 }
 
-function getResult(result) {
+function getResult(result: { status?: number, message?: string, result?: any }): any {
     // getLogs, getHistory have weird success responses
     if (result.status == 0 && (result.message === 'No records found' || result.message === 'No transactions found')) {
         return result.result;
@@ -38,7 +38,7 @@ function getResult(result) {
     return result.result;
 }
 
-function getJsonResult(result) {
+function getJsonResult(result: { jsonrpc: string, result?: any, error?: { code?: number, data?: any, message?: string} } ): any {
     if (result.jsonrpc != '2.0') {
         // @TODO: not any
         let error: any = new Error('invalid response');
@@ -213,8 +213,8 @@ export class EtherscanProvider extends Provider{
                 url += apiKey;
 
                 var self = this;
-                return fetchJson(url, null, getResult).then(function(logs) {
-                    var txs = {};
+                return fetchJson(url, null, getResult).then(function(logs: Array<any>) {
+                    var txs: { [hash: string]: string } = {};
 
                     var seq = Promise.resolve();
                     logs.forEach(function(log) {
@@ -268,7 +268,7 @@ export class EtherscanProvider extends Provider{
             url += '&endblock=' + endBlock;
             url += '&sort=asc' + apiKey;
 
-            return fetchJson(url, null, getResult).then((result) => {
+            return fetchJson(url, null, getResult).then((result: Array<any>) => {
                 var output: Array<TransactionResponse> = [];
                 result.forEach((tx) => {
                     ['contractAddress', 'to'].forEach(function(key) {

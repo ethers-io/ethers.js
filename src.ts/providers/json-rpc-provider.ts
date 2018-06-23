@@ -23,7 +23,7 @@ function timer(timeout: number): Promise<any> {
     });
 }
 
-function getResult(payload) {
+function getResult(payload: { error?: { code?: number, data?: any, message?: string }, result?: any }): any {
     if (payload.error) {
         // @TODO: not any
         var error: any = new Error(payload.error.message);
@@ -45,15 +45,15 @@ export function hexlifyTransaction(transaction: TransactionRequest): any {
 
     // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
     ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function(key) {
-        if (transaction[key] == null) { return; }
-        let value = hexStripZeros(hexlify(transaction[key]));
+        if ((<any>transaction)[key] == null) { return; }
+        let value = hexStripZeros(hexlify((<any>transaction)[key]));
         if (key === 'gasLimit') { key = 'gas'; }
         result[key] = value;
     });
 
     ['from', 'to', 'data'].forEach(function(key) {
-        if (transaction[key] == null) { return; }
-        result[key] = hexlify(transaction[key]);
+        if ((<any>transaction)[key] == null) { return; }
+        result[key] = hexlify((<any>transaction)[key]);
     });
 
     return result;
@@ -104,7 +104,7 @@ export class JsonRpcSigner extends Signer {
         return this.provider.getBalance(this.getAddress(), blockTag);
     }
 
-    getTransactionCount(blockTag): Promise<number> {
+    getTransactionCount(blockTag?: BlockTag): Promise<number> {
         return this.provider.getTransactionCount(this.getAddress(), blockTag);
     }
 
@@ -195,7 +195,7 @@ export class JsonRpcProvider extends Provider {
     }
 
     listAccounts(): Promise<Array<string>> {
-        return this.send('eth_accounts', []).then((accounts) => {
+        return this.send('eth_accounts', []).then((accounts: Array<string>) => {
             return accounts.map((a) => getAddress(a));
         });
     }
@@ -277,7 +277,7 @@ export class JsonRpcProvider extends Provider {
 
         pendingFilter.then(function(filterId) {
             function poll() {
-                self.send('eth_getFilterChanges', [ filterId ]).then(function(hashes) {
+                self.send('eth_getFilterChanges', [ filterId ]).then(function(hashes: Array<string>) {
                     if (self._pendingFilter != pendingFilter) { return null; }
 
                     var seq = Promise.resolve();

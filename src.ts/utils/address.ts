@@ -1,7 +1,7 @@
 'use strict';
 
 // We use this for base 36 maths
-import BN = require('bn.js');
+import BN from 'bn.js';
 
 import { BigNumber } from './bignumber';
 import { arrayify, Arrayish, stripZeros, hexlify } from './bytes';
@@ -50,7 +50,7 @@ function log10(x: number): number {
 // See: https://en.wikipedia.org/wiki/International_Bank_Account_Number
 
 // Create lookup table
-var ibanLookup = {};
+var ibanLookup: { [character: string]: string } = {};
 for (var i = 0; i < 10; i++) { ibanLookup[String(i)] = String(i); }
 for (var i = 0; i < 26; i++) { ibanLookup[String.fromCharCode(65 + i)] = String(10 + i); }
 
@@ -105,7 +105,7 @@ export function getAddress(address: string): string {
             errors.throwError('bad icap checksum', errors.INVALID_ARGUMENT, { arg: 'address', value: address });
         }
 
-        result = (new BN(address.substring(4), 36)).toString(16);
+        result = (new BN.BN(address.substring(4), 36)).toString(16);
         while (result.length < 40) { result = '0' + result; }
         result = getChecksumAddress('0x' + result);
 
@@ -117,7 +117,7 @@ export function getAddress(address: string): string {
 }
 
 export function getIcapAddress(address: string): string {
-    var base36 = (new BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
+    var base36 = (new BN.BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
     while (base36.length < 30) { base36 = '0' + base36; }
     return 'XE' + ibanChecksum('XE00' + base36) + base36;
 }

@@ -23,7 +23,7 @@ const ropsten = {
     name: "ropsten"
 };
 
-const networks = {
+const networks: { [name: string]: { chainId: number, ensAddress?: string } } = {
     unspecified: {
         chainId: 0
     },
@@ -90,7 +90,7 @@ export function getNetwork(network: Networkish): Network {
         };
     }
 
-    let n = networks[network.name];
+    let n  = networks[network.name];
 
     // Not a standard network; check that it is a valid network in general
     if (!n) {

@@ -50,12 +50,12 @@ function handleNumber(value: string): BigNumber {
 }
 
 var transactionFields = [
-    {name: 'nonce',    maxLength: 32 },
-    {name: 'gasPrice', maxLength: 32 },
-    {name: 'gasLimit', maxLength: 32 },
-    {name: 'to',          length: 20 },
-    {name: 'value',    maxLength: 32 },
-    {name: 'data' },
+    { name: 'nonce',    maxLength: 32 },
+    { name: 'gasPrice', maxLength: 32 },
+    { name: 'gasLimit', maxLength: 32 },
+    { name: 'to',          length: 20 },
+    { name: 'value',    maxLength: 32 },
+    { name: 'data' },
 ];
 
 
@@ -63,10 +63,10 @@ export type SignDigestFunc = (digest: Arrayish) => Signature;
 
 export function sign(transaction: UnsignedTransaction, signDigest: SignDigestFunc): string {
 
-    var raw = [];
+    var raw: Array<string | Uint8Array> = [];
 
     transactionFields.forEach(function(fieldInfo) {
-        let value = transaction[fieldInfo.name] || ([]);
+        let value = (<any>transaction)[fieldInfo.name] || ([]);
         value = arrayify(hexlify(value));
 
         // Fixed-width field
@@ -156,7 +156,7 @@ export function parse(rawTransaction: Arrayish): Transaction {
 
         var chainId = (tx.v - 35) / 2;
         if (chainId < 0) { chainId = 0; }
-        chainId = Math.trunc(chainId);
+        chainId = Math.floor(chainId);
 
         tx.chainId = chainId;
 

@@ -16,11 +16,6 @@ import { parse as parseTransaction, sign as signTransaction, SignDigestFunc, Tra
 
 import * as errors from '../utils/errors';
 
-function copyObject(obj) {
-    var result = {};
-    for (var key in obj) { result[key] = obj[key]; }
-    return result;
-}
 
 //////////////////////////////
 // Exported Types
@@ -82,6 +77,7 @@ export interface TransactionReceipt {
     logs?: Array<Log>,
     blockNumber?: number,
     cumulativeGasUsed?: BigNumber,
+    byzantium: boolean,
     status?: number  // @TOOD: Check 0 or 1?
 };
 
@@ -100,6 +96,8 @@ export interface Log {
 
     removed?: boolean;
 
+    transactionLogIndex?: number,
+
     address: string;
     data?: string;
 
@@ -109,12 +107,14 @@ export interface Log {
     logIndex?: number;
 }
 
+export type Listener = (...args: Array<any>) => void;
+
 //////////////////////////////
 // Request and Response Checking
 
 // @TODO: not any?
 function check(format: any, object: any): any {
-    var result = {};
+    var result: any = {};
     for (var key in format) {
         try {
             var value = format[key](object[key]);
@@ -137,7 +137,7 @@ function allowNull(check: CheckFunc, nullValue?: any): CheckFunc {
     });
 }
 
-function allowFalsish(check: CheckFunc, replaceValue): CheckFunc {
+function allowFalsish(check: CheckFunc, replaceValue: any): CheckFunc {
     return (function(value) {
         if (!value) { return replaceValue; }
         return check(value);
@@ -148,7 +148,7 @@ function arrayOf(check: CheckFunc): CheckFunc {
     return (function(array: any): Array<any> {
         if (!Array.isArray(array)) { throw new Error('not an array'); }
 
-        var result = [];
+        var result: any = [];
 
         array.forEach(function(value) {
             result.push(check(value));
@@ -166,7 +166,7 @@ function checkHash(hash: any): string {
     return null;
 }
 
-function checkNumber(number): number {
+function checkNumber(number: any): number {
     return bigNumberify(number).toNumber();
 }
 
@@ -181,7 +181,7 @@ function checkDifficulty(value: BigNumberish): number {
     return null;
 }
 
-function checkBoolean(value): boolean {
+function checkBoolean(value: any): boolean {
     if (typeof(value) === 'boolean') { return value; }
     if (typeof(value) === 'string') {
         if (value === 'true') { return true; }
@@ -250,7 +250,7 @@ var formatBlock = {
     //logsBloom: hexlify,
 };
 
-function checkBlock(block) {
+function checkBlock(block: any): Block {
     if (block.author != null && block.miner == null) {
         block.miner = block.author;
     }
@@ -362,7 +362,7 @@ var formatTransactionRequest = {
     data: allowNull(hexlify),
 };
 
-function checkTransactionRequest(transaction) {
+function checkTransactionRequest(transaction: any): any {
     return check(formatTransactionRequest, transaction);
 }
 
@@ -378,7 +378,7 @@ var formatTransactionReceiptLog = {
     blockHash: checkHash,
 };
 
-function checkTransactionReceiptLog(log) {
+function checkTransactionReceiptLog(log: any): any {
     return check(formatTransactionReceiptLog, log);
 }
 
@@ -396,11 +396,11 @@ var formatTransactionReceipt = {
     status: allowNull(checkNumber)
 };
 
-function checkTransactionReceipt(transactionReceipt) {
+function checkTransactionReceipt(transactionReceipt: any): TransactionReceipt {
     //var status = transactionReceipt.status;
     //var root = transactionReceipt.root;
 
-    var result = check(formatTransactionReceipt, transactionReceipt);
+    var result: TransactionReceipt = check(formatTransactionReceipt, transactionReceipt);
     result.logs.forEach(function(entry, index) {
         if (entry.transactionLogIndex == null) {
             entry.transactionLogIndex = index;
@@ -412,7 +412,7 @@ function checkTransactionReceipt(transactionReceipt) {
     return result;
 }
 
-function checkTopics(topics) {
+function checkTopics(topics: any): any {
     if (Array.isArray(topics)) {
         topics.forEach(function(topic) {
             checkTopics(topic);
@@ -432,7 +432,7 @@ var formatFilter = {
     topics: allowNull(checkTopics, undefined),
 };
 
-function checkFilter(filter) {
+function checkFilter(filter: any): any {
     return check(formatFilter, filter);
 }
 
@@ -452,7 +452,7 @@ var formatLog = {
     logIndex: checkNumber,
 }
 
-function checkLog(log) {
+function checkLog(log: any): any {
     return check(formatLog, log);
 }
 
@@ -473,7 +473,7 @@ function stallPromise(allowNullFunc: AllowNullFunc, executeFunc: ExecuteFunc): P
                 // Otherwise, exponential back-off (up to 10s) our next request
                 } else {
                     attempt++;
-                    var timeout = 500 + 250 * Math.trunc(Math.random() * (1 << attempt));
+                    var timeout = 500 + 250 * parseInt(String(Math.random() * (1 << attempt)));
                     if (timeout > 10000) { timeout = 10000; }
                     setTimeout(check, timeout);
                 }
@@ -488,9 +488,9 @@ function stallPromise(allowNullFunc: AllowNullFunc, executeFunc: ExecuteFunc): P
 //////////////////////////////
 // Event Serializeing
 
-function recurse(object, convertFunc) {
+function recurse(object: any, convertFunc: (object: any) => any): any {
     if (Array.isArray(object)) {
-        var result = [];
+        var result: any = [];
         object.forEach(function(object) {
             result.push(recurse(object, convertFunc));
         });
@@ -499,28 +499,26 @@ function recurse(object, convertFunc) {
     return convertFunc(object);
 }
 
-function getEventString(object) {
+function getEventString(object: any): string {
     try {
         return 'address:' + getAddress(object);
     } catch (error) { }
 
-    if (object === 'block') {
-        return 'block';
-
-    } else if (object === 'pending') {
-        return 'pending';
+    if (object === 'block' || object === 'pending' || object === 'error') {
+        return object;
 
     } else if (hexDataLength(object) === 32) {
         return 'tx:' + object;
 
     } else if (Array.isArray(object)) {
-        object = recurse(object, function(object) {
+        // Replace null in the structure with '0x'
+        let stringified: any = recurse(object, function(object: any) {
             if (object == null) { object = '0x'; }
             return object;
         });
 
         try {
-            return 'topic:' + rlpEncode(object);
+            return 'topic:' + rlpEncode(stringified);
         } catch (error) {
             console.log(error);
         }
@@ -534,27 +532,23 @@ function getEventString(object) {
     throw new Error('invalid event - ' + object);
 }
 
-function parseEventString(string) {
-    if (string.substring(0, 3) === 'tx:') {
-        return {type: 'transaction', hash: string.substring(3)};
+function parseEventString(event: string): { type: string, address?: string, hash?: string, topic?: any } {
+    if (event.substring(0, 3) === 'tx:') {
+        return { type: 'transaction', hash: event.substring(3) };
 
-    } else if (string === 'block') {
-        return {type: 'block'};
+    } else if (event === 'block' || event === 'pending' || event === 'error') {
+        return { type: event };
 
-    } else if (string === 'pending') {
-        return {type: 'pending'};
+    } else if (event.substring(0, 8) === 'address:') {
+        return { type: 'address', address: event.substring(8) };
 
-    } else if (string.substring(0, 8) === 'address:') {
-        return {type: 'address', address: string.substring(8)};
-
-    } else if (string.substring(0, 6) === 'topic:') {
+    } else if (event.substring(0, 6) === 'topic:') {
         try {
-            var object = rlpDecode(string.substring(6));
-            object = recurse(object, function(object) {
+            let object = recurse(rlpDecode(event.substring(6)), function(object: any) {
                 if (object === '0x') { object = null; }
                 return object;
             });
-            return {type: 'topic', topic: object};
+            return { type: 'topic', topic: object };
         } catch (error) {
             console.log(error);
         }
@@ -809,7 +803,7 @@ export class Provider {
     }
 
     set pollingInterval(value: number) {
-        if (typeof(value) !== 'number' || value <= 0 || Math.trunc(value) != value) {
+        if (typeof(value) !== 'number' || value <= 0 || parseInt(String(value)) != value) {
             throw new Error('invalid polling interval');
         }
 
@@ -827,9 +821,9 @@ export class Provider {
     waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionResponse> {
         var self = this;
         return new Promise(function(resolve, reject) {
-            var timer = null;
+            var timer: any = null;
 
-            function complete(transaction) {
+            function complete(transaction: TransactionResponse) {
                 if (timer) { clearTimeout(timer); }
                 resolve(transaction);
             }
@@ -848,7 +842,7 @@ export class Provider {
     getBlockNumber(): Promise<number> {
         return this.ready.then(() => {
             return this.perform('getBlockNumber', { }).then((result) => {
-                var value = Math.trunc(result);
+                var value = parseInt(result);
                 if (value != result) { throw new Error('invalid response - getBlockNumber'); }
                 return value;
             });
@@ -1067,14 +1061,14 @@ export class Provider {
     }
 
     // @TODO: Could probably use resolveProperties instead?
-    _resolveNames(object: any, keys: Array<string>): Promise<any> {
-        var promises = [];
+    _resolveNames(object: any, keys: Array<string>): Promise<{ [key: string]: string }> {
+        var promises: Array<Promise<void>> = [];
 
-        var result = copyObject(object);
+        var result: { [key: string ]: string } = shallowCopy(object);
 
         keys.forEach(function(key) {
             if (result[key] === undefined) { return; }
-            promises.push(this.resolveName(result[key]).then(function(address) {
+            promises.push(this.resolveName(result[key]).then((address: string) => {
                 result[key] = address;
             }));
         }, this);
@@ -1205,7 +1199,7 @@ export class Provider {
     _stopPending(): void {
     }
 
-    on(eventName, listener): Provider {
+    on(eventName: any, listener: Listener): Provider {
         var key = getEventString(eventName);
         if (!this._events[key]) { this._events[key] = []; }
         this._events[key].push({eventName: eventName, listener: listener, type: 'on'});
@@ -1215,7 +1209,7 @@ export class Provider {
         return this;
     }
 
-    once(eventName, listener): Provider {
+    once(eventName: any, listener: Listener): Provider {
         var key = getEventString(eventName);
         if (!this._events[key]) { this._events[key] = []; }
         this._events[key].push({eventName: eventName, listener: listener, type: 'once'});
@@ -1225,7 +1219,7 @@ export class Provider {
         return this;
     }
 
-    emit(eventName, ...args): boolean {
+    emit(eventName: any, ...args: Array<any>): boolean {
         let result = false;
 
         var key = getEventString(eventName);
@@ -1274,8 +1268,7 @@ export class Provider {
         return listeners.length;
     }
 
-    // @TODO: func
-    listeners(eventName): Array<any> {
+    listeners(eventName: any): Array<Listener> {
         var listeners = this._events[getEventString(eventName)];
         if (!listeners) { return []; }
         var result = [];
@@ -1285,14 +1278,14 @@ export class Provider {
         return result;
     }
 
-    removeAllListeners(eventName): Provider {
+    removeAllListeners(eventName: any): Provider {
         delete this._events[getEventString(eventName)];
         if (this.listenerCount() === 0) { this.polling = false; }
 
         return this;
     }
 
-    removeListener(eventName, listener): Provider {
+    removeListener(eventName: any, listener: Listener): Provider {
         var eventNameString = getEventString(eventName);
         var listeners = this._events[eventNameString];
         if (!listeners) { return this; }

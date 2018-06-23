@@ -7,13 +7,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var elliptic = __importStar(require("elliptic"));
+var curve = new elliptic.ec('secp256k1');
 var address_1 = require("./address");
 var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
 var properties_1 = require("./properties");
 var errors = __importStar(require("./errors"));
-var elliptic = __importStar(require("elliptic"));
-var curve = new elliptic.ec('secp256k1');
 exports.N = '0x' + curve.n.toString(16);
 var KeyPair = /** @class */ (function () {
     function KeyPair(privateKey) {
