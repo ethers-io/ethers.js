@@ -1120,7 +1120,7 @@ export class Provider {
         var result: { [key: string ]: string } = shallowCopy(object);
 
         keys.forEach(function(key) {
-            if (result[key] === undefined) { return; }
+            if (result[key] == null) { return; }
             promises.push(this.resolveName(result[key]).then((address: string) => {
                 result[key] = address;
             }));

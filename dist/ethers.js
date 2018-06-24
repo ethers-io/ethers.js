@@ -11458,7 +11458,7 @@ var Provider = /** @class */ (function () {
         var promises = [];
         var result = properties_1.shallowCopy(object);
         keys.forEach(function (key) {
-            if (result[key] === undefined) {
+            if (result[key] == null) {
                 return;
             }
             promises.push(this.resolveName(result[key]).then(function (address) {
