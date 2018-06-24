@@ -111,11 +111,12 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                         let reason = defaultAbiCoder.decode([ 'string' ], hexDataSlice(value, 4));
                         errors.throwError('call revert exception', errors.CALL_EXCEPTION, {
                             address: contract.address,
-                            method: method.signature,
                             args: params,
+                            method: method.signature,
                             errorSignature: 'Error(string)',
                             errorArgs: [ reason ],
-                            reason: reason
+                            reason: reason,
+                            transaction: tx
                         });
                     }
 
@@ -329,6 +330,12 @@ export class Contract {
         this._onerror = callback;
     }
 
+    // @TODO:
+    // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>
+
+    // @TODO:
+    // estimateDeploy(bytecode: string, ...args): Promise<BigNumber>
+
     fallback(overrides?: TransactionRequest): Promise<TransactionResponse> {
         if (!this.signer) {
             errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' })
@@ -337,7 +344,7 @@ export class Contract {
         var tx: TransactionRequest = shallowCopy(overrides || {});
 
         ['from', 'to'].forEach(function(key) {
-            if (tx.to == null) { return; }
+            if ((<any>tx)[key] == null) { return; }
             errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key })
         });
 
@@ -348,6 +355,11 @@ export class Contract {
     // Reconnect to a different signer or provider
     connect(signerOrProvider: Signer | Provider): Contract {
         return new Contract(this.address, this.interface, signerOrProvider);
+    }
+
+    // Re-attach to a different on=chain instance of this contract
+    attach(addressOrName: string): Contract {
+        return new Contract(addressOrName, this.interface, this.signer || this.provider);
     }
 
     // Deploy the contract with the bytecode, resolving to the deployed address.
@@ -371,10 +383,27 @@ export class Contract {
             errors.throwError('bytecode must be valid data (even length)', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
         }
 
+        let tx: TransactionRequest = { };
+        if (args.length === this.interface.deployFunction.inputs.length + 1) {
+            tx = shallowCopy(args.pop());
+            for (var key in tx) {
+                if (!allowedTransactionKeys[key]) {
+                    throw new Error('unknown transaction override ' + key);
+                }
+            }
+        }
+
+        ['data', 'from', 'to'].forEach(function(key) {
+            if ((<any>tx)[key] == null) { return; }
+            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key })
+        });
+
+        tx.data = this.interface.deployFunction.encode(bytecode, args);
+
+        errors.checkArgumentCount(args.length, this.interface.deployFunction.inputs.length, 'in Contract constructor');
+
         // @TODO: overrides of args.length = this.interface.deployFunction.inputs.length + 1
-        return this.signer.sendTransaction({
-            data: this.interface.deployFunction.encode(bytecode, args)
-        }).then((tx) => {
+        return this.signer.sendTransaction(tx).then((tx) => {
             let contract = new Contract(getContractAddress(tx), this.interface, this.signer || this.provider);
             defineReadOnly(contract, 'deployTransaction', tx);
             return contract;

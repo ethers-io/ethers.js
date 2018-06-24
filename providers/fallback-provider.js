@@ -43,7 +43,7 @@ function checkNetworks(networks) {
             check.ensAddress === network.ensAddress) {
             return;
         }
-        errors.throwError('provider mismatch', errors.INVALID_ARGUMENT, { arg: 'providers', networks: networks });
+        errors.throwError('provider mismatch', errors.INVALID_ARGUMENT, { arg: 'networks', value: networks });
     });
     return result;
 }

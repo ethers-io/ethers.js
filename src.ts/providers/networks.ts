@@ -95,14 +95,14 @@ export function getNetwork(network: Networkish): Network {
     // Not a standard network; check that it is a valid network in general
     if (!n) {
         if (typeof(n.chainId) !== 'number') {
-            errors.throwError('invalid network chainId', errors.INVALID_ARGUMENT, { name: 'network', value: network });
+            errors.throwError('invalid network chainId', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
         }
         return network;
     }
 
     // Make sure the chainId matches the expected network chainId (or is 0; disable EIP-155)
     if (network.chainId !== 0 && network.chainId !== n.chainId) {
-        errors.throwError('network chainId mismatch', errors.INVALID_ARGUMENT, { name: 'network', value: network });
+        errors.throwError('network chainId mismatch', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
     }
 
     // Standard Network

@@ -86,23 +86,10 @@ var DeployDescription = /** @class */ (function (_super) {
         if (!bytes_1.isHexString(bytecode)) {
             errors.throwError('invalid contract bytecode', errors.INVALID_ARGUMENT, {
                 arg: 'bytecode',
-                type: typeof (bytecode),
                 value: bytecode
             });
         }
-        if (params.length < this.inputs.length) {
-            errors.throwError('missing constructor argument', errors.MISSING_ARGUMENT, {
-                arg: (this.inputs[params.length].name || 'unknown'),
-                count: params.length,
-                expectedCount: this.inputs.length
-            });
-        }
-        else if (params.length > this.inputs.length) {
-            errors.throwError('too many constructor arguments', errors.UNEXPECTED_ARGUMENT, {
-                count: params.length,
-                expectedCount: this.inputs.length
-            });
-        }
+        errors.checkArgumentCount(params.length, this.inputs.length, 'in Interface constructor');
         try {
             return (bytecode + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2));
         }
@@ -124,20 +111,7 @@ var FunctionDescription = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     FunctionDescription.prototype.encode = function (params) {
-        if (params.length < this.inputs.length) {
-            errors.throwError('missing input argument', errors.MISSING_ARGUMENT, {
-                arg: (this.inputs[params.length].name || 'unknown'),
-                count: params.length,
-                expectedCount: this.inputs.length,
-                name: this.name
-            });
-        }
-        else if (params.length > this.inputs.length) {
-            errors.throwError('too many input arguments', errors.UNEXPECTED_ARGUMENT, {
-                count: params.length,
-                expectedCount: this.inputs.length
-            });
-        }
+        errors.checkArgumentCount(params.length, this.inputs.length, 'in interface function ' + this.name);
         try {
             return this.sighash + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2);
         }

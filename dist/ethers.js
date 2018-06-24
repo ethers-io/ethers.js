@@ -8950,11 +8950,12 @@ function runMethod(contract, functionName, estimateOnly) {
                         var reason = abi_coder_1.defaultAbiCoder.decode(['string'], bytes_1.hexDataSlice(value, 4));
                         errors.throwError('call revert exception', errors.CALL_EXCEPTION, {
                             address: contract.address,
-                            method: method.signature,
                             args: params,
+                            method: method.signature,
                             errorSignature: 'Error(string)',
                             errorArgs: [reason],
-                            reason: reason
+                            reason: reason,
+                            transaction: tx
                         });
                     }
                     try {
@@ -9121,13 +9122,17 @@ var Contract = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    // @TODO:
+    // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>
+    // @TODO:
+    // estimateDeploy(bytecode: string, ...args): Promise<BigNumber>
     Contract.prototype.fallback = function (overrides) {
         if (!this.signer) {
             errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' });
         }
         var tx = properties_1.shallowCopy(overrides || {});
         ['from', 'to'].forEach(function (key) {
-            if (tx.to == null) {
+            if (tx[key] == null) {
                 return;
             }
             errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
@@ -9138,6 +9143,10 @@ var Contract = /** @class */ (function () {
     // Reconnect to a different signer or provider
     Contract.prototype.connect = function (signerOrProvider) {
         return new Contract(this.address, this.interface, signerOrProvider);
+    };
+    // Re-attach to a different on=chain instance of this contract
+    Contract.prototype.attach = function (addressOrName) {
+        return new Contract(addressOrName, this.interface, this.signer || this.provider);
     };
     // Deploy the contract with the bytecode, resolving to the deployed address.
     // Use contract.deployTransaction.wait() to wait until the contract has
@@ -9161,10 +9170,25 @@ var Contract = /** @class */ (function () {
         if ((bytecode.length % 2) !== 0) {
             errors.throwError('bytecode must be valid data (even length)', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
         }
+        var tx = {};
+        if (args.length === this.interface.deployFunction.inputs.length + 1) {
+            tx = properties_1.shallowCopy(args.pop());
+            for (var key in tx) {
+                if (!allowedTransactionKeys[key]) {
+                    throw new Error('unknown transaction override ' + key);
+                }
+            }
+        }
+        ['data', 'from', 'to'].forEach(function (key) {
+            if (tx[key] == null) {
+                return;
+            }
+            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
+        });
+        tx.data = this.interface.deployFunction.encode(bytecode, args);
+        errors.checkArgumentCount(args.length, this.interface.deployFunction.inputs.length, 'in Contract constructor');
         // @TODO: overrides of args.length = this.interface.deployFunction.inputs.length + 1
-        return this.signer.sendTransaction({
-            data: this.interface.deployFunction.encode(bytecode, args)
-        }).then(function (tx) {
+        return this.signer.sendTransaction(tx).then(function (tx) {
             var contract = new Contract(address_1.getContractAddress(tx), _this.interface, _this.signer || _this.provider);
             properties_1.defineReadOnly(contract, 'deployTransaction', tx);
             return contract;
@@ -9275,23 +9299,10 @@ var DeployDescription = /** @class */ (function (_super) {
         if (!bytes_1.isHexString(bytecode)) {
             errors.throwError('invalid contract bytecode', errors.INVALID_ARGUMENT, {
                 arg: 'bytecode',
-                type: typeof (bytecode),
                 value: bytecode
             });
         }
-        if (params.length < this.inputs.length) {
-            errors.throwError('missing constructor argument', errors.MISSING_ARGUMENT, {
-                arg: (this.inputs[params.length].name || 'unknown'),
-                count: params.length,
-                expectedCount: this.inputs.length
-            });
-        }
-        else if (params.length > this.inputs.length) {
-            errors.throwError('too many constructor arguments', errors.UNEXPECTED_ARGUMENT, {
-                count: params.length,
-                expectedCount: this.inputs.length
-            });
-        }
+        errors.checkArgumentCount(params.length, this.inputs.length, 'in Interface constructor');
         try {
             return (bytecode + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2));
         }
@@ -9313,20 +9324,7 @@ var FunctionDescription = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     FunctionDescription.prototype.encode = function (params) {
-        if (params.length < this.inputs.length) {
-            errors.throwError('missing input argument', errors.MISSING_ARGUMENT, {
-                arg: (this.inputs[params.length].name || 'unknown'),
-                count: params.length,
-                expectedCount: this.inputs.length,
-                name: this.name
-            });
-        }
-        else if (params.length > this.inputs.length) {
-            errors.throwError('too many input arguments', errors.UNEXPECTED_ARGUMENT, {
-                count: params.length,
-                expectedCount: this.inputs.length
-            });
-        }
+        errors.checkArgumentCount(params.length, this.inputs.length, 'in interface function ' + this.name);
         try {
             return this.sighash + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2);
         }
@@ -9928,7 +9926,7 @@ function checkNetworks(networks) {
             check.ensAddress === network.ensAddress) {
             return;
         }
-        errors.throwError('provider mismatch', errors.INVALID_ARGUMENT, { arg: 'providers', networks: networks });
+        errors.throwError('provider mismatch', errors.INVALID_ARGUMENT, { arg: 'networks', value: networks });
     });
     return result;
 }
@@ -10478,13 +10476,13 @@ function getNetwork(network) {
     // Not a standard network; check that it is a valid network in general
     if (!n) {
         if (typeof (n.chainId) !== 'number') {
-            errors.throwError('invalid network chainId', errors.INVALID_ARGUMENT, { name: 'network', value: network });
+            errors.throwError('invalid network chainId', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
         }
         return network;
     }
     // Make sure the chainId matches the expected network chainId (or is 0; disable EIP-155)
     if (network.chainId !== 0 && network.chainId !== n.chainId) {
-        errors.throwError('network chainId mismatch', errors.INVALID_ARGUMENT, { name: 'network', value: network });
+        errors.throwError('network chainId mismatch', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
     }
     // Standard Network
     return {
@@ -10528,6 +10526,49 @@ var properties_1 = require("../utils/properties");
 var transaction_1 = require("../utils/transaction");
 var errors = __importStar(require("../utils/errors"));
 ;
+;
+function timeoutFunction(setup, cancelled, timeout) {
+    var timer = null;
+    var done = false;
+    return new Promise(function (resolve, reject) {
+        function cancelTimer() {
+            if (timer == null) {
+                return;
+            }
+            clearTimeout(timer);
+            timer = null;
+        }
+        function complete(result) {
+            cancelTimer();
+            if (done) {
+                return;
+            }
+            resolve(result);
+            done = true;
+        }
+        setup(complete, function (error) {
+            cancelTimer();
+            if (done) {
+                return;
+            }
+            reject(error);
+            done = true;
+        });
+        if (typeof (timeout) === 'number' && timeout > 0) {
+            timer = setTimeout(function () {
+                cancelTimer();
+                if (done) {
+                    return;
+                }
+                if (cancelled) {
+                    cancelled();
+                }
+                reject(new Error('timeout'));
+                done = true;
+            }, timeout);
+        }
+    });
+}
 ;
 //////////////////////////////
 // Request and Response Checking
@@ -11045,12 +11086,12 @@ var Provider = /** @class */ (function () {
             Object.keys(_this._events).forEach(function (eventName) {
                 var event = parseEventString(eventName);
                 if (event.type === 'transaction') {
-                    _this.getTransaction(event.hash).then(function (transaction) {
-                        if (!transaction || transaction.blockNumber == null) {
+                    _this.getTransactionReceipt(event.hash).then(function (receipt) {
+                        if (!receipt || receipt.blockNumber == null) {
                             return;
                         }
-                        _this._emitted['t:' + transaction.hash.toLowerCase()] = transaction.blockNumber;
-                        _this.emit(event.hash, transaction);
+                        _this._emitted['t:' + event.hash.toLowerCase()] = receipt.blockNumber;
+                        _this.emit(event.hash, receipt);
                     });
                 }
                 else if (event.type === 'address') {
@@ -11152,23 +11193,18 @@ var Provider = /** @class */ (function () {
     // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
     //        this will be used once we move to the WebSocket or other alternatives to polling
     Provider.prototype.waitForTransaction = function (transactionHash, timeout) {
-        var self = this;
-        return new Promise(function (resolve, reject) {
-            var timer = null;
-            function complete(transaction) {
-                if (timer) {
-                    clearTimeout(timer);
-                }
-                resolve(transaction);
-            }
-            self.once(transactionHash, complete);
-            if (typeof (timeout) === 'number' && timeout > 0) {
-                timer = setTimeout(function () {
-                    self.removeListener(transactionHash, complete);
-                    reject(new Error('timeout'));
-                }, timeout);
-            }
-        });
+        var _this = this;
+        var complete = null;
+        var setup = function (resolve) {
+            complete = function (receipt) {
+                resolve(receipt);
+            };
+            _this.once(transactionHash, complete);
+        };
+        var cancelled = function () {
+            _this.removeListener(transactionHash, complete);
+        };
+        return timeoutFunction(setup, cancelled, timeout);
     };
     Provider.prototype.getBlockNumber = function () {
         var _this = this;
@@ -11268,7 +11304,14 @@ var Provider = /** @class */ (function () {
                     }
                     _this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
                     tx.wait = function (timeout) {
-                        return _this.waitForTransaction(hash, timeout);
+                        return _this.waitForTransaction(hash, timeout).then(function (receipt) {
+                            if (receipt.status === 0) {
+                                errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
+                                    transaction: tx
+                                });
+                            }
+                            return receipt;
+                        });
                     };
                     return tx;
                 });
@@ -12042,7 +12085,7 @@ var CoderNumber = /** @class */ (function (_super) {
         catch (error) {
             errors.throwError('invalid number value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof (value),
+                coderType: this.name,
                 value: value
             });
         }
@@ -12122,7 +12165,7 @@ var CoderFixedBytes = /** @class */ (function (_super) {
         catch (error) {
             errors.throwError('invalid ' + this.name + ' value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof (value),
+                coderType: this.name,
                 value: (error.value || value)
             });
         }
@@ -12156,7 +12199,7 @@ var CoderAddress = /** @class */ (function (_super) {
         catch (error) {
             errors.throwError('invalid address', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof (value),
+                coderType: 'address',
                 value: value
             });
         }
@@ -12229,7 +12272,7 @@ var CoderDynamicBytes = /** @class */ (function (_super) {
         catch (error) {
             errors.throwError('invalid bytes value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof (value),
+                coderType: 'bytes',
                 value: error.value
             });
         }
@@ -12251,7 +12294,7 @@ var CoderString = /** @class */ (function (_super) {
         if (typeof (value) !== 'string') {
             errors.throwError('invalid string value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof (value),
+                coderType: 'string',
                 value: value
             });
         }
@@ -12281,7 +12324,6 @@ function pack(coders, values) {
     else {
         errors.throwError('invalid tuple value', errors.INVALID_ARGUMENT, {
             coderType: 'tuple',
-            type: typeof (values),
             value: values
         });
     }
@@ -12378,7 +12420,6 @@ var CoderArray = /** @class */ (function (_super) {
             errors.throwError('expected array value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
                 coderType: 'array',
-                type: typeof (value),
                 value: value
             });
         }
@@ -12388,15 +12429,7 @@ var CoderArray = /** @class */ (function (_super) {
             count = value.length;
             result = uint256Coder.encode(count);
         }
-        if (count !== value.length) {
-            errors.throwError('array value length mismatch', errors.INVALID_ARGUMENT, {
-                arg: this.localName,
-                coderType: 'array',
-                count: value.length,
-                expectedCount: count,
-                value: value
-            });
-        }
+        errors.checkArgumentCount(count, value.length, 'in coder array' + (this.localName ? (" " + this.localName) : ""));
         var coders = [];
         for (var i = 0; i < value.length; i++) {
             coders.push(this.coder);
@@ -13151,18 +13184,22 @@ exports.NOT_IMPLEMENTED = 'NOT_IMPLEMENTED';
 //  - name: The name of the class
 exports.MISSING_NEW = 'MISSING_NEW';
 // Call exception
+//  - transaction: the transaction
+//  - address?: the contract address
+//  - args?: The arguments passed into the function
+//  - method?: The Solidity method signature
+//  - errorSignature?: The EIP848 error signature
+//  - errorArgs?: The EIP848 error parameters
+//  - reason: The reason (only for EIP848 "Error(string)")
 exports.CALL_EXCEPTION = 'CALL_EXCEPTION';
 // Response from a server was invalid
 //   - response: The body of the response
 //'BAD_RESPONSE',
-// Invalid argument (e.g. type) to a function:
+// Invalid argument (e.g. value is incompatible with type) to a function:
 //   - arg: The argument name that was invalid
 //   - value: The value of the argument
-//   - type: The type of the argument
-//   - expected: What was expected
 exports.INVALID_ARGUMENT = 'INVALID_ARGUMENT';
 // Missing argument to a function:
-//   - arg: The argument name that is required
 //   - count: The number of arguments received
 //   - expectedCount: The number of arguments expected
 exports.MISSING_ARGUMENT = 'MISSING_ARGUMENT';
@@ -13177,8 +13214,13 @@ exports.NUMERIC_FAULT = 'NUMERIC_FAULT';
 // Unsupported operation
 //   - operation
 exports.UNSUPPORTED_OPERATION = 'UNSUPPORTED_OPERATION';
+var _permanentCensorErrors = false;
+var _censorErrors = false;
 // @TODO: Enum
 function throwError(message, code, params) {
+    if (_censorErrors) {
+        throw new Error('unknown error');
+    }
     if (!code) {
         code = exports.UNKNOWN_ERROR;
     }
@@ -13214,6 +13256,26 @@ function checkNew(self, kind) {
     }
 }
 exports.checkNew = checkNew;
+function checkArgumentCount(count, expectedCount, suffix) {
+    if (!suffix) {
+        suffix = '';
+    }
+    if (count < expectedCount) {
+        throwError('missing argument' + suffix, exports.MISSING_ARGUMENT, { count: count, expectedCount: expectedCount });
+    }
+    if (count > expectedCount) {
+        throwError('too many arguments' + suffix, exports.UNEXPECTED_ARGUMENT, { count: count, expectedCount: expectedCount });
+    }
+}
+exports.checkArgumentCount = checkArgumentCount;
+function setCensorship(censorship, permanent) {
+    if (_permanentCensorErrors) {
+        throwError('error censorship permanent', exports.UNSUPPORTED_OPERATION, { operation: 'setCersorship' });
+    }
+    _censorErrors = !!censorship;
+    _permanentCensorErrors = !!permanent;
+}
+exports.setCensorship = setCensorship;
 
 },{}],63:[function(require,module,exports){
 'use strict';
@@ -14971,7 +15033,7 @@ var SigningKey = /** @class */ (function () {
         }
         try {
             if (privateKeyBytes.length !== 32) {
-                errors.throwError('exactly 32 bytes required', errors.INVALID_ARGUMENT, { value: privateKey });
+                errors.throwError('exactly 32 bytes required', errors.INVALID_ARGUMENT, { arg: 'privateKey', value: '[REDACTED]' });
             }
         }
         catch (error) {

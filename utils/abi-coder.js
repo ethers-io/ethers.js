@@ -318,7 +318,7 @@ var CoderNumber = /** @class */ (function (_super) {
         catch (error) {
             errors.throwError('invalid number value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof (value),
+                coderType: this.name,
                 value: value
             });
         }
@@ -398,7 +398,7 @@ var CoderFixedBytes = /** @class */ (function (_super) {
         catch (error) {
             errors.throwError('invalid ' + this.name + ' value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof (value),
+                coderType: this.name,
                 value: (error.value || value)
             });
         }
@@ -432,7 +432,7 @@ var CoderAddress = /** @class */ (function (_super) {
         catch (error) {
             errors.throwError('invalid address', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof (value),
+                coderType: 'address',
                 value: value
             });
         }
@@ -505,7 +505,7 @@ var CoderDynamicBytes = /** @class */ (function (_super) {
         catch (error) {
             errors.throwError('invalid bytes value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof (value),
+                coderType: 'bytes',
                 value: error.value
             });
         }
@@ -527,7 +527,7 @@ var CoderString = /** @class */ (function (_super) {
         if (typeof (value) !== 'string') {
             errors.throwError('invalid string value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof (value),
+                coderType: 'string',
                 value: value
             });
         }
@@ -557,7 +557,6 @@ function pack(coders, values) {
     else {
         errors.throwError('invalid tuple value', errors.INVALID_ARGUMENT, {
             coderType: 'tuple',
-            type: typeof (values),
             value: values
         });
     }
@@ -654,7 +653,6 @@ var CoderArray = /** @class */ (function (_super) {
             errors.throwError('expected array value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
                 coderType: 'array',
-                type: typeof (value),
                 value: value
             });
         }
@@ -664,15 +662,7 @@ var CoderArray = /** @class */ (function (_super) {
             count = value.length;
             result = uint256Coder.encode(count);
         }
-        if (count !== value.length) {
-            errors.throwError('array value length mismatch', errors.INVALID_ARGUMENT, {
-                arg: this.localName,
-                coderType: 'array',
-                count: value.length,
-                expectedCount: count,
-                value: value
-            });
-        }
+        errors.checkArgumentCount(count, value.length, 'in coder array' + (this.localName ? (" " + this.localName) : ""));
         var coders = [];
         for (var i = 0; i < value.length; i++) {
             coders.push(this.coder);

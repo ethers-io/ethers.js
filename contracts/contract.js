@@ -98,11 +98,12 @@ function runMethod(contract, functionName, estimateOnly) {
                         var reason = abi_coder_1.defaultAbiCoder.decode(['string'], bytes_1.hexDataSlice(value, 4));
                         errors.throwError('call revert exception', errors.CALL_EXCEPTION, {
                             address: contract.address,
-                            method: method.signature,
                             args: params,
+                            method: method.signature,
                             errorSignature: 'Error(string)',
                             errorArgs: [reason],
-                            reason: reason
+                            reason: reason,
+                            transaction: tx
                         });
                     }
                     try {
@@ -269,13 +270,17 @@ var Contract = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    // @TODO:
+    // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>
+    // @TODO:
+    // estimateDeploy(bytecode: string, ...args): Promise<BigNumber>
     Contract.prototype.fallback = function (overrides) {
         if (!this.signer) {
             errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' });
         }
         var tx = properties_1.shallowCopy(overrides || {});
         ['from', 'to'].forEach(function (key) {
-            if (tx.to == null) {
+            if (tx[key] == null) {
                 return;
             }
             errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
@@ -286,6 +291,10 @@ var Contract = /** @class */ (function () {
     // Reconnect to a different signer or provider
     Contract.prototype.connect = function (signerOrProvider) {
         return new Contract(this.address, this.interface, signerOrProvider);
+    };
+    // Re-attach to a different on=chain instance of this contract
+    Contract.prototype.attach = function (addressOrName) {
+        return new Contract(addressOrName, this.interface, this.signer || this.provider);
     };
     // Deploy the contract with the bytecode, resolving to the deployed address.
     // Use contract.deployTransaction.wait() to wait until the contract has
@@ -309,10 +318,25 @@ var Contract = /** @class */ (function () {
         if ((bytecode.length % 2) !== 0) {
             errors.throwError('bytecode must be valid data (even length)', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
         }
+        var tx = {};
+        if (args.length === this.interface.deployFunction.inputs.length + 1) {
+            tx = properties_1.shallowCopy(args.pop());
+            for (var key in tx) {
+                if (!allowedTransactionKeys[key]) {
+                    throw new Error('unknown transaction override ' + key);
+                }
+            }
+        }
+        ['data', 'from', 'to'].forEach(function (key) {
+            if (tx[key] == null) {
+                return;
+            }
+            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
+        });
+        tx.data = this.interface.deployFunction.encode(bytecode, args);
+        errors.checkArgumentCount(args.length, this.interface.deployFunction.inputs.length, 'in Contract constructor');
         // @TODO: overrides of args.length = this.interface.deployFunction.inputs.length + 1
-        return this.signer.sendTransaction({
-            data: this.interface.deployFunction.encode(bytecode, args)
-        }).then(function (tx) {
+        return this.signer.sendTransaction(tx).then(function (tx) {
             var contract = new Contract(address_1.getContractAddress(tx), _this.interface, _this.signer || _this.provider);
             properties_1.defineReadOnly(contract, 'deployTransaction', tx);
             return contract;

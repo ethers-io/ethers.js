@@ -31,6 +31,49 @@ var transaction_1 = require("../utils/transaction");
 var errors = __importStar(require("../utils/errors"));
 ;
 ;
+function timeoutFunction(setup, cancelled, timeout) {
+    var timer = null;
+    var done = false;
+    return new Promise(function (resolve, reject) {
+        function cancelTimer() {
+            if (timer == null) {
+                return;
+            }
+            clearTimeout(timer);
+            timer = null;
+        }
+        function complete(result) {
+            cancelTimer();
+            if (done) {
+                return;
+            }
+            resolve(result);
+            done = true;
+        }
+        setup(complete, function (error) {
+            cancelTimer();
+            if (done) {
+                return;
+            }
+            reject(error);
+            done = true;
+        });
+        if (typeof (timeout) === 'number' && timeout > 0) {
+            timer = setTimeout(function () {
+                cancelTimer();
+                if (done) {
+                    return;
+                }
+                if (cancelled) {
+                    cancelled();
+                }
+                reject(new Error('timeout'));
+                done = true;
+            }, timeout);
+        }
+    });
+}
+;
 //////////////////////////////
 // Request and Response Checking
 // @TODO: not any?
@@ -547,12 +590,12 @@ var Provider = /** @class */ (function () {
             Object.keys(_this._events).forEach(function (eventName) {
                 var event = parseEventString(eventName);
                 if (event.type === 'transaction') {
-                    _this.getTransaction(event.hash).then(function (transaction) {
-                        if (!transaction || transaction.blockNumber == null) {
+                    _this.getTransactionReceipt(event.hash).then(function (receipt) {
+                        if (!receipt || receipt.blockNumber == null) {
                             return;
                         }
-                        _this._emitted['t:' + transaction.hash.toLowerCase()] = transaction.blockNumber;
-                        _this.emit(event.hash, transaction);
+                        _this._emitted['t:' + event.hash.toLowerCase()] = receipt.blockNumber;
+                        _this.emit(event.hash, receipt);
                     });
                 }
                 else if (event.type === 'address') {
@@ -654,23 +697,18 @@ var Provider = /** @class */ (function () {
     // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
     //        this will be used once we move to the WebSocket or other alternatives to polling
     Provider.prototype.waitForTransaction = function (transactionHash, timeout) {
-        var self = this;
-        return new Promise(function (resolve, reject) {
-            var timer = null;
-            function complete(transaction) {
-                if (timer) {
-                    clearTimeout(timer);
-                }
-                resolve(transaction);
-            }
-            self.once(transactionHash, complete);
-            if (typeof (timeout) === 'number' && timeout > 0) {
-                timer = setTimeout(function () {
-                    self.removeListener(transactionHash, complete);
-                    reject(new Error('timeout'));
-                }, timeout);
-            }
-        });
+        var _this = this;
+        var complete = null;
+        var setup = function (resolve) {
+            complete = function (receipt) {
+                resolve(receipt);
+            };
+            _this.once(transactionHash, complete);
+        };
+        var cancelled = function () {
+            _this.removeListener(transactionHash, complete);
+        };
+        return timeoutFunction(setup, cancelled, timeout);
     };
     Provider.prototype.getBlockNumber = function () {
         var _this = this;
@@ -770,7 +808,14 @@ var Provider = /** @class */ (function () {
                     }
                     _this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
                     tx.wait = function (timeout) {
-                        return _this.waitForTransaction(hash, timeout);
+                        return _this.waitForTransaction(hash, timeout).then(function (receipt) {
+                            if (receipt.status === 0) {
+                                errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
+                                    transaction: tx
+                                });
+                            }
+                            return receipt;
+                        });
                     };
                     return tx;
                 });

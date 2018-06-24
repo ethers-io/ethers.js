@@ -35,7 +35,7 @@ function checkNetworks(networks: Array<Network>): boolean {
         errors.throwError(
             'provider mismatch',
             errors.INVALID_ARGUMENT,
-            { arg: 'providers', networks: networks }
+            { arg: 'networks', value: networks }
         );
     });
 

@@ -389,7 +389,7 @@ class CoderNumber extends Coder {
         } catch (error) {
             errors.throwError('invalid number value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof(value),
+                coderType: this.name,
                 value: value
             });
         }
@@ -467,7 +467,7 @@ class CoderFixedBytes extends Coder {
         } catch (error) {
             errors.throwError('invalid ' + this.name + ' value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof(value),
+                coderType: this.name,
                 value: (error.value || value)
             });
         }
@@ -502,7 +502,7 @@ class CoderAddress extends Coder {
         } catch (error) {
             errors.throwError('invalid address', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof(value),
+                coderType: 'address',
                 value: value
             });
         }
@@ -578,7 +578,7 @@ class CoderDynamicBytes extends Coder {
         } catch (error) {
             errors.throwError('invalid bytes value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof(value),
+                coderType: 'bytes',
                 value: error.value
             });
         }
@@ -601,7 +601,7 @@ class CoderString extends Coder {
         if (typeof(value) !== 'string') {
             errors.throwError('invalid string value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
-                type: typeof(value),
+                coderType: 'string',
                 value: value
             });
         }
@@ -634,7 +634,6 @@ function pack(coders: Array<Coder>, values: Array<any>): Uint8Array {
     } else {
         errors.throwError('invalid tuple value', errors.INVALID_ARGUMENT, {
             coderType: 'tuple',
-            type: typeof(values),
             value: values
         });
     }
@@ -740,7 +739,6 @@ class CoderArray extends Coder {
             errors.throwError('expected array value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
                 coderType: 'array',
-                type: typeof(value),
                 value: value
             });
         }
@@ -753,15 +751,7 @@ class CoderArray extends Coder {
             result = uint256Coder.encode(count);
         }
 
-        if (count !== value.length) {
-            errors.throwError('array value length mismatch', errors.INVALID_ARGUMENT, {
-                arg: this.localName,
-                coderType: 'array',
-                count: value.length,
-                expectedCount: count,
-                value: value
-            });
-        }
+        errors.checkArgumentCount(count, value.length, 'in coder array' + (this.localName? (" "+ this.localName): ""));
 
         var coders = [];
         for (var i = 0; i < value.length; i++) { coders.push(this.coder); }

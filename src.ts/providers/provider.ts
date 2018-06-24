@@ -63,7 +63,7 @@ export interface TransactionResponse extends Transaction {
     from: string;
 
     // This function waits until the transaction has been mined
-    wait: (timeout?: number) => Promise<TransactionResponse>
+    wait: (timeout?: number) => Promise<TransactionReceipt>
 };
 
 export interface TransactionReceipt {
@@ -108,6 +108,50 @@ export interface Log {
 }
 
 export type Listener = (...args: Array<any>) => void;
+
+
+//////////////////////////////
+// Request and Response Checking
+
+type ResolveFunc = (result: any) => void;
+type RejectFunc = (error: Error) => void;
+type SetupFunc = (resolve: ResolveFunc, reject: RejectFunc) => void;
+type CancelledFunc = () => void;
+function timeoutFunction(setup: SetupFunc, cancelled: CancelledFunc, timeout: number): Promise<any> {
+    var timer: any = null;
+    var done = false;
+    return new Promise(function(resolve, reject) {
+        function cancelTimer() {
+            if (timer == null) { return; }
+            clearTimeout(timer);
+            timer = null;
+        }
+
+        function complete(result: any): void {
+            cancelTimer();
+            if (done) { return; }
+            resolve(result);
+            done = true;
+        }
+
+        setup(complete, (error: Error) => {
+            cancelTimer();
+            if (done) { return; }
+            reject(error);
+            done = true;
+        });
+
+        if (typeof(timeout) === 'number' && timeout > 0) {
+            timer = setTimeout(function() {
+                cancelTimer();
+                if (done) { return; }
+                if (cancelled) { cancelled(); }
+                reject(new Error('timeout'));
+                done = true;
+            }, timeout);
+        }
+    });
+};
 
 //////////////////////////////
 // Request and Response Checking
@@ -724,10 +768,10 @@ export class Provider {
                 var event = parseEventString(eventName);
 
                 if (event.type === 'transaction') {
-                    this.getTransaction(event.hash).then((transaction) => {
-                        if (!transaction || transaction.blockNumber == null) { return; }
-                        this._emitted['t:' + transaction.hash.toLowerCase()] = transaction.blockNumber;
-                        this.emit(event.hash, transaction);
+                    this.getTransactionReceipt(event.hash).then((receipt) => {
+                        if (!receipt || receipt.blockNumber == null) { return; }
+                        this._emitted['t:' + event.hash.toLowerCase()] = receipt.blockNumber;
+                        this.emit(event.hash, receipt);
                     });
 
                 } else if (event.type === 'address') {
@@ -818,25 +862,22 @@ export class Provider {
     // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
     //        this will be used once we move to the WebSocket or other alternatives to polling
 
-    waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionResponse> {
-        var self = this;
-        return new Promise(function(resolve, reject) {
-            var timer: any = null;
+    waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt> {
+        let complete: Listener = null
 
-            function complete(transaction: TransactionResponse) {
-                if (timer) { clearTimeout(timer); }
-                resolve(transaction);
-            }
+        var setup = (resolve: ResolveFunc) => {
+            complete = (receipt) => {
+                resolve(receipt);
+            };
 
-            self.once(transactionHash, complete);
+            this.once(transactionHash, complete);
+        };
 
-            if (typeof(timeout) === 'number' && timeout > 0) {
-                timer = setTimeout(function() {
-                    self.removeListener(transactionHash, complete);
-                    reject(new Error('timeout'));
-                }, timeout);
-            }
-        });
+        var cancelled = () => {
+            this.removeListener(transactionHash, complete);
+        };
+
+        return timeoutFunction(setup, cancelled, timeout);
     }
 
     getBlockNumber(): Promise<number> {
@@ -930,7 +971,14 @@ export class Provider {
                     }
                     this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
                     tx.wait = (timeout?: number) => {
-                        return this.waitForTransaction(hash, timeout);
+                        return this.waitForTransaction(hash, timeout).then((receipt) => {
+                            if (receipt.status === 0) {
+                                errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
+                                    transaction: tx
+                                });
+                            }
+                            return receipt;
+                        });
                     };
 
                     return tx;

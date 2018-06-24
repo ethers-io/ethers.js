@@ -8,18 +8,22 @@ exports.NOT_IMPLEMENTED = 'NOT_IMPLEMENTED';
 //  - name: The name of the class
 exports.MISSING_NEW = 'MISSING_NEW';
 // Call exception
+//  - transaction: the transaction
+//  - address?: the contract address
+//  - args?: The arguments passed into the function
+//  - method?: The Solidity method signature
+//  - errorSignature?: The EIP848 error signature
+//  - errorArgs?: The EIP848 error parameters
+//  - reason: The reason (only for EIP848 "Error(string)")
 exports.CALL_EXCEPTION = 'CALL_EXCEPTION';
 // Response from a server was invalid
 //   - response: The body of the response
 //'BAD_RESPONSE',
-// Invalid argument (e.g. type) to a function:
+// Invalid argument (e.g. value is incompatible with type) to a function:
 //   - arg: The argument name that was invalid
 //   - value: The value of the argument
-//   - type: The type of the argument
-//   - expected: What was expected
 exports.INVALID_ARGUMENT = 'INVALID_ARGUMENT';
 // Missing argument to a function:
-//   - arg: The argument name that is required
 //   - count: The number of arguments received
 //   - expectedCount: The number of arguments expected
 exports.MISSING_ARGUMENT = 'MISSING_ARGUMENT';
@@ -34,8 +38,13 @@ exports.NUMERIC_FAULT = 'NUMERIC_FAULT';
 // Unsupported operation
 //   - operation
 exports.UNSUPPORTED_OPERATION = 'UNSUPPORTED_OPERATION';
+var _permanentCensorErrors = false;
+var _censorErrors = false;
 // @TODO: Enum
 function throwError(message, code, params) {
+    if (_censorErrors) {
+        throw new Error('unknown error');
+    }
     if (!code) {
         code = exports.UNKNOWN_ERROR;
     }
@@ -71,3 +80,23 @@ function checkNew(self, kind) {
     }
 }
 exports.checkNew = checkNew;
+function checkArgumentCount(count, expectedCount, suffix) {
+    if (!suffix) {
+        suffix = '';
+    }
+    if (count < expectedCount) {
+        throwError('missing argument' + suffix, exports.MISSING_ARGUMENT, { count: count, expectedCount: expectedCount });
+    }
+    if (count > expectedCount) {
+        throwError('too many arguments' + suffix, exports.UNEXPECTED_ARGUMENT, { count: count, expectedCount: expectedCount });
+    }
+}
+exports.checkArgumentCount = checkArgumentCount;
+function setCensorship(censorship, permanent) {
+    if (_permanentCensorErrors) {
+        throwError('error censorship permanent', exports.UNSUPPORTED_OPERATION, { operation: 'setCersorship' });
+    }
+    _censorErrors = !!censorship;
+    _permanentCensorErrors = !!permanent;
+}
+exports.setCensorship = setCensorship;

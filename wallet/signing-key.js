@@ -30,7 +30,7 @@ var SigningKey = /** @class */ (function () {
         }
         try {
             if (privateKeyBytes.length !== 32) {
-                errors.throwError('exactly 32 bytes required', errors.INVALID_ARGUMENT, { value: privateKey });
+                errors.throwError('exactly 32 bytes required', errors.INVALID_ARGUMENT, { arg: 'privateKey', value: '[REDACTED]' });
             }
         }
         catch (error) {

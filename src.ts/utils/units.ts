@@ -54,11 +54,7 @@ function getUnitInfo(name: string | number): UnitInfo {
 
     // Make sure we got something
     if (!info) {
-        errors.throwError(
-            'invalid unitType',
-            errors.INVALID_ARGUMENT,
-            { arg: 'name', value: name }
-       );
+        errors.throwError('invalid unitType', errors.INVALID_ARGUMENT, { arg: 'name', value: name });
     }
 
     return info;

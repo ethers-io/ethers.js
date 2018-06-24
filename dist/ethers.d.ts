@@ -74,6 +74,8 @@ declare module 'ethers/utils/errors' {
     export const UNSUPPORTED_OPERATION = "UNSUPPORTED_OPERATION";
     export function throwError(message: string, code: string, params: any): never;
     export function checkNew(self: any, kind: any): void;
+    export function checkArgumentCount(count: number, expectedCount: number, suffix?: string): void;
+    export function setCensorship(censorship: boolean, permanent?: boolean): void;
 }
 
 declare module 'ethers/providers/networks' {
@@ -225,6 +227,7 @@ declare module 'ethers/contracts/contract' {
         onerror: ErrorCallback;
         fallback(overrides?: TransactionRequest): Promise<TransactionResponse>;
         connect(signerOrProvider: Signer | Provider): Contract;
+        attach(addressOrName: string): Contract;
         deploy(bytecode: string, ...args: Array<any>): Promise<Contract>;
     }
     export {};
@@ -334,7 +337,7 @@ declare module 'ethers/providers/provider' {
         blockHash?: string;
         timestamp?: number;
         from: string;
-        wait: (timeout?: number) => Promise<TransactionResponse>;
+        wait: (timeout?: number) => Promise<TransactionReceipt>;
     }
     export interface TransactionReceipt {
         contractAddress?: string;
@@ -397,7 +400,7 @@ declare module 'ethers/providers/provider' {
         readonly blockNumber: number;
         polling: boolean;
         pollingInterval: number;
-        waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionResponse>;
+        waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt>;
         getBlockNumber(): Promise<number>;
         getGasPrice(): Promise<BigNumber>;
         getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber>;
