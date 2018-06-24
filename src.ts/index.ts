@@ -1,7 +1,7 @@
 'use strict';
 
 // This is empty in node, and used by browserify to inject extra goodies
-import './utils/shims';
+import {} from './utils/shims';
 
 import { Contract, Interface } from './contracts';
 import * as providers from './providers';
@@ -9,9 +9,10 @@ import * as errors from './utils/errors';
 import { getNetwork } from './providers/networks';
 import * as utils from './utils';
 import { HDNode, SigningKey, Wallet } from './wallet';
+import * as wordlists from './wordlists';
 
+// @TODO:
 //import info from '../package.json';
-//console.log(info);
 console.log("@TODO: Get version");
 const version = "4.0.0";
 
@@ -30,25 +31,27 @@ export {
     errors,
     utils,
 
+    wordlists,
+
     version
 };
 
-/*
 export default {
-    Wallet: wallet.Wallet,
+    Wallet,
 
-    HDNode: wallet.HDNode,
-    SigningKey: wallet.SigningKey,
+    HDNode,
+    SigningKey,
 
-//    Contract: contracts.Contract,
-//    Interface: contracts.Interface,
+    Contract,
+    Interface,
 
-//    networks: providers.networks,
-//    providers: providers,
+    getNetwork,
+    providers,
 
-    errors: errors,
-    utils: utils,
+    errors,
+    utils,
 
-//    version: version,
+    wordlists,
+
+    version
 }
-*/

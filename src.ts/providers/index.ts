@@ -33,3 +33,19 @@ export {
 
     IpcProvider
 };
+
+export default {
+    Provider,
+    getDefaultProvider,
+
+    ProviderSigner,
+
+    FallbackProvider,
+
+    EtherscanProvider,
+    InfuraProvider,
+    JsonRpcProvider,
+    Web3Provider,
+
+    IpcProvider
+};

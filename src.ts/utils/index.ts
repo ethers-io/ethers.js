@@ -91,3 +91,67 @@ export {
 
     errors
 }
+
+export default {
+    AbiCoder,
+    defaultAbiCoder,
+    parseSignature,
+    parseParamType,
+
+    RLP,
+
+    fetchJson,
+
+    defineReadOnly,
+    defineFrozen,
+    resolveProperties,
+    shallowCopy,
+
+    etherSymbol,
+
+    arrayify,
+
+    concat,
+    padZeros,
+    stripZeros,
+
+    base64,
+
+    bigNumberify,
+    BigNumber,
+
+    hexlify,
+
+    toUtf8Bytes,
+    toUtf8String,
+
+    hashMessage,
+    namehash,
+    id,
+
+    getAddress,
+    getIcapAddress,
+    getContractAddress,
+
+    formatEther,
+    parseEther,
+
+    formatUnits,
+    parseUnits,
+
+    keccak256,
+    sha256,
+
+    randomBytes,
+
+    solidityPack,
+    solidityKeccak256,
+    soliditySha256,
+
+    splitSignature,
+    joinSignature,
+
+    parseTransaction,
+
+    errors
+}

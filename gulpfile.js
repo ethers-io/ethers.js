@@ -63,6 +63,9 @@ var transforms = {
     // Used by sha3 if it exists; (so make it no exist)
     "process/browser.js": process,
     "timers-browserify/main.js": timers,
+
+    // Browser doesn't automatically get wordlists (individual files avaialble)
+    "src.ts/wordlists/index.ts": "module.exports = { }",
 };
 
 function transformFile(path) {
@@ -204,20 +207,21 @@ taskBundle("default", { filename: "ethers.js", minify: false });
 taskBundle("minified", { filename: "ethers.min.js", minify: true });
 
 // Crearte a single definition file and its map as dist/ethers.d.ts[.map]
-gulp.task("types", function() {
+gulp.task("temp-types", function() {
     return gulp.src(['./src.ts/index.ts', './src.ts/**/*.ts'])
     .pipe(ts({
         declaration: true,
         esModuleInterop: true,
         moduleResolution: "node",
-        outFile: 'ethers.js',
+//        outFile: 'ethers.js',
         lib: [ "es2015", "es5", "dom" ],
-        module: "amd",
-        target: "es5"
+        module: "commonjs",
+//        rootDir: "./src.ts",
+        target: "es5",
     }))
     .dts
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest("dist"))
+//    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest(".tmp"))
 });
 
 /**
