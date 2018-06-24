@@ -8,7 +8,7 @@ declare module 'ethers' {
     import * as utils from 'ethers/utils';
     import { HDNode, SigningKey, Wallet } from 'ethers/wallet';
     import * as wordlists from 'ethers/wordlists';
-    const version = "4.0.0";
+    import { version } from 'ethers/_version';
     export { Wallet, HDNode, SigningKey, Contract, Interface, getNetwork, providers, errors, utils, wordlists, version };
     const _default: {
         Wallet: typeof Wallet;
@@ -191,6 +191,10 @@ declare module 'ethers/wordlists' {
         zh_tw: Wordlist;
     };
     export default _default;
+}
+
+declare module 'ethers/_version' {
+    export const version = "4.0.0";
 }
 
 declare module 'ethers/contracts/contract' {

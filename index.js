@@ -24,11 +24,8 @@ exports.SigningKey = wallet_1.SigningKey;
 exports.Wallet = wallet_1.Wallet;
 var wordlists = __importStar(require("./wordlists"));
 exports.wordlists = wordlists;
-// @TODO:
-//import info from '../package.json';
-console.log("@TODO: Get version");
-var version = "4.0.0";
-exports.version = version;
+var _version_1 = require("./_version");
+exports.version = _version_1.version;
 exports.default = {
     Wallet: wallet_1.Wallet,
     HDNode: wallet_1.HDNode,
@@ -40,5 +37,5 @@ exports.default = {
     errors: errors,
     utils: utils,
     wordlists: wordlists,
-    version: version
+    version: _version_1.version
 };

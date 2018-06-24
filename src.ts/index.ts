@@ -11,10 +11,7 @@ import * as utils from './utils';
 import { HDNode, SigningKey, Wallet } from './wallet';
 import * as wordlists from './wordlists';
 
-// @TODO:
-//import info from '../package.json';
-console.log("@TODO: Get version");
-const version = "4.0.0";
+import { version } from './_version';
 
 export {
     Wallet,
