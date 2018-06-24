@@ -110,6 +110,7 @@ var Wallet = /** @class */ (function (_super) {
             tx.to = this.provider.resolveName(tx.to);
         }
         if (tx.gasLimit == null) {
+            tx.from = this.getAddress();
             tx.gasLimit = this.provider.estimateGas(tx);
         }
         if (tx.gasPrice == null) {

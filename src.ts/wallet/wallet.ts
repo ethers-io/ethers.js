@@ -104,6 +104,7 @@ export class Wallet extends Signer {
         }
 
         if (tx.gasLimit == null) {
+            tx.from = this.getAddress();
             tx.gasLimit = this.provider.estimateGas(tx);
         }
 
