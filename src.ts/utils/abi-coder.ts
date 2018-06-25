@@ -304,6 +304,16 @@ export function parseParamType(type: string): ParamType {
     return parseParam(type, true);
 }
 
+// @TODO: Allow a second boolean to expose names
+export function formatParamType(paramType: ParamType): string {
+    return getParamCoder(defaultCoerceFunc, paramType).type;
+}
+
+// @TODO: Allow a second boolean to expose names and modifiers
+export function formatSignature(fragment: EventFragment | FunctionFragment): string {
+    return fragment.name + '(' + fragment.inputs.map((i) => formatParamType(i)).join(',') + ')';
+}
+
 export function parseSignature(fragment: string): EventFragment | FunctionFragment {
     if(typeof(fragment) === 'string') {
         // Make sure the "returns" is surrounded by a space and all whitespace is exactly one space
@@ -814,9 +824,11 @@ class CoderTuple extends Coder {
         super(coerceFunc, 'tuple', type, localName, dynamic);
         this.coders = coders;
     }
+
     encode(value: Array<any>): Uint8Array {
         return pack(this.coders, value);
     }
+
     decode(data: Uint8Array, offset: number): DecodedResult {
         var result = unpack(this.coders, data, offset);
         result.value = this.coerceFunc(this.type, result.value);
@@ -903,6 +915,7 @@ function getParamCoder(coerceFunc: CoerceFunc, param: ParamType): Coder {
     var match = param.type.match(paramTypeArray);
     if (match) {
         let size = parseInt(match[2] || "-1");
+        param = jsonCopy(param);
         param.type = match[1];
         return new CoderArray(coerceFunc, getParamCoder(coerceFunc, param), size, param.name);
     }
@@ -952,7 +965,7 @@ export class AbiCoder {
             if (typeof(type) === 'string') {
                 typeObject = parseParam(type);
             } else {
-                typeObject = jsonCopy(type);
+                typeObject = type;
             }
 
             coders.push(getParamCoder(this.coerceFunc, typeObject));

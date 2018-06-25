@@ -96,7 +96,7 @@ declare module 'ethers/providers/networks' {
 
 declare module 'ethers/utils' {
     import { getAddress, getContractAddress, getIcapAddress } from 'ethers/utils/address';
-    import { AbiCoder, defaultAbiCoder, parseSignature, parseParamType } from 'ethers/utils/abi-coder';
+    import { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from 'ethers/utils/abi-coder';
     import * as base64 from 'ethers/utils/base64';
     import { BigNumber, bigNumberify } from 'ethers/utils/bignumber';
     import { arrayify, concat, hexlify, joinSignature, padZeros, splitSignature, stripZeros } from 'ethers/utils/bytes';
@@ -113,7 +113,7 @@ declare module 'ethers/utils' {
     import { parse as parseTransaction } from 'ethers/utils/transaction';
     import * as errors from 'ethers/utils/errors';
     const etherSymbol = "\u039E";
-    export { AbiCoder, defaultAbiCoder, parseSignature, parseParamType, RLP, fetchJson, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, etherSymbol, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, BigNumber, hexlify, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, errors };
+    export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, etherSymbol, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, BigNumber, hexlify, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, errors };
     const _default: {
         AbiCoder: typeof AbiCoder;
         defaultAbiCoder: AbiCoder;
@@ -563,6 +563,8 @@ declare module 'ethers/utils/abi-coder' {
         stateMutability: string;
     };
     export function parseParamType(type: string): ParamType;
+    export function formatParamType(paramType: ParamType): string;
+    export function formatSignature(fragment: EventFragment | FunctionFragment): string;
     export function parseSignature(fragment: string): EventFragment | FunctionFragment;
     export class AbiCoder {
         readonly coerceFunc: CoerceFunc;

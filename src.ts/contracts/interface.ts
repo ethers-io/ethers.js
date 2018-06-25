@@ -2,43 +2,13 @@
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
-import { defaultAbiCoder, EventFragment, FunctionFragment, ParamType, parseSignature } from '../utils/abi-coder';
+import { defaultAbiCoder, EventFragment, formatSignature, FunctionFragment, ParamType, parseSignature } from '../utils/abi-coder';
 import { BigNumber, bigNumberify, BigNumberish } from '../utils/bignumber';
 import { arrayify, concat, isHexString } from '../utils/bytes';
-import { keccak256 } from '../utils/keccak256';
-import { toUtf8Bytes } from '../utils/utf8';
+import { id } from '../utils/hash';
 import { defineReadOnly, defineFrozen } from '../utils/properties';
 
 import * as errors from '../utils/errors';
-
-// @TODO: Replace with a new abiCode.formatSignature method
-function parseParams(params: Array<ParamType>): { names: Array<any>, types: Array<string> } {
-    var names: Array<any> = [];
-    var types: Array<string> = [];
-
-    params.forEach(function(param) {
-        if (param.components != null) {
-            if (param.type.substring(0, 5) !== 'tuple') {
-                throw new Error('internal error; report on GitHub');
-            }
-            var suffix = '';
-            var arrayBracket = param.type.indexOf('[');
-            if (arrayBracket >= 0) { suffix = param.type.substring(arrayBracket); }
-
-            var result = parseParams(param.components);
-            names.push({ name: (param.name || null), names: result.names });
-            types.push('tuple(' + result.types.join(',') + ')' + suffix)
-        } else {
-            names.push(param.name || null);
-            types.push(param.type);
-        }
-    });
-
-    return {
-        names: names,
-        types: types
-    }
-}
 
 export class Description {
     readonly type: string;
@@ -54,7 +24,6 @@ export class Description {
     }
 }
 
-// @TOOD: Make this a description
 export class Indexed extends Description {
     readonly hash: string;
 }
@@ -231,12 +200,8 @@ function addMethod(method: any): void {
         }
 
         case 'function': {
-            // @TODO: See event
-            let signature = '(' + parseParams(method.inputs).types.join(',') + ')';
-            signature = signature.replace(/tuple/g, '');
-            signature = method.name + signature;
-
-            let sighash = keccak256(toUtf8Bytes(signature)).substring(0, 10);
+            let signature = formatSignature(method).replace(/tuple/g, '');
+            let sighash = id(signature).substring(0, 10);
 
             let description = new FunctionDescription({
                 inputs: method.inputs,
@@ -263,20 +228,14 @@ function addMethod(method: any): void {
         }
 
         case 'event': {
-            // @TODO: method.params instead? As well? Different fomrat?
-            //let inputParams = parseParams(method.inputs);
-
-            // @TODO: Don't use parseParams (create new function in ABI, formatSignature)
-            let signature = '(' + parseParams(method.inputs).types.join(',') + ')';
-            signature = signature.replace(/tuple/g, '');
-            signature = method.name + signature;
+            let signature = formatSignature(method).replace(/tuple/g, '');
 
             let description = new EventDescription({
                 name: method.name,
                 signature: signature,
 
                 inputs: method.inputs,
-                topic: keccak256(toUtf8Bytes(signature)),
+                topic: id(signature),
                 anonymous: (!!method.anonymous),
 
                 type: 'event'

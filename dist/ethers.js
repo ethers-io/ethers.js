@@ -9234,38 +9234,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var abi_coder_1 = require("../utils/abi-coder");
 var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
-var keccak256_1 = require("../utils/keccak256");
-var utf8_1 = require("../utils/utf8");
+var hash_1 = require("../utils/hash");
 var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
-// @TODO: Replace with a new abiCode.formatSignature method
-function parseParams(params) {
-    var names = [];
-    var types = [];
-    params.forEach(function (param) {
-        if (param.components != null) {
-            if (param.type.substring(0, 5) !== 'tuple') {
-                throw new Error('internal error; report on GitHub');
-            }
-            var suffix = '';
-            var arrayBracket = param.type.indexOf('[');
-            if (arrayBracket >= 0) {
-                suffix = param.type.substring(arrayBracket);
-            }
-            var result = parseParams(param.components);
-            names.push({ name: (param.name || null), names: result.names });
-            types.push('tuple(' + result.types.join(',') + ')' + suffix);
-        }
-        else {
-            names.push(param.name || null);
-            types.push(param.type);
-        }
-    });
-    return {
-        names: names,
-        types: types
-    };
-}
 var Description = /** @class */ (function () {
     function Description(info) {
         for (var key in info) {
@@ -9281,7 +9252,6 @@ var Description = /** @class */ (function () {
     return Description;
 }());
 exports.Description = Description;
-// @TOOD: Make this a description
 var Indexed = /** @class */ (function (_super) {
     __extends(Indexed, _super);
     function Indexed() {
@@ -9449,11 +9419,8 @@ function addMethod(method) {
             break;
         }
         case 'function': {
-            // @TODO: See event
-            var signature = '(' + parseParams(method.inputs).types.join(',') + ')';
-            signature = signature.replace(/tuple/g, '');
-            signature = method.name + signature;
-            var sighash = keccak256_1.keccak256(utf8_1.toUtf8Bytes(signature)).substring(0, 10);
+            var signature = abi_coder_1.formatSignature(method).replace(/tuple/g, '');
+            var sighash = hash_1.id(signature).substring(0, 10);
             var description = new FunctionDescription({
                 inputs: method.inputs,
                 outputs: method.outputs,
@@ -9473,17 +9440,12 @@ function addMethod(method) {
             break;
         }
         case 'event': {
-            // @TODO: method.params instead? As well? Different fomrat?
-            //let inputParams = parseParams(method.inputs);
-            // @TODO: Don't use parseParams (create new function in ABI, formatSignature)
-            var signature = '(' + parseParams(method.inputs).types.join(',') + ')';
-            signature = signature.replace(/tuple/g, '');
-            signature = method.name + signature;
+            var signature = abi_coder_1.formatSignature(method).replace(/tuple/g, '');
             var description = new EventDescription({
                 name: method.name,
                 signature: signature,
                 inputs: method.inputs,
-                topic: keccak256_1.keccak256(utf8_1.toUtf8Bytes(signature)),
+                topic: hash_1.id(signature),
                 anonymous: (!!method.anonymous),
                 type: 'event'
             });
@@ -9591,7 +9553,7 @@ var Interface = /** @class */ (function () {
 }());
 exports.Interface = Interface;
 
-},{"../utils/abi-coder":58,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/keccak256":65,"../utils/properties":66,"../utils/utf8":73}],50:[function(require,module,exports){
+},{"../utils/abi-coder":58,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/properties":66}],50:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -12015,6 +11977,16 @@ function parseParamType(type) {
     return parseParam(type, true);
 }
 exports.parseParamType = parseParamType;
+// @TODO: Allow a second boolean to expose names
+function formatParamType(paramType) {
+    return getParamCoder(exports.defaultCoerceFunc, paramType).type;
+}
+exports.formatParamType = formatParamType;
+// @TODO: Allow a second boolean to expose names and modifiers
+function formatSignature(fragment) {
+    return fragment.name + '(' + fragment.inputs.map(function (i) { return formatParamType(i); }).join(',') + ')';
+}
+exports.formatSignature = formatSignature;
 function parseSignature(fragment) {
     if (typeof (fragment) === 'string') {
         // Make sure the "returns" is surrounded by a space and all whitespace is exactly one space
@@ -12582,6 +12554,7 @@ function getParamCoder(coerceFunc, param) {
     var match = param.type.match(paramTypeArray);
     if (match) {
         var size = parseInt(match[2] || "-1");
+        param = properties_1.jsonCopy(param);
         param.type = match[1];
         return new CoderArray(coerceFunc, getParamCoder(coerceFunc, param), size, param.name);
     }
@@ -12622,7 +12595,7 @@ var AbiCoder = /** @class */ (function () {
                 typeObject = parseParam(type);
             }
             else {
-                typeObject = properties_1.jsonCopy(type);
+                typeObject = type;
             }
             coders.push(getParamCoder(this.coerceFunc, typeObject));
         }, this);
@@ -13338,6 +13311,8 @@ exports.getIcapAddress = address_1.getIcapAddress;
 var abi_coder_1 = require("./abi-coder");
 exports.AbiCoder = abi_coder_1.AbiCoder;
 exports.defaultAbiCoder = abi_coder_1.defaultAbiCoder;
+exports.formatSignature = abi_coder_1.formatSignature;
+exports.formatParamType = abi_coder_1.formatParamType;
 exports.parseSignature = abi_coder_1.parseSignature;
 exports.parseParamType = abi_coder_1.parseParamType;
 var base64 = __importStar(require("./base64"));

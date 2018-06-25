@@ -248,6 +248,16 @@ function parseParamType(type) {
     return parseParam(type, true);
 }
 exports.parseParamType = parseParamType;
+// @TODO: Allow a second boolean to expose names
+function formatParamType(paramType) {
+    return getParamCoder(exports.defaultCoerceFunc, paramType).type;
+}
+exports.formatParamType = formatParamType;
+// @TODO: Allow a second boolean to expose names and modifiers
+function formatSignature(fragment) {
+    return fragment.name + '(' + fragment.inputs.map(function (i) { return formatParamType(i); }).join(',') + ')';
+}
+exports.formatSignature = formatSignature;
 function parseSignature(fragment) {
     if (typeof (fragment) === 'string') {
         // Make sure the "returns" is surrounded by a space and all whitespace is exactly one space
@@ -815,6 +825,7 @@ function getParamCoder(coerceFunc, param) {
     var match = param.type.match(paramTypeArray);
     if (match) {
         var size = parseInt(match[2] || "-1");
+        param = properties_1.jsonCopy(param);
         param.type = match[1];
         return new CoderArray(coerceFunc, getParamCoder(coerceFunc, param), size, param.name);
     }
@@ -855,7 +866,7 @@ var AbiCoder = /** @class */ (function () {
                 typeObject = parseParam(type);
             }
             else {
-                typeObject = properties_1.jsonCopy(type);
+                typeObject = type;
             }
             coders.push(getParamCoder(this.coerceFunc, typeObject));
         }, this);

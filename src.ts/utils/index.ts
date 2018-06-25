@@ -4,7 +4,7 @@
 //var unorm = require('unorm');
 
 import { getAddress, getContractAddress, getIcapAddress } from './address';
-import { AbiCoder, defaultAbiCoder, parseSignature, parseParamType } from './abi-coder';
+import { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from './abi-coder';
 import * as base64 from './base64';
 import { BigNumber, bigNumberify } from './bignumber';
 import { arrayify, concat, hexlify, joinSignature, padZeros, splitSignature, stripZeros } from './bytes';
@@ -31,6 +31,8 @@ const etherSymbol = '\u039e';
 export {
     AbiCoder,
     defaultAbiCoder,
+    formatSignature,
+    formatParamType,
     parseSignature,
     parseParamType,
 
