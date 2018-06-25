@@ -87,6 +87,7 @@ describe('Test Contract Objects', function() {
     });
 
     it('ABIv2 parameters and return types work', function() {
+        this.timeout(120000);
         var p0 = '0x06B5955A67D827CDF91823E3bB8F069e6c89c1D6';
         var p0_0f = '0x06B5955a67d827cDF91823e3bB8F069E6c89c1e5';
         var p0_f0 = '0x06b5955a67D827CDF91823e3Bb8F069E6C89c2C6';
@@ -118,12 +119,14 @@ describe('Test Contract Objects', function() {
     });
 
     it('collapses single argument solidity methods', function() {
+        this.timeout(120000);
         return contract.testSingleResult(4).then(function(result) {
             assert.equal(result, 5, 'single value returned');
         });
     });
 
     it('does not collapses multi argument solidity methods', function() {
+        this.timeout(120000);
         return contract.testMultiResult(6).then(function(result) {
             assert.equal(result[0], 7, 'multi value [0] returned');
             assert.equal(result[1], 8, 'multi value [1] returned');
