@@ -18,7 +18,7 @@ import * as RLP from './rlp';
 import { toUtf8Bytes, toUtf8String } from './utf8';
 import { formatEther, parseEther, formatUnits, parseUnits } from './units';
 import { fetchJson } from './web';
-import { parse as parseTransaction } from './transaction';
+import { parse as parseTransaction, serialize as serializeTransaction } from './transaction';
 
 import * as errors from './errors';
 
@@ -90,6 +90,7 @@ export {
     joinSignature,
 
     parseTransaction,
+    serializeTransaction,
 
     errors
 }
@@ -154,6 +155,7 @@ export default {
     joinSignature,
 
     parseTransaction,
+    serializeTransaction,
 
     errors
 }

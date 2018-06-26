@@ -493,7 +493,7 @@ var ProviderSigner = /** @class */ (function (_super) {
         return this._addressPromise;
     };
     ProviderSigner.prototype.signMessage = function (message) {
-        return Promise.resolve(bytes_1.joinSignature(this.signDigest(hash_1.hashMessage(message))));
+        return Promise.resolve(bytes_1.joinSignature(this.signDigest(bytes_1.arrayify(hash_1.hashMessage(message)))));
     };
     ProviderSigner.prototype.sendTransaction = function (transaction) {
         var _this = this;
@@ -513,7 +513,7 @@ var ProviderSigner = /** @class */ (function (_super) {
             transaction.gasPrice = this.provider.getGasPrice();
         }
         return properties_1.resolveProperties(transaction).then(function (tx) {
-            var signedTx = transaction_1.sign(tx, _this.signDigest);
+            var signedTx = transaction_1.serialize(tx, _this.signDigest);
             return _this._addressPromise.then(function (address) {
                 if (transaction_1.parse(signedTx).from !== address) {
                     errors.throwError('signing address does not match expected address', errors.UNKNOWN_ERROR, { address: transaction_1.parse(signedTx).from, expectedAddress: address, signedTransaction: signedTx });

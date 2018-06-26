@@ -66,6 +66,7 @@ var web_1 = require("./web");
 exports.fetchJson = web_1.fetchJson;
 var transaction_1 = require("./transaction");
 exports.parseTransaction = transaction_1.parse;
+exports.serializeTransaction = transaction_1.serialize;
 var errors = __importStar(require("./errors"));
 exports.errors = errors;
 // NFKD (decomposed)
@@ -114,5 +115,6 @@ exports.default = {
     splitSignature: bytes_1.splitSignature,
     joinSignature: bytes_1.joinSignature,
     parseTransaction: transaction_1.parse,
+    serializeTransaction: transaction_1.serialize,
     errors: errors
 };

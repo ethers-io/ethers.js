@@ -6,6 +6,8 @@ import { keccak256 } from './keccak256';
 import { recoverAddress, Signature } from './secp256k1';
 import * as RLP from './rlp';
 
+import * as errors from './errors';
+
 export type UnsignedTransaction = {
     to?: string;
     nonce?: number;
@@ -59,9 +61,9 @@ var transactionFields = [
 ];
 
 
-export type SignDigestFunc = (digest: Arrayish) => Signature;
+export type SignDigestFunc = (digest: Uint8Array) => Signature;
 
-export function sign(transaction: UnsignedTransaction, signDigest: SignDigestFunc): string {
+export function serialize(transaction: UnsignedTransaction, signDigest?: SignDigestFunc): string {
 
     var raw: Array<string | Uint8Array> = [];
 
@@ -71,53 +73,38 @@ export function sign(transaction: UnsignedTransaction, signDigest: SignDigestFun
 
         // Fixed-width field
         if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
-            let error: any = new Error('invalid ' + fieldInfo.name);
-            error.reason = 'wrong length';
-            error.value = value;
-            throw error;
+            errors.throwError('invalid length for ' + fieldInfo.name, errors.INVALID_ARGUMENT, { arg: ('transaction' + fieldInfo.name), value: value });
         }
 
         // Variable-width (with a maximum)
         if (fieldInfo.maxLength) {
             value = stripZeros(value);
             if (value.length > fieldInfo.maxLength) {
-                let error: any = new Error('invalid ' + fieldInfo.name);
-                error.reason = 'too long';
-                error.value = value;
-                throw error;
+                errors.throwError('invalid length for ' + fieldInfo.name, errors.INVALID_ARGUMENT, { arg: ('transaction' + fieldInfo.name), value: value });
             }
         }
 
         raw.push(hexlify(value));
     });
 
-    // @TOOD:
-    /*
-    // Requesting an unsigned transation
-    if (!signDigest) {
-        let v = 27 + signature.recoveryParam
-        if (transaction.chainId) {
-            v += transaction.chainId * 2 + 8;
-        }
-        //raw.push(hexlify(transaction.chainId));
-        raw.push(hexlify(v));
-        raw.push('0x');
-        raw.push('0x');
-    }
-    */
-
-    if (transaction.chainId) {
+    if (transaction.chainId && transaction.chainId !== 0) {
         raw.push(hexlify(transaction.chainId));
         raw.push('0x');
         raw.push('0x');
     }
 
+    // Requesting an unsigned transation
+    if (!signDigest) {
+        return RLP.encode(raw);
+    }
+
     var digest = keccak256(RLP.encode(raw));
 
-    var signature = signDigest(digest);
+    var signature = signDigest(arrayify(digest));
 
+    // We pushed a chainId and null r, s on for hashing only; remove those
     var v = 27 + signature.recoveryParam
-    if (transaction.chainId) {
+    if (raw.length === 9) {
         raw.pop();
         raw.pop();
         raw.pop();
@@ -132,48 +119,60 @@ export function sign(transaction: UnsignedTransaction, signDigest: SignDigestFun
 }
 
 export function parse(rawTransaction: Arrayish): Transaction {
-    var signedTransaction = RLP.decode(rawTransaction);
-    if (signedTransaction.length !== 9) { throw new Error('invalid transaction'); }
+    let transaction = RLP.decode(rawTransaction);
+    if (transaction.length !== 9 && transaction.length !== 6) {
+        errors.throwError('invalid raw transaction', errors.INVALID_ARGUMENT, { arg: 'rawTransactin', value: rawTransaction });
+    }
 
     let tx: Transaction = {
-        nonce:    handleNumber(signedTransaction[0]).toNumber(),
-        gasPrice: handleNumber(signedTransaction[1]),
-        gasLimit: handleNumber(signedTransaction[2]),
-        to:       handleAddress(signedTransaction[3]),
-        value:    handleNumber(signedTransaction[4]),
-        data:     signedTransaction[5],
+        nonce:    handleNumber(transaction[0]).toNumber(),
+        gasPrice: handleNumber(transaction[1]),
+        gasLimit: handleNumber(transaction[2]),
+        to:       handleAddress(transaction[3]),
+        value:    handleNumber(transaction[4]),
+        data:     transaction[5],
         chainId:  0
     };
 
-    var v = arrayify(signedTransaction[6]);
-    var r = arrayify(signedTransaction[7]);
-    var s = arrayify(signedTransaction[8]);
+    // Legacy unsigned transaction
+    if (transaction.length === 6) { return tx; }
 
-    if (v.length >= 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
-        tx.v = bigNumberify(v).toNumber();
-        tx.r = hexZeroPad(signedTransaction[7], 32);
-        tx.s = hexZeroPad(signedTransaction[8], 32);
+    try {
+        tx.v = bigNumberify(transaction[6]).toNumber();
 
-        var chainId = (tx.v - 35) / 2;
-        if (chainId < 0) { chainId = 0; }
-        chainId = Math.floor(chainId);
+    } catch (error) {
+        console.log(error);
+        return tx;
+    }
 
-        tx.chainId = chainId;
+    tx.r = hexZeroPad(transaction[7], 32);
+    tx.s = hexZeroPad(transaction[8], 32);
+
+    if (bigNumberify(tx.r).isZero() && bigNumberify(tx.s).isZero()) {
+        // EIP-155 unsigned transaction
+        tx.chainId = tx.v;
+        tx.v = 0;
+
+    } else {
+        // Signed Tranasaction
+
+        tx.chainId = Math.floor((tx.v - 35) / 2);
+        if (tx.chainId < 0) { tx.chainId = 0; }
 
         var recoveryParam = tx.v - 27;
 
-        let raw = signedTransaction.slice(0, 6);
+        let raw = transaction.slice(0, 6);
 
-        if (chainId) {
-            raw.push(hexlify(chainId));
+        if (tx.chainId !== 0) {
+            raw.push(hexlify(tx.chainId));
             raw.push('0x');
             raw.push('0x');
-            recoveryParam -= chainId * 2 + 8;
+            recoveryParam -= tx.chainId * 2 + 8;
         }
 
         var digest = keccak256(RLP.encode(raw));
         try {
-            tx.from = recoverAddress(digest, { r: hexlify(r), s: hexlify(s), recoveryParam: recoveryParam });
+            tx.from = recoverAddress(digest, { r: hexlify(tx.r), s: hexlify(tx.s), recoveryParam: recoveryParam });
         } catch (error) {
             console.log(error);
         }

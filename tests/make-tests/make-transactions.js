@@ -3,6 +3,23 @@
 var ethereumUtil = require('ethereumjs-util');
 var ethereumTx = require('ethereumjs-tx');
 
+ethereumTx.prototype.serializeUnsigned = function() {
+    let items
+    if (this._chainId > 0) {
+        const raw = this.raw.slice()
+        this.v = this._chainId
+        this.r = 0
+        this.s = 0
+        items = this.raw
+        this.raw = raw
+    } else {
+        items = this.raw.slice(0, 6)
+    }
+
+   // create hash
+    return ethereumUtil.rlp.encode(items)
+}
+
 var utils = require('../utils.js');
 
 
@@ -16,12 +33,17 @@ function addTransaction(privateKey, name, transaction, signature) {
     var rawTransactionEip155 = new ethereumTx(transaction);
     delete transaction['chainId'];
 
+console.log(rawTransaction, rawTransaction.serialize().toString('hex'));
+console.log(rawTransactionEip155, rawTransactionEip155.serialize().toString('hex'));
+console.log(rawTransactionEip155.serialize().toString('hex') === rawTransaction.serialize().toString('hex'));
+console.log('------');
+
     var test = {
         accountAddress: '0x' + ethereumUtil.privateToAddress(privateKey).toString('hex'),
         name: name,
         privateKey: '0x' + privateKey.toString('hex'),
-        unsignedTransaction: '0x' + rawTransaction.serialize().toString('hex'),
-        unsignedTransactionChainId5: '0x' + rawTransactionEip155.serialize().toString('hex'),
+        unsignedTransaction: '0x' + rawTransaction.serializeUnsigned().toString('hex'),
+        unsignedTransactionChainId5: '0x' + rawTransactionEip155.serializeUnsigned().toString('hex'),
     }
 
     rawTransaction.sign(privateKey);

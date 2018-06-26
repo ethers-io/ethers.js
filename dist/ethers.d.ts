@@ -110,10 +110,10 @@ declare module 'ethers/utils' {
     import { toUtf8Bytes, toUtf8String } from 'ethers/utils/utf8';
     import { formatEther, parseEther, formatUnits, parseUnits } from 'ethers/utils/units';
     import { fetchJson } from 'ethers/utils/web';
-    import { parse as parseTransaction } from 'ethers/utils/transaction';
+    import { parse as parseTransaction, serialize as serializeTransaction } from 'ethers/utils/transaction';
     import * as errors from 'ethers/utils/errors';
     const etherSymbol = "\u039E";
-    export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, etherSymbol, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, BigNumber, hexlify, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, errors };
+    export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, etherSymbol, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, BigNumber, hexlify, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, errors };
     const _default: {
         AbiCoder: typeof AbiCoder;
         defaultAbiCoder: AbiCoder;
@@ -155,6 +155,7 @@ declare module 'ethers/utils' {
         splitSignature: typeof splitSignature;
         joinSignature: typeof joinSignature;
         parseTransaction: typeof parseTransaction;
+        serializeTransaction: typeof serializeTransaction;
         errors: typeof errors;
     };
     export default _default;
@@ -738,8 +739,8 @@ declare module 'ethers/utils/transaction' {
         s?: string;
         v?: number;
     }
-    export type SignDigestFunc = (digest: Arrayish) => Signature;
-    export function sign(transaction: UnsignedTransaction, signDigest: SignDigestFunc): string;
+    export type SignDigestFunc = (digest: Uint8Array) => Signature;
+    export function serialize(transaction: UnsignedTransaction, signDigest?: SignDigestFunc): string;
     export function parse(rawTransaction: Arrayish): Transaction;
 }
 

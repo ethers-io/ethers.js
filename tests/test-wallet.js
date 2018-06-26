@@ -10,31 +10,6 @@ if (global.ethers) {
     var ethers = require('..');
 }
 
-/* // Brain Wallets are discontinued
-describe('Test Brain Wallets', function() {
-    var Wallet = ethers.Wallet;
-
-    var tests = [
-        {
-            address: '0xbed9d2E41BdD066f702C4bDB86eB3A3740101acC',
-            name: 'simple brain wallet',
-            password: 'password',
-            username: 'ricmoo'
-        }
-    ];
-
-    tests.forEach(function(test) {
-        it(('computes the brain wallet for ' + test.name), function() {
-            this.timeout(1000000);
-            return Wallet.fromBrainWallet(test.username, test.password).then(function(wallet) {
-                assert.equal(wallet.address, test.address,
-                    'computed brain wallet for ' + test.username + ':' + test.password);
-            });
-        });
-    });
-});
-*/
-
 describe('Test JSON Wallets', function() {
     var Wallet = ethers.Wallet;
     var tests = utils.loadTests('wallets');
@@ -80,94 +55,110 @@ describe('Test JSON Wallets', function() {
     });
 });
 
-describe('Test Transaction Signing and Parsing', function() {
-    var Wallet = ethers.Wallet;
+function checkTransaction(parsedTransaction, test) {
+    var transaction = {};
 
-    var getAddress = ethers.utils.getAddress;
+    ['nonce', 'gasLimit', 'gasPrice', 'to', 'value', 'data'].forEach(function(key) {
+        var expected = test[key];
+
+        var value = parsedTransaction[key];
+
+        if ({ gasLimit: 1, gasPrice: 1, value: 1 }[key]) {
+            assert.ok((!!value._bn),
+                'parsed into a big number - ' + key);
+            value = value.toHexString();
+
+            if (!expected || expected === '0x') { expected = '0x00'; }
+
+        } else if (key === 'nonce') {
+            assert.equal(typeof(value), 'number',
+                'parse into a number - nonce');
+
+            value = utils.hexlify(value);
+
+            if (!expected || expected === '0x') { expected = '0x00'; }
+
+        } else if (key === 'data') {
+            if (!expected) { expected = '0x'; }
+
+        } else if (key === 'to') {
+            if (value) {
+                // Make sure teh address is valid
+                ethers.utils.getAddress(value);
+                value = value.toLowerCase();
+            }
+        }
+
+        assert.equal(value, expected, 'parses ' + key + ' (legacy)');
+
+        transaction[key] = test[key];
+    });
+
+    return transaction;
+}
+
+describe('Test Transaction Signing and Parsing', function() {
 
     var tests = utils.loadTests('transactions');
     tests.forEach(function(test) {
         it(('parses and signs transaction - ' + test.name), function() {
-            var wallet = new Wallet(test.privateKey);
+            var signingKey = new ethers.SigningKey(test.privateKey);
+            var signDigest = signingKey.signDigest.bind(signingKey);
 
-            var transaction = {};
+            // Legacy parsing unsigned transaction
+            checkTransaction(ethers.utils.parseTransaction(test.unsignedTransaction), test);
 
             var parsedTransaction = ethers.utils.parseTransaction(test.signedTransaction);
+            var transaction = checkTransaction(parsedTransaction, test);
 
-            ['nonce', 'gasLimit', 'gasPrice', 'to', 'value', 'data'].forEach(function(key) {
-                var expected = test[key];
-
-                var value = parsedTransaction[key];
-
-                if ({ gasLimit: 1, gasPrice: 1, value: 1 }[key]) {
-                    assert.ok((!!value._bn),
-                        'parsed into a big number - ' + key);
-                    value = value.toHexString();
-
-                    if (!expected || expected === '0x') { expected = '0x00'; }
-
-                } else if (key === 'nonce') {
-                    assert.equal(typeof(value), 'number',
-                        'parse into a number - nonce');
-
-                    value = utils.hexlify(value);
-
-                    if (!expected || expected === '0x') { expected = '0x00'; }
-
-                } else if (key === 'data') {
-                    if (!expected) { expected = '0x'; }
-
-                } else if (key === 'to') {
-                    if (value) {
-                        // Make sure teh address is valid
-                        getAddress(value);
-                        value = value.toLowerCase();
-                    }
-                }
-
-                assert.equal(value, expected, 'parsed ' + key);
-
-                transaction[key] = test[key];
-            });
-
-            assert.equal(parsedTransaction.from, getAddress(test.accountAddress),
+            // Legacy signed transaction ecrecover
+            assert.equal(parsedTransaction.from, ethers.utils.getAddress(test.accountAddress),
                 'computed from');
 
-            assert.equal(parsedTransaction.chainId, 0, 'parsed chainId');
+            // Legacy transaction chain ID
+            assert.equal(parsedTransaction.chainId, 0, 'parses chainId (legacy)');
 
-            var seq = Promise.resolve();
+            // Legacy serializes unsigned transaction
+            assert.equal(ethers.utils.serializeTransaction(transaction), test.unsignedTransaction,
+                'serializes undsigned transaction (legacy)');
 
-            var async1 = ethers.utils.shallowCopy(transaction);
-            seq = seq.then(function() {
-                var signedTransaction = wallet.sign(async1).then(function(signedTransaction) {
-                    assert.equal(signedTransaction, test.signedTransaction, 'signed transaction');
-                });
-            });
+            // Legacy signed serialized transaction
+            assert.equal(ethers.utils.serializeTransaction(transaction, signDigest), test.signedTransaction,
+                'signs transaction (legacy)');
+
 
             // EIP155
 
+            // EIP-155 parsing unsigned transaction
+            var parsedUnsignedTransactionChainId5 = ethers.utils.parseTransaction(test.unsignedTransactionChainId5);
+            checkTransaction(parsedUnsignedTransactionChainId5, test);
+            assert.equal(parsedUnsignedTransactionChainId5.chainId, 5, 'parses chainId (eip155)');
+
+            // EIP-155 fields
             var parsedTransactionChainId5 = ethers.utils.parseTransaction(test.signedTransactionChainId5);
             ['data', 'from', 'nonce', 'to'].forEach(function (key) {
                 assert.equal(parsedTransaction[key], parsedTransactionChainId5[key],
-                    'eip155 parsed ' + key);
+                    'parses ' + key + ' (eip155)');
             });
+
             ['gasLimit', 'gasPrice', 'value'].forEach(function (key) {
                 assert.ok(parsedTransaction[key].eq(parsedTransactionChainId5[key]),
-                    'eip155 parsed ' + key);
+                    'parses ' + key + ' (eip155)');
             });
+
+            // EIP-155 chain ID
             assert.equal(parsedTransactionChainId5.chainId, 5,
-                'eip155 parsed chainId');
+                'parses chainId (eip155)');
 
+            transaction.chainId = 5;
 
-            var async2 = ethers.utils.shallowCopy(transaction);
-            seq = seq.then(function() {
-                async2.chainId = 5;
-                var signedTransaction = wallet.sign(async2).then(function(signedTransactionChainId5) {
-                    assert.equal(signedTransactionChainId5, test.signedTransactionChainId5, 'eip155 signed transaction');
-                });
-            });
+            // EIP-155 signed serialized transaction
+            assert.equal(ethers.utils.serializeTransaction(transaction, signDigest), test.signedTransactionChainId5,
+                'signs transaction (eip155)');
 
-            return seq;
+            // EIP-155 serialized unsigned transaction
+            assert.equal(ethers.utils.serializeTransaction(transaction), test.unsignedTransactionChainId5,
+                'serializes unsigned transaction (eip155) ');
         });
     });
 });

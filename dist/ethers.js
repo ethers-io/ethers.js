@@ -10951,7 +10951,7 @@ var ProviderSigner = /** @class */ (function (_super) {
         return this._addressPromise;
     };
     ProviderSigner.prototype.signMessage = function (message) {
-        return Promise.resolve(bytes_1.joinSignature(this.signDigest(hash_1.hashMessage(message))));
+        return Promise.resolve(bytes_1.joinSignature(this.signDigest(bytes_1.arrayify(hash_1.hashMessage(message)))));
     };
     ProviderSigner.prototype.sendTransaction = function (transaction) {
         var _this = this;
@@ -10971,7 +10971,7 @@ var ProviderSigner = /** @class */ (function (_super) {
             transaction.gasPrice = this.provider.getGasPrice();
         }
         return properties_1.resolveProperties(transaction).then(function (tx) {
-            var signedTx = transaction_1.sign(tx, _this.signDigest);
+            var signedTx = transaction_1.serialize(tx, _this.signDigest);
             return _this._addressPromise.then(function (address) {
                 if (transaction_1.parse(signedTx).from !== address) {
                     errors.throwError('signing address does not match expected address', errors.UNKNOWN_ERROR, { address: transaction_1.parse(signedTx).from, expectedAddress: address, signedTransaction: signedTx });
@@ -13361,6 +13361,7 @@ var web_1 = require("./web");
 exports.fetchJson = web_1.fetchJson;
 var transaction_1 = require("./transaction");
 exports.parseTransaction = transaction_1.parse;
+exports.serializeTransaction = transaction_1.serialize;
 var errors = __importStar(require("./errors"));
 exports.errors = errors;
 // NFKD (decomposed)
@@ -13409,6 +13410,7 @@ exports.default = {
     splitSignature: bytes_1.splitSignature,
     joinSignature: bytes_1.joinSignature,
     parseTransaction: transaction_1.parse,
+    serializeTransaction: transaction_1.serialize,
     errors: errors
 };
 
@@ -13800,6 +13802,7 @@ var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
 var secp256k1_1 = require("./secp256k1");
 var RLP = __importStar(require("./rlp"));
+var errors = __importStar(require("./errors"));
 function handleAddress(value) {
     if (value === '0x') {
         return null;
@@ -13820,53 +13823,38 @@ var transactionFields = [
     { name: 'value', maxLength: 32 },
     { name: 'data' },
 ];
-function sign(transaction, signDigest) {
+function serialize(transaction, signDigest) {
     var raw = [];
     transactionFields.forEach(function (fieldInfo) {
         var value = transaction[fieldInfo.name] || ([]);
         value = bytes_1.arrayify(bytes_1.hexlify(value));
         // Fixed-width field
         if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
-            var error = new Error('invalid ' + fieldInfo.name);
-            error.reason = 'wrong length';
-            error.value = value;
-            throw error;
+            errors.throwError('invalid length for ' + fieldInfo.name, errors.INVALID_ARGUMENT, { arg: ('transaction' + fieldInfo.name), value: value });
         }
         // Variable-width (with a maximum)
         if (fieldInfo.maxLength) {
             value = bytes_1.stripZeros(value);
             if (value.length > fieldInfo.maxLength) {
-                var error = new Error('invalid ' + fieldInfo.name);
-                error.reason = 'too long';
-                error.value = value;
-                throw error;
+                errors.throwError('invalid length for ' + fieldInfo.name, errors.INVALID_ARGUMENT, { arg: ('transaction' + fieldInfo.name), value: value });
             }
         }
         raw.push(bytes_1.hexlify(value));
     });
-    // @TOOD:
-    /*
-    // Requesting an unsigned transation
-    if (!signDigest) {
-        let v = 27 + signature.recoveryParam
-        if (transaction.chainId) {
-            v += transaction.chainId * 2 + 8;
-        }
-        //raw.push(hexlify(transaction.chainId));
-        raw.push(hexlify(v));
-        raw.push('0x');
-        raw.push('0x');
-    }
-    */
-    if (transaction.chainId) {
+    if (transaction.chainId && transaction.chainId !== 0) {
         raw.push(bytes_1.hexlify(transaction.chainId));
         raw.push('0x');
         raw.push('0x');
     }
+    // Requesting an unsigned transation
+    if (!signDigest) {
+        return RLP.encode(raw);
+    }
     var digest = keccak256_1.keccak256(RLP.encode(raw));
-    var signature = signDigest(digest);
+    var signature = signDigest(bytes_1.arrayify(digest));
+    // We pushed a chainId and null r, s on for hashing only; remove those
     var v = 27 + signature.recoveryParam;
-    if (transaction.chainId) {
+    if (raw.length === 9) {
         raw.pop();
         raw.pop();
         raw.pop();
@@ -13877,45 +13865,56 @@ function sign(transaction, signDigest) {
     raw.push(bytes_1.stripZeros(bytes_1.arrayify(signature.s)));
     return RLP.encode(raw);
 }
-exports.sign = sign;
+exports.serialize = serialize;
 function parse(rawTransaction) {
-    var signedTransaction = RLP.decode(rawTransaction);
-    if (signedTransaction.length !== 9) {
-        throw new Error('invalid transaction');
+    var transaction = RLP.decode(rawTransaction);
+    if (transaction.length !== 9 && transaction.length !== 6) {
+        errors.throwError('invalid raw transaction', errors.INVALID_ARGUMENT, { arg: 'rawTransactin', value: rawTransaction });
     }
     var tx = {
-        nonce: handleNumber(signedTransaction[0]).toNumber(),
-        gasPrice: handleNumber(signedTransaction[1]),
-        gasLimit: handleNumber(signedTransaction[2]),
-        to: handleAddress(signedTransaction[3]),
-        value: handleNumber(signedTransaction[4]),
-        data: signedTransaction[5],
+        nonce: handleNumber(transaction[0]).toNumber(),
+        gasPrice: handleNumber(transaction[1]),
+        gasLimit: handleNumber(transaction[2]),
+        to: handleAddress(transaction[3]),
+        value: handleNumber(transaction[4]),
+        data: transaction[5],
         chainId: 0
     };
-    var v = bytes_1.arrayify(signedTransaction[6]);
-    var r = bytes_1.arrayify(signedTransaction[7]);
-    var s = bytes_1.arrayify(signedTransaction[8]);
-    if (v.length >= 1 && r.length >= 1 && r.length <= 32 && s.length >= 1 && s.length <= 32) {
-        tx.v = bignumber_1.bigNumberify(v).toNumber();
-        tx.r = bytes_1.hexZeroPad(signedTransaction[7], 32);
-        tx.s = bytes_1.hexZeroPad(signedTransaction[8], 32);
-        var chainId = (tx.v - 35) / 2;
-        if (chainId < 0) {
-            chainId = 0;
+    // Legacy unsigned transaction
+    if (transaction.length === 6) {
+        return tx;
+    }
+    try {
+        tx.v = bignumber_1.bigNumberify(transaction[6]).toNumber();
+    }
+    catch (error) {
+        console.log(error);
+        return tx;
+    }
+    tx.r = bytes_1.hexZeroPad(transaction[7], 32);
+    tx.s = bytes_1.hexZeroPad(transaction[8], 32);
+    if (bignumber_1.bigNumberify(tx.r).isZero() && bignumber_1.bigNumberify(tx.s).isZero()) {
+        // EIP-155 unsigned transaction
+        tx.chainId = tx.v;
+        tx.v = 0;
+    }
+    else {
+        // Signed Tranasaction
+        tx.chainId = Math.floor((tx.v - 35) / 2);
+        if (tx.chainId < 0) {
+            tx.chainId = 0;
         }
-        chainId = Math.floor(chainId);
-        tx.chainId = chainId;
         var recoveryParam = tx.v - 27;
-        var raw = signedTransaction.slice(0, 6);
-        if (chainId) {
-            raw.push(bytes_1.hexlify(chainId));
+        var raw = transaction.slice(0, 6);
+        if (tx.chainId !== 0) {
+            raw.push(bytes_1.hexlify(tx.chainId));
             raw.push('0x');
             raw.push('0x');
-            recoveryParam -= chainId * 2 + 8;
+            recoveryParam -= tx.chainId * 2 + 8;
         }
         var digest = keccak256_1.keccak256(RLP.encode(raw));
         try {
-            tx.from = secp256k1_1.recoverAddress(digest, { r: bytes_1.hexlify(r), s: bytes_1.hexlify(s), recoveryParam: recoveryParam });
+            tx.from = secp256k1_1.recoverAddress(digest, { r: bytes_1.hexlify(tx.r), s: bytes_1.hexlify(tx.s), recoveryParam: recoveryParam });
         }
         catch (error) {
             console.log(error);
@@ -13926,7 +13925,7 @@ function parse(rawTransaction) {
 }
 exports.parse = parse;
 
-},{"./address":59,"./bignumber":60,"./bytes":61,"./keccak256":65,"./rlp":67,"./secp256k1":68}],72:[function(require,module,exports){
+},{"./address":59,"./bignumber":60,"./bytes":61,"./errors":62,"./keccak256":65,"./rlp":67,"./secp256k1":68}],72:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -15126,7 +15125,7 @@ var Wallet = /** @class */ (function (_super) {
     Wallet.prototype.sign = function (transaction) {
         var _this = this;
         return properties_1.resolveProperties(transaction).then(function (tx) {
-            return transaction_1.sign(tx, _this.signingKey.signDigest.bind(_this.signingKey));
+            return transaction_1.serialize(tx, _this.signingKey.signDigest.bind(_this.signingKey));
         });
     };
     Wallet.prototype.signMessage = function (message) {

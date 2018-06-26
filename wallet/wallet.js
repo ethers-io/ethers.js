@@ -80,7 +80,7 @@ var Wallet = /** @class */ (function (_super) {
     Wallet.prototype.sign = function (transaction) {
         var _this = this;
         return properties_1.resolveProperties(transaction).then(function (tx) {
-            return transaction_1.sign(tx, _this.signingKey.signDigest.bind(_this.signingKey));
+            return transaction_1.serialize(tx, _this.signingKey.signDigest.bind(_this.signingKey));
         });
     };
     Wallet.prototype.signMessage = function (message) {

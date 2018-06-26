@@ -14,7 +14,7 @@ import { hashMessage } from '../utils/hash';
 import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { randomBytes } from '../utils/random-bytes';
-import { sign as signTransaction } from '../utils/transaction';
+import { serialize as serializeTransaction } from '../utils/transaction';
 
 import * as errors from '../utils/errors';
 
@@ -71,7 +71,7 @@ export class Wallet extends Signer {
     sign(transaction: TransactionRequest): Promise<string> {
 
         return resolveProperties(transaction).then((tx) => {
-            return signTransaction(tx, this.signingKey.signDigest.bind(this.signingKey));
+            return serializeTransaction(tx, this.signingKey.signDigest.bind(this.signingKey));
         });
     }
 

@@ -6,13 +6,13 @@ import { Signer } from '../wallet/wallet';
 
 import { getAddress, getContractAddress } from '../utils/address';
 import { BigNumber, bigNumberify, BigNumberish } from '../utils/bignumber';
-import { Arrayish, hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, joinSignature, stripZeros } from '../utils/bytes';
+import { arrayify, Arrayish, hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, joinSignature, stripZeros } from '../utils/bytes';
 import { toUtf8String } from '../utils/utf8';
 import { decode as rlpDecode, encode as rlpEncode } from '../utils/rlp';
 import { hashMessage, namehash } from '../utils/hash';
 import { getNetwork, Network, Networkish } from './networks';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
-import { parse as parseTransaction, sign as signTransaction, SignDigestFunc, Transaction } from '../utils/transaction';
+import { parse as parseTransaction, serialize as serializeTransaction, SignDigestFunc, Transaction } from '../utils/transaction';
 
 import * as errors from '../utils/errors';
 
@@ -634,7 +634,7 @@ export class ProviderSigner extends Signer {
     }
 
     signMessage(message: Arrayish | string): Promise<string> {
-        return Promise.resolve(joinSignature(this.signDigest(hashMessage(message))));
+        return Promise.resolve(joinSignature(this.signDigest(arrayify(hashMessage(message)))));
     }
 
     sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
@@ -659,7 +659,7 @@ export class ProviderSigner extends Signer {
         }
 
         return resolveProperties(transaction).then((tx) => {
-            let signedTx = signTransaction(tx, this.signDigest);
+            let signedTx = serializeTransaction(tx, this.signDigest);
             return this._addressPromise.then((address) => {
                 if (parseTransaction(signedTx).from !== address) {
                     errors.throwError('signing address does not match expected address', errors.UNKNOWN_ERROR, { address: parseTransaction(signedTx).from, expectedAddress: address, signedTransaction: signedTx });
