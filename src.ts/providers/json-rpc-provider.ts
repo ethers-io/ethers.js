@@ -119,7 +119,7 @@ export class JsonRpcSigner extends Signer {
         }
 
         return resolveProperties(tx).then((tx) => {
-            return this.provider.send('eth_sendTransaction', [ transaction ]);
+            return this.provider.send('eth_sendTransaction', [ tx ]);
         });
     }
 
@@ -190,7 +190,7 @@ export class JsonRpcProvider extends Provider {
 
     }
 
-    getSigner(address: string): JsonRpcSigner {
+    getSigner(address?: string): JsonRpcSigner {
         return new JsonRpcSigner(this, address);
     }
 

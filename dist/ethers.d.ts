@@ -501,7 +501,7 @@ declare module 'ethers/providers/json-rpc-provider' {
     export class JsonRpcProvider extends Provider {
         readonly connection: ConnectionInfo;
         constructor(url?: ConnectionInfo | string, network?: Networkish);
-        getSigner(address: string): JsonRpcSigner;
+        getSigner(address?: string): JsonRpcSigner;
         listAccounts(): Promise<Array<string>>;
         send(method: string, params: any): Promise<any>;
         perform(method: string, params: any): Promise<any>;

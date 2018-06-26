@@ -10187,7 +10187,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             });
         }
         return properties_1.resolveProperties(tx).then(function (tx) {
-            return _this.provider.send('eth_sendTransaction', [transaction]);
+            return _this.provider.send('eth_sendTransaction', [tx]);
         });
     };
     JsonRpcSigner.prototype.signMessage = function (message) {
