@@ -62,6 +62,9 @@ export interface TransactionResponse extends Transaction {
     // Not optional (as it is in Transaction)
     from: string;
 
+    // The raw transaction
+    raw?: string,
+
     // This function waits until the transaction has been mined
     wait: (timeout?: number) => Promise<TransactionReceipt>
 };
@@ -350,6 +353,7 @@ export function checkTransactionResponse(transaction: any): TransactionResponse 
         transaction.creates = getContractAddress(transaction);
     }
 
+    // @TODO: use transaction.serialize? Have to add support for including v, r, and s...
     if (!transaction.raw) {
         // Very loose providers (e.g. TestRPC) don't provide a signature or raw
         if (transaction.v && transaction.r && transaction.s) {
@@ -960,31 +964,34 @@ export class Provider {
             return resolveProperties({ signedTransaction: signedTransaction }).then(({ signedTransaction }) => {
                 var params = { signedTransaction: hexlify(signedTransaction) };
                 return this.perform('sendTransaction', params).then((hash) => {
-                    if (hexDataLength(hash) !== 32) { throw new Error('invalid response - sendTransaction'); }
-
-                    // A signed transaction always has a from (and we add wait below)
-                    var tx = <TransactionResponse>parseTransaction(signedTransaction);
-
-                    // Check the hash we expect is the same as the hash the server reported
-                    if (tx.hash !== hash) {
-                        errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
-                    }
-                    this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
-                    tx.wait = (timeout?: number) => {
-                        return this.waitForTransaction(hash, timeout).then((receipt) => {
-                            if (receipt.status === 0) {
-                                errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
-                                    transaction: tx
-                                });
-                            }
-                            return receipt;
-                        });
-                    };
-
-                    return tx;
+                    return this._wrapTransaction(signedTransaction, hash);
                 });
             });
         });
+    }
+
+    _wrapTransaction(signedTransaction: string, hash?: string): TransactionResponse {
+        if (hexDataLength(hash) !== 32) { throw new Error('invalid response - sendTransaction'); }
+
+        // A signed transaction always has a from (and we add wait below)
+        var tx = <TransactionResponse>parseTransaction(signedTransaction);
+
+        // Check the hash we expect is the same as the hash the server reported
+        if (tx.hash !== hash) {
+            errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
+        }
+        this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
+        tx.wait = (timeout?: number) => {
+            return this.waitForTransaction(hash, timeout).then((receipt) => {
+                if (receipt.status === 0) {
+                    errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
+                        transaction: tx
+                    });
+                }
+                return receipt;
+            });
+        };
+        return tx;
     }
 
 

@@ -244,6 +244,7 @@ function checkTransactionResponse(transaction) {
     if (transaction.to == null && transaction.creates == null) {
         transaction.creates = address_1.getContractAddress(transaction);
     }
+    // @TODO: use transaction.serialize? Have to add support for including v, r, and s...
     if (!transaction.raw) {
         // Very loose providers (e.g. TestRPC) don't provide a signature or raw
         if (transaction.v && transaction.r && transaction.s) {
@@ -797,30 +798,34 @@ var Provider = /** @class */ (function () {
                 var signedTransaction = _a.signedTransaction;
                 var params = { signedTransaction: bytes_1.hexlify(signedTransaction) };
                 return _this.perform('sendTransaction', params).then(function (hash) {
-                    if (bytes_1.hexDataLength(hash) !== 32) {
-                        throw new Error('invalid response - sendTransaction');
-                    }
-                    // A signed transaction always has a from (and we add wait below)
-                    var tx = transaction_1.parse(signedTransaction);
-                    // Check the hash we expect is the same as the hash the server reported
-                    if (tx.hash !== hash) {
-                        errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
-                    }
-                    _this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
-                    tx.wait = function (timeout) {
-                        return _this.waitForTransaction(hash, timeout).then(function (receipt) {
-                            if (receipt.status === 0) {
-                                errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
-                                    transaction: tx
-                                });
-                            }
-                            return receipt;
-                        });
-                    };
-                    return tx;
+                    return _this._wrapTransaction(signedTransaction, hash);
                 });
             });
         });
+    };
+    Provider.prototype._wrapTransaction = function (signedTransaction, hash) {
+        var _this = this;
+        if (bytes_1.hexDataLength(hash) !== 32) {
+            throw new Error('invalid response - sendTransaction');
+        }
+        // A signed transaction always has a from (and we add wait below)
+        var tx = transaction_1.parse(signedTransaction);
+        // Check the hash we expect is the same as the hash the server reported
+        if (tx.hash !== hash) {
+            errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
+        }
+        this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
+        tx.wait = function (timeout) {
+            return _this.waitForTransaction(hash, timeout).then(function (receipt) {
+                if (receipt.status === 0) {
+                    errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
+                        transaction: tx
+                    });
+                }
+                return receipt;
+            });
+        };
+        return tx;
     };
     Provider.prototype.call = function (transaction) {
         var _this = this;

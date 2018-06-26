@@ -118,7 +118,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     };
     JsonRpcSigner.prototype.sendTransaction = function (transaction) {
         var _this = this;
-        var tx = hexlifyTransaction(transaction);
+        var tx = properties_1.shallowCopy(transaction);
         if (tx.from == null) {
             tx.from = this.getAddress().then(function (address) {
                 if (!address) {
@@ -128,7 +128,28 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             });
         }
         return properties_1.resolveProperties(tx).then(function (tx) {
-            return _this.provider.send('eth_sendTransaction', [tx]);
+            tx = hexlifyTransaction(tx);
+            return _this.provider.send('eth_sendTransaction', [tx]).then(function (hash) {
+                // @TODO: Make a pollProperty method in utils
+                return new Promise(function (resolve, reject) {
+                    var count = 0;
+                    var check = function () {
+                        _this.provider.getTransaction(hash).then(function (tx) {
+                            if (tx == null) {
+                                if (count++ > 500) {
+                                    // @TODO: Better error
+                                    reject(new Error('could not find transaction'));
+                                    return;
+                                }
+                                setTimeout(check, 200);
+                                return;
+                            }
+                            resolve(_this.provider._wrapTransaction(tx.raw, hash));
+                        });
+                    };
+                    setTimeout(check, 50);
+                });
+            });
         });
     };
     JsonRpcSigner.prototype.signMessage = function (message) {

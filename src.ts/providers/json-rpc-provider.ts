@@ -9,7 +9,7 @@ import { Signer } from '../wallet/wallet';
 import { getAddress } from '../utils/address';
 import { BigNumber } from '../utils/bignumber';
 import { Arrayish, hexlify, hexStripZeros } from '../utils/bytes';
-import { defineReadOnly, resolveProperties } from '../utils/properties';
+import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { toUtf8Bytes } from '../utils/utf8';
 import { ConnectionInfo, fetchJson } from '../utils/web';
 
@@ -109,7 +109,7 @@ export class JsonRpcSigner extends Signer {
     }
 
     sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
-        let tx = hexlifyTransaction(transaction);
+        let tx = shallowCopy(transaction);
 
         if (tx.from == null) {
             tx.from = this.getAddress().then((address) => {
@@ -119,7 +119,28 @@ export class JsonRpcSigner extends Signer {
         }
 
         return resolveProperties(tx).then((tx) => {
-            return this.provider.send('eth_sendTransaction', [ tx ]);
+            tx = hexlifyTransaction(tx);
+            return this.provider.send('eth_sendTransaction', [ tx ]).then((hash) => {
+                // @TODO: Make a pollProperty method in utils
+                return new Promise((resolve: (result: TransactionResponse) => void, reject) => {
+                    let count = 0;
+                    let check = () => {
+                        this.provider.getTransaction(hash).then((tx: TransactionResponse) => {
+                            if (tx == null) {
+                                if (count++ > 500) {
+                                    // @TODO: Better error
+                                    reject(new Error('could not find transaction'));
+                                    return;
+                                }
+                                setTimeout(check, 200);
+                                return;
+                            }
+                            resolve(this.provider._wrapTransaction(tx.raw, hash));
+                        });
+                    }
+                    setTimeout(check, 50);
+                });
+            });
         });
     }
 
