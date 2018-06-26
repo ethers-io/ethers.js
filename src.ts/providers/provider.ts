@@ -355,6 +355,7 @@ export function checkTransactionResponse(transaction: any): TransactionResponse 
 
     // @TODO: use transaction.serialize? Have to add support for including v, r, and s...
     if (!transaction.raw) {
+
         // Very loose providers (e.g. TestRPC) don't provide a signature or raw
         if (transaction.v && transaction.r && transaction.s) {
             var raw = [
@@ -964,24 +965,25 @@ export class Provider {
             return resolveProperties({ signedTransaction: signedTransaction }).then(({ signedTransaction }) => {
                 var params = { signedTransaction: hexlify(signedTransaction) };
                 return this.perform('sendTransaction', params).then((hash) => {
-                    return this._wrapTransaction(signedTransaction, hash);
+                    return this._wrapTransaction(parseTransaction(signedTransaction), hash);
                 });
             });
         });
     }
 
-    _wrapTransaction(signedTransaction: string, hash?: string): TransactionResponse {
+    // This should be called by any subclass wrapping a TransactionResponse
+    _wrapTransaction(tx: Transaction, hash?: string): TransactionResponse {
         if (hexDataLength(hash) !== 32) { throw new Error('invalid response - sendTransaction'); }
 
-        // A signed transaction always has a from (and we add wait below)
-        var tx = <TransactionResponse>parseTransaction(signedTransaction);
+        let result: TransactionResponse = <TransactionResponse>tx;
 
         // Check the hash we expect is the same as the hash the server reported
-        if (tx.hash !== hash) {
+        if (hash != null && tx.hash !== hash) {
             errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
+
         this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
-        tx.wait = (timeout?: number) => {
+        result.wait = (timeout?: number) => {
             return this.waitForTransaction(hash, timeout).then((receipt) => {
                 if (receipt.status === 0) {
                     errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
@@ -991,7 +993,8 @@ export class Provider {
                 return receipt;
             });
         };
-        return tx;
+
+        return result;
     }
 
 

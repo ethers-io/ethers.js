@@ -798,24 +798,24 @@ var Provider = /** @class */ (function () {
                 var signedTransaction = _a.signedTransaction;
                 var params = { signedTransaction: bytes_1.hexlify(signedTransaction) };
                 return _this.perform('sendTransaction', params).then(function (hash) {
-                    return _this._wrapTransaction(signedTransaction, hash);
+                    return _this._wrapTransaction(transaction_1.parse(signedTransaction), hash);
                 });
             });
         });
     };
-    Provider.prototype._wrapTransaction = function (signedTransaction, hash) {
+    // This should be called by any subclass wrapping a TransactionResponse
+    Provider.prototype._wrapTransaction = function (tx, hash) {
         var _this = this;
         if (bytes_1.hexDataLength(hash) !== 32) {
             throw new Error('invalid response - sendTransaction');
         }
-        // A signed transaction always has a from (and we add wait below)
-        var tx = transaction_1.parse(signedTransaction);
+        var result = tx;
         // Check the hash we expect is the same as the hash the server reported
-        if (tx.hash !== hash) {
+        if (hash != null && tx.hash !== hash) {
             errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
         this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
-        tx.wait = function (timeout) {
+        result.wait = function (timeout) {
             return _this.waitForTransaction(hash, timeout).then(function (receipt) {
                 if (receipt.status === 0) {
                     errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
@@ -825,7 +825,7 @@ var Provider = /** @class */ (function () {
                 return receipt;
             });
         };
-        return tx;
+        return result;
     };
     Provider.prototype.call = function (transaction) {
         var _this = this;

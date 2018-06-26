@@ -144,7 +144,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                                 setTimeout(check, 200);
                                 return;
                             }
-                            resolve(_this.provider._wrapTransaction(tx.raw, hash));
+                            resolve(_this.provider._wrapTransaction(tx, hash));
                         });
                     };
                     setTimeout(check, 50);

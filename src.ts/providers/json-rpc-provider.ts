@@ -135,7 +135,7 @@ export class JsonRpcSigner extends Signer {
                                 setTimeout(check, 200);
                                 return;
                             }
-                            resolve(this.provider._wrapTransaction(tx.raw, hash));
+                            resolve(this.provider._wrapTransaction(tx, hash));
                         });
                     }
                     setTimeout(check, 50);

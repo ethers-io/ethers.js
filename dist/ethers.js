@@ -10177,7 +10177,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     };
     JsonRpcSigner.prototype.sendTransaction = function (transaction) {
         var _this = this;
-        var tx = hexlifyTransaction(transaction);
+        var tx = properties_1.shallowCopy(transaction);
         if (tx.from == null) {
             tx.from = this.getAddress().then(function (address) {
                 if (!address) {
@@ -10187,7 +10187,28 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             });
         }
         return properties_1.resolveProperties(tx).then(function (tx) {
-            return _this.provider.send('eth_sendTransaction', [tx]);
+            tx = hexlifyTransaction(tx);
+            return _this.provider.send('eth_sendTransaction', [tx]).then(function (hash) {
+                // @TODO: Make a pollProperty method in utils
+                return new Promise(function (resolve, reject) {
+                    var count = 0;
+                    var check = function () {
+                        _this.provider.getTransaction(hash).then(function (tx) {
+                            if (tx == null) {
+                                if (count++ > 500) {
+                                    // @TODO: Better error
+                                    reject(new Error('could not find transaction'));
+                                    return;
+                                }
+                                setTimeout(check, 200);
+                                return;
+                            }
+                            resolve(_this.provider._wrapTransaction(tx, hash));
+                        });
+                    };
+                    setTimeout(check, 50);
+                });
+            });
         });
     };
     JsonRpcSigner.prototype.signMessage = function (message) {
@@ -10702,6 +10723,7 @@ function checkTransactionResponse(transaction) {
     if (transaction.to == null && transaction.creates == null) {
         transaction.creates = address_1.getContractAddress(transaction);
     }
+    // @TODO: use transaction.serialize? Have to add support for including v, r, and s...
     if (!transaction.raw) {
         // Very loose providers (e.g. TestRPC) don't provide a signature or raw
         if (transaction.v && transaction.r && transaction.s) {
@@ -11255,30 +11277,34 @@ var Provider = /** @class */ (function () {
                 var signedTransaction = _a.signedTransaction;
                 var params = { signedTransaction: bytes_1.hexlify(signedTransaction) };
                 return _this.perform('sendTransaction', params).then(function (hash) {
-                    if (bytes_1.hexDataLength(hash) !== 32) {
-                        throw new Error('invalid response - sendTransaction');
-                    }
-                    // A signed transaction always has a from (and we add wait below)
-                    var tx = transaction_1.parse(signedTransaction);
-                    // Check the hash we expect is the same as the hash the server reported
-                    if (tx.hash !== hash) {
-                        errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
-                    }
-                    _this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
-                    tx.wait = function (timeout) {
-                        return _this.waitForTransaction(hash, timeout).then(function (receipt) {
-                            if (receipt.status === 0) {
-                                errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
-                                    transaction: tx
-                                });
-                            }
-                            return receipt;
-                        });
-                    };
-                    return tx;
+                    return _this._wrapTransaction(transaction_1.parse(signedTransaction), hash);
                 });
             });
         });
+    };
+    // This should be called by any subclass wrapping a TransactionResponse
+    Provider.prototype._wrapTransaction = function (tx, hash) {
+        var _this = this;
+        if (bytes_1.hexDataLength(hash) !== 32) {
+            throw new Error('invalid response - sendTransaction');
+        }
+        var result = tx;
+        // Check the hash we expect is the same as the hash the server reported
+        if (hash != null && tx.hash !== hash) {
+            errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
+        }
+        this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
+        result.wait = function (timeout) {
+            return _this.waitForTransaction(hash, timeout).then(function (receipt) {
+                if (receipt.status === 0) {
+                    errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
+                        transaction: tx
+                    });
+                }
+                return receipt;
+            });
+        };
+        return result;
     };
     Provider.prototype.call = function (transaction) {
         var _this = this;

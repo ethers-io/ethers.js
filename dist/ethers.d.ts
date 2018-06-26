@@ -338,6 +338,7 @@ declare module 'ethers/providers/provider' {
         blockHash?: string;
         timestamp?: number;
         from: string;
+        raw?: string;
         wait: (timeout?: number) => Promise<TransactionReceipt>;
     }
     export interface TransactionReceipt {
@@ -409,6 +410,7 @@ declare module 'ethers/providers/provider' {
         getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
         getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
         sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
+        _wrapTransaction(tx: Transaction, hash?: string): TransactionResponse;
         call(transaction: TransactionRequest): Promise<string>;
         estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
         getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block>;
