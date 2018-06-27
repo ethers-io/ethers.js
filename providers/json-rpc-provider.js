@@ -124,12 +124,16 @@ utils.defineProperty(JsonRpcSigner.prototype, 'sendTransaction', function(transa
                     provider.getTransaction(hash).then(function(transaction) {
                         if (!transaction) {
                             setTimeout(check, 1000);
-                            return;
+                            return null;
                         }
                         transaction.wait = function() {
                             return provider.waitForTransaction(hash);
                         };
                         resolve(transaction);
+                        return null;
+                    }).catch(function(error) {
+                        setTimeout(check, 1000);
+                        return null;
                     });
                 }
                 check();
@@ -278,6 +282,7 @@ utils.defineProperty(JsonRpcProvider.prototype, '_startPending', function() {
                     seq = seq.then(function() {
                         return self.getTransaction(hash).then(function(tx) {
                             self.emit('pending', tx);
+                            return null;
                         });
                     });
                 });
@@ -288,14 +293,18 @@ utils.defineProperty(JsonRpcProvider.prototype, '_startPending', function() {
             }).then(function() {
                 if (self._pendingFilter != pendingFilter) {
                     self.send('eth_uninstallFilter', [ filterIf ]);
-                    return;
+                    return null;
                 }
                 setTimeout(function() { poll(); }, 0);
+                return null;
+            }).catch(function(error) {
+                
             });
         }
         poll();
 
         return filterId;
+    }).catch(function(error) {
     });
 });
 

@@ -449,10 +449,11 @@ function Provider(network) {
 
                 if (event.type === 'transaction') {
                     self.getTransaction(event.hash).then(function(transaction) {
-                        if (!transaction || transaction.blockNumber == null) { return; }
+                        if (!transaction || transaction.blockNumber == null) { return null; }
                         self._emitted['t:' + transaction.hash.toLowerCase()] = transaction.blockNumber;
                         self.emit(event.hash, transaction);
-                    });
+                        return null;
+                    }).catch(function(error) { });
 
                 } else if (event.type === 'address') {
                     if (balances[event.address]) {
@@ -460,10 +461,11 @@ function Provider(network) {
                     }
                     self.getBalance(event.address, 'latest').then(function(balance) {
                         var lastBalance = balances[event.address];
-                        if (lastBalance && balance.eq(lastBalance)) { return; }
+                        if (lastBalance && balance.eq(lastBalance)) { return null; }
                         balances[event.address] = balance;
                         self.emit(event.address, balance);
-                    });
+                        return null;
+                    }).catch(function(error) { });
 
                 } else if (event.type === 'topic') {
                     self.getLogs({
@@ -471,20 +473,23 @@ function Provider(network) {
                         toBlock: blockNumber,
                         topics: event.topic
                     }).then(function(logs) {
-                        if (logs.length === 0) { return; }
+                        if (logs.length === 0) { return null; }
                         logs.forEach(function(log) {
                             self._emitted['b:' + log.blockHash.toLowerCase()] = log.blockNumber;
                             self._emitted['t:' + log.transactionHash.toLowerCase()] = log.blockNumber;
                             self.emit(event.topic, log);
                         });
-                    });
+                        return null;
+                    }).catch(function(error) { });
                 }
             });
 
             lastBlockNumber = blockNumber;
 
             balances = newBalances;
-        });
+
+            return null;
+        }).catch(function() { });
 
         self.doPoll();
     }
@@ -795,9 +800,10 @@ function stallPromise(allowNullFunc, executeFunc) {
                     if (timeout > 10000) { timeout = 10000; }
                     setTimeout(check, timeout);
                 }
+                return null;
             }, function(error) {
                 reject(error);
-            });
+            }).catch(function(error) { reject(error); });
         }
         check();
     });
@@ -904,6 +910,7 @@ utils.defineProperty(Provider.prototype, '_resolveNames', function(object, keys)
         if (result[key] === undefined) { return; }
         promises.push(this.resolveName(result[key]).then(function(address) {
             result[key] = address;
+            return null;
         }));
     }, this);
 

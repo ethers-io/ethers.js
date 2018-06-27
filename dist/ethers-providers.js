@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -4350,14 +4350,16 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
                 var seq = Promise.resolve();
                 logs.forEach(function(log) {
                     seq = seq.then(function() {
-                        if (log.blockHash != null) { return; }
+                        if (log.blockHash != null) { return null; }
                         log.blockHash = txs[log.transactionHash];
                         if (log.blockHash == null) {
                             return self.getTransaction(log.transactionHash).then(function(tx) {
                                 txs[log.transactionHash] = tx.blockHash;
                                 log.blockHash = tx.blockHash;
+                                return log;
                             });
                         }
+                        return null;
                     });
                 })
 
@@ -4469,11 +4471,11 @@ utils.defineProperty(FallbackProvider.prototype, 'perform', function(method, par
 
             var provider = providers.shift();
             provider.perform(method, params).then(function(result) {
-                resolve(result);
+                return resolve(result);
             }, function (error) {
                 if (!firstError) { firstError = error; }
                 next();
-            });
+            }).catch(function(error) { });
         }
         next();
     });
@@ -4712,12 +4714,16 @@ utils.defineProperty(JsonRpcSigner.prototype, 'sendTransaction', function(transa
                     provider.getTransaction(hash).then(function(transaction) {
                         if (!transaction) {
                             setTimeout(check, 1000);
-                            return;
+                            return null;
                         }
                         transaction.wait = function() {
                             return provider.waitForTransaction(hash);
                         };
                         resolve(transaction);
+                        return null;
+                    }).catch(function(error) {
+                        setTimeout(check, 1000);
+                        return null;
                     });
                 }
                 check();
@@ -4866,6 +4872,7 @@ utils.defineProperty(JsonRpcProvider.prototype, '_startPending', function() {
                     seq = seq.then(function() {
                         return self.getTransaction(hash).then(function(tx) {
                             self.emit('pending', tx);
+                            return null;
                         });
                     });
                 });
@@ -4876,14 +4883,18 @@ utils.defineProperty(JsonRpcProvider.prototype, '_startPending', function() {
             }).then(function() {
                 if (self._pendingFilter != pendingFilter) {
                     self.send('eth_uninstallFilter', [ filterIf ]);
-                    return;
+                    return null;
                 }
                 setTimeout(function() { poll(); }, 0);
+                return null;
+            }).catch(function(error) {
+                
             });
         }
         poll();
 
         return filterId;
+    }).catch(function(error) {
     });
 });
 
@@ -5399,10 +5410,11 @@ function Provider(network) {
 
                 if (event.type === 'transaction') {
                     self.getTransaction(event.hash).then(function(transaction) {
-                        if (!transaction || transaction.blockNumber == null) { return; }
+                        if (!transaction || transaction.blockNumber == null) { return null; }
                         self._emitted['t:' + transaction.hash.toLowerCase()] = transaction.blockNumber;
                         self.emit(event.hash, transaction);
-                    });
+                        return null;
+                    }).catch(function(error) { });
 
                 } else if (event.type === 'address') {
                     if (balances[event.address]) {
@@ -5410,10 +5422,11 @@ function Provider(network) {
                     }
                     self.getBalance(event.address, 'latest').then(function(balance) {
                         var lastBalance = balances[event.address];
-                        if (lastBalance && balance.eq(lastBalance)) { return; }
+                        if (lastBalance && balance.eq(lastBalance)) { return null; }
                         balances[event.address] = balance;
                         self.emit(event.address, balance);
-                    });
+                        return null;
+                    }).catch(function(error) { });
 
                 } else if (event.type === 'topic') {
                     self.getLogs({
@@ -5421,20 +5434,23 @@ function Provider(network) {
                         toBlock: blockNumber,
                         topics: event.topic
                     }).then(function(logs) {
-                        if (logs.length === 0) { return; }
+                        if (logs.length === 0) { return null; }
                         logs.forEach(function(log) {
                             self._emitted['b:' + log.blockHash.toLowerCase()] = log.blockNumber;
                             self._emitted['t:' + log.transactionHash.toLowerCase()] = log.blockNumber;
                             self.emit(event.topic, log);
                         });
-                    });
+                        return null;
+                    }).catch(function(error) { });
                 }
             });
 
             lastBlockNumber = blockNumber;
 
             balances = newBalances;
-        });
+
+            return null;
+        }).catch(function() { });
 
         self.doPoll();
     }
@@ -5745,9 +5761,10 @@ function stallPromise(allowNullFunc, executeFunc) {
                     if (timeout > 10000) { timeout = 10000; }
                     setTimeout(check, timeout);
                 }
+                return null;
             }, function(error) {
                 reject(error);
-            });
+            }).catch(function(error) { reject(error); });
         }
         check();
     });
@@ -5854,6 +5871,7 @@ utils.defineProperty(Provider.prototype, '_resolveNames', function(object, keys)
         if (result[key] === undefined) { return; }
         promises.push(this.resolveName(result[key]).then(function(address) {
             result[key] = address;
+            return null;
         }));
     }, this);
 

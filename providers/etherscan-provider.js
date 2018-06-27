@@ -218,14 +218,16 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
                 var seq = Promise.resolve();
                 logs.forEach(function(log) {
                     seq = seq.then(function() {
-                        if (log.blockHash != null) { return; }
+                        if (log.blockHash != null) { return null; }
                         log.blockHash = txs[log.transactionHash];
                         if (log.blockHash == null) {
                             return self.getTransaction(log.transactionHash).then(function(tx) {
                                 txs[log.transactionHash] = tx.blockHash;
                                 log.blockHash = tx.blockHash;
+                                return log;
                             });
                         }
+                        return null;
                     });
                 })
 

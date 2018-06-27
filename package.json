@@ -1,9 +1,10 @@
 {
   "name": "ethers",
-  "version": "3.0.24",
+  "version": "3.0.25",
   "description": "Ethereum wallet library.",
   "main": "index.js",
   "scripts": {
+    "eslint": "eslint index.js contracts/*.js providers/*.js utils/*.js wallet/*.js",
     "test": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
     "test-node": "./node_modules/.bin/mocha tests/test-*.js",
     "test-phantomjs": "./node_modules/.bin/grunt dist && ./node_modules/.bin/grunt --gruntfile Gruntfile-test.js dist && phantomjs --web-security=false ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",
@@ -23,6 +24,8 @@
   },
   "devDependencies": {
     "browserify-zlib": "^0.2.0",
+    "eslint": "^5.0.1",
+    "eslint-plugin-promise": "^3.8.0",
     "grunt": "^0.4.5",
     "grunt-browserify": "^5.0.0",
     "grunt-cli": "1.2.0",

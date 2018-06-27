@@ -269,6 +269,10 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                 } catch (error) {
                     console.log(error);
                 }
+
+                return null;
+            }).catch(function(error) {
+                //console.log(error);
             });
         }
 

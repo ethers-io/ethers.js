@@ -416,9 +416,10 @@ utils.defineProperty(Wallet, 'fromEncryptedWallet', function(json, password, pro
                     utils.defineProperty(wallet, 'path', signingKey.path);
                 }
                 resolve(wallet);
+                return null;
             }, function(error) {
                 reject(error);
-            });
+            }).catch(function(error) { reject(error); });
 
         } else {
             reject('invalid wallet JSON');

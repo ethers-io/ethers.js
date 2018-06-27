@@ -49,11 +49,11 @@ utils.defineProperty(FallbackProvider.prototype, 'perform', function(method, par
 
             var provider = providers.shift();
             provider.perform(method, params).then(function(result) {
-                resolve(result);
+                return resolve(result);
             }, function (error) {
                 if (!firstError) { firstError = error; }
                 next();
-            });
+            }).catch(function(error) { });
         }
         next();
     });
