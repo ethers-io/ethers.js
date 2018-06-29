@@ -48,6 +48,8 @@ var codes = { };
     //   - operation
     'UNSUPPORTED_OPERATION',
 
+    // EIP 838 Revert reason
+    'REVERT_REASON',
 
 ].forEach(function(code) {
     defineProperty(codes, code, code);

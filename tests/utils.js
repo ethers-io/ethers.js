@@ -5,6 +5,7 @@ var fs = require('fs');
 var path = require('path');
 var zlib = require('zlib');
 
+var AbiCoder = require('../utils/abi-coder');
 var bigNumber = require('../utils/bignumber');
 var convert = require('../utils/convert');
 var keccak256 = require('../utils/keccak256');
@@ -99,6 +100,8 @@ function loadTests(tag) {
 }
 
 module.exports = {
+    AbiCoder: AbiCoder,
+
     randomBytes: randomBytes,
     randomHexString: randomHexString,
     randomNumber:randomNumber,
