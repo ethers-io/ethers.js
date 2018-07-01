@@ -15,6 +15,7 @@ var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var bignumber_1 = require("../utils/bignumber");
 var properties_1 = require("../utils/properties");
+var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
 var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
@@ -270,6 +271,25 @@ var Contract = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    // @TODO: Allow timeout?
+    Contract.prototype.deployed = function () {
+        var _this = this;
+        // If we were just deployed, we know the transaction we should occur in
+        if (this.deployTransaction) {
+            return this.deployTransaction.wait().then(function () {
+                return _this;
+            });
+        }
+        // Otherwise, poll for our code to be deployed
+        return web_1.poll(function () {
+            return _this.provider.getCode(_this.address).then(function (code) {
+                if (code === '0x') {
+                    return undefined;
+                }
+                return _this;
+            });
+        });
+    };
     // @TODO:
     // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>
     // @TODO:

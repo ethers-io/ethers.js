@@ -109,7 +109,7 @@ export class JsonRpcSigner extends Signer {
     }
 
     sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
-        let tx = shallowCopy(transaction);
+        let tx: TransactionRequest = shallowCopy(transaction);
 
         if (tx.from == null) {
             tx.from = this.getAddress().then((address) => {

@@ -13,6 +13,7 @@ import { hashMessage, namehash } from '../utils/hash';
 import { getNetwork, Network, Networkish } from './networks';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { parse as parseTransaction, serialize as serializeTransaction, SignDigestFunc, Transaction } from '../utils/transaction';
+import { poll } from '../utils/web';
 
 import * as errors from '../utils/errors';
 
@@ -503,35 +504,6 @@ var formatLog = {
 
 function checkLog(log: any): any {
     return check(formatLog, log);
-}
-
-//////////////////////////////
-// Defer Promises
-
-type AllowNullFunc = () => boolean;
-type ExecuteFunc = () => Promise<any>
-function stallPromise(allowNullFunc: AllowNullFunc, executeFunc: ExecuteFunc): Promise<any> {
-    return new Promise(function(resolve, reject) {
-        var attempt = 0;
-        function check() {
-            executeFunc().then(function(result) {
-                // If we have a result, or are allowed null then we're done
-                if (result || allowNullFunc()) {
-                    resolve(result);
-
-                // Otherwise, exponential back-off (up to 10s) our next request
-                } else {
-                    attempt++;
-                    var timeout = 500 + 250 * parseInt(String(Math.random() * (1 << attempt)));
-                    if (timeout > 10000) { timeout = 10000; }
-                    setTimeout(check, timeout);
-                }
-            }, function(error) {
-                reject(error);
-            });
-        }
-        check();
-    });
 }
 
 //////////////////////////////
@@ -1037,28 +1009,37 @@ export class Provider {
                 try {
                     var blockHash = hexlify(blockHashOrBlockTag);
                     if (hexDataLength(blockHash) === 32) {
-                        return stallPromise(() => {
-                            return (this._emitted['b:' + blockHash.toLowerCase()] == null);
-                        }, () => {
-                            return this.perform('getBlock', {blockHash: blockHash}).then((block) => {
-                                if (block == null) { return null; }
+                        return poll(() => {
+                            return this.perform('getBlock', { blockHash: blockHash }).then((block) => {
+                                if (block == null) {
+                                    if (this._emitted['b:' + blockHash.toLowerCase()] == null) {
+                                        return null;
+                                    }
+                                    return undefined;
+                                }
                                 return checkBlock(block);
                             });
                         });
+
                     }
                 } catch (error) { }
 
                 try {
-                    var blockTag = checkBlockTag(blockHashOrBlockTag);
-                    return stallPromise(() => {
-                        if (isHexString(blockTag)) {
-                            var blockNumber = parseInt(blockTag.substring(2), 16);
-                            return blockNumber > this._emitted.block;
-                        }
-                        return true;
-                    }, () => {
+                    let blockNumber = -128;
+
+                    let blockTag = checkBlockTag(blockHashOrBlockTag);
+                    if (isHexString(blockTag)) {
+                        blockNumber = parseInt(blockTag.substring(2), 16);
+                    }
+
+                    return poll(() => {
                         return this.perform('getBlock', { blockTag: blockTag }).then((block) => {
-                            if (block == null) { return null; }
+                            if (block == null) {
+                                if (blockNumber > this._emitted.block) {
+                                    return undefined;
+                                }
+                                return null;
+                            }
                             return checkBlock(block);
                         });
                     });
@@ -1073,12 +1054,15 @@ export class Provider {
         return this.ready.then(() => {
             return resolveProperties({ transactionHash: transactionHash }).then(({ transactionHash }) => {
                 var params = { transactionHash: checkHash(transactionHash) };
-                return stallPromise(() => {
-                    return (this._emitted['t:' + transactionHash.toLowerCase()] == null);
-                }, () => {
+                return poll(() => {
                     return this.perform('getTransaction', params).then((result) => {
-                        if (result != null) { result = checkTransactionResponse(result); }
-                        return result;
+                        if (result == null) {
+                            if (this._emitted['t:' + transactionHash.toLowerCase()] == null) {
+                                return null;
+                            }
+                            return undefined;
+                        }
+                        return checkTransactionResponse(result);
                     });
                 });
             });
@@ -1089,12 +1073,15 @@ export class Provider {
         return this.ready.then(() => {
             return resolveProperties({ transactionHash: transactionHash }).then(({ transactionHash }) => {
                 var params = { transactionHash: checkHash(transactionHash) };
-                return stallPromise(() => {
-                    return (this._emitted['t:' + transactionHash.toLowerCase()] == null);
-                }, () => {
+                return poll(() => {
                     return this.perform('getTransactionReceipt', params).then((result) => {
-                        if (result != null) { result = checkTransactionReceipt(result); }
-                        return result;
+                        if (result == null) {
+                            if (this._emitted['t:' + transactionHash.toLowerCase()] == null) {
+                                return null;
+                            }
+                            return undefined;
+                        }
+                        return checkTransactionReceipt(result);
                     });
                 });
             });

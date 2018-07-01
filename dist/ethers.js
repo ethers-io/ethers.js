@@ -8867,6 +8867,7 @@ var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var bignumber_1 = require("../utils/bignumber");
 var properties_1 = require("../utils/properties");
+var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
 var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
@@ -9122,6 +9123,25 @@ var Contract = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    // @TODO: Allow timeout?
+    Contract.prototype.deployed = function () {
+        var _this = this;
+        // If we were just deployed, we know the transaction we should occur in
+        if (this.deployTransaction) {
+            return this.deployTransaction.wait().then(function () {
+                return _this;
+            });
+        }
+        // Otherwise, poll for our code to be deployed
+        return web_1.poll(function () {
+            return _this.provider.getCode(_this.address).then(function (code) {
+                if (code === '0x') {
+                    return undefined;
+                }
+                return _this;
+            });
+        });
+    };
     // @TODO:
     // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>
     // @TODO:
@@ -9198,7 +9218,7 @@ var Contract = /** @class */ (function () {
 }());
 exports.Contract = Contract;
 
-},{"../providers/provider":56,"../utils/abi-coder":58,"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../wallet/wallet":79,"./interface":49}],48:[function(require,module,exports){
+},{"../providers/provider":56,"../utils/abi-coder":58,"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../utils/web":74,"../wallet/wallet":79,"./interface":49}],48:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var contract_1 = require("./contract");
@@ -10507,6 +10527,7 @@ var hash_1 = require("../utils/hash");
 var networks_1 = require("./networks");
 var properties_1 = require("../utils/properties");
 var transaction_1 = require("../utils/transaction");
+var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
 ;
 ;
@@ -10850,31 +10871,6 @@ var formatLog = {
 };
 function checkLog(log) {
     return check(formatLog, log);
-}
-function stallPromise(allowNullFunc, executeFunc) {
-    return new Promise(function (resolve, reject) {
-        var attempt = 0;
-        function check() {
-            executeFunc().then(function (result) {
-                // If we have a result, or are allowed null then we're done
-                if (result || allowNullFunc()) {
-                    resolve(result);
-                    // Otherwise, exponential back-off (up to 10s) our next request
-                }
-                else {
-                    attempt++;
-                    var timeout = 500 + 250 * parseInt(String(Math.random() * (1 << attempt)));
-                    if (timeout > 10000) {
-                        timeout = 10000;
-                    }
-                    setTimeout(check, timeout);
-                }
-            }, function (error) {
-                reject(error);
-            });
-        }
-        check();
-    });
 }
 //////////////////////////////
 // Event Serializeing
@@ -11346,12 +11342,13 @@ var Provider = /** @class */ (function () {
                 try {
                     var blockHash = bytes_1.hexlify(blockHashOrBlockTag);
                     if (bytes_1.hexDataLength(blockHash) === 32) {
-                        return stallPromise(function () {
-                            return (_this._emitted['b:' + blockHash.toLowerCase()] == null);
-                        }, function () {
+                        return web_1.poll(function () {
                             return _this.perform('getBlock', { blockHash: blockHash }).then(function (block) {
                                 if (block == null) {
-                                    return null;
+                                    if (_this._emitted['b:' + blockHash.toLowerCase()] == null) {
+                                        return null;
+                                    }
+                                    return undefined;
                                 }
                                 return checkBlock(block);
                             });
@@ -11360,16 +11357,17 @@ var Provider = /** @class */ (function () {
                 }
                 catch (error) { }
                 try {
-                    var blockTag = checkBlockTag(blockHashOrBlockTag);
-                    return stallPromise(function () {
-                        if (bytes_1.isHexString(blockTag)) {
-                            var blockNumber = parseInt(blockTag.substring(2), 16);
-                            return blockNumber > _this._emitted.block;
-                        }
-                        return true;
-                    }, function () {
-                        return _this.perform('getBlock', { blockTag: blockTag }).then(function (block) {
+                    var blockNumber_1 = -128;
+                    var blockTag_1 = checkBlockTag(blockHashOrBlockTag);
+                    if (bytes_1.isHexString(blockTag_1)) {
+                        blockNumber_1 = parseInt(blockTag_1.substring(2), 16);
+                    }
+                    return web_1.poll(function () {
+                        return _this.perform('getBlock', { blockTag: blockTag_1 }).then(function (block) {
                             if (block == null) {
+                                if (blockNumber_1 > _this._emitted.block) {
+                                    return undefined;
+                                }
                                 return null;
                             }
                             return checkBlock(block);
@@ -11387,14 +11385,15 @@ var Provider = /** @class */ (function () {
             return properties_1.resolveProperties({ transactionHash: transactionHash }).then(function (_a) {
                 var transactionHash = _a.transactionHash;
                 var params = { transactionHash: checkHash(transactionHash) };
-                return stallPromise(function () {
-                    return (_this._emitted['t:' + transactionHash.toLowerCase()] == null);
-                }, function () {
+                return web_1.poll(function () {
                     return _this.perform('getTransaction', params).then(function (result) {
-                        if (result != null) {
-                            result = checkTransactionResponse(result);
+                        if (result == null) {
+                            if (_this._emitted['t:' + transactionHash.toLowerCase()] == null) {
+                                return null;
+                            }
+                            return undefined;
                         }
-                        return result;
+                        return checkTransactionResponse(result);
                     });
                 });
             });
@@ -11406,14 +11405,15 @@ var Provider = /** @class */ (function () {
             return properties_1.resolveProperties({ transactionHash: transactionHash }).then(function (_a) {
                 var transactionHash = _a.transactionHash;
                 var params = { transactionHash: checkHash(transactionHash) };
-                return stallPromise(function () {
-                    return (_this._emitted['t:' + transactionHash.toLowerCase()] == null);
-                }, function () {
+                return web_1.poll(function () {
                     return _this.perform('getTransactionReceipt', params).then(function (result) {
-                        if (result != null) {
-                            result = checkTransactionReceipt(result);
+                        if (result == null) {
+                            if (_this._emitted['t:' + transactionHash.toLowerCase()] == null) {
+                                return null;
+                            }
+                            return undefined;
                         }
-                        return result;
+                        return checkTransactionReceipt(result);
                     });
                 });
             });
@@ -11679,7 +11679,7 @@ var Provider = /** @class */ (function () {
 }());
 exports.Provider = Provider;
 
-},{"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/properties":66,"../utils/rlp":67,"../utils/transaction":71,"../utils/utf8":73,"../wallet/wallet":79,"./networks":55}],57:[function(require,module,exports){
+},{"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/properties":66,"../utils/rlp":67,"../utils/transaction":71,"../utils/utf8":73,"../utils/web":74,"../wallet/wallet":79,"./networks":55}],57:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -12041,6 +12041,18 @@ var Coder = /** @class */ (function () {
     }
     return Coder;
 }());
+// Clones the functionality of an existing Coder, but without a localName
+var CoderAnonymous = /** @class */ (function (_super) {
+    __extends(CoderAnonymous, _super);
+    function CoderAnonymous(coder) {
+        var _this = _super.call(this, coder.coerceFunc, coder.name, coder.type, undefined, coder.dynamic) || this;
+        properties_1.defineReadOnly(_this, 'coder', coder);
+        return _this;
+    }
+    CoderAnonymous.prototype.encode = function (value) { return this.coder.encode(value); };
+    CoderAnonymous.prototype.decode = function (data, offset) { return this.coder.decode(data, offset); };
+    return CoderAnonymous;
+}(Coder));
 var CoderNull = /** @class */ (function (_super) {
     __extends(CoderNull, _super);
     function CoderNull(coerceFunc, localName) {
@@ -12465,7 +12477,7 @@ var CoderArray = /** @class */ (function (_super) {
         }
         var coders = [];
         for (var i = 0; i < count; i++) {
-            coders.push(this.coder);
+            coders.push(new CoderAnonymous(this.coder));
         }
         var result = unpack(coders, data, offset);
         result.consumed += consumed;
@@ -14329,6 +14341,71 @@ function fetchJson(connection, json, processFunc) {
     });
 }
 exports.fetchJson = fetchJson;
+function poll(func, options) {
+    if (!options) {
+        options = {};
+    }
+    if (options.floor == null) {
+        options.floor = 0;
+    }
+    if (options.ceiling == null) {
+        options.ceiling = 10000;
+    }
+    if (options.interval == null) {
+        options.interval = 250;
+    }
+    return new Promise(function (resolve, reject) {
+        var timer = null;
+        var done = false;
+        // Returns true if cancel was successful. Unsuccessful cancel means we're already done.
+        var cancel = function () {
+            if (done) {
+                return false;
+            }
+            done = true;
+            if (timer) {
+                clearTimeout(timer);
+            }
+            return true;
+        };
+        if (options.timeout) {
+            timer = setTimeout(function () {
+                if (cancel()) {
+                    reject(new Error('timeout'));
+                }
+            }, options.timeout);
+        }
+        var attempt = 0;
+        function check() {
+            func().then(function (result) {
+                // If we have a result, or are allowed null then we're done
+                if (result !== undefined) {
+                    if (cancel()) {
+                        resolve(result);
+                    }
+                    // Otherwise, exponential back-off (up to 10s) our next request
+                }
+                else if (!done) {
+                    attempt++;
+                    var timeout = options.interval * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                    if (timeout < options.floor) {
+                        timeout = options.floor;
+                    }
+                    if (timeout > options.ceiling) {
+                        timeout = options.ceiling;
+                    }
+                    setTimeout(check, timeout);
+                }
+            }, function (error) {
+                if (cancel()) {
+                    reject(error);
+                }
+            });
+        }
+        check();
+    });
+}
+exports.poll = poll;
 
 },{"./base64":40,"./errors":62,"./utf8":73,"xmlhttprequest":45}],75:[function(require,module,exports){
 'use strict';

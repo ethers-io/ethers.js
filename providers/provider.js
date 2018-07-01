@@ -28,6 +28,7 @@ var hash_1 = require("../utils/hash");
 var networks_1 = require("./networks");
 var properties_1 = require("../utils/properties");
 var transaction_1 = require("../utils/transaction");
+var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
 ;
 ;
@@ -371,31 +372,6 @@ var formatLog = {
 };
 function checkLog(log) {
     return check(formatLog, log);
-}
-function stallPromise(allowNullFunc, executeFunc) {
-    return new Promise(function (resolve, reject) {
-        var attempt = 0;
-        function check() {
-            executeFunc().then(function (result) {
-                // If we have a result, or are allowed null then we're done
-                if (result || allowNullFunc()) {
-                    resolve(result);
-                    // Otherwise, exponential back-off (up to 10s) our next request
-                }
-                else {
-                    attempt++;
-                    var timeout = 500 + 250 * parseInt(String(Math.random() * (1 << attempt)));
-                    if (timeout > 10000) {
-                        timeout = 10000;
-                    }
-                    setTimeout(check, timeout);
-                }
-            }, function (error) {
-                reject(error);
-            });
-        }
-        check();
-    });
 }
 //////////////////////////////
 // Event Serializeing
@@ -867,12 +843,13 @@ var Provider = /** @class */ (function () {
                 try {
                     var blockHash = bytes_1.hexlify(blockHashOrBlockTag);
                     if (bytes_1.hexDataLength(blockHash) === 32) {
-                        return stallPromise(function () {
-                            return (_this._emitted['b:' + blockHash.toLowerCase()] == null);
-                        }, function () {
+                        return web_1.poll(function () {
                             return _this.perform('getBlock', { blockHash: blockHash }).then(function (block) {
                                 if (block == null) {
-                                    return null;
+                                    if (_this._emitted['b:' + blockHash.toLowerCase()] == null) {
+                                        return null;
+                                    }
+                                    return undefined;
                                 }
                                 return checkBlock(block);
                             });
@@ -881,16 +858,17 @@ var Provider = /** @class */ (function () {
                 }
                 catch (error) { }
                 try {
-                    var blockTag = checkBlockTag(blockHashOrBlockTag);
-                    return stallPromise(function () {
-                        if (bytes_1.isHexString(blockTag)) {
-                            var blockNumber = parseInt(blockTag.substring(2), 16);
-                            return blockNumber > _this._emitted.block;
-                        }
-                        return true;
-                    }, function () {
-                        return _this.perform('getBlock', { blockTag: blockTag }).then(function (block) {
+                    var blockNumber_1 = -128;
+                    var blockTag_1 = checkBlockTag(blockHashOrBlockTag);
+                    if (bytes_1.isHexString(blockTag_1)) {
+                        blockNumber_1 = parseInt(blockTag_1.substring(2), 16);
+                    }
+                    return web_1.poll(function () {
+                        return _this.perform('getBlock', { blockTag: blockTag_1 }).then(function (block) {
                             if (block == null) {
+                                if (blockNumber_1 > _this._emitted.block) {
+                                    return undefined;
+                                }
                                 return null;
                             }
                             return checkBlock(block);
@@ -908,14 +886,15 @@ var Provider = /** @class */ (function () {
             return properties_1.resolveProperties({ transactionHash: transactionHash }).then(function (_a) {
                 var transactionHash = _a.transactionHash;
                 var params = { transactionHash: checkHash(transactionHash) };
-                return stallPromise(function () {
-                    return (_this._emitted['t:' + transactionHash.toLowerCase()] == null);
-                }, function () {
+                return web_1.poll(function () {
                     return _this.perform('getTransaction', params).then(function (result) {
-                        if (result != null) {
-                            result = checkTransactionResponse(result);
+                        if (result == null) {
+                            if (_this._emitted['t:' + transactionHash.toLowerCase()] == null) {
+                                return null;
+                            }
+                            return undefined;
                         }
-                        return result;
+                        return checkTransactionResponse(result);
                     });
                 });
             });
@@ -927,14 +906,15 @@ var Provider = /** @class */ (function () {
             return properties_1.resolveProperties({ transactionHash: transactionHash }).then(function (_a) {
                 var transactionHash = _a.transactionHash;
                 var params = { transactionHash: checkHash(transactionHash) };
-                return stallPromise(function () {
-                    return (_this._emitted['t:' + transactionHash.toLowerCase()] == null);
-                }, function () {
+                return web_1.poll(function () {
                     return _this.perform('getTransactionReceipt', params).then(function (result) {
-                        if (result != null) {
-                            result = checkTransactionReceipt(result);
+                        if (result == null) {
+                            if (_this._emitted['t:' + transactionHash.toLowerCase()] == null) {
+                                return null;
+                            }
+                            return undefined;
                         }
-                        return result;
+                        return checkTransactionReceipt(result);
                     });
                 });
             });

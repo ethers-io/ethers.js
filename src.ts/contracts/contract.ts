@@ -11,6 +11,7 @@ import { hexDataLength, hexDataSlice, isHexString } from '../utils/bytes';
 import { ParamType } from '../utils/abi-coder';
 import { BigNumber, ConstantZero } from '../utils/bignumber';
 import { defineReadOnly, shallowCopy } from '../utils/properties';
+import { poll } from '../utils/web';
 
 import * as errors from '../utils/errors';
 
@@ -328,6 +329,24 @@ export class Contract {
 
     set onerror(callback: ErrorCallback) {
         this._onerror = callback;
+    }
+
+    // @TODO: Allow timeout?
+    deployed() {
+        // If we were just deployed, we know the transaction we should occur in
+        if (this.deployTransaction) {
+            return this.deployTransaction.wait().then(() => {
+                return this;
+            });
+        }
+
+        // Otherwise, poll for our code to be deployed
+        return poll(() => {
+            return this.provider.getCode(this.address).then((code) => {
+                if (code === '0x') { return undefined; }
+                return this;
+            });
+        });
     }
 
     // @TODO:

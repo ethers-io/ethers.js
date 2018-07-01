@@ -286,6 +286,18 @@ var Coder = /** @class */ (function () {
     }
     return Coder;
 }());
+// Clones the functionality of an existing Coder, but without a localName
+var CoderAnonymous = /** @class */ (function (_super) {
+    __extends(CoderAnonymous, _super);
+    function CoderAnonymous(coder) {
+        var _this = _super.call(this, coder.coerceFunc, coder.name, coder.type, undefined, coder.dynamic) || this;
+        properties_1.defineReadOnly(_this, 'coder', coder);
+        return _this;
+    }
+    CoderAnonymous.prototype.encode = function (value) { return this.coder.encode(value); };
+    CoderAnonymous.prototype.decode = function (data, offset) { return this.coder.decode(data, offset); };
+    return CoderAnonymous;
+}(Coder));
 var CoderNull = /** @class */ (function (_super) {
     __extends(CoderNull, _super);
     function CoderNull(coerceFunc, localName) {
@@ -710,7 +722,7 @@ var CoderArray = /** @class */ (function (_super) {
         }
         var coders = [];
         for (var i = 0; i < count; i++) {
-            coders.push(this.coder);
+            coders.push(new CoderAnonymous(this.coder));
         }
         var result = unpack(coders, data, offset);
         result.consumed += consumed;
