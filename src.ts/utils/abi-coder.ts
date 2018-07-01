@@ -357,6 +357,17 @@ abstract class Coder {
     abstract decode(data: Uint8Array, offset: number): DecodedResult;
 }
 
+// Clones the functionality of an existing Coder, but without a localName
+class CoderAnonymous extends Coder {
+    private coder: Coder;
+    constructor(coder: Coder) {
+        super(coder.coerceFunc, coder.name, coder.type, undefined, coder.dynamic);
+        defineReadOnly(this, 'coder', coder);
+    }
+    encode(value: any): Uint8Array { return this.coder.encode(value); }
+    decode(data: Uint8Array, offset: number): DecodedResult { return this.coder.decode(data, offset); }
+}
+
 class CoderNull extends Coder {
     constructor(coerceFunc: CoerceFunc, localName: string) {
         super(coerceFunc, 'null', '', localName, false);
@@ -801,7 +812,7 @@ class CoderArray extends Coder {
         }
 
         var coders = [];
-        for (var i = 0; i < count; i++) { coders.push(this.coder); }
+        for (var i = 0; i < count; i++) { coders.push(new CoderAnonymous(this.coder)); }
 
         var result = unpack(coders, data, offset);
         result.consumed += consumed;
