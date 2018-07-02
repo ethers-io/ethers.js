@@ -17,7 +17,8 @@ var utils = (function() {
 var errors = require('../utils/errors');
 
 var allowedTransactionKeys = {
-    data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
+    data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true,
+    signer: true
 }
 
 function copyObject(object) {
@@ -88,6 +89,12 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
             // Send to the contract address
             transaction.to = addressOrName;
 
+            var _signer = signer;
+            if (typeof transaction.signer !== 'undefined') {
+                _signer = transaction.signer;
+                delete transaction.signer;
+            }
+
             // Set the transaction data
             transaction.data = call.data;
 
@@ -107,8 +114,8 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                     });
 
                     var fromPromise = null;
-                    if (transaction.from == null && signer && signer.getAddress) {
-                        fromPromise = signer.getAddress();
+                    if (transaction.from == null && _signer && _signer.getAddress) {
+                        fromPromise = _signer.getAddress();
                         if (!(fromPromise instanceof Promise)) {
                             fromPromise = Promise.resolve(fromPromise);
                         }
@@ -142,7 +149,7 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                     });
 
                 case 'transaction':
-                    if (!signer) { return Promise.reject(new Error('missing signer')); }
+                    if (!_signer) { return Promise.reject(new Error('missing signer')); }
 
                     // Make sure they aren't overriding something they shouldn't
                     if (transaction.from != null) {
@@ -151,36 +158,36 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
 
                     // Only computing the transaction estimate
                     if (estimateOnly) {
-                        if (signer && signer.estimateGas) {
-                            return signer.estimateGas(transaction);
+                        if (_signer && _signer.estimateGas) {
+                            return _signer.estimateGas(transaction);
                         }
 
                         return provider.estimateGas(transaction)
                     }
 
-                    // If the signer supports sendTrasaction, use it
-                    if (signer.sendTransaction) {
-                        return signer.sendTransaction(transaction);
+                    // If the _signer supports sendTrasaction, use it
+                    if (_signer.sendTransaction) {
+                        return _signer.sendTransaction(transaction);
                     }
 
-                    if (!signer.sign) {
+                    if (!_signer.sign) {
                         return Promise.reject(new Error('custom signer does not support signing'));
                     }
 
                     if (transaction.gasLimit == null) {
-                        transaction.gasLimit = signer.defaultGasLimit || 2000000;
+                        transaction.gasLimit = _signer.defaultGasLimit || 2000000;
                     }
 
                     var noncePromise = null;
                     if (transaction.nonce) {
                         noncePromise = Promise.resolve(transaction.nonce)
-                    } else if (signer.getTransactionCount) {
-                        noncePromise = signer.getTransactionCount();
+                    } else if (_signer.getTransactionCount) {
+                        noncePromise = _signer.getTransactionCount();
                         if (!(noncePromise instanceof Promise)) {
                             noncePromise = Promise.resolve(noncePromise);
                         }
                     } else {
-                        var addressPromise = signer.getAddress();
+                        var addressPromise = _signer.getAddress();
                         if (!(addressPromise instanceof Promise)) {
                             addressPromise = Promise.resolve(addressPromise);
                         }
@@ -203,7 +210,7 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                     ]).then(function(results) {
                         transaction.nonce = results[0];
                         transaction.gasPrice = results[1];
-                        return signer.sign(transaction);
+                        return _signer.sign(transaction);
 
                     }).then(function(signedTransaction) {
                         return provider.sendTransaction(signedTransaction);
