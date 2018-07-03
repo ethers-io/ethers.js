@@ -45,6 +45,9 @@ export class BigNumber {
             } else if (value.match(/^-?[0-9]*$/)) {
                 if (value == '') { value = '0'; }
                 defineReadOnly(this, '_bn', new BN.BN(value));
+
+            } else {
+                errors.throwError('invalid BigNumber string value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
             }
 
         } else if (typeof(value) === 'number') {
