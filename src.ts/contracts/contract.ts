@@ -238,7 +238,13 @@ export class Contract {
         }
 
         defineReadOnly(this, 'address', addressOrName);
-        defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName));
+        defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName).then((address) => {
+            if (address == null) { throw new Error('name not found'); }
+            return address;
+        }).catch((error: Error) => {
+            console.log('ERROR: Cannot find Contract - ' + addressOrName);
+            throw error;
+        }));
 
         Object.keys(this.interface.functions).forEach((name) => {
             var run = runMethod(this, name, false);
@@ -265,7 +271,7 @@ export class Contract {
             function handleEvent(log: any): void {
                 contract.addressPromise.then((address) => {
                     // Not meant for us (the topics just has the same name)
-                    if (address != log.address) { return; }
+                    if (address != log.address) { return null; }
 
                     try {
                         let result = eventInfo.decode(log.data, log.topics);
@@ -289,7 +295,9 @@ export class Contract {
                         let onerror = contract._onerror;
                         if (onerror) { setTimeout(() => { onerror(error); }); }
                     }
-                });
+
+                    return null;
+                }).catch((error) => { });
             }
 
             var property = {

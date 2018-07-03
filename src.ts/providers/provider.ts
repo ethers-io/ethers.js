@@ -749,7 +749,8 @@ export class Provider {
                         if (!receipt || receipt.blockNumber == null) { return; }
                         this._emitted['t:' + event.hash.toLowerCase()] = receipt.blockNumber;
                         this.emit(event.hash, receipt);
-                    });
+                        return null;
+                    }).catch((error: Error) => { });
 
                 } else if (event.type === 'address') {
                     if (this._balances[event.address]) {
@@ -760,7 +761,8 @@ export class Provider {
                         if (lastBalance && balance.eq(lastBalance)) { return; }
                         this._balances[event.address] = balance;
                         this.emit(event.address, balance);
-                    });
+                        return null;
+                    }).catch((error: Error) => { });
 
                 } else if (event.type === 'topic') {
                     this.getLogs({
@@ -774,14 +776,17 @@ export class Provider {
                             this._emitted['t:' + log.transactionHash.toLowerCase()] = log.blockNumber;
                             this.emit(event.topic, log);
                         });
-                    });
+                        return null;
+                    }).catch((error: Error) => { });
                 }
             });
 
             this._lastBlockNumber = blockNumber;
 
             this._balances = newBalances;
-        });
+
+            return null;
+        }).catch((error: Error) => { });
         this.doPoll();
     }
 
@@ -1126,6 +1131,7 @@ export class Provider {
             if (result[key] == null) { return; }
             promises.push(this.resolveName(result[key]).then((address: string) => {
                 result[key] = address;
+                return;
             }));
         }, this);
 

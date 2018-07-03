@@ -181,8 +181,9 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             var ready = new Promise(function (resolve, reject) {
                 setTimeout(function () {
                     _this.send('net_version', []).then(function (result) {
-                        var chainId = parseInt(result);
-                        resolve(networks_1.getNetwork(chainId));
+                        return resolve(networks_1.getNetwork(parseInt(result)));
+                    }).catch(function (error) {
+                        reject(error);
                     });
                 });
             });
@@ -282,6 +283,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                         seq = seq.then(function () {
                             return self.getTransaction(hash).then(function (tx) {
                                 self.emit('pending', tx);
+                                return null;
                             });
                         });
                     });
@@ -294,11 +296,12 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                         return;
                     }
                     setTimeout(function () { poll(); }, 0);
-                });
+                    return null;
+                }).catch(function (error) { });
             }
             poll();
             return filterId;
-        });
+        }).catch(function (error) { });
     };
     JsonRpcProvider.prototype._stopPending = function () {
         this._pendingFilter = null;

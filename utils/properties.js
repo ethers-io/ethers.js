@@ -24,6 +24,7 @@ function resolveProperties(object) {
         if (value instanceof Promise) {
             promises.push(value.then(function (value) {
                 result[key] = value;
+                return null;
             }));
         }
         else {

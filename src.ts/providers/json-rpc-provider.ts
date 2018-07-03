@@ -177,9 +177,9 @@ export class JsonRpcProvider extends Provider {
             let ready: Promise<Network> = new Promise((resolve, reject) => {
                 setTimeout(() => {
                     this.send('net_version', [ ]).then((result) => {
-                        let chainId = parseInt(result);
-
-                        resolve(getNetwork(chainId));
+                        return resolve(getNetwork(parseInt(result)));
+                    }).catch((error) => {
+                        reject(error);
                     });
                 });
             });
@@ -297,6 +297,7 @@ export class JsonRpcProvider extends Provider {
                         seq = seq.then(function() {
                             return self.getTransaction(hash).then(function(tx) {
                                 self.emit('pending', tx);
+                                return null;
                             });
                         });
                     });
@@ -310,12 +311,14 @@ export class JsonRpcProvider extends Provider {
                         return;
                     }
                     setTimeout(function() { poll(); }, 0);
-                });
+
+                    return null;
+                }).catch((error: Error) => { });
             }
             poll();
 
             return filterId;
-        });
+        }).catch((error: Error) => { });
     }
 
     _stopPending(): void {

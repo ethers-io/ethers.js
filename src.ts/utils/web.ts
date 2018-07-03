@@ -159,7 +159,7 @@ export function poll(func: () => Promise<any>, options?: PollOptions): Promise<a
 
         let attempt = 0;
         function check() {
-            func().then(function(result) {
+            return func().then(function(result) {
 
                 // If we have a result, or are allowed null then we're done
                 if (result !== undefined) {
@@ -178,6 +178,8 @@ export function poll(func: () => Promise<any>, options?: PollOptions): Promise<a
 
                     setTimeout(check, timeout);
                 }
+
+                return null;
             }, function(error) {
                 if (cancel()) { reject(error); }
             });

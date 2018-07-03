@@ -163,37 +163,21 @@ var Wallet = /** @class */ (function (_super) {
         return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
     };
     Wallet.fromEncryptedJson = function (json, password, progressCallback) {
-        if (progressCallback && typeof (progressCallback) !== 'function') {
-            throw new Error('invalid callback');
+        if (secretStorage.isCrowdsaleWallet(json)) {
+            try {
+                var privateKey = secretStorage.decryptCrowdsale(json, password);
+                return Promise.resolve(new Wallet(privateKey));
+            }
+            catch (error) {
+                return Promise.reject(error);
+            }
         }
-        return new Promise(function (resolve, reject) {
-            if (secretStorage.isCrowdsaleWallet(json)) {
-                try {
-                    var privateKey = secretStorage.decryptCrowdsale(json, password);
-                    resolve(new Wallet(privateKey));
-                }
-                catch (error) {
-                    reject(error);
-                }
-            }
-            else if (secretStorage.isValidWallet(json)) {
-                secretStorage.decrypt(json, password, progressCallback).then(function (signingKey) {
-                    var wallet = new Wallet(signingKey);
-                    /*
-                    if (signingKey.mnemonic && signingKey.path) {
-                        wallet.mnemonic = signingKey.mnemonic;
-                        wallet.path = signingKey.path;
-                    }
-                    */
-                    resolve(wallet);
-                }, function (error) {
-                    reject(error);
-                });
-            }
-            else {
-                reject('invalid wallet JSON');
-            }
-        });
+        else if (secretStorage.isValidWallet(json)) {
+            return secretStorage.decrypt(json, password, progressCallback).then(function (signingKey) {
+                return new Wallet(signingKey);
+            });
+        }
+        return Promise.reject('invalid wallet JSON');
     };
     Wallet.fromMnemonic = function (mnemonic, path, wordlist) {
         if (!path) {

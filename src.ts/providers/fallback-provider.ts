@@ -89,11 +89,11 @@ export class FallbackProvider extends Provider {
                 }
 
                 var provider = providers.shift();
-                provider.perform(method, params).then(function(result) {
-                    resolve(result);
-                }, function (error) {
+                provider.perform(method, params).then((result) => {
+                    return resolve(result);
+                }).catch((error) => {
                     if (!firstError) { firstError = error; }
-                    next();
+                    setTimeout(next, 0);
                 });
             }
             next();

@@ -225,6 +225,7 @@ export class EtherscanProvider extends Provider{
                                 return self.getTransaction(log.transactionHash).then(function(tx) {
                                     txs[log.transactionHash] = tx.blockHash;
                                     log.blockHash = tx.blockHash;
+                                    return null;
                                 });
                             }
                             return null;

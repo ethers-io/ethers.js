@@ -573,7 +573,8 @@ var Provider = /** @class */ (function () {
                         }
                         _this._emitted['t:' + event.hash.toLowerCase()] = receipt.blockNumber;
                         _this.emit(event.hash, receipt);
-                    });
+                        return null;
+                    }).catch(function (error) { });
                 }
                 else if (event.type === 'address') {
                     if (_this._balances[event.address]) {
@@ -586,7 +587,8 @@ var Provider = /** @class */ (function () {
                         }
                         this._balances[event.address] = balance;
                         this.emit(event.address, balance);
-                    });
+                        return null;
+                    }).catch(function (error) { });
                 }
                 else if (event.type === 'topic') {
                     _this.getLogs({
@@ -602,12 +604,14 @@ var Provider = /** @class */ (function () {
                             _this._emitted['t:' + log.transactionHash.toLowerCase()] = log.blockNumber;
                             _this.emit(event.topic, log);
                         });
-                    });
+                        return null;
+                    }).catch(function (error) { });
                 }
             });
             _this._lastBlockNumber = blockNumber;
             _this._balances = newBalances;
-        });
+            return null;
+        }).catch(function (error) { });
         this.doPoll();
     };
     Provider.prototype.resetEventsBlock = function (blockNumber) {
@@ -958,6 +962,7 @@ var Provider = /** @class */ (function () {
             }
             promises.push(this.resolveName(result[key]).then(function (address) {
                 result[key] = address;
+                return;
             }));
         }, this);
         return Promise.all(promises).then(function () { return result; });

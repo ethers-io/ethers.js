@@ -9039,7 +9039,15 @@ var Contract = /** @class */ (function () {
             return;
         }
         properties_1.defineReadOnly(this, 'address', addressOrName);
-        properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName));
+        properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName).then(function (address) {
+            if (address == null) {
+                throw new Error('name not found');
+            }
+            return address;
+        }).catch(function (error) {
+            console.log('ERROR: Cannot find Contract - ' + addressOrName);
+            throw error;
+        }));
         Object.keys(this.interface.functions).forEach(function (name) {
             var run = runMethod(_this, name, false);
             if (_this[name] == null) {
@@ -9061,7 +9069,7 @@ var Contract = /** @class */ (function () {
                 contract.addressPromise.then(function (address) {
                     // Not meant for us (the topics just has the same name)
                     if (address != log.address) {
-                        return;
+                        return null;
                     }
                     try {
                         var result = eventInfo.decode(log.data, log.topics);
@@ -9085,7 +9093,8 @@ var Contract = /** @class */ (function () {
                             setTimeout(function () { onerror_1(error); });
                         }
                     }
-                });
+                    return null;
+                }).catch(function (error) { });
             }
             var property = {
                 enumerable: true,
@@ -9796,6 +9805,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                                 return self.getTransaction(log.transactionHash).then(function (tx) {
                                     txs[log.transactionHash] = tx.blockHash;
                                     log.blockHash = tx.blockHash;
+                                    return null;
                                 });
                             }
                             return null;
@@ -9959,12 +9969,12 @@ var FallbackProvider = /** @class */ (function (_super) {
                 }
                 var provider = providers.shift();
                 provider.perform(method, params).then(function (result) {
-                    resolve(result);
-                }, function (error) {
+                    return resolve(result);
+                }).catch(function (error) {
                     if (!firstError) {
                         firstError = error;
                     }
-                    next();
+                    setTimeout(next, 0);
                 });
             }
             next();
@@ -10260,8 +10270,9 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             var ready = new Promise(function (resolve, reject) {
                 setTimeout(function () {
                     _this.send('net_version', []).then(function (result) {
-                        var chainId = parseInt(result);
-                        resolve(networks_1.getNetwork(chainId));
+                        return resolve(networks_1.getNetwork(parseInt(result)));
+                    }).catch(function (error) {
+                        reject(error);
                     });
                 });
             });
@@ -10361,6 +10372,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                         seq = seq.then(function () {
                             return self.getTransaction(hash).then(function (tx) {
                                 self.emit('pending', tx);
+                                return null;
                             });
                         });
                     });
@@ -10373,11 +10385,12 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                         return;
                     }
                     setTimeout(function () { poll(); }, 0);
-                });
+                    return null;
+                }).catch(function (error) { });
             }
             poll();
             return filterId;
-        });
+        }).catch(function (error) { });
     };
     JsonRpcProvider.prototype._stopPending = function () {
         this._pendingFilter = null;
@@ -11064,7 +11077,8 @@ var Provider = /** @class */ (function () {
                         }
                         _this._emitted['t:' + event.hash.toLowerCase()] = receipt.blockNumber;
                         _this.emit(event.hash, receipt);
-                    });
+                        return null;
+                    }).catch(function (error) { });
                 }
                 else if (event.type === 'address') {
                     if (_this._balances[event.address]) {
@@ -11077,7 +11091,8 @@ var Provider = /** @class */ (function () {
                         }
                         this._balances[event.address] = balance;
                         this.emit(event.address, balance);
-                    });
+                        return null;
+                    }).catch(function (error) { });
                 }
                 else if (event.type === 'topic') {
                     _this.getLogs({
@@ -11093,12 +11108,14 @@ var Provider = /** @class */ (function () {
                             _this._emitted['t:' + log.transactionHash.toLowerCase()] = log.blockNumber;
                             _this.emit(event.topic, log);
                         });
-                    });
+                        return null;
+                    }).catch(function (error) { });
                 }
             });
             _this._lastBlockNumber = blockNumber;
             _this._balances = newBalances;
-        });
+            return null;
+        }).catch(function (error) { });
         this.doPoll();
     };
     Provider.prototype.resetEventsBlock = function (blockNumber) {
@@ -11449,6 +11466,7 @@ var Provider = /** @class */ (function () {
             }
             promises.push(this.resolveName(result[key]).then(function (address) {
                 result[key] = address;
+                return;
             }));
         }, this);
         return Promise.all(promises).then(function () { return result; });
@@ -13490,6 +13508,7 @@ function resolveProperties(object) {
         if (value instanceof Promise) {
             promises.push(value.then(function (value) {
                 result[key] = value;
+                return null;
             }));
         }
         else {
@@ -14378,7 +14397,7 @@ function poll(func, options) {
         }
         var attempt = 0;
         function check() {
-            func().then(function (result) {
+            return func().then(function (result) {
                 // If we have a result, or are allowed null then we're done
                 if (result !== undefined) {
                     if (cancel()) {
@@ -14400,6 +14419,7 @@ function poll(func, options) {
                     }
                     setTimeout(check, timeout);
                 }
+                return null;
             }, function (error) {
                 if (cancel()) {
                     reject(error);
@@ -15315,37 +15335,21 @@ var Wallet = /** @class */ (function (_super) {
         return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
     };
     Wallet.fromEncryptedJson = function (json, password, progressCallback) {
-        if (progressCallback && typeof (progressCallback) !== 'function') {
-            throw new Error('invalid callback');
+        if (secretStorage.isCrowdsaleWallet(json)) {
+            try {
+                var privateKey = secretStorage.decryptCrowdsale(json, password);
+                return Promise.resolve(new Wallet(privateKey));
+            }
+            catch (error) {
+                return Promise.reject(error);
+            }
         }
-        return new Promise(function (resolve, reject) {
-            if (secretStorage.isCrowdsaleWallet(json)) {
-                try {
-                    var privateKey = secretStorage.decryptCrowdsale(json, password);
-                    resolve(new Wallet(privateKey));
-                }
-                catch (error) {
-                    reject(error);
-                }
-            }
-            else if (secretStorage.isValidWallet(json)) {
-                secretStorage.decrypt(json, password, progressCallback).then(function (signingKey) {
-                    var wallet = new Wallet(signingKey);
-                    /*
-                    if (signingKey.mnemonic && signingKey.path) {
-                        wallet.mnemonic = signingKey.mnemonic;
-                        wallet.path = signingKey.path;
-                    }
-                    */
-                    resolve(wallet);
-                }, function (error) {
-                    reject(error);
-                });
-            }
-            else {
-                reject('invalid wallet JSON');
-            }
-        });
+        else if (secretStorage.isValidWallet(json)) {
+            return secretStorage.decrypt(json, password, progressCallback).then(function (signingKey) {
+                return new Wallet(signingKey);
+            });
+        }
+        return Promise.reject('invalid wallet JSON');
     };
     Wallet.fromMnemonic = function (mnemonic, path, wordlist) {
         if (!path) {

@@ -94,12 +94,12 @@ var FallbackProvider = /** @class */ (function (_super) {
                 }
                 var provider = providers.shift();
                 provider.perform(method, params).then(function (result) {
-                    resolve(result);
-                }, function (error) {
+                    return resolve(result);
+                }).catch(function (error) {
                     if (!firstError) {
                         firstError = error;
                     }
-                    next();
+                    setTimeout(next, 0);
                 });
             }
             next();

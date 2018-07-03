@@ -220,6 +220,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                                 return self.getTransaction(log.transactionHash).then(function (tx) {
                                     txs[log.transactionHash] = tx.blockHash;
                                     log.blockHash = tx.blockHash;
+                                    return null;
                                 });
                             }
                             return null;

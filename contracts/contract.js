@@ -187,7 +187,15 @@ var Contract = /** @class */ (function () {
             return;
         }
         properties_1.defineReadOnly(this, 'address', addressOrName);
-        properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName));
+        properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName).then(function (address) {
+            if (address == null) {
+                throw new Error('name not found');
+            }
+            return address;
+        }).catch(function (error) {
+            console.log('ERROR: Cannot find Contract - ' + addressOrName);
+            throw error;
+        }));
         Object.keys(this.interface.functions).forEach(function (name) {
             var run = runMethod(_this, name, false);
             if (_this[name] == null) {
@@ -209,7 +217,7 @@ var Contract = /** @class */ (function () {
                 contract.addressPromise.then(function (address) {
                     // Not meant for us (the topics just has the same name)
                     if (address != log.address) {
-                        return;
+                        return null;
                     }
                     try {
                         var result = eventInfo.decode(log.data, log.topics);
@@ -233,7 +241,8 @@ var Contract = /** @class */ (function () {
                             setTimeout(function () { onerror_1(error); });
                         }
                     }
-                });
+                    return null;
+                }).catch(function (error) { });
             }
             var property = {
                 enumerable: true,
