@@ -120,11 +120,16 @@ export function fetchJson(connection: string | ConnectionInfo, json: string, pro
     });
 }
 
+export interface OnceBlockable {
+    once(eventName: "block", handler: () => void): void;
+}
+
 export type PollOptions = {
     timeout?: number,
     floor?: number,
     ceiling?: number,
-    interval?: number
+    interval?: number,
+    onceBlock?: OnceBlockable
 };
 
 export function poll(func: () => Promise<any>, options?: PollOptions): Promise<any> {
@@ -159,6 +164,9 @@ export function poll(func: () => Promise<any>, options?: PollOptions): Promise<a
                 // If we have a result, or are allowed null then we're done
                 if (result !== undefined) {
                     if (cancel()) { resolve(result); }
+
+                } else if (options.onceBlock) {
+                    options.onceBlock.once('block', check);
 
                 // Otherwise, exponential back-off (up to 10s) our next request
                 } else if (!done) {

@@ -226,7 +226,7 @@ declare module 'ethers/contracts/contract' {
         readonly deployTransaction: TransactionResponse;
         constructor(addressOrName: string, contractInterface: Contractish, signerOrProvider: Signer | Provider);
         onerror: ErrorCallback;
-        deployed(): Promise<any>;
+        deployed(): Promise<Contract>;
         fallback(overrides?: TransactionRequest): Promise<TransactionResponse>;
         connect(signerOrProvider: Signer | Provider): Contract;
         attach(addressOrName: string): Contract;
@@ -713,11 +713,15 @@ declare module 'ethers/utils/web' {
     };
     export type ProcessFunc = (value: any) => any;
     export function fetchJson(connection: string | ConnectionInfo, json: string, processFunc: ProcessFunc): Promise<any>;
+    export interface OnceBlockable {
+        once(eventName: "block", handler: () => void): void;
+    }
     export type PollOptions = {
         timeout?: number;
         floor?: number;
         ceiling?: number;
         interval?: number;
+        onceBlock?: OnceBlockable;
     };
     export function poll(func: () => Promise<any>, options?: PollOptions): Promise<any>;
 }

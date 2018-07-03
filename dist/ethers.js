@@ -9140,7 +9140,7 @@ var Contract = /** @class */ (function () {
                 }
                 return _this;
             });
-        });
+        }, { onceBlock: this.provider });
     };
     // @TODO:
     // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>
@@ -10209,24 +10209,16 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         return properties_1.resolveProperties(tx).then(function (tx) {
             tx = hexlifyTransaction(tx);
             return _this.provider.send('eth_sendTransaction', [tx]).then(function (hash) {
-                // @TODO: Make a pollProperty method in utils
-                return new Promise(function (resolve, reject) {
-                    var count = 0;
-                    var check = function () {
-                        _this.provider.getTransaction(hash).then(function (tx) {
-                            if (tx == null) {
-                                if (count++ > 500) {
-                                    // @TODO: Better error
-                                    reject(new Error('could not find transaction'));
-                                    return;
-                                }
-                                setTimeout(check, 200);
-                                return;
-                            }
-                            resolve(_this.provider._wrapTransaction(tx, hash));
-                        });
-                    };
-                    setTimeout(check, 50);
+                return web_1.poll(function () {
+                    return _this.provider.getTransaction(hash).then(function (tx) {
+                        if (tx === null) {
+                            return undefined;
+                        }
+                        return _this.provider._wrapTransaction(tx, hash);
+                    });
+                }, { onceBlock: _this.provider }).catch(function (error) {
+                    error.transactionHash = hash;
+                    throw error;
                 });
             });
         });
@@ -11274,6 +11266,12 @@ var Provider = /** @class */ (function () {
                 var params = { signedTransaction: bytes_1.hexlify(signedTransaction) };
                 return _this.perform('sendTransaction', params).then(function (hash) {
                     return _this._wrapTransaction(transaction_1.parse(signedTransaction), hash);
+                }, function (error) {
+                    var tx = transaction_1.parse(signedTransaction);
+                    if (tx.hash) {
+                        error.transactionHash = tx.hash;
+                    }
+                    throw error;
                 });
             });
         });
@@ -11352,7 +11350,7 @@ var Provider = /** @class */ (function () {
                                 }
                                 return checkBlock(block);
                             });
-                        });
+                        }, { onceBlock: _this });
                     }
                 }
                 catch (error) { }
@@ -11372,7 +11370,7 @@ var Provider = /** @class */ (function () {
                             }
                             return checkBlock(block);
                         });
-                    });
+                    }, { onceBlock: _this });
                 }
                 catch (error) { }
                 throw new Error('invalid block hash or block tag');
@@ -11395,7 +11393,7 @@ var Provider = /** @class */ (function () {
                         }
                         return checkTransactionResponse(result);
                     });
-                });
+                }, { onceBlock: _this });
             });
         });
     };
@@ -11415,7 +11413,7 @@ var Provider = /** @class */ (function () {
                         }
                         return checkTransactionReceipt(result);
                     });
-                });
+                }, { onceBlock: _this });
             });
         });
     };
@@ -12837,6 +12835,9 @@ var BigNumber = /** @class */ (function () {
                     value = '0';
                 }
                 properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(value));
+            }
+            else {
+                errors.throwError('invalid BigNumber string value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
             }
         }
         else if (typeof (value) === 'number') {
@@ -14383,6 +14384,9 @@ function poll(func, options) {
                     if (cancel()) {
                         resolve(result);
                     }
+                }
+                else if (options.onceBlock) {
+                    options.onceBlock.once('block', check);
                     // Otherwise, exponential back-off (up to 10s) our next request
                 }
                 else if (!done) {

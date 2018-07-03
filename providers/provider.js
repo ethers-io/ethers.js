@@ -775,6 +775,12 @@ var Provider = /** @class */ (function () {
                 var params = { signedTransaction: bytes_1.hexlify(signedTransaction) };
                 return _this.perform('sendTransaction', params).then(function (hash) {
                     return _this._wrapTransaction(transaction_1.parse(signedTransaction), hash);
+                }, function (error) {
+                    var tx = transaction_1.parse(signedTransaction);
+                    if (tx.hash) {
+                        error.transactionHash = tx.hash;
+                    }
+                    throw error;
                 });
             });
         });
@@ -853,7 +859,7 @@ var Provider = /** @class */ (function () {
                                 }
                                 return checkBlock(block);
                             });
-                        });
+                        }, { onceBlock: _this });
                     }
                 }
                 catch (error) { }
@@ -873,7 +879,7 @@ var Provider = /** @class */ (function () {
                             }
                             return checkBlock(block);
                         });
-                    });
+                    }, { onceBlock: _this });
                 }
                 catch (error) { }
                 throw new Error('invalid block hash or block tag');
@@ -896,7 +902,7 @@ var Provider = /** @class */ (function () {
                         }
                         return checkTransactionResponse(result);
                     });
-                });
+                }, { onceBlock: _this });
             });
         });
     };
@@ -916,7 +922,7 @@ var Provider = /** @class */ (function () {
                         }
                         return checkTransactionReceipt(result);
                     });
-                });
+                }, { onceBlock: _this });
             });
         });
     };

@@ -144,6 +144,9 @@ function poll(func, options) {
                     if (cancel()) {
                         resolve(result);
                     }
+                }
+                else if (options.onceBlock) {
+                    options.onceBlock.once('block', check);
                     // Otherwise, exponential back-off (up to 10s) our next request
                 }
                 else if (!done) {

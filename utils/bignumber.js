@@ -50,6 +50,9 @@ var BigNumber = /** @class */ (function () {
                 }
                 properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(value));
             }
+            else {
+                errors.throwError('invalid BigNumber string value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
+            }
         }
         else if (typeof (value) === 'number') {
             if (parseInt(String(value)) !== value) {

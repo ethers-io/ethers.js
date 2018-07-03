@@ -130,24 +130,16 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         return properties_1.resolveProperties(tx).then(function (tx) {
             tx = hexlifyTransaction(tx);
             return _this.provider.send('eth_sendTransaction', [tx]).then(function (hash) {
-                // @TODO: Make a pollProperty method in utils
-                return new Promise(function (resolve, reject) {
-                    var count = 0;
-                    var check = function () {
-                        _this.provider.getTransaction(hash).then(function (tx) {
-                            if (tx == null) {
-                                if (count++ > 500) {
-                                    // @TODO: Better error
-                                    reject(new Error('could not find transaction'));
-                                    return;
-                                }
-                                setTimeout(check, 200);
-                                return;
-                            }
-                            resolve(_this.provider._wrapTransaction(tx, hash));
-                        });
-                    };
-                    setTimeout(check, 50);
+                return web_1.poll(function () {
+                    return _this.provider.getTransaction(hash).then(function (tx) {
+                        if (tx === null) {
+                            return undefined;
+                        }
+                        return _this.provider._wrapTransaction(tx, hash);
+                    });
+                }, { onceBlock: _this.provider }).catch(function (error) {
+                    error.transactionHash = hash;
+                    throw error;
                 });
             });
         });

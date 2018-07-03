@@ -938,6 +938,12 @@ export class Provider {
                 var params = { signedTransaction: hexlify(signedTransaction) };
                 return this.perform('sendTransaction', params).then((hash) => {
                     return this._wrapTransaction(parseTransaction(signedTransaction), hash);
+                }, function (error) {
+                    let tx = parseTransaction(signedTransaction);
+                    if (tx.hash) {
+                        (<any>error).transactionHash = tx.hash;
+                    }
+                    throw error;
                 });
             });
         });
@@ -1019,7 +1025,7 @@ export class Provider {
                                 }
                                 return checkBlock(block);
                             });
-                        });
+                        }, { onceBlock: this });
 
                     }
                 } catch (error) { }
@@ -1042,7 +1048,7 @@ export class Provider {
                             }
                             return checkBlock(block);
                         });
-                    });
+                    }, { onceBlock: this });
                 } catch (error) { }
 
                 throw new Error('invalid block hash or block tag');
@@ -1064,7 +1070,7 @@ export class Provider {
                         }
                         return checkTransactionResponse(result);
                     });
-                });
+                }, { onceBlock: this });
             });
         });
     }
@@ -1083,7 +1089,7 @@ export class Provider {
                         }
                         return checkTransactionReceipt(result);
                     });
-                });
+                }, { onceBlock: this });
             });
         });
     }

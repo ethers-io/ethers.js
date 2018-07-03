@@ -288,7 +288,7 @@ var Contract = /** @class */ (function () {
                 }
                 return _this;
             });
-        });
+        }, { onceBlock: this.provider });
     };
     // @TODO:
     // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>

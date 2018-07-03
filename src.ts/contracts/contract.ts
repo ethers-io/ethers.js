@@ -332,7 +332,7 @@ export class Contract {
     }
 
     // @TODO: Allow timeout?
-    deployed() {
+    deployed(): Promise<Contract> {
         // If we were just deployed, we know the transaction we should occur in
         if (this.deployTransaction) {
             return this.deployTransaction.wait().then(() => {
@@ -346,7 +346,7 @@ export class Contract {
                 if (code === '0x') { return undefined; }
                 return this;
             });
-        });
+        }, { onceBlock: this.provider });
     }
 
     // @TODO:

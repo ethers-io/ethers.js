@@ -11,7 +11,7 @@ import { BigNumber } from '../utils/bignumber';
 import { Arrayish, hexlify, hexStripZeros } from '../utils/bytes';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { toUtf8Bytes } from '../utils/utf8';
-import { ConnectionInfo, fetchJson } from '../utils/web';
+import { ConnectionInfo, fetchJson, poll } from '../utils/web';
 
 import * as errors from '../utils/errors';
 
@@ -121,24 +121,14 @@ export class JsonRpcSigner extends Signer {
         return resolveProperties(tx).then((tx) => {
             tx = hexlifyTransaction(tx);
             return this.provider.send('eth_sendTransaction', [ tx ]).then((hash) => {
-                // @TODO: Make a pollProperty method in utils
-                return new Promise((resolve: (result: TransactionResponse) => void, reject) => {
-                    let count = 0;
-                    let check = () => {
-                        this.provider.getTransaction(hash).then((tx: TransactionResponse) => {
-                            if (tx == null) {
-                                if (count++ > 500) {
-                                    // @TODO: Better error
-                                    reject(new Error('could not find transaction'));
-                                    return;
-                                }
-                                setTimeout(check, 200);
-                                return;
-                            }
-                            resolve(this.provider._wrapTransaction(tx, hash));
-                        });
-                    }
-                    setTimeout(check, 50);
+                return poll(() => {
+                    return this.provider.getTransaction(hash).then((tx: TransactionResponse) => {
+                        if (tx === null) { return undefined; }
+                        return this.provider._wrapTransaction(tx, hash);
+                    });
+                }, { onceBlock: this.provider }).catch((error: Error) => {
+                    (<any>error).transactionHash = hash;
+                    throw error;
                 });
             });
         });

@@ -414,6 +414,7 @@ describe('Test Basic Authentication', function() {
 
     function test(name, url) {
         it('tests ' + name, function() {
+            this.timeout(20000);
             return ethers.utils.fetchJson(url).then(function(data) {
                 assert.equal(data.authenticated, true, 'authenticates user');
             });
@@ -443,6 +444,7 @@ describe('Test Basic Authentication', function() {
     test('insecure url', insecureForced);
 
     it('tests insecure connections fail', function() {
+        this.timeout(20000);
         assert.throws(function() {
             ethers.utils.fetchJson(insecure);
         }, function(error) {
