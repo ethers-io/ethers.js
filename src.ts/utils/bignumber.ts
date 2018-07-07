@@ -114,6 +114,10 @@ export class BigNumber {
     eq(other: BigNumberish): boolean {
         return this._bn.eq(bigNumberify(other)._bn);
     }
+    
+    equals(other: BigNumberish): boolean {
+        return this._bn.eq(bigNumberify(other)._bn);
+    }
 
     lt(other: BigNumberish): boolean {
         return this._bn.lt(bigNumberify(other)._bn);
