@@ -79,7 +79,7 @@ function TestContractEvents() {
     });
 }
 
-describe('Test Contract Objects', function() {
+xdescribe('Test Contract Objects', function() {
 
     it('parses events', function() {
         this.timeout(120000);
@@ -134,5 +134,93 @@ describe('Test Contract Objects', function() {
             assert.equal(result.r0, 7, 'multi value [r0] returned');
             assert.equal(result.r1, 8, 'multi value [r1] returned');
         });
+    });
+});
+
+/*
+    Revert reason throws is implemented only for JsonRpcProvider 
+    Ganache-version: Ganache CLI v6.1.4 (ganache-core: 2.1.3)
+*/
+
+describe('Test revert reasons errors', () => {
+    var GanacheCLI = require("ganache-cli");
+    var contractJson = require('./make-tests/test-revert-reasons/Revert.json');
+    var localProvider;
+    var wallet;
+
+    var expectedRevertReasons = [
+        "Number should be bigger than 7",
+        "Number is not bigger than 5",
+        "Number is not enough bigger",
+        "Owner's address should not be zero"
+    ];
+
+    var server = GanacheCLI.server({
+        accounts: [ 
+            {   secretKey: privateKey, 
+                "0xd9995bae12fee327256ffec1e3184d492bd94c31": "0x0999999999999999999"
+            } 
+        ]
+    });
+
+    var port = 18545;
+    var privateKey = '0x7ab741b57e8d94dd7e1a29055646bafde7010f38a900f55bbd7647880faa6ee8';
+
+    beforeEach(() => {
+        // Ganache version 6.1.4 listens to http://127.0.0.1:8545
+        server.listen(port, function(err, blockchain) {
+            localProvider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:' + port);
+            wallet = new ethers.Wallet(privateKey, localProvider);
+        });
+
+        var localProvider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
+    });
+    
+    it('should throw from constructor', async () => {
+        let txForDeploy = await ethers.Contract.getDeployTransaction(contractJson.bytecode, contractJson.abi, accounts[1]);
+        try{
+            await wallet.sendTransaction(txForDeploy);
+        }catch(error){
+            assert.equal(error.message, expectedRevertReasons[3], "Constructor revert is not handled properly");
+        }
+    });
+
+    it('should throw with relevant reason from non-view functions', async () => {
+        var contractInstance = await initContract(localProvider);
+
+        try{
+            await contractInstance.set(6);
+        }catch(error){
+            assert.equal(error.message, expectedRevertReasons[0], "Non-view function revert is not handled properly");
+        }
+
+        try{
+            await contractInstance.set(2);
+        }catch(error){
+            assert.equal(error.message, expectedRevertReasons[1], "Non-view function revert is not handled properly");
+        }
+    });
+
+    it('should throw with relevant reason from view functions', async () => {
+        var contractInstance = await initContract(localProvider);
+
+        try{
+            await contractInstance.isEnoughBigger();
+        }catch(error){
+            assert.equal(error.message, expectedRevertReasons[2], "View function revert is not handled properly");
+        }
+    });
+
+    var initContract = async function(provider) {
+
+        let txForDeploy = await ethers.Contract.getDeployTransaction(contractJson.bytecode, contractJson.abi);
+        let deploymentTxn = await wallet.sendTransaction(txForDeploy);
+        let contractAddress = await provider.waitForTransaction(deploymentTxn.hash);
+
+        return new ethers.Contract(contractAddress, contractJson.abi, provider);
+    };
+    
+    afterEach(() => {
+        server.stop();
     });
 });
