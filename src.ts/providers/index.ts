@@ -1,6 +1,6 @@
 'use strict';
 
-import { Provider, ProviderSigner } from './provider';
+import { Provider } from './provider';
 
 import { Network } from './networks';
 
@@ -22,8 +22,6 @@ export {
     Provider,
     getDefaultProvider,
 
-    ProviderSigner,
-
     FallbackProvider,
 
     EtherscanProvider,
@@ -37,8 +35,6 @@ export {
 export default {
     Provider,
     getDefaultProvider,
-
-    ProviderSigner,
 
     FallbackProvider,
 

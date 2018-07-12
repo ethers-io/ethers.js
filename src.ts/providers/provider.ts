@@ -1,18 +1,15 @@
 'use strict';
 
-//import inherits = require('inherits');
-
-import { Signer } from '../wallet/wallet';
+import { getNetwork, Network, Networkish } from './networks';
 
 import { getAddress, getContractAddress } from '../utils/address';
 import { BigNumber, bigNumberify, BigNumberish } from '../utils/bignumber';
-import { arrayify, Arrayish, hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, joinSignature, stripZeros } from '../utils/bytes';
-import { toUtf8String } from '../utils/utf8';
-import { decode as rlpDecode, encode as rlpEncode } from '../utils/rlp';
-import { hashMessage, namehash } from '../utils/hash';
-import { getNetwork, Network, Networkish } from './networks';
+import { Arrayish, hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, stripZeros } from '../utils/bytes';
+import { namehash } from '../utils/hash';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
-import { parse as parseTransaction, serialize as serializeTransaction, SignDigestFunc, Transaction } from '../utils/transaction';
+import { encode as rlpEncode } from '../utils/rlp';
+import { parse as parseTransaction, Transaction } from '../utils/transaction';
+import { toUtf8String } from '../utils/utf8';
 import { poll } from '../utils/web';
 
 import * as errors from '../utils/errors';
@@ -89,10 +86,9 @@ export type Filter = {
     fromBlock?: BlockTag,
     toBlock?: BlockTag,
     address?: string,
-    topics?: Array<any>
+    topics?: Array<string | Array<string>>,
 }
 
-// @TODO: Some of these are not options; force them?
 export interface Log {
     blockNumber?: number;
     blockHash?: string;
@@ -103,59 +99,14 @@ export interface Log {
     transactionLogIndex?: number,
 
     address: string;
-    data?: string;
+    data: string;
 
-    topics?: Array<string>;
+    topics: Array<string>;
 
     transactionHash?: string;
     logIndex?: number;
 }
 
-export type Listener = (...args: Array<any>) => void;
-
-
-//////////////////////////////
-// Request and Response Checking
-
-type ResolveFunc = (result: any) => void;
-type RejectFunc = (error: Error) => void;
-type SetupFunc = (resolve: ResolveFunc, reject: RejectFunc) => void;
-type CancelledFunc = () => void;
-function timeoutFunction(setup: SetupFunc, cancelled: CancelledFunc, timeout: number): Promise<any> {
-    var timer: any = null;
-    var done = false;
-    return new Promise(function(resolve, reject) {
-        function cancelTimer() {
-            if (timer == null) { return; }
-            clearTimeout(timer);
-            timer = null;
-        }
-
-        function complete(result: any): void {
-            cancelTimer();
-            if (done) { return; }
-            resolve(result);
-            done = true;
-        }
-
-        setup(complete, (error: Error) => {
-            cancelTimer();
-            if (done) { return; }
-            reject(error);
-            done = true;
-        });
-
-        if (typeof(timeout) === 'number' && timeout > 0) {
-            timer = setTimeout(function() {
-                cancelTimer();
-                if (done) { return; }
-                if (cancelled) { cancelled(); }
-                reject(new Error('timeout'));
-                done = true;
-            }, timeout);
-        }
-    });
-};
 
 //////////////////////////////
 // Request and Response Checking
@@ -208,7 +159,7 @@ function arrayOf(check: CheckFunc): CheckFunc {
 
 function checkHash(hash: any): string {
     if (typeof(hash) === 'string' && hexDataLength(hash) === 32) {
-       return hash;
+       return hash.toLowerCase();
     }
     errors.throwError('invalid hash', errors.INVALID_ARGUMENT, { arg: 'hash', value: hash });
     return null;
@@ -509,74 +460,58 @@ function checkLog(log: any): any {
 //////////////////////////////
 // Event Serializeing
 
-function recurse(object: any, convertFunc: (object: any) => any): any {
-    if (Array.isArray(object)) {
-        var result: any = [];
-        object.forEach(function(object) {
-            result.push(recurse(object, convertFunc));
-        });
-        return result;
-    }
-    return convertFunc(object);
-}
-
-function getEventString(object: any): string {
-    try {
-        return 'address:' + getAddress(object);
-    } catch (error) { }
-
-    if (object === 'block' || object === 'pending' || object === 'error') {
-        return object;
-
-    } else if (hexDataLength(object) === 32) {
-        return 'tx:' + object;
-
-    } else if (Array.isArray(object)) {
-        // Replace null in the structure with '0x'
-        let stringified: any = recurse(object, function(object: any) {
-            if (object == null) { object = '0x'; }
-            return object;
-        });
-
-        try {
-            return 'topic:' + rlpEncode(stringified);
-        } catch (error) {
-            console.log(error);
-        }
-    }
-    try {
-        throw new Error();
-    } catch(e) {
-        console.log(e.stack);
-    }
-
-    throw new Error('invalid event - ' + object);
-}
-
-function parseEventString(event: string): { type: string, address?: string, hash?: string, topic?: any } {
-    if (event.substring(0, 3) === 'tx:') {
-        return { type: 'transaction', hash: event.substring(3) };
-
-    } else if (event === 'block' || event === 'pending' || event === 'error') {
-        return { type: event };
-
-    } else if (event.substring(0, 8) === 'address:') {
-        return { type: 'address', address: event.substring(8) };
-
-    } else if (event.substring(0, 6) === 'topic:') {
-        try {
-            let object = recurse(rlpDecode(event.substring(6)), function(object: any) {
-                if (object === '0x') { object = null; }
-                return object;
+function serializeTopics(topics: Array<string | Array<string>>): string {
+    return topics.map((topic) => {
+        if (typeof(topic) === 'string') {
+            return topic;
+        } else if (Array.isArray(topic)) {
+            topic.forEach((topic) => {
+                if (topic !== null && hexDataLength(topic) !== 32) {
+                    errors.throwError('invalid topic', errors.INVALID_ARGUMENT, { argument: 'topic', value: topic });
+                }
             });
-            return { type: 'topic', topic: object };
-        } catch (error) {
-            console.log(error);
+            return topic.join(',');
         }
+        return errors.throwError('invalid topic value', errors.INVALID_ARGUMENT, { argument: 'topic', value: topic });
+    }).join('&');
+}
+
+function deserializeTopics(data: string): Array<string | Array<string>> {
+    return data.split(/&/g).map((topic) => {
+        let comps = topic.split(',');
+        if (comps.length === 1) {
+            if (comps[0] === '') { return null; }
+            return topic;
+        }
+        return comps;
+    });
+}
+
+function getEventTag(eventName: EventType): string {
+    if (typeof(eventName) === 'string') {
+        if (hexDataLength(eventName) === 20) {
+            return 'address:' + getAddress(eventName);
+        }
+
+        eventName = eventName.toLowerCase();
+
+        if (eventName === 'block' || eventName === 'pending' || eventName === 'error') {
+            return eventName;
+
+        } else if (hexDataLength(eventName) === 32) {
+            return 'tx:' + eventName;
+        }
+
+    } else if (Array.isArray(eventName)) {
+        return 'filter::' + serializeTopics(eventName);
+
+    } else if (eventName && typeof(eventName) === 'object') {
+        return 'filter:' + (eventName.address || '') + ':' + serializeTopics(eventName.topics || []);
     }
 
-    throw new Error('invalid event string');
+    throw new Error('invalid event - ' + eventName);
 }
+
 //////////////////////////////
 // Provider Object
 
@@ -592,6 +527,8 @@ type Event = {
 // @TODO: Perhaps allow a SignDigestAsyncFunc?
 
 // Enable a simple signing function and provider to provide a full Signer
+/*
+export type SignDigestFunc = (digest: string) => Promise<Signature>;
 export class ProviderSigner extends Signer {
     readonly provider: Provider;
     readonly signDigest: SignDigestFunc;
@@ -611,7 +548,9 @@ export class ProviderSigner extends Signer {
     }
 
     signMessage(message: Arrayish | string): Promise<string> {
-        return Promise.resolve(joinSignature(this.signDigest(arrayify(hashMessage(message)))));
+        return this.signDigest(arrayify(hashMessage(message))).then((signature) => {
+            return joinSignature(signature);
+        });
     }
 
     sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
@@ -636,22 +575,50 @@ export class ProviderSigner extends Signer {
         }
 
         return resolveProperties(transaction).then((tx) => {
-            let signedTx = serializeTransaction(tx, this.signDigest);
-            return this._addressPromise.then((address) => {
-                if (parseTransaction(signedTx).from !== address) {
-                    errors.throwError('signing address does not match expected address', errors.UNKNOWN_ERROR, { address: parseTransaction(signedTx).from, expectedAddress: address, signedTransaction: signedTx });
-                }
-                return this.provider.sendTransaction(signedTx);
+            let unsignedTx = serializeTransaction(tx);
+            return this.signDigest(keccak256(unsignedTx)).then((signature) => {
+                let signedTx = serializeTransaxction(tx, (ut) => {
+                    if (unsignedTx !== ut) { throw new Error('this should not happen'); }
+                    return signature;
+                });
+
+                return this._addressPromise.then((address) => {
+                    if (parseTransaction(signedTx).from !== address) {
+                        errors.throwError('signing address does not match expected address', errors.UNKNOWN_ERROR, { address: parseTransaction(signedTx).from, expectedAddress: address, signedTransaction: signedTx });
+                    }
+                    return this.provider.sendTransaction(signedTx);
+                });
             });
         });
     }
+}
+*/
+
+export type Listener = (...args: Array<any>) => void;
+
+/**
+ *  EventType
+ *   - "block"
+ *   - "pending"
+ *   - "error"
+ *   - address
+ *   - filter
+ *   - topics array
+ *   - transaction hash
+ */
+
+export type EventType = string | Array<string> | Filter;
+
+type _Event = {
+    listener: Listener;
+    once: boolean;
+    tag: string;
 }
 
 export class Provider {
     private _network: Network;
 
-    // string => Event
-    private _events: any;
+    private _events: Array<_Event>;
     protected _emitted: any;
 
     private _pollingInterval: number;
@@ -700,7 +667,7 @@ export class Provider {
         this._balances = {};
 
         // Events being listened to
-        this._events = {};
+        this._events = [];
 
         this._pollingInterval = 4000;
 
@@ -741,43 +708,52 @@ export class Provider {
             var newBalances: any = {};
 
             // Find all transaction hashes we are waiting on
-            Object.keys(this._events).forEach((eventName) => {
-                var event = parseEventString(eventName);
-
-                if (event.type === 'transaction') {
-                    this.getTransactionReceipt(event.hash).then((receipt) => {
-                        if (!receipt || receipt.blockNumber == null) { return; }
-                        this._emitted['t:' + event.hash.toLowerCase()] = receipt.blockNumber;
-                        this.emit(event.hash, receipt);
-                        return null;
-                    }).catch((error: Error) => { });
-
-                } else if (event.type === 'address') {
-                    if (this._balances[event.address]) {
-                        newBalances[event.address] = this._balances[event.address];
+            this._events.forEach((event) => {
+                let comps = event.tag.split(':');
+                switch (comps[0]) {
+                    case 'tx': {
+                        let hash = comps[1];
+                        this.getTransactionReceipt(hash).then((receipt) => {
+                            if (!receipt || receipt.blockNumber == null) { return; }
+                            this._emitted['t:' + hash] = receipt.blockNumber;
+                            this.emit(hash, receipt);
+                        }).catch((error: Error) => { this.emit('error', error); });
+                        break;
                     }
-                    this.getBalance(event.address, 'latest').then(function(balance) {
-                        var lastBalance = this._balances[event.address];
-                        if (lastBalance && balance.eq(lastBalance)) { return; }
-                        this._balances[event.address] = balance;
-                        this.emit(event.address, balance);
-                        return null;
-                    }).catch((error: Error) => { });
 
-                } else if (event.type === 'topic') {
-                    this.getLogs({
-                        fromBlock: this._lastBlockNumber + 1,
-                        toBlock: blockNumber,
-                        topics: event.topic
-                    }).then((logs) => {
-                        if (logs.length === 0) { return; }
-                        logs.forEach((log) => {
-                            this._emitted['b:' + log.blockHash.toLowerCase()] = log.blockNumber;
-                            this._emitted['t:' + log.transactionHash.toLowerCase()] = log.blockNumber;
-                            this.emit(event.topic, log);
-                        });
-                        return null;
-                    }).catch((error: Error) => { });
+                    case 'address': {
+                        let address = comps[1];
+                        if (this._balances[address]) {
+                            newBalances[address] = this._balances[address];
+                        }
+                        this.getBalance(address, 'latest').then(function(balance) {
+                            var lastBalance = this._balances[address];
+                            if (lastBalance && balance.eq(lastBalance)) { return; }
+                            this._balances[address] = balance;
+                            this.emit(address, balance);
+                        }).catch((error: Error) => { this.emit('error', error); });
+                        break;
+                    }
+
+                    case 'filter': {
+                        let address = comps[1];
+                        let topics = deserializeTopics(comps[2]);
+                        let filter = {
+                            address: address,
+                            fromBlock: this._lastBlockNumber + 1,
+                            toBlock: blockNumber,
+                            topics: topics
+                        }
+                        this.getLogs(filter).then((logs) => {
+                            if (logs.length === 0) { return; }
+                            logs.forEach((log: Log) => {
+                                this._emitted['b:' + log.blockHash] = log.blockNumber;
+                                this._emitted['t:' + log.transactionHash] = log.blockNumber;
+                                this.emit(filter, log);
+                            });
+                        }).catch((error: Error) => { this.emit('error', error); });
+                        break;
+                    }
                 }
             });
 
@@ -791,7 +767,7 @@ export class Provider {
     }
 
     resetEventsBlock(blockNumber: number): void {
-        this._lastBlockNumber = this.blockNumber;
+        this._lastBlockNumber = blockNumber;
         this._doPoll();
     }
 
@@ -845,21 +821,12 @@ export class Provider {
     //        this will be used once we move to the WebSocket or other alternatives to polling
 
     waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt> {
-        let complete: Listener = null
-
-        var setup = (resolve: ResolveFunc) => {
-            complete = (receipt) => {
-                resolve(receipt);
-            };
-
-            this.once(transactionHash, complete);
-        };
-
-        var cancelled = () => {
-            this.removeListener(transactionHash, complete);
-        };
-
-        return timeoutFunction(setup, cancelled, timeout);
+        return poll(() => {
+            return this.getTransactionReceipt(transactionHash).then((receipt) => {
+                if (receipt == null) { return undefined; }
+                return receipt;
+            });
+        }, { onceBlock: this });
     }
 
     getBlockNumber(): Promise<number> {
@@ -965,7 +932,7 @@ export class Provider {
             errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
 
-        this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
+        this._emitted['t:' + tx.hash] = 'pending';
         result.wait = (timeout?: number) => {
             return this.waitForTransaction(hash, timeout).then((receipt) => {
                 if (receipt.status === 0) {
@@ -1023,7 +990,7 @@ export class Provider {
                         return poll(() => {
                             return this.perform('getBlock', { blockHash: blockHash }).then((block) => {
                                 if (block == null) {
-                                    if (this._emitted['b:' + blockHash.toLowerCase()] == null) {
+                                    if (this._emitted['b:' + blockHash] == null) {
                                         return null;
                                     }
                                     return undefined;
@@ -1068,7 +1035,7 @@ export class Provider {
                 return poll(() => {
                     return this.perform('getTransaction', params).then((result) => {
                         if (result == null) {
-                            if (this._emitted['t:' + transactionHash.toLowerCase()] == null) {
+                            if (this._emitted['t:' + transactionHash] == null) {
                                 return null;
                             }
                             return undefined;
@@ -1087,7 +1054,7 @@ export class Provider {
                 return poll(() => {
                     return this.perform('getTransactionReceipt', params).then((result) => {
                         if (result == null) {
-                            if (this._emitted['t:' + transactionHash.toLowerCase()] == null) {
+                            if (this._emitted['t:' + transactionHash] == null) {
                                 return null;
                             }
                             return undefined;
@@ -1099,7 +1066,7 @@ export class Provider {
         });
     }
 
-    getLogs(filter: Filter): Promise<Array<Log>>{
+    getLogs(filter: Filter): Promise<Array<Log>> {
         return this.ready.then(() => {
             return resolveProperties(filter).then((filter) => {
                 return this._resolveNames(filter, ['address']).then((filter) => {
@@ -1261,127 +1228,112 @@ export class Provider {
     _stopPending(): void {
     }
 
-    on(eventName: any, listener: Listener): Provider {
-        var key = getEventString(eventName);
-        if (!this._events[key]) { this._events[key] = []; }
-        this._events[key].push({eventName: eventName, listener: listener, type: 'on'});
-        if (key === 'pending') { this._startPending(); }
+    _addEventListener(eventName: EventType, listener: Listener, once: boolean): void {
+        this._events.push({
+            tag: getEventTag(eventName),
+            listener: listener,
+            once: once,
+        });
+        if (eventName === 'pending') { this._startPending(); }
         this.polling = true;
+    }
 
+    on(eventName: EventType, listener: Listener): Provider {
+        this._addEventListener(eventName, listener, false);
         return this;
     }
 
-    once(eventName: any, listener: Listener): Provider {
-        var key = getEventString(eventName);
-        if (!this._events[key]) { this._events[key] = []; }
-        this._events[key].push({eventName: eventName, listener: listener, type: 'once'});
-        if (key === 'pending') { this._startPending(); }
-        this.polling = true;
-
+    once(eventName: EventType, listener: Listener): Provider {
+        this._addEventListener(eventName, listener, true);
         return this;
     }
 
-    emit(eventName: any, ...args: Array<any>): boolean {
+    addEventListener(eventName: EventType, listener: Listener): Provider {
+        return this.on(eventName, listener);
+    }
+
+    emit(eventName: EventType, ...args: Array<any>): boolean {
         let result = false;
 
-        var key = getEventString(eventName);
-
-        //var args = Array.prototype.slice.call(arguments, 1);
-        var listeners = this._events[key];
-        if (!listeners) { return result; }
-
-        for (var i = 0; i < listeners.length; i++) {
-            var listener = listeners[i];
-            if (listener.type === 'once') {
-                listeners.splice(i, 1);
-                i--;
-            }
-
-            try {
-                listener.listener.apply(this, args);
-                result = true;
-            } catch (error) {
-                console.log('Event Listener Error: ' + error.message);
-            }
-        }
-
-        if (listeners.length === 0) {
-            delete this._events[key];
-            if (key === 'pending') { this._stopPending(); }
-        }
-
-        if (this.listenerCount() === 0) { this.polling = false; }
+        let eventTag = getEventTag(eventName);
+        this._events = this._events.filter((event) => {
+            if (event.tag !== eventTag) { return true; }
+            setTimeout(() => {
+                event.listener.apply(this, args);
+            }, 0);
+            result = true;
+            return !(event.once);
+        });
 
         return result;
     }
 
-    // @TODO: type EventName
-    listenerCount(eventName?: any): number {
-        if (!eventName) {
-            var result = 0;
-            for (var key in this._events) {
-                result += this._events[key].length;
-            }
-            return result;
-        }
+    listenerCount(eventName?: EventType): number {
+        if (!eventName) { return this._events.length; }
 
-        var listeners = this._events[getEventString(eventName)];
-        if (!listeners) { return 0; }
-        return listeners.length;
+        let eventTag = getEventTag(eventName);
+        return this._events.filter((event) => {
+            return (event.tag === eventTag);
+        }).length;
     }
 
-    listeners(eventName: any): Array<Listener> {
-        var listeners = this._events[getEventString(eventName)];
-        if (!listeners) { return []; }
-        var result = [];
-        for (var i = 0; i < listeners.length; i++) {
-            result.push(listeners[i].listener);
-        }
-        return result;
+    listeners(eventName: EventType): Array<Listener> {
+        let eventTag = getEventTag(eventName);
+        return this._events.filter((event) => {
+            return (event.tag === eventTag);
+        }).map((event) => {
+            return event.listener;
+        });
     }
 
-    removeAllListeners(eventName: any): Provider {
-        delete this._events[getEventString(eventName)];
-        if (this.listenerCount() === 0) { this.polling = false; }
+    removeAllListeners(eventName: EventType): Provider {
+        let eventTag = getEventTag(eventName);
+        this._events = this._events.filter((event) => {
+            return (event.tag !== eventTag);
+        });
+
+        if (eventName === 'pending') { this._stopPending(); }
+        if (this._events.length === 0) { this.polling = false; }
 
         return this;
     }
 
-    removeListener(eventName: any, listener: Listener): Provider {
-        var eventNameString = getEventString(eventName);
-        var listeners = this._events[eventNameString];
-        if (!listeners) { return this; }
+    removeListener(eventName: EventType, listener: Listener): Provider {
+        let found = false;
 
-        for (var i = 0; i < listeners.length; i++) {
-            if (listeners[i].listener === listener) {
-                listeners.splice(i, 1);
-                break;
-            }
-        }
+        let eventTag = getEventTag(eventName);
+        this._events = this._events.filter((event) => {
+            if (event.tag !== eventTag) { return true; }
+            if (found) { return true; }
+            found = false;
+            return false;
+        });
 
-        if (listeners.length === 0) {
-            this.removeAllListeners(eventName);
-        }
+        if (eventName === 'pending' && this.listenerCount('pending') === 0) { this._stopPending(); }
+        if (this.listenerCount() === 0) { this.polling = false; }
 
         return this;
     }
 }
 
-/*
-function inheritable(parent) {
-    return function(child) {
+// See: https://github.com/isaacs/inherits/blob/master/inherits_browser.js
+function inherits(ctor: any, superCtor: any): void {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+        constructor: {
+            value: ctor,
+            enumerable: false,
+            writable: true,
+            configurable: true
+        }
+    });
+}
+
+function inheritable(parent: any): (child: any) => void {
+    return function(child: any): void {
         inherits(child, parent);
-        defineProperty(child, 'inherits', inheritable(child));
+        defineReadOnly(child, 'inherits', inheritable(child));
     }
 }
 
-defineProperty(Provider, 'inherits', inheritable(Provider));
-*/
-/*
-function(child) {
-    inherits(child, Provider);
-    child.inherits = function(grandchild) {
-        inherits(grandchild, child)
-    }
-});
-*/
+defineReadOnly(Provider, 'inherits', inheritable(Provider));

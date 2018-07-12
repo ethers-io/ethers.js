@@ -1,14 +1,4 @@
 'use strict';
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -17,63 +7,18 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-//import inherits = require('inherits');
-var wallet_1 = require("../wallet/wallet");
+var networks_1 = require("./networks");
 var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
-var utf8_1 = require("../utils/utf8");
-var rlp_1 = require("../utils/rlp");
 var hash_1 = require("../utils/hash");
-var networks_1 = require("./networks");
 var properties_1 = require("../utils/properties");
+var rlp_1 = require("../utils/rlp");
 var transaction_1 = require("../utils/transaction");
+var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
 ;
-;
-function timeoutFunction(setup, cancelled, timeout) {
-    var timer = null;
-    var done = false;
-    return new Promise(function (resolve, reject) {
-        function cancelTimer() {
-            if (timer == null) {
-                return;
-            }
-            clearTimeout(timer);
-            timer = null;
-        }
-        function complete(result) {
-            cancelTimer();
-            if (done) {
-                return;
-            }
-            resolve(result);
-            done = true;
-        }
-        setup(complete, function (error) {
-            cancelTimer();
-            if (done) {
-                return;
-            }
-            reject(error);
-            done = true;
-        });
-        if (typeof (timeout) === 'number' && timeout > 0) {
-            timer = setTimeout(function () {
-                cancelTimer();
-                if (done) {
-                    return;
-                }
-                if (cancelled) {
-                    cancelled();
-                }
-                reject(new Error('timeout'));
-                done = true;
-            }, timeout);
-        }
-    });
-}
 ;
 //////////////////////////////
 // Request and Response Checking
@@ -125,7 +70,7 @@ function arrayOf(check) {
 }
 function checkHash(hash) {
     if (typeof (hash) === 'string' && bytes_1.hexDataLength(hash) === 32) {
-        return hash;
+        return hash.toLowerCase();
     }
     errors.throwError('invalid hash', errors.INVALID_ARGUMENT, { arg: 'hash', value: hash });
     return null;
@@ -375,133 +320,55 @@ function checkLog(log) {
 }
 //////////////////////////////
 // Event Serializeing
-function recurse(object, convertFunc) {
-    if (Array.isArray(object)) {
-        var result = [];
-        object.forEach(function (object) {
-            result.push(recurse(object, convertFunc));
-        });
-        return result;
-    }
-    return convertFunc(object);
+function serializeTopics(topics) {
+    return topics.map(function (topic) {
+        if (typeof (topic) === 'string') {
+            return topic;
+        }
+        else if (Array.isArray(topic)) {
+            topic.forEach(function (topic) {
+                if (topic !== null && bytes_1.hexDataLength(topic) !== 32) {
+                    errors.throwError('invalid topic', errors.INVALID_ARGUMENT, { argument: 'topic', value: topic });
+                }
+            });
+            return topic.join(',');
+        }
+        return errors.throwError('invalid topic value', errors.INVALID_ARGUMENT, { argument: 'topic', value: topic });
+    }).join('&');
 }
-function getEventString(object) {
-    try {
-        return 'address:' + address_1.getAddress(object);
-    }
-    catch (error) { }
-    if (object === 'block' || object === 'pending' || object === 'error') {
-        return object;
-    }
-    else if (bytes_1.hexDataLength(object) === 32) {
-        return 'tx:' + object;
-    }
-    else if (Array.isArray(object)) {
-        // Replace null in the structure with '0x'
-        var stringified = recurse(object, function (object) {
-            if (object == null) {
-                object = '0x';
+function deserializeTopics(data) {
+    return data.split(/&/g).map(function (topic) {
+        var comps = topic.split(',');
+        if (comps.length === 1) {
+            if (comps[0] === '') {
+                return null;
             }
-            return object;
-        });
-        try {
-            return 'topic:' + rlp_1.encode(stringified);
+            return topic;
         }
-        catch (error) {
-            console.log(error);
-        }
-    }
-    try {
-        throw new Error();
-    }
-    catch (e) {
-        console.log(e.stack);
-    }
-    throw new Error('invalid event - ' + object);
+        return comps;
+    });
 }
-function parseEventString(event) {
-    if (event.substring(0, 3) === 'tx:') {
-        return { type: 'transaction', hash: event.substring(3) };
-    }
-    else if (event === 'block' || event === 'pending' || event === 'error') {
-        return { type: event };
-    }
-    else if (event.substring(0, 8) === 'address:') {
-        return { type: 'address', address: event.substring(8) };
-    }
-    else if (event.substring(0, 6) === 'topic:') {
-        try {
-            var object = recurse(rlp_1.decode(event.substring(6)), function (object) {
-                if (object === '0x') {
-                    object = null;
-                }
-                return object;
-            });
-            return { type: 'topic', topic: object };
+function getEventTag(eventName) {
+    if (typeof (eventName) === 'string') {
+        if (bytes_1.hexDataLength(eventName) === 20) {
+            return 'address:' + address_1.getAddress(eventName);
         }
-        catch (error) {
-            console.log(error);
+        eventName = eventName.toLowerCase();
+        if (eventName === 'block' || eventName === 'pending' || eventName === 'error') {
+            return eventName;
+        }
+        else if (bytes_1.hexDataLength(eventName) === 32) {
+            return 'tx:' + eventName;
         }
     }
-    throw new Error('invalid event string');
+    else if (Array.isArray(eventName)) {
+        return 'filter::' + serializeTopics(eventName);
+    }
+    else if (eventName && typeof (eventName) === 'object') {
+        return 'filter:' + (eventName.address || '') + ':' + serializeTopics(eventName.topics || []);
+    }
+    throw new Error('invalid event - ' + eventName);
 }
-//////////////////////////////
-// Provider Object
-/* @TODO:
-type Event = {
-   eventName: string,
-   listener: any, // @TODO: Function any: any
-   type: string,
-}
-*/
-// @TODO: Perhaps allow a SignDigestAsyncFunc?
-// Enable a simple signing function and provider to provide a full Signer
-var ProviderSigner = /** @class */ (function (_super) {
-    __extends(ProviderSigner, _super);
-    function ProviderSigner(address, signDigest, provider) {
-        var _this = _super.call(this) || this;
-        errors.checkNew(_this, ProviderSigner);
-        properties_1.defineReadOnly(_this, '_addressPromise', Promise.resolve(address));
-        properties_1.defineReadOnly(_this, 'signDigest', signDigest);
-        properties_1.defineReadOnly(_this, 'provider', provider);
-        return _this;
-    }
-    ProviderSigner.prototype.getAddress = function () {
-        return this._addressPromise;
-    };
-    ProviderSigner.prototype.signMessage = function (message) {
-        return Promise.resolve(bytes_1.joinSignature(this.signDigest(bytes_1.arrayify(hash_1.hashMessage(message)))));
-    };
-    ProviderSigner.prototype.sendTransaction = function (transaction) {
-        var _this = this;
-        transaction = properties_1.shallowCopy(transaction);
-        if (transaction.chainId == null) {
-            transaction.chainId = this.provider.getNetwork().then(function (network) {
-                return network.chainId;
-            });
-        }
-        if (transaction.from == null) {
-            transaction.from = this.getAddress();
-        }
-        if (transaction.gasLimit == null) {
-            transaction.gasLimit = this.provider.estimateGas(transaction);
-        }
-        if (transaction.gasPrice == null) {
-            transaction.gasPrice = this.provider.getGasPrice();
-        }
-        return properties_1.resolveProperties(transaction).then(function (tx) {
-            var signedTx = transaction_1.serialize(tx, _this.signDigest);
-            return _this._addressPromise.then(function (address) {
-                if (transaction_1.parse(signedTx).from !== address) {
-                    errors.throwError('signing address does not match expected address', errors.UNKNOWN_ERROR, { address: transaction_1.parse(signedTx).from, expectedAddress: address, signedTransaction: signedTx });
-                }
-                return _this.provider.sendTransaction(signedTx);
-            });
-        });
-    };
-    return ProviderSigner;
-}(wallet_1.Signer));
-exports.ProviderSigner = ProviderSigner;
 var Provider = /** @class */ (function () {
     function Provider(network) {
         var _this = this;
@@ -526,7 +393,7 @@ var Provider = /** @class */ (function () {
         // Balances being watched for changes
         this._balances = {};
         // Events being listened to
-        this._events = {};
+        this._events = [];
         this._pollingInterval = 4000;
         // We use this to track recent emitted events; for example, if we emit a "block" of 100
         // and we get a `getBlock(100)` request which would result in null, we should retry
@@ -564,48 +431,56 @@ var Provider = /** @class */ (function () {
             // Sweep balances and remove addresses we no longer have events for
             var newBalances = {};
             // Find all transaction hashes we are waiting on
-            Object.keys(_this._events).forEach(function (eventName) {
-                var event = parseEventString(eventName);
-                if (event.type === 'transaction') {
-                    _this.getTransactionReceipt(event.hash).then(function (receipt) {
-                        if (!receipt || receipt.blockNumber == null) {
-                            return;
-                        }
-                        _this._emitted['t:' + event.hash.toLowerCase()] = receipt.blockNumber;
-                        _this.emit(event.hash, receipt);
-                        return null;
-                    }).catch(function (error) { });
-                }
-                else if (event.type === 'address') {
-                    if (_this._balances[event.address]) {
-                        newBalances[event.address] = _this._balances[event.address];
+            _this._events.forEach(function (event) {
+                var comps = event.tag.split(':');
+                switch (comps[0]) {
+                    case 'tx': {
+                        var hash_2 = comps[1];
+                        _this.getTransactionReceipt(hash_2).then(function (receipt) {
+                            if (!receipt || receipt.blockNumber == null) {
+                                return;
+                            }
+                            _this._emitted['t:' + hash_2] = receipt.blockNumber;
+                            _this.emit(hash_2, receipt);
+                        }).catch(function (error) { _this.emit('error', error); });
+                        break;
                     }
-                    _this.getBalance(event.address, 'latest').then(function (balance) {
-                        var lastBalance = this._balances[event.address];
-                        if (lastBalance && balance.eq(lastBalance)) {
-                            return;
+                    case 'address': {
+                        var address_2 = comps[1];
+                        if (_this._balances[address_2]) {
+                            newBalances[address_2] = _this._balances[address_2];
                         }
-                        this._balances[event.address] = balance;
-                        this.emit(event.address, balance);
-                        return null;
-                    }).catch(function (error) { });
-                }
-                else if (event.type === 'topic') {
-                    _this.getLogs({
-                        fromBlock: _this._lastBlockNumber + 1,
-                        toBlock: blockNumber,
-                        topics: event.topic
-                    }).then(function (logs) {
-                        if (logs.length === 0) {
-                            return;
-                        }
-                        logs.forEach(function (log) {
-                            _this._emitted['b:' + log.blockHash.toLowerCase()] = log.blockNumber;
-                            _this._emitted['t:' + log.transactionHash.toLowerCase()] = log.blockNumber;
-                            _this.emit(event.topic, log);
-                        });
-                        return null;
-                    }).catch(function (error) { });
+                        _this.getBalance(address_2, 'latest').then(function (balance) {
+                            var lastBalance = this._balances[address_2];
+                            if (lastBalance && balance.eq(lastBalance)) {
+                                return;
+                            }
+                            this._balances[address_2] = balance;
+                            this.emit(address_2, balance);
+                        }).catch(function (error) { _this.emit('error', error); });
+                        break;
+                    }
+                    case 'filter': {
+                        var address = comps[1];
+                        var topics = deserializeTopics(comps[2]);
+                        var filter_1 = {
+                            address: address,
+                            fromBlock: _this._lastBlockNumber + 1,
+                            toBlock: blockNumber,
+                            topics: topics
+                        };
+                        _this.getLogs(filter_1).then(function (logs) {
+                            if (logs.length === 0) {
+                                return;
+                            }
+                            logs.forEach(function (log) {
+                                _this._emitted['b:' + log.blockHash] = log.blockNumber;
+                                _this._emitted['t:' + log.transactionHash] = log.blockNumber;
+                                _this.emit(filter_1, log);
+                            });
+                        }).catch(function (error) { _this.emit('error', error); });
+                        break;
+                    }
                 }
             });
             _this._lastBlockNumber = blockNumber;
@@ -615,7 +490,7 @@ var Provider = /** @class */ (function () {
         this.doPoll();
     };
     Provider.prototype.resetEventsBlock = function (blockNumber) {
-        this._lastBlockNumber = this.blockNumber;
+        this._lastBlockNumber = blockNumber;
         this._doPoll();
     };
     Object.defineProperty(Provider.prototype, "network", {
@@ -679,17 +554,14 @@ var Provider = /** @class */ (function () {
     //        this will be used once we move to the WebSocket or other alternatives to polling
     Provider.prototype.waitForTransaction = function (transactionHash, timeout) {
         var _this = this;
-        var complete = null;
-        var setup = function (resolve) {
-            complete = function (receipt) {
-                resolve(receipt);
-            };
-            _this.once(transactionHash, complete);
-        };
-        var cancelled = function () {
-            _this.removeListener(transactionHash, complete);
-        };
-        return timeoutFunction(setup, cancelled, timeout);
+        return web_1.poll(function () {
+            return _this.getTransactionReceipt(transactionHash).then(function (receipt) {
+                if (receipt == null) {
+                    return undefined;
+                }
+                return receipt;
+            });
+        }, { onceBlock: this });
     };
     Provider.prototype.getBlockNumber = function () {
         var _this = this;
@@ -800,7 +672,7 @@ var Provider = /** @class */ (function () {
         if (hash != null && tx.hash !== hash) {
             errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
-        this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
+        this._emitted['t:' + tx.hash] = 'pending';
         result.wait = function (timeout) {
             return _this.waitForTransaction(hash, timeout).then(function (receipt) {
                 if (receipt.status === 0) {
@@ -856,7 +728,7 @@ var Provider = /** @class */ (function () {
                         return web_1.poll(function () {
                             return _this.perform('getBlock', { blockHash: blockHash }).then(function (block) {
                                 if (block == null) {
-                                    if (_this._emitted['b:' + blockHash.toLowerCase()] == null) {
+                                    if (_this._emitted['b:' + blockHash] == null) {
                                         return null;
                                     }
                                     return undefined;
@@ -899,7 +771,7 @@ var Provider = /** @class */ (function () {
                 return web_1.poll(function () {
                     return _this.perform('getTransaction', params).then(function (result) {
                         if (result == null) {
-                            if (_this._emitted['t:' + transactionHash.toLowerCase()] == null) {
+                            if (_this._emitted['t:' + transactionHash] == null) {
                                 return null;
                             }
                             return undefined;
@@ -919,7 +791,7 @@ var Provider = /** @class */ (function () {
                 return web_1.poll(function () {
                     return _this.perform('getTransactionReceipt', params).then(function (result) {
                         if (result == null) {
-                            if (_this._emitted['t:' + transactionHash.toLowerCase()] == null) {
+                            if (_this._emitted['t:' + transactionHash] == null) {
                                 return null;
                             }
                             return undefined;
@@ -1076,117 +948,118 @@ var Provider = /** @class */ (function () {
     };
     Provider.prototype._stopPending = function () {
     };
-    Provider.prototype.on = function (eventName, listener) {
-        var key = getEventString(eventName);
-        if (!this._events[key]) {
-            this._events[key] = [];
-        }
-        this._events[key].push({ eventName: eventName, listener: listener, type: 'on' });
-        if (key === 'pending') {
+    Provider.prototype._addEventListener = function (eventName, listener, once) {
+        this._events.push({
+            tag: getEventTag(eventName),
+            listener: listener,
+            once: once,
+        });
+        if (eventName === 'pending') {
             this._startPending();
         }
         this.polling = true;
+    };
+    Provider.prototype.on = function (eventName, listener) {
+        this._addEventListener(eventName, listener, false);
         return this;
     };
     Provider.prototype.once = function (eventName, listener) {
-        var key = getEventString(eventName);
-        if (!this._events[key]) {
-            this._events[key] = [];
-        }
-        this._events[key].push({ eventName: eventName, listener: listener, type: 'once' });
-        if (key === 'pending') {
-            this._startPending();
-        }
-        this.polling = true;
+        this._addEventListener(eventName, listener, true);
         return this;
     };
+    Provider.prototype.addEventListener = function (eventName, listener) {
+        return this.on(eventName, listener);
+    };
     Provider.prototype.emit = function (eventName) {
+        var _this = this;
         var args = [];
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
         var result = false;
-        var key = getEventString(eventName);
-        //var args = Array.prototype.slice.call(arguments, 1);
-        var listeners = this._events[key];
-        if (!listeners) {
-            return result;
-        }
-        for (var i = 0; i < listeners.length; i++) {
-            var listener = listeners[i];
-            if (listener.type === 'once') {
-                listeners.splice(i, 1);
-                i--;
+        var eventTag = getEventTag(eventName);
+        this._events = this._events.filter(function (event) {
+            if (event.tag !== eventTag) {
+                return true;
             }
-            try {
-                listener.listener.apply(this, args);
-                result = true;
-            }
-            catch (error) {
-                console.log('Event Listener Error: ' + error.message);
-            }
-        }
-        if (listeners.length === 0) {
-            delete this._events[key];
-            if (key === 'pending') {
-                this._stopPending();
-            }
-        }
-        if (this.listenerCount() === 0) {
-            this.polling = false;
-        }
+            setTimeout(function () {
+                event.listener.apply(_this, args);
+            }, 0);
+            result = true;
+            return !(event.once);
+        });
         return result;
     };
-    // @TODO: type EventName
     Provider.prototype.listenerCount = function (eventName) {
         if (!eventName) {
-            var result = 0;
-            for (var key in this._events) {
-                result += this._events[key].length;
-            }
-            return result;
+            return this._events.length;
         }
-        var listeners = this._events[getEventString(eventName)];
-        if (!listeners) {
-            return 0;
-        }
-        return listeners.length;
+        var eventTag = getEventTag(eventName);
+        return this._events.filter(function (event) {
+            return (event.tag === eventTag);
+        }).length;
     };
     Provider.prototype.listeners = function (eventName) {
-        var listeners = this._events[getEventString(eventName)];
-        if (!listeners) {
-            return [];
-        }
-        var result = [];
-        for (var i = 0; i < listeners.length; i++) {
-            result.push(listeners[i].listener);
-        }
-        return result;
+        var eventTag = getEventTag(eventName);
+        return this._events.filter(function (event) {
+            return (event.tag === eventTag);
+        }).map(function (event) {
+            return event.listener;
+        });
     };
     Provider.prototype.removeAllListeners = function (eventName) {
-        delete this._events[getEventString(eventName)];
-        if (this.listenerCount() === 0) {
+        var eventTag = getEventTag(eventName);
+        this._events = this._events.filter(function (event) {
+            return (event.tag !== eventTag);
+        });
+        if (eventName === 'pending') {
+            this._stopPending();
+        }
+        if (this._events.length === 0) {
             this.polling = false;
         }
         return this;
     };
     Provider.prototype.removeListener = function (eventName, listener) {
-        var eventNameString = getEventString(eventName);
-        var listeners = this._events[eventNameString];
-        if (!listeners) {
-            return this;
-        }
-        for (var i = 0; i < listeners.length; i++) {
-            if (listeners[i].listener === listener) {
-                listeners.splice(i, 1);
-                break;
+        var found = false;
+        var eventTag = getEventTag(eventName);
+        this._events = this._events.filter(function (event) {
+            if (event.tag !== eventTag) {
+                return true;
             }
+            if (found) {
+                return true;
+            }
+            found = false;
+            return false;
+        });
+        if (eventName === 'pending' && this.listenerCount('pending') === 0) {
+            this._stopPending();
         }
-        if (listeners.length === 0) {
-            this.removeAllListeners(eventName);
+        if (this.listenerCount() === 0) {
+            this.polling = false;
         }
         return this;
     };
     return Provider;
 }());
 exports.Provider = Provider;
+// See: https://github.com/isaacs/inherits/blob/master/inherits_browser.js
+function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor;
+    ctor.prototype = Object.create(superCtor.prototype, {
+        constructor: {
+            value: ctor,
+            enumerable: false,
+            writable: true,
+            configurable: true
+        }
+    });
+}
+function inheritable(parent) {
+    return function (child) {
+        inherits(child, parent);
+        properties_1.defineReadOnly(child, 'inherits', inheritable(child));
+    };
+}
+properties_1.defineReadOnly(Provider, 'inherits', inheritable(Provider));

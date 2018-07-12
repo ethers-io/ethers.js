@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var provider_1 = require("./provider");
 exports.Provider = provider_1.Provider;
-exports.ProviderSigner = provider_1.ProviderSigner;
 var etherscan_provider_1 = require("./etherscan-provider");
 exports.EtherscanProvider = etherscan_provider_1.EtherscanProvider;
 var fallback_provider_1 = require("./fallback-provider");
@@ -25,7 +24,6 @@ exports.getDefaultProvider = getDefaultProvider;
 exports.default = {
     Provider: provider_1.Provider,
     getDefaultProvider: getDefaultProvider,
-    ProviderSigner: provider_1.ProviderSigner,
     FallbackProvider: fallback_provider_1.FallbackProvider,
     EtherscanProvider: etherscan_provider_1.EtherscanProvider,
     InfuraProvider: infura_provider_1.InfuraProvider,
