@@ -13,6 +13,8 @@ import * as wordlists from './wordlists';
 
 import { version } from './_version';
 
+const constants = utils.constants;
+
 export {
     Wallet,
 
@@ -26,6 +28,7 @@ export {
     providers,
 
     errors,
+    constants,
     utils,
 
     wordlists,
@@ -46,6 +49,7 @@ export default {
     providers,
 
     errors,
+    constants,
     utils,
 
     wordlists,

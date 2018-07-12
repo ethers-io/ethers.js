@@ -26,6 +26,8 @@ var wordlists = __importStar(require("./wordlists"));
 exports.wordlists = wordlists;
 var _version_1 = require("./_version");
 exports.version = _version_1.version;
+var constants = utils.constants;
+exports.constants = constants;
 exports.default = {
     Wallet: wallet_1.Wallet,
     HDNode: wallet_1.HDNode,
@@ -35,6 +37,7 @@ exports.default = {
     getNetwork: networks_1.getNetwork,
     providers: providers,
     errors: errors,
+    constants: constants,
     utils: utils,
     wordlists: wordlists,
     version: _version_1.version
