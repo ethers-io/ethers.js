@@ -6,8 +6,8 @@
 import { getAddress, getContractAddress, getIcapAddress } from './address';
 import { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from './abi-coder';
 import * as base64 from './base64';
-import { BigNumber, bigNumberify } from './bignumber';
-import { arrayify, concat, hexlify, joinSignature, padZeros, splitSignature, stripZeros } from './bytes';
+import { BigNumber, bigNumberify, ConstantNegativeOne, ConstantZero, ConstantOne, ConstantTwo, ConstantWeiPerEther } from './bignumber';
+import { AddressZero, arrayify, concat, HashZero, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexZeroPad, joinSignature, padZeros, splitSignature, stripZeros } from './bytes';
 import { hashMessage, id, namehash } from './hash';
 import { keccak256 } from './keccak256';
 import { sha256 } from './sha2';
@@ -28,6 +28,16 @@ import * as errors from './errors';
 // NFKC (composed)
 const etherSymbol = '\u039e';
 
+const constants = {
+    AddressZero: AddressZero,
+    HashZero: HashZero,
+    NegativeOne: ConstantNegativeOne,
+    Zero: ConstantZero,
+    One: ConstantOne,
+    Two: ConstantTwo,
+    WeiPerEther: ConstantWeiPerEther
+};
+
 export {
     AbiCoder,
     defaultAbiCoder,
@@ -35,6 +45,8 @@ export {
     formatParamType,
     parseSignature,
     parseParamType,
+
+    constants,
 
     RLP,
 
@@ -59,6 +71,10 @@ export {
     BigNumber,
 
     hexlify,
+    hexStripZeros,
+    hexZeroPad,
+    hexDataLength,
+    hexDataSlice,
 
     toUtf8Bytes,
     toUtf8String,
@@ -101,6 +117,8 @@ export default {
     parseSignature,
     parseParamType,
 
+    constants,
+
     RLP,
 
     fetchJson,
@@ -124,6 +142,10 @@ export default {
     BigNumber,
 
     hexlify,
+    hexStripZeros,
+    hexZeroPad,
+    hexDataLength,
+    hexDataSlice,
 
     toUtf8Bytes,
     toUtf8String,

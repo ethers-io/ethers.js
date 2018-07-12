@@ -28,7 +28,11 @@ exports.bigNumberify = bignumber_1.bigNumberify;
 var bytes_1 = require("./bytes");
 exports.arrayify = bytes_1.arrayify;
 exports.concat = bytes_1.concat;
+exports.hexDataSlice = bytes_1.hexDataSlice;
+exports.hexDataLength = bytes_1.hexDataLength;
 exports.hexlify = bytes_1.hexlify;
+exports.hexStripZeros = bytes_1.hexStripZeros;
+exports.hexZeroPad = bytes_1.hexZeroPad;
 exports.joinSignature = bytes_1.joinSignature;
 exports.padZeros = bytes_1.padZeros;
 exports.splitSignature = bytes_1.splitSignature;
@@ -74,11 +78,22 @@ exports.errors = errors;
 // NFKC (composed)
 var etherSymbol = '\u039e';
 exports.etherSymbol = etherSymbol;
+var constants = {
+    AddressZero: bytes_1.AddressZero,
+    HashZero: bytes_1.HashZero,
+    NegativeOne: bignumber_1.ConstantNegativeOne,
+    Zero: bignumber_1.ConstantZero,
+    One: bignumber_1.ConstantOne,
+    Two: bignumber_1.ConstantTwo,
+    WeiPerEther: bignumber_1.ConstantWeiPerEther
+};
+exports.constants = constants;
 exports.default = {
     AbiCoder: abi_coder_1.AbiCoder,
     defaultAbiCoder: abi_coder_1.defaultAbiCoder,
     parseSignature: abi_coder_1.parseSignature,
     parseParamType: abi_coder_1.parseParamType,
+    constants: constants,
     RLP: RLP,
     fetchJson: web_1.fetchJson,
     defineReadOnly: properties_1.defineReadOnly,
@@ -94,6 +109,10 @@ exports.default = {
     bigNumberify: bignumber_1.bigNumberify,
     BigNumber: bignumber_1.BigNumber,
     hexlify: bytes_1.hexlify,
+    hexStripZeros: bytes_1.hexStripZeros,
+    hexZeroPad: bytes_1.hexZeroPad,
+    hexDataLength: bytes_1.hexDataLength,
+    hexDataSlice: bytes_1.hexDataSlice,
     toUtf8Bytes: utf8_1.toUtf8Bytes,
     toUtf8String: utf8_1.toUtf8String,
     hashMessage: hash_1.hashMessage,
