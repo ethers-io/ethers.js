@@ -8864,8 +8864,8 @@ var provider_1 = require("../providers/provider");
 var wallet_1 = require("../wallet/wallet");
 var abi_coder_1 = require("../utils/abi-coder");
 var address_1 = require("../utils/address");
-var bytes_1 = require("../utils/bytes");
 var bignumber_1 = require("../utils/bignumber");
+var bytes_1 = require("../utils/bytes");
 var properties_1 = require("../utils/properties");
 var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
@@ -9003,6 +9003,9 @@ function runMethod(contract, functionName, estimateOnly) {
         });
     };
 }
+function getEventTag(filter) {
+    return (filter.address || '') + (filter.topics ? filter.topics.join(':') : '');
+}
 var Contract = /** @class */ (function () {
     // https://github.com/Microsoft/TypeScript/issues/5453
     // Once this issue is resolved (there are open PR) we can do this nicer
@@ -9030,14 +9033,28 @@ var Contract = /** @class */ (function () {
             errors.throwError('invalid signer or provider', errors.INVALID_ARGUMENT, { arg: 'signerOrProvider', value: signerOrProvider });
         }
         properties_1.defineReadOnly(this, 'estimate', {});
-        properties_1.defineReadOnly(this, 'events', {});
         properties_1.defineReadOnly(this, 'functions', {});
+        properties_1.defineReadOnly(this, 'filters', {});
+        Object.keys(this.interface.events).forEach(function (eventName) {
+            var event = _this.interface.events[eventName];
+            properties_1.defineReadOnly(_this.filters, eventName, function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                return {
+                    address: _this.address,
+                    topics: event.encodeTopics(args)
+                };
+            });
+        });
         // Not connected to an on-chain instance, so do not connect functions and events
         if (!addressOrName) {
             properties_1.defineReadOnly(this, 'address', null);
             properties_1.defineReadOnly(this, 'addressPromise', Promise.resolve(null));
             return;
         }
+        this._events = [];
         properties_1.defineReadOnly(this, 'address', addressOrName);
         properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName).then(function (address) {
             if (address == null) {
@@ -9061,68 +9078,6 @@ var Contract = /** @class */ (function () {
                 properties_1.defineReadOnly(_this.estimate, name, runMethod(_this, name, true));
             }
         });
-        Object.keys(this.interface.events).forEach(function (eventName) {
-            var eventInfo = _this.interface.events[eventName];
-            var eventCallback = null;
-            var contract = _this;
-            function handleEvent(log) {
-                contract.addressPromise.then(function (address) {
-                    // Not meant for us (the topics just has the same name)
-                    if (address != log.address) {
-                        return null;
-                    }
-                    try {
-                        var result = eventInfo.decode(log.data, log.topics);
-                        // Some useful things to have with the log
-                        log.args = result;
-                        log.event = eventName;
-                        log.decode = eventInfo.decode;
-                        log.removeListener = function () {
-                            contract.provider.removeListener([eventInfo.topic], handleEvent);
-                        };
-                        log.getBlock = function () { return contract.provider.getBlock(log.blockHash); ; };
-                        log.getTransaction = function () { return contract.provider.getTransaction(log.transactionHash); };
-                        log.getTransactionReceipt = function () { return contract.provider.getTransactionReceipt(log.transactionHash); };
-                        log.eventSignature = eventInfo.signature;
-                        eventCallback.apply(log, Array.prototype.slice.call(result));
-                    }
-                    catch (error) {
-                        console.log(error);
-                        var onerror_1 = contract._onerror;
-                        if (onerror_1) {
-                            setTimeout(function () { onerror_1(error); });
-                        }
-                    }
-                    return null;
-                }).catch(function (error) { });
-            }
-            var property = {
-                enumerable: true,
-                get: function () {
-                    return eventCallback;
-                },
-                set: function (value) {
-                    if (!value) {
-                        value = null;
-                    }
-                    if (!contract.provider) {
-                        errors.throwError('events require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'events' });
-                    }
-                    if (!value && eventCallback) {
-                        contract.provider.removeListener([eventInfo.topic], handleEvent);
-                    }
-                    else if (value && !eventCallback) {
-                        contract.provider.on([eventInfo.topic], handleEvent);
-                    }
-                    eventCallback = value;
-                }
-            };
-            var propertyName = 'on' + eventName.toLowerCase();
-            if (_this[propertyName] == null) {
-                Object.defineProperty(_this, propertyName, property);
-            }
-            Object.defineProperty(_this.events, eventName, property);
-        }, this);
     }
     Object.defineProperty(Contract.prototype, "onerror", {
         get: function () { return this._onerror; },
@@ -9223,6 +9178,181 @@ var Contract = /** @class */ (function () {
             return contract;
         });
     };
+    Contract.prototype._getEventFilter = function (eventName) {
+        var _this = this;
+        if (typeof (eventName) === 'string') {
+            // Listen for any event
+            if (eventName === '*') {
+                return {
+                    decode: function (log) {
+                        return [_this.interface.parseLog(log)];
+                    },
+                    eventTag: '*',
+                    filter: { address: this.address },
+                };
+            }
+            // Normalize the eventName
+            if (eventName.indexOf('(') !== -1) {
+                eventName = abi_coder_1.formatSignature(abi_coder_1.parseSignature('event ' + eventName));
+            }
+            var event_1 = this.interface.events[eventName];
+            if (!event_1) {
+                errors.throwError('unknown event - ' + eventName, errors.INVALID_ARGUMENT, { argumnet: 'eventName', value: eventName });
+            }
+            var filter_1 = {
+                address: this.address,
+                topics: [event_1.topic]
+            };
+            return {
+                decode: function (log) {
+                    return event_1.decode(log.data, log.topics);
+                },
+                event: event_1,
+                eventTag: getEventTag(filter_1),
+                filter: filter_1
+            };
+        }
+        var filter = {
+            address: this.address
+        };
+        // Find the matching event in the ABI; if none, we still allow filtering
+        // since it may be a filter for an otherwise unknown event
+        var event = null;
+        if (eventName.topics && eventName.topics[0]) {
+            filter.topics = eventName.topics;
+            for (var name in this.interface.events) {
+                if (name.indexOf('(') === -1) {
+                    continue;
+                }
+                var e = this.interface.events[name];
+                if (e.topic === eventName.topics[0].toLowerCase()) {
+                    event = e;
+                    break;
+                }
+            }
+        }
+        return {
+            decode: function (log) {
+                if (event) {
+                    return event.decode(log.data, log.topics);
+                }
+                return [log];
+            },
+            event: event,
+            eventTag: getEventTag(filter),
+            filter: filter
+        };
+    };
+    Contract.prototype._addEventListener = function (eventFilter, listener, once) {
+        var _this = this;
+        if (!this.provider) {
+            errors.throwError('events require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'once' });
+        }
+        var wrappedListener = function (log) {
+            var decoded = Array.prototype.slice.call(eventFilter.decode(log));
+            var event = properties_1.jsonCopy(log);
+            event.args = decoded;
+            event.decode = eventFilter.event.decode;
+            event.event = eventFilter.event.name;
+            event.eventSignature = eventFilter.event.signature;
+            event.removeListener = function () { _this.removeListener(eventFilter.filter, listener); };
+            event.getBlock = function () { return _this.provider.getBlock(log.blockHash); };
+            event.getTransaction = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
+            event.getTransactionReceipt = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
+            decoded.push(event);
+            _this.emit.apply(_this, [eventFilter.filter].concat(decoded));
+        };
+        this.provider.on(eventFilter.filter, wrappedListener);
+        this._events.push({ eventFilter: eventFilter, listener: listener, wrappedListener: wrappedListener, once: once });
+    };
+    Contract.prototype.on = function (event, listener) {
+        this._addEventListener(this._getEventFilter(event), listener, false);
+        return this;
+    };
+    Contract.prototype.once = function (event, listener) {
+        this._addEventListener(this._getEventFilter(event), listener, true);
+        return this;
+    };
+    Contract.prototype.addEventLisener = function (eventName, listener) {
+        return this.on(eventName, listener);
+    };
+    Contract.prototype.emit = function (eventName) {
+        var _this = this;
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        if (!this.provider) {
+            return false;
+        }
+        var result = false;
+        var eventFilter = this._getEventFilter(eventName);
+        this._events = this._events.filter(function (event) {
+            if (event.eventFilter.eventTag !== eventFilter.eventTag) {
+                return true;
+            }
+            setTimeout(function () {
+                event.listener.apply(_this, args);
+            }, 0);
+            result = true;
+            return !(event.once);
+        });
+        return result;
+    };
+    Contract.prototype.listenerCount = function (eventName) {
+        if (!this.provider) {
+            return 0;
+        }
+        var eventFilter = this._getEventFilter(eventName);
+        return this._events.filter(function (event) {
+            return event.eventFilter.eventTag === eventFilter.eventTag;
+        }).length;
+    };
+    Contract.prototype.listeners = function (eventName) {
+        if (!this.provider) {
+            return [];
+        }
+        var eventFilter = this._getEventFilter(eventName);
+        return this._events.filter(function (event) {
+            return event.eventFilter.eventTag === eventFilter.eventTag;
+        }).map(function (event) { return event.listener; });
+    };
+    Contract.prototype.removeAllListeners = function (eventName) {
+        if (!this.provider) {
+            return this;
+        }
+        var eventFilter = this._getEventFilter(eventName);
+        this._events = this._events.filter(function (event) {
+            return event.eventFilter.eventTag !== eventFilter.eventTag;
+        });
+        return this;
+    };
+    Contract.prototype.removeListener = function (eventName, listener) {
+        var _this = this;
+        if (!this.provider) {
+            return this;
+        }
+        var found = false;
+        var eventFilter = this._getEventFilter(eventName);
+        this._events = this._events.filter(function (event) {
+            // Make sure this event and listener match
+            if (event.eventFilter.eventTag !== eventFilter.eventTag) {
+                return true;
+            }
+            if (event.listener !== listener) {
+                return true;
+            }
+            _this.provider.removeListener(event.eventFilter.filter, event.wrappedListener);
+            // Already found a matching event in a previous loop
+            if (found) {
+                return true;
+            }
+            // REmove this event (returning false filters us out)
+            found = true;
+            return false;
+        });
+        return this;
+    };
     return Contract;
 }());
 exports.Contract = Contract;
@@ -9260,10 +9390,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
+var address_1 = require("../utils/address");
 var abi_coder_1 = require("../utils/abi-coder");
 var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
 var hash_1 = require("../utils/hash");
+var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
 var Description = /** @class */ (function () {
@@ -9365,6 +9497,46 @@ var EventDescription = /** @class */ (function (_super) {
     function EventDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    EventDescription.prototype.encodeTopics = function (params) {
+        var _this = this;
+        if (params.length > this.inputs.length) {
+            errors.throwError('too many arguments for ' + this.name, errors.UNEXPECTED_ARGUMENT, { maxCount: params.length, expectedCount: this.inputs.length });
+        }
+        var topics = [];
+        if (!this.anonymous) {
+            topics.push(this.topic);
+        }
+        params.forEach(function (arg, index) {
+            if (arg === null) {
+                topics.push(null);
+                return;
+            }
+            var param = _this.inputs[index];
+            if (!param.indexed) {
+                errors.throwError('cannot filter non-indexed parameters; must be null', errors.INVALID_ARGUMENT, { argument: (param.name || index), value: arg });
+            }
+            if (param.type === 'string') {
+                topics.push(hash_1.id(arg));
+            }
+            else if (param.type === 'bytes') {
+                topics.push(keccak256_1.keccak256(arg));
+            }
+            else if (param.type.indexOf('[') !== -1 || param.type.substring(0, 5) === 'tuple') {
+                errors.throwError('filtering with tuples or arrays not implemented yet; bug us on GitHub', errors.NOT_IMPLEMENTED, { operation: 'filter(array|tuple)' });
+            }
+            else {
+                if (param.type === 'address') {
+                    address_1.getAddress(arg);
+                }
+                topics.push(bytes_1.hexZeroPad(bytes_1.hexlify(arg), 32).toLowerCase());
+            }
+        });
+        // Trim off trailing nulls
+        while (topics.length && topics[topics.length - 1] === null) {
+            topics.pop();
+        }
+        return topics;
+    };
     EventDescription.prototype.decode = function (data, topics) {
         // Strip the signature off of non-anonymous topics
         if (topics != null && !this.anonymous) {
@@ -9582,7 +9754,7 @@ var Interface = /** @class */ (function () {
 }());
 exports.Interface = Interface;
 
-},{"../utils/abi-coder":58,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/properties":66}],50:[function(require,module,exports){
+},{"../utils/abi-coder":58,"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/keccak256":65,"../utils/properties":66}],50:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -9989,7 +10161,6 @@ exports.FallbackProvider = FallbackProvider;
 Object.defineProperty(exports, "__esModule", { value: true });
 var provider_1 = require("./provider");
 exports.Provider = provider_1.Provider;
-exports.ProviderSigner = provider_1.ProviderSigner;
 var etherscan_provider_1 = require("./etherscan-provider");
 exports.EtherscanProvider = etherscan_provider_1.EtherscanProvider;
 var fallback_provider_1 = require("./fallback-provider");
@@ -10012,7 +10183,6 @@ exports.getDefaultProvider = getDefaultProvider;
 exports.default = {
     Provider: provider_1.Provider,
     getDefaultProvider: getDefaultProvider,
-    ProviderSigner: provider_1.ProviderSigner,
     FallbackProvider: fallback_provider_1.FallbackProvider,
     EtherscanProvider: etherscan_provider_1.EtherscanProvider,
     InfuraProvider: infura_provider_1.InfuraProvider,
@@ -10503,16 +10673,6 @@ exports.getNetwork = getNetwork;
 
 },{"../utils/errors":62}],56:[function(require,module,exports){
 'use strict';
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -10521,63 +10681,18 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-//import inherits = require('inherits');
-var wallet_1 = require("../wallet/wallet");
+var networks_1 = require("./networks");
 var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
-var utf8_1 = require("../utils/utf8");
-var rlp_1 = require("../utils/rlp");
 var hash_1 = require("../utils/hash");
-var networks_1 = require("./networks");
 var properties_1 = require("../utils/properties");
+var rlp_1 = require("../utils/rlp");
 var transaction_1 = require("../utils/transaction");
+var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
 ;
-;
-function timeoutFunction(setup, cancelled, timeout) {
-    var timer = null;
-    var done = false;
-    return new Promise(function (resolve, reject) {
-        function cancelTimer() {
-            if (timer == null) {
-                return;
-            }
-            clearTimeout(timer);
-            timer = null;
-        }
-        function complete(result) {
-            cancelTimer();
-            if (done) {
-                return;
-            }
-            resolve(result);
-            done = true;
-        }
-        setup(complete, function (error) {
-            cancelTimer();
-            if (done) {
-                return;
-            }
-            reject(error);
-            done = true;
-        });
-        if (typeof (timeout) === 'number' && timeout > 0) {
-            timer = setTimeout(function () {
-                cancelTimer();
-                if (done) {
-                    return;
-                }
-                if (cancelled) {
-                    cancelled();
-                }
-                reject(new Error('timeout'));
-                done = true;
-            }, timeout);
-        }
-    });
-}
 ;
 //////////////////////////////
 // Request and Response Checking
@@ -10629,7 +10744,7 @@ function arrayOf(check) {
 }
 function checkHash(hash) {
     if (typeof (hash) === 'string' && bytes_1.hexDataLength(hash) === 32) {
-        return hash;
+        return hash.toLowerCase();
     }
     errors.throwError('invalid hash', errors.INVALID_ARGUMENT, { arg: 'hash', value: hash });
     return null;
@@ -10879,133 +10994,55 @@ function checkLog(log) {
 }
 //////////////////////////////
 // Event Serializeing
-function recurse(object, convertFunc) {
-    if (Array.isArray(object)) {
-        var result = [];
-        object.forEach(function (object) {
-            result.push(recurse(object, convertFunc));
-        });
-        return result;
-    }
-    return convertFunc(object);
+function serializeTopics(topics) {
+    return topics.map(function (topic) {
+        if (typeof (topic) === 'string') {
+            return topic;
+        }
+        else if (Array.isArray(topic)) {
+            topic.forEach(function (topic) {
+                if (topic !== null && bytes_1.hexDataLength(topic) !== 32) {
+                    errors.throwError('invalid topic', errors.INVALID_ARGUMENT, { argument: 'topic', value: topic });
+                }
+            });
+            return topic.join(',');
+        }
+        return errors.throwError('invalid topic value', errors.INVALID_ARGUMENT, { argument: 'topic', value: topic });
+    }).join('&');
 }
-function getEventString(object) {
-    try {
-        return 'address:' + address_1.getAddress(object);
-    }
-    catch (error) { }
-    if (object === 'block' || object === 'pending' || object === 'error') {
-        return object;
-    }
-    else if (bytes_1.hexDataLength(object) === 32) {
-        return 'tx:' + object;
-    }
-    else if (Array.isArray(object)) {
-        // Replace null in the structure with '0x'
-        var stringified = recurse(object, function (object) {
-            if (object == null) {
-                object = '0x';
+function deserializeTopics(data) {
+    return data.split(/&/g).map(function (topic) {
+        var comps = topic.split(',');
+        if (comps.length === 1) {
+            if (comps[0] === '') {
+                return null;
             }
-            return object;
-        });
-        try {
-            return 'topic:' + rlp_1.encode(stringified);
+            return topic;
         }
-        catch (error) {
-            console.log(error);
-        }
-    }
-    try {
-        throw new Error();
-    }
-    catch (e) {
-        console.log(e.stack);
-    }
-    throw new Error('invalid event - ' + object);
+        return comps;
+    });
 }
-function parseEventString(event) {
-    if (event.substring(0, 3) === 'tx:') {
-        return { type: 'transaction', hash: event.substring(3) };
-    }
-    else if (event === 'block' || event === 'pending' || event === 'error') {
-        return { type: event };
-    }
-    else if (event.substring(0, 8) === 'address:') {
-        return { type: 'address', address: event.substring(8) };
-    }
-    else if (event.substring(0, 6) === 'topic:') {
-        try {
-            var object = recurse(rlp_1.decode(event.substring(6)), function (object) {
-                if (object === '0x') {
-                    object = null;
-                }
-                return object;
-            });
-            return { type: 'topic', topic: object };
+function getEventTag(eventName) {
+    if (typeof (eventName) === 'string') {
+        if (bytes_1.hexDataLength(eventName) === 20) {
+            return 'address:' + address_1.getAddress(eventName);
         }
-        catch (error) {
-            console.log(error);
+        eventName = eventName.toLowerCase();
+        if (eventName === 'block' || eventName === 'pending' || eventName === 'error') {
+            return eventName;
+        }
+        else if (bytes_1.hexDataLength(eventName) === 32) {
+            return 'tx:' + eventName;
         }
     }
-    throw new Error('invalid event string');
+    else if (Array.isArray(eventName)) {
+        return 'filter::' + serializeTopics(eventName);
+    }
+    else if (eventName && typeof (eventName) === 'object') {
+        return 'filter:' + (eventName.address || '') + ':' + serializeTopics(eventName.topics || []);
+    }
+    throw new Error('invalid event - ' + eventName);
 }
-//////////////////////////////
-// Provider Object
-/* @TODO:
-type Event = {
-   eventName: string,
-   listener: any, // @TODO: Function any: any
-   type: string,
-}
-*/
-// @TODO: Perhaps allow a SignDigestAsyncFunc?
-// Enable a simple signing function and provider to provide a full Signer
-var ProviderSigner = /** @class */ (function (_super) {
-    __extends(ProviderSigner, _super);
-    function ProviderSigner(address, signDigest, provider) {
-        var _this = _super.call(this) || this;
-        errors.checkNew(_this, ProviderSigner);
-        properties_1.defineReadOnly(_this, '_addressPromise', Promise.resolve(address));
-        properties_1.defineReadOnly(_this, 'signDigest', signDigest);
-        properties_1.defineReadOnly(_this, 'provider', provider);
-        return _this;
-    }
-    ProviderSigner.prototype.getAddress = function () {
-        return this._addressPromise;
-    };
-    ProviderSigner.prototype.signMessage = function (message) {
-        return Promise.resolve(bytes_1.joinSignature(this.signDigest(bytes_1.arrayify(hash_1.hashMessage(message)))));
-    };
-    ProviderSigner.prototype.sendTransaction = function (transaction) {
-        var _this = this;
-        transaction = properties_1.shallowCopy(transaction);
-        if (transaction.chainId == null) {
-            transaction.chainId = this.provider.getNetwork().then(function (network) {
-                return network.chainId;
-            });
-        }
-        if (transaction.from == null) {
-            transaction.from = this.getAddress();
-        }
-        if (transaction.gasLimit == null) {
-            transaction.gasLimit = this.provider.estimateGas(transaction);
-        }
-        if (transaction.gasPrice == null) {
-            transaction.gasPrice = this.provider.getGasPrice();
-        }
-        return properties_1.resolveProperties(transaction).then(function (tx) {
-            var signedTx = transaction_1.serialize(tx, _this.signDigest);
-            return _this._addressPromise.then(function (address) {
-                if (transaction_1.parse(signedTx).from !== address) {
-                    errors.throwError('signing address does not match expected address', errors.UNKNOWN_ERROR, { address: transaction_1.parse(signedTx).from, expectedAddress: address, signedTransaction: signedTx });
-                }
-                return _this.provider.sendTransaction(signedTx);
-            });
-        });
-    };
-    return ProviderSigner;
-}(wallet_1.Signer));
-exports.ProviderSigner = ProviderSigner;
 var Provider = /** @class */ (function () {
     function Provider(network) {
         var _this = this;
@@ -11030,7 +11067,7 @@ var Provider = /** @class */ (function () {
         // Balances being watched for changes
         this._balances = {};
         // Events being listened to
-        this._events = {};
+        this._events = [];
         this._pollingInterval = 4000;
         // We use this to track recent emitted events; for example, if we emit a "block" of 100
         // and we get a `getBlock(100)` request which would result in null, we should retry
@@ -11068,48 +11105,56 @@ var Provider = /** @class */ (function () {
             // Sweep balances and remove addresses we no longer have events for
             var newBalances = {};
             // Find all transaction hashes we are waiting on
-            Object.keys(_this._events).forEach(function (eventName) {
-                var event = parseEventString(eventName);
-                if (event.type === 'transaction') {
-                    _this.getTransactionReceipt(event.hash).then(function (receipt) {
-                        if (!receipt || receipt.blockNumber == null) {
-                            return;
-                        }
-                        _this._emitted['t:' + event.hash.toLowerCase()] = receipt.blockNumber;
-                        _this.emit(event.hash, receipt);
-                        return null;
-                    }).catch(function (error) { });
-                }
-                else if (event.type === 'address') {
-                    if (_this._balances[event.address]) {
-                        newBalances[event.address] = _this._balances[event.address];
+            _this._events.forEach(function (event) {
+                var comps = event.tag.split(':');
+                switch (comps[0]) {
+                    case 'tx': {
+                        var hash_2 = comps[1];
+                        _this.getTransactionReceipt(hash_2).then(function (receipt) {
+                            if (!receipt || receipt.blockNumber == null) {
+                                return;
+                            }
+                            _this._emitted['t:' + hash_2] = receipt.blockNumber;
+                            _this.emit(hash_2, receipt);
+                        }).catch(function (error) { _this.emit('error', error); });
+                        break;
                     }
-                    _this.getBalance(event.address, 'latest').then(function (balance) {
-                        var lastBalance = this._balances[event.address];
-                        if (lastBalance && balance.eq(lastBalance)) {
-                            return;
+                    case 'address': {
+                        var address_2 = comps[1];
+                        if (_this._balances[address_2]) {
+                            newBalances[address_2] = _this._balances[address_2];
                         }
-                        this._balances[event.address] = balance;
-                        this.emit(event.address, balance);
-                        return null;
-                    }).catch(function (error) { });
-                }
-                else if (event.type === 'topic') {
-                    _this.getLogs({
-                        fromBlock: _this._lastBlockNumber + 1,
-                        toBlock: blockNumber,
-                        topics: event.topic
-                    }).then(function (logs) {
-                        if (logs.length === 0) {
-                            return;
-                        }
-                        logs.forEach(function (log) {
-                            _this._emitted['b:' + log.blockHash.toLowerCase()] = log.blockNumber;
-                            _this._emitted['t:' + log.transactionHash.toLowerCase()] = log.blockNumber;
-                            _this.emit(event.topic, log);
-                        });
-                        return null;
-                    }).catch(function (error) { });
+                        _this.getBalance(address_2, 'latest').then(function (balance) {
+                            var lastBalance = this._balances[address_2];
+                            if (lastBalance && balance.eq(lastBalance)) {
+                                return;
+                            }
+                            this._balances[address_2] = balance;
+                            this.emit(address_2, balance);
+                        }).catch(function (error) { _this.emit('error', error); });
+                        break;
+                    }
+                    case 'filter': {
+                        var address = comps[1];
+                        var topics = deserializeTopics(comps[2]);
+                        var filter_1 = {
+                            address: address,
+                            fromBlock: _this._lastBlockNumber + 1,
+                            toBlock: blockNumber,
+                            topics: topics
+                        };
+                        _this.getLogs(filter_1).then(function (logs) {
+                            if (logs.length === 0) {
+                                return;
+                            }
+                            logs.forEach(function (log) {
+                                _this._emitted['b:' + log.blockHash] = log.blockNumber;
+                                _this._emitted['t:' + log.transactionHash] = log.blockNumber;
+                                _this.emit(filter_1, log);
+                            });
+                        }).catch(function (error) { _this.emit('error', error); });
+                        break;
+                    }
                 }
             });
             _this._lastBlockNumber = blockNumber;
@@ -11119,7 +11164,7 @@ var Provider = /** @class */ (function () {
         this.doPoll();
     };
     Provider.prototype.resetEventsBlock = function (blockNumber) {
-        this._lastBlockNumber = this.blockNumber;
+        this._lastBlockNumber = blockNumber;
         this._doPoll();
     };
     Object.defineProperty(Provider.prototype, "network", {
@@ -11183,17 +11228,14 @@ var Provider = /** @class */ (function () {
     //        this will be used once we move to the WebSocket or other alternatives to polling
     Provider.prototype.waitForTransaction = function (transactionHash, timeout) {
         var _this = this;
-        var complete = null;
-        var setup = function (resolve) {
-            complete = function (receipt) {
-                resolve(receipt);
-            };
-            _this.once(transactionHash, complete);
-        };
-        var cancelled = function () {
-            _this.removeListener(transactionHash, complete);
-        };
-        return timeoutFunction(setup, cancelled, timeout);
+        return web_1.poll(function () {
+            return _this.getTransactionReceipt(transactionHash).then(function (receipt) {
+                if (receipt == null) {
+                    return undefined;
+                }
+                return receipt;
+            });
+        }, { onceBlock: this });
     };
     Provider.prototype.getBlockNumber = function () {
         var _this = this;
@@ -11304,7 +11346,7 @@ var Provider = /** @class */ (function () {
         if (hash != null && tx.hash !== hash) {
             errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
-        this._emitted['t:' + tx.hash.toLowerCase()] = 'pending';
+        this._emitted['t:' + tx.hash] = 'pending';
         result.wait = function (timeout) {
             return _this.waitForTransaction(hash, timeout).then(function (receipt) {
                 if (receipt.status === 0) {
@@ -11360,7 +11402,7 @@ var Provider = /** @class */ (function () {
                         return web_1.poll(function () {
                             return _this.perform('getBlock', { blockHash: blockHash }).then(function (block) {
                                 if (block == null) {
-                                    if (_this._emitted['b:' + blockHash.toLowerCase()] == null) {
+                                    if (_this._emitted['b:' + blockHash] == null) {
                                         return null;
                                     }
                                     return undefined;
@@ -11403,7 +11445,7 @@ var Provider = /** @class */ (function () {
                 return web_1.poll(function () {
                     return _this.perform('getTransaction', params).then(function (result) {
                         if (result == null) {
-                            if (_this._emitted['t:' + transactionHash.toLowerCase()] == null) {
+                            if (_this._emitted['t:' + transactionHash] == null) {
                                 return null;
                             }
                             return undefined;
@@ -11423,7 +11465,7 @@ var Provider = /** @class */ (function () {
                 return web_1.poll(function () {
                     return _this.perform('getTransactionReceipt', params).then(function (result) {
                         if (result == null) {
-                            if (_this._emitted['t:' + transactionHash.toLowerCase()] == null) {
+                            if (_this._emitted['t:' + transactionHash] == null) {
                                 return null;
                             }
                             return undefined;
@@ -11580,122 +11622,123 @@ var Provider = /** @class */ (function () {
     };
     Provider.prototype._stopPending = function () {
     };
-    Provider.prototype.on = function (eventName, listener) {
-        var key = getEventString(eventName);
-        if (!this._events[key]) {
-            this._events[key] = [];
-        }
-        this._events[key].push({ eventName: eventName, listener: listener, type: 'on' });
-        if (key === 'pending') {
+    Provider.prototype._addEventListener = function (eventName, listener, once) {
+        this._events.push({
+            tag: getEventTag(eventName),
+            listener: listener,
+            once: once,
+        });
+        if (eventName === 'pending') {
             this._startPending();
         }
         this.polling = true;
+    };
+    Provider.prototype.on = function (eventName, listener) {
+        this._addEventListener(eventName, listener, false);
         return this;
     };
     Provider.prototype.once = function (eventName, listener) {
-        var key = getEventString(eventName);
-        if (!this._events[key]) {
-            this._events[key] = [];
-        }
-        this._events[key].push({ eventName: eventName, listener: listener, type: 'once' });
-        if (key === 'pending') {
-            this._startPending();
-        }
-        this.polling = true;
+        this._addEventListener(eventName, listener, true);
         return this;
     };
+    Provider.prototype.addEventListener = function (eventName, listener) {
+        return this.on(eventName, listener);
+    };
     Provider.prototype.emit = function (eventName) {
+        var _this = this;
         var args = [];
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
         var result = false;
-        var key = getEventString(eventName);
-        //var args = Array.prototype.slice.call(arguments, 1);
-        var listeners = this._events[key];
-        if (!listeners) {
-            return result;
-        }
-        for (var i = 0; i < listeners.length; i++) {
-            var listener = listeners[i];
-            if (listener.type === 'once') {
-                listeners.splice(i, 1);
-                i--;
+        var eventTag = getEventTag(eventName);
+        this._events = this._events.filter(function (event) {
+            if (event.tag !== eventTag) {
+                return true;
             }
-            try {
-                listener.listener.apply(this, args);
-                result = true;
-            }
-            catch (error) {
-                console.log('Event Listener Error: ' + error.message);
-            }
-        }
-        if (listeners.length === 0) {
-            delete this._events[key];
-            if (key === 'pending') {
-                this._stopPending();
-            }
-        }
-        if (this.listenerCount() === 0) {
-            this.polling = false;
-        }
+            setTimeout(function () {
+                event.listener.apply(_this, args);
+            }, 0);
+            result = true;
+            return !(event.once);
+        });
         return result;
     };
-    // @TODO: type EventName
     Provider.prototype.listenerCount = function (eventName) {
         if (!eventName) {
-            var result = 0;
-            for (var key in this._events) {
-                result += this._events[key].length;
-            }
-            return result;
+            return this._events.length;
         }
-        var listeners = this._events[getEventString(eventName)];
-        if (!listeners) {
-            return 0;
-        }
-        return listeners.length;
+        var eventTag = getEventTag(eventName);
+        return this._events.filter(function (event) {
+            return (event.tag === eventTag);
+        }).length;
     };
     Provider.prototype.listeners = function (eventName) {
-        var listeners = this._events[getEventString(eventName)];
-        if (!listeners) {
-            return [];
-        }
-        var result = [];
-        for (var i = 0; i < listeners.length; i++) {
-            result.push(listeners[i].listener);
-        }
-        return result;
+        var eventTag = getEventTag(eventName);
+        return this._events.filter(function (event) {
+            return (event.tag === eventTag);
+        }).map(function (event) {
+            return event.listener;
+        });
     };
     Provider.prototype.removeAllListeners = function (eventName) {
-        delete this._events[getEventString(eventName)];
-        if (this.listenerCount() === 0) {
+        var eventTag = getEventTag(eventName);
+        this._events = this._events.filter(function (event) {
+            return (event.tag !== eventTag);
+        });
+        if (eventName === 'pending') {
+            this._stopPending();
+        }
+        if (this._events.length === 0) {
             this.polling = false;
         }
         return this;
     };
     Provider.prototype.removeListener = function (eventName, listener) {
-        var eventNameString = getEventString(eventName);
-        var listeners = this._events[eventNameString];
-        if (!listeners) {
-            return this;
-        }
-        for (var i = 0; i < listeners.length; i++) {
-            if (listeners[i].listener === listener) {
-                listeners.splice(i, 1);
-                break;
+        var found = false;
+        var eventTag = getEventTag(eventName);
+        this._events = this._events.filter(function (event) {
+            if (event.tag !== eventTag) {
+                return true;
             }
+            if (found) {
+                return true;
+            }
+            found = false;
+            return false;
+        });
+        if (eventName === 'pending' && this.listenerCount('pending') === 0) {
+            this._stopPending();
         }
-        if (listeners.length === 0) {
-            this.removeAllListeners(eventName);
+        if (this.listenerCount() === 0) {
+            this.polling = false;
         }
         return this;
     };
     return Provider;
 }());
 exports.Provider = Provider;
+// See: https://github.com/isaacs/inherits/blob/master/inherits_browser.js
+function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor;
+    ctor.prototype = Object.create(superCtor.prototype, {
+        constructor: {
+            value: ctor,
+            enumerable: false,
+            writable: true,
+            configurable: true
+        }
+    });
+}
+function inheritable(parent) {
+    return function (child) {
+        inherits(child, parent);
+        properties_1.defineReadOnly(child, 'inherits', inheritable(child));
+    };
+}
+properties_1.defineReadOnly(Provider, 'inherits', inheritable(Provider));
 
-},{"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/properties":66,"../utils/rlp":67,"../utils/transaction":71,"../utils/utf8":73,"../utils/web":74,"../wallet/wallet":79,"./networks":55}],57:[function(require,module,exports){
+},{"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/properties":66,"../utils/rlp":67,"../utils/transaction":71,"../utils/utf8":73,"../utils/web":74,"./networks":55}],57:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -11726,7 +11769,7 @@ var Web3Provider = /** @class */ (function (_super) {
             errors.throwError('invalid web3Provider', errors.INVALID_ARGUMENT, { arg: 'web3Provider', value: web3Provider });
         }
         // HTTP has a host; IPC has a path.
-        var url = web3Provider.host || web3Provider.path || 'unknown';
+        var url = web3Provider.host || web3Provider.path || '';
         _this = _super.call(this, url, network) || this;
         errors.checkNew(_this, Web3Provider);
         properties_1.defineReadOnly(_this, '_web3Provider', web3Provider);
@@ -11839,6 +11882,10 @@ function parseParam(param, allowIndexed) {
                 break;
             case ')':
                 delete node.state;
+                if (allowIndexed && node.name === 'indexed') {
+                    node.indexed = true;
+                    node.name = '';
+                }
                 node.type = verifyType(node.type);
                 var child = node;
                 node = node.parent;
@@ -11852,6 +11899,10 @@ function parseParam(param, allowIndexed) {
                 break;
             case ',':
                 delete node.state;
+                if (allowIndexed && node.name === 'indexed') {
+                    node.indexed = true;
+                    node.name = '';
+                }
                 node.type = verifyType(node.type);
                 var sibling = { type: '', name: '', parent: node.parent, state: { allowType: true } };
                 node.parent.components.push(sibling);
@@ -11922,6 +11973,10 @@ function parseParam(param, allowIndexed) {
         throw new Error("unexpected eof");
     }
     delete parent.state;
+    if (allowIndexed && node.name === 'indexed') {
+        node.indexed = true;
+        node.name = '';
+    }
     parent.type = verifyType(parent.type);
     return parent;
 }
@@ -12975,6 +13030,8 @@ exports.ConstantWeiPerEther = bigNumberify('1000000000000000000');
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 var errors = require("./errors");
+exports.AddressZero = '0x0000000000000000000000000000000000000000';
+exports.HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
 function isBigNumber(value) {
     return !!value._bn;
 }
@@ -13177,27 +13234,46 @@ function hexZeroPad(value, length) {
     return value;
 }
 exports.hexZeroPad = hexZeroPad;
+function isSignature(value) {
+    return (value && value.r != null && value.s != null);
+}
 function splitSignature(signature) {
-    var bytes = arrayify(signature);
-    if (bytes.length !== 65) {
-        throw new Error('invalid signature');
+    var v = 0;
+    var r = '0x', s = '0x';
+    if (isSignature(signature)) {
+        r = hexZeroPad(signature.r, 32);
+        s = hexZeroPad(signature.s, 32);
+        var recoveryParam = signature.recoveryParam;
+        if (recoveryParam == null && signature.v != null) {
+            recoveryParam = 1 - (signature.v % 2);
+        }
+        v = 27 + recoveryParam;
     }
-    var v = bytes[64];
-    if (v !== 27 && v !== 28) {
-        v = 27 + (v % 2);
+    else {
+        var bytes = arrayify(signature);
+        if (bytes.length !== 65) {
+            throw new Error('invalid signature');
+        }
+        r = hexlify(bytes.slice(0, 32));
+        s = hexlify(bytes.slice(32, 64));
+        v = bytes[64];
+        if (v !== 27 && v !== 28) {
+            v = 27 + (v % 2);
+        }
     }
     return {
-        r: hexlify(bytes.slice(0, 32)),
-        s: hexlify(bytes.slice(32, 64)),
+        r: r,
+        s: s,
         recoveryParam: (v - 27),
         v: v
     };
 }
 exports.splitSignature = splitSignature;
 function joinSignature(signature) {
+    signature = splitSignature(signature);
     return hexlify(concat([
-        hexZeroPad(signature.r, 32),
-        hexZeroPad(signature.s, 32),
+        signature.r,
+        signature.s,
         (signature.recoveryParam ? '0x1c' : '0x1b')
     ]));
 }
@@ -13380,7 +13456,11 @@ exports.bigNumberify = bignumber_1.bigNumberify;
 var bytes_1 = require("./bytes");
 exports.arrayify = bytes_1.arrayify;
 exports.concat = bytes_1.concat;
+exports.hexDataSlice = bytes_1.hexDataSlice;
+exports.hexDataLength = bytes_1.hexDataLength;
 exports.hexlify = bytes_1.hexlify;
+exports.hexStripZeros = bytes_1.hexStripZeros;
+exports.hexZeroPad = bytes_1.hexZeroPad;
 exports.joinSignature = bytes_1.joinSignature;
 exports.padZeros = bytes_1.padZeros;
 exports.splitSignature = bytes_1.splitSignature;
@@ -13426,11 +13506,22 @@ exports.errors = errors;
 // NFKC (composed)
 var etherSymbol = '\u039e';
 exports.etherSymbol = etherSymbol;
+var constants = {
+    AddressZero: bytes_1.AddressZero,
+    HashZero: bytes_1.HashZero,
+    NegativeOne: bignumber_1.ConstantNegativeOne,
+    Zero: bignumber_1.ConstantZero,
+    One: bignumber_1.ConstantOne,
+    Two: bignumber_1.ConstantTwo,
+    WeiPerEther: bignumber_1.ConstantWeiPerEther
+};
+exports.constants = constants;
 exports.default = {
     AbiCoder: abi_coder_1.AbiCoder,
     defaultAbiCoder: abi_coder_1.defaultAbiCoder,
     parseSignature: abi_coder_1.parseSignature,
     parseParamType: abi_coder_1.parseParamType,
+    constants: constants,
     RLP: RLP,
     fetchJson: web_1.fetchJson,
     defineReadOnly: properties_1.defineReadOnly,
@@ -13446,6 +13537,10 @@ exports.default = {
     bigNumberify: bignumber_1.bigNumberify,
     BigNumber: bignumber_1.BigNumber,
     hexlify: bytes_1.hexlify,
+    hexStripZeros: bytes_1.hexStripZeros,
+    hexZeroPad: bytes_1.hexZeroPad,
+    hexDataLength: bytes_1.hexDataLength,
+    hexDataSlice: bytes_1.hexDataSlice,
     toUtf8Bytes: utf8_1.toUtf8Bytes,
     toUtf8String: utf8_1.toUtf8String,
     hashMessage: hash_1.hashMessage,
@@ -13881,7 +13976,7 @@ var transactionFields = [
     { name: 'value', maxLength: 32 },
     { name: 'data' },
 ];
-function serialize(transaction, signDigest) {
+function serialize(transaction, signature) {
     var raw = [];
     transactionFields.forEach(function (fieldInfo) {
         var value = transaction[fieldInfo.name] || ([]);
@@ -13899,17 +13994,19 @@ function serialize(transaction, signDigest) {
         }
         raw.push(bytes_1.hexlify(value));
     });
-    if (transaction.chainId && transaction.chainId !== 0) {
+    if (transaction.chainId != null && transaction.chainId !== 0) {
         raw.push(bytes_1.hexlify(transaction.chainId));
         raw.push('0x');
         raw.push('0x');
     }
+    var unsignedTransaction = RLP.encode(raw);
     // Requesting an unsigned transation
-    if (!signDigest) {
-        return RLP.encode(raw);
+    if (!signature) {
+        return unsignedTransaction;
     }
-    var digest = keccak256_1.keccak256(RLP.encode(raw));
-    var signature = signDigest(bytes_1.arrayify(digest));
+    // The splitSignature will ensure the transaction has a recoveryParam in the
+    // case that the signTransaction function only adds a v.
+    signature = bytes_1.splitSignature(signature);
     // We pushed a chainId and null r, s on for hashing only; remove those
     var v = 27 + signature.recoveryParam;
     if (raw.length === 9) {
@@ -15252,7 +15349,9 @@ var Wallet = /** @class */ (function (_super) {
     Wallet.prototype.sign = function (transaction) {
         var _this = this;
         return properties_1.resolveProperties(transaction).then(function (tx) {
-            return transaction_1.serialize(tx, _this.signingKey.signDigest.bind(_this.signingKey));
+            var rawTx = transaction_1.serialize(tx);
+            var signature = _this.signingKey.signDigest(keccak256_1.keccak256(rawTx));
+            return Promise.resolve(transaction_1.serialize(tx, signature));
         });
     };
     Wallet.prototype.signMessage = function (message) {
@@ -15496,6 +15595,8 @@ var wordlists = __importStar(require("./wordlists"));
 exports.wordlists = wordlists;
 var _version_1 = require("./_version");
 exports.version = _version_1.version;
+var constants = utils.constants;
+exports.constants = constants;
 exports.default = {
     Wallet: wallet_1.Wallet,
     HDNode: wallet_1.HDNode,
@@ -15505,6 +15606,7 @@ exports.default = {
     getNetwork: networks_1.getNetwork,
     providers: providers,
     errors: errors,
+    constants: constants,
     utils: utils,
     wordlists: wordlists,
     version: _version_1.version
