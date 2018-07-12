@@ -37,7 +37,7 @@ export class Web3Provider extends JsonRpcProvider {
         }
 
         // HTTP has a host; IPC has a path.
-        var url = web3Provider.host || web3Provider.path || 'unknown';
+        var url = web3Provider.host || web3Provider.path || '';
 
         super(url, network);
         errors.checkNew(this, Web3Provider);

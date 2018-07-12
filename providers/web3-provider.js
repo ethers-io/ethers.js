@@ -28,7 +28,7 @@ var Web3Provider = /** @class */ (function (_super) {
             errors.throwError('invalid web3Provider', errors.INVALID_ARGUMENT, { arg: 'web3Provider', value: web3Provider });
         }
         // HTTP has a host; IPC has a path.
-        var url = web3Provider.host || web3Provider.path || 'unknown';
+        var url = web3Provider.host || web3Provider.path || '';
         _this = _super.call(this, url, network) || this;
         errors.checkNew(_this, Web3Provider);
         properties_1.defineReadOnly(_this, '_web3Provider', web3Provider);
