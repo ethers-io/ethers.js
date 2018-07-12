@@ -9,6 +9,8 @@ import { Signature } from './secp256k1';
 import errors = require('./errors');
 
 
+export const AddressZero = '0x0000000000000000000000000000000000000000';
+export const HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
 export type Arrayish = string | ArrayLike<number>;
 
@@ -240,29 +242,52 @@ export function hexZeroPad(value: string, length: number): string {
     return value;
 }
 
-export function splitSignature(signature: Arrayish): Signature {
-    let bytes: Uint8Array = arrayify(signature);
-    if (bytes.length !== 65) {
-        throw new Error('invalid signature');
-    }
+function isSignature(value: any): value is Signature {
+    return (value && value.r != null && value.s != null);
+}
 
-    var v = bytes[64];
-    if (v !== 27 && v !== 28) {
-        v = 27 + (v % 2);
+export function splitSignature(signature: Arrayish | Signature): Signature {
+    let v = 0;
+    let r = '0x', s = '0x';
+
+    if (isSignature(signature)) {
+        r = hexZeroPad(signature.r, 32);
+        s = hexZeroPad(signature.s, 32);
+
+        let recoveryParam = signature.recoveryParam;
+        if (recoveryParam == null && signature.v != null) {
+            recoveryParam = 1 - (signature.v % 2);
+        }
+        v = 27 + recoveryParam;
+
+    } else {
+        let bytes: Uint8Array = arrayify(signature);
+        if (bytes.length !== 65) {
+            throw new Error('invalid signature');
+        }
+        r = hexlify(bytes.slice(0, 32));
+        s = hexlify(bytes.slice(32, 64));
+
+        v = bytes[64];
+        if (v !== 27 && v !== 28) {
+            v = 27 + (v % 2);
+        }
     }
 
     return {
-        r: hexlify(bytes.slice(0, 32)),
-        s: hexlify(bytes.slice(32, 64)),
+        r: r,
+        s: s,
         recoveryParam: (v - 27),
         v: v
     }
 }
 
 export function joinSignature(signature: Signature): string {
+    signature = splitSignature(signature);
+
     return hexlify(concat([
-         hexZeroPad(signature.r, 32),
-         hexZeroPad(signature.s, 32),
+         signature.r,
+         signature.s,
          (signature.recoveryParam ? '0x1c': '0x1b')
     ]));
 }

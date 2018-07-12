@@ -119,12 +119,16 @@ describe('Test Transaction Signing and Parsing', function() {
             assert.equal(parsedTransaction.chainId, 0, 'parses chainId (legacy)');
 
             // Legacy serializes unsigned transaction
-            assert.equal(ethers.utils.serializeTransaction(transaction), test.unsignedTransaction,
-                'serializes undsigned transaction (legacy)');
+            {
+                let unsignedTx = ethers.utils.serializeTransaction(transaction);
+                assert.equal(unsignedTx, test.unsignedTransaction,
+                    'serializes undsigned transaction (legacy)');
 
-            // Legacy signed serialized transaction
-            assert.equal(ethers.utils.serializeTransaction(transaction, signDigest), test.signedTransaction,
-                'signs transaction (legacy)');
+                // Legacy signed serialized transaction
+                let signature = signDigest(ethers.utils.keccak256(unsignedTx));
+                assert.equal(ethers.utils.serializeTransaction(transaction, signature), test.signedTransaction,
+                    'signs transaction (legacy)');
+            }
 
 
             // EIP155
@@ -152,13 +156,18 @@ describe('Test Transaction Signing and Parsing', function() {
 
             transaction.chainId = 5;
 
-            // EIP-155 signed serialized transaction
-            assert.equal(ethers.utils.serializeTransaction(transaction, signDigest), test.signedTransactionChainId5,
-                'signs transaction (eip155)');
+            {
+                // EIP-155 serialized unsigned transaction
+                let unsignedTx = ethers.utils.serializeTransaction(transaction);
+                assert.equal(unsignedTx, test.unsignedTransactionChainId5,
+                    'serializes unsigned transaction (eip155) ');
 
-            // EIP-155 serialized unsigned transaction
-            assert.equal(ethers.utils.serializeTransaction(transaction), test.unsignedTransactionChainId5,
-                'serializes unsigned transaction (eip155) ');
+                // EIP-155 signed serialized transaction
+                let signature = signDigest(ethers.utils.keccak256(unsignedTx));
+                assert.equal(ethers.utils.serializeTransaction(transaction, signature), test.signedTransactionChainId5,
+                    'signs transaction (eip155)');
+            }
+
         });
     });
 });

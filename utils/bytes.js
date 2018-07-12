@@ -5,6 +5,8 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 var errors = require("./errors");
+exports.AddressZero = '0x0000000000000000000000000000000000000000';
+exports.HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
 function isBigNumber(value) {
     return !!value._bn;
 }
@@ -207,27 +209,46 @@ function hexZeroPad(value, length) {
     return value;
 }
 exports.hexZeroPad = hexZeroPad;
+function isSignature(value) {
+    return (value && value.r != null && value.s != null);
+}
 function splitSignature(signature) {
-    var bytes = arrayify(signature);
-    if (bytes.length !== 65) {
-        throw new Error('invalid signature');
+    var v = 0;
+    var r = '0x', s = '0x';
+    if (isSignature(signature)) {
+        r = hexZeroPad(signature.r, 32);
+        s = hexZeroPad(signature.s, 32);
+        var recoveryParam = signature.recoveryParam;
+        if (recoveryParam == null && signature.v != null) {
+            recoveryParam = 1 - (signature.v % 2);
+        }
+        v = 27 + recoveryParam;
     }
-    var v = bytes[64];
-    if (v !== 27 && v !== 28) {
-        v = 27 + (v % 2);
+    else {
+        var bytes = arrayify(signature);
+        if (bytes.length !== 65) {
+            throw new Error('invalid signature');
+        }
+        r = hexlify(bytes.slice(0, 32));
+        s = hexlify(bytes.slice(32, 64));
+        v = bytes[64];
+        if (v !== 27 && v !== 28) {
+            v = 27 + (v % 2);
+        }
     }
     return {
-        r: hexlify(bytes.slice(0, 32)),
-        s: hexlify(bytes.slice(32, 64)),
+        r: r,
+        s: s,
         recoveryParam: (v - 27),
         v: v
     };
 }
 exports.splitSignature = splitSignature;
 function joinSignature(signature) {
+    signature = splitSignature(signature);
     return hexlify(concat([
-        hexZeroPad(signature.r, 32),
-        hexZeroPad(signature.s, 32),
+        signature.r,
+        signature.s,
         (signature.recoveryParam ? '0x1c' : '0x1b')
     ]));
 }

@@ -1,7 +1,7 @@
 
 import { getAddress } from './address';
-import { BigNumber, bigNumberify, BigNumberish,ConstantZero } from './bignumber';
-import { arrayify, Arrayish, hexlify, hexZeroPad, stripZeros, } from './bytes';
+import { BigNumber, bigNumberify, BigNumberish, ConstantZero } from './bignumber';
+import { arrayify, Arrayish, hexlify, hexZeroPad, splitSignature, stripZeros, } from './bytes';
 import { keccak256 } from './keccak256';
 import { recoverAddress, Signature } from './secp256k1';
 import * as RLP from './rlp';
@@ -61,9 +61,7 @@ var transactionFields = [
 ];
 
 
-export type SignDigestFunc = (digest: Uint8Array) => Signature;
-
-export function serialize(transaction: UnsignedTransaction, signDigest?: SignDigestFunc): string {
+export function serialize(transaction: UnsignedTransaction, signature?: Arrayish | Signature): string {
 
     var raw: Array<string | Uint8Array> = [];
 
@@ -87,20 +85,22 @@ export function serialize(transaction: UnsignedTransaction, signDigest?: SignDig
         raw.push(hexlify(value));
     });
 
-    if (transaction.chainId && transaction.chainId !== 0) {
+    if (transaction.chainId != null && transaction.chainId !== 0) {
         raw.push(hexlify(transaction.chainId));
         raw.push('0x');
         raw.push('0x');
     }
 
+    let unsignedTransaction = RLP.encode(raw);
+
     // Requesting an unsigned transation
-    if (!signDigest) {
-        return RLP.encode(raw);
+    if (!signature) {
+        return unsignedTransaction;
     }
 
-    var digest = keccak256(RLP.encode(raw));
-
-    var signature = signDigest(arrayify(digest));
+    // The splitSignature will ensure the transaction has a recoveryParam in the
+    // case that the signTransaction function only adds a v.
+    signature = splitSignature(signature);
 
     // We pushed a chainId and null r, s on for hashing only; remove those
     var v = 27 + signature.recoveryParam

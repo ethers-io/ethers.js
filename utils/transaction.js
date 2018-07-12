@@ -34,7 +34,7 @@ var transactionFields = [
     { name: 'value', maxLength: 32 },
     { name: 'data' },
 ];
-function serialize(transaction, signDigest) {
+function serialize(transaction, signature) {
     var raw = [];
     transactionFields.forEach(function (fieldInfo) {
         var value = transaction[fieldInfo.name] || ([]);
@@ -52,17 +52,19 @@ function serialize(transaction, signDigest) {
         }
         raw.push(bytes_1.hexlify(value));
     });
-    if (transaction.chainId && transaction.chainId !== 0) {
+    if (transaction.chainId != null && transaction.chainId !== 0) {
         raw.push(bytes_1.hexlify(transaction.chainId));
         raw.push('0x');
         raw.push('0x');
     }
+    var unsignedTransaction = RLP.encode(raw);
     // Requesting an unsigned transation
-    if (!signDigest) {
-        return RLP.encode(raw);
+    if (!signature) {
+        return unsignedTransaction;
     }
-    var digest = keccak256_1.keccak256(RLP.encode(raw));
-    var signature = signDigest(bytes_1.arrayify(digest));
+    // The splitSignature will ensure the transaction has a recoveryParam in the
+    // case that the signTransaction function only adds a v.
+    signature = bytes_1.splitSignature(signature);
     // We pushed a chainId and null r, s on for hashing only; remove those
     var v = 27 + signature.recoveryParam;
     if (raw.length === 9) {

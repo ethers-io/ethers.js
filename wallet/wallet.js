@@ -80,7 +80,9 @@ var Wallet = /** @class */ (function (_super) {
     Wallet.prototype.sign = function (transaction) {
         var _this = this;
         return properties_1.resolveProperties(transaction).then(function (tx) {
-            return transaction_1.serialize(tx, _this.signingKey.signDigest.bind(_this.signingKey));
+            var rawTx = transaction_1.serialize(tx);
+            var signature = _this.signingKey.signDigest(keccak256_1.keccak256(rawTx));
+            return Promise.resolve(transaction_1.serialize(tx, signature));
         });
     };
     Wallet.prototype.signMessage = function (message) {

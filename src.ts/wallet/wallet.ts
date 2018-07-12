@@ -69,9 +69,10 @@ export class Wallet extends Signer {
     }
 
     sign(transaction: TransactionRequest): Promise<string> {
-
         return resolveProperties(transaction).then((tx) => {
-            return serializeTransaction(tx, this.signingKey.signDigest.bind(this.signingKey));
+            let rawTx = serializeTransaction(tx);
+            let signature = this.signingKey.signDigest(keccak256(rawTx));
+            return Promise.resolve(serializeTransaction(tx, signature));
         });
     }
 
