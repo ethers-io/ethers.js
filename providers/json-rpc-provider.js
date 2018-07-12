@@ -17,7 +17,7 @@ var utils = (function() {
 
         getAddress: require('../utils/address').getAddress,
 
-        abiCoder: require('../utils/abi-coder'),
+        abiCoder: require('../utils/abi-coder').defaultCoder,
     }
 })();
 
@@ -39,9 +39,9 @@ function getResult(payload) {
         if(revertedTx && revertedTx.return){
             var returnData = revertedTx.return;
             var hexlifiedData = utils.hexlify(returnData);
-            var reason = abiCoder.decodeRevertReason(hexlifiedData);
-            
-            payload.error.message = `${payload.error.message} The reason for revert: ${reason}`;
+            var reason = utils.abiCoder.decodeRevertReason(hexlifiedData);
+
+            payload.error.message = `${payload.error.message}. The reason for revert: ${reason}`;
         }
         
         var error = new Error(payload.error.message);

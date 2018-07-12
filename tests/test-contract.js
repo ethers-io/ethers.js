@@ -79,7 +79,7 @@ function TestContractEvents() {
     });
 }
 
-xdescribe('Test Contract Objects', function() {
+describe('Test Contract Objects', function() {
 
     it('parses events', function() {
         this.timeout(120000);
@@ -143,51 +143,36 @@ xdescribe('Test Contract Objects', function() {
 */
 
 describe('Test revert reasons errors', () => {
-    var GanacheCLI = require("ganache-cli");
+    var ganache = require("./run-ganache");
     var contractJson = require('./make-tests/test-revert-reasons/Revert.json');
-    var localProvider;
-    var wallet;
+
+    var node;
 
     var expectedRevertReasons = [
-        "Number should be bigger than 7",
-        "Number is not bigger than 5",
-        "Number is not enough bigger",
-        "Owner's address should not be zero"
+        "VM Exception while processing transaction: revert. The reason for revert: Number should be bigger than 7",
+        "VM Exception while processing transaction: revert. The reason for revert: Number is not bigger than 5",
+        "VM Exception while processing transaction: revert. The reason for revert: Number is not enough bigger",
+        "VM Exception while processing transaction: revert. The reason for revert: Owner's address should not be zero"
     ];
 
-    var server = GanacheCLI.server({
-        accounts: [ 
-            {   secretKey: privateKey, 
-                "0xd9995bae12fee327256ffec1e3184d492bd94c31": "0x0999999999999999999"
-            } 
-        ]
-    });
-
-    var port = 18545;
-    var privateKey = '0x7ab741b57e8d94dd7e1a29055646bafde7010f38a900f55bbd7647880faa6ee8';
-
-    beforeEach(() => {
-        // Ganache version 6.1.4 listens to http://127.0.0.1:8545
-        server.listen(port, function(err, blockchain) {
-            localProvider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:' + port);
-            wallet = new ethers.Wallet(privateKey, localProvider);
-        });
-
-        var localProvider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
+    beforeEach(async () => {
+        node = await ganache.run();
     });
     
     it('should throw from constructor', async () => {
-        let txForDeploy = await ethers.Contract.getDeployTransaction(contractJson.bytecode, contractJson.abi, accounts[1]);
+        var zeroAddress = "0x0000000000000000000000000000000000000000"
+        var txForDeploy = await ethers.Contract.getDeployTransaction(contractJson.bytecode, contractJson.abi, zeroAddress);
+
         try{
-            await wallet.sendTransaction(txForDeploy);
+            await node.wallet.sendTransaction(txForDeploy);
         }catch(error){
             assert.equal(error.message, expectedRevertReasons[3], "Constructor revert is not handled properly");
         }
     });
 
     it('should throw with relevant reason from non-view functions', async () => {
-        var contractInstance = await initContract(localProvider);
-
+        var contractInstance = await initContract(node.provider);
+        
         try{
             await contractInstance.set(6);
         }catch(error){
@@ -201,8 +186,8 @@ describe('Test revert reasons errors', () => {
         }
     });
 
-    it('should throw with relevant reason from view functions', async () => {
-        var contractInstance = await initContract(localProvider);
+    it('should throw with relevant reason from view functions',async () => {
+        var contractInstance = await initContract(node.provider);
 
         try{
             await contractInstance.isEnoughBigger();
@@ -212,15 +197,14 @@ describe('Test revert reasons errors', () => {
     });
 
     var initContract = async function(provider) {
+        var txForDeploy = await ethers.Contract.getDeployTransaction(contractJson.bytecode, contractJson.abi,  node.wallet.address);
+        var deploymentTxn = await node.wallet.sendTransaction(txForDeploy);
+        const receipt = await provider.getTransactionReceipt(deploymentTxn.hash);
 
-        let txForDeploy = await ethers.Contract.getDeployTransaction(contractJson.bytecode, contractJson.abi);
-        let deploymentTxn = await wallet.sendTransaction(txForDeploy);
-        let contractAddress = await provider.waitForTransaction(deploymentTxn.hash);
-
-        return new ethers.Contract(contractAddress, contractJson.abi, provider);
-    };
+        return new ethers.Contract(receipt.contractAddress, contractJson.abi, node.wallet);
+    };      
     
-    afterEach(() => {
-        server.stop();
+    afterEach(async () => {
+        await ganache.stop();
     });
 });
