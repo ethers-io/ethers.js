@@ -571,6 +571,7 @@ utils.defineProperty(Provider, 'getNetwork', function(network) {
 
 utils.defineProperty(Provider, 'networks', networks);
 
+if (typeof(weex) === 'undefined') {
 utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
     var headers = [ ];
 
@@ -656,7 +657,76 @@ utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
         }
     });
 });
+} else {
+utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
+    var stream = weex.requireModule('stream');
+    var headers = {};
+    var method = 'POST';
 
+    if (json) {
+        method = 'POST';
+        headers['Content-Type'] = 'application/json' ;
+    } else {
+        method = 'GET';
+        json = '';
+    }
+
+    if (typeof(url) === 'object' && url.url != null
+        && url.user != null && url.password != null) {
+        if (url.url.substring(0, 6) !== 'https:' && url.forceInsecure !== true) {
+            errors.throwError('basic authentication requires a secure https url',
+                              errors.INVALID_ARGUMENT,
+                              { arg: 'url', url: url.url, user: url.user, password: '[REDACTED]' });
+        }
+        var auth = utils.toUtf8Bytes(url.user + ':' + url.password);
+        headers['Authorization'] = 'Basic ' + utils.base64.encode(auth);
+        url = url.url;
+    }
+
+    return new Promise(function(resolve, reject) {
+        return stream.fetch({
+            method: method,
+            url: url,
+            type: 'text',
+            headers: headers,
+            body: json,
+        }, function(response) {
+            var result;
+            if (response.status != 200) {
+                var error = new Error('invalid response - ' + response.statusText);
+                error.statusCode = response.status;
+                reject(error);
+                return;
+            }
+
+            try {
+                result = JSON.parse(response.data);
+            } catch (error) {
+                var jsonError = new Error('invalid json response');
+                jsonError.orginialError = error;
+                jsonError.responseText = response.data;
+                jsonError.url = url;
+                reject(jsonError);
+                return;
+            }
+
+            if (processFunc) {
+                try {
+                    result = processFunc(result);
+                } catch (error) {
+                    error.url = url;
+                    error.body = json;
+                    error.responseText = response.data;
+                    reject(error);
+                    return;
+                }
+            }
+
+            resolve(result);
+        });
+    });
+});
+}
 
 utils.defineProperty(Provider.prototype, 'waitForTransaction', function(transactionHash, timeout) {
     var self = this;
