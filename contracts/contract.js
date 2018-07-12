@@ -12,8 +12,8 @@ var provider_1 = require("../providers/provider");
 var wallet_1 = require("../wallet/wallet");
 var abi_coder_1 = require("../utils/abi-coder");
 var address_1 = require("../utils/address");
-var bytes_1 = require("../utils/bytes");
 var bignumber_1 = require("../utils/bignumber");
+var bytes_1 = require("../utils/bytes");
 var properties_1 = require("../utils/properties");
 var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
@@ -151,6 +151,9 @@ function runMethod(contract, functionName, estimateOnly) {
         });
     };
 }
+function getEventTag(filter) {
+    return (filter.address || '') + (filter.topics ? filter.topics.join(':') : '');
+}
 var Contract = /** @class */ (function () {
     // https://github.com/Microsoft/TypeScript/issues/5453
     // Once this issue is resolved (there are open PR) we can do this nicer
@@ -178,14 +181,28 @@ var Contract = /** @class */ (function () {
             errors.throwError('invalid signer or provider', errors.INVALID_ARGUMENT, { arg: 'signerOrProvider', value: signerOrProvider });
         }
         properties_1.defineReadOnly(this, 'estimate', {});
-        properties_1.defineReadOnly(this, 'events', {});
         properties_1.defineReadOnly(this, 'functions', {});
+        properties_1.defineReadOnly(this, 'filters', {});
+        Object.keys(this.interface.events).forEach(function (eventName) {
+            var event = _this.interface.events[eventName];
+            properties_1.defineReadOnly(_this.filters, eventName, function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                return {
+                    address: _this.address,
+                    topics: event.encodeTopics(args)
+                };
+            });
+        });
         // Not connected to an on-chain instance, so do not connect functions and events
         if (!addressOrName) {
             properties_1.defineReadOnly(this, 'address', null);
             properties_1.defineReadOnly(this, 'addressPromise', Promise.resolve(null));
             return;
         }
+        this._events = [];
         properties_1.defineReadOnly(this, 'address', addressOrName);
         properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName).then(function (address) {
             if (address == null) {
@@ -209,68 +226,6 @@ var Contract = /** @class */ (function () {
                 properties_1.defineReadOnly(_this.estimate, name, runMethod(_this, name, true));
             }
         });
-        Object.keys(this.interface.events).forEach(function (eventName) {
-            var eventInfo = _this.interface.events[eventName];
-            var eventCallback = null;
-            var contract = _this;
-            function handleEvent(log) {
-                contract.addressPromise.then(function (address) {
-                    // Not meant for us (the topics just has the same name)
-                    if (address != log.address) {
-                        return null;
-                    }
-                    try {
-                        var result = eventInfo.decode(log.data, log.topics);
-                        // Some useful things to have with the log
-                        log.args = result;
-                        log.event = eventName;
-                        log.decode = eventInfo.decode;
-                        log.removeListener = function () {
-                            contract.provider.removeListener([eventInfo.topic], handleEvent);
-                        };
-                        log.getBlock = function () { return contract.provider.getBlock(log.blockHash); ; };
-                        log.getTransaction = function () { return contract.provider.getTransaction(log.transactionHash); };
-                        log.getTransactionReceipt = function () { return contract.provider.getTransactionReceipt(log.transactionHash); };
-                        log.eventSignature = eventInfo.signature;
-                        eventCallback.apply(log, Array.prototype.slice.call(result));
-                    }
-                    catch (error) {
-                        console.log(error);
-                        var onerror_1 = contract._onerror;
-                        if (onerror_1) {
-                            setTimeout(function () { onerror_1(error); });
-                        }
-                    }
-                    return null;
-                }).catch(function (error) { });
-            }
-            var property = {
-                enumerable: true,
-                get: function () {
-                    return eventCallback;
-                },
-                set: function (value) {
-                    if (!value) {
-                        value = null;
-                    }
-                    if (!contract.provider) {
-                        errors.throwError('events require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'events' });
-                    }
-                    if (!value && eventCallback) {
-                        contract.provider.removeListener([eventInfo.topic], handleEvent);
-                    }
-                    else if (value && !eventCallback) {
-                        contract.provider.on([eventInfo.topic], handleEvent);
-                    }
-                    eventCallback = value;
-                }
-            };
-            var propertyName = 'on' + eventName.toLowerCase();
-            if (_this[propertyName] == null) {
-                Object.defineProperty(_this, propertyName, property);
-            }
-            Object.defineProperty(_this.events, eventName, property);
-        }, this);
     }
     Object.defineProperty(Contract.prototype, "onerror", {
         get: function () { return this._onerror; },
@@ -370,6 +325,181 @@ var Contract = /** @class */ (function () {
             properties_1.defineReadOnly(contract, 'deployTransaction', tx);
             return contract;
         });
+    };
+    Contract.prototype._getEventFilter = function (eventName) {
+        var _this = this;
+        if (typeof (eventName) === 'string') {
+            // Listen for any event
+            if (eventName === '*') {
+                return {
+                    decode: function (log) {
+                        return [_this.interface.parseLog(log)];
+                    },
+                    eventTag: '*',
+                    filter: { address: this.address },
+                };
+            }
+            // Normalize the eventName
+            if (eventName.indexOf('(') !== -1) {
+                eventName = abi_coder_1.formatSignature(abi_coder_1.parseSignature('event ' + eventName));
+            }
+            var event_1 = this.interface.events[eventName];
+            if (!event_1) {
+                errors.throwError('unknown event - ' + eventName, errors.INVALID_ARGUMENT, { argumnet: 'eventName', value: eventName });
+            }
+            var filter_1 = {
+                address: this.address,
+                topics: [event_1.topic]
+            };
+            return {
+                decode: function (log) {
+                    return event_1.decode(log.data, log.topics);
+                },
+                event: event_1,
+                eventTag: getEventTag(filter_1),
+                filter: filter_1
+            };
+        }
+        var filter = {
+            address: this.address
+        };
+        // Find the matching event in the ABI; if none, we still allow filtering
+        // since it may be a filter for an otherwise unknown event
+        var event = null;
+        if (eventName.topics && eventName.topics[0]) {
+            filter.topics = eventName.topics;
+            for (var name in this.interface.events) {
+                if (name.indexOf('(') === -1) {
+                    continue;
+                }
+                var e = this.interface.events[name];
+                if (e.topic === eventName.topics[0].toLowerCase()) {
+                    event = e;
+                    break;
+                }
+            }
+        }
+        return {
+            decode: function (log) {
+                if (event) {
+                    return event.decode(log.data, log.topics);
+                }
+                return [log];
+            },
+            event: event,
+            eventTag: getEventTag(filter),
+            filter: filter
+        };
+    };
+    Contract.prototype._addEventListener = function (eventFilter, listener, once) {
+        var _this = this;
+        if (!this.provider) {
+            errors.throwError('events require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'once' });
+        }
+        var wrappedListener = function (log) {
+            var decoded = Array.prototype.slice.call(eventFilter.decode(log));
+            var event = properties_1.jsonCopy(log);
+            event.args = decoded;
+            event.decode = eventFilter.event.decode;
+            event.event = eventFilter.event.name;
+            event.eventSignature = eventFilter.event.signature;
+            event.removeListener = function () { _this.removeListener(eventFilter.filter, listener); };
+            event.getBlock = function () { return _this.provider.getBlock(log.blockHash); };
+            event.getTransaction = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
+            event.getTransactionReceipt = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
+            decoded.push(event);
+            _this.emit.apply(_this, [eventFilter.filter].concat(decoded));
+        };
+        this.provider.on(eventFilter.filter, wrappedListener);
+        this._events.push({ eventFilter: eventFilter, listener: listener, wrappedListener: wrappedListener, once: once });
+    };
+    Contract.prototype.on = function (event, listener) {
+        this._addEventListener(this._getEventFilter(event), listener, false);
+        return this;
+    };
+    Contract.prototype.once = function (event, listener) {
+        this._addEventListener(this._getEventFilter(event), listener, true);
+        return this;
+    };
+    Contract.prototype.addEventLisener = function (eventName, listener) {
+        return this.on(eventName, listener);
+    };
+    Contract.prototype.emit = function (eventName) {
+        var _this = this;
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        if (!this.provider) {
+            return false;
+        }
+        var result = false;
+        var eventFilter = this._getEventFilter(eventName);
+        this._events = this._events.filter(function (event) {
+            if (event.eventFilter.eventTag !== eventFilter.eventTag) {
+                return true;
+            }
+            setTimeout(function () {
+                event.listener.apply(_this, args);
+            }, 0);
+            result = true;
+            return !(event.once);
+        });
+        return result;
+    };
+    Contract.prototype.listenerCount = function (eventName) {
+        if (!this.provider) {
+            return 0;
+        }
+        var eventFilter = this._getEventFilter(eventName);
+        return this._events.filter(function (event) {
+            return event.eventFilter.eventTag === eventFilter.eventTag;
+        }).length;
+    };
+    Contract.prototype.listeners = function (eventName) {
+        if (!this.provider) {
+            return [];
+        }
+        var eventFilter = this._getEventFilter(eventName);
+        return this._events.filter(function (event) {
+            return event.eventFilter.eventTag === eventFilter.eventTag;
+        }).map(function (event) { return event.listener; });
+    };
+    Contract.prototype.removeAllListeners = function (eventName) {
+        if (!this.provider) {
+            return this;
+        }
+        var eventFilter = this._getEventFilter(eventName);
+        this._events = this._events.filter(function (event) {
+            return event.eventFilter.eventTag !== eventFilter.eventTag;
+        });
+        return this;
+    };
+    Contract.prototype.removeListener = function (eventName, listener) {
+        var _this = this;
+        if (!this.provider) {
+            return this;
+        }
+        var found = false;
+        var eventFilter = this._getEventFilter(eventName);
+        this._events = this._events.filter(function (event) {
+            // Make sure this event and listener match
+            if (event.eventFilter.eventTag !== eventFilter.eventTag) {
+                return true;
+            }
+            if (event.listener !== listener) {
+                return true;
+            }
+            _this.provider.removeListener(event.eventFilter.filter, event.wrappedListener);
+            // Already found a matching event in a previous loop
+            if (found) {
+                return true;
+            }
+            // REmove this event (returning false filters us out)
+            found = true;
+            return false;
+        });
+        return this;
     };
     return Contract;
 }());

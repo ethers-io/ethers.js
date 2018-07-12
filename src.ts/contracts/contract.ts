@@ -2,15 +2,14 @@
 
 import { EventDescription, Interface } from './interface';
 
-import { Provider, TransactionRequest, TransactionResponse } from '../providers/provider';
+import { Block, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse } from '../providers/provider';
 import { Signer } from '../wallet/wallet';
 
-import { defaultAbiCoder } from '../utils/abi-coder';
+import { defaultAbiCoder, formatSignature, ParamType, parseSignature } from '../utils/abi-coder';
 import { getContractAddress } from '../utils/address';
-import { hexDataLength, hexDataSlice, isHexString } from '../utils/bytes';
-import { ParamType } from '../utils/abi-coder';
 import { BigNumber, ConstantZero } from '../utils/bignumber';
-import { defineReadOnly, shallowCopy } from '../utils/properties';
+import { hexDataLength, hexDataSlice, isHexString } from '../utils/bytes';
+import { defineReadOnly, jsonCopy, shallowCopy } from '../utils/properties';
 import { poll } from '../utils/web';
 
 import * as errors from '../utils/errors';
@@ -47,7 +46,6 @@ function resolveAddresses(provider: Provider, value: any, paramType: ParamType |
 
     return Promise.resolve(value);
 }
-
 
 type RunFunction = (...params: Array<any>) => Promise<any>;
 
@@ -173,13 +171,54 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
     }
 }
 
+export type Listener = (...args: Array<any>) => void;
+
+export type EventFilter = {
+    address?: string;
+    topics?: Array<string>;
+    // @TODO: Support OR-style topcis; backwards compatible to make this change
+    //topics?: Array<string | Array<string>>
+};
+
 export type ContractEstimate = (...params: Array<any>) => Promise<BigNumber>;
 export type ContractFunction = (...params: Array<any>) => Promise<any>;
-export type ContractEvent = (...params: Array<any>) => void;
+export type ContractFilter = (...params: Array<any>) => EventFilter;
+
+export interface Event extends Log {
+    args: Array<any>;
+    decode: (data: string, topics?: Array<string>) => any;
+    event: string;
+    eventSignature: string;
+
+    removeListener: () => void;
+
+    getBlock: () => Promise<Block>;
+    getTransaction: () => Promise<TransactionResponse>;
+    getTransactionReceipt: () => Promise<TransactionReceipt>;
+}
+
+function getEventTag(filter: EventFilter): string {
+    return (filter.address || '') + (filter.topics ? filter.topics.join(':'): '');
+}
 
 interface Bucket<T> {
     [name: string]: T;
 }
+
+type _EventFilter = {
+    decode: (log: Log) => Array<any>;
+    event?: EventDescription;
+    eventTag: string;
+    filter: EventFilter;
+};
+
+type _Event = {
+    eventFilter: _EventFilter;
+    listener: Listener;
+    once: boolean;
+    wrappedListener: Listener;
+};
+
 
 export type ErrorCallback = (error: Error) => void;
 export type Contractish = Array<string | ParamType> | Interface | string;
@@ -192,7 +231,8 @@ export class Contract {
 
     readonly estimate: Bucket<ContractEstimate>;
     readonly functions: Bucket<ContractFunction>;
-    readonly events: Bucket<ContractEvent>;
+
+    readonly filters: Bucket<ContractFilter>;
 
     readonly addressPromise: Promise<string>;
 
@@ -227,8 +267,19 @@ export class Contract {
         }
 
         defineReadOnly(this, 'estimate', { });
-        defineReadOnly(this, 'events', { });
         defineReadOnly(this, 'functions', { });
+
+        defineReadOnly(this, 'filters', { });
+
+        Object.keys(this.interface.events).forEach((eventName) => {
+            let event = this.interface.events[eventName];
+            defineReadOnly(this.filters, eventName, (...args: Array<any>) => {
+                return {
+                    address: this.address,
+                    topics: event.encodeTopics(args)
+                }
+            });
+        });
 
         // Not connected to an on-chain instance, so do not connect functions and events
         if (!addressOrName) {
@@ -236,6 +287,8 @@ export class Contract {
             defineReadOnly(this, 'addressPromise', Promise.resolve(null));
             return;
         }
+
+        this._events = [];
 
         defineReadOnly(this, 'address', addressOrName);
         defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName).then((address) => {
@@ -260,77 +313,6 @@ export class Contract {
                 defineReadOnly(this.estimate, name, runMethod(this, name, true));
             }
         });
-
-        Object.keys(this.interface.events).forEach((eventName) => {
-            let eventInfo: EventDescription = this.interface.events[eventName];
-
-            type Callback = (...args: Array<any>) => void;
-            let eventCallback: Callback = null;
-
-            let contract = this;
-            function handleEvent(log: any): void {
-                contract.addressPromise.then((address) => {
-                    // Not meant for us (the topics just has the same name)
-                    if (address != log.address) { return null; }
-
-                    try {
-                        let result = eventInfo.decode(log.data, log.topics);
-
-                        // Some useful things to have with the log
-                        log.args = result;
-                        log.event = eventName;
-                        log.decode = eventInfo.decode;
-                        log.removeListener = function() {
-                            contract.provider.removeListener([ eventInfo.topic ], handleEvent);
-                        }
-
-                        log.getBlock = function() { return contract.provider.getBlock(log.blockHash);; }
-                        log.getTransaction = function() { return contract.provider.getTransaction(log.transactionHash); }
-                        log.getTransactionReceipt = function() { return contract.provider.getTransactionReceipt(log.transactionHash); }
-                        log.eventSignature = eventInfo.signature;
-
-                        eventCallback.apply(log, Array.prototype.slice.call(result));
-                    } catch (error) {
-                        console.log(error);
-                        let onerror = contract._onerror;
-                        if (onerror) { setTimeout(() => { onerror(error); }); }
-                    }
-
-                    return null;
-                }).catch((error) => { });
-            }
-
-            var property = {
-                enumerable: true,
-                get: function() {
-                    return eventCallback;
-                },
-                set: function(value: Callback) {
-                    if (!value) { value = null; }
-
-                    if (!contract.provider) {
-                        errors.throwError('events require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'events' })
-                    }
-
-                    if (!value && eventCallback) {
-                        contract.provider.removeListener([ eventInfo.topic ], handleEvent);
-
-                    } else if (value && !eventCallback) {
-                        contract.provider.on([ eventInfo.topic ], handleEvent);
-                    }
-
-                    eventCallback = value;
-                }
-            };
-
-            var propertyName = 'on' + eventName.toLowerCase();
-            if ((<any>this)[propertyName] == null) {
-                Object.defineProperty(this, propertyName, property);
-            }
-
-            Object.defineProperty(this.events, eventName, property);
-
-        }, this);
     }
 
     get onerror() { return this._onerror; }
@@ -436,4 +418,189 @@ export class Contract {
             return contract;
         });
     }
+
+    private _events: Array<_Event>;
+
+    _getEventFilter(eventName: EventFilter | string): _EventFilter {
+        if (typeof(eventName) === 'string') {
+
+            // Listen for any event
+            if (eventName === '*') {
+                return {
+                    decode: (log: Log) => {
+                        return [ this.interface.parseLog(log) ];
+                    },
+                    eventTag: '*',
+                    filter: { address: this.address },
+                };
+            }
+
+            // Normalize the eventName
+            if (eventName.indexOf('(') !== -1) {
+                eventName = formatSignature(parseSignature('event ' + eventName));
+            }
+
+            let event = this.interface.events[eventName];
+            if (!event) {
+                errors.throwError('unknown event - ' + eventName, errors.INVALID_ARGUMENT, { argumnet: 'eventName', value: eventName });
+            }
+
+            let filter = {
+                address: this.address,
+                topics: [ event.topic ]
+            }
+
+            return {
+                decode: (log: Log) => {
+                    return event.decode(log.data, log.topics)
+                },
+                event: event,
+                eventTag: getEventTag(filter),
+                filter: filter
+            };
+        }
+
+        let filter: EventFilter = {
+            address: this.address
+        }
+
+        // Find the matching event in the ABI; if none, we still allow filtering
+        // since it may be a filter for an otherwise unknown event
+        let event: EventDescription = null;
+        if (eventName.topics && eventName.topics[0]) {
+            filter.topics = eventName.topics;
+            for (var name in this.interface.events) {
+                if (name.indexOf('(') === -1) { continue; }
+                let e = this.interface.events[name];
+                if (e.topic === eventName.topics[0].toLowerCase()) {
+                    event = e;
+                    break;
+                }
+            }
+        }
+
+        return {
+            decode: (log: Log) => {
+                if (event) { return event.decode(log.data, log.topics) }
+                return [ log ]
+            },
+            event: event,
+            eventTag: getEventTag(filter),
+            filter: filter
+        }
+    }
+
+    _addEventListener(eventFilter: _EventFilter, listener: Listener, once: boolean): void {
+        if (!this.provider) {
+            errors.throwError('events require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'once' })
+        }
+
+        let wrappedListener = (log: Log) => {
+            let decoded = Array.prototype.slice.call(eventFilter.decode(log));
+
+            let event = jsonCopy(log);
+            event.args = decoded;
+            event.decode = eventFilter.event.decode;
+            event.event = eventFilter.event.name;
+            event.eventSignature = eventFilter.event.signature;
+
+            event.removeListener = () => { this.removeListener(eventFilter.filter, listener); };
+
+            event.getBlock = () => { return this.provider.getBlock(log.blockHash); }
+            event.getTransaction = () => { return this.provider.getTransactionReceipt(log.transactionHash); }
+            event.getTransactionReceipt = () => { return this.provider.getTransactionReceipt(log.transactionHash); }
+
+            decoded.push(event);
+            this.emit(eventFilter.filter, ...decoded);
+        };
+
+        this.provider.on(eventFilter.filter, wrappedListener);
+        this._events.push({ eventFilter: eventFilter, listener: listener, wrappedListener: wrappedListener, once: once });
+    }
+
+    on(event: EventFilter | string, listener: Listener): Contract {
+        this._addEventListener(this._getEventFilter(event), listener, false);
+        return this;
+    }
+
+    once(event: EventFilter | string, listener: Listener): Contract {
+        this._addEventListener(this._getEventFilter(event), listener, true);
+        return this;
+    }
+
+    addEventLisener(eventName: EventFilter | string, listener: Listener): Contract {
+        return this.on(eventName, listener);
+    }
+
+    emit(eventName: EventFilter | string, ...args: Array<any>): boolean {
+        if (!this.provider) { return false; }
+
+        let result = false;
+
+        let eventFilter = this._getEventFilter(eventName);
+        this._events = this._events.filter((event) => {
+            if (event.eventFilter.eventTag !== eventFilter.eventTag) { return true; }
+            setTimeout(() => {
+                event.listener.apply(this, args);
+            }, 0);
+            result = true;
+            return !(event.once);
+        });
+
+        return result;
+    }
+
+    listenerCount(eventName?: EventFilter | string): number {
+        if (!this.provider) { return 0; }
+
+        let eventFilter = this._getEventFilter(eventName);
+        return this._events.filter((event) => {
+            return event.eventFilter.eventTag === eventFilter.eventTag
+        }).length;
+    }
+
+    listeners(eventName: EventFilter | string): Array<Listener> {
+        if (!this.provider) { return []; }
+
+        let eventFilter = this._getEventFilter(eventName);
+        return this._events.filter((event) => {
+            return event.eventFilter.eventTag === eventFilter.eventTag
+        }).map((event) => { return event.listener; });
+    }
+
+    removeAllListeners(eventName: EventFilter | string): Contract {
+        if (!this.provider) { return this; }
+
+        let eventFilter = this._getEventFilter(eventName);
+        this._events = this._events.filter((event) => {
+            return event.eventFilter.eventTag !== eventFilter.eventTag
+        });
+
+        return this;
+    }
+
+    removeListener(eventName: any, listener: Listener): Contract {
+        if (!this.provider) { return this; }
+
+        let found = false;
+
+        let eventFilter = this._getEventFilter(eventName);
+        this._events = this._events.filter((event) => {
+
+            // Make sure this event and listener match
+            if (event.eventFilter.eventTag !== eventFilter.eventTag) { return true; }
+            if (event.listener !== listener) { return true; }
+            this.provider.removeListener(event.eventFilter.filter, event.wrappedListener);
+
+            // Already found a matching event in a previous loop
+            if (found) { return true; }
+
+            // REmove this event (returning false filters us out)
+            found = true;
+            return false;
+        });
+
+        return this;
+    }
+
 }

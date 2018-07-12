@@ -49,13 +49,13 @@ function TestContractEvents() {
 
         function waitForEvent(eventName, expected) {
             return new Promise(function(resolve, reject) {
-                contract['on' + eventName.toLowerCase()] = function() {
-                    //console.dir(this, { depth: null });
-                    //console.log(this.event);
-                    this.removeListener();
-                    equals(this.event, Array.prototype.slice.call(arguments), expected);
+                contract.on(eventName, function() {
+                    var args = Array.prototype.slice.call(arguments);
+                    var event = args.pop();
+                    event.removeListener();
+                    equals(event.event, args, expected);
                     resolve();
-                };
+                });
             });
         }
 

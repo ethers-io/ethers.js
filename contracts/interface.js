@@ -18,10 +18,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
+var address_1 = require("../utils/address");
 var abi_coder_1 = require("../utils/abi-coder");
 var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
 var hash_1 = require("../utils/hash");
+var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
 var Description = /** @class */ (function () {
@@ -123,6 +125,46 @@ var EventDescription = /** @class */ (function (_super) {
     function EventDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    EventDescription.prototype.encodeTopics = function (params) {
+        var _this = this;
+        if (params.length > this.inputs.length) {
+            errors.throwError('too many arguments for ' + this.name, errors.UNEXPECTED_ARGUMENT, { maxCount: params.length, expectedCount: this.inputs.length });
+        }
+        var topics = [];
+        if (!this.anonymous) {
+            topics.push(this.topic);
+        }
+        params.forEach(function (arg, index) {
+            if (arg === null) {
+                topics.push(null);
+                return;
+            }
+            var param = _this.inputs[index];
+            if (!param.indexed) {
+                errors.throwError('cannot filter non-indexed parameters; must be null', errors.INVALID_ARGUMENT, { argument: (param.name || index), value: arg });
+            }
+            if (param.type === 'string') {
+                topics.push(hash_1.id(arg));
+            }
+            else if (param.type === 'bytes') {
+                topics.push(keccak256_1.keccak256(arg));
+            }
+            else if (param.type.indexOf('[') !== -1 || param.type.substring(0, 5) === 'tuple') {
+                errors.throwError('filtering with tuples or arrays not implemented yet; bug us on GitHub', errors.NOT_IMPLEMENTED, { operation: 'filter(array|tuple)' });
+            }
+            else {
+                if (param.type === 'address') {
+                    address_1.getAddress(arg);
+                }
+                topics.push(bytes_1.hexZeroPad(bytes_1.hexlify(arg), 32).toLowerCase());
+            }
+        });
+        // Trim off trailing nulls
+        while (topics.length && topics[topics.length - 1] === null) {
+            topics.pop();
+        }
+        return topics;
+    };
     EventDescription.prototype.decode = function (data, topics) {
         // Strip the signature off of non-anonymous topics
         if (topics != null && !this.anonymous) {

@@ -2,10 +2,12 @@
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
+import { getAddress } from '../utils/address';
 import { defaultAbiCoder, EventFragment, formatSignature, FunctionFragment, ParamType, parseSignature } from '../utils/abi-coder';
 import { BigNumber, bigNumberify, BigNumberish } from '../utils/bignumber';
-import { arrayify, concat, isHexString } from '../utils/bytes';
+import { arrayify, concat, hexlify, hexZeroPad, isHexString } from '../utils/bytes';
 import { id } from '../utils/hash';
+import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly, defineFrozen } from '../utils/properties';
 
 import * as errors from '../utils/errors';
@@ -108,6 +110,45 @@ export class EventDescription extends Description {
     readonly inputs: Array<ParamType>;
     readonly anonymous: boolean;
     readonly topic: string;
+
+    encodeTopics(params: Array<any>): Array<string> {
+        if (params.length > this.inputs.length) {
+            errors.throwError('too many arguments for ' + this.name, errors.UNEXPECTED_ARGUMENT, { maxCount: params.length, expectedCount: this.inputs.length })
+        }
+
+        let topics: Array<string> = [];
+        if (!this.anonymous) { topics.push(this.topic); }
+        params.forEach((arg, index) => {
+            if (arg === null) {
+                topics.push(null);
+                return;
+            }
+
+            let param = this.inputs[index];
+
+            if (!param.indexed) {
+                errors.throwError('cannot filter non-indexed parameters; must be null', errors.INVALID_ARGUMENT, { argument: (param.name || index), value: arg });
+            }
+
+            if (param.type === 'string') {
+                 topics.push(id(arg));
+            } else if (param.type === 'bytes') {
+                 topics.push(keccak256(arg));
+            } else if (param.type.indexOf('[') !== -1 || param.type.substring(0, 5) === 'tuple') {
+                errors.throwError('filtering with tuples or arrays not implemented yet; bug us on GitHub', errors.NOT_IMPLEMENTED, { operation: 'filter(array|tuple)' });
+            } else {
+                if (param.type === 'address') { getAddress(arg); }
+                topics.push(hexZeroPad(hexlify(arg), 32).toLowerCase());
+            }
+        });
+
+        // Trim off trailing nulls
+        while (topics.length && topics[topics.length - 1] === null) {
+            topics.pop();
+        }
+
+        return topics;
+    }
 
     decode(data: string, topics?: Array<string>): any {
         // Strip the signature off of non-anonymous topics
