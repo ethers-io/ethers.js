@@ -68,6 +68,10 @@ function parseParam(param, allowIndexed) {
                 break;
             case ')':
                 delete node.state;
+                if (allowIndexed && node.name === 'indexed') {
+                    node.indexed = true;
+                    node.name = '';
+                }
                 node.type = verifyType(node.type);
                 var child = node;
                 node = node.parent;
@@ -81,6 +85,10 @@ function parseParam(param, allowIndexed) {
                 break;
             case ',':
                 delete node.state;
+                if (allowIndexed && node.name === 'indexed') {
+                    node.indexed = true;
+                    node.name = '';
+                }
                 node.type = verifyType(node.type);
                 var sibling = { type: '', name: '', parent: node.parent, state: { allowType: true } };
                 node.parent.components.push(sibling);
@@ -151,6 +159,10 @@ function parseParam(param, allowIndexed) {
         throw new Error("unexpected eof");
     }
     delete parent.state;
+    if (allowIndexed && node.name === 'indexed') {
+        node.indexed = true;
+        node.name = '';
+    }
     parent.type = verifyType(parent.type);
     return parent;
 }

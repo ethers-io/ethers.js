@@ -82,6 +82,10 @@ function parseParam(param: string, allowIndexed?: boolean): ParamType {
 
             case ')':
                 delete node.state;
+                if (allowIndexed && node.name === 'indexed') {
+                    node.indexed = true;
+                    node.name = '';
+                }
                 node.type = verifyType(node.type);
 
                 var child = node;
@@ -95,6 +99,10 @@ function parseParam(param: string, allowIndexed?: boolean): ParamType {
 
             case ',':
                 delete node.state;
+                if (allowIndexed && node.name === 'indexed') {
+                    node.indexed = true;
+                    node.name = '';
+                }
                 node.type = verifyType(node.type);
 
                 var sibling: ParseNode = { type: '', name: '', parent: node.parent, state: { allowType: true } };
@@ -169,6 +177,12 @@ function parseParam(param: string, allowIndexed?: boolean): ParamType {
     if (node.parent) { throw new Error("unexpected eof"); }
 
     delete parent.state;
+
+    if (allowIndexed && node.name === 'indexed') {
+        node.indexed = true;
+        node.name = '';
+    }
+
     parent.type = verifyType(parent.type);
 
     return (<ParamType>parent);
@@ -986,7 +1000,7 @@ export class AbiCoder {
         return hexlify(new CoderTuple(this.coerceFunc, coders, '_').encode(values));
     }
 
-    decode(types: Array<string | ParamType>, data: Arrayish): any {
+    decode(types: Array<string | ParamType>, data: Arrayish): Array<any> {
 
         var coders: Array<Coder> = [];
         types.forEach(function(type) {
