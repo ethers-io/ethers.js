@@ -38,10 +38,10 @@ function getResult(payload) {
         
         if(revertedTx && revertedTx.return){
             var returnData = revertedTx.return;
-            var hexlifiedData = utils.hexlify(returnData);
-            var reason = utils.abiCoder.decodeRevertReason(hexlifiedData);
+            var reason = utils.abiCoder.decodeRevertReason(returnData);
+            var reasonMessage = `The reason for revert: ${reason}`;
 
-            payload.error.message = `${payload.error.message}. The reason for revert: ${reason}`;
+            payload.error.message = `${payload.error.message}. ${reason ? reasonMessage : ""}`;
         }
         
         var error = new Error(payload.error.message);

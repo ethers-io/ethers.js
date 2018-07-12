@@ -31,6 +31,8 @@ var paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 var paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 var paramTypeArray = new RegExp(/^(.*)\[([0-9]*)\]$/);
 
+const REVERT_REASON_SIGNATURE = "0x08c379a0";
+
 var defaultCoerceFunc = function(type, value) {
     var match = type.match(paramTypeNumber)
     if (match && parseInt(match[2]) <= 48) { return value.toNumber(); }
@@ -972,16 +974,21 @@ utils.defineProperty(Coder.prototype, 'encode', function(names, types, values) {
 });
 
 utils.defineProperty(Coder.prototype, 'decodeRevertReason', function(data) {
+    var result;
+    let arrayifiedData = utils.arrayify(data);
 
-    data = utils.arrayify(data);
-
-    if (data && utils.hexlify(data.slice(0, 4)) === '0x08c379a0') {
-        var result = coderTuple(this.coerceFunc, [
-            getParamCoder(this.coerceFunc, {type: 'string'}, undefined),
-        ]).decode(data.slice(4), 0);
-
-        return result.value[0];
+    if (arrayifiedData && data.slice(0, 10) === REVERT_REASON_SIGNATURE) {
+        result = coderTuple(this.coerceFunc, [
+            getParamCoder(this.coerceFunc, { type: 'string' }),
+        ]).decode(arrayifiedData.slice(4), 0);
     }
+
+    if(result.value && result.value instanceof Array) {
+        result = result.value[0];
+        return result;
+    }
+
+    return undefined;
 });
 
 utils.defineProperty(Coder.prototype, 'decode', function(names, types, data) {

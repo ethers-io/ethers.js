@@ -32,7 +32,7 @@ function run(){
     server.listen(port);
 
     // Ganache version 6.1.4 listens to http://127.0.0.1:8545
-    provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:' + port);
+    provider = new ethers.providers.JsonRpcProvider(`http://127.0.0.1:${port}`);
     wallet = new ethers.Wallet(account.privateKey, provider);
 
     return {
