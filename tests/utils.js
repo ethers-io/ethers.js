@@ -9,6 +9,8 @@ var bigNumber = require('../utils/bignumber');
 var convert = require('../utils/convert');
 var keccak256 = require('../utils/keccak256');
 var utf8 = require('../utils/utf8');
+var AbiCoder = require('../utils/abi-coder');
+
 
 /*
 function random(lowerRandomInterval, upperOpenInterval) {
@@ -99,6 +101,8 @@ function loadTests(tag) {
 }
 
 module.exports = {
+    AbiCoder: AbiCoder.defaultCoder,
+
     randomBytes: randomBytes,
     randomHexString: randomHexString,
     randomNumber:randomNumber,

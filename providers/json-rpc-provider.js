@@ -16,6 +16,8 @@ var utils = (function() {
         toUtf8Bytes: require('../utils/utf8').toUtf8Bytes,
 
         getAddress: require('../utils/address').getAddress,
+
+        abiCoder: require('../utils/abi-coder').defaultCoder,
     }
 })();
 
@@ -31,6 +33,17 @@ function timer(timeout) {
 
 function getResult(payload) {
     if (payload.error) {
+        var revertedTxHash =  Object.keys(payload.error.data)[0];
+        var revertedTx = payload.error.data[revertedTxHash] 
+        
+        if(revertedTx && revertedTx.return){
+            var returnData = revertedTx.return;
+            var reason = utils.abiCoder.decodeRevertReason(returnData);
+            var reasonMessage = `The reason for revert: ${reason}`;
+
+            payload.error.message = `${payload.error.message}. ${reason ? reasonMessage : ""}`;
+        }
+        
         var error = new Error(payload.error.message);
         error.code = payload.error.code;
         error.data = payload.error.data;

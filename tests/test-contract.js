@@ -136,3 +136,75 @@ describe('Test Contract Objects', function() {
         });
     });
 });
+
+/*
+    Revert reason throws is implemented only for JsonRpcProvider 
+    Ganache-version: Ganache CLI v6.1.4 (ganache-core: 2.1.3)
+*/
+
+describe('Test revert reasons errors', () => {
+    var ganache = require("./run-ganache");
+    var contractJson = require('./make-tests/test-revert-reasons/Revert.json');
+
+    var node;
+
+    var expectedRevertReasons = [
+        "VM Exception while processing transaction: revert. The reason for revert: Number should be bigger than 7",
+        "VM Exception while processing transaction: revert. The reason for revert: Number is not bigger than 5",
+        "VM Exception while processing transaction: revert. The reason for revert: Number is not enough bigger",
+        "VM Exception while processing transaction: revert. The reason for revert: Owner's address should not be zero"
+    ];
+
+    beforeEach(async () => {
+        node = await ganache.run();
+    });
+    
+    it('should throw from constructor', async () => {
+        var zeroAddress = "0x0000000000000000000000000000000000000000"
+        var txForDeploy = await ethers.Contract.getDeployTransaction(contractJson.bytecode, contractJson.abi, zeroAddress);
+
+        try{
+            await node.wallet.sendTransaction(txForDeploy);
+        }catch(error){
+            assert.equal(error.message, expectedRevertReasons[3], "Constructor revert is not handled properly");
+        }
+    });
+
+    it('should throw with relevant reason from non-view functions', async () => {
+        var contractInstance = await initContract(node.provider);
+        
+        try{
+            await contractInstance.set(6);
+        }catch(error){
+            assert.equal(error.message, expectedRevertReasons[0], "Non-view function revert is not handled properly");
+        }
+
+        try{
+            await contractInstance.set(2);
+        }catch(error){
+            assert.equal(error.message, expectedRevertReasons[1], "Non-view function revert is not handled properly");
+        }
+    });
+
+    it('should throw with relevant reason from view functions',async () => {
+        var contractInstance = await initContract(node.provider);
+
+        try{
+            await contractInstance.isEnoughBigger();
+        }catch(error){
+            assert.equal(error.message, expectedRevertReasons[2], "View function revert is not handled properly");
+        }
+    });
+
+    var initContract = async function(provider) {
+        var txForDeploy = await ethers.Contract.getDeployTransaction(contractJson.bytecode, contractJson.abi,  node.wallet.address);
+        var deploymentTxn = await node.wallet.sendTransaction(txForDeploy);
+        const receipt = await provider.getTransactionReceipt(deploymentTxn.hash);
+
+        return new ethers.Contract(receipt.contractAddress, contractJson.abi, node.wallet);
+    };      
+    
+    afterEach(async () => {
+        await ganache.stop();
+    });
+});
