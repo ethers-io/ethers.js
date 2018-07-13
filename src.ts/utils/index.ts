@@ -15,10 +15,10 @@ import { keccak256 as solidityKeccak256, pack as solidityPack, sha256 as solidit
 import { randomBytes } from './random-bytes';
 import { defineFrozen, defineReadOnly, resolveProperties, shallowCopy } from './properties';
 import * as RLP from './rlp';
+import { parse as parseTransaction, serialize as serializeTransaction } from './transaction';
 import { toUtf8Bytes, toUtf8String } from './utf8';
 import { formatEther, parseEther, formatUnits, parseUnits } from './units';
 import { fetchJson } from './web';
-import { parse as parseTransaction, serialize as serializeTransaction } from './transaction';
 
 import * as errors from './errors';
 
@@ -139,7 +139,6 @@ export default {
     base64,
 
     bigNumberify,
-    BigNumber,
 
     hexlify,
     hexStripZeros,

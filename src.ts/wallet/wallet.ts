@@ -3,7 +3,7 @@
 import { defaultPath, entropyToMnemonic, fromMnemonic, HDNode } from './hdnode';
 import * as secretStorage from './secret-storage';
 import { ProgressCallback } from './secret-storage';
-import { recoverAddress, SigningKey } from './signing-key';
+import { SigningKey } from './signing-key';
 
 import { BlockTag, Provider, TransactionRequest, TransactionResponse } from '../providers/provider';
 import { Wordlist } from '../wordlists/wordlist';
@@ -14,6 +14,7 @@ import { hashMessage } from '../utils/hash';
 import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { randomBytes } from '../utils/random-bytes';
+import { recoverAddress } from '../utils/secp256k1';
 import { serialize as serializeTransaction } from '../utils/transaction';
 
 import * as errors from '../utils/errors';

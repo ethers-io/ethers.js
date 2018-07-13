@@ -1,23 +1,17 @@
 'use strict';
 
-import * as elliptic from 'elliptic';
-const curve = new elliptic.ec('secp256k1');
+import { ec as EC } from 'elliptic';
+const curve = new EC('secp256k1');
 
 import { getAddress } from './address';
-import { arrayify, Arrayish, hexlify, hexZeroPad } from './bytes';
+
+import { arrayify, Arrayish, hexlify, hexZeroPad, Signature } from './bytes';
 import { keccak256 } from './keccak256';
 import { defineReadOnly } from './properties';
 
 import * as errors from './errors';
 
 export const N = '0x' + curve.n.toString(16);
-
-export interface Signature {
-    r: string;
-    s: string;
-    recoveryParam: number;
-    v?: number;
-}
 
 export class KeyPair {
 
@@ -91,4 +85,3 @@ export function computeAddress(key: string): string {
     let publicKey = '0x' + computePublicKey(key).slice(4);
     return getAddress('0x' + keccak256(publicKey).substring(26));
 }
-

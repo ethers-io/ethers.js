@@ -1,12 +1,21 @@
 
 import { getAddress } from './address';
 import { BigNumber, bigNumberify, BigNumberish, ConstantZero } from './bignumber';
-import { arrayify, Arrayish, hexlify, hexZeroPad, splitSignature, stripZeros, } from './bytes';
+import { arrayify, Arrayish, hexlify, hexZeroPad, Signature, splitSignature, stripZeros, } from './bytes';
 import { keccak256 } from './keccak256';
-import { recoverAddress, Signature } from './secp256k1';
+
 import * as RLP from './rlp';
 
 import * as errors from './errors';
+
+/* !!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!
+ *
+ *  Due to a weird ordering-issue with browserify, there is an
+ *  import for secp256k1 at the bottom of the file; it must be
+ *  required AFTER the parse and serialize exports have been
+ *  defined.
+ *
+ */
 
 export type UnsignedTransaction = {
     to?: string;
@@ -40,7 +49,6 @@ export interface Transaction {
     v?: number;
 }
 
-
 function handleAddress(value: string): string {
     if (value === '0x') { return null; }
     return getAddress(value);
@@ -60,9 +68,7 @@ var transactionFields = [
     { name: 'data' },
 ];
 
-
 export function serialize(transaction: UnsignedTransaction, signature?: Arrayish | Signature): string {
-
     var raw: Array<string | Uint8Array> = [];
 
     transactionFields.forEach(function(fieldInfo) {
@@ -182,3 +188,5 @@ export function parse(rawTransaction: Arrayish): Transaction {
 
     return tx;
 }
+
+import { recoverAddress } from './secp256k1';

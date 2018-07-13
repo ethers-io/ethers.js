@@ -3,11 +3,12 @@
 // This is empty in node, and used by browserify to inject extra goodies
 import {} from './utils/shims';
 
+
 import { Contract, Interface } from './contracts';
-import * as providers from './providers';
+import providers from './providers';
 import * as errors from './utils/errors';
 import { getNetwork } from './providers/networks';
-import * as utils from './utils';
+import utils from './utils';
 import { HDNode, SigningKey, Wallet } from './wallet';
 import * as wordlists from './wordlists';
 

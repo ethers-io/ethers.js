@@ -4,7 +4,6 @@
  */
 
 import { BigNumber } from './bignumber';
-import { Signature } from './secp256k1';
 
 import errors = require('./errors');
 
@@ -246,6 +245,13 @@ function isSignature(value: any): value is Signature {
     return (value && value.r != null && value.s != null);
 }
 
+export interface Signature {
+    r: string;
+    s: string;
+    recoveryParam: number;
+    v?: number;
+}
+
 export function splitSignature(signature: Arrayish | Signature): Signature {
     let v = 0;
     let r = '0x', s = '0x';
@@ -254,9 +260,12 @@ export function splitSignature(signature: Arrayish | Signature): Signature {
         r = hexZeroPad(signature.r, 32);
         s = hexZeroPad(signature.s, 32);
 
+        v = signature.v;
+        if (typeof(v) === 'string') { v = parseInt(v, 16); }
+
         let recoveryParam = signature.recoveryParam;
         if (recoveryParam == null && signature.v != null) {
-            recoveryParam = 1 - (signature.v % 2);
+            recoveryParam = 1 - (v % 2);
         }
         v = 27 + recoveryParam;
 

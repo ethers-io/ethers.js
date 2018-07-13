@@ -6,12 +6,10 @@
  *
  */
 
-import { getAddress } from '../utils/address';
-import { arrayify, Arrayish, hexlify } from '../utils/bytes';
+import { arrayify, Arrayish, hexlify, Signature } from '../utils/bytes';
 import { HDNode } from './hdnode';
-import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly } from '../utils/properties';
-import { computePublicKey, KeyPair, recoverPublicKey, Signature } from '../utils/secp256k1';
+import { computeAddress, KeyPair } from '../utils/secp256k1';
 
 import errors = require('../utils/errors');
 
@@ -68,7 +66,7 @@ export class SigningKey {
         return this.keyPair.sign(digest);
     }
 }
-
+/*
 export function recoverAddress(digest: Arrayish, signature: Signature): string {
     return computeAddress(recoverPublicKey(digest, signature));
 }
@@ -78,3 +76,4 @@ export function computeAddress(key: string): string {
     let publicKey = '0x' + computePublicKey(key).slice(4);
     return getAddress('0x' + keccak256(publicKey).substring(26));
 }
+*/
