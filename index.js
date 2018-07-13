@@ -1,4 +1,7 @@
 'use strict';
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -10,14 +13,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var contracts_1 = require("./contracts");
 exports.Contract = contracts_1.Contract;
 exports.Interface = contracts_1.Interface;
-var providers = __importStar(require("./providers"));
-exports.providers = providers;
+var providers_1 = __importDefault(require("./providers"));
+exports.providers = providers_1.default;
 var errors = __importStar(require("./utils/errors"));
 exports.errors = errors;
 var networks_1 = require("./providers/networks");
 exports.getNetwork = networks_1.getNetwork;
-var utils = __importStar(require("./utils"));
-exports.utils = utils;
+var utils_1 = __importDefault(require("./utils"));
+exports.utils = utils_1.default;
 var wallet_1 = require("./wallet");
 exports.HDNode = wallet_1.HDNode;
 exports.SigningKey = wallet_1.SigningKey;
@@ -26,7 +29,7 @@ var wordlists = __importStar(require("./wordlists"));
 exports.wordlists = wordlists;
 var _version_1 = require("./_version");
 exports.version = _version_1.version;
-var constants = utils.constants;
+var constants = utils_1.default.constants;
 exports.constants = constants;
 exports.default = {
     Wallet: wallet_1.Wallet,
@@ -35,10 +38,10 @@ exports.default = {
     Contract: contracts_1.Contract,
     Interface: contracts_1.Interface,
     getNetwork: networks_1.getNetwork,
-    providers: providers,
+    providers: providers_1.default,
     errors: errors,
     constants: constants,
-    utils: utils,
+    utils: utils_1.default,
     wordlists: wordlists,
     version: _version_1.version
 };

@@ -7,8 +7,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var elliptic = __importStar(require("elliptic"));
-var curve = new elliptic.ec('secp256k1');
+var elliptic_1 = require("elliptic");
+var curve = new elliptic_1.ec('secp256k1');
 var address_1 = require("./address");
 var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");

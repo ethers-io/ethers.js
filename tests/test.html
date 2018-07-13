@@ -37,12 +37,6 @@
                  }
             }
 
-            if (!Math.tunc) {
-                Math.trunc = function(v) {
-                    return parseInt(v);
-                }
-            }
-
             // nextTick
             if (!window.nextTick) {
                 window.nextTick = function (callback) { setTimeout(callback, 0); }
@@ -67,7 +61,7 @@
         <!-- Run the test cases! -->
         <script type="text/javascript">
             // Use this to focus on specific test cases
-            //mocha.grep(new RegExp('easyseed')).run();
+            //mocha.grep(new RegExp('Test Transaction Signing and Parsing parses and signs transaction - random-999')).run();
             mocha.run();
         </script>
     </body>

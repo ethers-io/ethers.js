@@ -20,35 +20,46 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var bn_js_1 = __importDefault(require("bn.js"));
 var bytes_1 = require("./bytes");
 var properties_1 = require("./properties");
-var errors = __importStar(require("../utils/errors"));
-function _isBigNumber(value) {
-    return isBigNumber(value);
-}
-function fromBN(bn) {
+var errors = __importStar(require("./errors"));
+var BN_1 = new bn_js_1.default.BN(-1);
+function toHex(bn) {
     var value = bn.toString(16);
     if (value[0] === '-') {
-        return new BigNumber("-0x" + value.substring(1));
+        if ((value.length % 2) === 0) {
+            return '-0x0' + value.substring(1);
+        }
+        return "-0x" + value.substring(1);
     }
-    return new BigNumber('0x' + value);
+    if ((value.length % 2) === 1) {
+        return '0x0' + value;
+    }
+    return '0x' + value;
 }
-var BigNumber = /** @class */ (function () {
-    function BigNumber(value) {
-        errors.checkNew(this, BigNumber);
+function toBN(value) {
+    return bigNumberify(value)._bn;
+}
+function toBigNumber(bn) {
+    return new _BigNumber(toHex(bn));
+}
+;
+var _BigNumber = /** @class */ (function () {
+    function _BigNumber(value) {
+        errors.checkNew(this, _BigNumber);
         if (typeof (value) === 'string') {
             if (bytes_1.isHexString(value)) {
                 if (value == '0x') {
                     value = '0x0';
                 }
-                properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(value.substring(2), 16));
+                properties_1.defineReadOnly(this, '_hex', value);
             }
             else if (value[0] === '-' && bytes_1.isHexString(value.substring(1))) {
-                properties_1.defineReadOnly(this, '_bn', (new bn_js_1.default.BN(value.substring(3), 16)).mul(exports.ConstantNegativeOne._bn));
+                properties_1.defineReadOnly(this, '_hex', value);
             }
             else if (value.match(/^-?[0-9]*$/)) {
                 if (value == '') {
                     value = '0';
                 }
-                properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(value));
+                properties_1.defineReadOnly(this, '_hex', toHex(new bn_js_1.default.BN(value)));
             }
             else {
                 errors.throwError('invalid BigNumber string value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
@@ -59,72 +70,85 @@ var BigNumber = /** @class */ (function () {
                 errors.throwError('underflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'underflow', value: value, outputValue: parseInt(String(value)) });
             }
             try {
-                properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(value));
+                properties_1.defineReadOnly(this, '_hex', toHex(new bn_js_1.default.BN(value)));
             }
             catch (error) {
                 errors.throwError('overflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'overflow', details: error.message });
             }
         }
-        else if (_isBigNumber(value)) {
-            properties_1.defineReadOnly(this, '_bn', value._bn);
+        else if (value instanceof _BigNumber) {
+            properties_1.defineReadOnly(this, '_hex', value.toHexString());
+        }
+        else if (value.toHexString) {
+            properties_1.defineReadOnly(this, '_hex', toHex(toBN(value.toHexString())));
         }
         else if (bytes_1.isArrayish(value)) {
-            properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(bytes_1.hexlify(value).substring(2), 16));
+            properties_1.defineReadOnly(this, '_hex', toHex(new bn_js_1.default.BN(bytes_1.hexlify(value).substring(2), 16)));
         }
         else {
             errors.throwError('invalid BigNumber value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
         }
     }
-    BigNumber.prototype.fromTwos = function (value) {
-        return fromBN(this._bn.fromTwos(value));
+    Object.defineProperty(_BigNumber.prototype, "_bn", {
+        get: function () {
+            if (this._hex[0] === '-') {
+                return (new bn_js_1.default.BN(this._hex.substring(3), 16)).mul(BN_1);
+            }
+            return new bn_js_1.default.BN(this._hex.substring(2), 16);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    _BigNumber.prototype.fromTwos = function (value) {
+        return toBigNumber(this._bn.fromTwos(value));
     };
-    BigNumber.prototype.toTwos = function (value) {
-        return fromBN(this._bn.toTwos(value));
+    _BigNumber.prototype.toTwos = function (value) {
+        return toBigNumber(this._bn.toTwos(value));
     };
-    BigNumber.prototype.add = function (other) {
-        return fromBN(this._bn.add(bigNumberify(other)._bn));
+    _BigNumber.prototype.add = function (other) {
+        return toBigNumber(this._bn.add(toBN(other)));
     };
-    BigNumber.prototype.sub = function (other) {
-        return fromBN(this._bn.sub(bigNumberify(other)._bn));
+    _BigNumber.prototype.sub = function (other) {
+        return toBigNumber(this._bn.sub(toBN(other)));
     };
-    BigNumber.prototype.div = function (other) {
+    _BigNumber.prototype.div = function (other) {
         var o = bigNumberify(other);
         if (o.isZero()) {
             errors.throwError('division by zero', errors.NUMERIC_FAULT, { operation: 'divide', fault: 'division by zero' });
         }
-        return fromBN(this._bn.div(o._bn));
+        return toBigNumber(this._bn.div(toBN(other)));
     };
-    BigNumber.prototype.mul = function (other) {
-        return fromBN(this._bn.mul(bigNumberify(other)._bn));
+    _BigNumber.prototype.mul = function (other) {
+        return toBigNumber(this._bn.mul(toBN(other)));
     };
-    BigNumber.prototype.mod = function (other) {
-        return fromBN(this._bn.mod(bigNumberify(other)._bn));
+    _BigNumber.prototype.mod = function (other) {
+        return toBigNumber(this._bn.mod(toBN(other)));
     };
-    BigNumber.prototype.pow = function (other) {
-        return fromBN(this._bn.pow(bigNumberify(other)._bn));
+    _BigNumber.prototype.pow = function (other) {
+        return toBigNumber(this._bn.pow(toBN(other)));
     };
-    BigNumber.prototype.maskn = function (value) {
-        return fromBN(this._bn.maskn(value));
+    _BigNumber.prototype.maskn = function (value) {
+        return toBigNumber(this._bn.maskn(value));
     };
-    BigNumber.prototype.eq = function (other) {
-        return this._bn.eq(bigNumberify(other)._bn);
+    _BigNumber.prototype.eq = function (other) {
+        return this._bn.eq(toBN(other));
     };
-    BigNumber.prototype.lt = function (other) {
-        return this._bn.lt(bigNumberify(other)._bn);
+    _BigNumber.prototype.lt = function (other) {
+        return this._bn.lt(toBN(other));
     };
-    BigNumber.prototype.lte = function (other) {
-        return this._bn.lte(bigNumberify(other)._bn);
+    _BigNumber.prototype.lte = function (other) {
+        return this._bn.lte(toBN(other));
     };
-    BigNumber.prototype.gt = function (other) {
-        return this._bn.gt(bigNumberify(other)._bn);
+    _BigNumber.prototype.gt = function (other) {
+        return this._bn.gt(toBN(other));
     };
-    BigNumber.prototype.gte = function (other) {
-        return this._bn.gte(bigNumberify(other)._bn);
+    _BigNumber.prototype.gte = function (other) {
+        return this._bn.gte(toBN(other));
     };
-    BigNumber.prototype.isZero = function () {
+    _BigNumber.prototype.isZero = function () {
         return this._bn.isZero();
     };
-    BigNumber.prototype.toNumber = function () {
+    _BigNumber.prototype.toNumber = function () {
         try {
             return this._bn.toNumber();
         }
@@ -133,28 +157,23 @@ var BigNumber = /** @class */ (function () {
         }
         return null;
     };
-    BigNumber.prototype.toString = function () {
+    _BigNumber.prototype.toString = function () {
         return this._bn.toString(10);
     };
-    BigNumber.prototype.toHexString = function () {
-        var hex = this._bn.toString(16);
-        if (hex.length % 2) {
-            hex = '0' + hex;
-        }
-        return '0x' + hex;
+    _BigNumber.prototype.toHexString = function () {
+        return this._hex;
     };
-    return BigNumber;
+    return _BigNumber;
 }());
-exports.BigNumber = BigNumber;
 function isBigNumber(value) {
-    return (value._bn && value._bn.mod);
+    return (value instanceof _BigNumber);
 }
 exports.isBigNumber = isBigNumber;
 function bigNumberify(value) {
-    if (_isBigNumber(value)) {
+    if (value instanceof _BigNumber) {
         return value;
     }
-    return new BigNumber(value);
+    return new _BigNumber(value);
 }
 exports.bigNumberify = bigNumberify;
 exports.ConstantNegativeOne = bigNumberify(-1);

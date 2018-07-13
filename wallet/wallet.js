@@ -25,6 +25,7 @@ var hash_1 = require("../utils/hash");
 var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
 var random_bytes_1 = require("../utils/random-bytes");
+var secp256k1_1 = require("../utils/secp256k1");
 var transaction_1 = require("../utils/transaction");
 var errors = __importStar(require("../utils/errors"));
 var Signer = /** @class */ (function () {
@@ -209,7 +210,7 @@ var Wallet = /** @class */ (function (_super) {
         if (recoveryParam < 0) {
             throw new Error('invalid signature');
         }
-        return signing_key_1.recoverAddress(digest, {
+        return secp256k1_1.recoverAddress(digest, {
             r: signature.substring(0, 66),
             s: '0x' + signature.substring(66, 130),
             recoveryParam: recoveryParam

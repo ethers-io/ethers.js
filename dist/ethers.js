@@ -12879,35 +12879,46 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var bn_js_1 = __importDefault(require("bn.js"));
 var bytes_1 = require("./bytes");
 var properties_1 = require("./properties");
-var errors = __importStar(require("../utils/errors"));
-function _isBigNumber(value) {
-    return isBigNumber(value);
-}
-function fromBN(bn) {
+var errors = __importStar(require("./errors"));
+var BN_1 = new bn_js_1.default.BN(-1);
+function toHex(bn) {
     var value = bn.toString(16);
     if (value[0] === '-') {
-        return new BigNumber("-0x" + value.substring(1));
+        if ((value.length % 2) === 0) {
+            return '-0x0' + value.substring(1);
+        }
+        return "-0x" + value.substring(1);
     }
-    return new BigNumber('0x' + value);
+    if ((value.length % 2) === 1) {
+        return '0x0' + value;
+    }
+    return '0x' + value;
 }
-var BigNumber = /** @class */ (function () {
-    function BigNumber(value) {
-        errors.checkNew(this, BigNumber);
+function toBN(value) {
+    return bigNumberify(value)._bn;
+}
+function toBigNumber(bn) {
+    return new _BigNumber(toHex(bn));
+}
+;
+var _BigNumber = /** @class */ (function () {
+    function _BigNumber(value) {
+        errors.checkNew(this, _BigNumber);
         if (typeof (value) === 'string') {
             if (bytes_1.isHexString(value)) {
                 if (value == '0x') {
                     value = '0x0';
                 }
-                properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(value.substring(2), 16));
+                properties_1.defineReadOnly(this, '_hex', value);
             }
             else if (value[0] === '-' && bytes_1.isHexString(value.substring(1))) {
-                properties_1.defineReadOnly(this, '_bn', (new bn_js_1.default.BN(value.substring(3), 16)).mul(exports.ConstantNegativeOne._bn));
+                properties_1.defineReadOnly(this, '_hex', value);
             }
             else if (value.match(/^-?[0-9]*$/)) {
                 if (value == '') {
                     value = '0';
                 }
-                properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(value));
+                properties_1.defineReadOnly(this, '_hex', toHex(new bn_js_1.default.BN(value)));
             }
             else {
                 errors.throwError('invalid BigNumber string value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
@@ -12918,72 +12929,85 @@ var BigNumber = /** @class */ (function () {
                 errors.throwError('underflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'underflow', value: value, outputValue: parseInt(String(value)) });
             }
             try {
-                properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(value));
+                properties_1.defineReadOnly(this, '_hex', toHex(new bn_js_1.default.BN(value)));
             }
             catch (error) {
                 errors.throwError('overflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'overflow', details: error.message });
             }
         }
-        else if (_isBigNumber(value)) {
-            properties_1.defineReadOnly(this, '_bn', value._bn);
+        else if (value instanceof _BigNumber) {
+            properties_1.defineReadOnly(this, '_hex', value.toHexString());
+        }
+        else if (value.toHexString) {
+            properties_1.defineReadOnly(this, '_hex', toHex(toBN(value.toHexString())));
         }
         else if (bytes_1.isArrayish(value)) {
-            properties_1.defineReadOnly(this, '_bn', new bn_js_1.default.BN(bytes_1.hexlify(value).substring(2), 16));
+            properties_1.defineReadOnly(this, '_hex', toHex(new bn_js_1.default.BN(bytes_1.hexlify(value).substring(2), 16)));
         }
         else {
             errors.throwError('invalid BigNumber value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
         }
     }
-    BigNumber.prototype.fromTwos = function (value) {
-        return fromBN(this._bn.fromTwos(value));
+    Object.defineProperty(_BigNumber.prototype, "_bn", {
+        get: function () {
+            if (this._hex[0] === '-') {
+                return (new bn_js_1.default.BN(this._hex.substring(3), 16)).mul(BN_1);
+            }
+            return new bn_js_1.default.BN(this._hex.substring(2), 16);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    _BigNumber.prototype.fromTwos = function (value) {
+        return toBigNumber(this._bn.fromTwos(value));
     };
-    BigNumber.prototype.toTwos = function (value) {
-        return fromBN(this._bn.toTwos(value));
+    _BigNumber.prototype.toTwos = function (value) {
+        return toBigNumber(this._bn.toTwos(value));
     };
-    BigNumber.prototype.add = function (other) {
-        return fromBN(this._bn.add(bigNumberify(other)._bn));
+    _BigNumber.prototype.add = function (other) {
+        return toBigNumber(this._bn.add(toBN(other)));
     };
-    BigNumber.prototype.sub = function (other) {
-        return fromBN(this._bn.sub(bigNumberify(other)._bn));
+    _BigNumber.prototype.sub = function (other) {
+        return toBigNumber(this._bn.sub(toBN(other)));
     };
-    BigNumber.prototype.div = function (other) {
+    _BigNumber.prototype.div = function (other) {
         var o = bigNumberify(other);
         if (o.isZero()) {
             errors.throwError('division by zero', errors.NUMERIC_FAULT, { operation: 'divide', fault: 'division by zero' });
         }
-        return fromBN(this._bn.div(o._bn));
+        return toBigNumber(this._bn.div(toBN(other)));
     };
-    BigNumber.prototype.mul = function (other) {
-        return fromBN(this._bn.mul(bigNumberify(other)._bn));
+    _BigNumber.prototype.mul = function (other) {
+        return toBigNumber(this._bn.mul(toBN(other)));
     };
-    BigNumber.prototype.mod = function (other) {
-        return fromBN(this._bn.mod(bigNumberify(other)._bn));
+    _BigNumber.prototype.mod = function (other) {
+        return toBigNumber(this._bn.mod(toBN(other)));
     };
-    BigNumber.prototype.pow = function (other) {
-        return fromBN(this._bn.pow(bigNumberify(other)._bn));
+    _BigNumber.prototype.pow = function (other) {
+        return toBigNumber(this._bn.pow(toBN(other)));
     };
-    BigNumber.prototype.maskn = function (value) {
-        return fromBN(this._bn.maskn(value));
+    _BigNumber.prototype.maskn = function (value) {
+        return toBigNumber(this._bn.maskn(value));
     };
-    BigNumber.prototype.eq = function (other) {
-        return this._bn.eq(bigNumberify(other)._bn);
+    _BigNumber.prototype.eq = function (other) {
+        return this._bn.eq(toBN(other));
     };
-    BigNumber.prototype.lt = function (other) {
-        return this._bn.lt(bigNumberify(other)._bn);
+    _BigNumber.prototype.lt = function (other) {
+        return this._bn.lt(toBN(other));
     };
-    BigNumber.prototype.lte = function (other) {
-        return this._bn.lte(bigNumberify(other)._bn);
+    _BigNumber.prototype.lte = function (other) {
+        return this._bn.lte(toBN(other));
     };
-    BigNumber.prototype.gt = function (other) {
-        return this._bn.gt(bigNumberify(other)._bn);
+    _BigNumber.prototype.gt = function (other) {
+        return this._bn.gt(toBN(other));
     };
-    BigNumber.prototype.gte = function (other) {
-        return this._bn.gte(bigNumberify(other)._bn);
+    _BigNumber.prototype.gte = function (other) {
+        return this._bn.gte(toBN(other));
     };
-    BigNumber.prototype.isZero = function () {
+    _BigNumber.prototype.isZero = function () {
         return this._bn.isZero();
     };
-    BigNumber.prototype.toNumber = function () {
+    _BigNumber.prototype.toNumber = function () {
         try {
             return this._bn.toNumber();
         }
@@ -12992,28 +13016,23 @@ var BigNumber = /** @class */ (function () {
         }
         return null;
     };
-    BigNumber.prototype.toString = function () {
+    _BigNumber.prototype.toString = function () {
         return this._bn.toString(10);
     };
-    BigNumber.prototype.toHexString = function () {
-        var hex = this._bn.toString(16);
-        if (hex.length % 2) {
-            hex = '0' + hex;
-        }
-        return '0x' + hex;
+    _BigNumber.prototype.toHexString = function () {
+        return this._hex;
     };
-    return BigNumber;
+    return _BigNumber;
 }());
-exports.BigNumber = BigNumber;
 function isBigNumber(value) {
-    return (value._bn && value._bn.mod);
+    return (value instanceof _BigNumber);
 }
 exports.isBigNumber = isBigNumber;
 function bigNumberify(value) {
-    if (_isBigNumber(value)) {
+    if (value instanceof _BigNumber) {
         return value;
     }
-    return new BigNumber(value);
+    return new _BigNumber(value);
 }
 exports.bigNumberify = bigNumberify;
 exports.ConstantNegativeOne = bigNumberify(-1);
@@ -13022,7 +13041,7 @@ exports.ConstantOne = bigNumberify(1);
 exports.ConstantTwo = bigNumberify(2);
 exports.ConstantWeiPerEther = bigNumberify('1000000000000000000');
 
-},{"../utils/errors":62,"./bytes":61,"./properties":66,"bn.js":2}],61:[function(require,module,exports){
+},{"./bytes":61,"./errors":62,"./properties":66,"bn.js":2}],61:[function(require,module,exports){
 "use strict";
 /**
  *  Conversion Utilities
@@ -13243,9 +13262,13 @@ function splitSignature(signature) {
     if (isSignature(signature)) {
         r = hexZeroPad(signature.r, 32);
         s = hexZeroPad(signature.s, 32);
+        v = signature.v;
+        if (typeof (v) === 'string') {
+            v = parseInt(v, 16);
+        }
         var recoveryParam = signature.recoveryParam;
         if (recoveryParam == null && signature.v != null) {
-            recoveryParam = 1 - (signature.v % 2);
+            recoveryParam = 1 - (v % 2);
         }
         v = 27 + recoveryParam;
     }
@@ -13451,7 +13474,6 @@ exports.parseParamType = abi_coder_1.parseParamType;
 var base64 = __importStar(require("./base64"));
 exports.base64 = base64;
 var bignumber_1 = require("./bignumber");
-exports.BigNumber = bignumber_1.BigNumber;
 exports.bigNumberify = bignumber_1.bigNumberify;
 var bytes_1 = require("./bytes");
 exports.arrayify = bytes_1.arrayify;
@@ -13486,6 +13508,9 @@ exports.resolveProperties = properties_1.resolveProperties;
 exports.shallowCopy = properties_1.shallowCopy;
 var RLP = __importStar(require("./rlp"));
 exports.RLP = RLP;
+var transaction_1 = require("./transaction");
+exports.parseTransaction = transaction_1.parse;
+exports.serializeTransaction = transaction_1.serialize;
 var utf8_1 = require("./utf8");
 exports.toUtf8Bytes = utf8_1.toUtf8Bytes;
 exports.toUtf8String = utf8_1.toUtf8String;
@@ -13496,9 +13521,6 @@ exports.formatUnits = units_1.formatUnits;
 exports.parseUnits = units_1.parseUnits;
 var web_1 = require("./web");
 exports.fetchJson = web_1.fetchJson;
-var transaction_1 = require("./transaction");
-exports.parseTransaction = transaction_1.parse;
-exports.serializeTransaction = transaction_1.serialize;
 var errors = __importStar(require("./errors"));
 exports.errors = errors;
 // NFKD (decomposed)
@@ -13535,7 +13557,6 @@ exports.default = {
     stripZeros: bytes_1.stripZeros,
     base64: base64,
     bigNumberify: bignumber_1.bigNumberify,
-    BigNumber: bignumber_1.BigNumber,
     hexlify: bytes_1.hexlify,
     hexStripZeros: bytes_1.hexStripZeros,
     hexZeroPad: bytes_1.hexZeroPad,
@@ -13756,8 +13777,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var elliptic = __importStar(require("elliptic"));
-var curve = new elliptic.ec('secp256k1');
+var elliptic_1 = require("elliptic");
+var curve = new elliptic_1.ec('secp256k1');
 var address_1 = require("./address");
 var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
@@ -13953,7 +13974,6 @@ var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
 var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
-var secp256k1_1 = require("./secp256k1");
 var RLP = __importStar(require("./rlp"));
 var errors = __importStar(require("./errors"));
 function handleAddress(value) {
@@ -14079,6 +14099,7 @@ function parse(rawTransaction) {
     return tx;
 }
 exports.parse = parse;
+var secp256k1_1 = require("./secp256k1");
 
 },{"./address":59,"./bignumber":60,"./bytes":61,"./errors":62,"./keccak256":65,"./rlp":67,"./secp256k1":68}],72:[function(require,module,exports){
 'use strict';
@@ -15206,10 +15227,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  *
  */
-var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var hdnode_1 = require("./hdnode");
-var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
 var secp256k1_1 = require("../utils/secp256k1");
 var errors = require("../utils/errors");
@@ -15247,7 +15266,7 @@ var SigningKey = /** @class */ (function () {
         properties_1.defineReadOnly(this, 'privateKey', bytes_1.hexlify(privateKeyBytes));
         properties_1.defineReadOnly(this, 'keyPair', new secp256k1_1.KeyPair(privateKeyBytes));
         properties_1.defineReadOnly(this, 'publicKey', this.keyPair.publicKey);
-        properties_1.defineReadOnly(this, 'address', computeAddress(this.keyPair.publicKey));
+        properties_1.defineReadOnly(this, 'address', secp256k1_1.computeAddress(this.keyPair.publicKey));
     }
     SigningKey.prototype.signDigest = function (digest) {
         return this.keyPair.sign(digest);
@@ -15255,18 +15274,8 @@ var SigningKey = /** @class */ (function () {
     return SigningKey;
 }());
 exports.SigningKey = SigningKey;
-function recoverAddress(digest, signature) {
-    return computeAddress(secp256k1_1.recoverPublicKey(digest, signature));
-}
-exports.recoverAddress = recoverAddress;
-function computeAddress(key) {
-    // Strip off the leading "0x04"
-    var publicKey = '0x' + secp256k1_1.computePublicKey(key).slice(4);
-    return address_1.getAddress('0x' + keccak256_1.keccak256(publicKey).substring(26));
-}
-exports.computeAddress = computeAddress;
 
-},{"../utils/address":59,"../utils/bytes":61,"../utils/errors":62,"../utils/keccak256":65,"../utils/properties":66,"../utils/secp256k1":68,"./hdnode":75}],79:[function(require,module,exports){
+},{"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../utils/secp256k1":68,"./hdnode":75}],79:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -15294,6 +15303,7 @@ var hash_1 = require("../utils/hash");
 var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
 var random_bytes_1 = require("../utils/random-bytes");
+var secp256k1_1 = require("../utils/secp256k1");
 var transaction_1 = require("../utils/transaction");
 var errors = __importStar(require("../utils/errors"));
 var Signer = /** @class */ (function () {
@@ -15478,7 +15488,7 @@ var Wallet = /** @class */ (function (_super) {
         if (recoveryParam < 0) {
             throw new Error('invalid signature');
         }
-        return signing_key_1.recoverAddress(digest, {
+        return secp256k1_1.recoverAddress(digest, {
             r: signature.substring(0, 66),
             s: '0x' + signature.substring(66, 130),
             recoveryParam: recoveryParam
@@ -15488,7 +15498,7 @@ var Wallet = /** @class */ (function (_super) {
 }(Signer));
 exports.Wallet = Wallet;
 
-},{"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/keccak256":65,"../utils/properties":66,"../utils/random-bytes":44,"../utils/transaction":71,"./hdnode":75,"./secret-storage":77,"./signing-key":78}],80:[function(require,module,exports){
+},{"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/keccak256":65,"../utils/properties":66,"../utils/random-bytes":44,"../utils/secp256k1":68,"../utils/transaction":71,"./hdnode":75,"./secret-storage":77,"./signing-key":78}],80:[function(require,module,exports){
 module.exports = { }
 },{}],81:[function(require,module,exports){
 'use strict';
@@ -15568,6 +15578,9 @@ exportWordlist = true;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"../utils/properties":66}],83:[function(require,module,exports){
 'use strict';
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -15576,17 +15589,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var utils_1 = __importDefault(require("./utils"));
+exports.utils = utils_1.default;
 var contracts_1 = require("./contracts");
 exports.Contract = contracts_1.Contract;
 exports.Interface = contracts_1.Interface;
-var providers = __importStar(require("./providers"));
-exports.providers = providers;
+var providers_1 = __importDefault(require("./providers"));
+exports.providers = providers_1.default;
 var errors = __importStar(require("./utils/errors"));
 exports.errors = errors;
 var networks_1 = require("./providers/networks");
 exports.getNetwork = networks_1.getNetwork;
-var utils = __importStar(require("./utils"));
-exports.utils = utils;
 var wallet_1 = require("./wallet");
 exports.HDNode = wallet_1.HDNode;
 exports.SigningKey = wallet_1.SigningKey;
@@ -15595,7 +15608,7 @@ var wordlists = __importStar(require("./wordlists"));
 exports.wordlists = wordlists;
 var _version_1 = require("./_version");
 exports.version = _version_1.version;
-var constants = utils.constants;
+var constants = utils_1.default.constants;
 exports.constants = constants;
 exports.default = {
     Wallet: wallet_1.Wallet,
@@ -15604,10 +15617,10 @@ exports.default = {
     Contract: contracts_1.Contract,
     Interface: contracts_1.Interface,
     getNetwork: networks_1.getNetwork,
-    providers: providers,
+    providers: providers_1.default,
     errors: errors,
     constants: constants,
-    utils: utils,
+    utils: utils_1.default,
     wordlists: wordlists,
     version: _version_1.version
 };

@@ -218,9 +218,13 @@ function splitSignature(signature) {
     if (isSignature(signature)) {
         r = hexZeroPad(signature.r, 32);
         s = hexZeroPad(signature.s, 32);
+        v = signature.v;
+        if (typeof (v) === 'string') {
+            v = parseInt(v, 16);
+        }
         var recoveryParam = signature.recoveryParam;
         if (recoveryParam == null && signature.v != null) {
-            recoveryParam = 1 - (signature.v % 2);
+            recoveryParam = 1 - (v % 2);
         }
         v = 27 + recoveryParam;
     }

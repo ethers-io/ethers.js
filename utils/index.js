@@ -23,7 +23,6 @@ exports.parseParamType = abi_coder_1.parseParamType;
 var base64 = __importStar(require("./base64"));
 exports.base64 = base64;
 var bignumber_1 = require("./bignumber");
-exports.BigNumber = bignumber_1.BigNumber;
 exports.bigNumberify = bignumber_1.bigNumberify;
 var bytes_1 = require("./bytes");
 exports.arrayify = bytes_1.arrayify;
@@ -58,6 +57,9 @@ exports.resolveProperties = properties_1.resolveProperties;
 exports.shallowCopy = properties_1.shallowCopy;
 var RLP = __importStar(require("./rlp"));
 exports.RLP = RLP;
+var transaction_1 = require("./transaction");
+exports.parseTransaction = transaction_1.parse;
+exports.serializeTransaction = transaction_1.serialize;
 var utf8_1 = require("./utf8");
 exports.toUtf8Bytes = utf8_1.toUtf8Bytes;
 exports.toUtf8String = utf8_1.toUtf8String;
@@ -68,9 +70,6 @@ exports.formatUnits = units_1.formatUnits;
 exports.parseUnits = units_1.parseUnits;
 var web_1 = require("./web");
 exports.fetchJson = web_1.fetchJson;
-var transaction_1 = require("./transaction");
-exports.parseTransaction = transaction_1.parse;
-exports.serializeTransaction = transaction_1.serialize;
 var errors = __importStar(require("./errors"));
 exports.errors = errors;
 // NFKD (decomposed)
@@ -107,7 +106,6 @@ exports.default = {
     stripZeros: bytes_1.stripZeros,
     base64: base64,
     bigNumberify: bignumber_1.bigNumberify,
-    BigNumber: bignumber_1.BigNumber,
     hexlify: bytes_1.hexlify,
     hexStripZeros: bytes_1.hexStripZeros,
     hexZeroPad: bytes_1.hexZeroPad,
