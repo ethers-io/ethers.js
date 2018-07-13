@@ -987,8 +987,6 @@ utils.defineProperty(Coder.prototype, 'decodeRevertReason', function(data) {
         result = result.value[0];
         return result;
     }
-
-    return undefined;
 });
 
 utils.defineProperty(Coder.prototype, 'decode', function(names, types, data) {
