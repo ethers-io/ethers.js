@@ -4,7 +4,9 @@ var exportWordlist = false;
 
 import { defineReadOnly } from '../utils/properties';
 
-export abstract class Wordlist {
+import { Wordlist as _Wordlist } from '../utils/types';
+
+export abstract class Wordlist implements _Wordlist {
     locale: string;
 
     constructor(locale: string) {
@@ -25,9 +27,18 @@ export abstract class Wordlist {
     }
 }
 
-export function register(lang: Wordlist): void {
+export function register(lang: Wordlist, name?: string): void {
+    if (!name) { name = lang.locale; }
     if (exportWordlist) {
-        if (!(<any>global).wordlists) { defineReadOnly(global, 'wordlists', { }); }
-        defineReadOnly((<any>global).wordlists, lang.locale, lang);
+        let g: any = (<any>global)
+        if (!(g.wordlists)) { defineReadOnly(g, 'wordlists', { }); }
+        if (!g.wordlists[name]) {
+            defineReadOnly(g.wordlists, name, lang);
+        }
+        if (g.ethers && g.ethers.wordlists) {
+            if (!g.ethers.wordlists[name]) {
+                defineReadOnly(g.ethers.wordlists, name, lang);
+            }
+        }
     }
 }

@@ -1,9 +1,14 @@
 
 import { register, Wordlist } from './wordlist';
 
-import { toUtf8String } from '../utils/utf8';
+import { id } from '../utils/hash';
+
+import { hexlify } from '../utils/bytes';
+import { toUtf8Bytes, toUtf8String } from '../utils/utf8';
 
 import * as errors from '../utils/errors';
+
+const CheckId = "0xe561f52ac5f1fe957460337bc400302f30af56ac8da6adc7311efa89fbbc0777";
 
 const data = [
 
@@ -34,8 +39,19 @@ const mapping = "~~AzB~X~a~KN~Q~D~S~C~G~E~Y~p~L~I~O~eH~g~V~hxyumi~~U~~Z~~v~~s~~d
 
 let words: Array<string> = null;
 
+function hex(word: string) {
+    return hexlify(toUtf8Bytes(word));
+}
+
+const KiYoKu = '0xe3818de38284e3818f';
+const KyoKu = '0xe3818de38283e3818f'
+
+let error: Error = null;
 function loadWords() {
-    if (words !== null) { return; }
+    if (words !== null) {
+        if (error) { throw error; }
+        return;
+    }
     words = [];
 
     // Transforms for normalizing (sort is a not quite UTF-8)
@@ -90,19 +106,23 @@ function loadWords() {
     }
     words.sort(sortJapanese);
 
-    // For some reason kyoku and kiyoku are flipped; we'll just manually fix it
-    let kyoku = words[442];
-    words[442] = words[443];
-    words[443] = kyoku;
+    // For some reason kyoku and kiyoku are flipped in node (!!).
+    // The order SHOULD be:
+    //   - kyoku
+    //   - kiyoku
+
+    if (hex(words[442]) === KiYoKu && hex(words[443]) === KyoKu) {
+        let tmp = words[442];
+        words[442] = words[443];
+        words[443] = tmp;
+    }
+
+    let check = id(words.join('\n'));
+    if (check !== CheckId) {
+        error = new Error('Japanese Wordlist FAILED to load; your browser sort is broken; please contract support@ethers.io.');
+        throw error;
+    }
 }
-
-/*
-var fs = require('fs');
-fs.readFileSync('lang-ja.txt').toString().split('\x0a').forEach(function(d, i) {
-    if (d !== words[i]) { console.log(d, words[i], i, toUtf8Bytes(d)); }
-});
-*/
-
 
 class LangJa extends Wordlist {
     constructor() {

@@ -54,30 +54,9 @@ class LangZh extends Wordlist {
 
 const langZhCn = new LangZh('cn');
 register(langZhCn);
+register(langZhCn, 'zh');
 
 const langZhTw = new LangZh('tw');
 register(langZhTw);
-
-//var count = 0;
-//var fs = require('fs');
-//fs.readFileSync('wordlists/lang-zh.txt').toString().split('\x0a').forEach(function(d, i) {
-//    let word = langZhCn.getWord(i);
-//    if (d !== word) {
-//        console.log(d, word, i, toUtf8Bytes(d));
-//        count++;
-//    }
-//});
-//console.log(count);
-
-//var count = 0;
-//var fs = require('fs');
-//fs.readFileSync('wordlists/lang-zh_tw.txt').toString().split('\x0a').forEach(function(d, i) {
-//    let word = langZhTw.getWord(i);
-//    if (d !== word) {
-//        console.log(d, word, i, toUtf8Bytes(d));
-//        count++;
-//    }
-//});
-//console.log(count);
 
 export { langZhCn, langZhTw };
