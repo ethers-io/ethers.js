@@ -5,10 +5,11 @@ import {} from './utils/shims';
 
 
 import { Contract, Interface } from './contracts';
-import providers from './providers';
+import * as providers from './providers';
 import * as errors from './utils/errors';
 import { getNetwork } from './providers/networks';
-import utils from './utils';
+import * as types from './utils/types';
+import * as utils from './utils';
 import { HDNode, SigningKey, Wallet } from './wallet';
 import * as wordlists from './wordlists';
 
@@ -27,6 +28,8 @@ export {
 
     getNetwork,
     providers,
+
+    types,
 
     errors,
     constants,
@@ -48,6 +51,8 @@ export default {
 
     getNetwork,
     providers,
+
+    types,
 
     errors,
     constants,

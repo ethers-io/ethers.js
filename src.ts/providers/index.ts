@@ -2,14 +2,14 @@
 
 import { Provider } from './provider';
 
-import { Network } from './networks';
-
 import { EtherscanProvider } from './etherscan-provider';
 import { FallbackProvider } from './fallback-provider';
 import { IpcProvider } from './ipc-provider';
 import { InfuraProvider } from './infura-provider';
-import { JsonRpcProvider } from './json-rpc-provider';
+import { JsonRpcProvider, JsonRpcSigner } from './json-rpc-provider';
 import { Web3Provider } from './web3-provider';
+
+import { Network } from '../utils/types';
 
 function getDefaultProvider(network?: Network | string): FallbackProvider {
     return new FallbackProvider([
@@ -29,7 +29,9 @@ export {
     JsonRpcProvider,
     Web3Provider,
 
-    IpcProvider
+    IpcProvider,
+
+    JsonRpcSigner
 };
 
 export default {
@@ -43,5 +45,7 @@ export default {
     JsonRpcProvider,
     Web3Provider,
 
-    IpcProvider
+    IpcProvider,
+
+    JsonRpcSigner
 };

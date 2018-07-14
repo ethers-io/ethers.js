@@ -10,13 +10,15 @@
 
 import BN from 'bn.js';
 
-import { Arrayish, hexlify, isArrayish, isHexString } from './bytes';
+import { hexlify, isArrayish, isHexString } from './bytes';
 import { defineReadOnly } from './properties';
+
+import { BigNumber, BigNumberish } from './types';
+export { BigNumber, BigNumberish };
+
 import * as errors from './errors';
 
 const BN_1 = new BN.BN(-1);
-
-export type BigNumberish = BigNumber | string | number | Arrayish;
 
 function toHex(bn: BN.BN): string {
     let value = bn.toString(16);
@@ -37,29 +39,6 @@ function toBN(value: BigNumberish): BN.BN {
 function toBigNumber(bn: BN.BN): _BigNumber {
     return new _BigNumber(toHex(bn));
 }
-
-
-
-export interface BigNumber {
-    fromTwos(value: number): BigNumber;
-    toTwos(value: number): BigNumber;
-    add(other: BigNumberish): BigNumber;
-    sub(other: BigNumberish): BigNumber;
-    div(other: BigNumberish): BigNumber;
-    mul(other: BigNumberish): BigNumber;
-    mod(other: BigNumberish): BigNumber;
-    pow(other: BigNumberish): BigNumber;
-    maskn(value: number): BigNumber;
-    eq(other: BigNumberish): boolean;
-    lt(other: BigNumberish): boolean;
-    lte(other: BigNumberish): boolean;
-    gt(other: BigNumberish): boolean;
-    gte(other: BigNumberish): boolean;
-    isZero(): boolean;
-    toNumber(): number;
-    toString(): string;
-    toHexString(): string;
-};
 
 class _BigNumber implements BigNumber {
     private readonly _hex: string;

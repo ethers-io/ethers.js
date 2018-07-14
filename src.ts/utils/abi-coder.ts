@@ -8,15 +8,14 @@ import { arrayify, Arrayish, concat, hexlify, padZeros } from './bytes';
 import { toUtf8Bytes, toUtf8String } from './utf8';
 import { defineReadOnly, jsonCopy } from './properties';
 
+import { CoerceFunc, EventFragment, FunctionFragment, ParamType }from './types';
+export { CoerceFunc, EventFragment, FunctionFragment, ParamType }
+
 import * as errors from './errors';
 
 const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 const paramTypeArray = new RegExp(/^(.*)\[([0-9]*)\]$/);
-
-// @TODO: Add enum for param types
-export type CoerceFunc = (type: string, value: any) => any;
-export type ParamType = { name?: string, type: string, indexed?: boolean, components?: Array<any> };
 
 export const defaultCoerceFunc: CoerceFunc = function(type: string, value: any): any {
     var match = type.match(paramTypeNumber)
@@ -188,29 +187,6 @@ function parseParam(param: string, allowIndexed?: boolean): ParamType {
     return (<ParamType>parent);
 }
 
-// @TODO: should this just be a combined Fragment?
-
-export type EventFragment = {
-    type: string
-    name: string,
-
-    anonymous: boolean,
-
-    inputs: Array<ParamType>,
-};
-
-export type FunctionFragment = {
-    type: string
-    name: string,
-
-    constant: boolean,
-
-    inputs: Array<ParamType>,
-    outputs: Array<ParamType>,
-
-    payable: boolean,
-    stateMutability: string,
-};
 
 // @TODO: Better return type
 function parseSignatureEvent(fragment: string): EventFragment {

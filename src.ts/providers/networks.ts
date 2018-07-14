@@ -1,14 +1,9 @@
 'use strict';
 
+import { Network, Networkish } from '../utils/types';
+export { Network, Networkish };
+
 import * as errors from '../utils/errors';
-
-export type Network = {
-    name: string,
-    chainId: number,
-    ensAddress?: string,
-}
-
-export type Networkish = Network | string | number;
 
 
 const homestead = {

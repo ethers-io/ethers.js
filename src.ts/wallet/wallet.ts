@@ -2,10 +2,9 @@
 
 import { defaultPath, entropyToMnemonic, fromMnemonic, HDNode } from './hdnode';
 import * as secretStorage from './secret-storage';
-import { ProgressCallback } from './secret-storage';
 import { SigningKey } from './signing-key';
 
-import { BlockTag, Provider, TransactionRequest, TransactionResponse } from '../providers/provider';
+import { Provider } from '../providers/provider';
 import { Wordlist } from '../wordlists/wordlist';
 
 import { BigNumber } from '../utils/bignumber';
@@ -17,16 +16,10 @@ import { randomBytes } from '../utils/random-bytes';
 import { recoverAddress } from '../utils/secp256k1';
 import { serialize as serializeTransaction } from '../utils/transaction';
 
+import { BlockTag, ProgressCallback, Signer, TransactionRequest, TransactionResponse } from '../utils/types';
+export { BlockTag, ProgressCallback, Signer, TransactionRequest, TransactionResponse };
+
 import * as errors from '../utils/errors';
-
-export abstract class Signer {
-    provider?: Provider;
-
-    abstract getAddress(): Promise<string>
-
-    abstract signMessage(transaction: Arrayish | string): Promise<string>;
-    abstract sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
-}
 
 
 export class Wallet extends Signer {
@@ -171,7 +164,9 @@ export class Wallet extends Signer {
     static fromEncryptedJson(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet> {
         if (secretStorage.isCrowdsaleWallet(json)) {
             try {
+                if (progressCallback) { progressCallback(0); }
                 let privateKey = secretStorage.decryptCrowdsale(json, password);
+                if (progressCallback) { progressCallback(1); }
                 return Promise.resolve(new Wallet(privateKey));
             } catch (error) {
                 return Promise.reject(error);

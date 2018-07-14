@@ -2,15 +2,16 @@
 
 import { EventDescription, Interface } from './interface';
 
-import { Block, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse } from '../providers/provider';
-import { Signer } from '../wallet/wallet';
-
 import { defaultAbiCoder, formatSignature, ParamType, parseSignature } from '../utils/abi-coder';
-import { getContractAddress } from '../utils/address';
+import { getAddress, getContractAddress } from '../utils/address';
 import { BigNumber, ConstantZero } from '../utils/bignumber';
 import { hexDataLength, hexDataSlice, isHexString } from '../utils/bytes';
 import { defineReadOnly, jsonCopy, shallowCopy } from '../utils/properties';
 import { poll } from '../utils/web';
+
+import { MinimalProvider, Signer } from '../utils/types';
+import { EventFilter, Event, Listener, Log, TransactionRequest, TransactionResponse } from '../utils/types';
+export { EventFilter, Event, Listener, Log, TransactionRequest, TransactionResponse };
 
 import * as errors from '../utils/errors';
 
@@ -21,7 +22,7 @@ var allowedTransactionKeys: { [ key: string ]: boolean } = {
 // Recursively replaces ENS names with promises to resolve the name and
 // stalls until all promises have returned
 // @TODO: Expand this to resolve any promises too
-function resolveAddresses(provider: Provider, value: any, paramType: ParamType | Array<ParamType>): Promise<any> {
+function resolveAddresses(provider: MinimalProvider, value: any, paramType: ParamType | Array<ParamType>): Promise<any> {
     if (Array.isArray(paramType)) {
         var promises: Array<Promise<string>> = [];
         paramType.forEach((paramType, index) => {
@@ -171,32 +172,6 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
     }
 }
 
-export type Listener = (...args: Array<any>) => void;
-
-export type EventFilter = {
-    address?: string;
-    topics?: Array<string>;
-    // @TODO: Support OR-style topcis; backwards compatible to make this change
-    //topics?: Array<string | Array<string>>
-};
-
-export type ContractEstimate = (...params: Array<any>) => Promise<BigNumber>;
-export type ContractFunction = (...params: Array<any>) => Promise<any>;
-export type ContractFilter = (...params: Array<any>) => EventFilter;
-
-export interface Event extends Log {
-    args: Array<any>;
-    decode: (data: string, topics?: Array<string>) => any;
-    event: string;
-    eventSignature: string;
-
-    removeListener: () => void;
-
-    getBlock: () => Promise<Block>;
-    getTransaction: () => Promise<TransactionResponse>;
-    getTransactionReceipt: () => Promise<TransactionReceipt>;
-}
-
 function getEventTag(filter: EventFilter): string {
     return (filter.address || '') + (filter.topics ? filter.topics.join(':'): '');
 }
@@ -220,32 +195,28 @@ type _Event = {
 };
 
 
-export type ErrorCallback = (error: Error) => void;
-export type Contractish = Array<string | ParamType> | Interface | string;
 export class Contract {
     readonly address: string;
     readonly interface: Interface;
 
     readonly signer: Signer;
-    readonly provider: Provider;
+    readonly provider: MinimalProvider;
 
-    readonly estimate: Bucket<ContractEstimate>;
-    readonly functions: Bucket<ContractFunction>;
+    readonly estimate: Bucket<(...params: Array<any>) => Promise<BigNumber>>;
+    readonly functions: Bucket<(...params: Array<any>) => Promise<any>>;
 
-    readonly filters: Bucket<ContractFilter>;
+    readonly filters: Bucket<(...params: Array<any>) => EventFilter>;
 
     readonly addressPromise: Promise<string>;
 
     // This is only set if the contract was created with a call to deploy
     readonly deployTransaction: TransactionResponse;
 
-    private _onerror: ErrorCallback;
-
     // https://github.com/Microsoft/TypeScript/issues/5453
     // Once this issue is resolved (there are open PR) we can do this nicer
     // by making addressOrName default to null for 2 operand calls. :)
 
-    constructor(addressOrName: string, contractInterface: Contractish, signerOrProvider: Signer | Provider) {
+    constructor(addressOrName: string, contractInterface: Array<string | ParamType> | string | Interface, signerOrProvider: Signer | MinimalProvider) {
         errors.checkNew(this, Contract);
 
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
@@ -259,7 +230,7 @@ export class Contract {
         if (signerOrProvider instanceof Signer) {
             defineReadOnly(this, 'provider', signerOrProvider.provider);
             defineReadOnly(this, 'signer', signerOrProvider);
-        } else if (signerOrProvider instanceof Provider) {
+        } else if (signerOrProvider instanceof MinimalProvider) {
             defineReadOnly(this, 'provider', signerOrProvider);
             defineReadOnly(this, 'signer', null);
         } else {
@@ -291,13 +262,21 @@ export class Contract {
         this._events = [];
 
         defineReadOnly(this, 'address', addressOrName);
-        defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName).then((address) => {
-            if (address == null) { throw new Error('name not found'); }
-            return address;
-        }).catch((error: Error) => {
-            console.log('ERROR: Cannot find Contract - ' + addressOrName);
-            throw error;
-        }));
+        if (this.provider) {
+            defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName).then((address) => {
+                if (address == null) { throw new Error('name not found'); }
+                return address;
+            }).catch((error: Error) => {
+                console.log('ERROR: Cannot find Contract - ' + addressOrName);
+                throw error;
+            }));
+        } else {
+            try {
+                defineReadOnly(this, 'addressPromise', Promise.resolve(getAddress(addressOrName)));
+            } catch (error) {
+                errors.throwError('provider is required to use non-address contract address', errors.INVALID_ARGUMENT, { argument: 'addressOrName', value: addressOrName });
+            }
+        }
 
         Object.keys(this.interface.functions).forEach((name) => {
             var run = runMethod(this, name, false);
@@ -315,14 +294,9 @@ export class Contract {
         });
     }
 
-    get onerror() { return this._onerror; }
-
-    set onerror(callback: ErrorCallback) {
-        this._onerror = callback;
-    }
-
     // @TODO: Allow timeout?
     deployed(): Promise<Contract> {
+
         // If we were just deployed, we know the transaction we should occur in
         if (this.deployTransaction) {
             return this.deployTransaction.wait().then(() => {
@@ -362,7 +336,7 @@ export class Contract {
     }
 
     // Reconnect to a different signer or provider
-    connect(signerOrProvider: Signer | Provider): Contract {
+    connect(signerOrProvider: Signer | MinimalProvider): Contract {
         return new Contract(this.address, this.interface, signerOrProvider);
     }
 

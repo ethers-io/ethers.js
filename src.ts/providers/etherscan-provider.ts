@@ -1,9 +1,9 @@
 
-import { BlockTag, checkTransactionResponse, Provider, TransactionRequest, TransactionResponse } from './provider';
-import { Networkish } from './networks';
+import { Provider } from './provider';
 
 import { hexlify, hexStripZeros } from '../utils/bytes';
 import { defineReadOnly } from '../utils/properties';
+import { BlockTag, Networkish, TransactionRequest, TransactionResponse } from '../utils/types';
 import { fetchJson } from '../utils/web';
 
 import * as errors from '../utils/errors';
@@ -278,7 +278,7 @@ export class EtherscanProvider extends Provider{
                     if (tx.creates == null && tx.contractAddress != null) {
                         tx.creates = tx.contractAddress;
                     }
-                    let item = checkTransactionResponse(tx);
+                    let item = Provider.checkTransactionResponse(tx);
                     if (tx.timeStamp) { item.timestamp = parseInt(tx.timeStamp); }
                     output.push(item);
                 });

@@ -1,10 +1,13 @@
 
 import { getAddress } from './address';
-import { BigNumber, bigNumberify, BigNumberish, ConstantZero } from './bignumber';
+import { BigNumber, bigNumberify, ConstantZero } from './bignumber';
 import { arrayify, Arrayish, hexlify, hexZeroPad, Signature, splitSignature, stripZeros, } from './bytes';
 import { keccak256 } from './keccak256';
 
 import * as RLP from './rlp';
+
+import { Transaction, UnsignedTransaction } from './types';
+export { Transaction, UnsignedTransaction };
 
 import * as errors from './errors';
 
@@ -16,38 +19,6 @@ import * as errors from './errors';
  *  defined.
  *
  */
-
-export type UnsignedTransaction = {
-    to?: string;
-    nonce?: number;
-
-    gasLimit?: BigNumberish;
-    gasPrice?: BigNumberish;
-
-    data?: Arrayish;
-    value?: BigNumberish;
-    chainId?: number;
-}
-
-
-export interface Transaction {
-    hash?: string;
-
-    to?: string;
-    from?: string;
-    nonce: number;
-
-    gasLimit: BigNumber;
-    gasPrice: BigNumber;
-
-    data: string;
-    value: BigNumber;
-    chainId: number;
-
-    r?: string;
-    s?: string;
-    v?: number;
-}
 
 function handleAddress(value: string): string {
     if (value === '0x') { return null; }

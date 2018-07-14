@@ -5,13 +5,14 @@
 
 import { BigNumber } from './bignumber';
 
+import { Arrayish, Signature } from './types';
+export { Arrayish, Signature };
+
 import errors = require('./errors');
 
 
 export const AddressZero = '0x0000000000000000000000000000000000000000';
 export const HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
-
-export type Arrayish = string | ArrayLike<number>;
 
 
 function isBigNumber(value: any): value is BigNumber {
@@ -243,13 +244,6 @@ export function hexZeroPad(value: string, length: number): string {
 
 function isSignature(value: any): value is Signature {
     return (value && value.r != null && value.s != null);
-}
-
-export interface Signature {
-    r: string;
-    s: string;
-    recoveryParam: number;
-    v?: number;
 }
 
 export function splitSignature(signature: Arrayish | Signature): Signature {

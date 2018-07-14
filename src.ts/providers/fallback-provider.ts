@@ -1,7 +1,8 @@
 'use strict';
 
-import { Network } from './networks';
 import { Provider } from './provider';
+
+import { Network } from '../utils/types';
 
 import * as errors from '../utils/errors';
 

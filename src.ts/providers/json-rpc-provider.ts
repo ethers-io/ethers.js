@@ -2,14 +2,14 @@
 
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 
-import { getNetwork, Network, Networkish } from './networks';
-import { BlockTag, Provider, TransactionRequest, TransactionResponse } from './provider';
-import { Signer } from '../wallet/wallet';
+import { getNetwork } from './networks';
+import { Provider } from './provider';
 
 import { getAddress } from '../utils/address';
 import { BigNumber } from '../utils/bignumber';
 import { Arrayish, hexlify, hexStripZeros } from '../utils/bytes';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
+import { BlockTag, Network, Networkish, Signer, TransactionRequest, TransactionResponse } from '../utils/types';
 import { toUtf8Bytes } from '../utils/utf8';
 import { ConnectionInfo, fetchJson, poll } from '../utils/web';
 
@@ -33,30 +33,6 @@ function getResult(payload: { error?: { code?: number, data?: any, message?: str
     }
 
     return payload.result;
-}
-
-// Convert an ethers.js transaction into a JSON-RPC transaction
-//  - gasLimit => gas
-//  - All values hexlified
-//  - All numeric values zero-striped
-// @TODO: Not any, a dictionary of string to strings
-export function hexlifyTransaction(transaction: TransactionRequest): any {
-    var result: any = {};
-
-    // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
-    ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function(key) {
-        if ((<any>transaction)[key] == null) { return; }
-        let value = hexStripZeros(hexlify((<any>transaction)[key]));
-        if (key === 'gasLimit') { key = 'gas'; }
-        result[key] = value;
-    });
-
-    ['from', 'to', 'data'].forEach(function(key) {
-        if ((<any>transaction)[key] == null) { return; }
-        result[key] = hexlify((<any>transaction)[key]);
-    });
-
-    return result;
 }
 
 function getLowerCase(value: string): string {
@@ -119,7 +95,7 @@ export class JsonRpcSigner extends Signer {
         }
 
         return resolveProperties(tx).then((tx) => {
-            tx = hexlifyTransaction(tx);
+            tx = JsonRpcProvider.hexlifyTransaction(tx);
             return this.provider.send('eth_sendTransaction', [ tx ]).then((hash) => {
                 return poll(() => {
                     return this.provider.getTransaction(hash).then((tx: TransactionResponse) => {
@@ -260,10 +236,10 @@ export class JsonRpcProvider extends Provider {
                 return this.send('eth_getTransactionReceipt', [ params.transactionHash ]);
 
             case 'call':
-                return this.send('eth_call', [ hexlifyTransaction(params.transaction), 'latest' ]);
+                return this.send('eth_call', [ JsonRpcProvider.hexlifyTransaction(params.transaction), 'latest' ]);
 
             case 'estimateGas':
-                return this.send('eth_estimateGas', [ hexlifyTransaction(params.transaction) ]);
+                return this.send('eth_estimateGas', [ JsonRpcProvider.hexlifyTransaction(params.transaction) ]);
 
             case 'getLogs':
                 if (params.filter && params.filter.address != null) {
@@ -323,5 +299,29 @@ export class JsonRpcProvider extends Provider {
 
     _stopPending(): void {
         this._pendingFilter = null;
+    }
+
+    // Convert an ethers.js transaction into a JSON-RPC transaction
+    //  - gasLimit => gas
+    //  - All values hexlified
+    //  - All numeric values zero-striped
+    // @TODO: Not any, a dictionary of string to strings
+    static hexlifyTransaction(transaction: TransactionRequest): any {
+        var result: any = {};
+
+        // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
+        ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function(key) {
+            if ((<any>transaction)[key] == null) { return; }
+            let value = hexStripZeros(hexlify((<any>transaction)[key]));
+            if (key === 'gasLimit') { key = 'gas'; }
+            result[key] = value;
+        });
+
+        ['from', 'to', 'data'].forEach(function(key) {
+            if ((<any>transaction)[key] == null) { return; }
+            result[key] = hexlify((<any>transaction)[key]);
+         });
+
+        return result;
     }
 }

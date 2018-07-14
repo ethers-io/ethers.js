@@ -1,22 +1,18 @@
+'use strict';
 
 import { XMLHttpRequest } from 'xmlhttprequest';
-import { toUtf8Bytes } from './utf8';
-import { encode as base64Encode } from './base64';
 
-export type ConnectionInfo = {
-    url: string,
-    user?: string,
-    password?: string,
-    allowInsecure?: boolean
-};
+import { encode as base64Encode } from './base64';
+import { toUtf8Bytes } from './utf8';
+
+import { ConnectionInfo } from './types';
+export { ConnectionInfo };
 
 import * as errors from './errors';
 
-export type ProcessFunc = (value: any) => any;
-
 type Header = { key: string, value: string };
 
-export function fetchJson(connection: string | ConnectionInfo, json: string, processFunc: ProcessFunc): Promise<any> {
+export function fetchJson(connection: string | ConnectionInfo, json: string, processFunc: (value: any) => any): Promise<any> {
     let headers: Array<Header> = [ ];
 
     let url: string = null;

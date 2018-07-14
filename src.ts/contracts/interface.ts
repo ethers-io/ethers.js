@@ -10,9 +10,19 @@ import { id } from '../utils/hash';
 import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly, defineFrozen } from '../utils/properties';
 
+import { DeployDescription, EventDescription, FunctionDescription, Indexed } from '../utils/types';
+export { DeployDescription, EventDescription, FunctionDescription, Indexed };
+
 import * as errors from '../utils/errors';
 
-export class Description {
+class _Indexed extends Indexed {
+    constructor(hash: string) {
+        super();
+        defineReadOnly(this, 'hash', hash);
+    }
+}
+
+class _Description {
     readonly type: string;
     constructor(info: any) {
         for (var key in info) {
@@ -26,11 +36,8 @@ export class Description {
     }
 }
 
-export class Indexed extends Description {
-    readonly hash: string;
-}
-
-export class DeployDescription extends Description {
+class _DeployDescription extends _Description implements DeployDescription {
+    readonly type: "deploy";
     readonly inputs: Array<ParamType>;
     readonly payable: boolean;
 
@@ -58,7 +65,8 @@ export class DeployDescription extends Description {
     }
 }
 
-export class FunctionDescription extends Description {
+class _FunctionDescription extends _Description implements FunctionDescription {
+    readonly type: "call" | "transaction";
     readonly name: string;
     readonly signature: string;
     readonly sighash: string;
@@ -98,12 +106,13 @@ export class FunctionDescription extends Description {
     }
 }
 
-class Result extends Description {
+class Result extends _Description {
     [key: string]: any;
     [key: number]: any;
 }
 
-export class EventDescription extends Description {
+class _EventDescription extends _Description implements EventDescription {
+    readonly type: "event";
     readonly name: string;
     readonly signature: string;
 
@@ -190,10 +199,11 @@ export class EventDescription extends Description {
         this.inputs.forEach(function(input, index) {
             if (input.indexed) {
                 if (topics == null) {
-                    result[index] = new Indexed({ type: 'indexed', hash: null });
+                    result[index] = new _Indexed(null);
 
                 } else if (inputDynamic[index]) {
-                    result[index] = new Indexed({ type: 'indexed', hash: resultIndexed[indexedIndex++] });
+                    result[index] = new _Indexed(resultIndexed[indexedIndex++]);
+
                 } else {
                     result[index] = resultIndexed[indexedIndex++];
                 }
@@ -209,7 +219,7 @@ export class EventDescription extends Description {
     }
 }
 
-class TransactionDescription extends Description {
+class TransactionDescription extends _Description {
     readonly name: string;
     readonly args: Array<any>;
     readonly signature: string;
@@ -218,7 +228,7 @@ class TransactionDescription extends Description {
     readonly value: BigNumber;
 }
 
-class LogDescription extends Description {
+class LogDescription extends _Description {
     readonly name: string;
     readonly signature: string;
     readonly topic: string;
@@ -229,10 +239,10 @@ class LogDescription extends Description {
 function addMethod(method: any): void {
     switch (method.type) {
         case 'constructor': {
-            let description = new DeployDescription({
+            let description = new _DeployDescription({
                 inputs: method.inputs,
                 payable: (method.payable == null || !!method.payable),
-                type: 'deploy'
+                type: "deploy"
             });
 
             if (!this.deployFunction) { this.deployFunction = description; }
@@ -244,7 +254,7 @@ function addMethod(method: any): void {
             let signature = formatSignature(method).replace(/tuple/g, '');
             let sighash = id(signature).substring(0, 10);
 
-            let description = new FunctionDescription({
+            let description = new _FunctionDescription({
                 inputs: method.inputs,
                 outputs: method.outputs,
 
@@ -271,7 +281,7 @@ function addMethod(method: any): void {
         case 'event': {
             let signature = formatSignature(method).replace(/tuple/g, '');
 
-            let description = new EventDescription({
+            let description = new _EventDescription({
                 name: method.name,
                 signature: signature,
 

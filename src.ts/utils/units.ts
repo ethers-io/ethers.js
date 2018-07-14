@@ -111,6 +111,10 @@ export function parseUnits(value: string, unitType?: string | number): BigNumber
     // Remove commas
     var value = value.replace(/,/g,'');
 
+    if (unitInfo.decimals === 0) {
+        return bigNumberify(value);
+    }
+
     // Is it negative?
     var negative = (value.substring(0, 1) === '-');
     if (negative) { value = value.substring(1); }

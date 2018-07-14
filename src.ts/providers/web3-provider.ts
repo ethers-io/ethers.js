@@ -14,13 +14,11 @@ utils.defineProperty(Web3Signer, 'onchange', {
 });
 */
 
-export type Callback = (error: any, response: any) => void;
-
 export type AsyncProvider = {
     isMetaMask: boolean;
     host?: string;
     path?: string;
-    sendAsync: (request: any, callback: Callback) => void
+    sendAsync: (request: any, callback: (error: any, response: any) => void) => void
 }
 
 export class Web3Provider extends JsonRpcProvider {

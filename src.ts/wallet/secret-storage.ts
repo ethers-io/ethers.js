@@ -4,21 +4,17 @@ import aes from 'aes-js';
 import scrypt from 'scrypt-js';
 import uuid from 'uuid';
 
+import { SigningKey } from './signing-key';
+import * as HDNode from './hdnode';
+
 import { getAddress } from '../utils/address';
 import { arrayify, Arrayish, concat, hexlify } from '../utils/bytes';
-
 import { pbkdf2 } from '../utils/pbkdf2';
 import { keccak256 } from '../utils/keccak256';
 import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
 import { randomBytes } from '../utils/random-bytes';
 
-import { SigningKey } from './signing-key';
-import * as HDNode from './hdnode';
-
-
-export interface ProgressCallback {
-    (percent: number): void
-}
+import { EncryptOptions, ProgressCallback } from '../utils/types';
 
 function looseArrayify(hexString: string): Uint8Array {
     if (typeof(hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
@@ -230,6 +226,7 @@ export function decrypt(json: string, password: Arrayish, progressCallback?: Pro
                     return;
                 }
 
+                if (progressCallback) { progressCallback(0); }
                 scrypt(passwordBytes, salt, N, r, p, 64, function(error, progress, key) {
                     if (error) {
                         error.progress = progress;
@@ -286,21 +283,6 @@ export function decrypt(json: string, password: Arrayish, progressCallback?: Pro
             reject(new Error('unsupported key-derivation function'));
         }
     });
-}
-
-export type EncryptOptions = {
-   iv?: Arrayish;
-   entropy?: Arrayish;
-   mnemonic?: string;
-   path?: string;
-   client?: string;
-   salt?: Arrayish;
-   uuid?: string;
-   scrypt?: {
-       N?: number;
-       r?: number;
-       p?: number;
-   }
 }
 
 export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: EncryptOptions, progressCallback?: ProgressCallback): Promise<string> {
@@ -382,6 +364,7 @@ export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | 
     }
 
     return new Promise(function(resolve, reject) {
+        if (progressCallback) { progressCallback(0); }
 
         // We take 64 bytes:
         //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)

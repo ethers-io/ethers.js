@@ -2,8 +2,8 @@
 import net from 'net';
 
 import { JsonRpcProvider } from './json-rpc-provider';
-import { Networkish } from './networks';
 
+import { Networkish } from '../utils/types';
 import { defineReadOnly } from '../utils/properties';
 
 import * as errors from '../utils/errors';

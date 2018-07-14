@@ -4,7 +4,7 @@ import { getNetwork, Network, Networkish } from './networks';
 
 import { getAddress, getContractAddress } from '../utils/address';
 import { BigNumber, bigNumberify, BigNumberish } from '../utils/bignumber';
-import { Arrayish, hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, stripZeros } from '../utils/bytes';
+import { hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, stripZeros } from '../utils/bytes';
 import { namehash } from '../utils/hash';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { encode as rlpEncode } from '../utils/rlp';
@@ -12,100 +12,11 @@ import { parse as parseTransaction, Transaction } from '../utils/transaction';
 import { toUtf8String } from '../utils/utf8';
 import { poll } from '../utils/web';
 
+import { MinimalProvider } from '../utils/types';
+import { Block, BlockTag, EventType, Filter, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from '../utils/types';
+export { Block, BlockTag, EventType, Filter, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse };
+
 import * as errors from '../utils/errors';
-
-
-//////////////////////////////
-// Exported Types
-
-export type BlockTag = string | number;
-
-export interface Block {
-    hash: string;
-    parentHash: string;
-    number: number;
-
-    timestamp: number;
-    nonce: string;
-    difficulty: number;
-
-    gasLimit: BigNumber;
-    gasUsed: BigNumber;
-
-    miner: string;
-    extraData: string;
-
-    transactions: Array<string>;
-}
-
-export type TransactionRequest = {
-    to?: string | Promise<string>,
-    from?: string | Promise<string>,
-    nonce?: number | string | Promise<number | string>,
-
-    gasLimit?: BigNumberish | Promise<BigNumberish>,
-    gasPrice?: BigNumberish | Promise<BigNumberish>,
-
-    data?: Arrayish | Promise<Arrayish>,
-    value?: BigNumberish | Promise<BigNumberish>,
-    chainId?: number | Promise<number>,
-}
-
-export interface TransactionResponse extends Transaction {
-    // Only if a transaction has been mined
-    blockNumber?: number,
-    blockHash?: string,
-    timestamp?: number,
-
-    // Not optional (as it is in Transaction)
-    from: string;
-
-    // The raw transaction
-    raw?: string,
-
-    // This function waits until the transaction has been mined
-    wait: (timeout?: number) => Promise<TransactionReceipt>
-};
-
-export interface TransactionReceipt {
-    contractAddress?: string,
-    transactionIndex?: number,
-    root?: string,
-    gasUsed?: BigNumber,
-    logsBloom?: string,
-    blockHash?: string,
-    transactionHash?: string,
-    logs?: Array<Log>,
-    blockNumber?: number,
-    cumulativeGasUsed?: BigNumber,
-    byzantium: boolean,
-    status?: number  // @TOOD: Check 0 or 1?
-};
-
-export type Filter = {
-    fromBlock?: BlockTag,
-    toBlock?: BlockTag,
-    address?: string,
-    topics?: Array<string | Array<string>>,
-}
-
-export interface Log {
-    blockNumber?: number;
-    blockHash?: string;
-    transactionIndex?: number;
-
-    removed?: boolean;
-
-    transactionLogIndex?: number,
-
-    address: string;
-    data: string;
-
-    topics: Array<string>;
-
-    transactionHash?: string;
-    logIndex?: number;
-}
 
 
 //////////////////////////////
@@ -282,7 +193,7 @@ var formatTransaction = {
    raw: allowNull(hexlify),
 };
 
-export function checkTransactionResponse(transaction: any): TransactionResponse {
+function checkTransactionResponse(transaction: any): TransactionResponse {
 
     // Rename gas to gasLimit
     if (transaction.gas != null && transaction.gasLimit == null) {
@@ -594,8 +505,6 @@ export class ProviderSigner extends Signer {
 }
 */
 
-export type Listener = (...args: Array<any>) => void;
-
 /**
  *  EventType
  *   - "block"
@@ -607,15 +516,13 @@ export type Listener = (...args: Array<any>) => void;
  *   - transaction hash
  */
 
-export type EventType = string | Array<string> | Filter;
-
 type _Event = {
     listener: Listener;
     once: boolean;
     tag: string;
 }
 
-export class Provider {
+export class Provider extends MinimalProvider {
     private _network: Network;
 
     private _events: Array<_Event>;
@@ -642,6 +549,7 @@ export class Provider {
     protected ready: Promise<Network>;
 
     constructor(network: Networkish | Promise<Network>) {
+        super();
         errors.checkNew(this, Provider);
 
         if (network instanceof Promise) {
@@ -1040,7 +948,7 @@ export class Provider {
                             }
                             return undefined;
                         }
-                        return checkTransactionResponse(result);
+                        return Provider.checkTransactionResponse(result);
                     });
                 }, { onceBlock: this });
             });
@@ -1211,6 +1119,10 @@ export class Provider {
             });
 
         });
+    }
+
+    static checkTransactionResponse(transaction: any): TransactionResponse {
+        return checkTransactionResponse(transaction);
     }
 
     doPoll(): void {
