@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -8,8 +8,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var xmlhttprequest_1 = require("xmlhttprequest");
-var utf8_1 = require("./utf8");
 var base64_1 = require("./base64");
+var utf8_1 = require("./utf8");
 var errors = __importStar(require("./errors"));
 function fetchJson(connection, json, processFunc) {
     var headers = [];

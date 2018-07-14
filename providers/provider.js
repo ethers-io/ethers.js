@@ -1,4 +1,14 @@
 'use strict';
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -17,9 +27,8 @@ var rlp_1 = require("../utils/rlp");
 var transaction_1 = require("../utils/transaction");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
+var types_1 = require("../utils/types");
 var errors = __importStar(require("../utils/errors"));
-;
-;
 //////////////////////////////
 // Request and Response Checking
 // @TODO: not any?
@@ -230,7 +239,6 @@ function checkTransactionResponse(transaction) {
     }
     return result;
 }
-exports.checkTransactionResponse = checkTransactionResponse;
 var formatTransactionRequest = {
     from: allowNull(address_1.getAddress),
     nonce: allowNull(checkNumber),
@@ -369,12 +377,13 @@ function getEventTag(eventName) {
     }
     throw new Error('invalid event - ' + eventName);
 }
-var Provider = /** @class */ (function () {
+var Provider = /** @class */ (function (_super) {
+    __extends(Provider, _super);
     function Provider(network) {
-        var _this = this;
-        errors.checkNew(this, Provider);
+        var _this = _super.call(this) || this;
+        errors.checkNew(_this, Provider);
         if (network instanceof Promise) {
-            properties_1.defineReadOnly(this, 'ready', network.then(function (network) {
+            properties_1.defineReadOnly(_this, 'ready', network.then(function (network) {
                 properties_1.defineReadOnly(_this, '_network', network);
                 return network;
             }));
@@ -382,24 +391,25 @@ var Provider = /** @class */ (function () {
         else {
             var knownNetwork = networks_1.getNetwork((network == null) ? 'homestead' : network);
             if (knownNetwork) {
-                properties_1.defineReadOnly(this, '_network', knownNetwork);
-                properties_1.defineReadOnly(this, 'ready', Promise.resolve(this._network));
+                properties_1.defineReadOnly(_this, '_network', knownNetwork);
+                properties_1.defineReadOnly(_this, 'ready', Promise.resolve(_this._network));
             }
             else {
                 errors.throwError('invalid network', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
             }
         }
-        this._lastBlockNumber = -2;
+        _this._lastBlockNumber = -2;
         // Balances being watched for changes
-        this._balances = {};
+        _this._balances = {};
         // Events being listened to
-        this._events = [];
-        this._pollingInterval = 4000;
+        _this._events = [];
+        _this._pollingInterval = 4000;
         // We use this to track recent emitted events; for example, if we emit a "block" of 100
         // and we get a `getBlock(100)` request which would result in null, we should retry
         // until we get a response. This provides devs with a consistent view. Similarly for
         // transaction hashes.
-        this._emitted = { block: this._lastBlockNumber };
+        _this._emitted = { block: _this._lastBlockNumber };
+        return _this;
     }
     Provider.prototype._doPoll = function () {
         var _this = this;
@@ -776,7 +786,7 @@ var Provider = /** @class */ (function () {
                             }
                             return undefined;
                         }
-                        return checkTransactionResponse(result);
+                        return Provider.checkTransactionResponse(result);
                     });
                 }, { onceBlock: _this });
             });
@@ -937,6 +947,9 @@ var Provider = /** @class */ (function () {
             });
         });
     };
+    Provider.checkTransactionResponse = function (transaction) {
+        return checkTransactionResponse(transaction);
+    };
     Provider.prototype.doPoll = function () {
     };
     Provider.prototype.perform = function (method, params) {
@@ -1042,7 +1055,7 @@ var Provider = /** @class */ (function () {
         return this;
     };
     return Provider;
-}());
+}(types_1.MinimalProvider));
 exports.Provider = Provider;
 // See: https://github.com/isaacs/inherits/blob/master/inherits_browser.js
 function inherits(ctor, superCtor) {

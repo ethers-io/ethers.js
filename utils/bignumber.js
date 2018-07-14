@@ -41,7 +41,6 @@ function toBN(value) {
 function toBigNumber(bn) {
     return new _BigNumber(toHex(bn));
 }
-;
 var _BigNumber = /** @class */ (function () {
     function _BigNumber(value) {
         errors.checkNew(this, _BigNumber);

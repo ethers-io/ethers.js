@@ -12,6 +12,7 @@ var infura_provider_1 = require("./infura-provider");
 exports.InfuraProvider = infura_provider_1.InfuraProvider;
 var json_rpc_provider_1 = require("./json-rpc-provider");
 exports.JsonRpcProvider = json_rpc_provider_1.JsonRpcProvider;
+exports.JsonRpcSigner = json_rpc_provider_1.JsonRpcSigner;
 var web3_provider_1 = require("./web3-provider");
 exports.Web3Provider = web3_provider_1.Web3Provider;
 function getDefaultProvider(network) {
@@ -29,5 +30,6 @@ exports.default = {
     InfuraProvider: infura_provider_1.InfuraProvider,
     JsonRpcProvider: json_rpc_provider_1.JsonRpcProvider,
     Web3Provider: web3_provider_1.Web3Provider,
-    IpcProvider: ipc_provider_1.IpcProvider
+    IpcProvider: ipc_provider_1.IpcProvider,
+    JsonRpcSigner: json_rpc_provider_1.JsonRpcSigner
 };

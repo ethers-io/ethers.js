@@ -20,10 +20,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 var networks_1 = require("./networks");
 var provider_1 = require("./provider");
-var wallet_1 = require("../wallet/wallet");
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var properties_1 = require("../utils/properties");
+var types_1 = require("../utils/types");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
@@ -44,33 +44,6 @@ function getResult(payload) {
     }
     return payload.result;
 }
-// Convert an ethers.js transaction into a JSON-RPC transaction
-//  - gasLimit => gas
-//  - All values hexlified
-//  - All numeric values zero-striped
-// @TODO: Not any, a dictionary of string to strings
-function hexlifyTransaction(transaction) {
-    var result = {};
-    // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
-    ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function (key) {
-        if (transaction[key] == null) {
-            return;
-        }
-        var value = bytes_1.hexStripZeros(bytes_1.hexlify(transaction[key]));
-        if (key === 'gasLimit') {
-            key = 'gas';
-        }
-        result[key] = value;
-    });
-    ['from', 'to', 'data'].forEach(function (key) {
-        if (transaction[key] == null) {
-            return;
-        }
-        result[key] = bytes_1.hexlify(transaction[key]);
-    });
-    return result;
-}
-exports.hexlifyTransaction = hexlifyTransaction;
 function getLowerCase(value) {
     if (value) {
         return value.toLowerCase();
@@ -128,7 +101,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             });
         }
         return properties_1.resolveProperties(tx).then(function (tx) {
-            tx = hexlifyTransaction(tx);
+            tx = JsonRpcProvider.hexlifyTransaction(tx);
             return _this.provider.send('eth_sendTransaction', [tx]).then(function (hash) {
                 return web_1.poll(function () {
                     return _this.provider.getTransaction(hash).then(function (tx) {
@@ -159,7 +132,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         });
     };
     return JsonRpcSigner;
-}(wallet_1.Signer));
+}(types_1.Signer));
 exports.JsonRpcSigner = JsonRpcSigner;
 var JsonRpcProvider = /** @class */ (function (_super) {
     __extends(JsonRpcProvider, _super);
@@ -250,9 +223,9 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             case 'getTransactionReceipt':
                 return this.send('eth_getTransactionReceipt', [params.transactionHash]);
             case 'call':
-                return this.send('eth_call', [hexlifyTransaction(params.transaction), 'latest']);
+                return this.send('eth_call', [JsonRpcProvider.hexlifyTransaction(params.transaction), 'latest']);
             case 'estimateGas':
-                return this.send('eth_estimateGas', [hexlifyTransaction(params.transaction)]);
+                return this.send('eth_estimateGas', [JsonRpcProvider.hexlifyTransaction(params.transaction)]);
             case 'getLogs':
                 if (params.filter && params.filter.address != null) {
                     params.filter.address = getLowerCase(params.filter.address);
@@ -305,6 +278,32 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     };
     JsonRpcProvider.prototype._stopPending = function () {
         this._pendingFilter = null;
+    };
+    // Convert an ethers.js transaction into a JSON-RPC transaction
+    //  - gasLimit => gas
+    //  - All values hexlified
+    //  - All numeric values zero-striped
+    // @TODO: Not any, a dictionary of string to strings
+    JsonRpcProvider.hexlifyTransaction = function (transaction) {
+        var result = {};
+        // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
+        ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function (key) {
+            if (transaction[key] == null) {
+                return;
+            }
+            var value = bytes_1.hexStripZeros(bytes_1.hexlify(transaction[key]));
+            if (key === 'gasLimit') {
+                key = 'gas';
+            }
+            result[key] = value;
+        });
+        ['from', 'to', 'data'].forEach(function (key) {
+            if (transaction[key] == null) {
+                return;
+            }
+            result[key] = bytes_1.hexlify(transaction[key]);
+        });
+        return result;
     };
     return JsonRpcProvider;
 }(provider_1.Provider));

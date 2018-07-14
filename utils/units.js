@@ -99,6 +99,9 @@ function parseUnits(value, unitType) {
     }
     // Remove commas
     var value = value.replace(/,/g, '');
+    if (unitInfo.decimals === 0) {
+        return bignumber_1.bigNumberify(value);
+    }
     // Is it negative?
     var negative = (value.substring(0, 1) === '-');
     if (negative) {

@@ -13,14 +13,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var aes_js_1 = __importDefault(require("aes-js"));
 var scrypt_js_1 = __importDefault(require("scrypt-js"));
 var uuid_1 = __importDefault(require("uuid"));
+var signing_key_1 = require("./signing-key");
+var HDNode = __importStar(require("./hdnode"));
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var pbkdf2_1 = require("../utils/pbkdf2");
 var keccak256_1 = require("../utils/keccak256");
 var utf8_1 = require("../utils/utf8");
 var random_bytes_1 = require("../utils/random-bytes");
-var signing_key_1 = require("./signing-key");
-var HDNode = __importStar(require("./hdnode"));
 function looseArrayify(hexString) {
     if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
         hexString = '0x' + hexString;
@@ -193,6 +193,9 @@ function decrypt(json, password, progressCallback) {
                     reject(new Error('unsupported key-derivation derived-key length'));
                     return;
                 }
+                if (progressCallback) {
+                    progressCallback(0);
+                }
                 scrypt_js_1.default(passwordBytes, salt, N, r, p, 64, function (error, progress, key) {
                     if (error) {
                         error.progress = progress;
@@ -339,6 +342,9 @@ function encrypt(privateKey, password, options, progressCallback) {
         }
     }
     return new Promise(function (resolve, reject) {
+        if (progressCallback) {
+            progressCallback(0);
+        }
         // We take 64 bytes:
         //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
         //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)

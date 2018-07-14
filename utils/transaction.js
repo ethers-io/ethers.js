@@ -13,6 +13,14 @@ var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
 var RLP = __importStar(require("./rlp"));
 var errors = __importStar(require("./errors"));
+/* !!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!
+ *
+ *  Due to a weird ordering-issue with browserify, there is an
+ *  import for secp256k1 at the bottom of the file; it must be
+ *  required AFTER the parse and serialize exports have been
+ *  defined.
+ *
+ */
 function handleAddress(value) {
     if (value === '0x') {
         return null;

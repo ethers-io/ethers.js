@@ -25,9 +25,20 @@ var bytes_1 = require("../utils/bytes");
 var hash_1 = require("../utils/hash");
 var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
+var types_1 = require("../utils/types");
+exports.Indexed = types_1.Indexed;
 var errors = __importStar(require("../utils/errors"));
-var Description = /** @class */ (function () {
-    function Description(info) {
+var _Indexed = /** @class */ (function (_super) {
+    __extends(_Indexed, _super);
+    function _Indexed(hash) {
+        var _this = _super.call(this) || this;
+        properties_1.defineReadOnly(_this, 'hash', hash);
+        return _this;
+    }
+    return _Indexed;
+}(types_1.Indexed));
+var _Description = /** @class */ (function () {
+    function _Description(info) {
         for (var key in info) {
             var value = info[key];
             if (value != null && typeof (value) === 'object') {
@@ -38,23 +49,14 @@ var Description = /** @class */ (function () {
             }
         }
     }
-    return Description;
+    return _Description;
 }());
-exports.Description = Description;
-var Indexed = /** @class */ (function (_super) {
-    __extends(Indexed, _super);
-    function Indexed() {
+var _DeployDescription = /** @class */ (function (_super) {
+    __extends(_DeployDescription, _super);
+    function _DeployDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    return Indexed;
-}(Description));
-exports.Indexed = Indexed;
-var DeployDescription = /** @class */ (function (_super) {
-    __extends(DeployDescription, _super);
-    function DeployDescription() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    DeployDescription.prototype.encode = function (bytecode, params) {
+    _DeployDescription.prototype.encode = function (bytecode, params) {
         if (!bytes_1.isHexString(bytecode)) {
             errors.throwError('invalid contract bytecode', errors.INVALID_ARGUMENT, {
                 arg: 'bytecode',
@@ -74,15 +76,14 @@ var DeployDescription = /** @class */ (function (_super) {
         }
         return null;
     };
-    return DeployDescription;
-}(Description));
-exports.DeployDescription = DeployDescription;
-var FunctionDescription = /** @class */ (function (_super) {
-    __extends(FunctionDescription, _super);
-    function FunctionDescription() {
+    return _DeployDescription;
+}(_Description));
+var _FunctionDescription = /** @class */ (function (_super) {
+    __extends(_FunctionDescription, _super);
+    function _FunctionDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    FunctionDescription.prototype.encode = function (params) {
+    _FunctionDescription.prototype.encode = function (params) {
         errors.checkArgumentCount(params.length, this.inputs.length, 'in interface function ' + this.name);
         try {
             return this.sighash + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2);
@@ -96,7 +97,7 @@ var FunctionDescription = /** @class */ (function (_super) {
         }
         return null;
     };
-    FunctionDescription.prototype.decode = function (data) {
+    _FunctionDescription.prototype.decode = function (data) {
         try {
             return abi_coder_1.defaultAbiCoder.decode(this.outputs, bytes_1.arrayify(data));
         }
@@ -110,22 +111,21 @@ var FunctionDescription = /** @class */ (function (_super) {
             });
         }
     };
-    return FunctionDescription;
-}(Description));
-exports.FunctionDescription = FunctionDescription;
+    return _FunctionDescription;
+}(_Description));
 var Result = /** @class */ (function (_super) {
     __extends(Result, _super);
     function Result() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     return Result;
-}(Description));
-var EventDescription = /** @class */ (function (_super) {
-    __extends(EventDescription, _super);
-    function EventDescription() {
+}(_Description));
+var _EventDescription = /** @class */ (function (_super) {
+    __extends(_EventDescription, _super);
+    function _EventDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    EventDescription.prototype.encodeTopics = function (params) {
+    _EventDescription.prototype.encodeTopics = function (params) {
         var _this = this;
         if (params.length > this.inputs.length) {
             errors.throwError('too many arguments for ' + this.name, errors.UNEXPECTED_ARGUMENT, { maxCount: params.length, expectedCount: this.inputs.length });
@@ -165,7 +165,7 @@ var EventDescription = /** @class */ (function (_super) {
         }
         return topics;
     };
-    EventDescription.prototype.decode = function (data, topics) {
+    _EventDescription.prototype.decode = function (data, topics) {
         // Strip the signature off of non-anonymous topics
         if (topics != null && !this.anonymous) {
             topics = topics.slice(1);
@@ -198,10 +198,10 @@ var EventDescription = /** @class */ (function (_super) {
         this.inputs.forEach(function (input, index) {
             if (input.indexed) {
                 if (topics == null) {
-                    result[index] = new Indexed({ type: 'indexed', hash: null });
+                    result[index] = new _Indexed(null);
                 }
                 else if (inputDynamic[index]) {
-                    result[index] = new Indexed({ type: 'indexed', hash: resultIndexed[indexedIndex++] });
+                    result[index] = new _Indexed(resultIndexed[indexedIndex++]);
                 }
                 else {
                     result[index] = resultIndexed[indexedIndex++];
@@ -217,30 +217,29 @@ var EventDescription = /** @class */ (function (_super) {
         result.length = this.inputs.length;
         return result;
     };
-    return EventDescription;
-}(Description));
-exports.EventDescription = EventDescription;
+    return _EventDescription;
+}(_Description));
 var TransactionDescription = /** @class */ (function (_super) {
     __extends(TransactionDescription, _super);
     function TransactionDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     return TransactionDescription;
-}(Description));
+}(_Description));
 var LogDescription = /** @class */ (function (_super) {
     __extends(LogDescription, _super);
     function LogDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     return LogDescription;
-}(Description));
+}(_Description));
 function addMethod(method) {
     switch (method.type) {
         case 'constructor': {
-            var description = new DeployDescription({
+            var description = new _DeployDescription({
                 inputs: method.inputs,
                 payable: (method.payable == null || !!method.payable),
-                type: 'deploy'
+                type: "deploy"
             });
             if (!this.deployFunction) {
                 this.deployFunction = description;
@@ -250,7 +249,7 @@ function addMethod(method) {
         case 'function': {
             var signature = abi_coder_1.formatSignature(method).replace(/tuple/g, '');
             var sighash = hash_1.id(signature).substring(0, 10);
-            var description = new FunctionDescription({
+            var description = new _FunctionDescription({
                 inputs: method.inputs,
                 outputs: method.outputs,
                 payable: (method.payable == null || !!method.payable),
@@ -270,7 +269,7 @@ function addMethod(method) {
         }
         case 'event': {
             var signature = abi_coder_1.formatSignature(method).replace(/tuple/g, '');
-            var description = new EventDescription({
+            var description = new _EventDescription({
                 name: method.name,
                 signature: signature,
                 inputs: method.inputs,

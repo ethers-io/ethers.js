@@ -8,14 +8,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var interface_1 = require("./interface");
-var provider_1 = require("../providers/provider");
-var wallet_1 = require("../wallet/wallet");
 var abi_coder_1 = require("../utils/abi-coder");
 var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
 var properties_1 = require("../utils/properties");
 var web_1 = require("../utils/web");
+var types_1 = require("../utils/types");
 var errors = __importStar(require("../utils/errors"));
 var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
@@ -169,11 +168,11 @@ var Contract = /** @class */ (function () {
         else {
             properties_1.defineReadOnly(this, 'interface', new interface_1.Interface(contractInterface));
         }
-        if (signerOrProvider instanceof wallet_1.Signer) {
+        if (signerOrProvider instanceof types_1.Signer) {
             properties_1.defineReadOnly(this, 'provider', signerOrProvider.provider);
             properties_1.defineReadOnly(this, 'signer', signerOrProvider);
         }
-        else if (signerOrProvider instanceof provider_1.Provider) {
+        else if (signerOrProvider instanceof types_1.MinimalProvider) {
             properties_1.defineReadOnly(this, 'provider', signerOrProvider);
             properties_1.defineReadOnly(this, 'signer', null);
         }
@@ -204,15 +203,25 @@ var Contract = /** @class */ (function () {
         }
         this._events = [];
         properties_1.defineReadOnly(this, 'address', addressOrName);
-        properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName).then(function (address) {
-            if (address == null) {
-                throw new Error('name not found');
+        if (this.provider) {
+            properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName).then(function (address) {
+                if (address == null) {
+                    throw new Error('name not found');
+                }
+                return address;
+            }).catch(function (error) {
+                console.log('ERROR: Cannot find Contract - ' + addressOrName);
+                throw error;
+            }));
+        }
+        else {
+            try {
+                properties_1.defineReadOnly(this, 'addressPromise', Promise.resolve(address_1.getAddress(addressOrName)));
             }
-            return address;
-        }).catch(function (error) {
-            console.log('ERROR: Cannot find Contract - ' + addressOrName);
-            throw error;
-        }));
+            catch (error) {
+                errors.throwError('provider is required to use non-address contract address', errors.INVALID_ARGUMENT, { argument: 'addressOrName', value: addressOrName });
+            }
+        }
         Object.keys(this.interface.functions).forEach(function (name) {
             var run = runMethod(_this, name, false);
             if (_this[name] == null) {
@@ -227,14 +236,6 @@ var Contract = /** @class */ (function () {
             }
         });
     }
-    Object.defineProperty(Contract.prototype, "onerror", {
-        get: function () { return this._onerror; },
-        set: function (callback) {
-            this._onerror = callback;
-        },
-        enumerable: true,
-        configurable: true
-    });
     // @TODO: Allow timeout?
     Contract.prototype.deployed = function () {
         var _this = this;

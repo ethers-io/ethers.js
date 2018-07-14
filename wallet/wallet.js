@@ -27,13 +27,9 @@ var properties_1 = require("../utils/properties");
 var random_bytes_1 = require("../utils/random-bytes");
 var secp256k1_1 = require("../utils/secp256k1");
 var transaction_1 = require("../utils/transaction");
+var types_1 = require("../utils/types");
+exports.Signer = types_1.Signer;
 var errors = __importStar(require("../utils/errors"));
-var Signer = /** @class */ (function () {
-    function Signer() {
-    }
-    return Signer;
-}());
-exports.Signer = Signer;
 var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);
     function Wallet(privateKey, provider) {
@@ -168,7 +164,13 @@ var Wallet = /** @class */ (function (_super) {
     Wallet.fromEncryptedJson = function (json, password, progressCallback) {
         if (secretStorage.isCrowdsaleWallet(json)) {
             try {
+                if (progressCallback) {
+                    progressCallback(0);
+                }
                 var privateKey = secretStorage.decryptCrowdsale(json, password);
+                if (progressCallback) {
+                    progressCallback(1);
+                }
                 return Promise.resolve(new Wallet(privateKey));
             }
             catch (error) {
@@ -217,5 +219,5 @@ var Wallet = /** @class */ (function (_super) {
         });
     };
     return Wallet;
-}(Signer));
+}(types_1.Signer));
 exports.Wallet = Wallet;

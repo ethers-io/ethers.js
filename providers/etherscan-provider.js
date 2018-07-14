@@ -273,7 +273,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                     if (tx.creates == null && tx.contractAddress != null) {
                         tx.creates = tx.contractAddress;
                     }
-                    var item = provider_1.checkTransactionResponse(tx);
+                    var item = provider_1.Provider.checkTransactionResponse(tx);
                     if (tx.timeStamp) {
                         item.timestamp = parseInt(tx.timeStamp);
                     }
