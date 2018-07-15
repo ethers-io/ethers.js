@@ -1,5 +1,5 @@
 
-import { register, Wordlist } from './wordlist';
+import { check, register, Wordlist } from './wordlist';
 
 import { toUtf8String } from '../utils/utf8';
 
@@ -8,29 +8,47 @@ const deltaData = "FAZDC6BALcLZCA+GBARCW8wNCcDDZ8LVFBOqqDUiou+M42TFAyERXFb7EjhP+
 
 // @TODO: Load lazily
 
-const words: { [key: string]: Array<string> } = {
-    zh_cn: [],
-    zh_tw: []
+const wordlist: { [key: string]: Array<string> } = {
+    zh_cn: null,
+    zh_tw: null
 }
 
-var codes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-var style = "~!@#$%^&*_-=[]{}|;:,.()<>?"
+const Checks: { [key: string]: string } = {
+    zh_cn: '0x17bcc4d8547e5a7135e365d1ab443aaae95e76d8230c2782c67305d4f21497a1',
+    zh_tw: '0x51e720e90c7b87bec1d70eb6e74a21a449bd3ec9c020b01d3a40ed991b60ce5d'
+}
 
-let deltaOffset = 0;
-for (var i = 0; i < 2048; i++) {
-    let s = style.indexOf(data[i * 3]);
-    let bytes = [
-        228 + (s >> 2),
-        128 + codes.indexOf(data[i * 3 + 1]),
-        128 + codes.indexOf(data[i * 3 + 2]),
-    ];
-    words.zh_cn.push(toUtf8String(bytes));
+const codes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const style = "~!@#$%^&*_-=[]{}|;:,.()<>?"
 
-    let common = s % 4;
-    for (let i = common; i < 3; i++) {
-        bytes[i] = codes.indexOf(deltaData[deltaOffset++]) + ((i == 0) ? 228: 128);
+function loadWords(lang: Wordlist) {
+    if (wordlist[lang.locale] !== null) { return; }
+
+    wordlist[lang.locale] = [];
+
+    let deltaOffset = 0;
+    for (var i = 0; i < 2048; i++) {
+        let s = style.indexOf(data[i * 3]);
+        let bytes = [
+            228 + (s >> 2),
+            128 + codes.indexOf(data[i * 3 + 1]),
+            128 + codes.indexOf(data[i * 3 + 2]),
+        ];
+
+        if (lang.locale === 'zh_tw') {
+            let common = s % 4;
+            for (let i = common; i < 3; i++) {
+                bytes[i] = codes.indexOf(deltaData[deltaOffset++]) + ((i == 0) ? 228: 128);
+            }
+        }
+
+        wordlist[lang.locale].push(toUtf8String(bytes));
     }
-    words.zh_tw.push(toUtf8String(bytes));
+
+    if (check(lang) !== Checks[lang.locale]) {
+        wordlist[lang.locale] = null;
+        throw new Error('BIP39 Wordlist for ' + lang.locale + ' (Chinese) FAILED');
+    }
 }
 
 class LangZh extends Wordlist {
@@ -39,11 +57,13 @@ class LangZh extends Wordlist {
     }
 
     getWord(index: number): string {
-        return words[this.locale][index];
+        loadWords(this);
+        return wordlist[this.locale][index];
     }
 
     getWordIndex(word: string): number {
-        return words[this.locale].indexOf(word);
+        loadWords(this);
+        return wordlist[this.locale].indexOf(word);
     }
 
     split(mnemonic: string): Array<string> {

@@ -1,14 +1,10 @@
 
-import { register, Wordlist } from './wordlist';
-
-import { id } from '../utils/hash';
+import { check, register, Wordlist } from './wordlist';
 
 import { hexlify } from '../utils/bytes';
 import { toUtf8Bytes, toUtf8String } from '../utils/utf8';
 
 import * as errors from '../utils/errors';
-
-const CheckId = "0xe561f52ac5f1fe957460337bc400302f30af56ac8da6adc7311efa89fbbc0777";
 
 const data = [
 
@@ -37,7 +33,7 @@ const data = [
 // Maps each character into its kana value (the index)
 const mapping = "~~AzB~X~a~KN~Q~D~S~C~G~E~Y~p~L~I~O~eH~g~V~hxyumi~~U~~Z~~v~~s~~dkoblPjfnqwMcRTr~W~~~F~~~~~Jt"
 
-let words: Array<string> = null;
+let wordlist: Array<string> = null;
 
 function hex(word: string) {
     return hexlify(toUtf8Bytes(word));
@@ -46,13 +42,10 @@ function hex(word: string) {
 const KiYoKu = '0xe3818de38284e3818f';
 const KyoKu = '0xe3818de38283e3818f'
 
-let error: Error = null;
-function loadWords() {
-    if (words !== null) {
-        if (error) { throw error; }
-        return;
-    }
-    words = [];
+function loadWords(lang: Wordlist) {
+    if (wordlist !== null) { return; }
+
+    wordlist = [];
 
     // Transforms for normalizing (sort is a not quite UTF-8)
     var transform: { [key: string]: string | boolean } = {};
@@ -101,26 +94,25 @@ function loadWords() {
                  word.push((k & 0x40) ? 130: 129);
                  word.push((k & 0x3f) + 128);
             }
-            words.push(toUtf8String(word));
+            wordlist.push(toUtf8String(word));
         }
     }
-    words.sort(sortJapanese);
+    wordlist.sort(sortJapanese);
 
     // For some reason kyoku and kiyoku are flipped in node (!!).
     // The order SHOULD be:
     //   - kyoku
     //   - kiyoku
 
-    if (hex(words[442]) === KiYoKu && hex(words[443]) === KyoKu) {
-        let tmp = words[442];
-        words[442] = words[443];
-        words[443] = tmp;
+    if (hex(wordlist[442]) === KiYoKu && hex(wordlist[443]) === KyoKu) {
+        let tmp = wordlist[442];
+        wordlist[442] = wordlist[443];
+        wordlist[443] = tmp;
     }
 
-    let check = id(words.join('\n'));
-    if (check !== CheckId) {
-        error = new Error('Japanese Wordlist FAILED to load; your browser sort is broken; please contract support@ethers.io.');
-        throw error;
+    if (check(lang) !== '0xcb36b09e6baa935787fd762ce65e80b0c6a8dabdfbc3a7f86ac0e2c4fd111600') {
+        wordlist = null;
+        throw new Error('BIP39 Wordlist for ja (Japanese) FAILED');
     }
 }
 
@@ -130,13 +122,13 @@ class LangJa extends Wordlist {
     }
 
     getWord(index: number): string {
-        loadWords();
-        return words[index];
+        loadWords(this);
+        return wordlist[index];
     }
 
     getWordIndex(word: string): number {
-        loadWords();
-        return words.indexOf(word);
+        loadWords(this);
+        return wordlist.indexOf(word);
     }
 
     split(mnemonic: string): Array<string> {

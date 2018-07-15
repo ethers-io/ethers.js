@@ -2,9 +2,21 @@
 // This gets overriddenby gulp during bip39-XX
 var exportWordlist = false;
 
+import { id } from '../utils/hash';
+
 import { defineReadOnly } from '../utils/properties';
 
 import { Wordlist as _Wordlist } from '../utils/types';
+
+export function check(wordlist: _Wordlist) {
+    var words = [];
+    for (let i = 0; i < 2048; i++) {
+        let word = wordlist.getWord(i);
+        if (i !== wordlist.getWordIndex(word)) { return '0x'; }
+        words.push(word);
+    }
+    return id(words.join('\n') + '\n');
+}
 
 export abstract class Wordlist implements _Wordlist {
     locale: string;

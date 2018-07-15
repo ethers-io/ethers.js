@@ -1,5 +1,5 @@
 
-import { register, Wordlist } from './wordlist';
+import { check, register, Wordlist } from './wordlist';
 
 import { toUtf8String } from '../utils/utf8';
 
@@ -28,7 +28,7 @@ function getHangul(code: number): string {
 
 let wordlist: Array<string> = null;
 
-function loadWords(): void {
+function loadWords(lang: Wordlist): void {
     if (wordlist != null) { return; }
 
     wordlist = [];
@@ -45,9 +45,12 @@ function loadWords(): void {
     });
 
     wordlist.sort();
-}
-loadWords();
 
+    if (check(lang) !== '0xf9eddeace9c5d3da9c93cf7d3cd38f6a13ed3affb933259ae865714e8a3ae71a') {
+        wordlist = null;
+        throw new Error('BIP39 Wordlist for ko (Korean) FAILED');
+    }
+}
 
 
 class LangKo extends Wordlist {
@@ -56,12 +59,12 @@ class LangKo extends Wordlist {
     }
 
     getWord(index: number): string {
-        loadWords();
+        loadWords(this);
         return wordlist[index];
     }
 
     getWordIndex(word: string): number {
-        loadWords();
+        loadWords(this);
         return wordlist.indexOf(word);
     }
 }
