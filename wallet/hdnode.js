@@ -12,6 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // The English language word list.
 // For additional word lists, please see /src.tc/wordlists/
 var lang_en_1 = require("../wordlists/lang-en");
+// Automatically register English?
+//import { register } from '../wordlists/wordlist';
+//register(langEn);
 var bytes_1 = require("../utils/bytes");
 var bignumber_1 = require("../utils/bignumber");
 var utf8_1 = require("../utils/utf8");

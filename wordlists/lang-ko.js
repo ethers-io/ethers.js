@@ -33,7 +33,7 @@ function getHangul(code) {
     return utf8_1.toUtf8String([225, (code >> 6) + 132, (code & 0x3f) + 128]);
 }
 var wordlist = null;
-function loadWords() {
+function loadWords(lang) {
     if (wordlist != null) {
         return;
     }
@@ -49,19 +49,22 @@ function loadWords() {
         }
     });
     wordlist.sort();
+    if (wordlist_1.check(lang) !== '0xf9eddeace9c5d3da9c93cf7d3cd38f6a13ed3affb933259ae865714e8a3ae71a') {
+        wordlist = null;
+        throw new Error('BIP39 Wordlist for ko (Korean) FAILED');
+    }
 }
-loadWords();
 var LangKo = /** @class */ (function (_super) {
     __extends(LangKo, _super);
     function LangKo() {
         return _super.call(this, 'ko') || this;
     }
     LangKo.prototype.getWord = function (index) {
-        loadWords();
+        loadWords(this);
         return wordlist[index];
     };
     LangKo.prototype.getWordIndex = function (word) {
-        loadWords();
+        loadWords(this);
         return wordlist.indexOf(word);
     };
     return LangKo;

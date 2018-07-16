@@ -13,4 +13,3 @@ var HDNode = __importStar(require("./hdnode"));
 exports.HDNode = HDNode;
 var signing_key_1 = require("./signing-key");
 exports.SigningKey = signing_key_1.SigningKey;
-exports.default = { HDNode: HDNode, SigningKey: signing_key_1.SigningKey, Wallet: wallet_1.Wallet };

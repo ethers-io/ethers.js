@@ -15,6 +15,7 @@ var bytes_1 = require("../utils/bytes");
 var properties_1 = require("../utils/properties");
 var web_1 = require("../utils/web");
 var types_1 = require("../utils/types");
+//export { EventFilter, Event, Listener, Log, TransactionRequest, TransactionResponse };
 var errors = __importStar(require("../utils/errors"));
 var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true

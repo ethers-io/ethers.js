@@ -28,6 +28,7 @@ var transaction_1 = require("../utils/transaction");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
 var types_1 = require("../utils/types");
+//export { Block, BlockTag, EventType, Filter, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse };
 var errors = __importStar(require("../utils/errors"));
 //////////////////////////////
 // Request and Response Checking

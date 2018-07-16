@@ -18,6 +18,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var wordlist_1 = require("./wordlist");
+var bytes_1 = require("../utils/bytes");
 var utf8_1 = require("../utils/utf8");
 var errors = __importStar(require("../utils/errors"));
 var data = [
@@ -38,12 +39,17 @@ var data = [
 ];
 // Maps each character into its kana value (the index)
 var mapping = "~~AzB~X~a~KN~Q~D~S~C~G~E~Y~p~L~I~O~eH~g~V~hxyumi~~U~~Z~~v~~s~~dkoblPjfnqwMcRTr~W~~~F~~~~~Jt";
-var words = null;
-function loadWords() {
-    if (words !== null) {
+var wordlist = null;
+function hex(word) {
+    return bytes_1.hexlify(utf8_1.toUtf8Bytes(word));
+}
+var KiYoKu = '0xe3818de38284e3818f';
+var KyoKu = '0xe3818de38283e3818f';
+function loadWords(lang) {
+    if (wordlist !== null) {
         return;
     }
-    words = [];
+    wordlist = [];
     // Transforms for normalizing (sort is a not quite UTF-8)
     var transform = {};
     // Delete the diacritic marks
@@ -93,33 +99,36 @@ function loadWords() {
                 word.push((k & 0x40) ? 130 : 129);
                 word.push((k & 0x3f) + 128);
             }
-            words.push(utf8_1.toUtf8String(word));
+            wordlist.push(utf8_1.toUtf8String(word));
         }
     }
-    words.sort(sortJapanese);
-    // For some reason kyoku and kiyoku are flipped; we'll just manually fix it
-    var kyoku = words[442];
-    words[442] = words[443];
-    words[443] = kyoku;
+    wordlist.sort(sortJapanese);
+    // For some reason kyoku and kiyoku are flipped in node (!!).
+    // The order SHOULD be:
+    //   - kyoku
+    //   - kiyoku
+    if (hex(wordlist[442]) === KiYoKu && hex(wordlist[443]) === KyoKu) {
+        var tmp = wordlist[442];
+        wordlist[442] = wordlist[443];
+        wordlist[443] = tmp;
+    }
+    if (wordlist_1.check(lang) !== '0xcb36b09e6baa935787fd762ce65e80b0c6a8dabdfbc3a7f86ac0e2c4fd111600') {
+        wordlist = null;
+        throw new Error('BIP39 Wordlist for ja (Japanese) FAILED');
+    }
 }
-/*
-var fs = require('fs');
-fs.readFileSync('lang-ja.txt').toString().split('\x0a').forEach(function(d, i) {
-    if (d !== words[i]) { console.log(d, words[i], i, toUtf8Bytes(d)); }
-});
-*/
 var LangJa = /** @class */ (function (_super) {
     __extends(LangJa, _super);
     function LangJa() {
         return _super.call(this, 'ja') || this;
     }
     LangJa.prototype.getWord = function (index) {
-        loadWords();
-        return words[index];
+        loadWords(this);
+        return wordlist[index];
     };
     LangJa.prototype.getWordIndex = function (word) {
-        loadWords();
-        return words.indexOf(word);
+        loadWords(this);
+        return wordlist.indexOf(word);
     };
     LangJa.prototype.split = function (mnemonic) {
         if (!mnemonic.normalize) {

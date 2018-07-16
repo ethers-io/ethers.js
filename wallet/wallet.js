@@ -28,7 +28,7 @@ var random_bytes_1 = require("../utils/random-bytes");
 var secp256k1_1 = require("../utils/secp256k1");
 var transaction_1 = require("../utils/transaction");
 var types_1 = require("../utils/types");
-exports.Signer = types_1.Signer;
+//export { BlockTag, ProgressCallback, Signer, TransactionRequest, TransactionResponse };
 var errors = __importStar(require("../utils/errors"));
 var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);

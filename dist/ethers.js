@@ -8860,14 +8860,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var interface_1 = require("./interface");
-var provider_1 = require("../providers/provider");
-var wallet_1 = require("../wallet/wallet");
 var abi_coder_1 = require("../utils/abi-coder");
 var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
 var properties_1 = require("../utils/properties");
 var web_1 = require("../utils/web");
+var types_1 = require("../utils/types");
+//export { EventFilter, Event, Listener, Log, TransactionRequest, TransactionResponse };
 var errors = __importStar(require("../utils/errors"));
 var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
@@ -9021,11 +9021,11 @@ var Contract = /** @class */ (function () {
         else {
             properties_1.defineReadOnly(this, 'interface', new interface_1.Interface(contractInterface));
         }
-        if (signerOrProvider instanceof wallet_1.Signer) {
+        if (signerOrProvider instanceof types_1.Signer) {
             properties_1.defineReadOnly(this, 'provider', signerOrProvider.provider);
             properties_1.defineReadOnly(this, 'signer', signerOrProvider);
         }
-        else if (signerOrProvider instanceof provider_1.Provider) {
+        else if (signerOrProvider instanceof types_1.MinimalProvider) {
             properties_1.defineReadOnly(this, 'provider', signerOrProvider);
             properties_1.defineReadOnly(this, 'signer', null);
         }
@@ -9056,15 +9056,25 @@ var Contract = /** @class */ (function () {
         }
         this._events = [];
         properties_1.defineReadOnly(this, 'address', addressOrName);
-        properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName).then(function (address) {
-            if (address == null) {
-                throw new Error('name not found');
+        if (this.provider) {
+            properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName).then(function (address) {
+                if (address == null) {
+                    throw new Error('name not found');
+                }
+                return address;
+            }).catch(function (error) {
+                console.log('ERROR: Cannot find Contract - ' + addressOrName);
+                throw error;
+            }));
+        }
+        else {
+            try {
+                properties_1.defineReadOnly(this, 'addressPromise', Promise.resolve(address_1.getAddress(addressOrName)));
             }
-            return address;
-        }).catch(function (error) {
-            console.log('ERROR: Cannot find Contract - ' + addressOrName);
-            throw error;
-        }));
+            catch (error) {
+                errors.throwError('provider is required to use non-address contract address', errors.INVALID_ARGUMENT, { argument: 'addressOrName', value: addressOrName });
+            }
+        }
         Object.keys(this.interface.functions).forEach(function (name) {
             var run = runMethod(_this, name, false);
             if (_this[name] == null) {
@@ -9079,14 +9089,6 @@ var Contract = /** @class */ (function () {
             }
         });
     }
-    Object.defineProperty(Contract.prototype, "onerror", {
-        get: function () { return this._onerror; },
-        set: function (callback) {
-            this._onerror = callback;
-        },
-        enumerable: true,
-        configurable: true
-    });
     // @TODO: Allow timeout?
     Contract.prototype.deployed = function () {
         var _this = this;
@@ -9357,17 +9359,13 @@ var Contract = /** @class */ (function () {
 }());
 exports.Contract = Contract;
 
-},{"../providers/provider":56,"../utils/abi-coder":58,"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../utils/web":74,"../wallet/wallet":79,"./interface":49}],48:[function(require,module,exports){
+},{"../utils/abi-coder":58,"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../utils/types":72,"../utils/web":75,"./interface":49}],48:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var contract_1 = require("./contract");
 exports.Contract = contract_1.Contract;
 var interface_1 = require("./interface");
 exports.Interface = interface_1.Interface;
-exports.default = {
-    Contract: contract_1.Contract,
-    Interface: interface_1.Interface
-};
 
 },{"./contract":47,"./interface":49}],49:[function(require,module,exports){
 'use strict';
@@ -9397,9 +9395,20 @@ var bytes_1 = require("../utils/bytes");
 var hash_1 = require("../utils/hash");
 var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
+var types_1 = require("../utils/types");
+//export { DeployDescription, EventDescription, FunctionDescription, Indexed };
 var errors = __importStar(require("../utils/errors"));
-var Description = /** @class */ (function () {
-    function Description(info) {
+var _Indexed = /** @class */ (function (_super) {
+    __extends(_Indexed, _super);
+    function _Indexed(hash) {
+        var _this = _super.call(this) || this;
+        properties_1.defineReadOnly(_this, 'hash', hash);
+        return _this;
+    }
+    return _Indexed;
+}(types_1.Indexed));
+var _Description = /** @class */ (function () {
+    function _Description(info) {
         for (var key in info) {
             var value = info[key];
             if (value != null && typeof (value) === 'object') {
@@ -9410,23 +9419,14 @@ var Description = /** @class */ (function () {
             }
         }
     }
-    return Description;
+    return _Description;
 }());
-exports.Description = Description;
-var Indexed = /** @class */ (function (_super) {
-    __extends(Indexed, _super);
-    function Indexed() {
+var _DeployDescription = /** @class */ (function (_super) {
+    __extends(_DeployDescription, _super);
+    function _DeployDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    return Indexed;
-}(Description));
-exports.Indexed = Indexed;
-var DeployDescription = /** @class */ (function (_super) {
-    __extends(DeployDescription, _super);
-    function DeployDescription() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    DeployDescription.prototype.encode = function (bytecode, params) {
+    _DeployDescription.prototype.encode = function (bytecode, params) {
         if (!bytes_1.isHexString(bytecode)) {
             errors.throwError('invalid contract bytecode', errors.INVALID_ARGUMENT, {
                 arg: 'bytecode',
@@ -9446,15 +9446,14 @@ var DeployDescription = /** @class */ (function (_super) {
         }
         return null;
     };
-    return DeployDescription;
-}(Description));
-exports.DeployDescription = DeployDescription;
-var FunctionDescription = /** @class */ (function (_super) {
-    __extends(FunctionDescription, _super);
-    function FunctionDescription() {
+    return _DeployDescription;
+}(_Description));
+var _FunctionDescription = /** @class */ (function (_super) {
+    __extends(_FunctionDescription, _super);
+    function _FunctionDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    FunctionDescription.prototype.encode = function (params) {
+    _FunctionDescription.prototype.encode = function (params) {
         errors.checkArgumentCount(params.length, this.inputs.length, 'in interface function ' + this.name);
         try {
             return this.sighash + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2);
@@ -9468,7 +9467,7 @@ var FunctionDescription = /** @class */ (function (_super) {
         }
         return null;
     };
-    FunctionDescription.prototype.decode = function (data) {
+    _FunctionDescription.prototype.decode = function (data) {
         try {
             return abi_coder_1.defaultAbiCoder.decode(this.outputs, bytes_1.arrayify(data));
         }
@@ -9482,22 +9481,21 @@ var FunctionDescription = /** @class */ (function (_super) {
             });
         }
     };
-    return FunctionDescription;
-}(Description));
-exports.FunctionDescription = FunctionDescription;
+    return _FunctionDescription;
+}(_Description));
 var Result = /** @class */ (function (_super) {
     __extends(Result, _super);
     function Result() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     return Result;
-}(Description));
-var EventDescription = /** @class */ (function (_super) {
-    __extends(EventDescription, _super);
-    function EventDescription() {
+}(_Description));
+var _EventDescription = /** @class */ (function (_super) {
+    __extends(_EventDescription, _super);
+    function _EventDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    EventDescription.prototype.encodeTopics = function (params) {
+    _EventDescription.prototype.encodeTopics = function (params) {
         var _this = this;
         if (params.length > this.inputs.length) {
             errors.throwError('too many arguments for ' + this.name, errors.UNEXPECTED_ARGUMENT, { maxCount: params.length, expectedCount: this.inputs.length });
@@ -9537,7 +9535,7 @@ var EventDescription = /** @class */ (function (_super) {
         }
         return topics;
     };
-    EventDescription.prototype.decode = function (data, topics) {
+    _EventDescription.prototype.decode = function (data, topics) {
         // Strip the signature off of non-anonymous topics
         if (topics != null && !this.anonymous) {
             topics = topics.slice(1);
@@ -9570,10 +9568,10 @@ var EventDescription = /** @class */ (function (_super) {
         this.inputs.forEach(function (input, index) {
             if (input.indexed) {
                 if (topics == null) {
-                    result[index] = new Indexed({ type: 'indexed', hash: null });
+                    result[index] = new _Indexed(null);
                 }
                 else if (inputDynamic[index]) {
-                    result[index] = new Indexed({ type: 'indexed', hash: resultIndexed[indexedIndex++] });
+                    result[index] = new _Indexed(resultIndexed[indexedIndex++]);
                 }
                 else {
                     result[index] = resultIndexed[indexedIndex++];
@@ -9589,30 +9587,29 @@ var EventDescription = /** @class */ (function (_super) {
         result.length = this.inputs.length;
         return result;
     };
-    return EventDescription;
-}(Description));
-exports.EventDescription = EventDescription;
+    return _EventDescription;
+}(_Description));
 var TransactionDescription = /** @class */ (function (_super) {
     __extends(TransactionDescription, _super);
     function TransactionDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     return TransactionDescription;
-}(Description));
+}(_Description));
 var LogDescription = /** @class */ (function (_super) {
     __extends(LogDescription, _super);
     function LogDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     return LogDescription;
-}(Description));
+}(_Description));
 function addMethod(method) {
     switch (method.type) {
         case 'constructor': {
-            var description = new DeployDescription({
+            var description = new _DeployDescription({
                 inputs: method.inputs,
                 payable: (method.payable == null || !!method.payable),
-                type: 'deploy'
+                type: "deploy"
             });
             if (!this.deployFunction) {
                 this.deployFunction = description;
@@ -9622,7 +9619,7 @@ function addMethod(method) {
         case 'function': {
             var signature = abi_coder_1.formatSignature(method).replace(/tuple/g, '');
             var sighash = hash_1.id(signature).substring(0, 10);
-            var description = new FunctionDescription({
+            var description = new _FunctionDescription({
                 inputs: method.inputs,
                 outputs: method.outputs,
                 payable: (method.payable == null || !!method.payable),
@@ -9642,7 +9639,7 @@ function addMethod(method) {
         }
         case 'event': {
             var signature = abi_coder_1.formatSignature(method).replace(/tuple/g, '');
-            var description = new EventDescription({
+            var description = new _EventDescription({
                 name: method.name,
                 signature: signature,
                 inputs: method.inputs,
@@ -9754,7 +9751,7 @@ var Interface = /** @class */ (function () {
 }());
 exports.Interface = Interface;
 
-},{"../utils/abi-coder":58,"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/keccak256":65,"../utils/properties":66}],50:[function(require,module,exports){
+},{"../utils/abi-coder":58,"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/keccak256":65,"../utils/properties":66,"../utils/types":72}],50:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10030,7 +10027,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                     if (tx.creates == null && tx.contractAddress != null) {
                         tx.creates = tx.contractAddress;
                     }
-                    var item = provider_1.checkTransactionResponse(tx);
+                    var item = provider_1.Provider.checkTransactionResponse(tx);
                     if (tx.timeStamp) {
                         item.timestamp = parseInt(tx.timeStamp);
                     }
@@ -10044,7 +10041,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
 }(provider_1.Provider));
 exports.EtherscanProvider = EtherscanProvider;
 
-},{"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../utils/web":74,"./provider":56}],51:[function(require,module,exports){
+},{"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../utils/web":75,"./provider":56}],51:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10171,6 +10168,7 @@ var infura_provider_1 = require("./infura-provider");
 exports.InfuraProvider = infura_provider_1.InfuraProvider;
 var json_rpc_provider_1 = require("./json-rpc-provider");
 exports.JsonRpcProvider = json_rpc_provider_1.JsonRpcProvider;
+exports.JsonRpcSigner = json_rpc_provider_1.JsonRpcSigner;
 var web3_provider_1 = require("./web3-provider");
 exports.Web3Provider = web3_provider_1.Web3Provider;
 function getDefaultProvider(network) {
@@ -10180,16 +10178,6 @@ function getDefaultProvider(network) {
     ]);
 }
 exports.getDefaultProvider = getDefaultProvider;
-exports.default = {
-    Provider: provider_1.Provider,
-    getDefaultProvider: getDefaultProvider,
-    FallbackProvider: fallback_provider_1.FallbackProvider,
-    EtherscanProvider: etherscan_provider_1.EtherscanProvider,
-    InfuraProvider: infura_provider_1.InfuraProvider,
-    JsonRpcProvider: json_rpc_provider_1.JsonRpcProvider,
-    Web3Provider: web3_provider_1.Web3Provider,
-    IpcProvider: ipc_provider_1.IpcProvider
-};
 
 },{"./etherscan-provider":50,"./fallback-provider":51,"./infura-provider":53,"./ipc-provider":41,"./json-rpc-provider":54,"./provider":56,"./web3-provider":57}],53:[function(require,module,exports){
 'use strict';
@@ -10279,10 +10267,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 var networks_1 = require("./networks");
 var provider_1 = require("./provider");
-var wallet_1 = require("../wallet/wallet");
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var properties_1 = require("../utils/properties");
+var types_1 = require("../utils/types");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
@@ -10303,33 +10291,6 @@ function getResult(payload) {
     }
     return payload.result;
 }
-// Convert an ethers.js transaction into a JSON-RPC transaction
-//  - gasLimit => gas
-//  - All values hexlified
-//  - All numeric values zero-striped
-// @TODO: Not any, a dictionary of string to strings
-function hexlifyTransaction(transaction) {
-    var result = {};
-    // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
-    ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function (key) {
-        if (transaction[key] == null) {
-            return;
-        }
-        var value = bytes_1.hexStripZeros(bytes_1.hexlify(transaction[key]));
-        if (key === 'gasLimit') {
-            key = 'gas';
-        }
-        result[key] = value;
-    });
-    ['from', 'to', 'data'].forEach(function (key) {
-        if (transaction[key] == null) {
-            return;
-        }
-        result[key] = bytes_1.hexlify(transaction[key]);
-    });
-    return result;
-}
-exports.hexlifyTransaction = hexlifyTransaction;
 function getLowerCase(value) {
     if (value) {
         return value.toLowerCase();
@@ -10387,7 +10348,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             });
         }
         return properties_1.resolveProperties(tx).then(function (tx) {
-            tx = hexlifyTransaction(tx);
+            tx = JsonRpcProvider.hexlifyTransaction(tx);
             return _this.provider.send('eth_sendTransaction', [tx]).then(function (hash) {
                 return web_1.poll(function () {
                     return _this.provider.getTransaction(hash).then(function (tx) {
@@ -10418,7 +10379,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         });
     };
     return JsonRpcSigner;
-}(wallet_1.Signer));
+}(types_1.Signer));
 exports.JsonRpcSigner = JsonRpcSigner;
 var JsonRpcProvider = /** @class */ (function (_super) {
     __extends(JsonRpcProvider, _super);
@@ -10509,9 +10470,9 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             case 'getTransactionReceipt':
                 return this.send('eth_getTransactionReceipt', [params.transactionHash]);
             case 'call':
-                return this.send('eth_call', [hexlifyTransaction(params.transaction), 'latest']);
+                return this.send('eth_call', [JsonRpcProvider.hexlifyTransaction(params.transaction), 'latest']);
             case 'estimateGas':
-                return this.send('eth_estimateGas', [hexlifyTransaction(params.transaction)]);
+                return this.send('eth_estimateGas', [JsonRpcProvider.hexlifyTransaction(params.transaction)]);
             case 'getLogs':
                 if (params.filter && params.filter.address != null) {
                     params.filter.address = getLowerCase(params.filter.address);
@@ -10565,11 +10526,37 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     JsonRpcProvider.prototype._stopPending = function () {
         this._pendingFilter = null;
     };
+    // Convert an ethers.js transaction into a JSON-RPC transaction
+    //  - gasLimit => gas
+    //  - All values hexlified
+    //  - All numeric values zero-striped
+    // @TODO: Not any, a dictionary of string to strings
+    JsonRpcProvider.hexlifyTransaction = function (transaction) {
+        var result = {};
+        // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
+        ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function (key) {
+            if (transaction[key] == null) {
+                return;
+            }
+            var value = bytes_1.hexStripZeros(bytes_1.hexlify(transaction[key]));
+            if (key === 'gasLimit') {
+                key = 'gas';
+            }
+            result[key] = value;
+        });
+        ['from', 'to', 'data'].forEach(function (key) {
+            if (transaction[key] == null) {
+                return;
+            }
+            result[key] = bytes_1.hexlify(transaction[key]);
+        });
+        return result;
+    };
     return JsonRpcProvider;
 }(provider_1.Provider));
 exports.JsonRpcProvider = JsonRpcProvider;
 
-},{"../utils/address":59,"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../utils/utf8":73,"../utils/web":74,"../wallet/wallet":79,"./networks":55,"./provider":56}],55:[function(require,module,exports){
+},{"../utils/address":59,"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../utils/types":72,"../utils/utf8":74,"../utils/web":75,"./networks":55,"./provider":56}],55:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -10673,6 +10660,16 @@ exports.getNetwork = getNetwork;
 
 },{"../utils/errors":62}],56:[function(require,module,exports){
 'use strict';
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -10691,9 +10688,9 @@ var rlp_1 = require("../utils/rlp");
 var transaction_1 = require("../utils/transaction");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
+var types_1 = require("../utils/types");
+//export { Block, BlockTag, EventType, Filter, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse };
 var errors = __importStar(require("../utils/errors"));
-;
-;
 //////////////////////////////
 // Request and Response Checking
 // @TODO: not any?
@@ -10904,7 +10901,6 @@ function checkTransactionResponse(transaction) {
     }
     return result;
 }
-exports.checkTransactionResponse = checkTransactionResponse;
 var formatTransactionRequest = {
     from: allowNull(address_1.getAddress),
     nonce: allowNull(checkNumber),
@@ -11043,12 +11039,13 @@ function getEventTag(eventName) {
     }
     throw new Error('invalid event - ' + eventName);
 }
-var Provider = /** @class */ (function () {
+var Provider = /** @class */ (function (_super) {
+    __extends(Provider, _super);
     function Provider(network) {
-        var _this = this;
-        errors.checkNew(this, Provider);
+        var _this = _super.call(this) || this;
+        errors.checkNew(_this, Provider);
         if (network instanceof Promise) {
-            properties_1.defineReadOnly(this, 'ready', network.then(function (network) {
+            properties_1.defineReadOnly(_this, 'ready', network.then(function (network) {
                 properties_1.defineReadOnly(_this, '_network', network);
                 return network;
             }));
@@ -11056,24 +11053,25 @@ var Provider = /** @class */ (function () {
         else {
             var knownNetwork = networks_1.getNetwork((network == null) ? 'homestead' : network);
             if (knownNetwork) {
-                properties_1.defineReadOnly(this, '_network', knownNetwork);
-                properties_1.defineReadOnly(this, 'ready', Promise.resolve(this._network));
+                properties_1.defineReadOnly(_this, '_network', knownNetwork);
+                properties_1.defineReadOnly(_this, 'ready', Promise.resolve(_this._network));
             }
             else {
                 errors.throwError('invalid network', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
             }
         }
-        this._lastBlockNumber = -2;
+        _this._lastBlockNumber = -2;
         // Balances being watched for changes
-        this._balances = {};
+        _this._balances = {};
         // Events being listened to
-        this._events = [];
-        this._pollingInterval = 4000;
+        _this._events = [];
+        _this._pollingInterval = 4000;
         // We use this to track recent emitted events; for example, if we emit a "block" of 100
         // and we get a `getBlock(100)` request which would result in null, we should retry
         // until we get a response. This provides devs with a consistent view. Similarly for
         // transaction hashes.
-        this._emitted = { block: this._lastBlockNumber };
+        _this._emitted = { block: _this._lastBlockNumber };
+        return _this;
     }
     Provider.prototype._doPoll = function () {
         var _this = this;
@@ -11450,7 +11448,7 @@ var Provider = /** @class */ (function () {
                             }
                             return undefined;
                         }
-                        return checkTransactionResponse(result);
+                        return Provider.checkTransactionResponse(result);
                     });
                 }, { onceBlock: _this });
             });
@@ -11611,6 +11609,9 @@ var Provider = /** @class */ (function () {
             });
         });
     };
+    Provider.checkTransactionResponse = function (transaction) {
+        return checkTransactionResponse(transaction);
+    };
     Provider.prototype.doPoll = function () {
     };
     Provider.prototype.perform = function (method, params) {
@@ -11716,7 +11717,7 @@ var Provider = /** @class */ (function () {
         return this;
     };
     return Provider;
-}());
+}(types_1.MinimalProvider));
 exports.Provider = Provider;
 // See: https://github.com/isaacs/inherits/blob/master/inherits_browser.js
 function inherits(ctor, superCtor) {
@@ -11738,7 +11739,7 @@ function inheritable(parent) {
 }
 properties_1.defineReadOnly(Provider, 'inherits', inheritable(Provider));
 
-},{"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/properties":66,"../utils/rlp":67,"../utils/transaction":71,"../utils/utf8":73,"../utils/web":74,"./networks":55}],57:[function(require,module,exports){
+},{"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/properties":66,"../utils/rlp":67,"../utils/transaction":71,"../utils/types":72,"../utils/utf8":74,"../utils/web":75,"./networks":55}],57:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -11761,6 +11762,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var json_rpc_provider_1 = require("./json-rpc-provider");
 var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
+/*
+@TODO
+utils.defineProperty(Web3Signer, 'onchange', {
+
+});
+
+export type AsyncProvider = {
+    isMetaMask: boolean;
+    host?: string;
+    path?: string;
+    sendAsync: (request: any, callback: (error: any, response: any) => void) => void
+}
+
+*/
 var Web3Provider = /** @class */ (function (_super) {
     __extends(Web3Provider, _super);
     function Web3Provider(web3Provider, network) {
@@ -12730,7 +12745,7 @@ var AbiCoder = /** @class */ (function () {
 exports.AbiCoder = AbiCoder;
 exports.defaultAbiCoder = new AbiCoder();
 
-},{"./address":59,"./bignumber":60,"./bytes":61,"./errors":62,"./properties":66,"./utf8":73}],59:[function(require,module,exports){
+},{"./address":59,"./bignumber":60,"./bytes":61,"./errors":62,"./properties":66,"./utf8":74}],59:[function(require,module,exports){
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -12900,7 +12915,6 @@ function toBN(value) {
 function toBigNumber(bn) {
     return new _BigNumber(toHex(bn));
 }
-;
 var _BigNumber = /** @class */ (function () {
     function _BigNumber(value) {
         errors.checkNew(this, _BigNumber);
@@ -13448,7 +13462,7 @@ function hashMessage(message) {
 }
 exports.hashMessage = hashMessage;
 
-},{"./bytes":61,"./keccak256":65,"./utf8":73}],64:[function(require,module,exports){
+},{"./bytes":61,"./keccak256":65,"./utf8":74}],64:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13538,56 +13552,8 @@ var constants = {
     WeiPerEther: bignumber_1.ConstantWeiPerEther
 };
 exports.constants = constants;
-exports.default = {
-    AbiCoder: abi_coder_1.AbiCoder,
-    defaultAbiCoder: abi_coder_1.defaultAbiCoder,
-    parseSignature: abi_coder_1.parseSignature,
-    parseParamType: abi_coder_1.parseParamType,
-    constants: constants,
-    RLP: RLP,
-    fetchJson: web_1.fetchJson,
-    defineReadOnly: properties_1.defineReadOnly,
-    defineFrozen: properties_1.defineFrozen,
-    resolveProperties: properties_1.resolveProperties,
-    shallowCopy: properties_1.shallowCopy,
-    etherSymbol: etherSymbol,
-    arrayify: bytes_1.arrayify,
-    concat: bytes_1.concat,
-    padZeros: bytes_1.padZeros,
-    stripZeros: bytes_1.stripZeros,
-    base64: base64,
-    bigNumberify: bignumber_1.bigNumberify,
-    hexlify: bytes_1.hexlify,
-    hexStripZeros: bytes_1.hexStripZeros,
-    hexZeroPad: bytes_1.hexZeroPad,
-    hexDataLength: bytes_1.hexDataLength,
-    hexDataSlice: bytes_1.hexDataSlice,
-    toUtf8Bytes: utf8_1.toUtf8Bytes,
-    toUtf8String: utf8_1.toUtf8String,
-    hashMessage: hash_1.hashMessage,
-    namehash: hash_1.namehash,
-    id: hash_1.id,
-    getAddress: address_1.getAddress,
-    getIcapAddress: address_1.getIcapAddress,
-    getContractAddress: address_1.getContractAddress,
-    formatEther: units_1.formatEther,
-    parseEther: units_1.parseEther,
-    formatUnits: units_1.formatUnits,
-    parseUnits: units_1.parseUnits,
-    keccak256: keccak256_1.keccak256,
-    sha256: sha2_1.sha256,
-    randomBytes: random_bytes_1.randomBytes,
-    solidityPack: solidity_1.pack,
-    solidityKeccak256: solidity_1.keccak256,
-    soliditySha256: solidity_1.sha256,
-    splitSignature: bytes_1.splitSignature,
-    joinSignature: bytes_1.joinSignature,
-    parseTransaction: transaction_1.parse,
-    serializeTransaction: transaction_1.serialize,
-    errors: errors
-};
 
-},{"./abi-coder":58,"./address":59,"./base64":40,"./bignumber":60,"./bytes":61,"./errors":62,"./hash":63,"./keccak256":65,"./properties":66,"./random-bytes":44,"./rlp":67,"./sha2":69,"./solidity":70,"./transaction":71,"./units":72,"./utf8":73,"./web":74}],65:[function(require,module,exports){
+},{"./abi-coder":58,"./address":59,"./base64":40,"./bignumber":60,"./bytes":61,"./errors":62,"./hash":63,"./keccak256":65,"./properties":66,"./random-bytes":44,"./rlp":67,"./sha2":69,"./solidity":70,"./transaction":71,"./units":73,"./utf8":74,"./web":75}],65:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var sha3 = require("js-sha3");
@@ -13960,7 +13926,7 @@ function sha256(types, values) {
 }
 exports.sha256 = sha256;
 
-},{"./bignumber":60,"./bytes":61,"./keccak256":65,"./sha2":69,"./utf8":73}],71:[function(require,module,exports){
+},{"./bignumber":60,"./bytes":61,"./keccak256":65,"./sha2":69,"./utf8":74}],71:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13976,6 +13942,14 @@ var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
 var RLP = __importStar(require("./rlp"));
 var errors = __importStar(require("./errors"));
+/* !!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!
+ *
+ *  Due to a weird ordering-issue with browserify, there is an
+ *  import for secp256k1 at the bottom of the file; it must be
+ *  required AFTER the parse and serialize exports have been
+ *  defined.
+ *
+ */
 function handleAddress(value) {
     if (value === '0x') {
         return null;
@@ -14102,6 +14076,47 @@ exports.parse = parse;
 var secp256k1_1 = require("./secp256k1");
 
 },{"./address":59,"./bignumber":60,"./bytes":61,"./errors":62,"./keccak256":65,"./rlp":67,"./secp256k1":68}],72:[function(require,module,exports){
+"use strict";
+///////////////////////////////
+// Bytes
+Object.defineProperty(exports, "__esModule", { value: true });
+;
+;
+;
+///////////////////////////////
+// Interface
+var Indexed = /** @class */ (function () {
+    function Indexed() {
+    }
+    return Indexed;
+}());
+exports.Indexed = Indexed;
+/**
+ *  Provider
+ *
+ *  Note: We use an abstract class so we can use instanceof to determine if an
+ *        object is a Provider.
+ */
+var MinimalProvider = /** @class */ (function () {
+    function MinimalProvider() {
+    }
+    return MinimalProvider;
+}());
+exports.MinimalProvider = MinimalProvider;
+/**
+ *  Signer
+ *
+ *  Note: We use an abstract class so we can use instanceof to determine if an
+ *        object is a Signer.
+ */
+var Signer = /** @class */ (function () {
+    function Signer() {
+    }
+    return Signer;
+}());
+exports.Signer = Signer;
+
+},{}],73:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14203,6 +14218,9 @@ function parseUnits(value, unitType) {
     }
     // Remove commas
     var value = value.replace(/,/g, '');
+    if (unitInfo.decimals === 0) {
+        return bignumber_1.bigNumberify(value);
+    }
     // Is it negative?
     var negative = (value.substring(0, 1) === '-');
     if (negative) {
@@ -14249,7 +14267,7 @@ function parseEther(ether) {
 }
 exports.parseEther = parseEther;
 
-},{"./bignumber":60,"./errors":62}],73:[function(require,module,exports){
+},{"./bignumber":60,"./errors":62}],74:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
@@ -14374,8 +14392,8 @@ function toUtf8String(bytes) {
 }
 exports.toUtf8String = toUtf8String;
 
-},{"./bytes":61}],74:[function(require,module,exports){
-"use strict";
+},{"./bytes":61}],75:[function(require,module,exports){
+'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -14385,8 +14403,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var xmlhttprequest_1 = require("xmlhttprequest");
-var utf8_1 = require("./utf8");
 var base64_1 = require("./base64");
+var utf8_1 = require("./utf8");
 var errors = __importStar(require("./errors"));
 function fetchJson(connection, json, processFunc) {
     var headers = [];
@@ -14549,7 +14567,7 @@ function poll(func, options) {
 }
 exports.poll = poll;
 
-},{"./base64":40,"./errors":62,"./utf8":73,"xmlhttprequest":45}],75:[function(require,module,exports){
+},{"./base64":40,"./errors":62,"./utf8":74,"xmlhttprequest":45}],76:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14564,6 +14582,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // The English language word list.
 // For additional word lists, please see /src.tc/wordlists/
 var lang_en_1 = require("../wordlists/lang-en");
+// Automatically register English?
+//import { register } from '../wordlists/wordlist';
+//register(langEn);
 var bytes_1 = require("../utils/bytes");
 var bignumber_1 = require("../utils/bignumber");
 var utf8_1 = require("../utils/utf8");
@@ -14780,7 +14801,7 @@ function isValidMnemonic(mnemonic, wordlist) {
 }
 exports.isValidMnemonic = isValidMnemonic;
 
-},{"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hmac":42,"../utils/pbkdf2":43,"../utils/properties":66,"../utils/secp256k1":68,"../utils/sha2":69,"../utils/utf8":73,"../wordlists/lang-en":81}],76:[function(require,module,exports){
+},{"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hmac":42,"../utils/pbkdf2":43,"../utils/properties":66,"../utils/secp256k1":68,"../utils/sha2":69,"../utils/utf8":74,"../wordlists/lang-en":82}],77:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14796,9 +14817,8 @@ var HDNode = __importStar(require("./hdnode"));
 exports.HDNode = HDNode;
 var signing_key_1 = require("./signing-key");
 exports.SigningKey = signing_key_1.SigningKey;
-exports.default = { HDNode: HDNode, SigningKey: signing_key_1.SigningKey, Wallet: wallet_1.Wallet };
 
-},{"./hdnode":75,"./signing-key":78,"./wallet":79}],77:[function(require,module,exports){
+},{"./hdnode":76,"./signing-key":79,"./wallet":80}],78:[function(require,module,exports){
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -14814,14 +14834,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var aes_js_1 = __importDefault(require("aes-js"));
 var scrypt_js_1 = __importDefault(require("scrypt-js"));
 var uuid_1 = __importDefault(require("uuid"));
+var signing_key_1 = require("./signing-key");
+var HDNode = __importStar(require("./hdnode"));
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var pbkdf2_1 = require("../utils/pbkdf2");
 var keccak256_1 = require("../utils/keccak256");
 var utf8_1 = require("../utils/utf8");
 var random_bytes_1 = require("../utils/random-bytes");
-var signing_key_1 = require("./signing-key");
-var HDNode = __importStar(require("./hdnode"));
 function looseArrayify(hexString) {
     if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
         hexString = '0x' + hexString;
@@ -14994,6 +15014,9 @@ function decrypt(json, password, progressCallback) {
                     reject(new Error('unsupported key-derivation derived-key length'));
                     return;
                 }
+                if (progressCallback) {
+                    progressCallback(0);
+                }
                 scrypt_js_1.default(passwordBytes, salt, N, r, p, 64, function (error, progress, key) {
                     if (error) {
                         error.progress = progress;
@@ -15140,6 +15163,9 @@ function encrypt(privateKey, password, options, progressCallback) {
         }
     }
     return new Promise(function (resolve, reject) {
+        if (progressCallback) {
+            progressCallback(0);
+        }
         // We take 64 bytes:
         //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
         //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
@@ -15219,7 +15245,7 @@ function encrypt(privateKey, password, options, progressCallback) {
 }
 exports.encrypt = encrypt;
 
-},{"../utils/address":59,"../utils/bytes":61,"../utils/keccak256":65,"../utils/pbkdf2":43,"../utils/random-bytes":44,"../utils/utf8":73,"./hdnode":75,"./signing-key":78,"aes-js":1,"scrypt-js":36,"uuid":39}],78:[function(require,module,exports){
+},{"../utils/address":59,"../utils/bytes":61,"../utils/keccak256":65,"../utils/pbkdf2":43,"../utils/random-bytes":44,"../utils/utf8":74,"./hdnode":76,"./signing-key":79,"aes-js":1,"scrypt-js":36,"uuid":39}],79:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -15275,7 +15301,7 @@ var SigningKey = /** @class */ (function () {
 }());
 exports.SigningKey = SigningKey;
 
-},{"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../utils/secp256k1":68,"./hdnode":75}],79:[function(require,module,exports){
+},{"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../utils/secp256k1":68,"./hdnode":76}],80:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -15305,13 +15331,9 @@ var properties_1 = require("../utils/properties");
 var random_bytes_1 = require("../utils/random-bytes");
 var secp256k1_1 = require("../utils/secp256k1");
 var transaction_1 = require("../utils/transaction");
+var types_1 = require("../utils/types");
+//export { BlockTag, ProgressCallback, Signer, TransactionRequest, TransactionResponse };
 var errors = __importStar(require("../utils/errors"));
-var Signer = /** @class */ (function () {
-    function Signer() {
-    }
-    return Signer;
-}());
-exports.Signer = Signer;
 var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);
     function Wallet(privateKey, provider) {
@@ -15446,7 +15468,13 @@ var Wallet = /** @class */ (function (_super) {
     Wallet.fromEncryptedJson = function (json, password, progressCallback) {
         if (secretStorage.isCrowdsaleWallet(json)) {
             try {
+                if (progressCallback) {
+                    progressCallback(0);
+                }
                 var privateKey = secretStorage.decryptCrowdsale(json, password);
+                if (progressCallback) {
+                    progressCallback(1);
+                }
                 return Promise.resolve(new Wallet(privateKey));
             }
             catch (error) {
@@ -15495,12 +15523,12 @@ var Wallet = /** @class */ (function (_super) {
         });
     };
     return Wallet;
-}(Signer));
+}(types_1.Signer));
 exports.Wallet = Wallet;
 
-},{"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/keccak256":65,"../utils/properties":66,"../utils/random-bytes":44,"../utils/secp256k1":68,"../utils/transaction":71,"./hdnode":75,"./secret-storage":77,"./signing-key":78}],80:[function(require,module,exports){
-module.exports = { }
-},{}],81:[function(require,module,exports){
+},{"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/keccak256":65,"../utils/properties":66,"../utils/random-bytes":44,"../utils/secp256k1":68,"../utils/transaction":71,"../utils/types":72,"./hdnode":76,"./secret-storage":78,"./signing-key":79}],81:[function(require,module,exports){
+module.exports = { en: require('./lang-en').langEn }
+},{"./lang-en":82}],82:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -15516,11 +15544,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var wordlist_1 = require("./wordlist");
 var words = "AbandonAbilityAbleAboutAboveAbsentAbsorbAbstractAbsurdAbuseAccessAccidentAccountAccuseAchieveAcidAcousticAcquireAcrossActActionActorActressActualAdaptAddAddictAddressAdjustAdmitAdultAdvanceAdviceAerobicAffairAffordAfraidAgainAgeAgentAgreeAheadAimAirAirportAisleAlarmAlbumAlcoholAlertAlienAllAlleyAllowAlmostAloneAlphaAlreadyAlsoAlterAlwaysAmateurAmazingAmongAmountAmusedAnalystAnchorAncientAngerAngleAngryAnimalAnkleAnnounceAnnualAnotherAnswerAntennaAntiqueAnxietyAnyApartApologyAppearAppleApproveAprilArchArcticAreaArenaArgueArmArmedArmorArmyAroundArrangeArrestArriveArrowArtArtefactArtistArtworkAskAspectAssaultAssetAssistAssumeAsthmaAthleteAtomAttackAttendAttitudeAttractAuctionAuditAugustAuntAuthorAutoAutumnAverageAvocadoAvoidAwakeAwareAwayAwesomeAwfulAwkwardAxisBabyBachelorBaconBadgeBagBalanceBalconyBallBambooBananaBannerBarBarelyBargainBarrelBaseBasicBasketBattleBeachBeanBeautyBecauseBecomeBeefBeforeBeginBehaveBehindBelieveBelowBeltBenchBenefitBestBetrayBetterBetweenBeyondBicycleBidBikeBindBiologyBirdBirthBitterBlackBladeBlameBlanketBlastBleakBlessBlindBloodBlossomBlouseBlueBlurBlushBoardBoatBodyBoilBombBoneBonusBookBoostBorderBoringBorrowBossBottomBounceBoxBoyBracketBrainBrandBrassBraveBreadBreezeBrickBridgeBriefBrightBringBriskBroccoliBrokenBronzeBroomBrotherBrownBrushBubbleBuddyBudgetBuffaloBuildBulbBulkBulletBundleBunkerBurdenBurgerBurstBusBusinessBusyButterBuyerBuzzCabbageCabinCableCactusCageCakeCallCalmCameraCampCanCanalCancelCandyCannonCanoeCanvasCanyonCapableCapitalCaptainCarCarbonCardCargoCarpetCarryCartCaseCashCasinoCastleCasualCatCatalogCatchCategoryCattleCaughtCauseCautionCaveCeilingCeleryCementCensusCenturyCerealCertainChairChalkChampionChangeChaosChapterChargeChaseChatCheapCheckCheeseChefCherryChestChickenChiefChildChimneyChoiceChooseChronicChuckleChunkChurnCigarCinnamonCircleCitizenCityCivilClaimClapClarifyClawClayCleanClerkCleverClickClientCliffClimbClinicClipClockClogCloseClothCloudClownClubClumpClusterClutchCoachCoastCoconutCodeCoffeeCoilCoinCollectColorColumnCombineComeComfortComicCommonCompanyConcertConductConfirmCongressConnectConsiderControlConvinceCookCoolCopperCopyCoralCoreCornCorrectCostCottonCouchCountryCoupleCourseCousinCoverCoyoteCrackCradleCraftCramCraneCrashCraterCrawlCrazyCreamCreditCreekCrewCricketCrimeCrispCriticCropCrossCrouchCrowdCrucialCruelCruiseCrumbleCrunchCrushCryCrystalCubeCultureCupCupboardCuriousCurrentCurtainCurveCushionCustomCuteCycleDadDamageDampDanceDangerDaringDashDaughterDawnDayDealDebateDebrisDecadeDecemberDecideDeclineDecorateDecreaseDeerDefenseDefineDefyDegreeDelayDeliverDemandDemiseDenialDentistDenyDepartDependDepositDepthDeputyDeriveDescribeDesertDesignDeskDespairDestroyDetailDetectDevelopDeviceDevoteDiagramDialDiamondDiaryDiceDieselDietDifferDigitalDignityDilemmaDinnerDinosaurDirectDirtDisagreeDiscoverDiseaseDishDismissDisorderDisplayDistanceDivertDivideDivorceDizzyDoctorDocumentDogDollDolphinDomainDonateDonkeyDonorDoorDoseDoubleDoveDraftDragonDramaDrasticDrawDreamDressDriftDrillDrinkDripDriveDropDrumDryDuckDumbDuneDuringDustDutchDutyDwarfDynamicEagerEagleEarlyEarnEarthEasilyEastEasyEchoEcologyEconomyEdgeEditEducateEffortEggEightEitherElbowElderElectricElegantElementElephantElevatorEliteElseEmbarkEmbodyEmbraceEmergeEmotionEmployEmpowerEmptyEnableEnactEndEndlessEndorseEnemyEnergyEnforceEngageEngineEnhanceEnjoyEnlistEnoughEnrichEnrollEnsureEnterEntireEntryEnvelopeEpisodeEqualEquipEraEraseErodeErosionErrorEruptEscapeEssayEssenceEstateEternalEthicsEvidenceEvilEvokeEvolveExactExampleExcessExchangeExciteExcludeExcuseExecuteExerciseExhaustExhibitExileExistExitExoticExpandExpectExpireExplainExposeExpressExtendExtraEyeEyebrowFabricFaceFacultyFadeFaintFaithFallFalseFameFamilyFamousFanFancyFantasyFarmFashionFatFatalFatherFatigueFaultFavoriteFeatureFebruaryFederalFeeFeedFeelFemaleFenceFestivalFetchFeverFewFiberFictionFieldFigureFileFilmFilterFinalFindFineFingerFinishFireFirmFirstFiscalFishFitFitnessFixFlagFlameFlashFlatFlavorFleeFlightFlipFloatFlockFloorFlowerFluidFlushFlyFoamFocusFogFoilFoldFollowFoodFootForceForestForgetForkFortuneForumForwardFossilFosterFoundFoxFragileFrameFrequentFreshFriendFringeFrogFrontFrostFrownFrozenFruitFuelFunFunnyFurnaceFuryFutureGadgetGainGalaxyGalleryGameGapGarageGarbageGardenGarlicGarmentGasGaspGateGatherGaugeGazeGeneralGeniusGenreGentleGenuineGestureGhostGiantGiftGiggleGingerGiraffeGirlGiveGladGlanceGlareGlassGlideGlimpseGlobeGloomGloryGloveGlowGlueGoatGoddessGoldGoodGooseGorillaGospelGossipGovernGownGrabGraceGrainGrantGrapeGrassGravityGreatGreenGridGriefGritGroceryGroupGrowGruntGuardGuessGuideGuiltGuitarGunGymHabitHairHalfHammerHamsterHandHappyHarborHardHarshHarvestHatHaveHawkHazardHeadHealthHeartHeavyHedgehogHeightHelloHelmetHelpHenHeroHiddenHighHillHintHipHireHistoryHobbyHockeyHoldHoleHolidayHollowHomeHoneyHoodHopeHornHorrorHorseHospitalHostHotelHourHoverHubHugeHumanHumbleHumorHundredHungryHuntHurdleHurryHurtHusbandHybridIceIconIdeaIdentifyIdleIgnoreIllIllegalIllnessImageImitateImmenseImmuneImpactImposeImproveImpulseInchIncludeIncomeIncreaseIndexIndicateIndoorIndustryInfantInflictInformInhaleInheritInitialInjectInjuryInmateInnerInnocentInputInquiryInsaneInsectInsideInspireInstallIntactInterestIntoInvestInviteInvolveIronIslandIsolateIssueItemIvoryJacketJaguarJarJazzJealousJeansJellyJewelJobJoinJokeJourneyJoyJudgeJuiceJumpJungleJuniorJunkJustKangarooKeenKeepKetchupKeyKickKidKidneyKindKingdomKissKitKitchenKiteKittenKiwiKneeKnifeKnockKnowLabLabelLaborLadderLadyLakeLampLanguageLaptopLargeLaterLatinLaughLaundryLavaLawLawnLawsuitLayerLazyLeaderLeafLearnLeaveLectureLeftLegLegalLegendLeisureLemonLendLengthLensLeopardLessonLetterLevelLiarLibertyLibraryLicenseLifeLiftLightLikeLimbLimitLinkLionLiquidListLittleLiveLizardLoadLoanLobsterLocalLockLogicLonelyLongLoopLotteryLoudLoungeLoveLoyalLuckyLuggageLumberLunarLunchLuxuryLyricsMachineMadMagicMagnetMaidMailMainMajorMakeMammalManManageMandateMangoMansionManualMapleMarbleMarchMarginMarineMarketMarriageMaskMassMasterMatchMaterialMathMatrixMatterMaximumMazeMeadowMeanMeasureMeatMechanicMedalMediaMelodyMeltMemberMemoryMentionMenuMercyMergeMeritMerryMeshMessageMetalMethodMiddleMidnightMilkMillionMimicMindMinimumMinorMinuteMiracleMirrorMiseryMissMistakeMixMixedMixtureMobileModelModifyMomMomentMonitorMonkeyMonsterMonthMoonMoralMoreMorningMosquitoMotherMotionMotorMountainMouseMoveMovieMuchMuffinMuleMultiplyMuscleMuseumMushroomMusicMustMutualMyselfMysteryMythNaiveNameNapkinNarrowNastyNationNatureNearNeckNeedNegativeNeglectNeitherNephewNerveNestNetNetworkNeutralNeverNewsNextNiceNightNobleNoiseNomineeNoodleNormalNorthNoseNotableNoteNothingNoticeNovelNowNuclearNumberNurseNutOakObeyObjectObligeObscureObserveObtainObviousOccurOceanOctoberOdorOffOfferOfficeOftenOilOkayOldOliveOlympicOmitOnceOneOnionOnlineOnlyOpenOperaOpinionOpposeOptionOrangeOrbitOrchardOrderOrdinaryOrganOrientOriginalOrphanOstrichOtherOutdoorOuterOutputOutsideOvalOvenOverOwnOwnerOxygenOysterOzonePactPaddlePagePairPalacePalmPandaPanelPanicPantherPaperParadeParentParkParrotPartyPassPatchPathPatientPatrolPatternPausePavePaymentPeacePeanutPearPeasantPelicanPenPenaltyPencilPeoplePepperPerfectPermitPersonPetPhonePhotoPhrasePhysicalPianoPicnicPicturePiecePigPigeonPillPilotPinkPioneerPipePistolPitchPizzaPlacePlanetPlasticPlatePlayPleasePledgePluckPlugPlungePoemPoetPointPolarPolePolicePondPonyPoolPopularPortionPositionPossiblePostPotatoPotteryPovertyPowderPowerPracticePraisePredictPreferPreparePresentPrettyPreventPricePridePrimaryPrintPriorityPrisonPrivatePrizeProblemProcessProduceProfitProgramProjectPromoteProofPropertyProsperProtectProudProvidePublicPuddingPullPulpPulsePumpkinPunchPupilPuppyPurchasePurityPurposePursePushPutPuzzlePyramidQualityQuantumQuarterQuestionQuickQuitQuizQuoteRabbitRaccoonRaceRackRadarRadioRailRainRaiseRallyRampRanchRandomRangeRapidRareRateRatherRavenRawRazorReadyRealReasonRebelRebuildRecallReceiveRecipeRecordRecycleReduceReflectReformRefuseRegionRegretRegularRejectRelaxReleaseReliefRelyRemainRememberRemindRemoveRenderRenewRentReopenRepairRepeatReplaceReportRequireRescueResembleResistResourceResponseResultRetireRetreatReturnReunionRevealReviewRewardRhythmRibRibbonRiceRichRideRidgeRifleRightRigidRingRiotRippleRiskRitualRivalRiverRoadRoastRobotRobustRocketRomanceRoofRookieRoomRoseRotateRoughRoundRouteRoyalRubberRudeRugRuleRunRunwayRuralSadSaddleSadnessSafeSailSaladSalmonSalonSaltSaluteSameSampleSandSatisfySatoshiSauceSausageSaveSayScaleScanScareScatterSceneSchemeSchoolScienceScissorsScorpionScoutScrapScreenScriptScrubSeaSearchSeasonSeatSecondSecretSectionSecuritySeedSeekSegmentSelectSellSeminarSeniorSenseSentenceSeriesServiceSessionSettleSetupSevenShadowShaftShallowShareShedShellSheriffShieldShiftShineShipShiverShockShoeShootShopShortShoulderShoveShrimpShrugShuffleShySiblingSickSideSiegeSightSignSilentSilkSillySilverSimilarSimpleSinceSingSirenSisterSituateSixSizeSkateSketchSkiSkillSkinSkirtSkullSlabSlamSleepSlenderSliceSlideSlightSlimSloganSlotSlowSlushSmallSmartSmileSmokeSmoothSnackSnakeSnapSniffSnowSoapSoccerSocialSockSodaSoftSolarSoldierSolidSolutionSolveSomeoneSongSoonSorrySortSoulSoundSoupSourceSouthSpaceSpareSpatialSpawnSpeakSpecialSpeedSpellSpendSphereSpiceSpiderSpikeSpinSpiritSplitSpoilSponsorSpoonSportSpotSpraySpreadSpringSpySquareSqueezeSquirrelStableStadiumStaffStageStairsStampStandStartStateStaySteakSteelStemStepStereoStickStillStingStockStomachStoneStoolStoryStoveStrategyStreetStrikeStrongStruggleStudentStuffStumbleStyleSubjectSubmitSubwaySuccessSuchSuddenSufferSugarSuggestSuitSummerSunSunnySunsetSuperSupplySupremeSureSurfaceSurgeSurpriseSurroundSurveySuspectSustainSwallowSwampSwapSwarmSwearSweetSwiftSwimSwingSwitchSwordSymbolSymptomSyrupSystemTableTackleTagTailTalentTalkTankTapeTargetTaskTasteTattooTaxiTeachTeamTellTenTenantTennisTentTermTestTextThankThatThemeThenTheoryThereTheyThingThisThoughtThreeThriveThrowThumbThunderTicketTideTigerTiltTimberTimeTinyTipTiredTissueTitleToastTobaccoTodayToddlerToeTogetherToiletTokenTomatoTomorrowToneTongueTonightToolToothTopTopicToppleTorchTornadoTortoiseTossTotalTouristTowardTowerTownToyTrackTradeTrafficTragicTrainTransferTrapTrashTravelTrayTreatTreeTrendTrialTribeTrickTriggerTrimTripTrophyTroubleTruckTrueTrulyTrumpetTrustTruthTryTubeTuitionTumbleTunaTunnelTurkeyTurnTurtleTwelveTwentyTwiceTwinTwistTwoTypeTypicalUglyUmbrellaUnableUnawareUncleUncoverUnderUndoUnfairUnfoldUnhappyUniformUniqueUnitUniverseUnknownUnlockUntilUnusualUnveilUpdateUpgradeUpholdUponUpperUpsetUrbanUrgeUsageUseUsedUsefulUselessUsualUtilityVacantVacuumVagueValidValleyValveVanVanishVaporVariousVastVaultVehicleVelvetVendorVentureVenueVerbVerifyVersionVeryVesselVeteranViableVibrantViciousVictoryVideoViewVillageVintageViolinVirtualVirusVisaVisitVisualVitalVividVocalVoiceVoidVolcanoVolumeVoteVoyageWageWagonWaitWalkWallWalnutWantWarfareWarmWarriorWashWaspWasteWaterWaveWayWealthWeaponWearWeaselWeatherWebWeddingWeekendWeirdWelcomeWestWetWhaleWhatWheatWheelWhenWhereWhipWhisperWideWidthWifeWildWillWinWindowWineWingWinkWinnerWinterWireWisdomWiseWishWitnessWolfWomanWonderWoodWoolWordWorkWorldWorryWorthWrapWreckWrestleWristWriteWrongYardYearYellowYouYoungYouthZebraZeroZoneZoo";
 var wordlist = null;
-function loadWords() {
+function loadWords(lang) {
     if (wordlist != null) {
         return;
     }
     wordlist = words.replace(/([A-Z])/g, ' $1').toLowerCase().substring(1).split(' ');
+    if (wordlist_1.check(lang) !== '0x3c8acc1e7b08d8e76f9fda015ef48dc8c710a73cb7e0f77b2c18a9b5a7adde60') {
+        wordlist = null;
+        throw new Error('BIP39 Wordlist for en (English) FAILED');
+    }
 }
 var LangEn = /** @class */ (function (_super) {
     __extends(LangEn, _super);
@@ -15528,11 +15560,11 @@ var LangEn = /** @class */ (function (_super) {
         return _super.call(this, 'en') || this;
     }
     LangEn.prototype.getWord = function (index) {
-        loadWords();
+        loadWords(this);
         return wordlist[index];
     };
     LangEn.prototype.getWordIndex = function (word) {
-        loadWords();
+        loadWords(this);
         return wordlist.indexOf(word);
     };
     return LangEn;
@@ -15541,13 +15573,26 @@ var langEn = new LangEn();
 exports.langEn = langEn;
 wordlist_1.register(langEn);
 
-},{"./wordlist":82}],82:[function(require,module,exports){
+},{"./wordlist":83}],83:[function(require,module,exports){
 (function (global){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // This gets overriddenby gulp during bip39-XX
 var exportWordlist = false;
+var hash_1 = require("../utils/hash");
 var properties_1 = require("../utils/properties");
+function check(wordlist) {
+    var words = [];
+    for (var i = 0; i < 2048; i++) {
+        var word = wordlist.getWord(i);
+        if (i !== wordlist.getWordIndex(word)) {
+            return '0x';
+        }
+        words.push(word);
+    }
+    return hash_1.id(words.join('\n') + '\n');
+}
+exports.check = check;
 var Wordlist = /** @class */ (function () {
     function Wordlist(locale) {
         properties_1.defineReadOnly(this, 'locale', locale);
@@ -15563,12 +15608,23 @@ var Wordlist = /** @class */ (function () {
     return Wordlist;
 }());
 exports.Wordlist = Wordlist;
-function register(lang) {
+function register(lang, name) {
+    if (!name) {
+        name = lang.locale;
+    }
     if (exportWordlist) {
-        if (!global.wordlists) {
-            properties_1.defineReadOnly(global, 'wordlists', {});
+        var g = global;
+        if (!(g.wordlists)) {
+            properties_1.defineReadOnly(g, 'wordlists', {});
         }
-        properties_1.defineReadOnly(global.wordlists, lang.locale, lang);
+        if (!g.wordlists[name]) {
+            properties_1.defineReadOnly(g.wordlists, name, lang);
+        }
+        if (g.ethers && g.ethers.wordlists) {
+            if (!g.ethers.wordlists[name]) {
+                properties_1.defineReadOnly(g.ethers.wordlists, name, lang);
+            }
+        }
     }
 }
 exports.register = register;
@@ -15576,11 +15632,8 @@ exports.register = register;
 
 exportWordlist = true;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../utils/properties":66}],83:[function(require,module,exports){
+},{"../utils/hash":63,"../utils/properties":66}],84:[function(require,module,exports){
 'use strict';
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -15589,26 +15642,28 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var utils_1 = __importDefault(require("./utils"));
-exports.utils = utils_1.default;
 var contracts_1 = require("./contracts");
 exports.Contract = contracts_1.Contract;
 exports.Interface = contracts_1.Interface;
-var providers_1 = __importDefault(require("./providers"));
-exports.providers = providers_1.default;
-var errors = __importStar(require("./utils/errors"));
-exports.errors = errors;
+var providers = __importStar(require("./providers"));
+exports.providers = providers;
 var networks_1 = require("./providers/networks");
 exports.getNetwork = networks_1.getNetwork;
+var utils = __importStar(require("./utils"));
+exports.utils = utils;
 var wallet_1 = require("./wallet");
 exports.HDNode = wallet_1.HDNode;
 exports.SigningKey = wallet_1.SigningKey;
 exports.Wallet = wallet_1.Wallet;
 var wordlists = __importStar(require("./wordlists"));
 exports.wordlists = wordlists;
+var types = __importStar(require("./utils/types"));
+exports.types = types;
+var errors = __importStar(require("./utils/errors"));
+exports.errors = errors;
 var _version_1 = require("./_version");
 exports.version = _version_1.version;
-var constants = utils_1.default.constants;
+var constants = utils.constants;
 exports.constants = constants;
 exports.default = {
     Wallet: wallet_1.Wallet,
@@ -15617,13 +15672,14 @@ exports.default = {
     Contract: contracts_1.Contract,
     Interface: contracts_1.Interface,
     getNetwork: networks_1.getNetwork,
-    providers: providers_1.default,
+    providers: providers,
+    types: types,
     errors: errors,
     constants: constants,
-    utils: utils_1.default,
+    utils: utils,
     wordlists: wordlists,
     version: _version_1.version
 };
 
-},{"./_version":46,"./contracts":48,"./providers":52,"./providers/networks":55,"./utils":64,"./utils/errors":62,"./wallet":76,"./wordlists":80}]},{},[83])(83)
+},{"./_version":46,"./contracts":48,"./providers":52,"./providers/networks":55,"./utils":64,"./utils/errors":62,"./utils/types":72,"./wallet":77,"./wordlists":81}]},{},[84])(84)
 });

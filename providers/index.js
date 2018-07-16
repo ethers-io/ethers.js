@@ -22,14 +22,3 @@ function getDefaultProvider(network) {
     ]);
 }
 exports.getDefaultProvider = getDefaultProvider;
-exports.default = {
-    Provider: provider_1.Provider,
-    getDefaultProvider: getDefaultProvider,
-    FallbackProvider: fallback_provider_1.FallbackProvider,
-    EtherscanProvider: etherscan_provider_1.EtherscanProvider,
-    InfuraProvider: infura_provider_1.InfuraProvider,
-    JsonRpcProvider: json_rpc_provider_1.JsonRpcProvider,
-    Web3Provider: web3_provider_1.Web3Provider,
-    IpcProvider: ipc_provider_1.IpcProvider,
-    JsonRpcSigner: json_rpc_provider_1.JsonRpcSigner
-};

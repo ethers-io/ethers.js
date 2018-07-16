@@ -26,7 +26,7 @@ var hash_1 = require("../utils/hash");
 var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
 var types_1 = require("../utils/types");
-exports.Indexed = types_1.Indexed;
+//export { DeployDescription, EventDescription, FunctionDescription, Indexed };
 var errors = __importStar(require("../utils/errors"));
 var _Indexed = /** @class */ (function (_super) {
     __extends(_Indexed, _super);
