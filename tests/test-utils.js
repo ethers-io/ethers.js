@@ -55,6 +55,7 @@ describe('Test Contract Address Generation', function() {
 
     Tests.forEach(function(test) {
         it(('Computes the transaction address - ' + test.name), function() {
+            this.timeout(120000);
             assert.equal(getContractAddress(test.tx), test.address, 'computes the transaction address');
         });
     });
@@ -67,12 +68,14 @@ describe('Test RLP Coder', function () {
 
     tests.forEach(function(test) {
         it(('RLP coder encoded - ' + test.name), function() {
+            this.timeout(120000);
             assert.equal(rlp.encode(test.decoded), test.encoded, 'RLP encoded - ' + test.name);
         });
     });
 
     tests.forEach(function(test) {
         it(('RLP coder decoded - ' + test.name), function() {
+            this.timeout(120000);
             assert.ok(equals(rlp.decode(test.encoded), test.decoded),
                 'RLP decoded - ' + test.name);
         });
@@ -109,6 +112,7 @@ describe('Test Unit Conversion', function () {
 
             if (test[name]) {
                 it(('parses ' + test[name] + ' ' + name), function() {
+                    this.timeout(120000);
                     assert.ok(ethers.utils.parseUnits(test[name], unitName).eq(wei),
                         ('parsing ' + name + ' failed - ' + test.name));
                 });
@@ -130,6 +134,7 @@ describe('Test Namehash', function() {
     var tests = utils.loadTests('namehash');
     tests.forEach(function(test) {
         it(('computes namehash - "' + test.name + '"'), function() {
+            this.timeout(120000);
             assert.equal(ethers.utils.namehash(test.name), test.expected,
                 'computes namehash(' + test.name + ')');
         });
@@ -147,6 +152,7 @@ describe('Test ID Hash Function', function () {
 
     tests.forEach(function(test) {
         it(('computes id - ' + test.name), function() {
+            this.timeout(120000);
             var value = ethers.utils.id(test.text);
             assert.equal(value, test.expected,
                 'computes id(' + test.text + ')');
@@ -158,6 +164,8 @@ describe('Test Solidity Hash Functions', function() {
     var tests = utils.loadTests('solidity-hashes');
     ['Keccak256', 'Sha256'].forEach(function(funcName) {
         it(('computes ' + funcName + ' correctly'), function() {
+            this.timeout(120000);
+
             tests.forEach(function(test, index) {
                 var result = ethers.utils['solidity' + funcName](test.types, test.values);
                 assert.equal(result, test[funcName.toLowerCase()],
@@ -172,12 +180,14 @@ describe('Test Hash Functions', function() {
     var tests = utils.loadTests('hashes');
 
     it('computes keccak256 correctly', function() {
+        this.timeout(120000);
         tests.forEach(function(test) {
             assert.equal(ethers.utils.keccak256(test.data), test.keccak256, ('Keccak256 - ' + test.data));
         });
     });
 
     it('computes sha2566 correctly', function() {
+        this.timeout(120000);
         tests.forEach(function(test) {
             assert.equal(ethers.utils.sha256(test.data), test.sha256, ('SHA256 - ' + test.data));
         });
@@ -187,6 +197,7 @@ describe('Test Hash Functions', function() {
 describe('Test Solidity splitSignature', function() {
 
     it('splits a canonical signature', function() {
+        this.timeout(120000);
         var r = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
         var s = '0xcafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7e';
         for (var v = 27; v <= 28; v++) {
@@ -199,6 +210,7 @@ describe('Test Solidity splitSignature', function() {
     });
 
     it('splits a legacy signature', function() {
+        this.timeout(120000);
         var r = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
         var s = '0xcafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7e';
         for (var v = 27; v <= 28; v++) {
@@ -215,6 +227,7 @@ describe('Test Base64 coder', function() {
 
     // https://en.wikipedia.org/wiki/Base64#Examples
     it('encodes and decodes the example from wikipedia', function() {
+        this.timeout(120000);
         var decodedText = 'Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure.';
         var decoded = ethers.utils.toUtf8Bytes(decodedText);
         var encoded = 'TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=';

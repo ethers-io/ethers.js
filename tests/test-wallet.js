@@ -15,7 +15,7 @@ describe('Test JSON Wallets', function() {
     var tests = utils.loadTests('wallets');
     tests.forEach(function(test) {
         it(('decrypts wallet - ' + test.name), function() {
-            this.timeout(1000000);
+            this.timeout(120000);
 
             assert.ok(Wallet.isEncryptedWallet(test.json),
                 'detect encrypted JSON wallet');
@@ -38,7 +38,7 @@ describe('Test JSON Wallets', function() {
         var password = 'foobar' + i;
         var wallet = new Wallet(utils.randomHexString('test-' + i, 32));
         it('encrypts and decrypts a random wallet - ' + i, function() {
-            this.timeout(1000000);
+            this.timeout(120000);
 
             return wallet.encrypt(password).then(function(json) {
                 return Wallet.fromEncryptedJson(json, password).then(function(decryptedWallet) {
@@ -102,6 +102,8 @@ describe('Test Transaction Signing and Parsing', function() {
     var tests = utils.loadTests('transactions');
     tests.forEach(function(test) {
         it(('parses and signs transaction - ' + test.name), function() {
+            this.timeout(120000);
+
             var signingKey = new ethers.SigningKey(test.privateKey);
             var signDigest = signingKey.signDigest.bind(signingKey);
 
@@ -213,7 +215,7 @@ describe('Test Signing Messages', function() {
 
     tests.forEach(function(test) {
         it(('signs a message "' + test.name + '"'), function() {
-            this.timeout(1000000);
+            this.timeout(120000);
             var wallet = new Wallet(test.privateKey);
             return wallet.signMessage(test.message).then(function(signature) {
                 assert.equal(signature, test.signature, 'computes message signature');
@@ -223,7 +225,7 @@ describe('Test Signing Messages', function() {
 
     tests.forEach(function(test) {
         it(('verifies a message "' + test.name + '"'), function() {
-            this.timeout(1000000);
+            this.timeout(120000);
             var address = Wallet.verifyMessage(test.message, test.signature);
             assert.equal(address, test.address, 'verifies message signature');
         });
@@ -231,7 +233,7 @@ describe('Test Signing Messages', function() {
 
     tests.forEach(function(test) {
       it(('hashes a message "' + test.name + '"'), function() {
-          this.timeout(1000000);
+          this.timeout(120000);
           var hash = ethers.utils.hashMessage(test.message);
           assert.equal(hash, test.messageHash, 'calculates message hash');
       });

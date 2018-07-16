@@ -110,6 +110,7 @@ describe('ABI Coder Encoding', function() {
         var title = test.name + ' => (' + test.types + ') = (' + test.normalizedValues + ')';
 
         it(('encodes paramters - ' + test.name + ' - ' + test.types), function() {
+            this.timeout(120000);
             var encoded = coder.encode(types, values);
             assert.equal(encoded, result, 'encoded data - ' + title);
         });
@@ -128,6 +129,8 @@ describe('ABI Coder Decoding', function() {
         var title = test.name + ' => (' + test.types + ') = (' + test.normalizedValues + ')';
 
         it(('decodes parameters - ' + test.name + ' - ' + test.types), function() {
+            this.timeout(120000);
+
             var decoded = coder.decode(types, result);
 
             assert.ok(equals(decoded, values), 'decoded parameters - ' + title);
@@ -147,6 +150,8 @@ describe('ABI Coder ABIv2 Encoding', function() {
         var title = test.name + ' => (' + test.types + ') = (' + test.value + ')';
 
         it(('encodes ABIv2 parameters - ' + test.name + ' - ' + test.types), function() {
+            this.timeout(120000);
+
             var encoded = coder.encode(types, values);
             assert.equal(encoded, expected, 'encoded positional parameters - ' + title);
 
@@ -167,6 +172,8 @@ describe('ABI Coder ABIv2 Decoding', function() {
         var title = test.name + ' => (' + test.types + ') = (' + test.values + ')';
 
         it(('decodes ABIv2 parameters - ' + test.name + ' - ' + test.types), function() {
+            this.timeout(120000);
+
             var decoded = coder.decode(types, result);
             assert.ok(equals(decoded, values), 'decoded positional parameters - ' + title);
         });
@@ -178,6 +185,8 @@ describe('Test Contract Events', function() {
     var tests = utils.loadTests('contract-events');
     tests.forEach(function(test, index) {
         it(('decodes event parameters - ' + test.name + ' - ' + test.types), function() {
+            this.timeout(120000);
+
             var contract = new ethers.Interface(test.interface);
             var event = contract.events.testEvent;
             var parsed = event.decode(test.data, test.topics);
@@ -194,6 +203,8 @@ describe('Test Contract Events', function() {
 
     tests.forEach(function(test, index) {
         it(('decodes event data - ' + test.name + ' - ' + test.types), function() {
+            this.timeout(120000);
+
             var contract = new ethers.Interface(test.interface);
             var event = contract.events.testEvent;
             var parsed = event.decode(test.data);
@@ -217,6 +228,8 @@ describe('Test Interface Signatures', function() {
     tests.forEach(function(test) {
         var contract = new Interface(test.abi);
         it('derives the correct signature - ' + test.name, function() {
+            this.timeout(120000);
+
             assert.equal(contract.functions.testSig.signature, test.signature,
                 'derived the correct signature');
             assert.equal(contract.functions.testSig.sighash, test.sigHash,
@@ -228,6 +241,8 @@ describe('Test Interface Signatures', function() {
 describe('Test Invalid Input', function() {
     var coder = ethers.utils.defaultAbiCoder;
     it('null input failed', function() {
+        this.timeout(120000);
+
         assert.throws(function() {
             var result = coder.decode([ 'bool' ], '0x');
             console.log(result);
