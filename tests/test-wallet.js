@@ -15,7 +15,7 @@ describe('Test JSON Wallets', function() {
     var tests = utils.loadTests('wallets');
     tests.forEach(function(test) {
         it(('decrypts wallet - ' + test.name), function() {
-            this.timeout(120000);
+            this.timeout(1200000);
 
             assert.ok(Wallet.isEncryptedWallet(test.json),
                 'detect encrypted JSON wallet');
@@ -38,7 +38,7 @@ describe('Test JSON Wallets', function() {
         var password = 'foobar' + i;
         var wallet = new Wallet(utils.randomHexString('test-' + i, 32));
         it('encrypts and decrypts a random wallet - ' + i, function() {
-            this.timeout(120000);
+            this.timeout(1200000);
 
             return wallet.encrypt(password).then(function(json) {
                 return Wallet.fromEncryptedJson(json, password).then(function(decryptedWallet) {
