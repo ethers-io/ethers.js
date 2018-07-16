@@ -65,7 +65,7 @@ var transforms = {
     "timers-browserify/main.js": timers,
 
     // Browser doesn't automatically get wordlists (individual files avaialble)
-    "src.ts/wordlists/index.ts": "module.exports = { }",
+    "src.ts/wordlists/index.ts": "module.exports = { en: require('./lang-en').langEn }",
 };
 
 function transformFile(path) {
@@ -155,6 +155,7 @@ function transformBip39(path, options) {
                 data = "module.exports = global.ethers.utils.errors";
                 break;
             case '/src.ts/utils/bytes.ts':
+            case '/src.ts/utils/hash.ts':
             case '/src.ts/utils/properties.ts':
             case '/src.ts/utils/utf8.ts':
                 data = "module.exports = global.ethers.utils";
@@ -270,6 +271,12 @@ gulp.task("tests", function() {
     fs.readdirSync('tests/tests/easyseed-bip39').forEach(function(filename) {
         if (!filename.match(/\.json$/)) { return; }
         filename = 'tests/tests/easyseed-bip39/' + filename;
+        data['/' + filename] = fs.readFileSync(filename).toString('base64');
+    });
+
+    fs.readdirSync('tests/wordlist-generation').forEach(function(filename) {
+        if (!filename.match(/\.txt$/)) { return; }
+        filename = 'tests/wordlist-generation/' + filename;
         data['/' + filename] = fs.readFileSync(filename).toString('base64');
     });
 
