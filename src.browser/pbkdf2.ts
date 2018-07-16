@@ -1,7 +1,7 @@
 'use strict';
 
 import { arrayify } from '../src.ts/utils/bytes';
-import { computeHmac } from '../src.ts/utils/hmac';
+import { computeHmac } from './hmac';
 
 import { Arrayish, SupportedAlgorithms } from '../src.ts/utils/types';
 
