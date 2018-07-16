@@ -8,4 +8,5 @@ module.exports = {
     providers: require('./test-providers'),
     utils: require('./test-utils'),
     wallet: require('./test-wallet'),
+    wordlists: require('./test-wordlists'),
 }

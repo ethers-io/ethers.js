@@ -54,6 +54,10 @@
 
         <!-- Load the browser dist ethers package -->
         <script type="text/javascript" src="../dist/ethers.min.js"></script>
+        <script type="text/javascript" src="../dist/wordlist-it.js"></script>
+        <script type="text/javascript" src="../dist/wordlist-ja.js"></script>
+        <script type="text/javascript" src="../dist/wordlist-ko.js"></script>
+        <script type="text/javascript" src="../dist/wordlist-zh.js"></script>
 
         <!-- Our test cases; compiled by browserify -->
         <script src="./dist/tests.js" type="text/javascript"></script>
@@ -61,7 +65,7 @@
         <!-- Run the test cases! -->
         <script type="text/javascript">
             // Use this to focus on specific test cases
-            //mocha.grep(new RegExp('Test Transaction Signing and Parsing parses and signs transaction - random-999')).run();
+            //mocha.grep(new RegExp('wordlists')).run();
             mocha.run();
         </script>
     </body>

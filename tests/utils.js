@@ -103,6 +103,11 @@ function loadJson(filename) {
    return JSON.parse(fs.readFileSync(filename).toString());
 }
 
+function loadText(filename) {
+   var filename = path.resolve(__dirname, filename);
+   return fs.readFileSync(filename).toString();
+}
+
 
 module.exports = {
     randomBytes: randomBytes,
@@ -120,4 +125,5 @@ module.exports = {
     saveTests: saveTests,
 
     loadJson: loadJson,
+    loadText: loadText,
 }
