@@ -17,11 +17,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var networks_1 = require("./networks");
 var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
 var hash_1 = require("../utils/hash");
+var networks_1 = require("../utils/networks");
 var properties_1 = require("../utils/properties");
 var rlp_1 = require("../utils/rlp");
 var transaction_1 = require("../utils/transaction");

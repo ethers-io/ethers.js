@@ -12,8 +12,6 @@ exports.Contract = contracts_1.Contract;
 exports.Interface = contracts_1.Interface;
 var providers = __importStar(require("./providers"));
 exports.providers = providers;
-var networks_1 = require("./providers/networks");
-exports.getNetwork = networks_1.getNetwork;
 var utils = __importStar(require("./utils"));
 exports.utils = utils;
 var wallet_1 = require("./wallet");
@@ -30,13 +28,12 @@ var _version_1 = require("./_version");
 exports.version = _version_1.version;
 var constants = utils.constants;
 exports.constants = constants;
-exports.default = {
+exports.ethers = {
     Wallet: wallet_1.Wallet,
     HDNode: wallet_1.HDNode,
     SigningKey: wallet_1.SigningKey,
     Contract: contracts_1.Contract,
     Interface: contracts_1.Interface,
-    getNetwork: networks_1.getNetwork,
     providers: providers,
     types: types,
     errors: errors,

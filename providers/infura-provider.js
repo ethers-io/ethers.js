@@ -18,7 +18,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var json_rpc_provider_1 = require("./json-rpc-provider");
-var networks_1 = require("./networks");
+var networks_1 = require("../utils/networks");
 var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
 var InfuraProvider = /** @class */ (function (_super) {

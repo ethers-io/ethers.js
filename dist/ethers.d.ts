@@ -3,7 +3,6 @@
 declare module 'ethers' {
     import { Contract, Interface } from 'ethers/contracts';
     import * as providers from 'ethers/providers';
-    import { getNetwork } from 'ethers/providers/networks';
     import * as utils from 'ethers/utils';
     import { HDNode, SigningKey, Wallet } from 'ethers/wallet';
     import * as wordlists from 'ethers/wordlists';
@@ -19,14 +18,13 @@ declare module 'ethers' {
         Two: utils.BigNumber;
         WeiPerEther: utils.BigNumber;
     };
-    export { Wallet, HDNode, SigningKey, Contract, Interface, getNetwork, providers, types, errors, constants, utils, wordlists, version };
-    const _default: {
+    export { Wallet, HDNode, SigningKey, Contract, Interface, providers, types, errors, constants, utils, wordlists, version };
+    export const ethers: {
         Wallet: typeof Wallet;
         HDNode: typeof HDNode;
         SigningKey: typeof SigningKey;
         Contract: typeof Contract;
         Interface: typeof Interface;
-        getNetwork: typeof getNetwork;
         providers: typeof providers;
         types: typeof types;
         errors: typeof utils.errors;
@@ -43,7 +41,6 @@ declare module 'ethers' {
         wordlists: typeof wordlists;
         version: string;
     };
-    export default _default;
 }
 
 declare module 'ethers/contracts' {
@@ -65,18 +62,6 @@ declare module 'ethers/providers' {
     export { Provider, getDefaultProvider, FallbackProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, Web3Provider, IpcProvider, JsonRpcSigner };
 }
 
-declare module 'ethers/providers/networks' {
-    import { Network, Networkish } from 'ethers/utils/types';
-    export { Network, Networkish };
-    /**
-      *  getNetwork
-      *
-      *  Converts a named common networks or chain ID (network ID) to a Network
-      *  and verifies a network is a valid Network..
-      */
-    export function getNetwork(network: Networkish): Network;
-}
-
 declare module 'ethers/utils' {
     import { getAddress, getContractAddress, getIcapAddress } from 'ethers/utils/address';
     import { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from 'ethers/utils/abi-coder';
@@ -88,6 +73,7 @@ declare module 'ethers/utils' {
     import { sha256 } from 'ethers/utils/sha2';
     import { keccak256 as solidityKeccak256, pack as solidityPack, sha256 as soliditySha256 } from 'ethers/utils/solidity';
     import { randomBytes } from 'ethers/utils/random-bytes';
+    import { getNetwork } from 'ethers/utils/networks';
     import { defineFrozen, defineReadOnly, resolveProperties, shallowCopy } from 'ethers/utils/properties';
     import * as RLP from 'ethers/utils/rlp';
     import { parse as parseTransaction, serialize as serializeTransaction } from 'ethers/utils/transaction';
@@ -105,7 +91,7 @@ declare module 'ethers/utils' {
         Two: BigNumber;
         WeiPerEther: BigNumber;
     };
-    export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, constants, RLP, fetchJson, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, etherSymbol, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, BigNumber, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, errors };
+    export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, constants, RLP, fetchJson, getNetwork, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, etherSymbol, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, BigNumber, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, errors };
 }
 
 declare module 'ethers/wallet' {
@@ -125,16 +111,6 @@ declare module 'ethers/wordlists' {
     const zh_cn: Wordlist;
     const zh_tw: Wordlist;
     export { en, it, ja, ko, zh, zh_cn, zh_tw };
-    const _default: {
-        en: Wordlist;
-        it: Wordlist;
-        ja: Wordlist;
-        ko: Wordlist;
-        zh: Wordlist;
-        zh_cn: Wordlist;
-        zh_tw: Wordlist;
-    };
-    export default _default;
 }
 
 declare module 'ethers/utils/types' {
@@ -517,8 +493,8 @@ declare module 'ethers/contracts/interface' {
 }
 
 declare module 'ethers/providers/provider' {
-    import { Network, Networkish } from 'ethers/providers/networks';
     import { BigNumber, BigNumberish } from 'ethers/utils/bignumber';
+    import { Network, Networkish } from 'ethers/utils/networks';
     import { Transaction } from 'ethers/utils/transaction';
     import { MinimalProvider } from 'ethers/utils/types';
     import { Block, BlockTag, EventType, Filter, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from 'ethers/utils/types';
@@ -627,8 +603,8 @@ declare module 'ethers/providers/json-rpc-provider' {
     import { Provider } from 'ethers/providers/provider';
     import { BigNumber } from 'ethers/utils/bignumber';
     import { Arrayish } from 'ethers/utils/bytes';
-    import { BlockTag, Networkish, Signer, TransactionRequest, TransactionResponse } from 'ethers/utils/types';
     import { ConnectionInfo } from 'ethers/utils/web';
+    import { BlockTag, Networkish, Signer, TransactionRequest, TransactionResponse } from 'ethers/utils/types';
     export class JsonRpcSigner extends Signer {
         readonly provider: JsonRpcProvider;
         constructor(provider: JsonRpcProvider, address?: string);
@@ -654,9 +630,8 @@ declare module 'ethers/providers/json-rpc-provider' {
 }
 
 declare module 'ethers/providers/web3-provider' {
-    import { Networkish } from 'ethers/providers/networks';
     import { JsonRpcProvider } from 'ethers/providers/json-rpc-provider';
-    import { AsyncProvider } from 'ethers/utils/types';
+    import { AsyncProvider, Networkish } from 'ethers/utils/types';
     export class Web3Provider extends JsonRpcProvider {
         readonly _web3Provider: AsyncProvider;
         constructor(web3Provider: AsyncProvider, network?: Networkish);
@@ -762,6 +737,18 @@ declare module 'ethers/utils/solidity' {
 
 declare module 'ethers/utils/random-bytes' {
     export function randomBytes(length: number): Uint8Array;
+}
+
+declare module 'ethers/utils/networks' {
+    import { Network, Networkish } from 'ethers/utils/types';
+    export { Network, Networkish };
+    /**
+      *  getNetwork
+      *
+      *  Converts a named common networks or chain ID (network ID) to a Network
+      *  and verifies a network is a valid Network..
+      */
+    export function getNetwork(network: Networkish): Network;
 }
 
 declare module 'ethers/utils/properties' {

@@ -26,13 +26,6 @@ utils.defineProperty(Web3Signer, 'onchange', {
 
 });
 
-export type AsyncProvider = {
-    isMetaMask: boolean;
-    host?: string;
-    path?: string;
-    sendAsync: (request: any, callback: (error: any, response: any) => void) => void
-}
-
 */
 var Web3Provider = /** @class */ (function (_super) {
     __extends(Web3Provider, _super);

@@ -4229,7 +4229,7 @@
 
 },{"buffer":4}],3:[function(require,module,exports){
 var randomBytes = require('../../src.ts/utils').randomBytes; module.exports = function(length) { return randomBytes(length); };
-},{"../../src.ts/utils":64}],4:[function(require,module,exports){
+},{"../../src.ts/utils":63}],4:[function(require,module,exports){
 
 },{}],5:[function(require,module,exports){
 'use strict';
@@ -8722,7 +8722,7 @@ module.exports = {
     }
 };
 
-},{"../src.ts/utils/bytes":61}],41:[function(require,module,exports){
+},{"../src.ts/utils/bytes":60}],41:[function(require,module,exports){
 arguments[4][4][0].apply(exports,arguments)
 },{"dup":4}],42:[function(require,module,exports){
 "use strict";
@@ -8746,7 +8746,7 @@ function computeHmac(algorithm, key, data) {
 }
 exports.computeHmac = computeHmac;
 
-},{"../src.ts/utils/bytes":61,"../src.ts/utils/errors":62,"hash.js":20}],43:[function(require,module,exports){
+},{"../src.ts/utils/bytes":60,"../src.ts/utils/errors":61,"hash.js":20}],43:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("../src.ts/utils/bytes");
@@ -8793,7 +8793,7 @@ function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
 }
 exports.pbkdf2 = pbkdf2;
 
-},{"../src.ts/utils/bytes":61,"../src.ts/utils/hmac":42}],44:[function(require,module,exports){
+},{"../src.ts/utils/bytes":60,"../src.ts/utils/hmac":42}],44:[function(require,module,exports){
 (function (global){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -8834,7 +8834,7 @@ if (crypto._weakCrypto === true) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../src.ts/utils/bytes":61,"../src.ts/utils/properties":66}],45:[function(require,module,exports){
+},{"../src.ts/utils/bytes":60,"../src.ts/utils/properties":66}],45:[function(require,module,exports){
 'use strict';
 try {
     module.exports.XMLHttpRequest = XMLHttpRequest;
@@ -9359,7 +9359,7 @@ var Contract = /** @class */ (function () {
 }());
 exports.Contract = Contract;
 
-},{"../utils/abi-coder":58,"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../utils/types":72,"../utils/web":75,"./interface":49}],48:[function(require,module,exports){
+},{"../utils/abi-coder":57,"../utils/address":58,"../utils/bignumber":59,"../utils/bytes":60,"../utils/errors":61,"../utils/properties":66,"../utils/types":72,"../utils/web":75,"./interface":49}],48:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var contract_1 = require("./contract");
@@ -9751,7 +9751,7 @@ var Interface = /** @class */ (function () {
 }());
 exports.Interface = Interface;
 
-},{"../utils/abi-coder":58,"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/keccak256":65,"../utils/properties":66,"../utils/types":72}],50:[function(require,module,exports){
+},{"../utils/abi-coder":57,"../utils/address":58,"../utils/bignumber":59,"../utils/bytes":60,"../utils/errors":61,"../utils/hash":62,"../utils/keccak256":64,"../utils/properties":66,"../utils/types":72}],50:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10041,7 +10041,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
 }(provider_1.Provider));
 exports.EtherscanProvider = EtherscanProvider;
 
-},{"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../utils/web":75,"./provider":56}],51:[function(require,module,exports){
+},{"../utils/bytes":60,"../utils/errors":61,"../utils/properties":66,"../utils/web":75,"./provider":55}],51:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10153,7 +10153,7 @@ var FallbackProvider = /** @class */ (function (_super) {
 }(provider_1.Provider));
 exports.FallbackProvider = FallbackProvider;
 
-},{"../utils/errors":62,"./provider":56}],52:[function(require,module,exports){
+},{"../utils/errors":61,"./provider":55}],52:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var provider_1 = require("./provider");
@@ -10179,7 +10179,7 @@ function getDefaultProvider(network) {
 }
 exports.getDefaultProvider = getDefaultProvider;
 
-},{"./etherscan-provider":50,"./fallback-provider":51,"./infura-provider":53,"./ipc-provider":41,"./json-rpc-provider":54,"./provider":56,"./web3-provider":57}],53:[function(require,module,exports){
+},{"./etherscan-provider":50,"./fallback-provider":51,"./infura-provider":53,"./ipc-provider":41,"./json-rpc-provider":54,"./provider":55,"./web3-provider":56}],53:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10200,7 +10200,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var json_rpc_provider_1 = require("./json-rpc-provider");
-var networks_1 = require("./networks");
+var networks_1 = require("../utils/networks");
 var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../utils/errors"));
 var InfuraProvider = /** @class */ (function (_super) {
@@ -10244,7 +10244,7 @@ var InfuraProvider = /** @class */ (function (_super) {
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.InfuraProvider = InfuraProvider;
 
-},{"../utils/errors":62,"../utils/properties":66,"./json-rpc-provider":54,"./networks":55}],54:[function(require,module,exports){
+},{"../utils/errors":61,"../utils/networks":65,"../utils/properties":66,"./json-rpc-provider":54}],54:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10265,14 +10265,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
-var networks_1 = require("./networks");
 var provider_1 = require("./provider");
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
+var networks_1 = require("../utils/networks");
 var properties_1 = require("../utils/properties");
-var types_1 = require("../utils/types");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
+var types_1 = require("../utils/types");
 var errors = __importStar(require("../utils/errors"));
 function timer(timeout) {
     return new Promise(function (resolve) {
@@ -10556,109 +10556,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
 }(provider_1.Provider));
 exports.JsonRpcProvider = JsonRpcProvider;
 
-},{"../utils/address":59,"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../utils/types":72,"../utils/utf8":74,"../utils/web":75,"./networks":55,"./provider":56}],55:[function(require,module,exports){
-'use strict';
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("../utils/errors"));
-var homestead = {
-    chainId: 1,
-    ensAddress: "0x314159265dd8dbb310642f98f50c066173c1259b",
-    name: "homestead"
-};
-var ropsten = {
-    chainId: 3,
-    ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
-    name: "ropsten"
-};
-var networks = {
-    unspecified: {
-        chainId: 0
-    },
-    homestead: homestead,
-    mainnet: homestead,
-    morden: {
-        chainId: 2
-    },
-    ropsten: ropsten,
-    testnet: ropsten,
-    rinkeby: {
-        chainId: 4,
-        ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A"
-    },
-    kovan: {
-        chainId: 42
-    },
-    classic: {
-        chainId: 61
-    }
-};
-/**
- *  getNetwork
- *
- *  Converts a named common networks or chain ID (network ID) to a Network
- *  and verifies a network is a valid Network..
- */
-function getNetwork(network) {
-    // No network (null) or unspecified (chainId = 0)
-    if (!network) {
-        return null;
-    }
-    if (typeof (network) === 'number') {
-        for (var name in networks) {
-            var n_1 = networks[name];
-            if (n_1.chainId === network) {
-                return {
-                    name: name,
-                    chainId: n_1.chainId,
-                    ensAddress: n_1.ensAddress
-                };
-            }
-        }
-        return {
-            chainId: network,
-            name: 'unknown'
-        };
-    }
-    if (typeof (network) === 'string') {
-        var n_2 = networks[network];
-        if (n_2 == null) {
-            return null;
-        }
-        return {
-            name: network,
-            chainId: n_2.chainId,
-            ensAddress: n_2.ensAddress
-        };
-    }
-    var n = networks[network.name];
-    // Not a standard network; check that it is a valid network in general
-    if (!n) {
-        if (typeof (n.chainId) !== 'number') {
-            errors.throwError('invalid network chainId', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
-        }
-        return network;
-    }
-    // Make sure the chainId matches the expected network chainId (or is 0; disable EIP-155)
-    if (network.chainId !== 0 && network.chainId !== n.chainId) {
-        errors.throwError('network chainId mismatch', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
-    }
-    // Standard Network
-    return {
-        name: network.name,
-        chainId: n.chainId,
-        ensAddress: n.ensAddress
-    };
-}
-exports.getNetwork = getNetwork;
-
-},{"../utils/errors":62}],56:[function(require,module,exports){
+},{"../utils/address":58,"../utils/bytes":60,"../utils/errors":61,"../utils/networks":65,"../utils/properties":66,"../utils/types":72,"../utils/utf8":74,"../utils/web":75,"./provider":55}],55:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10678,11 +10576,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var networks_1 = require("./networks");
 var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
 var hash_1 = require("../utils/hash");
+var networks_1 = require("../utils/networks");
 var properties_1 = require("../utils/properties");
 var rlp_1 = require("../utils/rlp");
 var transaction_1 = require("../utils/transaction");
@@ -11739,7 +11637,7 @@ function inheritable(parent) {
 }
 properties_1.defineReadOnly(Provider, 'inherits', inheritable(Provider));
 
-},{"../utils/address":59,"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/properties":66,"../utils/rlp":67,"../utils/transaction":71,"../utils/types":72,"../utils/utf8":74,"../utils/web":75,"./networks":55}],57:[function(require,module,exports){
+},{"../utils/address":58,"../utils/bignumber":59,"../utils/bytes":60,"../utils/errors":61,"../utils/hash":62,"../utils/networks":65,"../utils/properties":66,"../utils/rlp":67,"../utils/transaction":71,"../utils/types":72,"../utils/utf8":74,"../utils/web":75}],56:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -11767,13 +11665,6 @@ var errors = __importStar(require("../utils/errors"));
 utils.defineProperty(Web3Signer, 'onchange', {
 
 });
-
-export type AsyncProvider = {
-    isMetaMask: boolean;
-    host?: string;
-    path?: string;
-    sendAsync: (request: any, callback: (error: any, response: any) => void) => void
-}
 
 */
 var Web3Provider = /** @class */ (function (_super) {
@@ -11826,7 +11717,7 @@ var Web3Provider = /** @class */ (function (_super) {
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.Web3Provider = Web3Provider;
 
-},{"../utils/errors":62,"../utils/properties":66,"./json-rpc-provider":54}],58:[function(require,module,exports){
+},{"../utils/errors":61,"../utils/properties":66,"./json-rpc-provider":54}],57:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -12745,7 +12636,7 @@ var AbiCoder = /** @class */ (function () {
 exports.AbiCoder = AbiCoder;
 exports.defaultAbiCoder = new AbiCoder();
 
-},{"./address":59,"./bignumber":60,"./bytes":61,"./errors":62,"./properties":66,"./utf8":74}],59:[function(require,module,exports){
+},{"./address":58,"./bignumber":59,"./bytes":60,"./errors":61,"./properties":66,"./utf8":74}],58:[function(require,module,exports){
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -12871,7 +12762,7 @@ function getContractAddress(transaction) {
 }
 exports.getContractAddress = getContractAddress;
 
-},{"./bytes":61,"./errors":62,"./keccak256":65,"./rlp":67,"bn.js":2}],60:[function(require,module,exports){
+},{"./bytes":60,"./errors":61,"./keccak256":64,"./rlp":67,"bn.js":2}],59:[function(require,module,exports){
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -13055,7 +12946,7 @@ exports.ConstantOne = bigNumberify(1);
 exports.ConstantTwo = bigNumberify(2);
 exports.ConstantWeiPerEther = bigNumberify('1000000000000000000');
 
-},{"./bytes":61,"./errors":62,"./properties":66,"bn.js":2}],61:[function(require,module,exports){
+},{"./bytes":60,"./errors":61,"./properties":66,"bn.js":2}],60:[function(require,module,exports){
 "use strict";
 /**
  *  Conversion Utilities
@@ -13316,7 +13207,7 @@ function joinSignature(signature) {
 }
 exports.joinSignature = joinSignature;
 
-},{"./errors":62}],62:[function(require,module,exports){
+},{"./errors":61}],61:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 // Unknown Error
@@ -13420,7 +13311,7 @@ function setCensorship(censorship, permanent) {
 }
 exports.setCensorship = setCensorship;
 
-},{}],63:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
@@ -13462,7 +13353,7 @@ function hashMessage(message) {
 }
 exports.hashMessage = hashMessage;
 
-},{"./bytes":61,"./keccak256":65,"./utf8":74}],64:[function(require,module,exports){
+},{"./bytes":60,"./keccak256":64,"./utf8":74}],63:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13515,6 +13406,8 @@ exports.solidityPack = solidity_1.pack;
 exports.soliditySha256 = solidity_1.sha256;
 var random_bytes_1 = require("./random-bytes");
 exports.randomBytes = random_bytes_1.randomBytes;
+var networks_1 = require("./networks");
+exports.getNetwork = networks_1.getNetwork;
 var properties_1 = require("./properties");
 exports.defineFrozen = properties_1.defineFrozen;
 exports.defineReadOnly = properties_1.defineReadOnly;
@@ -13553,7 +13446,7 @@ var constants = {
 };
 exports.constants = constants;
 
-},{"./abi-coder":58,"./address":59,"./base64":40,"./bignumber":60,"./bytes":61,"./errors":62,"./hash":63,"./keccak256":65,"./properties":66,"./random-bytes":44,"./rlp":67,"./sha2":69,"./solidity":70,"./transaction":71,"./units":73,"./utf8":74,"./web":75}],65:[function(require,module,exports){
+},{"./abi-coder":57,"./address":58,"./base64":40,"./bignumber":59,"./bytes":60,"./errors":61,"./hash":62,"./keccak256":64,"./networks":65,"./properties":66,"./random-bytes":44,"./rlp":67,"./sha2":69,"./solidity":70,"./transaction":71,"./units":73,"./utf8":74,"./web":75}],64:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var sha3 = require("js-sha3");
@@ -13563,7 +13456,109 @@ function keccak256(data) {
 }
 exports.keccak256 = keccak256;
 
-},{"./bytes":61,"js-sha3":33}],66:[function(require,module,exports){
+},{"./bytes":60,"js-sha3":33}],65:[function(require,module,exports){
+'use strict';
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var errors = __importStar(require("../utils/errors"));
+var homestead = {
+    chainId: 1,
+    ensAddress: "0x314159265dd8dbb310642f98f50c066173c1259b",
+    name: "homestead"
+};
+var ropsten = {
+    chainId: 3,
+    ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
+    name: "ropsten"
+};
+var networks = {
+    unspecified: {
+        chainId: 0
+    },
+    homestead: homestead,
+    mainnet: homestead,
+    morden: {
+        chainId: 2
+    },
+    ropsten: ropsten,
+    testnet: ropsten,
+    rinkeby: {
+        chainId: 4,
+        ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A"
+    },
+    kovan: {
+        chainId: 42
+    },
+    classic: {
+        chainId: 61
+    }
+};
+/**
+ *  getNetwork
+ *
+ *  Converts a named common networks or chain ID (network ID) to a Network
+ *  and verifies a network is a valid Network..
+ */
+function getNetwork(network) {
+    // No network (null) or unspecified (chainId = 0)
+    if (!network) {
+        return null;
+    }
+    if (typeof (network) === 'number') {
+        for (var name in networks) {
+            var n_1 = networks[name];
+            if (n_1.chainId === network) {
+                return {
+                    name: name,
+                    chainId: n_1.chainId,
+                    ensAddress: n_1.ensAddress
+                };
+            }
+        }
+        return {
+            chainId: network,
+            name: 'unknown'
+        };
+    }
+    if (typeof (network) === 'string') {
+        var n_2 = networks[network];
+        if (n_2 == null) {
+            return null;
+        }
+        return {
+            name: network,
+            chainId: n_2.chainId,
+            ensAddress: n_2.ensAddress
+        };
+    }
+    var n = networks[network.name];
+    // Not a standard network; check that it is a valid network in general
+    if (!n) {
+        if (typeof (n.chainId) !== 'number') {
+            errors.throwError('invalid network chainId', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
+        }
+        return network;
+    }
+    // Make sure the chainId matches the expected network chainId (or is 0; disable EIP-155)
+    if (network.chainId !== 0 && network.chainId !== n.chainId) {
+        errors.throwError('network chainId mismatch', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
+    }
+    // Standard Network
+    return {
+        name: network.name,
+        chainId: n.chainId,
+        ensAddress: n.ensAddress
+    };
+}
+exports.getNetwork = getNetwork;
+
+},{"../utils/errors":61}],66:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 function defineReadOnly(object, name, value) {
@@ -13733,7 +13728,7 @@ function decode(data) {
 }
 exports.decode = decode;
 
-},{"./bytes":61}],68:[function(require,module,exports){
+},{"./bytes":60}],68:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13816,7 +13811,7 @@ function computeAddress(key) {
 }
 exports.computeAddress = computeAddress;
 
-},{"./address":59,"./bytes":61,"./errors":62,"./keccak256":65,"./properties":66,"elliptic":5}],69:[function(require,module,exports){
+},{"./address":58,"./bytes":60,"./errors":61,"./keccak256":64,"./properties":66,"elliptic":5}],69:[function(require,module,exports){
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -13833,7 +13828,7 @@ function sha512(data) {
 }
 exports.sha512 = sha512;
 
-},{"./bytes":61,"hash.js":20}],70:[function(require,module,exports){
+},{"./bytes":60,"hash.js":20}],70:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("./bignumber");
@@ -13926,7 +13921,7 @@ function sha256(types, values) {
 }
 exports.sha256 = sha256;
 
-},{"./bignumber":60,"./bytes":61,"./keccak256":65,"./sha2":69,"./utf8":74}],71:[function(require,module,exports){
+},{"./bignumber":59,"./bytes":60,"./keccak256":64,"./sha2":69,"./utf8":74}],71:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14075,7 +14070,7 @@ function parse(rawTransaction) {
 exports.parse = parse;
 var secp256k1_1 = require("./secp256k1");
 
-},{"./address":59,"./bignumber":60,"./bytes":61,"./errors":62,"./keccak256":65,"./rlp":67,"./secp256k1":68}],72:[function(require,module,exports){
+},{"./address":58,"./bignumber":59,"./bytes":60,"./errors":61,"./keccak256":64,"./rlp":67,"./secp256k1":68}],72:[function(require,module,exports){
 "use strict";
 ///////////////////////////////
 // Bytes
@@ -14267,7 +14262,7 @@ function parseEther(ether) {
 }
 exports.parseEther = parseEther;
 
-},{"./bignumber":60,"./errors":62}],74:[function(require,module,exports){
+},{"./bignumber":59,"./errors":61}],74:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
@@ -14392,7 +14387,7 @@ function toUtf8String(bytes) {
 }
 exports.toUtf8String = toUtf8String;
 
-},{"./bytes":61}],75:[function(require,module,exports){
+},{"./bytes":60}],75:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14567,7 +14562,7 @@ function poll(func, options) {
 }
 exports.poll = poll;
 
-},{"./base64":40,"./errors":62,"./utf8":74,"xmlhttprequest":45}],76:[function(require,module,exports){
+},{"./base64":40,"./errors":61,"./utf8":74,"xmlhttprequest":45}],76:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14801,7 +14796,7 @@ function isValidMnemonic(mnemonic, wordlist) {
 }
 exports.isValidMnemonic = isValidMnemonic;
 
-},{"../utils/bignumber":60,"../utils/bytes":61,"../utils/errors":62,"../utils/hmac":42,"../utils/pbkdf2":43,"../utils/properties":66,"../utils/secp256k1":68,"../utils/sha2":69,"../utils/utf8":74,"../wordlists/lang-en":82}],77:[function(require,module,exports){
+},{"../utils/bignumber":59,"../utils/bytes":60,"../utils/errors":61,"../utils/hmac":42,"../utils/pbkdf2":43,"../utils/properties":66,"../utils/secp256k1":68,"../utils/sha2":69,"../utils/utf8":74,"../wordlists/lang-en":82}],77:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -15245,7 +15240,7 @@ function encrypt(privateKey, password, options, progressCallback) {
 }
 exports.encrypt = encrypt;
 
-},{"../utils/address":59,"../utils/bytes":61,"../utils/keccak256":65,"../utils/pbkdf2":43,"../utils/random-bytes":44,"../utils/utf8":74,"./hdnode":76,"./signing-key":79,"aes-js":1,"scrypt-js":36,"uuid":39}],79:[function(require,module,exports){
+},{"../utils/address":58,"../utils/bytes":60,"../utils/keccak256":64,"../utils/pbkdf2":43,"../utils/random-bytes":44,"../utils/utf8":74,"./hdnode":76,"./signing-key":79,"aes-js":1,"scrypt-js":36,"uuid":39}],79:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -15301,7 +15296,7 @@ var SigningKey = /** @class */ (function () {
 }());
 exports.SigningKey = SigningKey;
 
-},{"../utils/bytes":61,"../utils/errors":62,"../utils/properties":66,"../utils/secp256k1":68,"./hdnode":76}],80:[function(require,module,exports){
+},{"../utils/bytes":60,"../utils/errors":61,"../utils/properties":66,"../utils/secp256k1":68,"./hdnode":76}],80:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -15526,7 +15521,7 @@ var Wallet = /** @class */ (function (_super) {
 }(types_1.Signer));
 exports.Wallet = Wallet;
 
-},{"../utils/bytes":61,"../utils/errors":62,"../utils/hash":63,"../utils/keccak256":65,"../utils/properties":66,"../utils/random-bytes":44,"../utils/secp256k1":68,"../utils/transaction":71,"../utils/types":72,"./hdnode":76,"./secret-storage":78,"./signing-key":79}],81:[function(require,module,exports){
+},{"../utils/bytes":60,"../utils/errors":61,"../utils/hash":62,"../utils/keccak256":64,"../utils/properties":66,"../utils/random-bytes":44,"../utils/secp256k1":68,"../utils/transaction":71,"../utils/types":72,"./hdnode":76,"./secret-storage":78,"./signing-key":79}],81:[function(require,module,exports){
 module.exports = { en: require('./lang-en').langEn }
 },{"./lang-en":82}],82:[function(require,module,exports){
 'use strict';
@@ -15632,7 +15627,7 @@ exports.register = register;
 
 exportWordlist = true;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../utils/hash":63,"../utils/properties":66}],84:[function(require,module,exports){
+},{"../utils/hash":62,"../utils/properties":66}],84:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -15647,8 +15642,6 @@ exports.Contract = contracts_1.Contract;
 exports.Interface = contracts_1.Interface;
 var providers = __importStar(require("./providers"));
 exports.providers = providers;
-var networks_1 = require("./providers/networks");
-exports.getNetwork = networks_1.getNetwork;
 var utils = __importStar(require("./utils"));
 exports.utils = utils;
 var wallet_1 = require("./wallet");
@@ -15665,13 +15658,12 @@ var _version_1 = require("./_version");
 exports.version = _version_1.version;
 var constants = utils.constants;
 exports.constants = constants;
-exports.default = {
+exports.ethers = {
     Wallet: wallet_1.Wallet,
     HDNode: wallet_1.HDNode,
     SigningKey: wallet_1.SigningKey,
     Contract: contracts_1.Contract,
     Interface: contracts_1.Interface,
-    getNetwork: networks_1.getNetwork,
     providers: providers,
     types: types,
     errors: errors,
@@ -15681,5 +15673,5 @@ exports.default = {
     version: _version_1.version
 };
 
-},{"./_version":46,"./contracts":48,"./providers":52,"./providers/networks":55,"./utils":64,"./utils/errors":62,"./utils/types":72,"./wallet":77,"./wordlists":81}]},{},[84])(84)
+},{"./_version":46,"./contracts":48,"./providers":52,"./utils":63,"./utils/errors":61,"./utils/types":72,"./wallet":77,"./wordlists":81}]},{},[84])(84)
 });

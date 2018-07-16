@@ -19,6 +19,3 @@ var zh_cn = lang_zh_1.langZhCn;
 exports.zh_cn = zh_cn;
 var zh_tw = lang_zh_1.langZhTw;
 exports.zh_tw = zh_tw;
-exports.default = {
-    en: en, it: it, ja: ja, ko: ko, zh: zh, zh_cn: zh_cn, zh_tw: zh_tw
-};
