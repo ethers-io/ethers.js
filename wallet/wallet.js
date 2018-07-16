@@ -69,6 +69,9 @@ var Wallet = /** @class */ (function (_super) {
      *  Create a new instance of this Wallet connected to provider.
      */
     Wallet.prototype.connect = function (provider) {
+        if (!(provider instanceof types_1.MinimalProvider)) {
+            errors.throwError('invalid provider', errors.INVALID_ARGUMENT, { argument: 'provider', value: provider });
+        }
         return new Wallet(this.signingKey, provider);
     };
     Wallet.prototype.getAddress = function () {

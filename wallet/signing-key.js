@@ -6,15 +6,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  */
 var bytes_1 = require("../utils/bytes");
-var hdnode_1 = require("./hdnode");
 var properties_1 = require("../utils/properties");
 var secp256k1_1 = require("../utils/secp256k1");
+var types_1 = require("../utils/types");
 var errors = require("../utils/errors");
 var SigningKey = /** @class */ (function () {
     function SigningKey(privateKey) {
         errors.checkNew(this, SigningKey);
         var privateKeyBytes = null;
-        if (privateKey instanceof hdnode_1.HDNode) {
+        if (privateKey instanceof types_1.HDNode) {
             properties_1.defineReadOnly(this, 'mnemonic', privateKey.mnemonic);
             properties_1.defineReadOnly(this, 'path', privateKey.path);
             privateKeyBytes = bytes_1.arrayify(privateKey.privateKey);

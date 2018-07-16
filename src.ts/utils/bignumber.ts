@@ -72,8 +72,8 @@ class BigNumber extends _BigNumber {
                 errors.throwError('overflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'overflow', details: error.message });
             }
 
-        } else if (value instanceof _BigNumber) {
-            defineReadOnly(this, '_hex', value.toHexString());
+        } else if (value instanceof BigNumber) {
+            defineReadOnly(this, '_hex', value._hex);
 
         } else if ((<any>value).toHexString) {
             defineReadOnly(this, '_hex', toHex(toBN((<any>value).toHexString())));
@@ -175,19 +175,13 @@ class BigNumber extends _BigNumber {
     }
 }
 
-/*
-export function isBigNumber(value: any): boolean {
-    return (value instanceof BigNumber);
-}
-*/
-
 export function bigNumberify(value: BigNumberish): _BigNumber {
     if (value instanceof BigNumber) { return value; }
     return new BigNumber(value);
 }
 
-export const ConstantNegativeOne: _BigNumber = bigNumberify(-1);
-export const ConstantZero: _BigNumber = bigNumberify(0);
-export const ConstantOne: _BigNumber = bigNumberify(1);
-export const ConstantTwo: _BigNumber = bigNumberify(2);
-export const ConstantWeiPerEther: _BigNumber = bigNumberify('1000000000000000000');
+export const ConstantNegativeOne = bigNumberify(-1);
+export const ConstantZero = bigNumberify(0);
+export const ConstantOne = bigNumberify(1);
+export const ConstantTwo = bigNumberify(2);
+export const ConstantWeiPerEther = bigNumberify('1000000000000000000');

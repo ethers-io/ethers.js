@@ -2,6 +2,14 @@
 ///////////////////////////////
 // Bytes
 Object.defineProperty(exports, "__esModule", { value: true });
+///////////////////////////////
+// BigNumber
+var BigNumber = /** @class */ (function () {
+    function BigNumber() {
+    }
+    return BigNumber;
+}());
+exports.BigNumber = BigNumber;
 ;
 ;
 ;
@@ -37,3 +45,11 @@ var Signer = /** @class */ (function () {
     return Signer;
 }());
 exports.Signer = Signer;
+///////////////////////////////
+// HDNode
+var HDNode = /** @class */ (function () {
+    function HDNode() {
+    }
+    return HDNode;
+}());
+exports.HDNode = HDNode;

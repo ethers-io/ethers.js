@@ -1,4 +1,14 @@
 'use strict';
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -23,6 +33,7 @@ var hmac_1 = require("../utils/hmac");
 var properties_1 = require("../utils/properties");
 var secp256k1_1 = require("../utils/secp256k1");
 var sha2_1 = require("../utils/sha2");
+var types_1 = require("../utils/types");
 var errors = __importStar(require("../utils/errors"));
 // "Bitcoin seed"
 var MasterSecret = utf8_1.toUtf8Bytes('Bitcoin seed');
@@ -36,7 +47,8 @@ function getLowerMask(bits) {
     return (1 << bits) - 1;
 }
 exports.defaultPath = "m/44'/60'/0'/0/0";
-var HDNode = /** @class */ (function () {
+var HDNode = /** @class */ (function (_super) {
+    __extends(HDNode, _super);
     /**
      *  This constructor should not be called directly.
      *
@@ -45,15 +57,17 @@ var HDNode = /** @class */ (function () {
      *   - fromSeed
      */
     function HDNode(privateKey, chainCode, index, depth, mnemonic, path) {
-        errors.checkNew(this, HDNode);
-        properties_1.defineReadOnly(this, 'keyPair', new secp256k1_1.KeyPair(privateKey));
-        properties_1.defineReadOnly(this, 'privateKey', this.keyPair.privateKey);
-        properties_1.defineReadOnly(this, 'publicKey', this.keyPair.compressedPublicKey);
-        properties_1.defineReadOnly(this, 'chainCode', bytes_1.hexlify(chainCode));
-        properties_1.defineReadOnly(this, 'index', index);
-        properties_1.defineReadOnly(this, 'depth', depth);
-        properties_1.defineReadOnly(this, 'mnemonic', mnemonic);
-        properties_1.defineReadOnly(this, 'path', path);
+        var _this = _super.call(this) || this;
+        errors.checkNew(_this, HDNode);
+        properties_1.defineReadOnly(_this, 'keyPair', new secp256k1_1.KeyPair(privateKey));
+        properties_1.defineReadOnly(_this, 'privateKey', _this.keyPair.privateKey);
+        properties_1.defineReadOnly(_this, 'publicKey', _this.keyPair.compressedPublicKey);
+        properties_1.defineReadOnly(_this, 'chainCode', bytes_1.hexlify(chainCode));
+        properties_1.defineReadOnly(_this, 'index', index);
+        properties_1.defineReadOnly(_this, 'depth', depth);
+        properties_1.defineReadOnly(_this, 'mnemonic', mnemonic);
+        properties_1.defineReadOnly(_this, 'path', path);
+        return _this;
     }
     HDNode.prototype._derive = function (index) {
         // Public parent key -> public child key
@@ -124,8 +138,7 @@ var HDNode = /** @class */ (function () {
         return result;
     };
     return HDNode;
-}());
-exports.HDNode = HDNode;
+}(types_1.HDNode));
 function _fromSeed(seed, mnemonic) {
     var seedArray = bytes_1.arrayify(seed);
     if (seedArray.length < 16 || seedArray.length > 64) {

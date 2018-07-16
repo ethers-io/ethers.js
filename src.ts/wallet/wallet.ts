@@ -13,7 +13,6 @@ import { recoverAddress } from '../utils/secp256k1';
 import { serialize as serializeTransaction } from '../utils/transaction';
 
 import { Arrayish, BigNumber, BlockTag, HDNode, MinimalProvider, ProgressCallback, Signer, TransactionRequest, TransactionResponse, Wordlist } from '../utils/types';
-//export { BlockTag, ProgressCallback, Signer, TransactionRequest, TransactionResponse };
 
 import * as errors from '../utils/errors';
 

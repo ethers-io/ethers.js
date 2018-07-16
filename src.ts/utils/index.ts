@@ -21,6 +21,8 @@ import { toUtf8Bytes, toUtf8String } from './utf8';
 import { formatEther, parseEther, formatUnits, parseUnits } from './units';
 import { fetchJson } from './web';
 
+import * as types from './types';
+
 import * as errors from './errors';
 
 // NFKD (decomposed)
@@ -48,6 +50,7 @@ export {
     parseParamType,
 
     constants,
+    types,
 
     RLP,
 

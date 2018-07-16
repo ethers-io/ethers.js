@@ -26,7 +26,6 @@ var hash_1 = require("../utils/hash");
 var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
 var types_1 = require("../utils/types");
-//export { DeployDescription, EventDescription, FunctionDescription, Indexed };
 var errors = __importStar(require("../utils/errors"));
 var _Indexed = /** @class */ (function (_super) {
     __extends(_Indexed, _super);
@@ -37,8 +36,8 @@ var _Indexed = /** @class */ (function (_super) {
     }
     return _Indexed;
 }(types_1.Indexed));
-var _Description = /** @class */ (function () {
-    function _Description(info) {
+var Description = /** @class */ (function () {
+    function Description(info) {
         for (var key in info) {
             var value = info[key];
             if (value != null && typeof (value) === 'object') {
@@ -49,7 +48,7 @@ var _Description = /** @class */ (function () {
             }
         }
     }
-    return _Description;
+    return Description;
 }());
 var _DeployDescription = /** @class */ (function (_super) {
     __extends(_DeployDescription, _super);
@@ -77,7 +76,7 @@ var _DeployDescription = /** @class */ (function (_super) {
         return null;
     };
     return _DeployDescription;
-}(_Description));
+}(Description));
 var _FunctionDescription = /** @class */ (function (_super) {
     __extends(_FunctionDescription, _super);
     function _FunctionDescription() {
@@ -112,14 +111,14 @@ var _FunctionDescription = /** @class */ (function (_super) {
         }
     };
     return _FunctionDescription;
-}(_Description));
+}(Description));
 var Result = /** @class */ (function (_super) {
     __extends(Result, _super);
     function Result() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     return Result;
-}(_Description));
+}(Description));
 var _EventDescription = /** @class */ (function (_super) {
     __extends(_EventDescription, _super);
     function _EventDescription() {
@@ -218,21 +217,21 @@ var _EventDescription = /** @class */ (function (_super) {
         return result;
     };
     return _EventDescription;
-}(_Description));
+}(Description));
 var TransactionDescription = /** @class */ (function (_super) {
     __extends(TransactionDescription, _super);
     function TransactionDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     return TransactionDescription;
-}(_Description));
+}(Description));
 var LogDescription = /** @class */ (function (_super) {
     __extends(LogDescription, _super);
     function LogDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     return LogDescription;
-}(_Description));
+}(Description));
 function addMethod(method) {
     switch (method.type) {
         case 'constructor': {
