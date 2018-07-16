@@ -6,7 +6,6 @@ import {} from './utils/shims';
 
 import { Contract, Interface } from './contracts';
 import * as providers from './providers';
-import { getNetwork } from './providers/networks';
 import * as utils from './utils';
 import { HDNode, SigningKey, Wallet } from './wallet';
 import * as wordlists from './wordlists';
@@ -28,7 +27,6 @@ export {
     Contract,
     Interface,
 
-    getNetwork,
     providers,
 
     types,
@@ -51,7 +49,6 @@ export const ethers = {
     Contract,
     Interface,
 
-    getNetwork,
     providers,
 
     types,

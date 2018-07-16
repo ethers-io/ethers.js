@@ -1,9 +1,10 @@
 'use strict';
 
 import { JsonRpcProvider, JsonRpcSigner } from './json-rpc-provider';
-import { getNetwork } from './networks';
 
+import { getNetwork } from '../utils/networks';
 import { defineReadOnly } from '../utils/properties';
+
 import { Networkish } from '../utils/types';
 
 import * as errors from '../utils/errors';

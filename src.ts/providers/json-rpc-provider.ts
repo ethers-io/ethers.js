@@ -2,16 +2,17 @@
 
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 
-import { getNetwork } from './networks';
 import { Provider } from './provider';
 
 import { getAddress } from '../utils/address';
 import { BigNumber } from '../utils/bignumber';
 import { Arrayish, hexlify, hexStripZeros } from '../utils/bytes';
+import { getNetwork } from '../utils/networks';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
-import { BlockTag, Network, Networkish, Signer, TransactionRequest, TransactionResponse } from '../utils/types';
 import { toUtf8Bytes } from '../utils/utf8';
 import { ConnectionInfo, fetchJson, poll } from '../utils/web';
+
+import { BlockTag, Network, Networkish, Signer, TransactionRequest, TransactionResponse } from '../utils/types';
 
 import * as errors from '../utils/errors';
 

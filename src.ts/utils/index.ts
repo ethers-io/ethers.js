@@ -13,6 +13,7 @@ import { keccak256 } from './keccak256';
 import { sha256 } from './sha2';
 import { keccak256 as solidityKeccak256, pack as solidityPack, sha256 as soliditySha256 } from './solidity';
 import { randomBytes } from './random-bytes';
+import { getNetwork } from './networks';
 import { defineFrozen, defineReadOnly, resolveProperties, shallowCopy } from './properties';
 import * as RLP from './rlp';
 import { parse as parseTransaction, serialize as serializeTransaction } from './transaction';
@@ -51,6 +52,7 @@ export {
     RLP,
 
     fetchJson,
+    getNetwork,
 
     defineReadOnly,
     defineFrozen,

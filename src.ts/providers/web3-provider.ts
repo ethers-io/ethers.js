@@ -1,11 +1,11 @@
 'use strict';
 
-import { Networkish } from './networks';
 import { JsonRpcProvider } from './json-rpc-provider';
 
 import { defineReadOnly } from '../utils/properties';
 
-import { AsyncProvider } from '../utils/types';
+import { AsyncProvider, Networkish } from '../utils/types';
+
 import * as errors from '../utils/errors';
 
 /*
@@ -13,13 +13,6 @@ import * as errors from '../utils/errors';
 utils.defineProperty(Web3Signer, 'onchange', {
 
 });
-
-export type AsyncProvider = {
-    isMetaMask: boolean;
-    host?: string;
-    path?: string;
-    sendAsync: (request: any, callback: (error: any, response: any) => void) => void
-}
 
 */
 

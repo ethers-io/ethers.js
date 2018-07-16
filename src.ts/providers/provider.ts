@@ -1,11 +1,10 @@
 'use strict';
 
-import { getNetwork, Network, Networkish } from './networks';
-
 import { getAddress, getContractAddress } from '../utils/address';
 import { BigNumber, bigNumberify, BigNumberish } from '../utils/bignumber';
 import { hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, stripZeros } from '../utils/bytes';
 import { namehash } from '../utils/hash';
+import { getNetwork, Network, Networkish } from '../utils/networks';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { encode as rlpEncode } from '../utils/rlp';
 import { parse as parseTransaction, Transaction } from '../utils/transaction';
