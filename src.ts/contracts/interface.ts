@@ -3,15 +3,14 @@
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
 import { getAddress } from '../utils/address';
-import { defaultAbiCoder, EventFragment, formatSignature, FunctionFragment, ParamType, parseSignature } from '../utils/abi-coder';
-import { BigNumber, bigNumberify, BigNumberish } from '../utils/bignumber';
+import { defaultAbiCoder, formatSignature, parseSignature } from '../utils/abi-coder';
+import { bigNumberify } from '../utils/bignumber';
 import { arrayify, concat, hexlify, hexZeroPad, isHexString } from '../utils/bytes';
 import { id } from '../utils/hash';
 import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly, defineFrozen } from '../utils/properties';
 
-import { DeployDescription, EventDescription, FunctionDescription, Indexed } from '../utils/types';
-//export { DeployDescription, EventDescription, FunctionDescription, Indexed };
+import { BigNumber, BigNumberish, DeployDescription, EventDescription, EventFragment, FunctionDescription, FunctionFragment, Indexed, ParamType } from '../utils/types';
 
 import * as errors from '../utils/errors';
 
@@ -22,7 +21,7 @@ class _Indexed extends Indexed {
     }
 }
 
-class _Description {
+class Description {
     readonly type: string;
     constructor(info: any) {
         for (var key in info) {
@@ -36,7 +35,7 @@ class _Description {
     }
 }
 
-class _DeployDescription extends _Description implements DeployDescription {
+class _DeployDescription extends Description implements DeployDescription {
     readonly type: "deploy";
     readonly inputs: Array<ParamType>;
     readonly payable: boolean;
@@ -65,7 +64,7 @@ class _DeployDescription extends _Description implements DeployDescription {
     }
 }
 
-class _FunctionDescription extends _Description implements FunctionDescription {
+class _FunctionDescription extends Description implements FunctionDescription {
     readonly type: "call" | "transaction";
     readonly name: string;
     readonly signature: string;
@@ -106,12 +105,12 @@ class _FunctionDescription extends _Description implements FunctionDescription {
     }
 }
 
-class Result extends _Description {
+class Result extends Description {
     [key: string]: any;
     [key: number]: any;
 }
 
-class _EventDescription extends _Description implements EventDescription {
+class _EventDescription extends Description implements EventDescription {
     readonly type: "event";
     readonly name: string;
     readonly signature: string;
@@ -219,7 +218,7 @@ class _EventDescription extends _Description implements EventDescription {
     }
 }
 
-class TransactionDescription extends _Description {
+class TransactionDescription extends Description {
     readonly name: string;
     readonly args: Array<any>;
     readonly signature: string;
@@ -228,7 +227,7 @@ class TransactionDescription extends _Description {
     readonly value: BigNumber;
 }
 
-class LogDescription extends _Description {
+class LogDescription extends Description {
     readonly name: string;
     readonly signature: string;
     readonly topic: string;

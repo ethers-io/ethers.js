@@ -3,10 +3,7 @@
  *
  */
 
-import { BigNumber } from './bignumber';
-
-import { Arrayish, Signature } from './types';
-export { Arrayish, Signature };
+import { Arrayish, BigNumber, Signature } from './types';
 
 import errors = require('./errors');
 

@@ -6,7 +6,7 @@
 import { getAddress, getContractAddress, getIcapAddress } from './address';
 import { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from './abi-coder';
 import * as base64 from './base64';
-import { BigNumber, bigNumberify, ConstantNegativeOne, ConstantZero, ConstantOne, ConstantTwo, ConstantWeiPerEther } from './bignumber';
+import { bigNumberify, ConstantNegativeOne, ConstantZero, ConstantOne, ConstantTwo, ConstantWeiPerEther } from './bignumber';
 import { AddressZero, arrayify, concat, HashZero, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexZeroPad, joinSignature, padZeros, splitSignature, stripZeros } from './bytes';
 import { hashMessage, id, namehash } from './hash';
 import { keccak256 } from './keccak256';
@@ -70,7 +70,6 @@ export {
     base64,
 
     bigNumberify,
-    BigNumber,
 
     hexlify,
     hexStripZeros,

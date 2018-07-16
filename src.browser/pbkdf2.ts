@@ -1,7 +1,9 @@
 'use strict';
 
-import { arrayify, Arrayish } from '../src.ts/utils/bytes';
-import { computeHmac, SupportedAlgorithms } from '../src.ts/utils/hmac';
+import { arrayify } from '../src.ts/utils/bytes';
+import { computeHmac } from '../src.ts/utils/hmac';
+
+import { Arrayish, SupportedAlgorithms } from '../src.ts/utils/types';
 
 export function pbkdf2(password: Arrayish, salt: Arrayish, iterations: number, keylen: number, hashAlgorithm: SupportedAlgorithms): Uint8Array {
     password = arrayify(password);

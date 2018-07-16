@@ -5,14 +5,13 @@
 import { Provider } from './provider';
 
 import { getAddress } from '../utils/address';
-import { BigNumber } from '../utils/bignumber';
-import { Arrayish, hexlify, hexStripZeros } from '../utils/bytes';
+import { hexlify, hexStripZeros } from '../utils/bytes';
 import { getNetwork } from '../utils/networks';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { toUtf8Bytes } from '../utils/utf8';
-import { ConnectionInfo, fetchJson, poll } from '../utils/web';
+import { fetchJson, poll } from '../utils/web';
 
-import { BlockTag, Network, Networkish, Signer, TransactionRequest, TransactionResponse } from '../utils/types';
+import { Arrayish, BigNumber, BlockTag, ConnectionInfo, Network, Networkish, Signer, TransactionRequest, TransactionResponse } from '../utils/types';
 
 import * as errors from '../utils/errors';
 
@@ -256,7 +255,7 @@ export class JsonRpcProvider extends Provider {
         return null;
     }
 
-    _startPending(): void {
+    protected _startPending(): void {
         if (this._pendingFilter != null) { return; }
         var self = this;
 
@@ -298,7 +297,7 @@ export class JsonRpcProvider extends Provider {
         }).catch((error: Error) => { });
     }
 
-    _stopPending(): void {
+    protected _stopPending(): void {
         this._pendingFilter = null;
     }
 

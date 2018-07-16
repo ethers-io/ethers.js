@@ -3,13 +3,12 @@
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
 import { getAddress } from  './address';
-import { bigNumberify, BigNumberish } from './bignumber';
-import { arrayify, Arrayish, concat, hexlify, padZeros } from './bytes';
+import { bigNumberify } from './bignumber';
+import { arrayify, concat, hexlify, padZeros } from './bytes';
 import { toUtf8Bytes, toUtf8String } from './utf8';
 import { defineReadOnly, jsonCopy } from './properties';
 
-import { CoerceFunc, EventFragment, FunctionFragment, ParamType }from './types';
-export { CoerceFunc, EventFragment, FunctionFragment, ParamType }
+import { Arrayish, BigNumberish, CoerceFunc, EventFragment, FunctionFragment, ParamType }from './types';
 
 import * as errors from './errors';
 

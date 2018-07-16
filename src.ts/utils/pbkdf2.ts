@@ -2,7 +2,9 @@
 
 import { pbkdf2Sync as _pbkdf2 } from 'crypto';
 
-import { arrayify, Arrayish } from './bytes';
+import { arrayify } from './bytes';
+
+import { Arrayish } from './types';
 
 function bufferify(value: Arrayish): Buffer {
     return new Buffer(arrayify(value));

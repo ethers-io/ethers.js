@@ -9,25 +9,25 @@ export type Arrayish = string | ArrayLike<number>;
 ///////////////////////////////
 // BigNumber
 
-export interface BigNumber {
-    fromTwos(value: number): BigNumber;
-    toTwos(value: number): BigNumber;
-    add(other: BigNumberish): BigNumber;
-    sub(other: BigNumberish): BigNumber;
-    div(other: BigNumberish): BigNumber;
-    mul(other: BigNumberish): BigNumber;
-    mod(other: BigNumberish): BigNumber;
-    pow(other: BigNumberish): BigNumber;
-    maskn(value: number): BigNumber;
-    eq(other: BigNumberish): boolean;
-    lt(other: BigNumberish): boolean;
-    lte(other: BigNumberish): boolean;
-    gt(other: BigNumberish): boolean;
-    gte(other: BigNumberish): boolean;
-    isZero(): boolean;
-    toNumber(): number;
-    toString(): string;
-    toHexString(): string;
+export abstract class BigNumber {
+    abstract fromTwos(value: number): BigNumber;
+    abstract toTwos(value: number): BigNumber;
+    abstract add(other: BigNumberish): BigNumber;
+    abstract sub(other: BigNumberish): BigNumber;
+    abstract div(other: BigNumberish): BigNumber;
+    abstract mul(other: BigNumberish): BigNumber;
+    abstract mod(other: BigNumberish): BigNumber;
+    abstract pow(other: BigNumberish): BigNumber;
+    abstract maskn(value: number): BigNumber;
+    abstract eq(other: BigNumberish): boolean;
+    abstract lt(other: BigNumberish): boolean;
+    abstract lte(other: BigNumberish): boolean;
+    abstract gt(other: BigNumberish): boolean;
+    abstract gte(other: BigNumberish): boolean;
+    abstract isZero(): boolean;
+    abstract toNumber(): number;
+    abstract toString(): string;
+    abstract toHexString(): string;
 };
 
 export type BigNumberish = BigNumber | string | number | Arrayish;
@@ -42,6 +42,18 @@ export type ConnectionInfo = {
     user?: string,
     password?: string,
     allowInsecure?: boolean
+};
+
+export interface OnceBlockable {
+    once(eventName: "block", handler: () => void): void;
+}
+
+export type PollOptions = {
+    timeout?: number,
+    floor?: number,
+    ceiling?: number,
+    interval?: number,
+    onceBlock?: OnceBlockable
 };
 
 
@@ -383,10 +395,27 @@ export abstract class Signer {
 
     abstract getAddress(): Promise<string>
 
-    abstract signMessage(transaction: Arrayish | string): Promise<string>;
+    abstract signMessage(message: Arrayish | string): Promise<string>;
     abstract sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
 }
 
+///////////////////////////////
+// HDNode
+
+export abstract class HDNode {
+    readonly privateKey: string;
+    readonly publicKey: string;
+
+    readonly mnemonic: string;
+    readonly path: string;
+
+    readonly chainCode: string;
+
+    readonly index: number;
+    readonly depth: number;
+
+    abstract derivePath(path: string): HDNode;
+}
 
 ///////////////////////////////
 // Wordlist (BIP39 mnemonic)

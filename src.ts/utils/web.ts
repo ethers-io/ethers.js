@@ -5,8 +5,7 @@ import { XMLHttpRequest } from 'xmlhttprequest';
 import { encode as base64Encode } from './base64';
 import { toUtf8Bytes } from './utf8';
 
-import { ConnectionInfo } from './types';
-export { ConnectionInfo };
+import { ConnectionInfo, PollOptions } from './types';
 
 import * as errors from './errors';
 
@@ -115,18 +114,6 @@ export function fetchJson(connection: string | ConnectionInfo, json: string, pro
         }
     });
 }
-
-export interface OnceBlockable {
-    once(eventName: "block", handler: () => void): void;
-}
-
-export type PollOptions = {
-    timeout?: number,
-    floor?: number,
-    ceiling?: number,
-    interval?: number,
-    onceBlock?: OnceBlockable
-};
 
 export function poll(func: () => Promise<any>, options?: PollOptions): Promise<any> {
     if (!options) { options = {}; }

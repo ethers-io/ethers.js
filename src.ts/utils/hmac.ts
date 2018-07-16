@@ -2,10 +2,9 @@
 
 import { createHmac } from 'crypto';
 
-import { arrayify, Arrayish } from './bytes';
+import { arrayify } from './bytes';
 
-import { SupportedAlgorithms } from './types';
-export { SupportedAlgorithms };
+import { Arrayish, SupportedAlgorithms } from './types';
 
 import * as errors from './errors';
 

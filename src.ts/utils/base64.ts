@@ -1,6 +1,8 @@
 'use strict';
 
-import { arrayify, Arrayish } from './bytes';
+import { arrayify } from './bytes';
+
+import { Arrayish } from './types';
 
 declare class Buffer implements ArrayLike<number> {
     constructor(data: any, encoding?: string);

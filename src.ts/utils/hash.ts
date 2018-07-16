@@ -1,8 +1,10 @@
 'use strict';
 
-import { Arrayish, concat, hexlify } from './bytes';
+import { concat, hexlify } from './bytes';
 import { toUtf8Bytes } from './utf8';
 import { keccak256 } from './keccak256';
+
+import { Arrayish } from './types';
 
 var Zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 var Partition = new RegExp("^((.*)\\.)?([^.]+)$");

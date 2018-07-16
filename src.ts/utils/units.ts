@@ -1,6 +1,8 @@
 'use strict';
 
-import { BigNumber, bigNumberify, BigNumberish, ConstantZero, ConstantNegativeOne } from './bignumber';
+import { bigNumberify, ConstantZero, ConstantNegativeOne } from './bignumber';
+
+import { BigNumber, BigNumberish } from './types';
 
 import * as errors from './errors';
 

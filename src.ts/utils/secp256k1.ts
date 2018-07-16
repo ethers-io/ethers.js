@@ -5,9 +5,11 @@ const curve = new EC('secp256k1');
 
 import { getAddress } from './address';
 
-import { arrayify, Arrayish, hexlify, hexZeroPad, Signature } from './bytes';
+import { arrayify, hexlify, hexZeroPad } from './bytes';
 import { keccak256 } from './keccak256';
 import { defineReadOnly } from './properties';
+
+import { Arrayish, Signature } from './types';
 
 import * as errors from './errors';
 

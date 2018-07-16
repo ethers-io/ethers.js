@@ -39,7 +39,7 @@ export class InfuraProvider extends JsonRpcProvider {
         defineReadOnly(this, 'apiAccessToken', apiAccessToken || null);
     }
 
-    _startPending(): void {
+    protected _startPending(): void {
         console.log('WARNING: INFURA does not support pending filters');
     }
 

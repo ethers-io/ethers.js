@@ -1,14 +1,10 @@
 'use strict';
 
-import { defaultPath, entropyToMnemonic, fromMnemonic, HDNode } from './hdnode';
+import { defaultPath, entropyToMnemonic, fromMnemonic } from './hdnode';
 import * as secretStorage from './secret-storage';
 import { SigningKey } from './signing-key';
 
-import { Provider } from '../providers/provider';
-import { Wordlist } from '../wordlists/wordlist';
-
-import { BigNumber } from '../utils/bignumber';
-import { arrayify, Arrayish, concat, hexlify, joinSignature } from '../utils/bytes';
+import { arrayify, concat, hexlify, joinSignature } from '../utils/bytes';
 import { hashMessage } from '../utils/hash';
 import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
@@ -16,7 +12,7 @@ import { randomBytes } from '../utils/random-bytes';
 import { recoverAddress } from '../utils/secp256k1';
 import { serialize as serializeTransaction } from '../utils/transaction';
 
-import { BlockTag, ProgressCallback, Signer, TransactionRequest, TransactionResponse } from '../utils/types';
+import { Arrayish, BigNumber, BlockTag, HDNode, MinimalProvider, ProgressCallback, Signer, TransactionRequest, TransactionResponse, Wordlist } from '../utils/types';
 //export { BlockTag, ProgressCallback, Signer, TransactionRequest, TransactionResponse };
 
 import * as errors from '../utils/errors';
@@ -24,11 +20,11 @@ import * as errors from '../utils/errors';
 
 export class Wallet extends Signer {
 
-    readonly provider: Provider;
+    readonly provider: MinimalProvider;
 
     private readonly signingKey: SigningKey;
 
-    constructor(privateKey: SigningKey | HDNode | Arrayish, provider?: Provider) {
+    constructor(privateKey: SigningKey | HDNode | Arrayish, provider?: MinimalProvider) {
         super();
         errors.checkNew(this, Wallet);
 
@@ -53,7 +49,10 @@ export class Wallet extends Signer {
     /**
      *  Create a new instance of this Wallet connected to provider.
      */
-    connect(provider: Provider): Wallet {
+    connect(provider: MinimalProvider): Wallet {
+        if (!(provider instanceof MinimalProvider)) {
+            errors.throwError('invalid provider', errors.INVALID_ARGUMENT, { argument: 'provider', value: provider });
+        }
         return new Wallet(this.signingKey, provider);
     }
 

@@ -6,10 +6,11 @@
  *
  */
 
-import { arrayify, Arrayish, hexlify, Signature } from '../utils/bytes';
-import { HDNode } from './hdnode';
+import { arrayify, hexlify } from '../utils/bytes';
 import { defineReadOnly } from '../utils/properties';
 import { computeAddress, KeyPair } from '../utils/secp256k1';
+
+import { Arrayish, HDNode, Signature } from '../utils/types';
 
 import errors = require('../utils/errors');
 

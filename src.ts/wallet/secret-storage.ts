@@ -8,13 +8,13 @@ import { SigningKey } from './signing-key';
 import * as HDNode from './hdnode';
 
 import { getAddress } from '../utils/address';
-import { arrayify, Arrayish, concat, hexlify } from '../utils/bytes';
+import { arrayify, concat, hexlify } from '../utils/bytes';
 import { pbkdf2 } from '../utils/pbkdf2';
 import { keccak256 } from '../utils/keccak256';
 import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
 import { randomBytes } from '../utils/random-bytes';
 
-import { EncryptOptions, ProgressCallback } from '../utils/types';
+import { Arrayish, EncryptOptions, ProgressCallback } from '../utils/types';
 
 function looseArrayify(hexString: string): Uint8Array {
     if (typeof(hexString) === 'string' && hexString.substring(0, 2) !== '0x') {

@@ -1,13 +1,12 @@
 
 import { getAddress } from './address';
-import { BigNumber, bigNumberify, ConstantZero } from './bignumber';
-import { arrayify, Arrayish, hexlify, hexZeroPad, Signature, splitSignature, stripZeros, } from './bytes';
+import { bigNumberify, ConstantZero } from './bignumber';
+import { arrayify, hexlify, hexZeroPad, splitSignature, stripZeros, } from './bytes';
 import { keccak256 } from './keccak256';
 
 import * as RLP from './rlp';
 
-import { Transaction, UnsignedTransaction } from './types';
-export { Transaction, UnsignedTransaction };
+import { Arrayish, BigNumber, Signature, Transaction, UnsignedTransaction } from './types';
 
 import * as errors from './errors';
 

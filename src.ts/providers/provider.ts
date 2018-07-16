@@ -1,19 +1,17 @@
 'use strict';
 
 import { getAddress, getContractAddress } from '../utils/address';
-import { BigNumber, bigNumberify, BigNumberish } from '../utils/bignumber';
+import {  bigNumberify } from '../utils/bignumber';
 import { hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, stripZeros } from '../utils/bytes';
 import { namehash } from '../utils/hash';
-import { getNetwork, Network, Networkish } from '../utils/networks';
+import { getNetwork } from '../utils/networks';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { encode as rlpEncode } from '../utils/rlp';
-import { parse as parseTransaction, Transaction } from '../utils/transaction';
+import { parse as parseTransaction } from '../utils/transaction';
 import { toUtf8String } from '../utils/utf8';
 import { poll } from '../utils/web';
 
-import { MinimalProvider } from '../utils/types';
-import { Block, BlockTag, EventType, Filter, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from '../utils/types';
-//export { Block, BlockTag, EventType, Filter, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse };
+import { BigNumber, BigNumberish, Block, BlockTag, EventType, Filter, Listener, Log, MinimalProvider, Network, Networkish, Transaction, TransactionReceipt, TransactionRequest, TransactionResponse } from '../utils/types';
 
 import * as errors from '../utils/errors';
 
@@ -996,7 +994,7 @@ export class Provider extends MinimalProvider {
     }
 
     // @TODO: Could probably use resolveProperties instead?
-    _resolveNames(object: any, keys: Array<string>): Promise<{ [key: string]: string }> {
+    private _resolveNames(object: any, keys: Array<string>): Promise<{ [key: string]: string }> {
         var promises: Array<Promise<void>> = [];
 
         var result: { [key: string ]: string } = shallowCopy(object);
@@ -1012,7 +1010,7 @@ export class Provider extends MinimalProvider {
         return Promise.all(promises).then(function() { return result; });
     }
 
-    _getResolver(name: string): Promise<string> {
+    private _getResolver(name: string): Promise<string> {
         // Get the resolver from the blockchain
         return this.getNetwork().then((network) => {
 
@@ -1132,14 +1130,14 @@ export class Provider extends MinimalProvider {
         return null;
     }
 
-    _startPending(): void {
+    protected _startPending(): void {
         console.log('WARNING: this provider does not support pending events');
     }
 
-    _stopPending(): void {
+    protected _stopPending(): void {
     }
 
-    _addEventListener(eventName: EventType, listener: Listener, once: boolean): void {
+    private _addEventListener(eventName: EventType, listener: Listener, once: boolean): void {
         this._events.push({
             tag: getEventTag(eventName),
             listener: listener,

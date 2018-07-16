@@ -1,7 +1,9 @@
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 
-import { arrayify, Arrayish, hexlify } from './bytes';
+import { arrayify, hexlify } from './bytes';
+
+import { Arrayish } from './types';
 
 function arrayifyInteger(value: number): Array<number> {
     var result = [];

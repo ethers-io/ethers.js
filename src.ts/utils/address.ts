@@ -3,10 +3,11 @@
 // We use this for base 36 maths
 import BN from 'bn.js';
 
-import { BigNumber } from './bignumber';
-import { arrayify, Arrayish, stripZeros, hexlify } from './bytes';
+import { arrayify, stripZeros, hexlify } from './bytes';
 import { keccak256 } from './keccak256';
 import { encode } from './rlp';
+
+import { Arrayish, BigNumber } from './types';
 
 import errors = require('./errors');
 

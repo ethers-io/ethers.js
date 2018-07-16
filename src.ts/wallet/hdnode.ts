@@ -11,7 +11,7 @@ import { langEn } from '../wordlists/lang-en';
 //import { register } from '../wordlists/wordlist';
 //register(langEn);
 
-import { arrayify, Arrayish, hexlify } from '../utils/bytes';
+import { arrayify, hexlify } from '../utils/bytes';
 import { bigNumberify } from '../utils/bignumber';
 import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
 import { pbkdf2 } from '../utils/pbkdf2';
@@ -20,7 +20,7 @@ import { defineReadOnly } from '../utils/properties';
 import { KeyPair, N } from '../utils/secp256k1';
 import { sha256 } from '../utils/sha2';
 
-import { Wordlist } from '../utils/types';
+import { Arrayish, HDNode as _HDNode ,Wordlist } from '../utils/types';
 
 import * as errors from '../utils/errors';
 
@@ -41,7 +41,7 @@ function getLowerMask(bits: number): number {
 
 export const defaultPath = "m/44'/60'/0'/0/0";
 
-export class HDNode {
+class HDNode extends _HDNode {
     private readonly keyPair: KeyPair;
 
     readonly privateKey: string;
@@ -63,6 +63,7 @@ export class HDNode {
      *   - fromSeed
      */
     constructor(privateKey: Arrayish, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string) {
+        super();
         errors.checkNew(this, HDNode);
 
         defineReadOnly(this, 'keyPair', new KeyPair(privateKey));

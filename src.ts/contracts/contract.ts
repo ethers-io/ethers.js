@@ -2,16 +2,14 @@
 
 import { Interface } from './interface';
 
-import { defaultAbiCoder, formatSignature, ParamType, parseSignature } from '../utils/abi-coder';
+import { defaultAbiCoder, formatSignature, parseSignature } from '../utils/abi-coder';
 import { getAddress, getContractAddress } from '../utils/address';
-import { BigNumber, ConstantZero } from '../utils/bignumber';
+import { ConstantZero } from '../utils/bignumber';
 import { hexDataLength, hexDataSlice, isHexString } from '../utils/bytes';
 import { defineReadOnly, jsonCopy, shallowCopy } from '../utils/properties';
 import { poll } from '../utils/web';
 
-import { MinimalProvider, Signer } from '../utils/types';
-import { EventDescription, EventFilter, Listener, Log, TransactionRequest, TransactionResponse } from '../utils/types';
-//export { EventFilter, Event, Listener, Log, TransactionRequest, TransactionResponse };
+import { BigNumber, EventDescription, EventFilter, Listener, Log, MinimalProvider, ParamType, Signer, TransactionRequest, TransactionResponse } from '../utils/types';
 
 import * as errors from '../utils/errors';
 
@@ -395,7 +393,7 @@ export class Contract {
 
     private _events: Array<_Event>;
 
-    _getEventFilter(eventName: EventFilter | string): _EventFilter {
+    private _getEventFilter(eventName: EventFilter | string): _EventFilter {
         if (typeof(eventName) === 'string') {
 
             // Listen for any event
@@ -464,7 +462,7 @@ export class Contract {
         }
     }
 
-    _addEventListener(eventFilter: _EventFilter, listener: Listener, once: boolean): void {
+    private _addEventListener(eventFilter: _EventFilter, listener: Listener, once: boolean): void {
         if (!this.provider) {
             errors.throwError('events require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'once' })
         }

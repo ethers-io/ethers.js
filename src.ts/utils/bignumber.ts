@@ -13,8 +13,7 @@ import BN from 'bn.js';
 import { hexlify, isArrayish, isHexString } from './bytes';
 import { defineReadOnly } from './properties';
 
-import { BigNumber, BigNumberish } from './types';
-export { BigNumber, BigNumberish };
+import { BigNumber as _BigNumber, BigNumberish } from './types';
 
 import * as errors from './errors';
 
@@ -33,18 +32,19 @@ function toHex(bn: BN.BN): string {
 }
 
 function toBN(value: BigNumberish): BN.BN {
-    return (<_BigNumber>bigNumberify(value))._bn;
+    return (<BigNumber>bigNumberify(value))._bn;
 }
 
-function toBigNumber(bn: BN.BN): _BigNumber {
-    return new _BigNumber(toHex(bn));
+function toBigNumber(bn: BN.BN): BigNumber {
+    return new BigNumber(toHex(bn));
 }
 
-class _BigNumber implements BigNumber {
+class BigNumber extends _BigNumber {
     private readonly _hex: string;
 
     constructor(value: BigNumberish) {
-        errors.checkNew(this, _BigNumber);
+        super();
+        errors.checkNew(this, BigNumber);
 
         if (typeof(value) === 'string') {
             if (isHexString(value)) {
@@ -110,7 +110,7 @@ class _BigNumber implements BigNumber {
     }
 
     div(other: BigNumberish): BigNumber {
-        let o: BigNumber = bigNumberify(other);
+        let o: _BigNumber = bigNumberify(other);
         if (o.isZero()) {
             errors.throwError('division by zero', errors.NUMERIC_FAULT, { operation: 'divide', fault: 'division by zero' });
         }
@@ -175,17 +175,19 @@ class _BigNumber implements BigNumber {
     }
 }
 
+/*
 export function isBigNumber(value: any): boolean {
-    return (value instanceof _BigNumber);
+    return (value instanceof BigNumber);
+}
+*/
+
+export function bigNumberify(value: BigNumberish): _BigNumber {
+    if (value instanceof BigNumber) { return value; }
+    return new BigNumber(value);
 }
 
-export function bigNumberify(value: BigNumberish): BigNumber {
-    if (value instanceof _BigNumber) { return value; }
-    return new _BigNumber(value);
-}
-
-export const ConstantNegativeOne: BigNumber = bigNumberify(-1);
-export const ConstantZero: BigNumber = bigNumberify(0);
-export const ConstantOne: BigNumber = bigNumberify(1);
-export const ConstantTwo: BigNumber = bigNumberify(2);
-export const ConstantWeiPerEther: BigNumber = bigNumberify('1000000000000000000');
+export const ConstantNegativeOne: _BigNumber = bigNumberify(-1);
+export const ConstantZero: _BigNumber = bigNumberify(0);
+export const ConstantOne: _BigNumber = bigNumberify(1);
+export const ConstantTwo: _BigNumber = bigNumberify(2);
+export const ConstantWeiPerEther: _BigNumber = bigNumberify('1000000000000000000');

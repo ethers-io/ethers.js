@@ -1,7 +1,6 @@
 'use strict';
 
 import { Network, Networkish } from '../utils/types';
-export { Network, Networkish };
 
 import * as errors from '../utils/errors';
 
