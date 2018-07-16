@@ -7,7 +7,9 @@
 // For additional word lists, please see /src.tc/wordlists/
 import { langEn } from '../wordlists/lang-en';
 
-import { Wordlist } from '../wordlists/wordlist';
+// Automatically register English?
+//import { register } from '../wordlists/wordlist';
+//register(langEn);
 
 import { arrayify, Arrayish, hexlify } from '../utils/bytes';
 import { bigNumberify } from '../utils/bignumber';
@@ -17,6 +19,8 @@ import { computeHmac } from '../utils/hmac';
 import { defineReadOnly } from '../utils/properties';
 import { KeyPair, N } from '../utils/secp256k1';
 import { sha256 } from '../utils/sha2';
+
+import { Wordlist } from '../utils/types';
 
 import * as errors from '../utils/errors';
 

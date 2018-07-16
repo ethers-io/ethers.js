@@ -14,7 +14,7 @@ import { poll } from '../utils/web';
 
 import { MinimalProvider } from '../utils/types';
 import { Block, BlockTag, EventType, Filter, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from '../utils/types';
-export { Block, BlockTag, EventType, Filter, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse };
+//export { Block, BlockTag, EventType, Filter, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse };
 
 import * as errors from '../utils/errors';
 

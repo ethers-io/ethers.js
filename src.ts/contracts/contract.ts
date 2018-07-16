@@ -1,6 +1,6 @@
 'use strict';
 
-import { EventDescription, Interface } from './interface';
+import { Interface } from './interface';
 
 import { defaultAbiCoder, formatSignature, ParamType, parseSignature } from '../utils/abi-coder';
 import { getAddress, getContractAddress } from '../utils/address';
@@ -10,8 +10,8 @@ import { defineReadOnly, jsonCopy, shallowCopy } from '../utils/properties';
 import { poll } from '../utils/web';
 
 import { MinimalProvider, Signer } from '../utils/types';
-import { EventFilter, Event, Listener, Log, TransactionRequest, TransactionResponse } from '../utils/types';
-export { EventFilter, Event, Listener, Log, TransactionRequest, TransactionResponse };
+import { EventDescription, EventFilter, Listener, Log, TransactionRequest, TransactionResponse } from '../utils/types';
+//export { EventFilter, Event, Listener, Log, TransactionRequest, TransactionResponse };
 
 import * as errors from '../utils/errors';
 

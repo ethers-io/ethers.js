@@ -17,7 +17,7 @@ import { recoverAddress } from '../utils/secp256k1';
 import { serialize as serializeTransaction } from '../utils/transaction';
 
 import { BlockTag, ProgressCallback, Signer, TransactionRequest, TransactionResponse } from '../utils/types';
-export { BlockTag, ProgressCallback, Signer, TransactionRequest, TransactionResponse };
+//export { BlockTag, ProgressCallback, Signer, TransactionRequest, TransactionResponse };
 
 import * as errors from '../utils/errors';
 

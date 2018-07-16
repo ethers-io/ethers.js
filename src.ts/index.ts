@@ -6,12 +6,14 @@ import {} from './utils/shims';
 
 import { Contract, Interface } from './contracts';
 import * as providers from './providers';
-import * as errors from './utils/errors';
 import { getNetwork } from './providers/networks';
-import * as types from './utils/types';
 import * as utils from './utils';
 import { HDNode, SigningKey, Wallet } from './wallet';
 import * as wordlists from './wordlists';
+
+import * as types from './utils/types';
+
+import * as errors from './utils/errors';
 
 import { version } from './_version';
 

@@ -345,6 +345,12 @@ export abstract class MinimalProvider {
     abstract waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt>;
 }
 
+export type AsyncProvider = {
+    isMetaMask: boolean;
+    host?: string;
+    path?: string;
+    sendAsync: (request: any, callback: (error: any, response: any) => void) => void
+}
 
 ///////////////////////////////
 // Signer
@@ -379,5 +385,19 @@ export abstract class Signer {
 
     abstract signMessage(transaction: Arrayish | string): Promise<string>;
     abstract sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
+}
+
+
+///////////////////////////////
+// Wordlist (BIP39 mnemonic)
+
+export interface Wordlist {
+    locale: string;
+
+    getWord(index: number): string;
+    getWordIndex(word: string): number;
+
+    split(mnemonic: string): Array<string>;
+    join(words: Array<string>): string;
 }
 

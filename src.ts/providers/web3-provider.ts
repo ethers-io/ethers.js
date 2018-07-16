@@ -5,6 +5,7 @@ import { JsonRpcProvider } from './json-rpc-provider';
 
 import { defineReadOnly } from '../utils/properties';
 
+import { AsyncProvider } from '../utils/types';
 import * as errors from '../utils/errors';
 
 /*
@@ -12,7 +13,6 @@ import * as errors from '../utils/errors';
 utils.defineProperty(Web3Signer, 'onchange', {
 
 });
-*/
 
 export type AsyncProvider = {
     isMetaMask: boolean;
@@ -20,6 +20,8 @@ export type AsyncProvider = {
     path?: string;
     sendAsync: (request: any, callback: (error: any, response: any) => void) => void
 }
+
+*/
 
 export class Web3Provider extends JsonRpcProvider {
     readonly _web3Provider: AsyncProvider;

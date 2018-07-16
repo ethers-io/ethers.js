@@ -8,8 +8,9 @@ export {
     Interface
 }
 
+/*
 export default {
     Contract,
     Interface
 }
-
+*/

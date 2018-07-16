@@ -33,7 +33,7 @@ export {
 
     JsonRpcSigner
 };
-
+/*
 export default {
     Provider,
     getDefaultProvider,
@@ -49,3 +49,4 @@ export default {
 
     JsonRpcSigner
 };
+*/

@@ -110,7 +110,7 @@ export {
 
     errors
 }
-
+/*
 export default {
     AbiCoder,
     defaultAbiCoder,
@@ -180,3 +180,4 @@ export default {
 
     errors
 }
+*/

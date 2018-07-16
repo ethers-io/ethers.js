@@ -11,7 +11,7 @@ import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly, defineFrozen } from '../utils/properties';
 
 import { DeployDescription, EventDescription, FunctionDescription, Indexed } from '../utils/types';
-export { DeployDescription, EventDescription, FunctionDescription, Indexed };
+//export { DeployDescription, EventDescription, FunctionDescription, Indexed };
 
 import * as errors from '../utils/errors';
 
