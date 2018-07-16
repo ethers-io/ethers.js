@@ -18,9 +18,3 @@ const zh_tw: Wordlist = _zh_tw;
 export {
     en, it, ja, ko, zh, zh_cn, zh_tw
 }
-
-/*
-export default {
-    en, it, ja, ko, zh, zh_cn, zh_tw
-}
-*/

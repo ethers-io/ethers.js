@@ -33,20 +33,4 @@ export {
 
     JsonRpcSigner
 };
-/*
-export default {
-    Provider,
-    getDefaultProvider,
 
-    FallbackProvider,
-
-    EtherscanProvider,
-    InfuraProvider,
-    JsonRpcProvider,
-    Web3Provider,
-
-    IpcProvider,
-
-    JsonRpcSigner
-};
-*/

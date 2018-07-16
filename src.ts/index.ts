@@ -42,7 +42,7 @@ export {
     version
 };
 
-export default {
+export const ethers = {
     Wallet,
 
     HDNode,

@@ -7,10 +7,3 @@ export {
     Contract,
     Interface
 }
-
-/*
-export default {
-    Contract,
-    Interface
-}
-*/
