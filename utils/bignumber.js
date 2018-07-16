@@ -88,8 +88,8 @@ var BigNumber = /** @class */ (function (_super) {
                 errors.throwError('overflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'overflow', details: error.message });
             }
         }
-        else if (value instanceof types_1.BigNumber) {
-            properties_1.defineReadOnly(_this, '_hex', value.toHexString());
+        else if (value instanceof BigNumber) {
+            properties_1.defineReadOnly(_this, '_hex', value._hex);
         }
         else if (value.toHexString) {
             properties_1.defineReadOnly(_this, '_hex', toHex(toBN(value.toHexString())));
@@ -178,11 +178,6 @@ var BigNumber = /** @class */ (function (_super) {
     };
     return BigNumber;
 }(types_1.BigNumber));
-/*
-export function isBigNumber(value: any): boolean {
-    return (value instanceof BigNumber);
-}
-*/
 function bigNumberify(value) {
     if (value instanceof BigNumber) {
         return value;

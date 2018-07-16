@@ -72,6 +72,8 @@ exports.formatUnits = units_1.formatUnits;
 exports.parseUnits = units_1.parseUnits;
 var web_1 = require("./web");
 exports.fetchJson = web_1.fetchJson;
+var types = __importStar(require("./types"));
+exports.types = types;
 var errors = __importStar(require("./errors"));
 exports.errors = errors;
 // NFKD (decomposed)
