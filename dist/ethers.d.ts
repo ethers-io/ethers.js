@@ -7,6 +7,7 @@ declare module 'ethers' {
 }
 
 declare module 'ethers/ethers' {
+    import { platform } from 'ethers/utils/shims';
     import { Contract, Interface } from 'ethers/contracts';
     import * as providers from 'ethers/providers';
     import * as utils from 'ethers/utils';
@@ -24,7 +25,11 @@ declare module 'ethers/ethers' {
         Two: utils.types.BigNumber;
         WeiPerEther: utils.types.BigNumber;
     };
-    export { Wallet, HDNode, SigningKey, Contract, Interface, providers, types, errors, constants, utils, wordlists, version };
+    export { Wallet, HDNode, SigningKey, Contract, Interface, providers, types, errors, constants, utils, wordlists, platform, version };
+}
+
+declare module 'ethers/utils/shims' {
+    export const platform = "node";
 }
 
 declare module 'ethers/contracts' {

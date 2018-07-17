@@ -241,7 +241,7 @@
                     fileReader.onload = function(e) {
                         var json = e.target.result;
 
-                        if (ethers.Wallet.isEncryptedWallet(json)) {
+                        if (ethers.utils.getJsonWalletAddress(json)) {
                             showLoading('Decrypting Wallet...');
 
                             cancelScrypt = false;
