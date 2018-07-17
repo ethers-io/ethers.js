@@ -7,14 +7,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var elliptic_1 = require("elliptic");
-var curve = new elliptic_1.ec('secp256k1');
 var address_1 = require("./address");
 var bytes_1 = require("./bytes");
+var hash_1 = require("./hash");
 var keccak256_1 = require("./keccak256");
 var properties_1 = require("./properties");
 var errors = __importStar(require("./errors"));
-exports.N = '0x' + curve.n.toString(16);
 var KeyPair = /** @class */ (function () {
     function KeyPair(privateKey) {
         var keyPair = curve.keyFromPrivate(bytes_1.arrayify(privateKey));
@@ -79,3 +77,20 @@ function computeAddress(key) {
     return address_1.getAddress('0x' + keccak256_1.keccak256(publicKey).substring(26));
 }
 exports.computeAddress = computeAddress;
+function verifyMessage(message, signature) {
+    var sig = bytes_1.splitSignature(signature);
+    var digest = hash_1.hashMessage(message);
+    return recoverAddress(digest, {
+        r: sig.r,
+        s: sig.s,
+        recoveryParam: sig.recoveryParam
+    });
+}
+exports.verifyMessage = verifyMessage;
+// !!!!!! IMPORTANT !!!!!!!!
+//
+// This import MUST be at the bottom, otehrwise browserify executes several imports
+// BEFORE they are exported, resulting in undefined
+var elliptic_1 = require("elliptic");
+var curve = new elliptic_1.ec('secp256k1');
+exports.N = '0x' + curve.n.toString(16);

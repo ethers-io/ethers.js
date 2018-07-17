@@ -17,7 +17,7 @@ describe('Test JSON Wallets', function() {
         it(('decrypts wallet - ' + test.name), function() {
             this.timeout(1200000);
 
-            assert.ok(Wallet.isEncryptedWallet(test.json),
+            assert.ok((ethers.utils.getJsonWalletAddress(test.json) !== null),
                 'detect encrypted JSON wallet');
 
             return Wallet.fromEncryptedJson(test.json, test.password).then(function(wallet) {
@@ -226,7 +226,7 @@ describe('Test Signing Messages', function() {
     tests.forEach(function(test) {
         it(('verifies a message "' + test.name + '"'), function() {
             this.timeout(120000);
-            var address = Wallet.verifyMessage(test.message, test.signature);
+            var address = ethers.utils.verifyMessage(test.message, test.signature);
             assert.equal(address, test.address, 'verifies message signature');
         });
     });

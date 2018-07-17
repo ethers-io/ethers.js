@@ -22,10 +22,10 @@ var secretStorage = __importStar(require("./secret-storage"));
 var signing_key_1 = require("./signing-key");
 var bytes_1 = require("../utils/bytes");
 var hash_1 = require("../utils/hash");
+var json_wallet_1 = require("../utils/json-wallet");
 var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
 var random_bytes_1 = require("../utils/random-bytes");
-var secp256k1_1 = require("../utils/secp256k1");
 var transaction_1 = require("../utils/transaction");
 var types_1 = require("../utils/types");
 var errors = __importStar(require("../utils/errors"));
@@ -164,7 +164,7 @@ var Wallet = /** @class */ (function (_super) {
         return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
     };
     Wallet.fromEncryptedJson = function (json, password, progressCallback) {
-        if (secretStorage.isCrowdsaleWallet(json)) {
+        if (json_wallet_1.isCrowdsaleWallet(json)) {
             try {
                 if (progressCallback) {
                     progressCallback(0);
@@ -179,7 +179,7 @@ var Wallet = /** @class */ (function (_super) {
                 return Promise.reject(error);
             }
         }
-        else if (secretStorage.isValidWallet(json)) {
+        else if (json_wallet_1.isSecretStorageWallet(json)) {
             return secretStorage.decrypt(json, password, progressCallback).then(function (signingKey) {
                 return new Wallet(signingKey);
             });
@@ -191,34 +191,6 @@ var Wallet = /** @class */ (function (_super) {
             path = hdnode_1.defaultPath;
         }
         return new Wallet(hdnode_1.fromMnemonic(mnemonic, wordlist).derivePath(path));
-    };
-    /**
-     *  Determine if this is an encryped JSON wallet.
-     */
-    Wallet.isEncryptedWallet = function (json) {
-        return (secretStorage.isValidWallet(json) || secretStorage.isCrowdsaleWallet(json));
-    };
-    /**
-     *  Verify a signed message, returning the address of the signer.
-     */
-    Wallet.verifyMessage = function (message, signature) {
-        signature = bytes_1.hexlify(signature);
-        if (signature.length != 132) {
-            throw new Error('invalid signature');
-        }
-        var digest = hash_1.hashMessage(message);
-        var recoveryParam = parseInt(signature.substring(130), 16);
-        if (recoveryParam >= 27) {
-            recoveryParam -= 27;
-        }
-        if (recoveryParam < 0) {
-            throw new Error('invalid signature');
-        }
-        return secp256k1_1.recoverAddress(digest, {
-            r: signature.substring(0, 66),
-            s: '0x' + signature.substring(66, 130),
-            recoveryParam: recoveryParam
-        });
     };
     return Wallet;
 }(types_1.Signer));
