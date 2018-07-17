@@ -407,9 +407,11 @@
 
                     var targetAddress = ethers.utils.getAddress(inputTargetAddress.value);
                     var amountWei = ethers.utils.parseEther(inputAmount.value);
-                    activeWallet.send(targetAddress, amountWei, {
-                        gasPrice: activeWallet.provider.getGasPrice(),
-                        gasLimit: 21000,
+                    activeWallet.sendTransaction({
+                        to: targetAddress,
+                        value: amountWei,
+                        //gasPrice: activeWallet.provider.getGasPrice(),
+                        //gasLimit: 21000,
                     }).then(function(tx) {
                         console.log(tx);
 
