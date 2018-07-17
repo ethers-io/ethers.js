@@ -65,7 +65,9 @@ export type SupportedAlgorithms = 'sha256' | 'sha512';
 export interface Signature {
     r: string;
     s: string;
-    recoveryParam: number;
+
+    /* At least one of the following MUST be specified; the other will be derived */
+    recoveryParam?: number;
     v?: number;
 }
 

@@ -248,6 +248,9 @@ export function splitSignature(signature: Arrayish | Signature): Signature {
     let r = '0x', s = '0x';
 
     if (isSignature(signature)) {
+        if (signature.v == null && signature.recoveryParam == null) {
+            errors.throwError('at least on of recoveryParam or v must be specified', errors.INVALID_ARGUMENT, { argument: 'signature', value: signature });
+        }
         r = hexZeroPad(signature.r, 32);
         s = hexZeroPad(signature.s, 32);
 
