@@ -148,7 +148,7 @@ declare module 'ethers/utils/types' {
     export interface Signature {
             r: string;
             s: string;
-            recoveryParam: number;
+            recoveryParam?: number;
             v?: number;
     }
     export type Network = {
