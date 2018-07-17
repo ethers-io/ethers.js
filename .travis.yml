@@ -13,5 +13,5 @@ matrix:
   exclude:
     - node_js: "6"
       env: RUN_PHANTOMJS=1
-    - node_js: "10"
+    - node_js: "8"
       env: RUN_PHANTOMJS=1

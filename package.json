@@ -50,7 +50,7 @@
     "typescript": "^2.9.1",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0",
-    "web3": "0.20.2"
+    "web3": "0.20.6"
   },
   "browser": {
     "fs": "./tests/browser-fs.js",
