@@ -9030,7 +9030,7 @@ catch (error) {
 },{}],48:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.0";
+exports.version = "4.0.0-beta.0";
 
 },{}],49:[function(require,module,exports){
 'use strict';
@@ -11219,10 +11219,11 @@ var Provider = /** @class */ (function (_super) {
                         var hash_2 = comps[1];
                         _this.getTransactionReceipt(hash_2).then(function (receipt) {
                             if (!receipt || receipt.blockNumber == null) {
-                                return;
+                                return null;
                             }
                             _this._emitted['t:' + hash_2] = receipt.blockNumber;
                             _this.emit(hash_2, receipt);
+                            return null;
                         }).catch(function (error) { _this.emit('error', error); });
                         break;
                     }
@@ -11238,6 +11239,7 @@ var Provider = /** @class */ (function (_super) {
                             }
                             this._balances[address_2] = balance;
                             this.emit(address_2, balance);
+                            return null;
                         }).catch(function (error) { _this.emit('error', error); });
                         break;
                     }
@@ -11259,6 +11261,7 @@ var Provider = /** @class */ (function (_super) {
                                 _this._emitted['t:' + log.transactionHash] = log.blockNumber;
                                 _this.emit(filter_1, log);
                             });
+                            return null;
                         }).catch(function (error) { _this.emit('error', error); });
                         break;
                     }

@@ -424,7 +424,7 @@ declare module 'ethers/utils/errors' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.0";
+    export const version = "4.0.0-beta.0";
 }
 
 declare module 'ethers/contracts/contract' {
