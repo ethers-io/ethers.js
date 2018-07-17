@@ -64,26 +64,6 @@ function searchPath(object: any, path: string): string {
     return currentChild;
 }
 
-export function isCrowdsaleWallet(json: string): boolean {
-    try {
-        var data = JSON.parse(json);
-    } catch (error) { return false; }
-
-    return (data.encseed && data.ethaddr);
-}
-
-export function isValidWallet(json: string): boolean {
-    try {
-        var data = JSON.parse(json);
-    } catch (error) { return false; }
-
-    if (!data.version || parseInt(data.version) !== data.version || parseInt(data.version) !== 3) {
-        return false;
-    }
-
-    // @TODO: Put more checks to make sure it has kdf, iv and all that good stuff
-    return true;
-}
 
 // @TODO: Make a type for string or arrayish
 // See: https://github.com/ethereum/pyethsaletool

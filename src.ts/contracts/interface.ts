@@ -10,11 +10,17 @@ import { id } from '../utils/hash';
 import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly, defineFrozen } from '../utils/properties';
 
-import { BigNumber, BigNumberish, DeployDescription, EventDescription, EventFragment, FunctionDescription, FunctionFragment, Indexed, ParamType } from '../utils/types';
+import {
+    BigNumber, BigNumberish,
+    DeployDescription as _DeployDescription, EventDescription as _EventDescription, FunctionDescription as _FunctionDescription, LogDescription as _LogDescription, TransactionDescription as _TransactionDescription,
+    EventFragment, FunctionFragment,
+    Indexed as _Indexed,
+    ParamType
+} from '../utils/types';
 
 import * as errors from '../utils/errors';
 
-class _Indexed extends Indexed {
+class Indexed extends _Indexed {
     constructor(hash: string) {
         super();
         defineReadOnly(this, 'hash', hash);
@@ -22,7 +28,6 @@ class _Indexed extends Indexed {
 }
 
 class Description {
-    readonly type: string;
     constructor(info: any) {
         for (var key in info) {
             let value = info[key];
@@ -35,8 +40,7 @@ class Description {
     }
 }
 
-class _DeployDescription extends Description implements DeployDescription {
-    readonly type: "deploy";
+class DeployDescription extends Description implements _DeployDescription {
     readonly inputs: Array<ParamType>;
     readonly payable: boolean;
 
@@ -64,7 +68,7 @@ class _DeployDescription extends Description implements DeployDescription {
     }
 }
 
-class _FunctionDescription extends Description implements FunctionDescription {
+class FunctionDescription extends Description implements _FunctionDescription {
     readonly type: "call" | "transaction";
     readonly name: string;
     readonly signature: string;
@@ -110,8 +114,7 @@ class Result extends Description {
     [key: number]: any;
 }
 
-class _EventDescription extends Description implements EventDescription {
-    readonly type: "event";
+class EventDescription extends Description implements _EventDescription {
     readonly name: string;
     readonly signature: string;
 
@@ -198,10 +201,10 @@ class _EventDescription extends Description implements EventDescription {
         this.inputs.forEach(function(input, index) {
             if (input.indexed) {
                 if (topics == null) {
-                    result[index] = new _Indexed(null);
+                    result[index] = new Indexed(null);
 
                 } else if (inputDynamic[index]) {
-                    result[index] = new _Indexed(resultIndexed[indexedIndex++]);
+                    result[index] = new Indexed(resultIndexed[indexedIndex++]);
 
                 } else {
                     result[index] = resultIndexed[indexedIndex++];
@@ -218,7 +221,7 @@ class _EventDescription extends Description implements EventDescription {
     }
 }
 
-class TransactionDescription extends Description {
+class TransactionDescription extends Description implements _TransactionDescription{
     readonly name: string;
     readonly args: Array<any>;
     readonly signature: string;
@@ -227,7 +230,7 @@ class TransactionDescription extends Description {
     readonly value: BigNumber;
 }
 
-class LogDescription extends Description {
+class LogDescription extends Description implements _LogDescription {
     readonly name: string;
     readonly signature: string;
     readonly topic: string;
@@ -238,10 +241,9 @@ class LogDescription extends Description {
 function addMethod(method: any): void {
     switch (method.type) {
         case 'constructor': {
-            let description = new _DeployDescription({
+            let description = new DeployDescription({
                 inputs: method.inputs,
-                payable: (method.payable == null || !!method.payable),
-                type: "deploy"
+                payable: (method.payable == null || !!method.payable)
             });
 
             if (!this.deployFunction) { this.deployFunction = description; }
@@ -253,7 +255,7 @@ function addMethod(method: any): void {
             let signature = formatSignature(method).replace(/tuple/g, '');
             let sighash = id(signature).substring(0, 10);
 
-            let description = new _FunctionDescription({
+            let description = new FunctionDescription({
                 inputs: method.inputs,
                 outputs: method.outputs,
 
@@ -280,15 +282,13 @@ function addMethod(method: any): void {
         case 'event': {
             let signature = formatSignature(method).replace(/tuple/g, '');
 
-            let description = new _EventDescription({
+            let description = new EventDescription({
                 name: method.name,
                 signature: signature,
 
                 inputs: method.inputs,
                 topic: id(signature),
-                anonymous: (!!method.anonymous),
-
-                type: 'event'
+                anonymous: (!!method.anonymous)
             });
 
             // Expose the first (and hopefully unique) event name
@@ -304,7 +304,6 @@ function addMethod(method: any): void {
             break;
         }
 
-
         case 'fallback':
             // Nothing to do for fallback
             break;
@@ -317,9 +316,9 @@ function addMethod(method: any): void {
 
 export class Interface {
     readonly abi: Array<EventFragment | FunctionFragment>;
-    readonly functions: { [ name: string ]: FunctionDescription };
-    readonly events: { [ name: string ]: EventDescription };
-    readonly deployFunction: DeployDescription;
+    readonly functions: { [ name: string ]: _FunctionDescription };
+    readonly events: { [ name: string ]: _EventDescription };
+    readonly deployFunction: _DeployDescription;
 
     constructor(abi: Array<string | ParamType> | string) {
         errors.checkNew(this, Interface);
@@ -364,7 +363,7 @@ export class Interface {
         }
     }
 
-    parseTransaction(tx: { data: string, value?: BigNumberish }): TransactionDescription {
+    parseTransaction(tx: { data: string, value?: BigNumberish }): _TransactionDescription {
         var sighash = tx.data.substring(0, 10).toLowerCase();
         for (var name in this.functions) {
             if (name.indexOf('(') === -1) { continue; }
@@ -377,7 +376,6 @@ export class Interface {
                     name: name,
                     signature: func.signature,
                     sighash: func.sighash,
-                    type: 'transaction',
                     value: bigNumberify(tx.value || 0),
                 });
             }
@@ -386,7 +384,7 @@ export class Interface {
         return null;
     }
 
-    parseLog(log: { topics: Array<string>, data: string}): LogDescription {
+    parseLog(log: { topics: Array<string>, data: string}): _LogDescription {
         for (var name in this.events) {
             if (name.indexOf('(') === -1) { continue; }
             var event = this.events[name];
@@ -399,7 +397,6 @@ export class Interface {
                 name: event.name,
                 signature: event.signature,
                 topic: event.topic,
-                type: 'log',
                 values: event.decode(log.data, log.topics)
             });
         }

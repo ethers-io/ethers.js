@@ -11,7 +11,7 @@ import { Web3Provider } from './web3-provider';
 
 import { Network } from '../utils/types';
 
-function getDefaultProvider(network?: Network | string): FallbackProvider {
+function getDefaultProvider(network?: Network | string): Provider {
     return new FallbackProvider([
         new InfuraProvider(network),
         new EtherscanProvider(network),

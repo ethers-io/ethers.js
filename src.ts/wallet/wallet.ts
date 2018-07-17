@@ -4,12 +4,12 @@ import { defaultPath, entropyToMnemonic, fromMnemonic } from './hdnode';
 import * as secretStorage from './secret-storage';
 import { SigningKey } from './signing-key';
 
-import { arrayify, concat, hexlify, joinSignature } from '../utils/bytes';
+import { arrayify, concat, joinSignature } from '../utils/bytes';
 import { hashMessage } from '../utils/hash';
+import { isCrowdsaleWallet, isSecretStorageWallet } from '../utils/json-wallet';
 import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { randomBytes } from '../utils/random-bytes';
-import { recoverAddress } from '../utils/secp256k1';
 import { serialize as serializeTransaction } from '../utils/transaction';
 
 import { Arrayish, BigNumber, BlockTag, HDNode, MinimalProvider, ProgressCallback, Signer, TransactionRequest, TransactionResponse, Wordlist } from '../utils/types';
@@ -160,7 +160,7 @@ export class Wallet extends Signer {
     }
 
     static fromEncryptedJson(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet> {
-        if (secretStorage.isCrowdsaleWallet(json)) {
+        if (isCrowdsaleWallet(json)) {
             try {
                 if (progressCallback) { progressCallback(0); }
                 let privateKey = secretStorage.decryptCrowdsale(json, password);
@@ -170,7 +170,7 @@ export class Wallet extends Signer {
                 return Promise.reject(error);
             }
 
-        } else if (secretStorage.isValidWallet(json)) {
+        } else if (isSecretStorageWallet(json)) {
 
             return secretStorage.decrypt(json, password, progressCallback).then(function(signingKey) {
                 return new Wallet(signingKey);
@@ -183,36 +183,5 @@ export class Wallet extends Signer {
     static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet {
         if (!path) { path = defaultPath; }
         return new Wallet(fromMnemonic(mnemonic, wordlist).derivePath(path));
-    }
-
-
-    /**
-     *  Determine if this is an encryped JSON wallet.
-     */
-    static isEncryptedWallet(json: string): boolean {
-        return (secretStorage.isValidWallet(json) || secretStorage.isCrowdsaleWallet(json));
-    }
-
-
-    /**
-     *  Verify a signed message, returning the address of the signer.
-     */
-    static verifyMessage(message: Arrayish | string, signature: string): string {
-        signature = hexlify(signature);
-        if (signature.length != 132) { throw new Error('invalid signature'); }
-        var digest = hashMessage(message);
-
-        var recoveryParam = parseInt(signature.substring(130), 16);
-        if (recoveryParam >= 27) { recoveryParam -= 27; }
-        if (recoveryParam < 0) { throw new Error('invalid signature'); }
-
-        return recoverAddress(
-            digest,
-            {
-                r: signature.substring(0, 66),
-                s: '0x' + signature.substring(66, 130),
-                recoveryParam: recoveryParam
-            }
-        );
     }
 }

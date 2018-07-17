@@ -157,14 +157,14 @@ function _fromSeed(seed: Arrayish, mnemonic: string): HDNode {
     return new HDNode(I.slice(0, 32), I.slice(32), 0, 0, mnemonic, 'm');
 }
 
-export function fromMnemonic(mnemonic: string, wordlist?: Wordlist): HDNode {
+export function fromMnemonic(mnemonic: string, wordlist?: Wordlist): _HDNode {
     // Check that the checksum s valid (will throw an error)
     mnemonicToEntropy(mnemonic, wordlist);
 
     return _fromSeed(mnemonicToSeed(mnemonic), mnemonic);
 }
 
-export function fromSeed(seed: Arrayish): HDNode {
+export function fromSeed(seed: Arrayish): _HDNode {
     return _fromSeed(seed, null);
 }
 

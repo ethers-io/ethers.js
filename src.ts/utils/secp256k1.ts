@@ -1,11 +1,11 @@
 'use strict';
 
-import { ec as EC } from 'elliptic';
-const curve = new EC('secp256k1');
+
 
 import { getAddress } from './address';
 
-import { arrayify, hexlify, hexZeroPad } from './bytes';
+import { arrayify, hexlify, hexZeroPad, splitSignature } from './bytes';
+import { hashMessage } from './hash';
 import { keccak256 } from './keccak256';
 import { defineReadOnly } from './properties';
 
@@ -13,7 +13,6 @@ import { Arrayish, Signature } from './types';
 
 import * as errors from './errors';
 
-export const N = '0x' + curve.n.toString(16);
 
 export class KeyPair {
 
@@ -87,3 +86,28 @@ export function computeAddress(key: string): string {
     let publicKey = '0x' + computePublicKey(key).slice(4);
     return getAddress('0x' + keccak256(publicKey).substring(26));
 }
+
+
+export function verifyMessage(message: Arrayish | string, signature: Signature | string): string {
+    let sig = splitSignature(signature);
+    let digest = hashMessage(message);
+
+    return recoverAddress(
+        digest,
+        {
+            r: sig.r,
+            s: sig.s,
+            recoveryParam: sig.recoveryParam
+        }
+    );
+}
+
+// !!!!!! IMPORTANT !!!!!!!!
+//
+// This import MUST be at the bottom, otehrwise browserify executes several imports
+// BEFORE they are exported, resulting in undefined
+
+import { ec as EC } from 'elliptic';
+const curve = new EC('secp256k1');
+
+export const N = '0x' + curve.n.toString(16);

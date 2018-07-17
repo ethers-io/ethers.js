@@ -250,39 +250,54 @@ export interface TransactionResponse extends Transaction {
 ///////////////////////////////
 // Interface
 
-export class Indexed {
-    hash: string;
+export abstract class Indexed {
+    readonly hash: string;
 }
 
 export interface DeployDescription {
-    type: "deploy";
-    inputs: Array<ParamType>;
-    payable: boolean;
+    readonly inputs: Array<ParamType>;
+    readonly payable: boolean;
     encode(bytecode: string, params: Array<any>): string;
 }
 
 export interface FunctionDescription {
-    type: "call" | "transaction";
-    name: string;
-    signature: string;
-    sighash: string;
-    inputs: Array<ParamType>;
-    outputs: Array<ParamType>;
-    payable: boolean;
+    readonly type: "call" | "transaction";
+    readonly name: string;
+    readonly signature: string;
+    readonly sighash: string;
+    readonly inputs: Array<ParamType>;
+    readonly outputs: Array<ParamType>;
+    readonly payable: boolean;
     encode(params: Array<any>): string;
     decode(data: string): any;
 }
 
 export interface EventDescription {
-    type: "event";
-    name: string;
-    signature: string;
-    inputs: Array<ParamType>;
-    anonymous: boolean;
-    topic: string;
+    readonly name: string;
+    readonly signature: string;
+    readonly inputs: Array<ParamType>;
+    readonly anonymous: boolean;
+    readonly topic: string;
     encodeTopics(params: Array<any>): Array<string>;
     decode(data: string, topics?: Array<string>): any;
 }
+
+export interface LogDescription {
+    readonly name: string;
+    readonly signature: string;
+    readonly topic: string;
+    readonly values: Array<any>
+}
+
+export interface TransactionDescription {
+    readonly name: string;
+    readonly args: Array<any>;
+    readonly signature: string;
+    readonly sighash: string;
+    readonly decode: (data: string) => any;
+    readonly value: BigNumber;
+}
+
 
 ///////////////////////////////
 // Contract
@@ -322,7 +337,7 @@ export type Listener = (...args: Array<any>) => void;
  *  Note: We use an abstract class so we can use instanceof to determine if an
  *        object is a Provider.
  */
-export abstract class MinimalProvider {
+export abstract class MinimalProvider implements OnceBlockable {
     abstract getNetwork(): Promise<Network>;
 
     abstract getBlockNumber(): Promise<number>;
@@ -358,7 +373,7 @@ export abstract class MinimalProvider {
 }
 
 export type AsyncProvider = {
-    isMetaMask: boolean;
+    isMetaMask?: boolean;
     host?: string;
     path?: string;
     sendAsync: (request: any, callback: (error: any, response: any) => void) => void
