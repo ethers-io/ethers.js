@@ -619,9 +619,10 @@ export class Provider extends MinimalProvider {
                     case 'tx': {
                         let hash = comps[1];
                         this.getTransactionReceipt(hash).then((receipt) => {
-                            if (!receipt || receipt.blockNumber == null) { return; }
+                            if (!receipt || receipt.blockNumber == null) { return null; }
                             this._emitted['t:' + hash] = receipt.blockNumber;
                             this.emit(hash, receipt);
+                            return null;
                         }).catch((error: Error) => { this.emit('error', error); });
                         break;
                     }
@@ -636,6 +637,7 @@ export class Provider extends MinimalProvider {
                             if (lastBalance && balance.eq(lastBalance)) { return; }
                             this._balances[address] = balance;
                             this.emit(address, balance);
+                            return null;
                         }).catch((error: Error) => { this.emit('error', error); });
                         break;
                     }
@@ -656,6 +658,7 @@ export class Provider extends MinimalProvider {
                                 this._emitted['t:' + log.transactionHash] = log.blockNumber;
                                 this.emit(filter, log);
                             });
+                            return null;
                         }).catch((error: Error) => { this.emit('error', error); });
                         break;
                     }
