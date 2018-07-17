@@ -1,3 +1,3 @@
 /* no shims for node */
 
-export default { };
+export const platform = 'node';

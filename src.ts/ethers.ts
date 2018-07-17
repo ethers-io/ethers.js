@@ -1,8 +1,7 @@
 'use strict';
 
 // This is empty in node, and used by browserify to inject extra goodies
-import {} from './utils/shims';
-
+import { platform } from './utils/shims';
 
 import { Contract, Interface } from './contracts';
 import * as providers from './providers';
@@ -37,6 +36,7 @@ export {
 
     wordlists,
 
+    platform,
     version
 };
 
