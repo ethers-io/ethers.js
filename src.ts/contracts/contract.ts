@@ -9,7 +9,22 @@ import { hexDataLength, hexDataSlice, isHexString } from '../utils/bytes';
 import { defineReadOnly, jsonCopy, shallowCopy } from '../utils/properties';
 import { poll } from '../utils/web';
 
-import { BigNumber, EventDescription, EventFilter, Listener, Log, MinimalProvider, ParamType, Signer, TransactionRequest, TransactionResponse } from '../utils/types';
+import {
+    Signer,
+    MinimalProvider,
+
+    BigNumber,
+
+    ContractFunction,
+    EventDescription,
+    EventFilter,
+    ParamType,
+
+    Listener,
+    Log,
+    TransactionRequest,
+    TransactionResponse
+} from '../utils/types';
 
 import * as errors from '../utils/errors';
 
@@ -201,9 +216,11 @@ export class Contract {
     readonly provider: MinimalProvider;
 
     readonly estimate: Bucket<(...params: Array<any>) => Promise<BigNumber>>;
-    readonly functions: Bucket<(...params: Array<any>) => Promise<any>>;
+    readonly functions: Bucket<ContractFunction>;
 
     readonly filters: Bucket<(...params: Array<any>) => EventFilter>;
+
+    readonly [name: string]: ContractFunction | any;
 
     readonly addressPromise: Promise<string>;
 

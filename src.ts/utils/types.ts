@@ -304,6 +304,8 @@ export interface TransactionDescription {
 ///////////////////////////////
 // Contract
 
+export type ContractFunction = (...params: Array<any>) => Promise<any>;
+
 export type EventFilter = {
     address?: string;
     topics?: Array<string>;
