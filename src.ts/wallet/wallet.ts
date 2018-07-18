@@ -146,7 +146,7 @@ export class Wallet extends Signer {
     /**
      *  Static methods to create Wallet instances.
      */
-    static createRandom(options: any): Wallet {
+    static createRandom(options?: any): Wallet {
         var entropy: Uint8Array = randomBytes(16);
 
         if (!options) { options = { }; }
