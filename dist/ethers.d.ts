@@ -308,6 +308,7 @@ declare module 'ethers/utils/types' {
             readonly decode: (data: string) => any;
             readonly value: BigNumber;
     }
+    export type ContractFunction = (...params: Array<any>) => Promise<any>;
     export type EventFilter = {
             address?: string;
             topics?: Array<string>;
@@ -429,7 +430,7 @@ declare module 'ethers/_version' {
 
 declare module 'ethers/contracts/contract' {
     import { Interface } from 'ethers/contracts/interface';
-    import { BigNumber, EventFilter, Listener, MinimalProvider, ParamType, Signer, TransactionRequest, TransactionResponse } from 'ethers/utils/types';
+    import { Signer, MinimalProvider, BigNumber, ContractFunction, EventFilter, ParamType, Listener, TransactionRequest, TransactionResponse } from 'ethers/utils/types';
     interface Bucket<T> {
         [name: string]: T;
     }
@@ -439,8 +440,9 @@ declare module 'ethers/contracts/contract' {
         readonly signer: Signer;
         readonly provider: MinimalProvider;
         readonly estimate: Bucket<(...params: Array<any>) => Promise<BigNumber>>;
-        readonly functions: Bucket<(...params: Array<any>) => Promise<any>>;
+        readonly functions: Bucket<ContractFunction>;
         readonly filters: Bucket<(...params: Array<any>) => EventFilter>;
+        readonly [name: string]: ContractFunction | any;
         readonly addressPromise: Promise<string>;
         readonly deployTransaction: TransactionResponse;
         constructor(addressOrName: string, contractInterface: Array<string | ParamType> | string | Interface, signerOrProvider: Signer | MinimalProvider);
@@ -818,7 +820,7 @@ declare module 'ethers/wallet/wallet' {
             /**
                 *  Static methods to create Wallet instances.
                 */
-            static createRandom(options: any): Wallet;
+            static createRandom(options?: any): Wallet;
             static fromEncryptedJson(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet>;
             static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet;
     }
