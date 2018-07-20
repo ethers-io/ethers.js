@@ -9030,7 +9030,7 @@ catch (error) {
 },{}],48:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.0-beta.0";
+exports.version = "4.0.0-beta.1";
 
 },{}],49:[function(require,module,exports){
 'use strict';

@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "declaration": false,
+    "declaration": true,
     "esModuleInterop": true,
     "lib": [ "es2015", "es5", "dom" ],
     "module": "commonjs",
-    "outDir": "./",
+    "outDir": "./dist",
     "target": "es5",
     "moduleResolution": "node",
     "resolveJsonModule": true,
