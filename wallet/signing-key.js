@@ -48,7 +48,7 @@ function SigningKey(privateKey) {
 
     var keyPair = secp256k1.keyFromPrivate(privateKey);
 
-    utils.defineProperty(this, 'publicKey', '0x' + keyPair.getPublic(true, 'hex'))
+    utils.defineProperty(this, 'publicKey', keyPair.getPublic(true, 'hex'))
 
     var address = SigningKey.publicKeyToAddress('0x' + keyPair.getPublic(false, 'hex'));
     utils.defineProperty(this, 'address', address)

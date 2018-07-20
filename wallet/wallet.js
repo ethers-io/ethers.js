@@ -59,7 +59,7 @@ function Wallet(privateKey, provider) {
         signingKey = new SigningKey(privateKey);
     }
     utils.defineProperty(this, 'privateKey', signingKey.privateKey);
-
+    utils.defineProperty(this, 'publicKey', signingKey.publicKey)
     // Provider
     Object.defineProperty(this, 'provider', {
         enumerable: true,
