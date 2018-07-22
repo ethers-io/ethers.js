@@ -1,7 +1,7 @@
 'use strict';
 
-import { arrayify } from '../src.ts/utils/bytes';
-import { defineReadOnly } from '../src.ts/utils/properties';
+import { arrayify } from '../utils/bytes';
+import { defineReadOnly } from '../utils/properties';
 
 let crypto: any = (<any>global).crypto || (<any>global).msCrypto;
 if (!crypto || !crypto.getRandomValues) {

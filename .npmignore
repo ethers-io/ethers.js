@@ -2,10 +2,8 @@
 gulpfile.js
 
 # We do not need the TypeScipt source in deployments
-src.browser/
-src.ts/
-
 tsconfig.json
+src.ts/
 
 # To run tests, checkout GitHub
 tests/

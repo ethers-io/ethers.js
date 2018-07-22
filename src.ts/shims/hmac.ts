@@ -1,11 +1,11 @@
 
 import * as hash from 'hash.js';
 
-import { arrayify } from '../src.ts/utils/bytes';
+import { arrayify } from '../utils/bytes';
 
-import { Arrayish, SupportedAlgorithms } from '../src.ts/utils/types';
+import { Arrayish, SupportedAlgorithms } from '../utils/types';
 
-import * as errors from '../src.ts/utils/errors';
+import * as errors from '../utils/errors';
 
 const supportedAlgorithms = { sha256: true, sha512: true };
 export function computeHmac(algorithm: SupportedAlgorithms, key: Arrayish, data: Arrayish): Uint8Array {

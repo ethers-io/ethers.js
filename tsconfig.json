@@ -24,7 +24,8 @@
   "files": [
       "./src.ts/index.ts",
       "./src.ts/wordlists/index.ts",
-      "./thirdparty.d.ts"
+      "./src.ts/shims/index.ts",
+      "./src.ts/thirdparty.d.ts"
   ]
 }
 

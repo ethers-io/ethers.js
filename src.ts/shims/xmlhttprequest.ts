@@ -6,3 +6,5 @@ try {
     console.log('Warning: XMLHttpRequest is not defined');
     module.exports.XMLHttpRequest = null;
 }
+
+export const _empty: any = null;

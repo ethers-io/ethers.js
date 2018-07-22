@@ -1,6 +1,6 @@
 'use strict';
 
-import { arrayify } from '../src.ts/utils/bytes';
+import { arrayify } from '../utils/bytes';
 
 module.exports = {
     decode: function(textData: string): Uint8Array {

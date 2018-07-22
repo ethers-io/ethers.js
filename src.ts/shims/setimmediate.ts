@@ -1,5 +1,5 @@
 
-function setImmediate(func) {
+function setImmediate(func: ) {
     setTimeout(func, 0);
 }
 
