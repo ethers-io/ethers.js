@@ -9,4 +9,5 @@ import { } from './hmac';
 import { } from './pbkdf2';
 import { } from './random-bytes';
 import { } from './shims';
+import { } from './wordlists';
 import { } from './xmlhttprequest';

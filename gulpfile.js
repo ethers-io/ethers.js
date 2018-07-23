@@ -31,14 +31,13 @@ var empty = "module.exports = {};";
 
 // We already have a random Uint8Array browser/node safe source
 // @TODO: Use path construction instead of ../..
-var brorand = "var randomBytes = require('../../src.ts/utils').randomBytes; module.exports = function(length) { return randomBytes(length); };";
+var brorand = "var randomBytes = require('../../utils').randomBytes; module.exports = function(length) { return randomBytes(length); };";
 
 // setImmediate is installed globally by our src.browser/shims.ts, loaded from src.ts/index.ts
-var process = "module.exports = { };";
+var process = "module.exports = { browser: true };";
 var timers = "module.exports = { setImmediate: global.setImmediate }; ";
 
 var transforms = {
-//    'ethers.js/package.json': JSON.stringify({ version: version }),
 
     // Remove the precomputed secp256k1 points
     "elliptic/lib/elliptic/precomputed/secp256k1.js": undef,
@@ -64,8 +63,6 @@ var transforms = {
     "process/browser.js": process,
     "timers-browserify/main.js": timers,
 
-    // Browser doesn't automatically get wordlists (individual files avaialble)
-    "src.ts/wordlists/index.ts": "module.exports = { en: require('./lang-en').langEn }",
 };
 
 function transformFile(path) {
@@ -178,13 +175,13 @@ function taskBundle(name, options) {
     var result = browserify({
         basedir: '.',
         debug: false,
-        entries: [ './src.ts/' ],
-        cache: {},
+        entries: [ './index.js' ],
+        cache: { },
         packageCache: {},
         standalone: "ethers",
         transform: [ [ transform, { global: true } ] ],
     })
-    .plugin(tsify)
+//    .plugin(tsify)
     .bundle()
     .pipe(source(options.filename))
 
