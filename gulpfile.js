@@ -15,187 +15,141 @@ var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
 var buffer = require('vinyl-buffer');
 
-
-/////////////////////////
-// Transforms
-
-
-// The elliptic package.json is only used for its version
-var ellipticPackage = require('elliptic/package.json');
-ellipticPackage = JSON.stringify({ version: ellipticPackage.version });
-
-var version = require('./package.json').version;
-
-var undef = "module.exports = undefined;";
-var empty = "module.exports = {};";
-
-// We already have a random Uint8Array browser/node safe source
-// @TODO: Use path construction instead of ../..
-var brorand = "var randomBytes = require('../../utils').randomBytes; module.exports = function(length) { return randomBytes(length); };";
-
-// setImmediate is installed globally by our src.browser/shims.ts, loaded from src.ts/index.ts
-var process = "module.exports = { browser: true };";
-var timers = "module.exports = { setImmediate: global.setImmediate }; ";
-
-var transforms = {
-
-    // Remove the precomputed secp256k1 points
-    "elliptic/lib/elliptic/precomputed/secp256k1.js": undef,
-
-    // Remove curves we don't care about
-    "elliptic/curve/edwards.js": empty,
-    "elliptic/curve/mont.js": empty,
-    "elliptic/lib/elliptic/eddsa/.*": empty,
-
-    // We only use the version from this JSON package
-    "elliptic/package.json" : ellipticPackage,
-
-    // Remove RIPEMD160 and unneeded hashing algorithms
-    "hash.js/lib/hash/ripemd.js": "module.exports = {ripemd160: null}",
-    "hash.js/lib/hash/sha/1.js": empty,
-    "hash.js/lib/hash/sha/224.js": empty,
-    "hash.js/lib/hash/sha/384.js": empty,
-
-    // Swap out borland for the random bytes we already have
-    "brorand/index.js": brorand,
-
-    // Used by sha3 if it exists; (so make it no exist)
-    "process/browser.js": process,
-    "timers-browserify/main.js": timers,
-
-};
-
-function transformFile(path) {
-    for (var pattern in transforms) {
-        if (path.match(new RegExp('/' + pattern + '$'))) {
-            return transforms[pattern];
-        }
+function createTransform(transforms) {
+    function padding(length) {
+        let pad = '';
+        while (pad.length < length) { pad += ' '; }
+        return pad;
     }
-    return null;
-}
 
-function padding(length) {
-    let pad = '';
-    while (pad.length < length) { pad += ' '; }
-    return pad;
-}
-
-/**
- *  Browser Library
- *
- *  Source: src.ts/index.ts src.ts/{contracts,providers,utils,wallet}/*.ts
- *  Target: dist/ethers{.min,}.js
- *
- *  See the above transform tables which maps regular expressions to
- *  replacement source for largely libraries we only require parts of.
- *
- */
-function transform(path, options) {
-    var data = '';
-
-    return through(function(chunk) {
-        data += chunk;
-    }, function () {
-        var transformed = transformFile(path);
-        var shortPath = path;
-        if (shortPath.substring(0, __dirname.length) == __dirname) {
-            shortPath = shortPath.substring(__dirname.length);
-        }
-        var size = fs.readFileSync(path).length;
-        if (transformed != null) {
-            console.log('Transformed:', shortPath, padding(70 - shortPath.length), size, padding(6 - String(size).length), '=>', transformed.length);
-            data = transformed;
-        } else if (shortPath === '/src.ts/wordlists/wordlist.ts') {
-            data += '\n\nexportWordlist = true;'
-        } else {
-            console.log('Preserved:  ', shortPath, padding(70 - shortPath.length), size);
-        }
-        this.queue(data);
-        this.queue(null);
-    });
-}
-
-/**
- *  Browser Wordlist files
- *
- *  Source: src.ts/wordlists/lang-*.ts.
- *  Target: dist/wordlist-*.js
- *
- *  Since all of the functions these wordlists use is already
- *  available from the global ethers library, we use this to
- *  target the global ethers functions directly, rather than
- *  re-include them.
- *
- */
-function transformBip39(path, options) {
-    var data = '';
-
-    return through(function(chunk) {
-        data += chunk;
-    }, function () {
-        var shortPath = path;
-        if (shortPath.substring(0, __dirname.length) == __dirname) {
-            shortPath = shortPath.substring(__dirname.length);
-        }
-
-        // Word list files...
-        if (shortPath.match(/^\/src\.ts\/wordlists\//)) {
-            // If it is the wordlist class, register should export the wordlist
-            if (shortPath === '/src.ts/wordlists/wordlist.ts') {
-                data += '\n\nexportWordlist = true;'
+    function transformFile(path) {
+        for (var pattern in transforms) {
+            if (path.match(new RegExp('/' + pattern + '$'))) {
+                return transforms[pattern];
             }
-            shortPath = '/';
         }
+        return null;
+    }
 
-        switch (shortPath) {
-            case '/src.ts/utils/errors.ts':
-                data = "module.exports = global.ethers.utils.errors";
-                break;
-            case '/src.ts/utils/bytes.ts':
-            case '/src.ts/utils/hash.ts':
-            case '/src.ts/utils/properties.ts':
-            case '/src.ts/utils/utf8.ts':
-                data = "module.exports = global.ethers.utils";
-                break;
-            case '/': break;
-            default:
-                throw new Error('unhandled file: ' + shortPath);
-        }
+    return function(path, options) {
+        var data = '';
 
-        this.queue(data);
-        this.queue(null);
-    });
+        return through(function(chunk) {
+            data += chunk;
+        }, function () {
+            var transformed = transformFile(path);
+            var shortPath = path;
+            if (shortPath.substring(0, __dirname.length) == __dirname) {
+                shortPath = shortPath.substring(__dirname.length);
+            }
+            var size = fs.readFileSync(path).length;
+            if (transformed != null) {
+                console.log('Transformed:', shortPath, padding(70 - shortPath.length), size, padding(6 - String(size).length), '=>', transformed.length);
+                data = transformed;
+            } else if (shortPath === '/src.ts/wordlists/wordlist.ts') {
+                data += '\n\nexportWordlist = true;'
+            } else {
+                console.log('Preserved:  ', shortPath, padding(70 - shortPath.length), size);
+            }
+            this.queue(data);
+            this.queue(null);
+        });
+    }
 }
 
-
+/**
+ *  Bundled Library (browser)
+ *
+ *  Source: src.ts/index.ts src.ts/{contracts,providers,utils,wallet}/*.ts src.ts/wordlists/lang-en.ts
+ *  Target: dist/ethers{.min,}.js
+ */
 function taskBundle(name, options) {
 
-  gulp.task(name, function () {
+    // The elliptic package.json is only used for its version
+    var ellipticPackage = require('elliptic/package.json');
+    ellipticPackage = JSON.stringify({ version: ellipticPackage.version });
 
-    var result = browserify({
-        basedir: '.',
-        debug: false,
-        entries: [ './index.js' ],
-        cache: { },
-        packageCache: {},
-        standalone: "ethers",
-        transform: [ [ transform, { global: true } ] ],
-    })
-//    .plugin(tsify)
-    .bundle()
-    .pipe(source(options.filename))
+    var version = require('./package.json').version;
 
-    if (options.minify) {
-        result = result.pipe(buffer())
-        .pipe(sourcemaps.init({ loadMaps: true }))
-        .pipe(uglify())
-        .pipe(sourcemaps.write('./'))
+    var undef = "module.exports = undefined;";
+    var empty = "module.exports = {};";
+
+    // We already have a random Uint8Array browser/node safe source
+    // @TODO: Use path construction instead of ../..
+    var brorand = "var randomBytes = require('../../utils').randomBytes; module.exports = function(length) { return randomBytes(length); };";
+
+    // setImmediate is installed globally by our src.browser/shims.ts, loaded from src.ts/index.ts
+    var process = "module.exports = { browser: true };";
+    var timers = "module.exports = { setImmediate: global.setImmediate }; ";
+
+    function readShim(filename) {
+        return fs.readFileSync('./shims/' + filename + '.js').toString();
     }
 
-    result = result.pipe(gulp.dest("dist"));
 
-    return result;
-  });
+    var transforms = {
+
+        // Remove the precomputed secp256k1 points
+        "elliptic/lib/elliptic/precomputed/secp256k1.js": undef,
+
+        // Remove curves we don't care about
+        "elliptic/curve/edwards.js": empty,
+        "elliptic/curve/mont.js": empty,
+        "elliptic/lib/elliptic/eddsa/.*": empty,
+
+        // We only use the version from this JSON package
+        "elliptic/package.json" : ellipticPackage,
+
+        // Remove RIPEMD160 and unneeded hashing algorithms
+        "hash.js/lib/hash/ripemd.js": "module.exports = {ripemd160: null}",
+        "hash.js/lib/hash/sha/1.js": empty,
+        "hash.js/lib/hash/sha/224.js": empty,
+        "hash.js/lib/hash/sha/384.js": empty,
+
+        // Swap out borland for the random bytes we already have
+        "brorand/index.js": brorand,
+
+        "xmlhttprequest/lib/XMLHttpRequest.js": readShim("xmlhttprequest"),
+
+        // Used by sha3 if it exists; (so make it no exist)
+        "process/browser.js": process,
+        "timers-browserify/main.js": timers,
+
+        "ethers.js/utils/base64.js": readShim("base64"),
+        "ethers.js/providers/ipc-provider.js": readShim("empty"),
+        "ethers.js/utils/hmac.js": readShim("hmac"),
+        "ethers.js/utils/pbkdf2.js": readShim("pbkdf2"),
+        "ethers.js/utils/random-bytes.js": readShim("random-bytes"),
+        "ethers.js/utils/shims.js": readShim("shims"),
+        "ethers.js/wordlists/index.js": readShim("wordlists"),
+
+    };
+
+    gulp.task(name, function () {
+
+        var result = browserify({
+            basedir: '.',
+            debug: false,
+            entries: [ './index.js' ],
+            cache: { },
+            packageCache: {},
+            standalone: "ethers",
+            transform: [ [ createTransform(transforms), { global: true } ] ],
+        })
+        .bundle()
+        .pipe(source(options.filename))
+
+        if (options.minify) {
+            result = result.pipe(buffer())
+            .pipe(sourcemaps.init({ loadMaps: true }))
+            .pipe(uglify())
+            .pipe(sourcemaps.write('./'))
+        }
+
+        result = result.pipe(gulp.dest("dist"));
+
+        return result;
+    });
 }
 
 // Creates dist/ethers.js
@@ -211,14 +165,11 @@ gulp.task("temp-types", function() {
         declaration: true,
         esModuleInterop: true,
         moduleResolution: "node",
-//        outFile: 'ethers.js',
         lib: [ "es2015", "es5", "dom" ],
         module: "commonjs",
-//        rootDir: "./src.ts",
         target: "es5",
     }))
     .dts
-//    .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest(".tmp"))
 });
 
@@ -228,8 +179,52 @@ gulp.task("temp-types", function() {
  *  source: src.ts/wordlist/lang-*.ts
  *  target: dist/wordlist-*.js
  *
+ *  Since all of the functions these wordlists use is already
+ *  available from the global ethers library, we use this to
+ *  target the global ethers functions directly, rather than
+ *  re-include them.
  */
 function taskLang(locale) {
+    function transformBip39(path, options) {
+        var data = '';
+
+        return through(function(chunk) {
+            data += chunk;
+        }, function () {
+            var shortPath = path;
+            if (shortPath.substring(0, __dirname.length) == __dirname) {
+                shortPath = shortPath.substring(__dirname.length);
+            }
+
+            // Word list files...
+            if (shortPath.match(/^\/src\.ts\/wordlists\//)) {
+                // If it is the wordlist class, register should export the wordlist
+                if (shortPath === '/src.ts/wordlists/wordlist.ts') {
+                    data += '\n\nexportWordlist = true;'
+                }
+                shortPath = '/';
+            }
+
+            switch (shortPath) {
+                case '/src.ts/utils/errors.ts':
+                    data = "module.exports = global.ethers.utils.errors";
+                    break;
+                case '/src.ts/utils/bytes.ts':
+                case '/src.ts/utils/hash.ts':
+                case '/src.ts/utils/properties.ts':
+                case '/src.ts/utils/utf8.ts':
+                    data = "module.exports = global.ethers.utils";
+                    break;
+                case '/': break;
+                default:
+                    throw new Error('unhandled file: ' + shortPath);
+            }
+
+            this.queue(data);
+            this.queue(null);
+        });
+    }
+
     gulp.task("bip39-" + locale, function() {
         return browserify({
             basedir: '.',
@@ -255,6 +250,14 @@ taskLang("zh");
 
 // Package up all the test cases into tests/dist/tests.json
 gulp.task("tests", function() {
+
+    function readShim(filename) {
+        return fs.readFileSync('./tests/' + filename + '.js').toString();
+    }
+
+    var transforms = {
+        "tests/utils-ethers.js": readShim('utils-ethers-browser')
+    }
 
     // Create a mock-fs module that can load our gzipped test cases
     var data = {};
@@ -285,7 +288,8 @@ gulp.task("tests", function() {
         entries: [ "./tests/browser.js" ],
         cache: {},
         packageCache: {},
-        standalone: "tests"
+        standalone: "tests",
+        transform: [ [ createTransform(transforms), { global: true } ] ],
     })
     .bundle()
     .pipe(source("tests.js"))
