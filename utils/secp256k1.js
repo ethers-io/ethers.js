@@ -12,17 +12,25 @@ var bytes_1 = require("./bytes");
 var hash_1 = require("./hash");
 var keccak256_1 = require("./keccak256");
 var properties_1 = require("./properties");
+var elliptic_1 = require("elliptic");
 var errors = __importStar(require("./errors"));
+var _curve = null;
+function getCurve() {
+    if (!_curve) {
+        _curve = new elliptic_1.ec('secp256k1');
+    }
+    return _curve;
+}
 var KeyPair = /** @class */ (function () {
     function KeyPair(privateKey) {
-        var keyPair = curve.keyFromPrivate(bytes_1.arrayify(privateKey));
+        var keyPair = getCurve().keyFromPrivate(bytes_1.arrayify(privateKey));
         properties_1.defineReadOnly(this, 'privateKey', bytes_1.hexlify(keyPair.priv.toArray('be', 32)));
         properties_1.defineReadOnly(this, 'publicKey', '0x' + keyPair.getPublic(false, 'hex'));
         properties_1.defineReadOnly(this, 'compressedPublicKey', '0x' + keyPair.getPublic(true, 'hex'));
         properties_1.defineReadOnly(this, 'publicKeyBytes', keyPair.getPublic().encode(null, true));
     }
     KeyPair.prototype.sign = function (digest) {
-        var keyPair = curve.keyFromPrivate(bytes_1.arrayify(this.privateKey));
+        var keyPair = getCurve().keyFromPrivate(bytes_1.arrayify(this.privateKey));
         var signature = keyPair.sign(bytes_1.arrayify(digest), { canonical: true });
         return {
             recoveryParam: signature.recoveryParam,
@@ -39,7 +47,7 @@ function recoverPublicKey(digest, signature) {
         r: bytes_1.arrayify(signature.r),
         s: bytes_1.arrayify(signature.s)
     };
-    return '0x' + curve.recoverPubKey(bytes_1.arrayify(digest), sig, signature.recoveryParam).encode('hex', false);
+    return '0x' + getCurve().recoverPubKey(bytes_1.arrayify(digest), sig, signature.recoveryParam).encode('hex', false);
 }
 exports.recoverPublicKey = recoverPublicKey;
 function computePublicKey(key, compressed) {
@@ -55,13 +63,13 @@ function computePublicKey(key, compressed) {
         if (compressed) {
             return bytes_1.hexlify(bytes);
         }
-        return '0x' + curve.keyFromPublic(bytes).getPublic(false, 'hex');
+        return '0x' + getCurve().keyFromPublic(bytes).getPublic(false, 'hex');
     }
     else if (bytes.length === 65) {
         if (!compressed) {
             return bytes_1.hexlify(bytes);
         }
-        return '0x' + curve.keyFromPublic(bytes).getPublic(true, 'hex');
+        return '0x' + getCurve().keyFromPublic(bytes).getPublic(true, 'hex');
     }
     errors.throwError('invalid public or private key', errors.INVALID_ARGUMENT, { arg: 'key', value: '[REDACTED]' });
     return null;
@@ -87,10 +95,3 @@ function verifyMessage(message, signature) {
     });
 }
 exports.verifyMessage = verifyMessage;
-// !!!!!! IMPORTANT !!!!!!!!
-//
-// This import MUST be at the bottom, otehrwise browserify executes several imports
-// BEFORE they are exported, resulting in undefined
-var elliptic_1 = require("elliptic");
-var curve = new elliptic_1.ec('secp256k1');
-exports.N = '0x' + curve.n.toString(16);

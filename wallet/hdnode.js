@@ -33,6 +33,7 @@ var hmac_1 = require("../utils/hmac");
 var properties_1 = require("../utils/properties");
 var secp256k1_1 = require("../utils/secp256k1");
 var sha2_1 = require("../utils/sha2");
+var N = bignumber_1.bigNumberify("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 var types_1 = require("../utils/types");
 var errors = __importStar(require("../utils/errors"));
 // "Bitcoin seed"
@@ -103,7 +104,7 @@ var HDNode = /** @class */ (function (_super) {
         var I = hmac_1.computeHmac('sha512', this.chainCode, data);
         var IL = bignumber_1.bigNumberify(I.slice(0, 32));
         var IR = I.slice(32);
-        var ki = IL.add(this.keyPair.privateKey).mod(secp256k1_1.N);
+        var ki = IL.add(this.keyPair.privateKey).mod(N);
         return new HDNode(bytes_1.arrayify(ki), IR, index, this.depth + 1, mnemonic, path);
     };
     HDNode.prototype.derivePath = function (path) {

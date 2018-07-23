@@ -66,7 +66,7 @@ declare module 'ethers/utils' {
     import { getNetwork } from 'ethers/utils/networks';
     import { defineFrozen, defineReadOnly, resolveProperties, shallowCopy } from 'ethers/utils/properties';
     import * as RLP from 'ethers/utils/rlp';
-    import { verifyMessage } from 'ethers/utils/secp256k1';
+    import { computePublicKey, verifyMessage } from 'ethers/utils/secp256k1';
     import { parse as parseTransaction, serialize as serializeTransaction } from 'ethers/utils/transaction';
     import { toUtf8Bytes, toUtf8String } from 'ethers/utils/utf8';
     import { formatEther, parseEther, formatUnits, parseUnits } from 'ethers/utils/units';
@@ -83,7 +83,7 @@ declare module 'ethers/utils' {
         Two: types.BigNumber;
         WeiPerEther: types.BigNumber;
     };
-    export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, constants, types, RLP, fetchJson, getNetwork, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, etherSymbol, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, verifyMessage, errors };
+    export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, constants, types, RLP, fetchJson, getNetwork, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, etherSymbol, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computePublicKey, verifyMessage, errors };
 }
 
 declare module 'ethers/wallet' {
@@ -425,7 +425,7 @@ declare module 'ethers/utils/errors' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.0-beta.0";
+    export const version = "4.0.0-beta.2";
 }
 
 declare module 'ethers/contracts/contract' {
@@ -760,7 +760,6 @@ declare module 'ethers/utils/secp256k1' {
     export function recoverAddress(digest: Arrayish, signature: Signature): string;
     export function computeAddress(key: string): string;
     export function verifyMessage(message: Arrayish | string, signature: Signature | string): string;
-    export const N: string;
 }
 
 declare module 'ethers/utils/transaction' {
@@ -786,7 +785,7 @@ declare module 'ethers/utils/units' {
     import { BigNumber, BigNumberish } from 'ethers/utils/types';
     export function formatUnits(value: BigNumberish, unitType?: string | number, options?: any): string;
     export function parseUnits(value: string, unitType?: string | number): BigNumber;
-    export function formatEther(wei: BigNumberish, options: any): string;
+    export function formatEther(wei: BigNumberish, options?: any): string;
     export function parseEther(ether: string): BigNumber;
 }
 

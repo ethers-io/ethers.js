@@ -1,6 +1,6 @@
 {
   "name": "ethers",
-  "version": "4.0.0-beta.1",
+  "version": "4.0.0-beta.2",
   "description": "Ethereum wallet library.",
   "main": "./index.js",
   "types": "./dist/ethers.d.ts",
@@ -52,16 +52,20 @@
     "vinyl-source-stream": "^2.0.0",
     "web3": "0.20.6"
   },
-  "browser": {
-    "fs": "./tests/browser-fs.js",
-    "zlib": "browserify-zlib",
-    "./src.ts/providers/ipc-provider.ts": "./src.browser/empty.ts",
-    "./src.ts/utils/base64.ts": "./src.browser/base64.ts",
-    "./src.ts/utils/hmac.ts": "./src.browser/hmac.ts",
-    "./src.ts/utils/pbkdf2.ts": "./src.browser/pbkdf2.ts",
-    "./src.ts/utils/random-bytes.ts": "./src.browser/random-bytes.ts",
-    "./src.ts/utils/shims.ts": "./src.browser/shims.ts",
-    "xmlhttprequest": "./src.browser/xmlhttprequest.ts"
+  "browser": "./dist/ethers.js",
+  "browser-old": {
+    "2fs": "./tests/browser-fs.js",
+    "2zlib": "browserify-zlib",
+
+    "./22providers/ipc-provider.js": "./shims/empty.js",
+    "./22utils/base64.js": "./shims/base64.js",
+    "./22utils/hmac.js": "./shims/hmac.js",
+    "./22utils/pbkdf2.js": "./shims/pbkdf2.js",
+    "./22utils/random-bytes.js": "./shims/random-bytes.js",
+    "./22utils/shims.js": "./shims/shims.js",
+    "./22wordlists/index.js": "./shims/wordlists.js",
+
+    "2xmlhttprequest": "./shims/xmlhttprequest.js"
   },
   "keywords": [
     "ethereum",

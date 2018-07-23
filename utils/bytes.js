@@ -4,11 +4,12 @@
  *
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+var types_1 = require("./types");
 var errors = require("./errors");
 exports.AddressZero = '0x0000000000000000000000000000000000000000';
 exports.HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
 function isBigNumber(value) {
-    return !!value._bn;
+    return (value instanceof types_1.BigNumber);
 }
 function addSlice(array) {
     if (array.slice) {

@@ -1,5 +1,958 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.version = "4.0.0-beta.2";
+
+},{}],2:[function(require,module,exports){
+'use strict';
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var interface_1 = require("./interface");
+var abi_coder_1 = require("../utils/abi-coder");
+var address_1 = require("../utils/address");
+var bignumber_1 = require("../utils/bignumber");
+var bytes_1 = require("../utils/bytes");
+var properties_1 = require("../utils/properties");
+var web_1 = require("../utils/web");
+var types_1 = require("../utils/types");
+var errors = __importStar(require("../utils/errors"));
+var allowedTransactionKeys = {
+    data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+};
+// Recursively replaces ENS names with promises to resolve the name and
+// stalls until all promises have returned
+// @TODO: Expand this to resolve any promises too
+function resolveAddresses(provider, value, paramType) {
+    if (Array.isArray(paramType)) {
+        var promises = [];
+        paramType.forEach(function (paramType, index) {
+            var v = null;
+            if (Array.isArray(value)) {
+                v = value[index];
+            }
+            else {
+                v = value[paramType.name];
+            }
+            promises.push(resolveAddresses(provider, v, paramType));
+        });
+        return Promise.all(promises);
+    }
+    if (paramType.type === 'address') {
+        return provider.resolveName(value);
+    }
+    if (paramType.components) {
+        return resolveAddresses(provider, value, paramType.components);
+    }
+    return Promise.resolve(value);
+}
+function runMethod(contract, functionName, estimateOnly) {
+    var method = contract.interface.functions[functionName];
+    return function () {
+        var params = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            params[_i] = arguments[_i];
+        }
+        var tx = {};
+        // If 1 extra parameter was passed in, it contains overrides
+        if (params.length === method.inputs.length + 1 && typeof (params[params.length - 1]) === 'object') {
+            tx = properties_1.shallowCopy(params.pop());
+            // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
+            for (var key in tx) {
+                if (!allowedTransactionKeys[key]) {
+                    throw new Error('unknown transaction override ' + key);
+                }
+            }
+        }
+        if (params.length != method.inputs.length) {
+            throw new Error('incorrect number of arguments');
+        }
+        // Check overrides make sense
+        ['data', 'to'].forEach(function (key) {
+            if (tx[key] != null) {
+                errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
+            }
+        });
+        // Send to the contract address
+        tx.to = contract.addressPromise;
+        return resolveAddresses(contract.provider, params, method.inputs).then(function (params) {
+            tx.data = method.encode(params);
+            if (method.type === 'call') {
+                // Call (constant functions) always cost 0 ether
+                if (estimateOnly) {
+                    return Promise.resolve(bignumber_1.ConstantZero);
+                }
+                if (!contract.provider) {
+                    errors.throwError('call (constant functions) require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'call' });
+                }
+                // Check overrides make sense
+                ['gasLimit', 'gasPrice', 'value'].forEach(function (key) {
+                    if (tx[key] != null) {
+                        throw new Error('call cannot override ' + key);
+                    }
+                });
+                if (tx.from == null && contract.signer) {
+                    tx.from = contract.signer.getAddress();
+                }
+                return contract.provider.call(tx).then(function (value) {
+                    if ((bytes_1.hexDataLength(value) % 32) === 4 && bytes_1.hexDataSlice(value, 0, 4) === '0x08c379a0') {
+                        var reason = abi_coder_1.defaultAbiCoder.decode(['string'], bytes_1.hexDataSlice(value, 4));
+                        errors.throwError('call revert exception', errors.CALL_EXCEPTION, {
+                            address: contract.address,
+                            args: params,
+                            method: method.signature,
+                            errorSignature: 'Error(string)',
+                            errorArgs: [reason],
+                            reason: reason,
+                            transaction: tx
+                        });
+                    }
+                    try {
+                        var result = method.decode(value);
+                        if (method.outputs.length === 1) {
+                            result = result[0];
+                        }
+                        return result;
+                    }
+                    catch (error) {
+                        if (value === '0x' && method.outputs.length > 0) {
+                            errors.throwError('call exception', errors.CALL_EXCEPTION, {
+                                address: contract.address,
+                                method: method.signature,
+                                args: params
+                            });
+                        }
+                        throw error;
+                    }
+                });
+            }
+            else if (method.type === 'transaction') {
+                // Only computing the transaction estimate
+                if (estimateOnly) {
+                    if (!contract.provider) {
+                        errors.throwError('estimate gas require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'estimateGas' });
+                    }
+                    if (tx.from == null && contract.signer) {
+                        tx.from = contract.signer.getAddress();
+                    }
+                    return contract.provider.estimateGas(tx);
+                }
+                if (!contract.signer) {
+                    errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' });
+                }
+                // Make sure they aren't overriding something they shouldn't
+                if (tx.from != null) {
+                    errors.throwError('cannot override from in a transaction', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' });
+                }
+                return contract.signer.sendTransaction(tx);
+            }
+            throw new Error('invalid type - ' + method.type);
+            return null;
+        });
+    };
+}
+function getEventTag(filter) {
+    return (filter.address || '') + (filter.topics ? filter.topics.join(':') : '');
+}
+var Contract = /** @class */ (function () {
+    // https://github.com/Microsoft/TypeScript/issues/5453
+    // Once this issue is resolved (there are open PR) we can do this nicer
+    // by making addressOrName default to null for 2 operand calls. :)
+    function Contract(addressOrName, contractInterface, signerOrProvider) {
+        var _this = this;
+        errors.checkNew(this, Contract);
+        // @TODO: Maybe still check the addressOrName looks like a valid address or name?
+        //address = getAddress(address);
+        if (contractInterface instanceof interface_1.Interface) {
+            properties_1.defineReadOnly(this, 'interface', contractInterface);
+        }
+        else {
+            properties_1.defineReadOnly(this, 'interface', new interface_1.Interface(contractInterface));
+        }
+        if (signerOrProvider instanceof types_1.Signer) {
+            properties_1.defineReadOnly(this, 'provider', signerOrProvider.provider);
+            properties_1.defineReadOnly(this, 'signer', signerOrProvider);
+        }
+        else if (signerOrProvider instanceof types_1.MinimalProvider) {
+            properties_1.defineReadOnly(this, 'provider', signerOrProvider);
+            properties_1.defineReadOnly(this, 'signer', null);
+        }
+        else {
+            errors.throwError('invalid signer or provider', errors.INVALID_ARGUMENT, { arg: 'signerOrProvider', value: signerOrProvider });
+        }
+        properties_1.defineReadOnly(this, 'estimate', {});
+        properties_1.defineReadOnly(this, 'functions', {});
+        properties_1.defineReadOnly(this, 'filters', {});
+        Object.keys(this.interface.events).forEach(function (eventName) {
+            var event = _this.interface.events[eventName];
+            properties_1.defineReadOnly(_this.filters, eventName, function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                return {
+                    address: _this.address,
+                    topics: event.encodeTopics(args)
+                };
+            });
+        });
+        // Not connected to an on-chain instance, so do not connect functions and events
+        if (!addressOrName) {
+            properties_1.defineReadOnly(this, 'address', null);
+            properties_1.defineReadOnly(this, 'addressPromise', Promise.resolve(null));
+            return;
+        }
+        this._events = [];
+        properties_1.defineReadOnly(this, 'address', addressOrName);
+        if (this.provider) {
+            properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName).then(function (address) {
+                if (address == null) {
+                    throw new Error('name not found');
+                }
+                return address;
+            }).catch(function (error) {
+                console.log('ERROR: Cannot find Contract - ' + addressOrName);
+                throw error;
+            }));
+        }
+        else {
+            try {
+                properties_1.defineReadOnly(this, 'addressPromise', Promise.resolve(address_1.getAddress(addressOrName)));
+            }
+            catch (error) {
+                errors.throwError('provider is required to use non-address contract address', errors.INVALID_ARGUMENT, { argument: 'addressOrName', value: addressOrName });
+            }
+        }
+        Object.keys(this.interface.functions).forEach(function (name) {
+            var run = runMethod(_this, name, false);
+            if (_this[name] == null) {
+                properties_1.defineReadOnly(_this, name, run);
+            }
+            else {
+                console.log('WARNING: Multiple definitions for ' + name);
+            }
+            if (_this.functions[name] == null) {
+                properties_1.defineReadOnly(_this.functions, name, run);
+                properties_1.defineReadOnly(_this.estimate, name, runMethod(_this, name, true));
+            }
+        });
+    }
+    // @TODO: Allow timeout?
+    Contract.prototype.deployed = function () {
+        var _this = this;
+        // If we were just deployed, we know the transaction we should occur in
+        if (this.deployTransaction) {
+            return this.deployTransaction.wait().then(function () {
+                return _this;
+            });
+        }
+        // Otherwise, poll for our code to be deployed
+        return web_1.poll(function () {
+            return _this.provider.getCode(_this.address).then(function (code) {
+                if (code === '0x') {
+                    return undefined;
+                }
+                return _this;
+            });
+        }, { onceBlock: this.provider });
+    };
+    // @TODO:
+    // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>
+    // @TODO:
+    // estimateDeploy(bytecode: string, ...args): Promise<BigNumber>
+    Contract.prototype.fallback = function (overrides) {
+        if (!this.signer) {
+            errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' });
+        }
+        var tx = properties_1.shallowCopy(overrides || {});
+        ['from', 'to'].forEach(function (key) {
+            if (tx[key] == null) {
+                return;
+            }
+            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
+        });
+        tx.to = this.addressPromise;
+        return this.signer.sendTransaction(tx);
+    };
+    // Reconnect to a different signer or provider
+    Contract.prototype.connect = function (signerOrProvider) {
+        return new Contract(this.address, this.interface, signerOrProvider);
+    };
+    // Re-attach to a different on=chain instance of this contract
+    Contract.prototype.attach = function (addressOrName) {
+        return new Contract(addressOrName, this.interface, this.signer || this.provider);
+    };
+    // Deploy the contract with the bytecode, resolving to the deployed address.
+    // Use contract.deployTransaction.wait() to wait until the contract has
+    // been mined.
+    Contract.prototype.deploy = function (bytecode) {
+        var _this = this;
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        if (this.signer == null) {
+            throw new Error('missing signer'); // @TODO: errors.throwError
+        }
+        // A lot of common tools do not prefix bytecode with a 0x
+        if (typeof (bytecode) === 'string' && bytecode.match(/^[0-9a-f]*$/i) && (bytecode.length % 2) == 0) {
+            bytecode = '0x' + bytecode;
+        }
+        if (!bytes_1.isHexString(bytecode)) {
+            errors.throwError('bytecode must be a valid hex string', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
+        }
+        if ((bytecode.length % 2) !== 0) {
+            errors.throwError('bytecode must be valid data (even length)', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
+        }
+        var tx = {};
+        if (args.length === this.interface.deployFunction.inputs.length + 1) {
+            tx = properties_1.shallowCopy(args.pop());
+            for (var key in tx) {
+                if (!allowedTransactionKeys[key]) {
+                    throw new Error('unknown transaction override ' + key);
+                }
+            }
+        }
+        ['data', 'from', 'to'].forEach(function (key) {
+            if (tx[key] == null) {
+                return;
+            }
+            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
+        });
+        tx.data = this.interface.deployFunction.encode(bytecode, args);
+        errors.checkArgumentCount(args.length, this.interface.deployFunction.inputs.length, 'in Contract constructor');
+        // @TODO: overrides of args.length = this.interface.deployFunction.inputs.length + 1
+        return this.signer.sendTransaction(tx).then(function (tx) {
+            var contract = new Contract(address_1.getContractAddress(tx), _this.interface, _this.signer || _this.provider);
+            properties_1.defineReadOnly(contract, 'deployTransaction', tx);
+            return contract;
+        });
+    };
+    Contract.prototype._getEventFilter = function (eventName) {
+        var _this = this;
+        if (typeof (eventName) === 'string') {
+            // Listen for any event
+            if (eventName === '*') {
+                return {
+                    decode: function (log) {
+                        return [_this.interface.parseLog(log)];
+                    },
+                    eventTag: '*',
+                    filter: { address: this.address },
+                };
+            }
+            // Normalize the eventName
+            if (eventName.indexOf('(') !== -1) {
+                eventName = abi_coder_1.formatSignature(abi_coder_1.parseSignature('event ' + eventName));
+            }
+            var event_1 = this.interface.events[eventName];
+            if (!event_1) {
+                errors.throwError('unknown event - ' + eventName, errors.INVALID_ARGUMENT, { argumnet: 'eventName', value: eventName });
+            }
+            var filter_1 = {
+                address: this.address,
+                topics: [event_1.topic]
+            };
+            return {
+                decode: function (log) {
+                    return event_1.decode(log.data, log.topics);
+                },
+                event: event_1,
+                eventTag: getEventTag(filter_1),
+                filter: filter_1
+            };
+        }
+        var filter = {
+            address: this.address
+        };
+        // Find the matching event in the ABI; if none, we still allow filtering
+        // since it may be a filter for an otherwise unknown event
+        var event = null;
+        if (eventName.topics && eventName.topics[0]) {
+            filter.topics = eventName.topics;
+            for (var name in this.interface.events) {
+                if (name.indexOf('(') === -1) {
+                    continue;
+                }
+                var e = this.interface.events[name];
+                if (e.topic === eventName.topics[0].toLowerCase()) {
+                    event = e;
+                    break;
+                }
+            }
+        }
+        return {
+            decode: function (log) {
+                if (event) {
+                    return event.decode(log.data, log.topics);
+                }
+                return [log];
+            },
+            event: event,
+            eventTag: getEventTag(filter),
+            filter: filter
+        };
+    };
+    Contract.prototype._addEventListener = function (eventFilter, listener, once) {
+        var _this = this;
+        if (!this.provider) {
+            errors.throwError('events require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'once' });
+        }
+        var wrappedListener = function (log) {
+            var decoded = Array.prototype.slice.call(eventFilter.decode(log));
+            var event = properties_1.jsonCopy(log);
+            event.args = decoded;
+            event.decode = eventFilter.event.decode;
+            event.event = eventFilter.event.name;
+            event.eventSignature = eventFilter.event.signature;
+            event.removeListener = function () { _this.removeListener(eventFilter.filter, listener); };
+            event.getBlock = function () { return _this.provider.getBlock(log.blockHash); };
+            event.getTransaction = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
+            event.getTransactionReceipt = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
+            decoded.push(event);
+            _this.emit.apply(_this, [eventFilter.filter].concat(decoded));
+        };
+        this.provider.on(eventFilter.filter, wrappedListener);
+        this._events.push({ eventFilter: eventFilter, listener: listener, wrappedListener: wrappedListener, once: once });
+    };
+    Contract.prototype.on = function (event, listener) {
+        this._addEventListener(this._getEventFilter(event), listener, false);
+        return this;
+    };
+    Contract.prototype.once = function (event, listener) {
+        this._addEventListener(this._getEventFilter(event), listener, true);
+        return this;
+    };
+    Contract.prototype.addEventLisener = function (eventName, listener) {
+        return this.on(eventName, listener);
+    };
+    Contract.prototype.emit = function (eventName) {
+        var _this = this;
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        if (!this.provider) {
+            return false;
+        }
+        var result = false;
+        var eventFilter = this._getEventFilter(eventName);
+        this._events = this._events.filter(function (event) {
+            if (event.eventFilter.eventTag !== eventFilter.eventTag) {
+                return true;
+            }
+            setTimeout(function () {
+                event.listener.apply(_this, args);
+            }, 0);
+            result = true;
+            return !(event.once);
+        });
+        return result;
+    };
+    Contract.prototype.listenerCount = function (eventName) {
+        if (!this.provider) {
+            return 0;
+        }
+        var eventFilter = this._getEventFilter(eventName);
+        return this._events.filter(function (event) {
+            return event.eventFilter.eventTag === eventFilter.eventTag;
+        }).length;
+    };
+    Contract.prototype.listeners = function (eventName) {
+        if (!this.provider) {
+            return [];
+        }
+        var eventFilter = this._getEventFilter(eventName);
+        return this._events.filter(function (event) {
+            return event.eventFilter.eventTag === eventFilter.eventTag;
+        }).map(function (event) { return event.listener; });
+    };
+    Contract.prototype.removeAllListeners = function (eventName) {
+        if (!this.provider) {
+            return this;
+        }
+        var eventFilter = this._getEventFilter(eventName);
+        this._events = this._events.filter(function (event) {
+            return event.eventFilter.eventTag !== eventFilter.eventTag;
+        });
+        return this;
+    };
+    Contract.prototype.removeListener = function (eventName, listener) {
+        var _this = this;
+        if (!this.provider) {
+            return this;
+        }
+        var found = false;
+        var eventFilter = this._getEventFilter(eventName);
+        this._events = this._events.filter(function (event) {
+            // Make sure this event and listener match
+            if (event.eventFilter.eventTag !== eventFilter.eventTag) {
+                return true;
+            }
+            if (event.listener !== listener) {
+                return true;
+            }
+            _this.provider.removeListener(event.eventFilter.filter, event.wrappedListener);
+            // Already found a matching event in a previous loop
+            if (found) {
+                return true;
+            }
+            // REmove this event (returning false filters us out)
+            found = true;
+            return false;
+        });
+        return this;
+    };
+    return Contract;
+}());
+exports.Contract = Contract;
+
+},{"../utils/abi-coder":56,"../utils/address":57,"../utils/bignumber":59,"../utils/bytes":60,"../utils/errors":61,"../utils/properties":69,"../utils/types":77,"../utils/web":80,"./interface":4}],3:[function(require,module,exports){
+'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
+var contract_1 = require("./contract");
+exports.Contract = contract_1.Contract;
+var interface_1 = require("./interface");
+exports.Interface = interface_1.Interface;
+
+},{"./contract":2,"./interface":4}],4:[function(require,module,exports){
+'use strict';
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+// See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
+var address_1 = require("../utils/address");
+var abi_coder_1 = require("../utils/abi-coder");
+var bignumber_1 = require("../utils/bignumber");
+var bytes_1 = require("../utils/bytes");
+var hash_1 = require("../utils/hash");
+var keccak256_1 = require("../utils/keccak256");
+var properties_1 = require("../utils/properties");
+var types_1 = require("../utils/types");
+var errors = __importStar(require("../utils/errors"));
+var Indexed = /** @class */ (function (_super) {
+    __extends(Indexed, _super);
+    function Indexed(hash) {
+        var _this = _super.call(this) || this;
+        properties_1.defineReadOnly(_this, 'hash', hash);
+        return _this;
+    }
+    return Indexed;
+}(types_1.Indexed));
+var Description = /** @class */ (function () {
+    function Description(info) {
+        for (var key in info) {
+            var value = info[key];
+            if (value != null && typeof (value) === 'object') {
+                properties_1.defineFrozen(this, key, info[key]);
+            }
+            else {
+                properties_1.defineReadOnly(this, key, info[key]);
+            }
+        }
+    }
+    return Description;
+}());
+var DeployDescription = /** @class */ (function (_super) {
+    __extends(DeployDescription, _super);
+    function DeployDescription() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    DeployDescription.prototype.encode = function (bytecode, params) {
+        if (!bytes_1.isHexString(bytecode)) {
+            errors.throwError('invalid contract bytecode', errors.INVALID_ARGUMENT, {
+                arg: 'bytecode',
+                value: bytecode
+            });
+        }
+        errors.checkArgumentCount(params.length, this.inputs.length, 'in Interface constructor');
+        try {
+            return (bytecode + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2));
+        }
+        catch (error) {
+            errors.throwError('invalid constructor argument', errors.INVALID_ARGUMENT, {
+                arg: error.arg,
+                reason: error.reason,
+                value: error.value
+            });
+        }
+        return null;
+    };
+    return DeployDescription;
+}(Description));
+var FunctionDescription = /** @class */ (function (_super) {
+    __extends(FunctionDescription, _super);
+    function FunctionDescription() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    FunctionDescription.prototype.encode = function (params) {
+        errors.checkArgumentCount(params.length, this.inputs.length, 'in interface function ' + this.name);
+        try {
+            return this.sighash + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2);
+        }
+        catch (error) {
+            errors.throwError('invalid input argument', errors.INVALID_ARGUMENT, {
+                arg: error.arg,
+                reason: error.reason,
+                value: error.value
+            });
+        }
+        return null;
+    };
+    FunctionDescription.prototype.decode = function (data) {
+        try {
+            return abi_coder_1.defaultAbiCoder.decode(this.outputs, bytes_1.arrayify(data));
+        }
+        catch (error) {
+            errors.throwError('invalid data for function output', errors.INVALID_ARGUMENT, {
+                arg: 'data',
+                errorArg: error.arg,
+                errorValue: error.value,
+                value: data,
+                reason: error.reason
+            });
+        }
+    };
+    return FunctionDescription;
+}(Description));
+var Result = /** @class */ (function (_super) {
+    __extends(Result, _super);
+    function Result() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return Result;
+}(Description));
+var EventDescription = /** @class */ (function (_super) {
+    __extends(EventDescription, _super);
+    function EventDescription() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    EventDescription.prototype.encodeTopics = function (params) {
+        var _this = this;
+        if (params.length > this.inputs.length) {
+            errors.throwError('too many arguments for ' + this.name, errors.UNEXPECTED_ARGUMENT, { maxCount: params.length, expectedCount: this.inputs.length });
+        }
+        var topics = [];
+        if (!this.anonymous) {
+            topics.push(this.topic);
+        }
+        params.forEach(function (arg, index) {
+            if (arg === null) {
+                topics.push(null);
+                return;
+            }
+            var param = _this.inputs[index];
+            if (!param.indexed) {
+                errors.throwError('cannot filter non-indexed parameters; must be null', errors.INVALID_ARGUMENT, { argument: (param.name || index), value: arg });
+            }
+            if (param.type === 'string') {
+                topics.push(hash_1.id(arg));
+            }
+            else if (param.type === 'bytes') {
+                topics.push(keccak256_1.keccak256(arg));
+            }
+            else if (param.type.indexOf('[') !== -1 || param.type.substring(0, 5) === 'tuple') {
+                errors.throwError('filtering with tuples or arrays not implemented yet; bug us on GitHub', errors.NOT_IMPLEMENTED, { operation: 'filter(array|tuple)' });
+            }
+            else {
+                if (param.type === 'address') {
+                    address_1.getAddress(arg);
+                }
+                topics.push(bytes_1.hexZeroPad(bytes_1.hexlify(arg), 32).toLowerCase());
+            }
+        });
+        // Trim off trailing nulls
+        while (topics.length && topics[topics.length - 1] === null) {
+            topics.pop();
+        }
+        return topics;
+    };
+    EventDescription.prototype.decode = function (data, topics) {
+        // Strip the signature off of non-anonymous topics
+        if (topics != null && !this.anonymous) {
+            topics = topics.slice(1);
+        }
+        var inputIndexed = [];
+        var inputNonIndexed = [];
+        var inputDynamic = [];
+        this.inputs.forEach(function (param, index) {
+            if (param.indexed) {
+                if (param.type === 'string' || param.type === 'bytes' || param.type.indexOf('[') >= 0 || param.type.substring(0, 5) === 'tuple') {
+                    inputIndexed.push({ type: 'bytes32', name: (param.name || '') });
+                    inputDynamic.push(true);
+                }
+                else {
+                    inputIndexed.push(param);
+                    inputDynamic.push(false);
+                }
+            }
+            else {
+                inputNonIndexed.push(param);
+                inputDynamic.push(false);
+            }
+        });
+        if (topics != null) {
+            var resultIndexed = abi_coder_1.defaultAbiCoder.decode(inputIndexed, bytes_1.concat(topics));
+        }
+        var resultNonIndexed = abi_coder_1.defaultAbiCoder.decode(inputNonIndexed, bytes_1.arrayify(data));
+        var result = new Result({});
+        var nonIndexedIndex = 0, indexedIndex = 0;
+        this.inputs.forEach(function (input, index) {
+            if (input.indexed) {
+                if (topics == null) {
+                    result[index] = new Indexed(null);
+                }
+                else if (inputDynamic[index]) {
+                    result[index] = new Indexed(resultIndexed[indexedIndex++]);
+                }
+                else {
+                    result[index] = resultIndexed[indexedIndex++];
+                }
+            }
+            else {
+                result[index] = resultNonIndexed[nonIndexedIndex++];
+            }
+            if (input.name) {
+                result[input.name] = result[index];
+            }
+        });
+        result.length = this.inputs.length;
+        return result;
+    };
+    return EventDescription;
+}(Description));
+var TransactionDescription = /** @class */ (function (_super) {
+    __extends(TransactionDescription, _super);
+    function TransactionDescription() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return TransactionDescription;
+}(Description));
+var LogDescription = /** @class */ (function (_super) {
+    __extends(LogDescription, _super);
+    function LogDescription() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return LogDescription;
+}(Description));
+function addMethod(method) {
+    switch (method.type) {
+        case 'constructor': {
+            var description = new DeployDescription({
+                inputs: method.inputs,
+                payable: (method.payable == null || !!method.payable)
+            });
+            if (!this.deployFunction) {
+                this.deployFunction = description;
+            }
+            break;
+        }
+        case 'function': {
+            var signature = abi_coder_1.formatSignature(method).replace(/tuple/g, '');
+            var sighash = hash_1.id(signature).substring(0, 10);
+            var description = new FunctionDescription({
+                inputs: method.inputs,
+                outputs: method.outputs,
+                payable: (method.payable == null || !!method.payable),
+                type: ((method.constant) ? 'call' : 'transaction'),
+                signature: signature,
+                sighash: sighash,
+            });
+            // Expose the first (and hopefully unique named function
+            if (method.name && this.functions[method.name] == null) {
+                properties_1.defineReadOnly(this.functions, method.name, description);
+            }
+            // Expose all methods by their signature, for overloaded functions
+            if (this.functions[description.signature] == null) {
+                properties_1.defineReadOnly(this.functions, description.signature, description);
+            }
+            break;
+        }
+        case 'event': {
+            var signature = abi_coder_1.formatSignature(method).replace(/tuple/g, '');
+            var description = new EventDescription({
+                name: method.name,
+                signature: signature,
+                inputs: method.inputs,
+                topic: hash_1.id(signature),
+                anonymous: (!!method.anonymous)
+            });
+            // Expose the first (and hopefully unique) event name
+            if (method.name && this.events[method.name] == null) {
+                properties_1.defineReadOnly(this.events, method.name, description);
+            }
+            // Expose all events by their signature, for overloaded functions
+            if (this.events[description.signature] == null) {
+                properties_1.defineReadOnly(this.events, description.signature, description);
+            }
+            break;
+        }
+        case 'fallback':
+            // Nothing to do for fallback
+            break;
+        default:
+            console.log('WARNING: unsupported ABI type - ' + method.type);
+            break;
+    }
+}
+var Interface = /** @class */ (function () {
+    function Interface(abi) {
+        errors.checkNew(this, Interface);
+        if (typeof (abi) === 'string') {
+            try {
+                abi = JSON.parse(abi);
+            }
+            catch (error) {
+                errors.throwError('could not parse ABI JSON', errors.INVALID_ARGUMENT, {
+                    arg: 'abi',
+                    errorMessage: error.message,
+                    value: abi
+                });
+            }
+            if (!Array.isArray(abi)) {
+                errors.throwError('invalid abi', errors.INVALID_ARGUMENT, { arg: 'abi', value: abi });
+                return null;
+            }
+        }
+        properties_1.defineReadOnly(this, 'functions', {});
+        properties_1.defineReadOnly(this, 'events', {});
+        // Convert any supported ABI format into a standard ABI format
+        var _abi = [];
+        abi.forEach(function (fragment) {
+            if (typeof (fragment) === 'string') {
+                fragment = abi_coder_1.parseSignature(fragment);
+            }
+            // @TODO: We should probable do some validation; create abiCoder.formatSignature for checking
+            _abi.push(fragment);
+        });
+        properties_1.defineFrozen(this, 'abi', _abi);
+        _abi.forEach(addMethod, this);
+        // If there wasn't a constructor, create the default constructor
+        if (!this.deployFunction) {
+            addMethod.call(this, { type: 'constructor', inputs: [] });
+        }
+    }
+    Interface.prototype.parseTransaction = function (tx) {
+        var sighash = tx.data.substring(0, 10).toLowerCase();
+        for (var name in this.functions) {
+            if (name.indexOf('(') === -1) {
+                continue;
+            }
+            var func = this.functions[name];
+            if (func.sighash === sighash) {
+                var result = abi_coder_1.defaultAbiCoder.decode(func.inputs, '0x' + tx.data.substring(10));
+                return new TransactionDescription({
+                    args: result,
+                    decode: func.decode,
+                    name: name,
+                    signature: func.signature,
+                    sighash: func.sighash,
+                    value: bignumber_1.bigNumberify(tx.value || 0),
+                });
+            }
+        }
+        return null;
+    };
+    Interface.prototype.parseLog = function (log) {
+        for (var name in this.events) {
+            if (name.indexOf('(') === -1) {
+                continue;
+            }
+            var event = this.events[name];
+            if (event.anonymous) {
+                continue;
+            }
+            if (event.topic !== log.topics[0]) {
+                continue;
+            }
+            // @TODO: If anonymous, and the only method, and the input count matches, should we parse and return it?
+            return new LogDescription({
+                name: event.name,
+                signature: event.signature,
+                topic: event.topic,
+                values: event.decode(log.data, log.topics)
+            });
+        }
+        return null;
+    };
+    return Interface;
+}());
+exports.Interface = Interface;
+
+},{"../utils/abi-coder":56,"../utils/address":57,"../utils/bignumber":59,"../utils/bytes":60,"../utils/errors":61,"../utils/hash":62,"../utils/keccak256":66,"../utils/properties":69,"../utils/types":77}],5:[function(require,module,exports){
+'use strict';
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+// This is empty in node, and used by browserify to inject extra goodies
+var shims_1 = require("./utils/shims");
+exports.platform = shims_1.platform;
+var contracts_1 = require("./contracts");
+exports.Contract = contracts_1.Contract;
+exports.Interface = contracts_1.Interface;
+var providers = __importStar(require("./providers"));
+exports.providers = providers;
+var utils = __importStar(require("./utils"));
+exports.utils = utils;
+var wallet_1 = require("./wallet");
+exports.HDNode = wallet_1.HDNode;
+exports.SigningKey = wallet_1.SigningKey;
+exports.Wallet = wallet_1.Wallet;
+var wordlists = __importStar(require("./wordlists"));
+exports.wordlists = wordlists;
+var types = __importStar(require("./utils/types"));
+exports.types = types;
+var errors = __importStar(require("./utils/errors"));
+exports.errors = errors;
+var _version_1 = require("./_version");
+exports.version = _version_1.version;
+var constants = utils.constants;
+exports.constants = constants;
+
+},{"./_version":1,"./contracts":3,"./providers":50,"./utils":64,"./utils/errors":61,"./utils/shims":74,"./utils/types":77,"./wallet":82,"./wordlists":86}],6:[function(require,module,exports){
+"use strict";
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var ethers = __importStar(require("./ethers"));
+exports.ethers = ethers;
+__export(require("./ethers"));
+
+},{"./ethers":5}],7:[function(require,module,exports){
+"use strict";
 
 (function(root) {
 
@@ -798,7 +1751,7 @@
 
 })(this);
 
-},{}],2:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -4227,11 +5180,11 @@
   };
 })(typeof module === 'undefined' || module, this);
 
-},{"buffer":4}],3:[function(require,module,exports){
-var randomBytes = require('../../src.ts/utils').randomBytes; module.exports = function(length) { return randomBytes(length); };
-},{"../../src.ts/utils":66}],4:[function(require,module,exports){
+},{"buffer":10}],9:[function(require,module,exports){
+var randomBytes = require('../../utils').randomBytes; module.exports = function(length) { return randomBytes(length); };
+},{"../../utils":64}],10:[function(require,module,exports){
 
-},{}],5:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 'use strict';
 
 var elliptic = exports;
@@ -4247,7 +5200,7 @@ elliptic.curves = require('./elliptic/curves');
 elliptic.ec = require('./elliptic/ec');
 elliptic.eddsa = require('./elliptic/eddsa');
 
-},{"../package.json":19,"./elliptic/curve":8,"./elliptic/curves":11,"./elliptic/ec":12,"./elliptic/eddsa":15,"./elliptic/hmac-drbg":16,"./elliptic/utils":18,"brorand":3}],6:[function(require,module,exports){
+},{"../package.json":25,"./elliptic/curve":14,"./elliptic/curves":17,"./elliptic/ec":18,"./elliptic/eddsa":21,"./elliptic/hmac-drbg":22,"./elliptic/utils":24,"brorand":9}],12:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -4624,9 +5577,9 @@ BasePoint.prototype.dblp = function dblp(k) {
   return r;
 };
 
-},{"../../elliptic":5,"bn.js":2}],7:[function(require,module,exports){
+},{"../../elliptic":11,"bn.js":8}],13:[function(require,module,exports){
 module.exports = {};
-},{}],8:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict';
 
 var curve = exports;
@@ -4636,9 +5589,9 @@ curve.short = require('./short');
 curve.mont = require('./mont');
 curve.edwards = require('./edwards');
 
-},{"./base":6,"./edwards":7,"./mont":9,"./short":10}],9:[function(require,module,exports){
-arguments[4][7][0].apply(exports,arguments)
-},{"dup":7}],10:[function(require,module,exports){
+},{"./base":12,"./edwards":13,"./mont":15,"./short":16}],15:[function(require,module,exports){
+arguments[4][13][0].apply(exports,arguments)
+},{"dup":13}],16:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -5578,7 +6531,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../../elliptic":5,"../curve":8,"bn.js":2,"inherits":32}],11:[function(require,module,exports){
+},{"../../elliptic":11,"../curve":14,"bn.js":8,"inherits":38}],17:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -5785,7 +6738,7 @@ defineCurve('secp256k1', {
   ]
 });
 
-},{"../elliptic":5,"./precomputed/secp256k1":17,"hash.js":20}],12:[function(require,module,exports){
+},{"../elliptic":11,"./precomputed/secp256k1":23,"hash.js":26}],18:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -6024,7 +6977,7 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
   throw new Error('Unable to find valid recovery factor');
 };
 
-},{"../../elliptic":5,"./key":13,"./signature":14,"bn.js":2}],13:[function(require,module,exports){
+},{"../../elliptic":11,"./key":19,"./signature":20,"bn.js":8}],19:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -6145,7 +7098,7 @@ KeyPair.prototype.inspect = function inspect() {
          ' pub: ' + (this.pub && this.pub.inspect()) + ' >';
 };
 
-},{"../../elliptic":5,"bn.js":2}],14:[function(require,module,exports){
+},{"../../elliptic":11,"bn.js":8}],20:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -6282,9 +7235,9 @@ Signature.prototype.toDER = function toDER(enc) {
   return utils.encode(res, enc);
 };
 
-},{"../../elliptic":5,"bn.js":2}],15:[function(require,module,exports){
-arguments[4][7][0].apply(exports,arguments)
-},{"dup":7}],16:[function(require,module,exports){
+},{"../../elliptic":11,"bn.js":8}],21:[function(require,module,exports){
+arguments[4][13][0].apply(exports,arguments)
+},{"dup":13}],22:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -6400,9 +7353,9 @@ HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
   return utils.encode(res, enc);
 };
 
-},{"../elliptic":5,"hash.js":20}],17:[function(require,module,exports){
+},{"../elliptic":11,"hash.js":26}],23:[function(require,module,exports){
 module.exports = undefined;
-},{}],18:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 'use strict';
 
 var utils = exports;
@@ -6576,9 +7529,9 @@ function intFromLE(bytes) {
 utils.intFromLE = intFromLE;
 
 
-},{"bn.js":2}],19:[function(require,module,exports){
+},{"bn.js":8}],25:[function(require,module,exports){
 module.exports={"version":"6.3.3"}
-},{}],20:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 var hash = exports;
 
 hash.utils = require('./hash/utils');
@@ -6595,7 +7548,7 @@ hash.sha384 = hash.sha.sha384;
 hash.sha512 = hash.sha.sha512;
 hash.ripemd160 = hash.ripemd.ripemd160;
 
-},{"./hash/common":21,"./hash/hmac":22,"./hash/ripemd":23,"./hash/sha":24,"./hash/utils":31}],21:[function(require,module,exports){
+},{"./hash/common":27,"./hash/hmac":28,"./hash/ripemd":29,"./hash/sha":30,"./hash/utils":37}],27:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -6689,7 +7642,7 @@ BlockHash.prototype._pad = function pad() {
   return res;
 };
 
-},{"./utils":31,"minimalistic-assert":34}],22:[function(require,module,exports){
+},{"./utils":37,"minimalistic-assert":40}],28:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -6738,9 +7691,9 @@ Hmac.prototype.digest = function digest(enc) {
   return this.outer.digest(enc);
 };
 
-},{"./utils":31,"minimalistic-assert":34}],23:[function(require,module,exports){
+},{"./utils":37,"minimalistic-assert":40}],29:[function(require,module,exports){
 module.exports = {ripemd160: null}
-},{}],24:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 'use strict';
 
 exports.sha1 = require('./sha/1');
@@ -6749,11 +7702,11 @@ exports.sha256 = require('./sha/256');
 exports.sha384 = require('./sha/384');
 exports.sha512 = require('./sha/512');
 
-},{"./sha/1":25,"./sha/224":26,"./sha/256":27,"./sha/384":28,"./sha/512":29}],25:[function(require,module,exports){
-arguments[4][7][0].apply(exports,arguments)
-},{"dup":7}],26:[function(require,module,exports){
-arguments[4][7][0].apply(exports,arguments)
-},{"dup":7}],27:[function(require,module,exports){
+},{"./sha/1":31,"./sha/224":32,"./sha/256":33,"./sha/384":34,"./sha/512":35}],31:[function(require,module,exports){
+arguments[4][13][0].apply(exports,arguments)
+},{"dup":13}],32:[function(require,module,exports){
+arguments[4][13][0].apply(exports,arguments)
+},{"dup":13}],33:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -6860,9 +7813,9 @@ SHA256.prototype._digest = function digest(enc) {
     return utils.split32(this.h, 'big');
 };
 
-},{"../common":21,"../utils":31,"./common":30,"minimalistic-assert":34}],28:[function(require,module,exports){
-arguments[4][7][0].apply(exports,arguments)
-},{"dup":7}],29:[function(require,module,exports){
+},{"../common":27,"../utils":37,"./common":36,"minimalistic-assert":40}],34:[function(require,module,exports){
+arguments[4][13][0].apply(exports,arguments)
+},{"dup":13}],35:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -7194,7 +8147,7 @@ function g1_512_lo(xh, xl) {
   return r;
 }
 
-},{"../common":21,"../utils":31,"minimalistic-assert":34}],30:[function(require,module,exports){
+},{"../common":27,"../utils":37,"minimalistic-assert":40}],36:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -7245,7 +8198,7 @@ function g1_256(x) {
 }
 exports.g1_256 = g1_256;
 
-},{"../utils":31}],31:[function(require,module,exports){
+},{"../utils":37}],37:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -7500,7 +8453,7 @@ function shr64_lo(ah, al, num) {
 }
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":32,"minimalistic-assert":34}],32:[function(require,module,exports){
+},{"inherits":38,"minimalistic-assert":40}],38:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -7525,7 +8478,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],33:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -8004,7 +8957,7 @@ if (typeof Object.create === 'function') {
 })();
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":35}],34:[function(require,module,exports){
+},{"_process":41}],40:[function(require,module,exports){
 module.exports = assert;
 
 function assert(val, msg) {
@@ -8017,9 +8970,9 @@ assert.equal = function assertEqual(l, r, msg) {
     throw new Error(msg || ('Assertion failed: ' + l + ' != ' + r));
 };
 
-},{}],35:[function(require,module,exports){
-module.exports = { };
-},{}],36:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
+module.exports = { browser: true };
+},{}],42:[function(require,module,exports){
 (function (setImmediate){
 "use strict";
 
@@ -8475,7 +9428,7 @@ module.exports = { };
 })(this);
 
 }).call(this,require("timers").setImmediate)
-},{"timers":38}],37:[function(require,module,exports){
+},{"timers":44}],43:[function(require,module,exports){
 (function (process,global){
 (function (global, undefined) {
     "use strict";
@@ -8654,11 +9607,11 @@ module.exports = { };
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":35}],38:[function(require,module,exports){
+},{"_process":41}],44:[function(require,module,exports){
 (function (global){
 module.exports = { setImmediate: global.setImmediate }; 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],39:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 (function (global){
 
 var rng;
@@ -8693,7 +9646,7 @@ module.exports = rng;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],40:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 //     uuid.js
 //
 //     Copyright (c) 2010-2012 Robert Kieffer
@@ -8878,147 +9831,9 @@ uuid.unparse = unparse;
 
 module.exports = uuid;
 
-},{"./rng":39}],41:[function(require,module,exports){
+},{"./rng":45}],47:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
-var bytes_1 = require("../src.ts/utils/bytes");
-module.exports = {
-    decode: function (textData) {
-        textData = atob(textData);
-        var data = [];
-        for (var i = 0; i < textData.length; i++) {
-            data.push(textData.charCodeAt(i));
-        }
-        return bytes_1.arrayify(data);
-    },
-    encode: function (data) {
-        data = bytes_1.arrayify(data);
-        var textData = '';
-        for (var i = 0; i < data.length; i++) {
-            textData += String.fromCharCode(data[i]);
-        }
-        return btoa(textData);
-    }
-};
-
-},{"../src.ts/utils/bytes":63}],42:[function(require,module,exports){
-arguments[4][4][0].apply(exports,arguments)
-},{"dup":4}],43:[function(require,module,exports){
-"use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var hash = __importStar(require("hash.js"));
-var bytes_1 = require("../src.ts/utils/bytes");
-var errors = __importStar(require("../src.ts/utils/errors"));
-var supportedAlgorithms = { sha256: true, sha512: true };
-function computeHmac(algorithm, key, data) {
-    if (!supportedAlgorithms[algorithm]) {
-        errors.throwError('unsupported algorithm ' + algorithm, errors.UNSUPPORTED_OPERATION, { operation: 'hmac', algorithm: algorithm });
-    }
-    return bytes_1.arrayify(hash.hmac(hash[algorithm], bytes_1.arrayify(key)).update(bytes_1.arrayify(data)).digest());
-}
-exports.computeHmac = computeHmac;
-
-},{"../src.ts/utils/bytes":63,"../src.ts/utils/errors":64,"hash.js":20}],44:[function(require,module,exports){
-'use strict';
-Object.defineProperty(exports, "__esModule", { value: true });
-var bytes_1 = require("../src.ts/utils/bytes");
-var hmac_1 = require("./hmac");
-function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
-    password = bytes_1.arrayify(password);
-    salt = bytes_1.arrayify(salt);
-    var hLen;
-    var l = 1;
-    var DK = new Uint8Array(keylen);
-    var block1 = new Uint8Array(salt.length + 4);
-    block1.set(salt);
-    //salt.copy(block1, 0, 0, salt.length)
-    var r;
-    var T;
-    for (var i = 1; i <= l; i++) {
-        //block1.writeUInt32BE(i, salt.length)
-        block1[salt.length] = (i >> 24) & 0xff;
-        block1[salt.length + 1] = (i >> 16) & 0xff;
-        block1[salt.length + 2] = (i >> 8) & 0xff;
-        block1[salt.length + 3] = i & 0xff;
-        //var U = createHmac(password).update(block1).digest();
-        var U = hmac_1.computeHmac(hashAlgorithm, password, block1);
-        if (!hLen) {
-            hLen = U.length;
-            T = new Uint8Array(hLen);
-            l = Math.ceil(keylen / hLen);
-            r = keylen - (l - 1) * hLen;
-        }
-        //U.copy(T, 0, 0, hLen)
-        T.set(U);
-        for (var j = 1; j < iterations; j++) {
-            //U = createHmac(password).update(U).digest();
-            U = hmac_1.computeHmac(hashAlgorithm, password, U);
-            for (var k = 0; k < hLen; k++)
-                T[k] ^= U[k];
-        }
-        var destPos = (i - 1) * hLen;
-        var len = (i === l ? r : hLen);
-        //T.copy(DK, destPos, 0, len)
-        DK.set(bytes_1.arrayify(T).slice(0, len), destPos);
-    }
-    return bytes_1.arrayify(DK);
-}
-exports.pbkdf2 = pbkdf2;
-
-},{"../src.ts/utils/bytes":63,"./hmac":43}],45:[function(require,module,exports){
-(function (global){
-'use strict';
-Object.defineProperty(exports, "__esModule", { value: true });
-var bytes_1 = require("../src.ts/utils/bytes");
-var properties_1 = require("../src.ts/utils/properties");
-var crypto = global.crypto || global.msCrypto;
-if (!crypto || !crypto.getRandomValues) {
-    console.log('WARNING: Missing strong random number source; using weak randomBytes');
-    crypto = {
-        getRandomValues: function (buffer) {
-            for (var round = 0; round < 20; round++) {
-                for (var i = 0; i < buffer.length; i++) {
-                    if (round) {
-                        buffer[i] ^= Math.trunc(256 * Math.random());
-                    }
-                    else {
-                        buffer[i] = Math.trunc(256 * Math.random());
-                    }
-                }
-            }
-            return buffer;
-        },
-        _weakCrypto: true
-    };
-}
-function randomBytes(length) {
-    if (length <= 0 || length > 1024 || parseInt(String(length)) != length) {
-        throw new Error('invalid length');
-    }
-    var result = new Uint8Array(length);
-    crypto.getRandomValues(result);
-    return bytes_1.arrayify(result);
-}
-exports.randomBytes = randomBytes;
-;
-if (crypto._weakCrypto === true) {
-    properties_1.defineReadOnly(randomBytes, '_weakCrypto', true);
-}
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../src.ts/utils/bytes":63,"../src.ts/utils/properties":70}],46:[function(require,module,exports){
-require('setimmediate');
-module.exports.platform = 'browser';
-
-},{"setimmediate":37}],47:[function(require,module,exports){
-'use strict';
 try {
     module.exports.XMLHttpRequest = XMLHttpRequest;
 }
@@ -9028,942 +9843,6 @@ catch (error) {
 }
 
 },{}],48:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.0-beta.0";
-
-},{}],49:[function(require,module,exports){
-'use strict';
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var interface_1 = require("./interface");
-var abi_coder_1 = require("../utils/abi-coder");
-var address_1 = require("../utils/address");
-var bignumber_1 = require("../utils/bignumber");
-var bytes_1 = require("../utils/bytes");
-var properties_1 = require("../utils/properties");
-var web_1 = require("../utils/web");
-var types_1 = require("../utils/types");
-var errors = __importStar(require("../utils/errors"));
-var allowedTransactionKeys = {
-    data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
-};
-// Recursively replaces ENS names with promises to resolve the name and
-// stalls until all promises have returned
-// @TODO: Expand this to resolve any promises too
-function resolveAddresses(provider, value, paramType) {
-    if (Array.isArray(paramType)) {
-        var promises = [];
-        paramType.forEach(function (paramType, index) {
-            var v = null;
-            if (Array.isArray(value)) {
-                v = value[index];
-            }
-            else {
-                v = value[paramType.name];
-            }
-            promises.push(resolveAddresses(provider, v, paramType));
-        });
-        return Promise.all(promises);
-    }
-    if (paramType.type === 'address') {
-        return provider.resolveName(value);
-    }
-    if (paramType.components) {
-        return resolveAddresses(provider, value, paramType.components);
-    }
-    return Promise.resolve(value);
-}
-function runMethod(contract, functionName, estimateOnly) {
-    var method = contract.interface.functions[functionName];
-    return function () {
-        var params = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            params[_i] = arguments[_i];
-        }
-        var tx = {};
-        // If 1 extra parameter was passed in, it contains overrides
-        if (params.length === method.inputs.length + 1 && typeof (params[params.length - 1]) === 'object') {
-            tx = properties_1.shallowCopy(params.pop());
-            // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
-            for (var key in tx) {
-                if (!allowedTransactionKeys[key]) {
-                    throw new Error('unknown transaction override ' + key);
-                }
-            }
-        }
-        if (params.length != method.inputs.length) {
-            throw new Error('incorrect number of arguments');
-        }
-        // Check overrides make sense
-        ['data', 'to'].forEach(function (key) {
-            if (tx[key] != null) {
-                errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
-            }
-        });
-        // Send to the contract address
-        tx.to = contract.addressPromise;
-        return resolveAddresses(contract.provider, params, method.inputs).then(function (params) {
-            tx.data = method.encode(params);
-            if (method.type === 'call') {
-                // Call (constant functions) always cost 0 ether
-                if (estimateOnly) {
-                    return Promise.resolve(bignumber_1.ConstantZero);
-                }
-                if (!contract.provider) {
-                    errors.throwError('call (constant functions) require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'call' });
-                }
-                // Check overrides make sense
-                ['gasLimit', 'gasPrice', 'value'].forEach(function (key) {
-                    if (tx[key] != null) {
-                        throw new Error('call cannot override ' + key);
-                    }
-                });
-                if (tx.from == null && contract.signer) {
-                    tx.from = contract.signer.getAddress();
-                }
-                return contract.provider.call(tx).then(function (value) {
-                    if ((bytes_1.hexDataLength(value) % 32) === 4 && bytes_1.hexDataSlice(value, 0, 4) === '0x08c379a0') {
-                        var reason = abi_coder_1.defaultAbiCoder.decode(['string'], bytes_1.hexDataSlice(value, 4));
-                        errors.throwError('call revert exception', errors.CALL_EXCEPTION, {
-                            address: contract.address,
-                            args: params,
-                            method: method.signature,
-                            errorSignature: 'Error(string)',
-                            errorArgs: [reason],
-                            reason: reason,
-                            transaction: tx
-                        });
-                    }
-                    try {
-                        var result = method.decode(value);
-                        if (method.outputs.length === 1) {
-                            result = result[0];
-                        }
-                        return result;
-                    }
-                    catch (error) {
-                        if (value === '0x' && method.outputs.length > 0) {
-                            errors.throwError('call exception', errors.CALL_EXCEPTION, {
-                                address: contract.address,
-                                method: method.signature,
-                                args: params
-                            });
-                        }
-                        throw error;
-                    }
-                });
-            }
-            else if (method.type === 'transaction') {
-                // Only computing the transaction estimate
-                if (estimateOnly) {
-                    if (!contract.provider) {
-                        errors.throwError('estimate gas require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'estimateGas' });
-                    }
-                    if (tx.from == null && contract.signer) {
-                        tx.from = contract.signer.getAddress();
-                    }
-                    return contract.provider.estimateGas(tx);
-                }
-                if (!contract.signer) {
-                    errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' });
-                }
-                // Make sure they aren't overriding something they shouldn't
-                if (tx.from != null) {
-                    errors.throwError('cannot override from in a transaction', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' });
-                }
-                return contract.signer.sendTransaction(tx);
-            }
-            throw new Error('invalid type - ' + method.type);
-            return null;
-        });
-    };
-}
-function getEventTag(filter) {
-    return (filter.address || '') + (filter.topics ? filter.topics.join(':') : '');
-}
-var Contract = /** @class */ (function () {
-    // https://github.com/Microsoft/TypeScript/issues/5453
-    // Once this issue is resolved (there are open PR) we can do this nicer
-    // by making addressOrName default to null for 2 operand calls. :)
-    function Contract(addressOrName, contractInterface, signerOrProvider) {
-        var _this = this;
-        errors.checkNew(this, Contract);
-        // @TODO: Maybe still check the addressOrName looks like a valid address or name?
-        //address = getAddress(address);
-        if (contractInterface instanceof interface_1.Interface) {
-            properties_1.defineReadOnly(this, 'interface', contractInterface);
-        }
-        else {
-            properties_1.defineReadOnly(this, 'interface', new interface_1.Interface(contractInterface));
-        }
-        if (signerOrProvider instanceof types_1.Signer) {
-            properties_1.defineReadOnly(this, 'provider', signerOrProvider.provider);
-            properties_1.defineReadOnly(this, 'signer', signerOrProvider);
-        }
-        else if (signerOrProvider instanceof types_1.MinimalProvider) {
-            properties_1.defineReadOnly(this, 'provider', signerOrProvider);
-            properties_1.defineReadOnly(this, 'signer', null);
-        }
-        else {
-            errors.throwError('invalid signer or provider', errors.INVALID_ARGUMENT, { arg: 'signerOrProvider', value: signerOrProvider });
-        }
-        properties_1.defineReadOnly(this, 'estimate', {});
-        properties_1.defineReadOnly(this, 'functions', {});
-        properties_1.defineReadOnly(this, 'filters', {});
-        Object.keys(this.interface.events).forEach(function (eventName) {
-            var event = _this.interface.events[eventName];
-            properties_1.defineReadOnly(_this.filters, eventName, function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                return {
-                    address: _this.address,
-                    topics: event.encodeTopics(args)
-                };
-            });
-        });
-        // Not connected to an on-chain instance, so do not connect functions and events
-        if (!addressOrName) {
-            properties_1.defineReadOnly(this, 'address', null);
-            properties_1.defineReadOnly(this, 'addressPromise', Promise.resolve(null));
-            return;
-        }
-        this._events = [];
-        properties_1.defineReadOnly(this, 'address', addressOrName);
-        if (this.provider) {
-            properties_1.defineReadOnly(this, 'addressPromise', this.provider.resolveName(addressOrName).then(function (address) {
-                if (address == null) {
-                    throw new Error('name not found');
-                }
-                return address;
-            }).catch(function (error) {
-                console.log('ERROR: Cannot find Contract - ' + addressOrName);
-                throw error;
-            }));
-        }
-        else {
-            try {
-                properties_1.defineReadOnly(this, 'addressPromise', Promise.resolve(address_1.getAddress(addressOrName)));
-            }
-            catch (error) {
-                errors.throwError('provider is required to use non-address contract address', errors.INVALID_ARGUMENT, { argument: 'addressOrName', value: addressOrName });
-            }
-        }
-        Object.keys(this.interface.functions).forEach(function (name) {
-            var run = runMethod(_this, name, false);
-            if (_this[name] == null) {
-                properties_1.defineReadOnly(_this, name, run);
-            }
-            else {
-                console.log('WARNING: Multiple definitions for ' + name);
-            }
-            if (_this.functions[name] == null) {
-                properties_1.defineReadOnly(_this.functions, name, run);
-                properties_1.defineReadOnly(_this.estimate, name, runMethod(_this, name, true));
-            }
-        });
-    }
-    // @TODO: Allow timeout?
-    Contract.prototype.deployed = function () {
-        var _this = this;
-        // If we were just deployed, we know the transaction we should occur in
-        if (this.deployTransaction) {
-            return this.deployTransaction.wait().then(function () {
-                return _this;
-            });
-        }
-        // Otherwise, poll for our code to be deployed
-        return web_1.poll(function () {
-            return _this.provider.getCode(_this.address).then(function (code) {
-                if (code === '0x') {
-                    return undefined;
-                }
-                return _this;
-            });
-        }, { onceBlock: this.provider });
-    };
-    // @TODO:
-    // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>
-    // @TODO:
-    // estimateDeploy(bytecode: string, ...args): Promise<BigNumber>
-    Contract.prototype.fallback = function (overrides) {
-        if (!this.signer) {
-            errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' });
-        }
-        var tx = properties_1.shallowCopy(overrides || {});
-        ['from', 'to'].forEach(function (key) {
-            if (tx[key] == null) {
-                return;
-            }
-            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
-        });
-        tx.to = this.addressPromise;
-        return this.signer.sendTransaction(tx);
-    };
-    // Reconnect to a different signer or provider
-    Contract.prototype.connect = function (signerOrProvider) {
-        return new Contract(this.address, this.interface, signerOrProvider);
-    };
-    // Re-attach to a different on=chain instance of this contract
-    Contract.prototype.attach = function (addressOrName) {
-        return new Contract(addressOrName, this.interface, this.signer || this.provider);
-    };
-    // Deploy the contract with the bytecode, resolving to the deployed address.
-    // Use contract.deployTransaction.wait() to wait until the contract has
-    // been mined.
-    Contract.prototype.deploy = function (bytecode) {
-        var _this = this;
-        var args = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            args[_i - 1] = arguments[_i];
-        }
-        if (this.signer == null) {
-            throw new Error('missing signer'); // @TODO: errors.throwError
-        }
-        // A lot of common tools do not prefix bytecode with a 0x
-        if (typeof (bytecode) === 'string' && bytecode.match(/^[0-9a-f]*$/i) && (bytecode.length % 2) == 0) {
-            bytecode = '0x' + bytecode;
-        }
-        if (!bytes_1.isHexString(bytecode)) {
-            errors.throwError('bytecode must be a valid hex string', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
-        }
-        if ((bytecode.length % 2) !== 0) {
-            errors.throwError('bytecode must be valid data (even length)', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
-        }
-        var tx = {};
-        if (args.length === this.interface.deployFunction.inputs.length + 1) {
-            tx = properties_1.shallowCopy(args.pop());
-            for (var key in tx) {
-                if (!allowedTransactionKeys[key]) {
-                    throw new Error('unknown transaction override ' + key);
-                }
-            }
-        }
-        ['data', 'from', 'to'].forEach(function (key) {
-            if (tx[key] == null) {
-                return;
-            }
-            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
-        });
-        tx.data = this.interface.deployFunction.encode(bytecode, args);
-        errors.checkArgumentCount(args.length, this.interface.deployFunction.inputs.length, 'in Contract constructor');
-        // @TODO: overrides of args.length = this.interface.deployFunction.inputs.length + 1
-        return this.signer.sendTransaction(tx).then(function (tx) {
-            var contract = new Contract(address_1.getContractAddress(tx), _this.interface, _this.signer || _this.provider);
-            properties_1.defineReadOnly(contract, 'deployTransaction', tx);
-            return contract;
-        });
-    };
-    Contract.prototype._getEventFilter = function (eventName) {
-        var _this = this;
-        if (typeof (eventName) === 'string') {
-            // Listen for any event
-            if (eventName === '*') {
-                return {
-                    decode: function (log) {
-                        return [_this.interface.parseLog(log)];
-                    },
-                    eventTag: '*',
-                    filter: { address: this.address },
-                };
-            }
-            // Normalize the eventName
-            if (eventName.indexOf('(') !== -1) {
-                eventName = abi_coder_1.formatSignature(abi_coder_1.parseSignature('event ' + eventName));
-            }
-            var event_1 = this.interface.events[eventName];
-            if (!event_1) {
-                errors.throwError('unknown event - ' + eventName, errors.INVALID_ARGUMENT, { argumnet: 'eventName', value: eventName });
-            }
-            var filter_1 = {
-                address: this.address,
-                topics: [event_1.topic]
-            };
-            return {
-                decode: function (log) {
-                    return event_1.decode(log.data, log.topics);
-                },
-                event: event_1,
-                eventTag: getEventTag(filter_1),
-                filter: filter_1
-            };
-        }
-        var filter = {
-            address: this.address
-        };
-        // Find the matching event in the ABI; if none, we still allow filtering
-        // since it may be a filter for an otherwise unknown event
-        var event = null;
-        if (eventName.topics && eventName.topics[0]) {
-            filter.topics = eventName.topics;
-            for (var name in this.interface.events) {
-                if (name.indexOf('(') === -1) {
-                    continue;
-                }
-                var e = this.interface.events[name];
-                if (e.topic === eventName.topics[0].toLowerCase()) {
-                    event = e;
-                    break;
-                }
-            }
-        }
-        return {
-            decode: function (log) {
-                if (event) {
-                    return event.decode(log.data, log.topics);
-                }
-                return [log];
-            },
-            event: event,
-            eventTag: getEventTag(filter),
-            filter: filter
-        };
-    };
-    Contract.prototype._addEventListener = function (eventFilter, listener, once) {
-        var _this = this;
-        if (!this.provider) {
-            errors.throwError('events require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'once' });
-        }
-        var wrappedListener = function (log) {
-            var decoded = Array.prototype.slice.call(eventFilter.decode(log));
-            var event = properties_1.jsonCopy(log);
-            event.args = decoded;
-            event.decode = eventFilter.event.decode;
-            event.event = eventFilter.event.name;
-            event.eventSignature = eventFilter.event.signature;
-            event.removeListener = function () { _this.removeListener(eventFilter.filter, listener); };
-            event.getBlock = function () { return _this.provider.getBlock(log.blockHash); };
-            event.getTransaction = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
-            event.getTransactionReceipt = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
-            decoded.push(event);
-            _this.emit.apply(_this, [eventFilter.filter].concat(decoded));
-        };
-        this.provider.on(eventFilter.filter, wrappedListener);
-        this._events.push({ eventFilter: eventFilter, listener: listener, wrappedListener: wrappedListener, once: once });
-    };
-    Contract.prototype.on = function (event, listener) {
-        this._addEventListener(this._getEventFilter(event), listener, false);
-        return this;
-    };
-    Contract.prototype.once = function (event, listener) {
-        this._addEventListener(this._getEventFilter(event), listener, true);
-        return this;
-    };
-    Contract.prototype.addEventLisener = function (eventName, listener) {
-        return this.on(eventName, listener);
-    };
-    Contract.prototype.emit = function (eventName) {
-        var _this = this;
-        var args = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            args[_i - 1] = arguments[_i];
-        }
-        if (!this.provider) {
-            return false;
-        }
-        var result = false;
-        var eventFilter = this._getEventFilter(eventName);
-        this._events = this._events.filter(function (event) {
-            if (event.eventFilter.eventTag !== eventFilter.eventTag) {
-                return true;
-            }
-            setTimeout(function () {
-                event.listener.apply(_this, args);
-            }, 0);
-            result = true;
-            return !(event.once);
-        });
-        return result;
-    };
-    Contract.prototype.listenerCount = function (eventName) {
-        if (!this.provider) {
-            return 0;
-        }
-        var eventFilter = this._getEventFilter(eventName);
-        return this._events.filter(function (event) {
-            return event.eventFilter.eventTag === eventFilter.eventTag;
-        }).length;
-    };
-    Contract.prototype.listeners = function (eventName) {
-        if (!this.provider) {
-            return [];
-        }
-        var eventFilter = this._getEventFilter(eventName);
-        return this._events.filter(function (event) {
-            return event.eventFilter.eventTag === eventFilter.eventTag;
-        }).map(function (event) { return event.listener; });
-    };
-    Contract.prototype.removeAllListeners = function (eventName) {
-        if (!this.provider) {
-            return this;
-        }
-        var eventFilter = this._getEventFilter(eventName);
-        this._events = this._events.filter(function (event) {
-            return event.eventFilter.eventTag !== eventFilter.eventTag;
-        });
-        return this;
-    };
-    Contract.prototype.removeListener = function (eventName, listener) {
-        var _this = this;
-        if (!this.provider) {
-            return this;
-        }
-        var found = false;
-        var eventFilter = this._getEventFilter(eventName);
-        this._events = this._events.filter(function (event) {
-            // Make sure this event and listener match
-            if (event.eventFilter.eventTag !== eventFilter.eventTag) {
-                return true;
-            }
-            if (event.listener !== listener) {
-                return true;
-            }
-            _this.provider.removeListener(event.eventFilter.filter, event.wrappedListener);
-            // Already found a matching event in a previous loop
-            if (found) {
-                return true;
-            }
-            // REmove this event (returning false filters us out)
-            found = true;
-            return false;
-        });
-        return this;
-    };
-    return Contract;
-}());
-exports.Contract = Contract;
-
-},{"../utils/abi-coder":60,"../utils/address":61,"../utils/bignumber":62,"../utils/bytes":63,"../utils/errors":64,"../utils/properties":70,"../utils/types":76,"../utils/web":79,"./interface":51}],50:[function(require,module,exports){
-'use strict';
-Object.defineProperty(exports, "__esModule", { value: true });
-var contract_1 = require("./contract");
-exports.Contract = contract_1.Contract;
-var interface_1 = require("./interface");
-exports.Interface = interface_1.Interface;
-
-},{"./contract":49,"./interface":51}],51:[function(require,module,exports){
-'use strict';
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-// See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
-var address_1 = require("../utils/address");
-var abi_coder_1 = require("../utils/abi-coder");
-var bignumber_1 = require("../utils/bignumber");
-var bytes_1 = require("../utils/bytes");
-var hash_1 = require("../utils/hash");
-var keccak256_1 = require("../utils/keccak256");
-var properties_1 = require("../utils/properties");
-var types_1 = require("../utils/types");
-var errors = __importStar(require("../utils/errors"));
-var Indexed = /** @class */ (function (_super) {
-    __extends(Indexed, _super);
-    function Indexed(hash) {
-        var _this = _super.call(this) || this;
-        properties_1.defineReadOnly(_this, 'hash', hash);
-        return _this;
-    }
-    return Indexed;
-}(types_1.Indexed));
-var Description = /** @class */ (function () {
-    function Description(info) {
-        for (var key in info) {
-            var value = info[key];
-            if (value != null && typeof (value) === 'object') {
-                properties_1.defineFrozen(this, key, info[key]);
-            }
-            else {
-                properties_1.defineReadOnly(this, key, info[key]);
-            }
-        }
-    }
-    return Description;
-}());
-var DeployDescription = /** @class */ (function (_super) {
-    __extends(DeployDescription, _super);
-    function DeployDescription() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    DeployDescription.prototype.encode = function (bytecode, params) {
-        if (!bytes_1.isHexString(bytecode)) {
-            errors.throwError('invalid contract bytecode', errors.INVALID_ARGUMENT, {
-                arg: 'bytecode',
-                value: bytecode
-            });
-        }
-        errors.checkArgumentCount(params.length, this.inputs.length, 'in Interface constructor');
-        try {
-            return (bytecode + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2));
-        }
-        catch (error) {
-            errors.throwError('invalid constructor argument', errors.INVALID_ARGUMENT, {
-                arg: error.arg,
-                reason: error.reason,
-                value: error.value
-            });
-        }
-        return null;
-    };
-    return DeployDescription;
-}(Description));
-var FunctionDescription = /** @class */ (function (_super) {
-    __extends(FunctionDescription, _super);
-    function FunctionDescription() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    FunctionDescription.prototype.encode = function (params) {
-        errors.checkArgumentCount(params.length, this.inputs.length, 'in interface function ' + this.name);
-        try {
-            return this.sighash + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2);
-        }
-        catch (error) {
-            errors.throwError('invalid input argument', errors.INVALID_ARGUMENT, {
-                arg: error.arg,
-                reason: error.reason,
-                value: error.value
-            });
-        }
-        return null;
-    };
-    FunctionDescription.prototype.decode = function (data) {
-        try {
-            return abi_coder_1.defaultAbiCoder.decode(this.outputs, bytes_1.arrayify(data));
-        }
-        catch (error) {
-            errors.throwError('invalid data for function output', errors.INVALID_ARGUMENT, {
-                arg: 'data',
-                errorArg: error.arg,
-                errorValue: error.value,
-                value: data,
-                reason: error.reason
-            });
-        }
-    };
-    return FunctionDescription;
-}(Description));
-var Result = /** @class */ (function (_super) {
-    __extends(Result, _super);
-    function Result() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return Result;
-}(Description));
-var EventDescription = /** @class */ (function (_super) {
-    __extends(EventDescription, _super);
-    function EventDescription() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    EventDescription.prototype.encodeTopics = function (params) {
-        var _this = this;
-        if (params.length > this.inputs.length) {
-            errors.throwError('too many arguments for ' + this.name, errors.UNEXPECTED_ARGUMENT, { maxCount: params.length, expectedCount: this.inputs.length });
-        }
-        var topics = [];
-        if (!this.anonymous) {
-            topics.push(this.topic);
-        }
-        params.forEach(function (arg, index) {
-            if (arg === null) {
-                topics.push(null);
-                return;
-            }
-            var param = _this.inputs[index];
-            if (!param.indexed) {
-                errors.throwError('cannot filter non-indexed parameters; must be null', errors.INVALID_ARGUMENT, { argument: (param.name || index), value: arg });
-            }
-            if (param.type === 'string') {
-                topics.push(hash_1.id(arg));
-            }
-            else if (param.type === 'bytes') {
-                topics.push(keccak256_1.keccak256(arg));
-            }
-            else if (param.type.indexOf('[') !== -1 || param.type.substring(0, 5) === 'tuple') {
-                errors.throwError('filtering with tuples or arrays not implemented yet; bug us on GitHub', errors.NOT_IMPLEMENTED, { operation: 'filter(array|tuple)' });
-            }
-            else {
-                if (param.type === 'address') {
-                    address_1.getAddress(arg);
-                }
-                topics.push(bytes_1.hexZeroPad(bytes_1.hexlify(arg), 32).toLowerCase());
-            }
-        });
-        // Trim off trailing nulls
-        while (topics.length && topics[topics.length - 1] === null) {
-            topics.pop();
-        }
-        return topics;
-    };
-    EventDescription.prototype.decode = function (data, topics) {
-        // Strip the signature off of non-anonymous topics
-        if (topics != null && !this.anonymous) {
-            topics = topics.slice(1);
-        }
-        var inputIndexed = [];
-        var inputNonIndexed = [];
-        var inputDynamic = [];
-        this.inputs.forEach(function (param, index) {
-            if (param.indexed) {
-                if (param.type === 'string' || param.type === 'bytes' || param.type.indexOf('[') >= 0 || param.type.substring(0, 5) === 'tuple') {
-                    inputIndexed.push({ type: 'bytes32', name: (param.name || '') });
-                    inputDynamic.push(true);
-                }
-                else {
-                    inputIndexed.push(param);
-                    inputDynamic.push(false);
-                }
-            }
-            else {
-                inputNonIndexed.push(param);
-                inputDynamic.push(false);
-            }
-        });
-        if (topics != null) {
-            var resultIndexed = abi_coder_1.defaultAbiCoder.decode(inputIndexed, bytes_1.concat(topics));
-        }
-        var resultNonIndexed = abi_coder_1.defaultAbiCoder.decode(inputNonIndexed, bytes_1.arrayify(data));
-        var result = new Result({});
-        var nonIndexedIndex = 0, indexedIndex = 0;
-        this.inputs.forEach(function (input, index) {
-            if (input.indexed) {
-                if (topics == null) {
-                    result[index] = new Indexed(null);
-                }
-                else if (inputDynamic[index]) {
-                    result[index] = new Indexed(resultIndexed[indexedIndex++]);
-                }
-                else {
-                    result[index] = resultIndexed[indexedIndex++];
-                }
-            }
-            else {
-                result[index] = resultNonIndexed[nonIndexedIndex++];
-            }
-            if (input.name) {
-                result[input.name] = result[index];
-            }
-        });
-        result.length = this.inputs.length;
-        return result;
-    };
-    return EventDescription;
-}(Description));
-var TransactionDescription = /** @class */ (function (_super) {
-    __extends(TransactionDescription, _super);
-    function TransactionDescription() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return TransactionDescription;
-}(Description));
-var LogDescription = /** @class */ (function (_super) {
-    __extends(LogDescription, _super);
-    function LogDescription() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return LogDescription;
-}(Description));
-function addMethod(method) {
-    switch (method.type) {
-        case 'constructor': {
-            var description = new DeployDescription({
-                inputs: method.inputs,
-                payable: (method.payable == null || !!method.payable)
-            });
-            if (!this.deployFunction) {
-                this.deployFunction = description;
-            }
-            break;
-        }
-        case 'function': {
-            var signature = abi_coder_1.formatSignature(method).replace(/tuple/g, '');
-            var sighash = hash_1.id(signature).substring(0, 10);
-            var description = new FunctionDescription({
-                inputs: method.inputs,
-                outputs: method.outputs,
-                payable: (method.payable == null || !!method.payable),
-                type: ((method.constant) ? 'call' : 'transaction'),
-                signature: signature,
-                sighash: sighash,
-            });
-            // Expose the first (and hopefully unique named function
-            if (method.name && this.functions[method.name] == null) {
-                properties_1.defineReadOnly(this.functions, method.name, description);
-            }
-            // Expose all methods by their signature, for overloaded functions
-            if (this.functions[description.signature] == null) {
-                properties_1.defineReadOnly(this.functions, description.signature, description);
-            }
-            break;
-        }
-        case 'event': {
-            var signature = abi_coder_1.formatSignature(method).replace(/tuple/g, '');
-            var description = new EventDescription({
-                name: method.name,
-                signature: signature,
-                inputs: method.inputs,
-                topic: hash_1.id(signature),
-                anonymous: (!!method.anonymous)
-            });
-            // Expose the first (and hopefully unique) event name
-            if (method.name && this.events[method.name] == null) {
-                properties_1.defineReadOnly(this.events, method.name, description);
-            }
-            // Expose all events by their signature, for overloaded functions
-            if (this.events[description.signature] == null) {
-                properties_1.defineReadOnly(this.events, description.signature, description);
-            }
-            break;
-        }
-        case 'fallback':
-            // Nothing to do for fallback
-            break;
-        default:
-            console.log('WARNING: unsupported ABI type - ' + method.type);
-            break;
-    }
-}
-var Interface = /** @class */ (function () {
-    function Interface(abi) {
-        errors.checkNew(this, Interface);
-        if (typeof (abi) === 'string') {
-            try {
-                abi = JSON.parse(abi);
-            }
-            catch (error) {
-                errors.throwError('could not parse ABI JSON', errors.INVALID_ARGUMENT, {
-                    arg: 'abi',
-                    errorMessage: error.message,
-                    value: abi
-                });
-            }
-            if (!Array.isArray(abi)) {
-                errors.throwError('invalid abi', errors.INVALID_ARGUMENT, { arg: 'abi', value: abi });
-                return null;
-            }
-        }
-        properties_1.defineReadOnly(this, 'functions', {});
-        properties_1.defineReadOnly(this, 'events', {});
-        // Convert any supported ABI format into a standard ABI format
-        var _abi = [];
-        abi.forEach(function (fragment) {
-            if (typeof (fragment) === 'string') {
-                fragment = abi_coder_1.parseSignature(fragment);
-            }
-            // @TODO: We should probable do some validation; create abiCoder.formatSignature for checking
-            _abi.push(fragment);
-        });
-        properties_1.defineFrozen(this, 'abi', _abi);
-        _abi.forEach(addMethod, this);
-        // If there wasn't a constructor, create the default constructor
-        if (!this.deployFunction) {
-            addMethod.call(this, { type: 'constructor', inputs: [] });
-        }
-    }
-    Interface.prototype.parseTransaction = function (tx) {
-        var sighash = tx.data.substring(0, 10).toLowerCase();
-        for (var name in this.functions) {
-            if (name.indexOf('(') === -1) {
-                continue;
-            }
-            var func = this.functions[name];
-            if (func.sighash === sighash) {
-                var result = abi_coder_1.defaultAbiCoder.decode(func.inputs, '0x' + tx.data.substring(10));
-                return new TransactionDescription({
-                    args: result,
-                    decode: func.decode,
-                    name: name,
-                    signature: func.signature,
-                    sighash: func.sighash,
-                    value: bignumber_1.bigNumberify(tx.value || 0),
-                });
-            }
-        }
-        return null;
-    };
-    Interface.prototype.parseLog = function (log) {
-        for (var name in this.events) {
-            if (name.indexOf('(') === -1) {
-                continue;
-            }
-            var event = this.events[name];
-            if (event.anonymous) {
-                continue;
-            }
-            if (event.topic !== log.topics[0]) {
-                continue;
-            }
-            // @TODO: If anonymous, and the only method, and the input count matches, should we parse and return it?
-            return new LogDescription({
-                name: event.name,
-                signature: event.signature,
-                topic: event.topic,
-                values: event.decode(log.data, log.topics)
-            });
-        }
-        return null;
-    };
-    return Interface;
-}());
-exports.Interface = Interface;
-
-},{"../utils/abi-coder":60,"../utils/address":61,"../utils/bignumber":62,"../utils/bytes":63,"../utils/errors":64,"../utils/hash":65,"../utils/keccak256":68,"../utils/properties":70,"../utils/types":76}],52:[function(require,module,exports){
-'use strict';
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-// This is empty in node, and used by browserify to inject extra goodies
-var shims_1 = require("./utils/shims");
-exports.platform = shims_1.platform;
-var contracts_1 = require("./contracts");
-exports.Contract = contracts_1.Contract;
-exports.Interface = contracts_1.Interface;
-var providers = __importStar(require("./providers"));
-exports.providers = providers;
-var utils = __importStar(require("./utils"));
-exports.utils = utils;
-var wallet_1 = require("./wallet");
-exports.HDNode = wallet_1.HDNode;
-exports.SigningKey = wallet_1.SigningKey;
-exports.Wallet = wallet_1.Wallet;
-var wordlists = __importStar(require("./wordlists"));
-exports.wordlists = wordlists;
-var types = __importStar(require("./utils/types"));
-exports.types = types;
-var errors = __importStar(require("./utils/errors"));
-exports.errors = errors;
-var _version_1 = require("./_version");
-exports.version = _version_1.version;
-var constants = utils.constants;
-exports.constants = constants;
-
-},{"./_version":48,"./contracts":50,"./providers":55,"./utils":66,"./utils/errors":64,"./utils/shims":46,"./utils/types":76,"./wallet":81,"./wordlists":85}],53:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10253,7 +10132,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
 }(provider_1.Provider));
 exports.EtherscanProvider = EtherscanProvider;
 
-},{"../utils/bytes":63,"../utils/errors":64,"../utils/properties":70,"../utils/web":79,"./provider":58}],54:[function(require,module,exports){
+},{"../utils/bytes":60,"../utils/errors":61,"../utils/properties":69,"../utils/web":80,"./provider":54}],49:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10365,7 +10244,7 @@ var FallbackProvider = /** @class */ (function (_super) {
 }(provider_1.Provider));
 exports.FallbackProvider = FallbackProvider;
 
-},{"../utils/errors":64,"./provider":58}],55:[function(require,module,exports){
+},{"../utils/errors":61,"./provider":54}],50:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var provider_1 = require("./provider");
@@ -10391,7 +10270,7 @@ function getDefaultProvider(network) {
 }
 exports.getDefaultProvider = getDefaultProvider;
 
-},{"./etherscan-provider":53,"./fallback-provider":54,"./infura-provider":56,"./ipc-provider":42,"./json-rpc-provider":57,"./provider":58,"./web3-provider":59}],56:[function(require,module,exports){
+},{"./etherscan-provider":48,"./fallback-provider":49,"./infura-provider":51,"./ipc-provider":52,"./json-rpc-provider":53,"./provider":54,"./web3-provider":55}],51:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10456,7 +10335,11 @@ var InfuraProvider = /** @class */ (function (_super) {
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.InfuraProvider = InfuraProvider;
 
-},{"../utils/errors":64,"../utils/networks":69,"../utils/properties":70,"./json-rpc-provider":57}],57:[function(require,module,exports){
+},{"../utils/errors":61,"../utils/networks":67,"../utils/properties":69,"./json-rpc-provider":53}],52:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],53:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -10768,7 +10651,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
 }(provider_1.Provider));
 exports.JsonRpcProvider = JsonRpcProvider;
 
-},{"../utils/address":61,"../utils/bytes":63,"../utils/errors":64,"../utils/networks":69,"../utils/properties":70,"../utils/types":76,"../utils/utf8":78,"../utils/web":79,"./provider":58}],58:[function(require,module,exports){
+},{"../utils/address":57,"../utils/bytes":60,"../utils/errors":61,"../utils/networks":67,"../utils/properties":69,"../utils/types":77,"../utils/utf8":79,"../utils/web":80,"./provider":54}],54:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -11851,7 +11734,7 @@ function inheritable(parent) {
 }
 properties_1.defineReadOnly(Provider, 'inherits', inheritable(Provider));
 
-},{"../utils/address":61,"../utils/bignumber":62,"../utils/bytes":63,"../utils/errors":64,"../utils/hash":65,"../utils/networks":69,"../utils/properties":70,"../utils/rlp":71,"../utils/transaction":75,"../utils/types":76,"../utils/utf8":78,"../utils/web":79}],59:[function(require,module,exports){
+},{"../utils/address":57,"../utils/bignumber":59,"../utils/bytes":60,"../utils/errors":61,"../utils/hash":62,"../utils/networks":67,"../utils/properties":69,"../utils/rlp":71,"../utils/transaction":76,"../utils/types":77,"../utils/utf8":79,"../utils/web":80}],55:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -11931,7 +11814,7 @@ var Web3Provider = /** @class */ (function (_super) {
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.Web3Provider = Web3Provider;
 
-},{"../utils/errors":64,"../utils/properties":70,"./json-rpc-provider":57}],60:[function(require,module,exports){
+},{"../utils/errors":61,"../utils/properties":69,"./json-rpc-provider":53}],56:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -12850,7 +12733,7 @@ var AbiCoder = /** @class */ (function () {
 exports.AbiCoder = AbiCoder;
 exports.defaultAbiCoder = new AbiCoder();
 
-},{"./address":61,"./bignumber":62,"./bytes":63,"./errors":64,"./properties":70,"./utf8":78}],61:[function(require,module,exports){
+},{"./address":57,"./bignumber":59,"./bytes":60,"./errors":61,"./properties":69,"./utf8":79}],57:[function(require,module,exports){
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -12976,7 +12859,30 @@ function getContractAddress(transaction) {
 }
 exports.getContractAddress = getContractAddress;
 
-},{"./bytes":63,"./errors":64,"./keccak256":68,"./rlp":71,"bn.js":2}],62:[function(require,module,exports){
+},{"./bytes":60,"./errors":61,"./keccak256":66,"./rlp":71,"bn.js":8}],58:[function(require,module,exports){
+'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
+var bytes_1 = require("../utils/bytes");
+module.exports = {
+    decode: function (textData) {
+        textData = atob(textData);
+        var data = [];
+        for (var i = 0; i < textData.length; i++) {
+            data.push(textData.charCodeAt(i));
+        }
+        return bytes_1.arrayify(data);
+    },
+    encode: function (data) {
+        data = bytes_1.arrayify(data);
+        var textData = '';
+        for (var i = 0; i < data.length; i++) {
+            textData += String.fromCharCode(data[i]);
+        }
+        return btoa(textData);
+    }
+};
+
+},{"../utils/bytes":60}],59:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -13170,18 +13076,19 @@ exports.ConstantOne = bigNumberify(1);
 exports.ConstantTwo = bigNumberify(2);
 exports.ConstantWeiPerEther = bigNumberify('1000000000000000000');
 
-},{"./bytes":63,"./errors":64,"./properties":70,"./types":76,"bn.js":2}],63:[function(require,module,exports){
+},{"./bytes":60,"./errors":61,"./properties":69,"./types":77,"bn.js":8}],60:[function(require,module,exports){
 "use strict";
 /**
  *  Conversion Utilities
  *
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+var types_1 = require("./types");
 var errors = require("./errors");
 exports.AddressZero = '0x0000000000000000000000000000000000000000';
 exports.HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
 function isBigNumber(value) {
-    return !!value._bn;
+    return (value instanceof types_1.BigNumber);
 }
 function addSlice(array) {
     if (array.slice) {
@@ -13434,7 +13341,7 @@ function joinSignature(signature) {
 }
 exports.joinSignature = joinSignature;
 
-},{"./errors":64}],64:[function(require,module,exports){
+},{"./errors":61,"./types":77}],61:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 // Unknown Error
@@ -13538,7 +13445,7 @@ function setCensorship(censorship, permanent) {
 }
 exports.setCensorship = setCensorship;
 
-},{}],65:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
@@ -13580,7 +13487,29 @@ function hashMessage(message) {
 }
 exports.hashMessage = hashMessage;
 
-},{"./bytes":63,"./keccak256":68,"./utf8":78}],66:[function(require,module,exports){
+},{"./bytes":60,"./keccak256":66,"./utf8":79}],63:[function(require,module,exports){
+"use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hash = __importStar(require("hash.js"));
+var bytes_1 = require("../utils/bytes");
+var errors = __importStar(require("../utils/errors"));
+var supportedAlgorithms = { sha256: true, sha512: true };
+function computeHmac(algorithm, key, data) {
+    if (!supportedAlgorithms[algorithm]) {
+        errors.throwError('unsupported algorithm ' + algorithm, errors.UNSUPPORTED_OPERATION, { operation: 'hmac', algorithm: algorithm });
+    }
+    return bytes_1.arrayify(hash.hmac(hash[algorithm], bytes_1.arrayify(key)).update(bytes_1.arrayify(data)).digest());
+}
+exports.computeHmac = computeHmac;
+
+},{"../utils/bytes":60,"../utils/errors":61,"hash.js":26}],64:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13645,6 +13574,7 @@ exports.shallowCopy = properties_1.shallowCopy;
 var RLP = __importStar(require("./rlp"));
 exports.RLP = RLP;
 var secp256k1_1 = require("./secp256k1");
+exports.computePublicKey = secp256k1_1.computePublicKey;
 exports.verifyMessage = secp256k1_1.verifyMessage;
 var transaction_1 = require("./transaction");
 exports.parseTransaction = transaction_1.parse;
@@ -13679,7 +13609,7 @@ var constants = {
 };
 exports.constants = constants;
 
-},{"./abi-coder":60,"./address":61,"./base64":41,"./bignumber":62,"./bytes":63,"./errors":64,"./hash":65,"./json-wallet":67,"./keccak256":68,"./networks":69,"./properties":70,"./random-bytes":45,"./rlp":71,"./secp256k1":72,"./sha2":73,"./solidity":74,"./transaction":75,"./types":76,"./units":77,"./utf8":78,"./web":79}],67:[function(require,module,exports){
+},{"./abi-coder":56,"./address":57,"./base64":58,"./bignumber":59,"./bytes":60,"./errors":61,"./hash":62,"./json-wallet":65,"./keccak256":66,"./networks":67,"./properties":69,"./random-bytes":70,"./rlp":71,"./secp256k1":72,"./sha2":73,"./solidity":75,"./transaction":76,"./types":77,"./units":78,"./utf8":79,"./web":80}],65:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var address_1 = require("./address");
@@ -13731,7 +13661,7 @@ function getJsonWalletAddress(json) {
 }
 exports.getJsonWalletAddress = getJsonWalletAddress;
 
-},{"./address":61}],68:[function(require,module,exports){
+},{"./address":57}],66:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var sha3 = require("js-sha3");
@@ -13741,7 +13671,7 @@ function keccak256(data) {
 }
 exports.keccak256 = keccak256;
 
-},{"./bytes":63,"js-sha3":33}],69:[function(require,module,exports){
+},{"./bytes":60,"js-sha3":39}],67:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13843,7 +13773,54 @@ function getNetwork(network) {
 }
 exports.getNetwork = getNetwork;
 
-},{"../utils/errors":64}],70:[function(require,module,exports){
+},{"../utils/errors":61}],68:[function(require,module,exports){
+'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
+var bytes_1 = require("../utils/bytes");
+var hmac_1 = require("./hmac");
+function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
+    password = bytes_1.arrayify(password);
+    salt = bytes_1.arrayify(salt);
+    var hLen;
+    var l = 1;
+    var DK = new Uint8Array(keylen);
+    var block1 = new Uint8Array(salt.length + 4);
+    block1.set(salt);
+    //salt.copy(block1, 0, 0, salt.length)
+    var r;
+    var T;
+    for (var i = 1; i <= l; i++) {
+        //block1.writeUInt32BE(i, salt.length)
+        block1[salt.length] = (i >> 24) & 0xff;
+        block1[salt.length + 1] = (i >> 16) & 0xff;
+        block1[salt.length + 2] = (i >> 8) & 0xff;
+        block1[salt.length + 3] = i & 0xff;
+        //var U = createHmac(password).update(block1).digest();
+        var U = hmac_1.computeHmac(hashAlgorithm, password, block1);
+        if (!hLen) {
+            hLen = U.length;
+            T = new Uint8Array(hLen);
+            l = Math.ceil(keylen / hLen);
+            r = keylen - (l - 1) * hLen;
+        }
+        //U.copy(T, 0, 0, hLen)
+        T.set(U);
+        for (var j = 1; j < iterations; j++) {
+            //U = createHmac(password).update(U).digest();
+            U = hmac_1.computeHmac(hashAlgorithm, password, U);
+            for (var k = 0; k < hLen; k++)
+                T[k] ^= U[k];
+        }
+        var destPos = (i - 1) * hLen;
+        var len = (i === l ? r : hLen);
+        //T.copy(DK, destPos, 0, len)
+        DK.set(bytes_1.arrayify(T).slice(0, len), destPos);
+    }
+    return bytes_1.arrayify(DK);
+}
+exports.pbkdf2 = pbkdf2;
+
+},{"../utils/bytes":60,"./hmac":63}],69:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 function defineReadOnly(object, name, value) {
@@ -13895,7 +13872,48 @@ function jsonCopy(object) {
 }
 exports.jsonCopy = jsonCopy;
 
-},{}],71:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
+(function (global){
+'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
+var bytes_1 = require("../utils/bytes");
+var properties_1 = require("../utils/properties");
+var crypto = global.crypto || global.msCrypto;
+if (!crypto || !crypto.getRandomValues) {
+    console.log('WARNING: Missing strong random number source; using weak randomBytes');
+    crypto = {
+        getRandomValues: function (buffer) {
+            for (var round = 0; round < 20; round++) {
+                for (var i = 0; i < buffer.length; i++) {
+                    if (round) {
+                        buffer[i] ^= Math.trunc(256 * Math.random());
+                    }
+                    else {
+                        buffer[i] = Math.trunc(256 * Math.random());
+                    }
+                }
+            }
+            return buffer;
+        },
+        _weakCrypto: true
+    };
+}
+function randomBytes(length) {
+    if (length <= 0 || length > 1024 || parseInt(String(length)) != length) {
+        throw new Error('invalid length');
+    }
+    var result = new Uint8Array(length);
+    crypto.getRandomValues(result);
+    return bytes_1.arrayify(result);
+}
+exports.randomBytes = randomBytes;
+;
+if (crypto._weakCrypto === true) {
+    properties_1.defineReadOnly(randomBytes, '_weakCrypto', true);
+}
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"../utils/bytes":60,"../utils/properties":69}],71:[function(require,module,exports){
 "use strict";
 //See: https://github.com/ethereum/wiki/wiki/RLP
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -14013,7 +14031,7 @@ function decode(data) {
 }
 exports.decode = decode;
 
-},{"./bytes":63}],72:[function(require,module,exports){
+},{"./bytes":60}],72:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14028,17 +14046,25 @@ var bytes_1 = require("./bytes");
 var hash_1 = require("./hash");
 var keccak256_1 = require("./keccak256");
 var properties_1 = require("./properties");
+var elliptic_1 = require("elliptic");
 var errors = __importStar(require("./errors"));
+var _curve = null;
+function getCurve() {
+    if (!_curve) {
+        _curve = new elliptic_1.ec('secp256k1');
+    }
+    return _curve;
+}
 var KeyPair = /** @class */ (function () {
     function KeyPair(privateKey) {
-        var keyPair = curve.keyFromPrivate(bytes_1.arrayify(privateKey));
+        var keyPair = getCurve().keyFromPrivate(bytes_1.arrayify(privateKey));
         properties_1.defineReadOnly(this, 'privateKey', bytes_1.hexlify(keyPair.priv.toArray('be', 32)));
         properties_1.defineReadOnly(this, 'publicKey', '0x' + keyPair.getPublic(false, 'hex'));
         properties_1.defineReadOnly(this, 'compressedPublicKey', '0x' + keyPair.getPublic(true, 'hex'));
         properties_1.defineReadOnly(this, 'publicKeyBytes', keyPair.getPublic().encode(null, true));
     }
     KeyPair.prototype.sign = function (digest) {
-        var keyPair = curve.keyFromPrivate(bytes_1.arrayify(this.privateKey));
+        var keyPair = getCurve().keyFromPrivate(bytes_1.arrayify(this.privateKey));
         var signature = keyPair.sign(bytes_1.arrayify(digest), { canonical: true });
         return {
             recoveryParam: signature.recoveryParam,
@@ -14055,7 +14081,7 @@ function recoverPublicKey(digest, signature) {
         r: bytes_1.arrayify(signature.r),
         s: bytes_1.arrayify(signature.s)
     };
-    return '0x' + curve.recoverPubKey(bytes_1.arrayify(digest), sig, signature.recoveryParam).encode('hex', false);
+    return '0x' + getCurve().recoverPubKey(bytes_1.arrayify(digest), sig, signature.recoveryParam).encode('hex', false);
 }
 exports.recoverPublicKey = recoverPublicKey;
 function computePublicKey(key, compressed) {
@@ -14071,13 +14097,13 @@ function computePublicKey(key, compressed) {
         if (compressed) {
             return bytes_1.hexlify(bytes);
         }
-        return '0x' + curve.keyFromPublic(bytes).getPublic(false, 'hex');
+        return '0x' + getCurve().keyFromPublic(bytes).getPublic(false, 'hex');
     }
     else if (bytes.length === 65) {
         if (!compressed) {
             return bytes_1.hexlify(bytes);
         }
-        return '0x' + curve.keyFromPublic(bytes).getPublic(true, 'hex');
+        return '0x' + getCurve().keyFromPublic(bytes).getPublic(true, 'hex');
     }
     errors.throwError('invalid public or private key', errors.INVALID_ARGUMENT, { arg: 'key', value: '[REDACTED]' });
     return null;
@@ -14103,15 +14129,8 @@ function verifyMessage(message, signature) {
     });
 }
 exports.verifyMessage = verifyMessage;
-// !!!!!! IMPORTANT !!!!!!!!
-//
-// This import MUST be at the bottom, otehrwise browserify executes several imports
-// BEFORE they are exported, resulting in undefined
-var elliptic_1 = require("elliptic");
-var curve = new elliptic_1.ec('secp256k1');
-exports.N = '0x' + curve.n.toString(16);
 
-},{"./address":61,"./bytes":63,"./errors":64,"./hash":65,"./keccak256":68,"./properties":70,"elliptic":5}],73:[function(require,module,exports){
+},{"./address":57,"./bytes":60,"./errors":61,"./hash":62,"./keccak256":66,"./properties":69,"elliptic":11}],73:[function(require,module,exports){
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -14128,7 +14147,13 @@ function sha512(data) {
 }
 exports.sha512 = sha512;
 
-},{"./bytes":63,"hash.js":20}],74:[function(require,module,exports){
+},{"./bytes":60,"hash.js":26}],74:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+require('setimmediate');
+exports.platform = "browser";
+
+},{"setimmediate":43}],75:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("./bignumber");
@@ -14221,7 +14246,7 @@ function sha256(types, values) {
 }
 exports.sha256 = sha256;
 
-},{"./bignumber":62,"./bytes":63,"./keccak256":68,"./sha2":73,"./utf8":78}],75:[function(require,module,exports){
+},{"./bignumber":59,"./bytes":60,"./keccak256":66,"./sha2":73,"./utf8":79}],76:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14235,6 +14260,7 @@ var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
 var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
+var secp256k1_1 = require("./secp256k1");
 var RLP = __importStar(require("./rlp"));
 var errors = __importStar(require("./errors"));
 /* !!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!
@@ -14368,9 +14394,8 @@ function parse(rawTransaction) {
     return tx;
 }
 exports.parse = parse;
-var secp256k1_1 = require("./secp256k1");
 
-},{"./address":61,"./bignumber":62,"./bytes":63,"./errors":64,"./keccak256":68,"./rlp":71,"./secp256k1":72}],76:[function(require,module,exports){
+},{"./address":57,"./bignumber":59,"./bytes":60,"./errors":61,"./keccak256":66,"./rlp":71,"./secp256k1":72}],77:[function(require,module,exports){
 "use strict";
 ///////////////////////////////
 // Bytes
@@ -14427,7 +14452,7 @@ var HDNode = /** @class */ (function () {
 }());
 exports.HDNode = HDNode;
 
-},{}],77:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14578,7 +14603,7 @@ function parseEther(ether) {
 }
 exports.parseEther = parseEther;
 
-},{"./bignumber":62,"./errors":64}],78:[function(require,module,exports){
+},{"./bignumber":59,"./errors":61}],79:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
@@ -14703,7 +14728,7 @@ function toUtf8String(bytes) {
 }
 exports.toUtf8String = toUtf8String;
 
-},{"./bytes":63}],79:[function(require,module,exports){
+},{"./bytes":60}],80:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14878,7 +14903,7 @@ function poll(func, options) {
 }
 exports.poll = poll;
 
-},{"./base64":41,"./errors":64,"./utf8":78,"xmlhttprequest":47}],80:[function(require,module,exports){
+},{"./base64":58,"./errors":61,"./utf8":79,"xmlhttprequest":47}],81:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -14914,6 +14939,7 @@ var hmac_1 = require("../utils/hmac");
 var properties_1 = require("../utils/properties");
 var secp256k1_1 = require("../utils/secp256k1");
 var sha2_1 = require("../utils/sha2");
+var N = bignumber_1.bigNumberify("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 var types_1 = require("../utils/types");
 var errors = __importStar(require("../utils/errors"));
 // "Bitcoin seed"
@@ -14984,7 +15010,7 @@ var HDNode = /** @class */ (function (_super) {
         var I = hmac_1.computeHmac('sha512', this.chainCode, data);
         var IL = bignumber_1.bigNumberify(I.slice(0, 32));
         var IR = I.slice(32);
-        var ki = IL.add(this.keyPair.privateKey).mod(secp256k1_1.N);
+        var ki = IL.add(this.keyPair.privateKey).mod(N);
         return new HDNode(bytes_1.arrayify(ki), IR, index, this.depth + 1, mnemonic, path);
     };
     HDNode.prototype.derivePath = function (path) {
@@ -15125,7 +15151,7 @@ function isValidMnemonic(mnemonic, wordlist) {
 }
 exports.isValidMnemonic = isValidMnemonic;
 
-},{"../utils/bignumber":62,"../utils/bytes":63,"../utils/errors":64,"../utils/hmac":43,"../utils/pbkdf2":44,"../utils/properties":70,"../utils/secp256k1":72,"../utils/sha2":73,"../utils/types":76,"../utils/utf8":78,"../wordlists/lang-en":86}],81:[function(require,module,exports){
+},{"../utils/bignumber":59,"../utils/bytes":60,"../utils/errors":61,"../utils/hmac":63,"../utils/pbkdf2":68,"../utils/properties":69,"../utils/secp256k1":72,"../utils/sha2":73,"../utils/types":77,"../utils/utf8":79,"../wordlists/lang-en":87}],82:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -15142,7 +15168,7 @@ exports.HDNode = HDNode;
 var signing_key_1 = require("./signing-key");
 exports.SigningKey = signing_key_1.SigningKey;
 
-},{"./hdnode":80,"./signing-key":83,"./wallet":84}],82:[function(require,module,exports){
+},{"./hdnode":81,"./signing-key":84,"./wallet":85}],83:[function(require,module,exports){
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -15545,7 +15571,7 @@ function encrypt(privateKey, password, options, progressCallback) {
 }
 exports.encrypt = encrypt;
 
-},{"../utils/address":61,"../utils/bytes":63,"../utils/keccak256":68,"../utils/pbkdf2":44,"../utils/random-bytes":45,"../utils/utf8":78,"./hdnode":80,"./signing-key":83,"aes-js":1,"scrypt-js":36,"uuid":40}],83:[function(require,module,exports){
+},{"../utils/address":57,"../utils/bytes":60,"../utils/keccak256":66,"../utils/pbkdf2":68,"../utils/random-bytes":70,"../utils/utf8":79,"./hdnode":81,"./signing-key":84,"aes-js":7,"scrypt-js":42,"uuid":46}],84:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -15601,7 +15627,7 @@ var SigningKey = /** @class */ (function () {
 }());
 exports.SigningKey = SigningKey;
 
-},{"../utils/bytes":63,"../utils/errors":64,"../utils/properties":70,"../utils/secp256k1":72,"../utils/types":76}],84:[function(require,module,exports){
+},{"../utils/bytes":60,"../utils/errors":61,"../utils/properties":69,"../utils/secp256k1":72,"../utils/types":77}],85:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -15800,9 +15826,14 @@ var Wallet = /** @class */ (function (_super) {
 }(types_1.Signer));
 exports.Wallet = Wallet;
 
-},{"../utils/bytes":63,"../utils/errors":64,"../utils/hash":65,"../utils/json-wallet":67,"../utils/keccak256":68,"../utils/properties":70,"../utils/random-bytes":45,"../utils/transaction":75,"../utils/types":76,"./hdnode":80,"./secret-storage":82,"./signing-key":83}],85:[function(require,module,exports){
-module.exports = { en: require('./lang-en').langEn }
-},{"./lang-en":86}],86:[function(require,module,exports){
+},{"../utils/bytes":60,"../utils/errors":61,"../utils/hash":62,"../utils/json-wallet":65,"../utils/keccak256":66,"../utils/properties":69,"../utils/random-bytes":70,"../utils/transaction":76,"../utils/types":77,"./hdnode":81,"./secret-storage":83,"./signing-key":84}],86:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var lang_en_1 = require("../wordlists/lang-en");
+var en = lang_en_1.langEn;
+exports.en = en;
+
+},{"../wordlists/lang-en":87}],87:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -15847,7 +15878,7 @@ var langEn = new LangEn();
 exports.langEn = langEn;
 wordlist_1.register(langEn);
 
-},{"./wordlist":87}],87:[function(require,module,exports){
+},{"./wordlist":88}],88:[function(require,module,exports){
 (function (global){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -15903,25 +15934,6 @@ function register(lang, name) {
 }
 exports.register = register;
 
-
-exportWordlist = true;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../utils/hash":65,"../utils/properties":70}],88:[function(require,module,exports){
-"use strict";
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var ethers = __importStar(require("./ethers"));
-exports.ethers = ethers;
-__export(require("./ethers"));
-
-},{"./ethers":52}]},{},[88])(88)
+},{"../utils/hash":62,"../utils/properties":69}]},{},[6])(6)
 });
