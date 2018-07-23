@@ -3,7 +3,6 @@ import { getAddress } from './address';
 import { bigNumberify, ConstantZero } from './bignumber';
 import { arrayify, hexlify, hexZeroPad, splitSignature, stripZeros, } from './bytes';
 import { keccak256 } from './keccak256';
-import { recoverAddress } from './secp256k1';
 
 import * as RLP from './rlp';
 
@@ -160,3 +159,9 @@ export function parse(rawTransaction: Arrayish): Transaction {
     return tx;
 }
 
+// !!! IMPORTANT !!!
+//
+// This must be be at the end, otherwise Browserify attempts to include upstream
+// dependencies before this module is loaded.
+
+import { recoverAddress } from './secp256k1';
