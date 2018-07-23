@@ -13,7 +13,7 @@ export const HashZero = '0x00000000000000000000000000000000000000000000000000000
 
 
 function isBigNumber(value: any): value is BigNumber {
-    return !!value._bn;
+    return (value instanceof BigNumber);
 }
 
 function addSlice(array: Uint8Array): Uint8Array {
