@@ -14046,7 +14046,6 @@ var bytes_1 = require("./bytes");
 var hash_1 = require("./hash");
 var keccak256_1 = require("./keccak256");
 var properties_1 = require("./properties");
-var elliptic_1 = require("elliptic");
 var errors = __importStar(require("./errors"));
 var _curve = null;
 function getCurve() {
@@ -14129,6 +14128,11 @@ function verifyMessage(message, signature) {
     });
 }
 exports.verifyMessage = verifyMessage;
+// !!! IMPORTANT !!!
+//
+// This must be be at the end, otherwise Browserify attempts to include upstream
+// dependencies before this module is loaded.
+var elliptic_1 = require("elliptic");
 
 },{"./address":57,"./bytes":60,"./errors":61,"./hash":62,"./keccak256":66,"./properties":69,"elliptic":11}],73:[function(require,module,exports){
 'use strict';
@@ -14260,7 +14264,6 @@ var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
 var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
-var secp256k1_1 = require("./secp256k1");
 var RLP = __importStar(require("./rlp"));
 var errors = __importStar(require("./errors"));
 /* !!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!
@@ -14394,6 +14397,11 @@ function parse(rawTransaction) {
     return tx;
 }
 exports.parse = parse;
+// !!! IMPORTANT !!!
+//
+// This must be be at the end, otherwise Browserify attempts to include upstream
+// dependencies before this module is loaded.
+var secp256k1_1 = require("./secp256k1");
 
 },{"./address":57,"./bignumber":59,"./bytes":60,"./errors":61,"./keccak256":66,"./rlp":71,"./secp256k1":72}],77:[function(require,module,exports){
 "use strict";

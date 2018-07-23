@@ -11,7 +11,6 @@ var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
 var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
-var secp256k1_1 = require("./secp256k1");
 var RLP = __importStar(require("./rlp"));
 var errors = __importStar(require("./errors"));
 /* !!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!
@@ -145,3 +144,8 @@ function parse(rawTransaction) {
     return tx;
 }
 exports.parse = parse;
+// !!! IMPORTANT !!!
+//
+// This must be be at the end, otherwise Browserify attempts to include upstream
+// dependencies before this module is loaded.
+var secp256k1_1 = require("./secp256k1");

@@ -12,7 +12,6 @@ var bytes_1 = require("./bytes");
 var hash_1 = require("./hash");
 var keccak256_1 = require("./keccak256");
 var properties_1 = require("./properties");
-var elliptic_1 = require("elliptic");
 var errors = __importStar(require("./errors"));
 var _curve = null;
 function getCurve() {
@@ -95,3 +94,8 @@ function verifyMessage(message, signature) {
     });
 }
 exports.verifyMessage = verifyMessage;
+// !!! IMPORTANT !!!
+//
+// This must be be at the end, otherwise Browserify attempts to include upstream
+// dependencies before this module is loaded.
+var elliptic_1 = require("elliptic");
