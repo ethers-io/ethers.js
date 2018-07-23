@@ -157,7 +157,7 @@ export function parseUnits(value: string, unitType?: string | number): BigNumber
     return wei;
 }
 
-export function formatEther(wei: BigNumberish, options: any): string {
+export function formatEther(wei: BigNumberish, options?: any): string {
     return formatUnits(wei, 18, options);
 }
 
