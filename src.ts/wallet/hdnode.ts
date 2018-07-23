@@ -17,8 +17,10 @@ import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
 import { pbkdf2 } from '../utils/pbkdf2';
 import { computeHmac } from '../utils/hmac';
 import { defineReadOnly } from '../utils/properties';
-import { KeyPair, N } from '../utils/secp256k1';
+import { KeyPair } from '../utils/secp256k1';
 import { sha256 } from '../utils/sha2';
+
+const N = bigNumberify("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 
 import { Arrayish, HDNode as _HDNode ,Wordlist } from '../utils/types';
 

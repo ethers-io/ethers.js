@@ -8,10 +8,19 @@ import { arrayify, hexlify, hexZeroPad, splitSignature } from './bytes';
 import { hashMessage } from './hash';
 import { keccak256 } from './keccak256';
 import { defineReadOnly } from './properties';
+import { ec as EC } from 'elliptic';
 
 import { Arrayish, Signature } from './types';
 
 import * as errors from './errors';
+
+let _curve: EC = null
+function getCurve() {
+    if (!_curve) {
+        _curve = new EC('secp256k1');
+    }
+    return _curve;
+}
 
 
 export class KeyPair {
@@ -24,7 +33,7 @@ export class KeyPair {
     readonly publicKeyBytes: Uint8Array;
 
     constructor(privateKey: Arrayish) {
-        let keyPair = curve.keyFromPrivate(arrayify(privateKey));
+        let keyPair = getCurve().keyFromPrivate(arrayify(privateKey));
 
         defineReadOnly(this, 'privateKey', hexlify(keyPair.priv.toArray('be', 32)));
         defineReadOnly(this, 'publicKey', '0x' + keyPair.getPublic(false, 'hex'));
@@ -33,7 +42,7 @@ export class KeyPair {
     }
 
     sign(digest: Arrayish): Signature {
-        let keyPair = curve.keyFromPrivate(arrayify(this.privateKey));
+        let keyPair = getCurve().keyFromPrivate(arrayify(this.privateKey));
         let signature = keyPair.sign(arrayify(digest), {canonical: true});
         return {
             recoveryParam: signature.recoveryParam,
@@ -50,7 +59,7 @@ export function recoverPublicKey(digest: Arrayish, signature: Signature): string
         r: arrayify(signature.r),
         s: arrayify(signature.s)
     };
-    return '0x' + curve.recoverPubKey(arrayify(digest), sig, signature.recoveryParam).encode('hex', false);
+    return '0x' + getCurve().recoverPubKey(arrayify(digest), sig, signature.recoveryParam).encode('hex', false);
 }
 
 export function computePublicKey(key: Arrayish, compressed?: boolean): string {
@@ -66,11 +75,11 @@ export function computePublicKey(key: Arrayish, compressed?: boolean): string {
 
     } else if (bytes.length === 33) {
         if (compressed) { return hexlify(bytes); }
-        return '0x' + curve.keyFromPublic(bytes).getPublic(false, 'hex');
+        return '0x' + getCurve().keyFromPublic(bytes).getPublic(false, 'hex');
 
     } else if (bytes.length === 65) {
         if (!compressed) { return hexlify(bytes); }
-        return '0x' + curve.keyFromPublic(bytes).getPublic(true, 'hex');
+        return '0x' + getCurve().keyFromPublic(bytes).getPublic(true, 'hex');
     }
 
     errors.throwError('invalid public or private key', errors.INVALID_ARGUMENT, { arg: 'key', value: '[REDACTED]' });
@@ -102,12 +111,3 @@ export function verifyMessage(message: Arrayish | string, signature: Signature |
     );
 }
 
-// !!!!!! IMPORTANT !!!!!!!!
-//
-// This import MUST be at the bottom, otehrwise browserify executes several imports
-// BEFORE they are exported, resulting in undefined
-
-import { ec as EC } from 'elliptic';
-const curve = new EC('secp256k1');
-
-export const N = '0x' + curve.n.toString(16);

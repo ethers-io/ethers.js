@@ -67,14 +67,3 @@ export class SigningKey {
         return this.keyPair.sign(digest);
     }
 }
-/*
-export function recoverAddress(digest: Arrayish, signature: Signature): string {
-    return computeAddress(recoverPublicKey(digest, signature));
-}
-
-export function computeAddress(key: string): string {
-    // Strip off the leading "0x04"
-    let publicKey = '0x' + computePublicKey(key).slice(4);
-    return getAddress('0x' + keccak256(publicKey).substring(26));
-}
-*/
