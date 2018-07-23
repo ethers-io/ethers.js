@@ -1,14 +1,9 @@
 'use strict';
 
 var assert = require('assert');
-var utils = require('./utils');
 
-if (global.ethers) {
-    console.log('Using global ethers; ' + __filename);
-    var ethers = global.ethers;
-} else {
-    var ethers = require('..');
-}
+var utils = require('./utils');
+var ethers = utils.getEthers(__filename);
 
 describe('Test JSON Wallets', function() {
     var Wallet = ethers.Wallet;

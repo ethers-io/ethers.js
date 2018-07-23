@@ -3,12 +3,8 @@
 var assert = require('assert');
 var web3 = require('web3');
 
-if (global.ethers) {
-    console.log('Using global ethers; ' + __filename);
-    var ethers = global.ethers;
-} else {
-    var ethers = require('..');
-}
+var utils = require('./utils');
+var ethers = utils.getEthers(__filename);
 
 var providers = ethers.providers;
 var bigNumberify = ethers.utils.bigNumberify;

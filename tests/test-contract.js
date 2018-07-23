@@ -2,12 +2,8 @@
 
 var assert = require('assert');
 
-if (global.ethers) {
-    console.log('Using global ethers; ' + __filename);
-    var ethers = global.ethers;
-} else {
-    var ethers = require('..');
-}
+var utils = require('./utils');
+var ethers = utils.getEthers(__filename);
 
 var provider = new ethers.providers.InfuraProvider('rinkeby');
 

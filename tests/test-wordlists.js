@@ -3,13 +3,8 @@
 var assert = require('assert');
 
 var utils = require('./utils');
+var ethers = utils.getEthers(__filename);
 
-if (global.ethers) {
-    console.log('Using global ethers; ' + __filename);
-    var ethers = global.ethers;
-} else {
-    var ethers = require('..');
-}
 
 function checkWordlist(filename, wordlist) {
     var words = utils.loadText(filename).split('\n');

@@ -5,10 +5,21 @@ var fs = require('fs');
 var path = require('path');
 var zlib = require('zlib');
 
+var getEthers = require('./utils-ethers');
+
 var bigNumber = require('../utils/bignumber');
 var convert = require('../utils/bytes');
 var keccak256 = require('../utils/keccak256').keccak256;
 var utf8 = require('../utils/utf8');
+
+var readFileSync = fs.readFileSync;
+if (!readFileSync) {
+    var data = require('./dist/tests.json');
+
+    readFileSync = function(filename) {
+        return new Buffer(data[filename], 'base64');
+    }
+}
 
 /*
 function random(lowerRandomInterval, upperOpenInterval) {
@@ -95,21 +106,23 @@ function saveTests(tag, data) {
 
 function loadTests(tag) {
    var filename = path.resolve(__dirname, 'tests', tag + '.json.gz');
-   return JSON.parse(zlib.gunzipSync(fs.readFileSync(filename)));
+   return JSON.parse(zlib.gunzipSync(readFileSync(filename)));
 }
 
 function loadJson(filename) {
    var filename = path.resolve(__dirname, 'tests', filename);
-   return JSON.parse(fs.readFileSync(filename).toString());
+   return JSON.parse(readFileSync(filename).toString());
 }
 
 function loadText(filename) {
    var filename = path.resolve(__dirname, filename);
-   return fs.readFileSync(filename).toString();
+   return readFileSync(filename).toString();
 }
 
 
 module.exports = {
+    getEthers: getEthers,
+
     randomBytes: randomBytes,
     randomHexString: randomHexString,
     randomNumber:randomNumber,
