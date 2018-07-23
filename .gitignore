@@ -6,3 +6,4 @@ obsolete/
 .tmp/
 docs/build/doctrees/
 docs/build/html/_sources/
+dist/types/shims/
