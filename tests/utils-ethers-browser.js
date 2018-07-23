@@ -4,7 +4,7 @@ function getEthers(filename) {
     var ethers = global.ethers
     if (!ethers) { return undefined; }
     console.log('Using global ethers; ' + filename);
-    assert.equal(ethers.platform, 'browser', 'platform: ' + ethers.platform + ' != "brwoser"');
+    assert.equal(ethers.platform, 'browser', 'platform: ' + ethers.platform + ' != "browser"');
     return ethers;
 }
 
