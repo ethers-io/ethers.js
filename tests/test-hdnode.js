@@ -63,8 +63,9 @@ function testEasySeed(lang, locale) {
     });
 }
 
-testEasySeed(require('../wordlists/lang-ja').langJa, 'ja');
-testEasySeed(require('../wordlists/lang-zh').langZhCn, 'zh_cn');
-testEasySeed(require('../wordlists/lang-zh').langZhTw, 'zh_tw');
-testEasySeed(require('../wordlists/lang-it').langIt, 'it');
-testEasySeed(require('../wordlists/lang-ko').langKo, 'ko');
+testEasySeed(ethers.wordlists.en, 'en');
+testEasySeed(ethers.wordlists.ja, 'ja');
+testEasySeed(ethers.wordlists.zh_cn, 'zh_cn');
+testEasySeed(ethers.wordlists.zh_tw, 'zh_tw');
+testEasySeed(ethers.wordlists.it, 'it');
+testEasySeed(ethers.wordlists.ko, 'ko');
