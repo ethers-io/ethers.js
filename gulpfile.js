@@ -158,8 +158,8 @@ taskBundle("default", { filename: "ethers.js", minify: false });
 // Creates dist/ethers.min.js
 taskBundle("minified", { filename: "ethers.min.js", minify: true });
 
-// Crearte a single definition file and its map as dist/ethers.d.ts[.map]
-gulp.task("temp-types", function() {
+// Dump the TypeScript definitions to dist/types/
+gulp.task("types", function() {
     return gulp.src(['./src.ts/index.ts', './src.ts/**/*.ts'])
     .pipe(ts({
         declaration: true,
@@ -170,7 +170,7 @@ gulp.task("temp-types", function() {
         target: "es5",
     }))
     .dts
-    .pipe(gulp.dest(".tmp"))
+    .pipe(gulp.dest("dist/types"))
 });
 
 /**
