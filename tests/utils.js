@@ -5,6 +5,7 @@ var fs = require('fs');
 var path = require('path');
 var zlib = require('zlib');
 
+var abiCoder = require('../utils/abi-coder');
 var bigNumber = require('../utils/bignumber');
 var convert = require('../utils/convert');
 var keccak256 = require('../utils/keccak256');
@@ -85,23 +86,24 @@ function equals(a, b) {
 }
 
 function saveTests(tag, data) {
-   var filename = path.resolve(__dirname, 'tests', tag + '.json.gz');
+    var filename = path.resolve(__dirname, 'tests', tag + '.json.gz');
 
-   var data = JSON.stringify(data, undefined, ' ') + '\n';
-   fs.writeFileSync(filename, zlib.gzipSync(data));
+    var data = JSON.stringify(data, undefined, ' ') + '\n';
+    fs.writeFileSync(filename, zlib.gzipSync(data));
 
-   console.log('Save testcase: ' + filename);
+    console.log('Save testcase: ' + filename);
 }
 
 function loadTests(tag) {
-   var filename = path.resolve(__dirname, 'tests', tag + '.json.gz');
-   return JSON.parse(zlib.gunzipSync(fs.readFileSync(filename)));
+    var filename = path.resolve(__dirname, 'tests', tag + '.json.gz');
+    return JSON.parse(zlib.gunzipSync(fs.readFileSync(filename)));
 }
 
 module.exports = {
+    abiCoder: abiCoder,
     randomBytes: randomBytes,
     randomHexString: randomHexString,
-    randomNumber:randomNumber,
+    randomNumber: randomNumber,
 
     bigNumberify: bigNumber.bigNumberify,
 

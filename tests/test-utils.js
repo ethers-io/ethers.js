@@ -226,3 +226,267 @@ describe('Test Base64 coder', function() {
         assert.equal(utf8.toUtf8String(base64.decode(encoded)), decodedText, 'decodes from base64 sstring');
     });
 });
+
+
+describe('Test coderNumber', function() {
+    var coder = utils.abiCoder.defaultCoder;
+    describe('uint8', function() {
+        describe('encode', function() {
+            function testUint8Encode(input, expected) {
+                var encoded = coder.encode(['uint8'], [input]);
+                assert.equal(encoded.toString('hex'), expected.toString('hex'));
+            }
+            it('min value', function() {
+                testUint8Encode(
+                    '0',
+                    '0x0000000000000000000000000000000000000000000000000000000000000000'
+                );
+            });
+            it('middle value', function() {
+                testUint8Encode(
+                    '12',
+                    '0x000000000000000000000000000000000000000000000000000000000000000c'
+                );
+            });
+            it('max value', function() {
+                testUint8Encode(
+                    '255',
+                    '0x00000000000000000000000000000000000000000000000000000000000000ff'
+                );
+            });
+            it('throws for min value - 1', function() {
+                var input = '-1';
+                assert.throws(() => coder.encode(['uint8'], [input]));
+            });
+            it('throws for max value + 1', function() {
+                var input = '256';
+                assert.throws(() => coder.encode(['uint8'], [input]));
+            });
+        });
+        describe('decode', function() {
+            function testUint8Decode(encoded, expected) {
+                var decoded = coder.decode(['uint8'], encoded);
+                assert.equal(decoded.toString(), expected);
+            }
+            it('min value', function() {
+                testUint8Decode(
+                    '0x0000000000000000000000000000000000000000000000000000000000000000',
+                    '0'
+                );
+            });
+            it('middle value', function() {
+                testUint8Decode(
+                    '0x000000000000000000000000000000000000000000000000000000000000000c',
+                    '12'
+                );
+            });
+            it('max value', function() {
+                testUint8Decode(
+                    '0x00000000000000000000000000000000000000000000000000000000000000ff',
+                    '255'
+                );
+            });
+        });
+    });
+    describe('uint256', function() {
+        describe('encode', function() {
+            function testUint256Encode(input, expected) {
+                var encoded = coder.encode(['uint256'], [input]);
+                assert.equal(encoded.toString('hex'), expected.toString('hex'));
+            }
+            it('min value', function() {
+                testUint256Encode(
+                    '0',
+                    '0x0000000000000000000000000000000000000000000000000000000000000000'
+                );
+            });
+            it('middle value', function() {
+                testUint256Encode(
+                    '123456789',
+                    '0x00000000000000000000000000000000000000000000000000000000075bcd15'
+                );
+            });
+            it('max value', function() {
+                testUint256Encode(
+                    '115792089237316195423570985008687907853269984665640564039457584007913129639935',
+                    '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+                );
+            });
+            it('throws for min value - 1', function() {
+                var input = '-1';
+                assert.throws(() => coder.encode(['uint256'], [input]));
+            });
+            it('throws for max value + 1', function() {
+                var input =
+                    '115792089237316195423570985008687907853269984665640564039457584007913129639936';
+                assert.throws(() => coder.encode(['uint256'], [input]));
+            });
+        });
+        describe('decode', function() {
+            function testUint256Decode(encoded, expected) {
+                var decoded = coder.decode(['uint256'], encoded);
+                assert.equal(decoded.toString(), expected);
+            }
+            it('min value', function() {
+                testUint256Decode(
+                    '0x0000000000000000000000000000000000000000000000000000000000000000',
+                    '0'
+                );
+            });
+            it('middle value', function() {
+                testUint256Decode(
+                    '0x00000000000000000000000000000000000000000000000000000000075bcd15',
+                    '123456789'
+                );
+            });
+            it('max value', function() {
+                testUint256Decode(
+                    '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+                    '115792089237316195423570985008687907853269984665640564039457584007913129639935'
+                );
+            });
+        });
+    });
+    describe('int8', function() {
+        describe('encode', function() {
+            function testInt8Encode(input, expected) {
+                var encoded = coder.encode(['int8'], [input]);
+                assert.equal(encoded.toString('hex'), expected.toString('hex'));
+            }
+            it('min value', function() {
+                testInt8Encode(
+                    '-128',
+                    '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff80'
+                );
+            });
+            it('negative middle value', function() {
+                testInt8Encode(
+                    '-12',
+                    '0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff4'
+                );
+            });
+            it('middle value', function() {
+                testInt8Encode(
+                    '12',
+                    '0x000000000000000000000000000000000000000000000000000000000000000c'
+                );
+            });
+            it('max value', function() {
+                testInt8Encode(
+                    '127',
+                    '0x000000000000000000000000000000000000000000000000000000000000007f'
+                );
+            });
+            it('throws for min value - 1', function() {
+                var input = '-129';
+                assert.throws(() => coder.encode(['int8'], [input]));
+            });
+            it('throws for max value + 1', function() {
+                var input = '128';
+                assert.throws(() => coder.encode(['int8'], [input]));
+            });
+        });
+        describe('decode', function() {
+            function testInt8Decode(encoded, expected) {
+                var decoded = coder.decode(['int8'], encoded);
+                assert.equal(decoded.toString(), expected);
+            }
+            it('min value', function() {
+                testInt8Decode(
+                    '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff80',
+                    '-128'
+                );
+            });
+            it('negative middle value', function() {
+                testInt8Decode(
+                    '0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff4',
+                    '-12'
+                );
+            });
+            it('middle value', function() {
+                testInt8Decode(
+                    '0x000000000000000000000000000000000000000000000000000000000000000c',
+                    '12'
+                );
+            });
+            it('max value', function() {
+                testInt8Decode(
+                    '0x000000000000000000000000000000000000000000000000000000000000007f',
+                    '127'
+                );
+            });
+      });
+    });
+    describe('int256', function() {
+        describe('encode', function() {
+            function testInt256Encode(input, expected) {
+                var encoded = coder.encode(['int256'], [input]);
+                assert.equal(encoded.toString('hex'), expected.toString('hex'));
+            }
+            it('min value', function() {
+                testInt256Encode(
+                    '-57896044618658097711785492504343953926634992332820282019728792003956564819968',
+                    '0x8000000000000000000000000000000000000000000000000000000000000000'
+                );
+            });
+            it('negative middle value', function() {
+                testInt256Encode(
+                    '-123456789',
+                    '0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffff8a432eb'
+                );
+            });
+            it('middle value', function() {
+                testInt256Encode(
+                    '123456789',
+                    '0x00000000000000000000000000000000000000000000000000000000075bcd15'
+                );
+            });
+            it('max value', function() {
+                testInt256Encode(
+                    '57896044618658097711785492504343953926634992332820282019728792003956564819967',
+                    '0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+                );
+            });
+            it('throws for min value - 1', function() {
+                var input =
+                    '-57896044618658097711785492504343953926634992332820282019728792003956564819969';
+                assert.throws(() => coder.encode(['int256'], [input]));
+            });
+            it('throws for max value + 1', function() {
+                var input =
+                    '57896044618658097711785492504343953926634992332820282019728792003956564819968';
+                assert.throws(() => coder.encode(['int256'], [input]));
+            });
+        });
+        describe('decode', function() {
+            function testInt256Decode(encoded, expected) {
+                var decoded = coder.decode(['int256'], encoded);
+                assert.equal(decoded.toString(), expected);
+            }
+            it('min value', function() {
+                testInt256Decode(
+                    '0x8000000000000000000000000000000000000000000000000000000000000000',
+                    '-57896044618658097711785492504343953926634992332820282019728792003956564819968'
+                );
+            });
+            it('negative middle value', function() {
+                testInt256Decode(
+                    '0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffff8a432eb',
+                    '-123456789'
+                );
+            });
+            it('middle value', function() {
+                testInt256Decode(
+                    '0x00000000000000000000000000000000000000000000000000000000075bcd15',
+                    '123456789'
+                );
+            });
+            it('max value', function() {
+                testInt256Decode(
+                    '0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+                    '57896044618658097711785492504343953926634992332820282019728792003956564819967'
+                );
+            });
+        });
+    });
+});
