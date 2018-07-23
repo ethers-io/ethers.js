@@ -7,4 +7,4 @@ try {
     module.exports.XMLHttpRequest = null;
 }
 
-export const _empty: any = null;
+export { }
