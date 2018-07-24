@@ -136,6 +136,10 @@ class BigNumber extends _BigNumber {
     eq(other: BigNumberish): boolean {
         return this._bn.eq(toBN(other));
     }
+    
+    equals(other: BigNumberish): boolean {
+        return this._bn.eq(bigNumberify(other)._bn);
+    }
 
     lt(other: BigNumberish): boolean {
         return this._bn.lt(toBN(other));
