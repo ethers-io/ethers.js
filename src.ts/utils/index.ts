@@ -6,7 +6,7 @@
 import { getAddress, getContractAddress, getIcapAddress } from './address';
 import { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from './abi-coder';
 import * as base64 from './base64';
-import { bigNumberify, ConstantNegativeOne, ConstantZero, ConstantOne, ConstantTwo, ConstantWeiPerEther } from './bignumber';
+import { bigNumberify, ConstantNegativeOne, ConstantZero, ConstantOne, ConstantTwo, ConstantWeiPerEther, ConstantMaxUint256 } from './bignumber';
 import { AddressZero, arrayify, concat, HashZero, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexZeroPad, joinSignature, padZeros, splitSignature, stripZeros } from './bytes';
 import { hashMessage, id, namehash } from './hash';
 import { getJsonWalletAddress } from './json-wallet';
@@ -40,7 +40,8 @@ const constants = {
     Zero: ConstantZero,
     One: ConstantOne,
     Two: ConstantTwo,
-    WeiPerEther: ConstantWeiPerEther
+    WeiPerEther: ConstantWeiPerEther,
+    ConstantMaxUint256: ConstantMaxUint256
 };
 
 export {

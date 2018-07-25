@@ -185,3 +185,4 @@ export const ConstantZero = bigNumberify(0);
 export const ConstantOne = bigNumberify(1);
 export const ConstantTwo = bigNumberify(2);
 export const ConstantWeiPerEther = bigNumberify('1000000000000000000');
+export const ConstantMaxUint256 = bigNumberify('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');

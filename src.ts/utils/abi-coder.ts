@@ -3,7 +3,7 @@
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
 import { getAddress } from  './address';
-import { bigNumberify } from './bignumber';
+import { bigNumberify, ConstantNegativeOne, ConstantZero, ConstantOne, ConstantMaxUint256 } from './bignumber';
 import { arrayify, concat, hexlify, padZeros } from './bytes';
 import { toUtf8Bytes, toUtf8String } from './utf8';
 import { defineReadOnly, jsonCopy } from './properties';
@@ -389,11 +389,20 @@ class CoderNumber extends Coder {
     encode(value: BigNumberish): Uint8Array {
         try {
             let v = bigNumberify(value);
+            if (this.signed) {
+                let bounds = ConstantMaxUint256.maskn(this.size * 8 - 1);
+                if (v.gt(bounds)) { throw new Error('out-of-bounds'); }
+                bounds = bounds.add(ConstantOne).mul(ConstantNegativeOne);
+                if (v.lt(bounds)) { throw new Error('out-of-bounds'); }
+            } else if (v.lt(ConstantZero) || v.gt(ConstantMaxUint256.maskn(this.size * 8))) {
+                throw new Error('out-of-bounds');
+            }
+
             v = v.toTwos(this.size * 8).maskn(this.size * 8);
-            //value = value.toTwos(size * 8).maskn(size * 8);
             if (this.signed) {
                 v = v.fromTwos(this.size * 8).toTwos(256);
             }
+
             return padZeros(arrayify(v), 32);
 
         } catch (error) {
@@ -472,7 +481,7 @@ class CoderFixedBytes extends Coder {
 
         try {
             let data = arrayify(value);
-            if (data.length > 32) { throw new Error(); }
+            if (data.length !== this.length) { throw new Error('incorrect data length'); }
             result.set(data);
         } catch (error) {
             errors.throwError('invalid ' + this.name + ' value', errors.INVALID_ARGUMENT, {
