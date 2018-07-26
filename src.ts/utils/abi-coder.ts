@@ -986,7 +986,7 @@ export class AbiCoder {
         return hexlify(new CoderTuple(this.coerceFunc, coders, '_').encode(values));
     }
 
-    decode(types: Array<string | ParamType>, data: Arrayish): Array<any> {
+    decode(types: Array<string | ParamType>, data: Arrayish): any {
 
         var coders: Array<Coder> = [];
         types.forEach(function(type) {

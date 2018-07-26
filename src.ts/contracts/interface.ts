@@ -234,7 +234,8 @@ class LogDescription extends Description implements _LogDescription {
     readonly name: string;
     readonly signature: string;
     readonly topic: string;
-    readonly values: Array<any>
+    readonly decode: (data: string, topics: Array<string>) => any;
+    readonly values: any
 }
 
 
@@ -378,7 +379,7 @@ export class Interface {
                     name: name,
                     signature: func.signature,
                     sighash: func.sighash,
-                    value: bigNumberify(tx.value || 0),
+                    value: bigNumberify(tx.value || null),
                 });
             }
         }
@@ -396,6 +397,7 @@ export class Interface {
             // @TODO: If anonymous, and the only method, and the input count matches, should we parse and return it?
 
             return new LogDescription({
+                decode: event.decode,
                 name: event.name,
                 signature: event.signature,
                 topic: event.topic,
