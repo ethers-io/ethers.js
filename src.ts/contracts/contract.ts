@@ -37,7 +37,7 @@ var allowedTransactionKeys: { [ key: string ]: boolean } = {
 // @TODO: Expand this to resolve any promises too
 function resolveAddresses(provider: MinimalProvider, value: any, paramType: ParamType | Array<ParamType>): Promise<any> {
     if (Array.isArray(paramType)) {
-        var promises: Array<Promise<string>> = [];
+        var promises: Array<Promise<any>> = [];
         paramType.forEach((paramType, index) => {
             var v = null;
             if (Array.isArray(value)) {
@@ -54,8 +54,23 @@ function resolveAddresses(provider: MinimalProvider, value: any, paramType: Para
         return provider.resolveName(value);
     }
 
-    if (paramType.components) {
+    if (paramType.type === 'tuple') {
         return resolveAddresses(provider, value, paramType.components);
+    }
+
+    // Strips one level of array indexing off the end to recuse into
+    let isArrayMatch = paramType.type.match(/(.*)(\[[0-9]*\]$)/);
+    if (isArrayMatch) {
+        if (!Array.isArray(value)) { throw new Error('invalid value for array'); }
+        var promises: Array<Promise<any>> = [];
+        var subParamType = {
+            components: paramType.components,
+            type: isArrayMatch[1],
+        };
+        value.forEach((v) => {
+            promises.push(resolveAddresses(provider, v, subParamType));
+        });
+        return Promise.all(promises);
     }
 
     return Promise.resolve(value);
