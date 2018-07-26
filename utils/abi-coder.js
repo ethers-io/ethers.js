@@ -342,8 +342,20 @@ var CoderNumber = /** @class */ (function (_super) {
     CoderNumber.prototype.encode = function (value) {
         try {
             var v = bignumber_1.bigNumberify(value);
+            if (this.signed) {
+                var bounds = bignumber_1.ConstantMaxUint256.maskn(this.size * 8 - 1);
+                if (v.gt(bounds)) {
+                    throw new Error('out-of-bounds');
+                }
+                bounds = bounds.add(bignumber_1.ConstantOne).mul(bignumber_1.ConstantNegativeOne);
+                if (v.lt(bounds)) {
+                    throw new Error('out-of-bounds');
+                }
+            }
+            else if (v.lt(bignumber_1.ConstantZero) || v.gt(bignumber_1.ConstantMaxUint256.maskn(this.size * 8))) {
+                throw new Error('out-of-bounds');
+            }
             v = v.toTwos(this.size * 8).maskn(this.size * 8);
-            //value = value.toTwos(size * 8).maskn(size * 8);
             if (this.signed) {
                 v = v.fromTwos(this.size * 8).toTwos(256);
             }
@@ -424,8 +436,8 @@ var CoderFixedBytes = /** @class */ (function (_super) {
         var result = new Uint8Array(32);
         try {
             var data = bytes_1.arrayify(value);
-            if (data.length > 32) {
-                throw new Error();
+            if (data.length !== this.length) {
+                throw new Error('incorrect data length');
             }
             result.set(data);
         }

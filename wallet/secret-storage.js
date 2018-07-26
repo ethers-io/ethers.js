@@ -241,7 +241,7 @@ function encrypt(privateKey, password, options, progressCallback) {
     }
     // Check the private key
     var privateKeyBytes = null;
-    if (privateKey instanceof signing_key_1.SigningKey) {
+    if (signing_key_1.SigningKey.isSigningKey(privateKey)) {
         privateKeyBytes = bytes_1.arrayify(privateKey.privateKey);
     }
     else {

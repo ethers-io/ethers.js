@@ -1,6 +1,6 @@
 {
   "name": "ethers",
-  "version": "4.0.0-beta.3",
+  "version": "4.0.0-beta.4",
   "description": "Ethereum wallet library.",
   "main": "./index.js",
   "types": "./dist/types/",
@@ -13,8 +13,8 @@
     "dist-version": "node -e \"let v = require('./package.json').version; require('fs').writeFileSync('./src.ts/_version.ts', 'export const version = \\\"' + v +'\\\";\\n')\"",
     "eslint": "eslint index.js contracts/*.js providers/*.js utils/*.js wallet/*.js wordlists/*.js",
     "test": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
-    "test-node": "mocha tests/test-*.js",
-    "test-phantomjs": "gulp minified tests && phantomjs --web-security=false ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",
+    "test-node": "npm run dist && mocha tests/test-*.js",
+    "test-phantomjs": "npm run dist && gulp tests && phantomjs --web-security=false ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",
     "version": "npm dist"
   },
   "dependencies": {

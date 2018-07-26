@@ -5,4 +5,5 @@ export declare const ConstantZero: _BigNumber;
 export declare const ConstantOne: _BigNumber;
 export declare const ConstantTwo: _BigNumber;
 export declare const ConstantWeiPerEther: _BigNumber;
+export declare const ConstantMaxUint256: _BigNumber;
 //# sourceMappingURL=bignumber.d.ts.map

@@ -179,7 +179,7 @@ var BigNumber = /** @class */ (function (_super) {
     return BigNumber;
 }(types_1.BigNumber));
 function bigNumberify(value) {
-    if (value instanceof BigNumber) {
+    if (BigNumber.isBigNumber(value)) {
         return value;
     }
     return new BigNumber(value);
@@ -190,3 +190,4 @@ exports.ConstantZero = bigNumberify(0);
 exports.ConstantOne = bigNumberify(1);
 exports.ConstantTwo = bigNumberify(2);
 exports.ConstantWeiPerEther = bigNumberify('1000000000000000000');
+exports.ConstantMaxUint256 = bigNumberify('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');

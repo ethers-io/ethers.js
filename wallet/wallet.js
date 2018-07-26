@@ -35,7 +35,7 @@ var Wallet = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         errors.checkNew(_this, Wallet);
         // Make sure we have a valid signing key
-        if (privateKey instanceof signing_key_1.SigningKey) {
+        if (signing_key_1.SigningKey.isSigningKey(privateKey)) {
             properties_1.defineReadOnly(_this, 'signingKey', privateKey);
         }
         else {
@@ -68,7 +68,7 @@ var Wallet = /** @class */ (function (_super) {
      *  Create a new instance of this Wallet connected to provider.
      */
     Wallet.prototype.connect = function (provider) {
-        if (!(provider instanceof types_1.MinimalProvider)) {
+        if (!(types_1.MinimalProvider.isProvider(provider))) {
             errors.throwError('invalid provider', errors.INVALID_ARGUMENT, { argument: 'provider', value: provider });
         }
         return new Wallet(this.signingKey, provider);

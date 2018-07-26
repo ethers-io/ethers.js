@@ -14,7 +14,7 @@ var SigningKey = /** @class */ (function () {
     function SigningKey(privateKey) {
         errors.checkNew(this, SigningKey);
         var privateKeyBytes = null;
-        if (privateKey instanceof types_1.HDNode) {
+        if (types_1.HDNode.isHDNode(privateKey)) {
             properties_1.defineReadOnly(this, 'mnemonic', privateKey.mnemonic);
             properties_1.defineReadOnly(this, 'path', privateKey.path);
             privateKeyBytes = bytes_1.arrayify(privateKey.privateKey);
@@ -45,9 +45,13 @@ var SigningKey = /** @class */ (function () {
         properties_1.defineReadOnly(this, 'keyPair', new secp256k1_1.KeyPair(privateKeyBytes));
         properties_1.defineReadOnly(this, 'publicKey', this.keyPair.publicKey);
         properties_1.defineReadOnly(this, 'address', secp256k1_1.computeAddress(this.keyPair.publicKey));
+        properties_1.setType(this, 'SigningKey');
     }
     SigningKey.prototype.signDigest = function (digest) {
         return this.keyPair.sign(digest);
+    };
+    SigningKey.isSigningKey = function (value) {
+        return properties_1.isType(value, 'SigningKey');
     };
     return SigningKey;
 }());

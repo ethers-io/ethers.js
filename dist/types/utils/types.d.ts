@@ -18,6 +18,8 @@ export declare abstract class BigNumber {
     abstract toNumber(): number;
     abstract toString(): string;
     abstract toHexString(): string;
+    constructor();
+    static isBigNumber(value: any): value is BigNumber;
 }
 export declare type BigNumberish = BigNumber | string | number | Arrayish;
 export declare type ConnectionInfo = {
@@ -160,6 +162,8 @@ export interface TransactionResponse extends Transaction {
 }
 export declare abstract class Indexed {
     readonly hash: string;
+    constructor();
+    static isIndexed(value: any): value is Indexed;
 }
 export interface DeployDescription {
     readonly inputs: Array<ParamType>;
@@ -217,12 +221,6 @@ export interface Event extends Log {
 }
 export declare type EventType = string | Array<string> | Filter;
 export declare type Listener = (...args: Array<any>) => void;
-/**
- *  Provider
- *
- *  Note: We use an abstract class so we can use instanceof to determine if an
- *        object is a Provider.
- */
 export declare abstract class MinimalProvider implements OnceBlockable {
     abstract getNetwork(): Promise<Network>;
     abstract getBlockNumber(): Promise<number>;
@@ -247,6 +245,8 @@ export declare abstract class MinimalProvider implements OnceBlockable {
     abstract removeAllListeners(eventName: EventType): MinimalProvider;
     abstract removeListener(eventName: EventType, listener: Listener): MinimalProvider;
     abstract waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt>;
+    constructor();
+    static isProvider(value: any): value is MinimalProvider;
 }
 export declare type AsyncProvider = {
     isMetaMask?: boolean;
@@ -269,17 +269,13 @@ export declare type EncryptOptions = {
         p?: number;
     };
 };
-/**
- *  Signer
- *
- *  Note: We use an abstract class so we can use instanceof to determine if an
- *        object is a Signer.
- */
 export declare abstract class Signer {
     provider?: MinimalProvider;
     abstract getAddress(): Promise<string>;
     abstract signMessage(message: Arrayish | string): Promise<string>;
     abstract sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
+    constructor();
+    static isSigner(value: any): value is Signer;
 }
 export declare abstract class HDNode {
     readonly privateKey: string;
@@ -290,6 +286,8 @@ export declare abstract class HDNode {
     readonly index: number;
     readonly depth: number;
     abstract derivePath(path: string): HDNode;
+    constructor();
+    static isHDNode(value: any): value is HDNode;
 }
 export interface Wordlist {
     locale: string;

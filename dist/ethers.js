@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.0-beta.3";
+exports.version = "4.0.0-beta.4";
 
 },{}],2:[function(require,module,exports){
 'use strict';
@@ -168,17 +168,17 @@ var Contract = /** @class */ (function () {
         errors.checkNew(this, Contract);
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
-        if (contractInterface instanceof interface_1.Interface) {
+        if (interface_1.Interface.isInterface(contractInterface)) {
             properties_1.defineReadOnly(this, 'interface', contractInterface);
         }
         else {
             properties_1.defineReadOnly(this, 'interface', new interface_1.Interface(contractInterface));
         }
-        if (signerOrProvider instanceof types_1.Signer) {
+        if (types_1.Signer.isSigner(signerOrProvider)) {
             properties_1.defineReadOnly(this, 'provider', signerOrProvider.provider);
             properties_1.defineReadOnly(this, 'signer', signerOrProvider);
         }
-        else if (signerOrProvider instanceof types_1.MinimalProvider) {
+        else if (types_1.MinimalProvider.isProvider(signerOrProvider)) {
             properties_1.defineReadOnly(this, 'provider', signerOrProvider);
             properties_1.defineReadOnly(this, 'signer', null);
         }
@@ -851,6 +851,7 @@ var Interface = /** @class */ (function () {
         if (!this.deployFunction) {
             addMethod.call(this, { type: 'constructor', inputs: [] });
         }
+        properties_1.setType(this, 'Interface');
     }
     Interface.prototype.parseTransaction = function (tx) {
         var sighash = tx.data.substring(0, 10).toLowerCase();
@@ -894,6 +895,9 @@ var Interface = /** @class */ (function () {
             });
         }
         return null;
+    };
+    Interface.isInterface = function (value) {
+        return properties_1.isType(value, 'Interface');
     };
     return Interface;
 }());
@@ -12159,8 +12163,20 @@ var CoderNumber = /** @class */ (function (_super) {
     CoderNumber.prototype.encode = function (value) {
         try {
             var v = bignumber_1.bigNumberify(value);
+            if (this.signed) {
+                var bounds = bignumber_1.ConstantMaxUint256.maskn(this.size * 8 - 1);
+                if (v.gt(bounds)) {
+                    throw new Error('out-of-bounds');
+                }
+                bounds = bounds.add(bignumber_1.ConstantOne).mul(bignumber_1.ConstantNegativeOne);
+                if (v.lt(bounds)) {
+                    throw new Error('out-of-bounds');
+                }
+            }
+            else if (v.lt(bignumber_1.ConstantZero) || v.gt(bignumber_1.ConstantMaxUint256.maskn(this.size * 8))) {
+                throw new Error('out-of-bounds');
+            }
             v = v.toTwos(this.size * 8).maskn(this.size * 8);
-            //value = value.toTwos(size * 8).maskn(size * 8);
             if (this.signed) {
                 v = v.fromTwos(this.size * 8).toTwos(256);
             }
@@ -12241,8 +12257,8 @@ var CoderFixedBytes = /** @class */ (function (_super) {
         var result = new Uint8Array(32);
         try {
             var data = bytes_1.arrayify(value);
-            if (data.length > 32) {
-                throw new Error();
+            if (data.length !== this.length) {
+                throw new Error('incorrect data length');
             }
             result.set(data);
         }
@@ -13064,7 +13080,7 @@ var BigNumber = /** @class */ (function (_super) {
     return BigNumber;
 }(types_1.BigNumber));
 function bigNumberify(value) {
-    if (value instanceof BigNumber) {
+    if (BigNumber.isBigNumber(value)) {
         return value;
     }
     return new BigNumber(value);
@@ -13075,6 +13091,7 @@ exports.ConstantZero = bigNumberify(0);
 exports.ConstantOne = bigNumberify(1);
 exports.ConstantTwo = bigNumberify(2);
 exports.ConstantWeiPerEther = bigNumberify('1000000000000000000');
+exports.ConstantMaxUint256 = bigNumberify('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
 
 },{"./bytes":60,"./errors":61,"./properties":69,"./types":77,"bn.js":8}],60:[function(require,module,exports){
 "use strict";
@@ -13087,9 +13104,6 @@ var types_1 = require("./types");
 var errors = require("./errors");
 exports.AddressZero = '0x0000000000000000000000000000000000000000';
 exports.HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
-function isBigNumber(value) {
-    return (value instanceof types_1.BigNumber);
-}
 function addSlice(array) {
     if (array.slice) {
         return array;
@@ -13117,7 +13131,7 @@ function arrayify(value) {
     if (value == null) {
         errors.throwError('cannot convert null value to array', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
     }
-    if (isBigNumber(value)) {
+    if (types_1.BigNumber.isBigNumber(value)) {
         value = value.toHexString();
     }
     if (typeof (value) === 'string') {
@@ -13203,7 +13217,7 @@ function isHexString(value, length) {
 exports.isHexString = isHexString;
 var HexCharacters = '0123456789abcdef';
 function hexlify(value) {
-    if (isBigNumber(value)) {
+    if (types_1.BigNumber.isBigNumber(value)) {
         return value.toHexString();
     }
     if (typeof (value) === 'number') {
@@ -13605,7 +13619,8 @@ var constants = {
     Zero: bignumber_1.ConstantZero,
     One: bignumber_1.ConstantOne,
     Two: bignumber_1.ConstantTwo,
-    WeiPerEther: bignumber_1.ConstantWeiPerEther
+    WeiPerEther: bignumber_1.ConstantWeiPerEther,
+    ConstantMaxUint256: bignumber_1.ConstantMaxUint256
 };
 exports.constants = constants;
 
@@ -13839,6 +13854,16 @@ function defineFrozen(object, name, value) {
     });
 }
 exports.defineFrozen = defineFrozen;
+// There are some issues with instanceof with npm link, so we use this
+// to ensure types are what we expect.
+function setType(object, type) {
+    Object.defineProperty(object, '_ethersType', { configurable: false, value: type, writable: false });
+}
+exports.setType = setType;
+function isType(object, type) {
+    return (object._ethersType === type);
+}
+exports.isType = isType;
 function resolveProperties(object) {
     var result = {};
     var promises = [];
@@ -14408,11 +14433,21 @@ var secp256k1_1 = require("./secp256k1");
 ///////////////////////////////
 // Bytes
 Object.defineProperty(exports, "__esModule", { value: true });
+function setType(object, type) {
+    Object.defineProperty(object, '_ethersType', { configurable: false, value: type, writable: false });
+}
+function isType(object, type) {
+    return (object._ethersType === type);
+}
 ///////////////////////////////
 // BigNumber
 var BigNumber = /** @class */ (function () {
     function BigNumber() {
+        setType(this, 'BigNumber');
     }
+    BigNumber.isBigNumber = function (value) {
+        return isType(value, 'BigNumber');
+    };
     return BigNumber;
 }());
 exports.BigNumber = BigNumber;
@@ -14423,31 +14458,31 @@ exports.BigNumber = BigNumber;
 // Interface
 var Indexed = /** @class */ (function () {
     function Indexed() {
+        setType(this, 'Indexed');
     }
+    Indexed.isIndexed = function (value) {
+        return isType(value, 'Indexed');
+    };
     return Indexed;
 }());
 exports.Indexed = Indexed;
-/**
- *  Provider
- *
- *  Note: We use an abstract class so we can use instanceof to determine if an
- *        object is a Provider.
- */
 var MinimalProvider = /** @class */ (function () {
     function MinimalProvider() {
+        setType(this, 'Provider');
     }
+    MinimalProvider.isProvider = function (value) {
+        return isType(value, 'Provider');
+    };
     return MinimalProvider;
 }());
 exports.MinimalProvider = MinimalProvider;
-/**
- *  Signer
- *
- *  Note: We use an abstract class so we can use instanceof to determine if an
- *        object is a Signer.
- */
 var Signer = /** @class */ (function () {
     function Signer() {
+        setType(this, 'Signer');
     }
+    Signer.isSigner = function (value) {
+        return isType(value, 'Signer');
+    };
     return Signer;
 }());
 exports.Signer = Signer;
@@ -14455,7 +14490,11 @@ exports.Signer = Signer;
 // HDNode
 var HDNode = /** @class */ (function () {
     function HDNode() {
+        setType(this, 'HDNode');
     }
+    HDNode.isHDNode = function (value) {
+        return isType(value, 'HDNode');
+    };
     return HDNode;
 }());
 exports.HDNode = HDNode;
@@ -15420,7 +15459,7 @@ function encrypt(privateKey, password, options, progressCallback) {
     }
     // Check the private key
     var privateKeyBytes = null;
-    if (privateKey instanceof signing_key_1.SigningKey) {
+    if (signing_key_1.SigningKey.isSigningKey(privateKey)) {
         privateKeyBytes = bytes_1.arrayify(privateKey.privateKey);
     }
     else {
@@ -15596,7 +15635,7 @@ var SigningKey = /** @class */ (function () {
     function SigningKey(privateKey) {
         errors.checkNew(this, SigningKey);
         var privateKeyBytes = null;
-        if (privateKey instanceof types_1.HDNode) {
+        if (types_1.HDNode.isHDNode(privateKey)) {
             properties_1.defineReadOnly(this, 'mnemonic', privateKey.mnemonic);
             properties_1.defineReadOnly(this, 'path', privateKey.path);
             privateKeyBytes = bytes_1.arrayify(privateKey.privateKey);
@@ -15627,9 +15666,13 @@ var SigningKey = /** @class */ (function () {
         properties_1.defineReadOnly(this, 'keyPair', new secp256k1_1.KeyPair(privateKeyBytes));
         properties_1.defineReadOnly(this, 'publicKey', this.keyPair.publicKey);
         properties_1.defineReadOnly(this, 'address', secp256k1_1.computeAddress(this.keyPair.publicKey));
+        properties_1.setType(this, 'SigningKey');
     }
     SigningKey.prototype.signDigest = function (digest) {
         return this.keyPair.sign(digest);
+    };
+    SigningKey.isSigningKey = function (value) {
+        return properties_1.isType(value, 'SigningKey');
     };
     return SigningKey;
 }());
@@ -15673,7 +15716,7 @@ var Wallet = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         errors.checkNew(_this, Wallet);
         // Make sure we have a valid signing key
-        if (privateKey instanceof signing_key_1.SigningKey) {
+        if (signing_key_1.SigningKey.isSigningKey(privateKey)) {
             properties_1.defineReadOnly(_this, 'signingKey', privateKey);
         }
         else {
@@ -15706,7 +15749,7 @@ var Wallet = /** @class */ (function (_super) {
      *  Create a new instance of this Wallet connected to provider.
      */
     Wallet.prototype.connect = function (provider) {
-        if (!(provider instanceof types_1.MinimalProvider)) {
+        if (!(types_1.MinimalProvider.isProvider(provider))) {
             errors.throwError('invalid provider', errors.INVALID_ARGUMENT, { argument: 'provider', value: provider });
         }
         return new Wallet(this.signingKey, provider);

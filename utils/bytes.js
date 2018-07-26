@@ -8,9 +8,6 @@ var types_1 = require("./types");
 var errors = require("./errors");
 exports.AddressZero = '0x0000000000000000000000000000000000000000';
 exports.HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
-function isBigNumber(value) {
-    return (value instanceof types_1.BigNumber);
-}
 function addSlice(array) {
     if (array.slice) {
         return array;
@@ -38,7 +35,7 @@ function arrayify(value) {
     if (value == null) {
         errors.throwError('cannot convert null value to array', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
     }
-    if (isBigNumber(value)) {
+    if (types_1.BigNumber.isBigNumber(value)) {
         value = value.toHexString();
     }
     if (typeof (value) === 'string') {
@@ -124,7 +121,7 @@ function isHexString(value, length) {
 exports.isHexString = isHexString;
 var HexCharacters = '0123456789abcdef';
 function hexlify(value) {
-    if (isBigNumber(value)) {
+    if (types_1.BigNumber.isBigNumber(value)) {
         return value.toHexString();
     }
     if (typeof (value) === 'number') {

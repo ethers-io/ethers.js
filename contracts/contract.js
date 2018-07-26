@@ -162,17 +162,17 @@ var Contract = /** @class */ (function () {
         errors.checkNew(this, Contract);
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
-        if (contractInterface instanceof interface_1.Interface) {
+        if (interface_1.Interface.isInterface(contractInterface)) {
             properties_1.defineReadOnly(this, 'interface', contractInterface);
         }
         else {
             properties_1.defineReadOnly(this, 'interface', new interface_1.Interface(contractInterface));
         }
-        if (signerOrProvider instanceof types_1.Signer) {
+        if (types_1.Signer.isSigner(signerOrProvider)) {
             properties_1.defineReadOnly(this, 'provider', signerOrProvider.provider);
             properties_1.defineReadOnly(this, 'signer', signerOrProvider);
         }
-        else if (signerOrProvider instanceof types_1.MinimalProvider) {
+        else if (types_1.MinimalProvider.isProvider(signerOrProvider)) {
             properties_1.defineReadOnly(this, 'provider', signerOrProvider);
             properties_1.defineReadOnly(this, 'signer', null);
         }

@@ -16,6 +16,16 @@ function defineFrozen(object, name, value) {
     });
 }
 exports.defineFrozen = defineFrozen;
+// There are some issues with instanceof with npm link, so we use this
+// to ensure types are what we expect.
+function setType(object, type) {
+    Object.defineProperty(object, '_ethersType', { configurable: false, value: type, writable: false });
+}
+exports.setType = setType;
+function isType(object, type) {
+    return (object._ethersType === type);
+}
+exports.isType = isType;
 function resolveProperties(object) {
     var result = {};
     var promises = [];

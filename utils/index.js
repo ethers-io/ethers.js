@@ -93,6 +93,7 @@ var constants = {
     Zero: bignumber_1.ConstantZero,
     One: bignumber_1.ConstantOne,
     Two: bignumber_1.ConstantTwo,
-    WeiPerEther: bignumber_1.ConstantWeiPerEther
+    WeiPerEther: bignumber_1.ConstantWeiPerEther,
+    ConstantMaxUint256: bignumber_1.ConstantMaxUint256
 };
 exports.constants = constants;

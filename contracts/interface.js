@@ -328,6 +328,7 @@ var Interface = /** @class */ (function () {
         if (!this.deployFunction) {
             addMethod.call(this, { type: 'constructor', inputs: [] });
         }
+        properties_1.setType(this, 'Interface');
     }
     Interface.prototype.parseTransaction = function (tx) {
         var sighash = tx.data.substring(0, 10).toLowerCase();
@@ -371,6 +372,9 @@ var Interface = /** @class */ (function () {
             });
         }
         return null;
+    };
+    Interface.isInterface = function (value) {
+        return properties_1.isType(value, 'Interface');
     };
     return Interface;
 }());

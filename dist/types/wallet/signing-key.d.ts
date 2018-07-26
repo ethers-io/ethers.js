@@ -8,5 +8,6 @@ export declare class SigningKey {
     private readonly keyPair;
     constructor(privateKey: Arrayish | HDNode);
     signDigest(digest: Arrayish): Signature;
+    static isSigningKey(value: any): value is SigningKey;
 }
 //# sourceMappingURL=signing-key.d.ts.map
