@@ -345,7 +345,7 @@ var Interface = /** @class */ (function () {
                     name: name,
                     signature: func.signature,
                     sighash: func.sighash,
-                    value: bignumber_1.bigNumberify(tx.value || 0),
+                    value: bignumber_1.bigNumberify(tx.value || null),
                 });
             }
         }
@@ -365,6 +365,7 @@ var Interface = /** @class */ (function () {
             }
             // @TODO: If anonymous, and the only method, and the input count matches, should we parse and return it?
             return new LogDescription({
+                decode: event.decode,
                 name: event.name,
                 signature: event.signature,
                 topic: event.topic,

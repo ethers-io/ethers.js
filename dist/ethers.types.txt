@@ -301,10 +301,11 @@ declare module 'ethers/utils/types' {
         decode(data: string, topics?: Array<string>): any;
     }
     export interface LogDescription {
+        readonly decode: (data: string, topics: Array<string>) => any;
         readonly name: string;
         readonly signature: string;
         readonly topic: string;
-        readonly values: Array<any>;
+        readonly values: any;
     }
     export interface TransactionDescription {
         readonly name: string;
@@ -643,7 +644,7 @@ declare module 'ethers/utils/abi-coder' {
         readonly coerceFunc: CoerceFunc;
         constructor(coerceFunc?: CoerceFunc);
         encode(types: Array<string | ParamType>, values: Array<any>): string;
-        decode(types: Array<string | ParamType>, data: Arrayish): Array<any>;
+        decode(types: Array<string | ParamType>, data: Arrayish): any;
     }
     export const defaultAbiCoder: AbiCoder;
 }

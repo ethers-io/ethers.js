@@ -8,7 +8,7 @@ export declare class AbiCoder {
     readonly coerceFunc: CoerceFunc;
     constructor(coerceFunc?: CoerceFunc);
     encode(types: Array<string | ParamType>, values: Array<any>): string;
-    decode(types: Array<string | ParamType>, data: Arrayish): Array<any>;
+    decode(types: Array<string | ParamType>, data: Arrayish): any;
 }
 export declare const defaultAbiCoder: AbiCoder;
 //# sourceMappingURL=abi-coder.d.ts.map

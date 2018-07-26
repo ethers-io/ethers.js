@@ -191,10 +191,11 @@ export interface EventDescription {
     decode(data: string, topics?: Array<string>): any;
 }
 export interface LogDescription {
+    readonly decode: (data: string, topics: Array<string>) => any;
     readonly name: string;
     readonly signature: string;
     readonly topic: string;
-    readonly values: Array<any>;
+    readonly values: any;
 }
 export interface TransactionDescription {
     readonly name: string;
