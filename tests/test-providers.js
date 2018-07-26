@@ -421,6 +421,7 @@ describe('Test Basic Authentication', function() {
 
     function test(name, url) {
         it('tests ' + name, function() {
+            this.timeout(100000);
             return Provider.fetchJSON(url).then(function(data) {
                 assert.equal(data.authenticated, true, 'authenticates user');
             });
