@@ -276,7 +276,7 @@ export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | 
 
     // Check the private key
     let privateKeyBytes: Uint8Array = null;
-    if (privateKey instanceof SigningKey) {
+    if (SigningKey.isSigningKey(privateKey)) {
         privateKeyBytes = arrayify(privateKey.privateKey);
     } else {
         privateKeyBytes = arrayify(privateKey);

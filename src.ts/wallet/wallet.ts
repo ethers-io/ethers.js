@@ -28,7 +28,7 @@ export class Wallet extends Signer {
         errors.checkNew(this, Wallet);
 
         // Make sure we have a valid signing key
-        if (privateKey instanceof SigningKey) {
+        if (SigningKey.isSigningKey(privateKey)) {
             defineReadOnly(this, 'signingKey', privateKey);
         } else {
             defineReadOnly(this, 'signingKey', new SigningKey(privateKey));
@@ -49,7 +49,7 @@ export class Wallet extends Signer {
      *  Create a new instance of this Wallet connected to provider.
      */
     connect(provider: MinimalProvider): Wallet {
-        if (!(provider instanceof MinimalProvider)) {
+        if (!(MinimalProvider.isProvider(provider))) {
             errors.throwError('invalid provider', errors.INVALID_ARGUMENT, { argument: 'provider', value: provider });
         }
         return new Wallet(this.signingKey, provider);

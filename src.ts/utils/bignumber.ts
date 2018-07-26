@@ -176,7 +176,7 @@ class BigNumber extends _BigNumber {
 }
 
 export function bigNumberify(value: BigNumberish): _BigNumber {
-    if (value instanceof BigNumber) { return value; }
+    if (BigNumber.isBigNumber(value)) { return value; }
     return new BigNumber(value);
 }
 

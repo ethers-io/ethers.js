@@ -5,6 +5,13 @@
 
 export type Arrayish = string | ArrayLike<number>;
 
+function setType(object: any, type: string): void {
+    Object.defineProperty(object, '_ethersType', { configurable: false, value: type, writable: false });
+}
+
+function isType(object: any, type: string): boolean {
+    return (object._ethersType === type);
+}
 
 ///////////////////////////////
 // BigNumber
@@ -28,6 +35,14 @@ export abstract class BigNumber {
     abstract toNumber(): number;
     abstract toString(): string;
     abstract toHexString(): string;
+
+    constructor() {
+        setType(this, 'BigNumber');
+    }
+
+    static isBigNumber(value: any): value is BigNumber {
+        return isType(value, 'BigNumber');
+    }
 };
 
 export type BigNumberish = BigNumber | string | number | Arrayish;
@@ -254,6 +269,14 @@ export interface TransactionResponse extends Transaction {
 
 export abstract class Indexed {
     readonly hash: string;
+
+    constructor() {
+        setType(this, 'Indexed');
+    }
+
+    static isIndexed(value: any): value is Indexed {
+        return isType(value, 'Indexed');
+    }
 }
 
 export interface DeployDescription {
@@ -335,12 +358,6 @@ export type EventType = string | Array<string> | Filter;
 
 export type Listener = (...args: Array<any>) => void;
 
-/**
- *  Provider
- *
- *  Note: We use an abstract class so we can use instanceof to determine if an
- *        object is a Provider.
- */
 export abstract class MinimalProvider implements OnceBlockable {
     abstract getNetwork(): Promise<Network>;
 
@@ -374,6 +391,14 @@ export abstract class MinimalProvider implements OnceBlockable {
 
     // @TODO: This *could* be implemented here, but would pull in events...
     abstract waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt>;
+
+    constructor() {
+        setType(this, 'Provider');
+    }
+
+    static isProvider(value: any): value is MinimalProvider {
+        return isType(value, 'Provider');
+    }
 }
 
 export type AsyncProvider = {
@@ -403,12 +428,6 @@ export type EncryptOptions = {
    }
 }
 
-/**
- *  Signer
- *
- *  Note: We use an abstract class so we can use instanceof to determine if an
- *        object is a Signer.
- */
 export abstract class Signer {
     provider?: MinimalProvider;
 
@@ -416,6 +435,14 @@ export abstract class Signer {
 
     abstract signMessage(message: Arrayish | string): Promise<string>;
     abstract sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
+
+    constructor() {
+        setType(this, 'Signer');
+    }
+
+    static isSigner(value: any): value is Signer {
+        return isType(value, 'Signer');
+    }
 }
 
 ///////////////////////////////
@@ -434,6 +461,14 @@ export abstract class HDNode {
     readonly depth: number;
 
     abstract derivePath(path: string): HDNode;
+
+    constructor() {
+        setType(this, 'HDNode');
+    }
+
+    static isHDNode(value: any): value is HDNode {
+        return isType(value, 'HDNode');
+    }
 }
 
 ///////////////////////////////

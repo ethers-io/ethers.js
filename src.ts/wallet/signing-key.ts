@@ -7,7 +7,7 @@
  */
 
 import { arrayify, hexlify } from '../utils/bytes';
-import { defineReadOnly } from '../utils/properties';
+import { defineReadOnly, isType, setType } from '../utils/properties';
 import { computeAddress, KeyPair } from '../utils/secp256k1';
 
 import { Arrayish, HDNode, Signature } from '../utils/types';
@@ -30,7 +30,7 @@ export class SigningKey {
 
         let privateKeyBytes = null;
 
-        if (privateKey instanceof HDNode) {
+        if (HDNode.isHDNode(privateKey)) {
             defineReadOnly(this, 'mnemonic', privateKey.mnemonic);
             defineReadOnly(this, 'path', privateKey.path);
             privateKeyBytes = arrayify(privateKey.privateKey);
@@ -61,9 +61,15 @@ export class SigningKey {
         defineReadOnly(this, 'keyPair', new KeyPair(privateKeyBytes));
         defineReadOnly(this, 'publicKey', this.keyPair.publicKey);
         defineReadOnly(this, 'address', computeAddress(this.keyPair.publicKey));
+
+        setType(this, 'SigningKey');
     }
 
     signDigest(digest: Arrayish): Signature {
         return this.keyPair.sign(digest);
+    }
+
+    static isSigningKey(value: any): value is SigningKey {
+        return isType(value, 'SigningKey');
     }
 }

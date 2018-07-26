@@ -236,16 +236,17 @@ export class Contract {
 
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
-        if (contractInterface instanceof Interface) {
+
+        if (Interface.isInterface(contractInterface)) {
             defineReadOnly(this, 'interface', contractInterface);
         } else {
             defineReadOnly(this, 'interface', new Interface(contractInterface));
         }
 
-        if (signerOrProvider instanceof Signer) {
+        if (Signer.isSigner(signerOrProvider)) {
             defineReadOnly(this, 'provider', signerOrProvider.provider);
             defineReadOnly(this, 'signer', signerOrProvider);
-        } else if (signerOrProvider instanceof MinimalProvider) {
+        } else if (MinimalProvider.isProvider(signerOrProvider)) {
             defineReadOnly(this, 'provider', signerOrProvider);
             defineReadOnly(this, 'signer', null);
         } else {

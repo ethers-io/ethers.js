@@ -12,10 +12,6 @@ export const AddressZero = '0x0000000000000000000000000000000000000000';
 export const HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
 
-function isBigNumber(value: any): value is BigNumber {
-    return (value instanceof BigNumber);
-}
-
 function addSlice(array: Uint8Array): Uint8Array {
     if (array.slice) { return array; }
 
@@ -47,7 +43,7 @@ export function arrayify(value: Arrayish | BigNumber): Uint8Array {
         errors.throwError('cannot convert null value to array', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
     }
 
-    if (isBigNumber(value)) {
+    if (BigNumber.isBigNumber(value)) {
         value = value.toHexString();
     }
 
@@ -142,7 +138,7 @@ const HexCharacters: string = '0123456789abcdef';
 
 export function hexlify(value: Arrayish | BigNumber | number): string {
 
-    if (isBigNumber(value)) {
+    if (BigNumber.isBigNumber(value)) {
         return value.toHexString();
     }
 

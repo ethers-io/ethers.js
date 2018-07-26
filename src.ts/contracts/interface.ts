@@ -8,7 +8,7 @@ import { bigNumberify } from '../utils/bignumber';
 import { arrayify, concat, hexlify, hexZeroPad, isHexString } from '../utils/bytes';
 import { id } from '../utils/hash';
 import { keccak256 } from '../utils/keccak256';
-import { defineReadOnly, defineFrozen } from '../utils/properties';
+import { defineReadOnly, defineFrozen, isType, setType } from '../utils/properties';
 
 import {
     BigNumber, BigNumberish,
@@ -361,6 +361,8 @@ export class Interface {
         if (!this.deployFunction) {
             addMethod.call(this, {type: 'constructor', inputs: []});
         }
+
+        setType(this, 'Interface');
     }
 
     parseTransaction(tx: { data: string, value?: BigNumberish }): _TransactionDescription {
@@ -402,5 +404,9 @@ export class Interface {
         }
 
         return null;
+    }
+
+    static isInterface(value: any): value is Interface {
+        return isType(value, 'Interface');
     }
 }
