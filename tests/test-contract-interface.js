@@ -260,4 +260,15 @@ describe('Test Invalid Input', function() {
             return true;
         }, 'null bytes throws an error');
     });
+
+    it('fails to encode fixed bytes that are out of range', function() {
+        assert.throws(function() {
+            var result = coder.encode([ 'bytes32' ], [ '0x012345678901234567890123456789012345678901234567890123456789012345' ]);
+            console.log('Result', result);
+        }, function(error) {
+            assert.equal(error.reason, 'invalid bytes32 value', 'got invalid bytes32');
+            return true;
+        }, 'long bytes32 throws an error');
+    });
+
 });
