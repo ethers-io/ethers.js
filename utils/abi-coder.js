@@ -229,6 +229,7 @@ function parseSignatureFunction(fragment) {
                 break;
             case 'payable':
                 abi.payable = true;
+                abi.stateMutability = 'payable';
                 break;
             case 'pure':
                 abi.constant = true;
@@ -238,6 +239,7 @@ function parseSignatureFunction(fragment) {
                 abi.constant = true;
                 abi.stateMutability = 'view';
                 break;
+            case 'public':
             case '':
                 break;
             default:

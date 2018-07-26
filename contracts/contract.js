@@ -40,8 +40,24 @@ function resolveAddresses(provider, value, paramType) {
     if (paramType.type === 'address') {
         return provider.resolveName(value);
     }
-    if (paramType.components) {
+    if (paramType.type === 'tuple') {
         return resolveAddresses(provider, value, paramType.components);
+    }
+    // Strips one level of array indexing off the end to recuse into
+    var isArrayMatch = paramType.type.match(/(.*)(\[[0-9]*\]$)/);
+    if (isArrayMatch) {
+        if (!Array.isArray(value)) {
+            throw new Error('invalid value for array');
+        }
+        var promises = [];
+        var subParamType = {
+            components: paramType.components,
+            type: isArrayMatch[1],
+        };
+        value.forEach(function (v) {
+            promises.push(resolveAddresses(provider, v, subParamType));
+        });
+        return Promise.all(promises);
     }
     return Promise.resolve(value);
 }
