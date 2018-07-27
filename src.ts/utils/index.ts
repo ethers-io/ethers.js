@@ -41,7 +41,7 @@ const constants = {
     One: ConstantOne,
     Two: ConstantTwo,
     WeiPerEther: ConstantWeiPerEther,
-    ConstantMaxUint256: ConstantMaxUint256
+    MaxUint256: ConstantMaxUint256
 };
 
 export {
