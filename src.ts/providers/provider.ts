@@ -845,6 +845,7 @@ export class Provider extends MinimalProvider {
             return this.waitForTransaction(hash, timeout).then((receipt) => {
                 if (receipt.status === 0) {
                     errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
+                        transactionHash: hash,
                         transaction: tx
                     });
                 }
