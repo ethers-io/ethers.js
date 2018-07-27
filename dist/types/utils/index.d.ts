@@ -28,7 +28,7 @@ declare const constants: {
     One: types.BigNumber;
     Two: types.BigNumber;
     WeiPerEther: types.BigNumber;
-    ConstantMaxUint256: types.BigNumber;
+    MaxUint256: types.BigNumber;
 };
 export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, constants, types, RLP, fetchJson, getNetwork, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, etherSymbol, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computePublicKey, verifyMessage, errors };
 //# sourceMappingURL=index.d.ts.map

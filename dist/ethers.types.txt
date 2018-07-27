@@ -24,7 +24,7 @@ declare module 'ethers/ethers' {
         One: utils.types.BigNumber;
         Two: utils.types.BigNumber;
         WeiPerEther: utils.types.BigNumber;
-        ConstantMaxUint256: utils.types.BigNumber;
+        MaxUint256: utils.types.BigNumber;
     };
     export { Wallet, HDNode, SigningKey, Contract, Interface, providers, types, errors, constants, utils, wordlists, platform, version };
 }
@@ -83,7 +83,7 @@ declare module 'ethers/utils' {
         One: types.BigNumber;
         Two: types.BigNumber;
         WeiPerEther: types.BigNumber;
-        ConstantMaxUint256: types.BigNumber;
+        MaxUint256: types.BigNumber;
     };
     export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, constants, types, RLP, fetchJson, getNetwork, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, etherSymbol, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computePublicKey, verifyMessage, errors };
 }

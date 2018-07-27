@@ -11365,6 +11365,7 @@ var Provider = /** @class */ (function (_super) {
             return _this.waitForTransaction(hash, timeout).then(function (receipt) {
                 if (receipt.status === 0) {
                     errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
+                        transactionHash: hash,
                         transaction: tx
                     });
                 }
@@ -13639,7 +13640,7 @@ var constants = {
     One: bignumber_1.ConstantOne,
     Two: bignumber_1.ConstantTwo,
     WeiPerEther: bignumber_1.ConstantWeiPerEther,
-    ConstantMaxUint256: bignumber_1.ConstantMaxUint256
+    MaxUint256: bignumber_1.ConstantMaxUint256
 };
 exports.constants = constants;
 

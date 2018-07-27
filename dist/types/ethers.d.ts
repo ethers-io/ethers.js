@@ -15,7 +15,7 @@ declare const constants: {
     One: utils.types.BigNumber;
     Two: utils.types.BigNumber;
     WeiPerEther: utils.types.BigNumber;
-    ConstantMaxUint256: utils.types.BigNumber;
+    MaxUint256: utils.types.BigNumber;
 };
 export { Wallet, HDNode, SigningKey, Contract, Interface, providers, types, errors, constants, utils, wordlists, platform, version };
 //# sourceMappingURL=ethers.d.ts.map

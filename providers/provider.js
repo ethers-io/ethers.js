@@ -690,6 +690,7 @@ var Provider = /** @class */ (function (_super) {
             return _this.waitForTransaction(hash, timeout).then(function (receipt) {
                 if (receipt.status === 0) {
                     errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
+                        transactionHash: hash,
                         transaction: tx
                     });
                 }
