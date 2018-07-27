@@ -324,6 +324,54 @@ var coderNull = function(coerceFunc) {
     };
 }
 
+
+function checkIntBounds(localName, size, value) {
+    var min = utils
+        .bigNumberify(2)
+        .pow(size * 8 - 1)
+        .mul(-1);
+    var max = utils
+        .bigNumberify(2)
+        .pow(size * 8 - 1)
+        .sub(1);
+    checkNumberBounds(localName, value, min, max);
+}
+  
+function checkUintBounds(localName, size, value) {
+    var min = 0;
+    var max = utils
+        .bigNumberify(2)
+        .pow(size * 8)
+        .sub(1);
+    checkNumberBounds(localName, value, min, max);
+}
+
+function checkNumberBounds(localName, value, min, max) {
+    if (value.lt(min)) {
+        errors.throwError(
+        'invalid number value (overflow)',
+        errors.INVALID_ARGUMENT,
+        {
+            arg: localName,
+            type: typeof value,
+            value: value
+        }
+        );
+    }
+    if (value.gt(max)) {
+        errors.throwError(
+        'invalid number value (overflow)',
+        errors.INVALID_ARGUMENT,
+        {
+            arg: localName,
+            type: typeof value,
+            value: value
+        }
+        );
+    }
+}
+  
+
 var coderNumber = function(coerceFunc, size, signed, localName) {
     var name = ((signed ? 'int': 'uint') + (size * 8));
     return {
@@ -339,6 +387,11 @@ var coderNumber = function(coerceFunc, size, signed, localName) {
                     type: typeof(value),
                     value: value
                 });
+            }
+            if (signed) {
+                checkIntBounds(localName, size, value);
+            } else {
+                checkUintBounds(localName, size, value);
             }
             value = value.toTwos(size * 8).maskn(size * 8);
 
