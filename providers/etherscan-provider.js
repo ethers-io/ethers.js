@@ -266,6 +266,7 @@ utils.defineProperty(EtherscanProvider.prototype, 'getHistory', function(address
         url += '&startblock=' + startBlock;
         url += '&endblock=' + endBlock;
         url += '&sort=asc';
+        url += apiKey;
 
         return Provider.fetchJSON(url, null, getResult).then(function(result) {
             var output = [];
