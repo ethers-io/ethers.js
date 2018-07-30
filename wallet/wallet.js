@@ -295,7 +295,7 @@ utils.defineProperty(Wallet, 'parseUnsignedTransaction', function(rawTransaction
 });
 
 //encode a transaction object to hex form
-utils.defineProperty(Wallet, 'encodeTransaction', function(transaction) {
+utils.defineProperty(Wallet, 'encodeUnsignedTransaction', function(transaction) {
     var chainId = transaction.chainId;
     if (chainId == null && this.provider) { chainId = this.provider.chainId; }
     if (!chainId) { chainId = 0; }
