@@ -6,9 +6,8 @@ import { id } from '../utils/hash';
 
 import { defineReadOnly } from '../utils/properties';
 
-import { Wordlist as _Wordlist } from '../utils/types';
 
-export function check(wordlist: _Wordlist) {
+export function check(wordlist: Wordlist) {
     var words = [];
     for (let i = 0; i < 2048; i++) {
         let word = wordlist.getWord(i);
@@ -18,8 +17,8 @@ export function check(wordlist: _Wordlist) {
     return id(words.join('\n') + '\n');
 }
 
-export abstract class Wordlist implements _Wordlist {
-    locale: string;
+export abstract class Wordlist {
+    readonly locale: string;
 
     constructor(locale: string) {
         defineReadOnly(this, 'locale', locale);

@@ -1,0 +1,11 @@
+import { Provider } from './provider';
+import { EtherscanProvider } from './etherscan-provider';
+import { FallbackProvider } from './fallback-provider';
+import { IpcProvider } from './ipc-provider';
+import { InfuraProvider } from './infura-provider';
+import { JsonRpcProvider, JsonRpcSigner } from './json-rpc-provider';
+import { Web3Provider } from './web3-provider';
+import { Provider as AbstractProvider } from './abstract-provider';
+import { Network } from '../utils/networks';
+declare function getDefaultProvider(network?: Network | string): Provider;
+export { AbstractProvider, Provider, getDefaultProvider, FallbackProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, Web3Provider, IpcProvider, JsonRpcSigner };

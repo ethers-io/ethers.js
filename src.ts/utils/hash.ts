@@ -4,7 +4,12 @@ import { concat, hexlify } from './bytes';
 import { toUtf8Bytes } from './utf8';
 import { keccak256 } from './keccak256';
 
-import { Arrayish } from './types';
+///////////////////////////////
+// Imported Types
+
+import { Arrayish } from './bytes';
+
+///////////////////////////////
 
 var Zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 var Partition = new RegExp("^((.*)\\.)?([^.]+)$");

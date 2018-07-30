@@ -10,10 +10,10 @@
 
 import BN from 'bn.js';
 
-import { hexlify, isArrayish, isHexString } from './bytes';
-import { defineReadOnly } from './properties';
+import { Hexable, hexlify, isArrayish, isHexString } from './bytes';
+import { defineReadOnly, isType, setType } from './properties';
 
-import { BigNumber as _BigNumber, BigNumberish } from './types';
+import { Arrayish } from './bytes';
 
 import * as errors from './errors';
 
@@ -32,19 +32,30 @@ function toHex(bn: BN.BN): string {
 }
 
 function toBN(value: BigNumberish): BN.BN {
-    return (<BigNumber>bigNumberify(value))._bn;
+    return _bnify(bigNumberify(value));
 }
 
 function toBigNumber(bn: BN.BN): BigNumber {
     return new BigNumber(toHex(bn));
 }
 
-class BigNumber extends _BigNumber {
+function _bnify(value: BigNumber): BN.BN {
+    let hex: string = (<any>value)._hex;
+    if (hex[0] === '-') {
+        return (new BN.BN(hex.substring(3), 16)).mul(BN_1);
+    }
+    return new BN.BN(hex.substring(2), 16);
+}
+
+
+export type BigNumberish = BigNumber | string | number | Arrayish;
+
+export class BigNumber implements Hexable {
     private readonly _hex: string;
 
     constructor(value: BigNumberish) {
-        super();
         errors.checkNew(this, BigNumber);
+        setType(this, 'BigNumber');
 
         if (typeof(value) === 'string') {
             if (isHexString(value)) {
@@ -86,80 +97,73 @@ class BigNumber extends _BigNumber {
         }
     }
 
-    get _bn(): BN.BN {
-        if (this._hex[0] === '-') {
-            return (new BN.BN(this._hex.substring(3), 16)).mul(BN_1);
-        }
-        return new BN.BN(this._hex.substring(2), 16);
-    }
-
     fromTwos(value: number): BigNumber {
-        return toBigNumber(this._bn.fromTwos(value));
+        return toBigNumber(_bnify(this).fromTwos(value));
     }
 
     toTwos(value: number): BigNumber {
-        return toBigNumber(this._bn.toTwos(value));
+        return toBigNumber(_bnify(this).toTwos(value));
     }
 
     add(other: BigNumberish): BigNumber {
-        return toBigNumber(this._bn.add(toBN(other)));
+        return toBigNumber(_bnify(this).add(toBN(other)));
     }
 
     sub(other: BigNumberish): BigNumber {
-        return toBigNumber(this._bn.sub(toBN(other)));
+        return toBigNumber(_bnify(this).sub(toBN(other)));
     }
 
     div(other: BigNumberish): BigNumber {
-        let o: _BigNumber = bigNumberify(other);
+        let o: BigNumber = bigNumberify(other);
         if (o.isZero()) {
             errors.throwError('division by zero', errors.NUMERIC_FAULT, { operation: 'divide', fault: 'division by zero' });
         }
-        return toBigNumber(this._bn.div(toBN(other)));
+        return toBigNumber(_bnify(this).div(toBN(other)));
     }
 
     mul(other: BigNumberish): BigNumber {
-        return toBigNumber(this._bn.mul(toBN(other)));
+        return toBigNumber(_bnify(this).mul(toBN(other)));
     }
 
     mod(other: BigNumberish): BigNumber {
-        return toBigNumber(this._bn.mod(toBN(other)));
+        return toBigNumber(_bnify(this).mod(toBN(other)));
     }
 
     pow(other: BigNumberish): BigNumber {
-        return toBigNumber(this._bn.pow(toBN(other)));
+        return toBigNumber(_bnify(this).pow(toBN(other)));
     }
 
     maskn(value: number): BigNumber {
-        return toBigNumber(this._bn.maskn(value));
+        return toBigNumber(_bnify(this).maskn(value));
     }
 
     eq(other: BigNumberish): boolean {
-        return this._bn.eq(toBN(other));
+        return _bnify(this).eq(toBN(other));
     }
 
     lt(other: BigNumberish): boolean {
-        return this._bn.lt(toBN(other));
+        return _bnify(this).lt(toBN(other));
     }
 
     lte(other: BigNumberish): boolean {
-        return this._bn.lte(toBN(other));
+        return _bnify(this).lte(toBN(other));
     }
 
     gt(other: BigNumberish): boolean {
-        return this._bn.gt(toBN(other));
+        return _bnify(this).gt(toBN(other));
    }
 
     gte(other: BigNumberish): boolean {
-        return this._bn.gte(toBN(other));
+        return _bnify(this).gte(toBN(other));
     }
 
     isZero(): boolean {
-        return this._bn.isZero();
+        return _bnify(this).isZero();
     }
 
     toNumber(): number {
         try {
-            return this._bn.toNumber();
+            return _bnify(this).toNumber();
         } catch (error) {
             errors.throwError('overflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'overflow', details: error.message });
         }
@@ -167,15 +171,19 @@ class BigNumber extends _BigNumber {
     }
 
     toString(): string {
-        return this._bn.toString(10);
+        return _bnify(this).toString(10);
     }
 
     toHexString(): string {
         return this._hex;
     }
+
+    static isBigNumber(value: any): value is BigNumber {
+        return isType(value, 'BigNumber');
+    }
 }
 
-export function bigNumberify(value: BigNumberish): _BigNumber {
+export function bigNumberify(value: BigNumberish): BigNumber {
     if (BigNumber.isBigNumber(value)) { return value; }
     return new BigNumber(value);
 }

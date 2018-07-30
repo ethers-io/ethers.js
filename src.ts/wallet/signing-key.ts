@@ -6,13 +6,20 @@
  *
  */
 
+import { HDNode } from './hdnode';
+
 import { arrayify, hexlify } from '../utils/bytes';
 import { defineReadOnly, isType, setType } from '../utils/properties';
 import { computeAddress, KeyPair } from '../utils/secp256k1';
 
-import { Arrayish, HDNode, Signature } from '../utils/types';
+import * as errors from '../utils/errors';
 
-import errors = require('../utils/errors');
+///////////////////////////////
+// Imported Types
+
+import { Arrayish, Signature } from '../utils/bytes';
+
+///////////////////////////////
 
 export class SigningKey {
 

@@ -3,8 +3,10 @@ import net from 'net';
 
 import { JsonRpcProvider } from './json-rpc-provider';
 
-import { Networkish } from '../utils/types';
 import { defineReadOnly } from '../utils/properties';
+
+// Imported Types
+import { Networkish } from '../utils/networks';
 
 import * as errors from '../utils/errors';
 

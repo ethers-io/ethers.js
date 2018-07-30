@@ -1,12 +1,9 @@
 'use strict';
 
-// This is SUPER useful, but adds 140kb (even zipped, adds 40kb)
-//var unorm = require('unorm');
-
-import { getAddress, getContractAddress, getIcapAddress } from './address';
 import { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from './abi-coder';
+import { getAddress, getContractAddress, getIcapAddress } from './address';
 import * as base64 from './base64';
-import { bigNumberify, ConstantNegativeOne, ConstantZero, ConstantOne, ConstantTwo, ConstantWeiPerEther, ConstantMaxUint256 } from './bignumber';
+import { BigNumber, bigNumberify, ConstantNegativeOne, ConstantZero, ConstantOne, ConstantTwo, ConstantWeiPerEther, ConstantMaxUint256 } from './bignumber';
 import { AddressZero, arrayify, concat, HashZero, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexZeroPad, joinSignature, padZeros, splitSignature, stripZeros } from './bytes';
 import { hashMessage, id, namehash } from './hash';
 import { getJsonWalletAddress } from './json-wallet';
@@ -22,8 +19,6 @@ import { parse as parseTransaction, serialize as serializeTransaction } from './
 import { toUtf8Bytes, toUtf8String } from './utf8';
 import { formatEther, parseEther, formatUnits, parseUnits } from './units';
 import { fetchJson } from './web';
-
-import * as types from './types';
 
 import * as errors from './errors';
 
@@ -53,7 +48,6 @@ export {
     parseParamType,
 
     constants,
-    types,
 
     RLP,
 
@@ -75,6 +69,7 @@ export {
 
     base64,
 
+    BigNumber,
     bigNumberify,
 
     hexlify,

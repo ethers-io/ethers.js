@@ -2,7 +2,8 @@
 
 import { Provider } from './provider';
 
-import { Network } from '../utils/types';
+// Imported Types
+import { Network } from '../utils/networks';
 
 import * as errors from '../utils/errors';
 

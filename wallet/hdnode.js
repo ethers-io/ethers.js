@@ -1,14 +1,4 @@
 'use strict';
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -34,7 +24,6 @@ var properties_1 = require("../utils/properties");
 var secp256k1_1 = require("../utils/secp256k1");
 var sha2_1 = require("../utils/sha2");
 var N = bignumber_1.bigNumberify("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
-var types_1 = require("../utils/types");
 var errors = __importStar(require("../utils/errors"));
 // "Bitcoin seed"
 var MasterSecret = utf8_1.toUtf8Bytes('Bitcoin seed');
@@ -47,9 +36,9 @@ function getUpperMask(bits) {
 function getLowerMask(bits) {
     return (1 << bits) - 1;
 }
+var _constructorGuard = {};
 exports.defaultPath = "m/44'/60'/0'/0/0";
-var HDNode = /** @class */ (function (_super) {
-    __extends(HDNode, _super);
+var HDNode = /** @class */ (function () {
     /**
      *  This constructor should not be called directly.
      *
@@ -57,18 +46,20 @@ var HDNode = /** @class */ (function (_super) {
      *   - fromMnemonic
      *   - fromSeed
      */
-    function HDNode(privateKey, chainCode, index, depth, mnemonic, path) {
-        var _this = _super.call(this) || this;
-        errors.checkNew(_this, HDNode);
-        properties_1.defineReadOnly(_this, 'keyPair', new secp256k1_1.KeyPair(privateKey));
-        properties_1.defineReadOnly(_this, 'privateKey', _this.keyPair.privateKey);
-        properties_1.defineReadOnly(_this, 'publicKey', _this.keyPair.compressedPublicKey);
-        properties_1.defineReadOnly(_this, 'chainCode', bytes_1.hexlify(chainCode));
-        properties_1.defineReadOnly(_this, 'index', index);
-        properties_1.defineReadOnly(_this, 'depth', depth);
-        properties_1.defineReadOnly(_this, 'mnemonic', mnemonic);
-        properties_1.defineReadOnly(_this, 'path', path);
-        return _this;
+    function HDNode(constructorGuard, privateKey, chainCode, index, depth, mnemonic, path) {
+        errors.checkNew(this, HDNode);
+        if (constructorGuard !== _constructorGuard) {
+            throw new Error('HDNode constructor cannot be called directly');
+        }
+        properties_1.defineReadOnly(this, 'keyPair', new secp256k1_1.KeyPair(privateKey));
+        properties_1.defineReadOnly(this, 'privateKey', this.keyPair.privateKey);
+        properties_1.defineReadOnly(this, 'publicKey', this.keyPair.compressedPublicKey);
+        properties_1.defineReadOnly(this, 'chainCode', bytes_1.hexlify(chainCode));
+        properties_1.defineReadOnly(this, 'index', index);
+        properties_1.defineReadOnly(this, 'depth', depth);
+        properties_1.defineReadOnly(this, 'mnemonic', mnemonic);
+        properties_1.defineReadOnly(this, 'path', path);
+        properties_1.setType(this, 'HDNode');
     }
     HDNode.prototype._derive = function (index) {
         // Public parent key -> public child key
@@ -105,7 +96,7 @@ var HDNode = /** @class */ (function (_super) {
         var IL = bignumber_1.bigNumberify(I.slice(0, 32));
         var IR = I.slice(32);
         var ki = IL.add(this.keyPair.privateKey).mod(N);
-        return new HDNode(bytes_1.arrayify(ki), IR, index, this.depth + 1, mnemonic, path);
+        return new HDNode(_constructorGuard, bytes_1.arrayify(ki), IR, index, this.depth + 1, mnemonic, path);
     };
     HDNode.prototype.derivePath = function (path) {
         var components = path.split('/');
@@ -138,15 +129,19 @@ var HDNode = /** @class */ (function (_super) {
         }
         return result;
     };
+    HDNode.isHDNode = function (value) {
+        return properties_1.isType(value, 'HDNode');
+    };
     return HDNode;
-}(types_1.HDNode));
+}());
+exports.HDNode = HDNode;
 function _fromSeed(seed, mnemonic) {
     var seedArray = bytes_1.arrayify(seed);
     if (seedArray.length < 16 || seedArray.length > 64) {
         throw new Error('invalid seed');
     }
     var I = bytes_1.arrayify(hmac_1.computeHmac('sha512', MasterSecret, seedArray));
-    return new HDNode(I.slice(0, 32), I.slice(32), 0, 0, mnemonic, 'm');
+    return new HDNode(_constructorGuard, I.slice(0, 32), I.slice(32), 0, 0, mnemonic, 'm');
 }
 function fromMnemonic(mnemonic, wordlist) {
     // Check that the checksum s valid (will throw an error)

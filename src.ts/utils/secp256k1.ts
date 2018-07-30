@@ -1,6 +1,6 @@
 'use strict';
 
-
+import { ec as EC } from 'elliptic';
 
 import { getAddress } from './address';
 
@@ -9,9 +9,14 @@ import { hashMessage } from './hash';
 import { keccak256 } from './keccak256';
 import { defineReadOnly } from './properties';
 
-import { Arrayish, Signature } from './types';
-
 import * as errors from './errors';
+
+///////////////////////////////
+// Imported Types
+
+import { Arrayish, Signature } from './bytes';
+
+///////////////////////////////
 
 let _curve: EC = null
 function getCurve() {
@@ -109,10 +114,3 @@ export function verifyMessage(message: Arrayish | string, signature: Signature |
         }
     );
 }
-
-// !!! IMPORTANT !!!
-//
-// This must be be at the end, otherwise Browserify attempts to include upstream
-// dependencies before this module is loaded.
-
-import { ec as EC } from 'elliptic';

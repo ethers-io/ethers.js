@@ -1,14 +1,4 @@
 'use strict';
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -30,7 +20,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var bn_js_1 = __importDefault(require("bn.js"));
 var bytes_1 = require("./bytes");
 var properties_1 = require("./properties");
-var types_1 = require("./types");
 var errors = __importStar(require("./errors"));
 var BN_1 = new bn_js_1.default.BN(-1);
 function toHex(bn) {
@@ -47,31 +36,37 @@ function toHex(bn) {
     return '0x' + value;
 }
 function toBN(value) {
-    return bigNumberify(value)._bn;
+    return _bnify(bigNumberify(value));
 }
 function toBigNumber(bn) {
     return new BigNumber(toHex(bn));
 }
-var BigNumber = /** @class */ (function (_super) {
-    __extends(BigNumber, _super);
+function _bnify(value) {
+    var hex = value._hex;
+    if (hex[0] === '-') {
+        return (new bn_js_1.default.BN(hex.substring(3), 16)).mul(BN_1);
+    }
+    return new bn_js_1.default.BN(hex.substring(2), 16);
+}
+var BigNumber = /** @class */ (function () {
     function BigNumber(value) {
-        var _this = _super.call(this) || this;
-        errors.checkNew(_this, BigNumber);
+        errors.checkNew(this, BigNumber);
+        properties_1.setType(this, 'BigNumber');
         if (typeof (value) === 'string') {
             if (bytes_1.isHexString(value)) {
                 if (value == '0x') {
                     value = '0x0';
                 }
-                properties_1.defineReadOnly(_this, '_hex', value);
+                properties_1.defineReadOnly(this, '_hex', value);
             }
             else if (value[0] === '-' && bytes_1.isHexString(value.substring(1))) {
-                properties_1.defineReadOnly(_this, '_hex', value);
+                properties_1.defineReadOnly(this, '_hex', value);
             }
             else if (value.match(/^-?[0-9]*$/)) {
                 if (value == '') {
                     value = '0';
                 }
-                properties_1.defineReadOnly(_this, '_hex', toHex(new bn_js_1.default.BN(value)));
+                properties_1.defineReadOnly(this, '_hex', toHex(new bn_js_1.default.BN(value)));
             }
             else {
                 errors.throwError('invalid BigNumber string value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
@@ -82,88 +77,77 @@ var BigNumber = /** @class */ (function (_super) {
                 errors.throwError('underflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'underflow', value: value, outputValue: parseInt(String(value)) });
             }
             try {
-                properties_1.defineReadOnly(_this, '_hex', toHex(new bn_js_1.default.BN(value)));
+                properties_1.defineReadOnly(this, '_hex', toHex(new bn_js_1.default.BN(value)));
             }
             catch (error) {
                 errors.throwError('overflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'overflow', details: error.message });
             }
         }
         else if (value instanceof BigNumber) {
-            properties_1.defineReadOnly(_this, '_hex', value._hex);
+            properties_1.defineReadOnly(this, '_hex', value._hex);
         }
         else if (value.toHexString) {
-            properties_1.defineReadOnly(_this, '_hex', toHex(toBN(value.toHexString())));
+            properties_1.defineReadOnly(this, '_hex', toHex(toBN(value.toHexString())));
         }
         else if (bytes_1.isArrayish(value)) {
-            properties_1.defineReadOnly(_this, '_hex', toHex(new bn_js_1.default.BN(bytes_1.hexlify(value).substring(2), 16)));
+            properties_1.defineReadOnly(this, '_hex', toHex(new bn_js_1.default.BN(bytes_1.hexlify(value).substring(2), 16)));
         }
         else {
             errors.throwError('invalid BigNumber value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
         }
-        return _this;
     }
-    Object.defineProperty(BigNumber.prototype, "_bn", {
-        get: function () {
-            if (this._hex[0] === '-') {
-                return (new bn_js_1.default.BN(this._hex.substring(3), 16)).mul(BN_1);
-            }
-            return new bn_js_1.default.BN(this._hex.substring(2), 16);
-        },
-        enumerable: true,
-        configurable: true
-    });
     BigNumber.prototype.fromTwos = function (value) {
-        return toBigNumber(this._bn.fromTwos(value));
+        return toBigNumber(_bnify(this).fromTwos(value));
     };
     BigNumber.prototype.toTwos = function (value) {
-        return toBigNumber(this._bn.toTwos(value));
+        return toBigNumber(_bnify(this).toTwos(value));
     };
     BigNumber.prototype.add = function (other) {
-        return toBigNumber(this._bn.add(toBN(other)));
+        return toBigNumber(_bnify(this).add(toBN(other)));
     };
     BigNumber.prototype.sub = function (other) {
-        return toBigNumber(this._bn.sub(toBN(other)));
+        return toBigNumber(_bnify(this).sub(toBN(other)));
     };
     BigNumber.prototype.div = function (other) {
         var o = bigNumberify(other);
         if (o.isZero()) {
             errors.throwError('division by zero', errors.NUMERIC_FAULT, { operation: 'divide', fault: 'division by zero' });
         }
-        return toBigNumber(this._bn.div(toBN(other)));
+        return toBigNumber(_bnify(this).div(toBN(other)));
     };
     BigNumber.prototype.mul = function (other) {
-        return toBigNumber(this._bn.mul(toBN(other)));
+        return toBigNumber(_bnify(this).mul(toBN(other)));
     };
     BigNumber.prototype.mod = function (other) {
-        return toBigNumber(this._bn.mod(toBN(other)));
+        return toBigNumber(_bnify(this).mod(toBN(other)));
     };
     BigNumber.prototype.pow = function (other) {
-        return toBigNumber(this._bn.pow(toBN(other)));
+        return toBigNumber(_bnify(this).pow(toBN(other)));
     };
     BigNumber.prototype.maskn = function (value) {
-        return toBigNumber(this._bn.maskn(value));
+        return toBigNumber(_bnify(this).maskn(value));
     };
     BigNumber.prototype.eq = function (other) {
-        return this._bn.eq(toBN(other));
+        return _bnify(this).eq(toBN(other));
     };
     BigNumber.prototype.lt = function (other) {
-        return this._bn.lt(toBN(other));
+        return _bnify(this).lt(toBN(other));
     };
     BigNumber.prototype.lte = function (other) {
-        return this._bn.lte(toBN(other));
+        return _bnify(this).lte(toBN(other));
     };
     BigNumber.prototype.gt = function (other) {
-        return this._bn.gt(toBN(other));
+        return _bnify(this).gt(toBN(other));
     };
     BigNumber.prototype.gte = function (other) {
-        return this._bn.gte(toBN(other));
+        return _bnify(this).gte(toBN(other));
     };
     BigNumber.prototype.isZero = function () {
-        return this._bn.isZero();
+        return _bnify(this).isZero();
     };
     BigNumber.prototype.toNumber = function () {
         try {
-            return this._bn.toNumber();
+            return _bnify(this).toNumber();
         }
         catch (error) {
             errors.throwError('overflow', errors.NUMERIC_FAULT, { operation: 'setValue', fault: 'overflow', details: error.message });
@@ -171,13 +155,17 @@ var BigNumber = /** @class */ (function (_super) {
         return null;
     };
     BigNumber.prototype.toString = function () {
-        return this._bn.toString(10);
+        return _bnify(this).toString(10);
     };
     BigNumber.prototype.toHexString = function () {
         return this._hex;
     };
+    BigNumber.isBigNumber = function (value) {
+        return properties_1.isType(value, 'BigNumber');
+    };
     return BigNumber;
-}(types_1.BigNumber));
+}());
+exports.BigNumber = BigNumber;
 function bigNumberify(value) {
     if (BigNumber.isBigNumber(value)) {
         return value;

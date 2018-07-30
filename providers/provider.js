@@ -27,8 +27,10 @@ var rlp_1 = require("../utils/rlp");
 var transaction_1 = require("../utils/transaction");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
-var types_1 = require("../utils/types");
 var errors = __importStar(require("../utils/errors"));
+///////////////////////////////
+// Imported Abstracts
+var abstract_provider_1 = require("./abstract-provider");
 //////////////////////////////
 // Request and Response Checking
 // @TODO: not any?
@@ -1059,24 +1061,6 @@ var Provider = /** @class */ (function (_super) {
         return this;
     };
     return Provider;
-}(types_1.MinimalProvider));
+}(abstract_provider_1.Provider));
 exports.Provider = Provider;
-// See: https://github.com/isaacs/inherits/blob/master/inherits_browser.js
-function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor;
-    ctor.prototype = Object.create(superCtor.prototype, {
-        constructor: {
-            value: ctor,
-            enumerable: false,
-            writable: true,
-            configurable: true
-        }
-    });
-}
-function inheritable(parent) {
-    return function (child) {
-        inherits(child, parent);
-        properties_1.defineReadOnly(child, 'inherits', inheritable(child));
-    };
-}
-properties_1.defineReadOnly(Provider, 'inherits', inheritable(Provider));
+properties_1.defineReadOnly(Provider, 'inherits', properties_1.inheritable(Provider));

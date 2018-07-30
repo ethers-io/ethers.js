@@ -3,10 +3,18 @@ import { Provider } from './provider';
 
 import { hexlify, hexStripZeros } from '../utils/bytes';
 import { defineReadOnly } from '../utils/properties';
-import { BlockTag, Networkish, TransactionRequest, TransactionResponse } from '../utils/types';
 import { fetchJson } from '../utils/web';
 
 import * as errors from '../utils/errors';
+
+///////////////////////////////
+// Imported Types
+
+import { BlockTag, TransactionRequest, TransactionResponse } from './abstract-provider';
+
+import { Networkish } from '../utils/networks';
+
+///////////////////////////////
 
 // The transaction has already been sanitized by the calls in Provider
 function getTransactionString(transaction: TransactionRequest): string {

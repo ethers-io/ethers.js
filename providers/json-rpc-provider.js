@@ -19,13 +19,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 var provider_1 = require("./provider");
+var abstract_signer_1 = require("../wallet/abstract-signer");
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var networks_1 = require("../utils/networks");
 var properties_1 = require("../utils/properties");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
-var types_1 = require("../utils/types");
 var errors = __importStar(require("../utils/errors"));
 function timer(timeout) {
     return new Promise(function (resolve) {
@@ -50,11 +50,15 @@ function getLowerCase(value) {
     }
     return value;
 }
+var _constructorGuard = {};
 var JsonRpcSigner = /** @class */ (function (_super) {
     __extends(JsonRpcSigner, _super);
-    function JsonRpcSigner(provider, address) {
+    function JsonRpcSigner(constructorGuard, provider, address) {
         var _this = _super.call(this) || this;
         errors.checkNew(_this, JsonRpcSigner);
+        if (constructorGuard !== _constructorGuard) {
+            throw new Error('do not call the JsonRpcSigner constructor directly; use provider.getSigner');
+        }
         properties_1.defineReadOnly(_this, 'provider', provider);
         // Statically attach to a given address
         if (address) {
@@ -132,7 +136,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         });
     };
     return JsonRpcSigner;
-}(types_1.Signer));
+}(abstract_signer_1.Signer));
 exports.JsonRpcSigner = JsonRpcSigner;
 var JsonRpcProvider = /** @class */ (function (_super) {
     __extends(JsonRpcProvider, _super);
@@ -178,7 +182,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         return _this;
     }
     JsonRpcProvider.prototype.getSigner = function (address) {
-        return new JsonRpcSigner(this, address);
+        return new JsonRpcSigner(_constructorGuard, this, address);
     };
     JsonRpcProvider.prototype.listAccounts = function () {
         return this.send('eth_accounts', []).then(function (accounts) {

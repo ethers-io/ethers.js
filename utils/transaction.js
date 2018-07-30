@@ -7,20 +7,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var secp256k1_1 = require("./secp256k1");
 var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
 var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
 var RLP = __importStar(require("./rlp"));
 var errors = __importStar(require("./errors"));
-/* !!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!
- *
- *  Due to a weird ordering-issue with browserify, there is an
- *  import for secp256k1 at the bottom of the file; it must be
- *  required AFTER the parse and serialize exports have been
- *  defined.
- *
- */
+///////////////////////////////
 function handleAddress(value) {
     if (value === '0x') {
         return null;
@@ -71,9 +65,9 @@ function serialize(transaction, signature) {
     }
     // The splitSignature will ensure the transaction has a recoveryParam in the
     // case that the signTransaction function only adds a v.
-    signature = bytes_1.splitSignature(signature);
+    var sig = bytes_1.splitSignature(signature);
     // We pushed a chainId and null r, s on for hashing only; remove those
-    var v = 27 + signature.recoveryParam;
+    var v = 27 + sig.recoveryParam;
     if (raw.length === 9) {
         raw.pop();
         raw.pop();
@@ -81,8 +75,8 @@ function serialize(transaction, signature) {
         v += transaction.chainId * 2 + 8;
     }
     raw.push(bytes_1.hexlify(v));
-    raw.push(bytes_1.stripZeros(bytes_1.arrayify(signature.r)));
-    raw.push(bytes_1.stripZeros(bytes_1.arrayify(signature.s)));
+    raw.push(bytes_1.stripZeros(bytes_1.arrayify(sig.r)));
+    raw.push(bytes_1.stripZeros(bytes_1.arrayify(sig.s)));
     return RLP.encode(raw);
 }
 exports.serialize = serialize;
@@ -144,8 +138,3 @@ function parse(rawTransaction) {
     return tx;
 }
 exports.parse = parse;
-// !!! IMPORTANT !!!
-//
-// This must be be at the end, otherwise Browserify attempts to include upstream
-// dependencies before this module is loaded.
-var secp256k1_1 = require("./secp256k1");

@@ -1,23 +1,56 @@
 
+import { recoverAddress } from './secp256k1';
+
 import { getAddress } from './address';
-import { bigNumberify, ConstantZero } from './bignumber';
+import { BigNumber, bigNumberify, ConstantZero } from './bignumber';
 import { arrayify, hexlify, hexZeroPad, splitSignature, stripZeros, } from './bytes';
 import { keccak256 } from './keccak256';
 
 import * as RLP from './rlp';
 
-import { Arrayish, BigNumber, Signature, Transaction, UnsignedTransaction } from './types';
-
 import * as errors from './errors';
 
-/* !!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!
- *
- *  Due to a weird ordering-issue with browserify, there is an
- *  import for secp256k1 at the bottom of the file; it must be
- *  required AFTER the parse and serialize exports have been
- *  defined.
- *
- */
+///////////////////////////////
+// Imported Types
+
+import { Arrayish, Signature } from './bytes';
+import { BigNumberish } from './bignumber';
+
+///////////////////////////////
+// Exported Types
+
+export type UnsignedTransaction = {
+    to?: string;
+    nonce?: number;
+
+    gasLimit?: BigNumberish;
+    gasPrice?: BigNumberish;
+
+    data?: Arrayish;
+    value?: BigNumberish;
+    chainId?: number;
+}
+
+export interface Transaction {
+    hash?: string;
+
+    to?: string;
+    from?: string;
+    nonce: number;
+
+    gasLimit: BigNumber;
+    gasPrice: BigNumber;
+
+    data: string;
+    value: BigNumber;
+    chainId: number;
+
+    r?: string;
+    s?: string;
+    v?: number;
+}
+
+///////////////////////////////
 
 function handleAddress(value: string): string {
     if (value === '0x') { return null; }
@@ -76,10 +109,10 @@ export function serialize(transaction: UnsignedTransaction, signature?: Arrayish
 
     // The splitSignature will ensure the transaction has a recoveryParam in the
     // case that the signTransaction function only adds a v.
-    signature = splitSignature(signature);
+    let sig = splitSignature(signature);
 
     // We pushed a chainId and null r, s on for hashing only; remove those
-    var v = 27 + signature.recoveryParam
+    var v = 27 + sig.recoveryParam
     if (raw.length === 9) {
         raw.pop();
         raw.pop();
@@ -88,8 +121,8 @@ export function serialize(transaction: UnsignedTransaction, signature?: Arrayish
     }
 
     raw.push(hexlify(v));
-    raw.push(stripZeros(arrayify(signature.r)));
-    raw.push(stripZeros(arrayify(signature.s)));
+    raw.push(stripZeros(arrayify(sig.r)));
+    raw.push(stripZeros(arrayify(sig.s)));
 
     return RLP.encode(raw);
 }
@@ -158,10 +191,3 @@ export function parse(rawTransaction: Arrayish): Transaction {
 
     return tx;
 }
-
-// !!! IMPORTANT !!!
-//
-// This must be be at the end, otherwise Browserify attempts to include upstream
-// dependencies before this module is loaded.
-
-import { recoverAddress } from './secp256k1';

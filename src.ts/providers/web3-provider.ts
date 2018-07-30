@@ -4,9 +4,19 @@ import { JsonRpcProvider } from './json-rpc-provider';
 
 import { defineReadOnly } from '../utils/properties';
 
-import { AsyncProvider, Networkish } from '../utils/types';
+// Imported Types
+import { Networkish } from '../utils/networks';
 
 import * as errors from '../utils/errors';
+
+
+// Exported Types
+export type AsyncSendable = {
+    isMetaMask?: boolean;
+    host?: string;
+    path?: string;
+    sendAsync: (request: any, callback: (error: any, response: any) => void) => void
+}
 
 /*
 @TODO
@@ -17,9 +27,9 @@ utils.defineProperty(Web3Signer, 'onchange', {
 */
 
 export class Web3Provider extends JsonRpcProvider {
-    readonly _web3Provider: AsyncProvider;
+    readonly _web3Provider: AsyncSendable;
 
-    constructor(web3Provider: AsyncProvider, network?: Networkish) {
+    constructor(web3Provider: AsyncSendable, network?: Networkish) {
 
         if (!web3Provider || !web3Provider.sendAsync) {
             errors.throwError(

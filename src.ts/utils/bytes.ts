@@ -3,14 +3,40 @@
  *
  */
 
-import { Arrayish, BigNumber, Signature } from './types';
+import * as errors from './errors';
 
-import errors = require('./errors');
+///////////////////////////////
+// Imported Types
+
+import { Arrayish } from './bytes';
+
+///////////////////////////////
+// Exported Types
+
+export type Arrayish = string | ArrayLike<number>;
+
+export interface Hexable {
+    toHexString(): string;
+}
+
+export interface Signature {
+    r: string;
+    s: string;
+
+    /* At least one of the following MUST be specified; the other will be derived */
+    recoveryParam?: number;
+    v?: number;
+}
+
+///////////////////////////////
 
 
 export const AddressZero = '0x0000000000000000000000000000000000000000';
 export const HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
+export function isHexable(value: any): value is Hexable {
+    return !!(value.toHexString);
+}
 
 function addSlice(array: Uint8Array): Uint8Array {
     if (array.slice) { return array; }
@@ -23,7 +49,7 @@ function addSlice(array: Uint8Array): Uint8Array {
     return array;
 }
 
-export function isArrayish(value: any): boolean {
+export function isArrayish(value: any): value is Arrayish {
     if (!value || parseInt(String(value.length)) != value.length || typeof(value) === 'string') {
         return false;
     }
@@ -38,12 +64,12 @@ export function isArrayish(value: any): boolean {
     return true;
 }
 
-export function arrayify(value: Arrayish | BigNumber): Uint8Array {
+export function arrayify(value: Arrayish | Hexable): Uint8Array {
     if (value == null) {
         errors.throwError('cannot convert null value to array', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
     }
 
-    if (BigNumber.isBigNumber(value)) {
+    if (isHexable(value)) {
         value = value.toHexString();
     }
 
@@ -67,8 +93,6 @@ export function arrayify(value: Arrayish | BigNumber): Uint8Array {
         }
 
         return addSlice(new Uint8Array(result));
-
-    } else if (typeof(value) === 'string') {
     }
 
     if (isArrayish(value)) {
@@ -136,9 +160,9 @@ export function isHexString(value: any, length?: number): boolean {
 
 const HexCharacters: string = '0123456789abcdef';
 
-export function hexlify(value: Arrayish | BigNumber | number): string {
+export function hexlify(value: Arrayish | Hexable | number): string {
 
-    if (BigNumber.isBigNumber(value)) {
+    if (isHexable(value)) {
         return value.toHexString();
     }
 

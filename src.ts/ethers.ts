@@ -4,12 +4,25 @@
 import { platform } from './utils/shims';
 
 import { Contract, Interface } from './contracts';
-import * as providers from './providers';
-import * as utils from './utils';
+import {
+    Provider,
+    getDefaultProvider,
+
+    FallbackProvider,
+
+    EtherscanProvider,
+    InfuraProvider,
+    JsonRpcProvider,
+    Web3Provider,
+
+    IpcProvider,
+} from './providers';
 import { HDNode, SigningKey, Wallet } from './wallet';
+
+import * as utils from './utils';
 import * as wordlists from './wordlists';
 
-import * as types from './utils/types';
+import * as types from './types';
 
 import * as errors from './utils/errors';
 
@@ -26,7 +39,14 @@ export {
     Contract,
     Interface,
 
-    providers,
+    getDefaultProvider,
+    Provider,
+    FallbackProvider,
+    EtherscanProvider,
+    InfuraProvider,
+    JsonRpcProvider,
+    Web3Provider,
+    IpcProvider,
 
     types,
 

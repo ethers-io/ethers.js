@@ -4,12 +4,18 @@
 import BN from 'bn.js';
 
 import { arrayify, stripZeros, hexlify } from './bytes';
+import { BigNumber } from './bignumber';
 import { keccak256 } from './keccak256';
 import { encode } from './rlp';
 
-import { Arrayish, BigNumber } from './types';
-
 import errors = require('./errors');
+
+///////////////////////////////
+// Imported Types
+
+import { Arrayish } from './bytes';
+
+///////////////////////////////
 
 
 function getChecksumAddress(address: string): string {

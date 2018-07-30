@@ -8,9 +8,51 @@ import { arrayify, concat, hexlify, padZeros } from './bytes';
 import { toUtf8Bytes, toUtf8String } from './utf8';
 import { defineReadOnly, jsonCopy } from './properties';
 
-import { Arrayish, BigNumberish, CoerceFunc, EventFragment, FunctionFragment, ParamType }from './types';
-
 import * as errors from './errors';
+
+///////////////////////////////
+// Imported Types
+
+import { Arrayish } from './bytes';
+import { BigNumberish } from './bignumber';
+
+///////////////////////////////
+// Exported Types
+
+export type CoerceFunc = (type: string, value: any) => any;
+
+export type ParamType = {
+    name?: string,
+    type: string,
+    indexed?: boolean,
+    components?: Array<any>
+};
+
+// @TODO: should this just be a combined Fragment?
+
+export type EventFragment = {
+    type: string
+    name: string,
+
+    anonymous: boolean,
+
+    inputs: Array<ParamType>,
+};
+
+export type FunctionFragment = {
+    type: string
+    name: string,
+
+    constant: boolean,
+
+    inputs: Array<ParamType>,
+    outputs: Array<ParamType>,
+
+    payable: boolean,
+    stateMutability: string,
+};
+
+///////////////////////////////
 
 const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);

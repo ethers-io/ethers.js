@@ -7,12 +7,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var elliptic_1 = require("elliptic");
 var address_1 = require("./address");
 var bytes_1 = require("./bytes");
 var hash_1 = require("./hash");
 var keccak256_1 = require("./keccak256");
 var properties_1 = require("./properties");
 var errors = __importStar(require("./errors"));
+///////////////////////////////
 var _curve = null;
 function getCurve() {
     if (!_curve) {
@@ -94,8 +96,3 @@ function verifyMessage(message, signature) {
     });
 }
 exports.verifyMessage = verifyMessage;
-// !!! IMPORTANT !!!
-//
-// This must be be at the end, otherwise Browserify attempts to include upstream
-// dependencies before this module is loaded.
-var elliptic_1 = require("elliptic");

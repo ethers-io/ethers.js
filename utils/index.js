@@ -7,12 +7,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// This is SUPER useful, but adds 140kb (even zipped, adds 40kb)
-//var unorm = require('unorm');
-var address_1 = require("./address");
-exports.getAddress = address_1.getAddress;
-exports.getContractAddress = address_1.getContractAddress;
-exports.getIcapAddress = address_1.getIcapAddress;
 var abi_coder_1 = require("./abi-coder");
 exports.AbiCoder = abi_coder_1.AbiCoder;
 exports.defaultAbiCoder = abi_coder_1.defaultAbiCoder;
@@ -20,9 +14,14 @@ exports.formatSignature = abi_coder_1.formatSignature;
 exports.formatParamType = abi_coder_1.formatParamType;
 exports.parseSignature = abi_coder_1.parseSignature;
 exports.parseParamType = abi_coder_1.parseParamType;
+var address_1 = require("./address");
+exports.getAddress = address_1.getAddress;
+exports.getContractAddress = address_1.getContractAddress;
+exports.getIcapAddress = address_1.getIcapAddress;
 var base64 = __importStar(require("./base64"));
 exports.base64 = base64;
 var bignumber_1 = require("./bignumber");
+exports.BigNumber = bignumber_1.BigNumber;
 exports.bigNumberify = bignumber_1.bigNumberify;
 var bytes_1 = require("./bytes");
 exports.arrayify = bytes_1.arrayify;
@@ -77,8 +76,6 @@ exports.formatUnits = units_1.formatUnits;
 exports.parseUnits = units_1.parseUnits;
 var web_1 = require("./web");
 exports.fetchJson = web_1.fetchJson;
-var types = __importStar(require("./types"));
-exports.types = types;
 var errors = __importStar(require("./errors"));
 exports.errors = errors;
 // NFKD (decomposed)

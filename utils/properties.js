@@ -58,3 +58,22 @@ function jsonCopy(object) {
     return JSON.parse(JSON.stringify(object));
 }
 exports.jsonCopy = jsonCopy;
+// See: https://github.com/isaacs/inherits/blob/master/inherits_browser.js
+function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor;
+    ctor.prototype = Object.create(superCtor.prototype, {
+        constructor: {
+            value: ctor,
+            enumerable: false,
+            writable: true,
+            configurable: true
+        }
+    });
+}
+function inheritable(parent) {
+    return function (child) {
+        inherits(child, parent);
+        defineReadOnly(child, 'inherits', inheritable(child));
+    };
+}
+exports.inheritable = inheritable;

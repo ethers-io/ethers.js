@@ -1,20 +1,37 @@
 'use strict';
 
 import { getAddress, getContractAddress } from '../utils/address';
-import {  bigNumberify } from '../utils/bignumber';
+import { BigNumber, bigNumberify } from '../utils/bignumber';
 import { hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, stripZeros } from '../utils/bytes';
 import { namehash } from '../utils/hash';
 import { getNetwork } from '../utils/networks';
-import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
+import { defineReadOnly, inheritable, resolveProperties, shallowCopy } from '../utils/properties';
 import { encode as rlpEncode } from '../utils/rlp';
 import { parse as parseTransaction } from '../utils/transaction';
 import { toUtf8String } from '../utils/utf8';
 import { poll } from '../utils/web';
 
-import { BigNumber, BigNumberish, Block, BlockTag, EventType, Filter, Listener, Log, MinimalProvider, Network, Networkish, Transaction, TransactionReceipt, TransactionRequest, TransactionResponse } from '../utils/types';
-
 import * as errors from '../utils/errors';
 
+///////////////////////////////
+// Imported Abstracts
+import { Provider as AbstractProvider } from './abstract-provider';
+
+
+///////////////////////////////
+// Imported Types
+
+import {
+    Block, BlockTag,
+    EventType, Filter,
+    Listener,
+    Log,
+    TransactionReceipt, TransactionRequest, TransactionResponse
+} from './abstract-provider';
+
+import { BigNumberish } from '../utils/bignumber';
+import { Transaction } from '../utils/transaction';
+import { Network, Networkish } from '../utils/networks';
 
 //////////////////////////////
 // Request and Response Checking
@@ -519,7 +536,7 @@ type _Event = {
     tag: string;
 }
 
-export class Provider extends MinimalProvider {
+export class Provider extends AbstractProvider {
     private _network: Network;
 
     private _events: Array<_Event>;
@@ -1226,26 +1243,6 @@ export class Provider extends MinimalProvider {
         if (this.listenerCount() === 0) { this.polling = false; }
 
         return this;
-    }
-}
-
-// See: https://github.com/isaacs/inherits/blob/master/inherits_browser.js
-function inherits(ctor: any, superCtor: any): void {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-        constructor: {
-            value: ctor,
-            enumerable: false,
-            writable: true,
-            configurable: true
-        }
-    });
-}
-
-function inheritable(parent: any): (child: any) => void {
-    return function(child: any): void {
-        inherits(child, parent);
-        defineReadOnly(child, 'inherits', inheritable(child));
     }
 }
 

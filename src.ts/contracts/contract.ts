@@ -1,32 +1,56 @@
 'use strict';
 
-import { Interface } from './interface';
+import { Indexed, Interface } from './interface';
 
 import { defaultAbiCoder, formatSignature, parseSignature } from '../utils/abi-coder';
 import { getAddress, getContractAddress } from '../utils/address';
-import { ConstantZero } from '../utils/bignumber';
+import { BigNumber, ConstantZero } from '../utils/bignumber';
 import { hexDataLength, hexDataSlice, isHexString } from '../utils/bytes';
 import { defineReadOnly, jsonCopy, shallowCopy } from '../utils/properties';
 import { poll } from '../utils/web';
 
-import {
-    Signer,
-    MinimalProvider,
-
-    BigNumber,
-
-    ContractFunction,
-    EventDescription,
-    EventFilter,
-    ParamType,
-
-    Listener,
-    Log,
-    TransactionRequest,
-    TransactionResponse
-} from '../utils/types';
-
 import * as errors from '../utils/errors';
+
+///////////////////////////////
+// Imported Abstracts
+
+import { Provider } from '../providers/abstract-provider';
+import { Signer } from '../wallet/abstract-signer';
+
+///////////////////////////////
+// Imported Types
+
+import { EventDescription } from './interface';
+import { ParamType } from '../utils/abi-coder';
+import { Block, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from '../providers/abstract-provider';
+
+///////////////////////////////
+// Exported Types
+
+export type ContractFunction = (...params: Array<any>) => Promise<any>;
+
+export type EventFilter = {
+    address?: string;
+    topics?: Array<string>;
+    // @TODO: Support OR-style topcis; backwards compatible to make this change
+    //topics?: Array<string | Array<string>>
+};
+
+// The (n + 1)th parameter passed to contract event callbacks
+export interface Event extends Log {
+    args: Array<any>;
+    decode: (data: string, topics?: Array<string>) => any;
+    event: string;
+    eventSignature: string;
+
+    removeListener: () => void;
+
+    getBlock: () => Promise<Block>;
+    getTransaction: () => Promise<TransactionResponse>;
+    getTransactionReceipt: () => Promise<TransactionReceipt>;
+}
+
+///////////////////////////////
 
 var allowedTransactionKeys: { [ key: string ]: boolean } = {
     data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
@@ -35,7 +59,7 @@ var allowedTransactionKeys: { [ key: string ]: boolean } = {
 // Recursively replaces ENS names with promises to resolve the name and
 // stalls until all promises have returned
 // @TODO: Expand this to resolve any promises too
-function resolveAddresses(provider: MinimalProvider, value: any, paramType: ParamType | Array<ParamType>): Promise<any> {
+function resolveAddresses(provider: Provider, value: any, paramType: ParamType | Array<ParamType>): Promise<any> {
     if (Array.isArray(paramType)) {
         var promises: Array<Promise<any>> = [];
         paramType.forEach((paramType, index) => {
@@ -228,7 +252,7 @@ export class Contract {
     readonly interface: Interface;
 
     readonly signer: Signer;
-    readonly provider: MinimalProvider;
+    readonly provider: Provider;
 
     readonly estimate: Bucket<(...params: Array<any>) => Promise<BigNumber>>;
     readonly functions: Bucket<ContractFunction>;
@@ -246,7 +270,7 @@ export class Contract {
     // Once this issue is resolved (there are open PR) we can do this nicer
     // by making addressOrName default to null for 2 operand calls. :)
 
-    constructor(addressOrName: string, contractInterface: Array<string | ParamType> | string | Interface, signerOrProvider: Signer | MinimalProvider) {
+    constructor(addressOrName: string, contractInterface: Array<string | ParamType> | string | Interface, signerOrProvider: Signer | Provider) {
         errors.checkNew(this, Contract);
 
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
@@ -261,7 +285,7 @@ export class Contract {
         if (Signer.isSigner(signerOrProvider)) {
             defineReadOnly(this, 'provider', signerOrProvider.provider);
             defineReadOnly(this, 'signer', signerOrProvider);
-        } else if (MinimalProvider.isProvider(signerOrProvider)) {
+        } else if (Provider.isProvider(signerOrProvider)) {
             defineReadOnly(this, 'provider', signerOrProvider);
             defineReadOnly(this, 'signer', null);
         } else {
@@ -367,7 +391,7 @@ export class Contract {
     }
 
     // Reconnect to a different signer or provider
-    connect(signerOrProvider: Signer | MinimalProvider): Contract {
+    connect(signerOrProvider: Signer | Provider): Contract {
         return new Contract(this.address, this.interface, signerOrProvider);
     }
 
@@ -422,6 +446,10 @@ export class Contract {
             defineReadOnly(contract, 'deployTransaction', tx);
             return contract;
         });
+    }
+
+    static isIndexed(value: any): value is Indexed {
+        return Interface.isIndexed(value);
     }
 
     private _events: Array<_Event>;

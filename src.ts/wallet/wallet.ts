@@ -1,29 +1,38 @@
 'use strict';
 
-import { defaultPath, entropyToMnemonic, fromMnemonic } from './hdnode';
+import { defaultPath, HDNode, entropyToMnemonic, fromMnemonic } from './hdnode';
 import * as secretStorage from './secret-storage';
 import { SigningKey } from './signing-key';
 
 import { arrayify, concat, joinSignature } from '../utils/bytes';
+import { BigNumber } from '../utils/bignumber';
 import { hashMessage } from '../utils/hash';
 import { isCrowdsaleWallet, isSecretStorageWallet } from '../utils/json-wallet';
 import { keccak256 } from '../utils/keccak256';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { randomBytes } from '../utils/random-bytes';
 import { serialize as serializeTransaction } from '../utils/transaction';
+import { Wordlist } from '../wordlists/wordlist';
 
-import { Arrayish, BigNumber, BlockTag, HDNode, MinimalProvider, ProgressCallback, Signer, TransactionRequest, TransactionResponse, Wordlist } from '../utils/types';
+// Imported Abstracts
+import { Signer as AbstractSigner } from './abstract-signer';
+import { Provider } from '../providers/abstract-provider';
+
+// Imported Types
+import { ProgressCallback } from './secret-storage';
+import { Arrayish } from '../utils/bytes';
+import { BlockTag, TransactionRequest, TransactionResponse } from '../providers/abstract-provider';
 
 import * as errors from '../utils/errors';
 
 
-export class Wallet extends Signer {
+export class Wallet extends AbstractSigner {
 
-    readonly provider: MinimalProvider;
+    readonly provider: Provider;
 
     private readonly signingKey: SigningKey;
 
-    constructor(privateKey: SigningKey | HDNode | Arrayish, provider?: MinimalProvider) {
+    constructor(privateKey: SigningKey | HDNode | Arrayish, provider?: Provider) {
         super();
         errors.checkNew(this, Wallet);
 
@@ -48,8 +57,8 @@ export class Wallet extends Signer {
     /**
      *  Create a new instance of this Wallet connected to provider.
      */
-    connect(provider: MinimalProvider): Wallet {
-        if (!(MinimalProvider.isProvider(provider))) {
+    connect(provider: Provider): Wallet {
+        if (!(Provider.isProvider(provider))) {
             errors.throwError('invalid provider', errors.INVALID_ARGUMENT, { argument: 'provider', value: provider });
         }
         return new Wallet(this.signingKey, provider);

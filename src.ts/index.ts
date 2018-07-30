@@ -3,4 +3,4 @@ import * as ethers from './ethers';
 
 export { ethers };
 
-export * from "./ethers";
+export * from './ethers';

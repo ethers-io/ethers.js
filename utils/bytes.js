@@ -3,11 +3,22 @@
  *  Conversion Utilities
  *
  */
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var types_1 = require("./types");
-var errors = require("./errors");
+var errors = __importStar(require("./errors"));
+///////////////////////////////
 exports.AddressZero = '0x0000000000000000000000000000000000000000';
 exports.HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
+function isHexable(value) {
+    return !!(value.toHexString);
+}
+exports.isHexable = isHexable;
 function addSlice(array) {
     if (array.slice) {
         return array;
@@ -35,7 +46,7 @@ function arrayify(value) {
     if (value == null) {
         errors.throwError('cannot convert null value to array', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
     }
-    if (types_1.BigNumber.isBigNumber(value)) {
+    if (isHexable(value)) {
         value = value.toHexString();
     }
     if (typeof (value) === 'string') {
@@ -55,8 +66,6 @@ function arrayify(value) {
             result.push(parseInt(value.substr(i, 2), 16));
         }
         return addSlice(new Uint8Array(result));
-    }
-    else if (typeof (value) === 'string') {
     }
     if (isArrayish(value)) {
         return addSlice(new Uint8Array(value));
@@ -121,7 +130,7 @@ function isHexString(value, length) {
 exports.isHexString = isHexString;
 var HexCharacters = '0123456789abcdef';
 function hexlify(value) {
-    if (types_1.BigNumber.isBigNumber(value)) {
+    if (isHexable(value)) {
         return value.toHexString();
     }
     if (typeof (value) === 'number') {

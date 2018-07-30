@@ -14,8 +14,12 @@ var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
 var properties_1 = require("../utils/properties");
 var web_1 = require("../utils/web");
-var types_1 = require("../utils/types");
 var errors = __importStar(require("../utils/errors"));
+///////////////////////////////
+// Imported Abstracts
+var abstract_provider_1 = require("../providers/abstract-provider");
+var abstract_signer_1 = require("../wallet/abstract-signer");
+///////////////////////////////
 var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
 };
@@ -184,11 +188,11 @@ var Contract = /** @class */ (function () {
         else {
             properties_1.defineReadOnly(this, 'interface', new interface_1.Interface(contractInterface));
         }
-        if (types_1.Signer.isSigner(signerOrProvider)) {
+        if (abstract_signer_1.Signer.isSigner(signerOrProvider)) {
             properties_1.defineReadOnly(this, 'provider', signerOrProvider.provider);
             properties_1.defineReadOnly(this, 'signer', signerOrProvider);
         }
-        else if (types_1.MinimalProvider.isProvider(signerOrProvider)) {
+        else if (abstract_provider_1.Provider.isProvider(signerOrProvider)) {
             properties_1.defineReadOnly(this, 'provider', signerOrProvider);
             properties_1.defineReadOnly(this, 'signer', null);
         }
@@ -342,6 +346,9 @@ var Contract = /** @class */ (function () {
             properties_1.defineReadOnly(contract, 'deployTransaction', tx);
             return contract;
         });
+    };
+    Contract.isIndexed = function (value) {
+        return interface_1.Interface.isIndexed(value);
     };
     Contract.prototype._getEventFilter = function (eventName) {
         var _this = this;

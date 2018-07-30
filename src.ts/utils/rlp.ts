@@ -3,7 +3,8 @@
 
 import { arrayify, hexlify } from './bytes';
 
-import { Arrayish } from './types';
+// Imported Types
+import { Arrayish } from './bytes';
 
 function arrayifyInteger(value: number): Array<number> {
     var result = [];

@@ -16,13 +16,15 @@ import { bigNumberify } from '../utils/bignumber';
 import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
 import { pbkdf2 } from '../utils/pbkdf2';
 import { computeHmac } from '../utils/hmac';
-import { defineReadOnly } from '../utils/properties';
+import { defineReadOnly, isType, setType } from '../utils/properties';
 import { KeyPair } from '../utils/secp256k1';
 import { sha256 } from '../utils/sha2';
 
 const N = bigNumberify("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 
-import { Arrayish, HDNode as _HDNode ,Wordlist } from '../utils/types';
+// Imported Types
+import { Arrayish } from '../utils/bytes';
+import { Wordlist } from '../wordlists/wordlist';
 
 import * as errors from '../utils/errors';
 
@@ -41,9 +43,11 @@ function getLowerMask(bits: number): number {
    return (1 << bits) - 1;
 }
 
+const _constructorGuard: any = {};
+
 export const defaultPath = "m/44'/60'/0'/0/0";
 
-class HDNode extends _HDNode {
+export class HDNode {
     private readonly keyPair: KeyPair;
 
     readonly privateKey: string;
@@ -64,9 +68,12 @@ class HDNode extends _HDNode {
      *   - fromMnemonic
      *   - fromSeed
      */
-    constructor(privateKey: Arrayish, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string) {
-        super();
+    constructor(constructorGuard: any, privateKey: Arrayish, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string) {
         errors.checkNew(this, HDNode);
+
+        if (constructorGuard !== _constructorGuard) {
+            throw new Error('HDNode constructor cannot be called directly');
+        }
 
         defineReadOnly(this, 'keyPair', new KeyPair(privateKey));
 
@@ -80,6 +87,8 @@ class HDNode extends _HDNode {
 
         defineReadOnly(this, 'mnemonic', mnemonic);
         defineReadOnly(this, 'path', path);
+
+        setType(this, 'HDNode');
     }
 
     private _derive(index: number): HDNode {
@@ -118,7 +127,7 @@ class HDNode extends _HDNode {
 
         var ki = IL.add(this.keyPair.privateKey).mod(N);
 
-        return new HDNode(arrayify(ki), IR, index, this.depth + 1, mnemonic, path);
+        return new HDNode(_constructorGuard, arrayify(ki), IR, index, this.depth + 1, mnemonic, path);
     }
 
     derivePath(path: string): HDNode {
@@ -148,7 +157,13 @@ class HDNode extends _HDNode {
 
         return result;
     }
+
+    static isHDNode(value: any): value is HDNode {
+        return isType(value, 'HDNode');
+    }
 }
+
+
 
 function _fromSeed(seed: Arrayish, mnemonic: string): HDNode {
     let seedArray: Uint8Array = arrayify(seed);
@@ -156,17 +171,17 @@ function _fromSeed(seed: Arrayish, mnemonic: string): HDNode {
 
     var I: Uint8Array = arrayify(computeHmac('sha512', MasterSecret, seedArray));
 
-    return new HDNode(I.slice(0, 32), I.slice(32), 0, 0, mnemonic, 'm');
+    return new HDNode(_constructorGuard, I.slice(0, 32), I.slice(32), 0, 0, mnemonic, 'm');
 }
 
-export function fromMnemonic(mnemonic: string, wordlist?: Wordlist): _HDNode {
+export function fromMnemonic(mnemonic: string, wordlist?: Wordlist): HDNode {
     // Check that the checksum s valid (will throw an error)
     mnemonicToEntropy(mnemonic, wordlist);
 
     return _fromSeed(mnemonicToSeed(mnemonic), mnemonic);
 }
 
-export function fromSeed(seed: Arrayish): _HDNode {
+export function fromSeed(seed: Arrayish): HDNode {
     return _fromSeed(seed, null);
 }
 

@@ -24,6 +24,7 @@ var bytes_1 = require("./bytes");
 var utf8_1 = require("./utf8");
 var properties_1 = require("./properties");
 var errors = __importStar(require("./errors"));
+///////////////////////////////
 var paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 var paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 var paramTypeArray = new RegExp(/^(.*)\[([0-9]*)\]$/);

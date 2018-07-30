@@ -14,7 +14,28 @@ import { keccak256 } from '../utils/keccak256';
 import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
 import { randomBytes } from '../utils/random-bytes';
 
-import { Arrayish, EncryptOptions, ProgressCallback } from '../utils/types';
+// Imported Types
+import { Arrayish } from '../utils/bytes';
+
+
+// Exported Types
+export type ProgressCallback = (percent: number) => void;
+
+export type EncryptOptions = {
+   iv?: Arrayish;
+   entropy?: Arrayish;
+   mnemonic?: string;
+   path?: string;
+   client?: string;
+   salt?: Arrayish;
+   uuid?: string;
+   scrypt?: {
+       N?: number;
+       r?: number;
+       p?: number;
+   }
+}
+
 
 function looseArrayify(hexString: string): Uint8Array {
     if (typeof(hexString) === 'string' && hexString.substring(0, 2) !== '0x') {

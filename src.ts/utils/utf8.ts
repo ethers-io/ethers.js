@@ -2,7 +2,12 @@
 
 import { arrayify } from './bytes';
 
-import { Arrayish } from './types';
+///////////////////////////////
+// Imported Types
+
+import { Arrayish } from './bytes';
+
+///////////////////////////////
 
 export enum UnicodeNormalizationForm {
     current  = '',

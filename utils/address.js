@@ -9,6 +9,7 @@ var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
 var rlp_1 = require("./rlp");
 var errors = require("./errors");
+///////////////////////////////
 function getChecksumAddress(address) {
     if (typeof (address) !== 'string' || !address.match(/^0x[0-9A-Fa-f]{40}$/)) {
         errors.throwError('invalid address', errors.INVALID_ARGUMENT, { arg: 'address', value: address });

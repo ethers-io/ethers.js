@@ -1,17 +1,24 @@
 'use strict';
 
-import { Network, Networkish } from '../utils/types';
-
 import * as errors from '../utils/errors';
 
 
-const homestead = {
+export type Network = {
+    name: string,
+    chainId: number,
+    ensAddress?: string,
+}
+
+export type Networkish = Network | string | number;
+
+
+const homestead: Network = {
     chainId: 1,
     ensAddress: "0x314159265dd8dbb310642f98f50c066173c1259b",
     name: "homestead"
 };
 
-const ropsten = {
+const ropsten: Network = {
     chainId: 3,
     ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
     name: "ropsten"

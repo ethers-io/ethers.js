@@ -5,7 +5,7 @@ var assert = require('assert');
 var utils = require('./utils');
 var ethers = utils.getEthers(__filename);
 
-var provider = new ethers.providers.InfuraProvider('rinkeby');
+var provider = new ethers.InfuraProvider('rinkeby');
 
 var contract = (function() {
     var data = require('./test-contract.json');
@@ -24,7 +24,7 @@ function equals(name, actual, expected) {
 
     if (typeof(actual) === 'object') {
         if (expected.indexed) {
-            assert.ok(actual instanceof ethers.types.Indexed, 'index property has index - ' + name);
+            assert.ok(ethers.Interface.isIndexed(actual), 'index property has index - ' + name);
             if (expected.hash) {
                 assert.equal(actual.hash, expected.hash, 'index property with known hash matches - ' + name);
             }

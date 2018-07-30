@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
 var utf8_1 = require("./utf8");
 var keccak256_1 = require("./keccak256");
+///////////////////////////////
 var Zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 var Partition = new RegExp("^((.*)\\.)?([^.]+)$");
 var UseSTD3ASCIIRules = new RegExp("^[a-z0-9.-]*$");

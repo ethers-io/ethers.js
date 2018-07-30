@@ -74,9 +74,9 @@ function taskBundle(name, options) {
     var undef = "module.exports = undefined;";
     var empty = "module.exports = {};";
 
-    // We already have a random Uint8Array browser/node safe source
-    // @TODO: Use path construction instead of ../..
-    var brorand = "var randomBytes = require('../../utils').randomBytes; module.exports = function(length) { return randomBytes(length); };";
+    // This is only used in getKeyPair, which we do not use; but we'll
+    // leave it in tact using the browser crypto functions
+    var brorand = "module.exports = function(length) { var result = new Uint8Array(length); (global.crypto || global.msCrypto).getRandomValues(result); return result; }";
 
     // setImmediate is installed globally by our src.browser/shims.ts, loaded from src.ts/index.ts
     var process = "module.exports = { browser: true };";
@@ -158,20 +158,23 @@ taskBundle("default", { filename: "ethers.js", minify: false });
 // Creates dist/ethers.min.js
 taskBundle("minified", { filename: "ethers.min.js", minify: true });
 
+/*
 // Dump the TypeScript definitions to dist/types/
 gulp.task("types", function() {
-    return gulp.src(['./src.ts/index.ts', './src.ts/**/*.ts'])
+    return gulp.src(['./src.ts/index.ts', './src.ts / * * / * . ts'])
     .pipe(ts({
         declaration: true,
         esModuleInterop: true,
         moduleResolution: "node",
         lib: [ "es2015", "es5", "dom" ],
         module: "commonjs",
+        outDir: './dist/types',
         target: "es5",
     }))
     .dts
-    .pipe(gulp.dest("dist/types"))
+    .pipe(gulp.dest("dist/types/"))
 });
+*/
 
 /**
  *  Browser Friendly BIP39 Wordlists

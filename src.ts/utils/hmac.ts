@@ -4,9 +4,12 @@ import { createHmac } from 'crypto';
 
 import { arrayify } from './bytes';
 
-import { Arrayish, SupportedAlgorithms } from './types';
+// Imported Types
+import { Arrayish } from './bytes';
 
 import * as errors from './errors';
+
+export type SupportedAlgorithms = 'sha256' | 'sha512';
 
 const supportedAlgorithms = { sha256: true, sha512: true };
 export function computeHmac(algorithm: SupportedAlgorithms, key: Arrayish, data: Arrayish): Uint8Array {

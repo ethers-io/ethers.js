@@ -5,9 +5,30 @@ import { XMLHttpRequest } from 'xmlhttprequest';
 import { encode as base64Encode } from './base64';
 import { toUtf8Bytes } from './utf8';
 
-import { ConnectionInfo, PollOptions } from './types';
-
 import * as errors from './errors';
+
+
+// Exported Types
+export type ConnectionInfo = {
+    url: string,
+    user?: string,
+    password?: string,
+    allowInsecure?: boolean
+};
+
+export interface OnceBlockable {
+    once(eventName: "block", handler: () => void): void;
+}
+
+export type PollOptions = {
+    timeout?: number,
+    floor?: number,
+    ceiling?: number,
+    interval?: number,
+    onceBlock?: OnceBlockable
+};
+
+
 
 type Header = { key: string, value: string };
 

@@ -1,3 +1,7 @@
+# Config files for testing and linting
+.eslintrc.js
+.travis.yml
+
 # This is only needed for building dist and library files
 gulpfile.js
 

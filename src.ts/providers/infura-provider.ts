@@ -5,7 +5,8 @@ import { JsonRpcProvider, JsonRpcSigner } from './json-rpc-provider';
 import { getNetwork } from '../utils/networks';
 import { defineReadOnly } from '../utils/properties';
 
-import { Networkish } from '../utils/types';
+// Imported Types
+import { Networkish } from '../utils/networks';
 
 import * as errors from '../utils/errors';
 

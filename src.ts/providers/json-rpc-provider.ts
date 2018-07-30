@@ -4,14 +4,21 @@
 
 import { Provider } from './provider';
 
+import { Signer } from '../wallet/abstract-signer';
+
 import { getAddress } from '../utils/address';
+import { BigNumber } from '../utils/bignumber';
 import { hexlify, hexStripZeros } from '../utils/bytes';
 import { getNetwork } from '../utils/networks';
 import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { toUtf8Bytes } from '../utils/utf8';
 import { fetchJson, poll } from '../utils/web';
 
-import { Arrayish, BigNumber, BlockTag, ConnectionInfo, Network, Networkish, Signer, TransactionRequest, TransactionResponse } from '../utils/types';
+// Imported Types
+import { Arrayish } from '../utils/bytes';
+import { Network, Networkish } from '../utils/networks';
+import { ConnectionInfo } from '../utils/web';
+import { BlockTag, TransactionRequest, TransactionResponse } from '../providers/abstract-provider';
 
 import * as errors from '../utils/errors';
 
@@ -40,13 +47,18 @@ function getLowerCase(value: string): string {
     return value;
 }
 
+const _constructorGuard = {};
+
 export class JsonRpcSigner extends Signer {
     readonly provider: JsonRpcProvider;
     private _address: string;
 
-    constructor(provider: JsonRpcProvider, address?: string) {
+    constructor(constructorGuard: any, provider: JsonRpcProvider, address?: string) {
         super();
         errors.checkNew(this, JsonRpcSigner);
+        if (constructorGuard !== _constructorGuard) {
+            throw new Error('do not call the JsonRpcSigner constructor directly; use provider.getSigner');
+        }
 
         defineReadOnly(this, 'provider', provider);
 
@@ -178,7 +190,7 @@ export class JsonRpcProvider extends Provider {
     }
 
     getSigner(address?: string): JsonRpcSigner {
-        return new JsonRpcSigner(this, address);
+        return new JsonRpcSigner(_constructorGuard, this, address);
     }
 
     listAccounts(): Promise<Array<string>> {

@@ -9,7 +9,17 @@ import { InfuraProvider } from './infura-provider';
 import { JsonRpcProvider, JsonRpcSigner } from './json-rpc-provider';
 import { Web3Provider } from './web3-provider';
 
-import { Network } from '../utils/types';
+///////////////////////////////
+// Imported Abstracts
+
+import { Provider as AbstractProvider } from './abstract-provider';
+
+///////////////////////////////
+// Imported Types
+
+import { Network } from '../utils/networks';
+
+///////////////////////////////
 
 function getDefaultProvider(network?: Network | string): Provider {
     return new FallbackProvider([
@@ -19,6 +29,8 @@ function getDefaultProvider(network?: Network | string): Provider {
 }
 
 export {
+    AbstractProvider,
+
     Provider,
     getDefaultProvider,
 

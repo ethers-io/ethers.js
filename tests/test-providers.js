@@ -6,7 +6,7 @@ var web3 = require('web3');
 var utils = require('./utils');
 var ethers = utils.getEthers(__filename);
 
-var providers = ethers.providers;
+//var providers = ethers.providers;
 var bigNumberify = ethers.utils.bigNumberify;
 var getAddress = ethers.utils.getAddress;
 
@@ -254,21 +254,21 @@ function testProvider(providerName, networkName) {
         var provider = null;
         if (networkName === 'default') {
             if (providerName === 'getDefaultProvider') {
-                provider = providers.getDefaultProvider();
+                provider = ethers.getDefaultProvider();
             } else if (providerName === 'Web3Provider') {
-                var infuraUrl = (new providers.InfuraProvider()).connection.url;
-                provider = new providers.Web3Provider(new web3.providers.HttpProvider(infuraUrl));
+                var infuraUrl = (new ethers.InfuraProvider()).connection.url;
+                provider = new ethers.Web3Provider(new web3.providers.HttpProvider(infuraUrl));
             } else {
-                provider = new providers[providerName]();
+                provider = new ethers[providerName]();
             }
         } else {
             if (providerName === 'getDefaultProvider') {
-                provider = providers.getDefaultProvider(networkName);
+                provider = ethers.getDefaultProvider(networkName);
             } else if (providerName === 'Web3Provider') {
-                var infuraUrl = (new providers.InfuraProvider(networkName)).connection.url;
-                provider = new providers.Web3Provider(new web3.providers.HttpProvider(infuraUrl), networkName);
+                var infuraUrl = (new ethers.InfuraProvider(networkName)).connection.url;
+                provider = new ethers.Web3Provider(new web3.providers.HttpProvider(infuraUrl), networkName);
             } else {
-                provider = new providers[providerName](networkName);
+                provider = new ethers[providerName](networkName);
             }
         }
 
@@ -369,9 +369,9 @@ function testProvider(providerName, networkName) {
         testProvider(providerName, networkName);
     });
 });
-
+/*
 function getDefaults(network, extra) {
-    var network = providers.networks[network];
+    var network = ethers.utils.getNetwork(network);
     var result = {
         chainId: network.chainId,
         ensAddress: (network.ensAddress ? getAddress(network.ensAddress): null),
@@ -383,7 +383,7 @@ function getDefaults(network, extra) {
     }
     return result;
 }
-
+*/
 /*
 describe('Test extra Etherscan operations', function() {
     var provider = new providers.EtherscanProvider();
@@ -406,7 +406,7 @@ describe('Test extra Etherscan operations', function() {
 describe('Test Basic Authentication', function() {
     // https://stackoverflow.com/questions/6509278/authentication-test-servers#16756383
 
-    var Provider = ethers.providers.Provider;
+    //var Provider = ethers.Provider;
 
     function test(name, url) {
         it('tests ' + name, function() {

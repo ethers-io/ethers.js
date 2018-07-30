@@ -27,7 +27,9 @@ var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
 var random_bytes_1 = require("../utils/random-bytes");
 var transaction_1 = require("../utils/transaction");
-var types_1 = require("../utils/types");
+// Imported Abstracts
+var abstract_signer_1 = require("./abstract-signer");
+var abstract_provider_1 = require("../providers/abstract-provider");
 var errors = __importStar(require("../utils/errors"));
 var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);
@@ -68,7 +70,7 @@ var Wallet = /** @class */ (function (_super) {
      *  Create a new instance of this Wallet connected to provider.
      */
     Wallet.prototype.connect = function (provider) {
-        if (!(types_1.MinimalProvider.isProvider(provider))) {
+        if (!(abstract_provider_1.Provider.isProvider(provider))) {
             errors.throwError('invalid provider', errors.INVALID_ARGUMENT, { argument: 'provider', value: provider });
         }
         return new Wallet(this.signingKey, provider);
@@ -193,5 +195,5 @@ var Wallet = /** @class */ (function (_super) {
         return new Wallet(hdnode_1.fromMnemonic(mnemonic, wordlist).derivePath(path));
     };
     return Wallet;
-}(types_1.Signer));
+}(abstract_signer_1.Signer));
 exports.Wallet = Wallet;

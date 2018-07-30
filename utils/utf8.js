@@ -1,6 +1,7 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
+///////////////////////////////
 var UnicodeNormalizationForm;
 (function (UnicodeNormalizationForm) {
     UnicodeNormalizationForm["current"] = "";

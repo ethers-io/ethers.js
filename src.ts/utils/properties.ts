@@ -59,3 +59,24 @@ export function shallowCopy(object: any): any {
 export function jsonCopy(object: any): any {
     return JSON.parse(JSON.stringify(object));
 }
+
+// See: https://github.com/isaacs/inherits/blob/master/inherits_browser.js
+function inherits(ctor: any, superCtor: any): void {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+        constructor: {
+            value: ctor,
+            enumerable: false,
+            writable: true,
+            configurable: true
+        }
+    });
+}
+
+export function inheritable(parent: any): (child: any) => void {
+    return function(child: any): void {
+        inherits(child, parent);
+        defineReadOnly(child, 'inherits', inheritable(child));
+    }
+}
+

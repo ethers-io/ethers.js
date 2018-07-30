@@ -15,6 +15,11 @@ exports.JsonRpcProvider = json_rpc_provider_1.JsonRpcProvider;
 exports.JsonRpcSigner = json_rpc_provider_1.JsonRpcSigner;
 var web3_provider_1 = require("./web3-provider");
 exports.Web3Provider = web3_provider_1.Web3Provider;
+///////////////////////////////
+// Imported Abstracts
+var abstract_provider_1 = require("./abstract-provider");
+exports.AbstractProvider = abstract_provider_1.Provider;
+///////////////////////////////
 function getDefaultProvider(network) {
     return new fallback_provider_1.FallbackProvider([
         new infura_provider_1.InfuraProvider(network),

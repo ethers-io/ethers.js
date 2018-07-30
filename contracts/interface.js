@@ -25,17 +25,15 @@ var bytes_1 = require("../utils/bytes");
 var hash_1 = require("../utils/hash");
 var keccak256_1 = require("../utils/keccak256");
 var properties_1 = require("../utils/properties");
-var types_1 = require("../utils/types");
 var errors = __importStar(require("../utils/errors"));
-var Indexed = /** @class */ (function (_super) {
-    __extends(Indexed, _super);
-    function Indexed(hash) {
-        var _this = _super.call(this) || this;
-        properties_1.defineReadOnly(_this, 'hash', hash);
-        return _this;
+///////////////////////////////
+var _Indexed = /** @class */ (function () {
+    function _Indexed(hash) {
+        properties_1.setType(this, 'Indexed');
+        properties_1.defineReadOnly(this, 'hash', hash);
     }
-    return Indexed;
-}(types_1.Indexed));
+    return _Indexed;
+}());
 var Description = /** @class */ (function () {
     function Description(info) {
         for (var key in info) {
@@ -50,12 +48,12 @@ var Description = /** @class */ (function () {
     }
     return Description;
 }());
-var DeployDescription = /** @class */ (function (_super) {
-    __extends(DeployDescription, _super);
-    function DeployDescription() {
+var _DeployDescription = /** @class */ (function (_super) {
+    __extends(_DeployDescription, _super);
+    function _DeployDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    DeployDescription.prototype.encode = function (bytecode, params) {
+    _DeployDescription.prototype.encode = function (bytecode, params) {
         if (!bytes_1.isHexString(bytecode)) {
             errors.throwError('invalid contract bytecode', errors.INVALID_ARGUMENT, {
                 arg: 'bytecode',
@@ -75,14 +73,14 @@ var DeployDescription = /** @class */ (function (_super) {
         }
         return null;
     };
-    return DeployDescription;
+    return _DeployDescription;
 }(Description));
-var FunctionDescription = /** @class */ (function (_super) {
-    __extends(FunctionDescription, _super);
-    function FunctionDescription() {
+var _FunctionDescription = /** @class */ (function (_super) {
+    __extends(_FunctionDescription, _super);
+    function _FunctionDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    FunctionDescription.prototype.encode = function (params) {
+    _FunctionDescription.prototype.encode = function (params) {
         errors.checkArgumentCount(params.length, this.inputs.length, 'in interface function ' + this.name);
         try {
             return this.sighash + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2);
@@ -96,7 +94,7 @@ var FunctionDescription = /** @class */ (function (_super) {
         }
         return null;
     };
-    FunctionDescription.prototype.decode = function (data) {
+    _FunctionDescription.prototype.decode = function (data) {
         try {
             return abi_coder_1.defaultAbiCoder.decode(this.outputs, bytes_1.arrayify(data));
         }
@@ -110,7 +108,7 @@ var FunctionDescription = /** @class */ (function (_super) {
             });
         }
     };
-    return FunctionDescription;
+    return _FunctionDescription;
 }(Description));
 var Result = /** @class */ (function (_super) {
     __extends(Result, _super);
@@ -119,12 +117,12 @@ var Result = /** @class */ (function (_super) {
     }
     return Result;
 }(Description));
-var EventDescription = /** @class */ (function (_super) {
-    __extends(EventDescription, _super);
-    function EventDescription() {
+var _EventDescription = /** @class */ (function (_super) {
+    __extends(_EventDescription, _super);
+    function _EventDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    EventDescription.prototype.encodeTopics = function (params) {
+    _EventDescription.prototype.encodeTopics = function (params) {
         var _this = this;
         if (params.length > this.inputs.length) {
             errors.throwError('too many arguments for ' + this.name, errors.UNEXPECTED_ARGUMENT, { maxCount: params.length, expectedCount: this.inputs.length });
@@ -164,7 +162,7 @@ var EventDescription = /** @class */ (function (_super) {
         }
         return topics;
     };
-    EventDescription.prototype.decode = function (data, topics) {
+    _EventDescription.prototype.decode = function (data, topics) {
         // Strip the signature off of non-anonymous topics
         if (topics != null && !this.anonymous) {
             topics = topics.slice(1);
@@ -197,10 +195,10 @@ var EventDescription = /** @class */ (function (_super) {
         this.inputs.forEach(function (input, index) {
             if (input.indexed) {
                 if (topics == null) {
-                    result[index] = new Indexed(null);
+                    result[index] = new _Indexed(null);
                 }
                 else if (inputDynamic[index]) {
-                    result[index] = new Indexed(resultIndexed[indexedIndex++]);
+                    result[index] = new _Indexed(resultIndexed[indexedIndex++]);
                 }
                 else {
                     result[index] = resultIndexed[indexedIndex++];
@@ -216,26 +214,26 @@ var EventDescription = /** @class */ (function (_super) {
         result.length = this.inputs.length;
         return result;
     };
-    return EventDescription;
+    return _EventDescription;
 }(Description));
-var TransactionDescription = /** @class */ (function (_super) {
-    __extends(TransactionDescription, _super);
-    function TransactionDescription() {
+var _TransactionDescription = /** @class */ (function (_super) {
+    __extends(_TransactionDescription, _super);
+    function _TransactionDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    return TransactionDescription;
+    return _TransactionDescription;
 }(Description));
-var LogDescription = /** @class */ (function (_super) {
-    __extends(LogDescription, _super);
-    function LogDescription() {
+var _LogDescription = /** @class */ (function (_super) {
+    __extends(_LogDescription, _super);
+    function _LogDescription() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    return LogDescription;
+    return _LogDescription;
 }(Description));
 function addMethod(method) {
     switch (method.type) {
         case 'constructor': {
-            var description = new DeployDescription({
+            var description = new _DeployDescription({
                 inputs: method.inputs,
                 payable: (method.payable == null || !!method.payable)
             });
@@ -247,7 +245,7 @@ function addMethod(method) {
         case 'function': {
             var signature = abi_coder_1.formatSignature(method).replace(/tuple/g, '');
             var sighash = hash_1.id(signature).substring(0, 10);
-            var description = new FunctionDescription({
+            var description = new _FunctionDescription({
                 inputs: method.inputs,
                 outputs: method.outputs,
                 payable: (method.payable == null || !!method.payable),
@@ -267,7 +265,7 @@ function addMethod(method) {
         }
         case 'event': {
             var signature = abi_coder_1.formatSignature(method).replace(/tuple/g, '');
-            var description = new EventDescription({
+            var description = new _EventDescription({
                 name: method.name,
                 signature: signature,
                 inputs: method.inputs,
@@ -339,7 +337,7 @@ var Interface = /** @class */ (function () {
             var func = this.functions[name];
             if (func.sighash === sighash) {
                 var result = abi_coder_1.defaultAbiCoder.decode(func.inputs, '0x' + tx.data.substring(10));
-                return new TransactionDescription({
+                return new _TransactionDescription({
                     args: result,
                     decode: func.decode,
                     name: name,
@@ -364,7 +362,7 @@ var Interface = /** @class */ (function () {
                 continue;
             }
             // @TODO: If anonymous, and the only method, and the input count matches, should we parse and return it?
-            return new LogDescription({
+            return new _LogDescription({
                 decode: event.decode,
                 name: event.name,
                 signature: event.signature,
@@ -376,6 +374,9 @@ var Interface = /** @class */ (function () {
     };
     Interface.isInterface = function (value) {
         return properties_1.isType(value, 'Interface');
+    };
+    Interface.isIndexed = function (value) {
+        return properties_1.isType(value, 'Indexed');
     };
     return Interface;
 }());
