@@ -5535,7 +5535,8 @@ utils.defineProperty(Provider, 'networks', networks);
 utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
     var headers = [ ];
 
-    if (typeof(url) === 'object' && url.url != null && url.user != null && url.password != null) {
+    if (typeof(url) === 'object' && url.url != null) {
+      if (url.user != null && url.password != null) {
         if (url.url.substring(0, 6) !== 'https:' && url.forceInsecure !== true) {
             errors.throwError('basic authentication requires a secure https url', errors.INVALID_ARGUMENT, { arg: 'url', url: url.url, user: url.user, password: '[REDACTED]' });
         }
@@ -5546,8 +5547,18 @@ utils.defineProperty(Provider, 'fetchJSON', function(url, json, processFunc) {
             value: 'Basic ' + utils.base64.encode(utils.toUtf8Bytes(authorization))
         });
 
-        url = url.url;
+      } else if (url.bearer != null) {
+        if (url.url.substring(0, 6) !== 'https:' && url.forceInsecure !== true) {
+          errors.throwError('basic authentication requires a secure https url', errors.INVALID_ARGUMENT, { arg: 'url', url: url.url,bearer: '[REDACTED]'});
+        }
+        headers.push({
+          key: 'Authorization',
+          value: 'Bearer ' + url.bearer
+        });
+      }
+      url = url.url;
     }
+
 
     return new Promise(function(resolve, reject) {
         var request = new XMLHttpRequest();
