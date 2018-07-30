@@ -140,6 +140,47 @@ function Wallet(privateKey, provider) {
     });
 }
 
+//apply a raw signature in RSV form to a transaction object to allow for
+//external signing from hardware wallets
+utils.defineProperty(Wallet, 'applySignature', function(transaction, r, s, v) {
+    var chainId = transaction.chainId;
+    if (chainId == null && this.provider) { chainId = this.provider.chainId; }
+    if (!chainId) { chainId = 0; }
+
+    var raw = [];
+    transactionFields.forEach(function(fieldInfo) {
+        var value = transaction[fieldInfo.name] || ([]);
+        value = utils.arrayify(utils.hexlify(value), fieldInfo.name);
+
+        // Fixed-width field
+        if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
+            var error = new Error('invalid ' + fieldInfo.name);
+            error.reason = 'wrong length';
+            error.value = value;
+            throw error;
+        }
+
+        // Variable-width (with a maximum)
+        if (fieldInfo.maxLength) {
+            value = utils.stripZeros(value);
+            if (value.length > fieldInfo.maxLength) {
+                var error = new Error('invalid ' + fieldInfo.name);
+                error.reason = 'too long';
+                error.value = value;
+                throw error;
+            }
+        }
+
+        raw.push(utils.hexlify(value));
+    });
+
+    raw.push(utils.hexlify(v));
+    raw.push(r);
+    raw.push(s);
+
+    return utils.RLP.encode(raw);
+});
+
 utils.defineProperty(Wallet, 'parseTransaction', function(rawTransaction) {
     rawTransaction = utils.hexlify(rawTransaction, 'rawTransaction');
     var signedTransaction = utils.RLP.decode(rawTransaction);
@@ -211,6 +252,89 @@ utils.defineProperty(Wallet, 'parseTransaction', function(rawTransaction) {
 
     return transaction;
 });
+
+utils.defineProperty(Wallet, 'parseUnsignedTransaction', function(rawTransaction) {
+    rawTransaction = utils.hexlify(rawTransaction, 'rawTransaction');
+    var signedTransaction = utils.RLP.decode(rawTransaction);
+
+    var raw = [];
+
+    var transaction = {};
+    transactionFields.forEach(function(fieldInfo, index) {
+        transaction[fieldInfo.name] = signedTransaction[index];
+        raw.push(signedTransaction[index]);
+    });
+
+    if (transaction.to) {
+        if (transaction.to == '0x') {
+            delete transaction.to;
+        } else {
+            transaction.to = utils.getAddress(transaction.to);
+        }
+    }
+
+    ['gasPrice', 'gasLimit', 'nonce', 'value'].forEach(function(name) {
+        if (!transaction[name]) { return; }
+        if (transaction[name].length === 0) {
+            transaction[name] = utils.bigNumberify(0);
+        } else {
+            transaction[name] = utils.bigNumberify(transaction[name]);
+        }
+        // for clients that do not have the BigNumber library and use hex instead like Trezor,
+        // include a hex encoding of the big number fields
+        transaction[`${name}Hex`] = transaction[name].toHexString();
+    });
+
+    if (transaction.nonce) {
+        transaction.nonce = transaction.nonce.toNumber();
+    } else {
+        transaction.nonce = 0;
+    }
+
+    return transaction;
+});
+
+//encode a transaction object to hex form
+utils.defineProperty(Wallet, 'encodeUnsignedTransaction', function(transaction) {
+    var chainId = transaction.chainId;
+    if (chainId == null && this.provider) { chainId = this.provider.chainId; }
+    if (!chainId) { chainId = 0; }
+
+    var raw = [];
+    transactionFields.forEach(function(fieldInfo) {
+        var value = transaction[fieldInfo.name] || ([]);
+        value = utils.arrayify(utils.hexlify(value), fieldInfo.name);
+
+        // Fixed-width field
+        if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
+            var error = new Error('invalid ' + fieldInfo.name);
+            error.reason = 'wrong length';
+            error.value = value;
+            throw error;
+        }
+
+        // Variable-width (with a maximum)
+        if (fieldInfo.maxLength) {
+            value = utils.stripZeros(value);
+            if (value.length > fieldInfo.maxLength) {
+                var error = new Error('invalid ' + fieldInfo.name);
+                error.reason = 'too long';
+                error.value = value;
+                throw error;
+            }
+        }
+
+        raw.push(utils.hexlify(value));
+    });
+
+    if (chainId) {
+        raw.push(utils.hexlify(chainId));
+        raw.push('0x');
+        raw.push('0x');
+    }
+    return utils.RLP.encode(raw);
+});
+
 
 utils.defineProperty(Wallet.prototype, 'getAddress', function() {
     return this.address;
