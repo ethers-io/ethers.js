@@ -2,9 +2,8 @@ language: node_js
 
 node_js:
   - "6"
+  - "8"
   - "10"
-
-#  - "8"
 
 env:
   - RUN_PHANTOMJS=0
