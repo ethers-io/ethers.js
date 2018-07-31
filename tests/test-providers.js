@@ -1,7 +1,7 @@
 'use strict';
 
 var assert = require('assert');
-var web3 = require('web3');
+var Web3HttpProvider = require('web3-providers-http');
 
 var utils = require('./utils');
 var ethers = utils.getEthers(__filename);
@@ -257,7 +257,7 @@ function testProvider(providerName, networkName) {
                 provider = ethers.getDefaultProvider();
             } else if (providerName === 'Web3Provider') {
                 var infuraUrl = (new ethers.InfuraProvider()).connection.url;
-                provider = new ethers.Web3Provider(new web3.providers.HttpProvider(infuraUrl));
+                provider = new ethers.Web3Provider(new Web3HttpProvider(infuraUrl));
             } else {
                 provider = new ethers[providerName]();
             }
@@ -266,7 +266,7 @@ function testProvider(providerName, networkName) {
                 provider = ethers.getDefaultProvider(networkName);
             } else if (providerName === 'Web3Provider') {
                 var infuraUrl = (new ethers.InfuraProvider(networkName)).connection.url;
-                provider = new ethers.Web3Provider(new web3.providers.HttpProvider(infuraUrl), networkName);
+                provider = new ethers.Web3Provider(new Web3HttpProvider(infuraUrl), networkName);
             } else {
                 provider = new ethers[providerName](networkName);
             }
@@ -361,10 +361,10 @@ function testProvider(providerName, networkName) {
     ['getDefaultProvider', 'InfuraProvider', 'EtherscanProvider', 'Web3Provider'].forEach(function(providerName) {
 
         // @TODO: Remove this! Temporary because Etherscan is down
-        if (providerName === 'EtherscanProvider') {
-            console.log("******** Remove this soon! Etherscan is having issues.");
-            return;
-        }
+        //if (providerName === 'EtherscanProvider') {
+        //    console.log("******** Remove this soon! Etherscan is having issues.");
+        //    return;
+        //}
 
         testProvider(providerName, networkName);
     });

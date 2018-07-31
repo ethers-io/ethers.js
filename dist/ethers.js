@@ -11820,14 +11820,21 @@ utils.defineProperty(Web3Signer, 'onchange', {
 var Web3Provider = /** @class */ (function (_super) {
     __extends(Web3Provider, _super);
     function Web3Provider(web3Provider, network) {
-        var _this = this;
-        if (!web3Provider || !web3Provider.sendAsync) {
+        var _this = 
+        // HTTP has a host; IPC has a path.
+        _super.call(this, web3Provider.host || web3Provider.path || '', network) || this;
+        errors.checkNew(_this, Web3Provider);
+        if (web3Provider) {
+            if (web3Provider.sendAsync) {
+                _this._sendAsync = web3Provider.sendAsync.bind(web3Provider);
+            }
+            else if (web3Provider.send) {
+                _this._sendAsync = web3Provider.send.bind(web3Provider);
+            }
+        }
+        if (!web3Provider || !_this._sendAsync) {
             errors.throwError('invalid web3Provider', errors.INVALID_ARGUMENT, { arg: 'web3Provider', value: web3Provider });
         }
-        // HTTP has a host; IPC has a path.
-        var url = web3Provider.host || web3Provider.path || '';
-        _this = _super.call(this, url, network) || this;
-        errors.checkNew(_this, Web3Provider);
         properties_1.defineReadOnly(_this, '_web3Provider', web3Provider);
         return _this;
     }
@@ -11846,7 +11853,7 @@ var Web3Provider = /** @class */ (function (_super) {
                 id: 42,
                 jsonrpc: "2.0"
             };
-            _this._web3Provider.sendAsync(request, function (error, result) {
+            _this._sendAsync(request, function (error, result) {
                 if (error) {
                     reject(error);
                     return;

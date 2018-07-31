@@ -37,12 +37,12 @@
     "eslint-plugin-promise": "^3.8.0",
     "ethereumjs-tx": "^1.3.5",
     "ethereumjs-util": "^5.2.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.0",
     "gulp-cli": "^2.0.1",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-typescript": "^5.0.0-alpha.1",
     "gulp-uglify": "^3.0.0",
-    "mocha": "^3.2.0",
+    "mocha": "^5.2.0",
     "mocha-phantomjs-core": "2.1.2",
     "solc": "0.4.20",
     "tsify": "^4.0.0",
@@ -50,7 +50,7 @@
     "typescript": "^2.9.1",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0",
-    "web3": "0.20.6"
+    "web3-providers-http": "1.0.0-beta.35"
   },
   "browser": "./dist/ethers.js",
   "keywords": [
