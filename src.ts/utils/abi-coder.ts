@@ -3,7 +3,7 @@
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
 import { getAddress } from  './address';
-import { bigNumberify, ConstantNegativeOne, ConstantZero, ConstantOne, ConstantMaxUint256 } from './bignumber';
+import { BigNumber, bigNumberify, ConstantNegativeOne, ConstantZero, ConstantOne, ConstantMaxUint256 } from './bignumber';
 import { arrayify, concat, hexlify, padZeros } from './bytes';
 import { toUtf8Bytes, toUtf8String } from './utf8';
 import { defineReadOnly, jsonCopy } from './properties';
@@ -50,6 +50,8 @@ export type FunctionFragment = {
 
     payable: boolean,
     stateMutability: string,
+
+    gas: BigNumber
 };
 
 ///////////////////////////////
@@ -272,6 +274,7 @@ function parseSignatureEvent(fragment: string): EventFragment {
 function parseSignatureFunction(fragment: string): FunctionFragment {
     var abi: FunctionFragment = {
         constant: false,
+        gas: null,
         inputs: [],
         name: '',
         outputs: [],
@@ -280,7 +283,19 @@ function parseSignatureFunction(fragment: string): FunctionFragment {
         type: 'function'
     };
 
-    var comps = fragment.split(' returns ');
+    let comps = fragment.split('@');
+    if (comps.length !== 1) {
+        if (comps.length > 2) {
+            throw new Error('invalid signature');
+        }
+        if (!comps[1].match(/^[0-9]+$/)) {
+            throw new Error('invalid signature gas');
+        }
+        abi.gas = bigNumberify(comps[1]);
+        fragment = comps[0];
+    }
+
+    comps = fragment.split(' returns ');
     var left = comps[0].match(regexParen);
     if (!left) { throw new Error('invalid signature'); }
 

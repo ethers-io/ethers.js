@@ -206,6 +206,10 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                     return contract.provider.estimateGas(tx);
                 }
 
+                if (tx.gasLimit == null && method.gas != null) {
+                    tx.gasLimit = method.gas;
+                }
+
                 if (!contract.signer) {
                     errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' })
                 }

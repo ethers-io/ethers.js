@@ -39,6 +39,7 @@ export interface FunctionDescription {
     readonly inputs: Array<ParamType>;
     readonly outputs: Array<ParamType>;
     readonly payable: boolean;
+    readonly gas: BigNumber;
     encode(params: Array<any>): string;
     decode(data: string): any;
 }
@@ -85,9 +86,13 @@ class Description {
         for (var key in info) {
             let value = info[key];
             if (value != null && typeof(value) === 'object') {
-                defineFrozen(this, key, info[key]);
+                if (BigNumber.isBigNumber(value)) {
+                    defineReadOnly(this, key, value);
+                } else {
+                    defineFrozen(this, key, value);
+                }
             } else {
-                defineReadOnly(this, key, info[key]);
+                defineReadOnly(this, key, value);
             }
         }
     }
@@ -130,6 +135,8 @@ class _FunctionDescription extends Description implements FunctionDescription {
     readonly inputs: Array<ParamType>;
     readonly outputs: Array<ParamType>;
     readonly payable: boolean;
+
+    readonly gas: BigNumber;
 
     encode(params: Array<any>): string {
         errors.checkArgumentCount(params.length, this.inputs.length, 'in interface function ' + this.name);
@@ -312,6 +319,8 @@ function addMethod(method: any): void {
             let description = new _FunctionDescription({
                 inputs: method.inputs,
                 outputs: method.outputs,
+
+                gas: method.gas,
 
                 payable: (method.payable == null || !!method.payable),
                 type: ((method.constant) ? 'call': 'transaction'),
