@@ -106,6 +106,10 @@ export class JsonRpcSigner extends Signer {
             });
         }
 
+        if (transaction.gasLimit == null) {
+            tx.gasLimit = this.provider.estimateGas(transaction);
+        }
+
         return resolveProperties(tx).then((tx) => {
             tx = JsonRpcProvider.hexlifyTransaction(tx);
             return this.provider.send('eth_sendTransaction', [ tx ]).then((hash) => {
