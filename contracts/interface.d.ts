@@ -17,6 +17,7 @@ export interface FunctionDescription {
     readonly inputs: Array<ParamType>;
     readonly outputs: Array<ParamType>;
     readonly payable: boolean;
+    readonly gas: BigNumber;
     encode(params: Array<any>): string;
     decode(data: string): any;
 }
@@ -60,6 +61,7 @@ declare class _FunctionDescription extends Description implements FunctionDescri
     readonly inputs: Array<ParamType>;
     readonly outputs: Array<ParamType>;
     readonly payable: boolean;
+    readonly gas: BigNumber;
     encode(params: Array<any>): string;
     decode(data: string): any;
 }

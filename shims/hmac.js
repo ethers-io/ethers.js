@@ -10,9 +10,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hash = __importStar(require("hash.js"));
 var bytes_1 = require("../utils/bytes");
 var errors = __importStar(require("../utils/errors"));
-var supportedAlgorithms = { sha256: true, sha512: true };
+///////////////////////////////
+var SupportedAlgorithms;
+(function (SupportedAlgorithms) {
+    SupportedAlgorithms["sha256"] = "sha256";
+    SupportedAlgorithms["sha512"] = "sha512";
+})(SupportedAlgorithms = exports.SupportedAlgorithms || (exports.SupportedAlgorithms = {}));
+;
 function computeHmac(algorithm, key, data) {
-    if (!supportedAlgorithms[algorithm]) {
+    if (!SupportedAlgorithms[algorithm]) {
         errors.throwError('unsupported algorithm ' + algorithm, errors.UNSUPPORTED_OPERATION, { operation: 'hmac', algorithm: algorithm });
     }
     return bytes_1.arrayify(hash.hmac(hash[algorithm], bytes_1.arrayify(key)).update(bytes_1.arrayify(data)).digest());

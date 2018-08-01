@@ -1,6 +1,6 @@
 {
   "name": "ethers",
-  "version": "4.0.0-beta.6",
+  "version": "4.0.0-beta.7",
   "description": "Ethereum wallet library.",
   "main": "./index.js",
   "types": "./index.d.ts",
@@ -8,13 +8,14 @@
     "build": "npm run dist-version && tsc -p ./tsconfig.json",
     "auto-build": "npm run build -- -w",
     "dist": "npm run dist-version && npm run build && gulp default minified && npm run dist-types",
+    "dist-test": "gulp default-test minified-test",
     "dist-bip39": "gulp bip39-it bip39-ja bip39-ko bip39-zh",
     "dist-types": "dts-bundle --name ethers --main ./index.d.ts --out ./dist/ethers.types.txt",
     "dist-version": "node -e \"let v = require('./package.json').version; require('fs').writeFileSync('./src.ts/_version.ts', 'export const version = \\\"' + v +'\\\";\\n')\"",
     "eslint": "eslint index.js contracts/*.js providers/*.js utils/*.js wallet/*.js wordlists/*.js",
     "test": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
-    "test-node": "npm run dist && mocha tests/test-*.js",
-    "test-phantomjs": "npm run dist && gulp tests && phantomjs --web-security=false ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",
+    "test-node": "npm run dist-test && mocha tests/test-*.js",
+    "test-phantomjs": "npm run dist-test && gulp tests && phantomjs --web-security=false ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./tests/test.html",
     "version": "npm dist"
   },
   "dependencies": {

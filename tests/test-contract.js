@@ -5,7 +5,7 @@ var assert = require('assert');
 var utils = require('./utils');
 var ethers = utils.getEthers(__filename);
 
-var provider = new ethers.InfuraProvider('rinkeby');
+var provider = new ethers.providers.InfuraProvider('rinkeby');
 
 var contract = (function() {
     var data = require('./test-contract.json');

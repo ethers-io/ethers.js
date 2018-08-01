@@ -104,9 +104,11 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                 return address.toLowerCase();
             });
         }
+        if (transaction.gasLimit == null) {
+            tx.gasLimit = this.provider.estimateGas(transaction);
+        }
         return properties_1.resolveProperties(tx).then(function (tx) {
-            tx = JsonRpcProvider.hexlifyTransaction(tx);
-            return _this.provider.send('eth_sendTransaction', [tx]).then(function (hash) {
+            return _this.provider.send('eth_sendTransaction', [JsonRpcProvider.hexlifyTransaction(tx)]).then(function (hash) {
                 return web_1.poll(function () {
                     return _this.provider.getTransaction(hash).then(function (tx) {
                         if (tx === null) {
@@ -118,6 +120,24 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                     error.transactionHash = hash;
                     throw error;
                 });
+            }, function (error) {
+                // See: JsonRpcProvider.sendTransaction (@TODO: Expose a ._throwError??)
+                if (error.responseText.indexOf('insufficient funds') >= 0) {
+                    errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, {
+                        transaction: tx
+                    });
+                }
+                if (error.responseText.indexOf('nonce too low') >= 0) {
+                    errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, {
+                        transaction: tx
+                    });
+                }
+                if (error.responseText.indexOf('replacement transaction underpriced') >= 0) {
+                    errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, {
+                        transaction: tx
+                    });
+                }
+                throw error;
             });
         });
     };
@@ -213,7 +233,21 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             case 'getStorageAt':
                 return this.send('eth_getStorageAt', [getLowerCase(params.address), params.position, params.blockTag]);
             case 'sendTransaction':
-                return this.send('eth_sendRawTransaction', [params.signedTransaction]);
+                return this.send('eth_sendRawTransaction', [params.signedTransaction]).catch(function (error) {
+                    // "insufficient funds for gas * price + value"
+                    if (error.responseText.indexOf('insufficient funds') > 0) {
+                        errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, {});
+                    }
+                    // "nonce too low"
+                    if (error.responseText.indexOf('nonce too low') > 0) {
+                        errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, {});
+                    }
+                    // "replacement transaction underpriced"
+                    if (error.responseText.indexOf('replacement transaction underpriced') > 0) {
+                        errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, {});
+                    }
+                    throw error;
+                });
             case 'getBlock':
                 if (params.blockTag) {
                     return this.send('eth_getBlockByNumber', [params.blockTag, false]);

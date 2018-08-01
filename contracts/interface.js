@@ -39,10 +39,15 @@ var Description = /** @class */ (function () {
         for (var key in info) {
             var value = info[key];
             if (value != null && typeof (value) === 'object') {
-                properties_1.defineFrozen(this, key, info[key]);
+                if (bignumber_1.BigNumber.isBigNumber(value)) {
+                    properties_1.defineReadOnly(this, key, value);
+                }
+                else {
+                    properties_1.defineFrozen(this, key, value);
+                }
             }
             else {
-                properties_1.defineReadOnly(this, key, info[key]);
+                properties_1.defineReadOnly(this, key, value);
             }
         }
     }
@@ -248,6 +253,7 @@ function addMethod(method) {
             var description = new _FunctionDescription({
                 inputs: method.inputs,
                 outputs: method.outputs,
+                gas: method.gas,
                 payable: (method.payable == null || !!method.payable),
                 type: ((method.constant) ? 'call' : 'transaction'),
                 signature: signature,

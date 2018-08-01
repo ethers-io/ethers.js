@@ -146,17 +146,23 @@ function taskBundle(name, options) {
             .pipe(sourcemaps.write('./'))
         }
 
-        result = result.pipe(gulp.dest("dist"));
+        result = result.pipe(gulp.dest(options.dest));
 
         return result;
     });
 }
 
 // Creates dist/ethers.js
-taskBundle("default", { filename: "ethers.js", minify: false });
+taskBundle("default", { filename: "ethers.js", dest: 'dist', minify: false });
+
+// Creates dist/ethers.js
+taskBundle("default-test", { filename: "ethers.js", dest: 'tests/dist', minify: false });
 
 // Creates dist/ethers.min.js
-taskBundle("minified", { filename: "ethers.min.js", minify: true });
+taskBundle("minified", { filename: "ethers.min.js", dest: 'dist', minify: true });
+
+// Creates dist/ethers.min.js
+taskBundle("minified-test", { filename: "ethers.min.js", dest: 'tests/dist', minify: true });
 
 /*
 // Dump the TypeScript definitions to dist/types/

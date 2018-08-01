@@ -16,9 +16,6 @@ exports.MISSING_NEW = 'MISSING_NEW';
 //  - errorArgs?: The EIP848 error parameters
 //  - reason: The reason (only for EIP848 "Error(string)")
 exports.CALL_EXCEPTION = 'CALL_EXCEPTION';
-// Response from a server was invalid
-//   - response: The body of the response
-//'BAD_RESPONSE',
 // Invalid argument (e.g. value is incompatible with type) to a function:
 //   - arg: The argument name that was invalid
 //   - value: The value of the argument
@@ -35,6 +32,15 @@ exports.UNEXPECTED_ARGUMENT = 'UNEXPECTED_ARGUMENT';
 //   - operation: the operation being executed
 //   - fault: the reason this faulted
 exports.NUMERIC_FAULT = 'NUMERIC_FAULT';
+// Insufficien funds (< value + gasLimit * gasPrice)
+//   - transaction: the transaction attempted
+exports.INSUFFICIENT_FUNDS = 'INSUFFICIENT_FUNDS';
+// Nonce has already been used
+//   - transaction: the transaction attempted
+exports.NONCE_EXPIRED = 'NONCE_EXPIRED';
+// The replacement fee for the transaction is too low
+//   - transaction: the transaction attempted
+exports.REPLACEMENT_UNDERPRICED = 'REPLACEMENT_UNDERPRICED';
 // Unsupported operation
 //   - operation
 exports.UNSUPPORTED_OPERATION = 'UNSUPPORTED_OPERATION';

@@ -204,6 +204,7 @@ function parseSignatureEvent(fragment) {
 function parseSignatureFunction(fragment) {
     var abi = {
         constant: false,
+        gas: null,
         inputs: [],
         name: '',
         outputs: [],
@@ -211,7 +212,18 @@ function parseSignatureFunction(fragment) {
         stateMutability: null,
         type: 'function'
     };
-    var comps = fragment.split(' returns ');
+    var comps = fragment.split('@');
+    if (comps.length !== 1) {
+        if (comps.length > 2) {
+            throw new Error('invalid signature');
+        }
+        if (!comps[1].match(/^[0-9]+$/)) {
+            throw new Error('invalid signature gas');
+        }
+        abi.gas = bignumber_1.bigNumberify(comps[1]);
+        fragment = comps[0];
+    }
+    comps = fragment.split(' returns ');
     var left = comps[0].match(regexParen);
     if (!left) {
         throw new Error('invalid signature');

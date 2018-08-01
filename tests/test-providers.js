@@ -256,19 +256,19 @@ function testProvider(providerName, networkName) {
             if (providerName === 'getDefaultProvider') {
                 provider = ethers.getDefaultProvider();
             } else if (providerName === 'Web3Provider') {
-                var infuraUrl = (new ethers.InfuraProvider()).connection.url;
-                provider = new ethers.Web3Provider(new Web3HttpProvider(infuraUrl));
+                var infuraUrl = (new ethers.providers.InfuraProvider()).connection.url;
+                provider = new ethers.providers.Web3Provider(new Web3HttpProvider(infuraUrl));
             } else {
-                provider = new ethers[providerName]();
+                provider = new ethers.providers[providerName]();
             }
         } else {
             if (providerName === 'getDefaultProvider') {
                 provider = ethers.getDefaultProvider(networkName);
             } else if (providerName === 'Web3Provider') {
-                var infuraUrl = (new ethers.InfuraProvider(networkName)).connection.url;
-                provider = new ethers.Web3Provider(new Web3HttpProvider(infuraUrl), networkName);
+                var infuraUrl = (new ethers.providers.InfuraProvider(networkName)).connection.url;
+                provider = new ethers.providers.Web3Provider(new Web3HttpProvider(infuraUrl), networkName);
             } else {
-                provider = new ethers[providerName](networkName);
+                provider = new ethers.providers[providerName](networkName);
             }
         }
 

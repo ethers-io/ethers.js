@@ -1,3 +1,4 @@
+import { BigNumber } from './bignumber';
 import { Arrayish } from './bytes';
 export declare type CoerceFunc = (type: string, value: any) => any;
 export declare type ParamType = {
@@ -20,6 +21,7 @@ export declare type FunctionFragment = {
     outputs: Array<ParamType>;
     payable: boolean;
     stateMutability: string;
+    gas: BigNumber;
 };
 export declare const defaultCoerceFunc: CoerceFunc;
 export declare function parseParamType(type: string): ParamType;

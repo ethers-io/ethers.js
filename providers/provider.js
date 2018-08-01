@@ -667,9 +667,9 @@ var Provider = /** @class */ (function (_super) {
                 return _this.perform('sendTransaction', params).then(function (hash) {
                     return _this._wrapTransaction(transaction_1.parse(signedTransaction), hash);
                 }, function (error) {
-                    var tx = transaction_1.parse(signedTransaction);
-                    if (tx.hash) {
-                        error.transactionHash = tx.hash;
+                    error.transaction = transaction_1.parse(signedTransaction);
+                    if (error.transaction.hash) {
+                        error.transactionHash = error.transaction.hash;
                     }
                     throw error;
                 });
