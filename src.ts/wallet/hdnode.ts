@@ -15,7 +15,7 @@ import { arrayify, hexlify } from '../utils/bytes';
 import { bigNumberify } from '../utils/bignumber';
 import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
 import { pbkdf2 } from '../utils/pbkdf2';
-import { computeHmac } from '../utils/hmac';
+import { computeHmac, SupportedAlgorithms } from '../utils/hmac';
 import { defineReadOnly, isType, setType } from '../utils/properties';
 import { KeyPair } from '../utils/secp256k1';
 import { sha256 } from '../utils/sha2';
@@ -121,7 +121,7 @@ export class HDNode {
         // Data += ser_32(i)
         for (var i = 24; i >= 0; i -= 8) { data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff); }
 
-        var I = computeHmac('sha512', this.chainCode, data);
+        var I = computeHmac(SupportedAlgorithms.sha512, this.chainCode, data);
         var IL = bigNumberify(I.slice(0, 32));
         var IR = I.slice(32);
 
@@ -169,7 +169,7 @@ function _fromSeed(seed: Arrayish, mnemonic: string): HDNode {
     let seedArray: Uint8Array = arrayify(seed);
     if (seedArray.length < 16 || seedArray.length > 64) { throw new Error('invalid seed'); }
 
-    var I: Uint8Array = arrayify(computeHmac('sha512', MasterSecret, seedArray));
+    var I: Uint8Array = arrayify(computeHmac(SupportedAlgorithms.sha512, MasterSecret, seedArray));
 
     return new HDNode(_constructorGuard, I.slice(0, 32), I.slice(32), 0, 0, mnemonic, 'm');
 }
