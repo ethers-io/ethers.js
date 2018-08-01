@@ -836,9 +836,9 @@ export class Provider extends AbstractProvider {
                 return this.perform('sendTransaction', params).then((hash) => {
                     return this._wrapTransaction(parseTransaction(signedTransaction), hash);
                 }, function (error) {
-                    let tx = parseTransaction(signedTransaction);
-                    if (tx.hash) {
-                        (<any>error).transactionHash = tx.hash;
+                    error.transaction = parseTransaction(signedTransaction);
+                    if (error.transaction.hash) {
+                        (<any>error).transactionHash = error.transaction.hash;
                     }
                     throw error;
                 });

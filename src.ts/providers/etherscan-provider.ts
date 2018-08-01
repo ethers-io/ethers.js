@@ -151,8 +151,21 @@ export class EtherscanProvider extends Provider{
             case 'sendTransaction':
                 url += '/api?module=proxy&action=eth_sendRawTransaction&hex=' + params.signedTransaction;
                 url += apiKey;
-                return fetchJson(url, null, getJsonResult);
-
+                return fetchJson(url, null, getJsonResult).catch((error) => {
+                    // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
+                    if (error.responseText.toLowerCase().indexOf('insufficient funds') >= 0) {
+                        errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, { });
+                    }
+                    // "Transaction with the same hash was already imported."
+                    if (error.responseText.indexOf('same hash was already imported') >= 0) {
+                        errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, { });
+                    }
+                    // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
+                    if (error.responseText.indexOf('another transaction with same nonce') >= 0) {
+                        errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, { });
+                    }
+                    throw error;
+                });
 
             case 'getBlock':
                 if (params.blockTag) {

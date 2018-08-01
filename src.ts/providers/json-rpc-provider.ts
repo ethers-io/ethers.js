@@ -111,8 +111,7 @@ export class JsonRpcSigner extends Signer {
         }
 
         return resolveProperties(tx).then((tx) => {
-            tx = JsonRpcProvider.hexlifyTransaction(tx);
-            return this.provider.send('eth_sendTransaction', [ tx ]).then((hash) => {
+            return this.provider.send('eth_sendTransaction', [ JsonRpcProvider.hexlifyTransaction(tx) ]).then((hash) => {
                 return poll(() => {
                     return this.provider.getTransaction(hash).then((tx: TransactionResponse) => {
                         if (tx === null) { return undefined; }
@@ -122,6 +121,24 @@ export class JsonRpcSigner extends Signer {
                     (<any>error).transactionHash = hash;
                     throw error;
                 });
+            }, (error) => {
+                // See: JsonRpcProvider.sendTransaction (@TODO: Expose a ._throwError??)
+                if (error.responseText.indexOf('insufficient funds') >= 0) {
+                    errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, {
+                        transaction: tx
+                    });
+                }
+                if (error.responseText.indexOf('nonce too low') >= 0) {
+                    errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, {
+                        transaction: tx
+                    });
+                }
+                if (error.responseText.indexOf('replacement transaction underpriced') >= 0) {
+                    errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, {
+                        transaction: tx
+                    });
+                }
+                throw error;
             });
         });
     }
@@ -235,7 +252,21 @@ export class JsonRpcProvider extends Provider {
                 return this.send('eth_getStorageAt', [ getLowerCase(params.address), params.position, params.blockTag ]);
 
             case 'sendTransaction':
-                return this.send('eth_sendRawTransaction', [ params.signedTransaction ]);
+                return this.send('eth_sendRawTransaction', [ params.signedTransaction ]).catch((error) => {
+                    // "insufficient funds for gas * price + value"
+                    if (error.responseText.indexOf('insufficient funds') > 0) {
+                        errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, { });
+                    }
+                    // "nonce too low"
+                    if (error.responseText.indexOf('nonce too low') > 0) {
+                        errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, { });
+                    }
+                    // "replacement transaction underpriced"
+                    if (error.responseText.indexOf('replacement transaction underpriced') > 0) {
+                        errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, { });
+                    }
+                    throw error;
+                });
 
             case 'getBlock':
                 if (params.blockTag) {

@@ -20,10 +20,6 @@ export const MISSING_NEW = 'MISSING_NEW';
 //  - reason: The reason (only for EIP848 "Error(string)")
 export const CALL_EXCEPTION = 'CALL_EXCEPTION';
 
-// Response from a server was invalid
-//   - response: The body of the response
-//'BAD_RESPONSE',
-
 // Invalid argument (e.g. value is incompatible with type) to a function:
 //   - arg: The argument name that was invalid
 //   - value: The value of the argument
@@ -44,6 +40,17 @@ export const UNEXPECTED_ARGUMENT = 'UNEXPECTED_ARGUMENT';
 //   - fault: the reason this faulted
 export const NUMERIC_FAULT = 'NUMERIC_FAULT';
 
+// Insufficien funds (< value + gasLimit * gasPrice)
+//   - transaction: the transaction attempted
+export const INSUFFICIENT_FUNDS = 'INSUFFICIENT_FUNDS';
+
+// Nonce has already been used
+//   - transaction: the transaction attempted
+export const NONCE_EXPIRED = 'NONCE_EXPIRED';
+
+// The replacement fee for the transaction is too low
+//   - transaction: the transaction attempted
+export const REPLACEMENT_UNDERPRICED = 'REPLACEMENT_UNDERPRICED';
 
 // Unsupported operation
 //   - operation
