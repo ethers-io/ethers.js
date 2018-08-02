@@ -41,16 +41,18 @@
             if (!window.nextTick) {
                 window.nextTick = function (callback) { setTimeout(callback, 0); }
             }
+        </script>
 
+        <!-- Inject the mocha describe and it functions -->
+        <script type="text/javascript">
             // https://github.com/nathanboktae/mocha-phantomjs-core#usage
             if (typeof(initMochaPhantomJS) === 'function') {
                 initMochaPhantomJS();
             }
 
+            // Inject the mocha describe and it functions
+            mocha.setup({ ui: 'bdd' });
         </script>
-
-        <!-- Inject the mocha describe and it functions -->
-        <script type="text/javascript">mocha.setup('bdd')</script>
 
         <!-- Load the browser dist ethers package -->
         <script type="text/javascript" src="../dist/ethers.min.js"></script>
@@ -64,8 +66,10 @@
 
         <!-- Run the test cases! -->
         <script type="text/javascript">
+            mocha.reporter(tests.reporter);
+
             // Use this to focus on specific test cases
-            //mocha.grep(new RegExp('wordlists')).run();
+            //mocha.grep(new RegExp('easyseed')).run();
             mocha.run();
         </script>
     </body>
