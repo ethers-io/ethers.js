@@ -4,7 +4,7 @@ import { Indexed, Interface } from './interface';
 
 import { defaultAbiCoder, formatSignature, parseSignature } from '../utils/abi-coder';
 import { getAddress, getContractAddress } from '../utils/address';
-import { BigNumber, ConstantZero } from '../utils/bignumber';
+import { BigNumber, bigNumberify, ConstantZero } from '../utils/bignumber';
 import { hexDataLength, hexDataSlice, isHexString } from '../utils/bytes';
 import { defineReadOnly, jsonCopy, shallowCopy } from '../utils/properties';
 import { poll } from '../utils/web';
@@ -207,7 +207,7 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                 }
 
                 if (tx.gasLimit == null && method.gas != null) {
-                    tx.gasLimit = method.gas;
+                    tx.gasLimit = bigNumberify(method.gas).add(21000);
                 }
 
                 if (!contract.signer) {
