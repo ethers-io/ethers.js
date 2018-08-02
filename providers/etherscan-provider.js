@@ -251,21 +251,22 @@ utils.defineProperty(EtherscanProvider.prototype, 'perform', function(method, pa
     return Promise.reject(new Error('not implemented - ' + method));
 });
 
-utils.defineProperty(EtherscanProvider.prototype, 'getHistory', function(addressOrName, startBlock, endBlock) {
+utils.defineProperty(EtherscanProvider.prototype, 'getHistory', function(addressOrName, startBlock, endBlock, pagination) {
 
     var url = this.baseUrl;
 
     var apiKey = '';
     if (this.apiKey) { apiKey += '&apikey=' + this.apiKey; }
 
-    if (startBlock == null) { startBlock = 0; }
-    if (endBlock == null) { endBlock = 99999999; }
+    if (pagination != null || startBlock == null) { startBlock = 0; }
+    if (pagination != null || endBlock == null) { endBlock = 99999999; }
 
     return this.resolveName(addressOrName).then(function(address) {
         url += '/api?module=account&action=txlist&address=' + address;
         url += '&startblock=' + startBlock;
         url += '&endblock=' + endBlock;
-        url += '&sort=asc';
+        url += pagination == null ? '&sort=asc' : '&sort=desc';
+        if (pagination != null) { url += '&page=' + pagination.page + '&offset=' + pagination.offset }
 
         return Provider.fetchJSON(url, null, getResult).then(function(result) {
             var output = [];
@@ -278,6 +279,7 @@ utils.defineProperty(EtherscanProvider.prototype, 'getHistory', function(address
                 }
                 var item = Provider._formatters.checkTransactionResponse(tx);
                 if (tx.timeStamp) { item.timestamp = parseInt(tx.timeStamp); }
+                if (tx.gasUsed) { item.gasUsed = tx.gasUsed }
                 output.push(item);
             });
             return output;
@@ -285,4 +287,4 @@ utils.defineProperty(EtherscanProvider.prototype, 'getHistory', function(address
     });
 });
 
-module.exports = EtherscanProvider;;
+module.exports = EtherscanProvider;
