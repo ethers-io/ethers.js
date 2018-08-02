@@ -15,7 +15,9 @@ var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
 var buffer = require('vinyl-buffer');
 
-function createTransform(transforms) {
+function createTransform(transforms, show) {
+    if (!show) { show = { }; }
+
     function padding(length) {
         let pad = '';
         while (pad.length < length) { pad += ' '; }
@@ -44,12 +46,19 @@ function createTransform(transforms) {
             }
             var size = fs.readFileSync(path).length;
             if (transformed != null) {
-                console.log('Transformed:', shortPath, padding(70 - shortPath.length), size, padding(6 - String(size).length), '=>', transformed.length);
+                if (show.transformed) {
+                    console.log('Transformed:', shortPath, padding(70 - shortPath.length), size, padding(6 - String(size).length), '=>', transformed.length);
+                }
                 data = transformed;
             } else if (shortPath === '/src.ts/wordlists/wordlist.ts') {
                 data += '\n\nexportWordlist = true;'
+                if (show.transformed) {
+                    console.log('Transformed:', shortPath, padding(70 - shortPath.length), size, padding(6 - String(size).length), '=>', data.length);
+                }
             } else {
-                console.log('Preserved:  ', shortPath, padding(70 - shortPath.length), size);
+                if (show.preserved) {
+                    console.log('Preserved:  ', shortPath, padding(70 - shortPath.length), size);
+                }
             }
             this.queue(data);
             this.queue(null);
@@ -64,6 +73,7 @@ function createTransform(transforms) {
  *  Target: dist/ethers{.min,}.js
  */
 function taskBundle(name, options) {
+    var show = options.show || { };
 
     // The elliptic package.json is only used for its version
     var ellipticPackage = require('elliptic/package.json');
@@ -134,7 +144,7 @@ function taskBundle(name, options) {
             cache: { },
             packageCache: {},
             standalone: "ethers",
-            transform: [ [ createTransform(transforms), { global: true } ] ],
+            transform: [ [ createTransform(transforms, show), { global: true } ] ],
         })
         .bundle()
         .pipe(source(options.filename))
@@ -153,10 +163,10 @@ function taskBundle(name, options) {
 }
 
 // Creates dist/ethers.js
-taskBundle("default", { filename: "ethers.js", dest: 'dist', minify: false });
+taskBundle("default", { filename: "ethers.js", dest: 'dist', show: { transformed: true, preserved: true }, minify: false });
 
 // Creates dist/ethers.js
-taskBundle("default-test", { filename: "ethers.js", dest: 'tests/dist', minify: false });
+taskBundle("default-test", { filename: "ethers.js", dest: 'tests/dist', show: { transformed: true }, minify: false });
 
 // Creates dist/ethers.min.js
 taskBundle("minified", { filename: "ethers.min.js", dest: 'dist', minify: true });

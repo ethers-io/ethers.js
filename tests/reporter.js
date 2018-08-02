@@ -15,19 +15,28 @@ function Reporter(runner) {
     var self = this;
     var suites = [];
 
+    var lastOutput = getTime();
+
     function getIndent() {
         var result = '';
         for (var i = 0; i < suites.length; i++) { result += '  '; }
         return result;
     }
 
+    function log(message) {
+        if (!message) { message = ''; }
+        var indent = getIndent();
+        console.log(indent + message);
+        lastOutput = getTime();
+    }
+
     runner.on('suite', function(suite) {
         if (!suite.title) {
-            console.log(getIndent() + 'Testing: Found ' + suite.suites.length + ' test suites');
+            log('Testing: Found ' + suite.suites.length + ' test suites');
         } else {
             var filename = (suite.file || '').split('/').pop();
             if (filename) { filename = ' (' + filename + ')'; }
-            console.log(getIndent() + 'Test Suite: ' + suite.title + filename);
+            log('Test Suite: ' + suite.title + filename);
         }
         suites.push(suite);
         suite._t0 = getTime();
@@ -38,8 +47,8 @@ function Reporter(runner) {
 
     runner.on('suite end', function() {
         var suite = suites.pop();
-        console.log(getIndent() + '  Total Tests: ' + suite._countPass + '/' + suite._countTotal + ' passed ' + getDelta(suite._t0));
-        console.log('');
+        log('  Total Tests: ' + suite._countPass + '/' + suite._countTotal + ' passed ' + getDelta(suite._t0));
+        log();
         if (suites.length > 0) {
             var currentSuite = suites[suites.length - 1];
             currentSuite._countFail += suite._countFail;
@@ -50,6 +59,10 @@ function Reporter(runner) {
 
     runner.on('test', function(test) {
         var currentSuite = suites[suites.length - 1];
+        if (((getTime() - lastOutput) / 1000) > 60) {
+            log('[ Still running suite - test #' + currentSuite._countTotal + ' ]');
+            lastOutput = getTime();
+        }
         currentSuite._countTotal++;
     });
 
@@ -62,42 +75,35 @@ function Reporter(runner) {
 
         if (countFail > 100) {
             if (countFail === 101) {
-                console.log(indent + '[ Over 100 errors; skipping remaining suite output ]');
+                log('[ Over 100 errors; skipping remaining suite output ]');
             }
             return;
         }
 
         if (countFail > 25) {
-            console.log(indent + 'Failure: ' + test.title + ' (too many errors; skipping dump)');
+            log('Failure: ' + test.title + ' (too many errors; skipping dump)');
             return;
         }
 
-        console.log(indent + 'Failure: ' + test.title);
+        log('Failure: ' + test.title);
         error.toString().split('\n').forEach(function(line) {
-            console.log(indent + '  ' + line);
+            log('  ' + line);
         });
         Object.keys(error).forEach(function(key) {
-            console.log(indent + '  ' + key + ': ' + error[key]);
+            log('  ' + key + ': ' + error[key]);
         });
-        error.stack.split('\n').forEach(function(line) {
-            console.log(indent + '  ' + line);
-        });
+        if (error.stack) {
+            log("Stack Trace:");
+            error.stack.split('\n').forEach(function(line) {
+                log('  ' + line);
+            });
+        }
     });
 
     runner.on('pass', function(test) {
         var currentSuite = suites[suites.length - 1];
         currentSuite._countPass++;
     });
-
-/*
-    runner.once('end', function() {
-        var ds = ((new Date()).getTime() - t0) / 1000;
-        var minutes = ds / 60;
-        var seconds = String(ds % 60);
-        while (seconds.length < 2) { seconds = '0' + seconds; }
-        console.log('Completed in ' + minutes + ':' + seconds);
-    });
-*/
 }
 
 module.exports = Reporter;
