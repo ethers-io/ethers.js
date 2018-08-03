@@ -1,7 +1,7 @@
-import { Provider } from './provider';
-export declare class FallbackProvider extends Provider {
+import { BaseProvider } from './base-provider';
+export declare class FallbackProvider extends BaseProvider {
     private _providers;
-    constructor(providers: Array<Provider>);
-    readonly providers: Array<Provider>;
+    constructor(providers: Array<BaseProvider>);
+    readonly providers: Array<BaseProvider>;
     perform(method: string, params: any): any;
 }

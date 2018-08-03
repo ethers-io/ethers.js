@@ -17,16 +17,4 @@ import { parse as parseTransaction, serialize as serializeTransaction } from './
 import { toUtf8Bytes, toUtf8String } from './utf8';
 import { formatEther, parseEther, formatUnits, parseUnits } from './units';
 import { fetchJson } from './web';
-import * as errors from './errors';
-declare const etherSymbol = "\u039E";
-declare const constants: {
-    AddressZero: string;
-    HashZero: string;
-    NegativeOne: BigNumber;
-    Zero: BigNumber;
-    One: BigNumber;
-    Two: BigNumber;
-    WeiPerEther: BigNumber;
-    MaxUint256: BigNumber;
-};
-export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, constants, RLP, fetchJson, getNetwork, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, etherSymbol, arrayify, concat, padZeros, stripZeros, base64, BigNumber, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computePublicKey, verifyMessage, errors };
+export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, getNetwork, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, arrayify, concat, padZeros, stripZeros, base64, BigNumber, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computePublicKey, verifyMessage };

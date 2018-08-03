@@ -13,8 +13,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var errors = __importStar(require("./errors"));
 ///////////////////////////////
-exports.AddressZero = '0x0000000000000000000000000000000000000000';
-exports.HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
 function isHexable(value) {
     return !!(value.toHexString);
 }

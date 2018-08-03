@@ -13,5 +13,3 @@ var HDNode = __importStar(require("./hdnode"));
 exports.HDNode = HDNode;
 var signing_key_1 = require("./signing-key");
 exports.SigningKey = signing_key_1.SigningKey;
-var abstract_signer_1 = require("./abstract-signer");
-exports.AbstractSigner = abstract_signer_1.Signer;

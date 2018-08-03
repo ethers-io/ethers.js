@@ -1,4 +1,4 @@
-import { Provider } from './provider';
+import { BaseProvider } from './base-provider';
 import { Signer } from '../wallet/abstract-signer';
 import { BigNumber } from '../utils/bignumber';
 import { Arrayish } from '../utils/bytes';
@@ -17,7 +17,7 @@ export declare class JsonRpcSigner extends Signer {
     signMessage(message: Arrayish | string): Promise<string>;
     unlock(password: string): Promise<boolean>;
 }
-export declare class JsonRpcProvider extends Provider {
+export declare class JsonRpcProvider extends BaseProvider {
     readonly connection: ConnectionInfo;
     private _pendingFilter;
     constructor(url?: ConnectionInfo | string, network?: Networkish);

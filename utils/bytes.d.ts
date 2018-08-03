@@ -13,8 +13,6 @@ export interface Signature {
     recoveryParam?: number;
     v?: number;
 }
-export declare const AddressZero = "0x0000000000000000000000000000000000000000";
-export declare const HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare function isHexable(value: any): value is Hexable;
 export declare function isArrayish(value: any): value is Arrayish;
 export declare function arrayify(value: Arrayish | Hexable): Uint8Array;

@@ -17,7 +17,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var provider_1 = require("./provider");
+var base_provider_1 = require("./base-provider");
 var bytes_1 = require("../utils/bytes");
 var properties_1 = require("../utils/properties");
 var web_1 = require("../utils/web");
@@ -288,7 +288,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                     if (tx.creates == null && tx.contractAddress != null) {
                         tx.creates = tx.contractAddress;
                     }
-                    var item = provider_1.Provider.checkTransactionResponse(tx);
+                    var item = base_provider_1.BaseProvider.checkTransactionResponse(tx);
                     if (tx.timeStamp) {
                         item.timestamp = parseInt(tx.timeStamp);
                     }
@@ -299,5 +299,5 @@ var EtherscanProvider = /** @class */ (function (_super) {
         });
     };
     return EtherscanProvider;
-}(provider_1.Provider));
+}(base_provider_1.BaseProvider));
 exports.EtherscanProvider = EtherscanProvider;

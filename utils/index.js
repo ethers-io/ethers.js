@@ -76,21 +76,3 @@ exports.formatUnits = units_1.formatUnits;
 exports.parseUnits = units_1.parseUnits;
 var web_1 = require("./web");
 exports.fetchJson = web_1.fetchJson;
-var errors = __importStar(require("./errors"));
-exports.errors = errors;
-// NFKD (decomposed)
-//const etherSymbol = '\uD835\uDF63';
-// NFKC (composed)
-var etherSymbol = '\u039e';
-exports.etherSymbol = etherSymbol;
-var constants = {
-    AddressZero: bytes_1.AddressZero,
-    HashZero: bytes_1.HashZero,
-    NegativeOne: bignumber_1.ConstantNegativeOne,
-    Zero: bignumber_1.ConstantZero,
-    One: bignumber_1.ConstantOne,
-    Two: bignumber_1.ConstantTwo,
-    WeiPerEther: bignumber_1.ConstantWeiPerEther,
-    MaxUint256: bignumber_1.ConstantMaxUint256
-};
-exports.constants = constants;

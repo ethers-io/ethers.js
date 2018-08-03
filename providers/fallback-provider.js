@@ -17,7 +17,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var provider_1 = require("./provider");
+var base_provider_1 = require("./base-provider");
 var errors = __importStar(require("../utils/errors"));
 // Returns:
 //  - true is all networks match
@@ -106,5 +106,5 @@ var FallbackProvider = /** @class */ (function (_super) {
         });
     };
     return FallbackProvider;
-}(provider_1.Provider));
+}(base_provider_1.BaseProvider));
 exports.FallbackProvider = FallbackProvider;
