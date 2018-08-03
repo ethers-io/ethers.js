@@ -51,11 +51,13 @@ const _constructorGuard = {};
 
 export class JsonRpcSigner extends Signer {
     readonly provider: JsonRpcProvider;
+    private _index: number;
     private _address: string;
 
-    constructor(constructorGuard: any, provider: JsonRpcProvider, address?: string) {
+    constructor(constructorGuard: any, provider: JsonRpcProvider, addressOrIndex?: string | number) {
         super();
         errors.checkNew(this, JsonRpcSigner);
+
         if (constructorGuard !== _constructorGuard) {
             throw new Error('do not call the JsonRpcSigner constructor directly; use provider.getSigner');
         }
@@ -63,8 +65,16 @@ export class JsonRpcSigner extends Signer {
         defineReadOnly(this, 'provider', provider);
 
         // Statically attach to a given address
-        if (address) {
-            defineReadOnly(this, '_address', address);
+        if (addressOrIndex) {
+            if (typeof(addressOrIndex) === 'string') {
+                defineReadOnly(this, '_address', getAddress(addressOrIndex));
+            } else if (typeof(addressOrIndex) === 'number') {
+                defineReadOnly(this, '_index', addressOrIndex);
+            } else {
+                errors.throwError('invalid address or index', errors.INVALID_ARGUMENT, { argument: 'addressOrIndex', value: addressOrIndex });
+            }
+        } else {
+            defineReadOnly(this, '_index', 0);
         }
     }
 
@@ -81,10 +91,10 @@ export class JsonRpcSigner extends Signer {
         }
 
         return this.provider.send('eth_accounts', []).then((accounts) => {
-            if (accounts.length === 0) {
-                errors.throwError('no accounts', errors.UNSUPPORTED_OPERATION, { operation: 'getAddress' });
+            if (accounts.length <= this._index) {
+                errors.throwError('unknown account #' + this._index, errors.UNSUPPORTED_OPERATION, { operation: 'getAddress' });
             }
-            return getAddress(accounts[0]);
+            return getAddress(accounts[this._index]);
         });
     }
 
@@ -107,7 +117,7 @@ export class JsonRpcSigner extends Signer {
         }
 
         if (transaction.gasLimit == null) {
-            tx.gasLimit = this.provider.estimateGas(transaction);
+            tx.gasLimit = this.provider.estimateGas(tx);
         }
 
         return resolveProperties(tx).then((tx) => {
@@ -210,8 +220,8 @@ export class JsonRpcProvider extends BaseProvider {
 
     }
 
-    getSigner(address?: string): JsonRpcSigner {
-        return new JsonRpcSigner(_constructorGuard, this, address);
+    getSigner(addressOrIndex?: string | number): JsonRpcSigner {
+        return new JsonRpcSigner(_constructorGuard, this, addressOrIndex);
     }
 
     listAccounts(): Promise<Array<string>> {
