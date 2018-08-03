@@ -8,6 +8,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("./bignumber");
+var constants_1 = require("./constants");
 var errors = __importStar(require("./errors"));
 var names = [
     'wei',
@@ -66,9 +67,9 @@ function formatUnits(value, unitType, options) {
     var unitInfo = getUnitInfo(unitType);
     // Make sure wei is a big number (convert as necessary)
     value = bignumber_1.bigNumberify(value);
-    var negative = value.lt(bignumber_1.ConstantZero);
+    var negative = value.lt(constants_1.Zero);
     if (negative) {
-        value = value.mul(bignumber_1.ConstantNegativeOne);
+        value = value.mul(constants_1.NegativeOne);
     }
     var fraction = value.mod(unitInfo.tenPower).toString();
     while (fraction.length < unitInfo.decimals) {
@@ -134,7 +135,7 @@ function parseUnits(value, unitType) {
     var fractionValue = bignumber_1.bigNumberify(fraction);
     var wei = (wholeValue.mul(unitInfo.tenPower)).add(fractionValue);
     if (negative) {
-        wei = wei.mul(bignumber_1.ConstantNegativeOne);
+        wei = wei.mul(constants_1.NegativeOne);
     }
     return wei;
 }

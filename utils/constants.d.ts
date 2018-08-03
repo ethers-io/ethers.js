@@ -1,11 +1,11 @@
-export declare const constants: {
-    AddressZero: string;
-    HashZero: string;
-    EtherSymbol: string;
-    NegativeOne: import("../../../../../../../../Users/ricmoo/Development/ethers/ethers.ts/ethers.js/src.ts/utils/bignumber").BigNumber;
-    Zero: import("../../../../../../../../Users/ricmoo/Development/ethers/ethers.ts/ethers.js/src.ts/utils/bignumber").BigNumber;
-    One: import("../../../../../../../../Users/ricmoo/Development/ethers/ethers.ts/ethers.js/src.ts/utils/bignumber").BigNumber;
-    Two: import("../../../../../../../../Users/ricmoo/Development/ethers/ethers.ts/ethers.js/src.ts/utils/bignumber").BigNumber;
-    WeiPerEther: import("../../../../../../../../Users/ricmoo/Development/ethers/ethers.ts/ethers.js/src.ts/utils/bignumber").BigNumber;
-    MaxUint256: import("../../../../../../../../Users/ricmoo/Development/ethers/ethers.ts/ethers.js/src.ts/utils/bignumber").BigNumber;
-};
+import { BigNumber } from './bignumber';
+declare const AddressZero = "0x0000000000000000000000000000000000000000";
+declare const HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
+declare const EtherSymbol = "\u039E";
+declare const NegativeOne: BigNumber;
+declare const Zero: BigNumber;
+declare const One: BigNumber;
+declare const Two: BigNumber;
+declare const WeiPerEther: BigNumber;
+declare const MaxUint256: BigNumber;
+export { AddressZero, HashZero, EtherSymbol, NegativeOne, Zero, One, Two, WeiPerEther, MaxUint256 };

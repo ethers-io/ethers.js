@@ -12,6 +12,7 @@ var abi_coder_1 = require("../utils/abi-coder");
 var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
+var constants_1 = require("../utils/constants");
 var properties_1 = require("../utils/properties");
 var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
@@ -99,7 +100,7 @@ function runMethod(contract, functionName, estimateOnly) {
             if (method.type === 'call') {
                 // Call (constant functions) always cost 0 ether
                 if (estimateOnly) {
-                    return Promise.resolve(bignumber_1.ConstantZero);
+                    return Promise.resolve(constants_1.Zero);
                 }
                 if (!contract.provider) {
                     errors.throwError('call (constant functions) require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'call' });

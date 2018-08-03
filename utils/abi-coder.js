@@ -21,6 +21,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
 var bytes_1 = require("./bytes");
+var constants_1 = require("../utils/constants");
 var utf8_1 = require("./utf8");
 var properties_1 = require("./properties");
 var errors = __importStar(require("./errors"));
@@ -358,16 +359,16 @@ var CoderNumber = /** @class */ (function (_super) {
         try {
             var v = bignumber_1.bigNumberify(value);
             if (this.signed) {
-                var bounds = bignumber_1.ConstantMaxUint256.maskn(this.size * 8 - 1);
+                var bounds = constants_1.MaxUint256.maskn(this.size * 8 - 1);
                 if (v.gt(bounds)) {
                     throw new Error('out-of-bounds');
                 }
-                bounds = bounds.add(bignumber_1.ConstantOne).mul(bignumber_1.ConstantNegativeOne);
+                bounds = bounds.add(constants_1.One).mul(constants_1.NegativeOne);
                 if (v.lt(bounds)) {
                     throw new Error('out-of-bounds');
                 }
             }
-            else if (v.lt(bignumber_1.ConstantZero) || v.gt(bignumber_1.ConstantMaxUint256.maskn(this.size * 8))) {
+            else if (v.lt(constants_1.Zero) || v.gt(constants_1.MaxUint256.maskn(this.size * 8))) {
                 throw new Error('out-of-bounds');
             }
             v = v.toTwos(this.size * 8).maskn(this.size * 8);

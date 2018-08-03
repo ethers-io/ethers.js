@@ -173,9 +173,3 @@ function bigNumberify(value) {
     return new BigNumber(value);
 }
 exports.bigNumberify = bigNumberify;
-exports.ConstantNegativeOne = bigNumberify(-1);
-exports.ConstantZero = bigNumberify(0);
-exports.ConstantOne = bigNumberify(1);
-exports.ConstantTwo = bigNumberify(2);
-exports.ConstantWeiPerEther = bigNumberify('1000000000000000000');
-exports.ConstantMaxUint256 = bigNumberify('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');

@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.0-beta.8";
+exports.version = "4.0.0-beta.9";
 
 },{}],2:[function(require,module,exports){
 'use strict';
@@ -18,6 +18,7 @@ var abi_coder_1 = require("../utils/abi-coder");
 var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
+var constants_1 = require("../utils/constants");
 var properties_1 = require("../utils/properties");
 var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
@@ -105,7 +106,7 @@ function runMethod(contract, functionName, estimateOnly) {
             if (method.type === 'call') {
                 // Call (constant functions) always cost 0 ether
                 if (estimateOnly) {
-                    return Promise.resolve(bignumber_1.ConstantZero);
+                    return Promise.resolve(constants_1.Zero);
                 }
                 if (!contract.provider) {
                     errors.throwError('call (constant functions) require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'call' });
@@ -538,7 +539,7 @@ var Contract = /** @class */ (function () {
 }());
 exports.Contract = Contract;
 
-},{"../providers/abstract-provider":48,"../utils/abi-coder":58,"../utils/address":59,"../utils/bignumber":61,"../utils/bytes":62,"../utils/errors":64,"../utils/properties":72,"../utils/web":82,"../wallet/abstract-signer":83,"./interface":4}],3:[function(require,module,exports){
+},{"../providers/abstract-provider":48,"../utils/abi-coder":58,"../utils/address":59,"../utils/bignumber":61,"../utils/bytes":62,"../utils/constants":63,"../utils/errors":64,"../utils/properties":72,"../utils/web":82,"../wallet/abstract-signer":83,"./interface":4}],3:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var contract_1 = require("./contract");
@@ -956,8 +957,8 @@ var wallet_1 = require("./wallet");
 exports.HDNode = wallet_1.HDNode;
 exports.SigningKey = wallet_1.SigningKey;
 exports.Wallet = wallet_1.Wallet;
-var constants_1 = require("./utils/constants");
-exports.constants = constants_1.constants;
+var constants = __importStar(require("./utils/constants"));
+exports.constants = constants;
 var errors = __importStar(require("./utils/errors"));
 exports.errors = errors;
 var utils = __importStar(require("./utils"));
@@ -11961,6 +11962,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
 var bytes_1 = require("./bytes");
+var constants_1 = require("../utils/constants");
 var utf8_1 = require("./utf8");
 var properties_1 = require("./properties");
 var errors = __importStar(require("./errors"));
@@ -12298,16 +12300,16 @@ var CoderNumber = /** @class */ (function (_super) {
         try {
             var v = bignumber_1.bigNumberify(value);
             if (this.signed) {
-                var bounds = bignumber_1.ConstantMaxUint256.maskn(this.size * 8 - 1);
+                var bounds = constants_1.MaxUint256.maskn(this.size * 8 - 1);
                 if (v.gt(bounds)) {
                     throw new Error('out-of-bounds');
                 }
-                bounds = bounds.add(bignumber_1.ConstantOne).mul(bignumber_1.ConstantNegativeOne);
+                bounds = bounds.add(constants_1.One).mul(constants_1.NegativeOne);
                 if (v.lt(bounds)) {
                     throw new Error('out-of-bounds');
                 }
             }
-            else if (v.lt(bignumber_1.ConstantZero) || v.gt(bignumber_1.ConstantMaxUint256.maskn(this.size * 8))) {
+            else if (v.lt(constants_1.Zero) || v.gt(constants_1.MaxUint256.maskn(this.size * 8))) {
                 throw new Error('out-of-bounds');
             }
             v = v.toTwos(this.size * 8).maskn(this.size * 8);
@@ -12883,7 +12885,7 @@ var AbiCoder = /** @class */ (function () {
 exports.AbiCoder = AbiCoder;
 exports.defaultAbiCoder = new AbiCoder();
 
-},{"./address":59,"./bignumber":61,"./bytes":62,"./errors":64,"./properties":72,"./utf8":81}],59:[function(require,module,exports){
+},{"../utils/constants":63,"./address":59,"./bignumber":61,"./bytes":62,"./errors":64,"./properties":72,"./utf8":81}],59:[function(require,module,exports){
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -13209,12 +13211,6 @@ function bigNumberify(value) {
     return new BigNumber(value);
 }
 exports.bigNumberify = bigNumberify;
-exports.ConstantNegativeOne = bigNumberify(-1);
-exports.ConstantZero = bigNumberify(0);
-exports.ConstantOne = bigNumberify(1);
-exports.ConstantTwo = bigNumberify(2);
-exports.ConstantWeiPerEther = bigNumberify('1000000000000000000');
-exports.ConstantMaxUint256 = bigNumberify('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
 
 },{"./bytes":62,"./errors":64,"./properties":72,"bn.js":8}],62:[function(require,module,exports){
 "use strict";
@@ -13490,22 +13486,26 @@ exports.joinSignature = joinSignature;
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("./bignumber");
 var AddressZero = '0x0000000000000000000000000000000000000000';
+exports.AddressZero = AddressZero;
 var HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
+exports.HashZero = HashZero;
 // NFKD (decomposed)
 //const EtherSymbol = '\uD835\uDF63';
 // NFKC (composed)
 var EtherSymbol = '\u039e';
-exports.constants = {
-    AddressZero: AddressZero,
-    HashZero: HashZero,
-    EtherSymbol: EtherSymbol,
-    NegativeOne: bignumber_1.ConstantNegativeOne,
-    Zero: bignumber_1.ConstantZero,
-    One: bignumber_1.ConstantOne,
-    Two: bignumber_1.ConstantTwo,
-    WeiPerEther: bignumber_1.ConstantWeiPerEther,
-    MaxUint256: bignumber_1.ConstantMaxUint256
-};
+exports.EtherSymbol = EtherSymbol;
+var NegativeOne = bignumber_1.bigNumberify(-1);
+exports.NegativeOne = NegativeOne;
+var Zero = bignumber_1.bigNumberify(0);
+exports.Zero = Zero;
+var One = bignumber_1.bigNumberify(1);
+exports.One = One;
+var Two = bignumber_1.bigNumberify(2);
+exports.Two = Two;
+var WeiPerEther = bignumber_1.bigNumberify('1000000000000000000');
+exports.WeiPerEther = WeiPerEther;
+var MaxUint256 = bignumber_1.bigNumberify('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+exports.MaxUint256 = MaxUint256;
 
 },{"./bignumber":61}],64:[function(require,module,exports){
 'use strict';
@@ -14449,6 +14449,7 @@ var secp256k1_1 = require("./secp256k1");
 var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
 var bytes_1 = require("./bytes");
+var constants_1 = require("./constants");
 var keccak256_1 = require("./keccak256");
 var RLP = __importStar(require("./rlp"));
 var errors = __importStar(require("./errors"));
@@ -14461,7 +14462,7 @@ function handleAddress(value) {
 }
 function handleNumber(value) {
     if (value === '0x') {
-        return bignumber_1.ConstantZero;
+        return constants_1.Zero;
     }
     return bignumber_1.bigNumberify(value);
 }
@@ -14577,7 +14578,7 @@ function parse(rawTransaction) {
 }
 exports.parse = parse;
 
-},{"./address":59,"./bignumber":61,"./bytes":62,"./errors":64,"./keccak256":69,"./rlp":74,"./secp256k1":75}],80:[function(require,module,exports){
+},{"./address":59,"./bignumber":61,"./bytes":62,"./constants":63,"./errors":64,"./keccak256":69,"./rlp":74,"./secp256k1":75}],80:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14588,6 +14589,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("./bignumber");
+var constants_1 = require("./constants");
 var errors = __importStar(require("./errors"));
 var names = [
     'wei',
@@ -14646,9 +14648,9 @@ function formatUnits(value, unitType, options) {
     var unitInfo = getUnitInfo(unitType);
     // Make sure wei is a big number (convert as necessary)
     value = bignumber_1.bigNumberify(value);
-    var negative = value.lt(bignumber_1.ConstantZero);
+    var negative = value.lt(constants_1.Zero);
     if (negative) {
-        value = value.mul(bignumber_1.ConstantNegativeOne);
+        value = value.mul(constants_1.NegativeOne);
     }
     var fraction = value.mod(unitInfo.tenPower).toString();
     while (fraction.length < unitInfo.decimals) {
@@ -14714,7 +14716,7 @@ function parseUnits(value, unitType) {
     var fractionValue = bignumber_1.bigNumberify(fraction);
     var wei = (wholeValue.mul(unitInfo.tenPower)).add(fractionValue);
     if (negative) {
-        wei = wei.mul(bignumber_1.ConstantNegativeOne);
+        wei = wei.mul(constants_1.NegativeOne);
     }
     return wei;
 }
@@ -14728,7 +14730,7 @@ function parseEther(ether) {
 }
 exports.parseEther = parseEther;
 
-},{"./bignumber":61,"./errors":64}],81:[function(require,module,exports){
+},{"./bignumber":61,"./constants":63,"./errors":64}],81:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");

@@ -25,9 +25,3 @@ export declare class BigNumber implements Hexable {
     static isBigNumber(value: any): value is BigNumber;
 }
 export declare function bigNumberify(value: BigNumberish): BigNumber;
-export declare const ConstantNegativeOne: BigNumber;
-export declare const ConstantZero: BigNumber;
-export declare const ConstantOne: BigNumber;
-export declare const ConstantTwo: BigNumber;
-export declare const ConstantWeiPerEther: BigNumber;
-export declare const ConstantMaxUint256: BigNumber;

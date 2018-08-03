@@ -11,6 +11,7 @@ var secp256k1_1 = require("./secp256k1");
 var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
 var bytes_1 = require("./bytes");
+var constants_1 = require("./constants");
 var keccak256_1 = require("./keccak256");
 var RLP = __importStar(require("./rlp"));
 var errors = __importStar(require("./errors"));
@@ -23,7 +24,7 @@ function handleAddress(value) {
 }
 function handleNumber(value) {
     if (value === '0x') {
-        return bignumber_1.ConstantZero;
+        return constants_1.Zero;
     }
     return bignumber_1.bigNumberify(value);
 }

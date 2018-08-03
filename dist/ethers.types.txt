@@ -10,7 +10,7 @@ declare module 'ethers/ethers' {
     import { Contract, Interface } from 'ethers/contracts';
     import * as providers from 'ethers/providers';
     import { HDNode, SigningKey, Wallet } from 'ethers/wallet';
-    import { constants } from 'ethers/utils/constants';
+    import * as constants from 'ethers/utils/constants';
     import * as errors from 'ethers/utils/errors';
     import * as utils from 'ethers/utils';
     import * as types from 'ethers/types';
@@ -46,17 +46,17 @@ declare module 'ethers/wallet' {
 }
 
 declare module 'ethers/utils/constants' {
-    export const constants: {
-        AddressZero: string;
-        HashZero: string;
-        EtherSymbol: string;
-        NegativeOne: import("../../../../../../../../Users/ricmoo/Development/ethers/ethers.ts/ethers.js/src.ts/utils/bignumber").BigNumber;
-        Zero: import("../../../../../../../../Users/ricmoo/Development/ethers/ethers.ts/ethers.js/src.ts/utils/bignumber").BigNumber;
-        One: import("../../../../../../../../Users/ricmoo/Development/ethers/ethers.ts/ethers.js/src.ts/utils/bignumber").BigNumber;
-        Two: import("../../../../../../../../Users/ricmoo/Development/ethers/ethers.ts/ethers.js/src.ts/utils/bignumber").BigNumber;
-        WeiPerEther: import("../../../../../../../../Users/ricmoo/Development/ethers/ethers.ts/ethers.js/src.ts/utils/bignumber").BigNumber;
-        MaxUint256: import("../../../../../../../../Users/ricmoo/Development/ethers/ethers.ts/ethers.js/src.ts/utils/bignumber").BigNumber;
-    };
+    import { BigNumber } from 'ethers/utils/bignumber';
+    const AddressZero = "0x0000000000000000000000000000000000000000";
+    const HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
+    const EtherSymbol = "\u039E";
+    const NegativeOne: BigNumber;
+    const Zero: BigNumber;
+    const One: BigNumber;
+    const Two: BigNumber;
+    const WeiPerEther: BigNumber;
+    const MaxUint256: BigNumber;
+    export { AddressZero, HashZero, EtherSymbol, NegativeOne, Zero, One, Two, WeiPerEther, MaxUint256 };
 }
 
 declare module 'ethers/utils/errors' {
@@ -138,7 +138,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.0-beta.8";
+    export const version = "4.0.0-beta.9";
 }
 
 declare module 'ethers/contracts/contract' {
@@ -553,6 +553,35 @@ declare module 'ethers/wallet/signing-key' {
     }
 }
 
+declare module 'ethers/utils/bignumber' {
+    import { Hexable } from 'ethers/utils/bytes';
+    import { Arrayish } from 'ethers/utils/bytes';
+    export type BigNumberish = BigNumber | string | number | Arrayish;
+    export class BigNumber implements Hexable {
+        constructor(value: BigNumberish);
+        fromTwos(value: number): BigNumber;
+        toTwos(value: number): BigNumber;
+        add(other: BigNumberish): BigNumber;
+        sub(other: BigNumberish): BigNumber;
+        div(other: BigNumberish): BigNumber;
+        mul(other: BigNumberish): BigNumber;
+        mod(other: BigNumberish): BigNumber;
+        pow(other: BigNumberish): BigNumber;
+        maskn(value: number): BigNumber;
+        eq(other: BigNumberish): boolean;
+        lt(other: BigNumberish): boolean;
+        lte(other: BigNumberish): boolean;
+        gt(other: BigNumberish): boolean;
+        gte(other: BigNumberish): boolean;
+        isZero(): boolean;
+        toNumber(): number;
+        toString(): string;
+        toHexString(): string;
+        static isBigNumber(value: any): value is BigNumber;
+    }
+    export function bigNumberify(value: BigNumberish): BigNumber;
+}
+
 declare module 'ethers/utils/abi-coder' {
     import { BigNumber } from 'ethers/utils/bignumber';
     import { Arrayish } from 'ethers/utils/bytes';
@@ -608,41 +637,6 @@ declare module 'ethers/utils/base64' {
     import { Arrayish } from 'ethers/utils/bytes';
     export function decode(textData: string): Uint8Array;
     export function encode(data: Arrayish): string;
-}
-
-declare module 'ethers/utils/bignumber' {
-    import { Hexable } from 'ethers/utils/bytes';
-    import { Arrayish } from 'ethers/utils/bytes';
-    export type BigNumberish = BigNumber | string | number | Arrayish;
-    export class BigNumber implements Hexable {
-        constructor(value: BigNumberish);
-        fromTwos(value: number): BigNumber;
-        toTwos(value: number): BigNumber;
-        add(other: BigNumberish): BigNumber;
-        sub(other: BigNumberish): BigNumber;
-        div(other: BigNumberish): BigNumber;
-        mul(other: BigNumberish): BigNumber;
-        mod(other: BigNumberish): BigNumber;
-        pow(other: BigNumberish): BigNumber;
-        maskn(value: number): BigNumber;
-        eq(other: BigNumberish): boolean;
-        lt(other: BigNumberish): boolean;
-        lte(other: BigNumberish): boolean;
-        gt(other: BigNumberish): boolean;
-        gte(other: BigNumberish): boolean;
-        isZero(): boolean;
-        toNumber(): number;
-        toString(): string;
-        toHexString(): string;
-        static isBigNumber(value: any): value is BigNumber;
-    }
-    export function bigNumberify(value: BigNumberish): BigNumber;
-    export const ConstantNegativeOne: BigNumber;
-    export const ConstantZero: BigNumber;
-    export const ConstantOne: BigNumber;
-    export const ConstantTwo: BigNumber;
-    export const ConstantWeiPerEther: BigNumber;
-    export const ConstantMaxUint256: BigNumber;
 }
 
 declare module 'ethers/utils/bytes' {
