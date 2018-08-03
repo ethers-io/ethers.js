@@ -1,6 +1,6 @@
 'use strict';
 
-import { Provider } from './provider';
+import { BaseProvider } from './base-provider';
 
 // Imported Types
 import { Network } from '../utils/networks';
@@ -44,10 +44,10 @@ function checkNetworks(networks: Array<Network>): boolean {
     return result;
 }
 
-export class FallbackProvider extends Provider {
-    private _providers: Array<Provider>;
+export class FallbackProvider extends BaseProvider {
+    private _providers: Array<BaseProvider>;
 
-    constructor(providers: Array<Provider>) {
+    constructor(providers: Array<BaseProvider>) {
 
         if (providers.length === 0) { throw new Error('no providers'); }
 
@@ -73,7 +73,7 @@ export class FallbackProvider extends Provider {
         this._providers = providers.slice(0);
     }
 
-    get providers(): Array<Provider> {
+    get providers(): Array<BaseProvider> {
         // Return a copy, so we don't get mutated
         return this._providers.slice(0);
     }

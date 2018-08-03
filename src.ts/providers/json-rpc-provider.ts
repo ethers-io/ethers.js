@@ -2,7 +2,7 @@
 
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 
-import { Provider } from './provider';
+import { BaseProvider } from './base-provider';
 
 import { Signer } from '../wallet/abstract-signer';
 
@@ -161,7 +161,7 @@ export class JsonRpcSigner extends Signer {
     }
 }
 
-export class JsonRpcProvider extends Provider {
+export class JsonRpcProvider extends BaseProvider {
     readonly connection: ConnectionInfo;
 
     private _pendingFilter: Promise<number>;

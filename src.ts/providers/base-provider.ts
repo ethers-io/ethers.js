@@ -15,7 +15,7 @@ import * as errors from '../utils/errors';
 
 ///////////////////////////////
 // Imported Abstracts
-import { Provider as AbstractProvider } from './abstract-provider';
+import { Provider } from './abstract-provider';
 
 
 ///////////////////////////////
@@ -441,84 +441,6 @@ function getEventTag(eventName: EventType): string {
 // Provider Object
 
 
-/* @TODO:
-type Event = {
-   eventName: string,
-   listener: any, // @TODO: Function any: any
-   type: string,
-}
-*/
-
-// @TODO: Perhaps allow a SignDigestAsyncFunc?
-
-// Enable a simple signing function and provider to provide a full Signer
-/*
-export type SignDigestFunc = (digest: string) => Promise<Signature>;
-export class ProviderSigner extends Signer {
-    readonly provider: Provider;
-    readonly signDigest: SignDigestFunc;
-
-    private _addressPromise: Promise<string>;
-
-    constructor(address: string | Promise<string>, signDigest: SignDigestFunc, provider: Provider) {
-        super();
-        errors.checkNew(this, ProviderSigner);
-        defineReadOnly(this, '_addressPromise', Promise.resolve(address));
-        defineReadOnly(this, 'signDigest', signDigest);
-        defineReadOnly(this, 'provider', provider);
-    }
-
-    getAddress(): Promise<string> {
-        return this._addressPromise;
-    }
-
-    signMessage(message: Arrayish | string): Promise<string> {
-        return this.signDigest(arrayify(hashMessage(message))).then((signature) => {
-            return joinSignature(signature);
-        });
-    }
-
-    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
-        transaction = shallowCopy(transaction);
-
-        if (transaction.chainId == null) {
-            transaction.chainId = this.provider.getNetwork().then((network) => {
-                return network.chainId;
-            });
-        }
-
-        if (transaction.from == null) {
-            transaction.from = this.getAddress();
-        }
-
-        if (transaction.gasLimit == null) {
-            transaction.gasLimit = this.provider.estimateGas(transaction);
-        }
-
-        if (transaction.gasPrice == null) {
-            transaction.gasPrice = this.provider.getGasPrice();
-        }
-
-        return resolveProperties(transaction).then((tx) => {
-            let unsignedTx = serializeTransaction(tx);
-            return this.signDigest(keccak256(unsignedTx)).then((signature) => {
-                let signedTx = serializeTransaxction(tx, (ut) => {
-                    if (unsignedTx !== ut) { throw new Error('this should not happen'); }
-                    return signature;
-                });
-
-                return this._addressPromise.then((address) => {
-                    if (parseTransaction(signedTx).from !== address) {
-                        errors.throwError('signing address does not match expected address', errors.UNKNOWN_ERROR, { address: parseTransaction(signedTx).from, expectedAddress: address, signedTransaction: signedTx });
-                    }
-                    return this.provider.sendTransaction(signedTx);
-                });
-            });
-        });
-    }
-}
-*/
-
 /**
  *  EventType
  *   - "block"
@@ -536,7 +458,7 @@ type _Event = {
     tag: string;
 }
 
-export class Provider extends AbstractProvider {
+export class BaseProvider extends Provider {
     private _network: Network;
 
     private _events: Array<_Event>;
@@ -966,7 +888,7 @@ export class Provider extends AbstractProvider {
                             }
                             return undefined;
                         }
-                        return Provider.checkTransactionResponse(result);
+                        return BaseProvider.checkTransactionResponse(result);
                     });
                 }, { onceBlock: this });
             });

@@ -31,9 +31,6 @@ export interface Signature {
 ///////////////////////////////
 
 
-export const AddressZero = '0x0000000000000000000000000000000000000000';
-export const HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
-
 export function isHexable(value: any): value is Hexable {
     return !!(value.toHexString);
 }

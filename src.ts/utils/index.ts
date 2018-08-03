@@ -3,8 +3,8 @@
 import { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from './abi-coder';
 import { getAddress, getContractAddress, getIcapAddress } from './address';
 import * as base64 from './base64';
-import { BigNumber, bigNumberify, ConstantNegativeOne, ConstantZero, ConstantOne, ConstantTwo, ConstantWeiPerEther, ConstantMaxUint256 } from './bignumber';
-import { AddressZero, arrayify, concat, HashZero, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexZeroPad, joinSignature, padZeros, splitSignature, stripZeros } from './bytes';
+import { BigNumber, bigNumberify } from './bignumber';
+import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexZeroPad, joinSignature, padZeros, splitSignature, stripZeros } from './bytes';
 import { hashMessage, id, namehash } from './hash';
 import { getJsonWalletAddress } from './json-wallet';
 import { keccak256 } from './keccak256';
@@ -20,25 +20,6 @@ import { toUtf8Bytes, toUtf8String } from './utf8';
 import { formatEther, parseEther, formatUnits, parseUnits } from './units';
 import { fetchJson } from './web';
 
-import * as errors from './errors';
-
-// NFKD (decomposed)
-//const etherSymbol = '\uD835\uDF63';
-
-// NFKC (composed)
-const etherSymbol = '\u039e';
-
-const constants = {
-    AddressZero: AddressZero,
-    HashZero: HashZero,
-    NegativeOne: ConstantNegativeOne,
-    Zero: ConstantZero,
-    One: ConstantOne,
-    Two: ConstantTwo,
-    WeiPerEther: ConstantWeiPerEther,
-    MaxUint256: ConstantMaxUint256
-};
-
 export {
     AbiCoder,
     defaultAbiCoder,
@@ -46,8 +27,6 @@ export {
     formatParamType,
     parseSignature,
     parseParamType,
-
-    constants,
 
     RLP,
 
@@ -58,8 +37,6 @@ export {
     defineFrozen,
     resolveProperties,
     shallowCopy,
-
-    etherSymbol,
 
     arrayify,
 
@@ -113,8 +90,6 @@ export {
     getJsonWalletAddress,
 
     computePublicKey,
-    verifyMessage,
-
-    errors
+    verifyMessage
 }
 

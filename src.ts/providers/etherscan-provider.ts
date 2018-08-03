@@ -1,5 +1,5 @@
 
-import { Provider } from './provider';
+import { BaseProvider } from './base-provider';
 
 import { hexlify, hexStripZeros } from '../utils/bytes';
 import { defineReadOnly } from '../utils/properties';
@@ -74,7 +74,7 @@ function checkLogTag(blockTag: string): number | "latest" {
 }
 
 
-export class EtherscanProvider extends Provider{
+export class EtherscanProvider extends BaseProvider{
     readonly baseUrl: string;
     readonly apiKey: string;
     constructor(network?: Networkish, apiKey?: string) {
@@ -299,7 +299,7 @@ export class EtherscanProvider extends Provider{
                     if (tx.creates == null && tx.contractAddress != null) {
                         tx.creates = tx.contractAddress;
                     }
-                    let item = Provider.checkTransactionResponse(tx);
+                    let item = BaseProvider.checkTransactionResponse(tx);
                     if (tx.timeStamp) { item.timestamp = parseInt(tx.timeStamp); }
                     output.push(item);
                 });
