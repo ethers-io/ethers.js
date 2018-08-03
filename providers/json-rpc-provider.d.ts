@@ -7,8 +7,9 @@ import { ConnectionInfo } from '../utils/web';
 import { BlockTag, TransactionRequest, TransactionResponse } from '../providers/abstract-provider';
 export declare class JsonRpcSigner extends Signer {
     readonly provider: JsonRpcProvider;
+    private _index;
     private _address;
-    constructor(constructorGuard: any, provider: JsonRpcProvider, address?: string);
+    constructor(constructorGuard: any, provider: JsonRpcProvider, addressOrIndex?: string | number);
     readonly address: string;
     getAddress(): Promise<string>;
     getBalance(blockTag?: BlockTag): Promise<BigNumber>;
@@ -21,7 +22,7 @@ export declare class JsonRpcProvider extends BaseProvider {
     readonly connection: ConnectionInfo;
     private _pendingFilter;
     constructor(url?: ConnectionInfo | string, network?: Networkish);
-    getSigner(address?: string): JsonRpcSigner;
+    getSigner(addressOrIndex?: string | number): JsonRpcSigner;
     listAccounts(): Promise<Array<string>>;
     send(method: string, params: any): Promise<any>;
     perform(method: string, params: any): Promise<any>;

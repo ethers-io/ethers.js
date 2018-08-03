@@ -138,7 +138,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.0-beta.9";
+    export const version = "4.0.0-beta.10";
 }
 
 declare module 'ethers/contracts/contract' {
@@ -426,7 +426,7 @@ declare module 'ethers/providers/json-rpc-provider' {
     import { BlockTag, TransactionRequest, TransactionResponse } from 'ethers/providers/abstract-provider';
     export class JsonRpcSigner extends Signer {
         readonly provider: JsonRpcProvider;
-        constructor(constructorGuard: any, provider: JsonRpcProvider, address?: string);
+        constructor(constructorGuard: any, provider: JsonRpcProvider, addressOrIndex?: string | number);
         readonly address: string;
         getAddress(): Promise<string>;
         getBalance(blockTag?: BlockTag): Promise<BigNumber>;
@@ -438,7 +438,7 @@ declare module 'ethers/providers/json-rpc-provider' {
     export class JsonRpcProvider extends BaseProvider {
         readonly connection: ConnectionInfo;
         constructor(url?: ConnectionInfo | string, network?: Networkish);
-        getSigner(address?: string): JsonRpcSigner;
+        getSigner(addressOrIndex?: string | number): JsonRpcSigner;
         listAccounts(): Promise<Array<string>>;
         send(method: string, params: any): Promise<any>;
         perform(method: string, params: any): Promise<any>;

@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.0-beta.9";
+exports.version = "4.0.0-beta.10";
 
 },{}],2:[function(require,module,exports){
 'use strict';
@@ -11540,7 +11540,7 @@ function getLowerCase(value) {
 var _constructorGuard = {};
 var JsonRpcSigner = /** @class */ (function (_super) {
     __extends(JsonRpcSigner, _super);
-    function JsonRpcSigner(constructorGuard, provider, address) {
+    function JsonRpcSigner(constructorGuard, provider, addressOrIndex) {
         var _this = _super.call(this) || this;
         errors.checkNew(_this, JsonRpcSigner);
         if (constructorGuard !== _constructorGuard) {
@@ -11548,8 +11548,19 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         }
         properties_1.defineReadOnly(_this, 'provider', provider);
         // Statically attach to a given address
-        if (address) {
-            properties_1.defineReadOnly(_this, '_address', address);
+        if (addressOrIndex) {
+            if (typeof (addressOrIndex) === 'string') {
+                properties_1.defineReadOnly(_this, '_address', address_1.getAddress(addressOrIndex));
+            }
+            else if (typeof (addressOrIndex) === 'number') {
+                properties_1.defineReadOnly(_this, '_index', addressOrIndex);
+            }
+            else {
+                errors.throwError('invalid address or index', errors.INVALID_ARGUMENT, { argument: 'addressOrIndex', value: addressOrIndex });
+            }
+        }
+        else {
+            properties_1.defineReadOnly(_this, '_index', 0);
         }
         return _this;
     }
@@ -11564,14 +11575,15 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         configurable: true
     });
     JsonRpcSigner.prototype.getAddress = function () {
+        var _this = this;
         if (this._address) {
             return Promise.resolve(this._address);
         }
         return this.provider.send('eth_accounts', []).then(function (accounts) {
-            if (accounts.length === 0) {
-                errors.throwError('no accounts', errors.UNSUPPORTED_OPERATION, { operation: 'getAddress' });
+            if (accounts.length <= _this._index) {
+                errors.throwError('unknown account #' + _this._index, errors.UNSUPPORTED_OPERATION, { operation: 'getAddress' });
             }
-            return address_1.getAddress(accounts[0]);
+            return address_1.getAddress(accounts[_this._index]);
         });
     };
     JsonRpcSigner.prototype.getBalance = function (blockTag) {
@@ -11592,7 +11604,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             });
         }
         if (transaction.gasLimit == null) {
-            tx.gasLimit = this.provider.estimateGas(transaction);
+            tx.gasLimit = this.provider.estimateGas(tx);
         }
         return properties_1.resolveProperties(tx).then(function (tx) {
             return _this.provider.send('eth_sendTransaction', [JsonRpcProvider.hexlifyTransaction(tx)]).then(function (hash) {
@@ -11688,8 +11700,8 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         }
         return _this;
     }
-    JsonRpcProvider.prototype.getSigner = function (address) {
-        return new JsonRpcSigner(_constructorGuard, this, address);
+    JsonRpcProvider.prototype.getSigner = function (addressOrIndex) {
+        return new JsonRpcSigner(_constructorGuard, this, addressOrIndex);
     };
     JsonRpcProvider.prototype.listAccounts = function () {
         return this.send('eth_accounts', []).then(function (accounts) {
