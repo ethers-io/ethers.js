@@ -2,8 +2,9 @@
 import { recoverAddress } from './secp256k1';
 
 import { getAddress } from './address';
-import { BigNumber, bigNumberify, ConstantZero } from './bignumber';
+import { BigNumber, bigNumberify } from './bignumber';
 import { arrayify, hexlify, hexZeroPad, splitSignature, stripZeros, } from './bytes';
+import { Zero } from './constants';
 import { keccak256 } from './keccak256';
 
 import * as RLP from './rlp';
@@ -58,7 +59,7 @@ function handleAddress(value: string): string {
 }
 
 function handleNumber(value: string): BigNumber {
-    if (value === '0x') { return ConstantZero; }
+    if (value === '0x') { return Zero; }
     return bigNumberify(value);
 }
 

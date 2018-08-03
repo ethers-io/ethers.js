@@ -1,6 +1,7 @@
 'use strict';
 
-import { BigNumber, bigNumberify, ConstantZero, ConstantNegativeOne } from './bignumber';
+import { BigNumber, bigNumberify } from './bignumber';
+import { Zero, NegativeOne } from './constants';
 
 // Imported Types
 import { BigNumberish } from './bignumber';
@@ -79,8 +80,8 @@ export function formatUnits(value: BigNumberish, unitType?: string | number, opt
     // Make sure wei is a big number (convert as necessary)
     value = bigNumberify(value);
 
-    var negative = value.lt(ConstantZero);
-    if (negative) { value = value.mul(ConstantNegativeOne); }
+    var negative = value.lt(Zero);
+    if (negative) { value = value.mul(NegativeOne); }
 
     var fraction = value.mod(unitInfo.tenPower).toString();
     while (fraction.length < unitInfo.decimals) { fraction = '0' + fraction; }
@@ -153,7 +154,7 @@ export function parseUnits(value: string, unitType?: string | number): BigNumber
 
     let wei = (wholeValue.mul(unitInfo.tenPower)).add(fractionValue);
 
-    if (negative) { wei = wei.mul(ConstantNegativeOne); }
+    if (negative) { wei = wei.mul(NegativeOne); }
 
     return wei;
 }

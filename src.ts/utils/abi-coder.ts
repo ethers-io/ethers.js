@@ -3,8 +3,9 @@
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
 import { getAddress } from  './address';
-import { BigNumber, bigNumberify, ConstantNegativeOne, ConstantZero, ConstantOne, ConstantMaxUint256 } from './bignumber';
+import { BigNumber, bigNumberify } from './bignumber';
 import { arrayify, concat, hexlify, padZeros } from './bytes';
+import { NegativeOne, Zero, One, MaxUint256 } from '../utils/constants';
 import { toUtf8Bytes, toUtf8String } from './utf8';
 import { defineReadOnly, jsonCopy } from './properties';
 
@@ -449,11 +450,11 @@ class CoderNumber extends Coder {
         try {
             let v = bigNumberify(value);
             if (this.signed) {
-                let bounds = ConstantMaxUint256.maskn(this.size * 8 - 1);
+                let bounds = MaxUint256.maskn(this.size * 8 - 1);
                 if (v.gt(bounds)) { throw new Error('out-of-bounds'); }
-                bounds = bounds.add(ConstantOne).mul(ConstantNegativeOne);
+                bounds = bounds.add(One).mul(NegativeOne);
                 if (v.lt(bounds)) { throw new Error('out-of-bounds'); }
-            } else if (v.lt(ConstantZero) || v.gt(ConstantMaxUint256.maskn(this.size * 8))) {
+            } else if (v.lt(Zero) || v.gt(MaxUint256.maskn(this.size * 8))) {
                 throw new Error('out-of-bounds');
             }
 

@@ -6,7 +6,7 @@ import * as providers from './providers';
 
 import { HDNode, SigningKey, Wallet } from './wallet';
 
-import { constants } from './utils/constants';
+import * as constants from './utils/constants';
 import * as errors from './utils/errors';
 import * as utils from './utils';
 

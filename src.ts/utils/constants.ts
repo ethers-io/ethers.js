@@ -1,11 +1,4 @@
-import {
-    ConstantNegativeOne,
-    ConstantZero,
-    ConstantOne,
-    ConstantTwo,
-    ConstantWeiPerEther,
-    ConstantMaxUint256
-} from './bignumber';
+import { BigNumber, bigNumberify } from './bignumber';
 
 const AddressZero = '0x0000000000000000000000000000000000000000';
 const HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
@@ -16,16 +9,23 @@ const HashZero = '0x000000000000000000000000000000000000000000000000000000000000
 // NFKC (composed)
 const EtherSymbol = '\u039e';
 
-export const constants = {
-    AddressZero: AddressZero,
-    HashZero: HashZero,
+const NegativeOne: BigNumber = bigNumberify(-1);
+const Zero: BigNumber = bigNumberify(0);
+const One: BigNumber = bigNumberify(1);
+const Two: BigNumber = bigNumberify(2);
+const WeiPerEther: BigNumber = bigNumberify('1000000000000000000');
+const MaxUint256: BigNumber = bigNumberify('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
 
-    EtherSymbol: EtherSymbol,
+export {
+    AddressZero,
+    HashZero,
 
-    NegativeOne: ConstantNegativeOne,
-    Zero: ConstantZero,
-    One: ConstantOne,
-    Two: ConstantTwo,
-    WeiPerEther: ConstantWeiPerEther,
-    MaxUint256: ConstantMaxUint256
+    EtherSymbol,
+
+    NegativeOne,
+    Zero,
+    One,
+    Two,
+    WeiPerEther,
+    MaxUint256
 };

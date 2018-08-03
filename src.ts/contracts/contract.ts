@@ -4,8 +4,9 @@ import { Indexed, Interface } from './interface';
 
 import { defaultAbiCoder, formatSignature, parseSignature } from '../utils/abi-coder';
 import { getAddress, getContractAddress } from '../utils/address';
-import { BigNumber, bigNumberify, ConstantZero } from '../utils/bignumber';
+import { BigNumber, bigNumberify } from '../utils/bignumber';
 import { hexDataLength, hexDataSlice, isHexString } from '../utils/bytes';
+import { Zero } from '../utils/constants';
 import { defineReadOnly, jsonCopy, shallowCopy } from '../utils/properties';
 import { poll } from '../utils/web';
 
@@ -139,7 +140,7 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
 
                 // Call (constant functions) always cost 0 ether
                 if (estimateOnly) {
-                    return Promise.resolve(ConstantZero);
+                    return Promise.resolve(Zero);
                 }
 
                 if (!contract.provider) {
