@@ -34,6 +34,11 @@ describe("Dist Build:", function() {
 
     test('ethers.js');
     test('ethers.min.js');
+
+    it("does not have host specific includes", function() {
+        var data = fs.readFileSync(path.resolve(__dirname, '../dist/ethers.types.txt')).toString();
+        assert.ok(data.toLowerCase().indexOf('/ricmoo') === -1, 'contains ricmoo in a path');
+    });
 });
 
 /*
