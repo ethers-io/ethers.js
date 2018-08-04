@@ -125,7 +125,7 @@ export class Wallet extends AbstractSigner {
         return this.provider.sendTransaction(this.sign(tx));
     }
 
-    encrypt(password: Arrayish | string, options: any, progressCallback: ProgressCallback): Promise<string> {
+    encrypt(password: Arrayish | string, options?: any, progressCallback?: ProgressCallback): Promise<string> {
         if (typeof(options) === 'function' && !progressCallback) {
             progressCallback = options;
             options = {};
