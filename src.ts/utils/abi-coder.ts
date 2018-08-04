@@ -911,6 +911,8 @@ function getTypes(coders) {
 }
 */
 function splitNesting(value: string): Array<any> {
+    value = value.trim();
+
     var result = [];
     var accum = '';
     var depth = 0;
@@ -931,7 +933,7 @@ function splitNesting(value: string): Array<any> {
             }
         }
     }
-    result.push(accum);
+    if (accum) { result.push(accum); }
 
     return result;
 }
