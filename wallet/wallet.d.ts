@@ -25,7 +25,7 @@ export declare class Wallet extends AbstractSigner {
     getBalance(blockTag?: BlockTag): Promise<BigNumber>;
     getTransactionCount(blockTag?: BlockTag): Promise<number>;
     sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
-    encrypt(password: Arrayish | string, options: any, progressCallback: ProgressCallback): Promise<string>;
+    encrypt(password: Arrayish | string, options?: any, progressCallback?: ProgressCallback): Promise<string>;
     /**
      *  Static methods to create Wallet instances.
      */

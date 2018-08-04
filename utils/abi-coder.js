@@ -805,6 +805,7 @@ function getTypes(coders) {
 }
 */
 function splitNesting(value) {
+    value = value.trim();
     var result = [];
     var accum = '';
     var depth = 0;
@@ -827,7 +828,9 @@ function splitNesting(value) {
             }
         }
     }
-    result.push(accum);
+    if (accum) {
+        result.push(accum);
+    }
     return result;
 }
 // @TODO: Is there a way to return "class"?
