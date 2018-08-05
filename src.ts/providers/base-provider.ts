@@ -814,7 +814,9 @@ export class BaseProvider extends Provider {
         let tx: TransactionRequest = {
             to: transaction.to,
             from: transaction.from,
-            data: transaction.data
+            data: transaction.data,
+            gasPrice: transaction.gasPrice,
+            value: transaction.value
         };
 
         return this.ready.then(() => {
