@@ -10634,7 +10634,9 @@ var BaseProvider = /** @class */ (function (_super) {
         var tx = {
             to: transaction.to,
             from: transaction.from,
-            data: transaction.data
+            data: transaction.data,
+            gasPrice: transaction.gasPrice,
+            value: transaction.value
         };
         return this.ready.then(function () {
             return properties_1.resolveProperties(tx).then(function (tx) {
