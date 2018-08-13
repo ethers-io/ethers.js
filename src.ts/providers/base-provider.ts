@@ -776,12 +776,13 @@ export class BaseProvider extends Provider {
 
         // Check the hash we expect is the same as the hash the server reported
         if (hash != null && tx.hash !== hash) {
-            errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
+            errors.throwError('Transaction hash mismatch from Provider.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
 
         this._emitted['t:' + tx.hash] = 'pending';
-        result.wait = (timeout?: number) => {
-            return this.waitForTransaction(hash, timeout).then((receipt) => {
+        // @TODO: (confirmations? number, timeout? number)
+        result.wait = () => {
+            return this.waitForTransaction(hash).then((receipt) => {
                 if (receipt.status === 0) {
                     errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
                         transactionHash: hash,
