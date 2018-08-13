@@ -81,7 +81,7 @@ function getNetwork(network) {
     var n = networks[network.name];
     // Not a standard network; check that it is a valid network in general
     if (!n) {
-        if (typeof (n.chainId) !== 'number') {
+        if (typeof (network.chainId) !== 'number') {
             errors.throwError('invalid network chainId', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
         }
         return network;

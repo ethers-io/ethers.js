@@ -10,6 +10,8 @@ declare module 'ethers/ethers' {
     import { Contract, Interface } from 'ethers/contracts';
     import * as providers from 'ethers/providers';
     import { HDNode, SigningKey, Wallet } from 'ethers/wallet';
+    import { AbiCoder } from 'ethers/utils/abi-coder';
+    import { BigNumber } from 'ethers/utils/bignumber';
     import * as constants from 'ethers/utils/constants';
     import * as errors from 'ethers/utils/errors';
     import * as utils from 'ethers/utils';
@@ -18,7 +20,7 @@ declare module 'ethers/ethers' {
     import { platform } from 'ethers/utils/shims';
     import { version } from 'ethers/_version';
     function getDefaultProvider(network?: types.Network | string): providers.BaseProvider;
-    export { Wallet, HDNode, SigningKey, Contract, Interface, getDefaultProvider, providers, errors, constants, utils, types, wordlists, platform, version };
+    export { Wallet, HDNode, SigningKey, Contract, Interface, getDefaultProvider, providers, AbiCoder, BigNumber, errors, constants, utils, types, wordlists, platform, version };
 }
 
 declare module 'ethers/contracts' {
@@ -43,6 +45,75 @@ declare module 'ethers/wallet' {
     import * as HDNode from 'ethers/wallet/hdnode';
     import { SigningKey } from 'ethers/wallet/signing-key';
     export { HDNode, SigningKey, Wallet };
+}
+
+declare module 'ethers/utils/abi-coder' {
+    import { BigNumber } from 'ethers/utils/bignumber';
+    import { Arrayish } from 'ethers/utils/bytes';
+    export type CoerceFunc = (type: string, value: any) => any;
+    export type ParamType = {
+        name?: string;
+        type: string;
+        indexed?: boolean;
+        components?: Array<any>;
+    };
+    export type EventFragment = {
+        type: string;
+        name: string;
+        anonymous: boolean;
+        inputs: Array<ParamType>;
+    };
+    export type FunctionFragment = {
+        type: string;
+        name: string;
+        constant: boolean;
+        inputs: Array<ParamType>;
+        outputs: Array<ParamType>;
+        payable: boolean;
+        stateMutability: string;
+        gas: BigNumber;
+    };
+    export const defaultCoerceFunc: CoerceFunc;
+    export function parseParamType(type: string): ParamType;
+    export function formatParamType(paramType: ParamType): string;
+    export function formatSignature(fragment: EventFragment | FunctionFragment): string;
+    export function parseSignature(fragment: string): EventFragment | FunctionFragment;
+    export class AbiCoder {
+        readonly coerceFunc: CoerceFunc;
+        constructor(coerceFunc?: CoerceFunc);
+        encode(types: Array<string | ParamType>, values: Array<any>): string;
+        decode(types: Array<string | ParamType>, data: Arrayish): any;
+    }
+    export const defaultAbiCoder: AbiCoder;
+}
+
+declare module 'ethers/utils/bignumber' {
+    import { Hexable } from 'ethers/utils/bytes';
+    import { Arrayish } from 'ethers/utils/bytes';
+    export type BigNumberish = BigNumber | string | number | Arrayish;
+    export class BigNumber implements Hexable {
+        constructor(value: BigNumberish);
+        fromTwos(value: number): BigNumber;
+        toTwos(value: number): BigNumber;
+        add(other: BigNumberish): BigNumber;
+        sub(other: BigNumberish): BigNumber;
+        div(other: BigNumberish): BigNumber;
+        mul(other: BigNumberish): BigNumber;
+        mod(other: BigNumberish): BigNumber;
+        pow(other: BigNumberish): BigNumber;
+        maskn(value: number): BigNumber;
+        eq(other: BigNumberish): boolean;
+        lt(other: BigNumberish): boolean;
+        lte(other: BigNumberish): boolean;
+        gt(other: BigNumberish): boolean;
+        gte(other: BigNumberish): boolean;
+        isZero(): boolean;
+        toNumber(): number;
+        toString(): string;
+        toHexString(): string;
+        static isBigNumber(value: any): value is BigNumber;
+    }
+    export function bigNumberify(value: BigNumberish): BigNumber;
 }
 
 declare module 'ethers/utils/constants' {
@@ -79,10 +150,10 @@ declare module 'ethers/utils/errors' {
 }
 
 declare module 'ethers/utils' {
-    import { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from 'ethers/utils/abi-coder';
+    import { defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from 'ethers/utils/abi-coder';
     import { getAddress, getContractAddress, getIcapAddress } from 'ethers/utils/address';
     import * as base64 from 'ethers/utils/base64';
-    import { BigNumber, bigNumberify } from 'ethers/utils/bignumber';
+    import { bigNumberify } from 'ethers/utils/bignumber';
     import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexZeroPad, joinSignature, padZeros, splitSignature, stripZeros } from 'ethers/utils/bytes';
     import { hashMessage, id, namehash } from 'ethers/utils/hash';
     import { getJsonWalletAddress } from 'ethers/utils/json-wallet';
@@ -98,7 +169,7 @@ declare module 'ethers/utils' {
     import { toUtf8Bytes, toUtf8String } from 'ethers/utils/utf8';
     import { formatEther, parseEther, formatUnits, parseUnits } from 'ethers/utils/units';
     import { fetchJson } from 'ethers/utils/web';
-    export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, getNetwork, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, arrayify, concat, padZeros, stripZeros, base64, BigNumber, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computePublicKey, verifyMessage };
+    export { defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, getNetwork, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computePublicKey, verifyMessage };
 }
 
 declare module 'ethers/types' {
@@ -138,7 +209,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.0-beta.11";
+    export const version = "4.0.0-beta.12";
 }
 
 declare module 'ethers/contracts/contract' {
@@ -553,92 +624,6 @@ declare module 'ethers/wallet/signing-key' {
     }
 }
 
-declare module 'ethers/utils/bignumber' {
-    import { Hexable } from 'ethers/utils/bytes';
-    import { Arrayish } from 'ethers/utils/bytes';
-    export type BigNumberish = BigNumber | string | number | Arrayish;
-    export class BigNumber implements Hexable {
-        constructor(value: BigNumberish);
-        fromTwos(value: number): BigNumber;
-        toTwos(value: number): BigNumber;
-        add(other: BigNumberish): BigNumber;
-        sub(other: BigNumberish): BigNumber;
-        div(other: BigNumberish): BigNumber;
-        mul(other: BigNumberish): BigNumber;
-        mod(other: BigNumberish): BigNumber;
-        pow(other: BigNumberish): BigNumber;
-        maskn(value: number): BigNumber;
-        eq(other: BigNumberish): boolean;
-        lt(other: BigNumberish): boolean;
-        lte(other: BigNumberish): boolean;
-        gt(other: BigNumberish): boolean;
-        gte(other: BigNumberish): boolean;
-        isZero(): boolean;
-        toNumber(): number;
-        toString(): string;
-        toHexString(): string;
-        static isBigNumber(value: any): value is BigNumber;
-    }
-    export function bigNumberify(value: BigNumberish): BigNumber;
-}
-
-declare module 'ethers/utils/abi-coder' {
-    import { BigNumber } from 'ethers/utils/bignumber';
-    import { Arrayish } from 'ethers/utils/bytes';
-    export type CoerceFunc = (type: string, value: any) => any;
-    export type ParamType = {
-        name?: string;
-        type: string;
-        indexed?: boolean;
-        components?: Array<any>;
-    };
-    export type EventFragment = {
-        type: string;
-        name: string;
-        anonymous: boolean;
-        inputs: Array<ParamType>;
-    };
-    export type FunctionFragment = {
-        type: string;
-        name: string;
-        constant: boolean;
-        inputs: Array<ParamType>;
-        outputs: Array<ParamType>;
-        payable: boolean;
-        stateMutability: string;
-        gas: BigNumber;
-    };
-    export const defaultCoerceFunc: CoerceFunc;
-    export function parseParamType(type: string): ParamType;
-    export function formatParamType(paramType: ParamType): string;
-    export function formatSignature(fragment: EventFragment | FunctionFragment): string;
-    export function parseSignature(fragment: string): EventFragment | FunctionFragment;
-    export class AbiCoder {
-        readonly coerceFunc: CoerceFunc;
-        constructor(coerceFunc?: CoerceFunc);
-        encode(types: Array<string | ParamType>, values: Array<any>): string;
-        decode(types: Array<string | ParamType>, data: Arrayish): any;
-    }
-    export const defaultAbiCoder: AbiCoder;
-}
-
-declare module 'ethers/utils/address' {
-    import { BigNumber } from 'ethers/utils/bignumber';
-    import { Arrayish } from 'ethers/utils/bytes';
-    export function getAddress(address: string): string;
-    export function getIcapAddress(address: string): string;
-    export function getContractAddress(transaction: {
-        from: string;
-        nonce: Arrayish | BigNumber | number;
-    }): string;
-}
-
-declare module 'ethers/utils/base64' {
-    import { Arrayish } from 'ethers/utils/bytes';
-    export function decode(textData: string): Uint8Array;
-    export function encode(data: Arrayish): string;
-}
-
 declare module 'ethers/utils/bytes' {
     /**
       *  Conversion Utilities
@@ -669,6 +654,23 @@ declare module 'ethers/utils/bytes' {
     export function hexZeroPad(value: string, length: number): string;
     export function splitSignature(signature: Arrayish | Signature): Signature;
     export function joinSignature(signature: Signature): string;
+}
+
+declare module 'ethers/utils/address' {
+    import { BigNumber } from 'ethers/utils/bignumber';
+    import { Arrayish } from 'ethers/utils/bytes';
+    export function getAddress(address: string): string;
+    export function getIcapAddress(address: string): string;
+    export function getContractAddress(transaction: {
+        from: string;
+        nonce: Arrayish | BigNumber | number;
+    }): string;
+}
+
+declare module 'ethers/utils/base64' {
+    import { Arrayish } from 'ethers/utils/bytes';
+    export function decode(textData: string): Uint8Array;
+    export function encode(data: Arrayish): string;
 }
 
 declare module 'ethers/utils/hash' {

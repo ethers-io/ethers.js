@@ -685,11 +685,12 @@ var BaseProvider = /** @class */ (function (_super) {
         var result = tx;
         // Check the hash we expect is the same as the hash the server reported
         if (hash != null && tx.hash !== hash) {
-            errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
+            errors.throwError('Transaction hash mismatch from Provider.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
         this._emitted['t:' + tx.hash] = 'pending';
-        result.wait = function (timeout) {
-            return _this.waitForTransaction(hash, timeout).then(function (receipt) {
+        // @TODO: (confirmations? number, timeout? number)
+        result.wait = function () {
+            return _this.waitForTransaction(hash).then(function (receipt) {
                 if (receipt.status === 0) {
                     errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
                         transactionHash: hash,

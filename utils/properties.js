@@ -23,7 +23,7 @@ function setType(object, type) {
 }
 exports.setType = setType;
 function isType(object, type) {
-    return (object._ethersType === type);
+    return (object && object._ethersType === type);
 }
 exports.isType = isType;
 function resolveProperties(object) {

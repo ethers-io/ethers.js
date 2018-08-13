@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.0-beta.11";
+exports.version = "4.0.0-beta.12";
 
 },{}],2:[function(require,module,exports){
 'use strict';
@@ -957,6 +957,10 @@ var wallet_1 = require("./wallet");
 exports.HDNode = wallet_1.HDNode;
 exports.SigningKey = wallet_1.SigningKey;
 exports.Wallet = wallet_1.Wallet;
+var abi_coder_1 = require("./utils/abi-coder");
+exports.AbiCoder = abi_coder_1.AbiCoder;
+var bignumber_1 = require("./utils/bignumber");
+exports.BigNumber = bignumber_1.BigNumber;
 var constants = __importStar(require("./utils/constants"));
 exports.constants = constants;
 var errors = __importStar(require("./utils/errors"));
@@ -981,7 +985,7 @@ function getDefaultProvider(network) {
 }
 exports.getDefaultProvider = getDefaultProvider;
 
-},{"./_version":1,"./contracts":3,"./providers":52,"./types":57,"./utils":67,"./utils/constants":63,"./utils/errors":64,"./utils/shims":77,"./wallet":85,"./wordlists":89}],6:[function(require,module,exports){
+},{"./_version":1,"./contracts":3,"./providers":52,"./types":57,"./utils":67,"./utils/abi-coder":58,"./utils/bignumber":61,"./utils/constants":63,"./utils/errors":64,"./utils/shims":77,"./wallet":85,"./wordlists":89}],6:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -10599,11 +10603,12 @@ var BaseProvider = /** @class */ (function (_super) {
         var result = tx;
         // Check the hash we expect is the same as the hash the server reported
         if (hash != null && tx.hash !== hash) {
-            errors.throwError('Transaction hash mismatch from Proivder.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
+            errors.throwError('Transaction hash mismatch from Provider.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
         this._emitted['t:' + tx.hash] = 'pending';
-        result.wait = function (timeout) {
-            return _this.waitForTransaction(hash, timeout).then(function (receipt) {
+        // @TODO: (confirmations? number, timeout? number)
+        result.wait = function () {
+            return _this.waitForTransaction(hash).then(function (receipt) {
                 if (receipt.status === 0) {
                     errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
                         transactionHash: hash,
@@ -13716,7 +13721,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var abi_coder_1 = require("./abi-coder");
-exports.AbiCoder = abi_coder_1.AbiCoder;
 exports.defaultAbiCoder = abi_coder_1.defaultAbiCoder;
 exports.formatSignature = abi_coder_1.formatSignature;
 exports.formatParamType = abi_coder_1.formatParamType;
@@ -13729,7 +13733,6 @@ exports.getIcapAddress = address_1.getIcapAddress;
 var base64 = __importStar(require("./base64"));
 exports.base64 = base64;
 var bignumber_1 = require("./bignumber");
-exports.BigNumber = bignumber_1.BigNumber;
 exports.bigNumberify = bignumber_1.bigNumberify;
 var bytes_1 = require("./bytes");
 exports.arrayify = bytes_1.arrayify;
@@ -13931,7 +13934,7 @@ function getNetwork(network) {
     var n = networks[network.name];
     // Not a standard network; check that it is a valid network in general
     if (!n) {
-        if (typeof (n.chainId) !== 'number') {
+        if (typeof (network.chainId) !== 'number') {
             errors.throwError('invalid network chainId', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
         }
         return network;
@@ -14022,7 +14025,7 @@ function setType(object, type) {
 }
 exports.setType = setType;
 function isType(object, type) {
-    return (object._ethersType === type);
+    return (object && object._ethersType === type);
 }
 exports.isType = isType;
 function resolveProperties(object) {
@@ -15938,11 +15941,7 @@ var Wallet = /** @class */ (function (_super) {
         }
         if (this.mnemonic) {
             // Make sure we don't accidentally bubble the mnemonic up the call-stack
-            var safeOptions = {};
-            for (var key in options) {
-                safeOptions[key] = options[key];
-            }
-            options = safeOptions;
+            options = properties_1.shallowCopy(options);
             // Set the mnemonic and path
             options.mnemonic = this.mnemonic;
             options.path = this.path;

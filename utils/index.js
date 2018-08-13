@@ -8,7 +8,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var abi_coder_1 = require("./abi-coder");
-exports.AbiCoder = abi_coder_1.AbiCoder;
 exports.defaultAbiCoder = abi_coder_1.defaultAbiCoder;
 exports.formatSignature = abi_coder_1.formatSignature;
 exports.formatParamType = abi_coder_1.formatParamType;
@@ -21,7 +20,6 @@ exports.getIcapAddress = address_1.getIcapAddress;
 var base64 = __importStar(require("./base64"));
 exports.base64 = base64;
 var bignumber_1 = require("./bignumber");
-exports.BigNumber = bignumber_1.BigNumber;
 exports.bigNumberify = bignumber_1.bigNumberify;
 var bytes_1 = require("./bytes");
 exports.arrayify = bytes_1.arrayify;

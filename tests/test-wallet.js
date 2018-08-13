@@ -59,7 +59,7 @@ function checkTransaction(parsedTransaction, test) {
         var value = parsedTransaction[key];
 
         if ({ gasLimit: 1, gasPrice: 1, value: 1 }[key]) {
-            assert.ok((ethers.utils.BigNumber.isBigNumber(value)),
+            assert.ok((ethers.BigNumber.isBigNumber(value)),
                 'parsed into a big number - ' + key);
             value = value.toHexString();
 

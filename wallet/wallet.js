@@ -140,11 +140,7 @@ var Wallet = /** @class */ (function (_super) {
         }
         if (this.mnemonic) {
             // Make sure we don't accidentally bubble the mnemonic up the call-stack
-            var safeOptions = {};
-            for (var key in options) {
-                safeOptions[key] = options[key];
-            }
-            options = safeOptions;
+            options = properties_1.shallowCopy(options);
             // Set the mnemonic and path
             options.mnemonic = this.mnemonic;
             options.path = this.path;
