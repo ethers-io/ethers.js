@@ -24,7 +24,7 @@ export function setType(object: any, type: string): void {
 }
 
 export function isType(object: any, type: string): boolean {
-    return (object._ethersType === type);
+    return (object && object._ethersType === type);
 }
 
 export function resolveProperties(object: any): Promise<any> {
