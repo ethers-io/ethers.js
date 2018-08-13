@@ -139,9 +139,7 @@ export class Wallet extends AbstractSigner {
 
         if (this.mnemonic) {
             // Make sure we don't accidentally bubble the mnemonic up the call-stack
-            var safeOptions: any = {};
-            for (var key in options) { safeOptions[key] = options[key]; }
-            options = safeOptions;
+            options = shallowCopy(options);
 
             // Set the mnemonic and path
             options.mnemonic = this.mnemonic;
