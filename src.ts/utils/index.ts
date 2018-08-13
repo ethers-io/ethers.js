@@ -1,9 +1,9 @@
 'use strict';
 
-import { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from './abi-coder';
+import { defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from './abi-coder';
 import { getAddress, getContractAddress, getIcapAddress } from './address';
 import * as base64 from './base64';
-import { BigNumber, bigNumberify } from './bignumber';
+import { bigNumberify } from './bignumber';
 import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexZeroPad, joinSignature, padZeros, splitSignature, stripZeros } from './bytes';
 import { hashMessage, id, namehash } from './hash';
 import { getJsonWalletAddress } from './json-wallet';
@@ -21,7 +21,6 @@ import { formatEther, parseEther, formatUnits, parseUnits } from './units';
 import { fetchJson } from './web';
 
 export {
-    AbiCoder,
     defaultAbiCoder,
     formatSignature,
     formatParamType,
@@ -46,7 +45,6 @@ export {
 
     base64,
 
-    BigNumber,
     bigNumberify,
 
     hexlify,

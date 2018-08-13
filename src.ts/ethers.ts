@@ -6,6 +6,9 @@ import * as providers from './providers';
 
 import { HDNode, SigningKey, Wallet } from './wallet';
 
+import { AbiCoder } from './utils/abi-coder';
+import { BigNumber } from './utils/bignumber';
+
 import * as constants from './utils/constants';
 import * as errors from './utils/errors';
 import * as utils from './utils';
@@ -39,6 +42,8 @@ export {
     getDefaultProvider,
     providers,
 
+    AbiCoder,
+    BigNumber,
     errors,
     constants,
     utils,
