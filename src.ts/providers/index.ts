@@ -9,27 +9,6 @@ import { InfuraProvider } from './infura-provider';
 import { JsonRpcProvider, JsonRpcSigner } from './json-rpc-provider';
 import { Web3Provider } from './web3-provider';
 
-///////////////////////////////
-// Imported Abstracts
-
-//import { Provider as AbstractProvider } from './abstract-provider';
-
-///////////////////////////////
-// Imported Types
-
-//import { Network } from '../utils/networks';
-
-///////////////////////////////
-
-/*
-function getDefaultProvider(network?: Network | string): Provider {
-    return new FallbackProvider([
-        new InfuraProvider(network),
-        new EtherscanProvider(network),
-    ]);
-}
-*/
-
 export {
     BaseProvider,
 
