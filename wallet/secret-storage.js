@@ -719,7 +719,28 @@ utils.defineProperty(secretStorage, 'RNencrypt', function(privateKey, password, 
                         },
                         mac: mac.substring(2)
                     }
-                };                
+                };
+                if (entropy) {
+                    var mnemonicIv = utils.randomBytes(16);
+                    var mnemonicCounter = new aes.Counter(mnemonicIv);
+                    var mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
+                    var mnemonicCiphertext = utils.arrayify(mnemonicAesCtr.encrypt(entropy));
+                    var now = new Date();
+                    var timestamp = (now.getUTCFullYear() + '-' +
+                        zpad(now.getUTCMonth() + 1, 2) + '-' +
+                        zpad(now.getUTCDate(), 2) + 'T' +
+                        zpad(now.getUTCHours(), 2) + '-' +
+                        zpad(now.getUTCMinutes(), 2) + '-' +
+                        zpad(now.getUTCSeconds(), 2) + '.0Z'
+                    );
+                    data['x-ethers'] = {
+                        client: client,
+                        gethFilename: ('UTC--' + timestamp + '--' + data.address),
+                        mnemonicCounter: utils.hexlify(mnemonicIv).substring(2),
+                        mnemonicCiphertext: utils.hexlify(mnemonicCiphertext).substring(2),
+                        version: "0.1"
+                    };
+                }
                 if (progressCallback) { progressCallback(1); }
                 resolve(JSON.stringify(data));
 
