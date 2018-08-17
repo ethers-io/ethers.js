@@ -418,7 +418,7 @@ utils.defineProperty(Wallet, 'createRandom', function(options) {
 });
 
 
-utils.defineProperty(Wallet, 'fromEncryptedWallet', function(json, password, progressCallback) {
+utils.defineProperty(Wallet, 'fromEncryptedWallet', function(json, password, options, progressCallback) {
     if (progressCallback && typeof(progressCallback) !== 'function') {
         throw new Error('invalid callback');
     }
@@ -435,7 +435,7 @@ utils.defineProperty(Wallet, 'fromEncryptedWallet', function(json, password, pro
 
         } else if (secretStorage.isValidWallet(json)) {
 
-            secretStorage.decrypt(json, password, progressCallback).then(function(signingKey) {
+            secretStorage.decrypt(json, password, options, progressCallback).then(function(signingKey) {
                 var wallet = new Wallet(signingKey);
                 if (signingKey.mnemonic && signingKey.path) {
                     utils.defineProperty(wallet, 'mnemonic', signingKey.mnemonic);

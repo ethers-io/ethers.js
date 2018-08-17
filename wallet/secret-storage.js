@@ -447,7 +447,8 @@ utils.defineProperty(secretStorage, 'encrypt', function(privateKey, password, op
     });
 });
 
-utils.defineProperty(secretStorage, 'RNdecrypt', function(json, password, progressCallback) {
+utils.defineProperty(secretStorage, 'RNdecrypt', function(json, password, options, progressCallback) {
+    options = options || { mnemonic: false };
     var data = JSON.parse(json);
 
     var decrypt = function(key, ciphertext) {
@@ -498,9 +499,14 @@ utils.defineProperty(secretStorage, 'RNdecrypt', function(json, password, progre
 
             var mnemonicCounter = new aes.Counter(mnemonicIv);
             var mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-
             var path = searchPath(data, 'x-ethers/path') || defaultPath;
-
+            // prevent a mnemonic decryption
+            if (!options.mnemonic) {
+                var MNEMONIC_STATE = 'ENCRYPTED';
+                signingKey.mnemonic = MNEMONIC_STATE;
+                signingKey.path = path;
+                return signingKey;
+            }
             var entropy = arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
             var mnemonic = HDNode.entropyToMnemonic(entropy);
 
