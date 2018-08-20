@@ -111,12 +111,13 @@ function parseUnits(value, unitType) {
 
     var whole = comps[0], fraction = comps[1];
     if (!whole) { whole = '0'; }
-    if (!fraction) { fraction = '0'; }
+    if (!fraction) { fraction = ''; }
 
     // Prevent underflow
     if (fraction.length > unitInfo.decimals) {
         throwError('too many decimal places', { input: value, decimals: fraction.length });
     }
+    if (fraction == '') fraction = '0'
 
     // Fully pad the string with zeros to get to wei
     while (fraction.length < unitInfo.decimals) { fraction += '0'; }
