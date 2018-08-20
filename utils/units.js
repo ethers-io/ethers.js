@@ -10,7 +10,7 @@ var names = [
     'Mwei',
     'Gwei',
     'szabo',
-    'finny',
+    'finney',
     'ether',
 ];
 
