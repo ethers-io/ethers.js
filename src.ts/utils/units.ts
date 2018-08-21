@@ -14,7 +14,7 @@ const names = [
     'Mwei',
     'Gwei',
     'szabo',
-    'finny',
+    'finney',
     'ether',
 ];
 
