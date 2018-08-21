@@ -8,7 +8,7 @@ import { BigNumber, bigNumberify } from '../utils/bignumber';
 import { arrayify, concat, hexlify, hexZeroPad, isHexString } from '../utils/bytes';
 import { id } from '../utils/hash';
 import { keccak256 } from '../utils/keccak256';
-import { defineReadOnly, defineFrozen, isType, setType } from '../utils/properties';
+import { deepCopy, defineReadOnly, isType, setType } from '../utils/properties';
 
 import * as errors from '../utils/errors';
 
@@ -83,18 +83,11 @@ class _Indexed implements Indexed {
 
 class Description {
     constructor(info: any) {
+        setType(this, 'Description');
         for (var key in info) {
-            let value = info[key];
-            if (value != null && typeof(value) === 'object') {
-                if (BigNumber.isBigNumber(value)) {
-                    defineReadOnly(this, key, value);
-                } else {
-                    defineFrozen(this, key, value);
-                }
-            } else {
-                defineReadOnly(this, key, value);
-            }
+            defineReadOnly(this, key, deepCopy(info[key], true));
         }
+        Object.freeze(this);
     }
 }
 
@@ -256,7 +249,7 @@ class _EventDescription extends Description implements EventDescription {
             arrayify(data)
         );
 
-        var result = new Result({});
+        var result: any = {};
         var nonIndexedIndex = 0, indexedIndex = 0;
         this.inputs.forEach(function(input, index) {
             if (input.indexed) {
@@ -277,7 +270,7 @@ class _EventDescription extends Description implements EventDescription {
 
         result.length = this.inputs.length;
 
-        return result;
+        return new Result(result);
     }
 }
 
@@ -416,7 +409,7 @@ export class Interface {
             _abi.push(<EventFragment | FunctionFragment>fragment);
         });
 
-        defineFrozen(this, 'abi', _abi);
+        defineReadOnly(this, 'abi', deepCopy(_abi, true));
 
         _abi.forEach(addMethod, this);
 

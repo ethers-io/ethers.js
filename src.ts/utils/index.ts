@@ -12,11 +12,11 @@ import { sha256 } from './sha2';
 import { keccak256 as solidityKeccak256, pack as solidityPack, sha256 as soliditySha256 } from './solidity';
 import { randomBytes } from './random-bytes';
 import { getNetwork } from './networks';
-import { defineFrozen, defineReadOnly, resolveProperties, shallowCopy } from './properties';
+import { deepCopy, defineReadOnly, resolveProperties, shallowCopy } from './properties';
 import * as RLP from './rlp';
 import { computePublicKey, verifyMessage } from './secp256k1';
 import { parse as parseTransaction, serialize as serializeTransaction } from './transaction';
-import { toUtf8Bytes, toUtf8String } from './utf8';
+import { formatBytes32String, parseBytes32String, toUtf8Bytes, toUtf8String } from './utf8';
 import { formatEther, parseEther, formatUnits, parseUnits } from './units';
 import { fetchJson } from './web';
 
@@ -32,8 +32,8 @@ export {
     fetchJson,
     getNetwork,
 
+    deepCopy,
     defineReadOnly,
-    defineFrozen,
     resolveProperties,
     shallowCopy,
 
@@ -55,6 +55,9 @@ export {
 
     toUtf8Bytes,
     toUtf8String,
+
+    formatBytes32String,
+    parseBytes32String,
 
     hashMessage,
     namehash,

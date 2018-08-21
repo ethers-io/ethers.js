@@ -8,14 +8,6 @@ export function defineReadOnly(object: any, name: string, value: any): void {
     });
 }
 
-export function defineFrozen(object: any, name: string, value: any): void {
-    var frozen = JSON.stringify(value);
-    Object.defineProperty(object, name, {
-        enumerable: true,
-        get: function() { return JSON.parse(frozen); }
-    });
-}
-
 // There are some issues with instanceof with npm link, so we use this
 // to ensure types are what we expect.
 
@@ -56,8 +48,43 @@ export function shallowCopy(object: any): any {
     return result;
 }
 
-export function jsonCopy(object: any): any {
-    return JSON.parse(JSON.stringify(object));
+let opaque: { [key: string]: boolean } = { boolean: true, number: true, string: true };
+
+export function deepCopy(object: any, frozen?: boolean): any {
+
+    if (object === undefined || object === null || opaque[typeof(object)]) { return object; }
+
+    if (Array.isArray(object)) {
+        let result: Array<any> = [];
+        object.forEach((item) => {
+            result.push(deepCopy(item, frozen));
+        });
+
+        if (frozen) { Object.freeze(result); }
+
+        return result
+    }
+
+    if (typeof(object) === 'object') {
+
+        // Some internal objects, which are already immutable
+        if (isType(object, 'BigNumber')) { return object; }
+        if (isType(object, 'Description')) { return object; }
+        if (isType(object, 'Indexed')) { return object; }
+
+        let result: { [ key: string ]: any } = {};
+        for (var key in object) {
+            let value = object[key];
+            if (value === undefined) { continue; }
+            defineReadOnly(result, key, deepCopy(value, frozen));
+        }
+
+        if (frozen) { Object.freeze(result); }
+
+        return result;
+    }
+
+    throw new Error('Cannot deepCopy ' + typeof(object));
 }
 
 // See: https://github.com/isaacs/inherits/blob/master/inherits_browser.js

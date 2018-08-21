@@ -7,7 +7,7 @@ import { getAddress, getContractAddress } from '../utils/address';
 import { BigNumber, bigNumberify } from '../utils/bignumber';
 import { hexDataLength, hexDataSlice, isHexString } from '../utils/bytes';
 import { Zero } from '../utils/constants';
-import { defineReadOnly, jsonCopy, shallowCopy } from '../utils/properties';
+import { defineReadOnly, deepCopy, shallowCopy } from '../utils/properties';
 import { poll } from '../utils/web';
 
 import * as errors from '../utils/errors';
@@ -536,7 +536,7 @@ export class Contract {
         let wrappedListener = (log: Log) => {
             let decoded = Array.prototype.slice.call(eventFilter.decode(log));
 
-            let event = jsonCopy(log);
+            let event = deepCopy(log);
             event.args = decoded;
             event.decode = eventFilter.event.decode;
             event.event = eventFilter.event.name;

@@ -7,7 +7,7 @@ import { BigNumber, bigNumberify } from './bignumber';
 import { arrayify, concat, hexlify, padZeros } from './bytes';
 import { NegativeOne, Zero, One, MaxUint256 } from '../utils/constants';
 import { toUtf8Bytes, toUtf8String } from './utf8';
-import { defineReadOnly, jsonCopy } from './properties';
+import { deepCopy, defineReadOnly, shallowCopy } from './properties';
 
 import * as errors from './errors';
 
@@ -986,8 +986,9 @@ function getParamCoder(coerceFunc: CoerceFunc, param: ParamType): Coder {
     var match = param.type.match(paramTypeArray);
     if (match) {
         let size = parseInt(match[2] || "-1");
-        param = jsonCopy(param);
+        param = shallowCopy(param);
         param.type = match[1];
+        param = deepCopy(param);
         return new CoderArray(coerceFunc, getParamCoder(coerceFunc, param), size, param.name);
     }
 
@@ -1056,7 +1057,7 @@ export class AbiCoder {
             if (typeof(type) === 'string') {
                 typeObject = parseParam(type);
             } else {
-                typeObject = jsonCopy(type);
+                typeObject = deepCopy(type);
             }
 
             coders.push(getParamCoder(this.coerceFunc, typeObject));
