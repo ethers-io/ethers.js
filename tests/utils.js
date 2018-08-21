@@ -48,7 +48,7 @@ function randomBytes(seed, lower, upper) {
     }
 
     var top = convert.arrayify(keccak256(result));
-    var percent = ((top[0] << 16) | (top[1] << 8) | top[2]) / 0x00ffffff;
+    var percent = ((top[0] << 16) | (top[1] << 8) | top[2]) / 0x01000000;
 
     return result.slice(0, lower + parseInt((upper - lower) * percent));
 }
@@ -59,7 +59,7 @@ function randomHexString(seed, lower, upper) {
 
 function randomNumber(seed, lower, upper) {
     var top = randomBytes(seed, 3);
-    var percent = ((top[0] << 16) | (top[1] << 8) | top[2]) / 0x00ffffff;
+    var percent = ((top[0] << 16) | (top[1] << 8) | top[2]) / 0x01000000;
     return lower + parseInt((upper - lower) * percent);
 }
 
