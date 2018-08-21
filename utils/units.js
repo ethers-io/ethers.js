@@ -16,7 +16,7 @@ var names = [
     'Mwei',
     'Gwei',
     'szabo',
-    'finny',
+    'finney',
     'ether',
 ];
 var unitInfos = {};

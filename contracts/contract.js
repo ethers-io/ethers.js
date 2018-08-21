@@ -426,7 +426,7 @@ var Contract = /** @class */ (function () {
         }
         var wrappedListener = function (log) {
             var decoded = Array.prototype.slice.call(eventFilter.decode(log));
-            var event = properties_1.jsonCopy(log);
+            var event = properties_1.deepCopy(log);
             event.args = decoded;
             event.decode = eventFilter.event.decode;
             event.event = eventFilter.event.name;

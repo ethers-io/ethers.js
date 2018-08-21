@@ -8,14 +8,6 @@ function defineReadOnly(object, name, value) {
     });
 }
 exports.defineReadOnly = defineReadOnly;
-function defineFrozen(object, name, value) {
-    var frozen = JSON.stringify(value);
-    Object.defineProperty(object, name, {
-        enumerable: true,
-        get: function () { return JSON.parse(frozen); }
-    });
-}
-exports.defineFrozen = defineFrozen;
 // There are some issues with instanceof with npm link, so we use this
 // to ensure types are what we expect.
 function setType(object, type) {
@@ -54,10 +46,48 @@ function shallowCopy(object) {
     return result;
 }
 exports.shallowCopy = shallowCopy;
-function jsonCopy(object) {
-    return JSON.parse(JSON.stringify(object));
+var opaque = { boolean: true, number: true, string: true };
+function deepCopy(object, frozen) {
+    if (object === undefined || object === null || opaque[typeof (object)]) {
+        return object;
+    }
+    if (Array.isArray(object)) {
+        var result_1 = [];
+        object.forEach(function (item) {
+            result_1.push(deepCopy(item, frozen));
+        });
+        if (frozen) {
+            Object.freeze(result_1);
+        }
+        return result_1;
+    }
+    if (typeof (object) === 'object') {
+        // Some internal objects, which are already immutable
+        if (isType(object, 'BigNumber')) {
+            return object;
+        }
+        if (isType(object, 'Description')) {
+            return object;
+        }
+        if (isType(object, 'Indexed')) {
+            return object;
+        }
+        var result = {};
+        for (var key in object) {
+            var value = object[key];
+            if (value === undefined) {
+                continue;
+            }
+            defineReadOnly(result, key, deepCopy(value, frozen));
+        }
+        if (frozen) {
+            Object.freeze(result);
+        }
+        return result;
+    }
+    throw new Error('Cannot deepCopy ' + typeof (object));
 }
-exports.jsonCopy = jsonCopy;
+exports.deepCopy = deepCopy;
 // See: https://github.com/isaacs/inherits/blob/master/inherits_browser.js
 function inherits(ctor, superCtor) {
     ctor.super_ = superCtor;

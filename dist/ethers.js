@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.0-beta.12";
+exports.version = "4.0.0-beta.13";
 
 },{}],2:[function(require,module,exports){
 'use strict';
@@ -432,7 +432,7 @@ var Contract = /** @class */ (function () {
         }
         var wrappedListener = function (log) {
             var decoded = Array.prototype.slice.call(eventFilter.decode(log));
-            var event = properties_1.jsonCopy(log);
+            var event = properties_1.deepCopy(log);
             event.args = decoded;
             event.decode = eventFilter.event.decode;
             event.event = eventFilter.event.name;
@@ -586,20 +586,11 @@ var _Indexed = /** @class */ (function () {
 }());
 var Description = /** @class */ (function () {
     function Description(info) {
+        properties_1.setType(this, 'Description');
         for (var key in info) {
-            var value = info[key];
-            if (value != null && typeof (value) === 'object') {
-                if (bignumber_1.BigNumber.isBigNumber(value)) {
-                    properties_1.defineReadOnly(this, key, value);
-                }
-                else {
-                    properties_1.defineFrozen(this, key, value);
-                }
-            }
-            else {
-                properties_1.defineReadOnly(this, key, value);
-            }
+            properties_1.defineReadOnly(this, key, properties_1.deepCopy(info[key], true));
         }
+        Object.freeze(this);
     }
     return Description;
 }());
@@ -745,7 +736,7 @@ var _EventDescription = /** @class */ (function (_super) {
             var resultIndexed = abi_coder_1.defaultAbiCoder.decode(inputIndexed, bytes_1.concat(topics));
         }
         var resultNonIndexed = abi_coder_1.defaultAbiCoder.decode(inputNonIndexed, bytes_1.arrayify(data));
-        var result = new Result({});
+        var result = {};
         var nonIndexedIndex = 0, indexedIndex = 0;
         this.inputs.forEach(function (input, index) {
             if (input.indexed) {
@@ -767,7 +758,7 @@ var _EventDescription = /** @class */ (function (_super) {
             }
         });
         result.length = this.inputs.length;
-        return result;
+        return new Result(result);
     };
     return _EventDescription;
 }(Description));
@@ -876,7 +867,7 @@ var Interface = /** @class */ (function () {
             // @TODO: We should probable do some validation; create abiCoder.formatSignature for checking
             _abi.push(fragment);
         });
-        properties_1.defineFrozen(this, 'abi', _abi);
+        properties_1.defineReadOnly(this, 'abi', properties_1.deepCopy(_abi, true));
         _abi.forEach(addMethod, this);
         // If there wasn't a constructor, create the default constructor
         if (!this.deployFunction) {
@@ -12840,8 +12831,9 @@ function getParamCoder(coerceFunc, param) {
     var match = param.type.match(paramTypeArray);
     if (match) {
         var size = parseInt(match[2] || "-1");
-        param = properties_1.jsonCopy(param);
+        param = properties_1.shallowCopy(param);
         param.type = match[1];
+        param = properties_1.deepCopy(param);
         return new CoderArray(coerceFunc, getParamCoder(coerceFunc, param), size, param.name);
     }
     if (param.type.substring(0, 5) === 'tuple') {
@@ -12896,7 +12888,7 @@ var AbiCoder = /** @class */ (function () {
                 typeObject = parseParam(type);
             }
             else {
-                typeObject = properties_1.jsonCopy(type);
+                typeObject = properties_1.deepCopy(type);
             }
             coders.push(getParamCoder(this.coerceFunc, typeObject));
         }, this);
@@ -13765,7 +13757,7 @@ exports.randomBytes = random_bytes_1.randomBytes;
 var networks_1 = require("./networks");
 exports.getNetwork = networks_1.getNetwork;
 var properties_1 = require("./properties");
-exports.defineFrozen = properties_1.defineFrozen;
+exports.deepCopy = properties_1.deepCopy;
 exports.defineReadOnly = properties_1.defineReadOnly;
 exports.resolveProperties = properties_1.resolveProperties;
 exports.shallowCopy = properties_1.shallowCopy;
@@ -13778,6 +13770,8 @@ var transaction_1 = require("./transaction");
 exports.parseTransaction = transaction_1.parse;
 exports.serializeTransaction = transaction_1.serialize;
 var utf8_1 = require("./utf8");
+exports.formatBytes32String = utf8_1.formatBytes32String;
+exports.parseBytes32String = utf8_1.parseBytes32String;
 exports.toUtf8Bytes = utf8_1.toUtf8Bytes;
 exports.toUtf8String = utf8_1.toUtf8String;
 var units_1 = require("./units");
@@ -14010,14 +14004,6 @@ function defineReadOnly(object, name, value) {
     });
 }
 exports.defineReadOnly = defineReadOnly;
-function defineFrozen(object, name, value) {
-    var frozen = JSON.stringify(value);
-    Object.defineProperty(object, name, {
-        enumerable: true,
-        get: function () { return JSON.parse(frozen); }
-    });
-}
-exports.defineFrozen = defineFrozen;
 // There are some issues with instanceof with npm link, so we use this
 // to ensure types are what we expect.
 function setType(object, type) {
@@ -14056,10 +14042,48 @@ function shallowCopy(object) {
     return result;
 }
 exports.shallowCopy = shallowCopy;
-function jsonCopy(object) {
-    return JSON.parse(JSON.stringify(object));
+var opaque = { boolean: true, number: true, string: true };
+function deepCopy(object, frozen) {
+    if (object === undefined || object === null || opaque[typeof (object)]) {
+        return object;
+    }
+    if (Array.isArray(object)) {
+        var result_1 = [];
+        object.forEach(function (item) {
+            result_1.push(deepCopy(item, frozen));
+        });
+        if (frozen) {
+            Object.freeze(result_1);
+        }
+        return result_1;
+    }
+    if (typeof (object) === 'object') {
+        // Some internal objects, which are already immutable
+        if (isType(object, 'BigNumber')) {
+            return object;
+        }
+        if (isType(object, 'Description')) {
+            return object;
+        }
+        if (isType(object, 'Indexed')) {
+            return object;
+        }
+        var result = {};
+        for (var key in object) {
+            var value = object[key];
+            if (value === undefined) {
+                continue;
+            }
+            defineReadOnly(result, key, deepCopy(value, frozen));
+        }
+        if (frozen) {
+            Object.freeze(result);
+        }
+        return result;
+    }
+    throw new Error('Cannot deepCopy ' + typeof (object));
 }
-exports.jsonCopy = jsonCopy;
+exports.deepCopy = deepCopy;
 // See: https://github.com/isaacs/inherits/blob/master/inherits_browser.js
 function inherits(ctor, superCtor) {
     ctor.super_ = superCtor;
@@ -14617,7 +14641,7 @@ var names = [
     'Mwei',
     'Gwei',
     'szabo',
-    'finny',
+    'finney',
     'ether',
 ];
 var unitInfos = {};
@@ -14754,6 +14778,7 @@ exports.parseEther = parseEther;
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
+var constants_1 = require("./constants");
 ///////////////////////////////
 var UnicodeNormalizationForm;
 (function (UnicodeNormalizationForm) {
@@ -14771,28 +14796,32 @@ function toUtf8Bytes(str, form) {
         str = str.normalize(form);
     }
     var result = [];
-    var offset = 0;
     for (var i = 0; i < str.length; i++) {
         var c = str.charCodeAt(i);
-        if (c < 128) {
-            result[offset++] = c;
+        if (c < 0x80) {
+            result.push(c);
         }
-        else if (c < 2048) {
-            result[offset++] = (c >> 6) | 192;
-            result[offset++] = (c & 63) | 128;
+        else if (c < 0x800) {
+            result.push((c >> 6) | 0xc0);
+            result.push((c & 0x3f) | 0x80);
         }
-        else if (((c & 0xFC00) == 0xD800) && (i + 1) < str.length && ((str.charCodeAt(i + 1) & 0xFC00) == 0xDC00)) {
+        else if ((c & 0xfc00) == 0xd800) {
+            i++;
+            var c2 = str.charCodeAt(i);
+            if (i >= str.length || (c2 & 0xfc00) !== 0xdc00) {
+                throw new Error('invalid utf-8 string');
+            }
             // Surrogate Pair
-            c = 0x10000 + ((c & 0x03FF) << 10) + (str.charCodeAt(++i) & 0x03FF);
-            result[offset++] = (c >> 18) | 240;
-            result[offset++] = ((c >> 12) & 63) | 128;
-            result[offset++] = ((c >> 6) & 63) | 128;
-            result[offset++] = (c & 63) | 128;
+            c = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
+            result.push((c >> 18) | 0xf0);
+            result.push(((c >> 12) & 0x3f) | 0x80);
+            result.push(((c >> 6) & 0x3f) | 0x80);
+            result.push((c & 0x3f) | 0x80);
         }
         else {
-            result[offset++] = (c >> 12) | 224;
-            result[offset++] = ((c >> 6) & 63) | 128;
-            result[offset++] = (c & 63) | 128;
+            result.push((c >> 12) | 0xe0);
+            result.push(((c >> 6) & 0x3f) | 0x80);
+            result.push((c & 0x3f) | 0x80);
         }
     }
     return bytes_1.arrayify(result);
@@ -14800,69 +14829,96 @@ function toUtf8Bytes(str, form) {
 exports.toUtf8Bytes = toUtf8Bytes;
 ;
 // http://stackoverflow.com/questions/13356493/decode-utf-8-with-javascript#13691499
-function toUtf8String(bytes) {
+function toUtf8String(bytes, ignoreErrors) {
     bytes = bytes_1.arrayify(bytes);
     var result = '';
     var i = 0;
     // Invalid bytes are ignored
     while (i < bytes.length) {
         var c = bytes[i++];
-        if (c >> 7 == 0) {
-            // 0xxx xxxx
+        // 0xxx xxxx
+        if (c >> 7 === 0) {
             result += String.fromCharCode(c);
             continue;
         }
-        // Invalid starting byte
-        if (c >> 6 == 0x02) {
-            continue;
-        }
-        // Multibyte; how many bytes left for thus character?
+        // Multibyte; how many bytes left for this character?
         var extraLength = null;
-        if (c >> 5 == 0x06) {
+        var overlongMask = null;
+        // 110x xxxx 10xx xxxx
+        if ((c & 0xe0) === 0xc0) {
             extraLength = 1;
+            overlongMask = 0x7f;
+            // 1110 xxxx 10xx xxxx 10xx xxxx
         }
-        else if (c >> 4 == 0x0e) {
+        else if ((c & 0xf0) === 0xe0) {
             extraLength = 2;
+            overlongMask = 0x7ff;
+            // 1111 0xxx 10xx xxxx 10xx xxxx 10xx xxxx
         }
-        else if (c >> 3 == 0x1e) {
+        else if ((c & 0xf8) === 0xf0) {
             extraLength = 3;
-        }
-        else if (c >> 2 == 0x3e) {
-            extraLength = 4;
-        }
-        else if (c >> 1 == 0x7e) {
-            extraLength = 5;
+            overlongMask = 0xffff;
         }
         else {
+            if (!ignoreErrors) {
+                if ((c & 0xc0) === 0x80) {
+                    throw new Error('invalid utf8 byte sequence; unexpected continuation byte');
+                }
+                throw new Error('invalid utf8 byte sequence; invalid prefix');
+            }
             continue;
         }
         // Do we have enough bytes in our data?
         if (i + extraLength > bytes.length) {
-            // If there is an invalid unprocessed byte, try to continue
+            if (!ignoreErrors) {
+                throw new Error('invalid utf8 byte sequence; too short');
+            }
+            // If there is an invalid unprocessed byte, skip continuation bytes
             for (; i < bytes.length; i++) {
-                if (bytes[i] >> 6 != 0x02) {
+                if (bytes[i] >> 6 !== 0x02) {
                     break;
                 }
             }
-            if (i != bytes.length)
-                continue;
-            // All leftover bytes are valid.
-            return result;
+            continue;
         }
-        // Remove the UTF-8 prefix from the char (res)
+        // Remove the length prefix from the char
         var res = c & ((1 << (8 - extraLength - 1)) - 1);
-        var count;
-        for (count = 0; count < extraLength; count++) {
-            var nextChar = bytes[i++];
-            // Is the char valid multibyte part?
-            if (nextChar >> 6 != 0x02) {
+        for (var j = 0; j < extraLength; j++) {
+            var nextChar = bytes[i];
+            // Invalid continuation byte
+            if ((nextChar & 0xc0) != 0x80) {
+                res = null;
                 break;
             }
             ;
             res = (res << 6) | (nextChar & 0x3f);
+            i++;
         }
-        if (count != extraLength) {
-            i--;
+        if (res === null) {
+            if (!ignoreErrors) {
+                throw new Error('invalid utf8 byte sequence; invalid continuation byte');
+            }
+            continue;
+        }
+        // Check for overlong seuences (more bytes than needed)
+        if (res <= overlongMask) {
+            if (!ignoreErrors) {
+                throw new Error('invalid utf8 byte sequence; overlong');
+            }
+            continue;
+        }
+        // Maximum code point
+        if (res > 0x10ffff) {
+            if (!ignoreErrors) {
+                throw new Error('invalid utf8 byte sequence; out-of-range');
+            }
+            continue;
+        }
+        // Reserved for UTF-16 surrogate halves
+        if (res >= 0xd800 && res <= 0xdfff) {
+            if (!ignoreErrors) {
+                throw new Error('invalid utf8 byte sequence; utf-16 surrogate');
+            }
             continue;
         }
         if (res <= 0xffff) {
@@ -14875,8 +14931,37 @@ function toUtf8String(bytes) {
     return result;
 }
 exports.toUtf8String = toUtf8String;
+function formatBytes32String(text) {
+    // Get the bytes
+    var bytes = toUtf8Bytes(text);
+    // Check we have room for null-termination
+    if (bytes.length > 31) {
+        throw new Error('bytes32 string must be less than 32 bytes');
+    }
+    // Zero-pad (implicitly null-terminates)
+    return bytes_1.hexlify(bytes_1.concat([bytes, constants_1.HashZero]).slice(0, 32));
+}
+exports.formatBytes32String = formatBytes32String;
+function parseBytes32String(bytes) {
+    var data = bytes_1.arrayify(bytes);
+    // Must be 32 bytes with a null-termination
+    if (data.length !== 32) {
+        throw new Error('invalid bytes32 - not 32 bytes long');
+    }
+    if (data[31] !== 0) {
+        throw new Error('invalid bytes32 sdtring - no null terminator');
+    }
+    // Find the null termination
+    var length = 31;
+    while (data[length - 1] === 0) {
+        length--;
+    }
+    // Determine the string value
+    return toUtf8String(data.slice(0, length));
+}
+exports.parseBytes32String = parseBytes32String;
 
-},{"./bytes":62}],82:[function(require,module,exports){
+},{"./bytes":62,"./constants":63}],82:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;

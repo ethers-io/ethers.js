@@ -36,20 +36,11 @@ var _Indexed = /** @class */ (function () {
 }());
 var Description = /** @class */ (function () {
     function Description(info) {
+        properties_1.setType(this, 'Description');
         for (var key in info) {
-            var value = info[key];
-            if (value != null && typeof (value) === 'object') {
-                if (bignumber_1.BigNumber.isBigNumber(value)) {
-                    properties_1.defineReadOnly(this, key, value);
-                }
-                else {
-                    properties_1.defineFrozen(this, key, value);
-                }
-            }
-            else {
-                properties_1.defineReadOnly(this, key, value);
-            }
+            properties_1.defineReadOnly(this, key, properties_1.deepCopy(info[key], true));
         }
+        Object.freeze(this);
     }
     return Description;
 }());
@@ -195,7 +186,7 @@ var _EventDescription = /** @class */ (function (_super) {
             var resultIndexed = abi_coder_1.defaultAbiCoder.decode(inputIndexed, bytes_1.concat(topics));
         }
         var resultNonIndexed = abi_coder_1.defaultAbiCoder.decode(inputNonIndexed, bytes_1.arrayify(data));
-        var result = new Result({});
+        var result = {};
         var nonIndexedIndex = 0, indexedIndex = 0;
         this.inputs.forEach(function (input, index) {
             if (input.indexed) {
@@ -217,7 +208,7 @@ var _EventDescription = /** @class */ (function (_super) {
             }
         });
         result.length = this.inputs.length;
-        return result;
+        return new Result(result);
     };
     return _EventDescription;
 }(Description));
@@ -326,7 +317,7 @@ var Interface = /** @class */ (function () {
             // @TODO: We should probable do some validation; create abiCoder.formatSignature for checking
             _abi.push(fragment);
         });
-        properties_1.defineFrozen(this, 'abi', _abi);
+        properties_1.defineReadOnly(this, 'abi', properties_1.deepCopy(_abi, true));
         _abi.forEach(addMethod, this);
         // If there wasn't a constructor, create the default constructor
         if (!this.deployFunction) {

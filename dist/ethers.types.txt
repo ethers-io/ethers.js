@@ -162,14 +162,14 @@ declare module 'ethers/utils' {
     import { keccak256 as solidityKeccak256, pack as solidityPack, sha256 as soliditySha256 } from 'ethers/utils/solidity';
     import { randomBytes } from 'ethers/utils/random-bytes';
     import { getNetwork } from 'ethers/utils/networks';
-    import { defineFrozen, defineReadOnly, resolveProperties, shallowCopy } from 'ethers/utils/properties';
+    import { deepCopy, defineReadOnly, resolveProperties, shallowCopy } from 'ethers/utils/properties';
     import * as RLP from 'ethers/utils/rlp';
     import { computePublicKey, verifyMessage } from 'ethers/utils/secp256k1';
     import { parse as parseTransaction, serialize as serializeTransaction } from 'ethers/utils/transaction';
-    import { toUtf8Bytes, toUtf8String } from 'ethers/utils/utf8';
+    import { formatBytes32String, parseBytes32String, toUtf8Bytes, toUtf8String } from 'ethers/utils/utf8';
     import { formatEther, parseEther, formatUnits, parseUnits } from 'ethers/utils/units';
     import { fetchJson } from 'ethers/utils/web';
-    export { defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, getNetwork, defineReadOnly, defineFrozen, resolveProperties, shallowCopy, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computePublicKey, verifyMessage };
+    export { defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, getNetwork, deepCopy, defineReadOnly, resolveProperties, shallowCopy, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, formatBytes32String, parseBytes32String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computePublicKey, verifyMessage };
 }
 
 declare module 'ethers/types' {
@@ -209,7 +209,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.0-beta.12";
+    export const version = "4.0.0-beta.13";
 }
 
 declare module 'ethers/contracts/contract' {
@@ -725,12 +725,11 @@ declare module 'ethers/utils/networks' {
 
 declare module 'ethers/utils/properties' {
     export function defineReadOnly(object: any, name: string, value: any): void;
-    export function defineFrozen(object: any, name: string, value: any): void;
     export function setType(object: any, type: string): void;
     export function isType(object: any, type: string): boolean;
     export function resolveProperties(object: any): Promise<any>;
     export function shallowCopy(object: any): any;
-    export function jsonCopy(object: any): any;
+    export function deepCopy(object: any, frozen?: boolean): any;
     export function inheritable(parent: any): (child: any) => void;
 }
 
@@ -798,7 +797,9 @@ declare module 'ethers/utils/utf8' {
         NFKD = "NFKD"
     }
     export function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm): Uint8Array;
-    export function toUtf8String(bytes: Arrayish): string;
+    export function toUtf8String(bytes: Arrayish, ignoreErrors?: boolean): string;
+    export function formatBytes32String(text: string): string;
+    export function parseBytes32String(bytes: Arrayish): string;
 }
 
 declare module 'ethers/utils/units' {

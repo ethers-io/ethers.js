@@ -1,6 +1,7 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
+var constants_1 = require("./constants");
 ///////////////////////////////
 var UnicodeNormalizationForm;
 (function (UnicodeNormalizationForm) {
@@ -18,28 +19,32 @@ function toUtf8Bytes(str, form) {
         str = str.normalize(form);
     }
     var result = [];
-    var offset = 0;
     for (var i = 0; i < str.length; i++) {
         var c = str.charCodeAt(i);
-        if (c < 128) {
-            result[offset++] = c;
+        if (c < 0x80) {
+            result.push(c);
         }
-        else if (c < 2048) {
-            result[offset++] = (c >> 6) | 192;
-            result[offset++] = (c & 63) | 128;
+        else if (c < 0x800) {
+            result.push((c >> 6) | 0xc0);
+            result.push((c & 0x3f) | 0x80);
         }
-        else if (((c & 0xFC00) == 0xD800) && (i + 1) < str.length && ((str.charCodeAt(i + 1) & 0xFC00) == 0xDC00)) {
+        else if ((c & 0xfc00) == 0xd800) {
+            i++;
+            var c2 = str.charCodeAt(i);
+            if (i >= str.length || (c2 & 0xfc00) !== 0xdc00) {
+                throw new Error('invalid utf-8 string');
+            }
             // Surrogate Pair
-            c = 0x10000 + ((c & 0x03FF) << 10) + (str.charCodeAt(++i) & 0x03FF);
-            result[offset++] = (c >> 18) | 240;
-            result[offset++] = ((c >> 12) & 63) | 128;
-            result[offset++] = ((c >> 6) & 63) | 128;
-            result[offset++] = (c & 63) | 128;
+            c = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
+            result.push((c >> 18) | 0xf0);
+            result.push(((c >> 12) & 0x3f) | 0x80);
+            result.push(((c >> 6) & 0x3f) | 0x80);
+            result.push((c & 0x3f) | 0x80);
         }
         else {
-            result[offset++] = (c >> 12) | 224;
-            result[offset++] = ((c >> 6) & 63) | 128;
-            result[offset++] = (c & 63) | 128;
+            result.push((c >> 12) | 0xe0);
+            result.push(((c >> 6) & 0x3f) | 0x80);
+            result.push((c & 0x3f) | 0x80);
         }
     }
     return bytes_1.arrayify(result);
@@ -47,69 +52,96 @@ function toUtf8Bytes(str, form) {
 exports.toUtf8Bytes = toUtf8Bytes;
 ;
 // http://stackoverflow.com/questions/13356493/decode-utf-8-with-javascript#13691499
-function toUtf8String(bytes) {
+function toUtf8String(bytes, ignoreErrors) {
     bytes = bytes_1.arrayify(bytes);
     var result = '';
     var i = 0;
     // Invalid bytes are ignored
     while (i < bytes.length) {
         var c = bytes[i++];
-        if (c >> 7 == 0) {
-            // 0xxx xxxx
+        // 0xxx xxxx
+        if (c >> 7 === 0) {
             result += String.fromCharCode(c);
             continue;
         }
-        // Invalid starting byte
-        if (c >> 6 == 0x02) {
-            continue;
-        }
-        // Multibyte; how many bytes left for thus character?
+        // Multibyte; how many bytes left for this character?
         var extraLength = null;
-        if (c >> 5 == 0x06) {
+        var overlongMask = null;
+        // 110x xxxx 10xx xxxx
+        if ((c & 0xe0) === 0xc0) {
             extraLength = 1;
+            overlongMask = 0x7f;
+            // 1110 xxxx 10xx xxxx 10xx xxxx
         }
-        else if (c >> 4 == 0x0e) {
+        else if ((c & 0xf0) === 0xe0) {
             extraLength = 2;
+            overlongMask = 0x7ff;
+            // 1111 0xxx 10xx xxxx 10xx xxxx 10xx xxxx
         }
-        else if (c >> 3 == 0x1e) {
+        else if ((c & 0xf8) === 0xf0) {
             extraLength = 3;
-        }
-        else if (c >> 2 == 0x3e) {
-            extraLength = 4;
-        }
-        else if (c >> 1 == 0x7e) {
-            extraLength = 5;
+            overlongMask = 0xffff;
         }
         else {
+            if (!ignoreErrors) {
+                if ((c & 0xc0) === 0x80) {
+                    throw new Error('invalid utf8 byte sequence; unexpected continuation byte');
+                }
+                throw new Error('invalid utf8 byte sequence; invalid prefix');
+            }
             continue;
         }
         // Do we have enough bytes in our data?
         if (i + extraLength > bytes.length) {
-            // If there is an invalid unprocessed byte, try to continue
+            if (!ignoreErrors) {
+                throw new Error('invalid utf8 byte sequence; too short');
+            }
+            // If there is an invalid unprocessed byte, skip continuation bytes
             for (; i < bytes.length; i++) {
-                if (bytes[i] >> 6 != 0x02) {
+                if (bytes[i] >> 6 !== 0x02) {
                     break;
                 }
             }
-            if (i != bytes.length)
-                continue;
-            // All leftover bytes are valid.
-            return result;
+            continue;
         }
-        // Remove the UTF-8 prefix from the char (res)
+        // Remove the length prefix from the char
         var res = c & ((1 << (8 - extraLength - 1)) - 1);
-        var count;
-        for (count = 0; count < extraLength; count++) {
-            var nextChar = bytes[i++];
-            // Is the char valid multibyte part?
-            if (nextChar >> 6 != 0x02) {
+        for (var j = 0; j < extraLength; j++) {
+            var nextChar = bytes[i];
+            // Invalid continuation byte
+            if ((nextChar & 0xc0) != 0x80) {
+                res = null;
                 break;
             }
             ;
             res = (res << 6) | (nextChar & 0x3f);
+            i++;
         }
-        if (count != extraLength) {
-            i--;
+        if (res === null) {
+            if (!ignoreErrors) {
+                throw new Error('invalid utf8 byte sequence; invalid continuation byte');
+            }
+            continue;
+        }
+        // Check for overlong seuences (more bytes than needed)
+        if (res <= overlongMask) {
+            if (!ignoreErrors) {
+                throw new Error('invalid utf8 byte sequence; overlong');
+            }
+            continue;
+        }
+        // Maximum code point
+        if (res > 0x10ffff) {
+            if (!ignoreErrors) {
+                throw new Error('invalid utf8 byte sequence; out-of-range');
+            }
+            continue;
+        }
+        // Reserved for UTF-16 surrogate halves
+        if (res >= 0xd800 && res <= 0xdfff) {
+            if (!ignoreErrors) {
+                throw new Error('invalid utf8 byte sequence; utf-16 surrogate');
+            }
             continue;
         }
         if (res <= 0xffff) {
@@ -122,3 +154,32 @@ function toUtf8String(bytes) {
     return result;
 }
 exports.toUtf8String = toUtf8String;
+function formatBytes32String(text) {
+    // Get the bytes
+    var bytes = toUtf8Bytes(text);
+    // Check we have room for null-termination
+    if (bytes.length > 31) {
+        throw new Error('bytes32 string must be less than 32 bytes');
+    }
+    // Zero-pad (implicitly null-terminates)
+    return bytes_1.hexlify(bytes_1.concat([bytes, constants_1.HashZero]).slice(0, 32));
+}
+exports.formatBytes32String = formatBytes32String;
+function parseBytes32String(bytes) {
+    var data = bytes_1.arrayify(bytes);
+    // Must be 32 bytes with a null-termination
+    if (data.length !== 32) {
+        throw new Error('invalid bytes32 - not 32 bytes long');
+    }
+    if (data[31] !== 0) {
+        throw new Error('invalid bytes32 sdtring - no null terminator');
+    }
+    // Find the null termination
+    var length = 31;
+    while (data[length - 1] === 0) {
+        length--;
+    }
+    // Determine the string value
+    return toUtf8String(data.slice(0, length));
+}
+exports.parseBytes32String = parseBytes32String;

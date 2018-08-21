@@ -880,8 +880,9 @@ function getParamCoder(coerceFunc, param) {
     var match = param.type.match(paramTypeArray);
     if (match) {
         var size = parseInt(match[2] || "-1");
-        param = properties_1.jsonCopy(param);
+        param = properties_1.shallowCopy(param);
         param.type = match[1];
+        param = properties_1.deepCopy(param);
         return new CoderArray(coerceFunc, getParamCoder(coerceFunc, param), size, param.name);
     }
     if (param.type.substring(0, 5) === 'tuple') {
@@ -936,7 +937,7 @@ var AbiCoder = /** @class */ (function () {
                 typeObject = parseParam(type);
             }
             else {
-                typeObject = properties_1.jsonCopy(type);
+                typeObject = properties_1.deepCopy(type);
             }
             coders.push(getParamCoder(this.coerceFunc, typeObject));
         }, this);
