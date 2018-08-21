@@ -229,3 +229,94 @@ describe('Test Base64 coder', function() {
         assert.equal(ethers.utils.toUtf8String(ethers.utils.base64.decode(encoded)), decodedText, 'decodes from base64 sstring');
     });
 });
+
+describe('Test UTF-8 coder', function() {
+    var BadUTF = [
+        // See: https://en.wikipedia.org/wiki/UTF-8#Overlong_encodings
+        { bytes: [ 0xF0,0x82, 0x82, 0xAC ], reason: 'overlong', name: 'wikipedia overlong encoded Euro sign' },
+        { bytes: [ 0xc0, 0x80 ], reason: 'overlong', name: '2-byte overlong - 0xc080' },
+        { bytes: [ 0xc0, 0xbf ], reason: 'overlong', name: '2-byte overlong - 0xc0bf' },
+        { bytes: [ 0xc1, 0x80 ], reason: 'overlong', name: '2-byte overlong - 0xc180' },
+        { bytes: [ 0xc1, 0xbf ], reason: 'overlong', name: '2-byte overlong - 0xc1bf' },
+
+        // Reserved UTF-16 Surrogate halves
+        { bytes: [ 0xed, 0xa0, 0x80 ], reason: 'utf-16 surrogate', name: 'utf-16 surrogate - U+d800' },
+        { bytes: [ 0xed, 0xbf, 0xbf ], reason: 'utf-16 surrogate', name: 'utf-16 surrogate - U+dfff' },
+
+        // a leading byte not followed by enough continuation bytes
+        { bytes: [ 0xdf ], reason: 'too short', name: 'too short - 2-bytes - 0x00' },
+        { bytes: [ 0xe0 ], reason: 'too short', name: 'too short - 3-bytes' },
+        { bytes: [ 0xe0, 0x80 ], reason: 'too short', name: 'too short - 3-bytes with 1' },
+
+        { bytes: [ 0x80 ], reason: 'unexpected continuation byte', name: 'unexpected continuation byte' },
+        { bytes: [ 0xc2, 0x00 ], reason: 'invalid continuation byte', name: 'invalid continuation byte - 0xc200' },
+        { bytes: [ 0xc2, 0x40 ], reason: 'invalid continuation byte', name: 'invalid continuation byte - 0xc240' },
+        { bytes: [ 0xc2, 0xc0 ], reason: 'invalid continuation byte', name: 'invalid continuation byte - 0xc2c0' },
+
+        // Out of range
+        { bytes: [ 0xf4, 0x90, 0x80, 0x80 ], reason: 'out-of-range', name: 'out of range' },
+    ];
+
+    BadUTF.forEach(function(test) {
+        it('toUtf8String - ' + test.name, function() {
+            assert.throws(function() {
+                var result = ethers.utils.toUtf8String(test.bytes);
+                console.log('Result', result);
+            }, function(error) {
+                return (error.message.split(';').pop().trim() === test.reason)
+            }, test.name);
+        });
+    });
+
+    it('toUtf8String - random conversions', function() {
+        this.timeout(200000);
+
+        function randomChar(seed) {
+            switch (utils.randomNumber(seed + '-range', 0, 4)) {
+                case 0:
+                    return String.fromCharCode(utils.randomNumber(seed + '-value', 0, 0x100));
+                case 1:
+                    return String.fromCharCode(utils.randomNumber(seed + '-value', 0, 0xd800));
+                case 2:
+                    return String.fromCharCode(utils.randomNumber(seed + '-value', 0xdfff + 1, 0xffff));
+                case 3:
+                    var left = utils.randomNumber(seed + '-value', 0xd800, 0xdbff + 1);
+                    var right = utils.randomNumber(seed + '-value', 0xdc00, 0xdfff + 1);
+                    return String.fromCharCode(left, right);
+            }
+
+            throw new Error('this should not happen');
+        }
+
+        function randomString(seed) {
+            var length = utils.randomNumber(seed + '-length', 1, 5);
+            var str = '';
+            for (var i = 0; i < length; i++) {
+                str += randomChar(seed + '-char-' + i);
+            }
+            return str;
+        }
+
+        for (var i = 0; i < 100000; i++) {
+            var seed = 'test-' + String(i);
+            var str = randomString(seed);
+
+            var bytes = ethers.utils.toUtf8Bytes(str)
+            var str2 = ethers.utils.toUtf8String(bytes);
+
+            assert.ok(Buffer.from(str).equals(Buffer.from(bytes)), 'bytes not generated correctly - ' + bytes)
+            assert.equal(str2, str, 'conversion not reflexive - ' + bytes);
+        }
+    });
+});
+
+describe('Test Bytes32String coder', function() {
+    // @TODO: a LOT more test cases; generated from Solidity
+    it("encodes an ens name", function() {
+        var str = "ricmoo.firefly.eth";
+        var bytes32 = ethers.utils.formatBytes32String(str);
+        var str2 = ethers.utils.parseBytes32String(bytes32);
+        assert.equal(bytes32, '0x7269636d6f6f2e66697265666c792e6574680000000000000000000000000000', 'formatted correctly');
+        assert.equal(str2, str, "parsed correctly");
+    });
+});
