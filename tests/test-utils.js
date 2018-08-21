@@ -99,7 +99,7 @@ describe('Test Unit Conversion', function () {
         var wei = ethers.utils.bigNumberify(test.wei);
         var formatting = test.format || {};
 
-        ['kwei', 'mwei', 'gwei', 'szabo', 'finny', 'satoshi'].forEach(function(name) {
+        ['kwei', 'mwei', 'gwei', 'szabo', 'finney', 'satoshi'].forEach(function(name) {
 
             var unitName = name;
             if (name === 'satoshi') { unitName = 8; }
