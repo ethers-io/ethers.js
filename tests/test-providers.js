@@ -409,7 +409,8 @@ describe('Test extra Etherscan operations', function() {
         this.timeout(100000);
         return provider.getHistory('ricmoo.firefly.eth').then(function(history) {
             assert.ok(history.length > 40, 'Etherscan history returns results');
-            assert.equal(history[0].hash, '0xd25f550cfdff90c086a6496a84dbb2c4577df15b1416e5b3319a3e4ebb5b25d8', 'Etherscan history returns correct transaction');
+            //assert.equal(history[0].hash, '0xd25f550cfdff90c086a6496a84dbb2c4577df15b1416e5b3319a3e4ebb5b25d8', 'Etherscan history returns correct transaction');
+            assert.equal(history[0].hash, '0x189f67df9fbdc54dbf03077540e4e4df07a01d0b35c52a7ff816dbbda7c99b74', 'Etherscan history returns correct transaction');
         });
     });
 });
