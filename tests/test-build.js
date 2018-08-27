@@ -22,7 +22,16 @@ describe("Package Version", function() {
 describe("Dist Build:", function() {
 
     // No need (and can't) check this in the browser
-    if (fs.readFileSync == null) { return; }
+    if (fs.readFileSync == null) {
+        return;
+    }
+
+    // Node.js 6 does not seem to use the package-lock.json properly, so it does
+    // not correctly generate the uglified dist files.
+    var version = parseInt(process.version.match(/^v([0-9]+)/)[1]);
+    if (version < 8) {
+        return;
+    }
 
     function test(filename) {
         it("matches dist build - " + filename, function() {
