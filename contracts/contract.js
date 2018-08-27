@@ -3,6 +3,7 @@
 var Interface = require('./interface.js');
 
 var utils = (function() {
+    var convert = require('../utils/convert.js');
     return {
         defineProperty: require('../utils/properties.js').defineProperty,
 
@@ -10,7 +11,8 @@ var utils = (function() {
 
         bigNumberify: require('../utils/bignumber.js').bigNumberify,
 
-        hexlify: require('../utils/convert.js').hexlify,
+        arrayify: convert.arrayify,
+        hexlify: convert.hexlify,
     };
 })();
 
@@ -124,9 +126,12 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
 
                     }).then(function(value) {
                         try {
+                            if ((utils.arrayify(value).length % 32) !== 0) {
+                                throw new Error('call exception');
+                            }
                             var result = call.parse(value);
                         } catch (error) {
-                            if (value === '0x' && method.outputs.types.length > 0) {
+                            if ((value === '0x' && method.outputs.types.length > 0) || error.message === 'call exception') {
                                 errors.throwError('call exception', errors.CALL_EXCEPTION, {
                                     address: addressOrName,
                                     method: call.signature,
