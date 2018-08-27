@@ -21,6 +21,12 @@ Complete Ethereum wallet implementation and utilities in JavaScript (and TypeScr
 - **MIT License** (including ALL dependencies); completely open source to do with as you please
 
 
+Keep Updated
+------------
+
+For the latest news and advisories, please follow (@ethersproject)[https://twitter.com/ethersproject] on Twitter.
+
+
 Installing
 ----------
 
@@ -28,7 +34,7 @@ To use in a browser:
 
 ```html
 <script charset="utf-8"
-        src="https://cdn.ethers.io/scripts/ethers-v4.min.js"
+        src="https://cdn.ethers.io/scripts/ethers-v4-beta.min.js"
         type="text/javascript">
 </script>
 ```
@@ -45,7 +51,18 @@ Documentation
 
 Browse the [API Documentation](https://docs.ethers.io/ethers.js/html/) online.
 
-Documentation is generated using [Sphinx](http://www.sphinx-doc.org) and can be browsed locally from the /docs/build/html directory.
+To fork and submit pull requests to the documentation, please see the
+[documentation repository](https://github.com/ethers-io/documentation).
+
+
+Related Libraries
+---------------
+
+- [Command Line Interface](https://github.com/ethers-io/ethers-cli) - Command Line Tools for ethers
+- [CryptoKitties](https://github.com/ricmoo/ethers-meow) - CryptoKitties utility libraries
+- [ENS](https://github.com/ethers-io/ethers-ens) - ENS utility libraries for managing names
+- [LedgerSigner](https://github.com/ethers-io/ethers-ledger) - Use a Ledger Hardware Wallet as an ethers Signer (supports HID (node.js) and U2F (browser); or specify your own transport)
+- [Web3 Bridge](https://github.com/ethers-io/ethers-web3-bridge) - Use ethers as the backend for a Web3 front-end
 
 
 Hacking and Contributing
@@ -71,7 +88,7 @@ Pull requests are always welcome, but please keep a few points in mind:
 - Add test cases for both expected and unexpected input
 - Any new features need to be supported by us (issues, documentation, testing), so anything that is overly complicated or specific may not be accepted
 
-If in doubt, please start an issue, and we can have a nice public discussion. :)
+In general, please start an issue before beginning a pull request, so we can have a public discussion. :)
 
 
 Donations
