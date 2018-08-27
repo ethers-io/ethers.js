@@ -101,10 +101,14 @@ export function computeAddress(key: string): string {
 }
 
 
-export function verifyMessage(message: Arrayish | string, signature: Signature | string): string {
-    let sig = splitSignature(signature);
-    let digest = hashMessage(message);
+export function computeSharedSecret(privateKey: Arrayish, publicKey: Arrayish): string {
+    let privateKeyPair = getCurve().keyFromPrivate(arrayify(privateKey));
+    let publicKeyPair = getCurve().keyFromPublic(arrayify(publicKey));
+    return hexZeroPad('0x' + privateKeyPair.derive(publicKeyPair.getPublic()).toString(16), 32);
+}
 
+export function verifyDigest(digest: Arrayish | string, signature: Signature | string): string {
+    let sig = splitSignature(signature);
     return recoverAddress(
         digest,
         {
@@ -113,4 +117,8 @@ export function verifyMessage(message: Arrayish | string, signature: Signature |
             recoveryParam: sig.recoveryParam
         }
     );
+}
+
+export function verifyMessage(message: Arrayish | string, signature: Signature | string): string {
+    return verifyDigest(hashMessage(message), signature);
 }

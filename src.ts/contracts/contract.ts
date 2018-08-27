@@ -8,7 +8,6 @@ import { BigNumber, bigNumberify } from '../utils/bignumber';
 import { hexDataLength, hexDataSlice, isHexString } from '../utils/bytes';
 import { Zero } from '../utils/constants';
 import { defineReadOnly, deepCopy, shallowCopy } from '../utils/properties';
-import { poll } from '../utils/web';
 
 import * as errors from '../utils/errors';
 
@@ -131,8 +130,10 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
             }
         });
 
-        // Send to the contract address
-        tx.to = contract.addressPromise;
+        // Send to the contract address (after checking the contract is deployed)
+        tx.to = contract.deployed().then(() => {
+            return contract.addressPromise;
+        });
 
         return resolveAddresses(contract.provider, params, method.inputs).then((params) => {
             tx.data = method.encode(params);
@@ -271,6 +272,8 @@ export class Contract {
     // This is only set if the contract was created with a call to deploy
     readonly deployTransaction: TransactionResponse;
 
+    private _deployed: Promise<Contract>;
+
     // https://github.com/Microsoft/TypeScript/issues/5453
     // Once this issue is resolved (there are open PR) we can do this nicer
     // by making addressOrName default to null for 2 operand calls. :)
@@ -339,7 +342,7 @@ export class Contract {
         }
 
         Object.keys(this.interface.functions).forEach((name) => {
-            var run = runMethod(this, name, false);
+            let run = runMethod(this, name, false);
 
             if ((<any>this)[name] == null) {
                 defineReadOnly(this, name, run);
@@ -356,21 +359,32 @@ export class Contract {
 
     // @TODO: Allow timeout?
     deployed(): Promise<Contract> {
+        if (!this._deployed) {
 
-        // If we were just deployed, we know the transaction we should occur in
-        if (this.deployTransaction) {
-            return this.deployTransaction.wait().then(() => {
-                return this;
-            });
+            // If we were just deployed, we know the transaction we should occur in
+            if (this.deployTransaction) {
+                this._deployed = this.deployTransaction.wait().then(() => {
+                    return this;
+                });
+
+            } else {
+                // @TODO: Once we allow a timeout to be passed in, we will wait
+                // up to that many blocks for getCode
+
+                // Otherwise, poll for our code to be deployed
+                this._deployed = this.provider.getCode(this.address).then((code) => {
+                    if (code === '0x') {
+                        errors.throwError('contract not deployed', errors.UNSUPPORTED_OPERATION, {
+                            contractAddress: this.address,
+                            operation: 'getDeployed'
+                        });
+                    }
+                    return this;
+                });
+            }
         }
 
-        // Otherwise, poll for our code to be deployed
-        return poll(() => {
-            return this.provider.getCode(this.address).then((code) => {
-                if (code === '0x') { return undefined; }
-                return this;
-            });
-        }, { onceBlock: this.provider });
+        return this._deployed;
     }
 
     // @TODO:
@@ -392,12 +406,18 @@ export class Contract {
         });
 
         tx.to = this.addressPromise;
-        return this.signer.sendTransaction(tx);
+        return this.deployed().then(() => {
+            return this.signer.sendTransaction(tx);
+        });
     }
 
     // Reconnect to a different signer or provider
     connect(signerOrProvider: Signer | Provider): Contract {
-        return new Contract(this.address, this.interface, signerOrProvider);
+        let contract = new Contract(this.address, this.interface, signerOrProvider);
+        if (this.deployTransaction) {
+            defineReadOnly(contract, 'deployTransaction', this.deployTransaction);
+        }
+        return contract;
     }
 
     // Re-attach to a different on=chain instance of this contract
