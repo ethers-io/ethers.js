@@ -5398,10 +5398,11 @@ var coderNumber = function(coerceFunc, size, signed, localName) {
                 });
             }
             value = value.toTwos(size * 8).maskn(size * 8);
-            //value = value.toTwos(size * 8).maskn(size * 8);
+
             if (signed) {
                 value = value.fromTwos(size * 8).toTwos(256);
             }
+
             return utils.padZeros(utils.arrayify(value), 32);
         },
         decode: function(data, offset) {
@@ -5469,6 +5470,14 @@ var coderFixedBytes = function(coerceFunc, length, localName) {
         encode: function(value) {
             try {
                 value = utils.arrayify(value);
+
+                // @TODO: In next major change, the value.length MUST equal the
+                // length, but that is a backward-incompatible change, so here
+                // we just check for things that can cause problems.
+                if (value.length > 32) {
+                    throw new Error('too many bytes for field');
+                }
+
             } catch (error) {
                 errors.throwError('invalid ' + name + ' value', errors.INVALID_ARGUMENT, {
                     arg: localName,
@@ -5476,7 +5485,8 @@ var coderFixedBytes = function(coerceFunc, length, localName) {
                     value: error.value
                 });
             }
-            if (length === 32) { return value; }
+
+            if (value.length === 32) { return value; }
 
             var result = new Uint8Array(32);
             result.set(value);
