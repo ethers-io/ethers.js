@@ -280,7 +280,7 @@ function parseSignatureFunction(fragment: string): FunctionFragment {
         name: '',
         outputs: [],
         payable: false,
-        stateMutability: null,
+        stateMutability: null,  // @TODO: Should this be initialized to 'nonpayable'?
         type: 'function'
     };
 
@@ -326,6 +326,7 @@ function parseSignatureFunction(fragment: string): FunctionFragment {
                 abi.constant = true;
                 abi.stateMutability = 'view';
                 break;
+            case 'external':
             case 'public':
             case '':
                 break;
