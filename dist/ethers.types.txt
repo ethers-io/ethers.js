@@ -164,12 +164,12 @@ declare module 'ethers/utils' {
     import { getNetwork } from 'ethers/utils/networks';
     import { deepCopy, defineReadOnly, resolveProperties, shallowCopy } from 'ethers/utils/properties';
     import * as RLP from 'ethers/utils/rlp';
-    import { computePublicKey, verifyMessage } from 'ethers/utils/secp256k1';
+    import { computePublicKey, computeSharedSecret, verifyMessage } from 'ethers/utils/secp256k1';
     import { parse as parseTransaction, serialize as serializeTransaction } from 'ethers/utils/transaction';
     import { formatBytes32String, parseBytes32String, toUtf8Bytes, toUtf8String } from 'ethers/utils/utf8';
     import { formatEther, parseEther, formatUnits, parseUnits } from 'ethers/utils/units';
     import { fetchJson } from 'ethers/utils/web';
-    export { defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, getNetwork, deepCopy, defineReadOnly, resolveProperties, shallowCopy, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, formatBytes32String, parseBytes32String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computePublicKey, verifyMessage };
+    export { defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, getNetwork, deepCopy, defineReadOnly, resolveProperties, shallowCopy, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, formatBytes32String, parseBytes32String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computePublicKey, computeSharedSecret, verifyMessage };
 }
 
 declare module 'ethers/types' {
@@ -498,7 +498,6 @@ declare module 'ethers/providers/json-rpc-provider' {
     export class JsonRpcSigner extends Signer {
         readonly provider: JsonRpcProvider;
         constructor(constructorGuard: any, provider: JsonRpcProvider, addressOrIndex?: string | number);
-        readonly address: string;
         getAddress(): Promise<string>;
         getBalance(blockTag?: BlockTag): Promise<BigNumber>;
         getTransactionCount(blockTag?: BlockTag): Promise<number>;
@@ -753,6 +752,8 @@ declare module 'ethers/utils/secp256k1' {
     export function computePublicKey(key: Arrayish, compressed?: boolean): string;
     export function recoverAddress(digest: Arrayish, signature: Signature): string;
     export function computeAddress(key: string): string;
+    export function computeSharedSecret(privateKey: Arrayish, publicKey: Arrayish): string;
+    export function verifyDigest(digest: Arrayish | string, signature: Signature | string): string;
     export function verifyMessage(message: Arrayish | string, signature: Signature | string): string;
 }
 

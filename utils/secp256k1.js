@@ -86,13 +86,22 @@ function computeAddress(key) {
     return address_1.getAddress('0x' + keccak256_1.keccak256(publicKey).substring(26));
 }
 exports.computeAddress = computeAddress;
-function verifyMessage(message, signature) {
+function computeSharedSecret(privateKey, publicKey) {
+    var privateKeyPair = getCurve().keyFromPrivate(bytes_1.arrayify(privateKey));
+    var publicKeyPair = getCurve().keyFromPublic(bytes_1.arrayify(publicKey));
+    return bytes_1.hexZeroPad('0x' + privateKeyPair.derive(publicKeyPair.getPublic()).toString(16), 32);
+}
+exports.computeSharedSecret = computeSharedSecret;
+function verifyDigest(digest, signature) {
     var sig = bytes_1.splitSignature(signature);
-    var digest = hash_1.hashMessage(message);
     return recoverAddress(digest, {
         r: sig.r,
         s: sig.s,
         recoveryParam: sig.recoveryParam
     });
+}
+exports.verifyDigest = verifyDigest;
+function verifyMessage(message, signature) {
+    return verifyDigest(hash_1.hashMessage(message), signature);
 }
 exports.verifyMessage = verifyMessage;

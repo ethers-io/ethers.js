@@ -10,7 +10,6 @@ export declare class JsonRpcSigner extends Signer {
     private _index;
     private _address;
     constructor(constructorGuard: any, provider: JsonRpcProvider, addressOrIndex?: string | number);
-    readonly address: string;
     getAddress(): Promise<string>;
     getBalance(blockTag?: BlockTag): Promise<BigNumber>;
     getTransactionCount(blockTag?: BlockTag): Promise<number>;

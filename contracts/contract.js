@@ -14,7 +14,6 @@ var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
 var constants_1 = require("../utils/constants");
 var properties_1 = require("../utils/properties");
-var web_1 = require("../utils/web");
 var errors = __importStar(require("../utils/errors"));
 ///////////////////////////////
 // Imported Abstracts
@@ -93,8 +92,10 @@ function runMethod(contract, functionName, estimateOnly) {
                 errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
             }
         });
-        // Send to the contract address
-        tx.to = contract.addressPromise;
+        // Send to the contract address (after checking the contract is deployed)
+        tx.to = contract.deployed().then(function () {
+            return contract.addressPromise;
+        });
         return resolveAddresses(contract.provider, params, method.inputs).then(function (params) {
             tx.data = method.encode(params);
             if (method.type === 'call') {
@@ -263,27 +264,36 @@ var Contract = /** @class */ (function () {
     // @TODO: Allow timeout?
     Contract.prototype.deployed = function () {
         var _this = this;
-        // If we were just deployed, we know the transaction we should occur in
-        if (this.deployTransaction) {
-            return this.deployTransaction.wait().then(function () {
-                return _this;
-            });
+        if (!this._deployed) {
+            // If we were just deployed, we know the transaction we should occur in
+            if (this.deployTransaction) {
+                this._deployed = this.deployTransaction.wait().then(function () {
+                    return _this;
+                });
+            }
+            else {
+                // @TODO: Once we allow a timeout to be passed in, we will wait
+                // up to that many blocks for getCode
+                // Otherwise, poll for our code to be deployed
+                this._deployed = this.provider.getCode(this.address).then(function (code) {
+                    if (code === '0x') {
+                        errors.throwError('contract not deployed', errors.UNSUPPORTED_OPERATION, {
+                            contractAddress: _this.address,
+                            operation: 'getDeployed'
+                        });
+                    }
+                    return _this;
+                });
+            }
         }
-        // Otherwise, poll for our code to be deployed
-        return web_1.poll(function () {
-            return _this.provider.getCode(_this.address).then(function (code) {
-                if (code === '0x') {
-                    return undefined;
-                }
-                return _this;
-            });
-        }, { onceBlock: this.provider });
+        return this._deployed;
     };
     // @TODO:
     // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>
     // @TODO:
     // estimateDeploy(bytecode: string, ...args): Promise<BigNumber>
     Contract.prototype.fallback = function (overrides) {
+        var _this = this;
         if (!this.signer) {
             errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' });
         }
@@ -295,11 +305,17 @@ var Contract = /** @class */ (function () {
             errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
         });
         tx.to = this.addressPromise;
-        return this.signer.sendTransaction(tx);
+        return this.deployed().then(function () {
+            return _this.signer.sendTransaction(tx);
+        });
     };
     // Reconnect to a different signer or provider
     Contract.prototype.connect = function (signerOrProvider) {
-        return new Contract(this.address, this.interface, signerOrProvider);
+        var contract = new Contract(this.address, this.interface, signerOrProvider);
+        if (this.deployTransaction) {
+            properties_1.defineReadOnly(contract, 'deployTransaction', this.deployTransaction);
+        }
+        return contract;
     };
     // Re-attach to a different on=chain instance of this contract
     Contract.prototype.attach = function (addressOrName) {

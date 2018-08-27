@@ -33,6 +33,7 @@ export declare class Contract {
     readonly [name: string]: ContractFunction | any;
     readonly addressPromise: Promise<string>;
     readonly deployTransaction: TransactionResponse;
+    private _deployed;
     constructor(addressOrName: string, contractInterface: Array<string | ParamType> | string | Interface, signerOrProvider: Signer | Provider);
     deployed(): Promise<Contract>;
     fallback(overrides?: TransactionRequest): Promise<TransactionResponse>;

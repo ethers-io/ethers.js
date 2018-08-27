@@ -60,6 +60,7 @@ var RLP = __importStar(require("./rlp"));
 exports.RLP = RLP;
 var secp256k1_1 = require("./secp256k1");
 exports.computePublicKey = secp256k1_1.computePublicKey;
+exports.computeSharedSecret = secp256k1_1.computeSharedSecret;
 exports.verifyMessage = secp256k1_1.verifyMessage;
 var transaction_1 = require("./transaction");
 exports.parseTransaction = transaction_1.parse;

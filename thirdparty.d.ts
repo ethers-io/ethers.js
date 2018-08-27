@@ -71,6 +71,7 @@ declare module "elliptic" {
         getPublic(): BN;
         getPrivate(encoding?: string): string;
         encode(encoding: string, compressed: boolean): string;
+        derive(publicKey: BN): BN;
         priv: BN;
     }
 

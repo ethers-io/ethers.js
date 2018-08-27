@@ -77,16 +77,14 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         }
         return _this;
     }
-    Object.defineProperty(JsonRpcSigner.prototype, "address", {
-        get: function () {
-            if (!this._address) {
-                errors.throwError('no sync sync address available; use getAddress', errors.UNSUPPORTED_OPERATION, { operation: 'address' });
-            }
-            return this._address;
-        },
-        enumerable: true,
-        configurable: true
-    });
+    /* May add back in the future; for now it is considered confusing. :)
+    get address(): string {
+        if (!this._address) {
+            errors.throwError('no sync sync address available; use getAddress', errors.UNSUPPORTED_OPERATION, { operation: 'address' });
+        }
+        return this._address
+    }
+    */
     JsonRpcSigner.prototype.getAddress = function () {
         var _this = this;
         if (this._address) {
@@ -96,7 +94,8 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             if (accounts.length <= _this._index) {
                 errors.throwError('unknown account #' + _this._index, errors.UNSUPPORTED_OPERATION, { operation: 'getAddress' });
             }
-            return address_1.getAddress(accounts[_this._index]);
+            _this._address = address_1.getAddress(accounts[_this._index]);
+            return _this._address;
         });
     };
     JsonRpcSigner.prototype.getBalance = function (blockTag) {

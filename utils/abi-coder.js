@@ -253,6 +253,7 @@ function parseSignatureFunction(fragment) {
                 abi.constant = true;
                 abi.stateMutability = 'view';
                 break;
+            case 'external':
             case 'public':
             case '':
                 break;
