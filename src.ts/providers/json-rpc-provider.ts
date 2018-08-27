@@ -78,12 +78,14 @@ export class JsonRpcSigner extends Signer {
         }
     }
 
+    /* May add back in the future; for now it is considered confusing. :)
     get address(): string {
         if (!this._address) {
             errors.throwError('no sync sync address available; use getAddress', errors.UNSUPPORTED_OPERATION, { operation: 'address' });
         }
         return this._address
     }
+    */
 
     getAddress(): Promise<string> {
         if (this._address) {
@@ -94,7 +96,8 @@ export class JsonRpcSigner extends Signer {
             if (accounts.length <= this._index) {
                 errors.throwError('unknown account #' + this._index, errors.UNSUPPORTED_OPERATION, { operation: 'getAddress' });
             }
-            return getAddress(accounts[this._index]);
+            this._address = getAddress(accounts[this._index]);
+            return this._address;
         });
     }
 
