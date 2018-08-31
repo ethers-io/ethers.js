@@ -92,6 +92,7 @@ export {
 
     computePublicKey,
     computeSharedSecret,
-    verifyMessage
+    verifyMessage,
+    verifyDigest
 }
 
