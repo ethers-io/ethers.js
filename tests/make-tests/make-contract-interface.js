@@ -43,7 +43,7 @@ var compile = (function() {
 
 // Create the indent given a tabstop
 function indent(tabs) {
-    var indent = new Buffer(tabs * 4);
+    var indent = Buffer.alloc(tabs * 4);
     indent.fill(32);
     return indent.toString('utf8')
 }
@@ -484,11 +484,11 @@ function makeTests() {
 
     check('sol-25',
         ['bytes32'],
-        [new Buffer('6761766f66796f726b0000000000000000000000000000000000000000000000', 'hex')]
+        [Buffer.from('6761766f66796f726b0000000000000000000000000000000000000000000000', 'hex')]
     );
     check('sol-26',
         ['bytes'],
-        [new Buffer('6761766f66796f726b', 'hex')]
+        [Buffer.from('6761766f66796f726b', 'hex')]
     );
 
     check('sol-27',
@@ -502,10 +502,10 @@ function makeTests() {
             getAddress("0x97916ef549947a3e0d321485a31dd2715a97d455"),
             "foobar2",
             [
-                new Buffer("a165ab0173c6", 'hex'),
-                new Buffer("f0f37bee9244", 'hex'),
-                new Buffer("c8dc0bf08d2b", 'hex'),
-                new Buffer("c8dc0bf08d2b", 'hex')
+                Buffer.from("a165ab0173c6", 'hex'),
+                Buffer.from("f0f37bee9244", 'hex'),
+                Buffer.from("c8dc0bf08d2b", 'hex'),
+                Buffer.from("c8dc0bf08d2b", 'hex')
             ],
             34
         ]
@@ -513,24 +513,24 @@ function makeTests() {
 
     check('sol-29',
         ['bytes32'],
-        [new Buffer('731a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b', 'hex')]
+        [Buffer.from('731a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b', 'hex')]
     );
     check('sol-30',
         ['bytes'],
-        [new Buffer('731a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b', 'hex')]
+        [Buffer.from('731a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b', 'hex')]
     );
 
     check('sol-31',
         ['bytes32[2]'],
         [[
-            new Buffer('731a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b', 'hex'),
-            new Buffer('731a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b', 'hex')
+            Buffer.from('731a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b', 'hex'),
+            Buffer.from('731a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b', 'hex')
         ]]
     );
 
     check('sol-32',
         ['bytes'],
-        [new Buffer('131a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b' +
+        [Buffer.from('131a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b' +
                     '231a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b' +
                     '331a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b', 'hex')]
     );
@@ -562,7 +562,7 @@ function makeTests() {
                 return {
                     type: 'bytes' + size,
                     value: function(extraSeed) {
-                        var value = new Buffer(utils.randomBytes(seed + '-' + extraSeed + '-type-0-value', size));
+                        var value = Buffer.from(utils.randomBytes(seed + '-' + extraSeed + '-type-0-value', size));
                         return {
                             value: value,
                             normalized: value
@@ -653,7 +653,7 @@ function makeTests() {
                     type: 'bytes',
                     value: function(extraSeed) {
                         var size = utils.randomNumber(seed + '-type-5b', 0, 100);
-                        var value = new Buffer(utils.randomBytes(seed + '-' + extraSeed + '-type-5a', size));
+                        var value = Buffer.from(utils.randomBytes(seed + '-' + extraSeed + '-type-5a', size));
                         return {
                             value: value,
                             normalized: value
@@ -920,7 +920,7 @@ function makeTestsAbi2() {
                         return {
                             type: 'bytes',
                             name: 'bytes',
-                            value: new Buffer(utils.randomBytes(seed + '-bytes-' + extra, 0, 64))
+                            value: Buffer.from(utils.randomBytes(seed + '-bytes-' + extra, 0, 64))
                         }
                     }
                 };
@@ -945,7 +945,7 @@ function makeTestsAbi2() {
                        return {
                            type: 'bytes' + String(count),
                            name: 'bytes' + String(count),
-                           value: new Buffer(utils.randomBytes(seed + '-bytes-value-' + extra, count, count))
+                           value: Buffer.from(utils.randomBytes(seed + '-bytes-value-' + extra, count, count))
                        };
                    }
                };

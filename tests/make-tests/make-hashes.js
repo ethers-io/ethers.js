@@ -16,13 +16,13 @@ function add(data) {
     });
 }
 
-add(new Buffer([ ]));
-add(new Buffer([ 0 ]));
-add(new Buffer([ 1 ]));
-add(new Buffer([ 0, 1 ]));
+add(Buffer.from([ ]));
+add(Buffer.from([ 0 ]));
+add(Buffer.from([ 1 ]));
+add(Buffer.from([ 0, 1 ]));
 
 for (var i = 0; i < 512; i++) {
-    var data = new Buffer(utils.randomBytes('data-' + i, 1, 128));
+    var data = Buffer.from(utils.randomBytes('data-' + i, 1, 128));
     add(data);
 }
 

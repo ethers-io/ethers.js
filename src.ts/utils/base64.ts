@@ -17,9 +17,9 @@ declare class Buffer implements ArrayLike<number> {
 }
 */
 export function decode(textData: string): Uint8Array {
-    return arrayify(new Uint8Array(new Buffer(textData, 'base64')));
+    return arrayify(new Uint8Array(Buffer.from(textData, 'base64')));
 };
 
 export function encode(data: Arrayish): string {
-    return new Buffer(arrayify(data)).toString('base64');
+    return Buffer.from(arrayify(data)).toString('base64');
 }

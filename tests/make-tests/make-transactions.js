@@ -80,13 +80,13 @@ for (var i = 0; i < 1000; i++) {
         nonce: trimHex(utils.randomHexString('nonce-' + i, 0, 4)),
     };
 
-    var privateKey = new Buffer(utils.randomBytes('privateKey-' + i, 32));
+    var privateKey = Buffer.from(utils.randomBytes('privateKey-' + i, 32));
 
     addTransaction(privateKey, 'random-' + i, transaction);
 }
 
 // See: https://github.com/ethereumjs/ethereumjs-tx/blob/master/test/txs.json
-addTransaction(new Buffer('164122e5d39e9814ca723a749253663bafb07f6af91704d9754c361eb315f0c1', 'hex'),
+addTransaction(Buffer.from('164122e5d39e9814ca723a749253663bafb07f6af91704d9754c361eb315f0c1', 'hex'),
     "ethereumjs1", {
     nonce: "0x",
     gasPrice: "0x09184e72a000",
@@ -100,7 +100,7 @@ addTransaction(new Buffer('164122e5d39e9814ca723a749253663bafb07f6af91704d9754c3
     s: "0x5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13"
 });
 
-addTransaction(new Buffer('e0a462586887362a18a318b128dbc1e3a0cae6d4b0739f5d0419ec25114bc722', 'hex'),
+addTransaction(Buffer.from('e0a462586887362a18a318b128dbc1e3a0cae6d4b0739f5d0419ec25114bc722', 'hex'),
     "ethereumjs2", {
     nonce: "0x06",
     gasPrice: "0x09184e72a000",
@@ -114,7 +114,7 @@ addTransaction(new Buffer('e0a462586887362a18a318b128dbc1e3a0cae6d4b0739f5d0419e
     s: "0x4d5ef07d9e73fa2fbfdad059591b4f13d0aa79e7634a2bb00174c9200cabb04d"
 });
 
-addTransaction(new Buffer('164122e5d39e9814ca723a749253663bafb07f6af91704d9754c361eb315f0c1', 'hex'),
+addTransaction(Buffer.from('164122e5d39e9814ca723a749253663bafb07f6af91704d9754c361eb315f0c1', 'hex'),
     "ethereumjs3", {
     nonce: "0x06",
     gasPrice: "0x09184e72a000",
@@ -129,7 +129,7 @@ addTransaction(new Buffer('164122e5d39e9814ca723a749253663bafb07f6af91704d9754c3
 });
 
 // Test all possible blank fields
-var privateKey = new Buffer('0123456789012345678901234567890123456789012345678901234567890123', 'hex');
+var privateKey = Buffer.from('0123456789012345678901234567890123456789012345678901234567890123', 'hex');
 for (var i = 0; i < 64; i++) {
     var transaction = {};
     if (i & (1 << 0)) { transaction.nonce     = '0x02'; }

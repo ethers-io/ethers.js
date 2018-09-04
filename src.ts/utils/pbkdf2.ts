@@ -8,7 +8,7 @@ import { arrayify } from './bytes';
 import { Arrayish } from './bytes';
 
 function bufferify(value: Arrayish): Buffer {
-    return new Buffer(arrayify(value));
+    return Buffer.from(arrayify(value));
 }
 
 export function pbkdf2(password: Arrayish, salt: Arrayish, iterations: number, keylen: number, hashAlgorithm: string): Uint8Array {

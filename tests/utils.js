@@ -17,7 +17,7 @@ if (!readFileSync) {
     var data = require('./dist/tests.json');
 
     readFileSync = function(filename) {
-        return new Buffer(data[filename], 'base64');
+        return Buffer.from(data[filename], 'base64');
     }
 }
 

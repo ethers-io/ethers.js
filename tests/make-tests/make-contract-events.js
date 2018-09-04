@@ -80,7 +80,7 @@ function waitForTransaction(hash) {
 
 // Create the indent given a tabstop
 function indent(tabs) {
-    var indent = new Buffer(tabs * 4);
+    var indent = Buffer.alloc(tabs * 4);
     indent.fill(32);
     return indent.toString('utf8')
 }
@@ -108,7 +108,7 @@ function createContractSource(test, comments) {
             source += (indent(2) + 's' + index + ' = ' + (param.value ? 'true': 'false') + ';\n');
 
         } else if (param.type === 'bytes') {
-            var value = new Buffer(param.value.substring(2), 'hex');
+            var value = Buffer.from(param.value.substring(2), 'hex');
             source += indent(2) + 's' + index + ' = new bytes(' + value.length + ');\n';
             source += indent(2) + 'assembly {\n';
             source += indent(3) + 'mstore(s' + index + ', ' + value.length + ')\n';
@@ -506,10 +506,10 @@ function makeTests() {
                     if (param.indexed && isHashed(param.type)) {
                         hashed.push(true);
                         if (param.type === 'string') {
-                            normalizedValues.push(keccak256(new Buffer(param.value, 'utf8')));
+                            normalizedValues.push(keccak256(Buffer.from(param.value, 'utf8')));
 
                         } else if (param.type === 'bytes') {
-                            normalizedValues.push(keccak256(new Buffer(param.value.substring(2), 'hex')));
+                            normalizedValues.push(keccak256(Buffer.from(param.value.substring(2), 'hex')));
 
                         } else if (param.type.indexOf('[') >= 0) {
                             var compute = param.type;
@@ -549,7 +549,7 @@ function makeTests() {
                             // The web3 coder has lots of bugs, but it does fine as long as there
                             // is only one type and nothing is dynamic
                             var encoded = web3Coder.encodeParams([ compute ], [ web3Value ]);
-                            normalizedValues.push(keccak256(new Buffer(encoded, 'hex')));
+                            normalizedValues.push(keccak256(Buffer.from(encoded, 'hex')));
 
                         } else {
                             throw new Error('unknown hashed type');

@@ -56,7 +56,7 @@ var Output = [];
     ]
 
     Tests.forEach(function(privateKey) {
-        var privateKeyBuffer = new Buffer(privateKey.substring(2), 'hex');
+        var privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
         var address = '0x' + ethereumUtil.privateToAddress(privateKeyBuffer).toString('hex');
         Output.push({
             address: address,
@@ -86,8 +86,8 @@ Output.push({
 
 // Add 1024 random private keys (checks for nibble and byte padding bugs)
 for (var i = 0; i < 1024; i++) {
-    var privateKey = new Buffer(utils.randomBytes('accounts-' + i, 32));
-    var address = '0x' + ethereumUtil.privateToAddress(new Buffer(privateKey)).toString('hex');
+    var privateKey = Buffer.from(utils.randomBytes('accounts-' + i, 32));
+    var address = '0x' + ethereumUtil.privateToAddress(Buffer.from(privateKey)).toString('hex');
 
     Output.push({
          address: address,

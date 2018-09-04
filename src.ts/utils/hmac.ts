@@ -15,6 +15,6 @@ export function computeHmac(algorithm: SupportedAlgorithms, key: Arrayish, data:
     if (!SupportedAlgorithms[algorithm]) {
         errors.throwError('unsupported algorithm ' + algorithm, errors.UNSUPPORTED_OPERATION, { operation: 'hmac', algorithm: algorithm });
     }
-    return arrayify(createHmac(algorithm, new Buffer(arrayify(key))).update(new Buffer(arrayify(data))).digest());
+    return arrayify(createHmac(algorithm, Buffer.from(arrayify(key))).update(Buffer.from(arrayify(data))).digest());
 }
 
