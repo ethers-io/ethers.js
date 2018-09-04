@@ -1,6 +1,6 @@
 'use strict';
 
-import { Contract, Interface } from './contracts';
+import { Contract, Interface, VoidSigner } from './contracts';
 
 import * as providers from './providers';
 
@@ -32,6 +32,7 @@ function getDefaultProvider(network?: types.Network | string): providers.BasePro
 
 export {
     Wallet,
+    VoidSigner,
 
     HDNode,
     SigningKey,

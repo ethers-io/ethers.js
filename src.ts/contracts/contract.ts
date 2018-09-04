@@ -20,6 +20,7 @@ import { Signer } from '../wallet/abstract-signer';
 ///////////////////////////////
 // Imported Types
 
+import { Arrayish } from '../utils/bytes';
 import { EventDescription } from './interface';
 import { ParamType } from '../utils/abi-coder';
 import { Block, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from '../providers/abstract-provider';
@@ -51,6 +52,38 @@ export interface Event extends Log {
 }
 
 ///////////////////////////////
+
+export class VoidSigner extends Signer {
+    readonly address: string;
+
+    constructor(address: string, provider: Provider) {
+        super();
+        defineReadOnly(this, 'address', address);
+        defineReadOnly(this, 'provider', provider);
+    }
+
+    getAddress(): Promise<string> {
+        return Promise.resolve(this.address);
+    }
+
+    _fail(message: string, operation: string): Promise<any> {
+        return Promise.resolve().then(() => {
+            errors.throwError(message, errors.UNSUPPORTED_OPERATION, { operation: operation });
+        });
+    }
+
+    signMessage(message: Arrayish | string): Promise<string> {
+        return this._fail('VoidSigner cannot sign messages', 'signMessage');
+    }
+
+    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
+        return this._fail('VoidSigner cannot sign transactions', 'sendTransaction');
+    }
+
+    connect(provider: Provider): VoidSigner {
+        return new VoidSigner(this.address, provider);
+    }
+}
 
 var allowedTransactionKeys: { [ key: string ]: boolean } = {
     data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
@@ -412,7 +445,11 @@ export class Contract {
     }
 
     // Reconnect to a different signer or provider
-    connect(signerOrProvider: Signer | Provider): Contract {
+    connect(signerOrProvider: Signer | Provider | string): Contract {
+        if (typeof(signerOrProvider) === 'string') {
+            signerOrProvider = new VoidSigner(signerOrProvider, this.provider);
+        }
+
         let contract = new Contract(this.address, this.interface, signerOrProvider);
         if (this.deployTransaction) {
             defineReadOnly(contract, 'deployTransaction', this.deployTransaction);
@@ -586,7 +623,7 @@ export class Contract {
         return this;
     }
 
-    addEventLisener(eventName: EventFilter | string, listener: Listener): Contract {
+    addListener(eventName: EventFilter | string, listener: Listener): Contract {
         return this.on(eventName, listener);
     }
 
