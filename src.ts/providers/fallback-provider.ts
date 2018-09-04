@@ -78,7 +78,7 @@ export class FallbackProvider extends BaseProvider {
         return this._providers.slice(0);
     }
 
-    perform(method: string, params: any): any {
+    perform(method: string, params: { [name: string]: any }): any {
         // Creates a copy of the providers array
         var providers = this.providers;
 

@@ -149,40 +149,7 @@ function checkBlockTag(blockTag: BlockTag): string {
     throw new Error('invalid blockTag');
 }
 
-var formatBlock = {
-    hash: checkHash,
-    parentHash: checkHash,
-    number: checkNumber,
-
-    timestamp: checkNumber,
-    nonce: allowNull(hexlify),
-    difficulty: checkDifficulty,
-
-    gasLimit: bigNumberify,
-    gasUsed: bigNumberify,
-
-    miner: getAddress,
-    extraData: hexlify,
-
-    //transactions: allowNull(arrayOf(checkTransaction)),
-    transactions: allowNull(arrayOf(checkHash)),
-
-    //transactionRoot: checkHash,
-    //stateRoot: checkHash,
-    //sha3Uncles: checkHash,
-
-    //logsBloom: hexlify,
-};
-
-function checkBlock(block: any): Block {
-    if (block.author != null && block.miner == null) {
-        block.miner = block.author;
-    }
-    return check(formatBlock, block);
-}
-
-
-var formatTransaction = {
+const formatTransaction = {
    hash: checkHash,
 
    blockHash: allowNull(checkHash, null),
@@ -278,7 +245,35 @@ function checkTransactionResponse(transaction: any): TransactionResponse {
     return result;
 }
 
-var formatTransactionRequest = {
+const formatBlock = {
+    hash: checkHash,
+    parentHash: checkHash,
+    number: checkNumber,
+
+    timestamp: checkNumber,
+    nonce: allowNull(hexlify),
+    difficulty: checkDifficulty,
+
+    gasLimit: bigNumberify,
+    gasUsed: bigNumberify,
+
+    miner: getAddress,
+    extraData: hexlify,
+
+    transactions: allowNull(arrayOf(checkHash)),
+};
+
+const formatBlockWithTransactions = shallowCopy(formatBlock);
+formatBlockWithTransactions.transactions = allowNull(arrayOf(checkTransactionResponse));
+
+function checkBlock(block: any, includeTransactions: boolean): Block {
+    if (block.author != null && block.miner == null) {
+        block.miner = block.author;
+    }
+    return check(includeTransactions ? formatBlockWithTransactions: formatBlock, block);
+}
+
+const formatTransactionRequest = {
     from: allowNull(getAddress),
     nonce: allowNull(checkNumber),
     gasLimit: allowNull(bigNumberify),
@@ -292,7 +287,7 @@ function checkTransactionRequest(transaction: any): any {
     return check(formatTransactionRequest, transaction);
 }
 
-var formatTransactionReceiptLog = {
+const formatTransactionReceiptLog = {
     transactionLogIndex: allowNull(checkNumber),
     transactionIndex: checkNumber,
     blockNumber: checkNumber,
@@ -308,7 +303,7 @@ function checkTransactionReceiptLog(log: any): any {
     return check(formatTransactionReceiptLog, log);
 }
 
-var formatTransactionReceipt = {
+const formatTransactionReceipt = {
     contractAddress: allowNull(getAddress, null),
     transactionIndex: checkNumber,
     root: allowNull(checkHash),
@@ -351,7 +346,7 @@ function checkTopics(topics: any): any {
     return topics;
 }
 
-var formatFilter = {
+const formatFilter = {
     fromBlock: allowNull(checkBlockTag, undefined),
     toBlock: allowNull(checkBlockTag, undefined),
     address: allowNull(getAddress, undefined),
@@ -362,7 +357,7 @@ function checkFilter(filter: any): any {
     return check(formatFilter, filter);
 }
 
-var formatLog = {
+const formatLog = {
     blockNumber: allowNull(checkNumber),
     blockHash: allowNull(checkHash),
     transactionIndex: checkNumber,
@@ -832,21 +827,21 @@ export class BaseProvider extends Provider {
         });
    }
 
-    getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> {
+    getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block> {
         return this.ready.then(() => {
             return resolveProperties({ blockHashOrBlockTag: blockHashOrBlockTag }).then(({ blockHashOrBlockTag }) => {
                 try {
                     var blockHash = hexlify(blockHashOrBlockTag);
                     if (hexDataLength(blockHash) === 32) {
                         return poll(() => {
-                            return this.perform('getBlock', { blockHash: blockHash }).then((block) => {
+                            return this.perform('getBlock', { blockHash: blockHash, includeTransactions: !!includeTransactions }).then((block) => {
                                 if (block == null) {
                                     if (this._emitted['b:' + blockHash] == null) {
                                         return null;
                                     }
                                     return undefined;
                                 }
-                                return checkBlock(block);
+                                return checkBlock(block, includeTransactions);
                             });
                         }, { onceBlock: this });
 
@@ -862,14 +857,14 @@ export class BaseProvider extends Provider {
                     }
 
                     return poll(() => {
-                        return this.perform('getBlock', { blockTag: blockTag }).then((block) => {
+                        return this.perform('getBlock', { blockTag: blockTag, includeTransactions: !!includeTransactions }).then((block) => {
                             if (block == null) {
                                 if (blockNumber > this._emitted.block) {
                                     return undefined;
                                 }
                                 return null;
                             }
-                            return checkBlock(block);
+                            return checkBlock(block, includeTransactions);
                         });
                     }, { onceBlock: this });
                 } catch (error) { }

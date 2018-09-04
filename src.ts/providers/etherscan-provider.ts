@@ -170,7 +170,11 @@ export class EtherscanProvider extends BaseProvider{
             case 'getBlock':
                 if (params.blockTag) {
                     url += '/api?module=proxy&action=eth_getBlockByNumber&tag=' + params.blockTag;
-                    url += '&boolean=false';
+                    if (params.includeTransactions) {
+                        url += '&boolean=true';
+                    } else {
+                        url += '&boolean=false';
+                    }
                     url += apiKey;
                     return fetchJson(url, null, getJsonResult);
                 }
