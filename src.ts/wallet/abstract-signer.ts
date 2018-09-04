@@ -10,7 +10,7 @@ import { TransactionRequest, TransactionResponse } from '../providers/abstract-p
 
 
 export abstract class Signer {
-    provider?: Provider;
+    readonly provider?: Provider;
 
     abstract getAddress(): Promise<string>
 
