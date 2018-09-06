@@ -36,7 +36,7 @@ export class KeyPair {
 
     readonly publicKeyBytes: Uint8Array;
 
-    constructor(privateKey: Arrayish) {
+    constructor(privateKey: Arrayish | string) {
         let keyPair = getCurve().keyFromPrivate(arrayify(privateKey));
 
         defineReadOnly(this, 'privateKey', hexlify(keyPair.priv.toArray('be', 32)));
@@ -45,7 +45,7 @@ export class KeyPair {
         defineReadOnly(this, 'publicKeyBytes', keyPair.getPublic().encode(null, true));
     }
 
-    sign(digest: Arrayish): Signature {
+    sign(digest: Arrayish | string): Signature {
         let keyPair = getCurve().keyFromPrivate(arrayify(this.privateKey));
         let signature = keyPair.sign(arrayify(digest), {canonical: true});
         return {
@@ -56,17 +56,15 @@ export class KeyPair {
         }
 
     }
+
+    computeSharedSecret(otherKey: Arrayish | string): string {
+        let keyPair = getCurve().keyFromPrivate(arrayify(this.privateKey));
+        let otherKeyPair = getCurve().keyFromPublic(arrayify(computePublicKey(otherKey)));
+        return hexZeroPad('0x' + keyPair.derive(otherKeyPair.getPublic()).toString(16), 32);
+    }
 }
 
-export function recoverPublicKey(digest: Arrayish, signature: Signature): string {
-    let sig = {
-        r: arrayify(signature.r),
-        s: arrayify(signature.s)
-    };
-    return '0x' + getCurve().recoverPubKey(arrayify(digest), sig, signature.recoveryParam).encode('hex', false);
-}
-
-export function computePublicKey(key: Arrayish, compressed?: boolean): string {
+export function computePublicKey(key: Arrayish | string, compressed?: boolean): string {
 
     let bytes = arrayify(key);
 
@@ -90,35 +88,22 @@ export function computePublicKey(key: Arrayish, compressed?: boolean): string {
     return null;
 }
 
-export function recoverAddress(digest: Arrayish, signature: Signature): string {
-    return computeAddress(recoverPublicKey(digest, signature));
-}
-
-export function computeAddress(key: string): string {
+export function computeAddress(key: Arrayish | string): string {
     // Strip off the leading "0x04"
     let publicKey = '0x' + computePublicKey(key).slice(4);
     return getAddress('0x' + keccak256(publicKey).substring(26));
 }
 
-
-export function computeSharedSecret(privateKey: Arrayish, publicKey: Arrayish): string {
-    let privateKeyPair = getCurve().keyFromPrivate(arrayify(privateKey));
-    let publicKeyPair = getCurve().keyFromPublic(arrayify(publicKey));
-    return hexZeroPad('0x' + privateKeyPair.derive(publicKeyPair.getPublic()).toString(16), 32);
+export function recoverPublicKey(digest: Arrayish | string, signature: Signature | string): string {
+    let sig = splitSignature(signature);
+    let rs = { r: arrayify(sig.r), s: arrayify(sig.s) };
+    return '0x' + getCurve().recoverPubKey(arrayify(digest), rs, sig.recoveryParam).encode('hex', false);
 }
 
-export function verifyDigest(digest: Arrayish | string, signature: Signature | string): string {
-    let sig = splitSignature(signature);
-    return recoverAddress(
-        digest,
-        {
-            r: sig.r,
-            s: sig.s,
-            recoveryParam: sig.recoveryParam
-        }
-    );
+export function recoverAddress(digest: Arrayish | string, signature: Signature | string): string {
+    return computeAddress(recoverPublicKey(arrayify(digest), signature));
 }
 
 export function verifyMessage(message: Arrayish | string, signature: Signature | string): string {
-    return verifyDigest(hashMessage(message), signature);
+    return recoverAddress(hashMessage(message), signature);
 }

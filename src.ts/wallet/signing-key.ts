@@ -76,6 +76,10 @@ export class SigningKey {
         return this.keyPair.sign(digest);
     }
 
+    computeSharedSecret(key: Arrayish | string): string {
+        return this.keyPair.computeSharedSecret(arrayify(key));
+    }
+
     static isSigningKey(value: any): value is SigningKey {
         return isType(value, 'SigningKey');
     }

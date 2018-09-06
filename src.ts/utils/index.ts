@@ -14,7 +14,7 @@ import { randomBytes } from './random-bytes';
 import { getNetwork } from './networks';
 import { deepCopy, defineReadOnly, resolveProperties, shallowCopy } from './properties';
 import * as RLP from './rlp';
-import { computePublicKey, computeSharedSecret, verifyMessage } from './secp256k1';
+import { computeAddress, computePublicKey, recoverAddress, recoverPublicKey, verifyMessage } from './secp256k1';
 import { parse as parseTransaction, serialize as serializeTransaction } from './transaction';
 import { formatBytes32String, parseBytes32String, toUtf8Bytes, toUtf8String } from './utf8';
 import { formatEther, parseEther, formatUnits, parseUnits } from './units';
@@ -90,8 +90,10 @@ export {
 
     getJsonWalletAddress,
 
+    computeAddress,
     computePublicKey,
-    computeSharedSecret,
+    recoverAddress,
+    recoverPublicKey,
     verifyMessage
 }
 
