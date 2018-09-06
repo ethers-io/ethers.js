@@ -13,7 +13,9 @@ export type ConnectionInfo = {
     url: string,
     user?: string,
     password?: string,
-    allowInsecure?: boolean
+    allowInsecure?: boolean,
+    timeout?: number,
+    headers?: { [key: string]: string | number }
 };
 
 export interface OnceBlockable {
@@ -33,9 +35,11 @@ export type PollOptions = {
 type Header = { key: string, value: string };
 
 export function fetchJson(connection: string | ConnectionInfo, json: string, processFunc: (value: any) => any): Promise<any> {
-    let headers: Array<Header> = [ ];
+    let headers: { [key: string]: Header } = { };
 
     let url: string = null;
+
+    let timeout = 2 * 60 * 1000;
 
     if (typeof(connection) === 'string') {
         url = connection;
@@ -47,45 +51,75 @@ export function fetchJson(connection: string | ConnectionInfo, json: string, pro
 
         url = connection.url;
 
+        if (typeof(connection.timeout) === 'number' && connection.timeout > 0) {
+            timeout = connection.timeout;
+        }
+
+        if (connection.headers) {
+            for (let key in connection.headers) {
+                headers[key.toLowerCase()] = { key: key, value: String(connection.headers[key]) };
+            }
+        }
+
         if (connection.user != null && connection.password != null) {
             if (url.substring(0, 6) !== 'https:' && connection.allowInsecure !== true) {
                 errors.throwError(
-                    'basic authentication requires a secure https url', 
+                    'basic authentication requires a secure https url',
                     errors.INVALID_ARGUMENT,
                     { arg: 'url', url: url, user: connection.user, password: '[REDACTED]' }
                 );
             }
 
-            var authorization = connection.user + ':' + connection.password;
-            headers.push({
+            let authorization = connection.user + ':' + connection.password;
+            headers['authorization'] = {
                 key: 'Authorization',
                 value: 'Basic ' + base64Encode(toUtf8Bytes(authorization))
-            });
+            };
         }
     }
 
     return new Promise(function(resolve, reject) {
-        var request = new XMLHttpRequest();
+        let request = new XMLHttpRequest();
+
+        let timer: any = null;
+        timer = setTimeout(() => {
+            if (timer == null) { return; }
+            timer = null;
+
+            reject(new Error('timeout'));
+            setTimeout(() => {
+                request.abort();
+            }, 0);
+        }, timeout);
+
+        let cancelTimeout = () => {
+            if (timer == null) { return; }
+            clearTimeout(timer);
+            timer = null;
+        }
 
         if (json) {
             request.open('POST', url, true);
-            headers.push({ key: 'Content-Type', value: 'application/json' });
+            headers['content-type'] = { key: 'Content-Type', value: 'application/json' };
         } else {
             request.open('GET', url, true);
         }
 
-        headers.forEach(function(header) {
+        Object.keys(headers).forEach((key) => {
+            let header = headers[key];
             request.setRequestHeader(header.key, header.value);
         });
 
         request.onreadystatechange = function() {
             if (request.readyState !== 4) { return; }
 
+            let result: any = null;
             try {
-                var result = JSON.parse(request.responseText);
+                result = JSON.parse(request.responseText);
             } catch (error) {
+                cancelTimeout();
                 // @TODO: not any!
-                var jsonError: any = new Error('invalid json response');
+                let jsonError: any = new Error('invalid json response');
                 jsonError.orginialError = error;
                 jsonError.responseText = request.responseText;
                 jsonError.url = url;
@@ -97,6 +131,7 @@ export function fetchJson(connection: string | ConnectionInfo, json: string, pro
                 try {
                     result = processFunc(result);
                 } catch (error) {
+                    cancelTimeout();
                     error.url = url;
                     error.body = json;
                     error.responseText = request.responseText;
@@ -106,17 +141,20 @@ export function fetchJson(connection: string | ConnectionInfo, json: string, pro
             }
 
             if (request.status != 200) {
+                cancelTimeout();
                 // @TODO: not any!
-                var error: any = new Error('invalid response - ' + request.status);
+                let error: any = new Error('invalid response - ' + request.status);
                 error.statusCode = request.status;
                 reject(error);
                 return;
             }
 
+            cancelTimeout();
             resolve(result);
         };
 
         request.onerror = function(error) {
+            cancelTimeout();
             reject(error);
         }
 
@@ -128,8 +166,9 @@ export function fetchJson(connection: string | ConnectionInfo, json: string, pro
             }
 
         } catch (error) {
+            cancelTimeout();
             // @TODO: not any!
-            var connectionError: any = new Error('connection error');
+            let connectionError: any = new Error('connection error');
             connectionError.error = error;
             reject(connectionError);
         }
