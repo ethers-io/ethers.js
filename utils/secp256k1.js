@@ -40,17 +40,14 @@ var KeyPair = /** @class */ (function () {
             v: 27 + signature.recoveryParam
         };
     };
+    KeyPair.prototype.computeSharedSecret = function (otherKey) {
+        var keyPair = getCurve().keyFromPrivate(bytes_1.arrayify(this.privateKey));
+        var otherKeyPair = getCurve().keyFromPublic(bytes_1.arrayify(computePublicKey(otherKey)));
+        return bytes_1.hexZeroPad('0x' + keyPair.derive(otherKeyPair.getPublic()).toString(16), 32);
+    };
     return KeyPair;
 }());
 exports.KeyPair = KeyPair;
-function recoverPublicKey(digest, signature) {
-    var sig = {
-        r: bytes_1.arrayify(signature.r),
-        s: bytes_1.arrayify(signature.s)
-    };
-    return '0x' + getCurve().recoverPubKey(bytes_1.arrayify(digest), sig, signature.recoveryParam).encode('hex', false);
-}
-exports.recoverPublicKey = recoverPublicKey;
 function computePublicKey(key, compressed) {
     var bytes = bytes_1.arrayify(key);
     if (bytes.length === 32) {
@@ -76,32 +73,23 @@ function computePublicKey(key, compressed) {
     return null;
 }
 exports.computePublicKey = computePublicKey;
-function recoverAddress(digest, signature) {
-    return computeAddress(recoverPublicKey(digest, signature));
-}
-exports.recoverAddress = recoverAddress;
 function computeAddress(key) {
     // Strip off the leading "0x04"
     var publicKey = '0x' + computePublicKey(key).slice(4);
     return address_1.getAddress('0x' + keccak256_1.keccak256(publicKey).substring(26));
 }
 exports.computeAddress = computeAddress;
-function computeSharedSecret(privateKey, publicKey) {
-    var privateKeyPair = getCurve().keyFromPrivate(bytes_1.arrayify(privateKey));
-    var publicKeyPair = getCurve().keyFromPublic(bytes_1.arrayify(publicKey));
-    return bytes_1.hexZeroPad('0x' + privateKeyPair.derive(publicKeyPair.getPublic()).toString(16), 32);
-}
-exports.computeSharedSecret = computeSharedSecret;
-function verifyDigest(digest, signature) {
+function recoverPublicKey(digest, signature) {
     var sig = bytes_1.splitSignature(signature);
-    return recoverAddress(digest, {
-        r: sig.r,
-        s: sig.s,
-        recoveryParam: sig.recoveryParam
-    });
+    var rs = { r: bytes_1.arrayify(sig.r), s: bytes_1.arrayify(sig.s) };
+    return '0x' + getCurve().recoverPubKey(bytes_1.arrayify(digest), rs, sig.recoveryParam).encode('hex', false);
 }
-exports.verifyDigest = verifyDigest;
+exports.recoverPublicKey = recoverPublicKey;
+function recoverAddress(digest, signature) {
+    return computeAddress(recoverPublicKey(bytes_1.arrayify(digest), signature));
+}
+exports.recoverAddress = recoverAddress;
 function verifyMessage(message, signature) {
-    return verifyDigest(hash_1.hashMessage(message), signature);
+    return recoverAddress(hash_1.hashMessage(message), signature);
 }
 exports.verifyMessage = verifyMessage;

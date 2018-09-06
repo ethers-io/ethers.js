@@ -1,4 +1,14 @@
 'use strict';
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -20,6 +30,34 @@ var errors = __importStar(require("../utils/errors"));
 var abstract_provider_1 = require("../providers/abstract-provider");
 var abstract_signer_1 = require("../wallet/abstract-signer");
 ///////////////////////////////
+var VoidSigner = /** @class */ (function (_super) {
+    __extends(VoidSigner, _super);
+    function VoidSigner(address, provider) {
+        var _this = _super.call(this) || this;
+        properties_1.defineReadOnly(_this, 'address', address);
+        properties_1.defineReadOnly(_this, 'provider', provider);
+        return _this;
+    }
+    VoidSigner.prototype.getAddress = function () {
+        return Promise.resolve(this.address);
+    };
+    VoidSigner.prototype._fail = function (message, operation) {
+        return Promise.resolve().then(function () {
+            errors.throwError(message, errors.UNSUPPORTED_OPERATION, { operation: operation });
+        });
+    };
+    VoidSigner.prototype.signMessage = function (message) {
+        return this._fail('VoidSigner cannot sign messages', 'signMessage');
+    };
+    VoidSigner.prototype.sendTransaction = function (transaction) {
+        return this._fail('VoidSigner cannot sign transactions', 'sendTransaction');
+    };
+    VoidSigner.prototype.connect = function (provider) {
+        return new VoidSigner(this.address, provider);
+    };
+    return VoidSigner;
+}(abstract_signer_1.Signer));
+exports.VoidSigner = VoidSigner;
 var allowedTransactionKeys = {
     data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
 };
@@ -311,6 +349,9 @@ var Contract = /** @class */ (function () {
     };
     // Reconnect to a different signer or provider
     Contract.prototype.connect = function (signerOrProvider) {
+        if (typeof (signerOrProvider) === 'string') {
+            signerOrProvider = new VoidSigner(signerOrProvider, this.provider);
+        }
         var contract = new Contract(this.address, this.interface, signerOrProvider);
         if (this.deployTransaction) {
             properties_1.defineReadOnly(contract, 'deployTransaction', this.deployTransaction);
@@ -465,7 +506,7 @@ var Contract = /** @class */ (function () {
         this._addEventListener(this._getEventFilter(event), listener, true);
         return this;
     };
-    Contract.prototype.addEventLisener = function (eventName, listener) {
+    Contract.prototype.addListener = function (eventName, listener) {
         return this.on(eventName, listener);
     };
     Contract.prototype.emit = function (eventName) {

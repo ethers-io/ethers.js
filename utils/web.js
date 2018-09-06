@@ -12,8 +12,9 @@ var base64_1 = require("./base64");
 var utf8_1 = require("./utf8");
 var errors = __importStar(require("./errors"));
 function fetchJson(connection, json, processFunc) {
-    var headers = [];
+    var headers = {};
     var url = null;
+    var timeout = 2 * 60 * 1000;
     if (typeof (connection) === 'string') {
         url = connection;
     }
@@ -22,37 +23,66 @@ function fetchJson(connection, json, processFunc) {
             errors.throwError('missing URL', errors.MISSING_ARGUMENT, { arg: 'url' });
         }
         url = connection.url;
+        if (typeof (connection.timeout) === 'number' && connection.timeout > 0) {
+            timeout = connection.timeout;
+        }
+        if (connection.headers) {
+            for (var key in connection.headers) {
+                headers[key.toLowerCase()] = { key: key, value: String(connection.headers[key]) };
+            }
+        }
         if (connection.user != null && connection.password != null) {
             if (url.substring(0, 6) !== 'https:' && connection.allowInsecure !== true) {
                 errors.throwError('basic authentication requires a secure https url', errors.INVALID_ARGUMENT, { arg: 'url', url: url, user: connection.user, password: '[REDACTED]' });
             }
             var authorization = connection.user + ':' + connection.password;
-            headers.push({
+            headers['authorization'] = {
                 key: 'Authorization',
                 value: 'Basic ' + base64_1.encode(utf8_1.toUtf8Bytes(authorization))
-            });
+            };
         }
     }
     return new Promise(function (resolve, reject) {
         var request = new xmlhttprequest_1.XMLHttpRequest();
+        var timer = null;
+        timer = setTimeout(function () {
+            if (timer == null) {
+                return;
+            }
+            timer = null;
+            reject(new Error('timeout'));
+            setTimeout(function () {
+                request.abort();
+            }, 0);
+        }, timeout);
+        var cancelTimeout = function () {
+            if (timer == null) {
+                return;
+            }
+            clearTimeout(timer);
+            timer = null;
+        };
         if (json) {
             request.open('POST', url, true);
-            headers.push({ key: 'Content-Type', value: 'application/json' });
+            headers['content-type'] = { key: 'Content-Type', value: 'application/json' };
         }
         else {
             request.open('GET', url, true);
         }
-        headers.forEach(function (header) {
+        Object.keys(headers).forEach(function (key) {
+            var header = headers[key];
             request.setRequestHeader(header.key, header.value);
         });
         request.onreadystatechange = function () {
             if (request.readyState !== 4) {
                 return;
             }
+            var result = null;
             try {
-                var result = JSON.parse(request.responseText);
+                result = JSON.parse(request.responseText);
             }
             catch (error) {
+                cancelTimeout();
                 // @TODO: not any!
                 var jsonError = new Error('invalid json response');
                 jsonError.orginialError = error;
@@ -66,6 +96,7 @@ function fetchJson(connection, json, processFunc) {
                     result = processFunc(result);
                 }
                 catch (error) {
+                    cancelTimeout();
                     error.url = url;
                     error.body = json;
                     error.responseText = request.responseText;
@@ -74,15 +105,18 @@ function fetchJson(connection, json, processFunc) {
                 }
             }
             if (request.status != 200) {
+                cancelTimeout();
                 // @TODO: not any!
                 var error = new Error('invalid response - ' + request.status);
                 error.statusCode = request.status;
                 reject(error);
                 return;
             }
+            cancelTimeout();
             resolve(result);
         };
         request.onerror = function (error) {
+            cancelTimeout();
             reject(error);
         };
         try {
@@ -94,6 +128,7 @@ function fetchJson(connection, json, processFunc) {
             }
         }
         catch (error) {
+            cancelTimeout();
             // @TODO: not any!
             var connectionError = new Error('connection error');
             connectionError.error = error;

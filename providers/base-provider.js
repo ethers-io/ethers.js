@@ -145,26 +145,6 @@ function checkBlockTag(blockTag) {
     }
     throw new Error('invalid blockTag');
 }
-var formatBlock = {
-    hash: checkHash,
-    parentHash: checkHash,
-    number: checkNumber,
-    timestamp: checkNumber,
-    nonce: allowNull(bytes_1.hexlify),
-    difficulty: checkDifficulty,
-    gasLimit: bignumber_1.bigNumberify,
-    gasUsed: bignumber_1.bigNumberify,
-    miner: address_1.getAddress,
-    extraData: bytes_1.hexlify,
-    //transactions: allowNull(arrayOf(checkTransaction)),
-    transactions: allowNull(arrayOf(checkHash)),
-};
-function checkBlock(block) {
-    if (block.author != null && block.miner == null) {
-        block.miner = block.author;
-    }
-    return check(formatBlock, block);
-}
 var formatTransaction = {
     hash: checkHash,
     blockHash: allowNull(checkHash, null),
@@ -240,6 +220,27 @@ function checkTransactionResponse(transaction) {
         result.blockHash = null;
     }
     return result;
+}
+var formatBlock = {
+    hash: checkHash,
+    parentHash: checkHash,
+    number: checkNumber,
+    timestamp: checkNumber,
+    nonce: allowNull(bytes_1.hexlify),
+    difficulty: checkDifficulty,
+    gasLimit: bignumber_1.bigNumberify,
+    gasUsed: bignumber_1.bigNumberify,
+    miner: address_1.getAddress,
+    extraData: bytes_1.hexlify,
+    transactions: allowNull(arrayOf(checkHash)),
+};
+var formatBlockWithTransactions = properties_1.shallowCopy(formatBlock);
+formatBlockWithTransactions.transactions = allowNull(arrayOf(checkTransactionResponse));
+function checkBlock(block, includeTransactions) {
+    if (block.author != null && block.miner == null) {
+        block.miner = block.author;
+    }
+    return check(includeTransactions ? formatBlockWithTransactions : formatBlock, block);
 }
 var formatTransactionRequest = {
     from: allowNull(address_1.getAddress),
@@ -736,7 +737,7 @@ var BaseProvider = /** @class */ (function (_super) {
             });
         });
     };
-    BaseProvider.prototype.getBlock = function (blockHashOrBlockTag) {
+    BaseProvider.prototype.getBlock = function (blockHashOrBlockTag, includeTransactions) {
         var _this = this;
         return this.ready.then(function () {
             return properties_1.resolveProperties({ blockHashOrBlockTag: blockHashOrBlockTag }).then(function (_a) {
@@ -745,14 +746,14 @@ var BaseProvider = /** @class */ (function (_super) {
                     var blockHash = bytes_1.hexlify(blockHashOrBlockTag);
                     if (bytes_1.hexDataLength(blockHash) === 32) {
                         return web_1.poll(function () {
-                            return _this.perform('getBlock', { blockHash: blockHash }).then(function (block) {
+                            return _this.perform('getBlock', { blockHash: blockHash, includeTransactions: !!includeTransactions }).then(function (block) {
                                 if (block == null) {
                                     if (_this._emitted['b:' + blockHash] == null) {
                                         return null;
                                     }
                                     return undefined;
                                 }
-                                return checkBlock(block);
+                                return checkBlock(block, includeTransactions);
                             });
                         }, { onceBlock: _this });
                     }
@@ -765,14 +766,14 @@ var BaseProvider = /** @class */ (function (_super) {
                         blockNumber_1 = parseInt(blockTag_1.substring(2), 16);
                     }
                     return web_1.poll(function () {
-                        return _this.perform('getBlock', { blockTag: blockTag_1 }).then(function (block) {
+                        return _this.perform('getBlock', { blockTag: blockTag_1, includeTransactions: !!includeTransactions }).then(function (block) {
                             if (block == null) {
                                 if (blockNumber_1 > _this._emitted.block) {
                                     return undefined;
                                 }
                                 return null;
                             }
-                            return checkBlock(block);
+                            return checkBlock(block, includeTransactions);
                         });
                     }, { onceBlock: _this });
                 }

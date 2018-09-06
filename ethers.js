@@ -10,6 +10,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var contracts_1 = require("./contracts");
 exports.Contract = contracts_1.Contract;
 exports.Interface = contracts_1.Interface;
+exports.VoidSigner = contracts_1.VoidSigner;
 var providers = __importStar(require("./providers"));
 exports.providers = providers;
 var wallet_1 = require("./wallet");

@@ -11,11 +11,11 @@ declare class Buffer implements ArrayLike<number> {
 }
 */
 function decode(textData) {
-    return bytes_1.arrayify(new Uint8Array(new Buffer(textData, 'base64')));
+    return bytes_1.arrayify(new Uint8Array(Buffer.from(textData, 'base64')));
 }
 exports.decode = decode;
 ;
 function encode(data) {
-    return new Buffer(bytes_1.arrayify(data)).toString('base64');
+    return Buffer.from(bytes_1.arrayify(data)).toString('base64');
 }
 exports.encode = encode;

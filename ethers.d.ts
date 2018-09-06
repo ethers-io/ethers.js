@@ -1,4 +1,4 @@
-import { Contract, Interface } from './contracts';
+import { Contract, Interface, VoidSigner } from './contracts';
 import * as providers from './providers';
 import { HDNode, SigningKey, Wallet } from './wallet';
 import { AbiCoder } from './utils/abi-coder';
@@ -11,4 +11,4 @@ import * as wordlists from './wordlists';
 import { platform } from './utils/shims';
 import { version } from './_version';
 declare function getDefaultProvider(network?: types.Network | string): providers.BaseProvider;
-export { Wallet, HDNode, SigningKey, Contract, Interface, getDefaultProvider, providers, AbiCoder, BigNumber, errors, constants, utils, types, wordlists, platform, version };
+export { Wallet, VoidSigner, HDNode, SigningKey, Contract, Interface, getDefaultProvider, providers, AbiCoder, BigNumber, errors, constants, utils, types, wordlists, platform, version };

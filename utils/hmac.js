@@ -20,6 +20,6 @@ function computeHmac(algorithm, key, data) {
     if (!SupportedAlgorithms[algorithm]) {
         errors.throwError('unsupported algorithm ' + algorithm, errors.UNSUPPORTED_OPERATION, { operation: 'hmac', algorithm: algorithm });
     }
-    return bytes_1.arrayify(crypto_1.createHmac(algorithm, new Buffer(bytes_1.arrayify(key))).update(new Buffer(bytes_1.arrayify(data))).digest());
+    return bytes_1.arrayify(crypto_1.createHmac(algorithm, Buffer.from(bytes_1.arrayify(key))).update(Buffer.from(bytes_1.arrayify(data))).digest());
 }
 exports.computeHmac = computeHmac;

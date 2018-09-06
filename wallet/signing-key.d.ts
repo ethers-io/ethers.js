@@ -14,5 +14,6 @@ export declare class SigningKey {
     private readonly keyPair;
     constructor(privateKey: Arrayish | HDNode);
     signDigest(digest: Arrayish): Signature;
+    computeSharedSecret(key: Arrayish | string): string;
     static isSigningKey(value: any): value is SigningKey;
 }

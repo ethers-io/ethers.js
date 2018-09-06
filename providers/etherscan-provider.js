@@ -164,7 +164,12 @@ var EtherscanProvider = /** @class */ (function (_super) {
             case 'getBlock':
                 if (params.blockTag) {
                     url += '/api?module=proxy&action=eth_getBlockByNumber&tag=' + params.blockTag;
-                    url += '&boolean=false';
+                    if (params.includeTransactions) {
+                        url += '&boolean=true';
+                    }
+                    else {
+                        url += '&boolean=false';
+                    }
                     url += apiKey;
                     return web_1.fetchJson(url, null, getJsonResult);
                 }

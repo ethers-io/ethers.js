@@ -58,6 +58,9 @@ var SigningKey = /** @class */ (function () {
     SigningKey.prototype.signDigest = function (digest) {
         return this.keyPair.sign(digest);
     };
+    SigningKey.prototype.computeSharedSecret = function (key) {
+        return this.keyPair.computeSharedSecret(bytes_1.arrayify(key));
+    };
     SigningKey.isSigningKey = function (value) {
         return properties_1.isType(value, 'SigningKey');
     };

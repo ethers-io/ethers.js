@@ -125,6 +125,7 @@ declare module "xmlhttprequest" {
         open(method: string, url: string, async?: boolean): void;
         setRequestHeader(key: string, value: string): void;
         send(body?: string): void;
+        abort(): void;
 
         onreadystatechange: () => void;
         onerror: (error: Error) => void;

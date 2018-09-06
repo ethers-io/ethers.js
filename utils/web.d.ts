@@ -3,6 +3,10 @@ export declare type ConnectionInfo = {
     user?: string;
     password?: string;
     allowInsecure?: boolean;
+    timeout?: number;
+    headers?: {
+        [key: string]: string | number;
+    };
 };
 export interface OnceBlockable {
     once(eventName: "block", handler: () => void): void;
