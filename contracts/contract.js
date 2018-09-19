@@ -177,8 +177,8 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                     }
 
                     var noncePromise = null;
-                    if (transaction.nonce) {
-                        noncePromise = Promise.resolve(transaction.nonce)
+                    if (typeof(transaction.nonce) !== 'undefined') {
+                        noncePromise = Promise.resolve(transaction.nonce);
                     } else if (signer.getTransactionCount) {
                         noncePromise = signer.getTransactionCount();
                         if (!(noncePromise instanceof Promise)) {
