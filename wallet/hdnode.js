@@ -112,7 +112,7 @@ utils.defineProperty(HDNode.prototype, 'derivePath', function(path) {
             if (index >= HardenedBit) { throw new Error('invalid path index - ' + component); }
             result = result._derive(index);
         } else {
-            throw new Error('invlaid path component - ' + component);
+            throw new Error('invalid path component - ' + component);
         }
     }
 
