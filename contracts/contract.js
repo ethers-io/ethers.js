@@ -177,7 +177,7 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                     }
 
                     var noncePromise = null;
-                    if (transaction.nonce) {
+                    if (transaction.nonce != null) {
                         noncePromise = Promise.resolve(transaction.nonce)
                     } else if (signer.getTransactionCount) {
                         noncePromise = signer.getTransactionCount();
