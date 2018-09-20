@@ -296,11 +296,6 @@ function testProvider(providerName, networkName) {
             //     }
             //  }
 
-            // @TODO: Remove this! Temporary because Ropsten seems unhappy
-            if (networkName === 'ropsten') {
-                console.log("******** Remove this soon! Ropsten is having issues.");
-                return;
-            }
             this.timeout(100000);
             var test = blockchainData[networkName].balance;
             return provider.getBalance(test.address).then(function(balance) {
