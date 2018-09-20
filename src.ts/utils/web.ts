@@ -113,6 +113,15 @@ export function fetchJson(connection: string | ConnectionInfo, json: string, pro
         request.onreadystatechange = function() {
             if (request.readyState !== 4) { return; }
 
+            if (request.status != 200) {
+                cancelTimeout();
+                // @TODO: not any!
+                let error: any = new Error('invalid response - ' + request.status);
+                error.statusCode = request.status;
+                reject(error);
+                return;
+            }
+
             let result: any = null;
             try {
                 result = JSON.parse(request.responseText);
@@ -138,15 +147,6 @@ export function fetchJson(connection: string | ConnectionInfo, json: string, pro
                     reject(error);
                     return;
                 }
-            }
-
-            if (request.status != 200) {
-                cancelTimeout();
-                // @TODO: not any!
-                let error: any = new Error('invalid response - ' + request.status);
-                error.statusCode = request.status;
-                reject(error);
-                return;
             }
 
             cancelTimeout();
