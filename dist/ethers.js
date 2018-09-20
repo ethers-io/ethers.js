@@ -178,7 +178,7 @@ function Contract(addressOrName, contractInterface, signerOrProvider) {
                     }
 
                     var noncePromise = null;
-                    if (transaction.nonce) {
+                    if (transaction.nonce != null) {
                         noncePromise = Promise.resolve(transaction.nonce)
                     } else if (signer.getTransactionCount) {
                         noncePromise = signer.getTransactionCount();
@@ -9927,7 +9927,7 @@ uuid.unparse = unparse;
 module.exports = uuid;
 
 },{"./rng":44}],46:[function(require,module,exports){
-module.exports={"version":"3.0.28"}
+module.exports={"version":"3.0.29"}
 },{}],47:[function(require,module,exports){
 'use strict';
 
@@ -14651,7 +14651,7 @@ utils.defineProperty(HDNode.prototype, 'derivePath', function(path) {
             if (index >= HardenedBit) { throw new Error('invalid path index - ' + component); }
             result = result._derive(index);
         } else {
-            throw new Error('invlaid path component - ' + component);
+            throw new Error('invalid path component - ' + component);
         }
     }
 
