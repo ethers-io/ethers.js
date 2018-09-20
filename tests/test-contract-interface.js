@@ -271,4 +271,17 @@ describe('Test Invalid Input', function() {
         }, 'long bytes32 throws an error');
     });
 
+    // See: https://github.com/ethers-io/ethers.js/issues/281
+    it('fails to encode byteXX with odd input', function() {
+        assert.throws(function() {
+            var coder = ethers.utils.AbiCoder.defaultCoder;
+            var result = coder.encode([ 'bytes32' ], [ '0x1' ]);
+            console.log(result);
+        }, function(error) {
+            assert.equal(error.message, 'hex string cannot be odd-length', 'got odd bytes');
+            return true;
+        });
+    });
+
 });
+

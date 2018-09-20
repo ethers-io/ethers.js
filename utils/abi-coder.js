@@ -17,6 +17,7 @@ var utils = (function() {
         getAddress: require('../utils/address').getAddress,
 
         concat: convert.concat,
+        isHexString: convert.isHexString,
 
         toUtf8Bytes: utf8.toUtf8Bytes,
         toUtf8String: utf8.toUtf8String,
@@ -411,6 +412,9 @@ var coderFixedBytes = function(coerceFunc, length, localName) {
         name: name,
         type: name,
         encode: function(value) {
+            if (utils.isHexString(value) && (value.length % 2) !== 0) {
+                throw new Error('hex string cannot be odd-length');
+            }
             try {
                 value = utils.arrayify(value);
 
