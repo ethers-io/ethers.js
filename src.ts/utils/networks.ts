@@ -50,6 +50,10 @@ const networks: { [name: string]: { chainId: number, ensAddress?: string } } = {
 
     classic: {
         chainId: 61
+    },
+
+    classicTestnet: {
+        chainId: 62
     }
 }
 
