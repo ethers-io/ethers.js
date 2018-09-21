@@ -347,6 +347,17 @@ function parseSignatureFunction(fragment: string): FunctionFragment {
         });
     }
 
+    if (abi.name === 'constructor') {
+        abi.type = "constructor";
+
+        if (abi.outputs.length) {
+            throw new Error('constructor may not have outputs');
+        }
+
+        delete abi.name;
+        delete abi.outputs;
+    }
+
     return abi;
 }
 
