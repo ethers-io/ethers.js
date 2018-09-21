@@ -3,6 +3,7 @@
   "version": "3.0.29",
   "description": "Ethereum wallet library.",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "eslint": "eslint index.js contracts/*.js providers/*.js utils/*.js wallet/*.js",
     "test": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
