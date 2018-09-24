@@ -1,15 +1,17 @@
 
+import { Zero } from '../constants';
+
+import * as errors from '../errors';
+
 import { recoverAddress } from './secp256k1';
 
 import { getAddress } from './address';
 import { BigNumber, bigNumberify } from './bignumber';
 import { arrayify, hexlify, hexZeroPad, splitSignature, stripZeros, } from './bytes';
-import { Zero } from './constants';
 import { keccak256 } from './keccak256';
 
 import * as RLP from './rlp';
 
-import * as errors from './errors';
 
 ///////////////////////////////
 // Imported Types

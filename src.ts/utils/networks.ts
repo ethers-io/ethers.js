@@ -1,6 +1,6 @@
 'use strict';
 
-import * as errors from '../utils/errors';
+import * as errors from '../errors';
 
 
 export type Network = {

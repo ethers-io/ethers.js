@@ -9,7 +9,7 @@ import { hashMessage } from './hash';
 import { keccak256 } from './keccak256';
 import { defineReadOnly } from './properties';
 
-import * as errors from './errors';
+import * as errors from '../errors';
 
 ///////////////////////////////
 // Imported Types

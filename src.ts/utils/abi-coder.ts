@@ -2,14 +2,16 @@
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
+import { NegativeOne, Zero, One, MaxUint256 } from '../constants';
+
+import * as errors from '../errors';
+
 import { getAddress } from  './address';
 import { BigNumber, bigNumberify } from './bignumber';
 import { arrayify, concat, hexlify, padZeros } from './bytes';
-import { NegativeOne, Zero, One, MaxUint256 } from '../utils/constants';
 import { toUtf8Bytes, toUtf8String } from './utf8';
 import { deepCopy, defineReadOnly, shallowCopy } from './properties';
 
-import * as errors from './errors';
 
 ///////////////////////////////
 // Imported Types

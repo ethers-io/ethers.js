@@ -2,21 +2,21 @@
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
-import { getAddress } from '../utils/address';
-import { defaultAbiCoder, formatSignature, parseSignature } from '../utils/abi-coder';
-import { BigNumber, bigNumberify } from '../utils/bignumber';
-import { arrayify, concat, hexlify, hexZeroPad, isHexString } from '../utils/bytes';
-import { id } from '../utils/hash';
-import { keccak256 } from '../utils/keccak256';
-import { deepCopy, defineReadOnly, isType, setType } from '../utils/properties';
+import { getAddress } from './address';
+import { defaultAbiCoder, formatSignature, parseSignature } from './abi-coder';
+import { BigNumber, bigNumberify } from './bignumber';
+import { arrayify, concat, hexlify, hexZeroPad, isHexString } from './bytes';
+import { id } from './hash';
+import { keccak256 } from './keccak256';
+import { deepCopy, defineReadOnly, isType, setType } from './properties';
 
-import * as errors from '../utils/errors';
+import * as errors from '../errors';
 
 ///////////////////////////////
 // Imported Types
 
-import { BigNumberish } from '../utils/bignumber';
-import { EventFragment, FunctionFragment, ParamType } from '../utils/abi-coder';
+import { BigNumberish } from './bignumber';
+import { EventFragment, FunctionFragment, ParamType } from './abi-coder';
 
 ///////////////////////////////
 // Exported Types

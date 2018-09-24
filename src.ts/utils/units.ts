@@ -1,12 +1,14 @@
 'use strict';
 
+import { Zero, NegativeOne } from '../constants';
+
+import * as errors from '../errors';
+
 import { BigNumber, bigNumberify } from './bignumber';
-import { Zero, NegativeOne } from './constants';
 
 // Imported Types
 import { BigNumberish } from './bignumber';
 
-import * as errors from './errors';
 
 const names = [
     'wei',

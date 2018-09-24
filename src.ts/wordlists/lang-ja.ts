@@ -1,10 +1,10 @@
 
-import { check, register, Wordlist } from './wordlist';
+import { check, register, Wordlist } from '../utils/wordlist';
 
 import { hexlify } from '../utils/bytes';
 import { toUtf8Bytes, toUtf8String } from '../utils/utf8';
 
-import * as errors from '../utils/errors';
+import * as errors from '../errors';
 
 const data = [
 

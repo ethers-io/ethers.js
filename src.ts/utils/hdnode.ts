@@ -3,6 +3,8 @@
 // See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 // See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
+import * as errors from '../errors';
+
 // The English language word list.
 // For additional word lists, please see /src.tc/wordlists/
 import { langEn } from '../wordlists/lang-en';
@@ -11,22 +13,21 @@ import { langEn } from '../wordlists/lang-en';
 //import { register } from '../wordlists/wordlist';
 //register(langEn);
 
-import { arrayify, hexlify } from '../utils/bytes';
-import { bigNumberify } from '../utils/bignumber';
-import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
-import { pbkdf2 } from '../utils/pbkdf2';
-import { computeHmac, SupportedAlgorithms } from '../utils/hmac';
-import { defineReadOnly, isType, setType } from '../utils/properties';
-import { KeyPair } from '../utils/secp256k1';
-import { sha256 } from '../utils/sha2';
+import { arrayify, hexlify } from './bytes';
+import { bigNumberify } from './bignumber';
+import { toUtf8Bytes, UnicodeNormalizationForm } from './utf8';
+import { pbkdf2 } from './pbkdf2';
+import { computeHmac, SupportedAlgorithms } from './hmac';
+import { defineReadOnly, isType, setType } from './properties';
+import { KeyPair } from './secp256k1';
+import { sha256 } from './sha2';
 
 const N = bigNumberify("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 
 // Imported Types
-import { Arrayish } from '../utils/bytes';
-import { Wordlist } from '../wordlists/wordlist';
+import { Arrayish } from './bytes';
+import { Wordlist } from './wordlist';
 
-import * as errors from '../utils/errors';
 
 // "Bitcoin seed"
 var MasterSecret = toUtf8Bytes('Bitcoin seed');

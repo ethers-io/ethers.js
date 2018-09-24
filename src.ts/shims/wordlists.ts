@@ -1,5 +1,5 @@
 
-import { Wordlist } from '../wordlists/wordlist';
+import { Wordlist } from '../utils/wordlist';
 
 import { langEn as _en } from '../wordlists/lang-en';
 

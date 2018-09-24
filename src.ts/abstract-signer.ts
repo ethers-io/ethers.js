@@ -1,12 +1,12 @@
 
-import { isType, setType } from '../utils/properties';
+import { isType, setType } from './utils/properties';
 
 // Imported Abstracts
-import { Provider } from '../providers/abstract-provider';
+import { Provider } from './providers/abstract-provider';
 
 // Imported Types
-import { Arrayish } from '../utils/bytes';
-import { TransactionRequest, TransactionResponse } from '../providers/abstract-provider';
+import { Arrayish } from './utils/bytes';
+import { TransactionRequest, TransactionResponse } from './providers/abstract-provider';
 
 
 export abstract class Signer {

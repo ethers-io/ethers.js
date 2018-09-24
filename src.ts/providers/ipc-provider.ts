@@ -8,7 +8,7 @@ import { defineReadOnly } from '../utils/properties';
 // Imported Types
 import { Networkish } from '../utils/networks';
 
-import * as errors from '../utils/errors';
+import * as errors from '../errors';
 
 export class IpcProvider extends JsonRpcProvider {
     readonly path: string;

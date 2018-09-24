@@ -8,7 +8,7 @@ import { BigNumber } from './bignumber';
 import { keccak256 } from './keccak256';
 import { encode } from './rlp';
 
-import errors = require('./errors');
+import errors = require('../errors');
 
 ///////////////////////////////
 // Imported Types

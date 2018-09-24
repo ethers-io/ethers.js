@@ -1,29 +1,28 @@
 'use strict';
 
-import { defaultPath, HDNode, entropyToMnemonic, fromMnemonic } from './hdnode';
-import * as secretStorage from './secret-storage';
-import { SigningKey } from './signing-key';
-
-import { arrayify, concat, joinSignature } from '../utils/bytes';
-import { BigNumber } from '../utils/bignumber';
-import { hashMessage } from '../utils/hash';
-import { isCrowdsaleWallet, isSecretStorageWallet } from '../utils/json-wallet';
-import { keccak256 } from '../utils/keccak256';
-import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
-import { randomBytes } from '../utils/random-bytes';
-import { serialize as serializeTransaction } from '../utils/transaction';
-import { Wordlist } from '../wordlists/wordlist';
+import { arrayify, concat, joinSignature } from './utils/bytes';
+import { BigNumber } from './utils/bignumber';
+import { hashMessage } from './utils/hash';
+import { defaultPath, HDNode, entropyToMnemonic, fromMnemonic } from './utils/hdnode';
+import { isCrowdsaleWallet, isSecretStorageWallet } from './utils/json-wallet';
+import { keccak256 } from './utils/keccak256';
+import { defineReadOnly, resolveProperties, shallowCopy } from './utils/properties';
+import { randomBytes } from './utils/random-bytes';
+import * as secretStorage from './utils/secret-storage';
+import { SigningKey } from './utils/signing-key';
+import { serialize as serializeTransaction } from './utils/transaction';
+import { Wordlist } from './utils/wordlist';
 
 // Imported Abstracts
 import { Signer as AbstractSigner } from './abstract-signer';
-import { Provider } from '../providers/abstract-provider';
+import { Provider } from './providers/abstract-provider';
 
 // Imported Types
-import { ProgressCallback } from './secret-storage';
-import { Arrayish } from '../utils/bytes';
-import { BlockTag, TransactionRequest, TransactionResponse } from '../providers/abstract-provider';
+import { ProgressCallback } from './utils/secret-storage';
+import { Arrayish } from './utils/bytes';
+import { BlockTag, TransactionRequest, TransactionResponse } from './providers/abstract-provider';
 
-import * as errors from '../utils/errors';
+import * as errors from './errors';
 
 
 export class Wallet extends AbstractSigner {

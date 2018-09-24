@@ -1,29 +1,30 @@
 'use strict';
 
-import { Indexed, Interface } from './interface';
+import { Zero } from './constants';
 
-import { defaultAbiCoder, formatSignature, parseSignature } from '../utils/abi-coder';
-import { getAddress, getContractAddress } from '../utils/address';
-import { BigNumber, bigNumberify } from '../utils/bignumber';
-import { hexDataLength, hexDataSlice, isHexString } from '../utils/bytes';
-import { Zero } from '../utils/constants';
-import { defineReadOnly, deepCopy, shallowCopy } from '../utils/properties';
+import * as errors from './errors';
 
-import * as errors from '../utils/errors';
+import { defaultAbiCoder, formatSignature, parseSignature } from './utils/abi-coder';
+import { getAddress, getContractAddress } from './utils/address';
+import { BigNumber, bigNumberify } from './utils/bignumber';
+import { hexDataLength, hexDataSlice, isHexString } from './utils/bytes';
+import { Indexed, Interface } from './utils/interface';
+import { defineReadOnly, deepCopy, shallowCopy } from './utils/properties';
+
 
 ///////////////////////////////
 // Imported Abstracts
 
-import { Provider } from '../providers/abstract-provider';
-import { Signer } from '../wallet/abstract-signer';
+import { Provider } from './providers/abstract-provider';
+import { Signer } from './abstract-signer';
 
 ///////////////////////////////
 // Imported Types
 
-import { Arrayish } from '../utils/bytes';
-import { EventDescription } from './interface';
-import { ParamType } from '../utils/abi-coder';
-import { Block, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from '../providers/abstract-provider';
+import { Arrayish } from './utils/bytes';
+import { EventDescription } from './utils/interface';
+import { ParamType } from './utils/abi-coder';
+import { Block, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from './providers/abstract-provider';
 
 ///////////////////////////////
 // Exported Types
@@ -85,7 +86,7 @@ export class VoidSigner extends Signer {
     }
 }
 
-var allowedTransactionKeys: { [ key: string ]: boolean } = {
+const allowedTransactionKeys: { [ key: string ]: boolean } = {
     data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
 }
 
@@ -94,9 +95,9 @@ var allowedTransactionKeys: { [ key: string ]: boolean } = {
 // @TODO: Expand this to resolve any promises too
 function resolveAddresses(provider: Provider, value: any, paramType: ParamType | Array<ParamType>): Promise<any> {
     if (Array.isArray(paramType)) {
-        var promises: Array<Promise<any>> = [];
+        let promises: Array<Promise<any>> = [];
         paramType.forEach((paramType, index) => {
-            var v = null;
+            let v = null;
             if (Array.isArray(value)) {
                 v = value[index];
             } else {

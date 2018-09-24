@@ -3,7 +3,7 @@ import * as hash from 'hash.js';
 
 import { arrayify } from '../utils/bytes';
 
-import * as errors from '../utils/errors';
+import * as errors from '../errors';
 
 ///////////////////////////////
 // Imported Types

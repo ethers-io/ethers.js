@@ -3,7 +3,7 @@
  *
  */
 
-import * as errors from './errors';
+import * as errors from '../errors';
 
 ///////////////////////////////
 // Imported Types

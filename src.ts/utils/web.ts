@@ -5,7 +5,7 @@ import { XMLHttpRequest } from 'xmlhttprequest';
 import { encode as base64Encode } from './base64';
 import { toUtf8Bytes } from './utf8';
 
-import * as errors from './errors';
+import * as errors from '../errors';
 
 
 // Exported Types

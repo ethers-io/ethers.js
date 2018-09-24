@@ -4,7 +4,7 @@
 
 import { BaseProvider } from './base-provider';
 
-import { Signer } from '../wallet/abstract-signer';
+import { Signer } from '../abstract-signer';
 
 import { getAddress } from '../utils/address';
 import { BigNumber } from '../utils/bignumber';
@@ -20,7 +20,7 @@ import { Network, Networkish } from '../utils/networks';
 import { ConnectionInfo } from '../utils/web';
 import { BlockTag, TransactionRequest, TransactionResponse } from '../providers/abstract-provider';
 
-import * as errors from '../utils/errors';
+import * as errors from '../errors';
 
 function timer(timeout: number): Promise<any> {
     return new Promise(function(resolve) {

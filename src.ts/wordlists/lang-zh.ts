@@ -1,5 +1,5 @@
 
-import { check, register, Wordlist } from './wordlist';
+import { check, register, Wordlist } from '../utils/wordlist';
 
 import { toUtf8String } from '../utils/utf8';
 

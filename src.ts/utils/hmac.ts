@@ -7,7 +7,7 @@ import { arrayify } from './bytes';
 // Imported Types
 import { Arrayish } from './bytes';
 
-import * as errors from './errors';
+import * as errors from '../errors';
 
 export enum SupportedAlgorithms { sha256 = 'sha256', sha512 = 'sha512' };
 

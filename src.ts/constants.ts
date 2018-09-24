@@ -1,4 +1,4 @@
-import { BigNumber, bigNumberify } from './bignumber';
+import { BigNumber, bigNumberify } from './utils/bignumber';
 
 const AddressZero = '0x0000000000000000000000000000000000000000';
 const HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000';

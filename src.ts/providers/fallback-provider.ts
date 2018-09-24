@@ -5,7 +5,7 @@ import { BaseProvider } from './base-provider';
 // Imported Types
 import { Network } from '../utils/networks';
 
-import * as errors from '../utils/errors';
+import * as errors from '../errors';
 
 // Returns:
 //  - true is all networks match

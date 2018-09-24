@@ -11,7 +11,7 @@ import { parse as parseTransaction } from '../utils/transaction';
 import { toUtf8String } from '../utils/utf8';
 import { poll } from '../utils/web';
 
-import * as errors from '../utils/errors';
+import * as errors from '../errors';
 
 ///////////////////////////////
 // Imported Abstracts

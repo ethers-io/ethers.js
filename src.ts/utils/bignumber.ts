@@ -15,7 +15,7 @@ import { defineReadOnly, isType, setType } from './properties';
 
 import { Arrayish } from './bytes';
 
-import * as errors from './errors';
+import * as errors from '../errors';
 
 const BN_1 = new BN.BN(-1);
 

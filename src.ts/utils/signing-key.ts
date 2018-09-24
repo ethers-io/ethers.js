@@ -8,16 +8,16 @@
 
 import { HDNode } from './hdnode';
 
-import { arrayify, hexlify } from '../utils/bytes';
-import { defineReadOnly, isType, setType } from '../utils/properties';
-import { computeAddress, KeyPair } from '../utils/secp256k1';
+import { arrayify, hexlify } from './bytes';
+import { defineReadOnly, isType, setType } from './properties';
+import { computeAddress, KeyPair } from './secp256k1';
 
-import * as errors from '../utils/errors';
+import * as errors from '../errors';
 
 ///////////////////////////////
 // Imported Types
 
-import { Arrayish, Signature } from '../utils/bytes';
+import { Arrayish, Signature } from './bytes';
 
 ///////////////////////////////
 

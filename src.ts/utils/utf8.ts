@@ -1,7 +1,8 @@
 'use strict';
 
+import { HashZero } from '../constants';
+
 import { arrayify, concat, hexlify } from './bytes';
-import { HashZero } from './constants';
 
 ///////////////////////////////
 // Imported Types

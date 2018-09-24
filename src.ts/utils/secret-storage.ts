@@ -7,15 +7,15 @@ import uuid from 'uuid';
 import { SigningKey } from './signing-key';
 import * as HDNode from './hdnode';
 
-import { getAddress } from '../utils/address';
-import { arrayify, concat, hexlify } from '../utils/bytes';
-import { pbkdf2 } from '../utils/pbkdf2';
-import { keccak256 } from '../utils/keccak256';
-import { toUtf8Bytes, UnicodeNormalizationForm } from '../utils/utf8';
-import { randomBytes } from '../utils/random-bytes';
+import { getAddress } from './address';
+import { arrayify, concat, hexlify } from './bytes';
+import { pbkdf2 } from './pbkdf2';
+import { keccak256 } from './keccak256';
+import { toUtf8Bytes, UnicodeNormalizationForm } from './utf8';
+import { randomBytes } from './random-bytes';
 
 // Imported Types
-import { Arrayish } from '../utils/bytes';
+import { Arrayish } from './bytes';
 
 
 // Exported Types

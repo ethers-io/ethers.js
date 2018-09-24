@@ -1,5 +1,6 @@
+'use strict';
 
-import { Wordlist } from './wordlist';
+import { Wordlist } from '../utils/wordlist';
 
 import { langJa as _ja } from './lang-ja';
 import { langKo as _ko } from './lang-ko';

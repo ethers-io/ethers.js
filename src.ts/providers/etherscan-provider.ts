@@ -5,7 +5,7 @@ import { hexlify, hexStripZeros } from '../utils/bytes';
 import { defineReadOnly } from '../utils/properties';
 import { fetchJson } from '../utils/web';
 
-import * as errors from '../utils/errors';
+import * as errors from '../errors';
 
 ///////////////////////////////
 // Imported Types
