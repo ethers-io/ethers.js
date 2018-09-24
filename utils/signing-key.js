@@ -13,10 +13,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  */
 var hdnode_1 = require("./hdnode");
-var bytes_1 = require("../utils/bytes");
-var properties_1 = require("../utils/properties");
-var secp256k1_1 = require("../utils/secp256k1");
-var errors = __importStar(require("../utils/errors"));
+var bytes_1 = require("./bytes");
+var properties_1 = require("./properties");
+var secp256k1_1 = require("./secp256k1");
+var errors = __importStar(require("../errors"));
 ///////////////////////////////
 var SigningKey = /** @class */ (function () {
     function SigningKey(privateKey) {

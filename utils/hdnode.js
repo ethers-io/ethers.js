@@ -9,22 +9,22 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 // See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
+var errors = __importStar(require("../errors"));
 // The English language word list.
 // For additional word lists, please see /src.tc/wordlists/
 var lang_en_1 = require("../wordlists/lang-en");
 // Automatically register English?
 //import { register } from '../wordlists/wordlist';
 //register(langEn);
-var bytes_1 = require("../utils/bytes");
-var bignumber_1 = require("../utils/bignumber");
-var utf8_1 = require("../utils/utf8");
-var pbkdf2_1 = require("../utils/pbkdf2");
-var hmac_1 = require("../utils/hmac");
-var properties_1 = require("../utils/properties");
-var secp256k1_1 = require("../utils/secp256k1");
-var sha2_1 = require("../utils/sha2");
+var bytes_1 = require("./bytes");
+var bignumber_1 = require("./bignumber");
+var utf8_1 = require("./utf8");
+var pbkdf2_1 = require("./pbkdf2");
+var hmac_1 = require("./hmac");
+var properties_1 = require("./properties");
+var secp256k1_1 = require("./secp256k1");
+var sha2_1 = require("./sha2");
 var N = bignumber_1.bigNumberify("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
-var errors = __importStar(require("../utils/errors"));
 // "Bitcoin seed"
 var MasterSecret = utf8_1.toUtf8Bytes('Bitcoin seed');
 var HardenedBit = 0x80000000;

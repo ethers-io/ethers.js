@@ -20,7 +20,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var bn_js_1 = __importDefault(require("bn.js"));
 var bytes_1 = require("./bytes");
 var properties_1 = require("./properties");
-var errors = __importStar(require("./errors"));
+var errors = __importStar(require("../errors"));
 var BN_1 = new bn_js_1.default.BN(-1);
 function toHex(bn) {
     var value = bn.toString(16);

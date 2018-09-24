@@ -218,7 +218,7 @@ function taskLang(locale) {
             // Word list files...
             if (shortPath.match(/^\/src\.ts\/wordlists\//)) {
                 // If it is the wordlist class, register should export the wordlist
-                if (shortPath === '/src.ts/wordlists/wordlist.ts') {
+                if (shortPath === '/src.ts/utils/wordlist.ts') {
                     data += '\n\nexportWordlist = true;'
                 }
                 shortPath = '/';

@@ -7,9 +7,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var constants_1 = require("../constants");
+var errors = __importStar(require("../errors"));
 var bignumber_1 = require("./bignumber");
-var constants_1 = require("./constants");
-var errors = __importStar(require("./errors"));
 var names = [
     'wei',
     'kwei',

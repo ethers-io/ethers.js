@@ -7,216 +7,26 @@ declare module 'ethers' {
 }
 
 declare module 'ethers/ethers' {
-    import { Contract, Interface, VoidSigner } from 'ethers/contracts';
+    import { Contract, VoidSigner } from 'ethers/contract';
+    import { Signer } from 'ethers/abstract-signer';
+    import { Wallet } from 'ethers/wallet';
+    import * as constants from 'ethers/constants';
+    import * as errors from 'ethers/errors';
     import * as providers from 'ethers/providers';
-    import { HDNode, SigningKey, Wallet } from 'ethers/wallet';
-    import { AbiCoder } from 'ethers/utils/abi-coder';
-    import { BigNumber } from 'ethers/utils/bignumber';
-    import * as constants from 'ethers/utils/constants';
-    import * as errors from 'ethers/utils/errors';
     import * as utils from 'ethers/utils';
-    import * as types from 'ethers/types';
     import * as wordlists from 'ethers/wordlists';
     import { platform } from 'ethers/utils/shims';
     import { version } from 'ethers/_version';
-    function getDefaultProvider(network?: types.Network | string): providers.BaseProvider;
-    export { Wallet, VoidSigner, HDNode, SigningKey, Contract, Interface, getDefaultProvider, providers, AbiCoder, BigNumber, errors, constants, utils, types, wordlists, platform, version };
+    import { ContractFunction, Event, EventFilter } from 'ethers/contract';
+    function getDefaultProvider(network?: utils.Network | string): providers.BaseProvider;
+    export { Signer, Wallet, VoidSigner, getDefaultProvider, providers, Contract, constants, errors, utils, wordlists, platform, version, ContractFunction, Event, EventFilter };
 }
 
-declare module 'ethers/contracts' {
-    import { Contract, VoidSigner } from 'ethers/contracts/contract';
-    import { Interface } from 'ethers/contracts/interface';
-    export { Contract, Interface, VoidSigner };
-}
-
-declare module 'ethers/providers' {
-    import { BaseProvider } from 'ethers/providers/base-provider';
-    import { EtherscanProvider } from 'ethers/providers/etherscan-provider';
-    import { FallbackProvider } from 'ethers/providers/fallback-provider';
-    import { IpcProvider } from 'ethers/providers/ipc-provider';
-    import { InfuraProvider } from 'ethers/providers/infura-provider';
-    import { JsonRpcProvider, JsonRpcSigner } from 'ethers/providers/json-rpc-provider';
-    import { Web3Provider } from 'ethers/providers/web3-provider';
-    export { BaseProvider, FallbackProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, Web3Provider, IpcProvider, JsonRpcSigner };
-}
-
-declare module 'ethers/wallet' {
-    import { Wallet } from 'ethers/wallet/wallet';
-    import * as HDNode from 'ethers/wallet/hdnode';
-    import { SigningKey } from 'ethers/wallet/signing-key';
-    export { HDNode, SigningKey, Wallet };
-}
-
-declare module 'ethers/utils/abi-coder' {
+declare module 'ethers/contract' {
     import { BigNumber } from 'ethers/utils/bignumber';
-    import { Arrayish } from 'ethers/utils/bytes';
-    export type CoerceFunc = (type: string, value: any) => any;
-    export type ParamType = {
-        name?: string;
-        type: string;
-        indexed?: boolean;
-        components?: Array<any>;
-    };
-    export type EventFragment = {
-        type: string;
-        name: string;
-        anonymous: boolean;
-        inputs: Array<ParamType>;
-    };
-    export type FunctionFragment = {
-        type: string;
-        name: string;
-        constant: boolean;
-        inputs: Array<ParamType>;
-        outputs: Array<ParamType>;
-        payable: boolean;
-        stateMutability: string;
-        gas: BigNumber;
-    };
-    export const defaultCoerceFunc: CoerceFunc;
-    export function parseParamType(type: string): ParamType;
-    export function formatParamType(paramType: ParamType): string;
-    export function formatSignature(fragment: EventFragment | FunctionFragment): string;
-    export function parseSignature(fragment: string): EventFragment | FunctionFragment;
-    export class AbiCoder {
-        readonly coerceFunc: CoerceFunc;
-        constructor(coerceFunc?: CoerceFunc);
-        encode(types: Array<string | ParamType>, values: Array<any>): string;
-        decode(types: Array<string | ParamType>, data: Arrayish): any;
-    }
-    export const defaultAbiCoder: AbiCoder;
-}
-
-declare module 'ethers/utils/bignumber' {
-    import { Hexable } from 'ethers/utils/bytes';
-    import { Arrayish } from 'ethers/utils/bytes';
-    export type BigNumberish = BigNumber | string | number | Arrayish;
-    export class BigNumber implements Hexable {
-        constructor(value: BigNumberish);
-        fromTwos(value: number): BigNumber;
-        toTwos(value: number): BigNumber;
-        add(other: BigNumberish): BigNumber;
-        sub(other: BigNumberish): BigNumber;
-        div(other: BigNumberish): BigNumber;
-        mul(other: BigNumberish): BigNumber;
-        mod(other: BigNumberish): BigNumber;
-        pow(other: BigNumberish): BigNumber;
-        maskn(value: number): BigNumber;
-        eq(other: BigNumberish): boolean;
-        lt(other: BigNumberish): boolean;
-        lte(other: BigNumberish): boolean;
-        gt(other: BigNumberish): boolean;
-        gte(other: BigNumberish): boolean;
-        isZero(): boolean;
-        toNumber(): number;
-        toString(): string;
-        toHexString(): string;
-        static isBigNumber(value: any): value is BigNumber;
-    }
-    export function bigNumberify(value: BigNumberish): BigNumber;
-}
-
-declare module 'ethers/utils/constants' {
-    import { BigNumber } from 'ethers/utils/bignumber';
-    const AddressZero = "0x0000000000000000000000000000000000000000";
-    const HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
-    const EtherSymbol = "\u039E";
-    const NegativeOne: BigNumber;
-    const Zero: BigNumber;
-    const One: BigNumber;
-    const Two: BigNumber;
-    const WeiPerEther: BigNumber;
-    const MaxUint256: BigNumber;
-    export { AddressZero, HashZero, EtherSymbol, NegativeOne, Zero, One, Two, WeiPerEther, MaxUint256 };
-}
-
-declare module 'ethers/utils/errors' {
-    export const UNKNOWN_ERROR = "UNKNOWN_ERROR";
-    export const NOT_IMPLEMENTED = "NOT_IMPLEMENTED";
-    export const MISSING_NEW = "MISSING_NEW";
-    export const CALL_EXCEPTION = "CALL_EXCEPTION";
-    export const INVALID_ARGUMENT = "INVALID_ARGUMENT";
-    export const MISSING_ARGUMENT = "MISSING_ARGUMENT";
-    export const UNEXPECTED_ARGUMENT = "UNEXPECTED_ARGUMENT";
-    export const NUMERIC_FAULT = "NUMERIC_FAULT";
-    export const INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS";
-    export const NONCE_EXPIRED = "NONCE_EXPIRED";
-    export const REPLACEMENT_UNDERPRICED = "REPLACEMENT_UNDERPRICED";
-    export const UNSUPPORTED_OPERATION = "UNSUPPORTED_OPERATION";
-    export function throwError(message: string, code: string, params: any): never;
-    export function checkNew(self: any, kind: any): void;
-    export function checkArgumentCount(count: number, expectedCount: number, suffix?: string): void;
-    export function setCensorship(censorship: boolean, permanent?: boolean): void;
-}
-
-declare module 'ethers/utils' {
-    import { defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from 'ethers/utils/abi-coder';
-    import { getAddress, getContractAddress, getIcapAddress } from 'ethers/utils/address';
-    import * as base64 from 'ethers/utils/base64';
-    import { bigNumberify } from 'ethers/utils/bignumber';
-    import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexZeroPad, joinSignature, padZeros, splitSignature, stripZeros } from 'ethers/utils/bytes';
-    import { hashMessage, id, namehash } from 'ethers/utils/hash';
-    import { getJsonWalletAddress } from 'ethers/utils/json-wallet';
-    import { keccak256 } from 'ethers/utils/keccak256';
-    import { sha256 } from 'ethers/utils/sha2';
-    import { keccak256 as solidityKeccak256, pack as solidityPack, sha256 as soliditySha256 } from 'ethers/utils/solidity';
-    import { randomBytes } from 'ethers/utils/random-bytes';
-    import { getNetwork } from 'ethers/utils/networks';
-    import { deepCopy, defineReadOnly, resolveProperties, shallowCopy } from 'ethers/utils/properties';
-    import * as RLP from 'ethers/utils/rlp';
-    import { computeAddress, computePublicKey, recoverAddress, recoverPublicKey, verifyMessage } from 'ethers/utils/secp256k1';
-    import { parse as parseTransaction, serialize as serializeTransaction } from 'ethers/utils/transaction';
-    import { formatBytes32String, parseBytes32String, toUtf8Bytes, toUtf8String } from 'ethers/utils/utf8';
-    import { formatEther, parseEther, formatUnits, parseUnits } from 'ethers/utils/units';
-    import { fetchJson } from 'ethers/utils/web';
-    export { defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, getNetwork, deepCopy, defineReadOnly, resolveProperties, shallowCopy, arrayify, concat, padZeros, stripZeros, base64, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, formatBytes32String, parseBytes32String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computeAddress, computePublicKey, recoverAddress, recoverPublicKey, verifyMessage };
-}
-
-declare module 'ethers/types' {
+    import { Indexed, Interface } from 'ethers/utils/interface';
     import { Provider } from 'ethers/providers/abstract-provider';
-    import { Signer } from 'ethers/wallet/abstract-signer';
-    import { ContractFunction, Event, EventFilter } from 'ethers/contracts/contract';
-    import { Indexed, DeployDescription, EventDescription, FunctionDescription, LogDescription, TransactionDescription } from 'ethers/contracts/interface';
-    import { Block, BlockTag, EventType, Filter, Log, Listener, TransactionReceipt, TransactionRequest, TransactionResponse } from 'ethers/providers/abstract-provider';
-    import { AsyncSendable } from 'ethers/providers/web3-provider';
-    import { CoerceFunc, EventFragment, FunctionFragment, ParamType } from 'ethers/utils/abi-coder';
-    import { BigNumberish } from 'ethers/utils/bignumber';
-    import { Arrayish, Hexable, Signature } from 'ethers/utils/bytes';
-    import { SupportedAlgorithms } from 'ethers/utils/hmac';
-    import { Network, Networkish } from 'ethers/utils/networks';
-    import { Transaction, UnsignedTransaction } from 'ethers/utils/transaction';
-    import { UnicodeNormalizationForm } from 'ethers/utils/utf8';
-    import { ConnectionInfo, OnceBlockable, PollOptions } from 'ethers/utils/web';
-    import { EncryptOptions, ProgressCallback } from 'ethers/wallet/secret-storage';
-    import { Wordlist } from 'ethers/wordlists/wordlist';
-    export { Provider, Signer, ContractFunction, EventFilter, Event, Indexed, DeployDescription, EventDescription, FunctionDescription, LogDescription, TransactionDescription, BlockTag, EventType, Filter, Listener, TransactionRequest, Block, Log, TransactionReceipt, TransactionResponse, AsyncSendable, CoerceFunc, EventFragment, FunctionFragment, ParamType, BigNumberish, Arrayish, Hexable, Signature, SupportedAlgorithms, Network, Networkish, UnsignedTransaction, Transaction, UnicodeNormalizationForm, ConnectionInfo, OnceBlockable, PollOptions, EncryptOptions, ProgressCallback, Wordlist };
-}
-
-declare module 'ethers/wordlists' {
-    import { Wordlist } from 'ethers/wordlists/wordlist';
-    const en: Wordlist;
-    const ko: Wordlist;
-    const it: Wordlist;
-    const ja: Wordlist;
-    const zh: Wordlist;
-    const zh_cn: Wordlist;
-    const zh_tw: Wordlist;
-    export { en, it, ja, ko, zh, zh_cn, zh_tw };
-}
-
-declare module 'ethers/utils/shims' {
-    export const platform = "node";
-}
-
-declare module 'ethers/_version' {
-    export const version = "4.0.0-beta.14";
-}
-
-declare module 'ethers/contracts/contract' {
-    import { Indexed, Interface } from 'ethers/contracts/interface';
-    import { BigNumber } from 'ethers/utils/bignumber';
-    import { Provider } from 'ethers/providers/abstract-provider';
-    import { Signer } from 'ethers/wallet/abstract-signer';
+    import { Signer } from 'ethers/abstract-signer';
     import { Arrayish } from 'ethers/utils/bytes';
     import { ParamType } from 'ethers/utils/abi-coder';
     import { Block, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from 'ethers/providers/abstract-provider';
@@ -277,7 +87,191 @@ declare module 'ethers/contracts/contract' {
     export {};
 }
 
-declare module 'ethers/contracts/interface' {
+declare module 'ethers/abstract-signer' {
+    import { Provider } from 'ethers/providers/abstract-provider';
+    import { Arrayish } from 'ethers/utils/bytes';
+    import { TransactionRequest, TransactionResponse } from 'ethers/providers/abstract-provider';
+    export abstract class Signer {
+        readonly provider?: Provider;
+        abstract getAddress(): Promise<string>;
+        abstract signMessage(message: Arrayish | string): Promise<string>;
+        abstract sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
+        constructor();
+        static isSigner(value: any): value is Signer;
+    }
+}
+
+declare module 'ethers/wallet' {
+    import { BigNumber } from 'ethers/utils/bignumber';
+    import { HDNode } from 'ethers/utils/hdnode';
+    import { SigningKey } from 'ethers/utils/signing-key';
+    import { Wordlist } from 'ethers/utils/wordlist';
+    import { Signer as AbstractSigner } from 'ethers/abstract-signer';
+    import { Provider } from 'ethers/providers/abstract-provider';
+    import { ProgressCallback } from 'ethers/utils/secret-storage';
+    import { Arrayish } from 'ethers/utils/bytes';
+    import { BlockTag, TransactionRequest, TransactionResponse } from 'ethers/providers/abstract-provider';
+    export class Wallet extends AbstractSigner {
+            readonly provider: Provider;
+            constructor(privateKey: SigningKey | HDNode | Arrayish, provider?: Provider);
+            readonly address: string;
+            readonly mnemonic: string;
+            readonly path: string;
+            readonly privateKey: string;
+            /**
+                *  Create a new instance of this Wallet connected to provider.
+                */
+            connect(provider: Provider): Wallet;
+            getAddress(): Promise<string>;
+            sign(transaction: TransactionRequest): Promise<string>;
+            signMessage(message: Arrayish | string): Promise<string>;
+            getBalance(blockTag?: BlockTag): Promise<BigNumber>;
+            getTransactionCount(blockTag?: BlockTag): Promise<number>;
+            sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
+            encrypt(password: Arrayish | string, options?: any, progressCallback?: ProgressCallback): Promise<string>;
+            /**
+                *  Static methods to create Wallet instances.
+                */
+            static createRandom(options?: any): Wallet;
+            static fromEncryptedJson(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet>;
+            static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet;
+    }
+}
+
+declare module 'ethers/constants' {
+    import { BigNumber } from 'ethers/utils/bignumber';
+    const AddressZero = "0x0000000000000000000000000000000000000000";
+    const HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
+    const EtherSymbol = "\u039E";
+    const NegativeOne: BigNumber;
+    const Zero: BigNumber;
+    const One: BigNumber;
+    const Two: BigNumber;
+    const WeiPerEther: BigNumber;
+    const MaxUint256: BigNumber;
+    export { AddressZero, HashZero, EtherSymbol, NegativeOne, Zero, One, Two, WeiPerEther, MaxUint256 };
+}
+
+declare module 'ethers/errors' {
+    export const UNKNOWN_ERROR = "UNKNOWN_ERROR";
+    export const NOT_IMPLEMENTED = "NOT_IMPLEMENTED";
+    export const MISSING_NEW = "MISSING_NEW";
+    export const CALL_EXCEPTION = "CALL_EXCEPTION";
+    export const INVALID_ARGUMENT = "INVALID_ARGUMENT";
+    export const MISSING_ARGUMENT = "MISSING_ARGUMENT";
+    export const UNEXPECTED_ARGUMENT = "UNEXPECTED_ARGUMENT";
+    export const NUMERIC_FAULT = "NUMERIC_FAULT";
+    export const INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS";
+    export const NONCE_EXPIRED = "NONCE_EXPIRED";
+    export const REPLACEMENT_UNDERPRICED = "REPLACEMENT_UNDERPRICED";
+    export const UNSUPPORTED_OPERATION = "UNSUPPORTED_OPERATION";
+    export function throwError(message: string, code: string, params: any): never;
+    export function checkNew(self: any, kind: any): void;
+    export function checkArgumentCount(count: number, expectedCount: number, suffix?: string): void;
+    export function setCensorship(censorship: boolean, permanent?: boolean): void;
+}
+
+declare module 'ethers/providers' {
+    import { Provider } from 'ethers/providers/abstract-provider';
+    import { BaseProvider } from 'ethers/providers/base-provider';
+    import { EtherscanProvider } from 'ethers/providers/etherscan-provider';
+    import { FallbackProvider } from 'ethers/providers/fallback-provider';
+    import { IpcProvider } from 'ethers/providers/ipc-provider';
+    import { InfuraProvider } from 'ethers/providers/infura-provider';
+    import { JsonRpcProvider, JsonRpcSigner } from 'ethers/providers/json-rpc-provider';
+    import { Web3Provider } from 'ethers/providers/web3-provider';
+    import { Block, BlockTag, EventType, Filter, Log, Listener, TransactionReceipt, TransactionRequest, TransactionResponse } from 'ethers/providers/abstract-provider';
+    import { AsyncSendable } from 'ethers/providers/web3-provider';
+    export { Provider, BaseProvider, FallbackProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, Web3Provider, IpcProvider, JsonRpcSigner, Block, BlockTag, EventType, Filter, Log, Listener, TransactionReceipt, TransactionRequest, TransactionResponse, AsyncSendable };
+}
+
+declare module 'ethers/utils' {
+    import { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from 'ethers/utils/abi-coder';
+    import { getAddress, getContractAddress, getIcapAddress } from 'ethers/utils/address';
+    import * as base64 from 'ethers/utils/base64';
+    import { BigNumber, bigNumberify } from 'ethers/utils/bignumber';
+    import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexZeroPad, joinSignature, padZeros, splitSignature, stripZeros } from 'ethers/utils/bytes';
+    import { hashMessage, id, namehash } from 'ethers/utils/hash';
+    import * as HDNode from 'ethers/utils/hdnode';
+    import { Interface } from 'ethers/utils/interface';
+    import { getJsonWalletAddress } from 'ethers/utils/json-wallet';
+    import { keccak256 } from 'ethers/utils/keccak256';
+    import { sha256 } from 'ethers/utils/sha2';
+    import { keccak256 as solidityKeccak256, pack as solidityPack, sha256 as soliditySha256 } from 'ethers/utils/solidity';
+    import { randomBytes } from 'ethers/utils/random-bytes';
+    import { getNetwork } from 'ethers/utils/networks';
+    import { deepCopy, defineReadOnly, resolveProperties, shallowCopy } from 'ethers/utils/properties';
+    import * as RLP from 'ethers/utils/rlp';
+    import { computeAddress, computePublicKey, recoverAddress, recoverPublicKey, verifyMessage } from 'ethers/utils/secp256k1';
+    import { SigningKey } from 'ethers/utils/signing-key';
+    import { parse as parseTransaction, serialize as serializeTransaction } from 'ethers/utils/transaction';
+    import { formatBytes32String, parseBytes32String, toUtf8Bytes, toUtf8String } from 'ethers/utils/utf8';
+    import { formatEther, parseEther, formatUnits, parseUnits } from 'ethers/utils/units';
+    import { fetchJson } from 'ethers/utils/web';
+    import { SupportedAlgorithms } from 'ethers/utils/hmac';
+    import { UnicodeNormalizationForm } from 'ethers/utils/utf8';
+    import { CoerceFunc, EventFragment, FunctionFragment, ParamType } from 'ethers/utils/abi-coder';
+    import { BigNumberish } from 'ethers/utils/bignumber';
+    import { Arrayish, Hexable, Signature } from 'ethers/utils/bytes';
+    import { Indexed, DeployDescription, EventDescription, FunctionDescription, LogDescription, TransactionDescription } from 'ethers/utils/interface';
+    import { Network, Networkish } from 'ethers/utils/networks';
+    import { Transaction, UnsignedTransaction } from 'ethers/utils/transaction';
+    import { ConnectionInfo, OnceBlockable, PollOptions } from 'ethers/utils/web';
+    import { EncryptOptions, ProgressCallback } from 'ethers/utils/secret-storage';
+    import { Wordlist } from 'ethers/utils/wordlist';
+    export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, getNetwork, deepCopy, defineReadOnly, resolveProperties, shallowCopy, arrayify, concat, padZeros, stripZeros, HDNode, SigningKey, Interface, base64, BigNumber, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, formatBytes32String, parseBytes32String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computeAddress, computePublicKey, recoverAddress, recoverPublicKey, verifyMessage, SupportedAlgorithms, UnicodeNormalizationForm, CoerceFunc, EventFragment, FunctionFragment, ParamType, BigNumberish, Arrayish, Hexable, Signature, Indexed, DeployDescription, EventDescription, FunctionDescription, LogDescription, TransactionDescription, Network, Networkish, Transaction, UnsignedTransaction, ConnectionInfo, OnceBlockable, PollOptions, EncryptOptions, ProgressCallback, Wordlist, };
+}
+
+declare module 'ethers/wordlists' {
+    import { Wordlist } from 'ethers/utils/wordlist';
+    const en: Wordlist;
+    const ko: Wordlist;
+    const it: Wordlist;
+    const ja: Wordlist;
+    const zh: Wordlist;
+    const zh_cn: Wordlist;
+    const zh_tw: Wordlist;
+    export { en, it, ja, ko, zh, zh_cn, zh_tw };
+}
+
+declare module 'ethers/utils/shims' {
+    export const platform = "node";
+}
+
+declare module 'ethers/_version' {
+    export const version = "4.0.0-beta.15";
+}
+
+declare module 'ethers/utils/bignumber' {
+    import { Hexable } from 'ethers/utils/bytes';
+    import { Arrayish } from 'ethers/utils/bytes';
+    export type BigNumberish = BigNumber | string | number | Arrayish;
+    export class BigNumber implements Hexable {
+        constructor(value: BigNumberish);
+        fromTwos(value: number): BigNumber;
+        toTwos(value: number): BigNumber;
+        add(other: BigNumberish): BigNumber;
+        sub(other: BigNumberish): BigNumber;
+        div(other: BigNumberish): BigNumber;
+        mul(other: BigNumberish): BigNumber;
+        mod(other: BigNumberish): BigNumber;
+        pow(other: BigNumberish): BigNumber;
+        maskn(value: number): BigNumber;
+        eq(other: BigNumberish): boolean;
+        lt(other: BigNumberish): boolean;
+        lte(other: BigNumberish): boolean;
+        gt(other: BigNumberish): boolean;
+        gte(other: BigNumberish): boolean;
+        isZero(): boolean;
+        toNumber(): number;
+        toString(): string;
+        toHexString(): string;
+        static isBigNumber(value: any): value is BigNumber;
+    }
+    export function bigNumberify(value: BigNumberish): BigNumber;
+}
+
+declare module 'ethers/utils/interface' {
     import { BigNumber } from 'ethers/utils/bignumber';
     import { BigNumberish } from 'ethers/utils/bignumber';
     import { EventFragment, FunctionFragment, ParamType } from 'ethers/utils/abi-coder';
@@ -393,6 +387,268 @@ declare module 'ethers/contracts/interface' {
     export {};
 }
 
+declare module 'ethers/providers/abstract-provider' {
+    import { BigNumber } from 'ethers/utils/bignumber';
+    import { Arrayish } from 'ethers/utils/bytes';
+    import { BigNumberish } from 'ethers/utils/bignumber';
+    import { Network } from 'ethers/utils/networks';
+    import { OnceBlockable } from 'ethers/utils/web';
+    import { Transaction } from 'ethers/utils/transaction';
+    export interface Block {
+        hash: string;
+        parentHash: string;
+        number: number;
+        timestamp: number;
+        nonce: string;
+        difficulty: number;
+        gasLimit: BigNumber;
+        gasUsed: BigNumber;
+        miner: string;
+        extraData: string;
+        transactions: Array<string>;
+    }
+    export type BlockTag = string | number;
+    export type Filter = {
+        fromBlock?: BlockTag;
+        toBlock?: BlockTag;
+        address?: string;
+        topics?: Array<string | Array<string>>;
+    };
+    export interface Log {
+        blockNumber?: number;
+        blockHash?: string;
+        transactionIndex?: number;
+        removed?: boolean;
+        transactionLogIndex?: number;
+        address: string;
+        data: string;
+        topics: Array<string>;
+        transactionHash?: string;
+        logIndex?: number;
+    }
+    export interface TransactionReceipt {
+        contractAddress?: string;
+        transactionIndex?: number;
+        root?: string;
+        gasUsed?: BigNumber;
+        logsBloom?: string;
+        blockHash?: string;
+        transactionHash?: string;
+        logs?: Array<Log>;
+        blockNumber?: number;
+        cumulativeGasUsed?: BigNumber;
+        byzantium: boolean;
+        status?: number;
+    }
+    export type TransactionRequest = {
+        to?: string | Promise<string>;
+        from?: string | Promise<string>;
+        nonce?: number | string | Promise<number | string>;
+        gasLimit?: BigNumberish | Promise<BigNumberish>;
+        gasPrice?: BigNumberish | Promise<BigNumberish>;
+        data?: Arrayish | Promise<Arrayish>;
+        value?: BigNumberish | Promise<BigNumberish>;
+        chainId?: number | Promise<number>;
+    };
+    export interface TransactionResponse extends Transaction {
+        blockNumber?: number;
+        blockHash?: string;
+        timestamp?: number;
+        from: string;
+        raw?: string;
+        wait: (timeout?: number) => Promise<TransactionReceipt>;
+    }
+    export type EventType = string | Array<string> | Filter;
+    export type Listener = (...args: Array<any>) => void;
+    export abstract class Provider implements OnceBlockable {
+        abstract getNetwork(): Promise<Network>;
+        abstract getBlockNumber(): Promise<number>;
+        abstract getGasPrice(): Promise<BigNumber>;
+        abstract getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber>;
+        abstract getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number>;
+        abstract getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
+        abstract getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
+        abstract sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
+        abstract call(transaction: TransactionRequest): Promise<string>;
+        abstract estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
+        abstract getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block>;
+        abstract getTransaction(transactionHash: string): Promise<TransactionResponse>;
+        abstract getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
+        abstract getLogs(filter: Filter): Promise<Array<Log>>;
+        abstract resolveName(name: string | Promise<string>): Promise<string>;
+        abstract lookupAddress(address: string | Promise<string>): Promise<string>;
+        abstract on(eventName: EventType, listener: Listener): Provider;
+        abstract once(eventName: EventType, listener: Listener): Provider;
+        abstract listenerCount(eventName?: EventType): number;
+        abstract listeners(eventName: EventType): Array<Listener>;
+        abstract removeAllListeners(eventName: EventType): Provider;
+        abstract removeListener(eventName: EventType, listener: Listener): Provider;
+        abstract waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt>;
+        constructor();
+        static isProvider(value: any): value is Provider;
+    }
+}
+
+declare module 'ethers/utils/bytes' {
+    /**
+      *  Conversion Utilities
+      *
+      */
+    import { Arrayish } from 'ethers/utils/bytes';
+    export type Arrayish = string | ArrayLike<number>;
+    export interface Hexable {
+        toHexString(): string;
+    }
+    export interface Signature {
+        r: string;
+        s: string;
+        recoveryParam?: number;
+        v?: number;
+    }
+    export function isHexable(value: any): value is Hexable;
+    export function isArrayish(value: any): value is Arrayish;
+    export function arrayify(value: Arrayish | Hexable): Uint8Array;
+    export function concat(objects: Array<Arrayish>): Uint8Array;
+    export function stripZeros(value: Arrayish): Uint8Array;
+    export function padZeros(value: Arrayish, length: number): Uint8Array;
+    export function isHexString(value: any, length?: number): boolean;
+    export function hexlify(value: Arrayish | Hexable | number): string;
+    export function hexDataLength(data: string): number;
+    export function hexDataSlice(data: string, offset: number, length?: number): string;
+    export function hexStripZeros(value: string): string;
+    export function hexZeroPad(value: string, length: number): string;
+    export function splitSignature(signature: Arrayish | Signature): Signature;
+    export function joinSignature(signature: Signature): string;
+}
+
+declare module 'ethers/utils/abi-coder' {
+    import { BigNumber } from 'ethers/utils/bignumber';
+    import { Arrayish } from 'ethers/utils/bytes';
+    export type CoerceFunc = (type: string, value: any) => any;
+    export type ParamType = {
+        name?: string;
+        type: string;
+        indexed?: boolean;
+        components?: Array<any>;
+    };
+    export type EventFragment = {
+        type: string;
+        name: string;
+        anonymous: boolean;
+        inputs: Array<ParamType>;
+    };
+    export type FunctionFragment = {
+        type: string;
+        name: string;
+        constant: boolean;
+        inputs: Array<ParamType>;
+        outputs: Array<ParamType>;
+        payable: boolean;
+        stateMutability: string;
+        gas: BigNumber;
+    };
+    export const defaultCoerceFunc: CoerceFunc;
+    export function parseParamType(type: string): ParamType;
+    export function formatParamType(paramType: ParamType): string;
+    export function formatSignature(fragment: EventFragment | FunctionFragment): string;
+    export function parseSignature(fragment: string): EventFragment | FunctionFragment;
+    export class AbiCoder {
+        readonly coerceFunc: CoerceFunc;
+        constructor(coerceFunc?: CoerceFunc);
+        encode(types: Array<string | ParamType>, values: Array<any>): string;
+        decode(types: Array<string | ParamType>, data: Arrayish): any;
+    }
+    export const defaultAbiCoder: AbiCoder;
+}
+
+declare module 'ethers/utils/hdnode' {
+    import { Arrayish } from 'ethers/utils/bytes';
+    import { Wordlist } from 'ethers/utils/wordlist';
+    export const defaultPath = "m/44'/60'/0'/0/0";
+    export class HDNode {
+        readonly privateKey: string;
+        readonly publicKey: string;
+        readonly mnemonic: string;
+        readonly path: string;
+        readonly chainCode: string;
+        readonly index: number;
+        readonly depth: number;
+        /**
+          *  This constructor should not be called directly.
+          *
+          *  Please use:
+          *   - fromMnemonic
+          *   - fromSeed
+          */
+        constructor(constructorGuard: any, privateKey: Arrayish, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string);
+        derivePath(path: string): HDNode;
+        static isHDNode(value: any): value is HDNode;
+    }
+    export function fromMnemonic(mnemonic: string, wordlist?: Wordlist): HDNode;
+    export function fromSeed(seed: Arrayish): HDNode;
+    export function mnemonicToSeed(mnemonic: string, password?: string): string;
+    export function mnemonicToEntropy(mnemonic: string, wordlist?: Wordlist): string;
+    export function entropyToMnemonic(entropy: Arrayish, wordlist?: Wordlist): string;
+    export function isValidMnemonic(mnemonic: string, wordlist?: Wordlist): boolean;
+}
+
+declare module 'ethers/utils/signing-key' {
+    /**
+      *  SigningKey
+      *
+      *
+      */
+    import { HDNode } from 'ethers/utils/hdnode';
+    import { Arrayish, Signature } from 'ethers/utils/bytes';
+    export class SigningKey {
+        readonly privateKey: string;
+        readonly publicKey: string;
+        readonly address: string;
+        readonly mnemonic: string;
+        readonly path: string;
+        constructor(privateKey: Arrayish | HDNode);
+        signDigest(digest: Arrayish): Signature;
+        computeSharedSecret(key: Arrayish | string): string;
+        static isSigningKey(value: any): value is SigningKey;
+    }
+}
+
+declare module 'ethers/utils/wordlist' {
+    export function check(wordlist: Wordlist): string;
+    export abstract class Wordlist {
+        readonly locale: string;
+        constructor(locale: string);
+        abstract getWord(index: number): string;
+        abstract getWordIndex(word: string): number;
+        split(mnemonic: string): Array<string>;
+        join(words: Array<string>): string;
+    }
+    export function register(lang: Wordlist, name?: string): void;
+}
+
+declare module 'ethers/utils/secret-storage' {
+    import { SigningKey } from 'ethers/utils/signing-key';
+    import { Arrayish } from 'ethers/utils/bytes';
+    export type ProgressCallback = (percent: number) => void;
+    export type EncryptOptions = {
+        iv?: Arrayish;
+        entropy?: Arrayish;
+        mnemonic?: string;
+        path?: string;
+        client?: string;
+        salt?: Arrayish;
+        uuid?: string;
+        scrypt?: {
+            N?: number;
+            r?: number;
+            p?: number;
+        };
+    };
+    export function decryptCrowdsale(json: string, password: Arrayish | string): SigningKey;
+    export function decrypt(json: string, password: Arrayish, progressCallback?: ProgressCallback): Promise<SigningKey>;
+    export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: EncryptOptions, progressCallback?: ProgressCallback): Promise<string>;
+}
+
 declare module 'ethers/providers/base-provider' {
     import { BigNumber } from 'ethers/utils/bignumber';
     import { Provider } from 'ethers/providers/abstract-provider';
@@ -501,7 +757,7 @@ declare module 'ethers/providers/infura-provider' {
 
 declare module 'ethers/providers/json-rpc-provider' {
     import { BaseProvider } from 'ethers/providers/base-provider';
-    import { Signer } from 'ethers/wallet/abstract-signer';
+    import { Signer } from 'ethers/abstract-signer';
     import { BigNumber } from 'ethers/utils/bignumber';
     import { Arrayish } from 'ethers/utils/bytes';
     import { Networkish } from 'ethers/utils/networks';
@@ -545,127 +801,6 @@ declare module 'ethers/providers/web3-provider' {
         constructor(web3Provider: AsyncSendable, network?: Networkish);
         send(method: string, params: any): Promise<any>;
     }
-}
-
-declare module 'ethers/wallet/wallet' {
-    import { HDNode } from 'ethers/wallet/hdnode';
-    import { SigningKey } from 'ethers/wallet/signing-key';
-    import { BigNumber } from 'ethers/utils/bignumber';
-    import { Wordlist } from 'ethers/wordlists/wordlist';
-    import { Signer as AbstractSigner } from 'ethers/wallet/abstract-signer';
-    import { Provider } from 'ethers/providers/abstract-provider';
-    import { ProgressCallback } from 'ethers/wallet/secret-storage';
-    import { Arrayish } from 'ethers/utils/bytes';
-    import { BlockTag, TransactionRequest, TransactionResponse } from 'ethers/providers/abstract-provider';
-    export class Wallet extends AbstractSigner {
-            readonly provider: Provider;
-            constructor(privateKey: SigningKey | HDNode | Arrayish, provider?: Provider);
-            readonly address: string;
-            readonly mnemonic: string;
-            readonly path: string;
-            readonly privateKey: string;
-            /**
-                *  Create a new instance of this Wallet connected to provider.
-                */
-            connect(provider: Provider): Wallet;
-            getAddress(): Promise<string>;
-            sign(transaction: TransactionRequest): Promise<string>;
-            signMessage(message: Arrayish | string): Promise<string>;
-            getBalance(blockTag?: BlockTag): Promise<BigNumber>;
-            getTransactionCount(blockTag?: BlockTag): Promise<number>;
-            sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
-            encrypt(password: Arrayish | string, options?: any, progressCallback?: ProgressCallback): Promise<string>;
-            /**
-                *  Static methods to create Wallet instances.
-                */
-            static createRandom(options?: any): Wallet;
-            static fromEncryptedJson(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet>;
-            static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet;
-    }
-}
-
-declare module 'ethers/wallet/hdnode' {
-    import { Arrayish } from 'ethers/utils/bytes';
-    import { Wordlist } from 'ethers/wordlists/wordlist';
-    export const defaultPath = "m/44'/60'/0'/0/0";
-    export class HDNode {
-        readonly privateKey: string;
-        readonly publicKey: string;
-        readonly mnemonic: string;
-        readonly path: string;
-        readonly chainCode: string;
-        readonly index: number;
-        readonly depth: number;
-        /**
-          *  This constructor should not be called directly.
-          *
-          *  Please use:
-          *   - fromMnemonic
-          *   - fromSeed
-          */
-        constructor(constructorGuard: any, privateKey: Arrayish, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string);
-        derivePath(path: string): HDNode;
-        static isHDNode(value: any): value is HDNode;
-    }
-    export function fromMnemonic(mnemonic: string, wordlist?: Wordlist): HDNode;
-    export function fromSeed(seed: Arrayish): HDNode;
-    export function mnemonicToSeed(mnemonic: string, password?: string): string;
-    export function mnemonicToEntropy(mnemonic: string, wordlist?: Wordlist): string;
-    export function entropyToMnemonic(entropy: Arrayish, wordlist?: Wordlist): string;
-    export function isValidMnemonic(mnemonic: string, wordlist?: Wordlist): boolean;
-}
-
-declare module 'ethers/wallet/signing-key' {
-    /**
-      *  SigningKey
-      *
-      *
-      */
-    import { HDNode } from 'ethers/wallet/hdnode';
-    import { Arrayish, Signature } from 'ethers/utils/bytes';
-    export class SigningKey {
-        readonly privateKey: string;
-        readonly publicKey: string;
-        readonly address: string;
-        readonly mnemonic: string;
-        readonly path: string;
-        constructor(privateKey: Arrayish | HDNode);
-        signDigest(digest: Arrayish): Signature;
-        computeSharedSecret(key: Arrayish | string): string;
-        static isSigningKey(value: any): value is SigningKey;
-    }
-}
-
-declare module 'ethers/utils/bytes' {
-    /**
-      *  Conversion Utilities
-      *
-      */
-    import { Arrayish } from 'ethers/utils/bytes';
-    export type Arrayish = string | ArrayLike<number>;
-    export interface Hexable {
-        toHexString(): string;
-    }
-    export interface Signature {
-        r: string;
-        s: string;
-        recoveryParam?: number;
-        v?: number;
-    }
-    export function isHexable(value: any): value is Hexable;
-    export function isArrayish(value: any): value is Arrayish;
-    export function arrayify(value: Arrayish | Hexable): Uint8Array;
-    export function concat(objects: Array<Arrayish>): Uint8Array;
-    export function stripZeros(value: Arrayish): Uint8Array;
-    export function padZeros(value: Arrayish, length: number): Uint8Array;
-    export function isHexString(value: any, length?: number): boolean;
-    export function hexlify(value: Arrayish | Hexable | number): string;
-    export function hexDataLength(data: string): number;
-    export function hexDataSlice(data: string, offset: number, length?: number): string;
-    export function hexStripZeros(value: string): string;
-    export function hexZeroPad(value: string, length: number): string;
-    export function splitSignature(signature: Arrayish | Signature): Signature;
-    export function joinSignature(signature: Signature): string;
 }
 
 declare module 'ethers/utils/address' {
@@ -849,122 +984,6 @@ declare module 'ethers/utils/web' {
     export function poll(func: () => Promise<any>, options?: PollOptions): Promise<any>;
 }
 
-declare module 'ethers/providers/abstract-provider' {
-    import { BigNumber } from 'ethers/utils/bignumber';
-    import { Arrayish } from 'ethers/utils/bytes';
-    import { BigNumberish } from 'ethers/utils/bignumber';
-    import { Network } from 'ethers/utils/networks';
-    import { OnceBlockable } from 'ethers/utils/web';
-    import { Transaction } from 'ethers/utils/transaction';
-    export interface Block {
-        hash: string;
-        parentHash: string;
-        number: number;
-        timestamp: number;
-        nonce: string;
-        difficulty: number;
-        gasLimit: BigNumber;
-        gasUsed: BigNumber;
-        miner: string;
-        extraData: string;
-        transactions: Array<string>;
-    }
-    export type BlockTag = string | number;
-    export type Filter = {
-        fromBlock?: BlockTag;
-        toBlock?: BlockTag;
-        address?: string;
-        topics?: Array<string | Array<string>>;
-    };
-    export interface Log {
-        blockNumber?: number;
-        blockHash?: string;
-        transactionIndex?: number;
-        removed?: boolean;
-        transactionLogIndex?: number;
-        address: string;
-        data: string;
-        topics: Array<string>;
-        transactionHash?: string;
-        logIndex?: number;
-    }
-    export interface TransactionReceipt {
-        contractAddress?: string;
-        transactionIndex?: number;
-        root?: string;
-        gasUsed?: BigNumber;
-        logsBloom?: string;
-        blockHash?: string;
-        transactionHash?: string;
-        logs?: Array<Log>;
-        blockNumber?: number;
-        cumulativeGasUsed?: BigNumber;
-        byzantium: boolean;
-        status?: number;
-    }
-    export type TransactionRequest = {
-        to?: string | Promise<string>;
-        from?: string | Promise<string>;
-        nonce?: number | string | Promise<number | string>;
-        gasLimit?: BigNumberish | Promise<BigNumberish>;
-        gasPrice?: BigNumberish | Promise<BigNumberish>;
-        data?: Arrayish | Promise<Arrayish>;
-        value?: BigNumberish | Promise<BigNumberish>;
-        chainId?: number | Promise<number>;
-    };
-    export interface TransactionResponse extends Transaction {
-        blockNumber?: number;
-        blockHash?: string;
-        timestamp?: number;
-        from: string;
-        raw?: string;
-        wait: (timeout?: number) => Promise<TransactionReceipt>;
-    }
-    export type EventType = string | Array<string> | Filter;
-    export type Listener = (...args: Array<any>) => void;
-    export abstract class Provider implements OnceBlockable {
-        abstract getNetwork(): Promise<Network>;
-        abstract getBlockNumber(): Promise<number>;
-        abstract getGasPrice(): Promise<BigNumber>;
-        abstract getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber>;
-        abstract getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number>;
-        abstract getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
-        abstract getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
-        abstract sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
-        abstract call(transaction: TransactionRequest): Promise<string>;
-        abstract estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
-        abstract getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block>;
-        abstract getTransaction(transactionHash: string): Promise<TransactionResponse>;
-        abstract getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
-        abstract getLogs(filter: Filter): Promise<Array<Log>>;
-        abstract resolveName(name: string | Promise<string>): Promise<string>;
-        abstract lookupAddress(address: string | Promise<string>): Promise<string>;
-        abstract on(eventName: EventType, listener: Listener): Provider;
-        abstract once(eventName: EventType, listener: Listener): Provider;
-        abstract listenerCount(eventName?: EventType): number;
-        abstract listeners(eventName: EventType): Array<Listener>;
-        abstract removeAllListeners(eventName: EventType): Provider;
-        abstract removeListener(eventName: EventType, listener: Listener): Provider;
-        abstract waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt>;
-        constructor();
-        static isProvider(value: any): value is Provider;
-    }
-}
-
-declare module 'ethers/wallet/abstract-signer' {
-    import { Provider } from 'ethers/providers/abstract-provider';
-    import { Arrayish } from 'ethers/utils/bytes';
-    import { TransactionRequest, TransactionResponse } from 'ethers/providers/abstract-provider';
-    export abstract class Signer {
-        readonly provider?: Provider;
-        abstract getAddress(): Promise<string>;
-        abstract signMessage(message: Arrayish | string): Promise<string>;
-        abstract sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
-        constructor();
-        static isSigner(value: any): value is Signer;
-    }
-}
-
 declare module 'ethers/utils/hmac' {
     import { Arrayish } from 'ethers/utils/bytes';
     export enum SupportedAlgorithms {
@@ -972,41 +991,5 @@ declare module 'ethers/utils/hmac' {
         sha512 = "sha512"
     }
     export function computeHmac(algorithm: SupportedAlgorithms, key: Arrayish, data: Arrayish): Uint8Array;
-}
-
-declare module 'ethers/wallet/secret-storage' {
-    import { SigningKey } from 'ethers/wallet/signing-key';
-    import { Arrayish } from 'ethers/utils/bytes';
-    export type ProgressCallback = (percent: number) => void;
-    export type EncryptOptions = {
-        iv?: Arrayish;
-        entropy?: Arrayish;
-        mnemonic?: string;
-        path?: string;
-        client?: string;
-        salt?: Arrayish;
-        uuid?: string;
-        scrypt?: {
-            N?: number;
-            r?: number;
-            p?: number;
-        };
-    };
-    export function decryptCrowdsale(json: string, password: Arrayish | string): SigningKey;
-    export function decrypt(json: string, password: Arrayish, progressCallback?: ProgressCallback): Promise<SigningKey>;
-    export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: EncryptOptions, progressCallback?: ProgressCallback): Promise<string>;
-}
-
-declare module 'ethers/wordlists/wordlist' {
-    export function check(wordlist: Wordlist): string;
-    export abstract class Wordlist {
-        readonly locale: string;
-        constructor(locale: string);
-        abstract getWord(index: number): string;
-        abstract getWordIndex(word: string): number;
-        split(mnemonic: string): Array<string>;
-        join(words: Array<string>): string;
-    }
-    export function register(lang: Wordlist, name?: string): void;
 }
 

@@ -19,14 +19,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 var base_provider_1 = require("./base-provider");
-var abstract_signer_1 = require("../wallet/abstract-signer");
+var abstract_signer_1 = require("../abstract-signer");
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var networks_1 = require("../utils/networks");
 var properties_1 = require("../utils/properties");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
-var errors = __importStar(require("../utils/errors"));
+var errors = __importStar(require("../errors"));
 function timer(timeout) {
     return new Promise(function (resolve) {
         setTimeout(function () {

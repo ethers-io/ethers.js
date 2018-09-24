@@ -1,5 +1,7 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+var abstract_provider_1 = require("./abstract-provider");
+exports.Provider = abstract_provider_1.Provider;
 var base_provider_1 = require("./base-provider");
 exports.BaseProvider = base_provider_1.BaseProvider;
 var etherscan_provider_1 = require("./etherscan-provider");

@@ -10,7 +10,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var wordlist_1 = require("./wordlist");
+var wordlist_1 = require("../utils/wordlist");
 var utf8_1 = require("../utils/utf8");
 var data = [
     'OYAa',

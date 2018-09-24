@@ -7,7 +7,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("../utils/errors"));
+var errors = __importStar(require("../errors"));
 var homestead = {
     chainId: 1,
     ensAddress: "0x314159265dd8dbb310642f98f50c066173c1259b",
@@ -38,6 +38,9 @@ var networks = {
     },
     classic: {
         chainId: 61
+    },
+    classicTestnet: {
+        chainId: 62
     }
 };
 /**

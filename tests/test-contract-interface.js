@@ -182,7 +182,7 @@ describe('Test Contract Events', function() {
         it(('decodes event parameters - ' + test.name + ' - ' + test.types), function() {
             this.timeout(120000);
 
-            var contract = new ethers.Interface(test.interface);
+            var contract = new ethers.utils.Interface(test.interface);
             var event = contract.events.testEvent;
             var parsed = event.decode(test.data, test.topics);
 
@@ -200,13 +200,13 @@ describe('Test Contract Events', function() {
         it(('decodes event data - ' + test.name + ' - ' + test.types), function() {
             this.timeout(120000);
 
-            var contract = new ethers.Interface(test.interface);
+            var contract = new ethers.utils.Interface(test.interface);
             var event = contract.events.testEvent;
             var parsed = event.decode(test.data);
 
             test.normalizedValues.forEach(function(expected, index) {
                 if (test.indexed[index]) {
-                    assert.ok((ethers.Interface.isIndexed(parsed[index]) && parsed[index].hash == null), 'parsed event data has empty Indexed - ' + index);
+                    assert.ok((ethers.Contract.isIndexed(parsed[index]) && parsed[index].hash == null), 'parsed event data has empty Indexed - ' + index);
                 } else {
                     assert.ok(equals(parsed[index], expected), 'parsed event data matches - ' + index);
                 }
@@ -217,7 +217,7 @@ describe('Test Contract Events', function() {
 });
 
 describe('Test Interface Signatures', function() {
-    var Interface = ethers.Interface;
+    var Interface = ethers.utils.Interface;
 
     var tests = utils.loadTests('contract-signatures');
     tests.forEach(function(test) {

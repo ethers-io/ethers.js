@@ -1,5 +1,5 @@
 import { SigningKey } from './signing-key';
-import { Arrayish } from '../utils/bytes';
+import { Arrayish } from './bytes';
 export declare type ProgressCallback = (percent: number) => void;
 export declare type EncryptOptions = {
     iv?: Arrayish;

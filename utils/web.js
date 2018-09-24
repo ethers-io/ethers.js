@@ -10,7 +10,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var xmlhttprequest_1 = require("xmlhttprequest");
 var base64_1 = require("./base64");
 var utf8_1 = require("./utf8");
-var errors = __importStar(require("./errors"));
+var errors = __importStar(require("../errors"));
 function fetchJson(connection, json, processFunc) {
     var headers = {};
     var url = null;
@@ -77,6 +77,14 @@ function fetchJson(connection, json, processFunc) {
             if (request.readyState !== 4) {
                 return;
             }
+            if (request.status != 200) {
+                cancelTimeout();
+                // @TODO: not any!
+                var error = new Error('invalid response - ' + request.status);
+                error.statusCode = request.status;
+                reject(error);
+                return;
+            }
             var result = null;
             try {
                 result = JSON.parse(request.responseText);
@@ -103,14 +111,6 @@ function fetchJson(connection, json, processFunc) {
                     reject(error);
                     return;
                 }
-            }
-            if (request.status != 200) {
-                cancelTimeout();
-                // @TODO: not any!
-                var error = new Error('invalid response - ' + request.status);
-                error.statusCode = request.status;
-                reject(error);
-                return;
             }
             cancelTimeout();
             resolve(result);

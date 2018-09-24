@@ -11,7 +11,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("./errors"));
+var errors = __importStar(require("../errors"));
 ///////////////////////////////
 function isHexable(value) {
     return !!(value.toHexString);

@@ -24,7 +24,7 @@ function equals(name, actual, expected) {
 
     if (typeof(actual) === 'object') {
         if (expected.indexed) {
-            assert.ok(ethers.Interface.isIndexed(actual), 'index property has index - ' + name);
+            assert.ok(ethers.Contract.isIndexed(actual), 'index property has index - ' + name);
             if (expected.hash) {
                 assert.equal(actual.hash, expected.hash, 'index property with known hash matches - ' + name);
             }

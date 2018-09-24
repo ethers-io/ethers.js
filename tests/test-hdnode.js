@@ -12,7 +12,7 @@ describe('Test HD Node Derivation', function(test) {
         it('Derives the HD nodes - ' + test.name, function() {
             this.timeout(10000);
 
-            var rootNode = new ethers.HDNode.fromSeed(test.seed);
+            var rootNode = new ethers.utils.HDNode.fromSeed(test.seed);
             test.hdnodes.forEach(function(nodeTest) {
 
                 var node = rootNode.derivePath(nodeTest.path);
@@ -33,11 +33,11 @@ describe('Test HD Mnemonic Phrases', function testMnemonic() {
         it(('converts mnemonic phrases - ' + test.name), function() {
             this.timeout(1000000);
 
-            assert.equal(ethers.HDNode.entropyToMnemonic(test.entropy), test.mnemonic,
+            assert.equal(ethers.utils.HDNode.entropyToMnemonic(test.entropy), test.mnemonic,
                 'Converts entropy to mnemonic ' + test.name);
-            assert.equal(ethers.HDNode.mnemonicToEntropy(test.mnemonic), test.entropy,
+            assert.equal(ethers.utils.HDNode.mnemonicToEntropy(test.mnemonic), test.entropy,
                 'Converts mnemonic to entropy - ' + test.mnemonic);
-            assert.equal(ethers.HDNode.mnemonicToSeed(test.mnemonic, test.password), test.seed,
+            assert.equal(ethers.utils.HDNode.mnemonicToSeed(test.mnemonic, test.password), test.seed,
                 'Converts mnemonic to seed - ' + test.mnemonic + ':' + test.password);
         });
     });
@@ -50,13 +50,13 @@ function testEasySeed(lang, locale) {
         tests.forEach(function(test) {
             it('test - ' + test.entropy, function() {
                 this.timeout(100000);
-                var seed = ethers.HDNode.mnemonicToSeed(test.mnemonic, test.passphrase);
+                var seed = ethers.utils.HDNode.mnemonicToSeed(test.mnemonic, test.passphrase);
                 assert.equal(seed, '0x' + test.seed, 'seeds match');
 
-                var entropy = ethers.HDNode.mnemonicToEntropy(test.mnemonic, lang);
+                var entropy = ethers.utils.HDNode.mnemonicToEntropy(test.mnemonic, lang);
                 assert.equal(entropy, '0x' + test.entropy, 'entropy match');
 
-                var mnemonic = ethers.HDNode.entropyToMnemonic('0x' + test.entropy, lang);
+                var mnemonic = ethers.utils.HDNode.entropyToMnemonic('0x' + test.entropy, lang);
                 assert.equal(mnemonic.normalize('NFKD'), test.mnemonic.normalize('NFKD'), 'mnemonic match');
             });
         });

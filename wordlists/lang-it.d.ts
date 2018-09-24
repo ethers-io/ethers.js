@@ -1,4 +1,4 @@
-import { Wordlist } from './wordlist';
+import { Wordlist } from '../utils/wordlist';
 declare class LangIt extends Wordlist {
     constructor();
     getWord(index: number): string;

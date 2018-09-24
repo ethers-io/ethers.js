@@ -59,7 +59,7 @@ function checkTransaction(parsedTransaction, test) {
         var value = parsedTransaction[key];
 
         if ({ gasLimit: 1, gasPrice: 1, value: 1 }[key]) {
-            assert.ok((ethers.BigNumber.isBigNumber(value)),
+            assert.ok((ethers.utils.BigNumber.isBigNumber(value)),
                 'parsed into a big number - ' + key);
             value = value.toHexString();
 
@@ -99,7 +99,7 @@ describe('Test Transaction Signing and Parsing', function() {
         it(('parses and signs transaction - ' + test.name), function() {
             this.timeout(120000);
 
-            var signingKey = new ethers.SigningKey(test.privateKey);
+            var signingKey = new ethers.utils.SigningKey(test.privateKey);
             var signDigest = signingKey.signDigest.bind(signingKey);
 
             // Legacy parsing unsigned transaction

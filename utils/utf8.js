@@ -1,7 +1,7 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+var constants_1 = require("../constants");
 var bytes_1 = require("./bytes");
-var constants_1 = require("./constants");
 ///////////////////////////////
 var UnicodeNormalizationForm;
 (function (UnicodeNormalizationForm) {

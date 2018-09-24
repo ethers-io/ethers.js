@@ -18,7 +18,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var base_provider_1 = require("./base-provider");
-var errors = __importStar(require("../utils/errors"));
+var errors = __importStar(require("../errors"));
 // Returns:
 //  - true is all networks match
 //  - false if any network is null

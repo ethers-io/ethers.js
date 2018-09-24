@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var lang_ja_1 = require("./lang-ja");
 var lang_ko_1 = require("./lang-ko");

@@ -9,7 +9,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var crypto_1 = require("crypto");
 var bytes_1 = require("./bytes");
-var errors = __importStar(require("./errors"));
+var errors = __importStar(require("../errors"));
 var SupportedAlgorithms;
 (function (SupportedAlgorithms) {
     SupportedAlgorithms["sha256"] = "sha256";

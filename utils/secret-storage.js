@@ -15,12 +15,12 @@ var scrypt_js_1 = __importDefault(require("scrypt-js"));
 var uuid_1 = __importDefault(require("uuid"));
 var signing_key_1 = require("./signing-key");
 var HDNode = __importStar(require("./hdnode"));
-var address_1 = require("../utils/address");
-var bytes_1 = require("../utils/bytes");
-var pbkdf2_1 = require("../utils/pbkdf2");
-var keccak256_1 = require("../utils/keccak256");
-var utf8_1 = require("../utils/utf8");
-var random_bytes_1 = require("../utils/random-bytes");
+var address_1 = require("./address");
+var bytes_1 = require("./bytes");
+var pbkdf2_1 = require("./pbkdf2");
+var keccak256_1 = require("./keccak256");
+var utf8_1 = require("./utf8");
+var random_bytes_1 = require("./random-bytes");
 function looseArrayify(hexString) {
     if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
         hexString = '0x' + hexString;

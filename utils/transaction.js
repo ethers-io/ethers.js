@@ -7,14 +7,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var constants_1 = require("../constants");
+var errors = __importStar(require("../errors"));
 var secp256k1_1 = require("./secp256k1");
 var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
 var bytes_1 = require("./bytes");
-var constants_1 = require("./constants");
 var keccak256_1 = require("./keccak256");
 var RLP = __importStar(require("./rlp"));
-var errors = __importStar(require("./errors"));
 ///////////////////////////////
 function handleAddress(value) {
     if (value === '0x') {

@@ -4,7 +4,7 @@
  *
  */
 import { HDNode } from './hdnode';
-import { Arrayish, Signature } from '../utils/bytes';
+import { Arrayish, Signature } from './bytes';
 export declare class SigningKey {
     readonly privateKey: string;
     readonly publicKey: string;

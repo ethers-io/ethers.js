@@ -18,13 +18,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
+var constants_1 = require("../constants");
+var errors = __importStar(require("../errors"));
 var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
 var bytes_1 = require("./bytes");
-var constants_1 = require("../utils/constants");
 var utf8_1 = require("./utf8");
 var properties_1 = require("./properties");
-var errors = __importStar(require("./errors"));
 ///////////////////////////////
 var paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 var paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
@@ -270,6 +270,14 @@ function parseSignatureFunction(fragment) {
         splitNesting(right[2]).forEach(function (param) {
             abi.outputs.push(parseParam(param));
         });
+    }
+    if (abi.name === 'constructor') {
+        abi.type = "constructor";
+        if (abi.outputs.length) {
+            throw new Error('constructor may not have outputs');
+        }
+        delete abi.name;
+        delete abi.outputs;
     }
     return abi;
 }

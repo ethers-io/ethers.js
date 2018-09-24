@@ -1,5 +1,5 @@
 import { BaseProvider } from './base-provider';
-import { Signer } from '../wallet/abstract-signer';
+import { Signer } from '../abstract-signer';
 import { BigNumber } from '../utils/bignumber';
 import { Arrayish } from '../utils/bytes';
 import { Networkish } from '../utils/networks';

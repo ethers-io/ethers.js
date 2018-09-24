@@ -21,7 +21,7 @@ var base_provider_1 = require("./base-provider");
 var bytes_1 = require("../utils/bytes");
 var properties_1 = require("../utils/properties");
 var web_1 = require("../utils/web");
-var errors = __importStar(require("../utils/errors"));
+var errors = __importStar(require("../errors"));
 ///////////////////////////////
 // The transaction has already been sanitized by the calls in Provider
 function getTransactionString(transaction) {

@@ -1,4 +1,4 @@
-import { Wordlist } from './wordlist';
+import { Wordlist } from '../utils/wordlist';
 declare class LangZh extends Wordlist {
     constructor(country: string);
     getWord(index: number): string;

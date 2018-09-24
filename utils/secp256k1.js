@@ -13,7 +13,7 @@ var bytes_1 = require("./bytes");
 var hash_1 = require("./hash");
 var keccak256_1 = require("./keccak256");
 var properties_1 = require("./properties");
-var errors = __importStar(require("./errors"));
+var errors = __importStar(require("../errors"));
 ///////////////////////////////
 var _curve = null;
 function getCurve() {

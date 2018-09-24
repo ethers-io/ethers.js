@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var properties_1 = require("../utils/properties");
+var properties_1 = require("./utils/properties");
 var Signer = /** @class */ (function () {
     function Signer() {
         properties_1.setType(this, 'Signer');

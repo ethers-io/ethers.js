@@ -23,7 +23,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var net_1 = __importDefault(require("net"));
 var json_rpc_provider_1 = require("./json-rpc-provider");
 var properties_1 = require("../utils/properties");
-var errors = __importStar(require("../utils/errors"));
+var errors = __importStar(require("../errors"));
 var IpcProvider = /** @class */ (function (_super) {
     __extends(IpcProvider, _super);
     function IpcProvider(path, network) {

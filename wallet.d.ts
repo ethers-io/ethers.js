@@ -1,12 +1,12 @@
-import { HDNode } from './hdnode';
-import { SigningKey } from './signing-key';
-import { BigNumber } from '../utils/bignumber';
-import { Wordlist } from '../wordlists/wordlist';
+import { BigNumber } from './utils/bignumber';
+import { HDNode } from './utils/hdnode';
+import { SigningKey } from './utils/signing-key';
+import { Wordlist } from './utils/wordlist';
 import { Signer as AbstractSigner } from './abstract-signer';
-import { Provider } from '../providers/abstract-provider';
-import { ProgressCallback } from './secret-storage';
-import { Arrayish } from '../utils/bytes';
-import { BlockTag, TransactionRequest, TransactionResponse } from '../providers/abstract-provider';
+import { Provider } from './providers/abstract-provider';
+import { ProgressCallback } from './utils/secret-storage';
+import { Arrayish } from './utils/bytes';
+import { BlockTag, TransactionRequest, TransactionResponse } from './providers/abstract-provider';
 export declare class Wallet extends AbstractSigner {
     readonly provider: Provider;
     private readonly signingKey;

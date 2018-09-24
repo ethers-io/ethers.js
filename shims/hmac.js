@@ -9,7 +9,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var hash = __importStar(require("hash.js"));
 var bytes_1 = require("../utils/bytes");
-var errors = __importStar(require("../utils/errors"));
+var errors = __importStar(require("../errors"));
 ///////////////////////////////
 var SupportedAlgorithms;
 (function (SupportedAlgorithms) {

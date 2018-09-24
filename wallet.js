@@ -17,20 +17,20 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var hdnode_1 = require("./hdnode");
-var secretStorage = __importStar(require("./secret-storage"));
-var signing_key_1 = require("./signing-key");
-var bytes_1 = require("../utils/bytes");
-var hash_1 = require("../utils/hash");
-var json_wallet_1 = require("../utils/json-wallet");
-var keccak256_1 = require("../utils/keccak256");
-var properties_1 = require("../utils/properties");
-var random_bytes_1 = require("../utils/random-bytes");
-var transaction_1 = require("../utils/transaction");
+var bytes_1 = require("./utils/bytes");
+var hash_1 = require("./utils/hash");
+var hdnode_1 = require("./utils/hdnode");
+var json_wallet_1 = require("./utils/json-wallet");
+var keccak256_1 = require("./utils/keccak256");
+var properties_1 = require("./utils/properties");
+var random_bytes_1 = require("./utils/random-bytes");
+var secretStorage = __importStar(require("./utils/secret-storage"));
+var signing_key_1 = require("./utils/signing-key");
+var transaction_1 = require("./utils/transaction");
 // Imported Abstracts
 var abstract_signer_1 = require("./abstract-signer");
-var abstract_provider_1 = require("../providers/abstract-provider");
-var errors = __importStar(require("../utils/errors"));
+var abstract_provider_1 = require("./providers/abstract-provider");
+var errors = __importStar(require("./errors"));
 var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);
     function Wallet(privateKey, provider) {

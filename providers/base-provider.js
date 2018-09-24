@@ -27,7 +27,7 @@ var rlp_1 = require("../utils/rlp");
 var transaction_1 = require("../utils/transaction");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
-var errors = __importStar(require("../utils/errors"));
+var errors = __importStar(require("../errors"));
 ///////////////////////////////
 // Imported Abstracts
 var abstract_provider_1 = require("./abstract-provider");

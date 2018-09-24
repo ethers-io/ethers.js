@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var json_rpc_provider_1 = require("./json-rpc-provider");
 var properties_1 = require("../utils/properties");
-var errors = __importStar(require("../utils/errors"));
+var errors = __importStar(require("../errors"));
 /*
 @TODO
 utils.defineProperty(Web3Signer, 'onchange', {

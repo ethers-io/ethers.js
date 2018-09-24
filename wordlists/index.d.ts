@@ -1,4 +1,4 @@
-import { Wordlist } from './wordlist';
+import { Wordlist } from '../utils/wordlist';
 declare const en: Wordlist;
 declare const ko: Wordlist;
 declare const it: Wordlist;
