@@ -49,21 +49,51 @@ function getUnitInfo(name) {
     }
     // Make sure we got something
     if (!info) {
-        errors.throwError('invalid unitType', errors.INVALID_ARGUMENT, { arg: 'name', value: name });
+        errors.throwError('invalid unitType', errors.INVALID_ARGUMENT, { argument: 'name', value: name });
     }
     return info;
 }
-function formatUnits(value, unitType, options) {
-    /*
-    if (typeof(unitType) === 'object' && !options) {
-        options = unitType;
-        unitType = undefined;
+// Some environments have issues with RegEx that contain back-tracking, so we cannot
+// use them.
+function commify(value) {
+    var comps = String(value).split('.');
+    if (comps.length > 2 || !comps[0].match(/^-?[0-9]*$/) || (comps[1] && !comps[1].match(/^[0-9]*$/)) || value === '.' || value === '-.') {
+        errors.throwError('invalid value', errors.INVALID_ARGUMENT, { argument: 'value', value: value });
     }
-    if (unitType == null) { unitType = 18; }
-    */
-    if (!options) {
-        options = {};
+    // Make sure we have at least one whole digit (0 if none)
+    var whole = comps[0];
+    var negative = '';
+    if (whole.substring(0, 1) === '-') {
+        negative = '-';
+        whole = whole.substring(1);
     }
+    // Make sure we have at least 1 whole digit with no leading zeros
+    while (whole.substring(0, 1) === '0') {
+        whole = whole.substring(1);
+    }
+    if (whole === '') {
+        whole = '0';
+    }
+    var suffix = '';
+    if (comps.length === 2) {
+        suffix = '.' + (comps[1] || '0');
+    }
+    var formatted = [];
+    while (whole.length) {
+        if (whole.length <= 3) {
+            formatted.unshift(whole);
+            break;
+        }
+        else {
+            var index = whole.length - 3;
+            formatted.unshift(whole.substring(index));
+            whole = whole.substring(0, index);
+        }
+    }
+    return negative + formatted.join(',') + suffix;
+}
+exports.commify = commify;
+function formatUnits(value, unitType) {
     var unitInfo = getUnitInfo(unitType);
     // Make sure wei is a big number (convert as necessary)
     value = bignumber_1.bigNumberify(value);
@@ -75,14 +105,9 @@ function formatUnits(value, unitType, options) {
     while (fraction.length < unitInfo.decimals) {
         fraction = '0' + fraction;
     }
-    // Strip off trailing zeros (but keep one if would otherwise be bare decimal point)
-    if (!options.pad) {
-        fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
-    }
+    // Strip training 0
+    fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
     var whole = value.div(unitInfo.tenPower).toString();
-    if (options.commify) {
-        whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    }
     value = whole + '.' + fraction;
     if (negative) {
         value = '-' + value;
@@ -98,8 +123,6 @@ function parseUnits(value, unitType) {
     if (typeof (value) !== 'string' || !value.match(/^-?[0-9.,]+$/)) {
         errors.throwError('invalid decimal value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
     }
-    // Remove commas
-    var value = value.replace(/,/g, '');
     if (unitInfo.decimals === 0) {
         return bignumber_1.bigNumberify(value);
     }
@@ -140,8 +163,8 @@ function parseUnits(value, unitType) {
     return wei;
 }
 exports.parseUnits = parseUnits;
-function formatEther(wei, options) {
-    return formatUnits(wei, 18, options);
+function formatEther(wei) {
+    return formatUnits(wei, 18);
 }
 exports.formatEther = formatEther;
 function parseEther(ether) {

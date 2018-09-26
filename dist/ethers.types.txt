@@ -7,7 +7,7 @@ declare module 'ethers' {
 }
 
 declare module 'ethers/ethers' {
-    import { Contract, VoidSigner } from 'ethers/contract';
+    import { Contract, ContractFactory, VoidSigner } from 'ethers/contract';
     import { Signer } from 'ethers/abstract-signer';
     import { Wallet } from 'ethers/wallet';
     import * as constants from 'ethers/constants';
@@ -19,12 +19,13 @@ declare module 'ethers/ethers' {
     import { version } from 'ethers/_version';
     import { ContractFunction, Event, EventFilter } from 'ethers/contract';
     function getDefaultProvider(network?: utils.Network | string): providers.BaseProvider;
-    export { Signer, Wallet, VoidSigner, getDefaultProvider, providers, Contract, constants, errors, utils, wordlists, platform, version, ContractFunction, Event, EventFilter };
+    export { Signer, Wallet, VoidSigner, getDefaultProvider, providers, Contract, ContractFactory, constants, errors, utils, wordlists, platform, version, ContractFunction, Event, EventFilter };
 }
 
 declare module 'ethers/contract' {
     import { BigNumber } from 'ethers/utils/bignumber';
     import { Indexed, Interface } from 'ethers/utils/interface';
+    import { UnsignedTransaction } from 'ethers/utils/transaction';
     import { Provider } from 'ethers/providers/abstract-provider';
     import { Signer } from 'ethers/abstract-signer';
     import { Arrayish } from 'ethers/utils/bytes';
@@ -73,7 +74,6 @@ declare module 'ethers/contract' {
         fallback(overrides?: TransactionRequest): Promise<TransactionResponse>;
         connect(signerOrProvider: Signer | Provider | string): Contract;
         attach(addressOrName: string): Contract;
-        deploy(bytecode: string, ...args: Array<any>): Promise<Contract>;
         static isIndexed(value: any): value is Indexed;
         on(event: EventFilter | string, listener: Listener): Contract;
         once(event: EventFilter | string, listener: Listener): Contract;
@@ -83,6 +83,19 @@ declare module 'ethers/contract' {
         listeners(eventName: EventFilter | string): Array<Listener>;
         removeAllListeners(eventName: EventFilter | string): Contract;
         removeListener(eventName: any, listener: Listener): Contract;
+    }
+    export class ContractFactory {
+        readonly interface: Interface;
+        readonly bytecode: string;
+        readonly signer: Signer;
+        constructor(contractInterface: Array<string | ParamType> | string | Interface, bytecode: Arrayish | string | {
+            object: string;
+        }, signer?: Signer);
+        getDeployTransaction(...args: Array<any>): UnsignedTransaction;
+        deploy(...args: Array<any>): Promise<Contract>;
+        attach(address: string): Contract;
+        connect(signer: Signer): ContractFactory;
+        static fromSolidity(compilerOutput: any, signer?: Signer): ContractFactory;
     }
     export {};
 }
@@ -206,7 +219,7 @@ declare module 'ethers/utils' {
     import { SigningKey } from 'ethers/utils/signing-key';
     import { parse as parseTransaction, serialize as serializeTransaction } from 'ethers/utils/transaction';
     import { formatBytes32String, parseBytes32String, toUtf8Bytes, toUtf8String } from 'ethers/utils/utf8';
-    import { formatEther, parseEther, formatUnits, parseUnits } from 'ethers/utils/units';
+    import { commify, formatEther, parseEther, formatUnits, parseUnits } from 'ethers/utils/units';
     import { fetchJson } from 'ethers/utils/web';
     import { SupportedAlgorithms } from 'ethers/utils/hmac';
     import { UnicodeNormalizationForm } from 'ethers/utils/utf8';
@@ -219,7 +232,7 @@ declare module 'ethers/utils' {
     import { ConnectionInfo, OnceBlockable, PollOptions } from 'ethers/utils/web';
     import { EncryptOptions, ProgressCallback } from 'ethers/utils/secret-storage';
     import { Wordlist } from 'ethers/utils/wordlist';
-    export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, getNetwork, deepCopy, defineReadOnly, resolveProperties, shallowCopy, arrayify, concat, padZeros, stripZeros, HDNode, SigningKey, Interface, base64, BigNumber, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, formatBytes32String, parseBytes32String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computeAddress, computePublicKey, recoverAddress, recoverPublicKey, verifyMessage, SupportedAlgorithms, UnicodeNormalizationForm, CoerceFunc, EventFragment, FunctionFragment, ParamType, BigNumberish, Arrayish, Hexable, Signature, Indexed, DeployDescription, EventDescription, FunctionDescription, LogDescription, TransactionDescription, Network, Networkish, Transaction, UnsignedTransaction, ConnectionInfo, OnceBlockable, PollOptions, EncryptOptions, ProgressCallback, Wordlist, };
+    export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, getNetwork, deepCopy, defineReadOnly, resolveProperties, shallowCopy, arrayify, concat, padZeros, stripZeros, HDNode, SigningKey, Interface, base64, BigNumber, bigNumberify, hexlify, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, formatBytes32String, parseBytes32String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, commify, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computeAddress, computePublicKey, recoverAddress, recoverPublicKey, verifyMessage, SupportedAlgorithms, UnicodeNormalizationForm, CoerceFunc, EventFragment, FunctionFragment, ParamType, BigNumberish, Arrayish, Hexable, Signature, Indexed, DeployDescription, EventDescription, FunctionDescription, LogDescription, TransactionDescription, Network, Networkish, Transaction, UnsignedTransaction, ConnectionInfo, OnceBlockable, PollOptions, EncryptOptions, ProgressCallback, Wordlist, };
 }
 
 declare module 'ethers/wordlists' {
@@ -385,6 +398,37 @@ declare module 'ethers/utils/interface' {
         static isIndexed(value: any): value is Indexed;
     }
     export {};
+}
+
+declare module 'ethers/utils/transaction' {
+    import { BigNumber } from 'ethers/utils/bignumber';
+    import { Arrayish, Signature } from 'ethers/utils/bytes';
+    import { BigNumberish } from 'ethers/utils/bignumber';
+    export type UnsignedTransaction = {
+        to?: string;
+        nonce?: number;
+        gasLimit?: BigNumberish;
+        gasPrice?: BigNumberish;
+        data?: Arrayish;
+        value?: BigNumberish;
+        chainId?: number;
+    };
+    export interface Transaction {
+        hash?: string;
+        to?: string;
+        from?: string;
+        nonce: number;
+        gasLimit: BigNumber;
+        gasPrice: BigNumber;
+        data: string;
+        value: BigNumber;
+        chainId: number;
+        r?: string;
+        s?: string;
+        v?: number;
+    }
+    export function serialize(transaction: UnsignedTransaction, signature?: Arrayish | Signature): string;
+    export function parse(rawTransaction: Arrayish): Transaction;
 }
 
 declare module 'ethers/providers/abstract-provider' {
@@ -904,37 +948,6 @@ declare module 'ethers/utils/secp256k1' {
     export function verifyMessage(message: Arrayish | string, signature: Signature | string): string;
 }
 
-declare module 'ethers/utils/transaction' {
-    import { BigNumber } from 'ethers/utils/bignumber';
-    import { Arrayish, Signature } from 'ethers/utils/bytes';
-    import { BigNumberish } from 'ethers/utils/bignumber';
-    export type UnsignedTransaction = {
-        to?: string;
-        nonce?: number;
-        gasLimit?: BigNumberish;
-        gasPrice?: BigNumberish;
-        data?: Arrayish;
-        value?: BigNumberish;
-        chainId?: number;
-    };
-    export interface Transaction {
-        hash?: string;
-        to?: string;
-        from?: string;
-        nonce: number;
-        gasLimit: BigNumber;
-        gasPrice: BigNumber;
-        data: string;
-        value: BigNumber;
-        chainId: number;
-        r?: string;
-        s?: string;
-        v?: number;
-    }
-    export function serialize(transaction: UnsignedTransaction, signature?: Arrayish | Signature): string;
-    export function parse(rawTransaction: Arrayish): Transaction;
-}
-
 declare module 'ethers/utils/utf8' {
     import { Arrayish } from 'ethers/utils/bytes';
     export enum UnicodeNormalizationForm {
@@ -953,9 +966,10 @@ declare module 'ethers/utils/utf8' {
 declare module 'ethers/utils/units' {
     import { BigNumber } from 'ethers/utils/bignumber';
     import { BigNumberish } from 'ethers/utils/bignumber';
-    export function formatUnits(value: BigNumberish, unitType?: string | number, options?: any): string;
+    export function commify(value: string | number): string;
+    export function formatUnits(value: BigNumberish, unitType?: string | number): string;
     export function parseUnits(value: string, unitType?: string | number): BigNumber;
-    export function formatEther(wei: BigNumberish, options?: any): string;
+    export function formatEther(wei: BigNumberish): string;
     export function parseEther(ether: string): BigNumber;
 }
 

@@ -1,5 +1,6 @@
 import { BigNumber } from './utils/bignumber';
 import { Indexed, Interface } from './utils/interface';
+import { UnsignedTransaction } from './utils/transaction';
 import { Provider } from './providers/abstract-provider';
 import { Signer } from './abstract-signer';
 import { Arrayish } from './utils/bytes';
@@ -49,7 +50,6 @@ export declare class Contract {
     fallback(overrides?: TransactionRequest): Promise<TransactionResponse>;
     connect(signerOrProvider: Signer | Provider | string): Contract;
     attach(addressOrName: string): Contract;
-    deploy(bytecode: string, ...args: Array<any>): Promise<Contract>;
     static isIndexed(value: any): value is Indexed;
     private _events;
     private _getEventFilter;
@@ -62,5 +62,18 @@ export declare class Contract {
     listeners(eventName: EventFilter | string): Array<Listener>;
     removeAllListeners(eventName: EventFilter | string): Contract;
     removeListener(eventName: any, listener: Listener): Contract;
+}
+export declare class ContractFactory {
+    readonly interface: Interface;
+    readonly bytecode: string;
+    readonly signer: Signer;
+    constructor(contractInterface: Array<string | ParamType> | string | Interface, bytecode: Arrayish | string | {
+        object: string;
+    }, signer?: Signer);
+    getDeployTransaction(...args: Array<any>): UnsignedTransaction;
+    deploy(...args: Array<any>): Promise<Contract>;
+    attach(address: string): Contract;
+    connect(signer: Signer): ContractFactory;
+    static fromSolidity(compilerOutput: any, signer?: Signer): ContractFactory;
 }
 export {};

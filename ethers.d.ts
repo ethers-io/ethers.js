@@ -1,4 +1,4 @@
-import { Contract, VoidSigner } from './contract';
+import { Contract, ContractFactory, VoidSigner } from './contract';
 import { Signer } from './abstract-signer';
 import { Wallet } from './wallet';
 import * as constants from './constants';
@@ -10,4 +10,4 @@ import { platform } from './utils/shims';
 import { version } from './_version';
 import { ContractFunction, Event, EventFilter } from './contract';
 declare function getDefaultProvider(network?: utils.Network | string): providers.BaseProvider;
-export { Signer, Wallet, VoidSigner, getDefaultProvider, providers, Contract, constants, errors, utils, wordlists, platform, version, ContractFunction, Event, EventFilter };
+export { Signer, Wallet, VoidSigner, getDefaultProvider, providers, Contract, ContractFactory, constants, errors, utils, wordlists, platform, version, ContractFunction, Event, EventFilter };
