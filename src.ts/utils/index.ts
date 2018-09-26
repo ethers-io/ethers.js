@@ -20,7 +20,7 @@ import { computeAddress, computePublicKey, recoverAddress, recoverPublicKey, ver
 import { SigningKey } from './signing-key';
 import { parse as parseTransaction, serialize as serializeTransaction } from './transaction';
 import { formatBytes32String, parseBytes32String, toUtf8Bytes, toUtf8String } from './utf8';
-import { formatEther, parseEther, formatUnits, parseUnits } from './units';
+import { commify, formatEther, parseEther, formatUnits, parseUnits } from './units';
 import { fetchJson } from './web';
 
 
@@ -106,6 +106,8 @@ export {
 
     formatUnits,
     parseUnits,
+
+    commify,
 
     keccak256,
     sha256,

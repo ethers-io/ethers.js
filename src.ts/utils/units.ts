@@ -25,7 +25,7 @@ type UnitInfo = {
     tenPower: BigNumber;
 };
 
-var unitInfos: { [key: string]: UnitInfo } = {};
+const unitInfos: { [key: string]: UnitInfo } = {};
 
 function _getUnitInfo(value: string): UnitInfo {
     return {
@@ -50,54 +50,75 @@ function _getUnitInfo(value: string): UnitInfo {
 function getUnitInfo(name: string | number): UnitInfo {
 
     // Try the cache
-    var info = unitInfos[String(name).toLowerCase()];
+    let info = unitInfos[String(name).toLowerCase()];
 
     if (!info && typeof(name) === 'number' && parseInt(String(name)) == name && name >= 0 && name <= 256) {
-        var value = '1';
-        for (var i = 0; i < name; i++) { value += '0'; }
+        let value = '1';
+        for (let i = 0; i < name; i++) { value += '0'; }
         info = _getUnitInfo(value);
     }
 
     // Make sure we got something
     if (!info) {
-        errors.throwError('invalid unitType', errors.INVALID_ARGUMENT, { arg: 'name', value: name });
+        errors.throwError('invalid unitType', errors.INVALID_ARGUMENT, { argument: 'name', value: name });
     }
 
     return info;
 }
 
-export function formatUnits(value: BigNumberish, unitType?: string | number, options?: any): string {
-    /*
-    if (typeof(unitType) === 'object' && !options) {
-        options = unitType;
-        unitType = undefined;
+// Some environments have issues with RegEx that contain back-tracking, so we cannot
+// use them.
+export function commify(value: string | number): string {
+    let comps = String(value).split('.');
+
+    if (comps.length > 2 || !comps[0].match(/^-?[0-9]*$/) || (comps[1] && !comps[1].match(/^[0-9]*$/)) || value === '.' || value === '-.') {
+        errors.throwError('invalid value', errors.INVALID_ARGUMENT, { argument: 'value', value: value });
     }
-    if (unitType == null) { unitType = 18; }
-    */
 
-    if (!options) { options = {}; }
+    // Make sure we have at least one whole digit (0 if none)
+    let whole = comps[0];
 
-    var unitInfo = getUnitInfo(unitType);
+    let negative = '';
+    if (whole.substring(0, 1) === '-') {
+        negative = '-';
+        whole = whole.substring(1);
+    }
+
+    // Make sure we have at least 1 whole digit with no leading zeros
+    while (whole.substring(0, 1) === '0') { whole = whole.substring(1); }
+    if (whole === '') { whole = '0'; }
+
+    let suffix = '';
+    if (comps.length === 2) { suffix = '.' + (comps[1] || '0'); }
+
+    let formatted = [];
+    while (whole.length) {
+        if (whole.length <= 3) {
+            formatted.unshift(whole);
+            break;
+        } else {
+            let index = whole.length - 3;
+            formatted.unshift(whole.substring(index));
+            whole = whole.substring(0, index);
+        }
+    }
+
+    return negative + formatted.join(',') + suffix;
+}
+
+export function formatUnits(value: BigNumberish, unitType?: string | number): string {
+    let unitInfo = getUnitInfo(unitType);
 
     // Make sure wei is a big number (convert as necessary)
     value = bigNumberify(value);
 
-    var negative = value.lt(Zero);
+    let negative = value.lt(Zero);
     if (negative) { value = value.mul(NegativeOne); }
 
-    var fraction = value.mod(unitInfo.tenPower).toString();
+    let fraction = value.mod(unitInfo.tenPower).toString();
     while (fraction.length < unitInfo.decimals) { fraction = '0' + fraction; }
 
-    // Strip off trailing zeros (but keep one if would otherwise be bare decimal point)
-    if (!options.pad) {
-        fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
-    }
-
-    var whole = value.div(unitInfo.tenPower).toString();
-
-    if (options.commify) {
-        whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-    }
+    let whole = value.div(unitInfo.tenPower).toString();
 
     value = whole + '.' + fraction;
 
@@ -108,21 +129,18 @@ export function formatUnits(value: BigNumberish, unitType?: string | number, opt
 
 export function parseUnits(value: string, unitType?: string | number): BigNumber {
     if (unitType == null) { unitType = 18; }
-    var unitInfo = getUnitInfo(unitType);
+    let unitInfo = getUnitInfo(unitType);
 
     if (typeof(value) !== 'string' || !value.match(/^-?[0-9.,]+$/)) {
         errors.throwError('invalid decimal value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
     }
-
-    // Remove commas
-    var value = value.replace(/,/g,'');
 
     if (unitInfo.decimals === 0) {
         return bigNumberify(value);
     }
 
     // Is it negative?
-    var negative = (value.substring(0, 1) === '-');
+    let negative = (value.substring(0, 1) === '-');
     if (negative) { value = value.substring(1); }
 
     if (value === '.') {
@@ -161,8 +179,8 @@ export function parseUnits(value: string, unitType?: string | number): BigNumber
     return wei;
 }
 
-export function formatEther(wei: BigNumberish, options?: any): string {
-    return formatUnits(wei, 18, options);
+export function formatEther(wei: BigNumberish): string {
+    return formatUnits(wei, 18);
 }
 
 export function parseEther(ether: string): BigNumber {
