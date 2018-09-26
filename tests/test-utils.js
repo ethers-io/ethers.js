@@ -119,7 +119,7 @@ describe('Test Unit Conversion', function () {
 
             if (test[name + '_format']) {
                 it (('formats ' + wei.toString() + ' ' + name + ' (options: ' + JSON.stringify(formatting) + ')'), function() {
-                    let v = ethers.utils.formatUnits(wei, unitName);
+                    var v = ethers.utils.formatUnits(wei, unitName);
                     if (formatting.commify) { v = ethers.utils.commify(v); }
                     assert.equal(v, test[name + '_format'],
                         ('formats ' + name + ' - ' + test.name));
