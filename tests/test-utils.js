@@ -84,13 +84,18 @@ describe('Test Unit Conversion', function () {
         var wei = ethers.utils.bigNumberify(test.wei);
         var formatting = test.format || {};
 
+        // We no longer support padding
+        if (formatting.pad) { return; }
+
         it (('parses ' + test.ether + ' ether'), function() {
-            assert.ok(ethers.utils.parseEther(test.ether).eq(wei),
+            assert.ok(ethers.utils.parseEther(test.ether.replace(/,/g, '')).eq(wei),
                 'parsing ether failed - ' + test.name);
         });
 
         it (('formats ' + wei.toString() + ' wei (options: ' + JSON.stringify(formatting) + ')'), function() {
-            assert.equal(ethers.utils.formatEther(wei, formatting), test.etherFormat,
+            var v = ethers.utils.formatEther(wei);
+            if (formatting.commify) { v = ethers.utils.commify(v); }
+            assert.equal(v, test.etherFormat,
                    'formatting wei failed - ' + test.name);
         });
     });
@@ -107,14 +112,16 @@ describe('Test Unit Conversion', function () {
             if (test[name]) {
                 it(('parses ' + test[name] + ' ' + name), function() {
                     this.timeout(120000);
-                    assert.ok(ethers.utils.parseUnits(test[name], unitName).eq(wei),
+                    assert.ok(ethers.utils.parseUnits(test[name].replace(/,/g, ''), unitName).eq(wei),
                         ('parsing ' + name + ' failed - ' + test.name));
                 });
             }
 
             if (test[name + '_format']) {
                 it (('formats ' + wei.toString() + ' ' + name + ' (options: ' + JSON.stringify(formatting) + ')'), function() {
-                    assert.equal(ethers.utils.formatUnits(wei, unitName, formatting), test[name + '_format'],
+                    let v = ethers.utils.formatUnits(wei, unitName);
+                    if (formatting.commify) { v = ethers.utils.commify(v); }
+                    assert.equal(v, test[name + '_format'],
                         ('formats ' + name + ' - ' + test.name));
                 });
             }
