@@ -1,6 +1,6 @@
 'use strict';
 
-import { Contract, VoidSigner } from './contract';
+import { Contract, ContractFactory, VoidSigner } from './contract';
 
 import { Signer } from './abstract-signer';
 import { Wallet } from './wallet';
@@ -53,6 +53,7 @@ export {
     providers,
 
     Contract,
+    ContractFactory,
 
     constants,
     errors,

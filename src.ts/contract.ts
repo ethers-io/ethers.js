@@ -7,9 +7,10 @@ import * as errors from './errors';
 import { defaultAbiCoder, formatSignature, parseSignature } from './utils/abi-coder';
 import { getAddress, getContractAddress } from './utils/address';
 import { BigNumber, bigNumberify } from './utils/bignumber';
-import { hexDataLength, hexDataSlice, isHexString } from './utils/bytes';
+import { hexDataLength, hexDataSlice, hexlify, isArrayish, isHexString } from './utils/bytes';
 import { Indexed, Interface } from './utils/interface';
 import { defineReadOnly, deepCopy, shallowCopy } from './utils/properties';
+import { UnsignedTransaction } from './utils/transaction';
 
 
 ///////////////////////////////
@@ -349,13 +350,6 @@ export class Contract {
             });
         });
 
-        // Not connected to an on-chain instance, so do not connect functions and events
-        if (!addressOrName) {
-            defineReadOnly(this, 'address', null);
-            defineReadOnly(this, 'addressPromise', Promise.resolve(null));
-            return;
-        }
-
         this._events = [];
 
         defineReadOnly(this, 'address', addressOrName);
@@ -371,6 +365,7 @@ export class Contract {
             try {
                 defineReadOnly(this, 'addressPromise', Promise.resolve(getAddress(addressOrName)));
             } catch (error) {
+                // Without a provider, we cannot use ENS names
                 errors.throwError('provider is required to use non-address contract address', errors.INVALID_ARGUMENT, { argument: 'addressOrName', value: addressOrName });
             }
         }
@@ -461,54 +456,6 @@ export class Contract {
     // Re-attach to a different on=chain instance of this contract
     attach(addressOrName: string): Contract {
         return new Contract(addressOrName, this.interface, this.signer || this.provider);
-    }
-
-    // Deploy the contract with the bytecode, resolving to the deployed address.
-    // Use contract.deployTransaction.wait() to wait until the contract has
-    // been mined.
-    deploy(bytecode: string, ...args: Array<any>): Promise<Contract> {
-        if (this.signer == null) {
-            throw new Error('missing signer'); // @TODO: errors.throwError
-        }
-
-        // A lot of common tools do not prefix bytecode with a 0x
-        if (typeof(bytecode) === 'string' && bytecode.match(/^[0-9a-f]*$/i) && (bytecode.length % 2) == 0) {
-            bytecode = '0x' + bytecode;
-        }
-
-        if (!isHexString(bytecode)) {
-            errors.throwError('bytecode must be a valid hex string', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
-        }
-
-        if ((bytecode.length % 2) !== 0) {
-            errors.throwError('bytecode must be valid data (even length)', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
-        }
-
-        let tx: TransactionRequest = { };
-        if (args.length === this.interface.deployFunction.inputs.length + 1) {
-            tx = shallowCopy(args.pop());
-            for (var key in tx) {
-                if (!allowedTransactionKeys[key]) {
-                    throw new Error('unknown transaction override ' + key);
-                }
-            }
-        }
-
-        ['data', 'from', 'to'].forEach(function(key) {
-            if ((<any>tx)[key] == null) { return; }
-            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key })
-        });
-
-        tx.data = this.interface.deployFunction.encode(bytecode, args);
-
-        errors.checkArgumentCount(args.length, this.interface.deployFunction.inputs.length, 'in Contract constructor');
-
-        // @TODO: overrides of args.length = this.interface.deployFunction.inputs.length + 1
-        return this.signer.sendTransaction(tx).then((tx) => {
-            let contract = new Contract(getContractAddress(tx), this.interface, this.signer || this.provider);
-            defineReadOnly(contract, 'deployTransaction', tx);
-            return contract;
-        });
     }
 
     static isIndexed(value: any): value is Indexed {
@@ -700,3 +647,126 @@ export class Contract {
     }
 
 }
+
+export class ContractFactory {
+
+    readonly interface: Interface;
+    readonly bytecode: string;
+    readonly signer: Signer;
+
+    constructor(contractInterface: Array<string | ParamType> | string | Interface, bytecode: Arrayish | string | { object: string }, signer?: Signer) {
+
+        let bytecodeHex: string = null;
+
+        // Allow the bytecode object from the Solidity compiler
+        if (typeof(bytecode) === 'string') {
+            bytecodeHex = bytecode;
+        } else if (isArrayish(bytecode)) {
+            bytecodeHex = hexlify(bytecode);
+        } else if (typeof(bytecode.object) === 'string') {
+            bytecodeHex = (<any>bytecode).object;
+        } else {
+            errors.throwError('bytecode must be a valid hex string', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
+        }
+
+        // Make sure it is 0x prefixed
+        if (bytecodeHex.substring(0, 2) !== '0x') {
+            bytecodeHex = '0x' + bytecodeHex;
+        }
+
+        if (!isHexString(bytecodeHex)) {
+            errors.throwError('bytecode must be a valid hex string', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
+        }
+
+        if ((bytecodeHex.length % 2) !== 0) {
+            errors.throwError('bytecode must be valid data (even length)', errors.INVALID_ARGUMENT, { arg: 'bytecode', value: bytecode });
+        }
+
+        defineReadOnly(this, 'bytecode', bytecodeHex);
+
+        if (Interface.isInterface(contractInterface)) {
+            defineReadOnly(this, 'interface', contractInterface);
+        } else {
+            defineReadOnly(this, 'interface', new Interface(contractInterface));
+        }
+
+        if (signer && !Signer.isSigner(signer)) {
+            errors.throwError('invalid signer', errors.INVALID_ARGUMENT, { arg: 'signer', value: null });
+        }
+
+        defineReadOnly(this, 'signer', signer || null);
+    }
+
+    getDeployTransaction(...args: Array<any>): UnsignedTransaction {
+
+        let tx: UnsignedTransaction = { };
+
+        // If we have 1 additional argument, we allow transaction overrides
+        if (args.length === this.interface.deployFunction.inputs.length + 1) {
+            tx = shallowCopy(args.pop());
+            for (let key in tx) {
+                if (!allowedTransactionKeys[key]) {
+                    throw new Error('unknown transaction override ' + key);
+                }
+            }
+        }
+
+        // Do not allow these to be overridden in a deployment transaction
+        ['data', 'from', 'to'].forEach((key) => {
+            if ((<any>tx)[key] == null) { return; }
+            errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key })
+        });
+
+        // Make sure the call matches the constructor signature
+        errors.checkArgumentCount(args.length, this.interface.deployFunction.inputs.length, 'in Contract constructor');
+
+        // Set the data to the bytecode + the encoded constructor arguments
+        tx.data = this.interface.deployFunction.encode(this.bytecode, args);
+
+        return tx
+    }
+
+    deploy(...args: Array<any>): Promise<Contract> {
+
+        // Get the deployment transaction (with optional overrides)
+        let tx = this.getDeployTransaction(...args);
+
+        // Send the deployment transaction
+        return this.signer.sendTransaction(tx).then((tx) => {
+            let contract = new Contract(getContractAddress(tx), this.interface, this.signer);
+            defineReadOnly(contract, 'deployTransaction', tx);
+            return contract;
+        });
+    }
+
+    attach(address: string): Contract {
+        return new Contract(address, this.interface, this.signer);
+    }
+
+    connect(signer: Signer) {
+        return new ContractFactory(this.interface, this.bytecode, signer);
+    }
+
+    static fromSolidity(compilerOutput: any, signer?: Signer): ContractFactory {
+        if (compilerOutput == null) {
+            errors.throwError('missing compiler output', errors.MISSING_ARGUMENT, { argument: 'compilerOutput' });
+        }
+
+        if (typeof(compilerOutput) === 'string') {
+            compilerOutput = JSON.parse(compilerOutput);
+        }
+
+        let abi = compilerOutput.abi;
+
+        let bytecode: any = null;
+        if (compilerOutput.bytecode) {
+            bytecode = compilerOutput.bytecode;
+        } else if (compilerOutput.evm && compilerOutput.evm.bytecode) {
+            bytecode = compilerOutput.evm.bytecode;
+        }
+
+
+        return new ContractFactory(abi, bytecode, signer);
+    }
+}
+
