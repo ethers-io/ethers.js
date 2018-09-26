@@ -118,6 +118,9 @@ export function formatUnits(value: BigNumberish, unitType?: string | number): st
     let fraction = value.mod(unitInfo.tenPower).toString();
     while (fraction.length < unitInfo.decimals) { fraction = '0' + fraction; }
 
+    // Strip training 0
+    fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
+
     let whole = value.div(unitInfo.tenPower).toString();
 
     value = whole + '.' + fraction;
