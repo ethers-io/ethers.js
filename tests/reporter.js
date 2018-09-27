@@ -47,7 +47,11 @@ function Reporter(runner) {
 
     runner.on('suite end', function() {
         var suite = suites.pop();
-        log('  Total Tests: ' + suite._countPass + '/' + suite._countTotal + ' passed ' + getDelta(suite._t0));
+        var failure = '';
+        if (suite._countTotal > suite._countPass) {
+            failure = ' (' + (suite._countTotal - suite._countPass) + ' failed)';
+        }
+        log('  Total Tests: ' + suite._countPass + '/' + suite._countTotal + ' passed ' + getDelta(suite._t0) + failure);
         log();
         if (suites.length > 0) {
             var currentSuite = suites[suites.length - 1];
