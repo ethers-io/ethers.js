@@ -219,7 +219,7 @@ export function hexDataLength(data: string) {
     return (data.length - 2) / 2;
 }
 
-export function hexDataSlice(data: string, offset: number, length?: number): string {
+export function hexDataSlice(data: string, offset: number, endOffset?: number): string {
     if (!isHexString(data)) {
         errors.throwError('invalid hex data', errors.INVALID_ARGUMENT, { arg: 'value', value: data });
     }
@@ -228,8 +228,8 @@ export function hexDataSlice(data: string, offset: number, length?: number): str
     }
     offset = 2 + 2 * offset;
 
-    if (length != null) {
-        return '0x' + data.substring(offset, offset + 2 * length);
+    if (endOffset != null) {
+        return '0x' + data.substring(offset, 2 + 2 * endOffset);
     }
 
     return '0x' + data.substring(offset);
