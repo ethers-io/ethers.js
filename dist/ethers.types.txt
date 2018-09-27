@@ -558,7 +558,7 @@ declare module 'ethers/utils/bytes' {
     export function isHexString(value: any, length?: number): boolean;
     export function hexlify(value: Arrayish | Hexable | number): string;
     export function hexDataLength(data: string): number;
-    export function hexDataSlice(data: string, offset: number, length?: number): string;
+    export function hexDataSlice(data: string, offset: number, endOffset?: number): string;
     export function hexStripZeros(value: string): string;
     export function hexZeroPad(value: string, length: number): string;
     export function splitSignature(signature: Arrayish | Signature): Signature;

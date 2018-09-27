@@ -180,7 +180,7 @@ function hexDataLength(data) {
     return (data.length - 2) / 2;
 }
 exports.hexDataLength = hexDataLength;
-function hexDataSlice(data, offset, length) {
+function hexDataSlice(data, offset, endOffset) {
     if (!isHexString(data)) {
         errors.throwError('invalid hex data', errors.INVALID_ARGUMENT, { arg: 'value', value: data });
     }
@@ -188,8 +188,8 @@ function hexDataSlice(data, offset, length) {
         errors.throwError('hex data length must be even', errors.INVALID_ARGUMENT, { arg: 'value', value: data });
     }
     offset = 2 + 2 * offset;
-    if (length != null) {
-        return '0x' + data.substring(offset, offset + 2 * length);
+    if (endOffset != null) {
+        return '0x' + data.substring(offset, 2 + 2 * endOffset);
     }
     return '0x' + data.substring(offset);
 }
