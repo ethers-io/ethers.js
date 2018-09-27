@@ -8,23 +8,23 @@ Complete Ethereum wallet implementation and utilities in JavaScript (and TypeScr
 **Features:**
 
 - Keep your private keys in your client, **safe** and sound
-- Import and export **JSON wallets** (Geth, Parity and crowdsale) and brain wallets
+- Import and export **JSON wallets** (Geth, Parity and crowdsale)
 - Import and export BIP 39 **mnemonic phrases** (12 word backup phrases) and **HD Wallets** (English, Italian, Japanese, Korean, Simplified Chinese, Traditional Chinese; more coming soon)
-- Meta-classes create JavaScript objects from any contract ABI
+- Meta-classes create JavaScript objects from any contract ABI, including **ABIv2** and **Human-Readable ABI**
 - Connect to Ethereum nodes over [JSON-RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC), [INFURA](https://infura.io), [Etherscan](https://etherscan.io), or [MetaMask](https://metamask.io)
-- ENS names are first-class citizens; they can be used anywhere an Ethereum addresses can be
+- **ENS names** are first-class citizens; they can be used anywhere an Ethereum addresses can be used
 - **Tiny** (~84kb compressed; 270kb uncompressed)
 - **Complete** functionality for all your Ethereum needs
 - Extensive [documentation](https://docs.ethers.io/ethers.js/html/)
-- Large collection of test cases which are maintained and added to
-- Fully TypeScript ready, with definition files and full TypeScript source
+- Large collection of **test cases** which are maintained and added to
+- Fully **TypeScript** ready, with definition files and full TypeScript source
 - **MIT License** (including ALL dependencies); completely open source to do with as you please
 
 
 Keep Updated
 ------------
 
-For the latest news and advisories, please follow (@ethersproject)[https://twitter.com/ethersproject] on Twitter.
+For the latest news and advisories, please follow (@ethersproject)[https://twitter.com/ethersproject] on Twitter as well as this GitHub project.
 
 
 Installing
@@ -34,7 +34,7 @@ To use in a browser:
 
 ```html
 <script charset="utf-8"
-        src="https://cdn.ethers.io/scripts/ethers-v4-beta.min.js"
+        src="https://cdn.ethers.io/scripts/ethers-v4.min.js"
         type="text/javascript">
 </script>
 ```
@@ -84,11 +84,11 @@ Pull requests are always welcome, but please keep a few points in mind:
 
 - Compatibility-breaking changes will not be accepted; they may be considered for the next major version
 - Security is important; adding dependencies require fairly convincing arguments
-- The library aims to be lean, so keep an eye on the `dist/ethers.min.js` filesize before and after your changes
+- The library aims to be lean, so keep an eye on the `dist/ethers.min.js` file size before and after your changes
 - Add test cases for both expected and unexpected input
 - Any new features need to be supported by us (issues, documentation, testing), so anything that is overly complicated or specific may not be accepted
 
-In general, please start an issue before beginning a pull request, so we can have a public discussion. :)
+In general, **please start an issue before beginning a pull request**, so we can have a public discussion. :)
 
 
 Donations
