@@ -50,7 +50,7 @@ function createTransform(transforms, show) {
                     console.log('Transformed:', shortPath, padding(70 - shortPath.length), size, padding(6 - String(size).length), '=>', transformed.length);
                 }
                 data = transformed;
-            } else if (shortPath === '/src.ts/wordlists/wordlist.ts') {
+            } else if (shortPath === '/src.ts/utils/wordlist.ts') {
                 data += '\n\nexportWordlist = true;'
                 if (show.transformed) {
                     console.log('Transformed:', shortPath, padding(70 - shortPath.length), size, padding(6 - String(size).length), '=>', data.length);
@@ -217,24 +217,32 @@ function taskLang(locale) {
 
             // Word list files...
             if (shortPath.match(/^\/src\.ts\/wordlists\//)) {
-                // If it is the wordlist class, register should export the wordlist
-                if (shortPath === '/src.ts/utils/wordlist.ts') {
-                    data += '\n\nexportWordlist = true;'
-                }
                 shortPath = '/';
             }
 
             switch (shortPath) {
-                case '/src.ts/utils/errors.ts':
-                    data = "module.exports = global.ethers.utils.errors";
+                // Use the existing "ethers.errors"
+                case '/src.ts/errors.ts':
+                    data = "module.exports = global.ethers.errors";
                     break;
+
+                // Use the existing "ethers.utils"
                 case '/src.ts/utils/bytes.ts':
                 case '/src.ts/utils/hash.ts':
                 case '/src.ts/utils/properties.ts':
                 case '/src.ts/utils/utf8.ts':
                     data = "module.exports = global.ethers.utils";
                     break;
-                case '/': break;
+
+                // If it is the Wordlist class, register should export the wordlist
+                case '/src.ts/utils/wordlist.ts':
+                    data += '\n\nexportWordlist = true;'
+                    break;
+
+                // Do nothing
+                case '/':
+                    break;
+
                 default:
                     throw new Error('unhandled file: ' + shortPath);
             }
