@@ -24,7 +24,7 @@ Complete Ethereum wallet implementation and utilities in JavaScript (and TypeScr
 Keep Updated
 ------------
 
-For the latest news and advisories, please follow (@ethersproject)[https://twitter.com/ethersproject] on Twitter as well as this GitHub project.
+For the latest news and advisories, please follow [@ethersproject](https://twitter.com/ethersproject) on Twitter as well as this GitHub project.
 
 
 Installing
