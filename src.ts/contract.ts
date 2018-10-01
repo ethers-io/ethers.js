@@ -41,10 +41,10 @@ export type EventFilter = {
 
 // The (n + 1)th parameter passed to contract event callbacks
 export interface Event extends Log {
-    args: Array<any>;
-    decode: (data: string, topics?: Array<string>) => any;
-    event: string;
-    eventSignature: string;
+    args?: Array<any>;
+    decode?: (data: string, topics?: Array<string>) => any;
+    event?: string;
+    eventSignature?: string;
 
     removeListener: () => void;
 
@@ -266,7 +266,10 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
 }
 
 function getEventTag(filter: EventFilter): string {
-    return (filter.address || '') + (filter.topics ? filter.topics.join(':'): '');
+    if (filter.address && (filter.topics == null || filter.topics.length === 0)) {
+        return '*';
+    }
+    return (filter.address || '*') + '@' + (filter.topics ? filter.topics.join(':'): '');
 }
 
 interface Bucket<T> {
@@ -274,7 +277,7 @@ interface Bucket<T> {
 }
 
 type _EventFilter = {
-    decode: (log: Log) => Array<any>;
+    prepareEvent: (event: Event) => Array<any>;
     event?: EventDescription;
     eventTag: string;
     filter: EventFilter;
@@ -286,7 +289,6 @@ type _Event = {
     once: boolean;
     wrappedListener: Listener;
 };
-
 
 export class Contract {
     readonly address: string;
@@ -470,8 +472,15 @@ export class Contract {
             // Listen for any event
             if (eventName === '*') {
                 return {
-                    decode: (log: Log) => {
-                        return [ this.interface.parseLog(log) ];
+                    prepareEvent: (e: Event) => {
+                        let parsed = this.interface.parseLog(e);
+                        if (parsed) {
+                            e.args = parsed.values;
+                            e.decode = parsed.decode;
+                            e.event = parsed.name;
+                            e.eventSignature = parsed.signature;
+                        }
+                        return [ e ];
                     },
                     eventTag: '*',
                     filter: { address: this.address },
@@ -494,8 +503,14 @@ export class Contract {
             }
 
             return {
-                decode: (log: Log) => {
-                    return event.decode(log.data, log.topics)
+                prepareEvent: (e: Event) => {
+                    let args = event.decode(e.data, e.topics);
+                    e.args = args;
+
+                    let result = Array.prototype.slice.call(args);
+                    result.push(e);
+
+                    return result;
                 },
                 event: event,
                 eventTag: getEventTag(filter),
@@ -512,7 +527,7 @@ export class Contract {
         let event: EventDescription = null;
         if (eventName.topics && eventName.topics[0]) {
             filter.topics = eventName.topics;
-            for (var name in this.interface.events) {
+            for (let name in this.interface.events) {
                 if (name.indexOf('(') === -1) { continue; }
                 let e = this.interface.events[name];
                 if (e.topic === eventName.topics[0].toLowerCase()) {
@@ -523,9 +538,16 @@ export class Contract {
         }
 
         return {
-            decode: (log: Log) => {
-                if (event) { return event.decode(log.data, log.topics) }
-                return [ log ]
+            prepareEvent: (e: Event) => {
+                if (!event) { return [ e ]; }
+
+                let args = event.decode(e.data, e.topics);
+                e.args = args;
+
+                let result = Array.prototype.slice.call(args);
+                result.push(e);
+
+                return result;
             },
             event: event,
             eventTag: getEventTag(filter),
@@ -539,22 +561,24 @@ export class Contract {
         }
 
         let wrappedListener = (log: Log) => {
-            let decoded = Array.prototype.slice.call(eventFilter.decode(log));
 
-            let event = deepCopy(log);
-            event.args = decoded;
-            event.decode = eventFilter.event.decode;
-            event.event = eventFilter.event.name;
-            event.eventSignature = eventFilter.event.signature;
+            let event: Event = (<Event>deepCopy(log));
+
+            let args = eventFilter.prepareEvent(event);
+
+            if (eventFilter.event) {
+                event.decode = eventFilter.event.decode;
+                event.event = eventFilter.event.name;
+                event.eventSignature = eventFilter.event.signature;
+            }
 
             event.removeListener = () => { this.removeListener(eventFilter.filter, listener); };
 
             event.getBlock = () => { return this.provider.getBlock(log.blockHash); }
-            event.getTransaction = () => { return this.provider.getTransactionReceipt(log.transactionHash); }
+            event.getTransaction = () => { return this.provider.getTransaction(log.transactionHash); }
             event.getTransactionReceipt = () => { return this.provider.getTransactionReceipt(log.transactionHash); }
 
-            decoded.push(event);
-            this.emit(eventFilter.filter, ...decoded);
+            this.emit(eventFilter.filter, ...args);
         };
 
         this.provider.on(eventFilter.filter, wrappedListener);
@@ -582,11 +606,17 @@ export class Contract {
 
         let eventFilter = this._getEventFilter(eventName);
         this._events = this._events.filter((event) => {
+
+            // Not this event (keep it for later)
             if (event.eventFilter.eventTag !== eventFilter.eventTag) { return true; }
+
+            // Call the callback in the next event loop
             setTimeout(() => {
                 event.listener.apply(this, args);
             }, 0);
             result = true;
+
+            // Reschedule it if it not "once"
             return !(event.once);
         });
 

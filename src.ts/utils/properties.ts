@@ -52,16 +52,13 @@ let opaque: { [key: string]: boolean } = { boolean: true, number: true, string: 
 
 export function deepCopy(object: any, frozen?: boolean): any {
 
+    // Opaque objects are not mutable, so safe to copy by assignment
     if (object === undefined || object === null || opaque[typeof(object)]) { return object; }
 
+    // Arrays are mutable, so we need to create a copy
     if (Array.isArray(object)) {
-        let result: Array<any> = [];
-        object.forEach((item) => {
-            result.push(deepCopy(item, frozen));
-        });
-
+        let result = object.map((item) => deepCopy(item, frozen));
         if (frozen) { Object.freeze(result); }
-
         return result
     }
 
@@ -73,7 +70,7 @@ export function deepCopy(object: any, frozen?: boolean): any {
         if (isType(object, 'Indexed')) { return object; }
 
         let result: { [ key: string ]: any } = {};
-        for (var key in object) {
+        for (let key in object) {
             let value = object[key];
             if (value === undefined) { continue; }
             defineReadOnly(result, key, deepCopy(value, frozen));
@@ -82,6 +79,11 @@ export function deepCopy(object: any, frozen?: boolean): any {
         if (frozen) { Object.freeze(result); }
 
         return result;
+    }
+
+    // The function type is also immutable, so safe to copy by assignment
+    if (typeof(object) === 'function') {
+        return object;
     }
 
     throw new Error('Cannot deepCopy ' + typeof(object));

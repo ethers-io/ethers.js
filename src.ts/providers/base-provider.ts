@@ -391,6 +391,8 @@ function serializeTopics(topics: Array<string | Array<string>>): string {
                 }
             });
             return topic.join(',');
+        } else if (topic === null) {
+            return '';
         }
         return errors.throwError('invalid topic value', errors.INVALID_ARGUMENT, { argument: 'topic', value: topic });
     }).join('&');
@@ -403,7 +405,11 @@ function deserializeTopics(data: string): Array<string | Array<string>> {
             if (comps[0] === '') { return null; }
             return topic;
         }
-        return comps;
+
+        return comps.map((topic) => {
+            if (topic === '') { return null; }
+            return topic;
+        });
     });
 }
 
