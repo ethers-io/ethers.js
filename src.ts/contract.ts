@@ -88,7 +88,7 @@ export class VoidSigner extends Signer {
 }
 
 const allowedTransactionKeys: { [ key: string ]: boolean } = {
-    data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
+    chainId: true, data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
 }
 
 // Recursively replaces ENS names with promises to resolve the name and
