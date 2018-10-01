@@ -48,18 +48,17 @@ function shallowCopy(object) {
 exports.shallowCopy = shallowCopy;
 var opaque = { boolean: true, number: true, string: true };
 function deepCopy(object, frozen) {
+    // Opaque objects are not mutable, so safe to copy by assignment
     if (object === undefined || object === null || opaque[typeof (object)]) {
         return object;
     }
+    // Arrays are mutable, so we need to create a copy
     if (Array.isArray(object)) {
-        var result_1 = [];
-        object.forEach(function (item) {
-            result_1.push(deepCopy(item, frozen));
-        });
+        var result = object.map(function (item) { return deepCopy(item, frozen); });
         if (frozen) {
-            Object.freeze(result_1);
+            Object.freeze(result);
         }
-        return result_1;
+        return result;
     }
     if (typeof (object) === 'object') {
         // Some internal objects, which are already immutable
@@ -84,6 +83,10 @@ function deepCopy(object, frozen) {
             Object.freeze(result);
         }
         return result;
+    }
+    // The function type is also immutable, so safe to copy by assignment
+    if (typeof (object) === 'function') {
+        return object;
     }
     throw new Error('Cannot deepCopy ' + typeof (object));
 }

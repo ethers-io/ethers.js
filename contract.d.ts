@@ -12,10 +12,10 @@ export declare type EventFilter = {
     topics?: Array<string>;
 };
 export interface Event extends Log {
-    args: Array<any>;
-    decode: (data: string, topics?: Array<string>) => any;
-    event: string;
-    eventSignature: string;
+    args?: Array<any>;
+    decode?: (data: string, topics?: Array<string>) => any;
+    event?: string;
+    eventSignature?: string;
     removeListener: () => void;
     getBlock: () => Promise<Block>;
     getTransaction: () => Promise<TransactionResponse>;

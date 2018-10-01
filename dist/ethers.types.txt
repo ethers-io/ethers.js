@@ -37,10 +37,10 @@ declare module 'ethers/contract' {
         topics?: Array<string>;
     };
     export interface Event extends Log {
-        args: Array<any>;
-        decode: (data: string, topics?: Array<string>) => any;
-        event: string;
-        eventSignature: string;
+        args?: Array<any>;
+        decode?: (data: string, topics?: Array<string>) => any;
+        event?: string;
+        eventSignature?: string;
         removeListener: () => void;
         getBlock: () => Promise<Block>;
         getTransaction: () => Promise<TransactionResponse>;
@@ -252,7 +252,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.0";
+    export const version = "4.0.1";
 }
 
 declare module 'ethers/utils/bignumber' {

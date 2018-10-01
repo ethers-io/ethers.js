@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.0";
+exports.version = "4.0.1";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -107,7 +107,7 @@ var VoidSigner = /** @class */ (function (_super) {
 }(abstract_signer_1.Signer));
 exports.VoidSigner = VoidSigner;
 var allowedTransactionKeys = {
-    data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+    chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
 };
 // Recursively replaces ENS names with promises to resolve the name and
 // stalls until all promises have returned
@@ -262,7 +262,10 @@ function runMethod(contract, functionName, estimateOnly) {
     };
 }
 function getEventTag(filter) {
-    return (filter.address || '') + (filter.topics ? filter.topics.join(':') : '');
+    if (filter.address && (filter.topics == null || filter.topics.length === 0)) {
+        return '*';
+    }
+    return (filter.address || '*') + '@' + (filter.topics ? filter.topics.join(':') : '');
 }
 var Contract = /** @class */ (function () {
     // https://github.com/Microsoft/TypeScript/issues/5453
@@ -414,8 +417,15 @@ var Contract = /** @class */ (function () {
             // Listen for any event
             if (eventName === '*') {
                 return {
-                    decode: function (log) {
-                        return [_this.interface.parseLog(log)];
+                    prepareEvent: function (e) {
+                        var parsed = _this.interface.parseLog(e);
+                        if (parsed) {
+                            e.args = parsed.values;
+                            e.decode = parsed.decode;
+                            e.event = parsed.name;
+                            e.eventSignature = parsed.signature;
+                        }
+                        return [e];
                     },
                     eventTag: '*',
                     filter: { address: this.address },
@@ -434,8 +444,12 @@ var Contract = /** @class */ (function () {
                 topics: [event_1.topic]
             };
             return {
-                decode: function (log) {
-                    return event_1.decode(log.data, log.topics);
+                prepareEvent: function (e) {
+                    var args = event_1.decode(e.data, e.topics);
+                    e.args = args;
+                    var result = Array.prototype.slice.call(args);
+                    result.push(e);
+                    return result;
                 },
                 event: event_1,
                 eventTag: getEventTag(filter_1),
@@ -450,11 +464,11 @@ var Contract = /** @class */ (function () {
         var event = null;
         if (eventName.topics && eventName.topics[0]) {
             filter.topics = eventName.topics;
-            for (var name in this.interface.events) {
-                if (name.indexOf('(') === -1) {
+            for (var name_1 in this.interface.events) {
+                if (name_1.indexOf('(') === -1) {
                     continue;
                 }
-                var e = this.interface.events[name];
+                var e = this.interface.events[name_1];
                 if (e.topic === eventName.topics[0].toLowerCase()) {
                     event = e;
                     break;
@@ -462,11 +476,15 @@ var Contract = /** @class */ (function () {
             }
         }
         return {
-            decode: function (log) {
-                if (event) {
-                    return event.decode(log.data, log.topics);
+            prepareEvent: function (e) {
+                if (!event) {
+                    return [e];
                 }
-                return [log];
+                var args = event.decode(e.data, e.topics);
+                e.args = args;
+                var result = Array.prototype.slice.call(args);
+                result.push(e);
+                return result;
             },
             event: event,
             eventTag: getEventTag(filter),
@@ -479,18 +497,18 @@ var Contract = /** @class */ (function () {
             errors.throwError('events require a provider or a signer with a provider', errors.UNSUPPORTED_OPERATION, { operation: 'once' });
         }
         var wrappedListener = function (log) {
-            var decoded = Array.prototype.slice.call(eventFilter.decode(log));
             var event = properties_1.deepCopy(log);
-            event.args = decoded;
-            event.decode = eventFilter.event.decode;
-            event.event = eventFilter.event.name;
-            event.eventSignature = eventFilter.event.signature;
+            var args = eventFilter.prepareEvent(event);
+            if (eventFilter.event) {
+                event.decode = eventFilter.event.decode;
+                event.event = eventFilter.event.name;
+                event.eventSignature = eventFilter.event.signature;
+            }
             event.removeListener = function () { _this.removeListener(eventFilter.filter, listener); };
             event.getBlock = function () { return _this.provider.getBlock(log.blockHash); };
-            event.getTransaction = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
+            event.getTransaction = function () { return _this.provider.getTransaction(log.transactionHash); };
             event.getTransactionReceipt = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
-            decoded.push(event);
-            _this.emit.apply(_this, [eventFilter.filter].concat(decoded));
+            _this.emit.apply(_this, [eventFilter.filter].concat(args));
         };
         this.provider.on(eventFilter.filter, wrappedListener);
         this._events.push({ eventFilter: eventFilter, listener: listener, wrappedListener: wrappedListener, once: once });
@@ -518,13 +536,16 @@ var Contract = /** @class */ (function () {
         var result = false;
         var eventFilter = this._getEventFilter(eventName);
         this._events = this._events.filter(function (event) {
+            // Not this event (keep it for later)
             if (event.eventFilter.eventTag !== eventFilter.eventTag) {
                 return true;
             }
+            // Call the callback in the next event loop
             setTimeout(function () {
                 event.listener.apply(_this, args);
             }, 0);
             result = true;
+            // Reschedule it if it not "once"
             return !(event.once);
         });
         return result;
@@ -10127,6 +10148,9 @@ function serializeTopics(topics) {
             });
             return topic.join(',');
         }
+        else if (topic === null) {
+            return '';
+        }
         return errors.throwError('invalid topic value', errors.INVALID_ARGUMENT, { argument: 'topic', value: topic });
     }).join('&');
 }
@@ -10139,7 +10163,12 @@ function deserializeTopics(data) {
             }
             return topic;
         }
-        return comps;
+        return comps.map(function (topic) {
+            if (topic === '') {
+                return null;
+            }
+            return topic;
+        });
     });
 }
 function getEventTag(eventName) {
@@ -14429,18 +14458,17 @@ function shallowCopy(object) {
 exports.shallowCopy = shallowCopy;
 var opaque = { boolean: true, number: true, string: true };
 function deepCopy(object, frozen) {
+    // Opaque objects are not mutable, so safe to copy by assignment
     if (object === undefined || object === null || opaque[typeof (object)]) {
         return object;
     }
+    // Arrays are mutable, so we need to create a copy
     if (Array.isArray(object)) {
-        var result_1 = [];
-        object.forEach(function (item) {
-            result_1.push(deepCopy(item, frozen));
-        });
+        var result = object.map(function (item) { return deepCopy(item, frozen); });
         if (frozen) {
-            Object.freeze(result_1);
+            Object.freeze(result);
         }
-        return result_1;
+        return result;
     }
     if (typeof (object) === 'object') {
         // Some internal objects, which are already immutable
@@ -14465,6 +14493,10 @@ function deepCopy(object, frozen) {
             Object.freeze(result);
         }
         return result;
+    }
+    // The function type is also immutable, so safe to copy by assignment
+    if (typeof (object) === 'function') {
+        return object;
     }
     throw new Error('Cannot deepCopy ' + typeof (object));
 }

@@ -344,6 +344,9 @@ function serializeTopics(topics) {
             });
             return topic.join(',');
         }
+        else if (topic === null) {
+            return '';
+        }
         return errors.throwError('invalid topic value', errors.INVALID_ARGUMENT, { argument: 'topic', value: topic });
     }).join('&');
 }
@@ -356,7 +359,12 @@ function deserializeTopics(data) {
             }
             return topic;
         }
-        return comps;
+        return comps.map(function (topic) {
+            if (topic === '') {
+                return null;
+            }
+            return topic;
+        });
     });
 }
 function getEventTag(eventName) {
