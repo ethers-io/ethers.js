@@ -9,7 +9,7 @@
     "auto-build": "npm run build -- -w",
     "dist": "npm run dist-version && npm run build && gulp default minified && npm run dist-types",
     "dist-test": "gulp default-test minified-test",
-    "dist-bip39": "gulp bip39-it bip39-ja bip39-ko bip39-zh",
+    "dist-bip39": "gulp bip39-es bip39-fr bip39-it bip39-ja bip39-ko bip39-zh",
     "dist-types": "dts-bundle --name ethers --main ./index.d.ts --out ./dist/ethers.types.txt",
     "dist-version": "node -e \"let v = require('./package.json').version; require('fs').writeFileSync('./src.ts/_version.ts', 'export const version = \\\"' + v +'\\\";\\n')\"",
     "eslint": "eslint index.js contracts/*.js providers/*.js utils/*.js wallet/*.js wordlists/*.js",

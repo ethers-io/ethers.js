@@ -19,6 +19,8 @@ function checkWordlist(filename, wordlist) {
 
 describe('Check Wordlists', function() {
     checkWordlist('./wordlist-generation/lang-en.txt', ethers.wordlists.en);
+    checkWordlist('./wordlist-generation/lang-es.txt', ethers.wordlists.es);
+    checkWordlist('./wordlist-generation/lang-fr.txt', ethers.wordlists.fr);
     checkWordlist('./wordlist-generation/lang-it.txt', ethers.wordlists.it);
     checkWordlist('./wordlist-generation/lang-ja.txt', ethers.wordlists.ja);
     checkWordlist('./wordlist-generation/lang-ko.txt', ethers.wordlists.ko);

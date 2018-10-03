@@ -270,6 +270,8 @@ function taskLang(locale) {
     });
 }
 
+taskLang("es");
+taskLang("fr");
 taskLang("it");
 taskLang("ja");
 taskLang("ko");
