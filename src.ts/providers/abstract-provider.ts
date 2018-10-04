@@ -69,6 +69,7 @@ export interface TransactionReceipt {
     transactionHash?: string,
     logs?: Array<Log>,
     blockNumber?: number,
+    confirmations?: number,
     cumulativeGasUsed?: BigNumber,
     byzantium: boolean,
     status?: number

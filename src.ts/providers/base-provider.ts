@@ -315,6 +315,7 @@ const formatTransactionReceipt = {
     transactionHash: checkHash,
     logs: arrayOf(checkTransactionReceiptLog),
     blockNumber: checkNumber,
+    confirmations: allowNull(checkNumber, null),
     cumulativeGasUsed: bigNumberify,
     status: allowNull(checkNumber)
 };
@@ -687,7 +688,6 @@ export class BaseProvider extends Provider {
 
         // Stale block number, request a newer value
         if ((now - this._fastQueryDate) > 2 * this._pollingInterval) {
-            console.log('re-poll fbn');
             this._fastQueryDate = now;
             this._fastBlockNumberPromise = this.getBlockNumber().then((blockNumber) => {
                 if (this._fastBlockNumber == null || blockNumber > this._fastBlockNumber) {
@@ -717,10 +717,11 @@ export class BaseProvider extends Provider {
     // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
     //        this will be used once we move to the WebSocket or other alternatives to polling
 
-    waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt> {
+    waitForTransaction(transactionHash: string, confirmations?: number): Promise<TransactionReceipt> {
+        if (!confirmations) { confirmations = 1; }
         return poll(() => {
             return this.getTransactionReceipt(transactionHash).then((receipt) => {
-                if (receipt == null) { return undefined; }
+                if (receipt == null || receipt.confirmations < confirmations) { return undefined; }
                 return receipt;
             });
         }, { onceBlock: this });
@@ -821,7 +822,7 @@ export class BaseProvider extends Provider {
 
     // This should be called by any subclass wrapping a TransactionResponse
     _wrapTransaction(tx: Transaction, hash?: string): TransactionResponse {
-        if (hexDataLength(hash) !== 32) { throw new Error('invalid response - sendTransaction'); }
+        if (hash != null && hexDataLength(hash) !== 32) { throw new Error('invalid response - sendTransaction'); }
 
         let result: TransactionResponse = <TransactionResponse>tx;
 
@@ -831,12 +832,13 @@ export class BaseProvider extends Provider {
         }
 
         this._emitted['t:' + tx.hash] = 'pending';
+
         // @TODO: (confirmations? number, timeout? number)
-        result.wait = () => {
-            return this.waitForTransaction(hash).then((receipt) => {
+        result.wait = (confirmations?: number) => {
+            return this.waitForTransaction(tx.hash, confirmations).then((receipt) => {
                 if (receipt.status === 0) {
                     errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
-                        transactionHash: hash,
+                        transactionHash: tx.hash,
                         transaction: tx
                     });
                 }
@@ -956,11 +958,11 @@ export class BaseProvider extends Provider {
                                 if (confirmations <= 0) { confirmations = 1; }
                                 tx.confirmations = confirmations;
 
-                                return tx;
+                                return this._wrapTransaction(tx);
                             });
                         }
 
-                        return tx;
+                        return this._wrapTransaction(tx);
                     });
                 }, { onceBlock: this });
             });
@@ -983,7 +985,24 @@ export class BaseProvider extends Provider {
                         // "geth-etc" returns receipts before they are ready
                         if (result.blockHash == null) { return undefined; }
 
-                        return checkTransactionReceipt(result);
+                        let receipt = checkTransactionReceipt(result);
+
+                        if (receipt.blockNumber == null) {
+                            receipt.confirmations = 0;
+
+                        } else if (receipt.confirmations == null) {
+                            return this._getFastBlockNumber().then((blockNumber) => {
+
+                                // Add the confirmations using the fast block number (pessimistic)
+                                let confirmations = (blockNumber - receipt.blockNumber) + 1;
+                                if (confirmations <= 0) { confirmations = 1; }
+                                receipt.confirmations = confirmations;
+
+                                return receipt;
+                            });
+                        }
+
+                        return receipt;
                     });
                 }, { onceBlock: this });
             });
