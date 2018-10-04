@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.1";
+exports.version = "4.0.2";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -9192,10 +9192,12 @@ module.exports = { browser: true };
         if (!checkBufferish(password)) {
             throw new Error('password must be an array or buffer');
         }
+        password = Array.prototype.slice.call(password);
 
         if (!checkBufferish(salt)) {
             throw new Error('salt must be an array or buffer');
         }
+        salt = Array.prototype.slice.call(salt);
 
         var b = PBKDF2_HMAC_SHA256_OneIter(password, salt, p * 128 * r);
         var B = new Uint32Array(p * 32 * r)
@@ -13042,6 +13044,9 @@ var BigNumber = /** @class */ (function () {
         }
         else if (value.toHexString) {
             properties_1.defineReadOnly(this, '_hex', toHex(toBN(value.toHexString())));
+        }
+        else if (value._hex && bytes_1.isHexString(value._hex)) {
+            properties_1.defineReadOnly(this, '_hex', value._hex);
         }
         else if (bytes_1.isArrayish(value)) {
             properties_1.defineReadOnly(this, '_hex', toHex(new bn_js_1.default.BN(bytes_1.hexlify(value).substring(2), 16)));

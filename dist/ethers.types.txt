@@ -238,13 +238,15 @@ declare module 'ethers/utils' {
 declare module 'ethers/wordlists' {
     import { Wordlist } from 'ethers/utils/wordlist';
     const en: Wordlist;
-    const ko: Wordlist;
+    const es: Wordlist;
+    const fr: Wordlist;
     const it: Wordlist;
     const ja: Wordlist;
+    const ko: Wordlist;
     const zh: Wordlist;
     const zh_cn: Wordlist;
     const zh_tw: Wordlist;
-    export { en, it, ja, ko, zh, zh_cn, zh_tw };
+    export { en, es, fr, it, ja, ko, zh, zh_cn, zh_tw };
 }
 
 declare module 'ethers/utils/shims' {
@@ -252,7 +254,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.1";
+    export const version = "4.0.2";
 }
 
 declare module 'ethers/utils/bignumber' {

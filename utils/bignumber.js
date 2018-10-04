@@ -89,6 +89,9 @@ var BigNumber = /** @class */ (function () {
         else if (value.toHexString) {
             properties_1.defineReadOnly(this, '_hex', toHex(toBN(value.toHexString())));
         }
+        else if (value._hex && bytes_1.isHexString(value._hex)) {
+            properties_1.defineReadOnly(this, '_hex', value._hex);
+        }
         else if (bytes_1.isArrayish(value)) {
             properties_1.defineReadOnly(this, '_hex', toHex(new bn_js_1.default.BN(bytes_1.hexlify(value).substring(2), 16)));
         }
