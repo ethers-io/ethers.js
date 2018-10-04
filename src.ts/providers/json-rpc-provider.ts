@@ -135,21 +135,23 @@ export class JsonRpcSigner extends Signer {
                     throw error;
                 });
             }, (error) => {
-                // See: JsonRpcProvider.sendTransaction (@TODO: Expose a ._throwError??)
-                if (error.responseText.indexOf('insufficient funds') >= 0) {
-                    errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, {
-                        transaction: tx
-                    });
-                }
-                if (error.responseText.indexOf('nonce too low') >= 0) {
-                    errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, {
-                        transaction: tx
-                    });
-                }
-                if (error.responseText.indexOf('replacement transaction underpriced') >= 0) {
-                    errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, {
-                        transaction: tx
-                    });
+                if (error.responseText) {
+                    // See: JsonRpcProvider.sendTransaction (@TODO: Expose a ._throwError??)
+                    if (error.responseText.indexOf('insufficient funds') >= 0) {
+                        errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, {
+                            transaction: tx
+                        });
+                    }
+                    if (error.responseText.indexOf('nonce too low') >= 0) {
+                        errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, {
+                            transaction: tx
+                        });
+                    }
+                    if (error.responseText.indexOf('replacement transaction underpriced') >= 0) {
+                        errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, {
+                            transaction: tx
+                        });
+                    }
                 }
                 throw error;
             });
@@ -266,17 +268,19 @@ export class JsonRpcProvider extends BaseProvider {
 
             case 'sendTransaction':
                 return this.send('eth_sendRawTransaction', [ params.signedTransaction ]).catch((error) => {
-                    // "insufficient funds for gas * price + value"
-                    if (error.responseText.indexOf('insufficient funds') > 0) {
-                        errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, { });
-                    }
-                    // "nonce too low"
-                    if (error.responseText.indexOf('nonce too low') > 0) {
-                        errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, { });
-                    }
-                    // "replacement transaction underpriced"
-                    if (error.responseText.indexOf('replacement transaction underpriced') > 0) {
-                        errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, { });
+                    if (error.responseText) {
+                        // "insufficient funds for gas * price + value"
+                        if (error.responseText.indexOf('insufficient funds') > 0) {
+                            errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, { });
+                        }
+                        // "nonce too low"
+                        if (error.responseText.indexOf('nonce too low') > 0) {
+                            errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, { });
+                        }
+                        // "replacement transaction underpriced"
+                        if (error.responseText.indexOf('replacement transaction underpriced') > 0) {
+                            errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, { });
+                        }
                     }
                     throw error;
                 });

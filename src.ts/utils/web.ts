@@ -118,6 +118,9 @@ export function fetchJson(connection: string | ConnectionInfo, json: string, pro
                 // @TODO: not any!
                 let error: any = new Error('invalid response - ' + request.status);
                 error.statusCode = request.status;
+                if (request.responseText) {
+                    error.responseText = request.responseText;
+                }
                 reject(error);
                 return;
             }
