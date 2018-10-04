@@ -326,6 +326,11 @@ function testProvider(providerName, networkName) {
         function testTransaction(expected) {
             var title = ('Transaction ' + expected.hash.substring(0, 10) + ' - ');
             return provider.getTransaction(expected.hash).then(function(tx) {
+
+                // This changes with every block
+                assert.equal(typeof(tx.confirmations), 'number', 'confirmations is a number');
+                delete tx.confirmations;
+
                 for (var key in tx) {
                     equals((title + key), tx[key], expected[key]);
                 }

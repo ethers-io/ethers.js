@@ -690,7 +690,7 @@ export class BaseProvider extends Provider {
             console.log('re-poll fbn');
             this._fastQueryDate = now;
             this._fastBlockNumberPromise = this.getBlockNumber().then((blockNumber) => {
-                if (blockNumber > this._fastBlockNumber) {
+                if (this._fastBlockNumber == null || blockNumber > this._fastBlockNumber) {
                     this._fastBlockNumber = blockNumber;
                 }
                 return this._fastBlockNumber;
@@ -933,7 +933,7 @@ export class BaseProvider extends Provider {
     getTransaction(transactionHash: string): Promise<TransactionResponse> {
         return this.ready.then(() => {
             return resolveProperties({ transactionHash: transactionHash }).then(({ transactionHash }) => {
-                var params = { transactionHash: checkHash(transactionHash) };
+                let params = { transactionHash: checkHash(transactionHash) };
                 return poll(() => {
                     return this.perform('getTransaction', params).then((result) => {
                         if (result == null) {
@@ -943,18 +943,24 @@ export class BaseProvider extends Provider {
                             return undefined;
                         }
 
-                        let seq = Promise.resolve();
-                        if (result.blockNumber != null && result.confirmations == null) {
-                            seq = this._getFastBlockNumber().then((blockNumber) => {
-                                let confirmations = (blockNumber - result.blockNumber) + 1;
+                        let tx = BaseProvider.checkTransactionResponse(result);
+
+                        if (tx.blockNumber == null) {
+                            tx.confirmations = 0;
+
+                        } else if (tx.confirmations == null) {
+                            return this._getFastBlockNumber().then((blockNumber) => {
+
+                                // Add the confirmations using the fast block number (pessimistic)
+                                let confirmations = (blockNumber - tx.blockNumber) + 1;
                                 if (confirmations <= 0) { confirmations = 1; }
-                                result.confirmations = confirmations;
+                                tx.confirmations = confirmations;
+
+                                return tx;
                             });
                         }
 
-                        return seq.then(() => {
-                            return BaseProvider.checkTransactionResponse(result);
-                        });
+                        return tx;
                     });
                 }, { onceBlock: this });
             });
@@ -964,7 +970,7 @@ export class BaseProvider extends Provider {
     getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt> {
         return this.ready.then(() => {
             return resolveProperties({ transactionHash: transactionHash }).then(({ transactionHash }) => {
-                var params = { transactionHash: checkHash(transactionHash) };
+                let params = { transactionHash: checkHash(transactionHash) };
                 return poll(() => {
                     return this.perform('getTransactionReceipt', params).then((result) => {
                         if (result == null) {
@@ -973,6 +979,7 @@ export class BaseProvider extends Provider {
                             }
                             return undefined;
                         }
+
                         return checkTransactionReceipt(result);
                     });
                 }, { onceBlock: this });
