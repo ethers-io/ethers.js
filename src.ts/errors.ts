@@ -1,5 +1,7 @@
 'use strict';
 
+import { version } from './_version';
+
 // Unknown Error
 export const UNKNOWN_ERROR = 'UNKNOWN_ERROR';
 
@@ -69,21 +71,23 @@ export function throwError(message: string, code: string, params: any): never {
     if (!code) { code = UNKNOWN_ERROR; }
     if (!params) { params = {}; }
 
-    var messageDetails: Array<string> = [];
-    Object.keys(params).forEach(function(key) {
+    let messageDetails: Array<string> = [];
+    Object.keys(params).forEach((key) => {
         try {
             messageDetails.push(key + '=' + JSON.stringify(params[key]));
         } catch (error) {
             messageDetails.push(key + '=' + JSON.stringify(params[key].toString()));
         }
     });
-    var reason = message;
+    messageDetails.push("version=" + version);
+
+    let reason = message;
     if (messageDetails.length) {
         message += ' (' + messageDetails.join(', ') + ')';
     }
 
     // @TODO: Any??
-    var error: any = new Error(message);
+    let error: any = new Error(message);
     error.reason = reason;
     error.code = code
 
