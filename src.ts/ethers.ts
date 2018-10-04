@@ -26,7 +26,7 @@ import { version } from './_version';
 ////////////////////////
 // Types
 
-import { ContractFunction, Event, EventFilter } from './contract';
+import { ContractFunction, ContractTransaction, Event, EventFilter } from './contract';
 
 
 ////////////////////////
@@ -72,6 +72,7 @@ export {
     // Types
 
     ContractFunction,
+    ContractTransaction,
     Event,
     EventFilter
 };

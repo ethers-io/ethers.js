@@ -53,6 +53,14 @@ export interface Event extends Log {
     getTransactionReceipt: () => Promise<TransactionReceipt>;
 }
 
+export interface ContractReceipt extends TransactionReceipt {
+    events?: Array<Event>;
+}
+
+export interface ContractTransaction extends TransactionResponse {
+    wait(confirmations?: number): Promise<ContractReceipt>;
+}
+
 ///////////////////////////////
 
 export class VoidSigner extends Signer {
@@ -256,7 +264,42 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                     errors.throwError('cannot override from in a transaction', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' })
                 }
 
-                return contract.signer.sendTransaction(tx);
+                return contract.signer.sendTransaction(tx).then((tx) => {
+                    let wait = tx.wait.bind(tx);
+
+                    tx.wait = (confirmations?: number) => {
+                        return wait(confirmations).then((receipt: ContractReceipt) => {
+                            receipt.events = receipt.logs.map((log) => {
+                                 let event: Event = (<Event>deepCopy(log));
+
+                                 let parsed = this.interface.parseLog(log);
+                                 if (parsed) {
+                                     event.args = parsed.values;
+                                     event.decode = parsed.decode;
+                                     event.event = parsed.name;
+                                     event.eventSignature = parsed.signature;
+                                }
+
+                                event.removeListener = () => { return this.provider; }
+                                event.getBlock = () => {
+                                    return this.provider.getBlock(receipt.blockHash);
+                                }
+                                event.getTransaction = () => {
+                                    return this.provider.getTransaction(receipt.transactionHash);
+                                }
+                                event.getTransactionReceipt = () => {
+                                    return Promise.resolve(receipt);
+                                }
+
+                                return event;
+                            });
+
+                            return receipt;
+                        });
+                    };
+
+                    return tx;
+                });
             }
 
             throw new Error('invalid type - ' + method.type);

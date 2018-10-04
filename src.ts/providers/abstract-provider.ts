@@ -103,7 +103,7 @@ export interface TransactionResponse extends Transaction {
     raw?: string,
 
     // This function waits until the transaction has been mined
-    wait: (timeout?: number) => Promise<TransactionReceipt>
+    wait: (confirmations?: number) => Promise<TransactionReceipt>
 };
 
 export type EventType = string | Array<string> | Filter;

@@ -702,13 +702,13 @@ export class BaseProvider extends Provider {
 
     _setFastBlockNumber(blockNumber: number): void {
         // Older block, maybe a stale request
-        if (blockNumber < this._fastBlockNumber) { return; }
+        if (this._fastBlockNumber != null && blockNumber < this._fastBlockNumber) { return; }
 
         // Update the time we updated the blocknumber
         this._fastQueryDate = getTime();
 
         // Newer block number, use  it
-        if (blockNumber > this._fastBlockNumber) {
+        if (this._fastBlockNumber == null || blockNumber > this._fastBlockNumber) {
             this._fastBlockNumber = blockNumber;
             this._fastBlockNumberPromise = Promise.resolve(blockNumber);
         }
