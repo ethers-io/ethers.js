@@ -9,6 +9,7 @@ var ethers = utils.getEthers(__filename);
 describe("Package Version", function() {
     var url = "http://registry.npmjs.org/ethers"
     it("is not already published", function() {
+        this.timeout(20000);
         return ethers.utils.fetchJson(url).then(function(data) {
             assert.ok(Object.keys(data.versions).indexOf(ethers.version) === -1);
         });
