@@ -156,6 +156,8 @@ const formatTransaction = {
    blockNumber: allowNull(checkNumber, null),
    transactionIndex: allowNull(checkNumber, null),
 
+   confirmations: allowNull(checkNumber, null),
+
    from: getAddress,
 
    gasPrice: bigNumberify,
@@ -236,7 +238,7 @@ function checkTransactionResponse(transaction: any): TransactionResponse {
     if (typeof(networkId) !== 'number') { networkId = 0; }
 
     result.networkId = networkId;
-    
+
     // 0x0000... should actually be null
     if (result.blockHash && result.blockHash.replace(/0/g, '') === 'x') {
         result.blockHash = null;
@@ -377,6 +379,7 @@ function checkLog(log: any): any {
     return check(formatLog, log);
 }
 
+
 //////////////////////////////
 // Event Serializeing
 
@@ -439,6 +442,13 @@ function getEventTag(eventName: EventType): string {
 }
 
 //////////////////////////////
+// Helper Object
+
+function getTime() {
+    return (new Date()).getTime();
+}
+
+//////////////////////////////
 // Provider Object
 
 
@@ -472,6 +482,10 @@ export class BaseProvider extends Provider {
 
     // string => BigNumber
     private _balances: any;
+
+    private _fastBlockNumber: number;
+    private _fastBlockNumberPromise: Promise<number>;
+    private _fastQueryDate: number;
 
 
     /**
@@ -521,10 +535,13 @@ export class BaseProvider extends Provider {
         // until we get a response. This provides devs with a consistent view. Similarly for
         // transaction hashes.
         this._emitted = { block: this._lastBlockNumber };
+
+        this._fastQueryDate = 0;
     }
 
     private _doPoll(): void {
         this.getBlockNumber().then((blockNumber) => {
+            this._setFastBlockNumber(blockNumber);
 
             // If the block hasn't changed, meh.
             if (blockNumber === this._lastBlockNumber) { return; }
@@ -665,6 +682,38 @@ export class BaseProvider extends Provider {
         }
     }
 
+    _getFastBlockNumber(): Promise<number> {
+        let now = getTime();
+
+        // Stale block number, request a newer value
+        if ((now - this._fastQueryDate) > 2 * this._pollingInterval) {
+            console.log('re-poll fbn');
+            this._fastQueryDate = now;
+            this._fastBlockNumberPromise = this.getBlockNumber().then((blockNumber) => {
+                if (blockNumber > this._fastBlockNumber) {
+                    this._fastBlockNumber = blockNumber;
+                }
+                return this._fastBlockNumber;
+            });
+        }
+
+        return this._fastBlockNumberPromise;
+    }
+
+    _setFastBlockNumber(blockNumber: number): void {
+        // Older block, maybe a stale request
+        if (blockNumber < this._fastBlockNumber) { return; }
+
+        // Update the time we updated the blocknumber
+        this._fastQueryDate = getTime();
+
+        // Newer block number, use  it
+        if (blockNumber > this._fastBlockNumber) {
+            this._fastBlockNumber = blockNumber;
+            this._fastBlockNumberPromise = Promise.resolve(blockNumber);
+        }
+    }
+
     // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
     //        this will be used once we move to the WebSocket or other alternatives to polling
 
@@ -680,8 +729,9 @@ export class BaseProvider extends Provider {
     getBlockNumber(): Promise<number> {
         return this.ready.then(() => {
             return this.perform('getBlockNumber', { }).then((result) => {
-                var value = parseInt(result);
+                let value = parseInt(result);
                 if (value != result) { throw new Error('invalid response - getBlockNumber'); }
+                this._setFastBlockNumber(value);
                 return value;
             });
         });
@@ -892,7 +942,19 @@ export class BaseProvider extends Provider {
                             }
                             return undefined;
                         }
-                        return BaseProvider.checkTransactionResponse(result);
+
+                        let seq = Promise.resolve();
+                        if (result.blockNumber != null && result.confirmations == null) {
+                            seq = this._getFastBlockNumber().then((blockNumber) => {
+                                let confirmations = (blockNumber - result.blockNumber) + 1;
+                                if (confirmations <= 0) { confirmations = 1; }
+                                result.confirmations = confirmations;
+                            });
+                        }
+
+                        return seq.then(() => {
+                            return BaseProvider.checkTransactionResponse(result);
+                        });
                     });
                 }, { onceBlock: this });
             });

@@ -93,6 +93,8 @@ export interface TransactionResponse extends Transaction {
     blockHash?: string,
     timestamp?: number,
 
+    confirmations: number,
+
     // Not optional (as it is in Transaction)
     from: string;
 
