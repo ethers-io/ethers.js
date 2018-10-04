@@ -980,6 +980,9 @@ export class BaseProvider extends Provider {
                             return undefined;
                         }
 
+                        // "geth-etc" returns receipts before they are ready
+                        if (result.blockHash == null) { return undefined; }
+
                         return checkTransactionReceipt(result);
                     });
                 }, { onceBlock: this });
