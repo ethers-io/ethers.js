@@ -9,19 +9,15 @@ let wordlist: Array<string> = null;
 let lookup: { [word: string]: number } = { }
 
 function dropDiacritic(word: string): string {
-    let output: Array<number> = [];
-    toUtf8Bytes(word.normalize('NFD').toLowerCase()).forEach((c) => {
-        if ((c >= 65 && c <= 90) || (c >= 97 && c <= 123)) {
-            output.push(c);
-        }
-    });
-    return toUtf8String(output);
+    return toUtf8String(Array.prototype.filter.call(toUtf8Bytes(word.normalize('NFD').toLowerCase()), (c: number) => {
+        return ((c >= 65 && c <= 90) || (c >= 97 && c <= 123));
+    }));
 }
 
 function expand(word: string): string {
     let output: Array<number> = [];
 
-    toUtf8Bytes(word).forEach((c) => {
+    Array.prototype.forEach.call(toUtf8Bytes(word), (c: number) => {
         // Acute accent
         if (c === 47) {
             output.push(204);
