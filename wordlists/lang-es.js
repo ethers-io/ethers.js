@@ -16,17 +16,13 @@ var words = "A/bacoAbdomenAbejaAbiertoAbogadoAbonoAbortoAbrazoAbrirAbueloAbusoAc
 var lookup = {};
 var wordlist = null;
 function dropDiacritic(word) {
-    var output = [];
-    utf8_1.toUtf8Bytes(word.normalize('NFD').toLowerCase()).forEach(function (c) {
-        if ((c >= 65 && c <= 90) || (c >= 97 && c <= 123)) {
-            output.push(c);
-        }
-    });
-    return utf8_1.toUtf8String(output);
+    return utf8_1.toUtf8String(Array.prototype.filter.call(utf8_1.toUtf8Bytes(word.normalize('NFD').toLowerCase()), function (c) {
+        return ((c >= 65 && c <= 90) || (c >= 97 && c <= 123));
+    }));
 }
 function expand(word) {
     var output = [];
-    utf8_1.toUtf8Bytes(word).forEach(function (c) {
+    Array.prototype.forEach.call(utf8_1.toUtf8Bytes(word), function (c) {
         // Acute accent
         if (c === 47) {
             output.push(204);

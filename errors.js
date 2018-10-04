@@ -1,5 +1,6 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+var _version_1 = require("./_version");
 // Unknown Error
 exports.UNKNOWN_ERROR = 'UNKNOWN_ERROR';
 // Not implemented
@@ -66,6 +67,7 @@ function throwError(message, code, params) {
             messageDetails.push(key + '=' + JSON.stringify(params[key].toString()));
         }
     });
+    messageDetails.push("version=" + _version_1.version);
     var reason = message;
     if (messageDetails.length) {
         message += ' (' + messageDetails.join(', ') + ')';

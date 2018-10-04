@@ -718,6 +718,7 @@ exports.ContractFactory = ContractFactory;
 },{"./abstract-signer":2,"./constants":3,"./errors":5,"./providers/abstract-provider":49,"./utils/abi-coder":58,"./utils/address":59,"./utils/bignumber":61,"./utils/bytes":62,"./utils/interface":67,"./utils/properties":72}],5:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+var _version_1 = require("./_version");
 // Unknown Error
 exports.UNKNOWN_ERROR = 'UNKNOWN_ERROR';
 // Not implemented
@@ -784,6 +785,7 @@ function throwError(message, code, params) {
             messageDetails.push(key + '=' + JSON.stringify(params[key].toString()));
         }
     });
+    messageDetails.push("version=" + _version_1.version);
     var reason = message;
     if (messageDetails.length) {
         message += ' (' + messageDetails.join(', ') + ')';
@@ -825,7 +827,7 @@ function setCensorship(censorship, permanent) {
 }
 exports.setCensorship = setCensorship;
 
-},{}],6:[function(require,module,exports){
+},{"./_version":1}],6:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
