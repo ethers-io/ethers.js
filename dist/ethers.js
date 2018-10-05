@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.2";
+exports.version = "4.0.3";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -154,6 +154,7 @@ function resolveAddresses(provider, value, paramType) {
 function runMethod(contract, functionName, estimateOnly) {
     var method = contract.interface.functions[functionName];
     return function () {
+        var _this = this;
         var params = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             params[_i] = arguments[_i];
@@ -254,7 +255,36 @@ function runMethod(contract, functionName, estimateOnly) {
                 if (tx.from != null) {
                     errors.throwError('cannot override from in a transaction', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' });
                 }
-                return contract.signer.sendTransaction(tx);
+                return contract.signer.sendTransaction(tx).then(function (tx) {
+                    var wait = tx.wait.bind(tx);
+                    tx.wait = function (confirmations) {
+                        return wait(confirmations).then(function (receipt) {
+                            receipt.events = receipt.logs.map(function (log) {
+                                var event = properties_1.deepCopy(log);
+                                var parsed = _this.interface.parseLog(log);
+                                if (parsed) {
+                                    event.args = parsed.values;
+                                    event.decode = parsed.decode;
+                                    event.event = parsed.name;
+                                    event.eventSignature = parsed.signature;
+                                }
+                                event.removeListener = function () { return _this.provider; };
+                                event.getBlock = function () {
+                                    return _this.provider.getBlock(receipt.blockHash);
+                                };
+                                event.getTransaction = function () {
+                                    return _this.provider.getTransaction(receipt.transactionHash);
+                                };
+                                event.getTransactionReceipt = function () {
+                                    return Promise.resolve(receipt);
+                                };
+                                return event;
+                            });
+                            return receipt;
+                        });
+                    };
+                    return tx;
+                });
             }
             throw new Error('invalid type - ' + method.type);
             return null;
@@ -9958,6 +9988,7 @@ var formatTransaction = {
     blockHash: allowNull(checkHash, null),
     blockNumber: allowNull(checkNumber, null),
     transactionIndex: allowNull(checkNumber, null),
+    confirmations: allowNull(checkNumber, null),
     from: address_1.getAddress,
     gasPrice: bignumber_1.bigNumberify,
     gasLimit: bignumber_1.bigNumberify,
@@ -10086,6 +10117,7 @@ var formatTransactionReceipt = {
     transactionHash: checkHash,
     logs: arrayOf(checkTransactionReceiptLog),
     blockNumber: checkNumber,
+    confirmations: allowNull(checkNumber, null),
     cumulativeGasUsed: bignumber_1.bigNumberify,
     status: allowNull(checkNumber)
 };
@@ -10196,6 +10228,11 @@ function getEventTag(eventName) {
     }
     throw new Error('invalid event - ' + eventName);
 }
+//////////////////////////////
+// Helper Object
+function getTime() {
+    return (new Date()).getTime();
+}
 var BaseProvider = /** @class */ (function (_super) {
     __extends(BaseProvider, _super);
     function BaseProvider(network) {
@@ -10228,11 +10265,13 @@ var BaseProvider = /** @class */ (function (_super) {
         // until we get a response. This provides devs with a consistent view. Similarly for
         // transaction hashes.
         _this._emitted = { block: _this._lastBlockNumber };
+        _this._fastQueryDate = 0;
         return _this;
     }
     BaseProvider.prototype._doPoll = function () {
         var _this = this;
         this.getBlockNumber().then(function (blockNumber) {
+            _this._setFastBlockNumber(blockNumber);
             // If the block hasn't changed, meh.
             if (blockNumber === _this._lastBlockNumber) {
                 return;
@@ -10382,13 +10421,44 @@ var BaseProvider = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    BaseProvider.prototype._getFastBlockNumber = function () {
+        var _this = this;
+        var now = getTime();
+        // Stale block number, request a newer value
+        if ((now - this._fastQueryDate) > 2 * this._pollingInterval) {
+            this._fastQueryDate = now;
+            this._fastBlockNumberPromise = this.getBlockNumber().then(function (blockNumber) {
+                if (_this._fastBlockNumber == null || blockNumber > _this._fastBlockNumber) {
+                    _this._fastBlockNumber = blockNumber;
+                }
+                return _this._fastBlockNumber;
+            });
+        }
+        return this._fastBlockNumberPromise;
+    };
+    BaseProvider.prototype._setFastBlockNumber = function (blockNumber) {
+        // Older block, maybe a stale request
+        if (this._fastBlockNumber != null && blockNumber < this._fastBlockNumber) {
+            return;
+        }
+        // Update the time we updated the blocknumber
+        this._fastQueryDate = getTime();
+        // Newer block number, use  it
+        if (this._fastBlockNumber == null || blockNumber > this._fastBlockNumber) {
+            this._fastBlockNumber = blockNumber;
+            this._fastBlockNumberPromise = Promise.resolve(blockNumber);
+        }
+    };
     // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
     //        this will be used once we move to the WebSocket or other alternatives to polling
-    BaseProvider.prototype.waitForTransaction = function (transactionHash, timeout) {
+    BaseProvider.prototype.waitForTransaction = function (transactionHash, confirmations) {
         var _this = this;
+        if (!confirmations) {
+            confirmations = 1;
+        }
         return web_1.poll(function () {
             return _this.getTransactionReceipt(transactionHash).then(function (receipt) {
-                if (receipt == null) {
+                if (receipt == null || receipt.confirmations < confirmations) {
                     return undefined;
                 }
                 return receipt;
@@ -10403,6 +10473,7 @@ var BaseProvider = /** @class */ (function (_super) {
                 if (value != result) {
                     throw new Error('invalid response - getBlockNumber');
                 }
+                _this._setFastBlockNumber(value);
                 return value;
             });
         });
@@ -10496,7 +10567,7 @@ var BaseProvider = /** @class */ (function (_super) {
     // This should be called by any subclass wrapping a TransactionResponse
     BaseProvider.prototype._wrapTransaction = function (tx, hash) {
         var _this = this;
-        if (bytes_1.hexDataLength(hash) !== 32) {
+        if (hash != null && bytes_1.hexDataLength(hash) !== 32) {
             throw new Error('invalid response - sendTransaction');
         }
         var result = tx;
@@ -10506,11 +10577,11 @@ var BaseProvider = /** @class */ (function (_super) {
         }
         this._emitted['t:' + tx.hash] = 'pending';
         // @TODO: (confirmations? number, timeout? number)
-        result.wait = function () {
-            return _this.waitForTransaction(hash).then(function (receipt) {
+        result.wait = function (confirmations) {
+            return _this.waitForTransaction(tx.hash, confirmations).then(function (receipt) {
                 if (receipt.status === 0) {
                     errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
-                        transactionHash: hash,
+                        transactionHash: tx.hash,
                         transaction: tx
                     });
                 }
@@ -10612,7 +10683,22 @@ var BaseProvider = /** @class */ (function (_super) {
                             }
                             return undefined;
                         }
-                        return BaseProvider.checkTransactionResponse(result);
+                        var tx = BaseProvider.checkTransactionResponse(result);
+                        if (tx.blockNumber == null) {
+                            tx.confirmations = 0;
+                        }
+                        else if (tx.confirmations == null) {
+                            return _this._getFastBlockNumber().then(function (blockNumber) {
+                                // Add the confirmations using the fast block number (pessimistic)
+                                var confirmations = (blockNumber - tx.blockNumber) + 1;
+                                if (confirmations <= 0) {
+                                    confirmations = 1;
+                                }
+                                tx.confirmations = confirmations;
+                                return _this._wrapTransaction(tx);
+                            });
+                        }
+                        return _this._wrapTransaction(tx);
                     });
                 }, { onceBlock: _this });
             });
@@ -10632,7 +10718,26 @@ var BaseProvider = /** @class */ (function (_super) {
                             }
                             return undefined;
                         }
-                        return checkTransactionReceipt(result);
+                        // "geth-etc" returns receipts before they are ready
+                        if (result.blockHash == null) {
+                            return undefined;
+                        }
+                        var receipt = checkTransactionReceipt(result);
+                        if (receipt.blockNumber == null) {
+                            receipt.confirmations = 0;
+                        }
+                        else if (receipt.confirmations == null) {
+                            return _this._getFastBlockNumber().then(function (blockNumber) {
+                                // Add the confirmations using the fast block number (pessimistic)
+                                var confirmations = (blockNumber - receipt.blockNumber) + 1;
+                                if (confirmations <= 0) {
+                                    confirmations = 1;
+                                }
+                                receipt.confirmations = confirmations;
+                                return receipt;
+                            });
+                        }
+                        return receipt;
                     });
                 }, { onceBlock: _this });
             });
@@ -11035,17 +11140,19 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 url += '/api?module=proxy&action=eth_sendRawTransaction&hex=' + params.signedTransaction;
                 url += apiKey;
                 return web_1.fetchJson(url, null, getJsonResult).catch(function (error) {
-                    // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
-                    if (error.responseText.toLowerCase().indexOf('insufficient funds') >= 0) {
-                        errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, {});
-                    }
-                    // "Transaction with the same hash was already imported."
-                    if (error.responseText.indexOf('same hash was already imported') >= 0) {
-                        errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, {});
-                    }
-                    // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
-                    if (error.responseText.indexOf('another transaction with same nonce') >= 0) {
-                        errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, {});
+                    if (error.responseText) {
+                        // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
+                        if (error.responseText.toLowerCase().indexOf('insufficient funds') >= 0) {
+                            errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, {});
+                        }
+                        // "Transaction with the same hash was already imported."
+                        if (error.responseText.indexOf('same hash was already imported') >= 0) {
+                            errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, {});
+                        }
+                        // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
+                        if (error.responseText.indexOf('another transaction with same nonce') >= 0) {
+                            errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, {});
+                        }
                     }
                     throw error;
                 });
@@ -11532,21 +11639,23 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                     throw error;
                 });
             }, function (error) {
-                // See: JsonRpcProvider.sendTransaction (@TODO: Expose a ._throwError??)
-                if (error.responseText.indexOf('insufficient funds') >= 0) {
-                    errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, {
-                        transaction: tx
-                    });
-                }
-                if (error.responseText.indexOf('nonce too low') >= 0) {
-                    errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, {
-                        transaction: tx
-                    });
-                }
-                if (error.responseText.indexOf('replacement transaction underpriced') >= 0) {
-                    errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, {
-                        transaction: tx
-                    });
+                if (error.responseText) {
+                    // See: JsonRpcProvider.sendTransaction (@TODO: Expose a ._throwError??)
+                    if (error.responseText.indexOf('insufficient funds') >= 0) {
+                        errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, {
+                            transaction: tx
+                        });
+                    }
+                    if (error.responseText.indexOf('nonce too low') >= 0) {
+                        errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, {
+                            transaction: tx
+                        });
+                    }
+                    if (error.responseText.indexOf('replacement transaction underpriced') >= 0) {
+                        errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, {
+                            transaction: tx
+                        });
+                    }
                 }
                 throw error;
             });
@@ -11645,17 +11754,19 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                 return this.send('eth_getStorageAt', [getLowerCase(params.address), params.position, params.blockTag]);
             case 'sendTransaction':
                 return this.send('eth_sendRawTransaction', [params.signedTransaction]).catch(function (error) {
-                    // "insufficient funds for gas * price + value"
-                    if (error.responseText.indexOf('insufficient funds') > 0) {
-                        errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, {});
-                    }
-                    // "nonce too low"
-                    if (error.responseText.indexOf('nonce too low') > 0) {
-                        errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, {});
-                    }
-                    // "replacement transaction underpriced"
-                    if (error.responseText.indexOf('replacement transaction underpriced') > 0) {
-                        errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, {});
+                    if (error.responseText) {
+                        // "insufficient funds for gas * price + value"
+                        if (error.responseText.indexOf('insufficient funds') > 0) {
+                            errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, {});
+                        }
+                        // "nonce too low"
+                        if (error.responseText.indexOf('nonce too low') > 0) {
+                            errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, {});
+                        }
+                        // "replacement transaction underpriced"
+                        if (error.responseText.indexOf('replacement transaction underpriced') > 0) {
+                            errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, {});
+                        }
                     }
                     throw error;
                 });
@@ -15964,6 +16075,9 @@ function fetchJson(connection, json, processFunc) {
                 // @TODO: not any!
                 var error = new Error('invalid response - ' + request.status);
                 error.statusCode = request.status;
+                if (request.responseText) {
+                    error.responseText = request.responseText;
+                }
                 reject(error);
                 return;
             }

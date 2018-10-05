@@ -21,6 +21,12 @@ export interface Event extends Log {
     getTransaction: () => Promise<TransactionResponse>;
     getTransactionReceipt: () => Promise<TransactionReceipt>;
 }
+export interface ContractReceipt extends TransactionReceipt {
+    events?: Array<Event>;
+}
+export interface ContractTransaction extends TransactionResponse {
+    wait(confirmations?: number): Promise<ContractReceipt>;
+}
 export declare class VoidSigner extends Signer {
     readonly address: string;
     constructor(address: string, provider: Provider);

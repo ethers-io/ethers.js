@@ -82,6 +82,9 @@ function fetchJson(connection, json, processFunc) {
                 // @TODO: not any!
                 var error = new Error('invalid response - ' + request.status);
                 error.statusCode = request.status;
+                if (request.responseText) {
+                    error.responseText = request.responseText;
+                }
                 reject(error);
                 return;
             }

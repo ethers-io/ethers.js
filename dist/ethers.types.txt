@@ -17,9 +17,9 @@ declare module 'ethers/ethers' {
     import * as wordlists from 'ethers/wordlists';
     import { platform } from 'ethers/utils/shims';
     import { version } from 'ethers/_version';
-    import { ContractFunction, Event, EventFilter } from 'ethers/contract';
+    import { ContractFunction, ContractTransaction, Event, EventFilter } from 'ethers/contract';
     function getDefaultProvider(network?: utils.Network | string): providers.BaseProvider;
-    export { Signer, Wallet, VoidSigner, getDefaultProvider, providers, Contract, ContractFactory, constants, errors, utils, wordlists, platform, version, ContractFunction, Event, EventFilter };
+    export { Signer, Wallet, VoidSigner, getDefaultProvider, providers, Contract, ContractFactory, constants, errors, utils, wordlists, platform, version, ContractFunction, ContractTransaction, Event, EventFilter };
 }
 
 declare module 'ethers/contract' {
@@ -45,6 +45,12 @@ declare module 'ethers/contract' {
         getBlock: () => Promise<Block>;
         getTransaction: () => Promise<TransactionResponse>;
         getTransactionReceipt: () => Promise<TransactionReceipt>;
+    }
+    export interface ContractReceipt extends TransactionReceipt {
+        events?: Array<Event>;
+    }
+    export interface ContractTransaction extends TransactionResponse {
+        wait(confirmations?: number): Promise<ContractReceipt>;
     }
     export class VoidSigner extends Signer {
         readonly address: string;
@@ -254,7 +260,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.2";
+    export const version = "4.0.3";
 }
 
 declare module 'ethers/utils/bignumber' {
@@ -482,6 +488,7 @@ declare module 'ethers/providers/abstract-provider' {
         transactionHash?: string;
         logs?: Array<Log>;
         blockNumber?: number;
+        confirmations?: number;
         cumulativeGasUsed?: BigNumber;
         byzantium: boolean;
         status?: number;
@@ -500,9 +507,10 @@ declare module 'ethers/providers/abstract-provider' {
         blockNumber?: number;
         blockHash?: string;
         timestamp?: number;
+        confirmations: number;
         from: string;
         raw?: string;
-        wait: (timeout?: number) => Promise<TransactionReceipt>;
+        wait: (confirmations?: number) => Promise<TransactionReceipt>;
     }
     export type EventType = string | Array<string> | Filter;
     export type Listener = (...args: Array<any>) => void;
@@ -721,7 +729,9 @@ declare module 'ethers/providers/base-provider' {
         readonly blockNumber: number;
         polling: boolean;
         pollingInterval: number;
-        waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt>;
+        _getFastBlockNumber(): Promise<number>;
+        _setFastBlockNumber(blockNumber: number): void;
+        waitForTransaction(transactionHash: string, confirmations?: number): Promise<TransactionReceipt>;
         getBlockNumber(): Promise<number>;
         getGasPrice(): Promise<BigNumber>;
         getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber>;

@@ -46,6 +46,7 @@ export interface TransactionReceipt {
     transactionHash?: string;
     logs?: Array<Log>;
     blockNumber?: number;
+    confirmations?: number;
     cumulativeGasUsed?: BigNumber;
     byzantium: boolean;
     status?: number;
@@ -64,9 +65,10 @@ export interface TransactionResponse extends Transaction {
     blockNumber?: number;
     blockHash?: string;
     timestamp?: number;
+    confirmations: number;
     from: string;
     raw?: string;
-    wait: (timeout?: number) => Promise<TransactionReceipt>;
+    wait: (confirmations?: number) => Promise<TransactionReceipt>;
 }
 export declare type EventType = string | Array<string> | Filter;
 export declare type Listener = (...args: Array<any>) => void;

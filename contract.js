@@ -106,6 +106,7 @@ function resolveAddresses(provider, value, paramType) {
 function runMethod(contract, functionName, estimateOnly) {
     var method = contract.interface.functions[functionName];
     return function () {
+        var _this = this;
         var params = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             params[_i] = arguments[_i];
@@ -206,7 +207,36 @@ function runMethod(contract, functionName, estimateOnly) {
                 if (tx.from != null) {
                     errors.throwError('cannot override from in a transaction', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' });
                 }
-                return contract.signer.sendTransaction(tx);
+                return contract.signer.sendTransaction(tx).then(function (tx) {
+                    var wait = tx.wait.bind(tx);
+                    tx.wait = function (confirmations) {
+                        return wait(confirmations).then(function (receipt) {
+                            receipt.events = receipt.logs.map(function (log) {
+                                var event = properties_1.deepCopy(log);
+                                var parsed = _this.interface.parseLog(log);
+                                if (parsed) {
+                                    event.args = parsed.values;
+                                    event.decode = parsed.decode;
+                                    event.event = parsed.name;
+                                    event.eventSignature = parsed.signature;
+                                }
+                                event.removeListener = function () { return _this.provider; };
+                                event.getBlock = function () {
+                                    return _this.provider.getBlock(receipt.blockHash);
+                                };
+                                event.getTransaction = function () {
+                                    return _this.provider.getTransaction(receipt.transactionHash);
+                                };
+                                event.getTransactionReceipt = function () {
+                                    return Promise.resolve(receipt);
+                                };
+                                return event;
+                            });
+                            return receipt;
+                        });
+                    };
+                    return tx;
+                });
             }
             throw new Error('invalid type - ' + method.type);
             return null;
