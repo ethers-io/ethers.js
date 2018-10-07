@@ -64,6 +64,8 @@ function testEasySeed(lang, locale) {
 }
 
 testEasySeed(ethers.wordlists.en, 'en');
+testEasySeed(ethers.wordlists.es, 'es');
+testEasySeed(ethers.wordlists.fr, 'fr');
 testEasySeed(ethers.wordlists.ja, 'ja');
 testEasySeed(ethers.wordlists.zh_cn, 'zh_cn');
 testEasySeed(ethers.wordlists.zh_tw, 'zh_tw');
