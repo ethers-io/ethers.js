@@ -152,7 +152,7 @@ declare module 'ethers/wallet' {
                 *  Static methods to create Wallet instances.
                 */
             static createRandom(options?: any): Wallet;
-            static fromEncryptedJson(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet>;
+            static fromEncryptedJson(json: string, password: Arrayish, progressCallback?: ProgressCallback): Promise<Wallet>;
             static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet;
     }
 }
@@ -260,7 +260,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.3";
+    export const version = "4.0.4";
 }
 
 declare module 'ethers/utils/bignumber' {
@@ -622,6 +622,7 @@ declare module 'ethers/utils/hdnode' {
     export class HDNode {
         readonly privateKey: string;
         readonly publicKey: string;
+        readonly address: string;
         readonly mnemonic: string;
         readonly path: string;
         readonly chainCode: string;

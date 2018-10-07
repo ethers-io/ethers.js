@@ -54,6 +54,7 @@ var HDNode = /** @class */ (function () {
         properties_1.defineReadOnly(this, 'keyPair', new secp256k1_1.KeyPair(privateKey));
         properties_1.defineReadOnly(this, 'privateKey', this.keyPair.privateKey);
         properties_1.defineReadOnly(this, 'publicKey', this.keyPair.compressedPublicKey);
+        properties_1.defineReadOnly(this, 'address', secp256k1_1.computeAddress(this.publicKey));
         properties_1.defineReadOnly(this, 'chainCode', bytes_1.hexlify(chainCode));
         properties_1.defineReadOnly(this, 'index', index);
         properties_1.defineReadOnly(this, 'depth', depth);

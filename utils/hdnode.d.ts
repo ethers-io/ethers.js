@@ -5,6 +5,7 @@ export declare class HDNode {
     private readonly keyPair;
     readonly privateKey: string;
     readonly publicKey: string;
+    readonly address: string;
     readonly mnemonic: string;
     readonly path: string;
     readonly chainCode: string;
