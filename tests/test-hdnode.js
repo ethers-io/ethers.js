@@ -22,6 +22,8 @@ describe('Test HD Node Derivation', function(test) {
                 var wallet = new ethers.Wallet(node.privateKey);
                 assert.equal(wallet.address.toLowerCase(), nodeTest.address,
                     'Generates address - ' + nodeTest.privateKey);
+
+                assert.equal(node.address, (new ethers.Wallet(node)).address, 'HDNode address matches - ' + nodeTest.privateKey);
             });
         });
     });

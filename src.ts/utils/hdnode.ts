@@ -19,7 +19,7 @@ import { toUtf8Bytes, UnicodeNormalizationForm } from './utf8';
 import { pbkdf2 } from './pbkdf2';
 import { computeHmac, SupportedAlgorithms } from './hmac';
 import { defineReadOnly, isType, setType } from './properties';
-import { KeyPair } from './secp256k1';
+import { computeAddress, KeyPair } from './secp256k1';
 import { sha256 } from './sha2';
 
 const N = bigNumberify("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
@@ -54,6 +54,8 @@ export class HDNode {
     readonly privateKey: string;
     readonly publicKey: string;
 
+    readonly address: string;
+
     readonly mnemonic: string;
     readonly path: string;
 
@@ -80,6 +82,8 @@ export class HDNode {
 
         defineReadOnly(this, 'privateKey', this.keyPair.privateKey);
         defineReadOnly(this, 'publicKey', this.keyPair.compressedPublicKey);
+
+        defineReadOnly(this, 'address', computeAddress(this.publicKey));
 
         defineReadOnly(this, 'chainCode', hexlify(chainCode));
 
