@@ -165,7 +165,7 @@ export class Wallet extends AbstractSigner {
         return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
     }
 
-    static fromEncryptedJson(json: string, password: Arrayish, progressCallback: ProgressCallback): Promise<Wallet> {
+    static fromEncryptedJson(json: string, password: Arrayish, progressCallback?: ProgressCallback): Promise<Wallet> {
         if (isCrowdsaleWallet(json)) {
             try {
                 if (progressCallback) { progressCallback(0); }
