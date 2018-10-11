@@ -112,7 +112,6 @@ var EtherscanProvider = /** @class */ (function (_super) {
         return _this;
     }
     EtherscanProvider.prototype.perform = function (method, params) {
-        //if (!params) { params = {}; }
         var url = this.baseUrl;
         var apiKey = '';
         if (this.apiKey) {
@@ -184,15 +183,20 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 url += '/api?module=proxy&action=eth_getTransactionReceipt&txhash=' + params.transactionHash;
                 url += apiKey;
                 return web_1.fetchJson(url, null, getJsonResult);
-            case 'call':
+            case 'call': {
                 var transaction = getTransactionString(params.transaction);
                 if (transaction) {
                     transaction = '&' + transaction;
                 }
                 url += '/api?module=proxy&action=eth_call' + transaction;
+                //url += '&tag=' + params.blockTag + apiKey;
+                if (params.blockTag !== 'latest') {
+                    throw new Error('EtherscanProvider does not support blockTag for call');
+                }
                 url += apiKey;
                 return web_1.fetchJson(url, null, getJsonResult);
-            case 'estimateGas':
+            }
+            case 'estimateGas': {
                 var transaction = getTransactionString(params.transaction);
                 if (transaction) {
                     transaction = '&' + transaction;
@@ -200,6 +204,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 url += '/api?module=proxy&action=eth_estimateGas&' + transaction;
                 url += apiKey;
                 return web_1.fetchJson(url, null, getJsonResult);
+            }
             case 'getLogs':
                 url += '/api?module=logs&action=getLogs';
                 try {

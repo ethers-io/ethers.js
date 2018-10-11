@@ -27,5 +27,9 @@ export declare class JsonRpcProvider extends BaseProvider {
     perform(method: string, params: any): Promise<any>;
     protected _startPending(): void;
     protected _stopPending(): void;
-    static hexlifyTransaction(transaction: TransactionRequest): any;
+    static hexlifyTransaction(transaction: TransactionRequest, allowExtra?: {
+        [key: string]: boolean;
+    }): {
+        [key: string]: string;
+    };
 }

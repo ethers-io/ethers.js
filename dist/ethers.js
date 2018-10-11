@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.4";
+exports.version = "4.0.5";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -160,9 +160,14 @@ function runMethod(contract, functionName, estimateOnly) {
             params[_i] = arguments[_i];
         }
         var tx = {};
+        var blockTag = null;
         // If 1 extra parameter was passed in, it contains overrides
         if (params.length === method.inputs.length + 1 && typeof (params[params.length - 1]) === 'object') {
             tx = properties_1.shallowCopy(params.pop());
+            if (tx.blockTag != null) {
+                blockTag = tx.blockTag;
+                delete tx.blockTag;
+            }
             // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
             for (var key in tx) {
                 if (!allowedTransactionKeys[key]) {
@@ -202,7 +207,7 @@ function runMethod(contract, functionName, estimateOnly) {
                 if (tx.from == null && contract.signer) {
                     tx.from = contract.signer.getAddress();
                 }
-                return contract.provider.call(tx).then(function (value) {
+                return contract.provider.call(tx, blockTag).then(function (value) {
                     if ((bytes_1.hexDataLength(value) % 32) === 4 && bytes_1.hexDataSlice(value, 0, 4) === '0x08c379a0') {
                         var reason = abi_coder_1.defaultAbiCoder.decode(['string'], bytes_1.hexDataSlice(value, 4));
                         errors.throwError('call revert exception', errors.CALL_EXCEPTION, {
@@ -10590,13 +10595,14 @@ var BaseProvider = /** @class */ (function (_super) {
         };
         return result;
     };
-    BaseProvider.prototype.call = function (transaction) {
+    BaseProvider.prototype.call = function (transaction, blockTag) {
         var _this = this;
         var tx = properties_1.shallowCopy(transaction);
         return this.ready.then(function () {
-            return properties_1.resolveProperties(tx).then(function (tx) {
+            return properties_1.resolveProperties({ blockTag: blockTag, tx: tx }).then(function (_a) {
+                var blockTag = _a.blockTag, tx = _a.tx;
                 return _this._resolveNames(tx, ['to', 'from']).then(function (tx) {
-                    var params = { transaction: checkTransactionRequest(tx) };
+                    var params = { blockTag: checkBlockTag(blockTag), transaction: checkTransactionRequest(tx) };
                     return _this.perform('call', params).then(function (result) {
                         return bytes_1.hexlify(result);
                     });
@@ -11105,7 +11111,6 @@ var EtherscanProvider = /** @class */ (function (_super) {
         return _this;
     }
     EtherscanProvider.prototype.perform = function (method, params) {
-        //if (!params) { params = {}; }
         var url = this.baseUrl;
         var apiKey = '';
         if (this.apiKey) {
@@ -11177,15 +11182,20 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 url += '/api?module=proxy&action=eth_getTransactionReceipt&txhash=' + params.transactionHash;
                 url += apiKey;
                 return web_1.fetchJson(url, null, getJsonResult);
-            case 'call':
+            case 'call': {
                 var transaction = getTransactionString(params.transaction);
                 if (transaction) {
                     transaction = '&' + transaction;
                 }
                 url += '/api?module=proxy&action=eth_call' + transaction;
+                //url += '&tag=' + params.blockTag + apiKey;
+                if (params.blockTag !== 'latest') {
+                    throw new Error('EtherscanProvider does not support blockTag for call');
+                }
                 url += apiKey;
                 return web_1.fetchJson(url, null, getJsonResult);
-            case 'estimateGas':
+            }
+            case 'estimateGas': {
                 var transaction = getTransactionString(params.transaction);
                 if (transaction) {
                     transaction = '&' + transaction;
@@ -11193,6 +11203,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 url += '/api?module=proxy&action=eth_estimateGas&' + transaction;
                 url += apiKey;
                 return web_1.fetchJson(url, null, getJsonResult);
+            }
             case 'getLogs':
                 url += '/api?module=logs&action=getLogs';
                 try {
@@ -11678,6 +11689,9 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     return JsonRpcSigner;
 }(abstract_signer_1.Signer));
 exports.JsonRpcSigner = JsonRpcSigner;
+var allowedTransactionKeys = {
+    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+};
 var JsonRpcProvider = /** @class */ (function (_super) {
     __extends(JsonRpcProvider, _super);
     function JsonRpcProvider(url, network) {
@@ -11783,9 +11797,9 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             case 'getTransactionReceipt':
                 return this.send('eth_getTransactionReceipt', [params.transactionHash]);
             case 'call':
-                return this.send('eth_call', [JsonRpcProvider.hexlifyTransaction(params.transaction), 'latest']);
+                return this.send('eth_call', [JsonRpcProvider.hexlifyTransaction(params.transaction, { from: true }), params.blockTag]);
             case 'estimateGas':
-                return this.send('eth_estimateGas', [JsonRpcProvider.hexlifyTransaction(params.transaction)]);
+                return this.send('eth_estimateGas', [JsonRpcProvider.hexlifyTransaction(params.transaction, { from: true })]);
             case 'getLogs':
                 if (params.filter && params.filter.address != null) {
                     params.filter.address = getLowerCase(params.filter.address);
@@ -11843,8 +11857,21 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     //  - gasLimit => gas
     //  - All values hexlified
     //  - All numeric values zero-striped
-    // @TODO: Not any, a dictionary of string to strings
-    JsonRpcProvider.hexlifyTransaction = function (transaction) {
+    // NOTE: This allows a TransactionRequest, but all values should be resolved
+    //       before this is called
+    JsonRpcProvider.hexlifyTransaction = function (transaction, allowExtra) {
+        if (!allowExtra) {
+            allowExtra = {};
+        }
+        for (var key in transaction) {
+            if (!allowedTransactionKeys[key] && !allowExtra[key]) {
+                errors.throwError('invalid key - ' + key, errors.INVALID_ARGUMENT, {
+                    argument: 'transaction',
+                    value: transaction,
+                    key: key
+                });
+            }
+        }
         var result = {};
         // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
         ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function (key) {
@@ -16295,6 +16322,9 @@ var transaction_1 = require("./utils/transaction");
 var abstract_signer_1 = require("./abstract-signer");
 var abstract_provider_1 = require("./providers/abstract-provider");
 var errors = __importStar(require("./errors"));
+var allowedTransactionKeys = {
+    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+};
 var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);
     function Wallet(privateKey, provider) {
@@ -16344,6 +16374,15 @@ var Wallet = /** @class */ (function (_super) {
     };
     Wallet.prototype.sign = function (transaction) {
         var _this = this;
+        for (var key in transaction) {
+            if (!allowedTransactionKeys[key]) {
+                errors.throwError('unsupported transaction property - ' + key, errors.INVALID_ARGUMENT, {
+                    argument: 'transaction',
+                    value: transaction,
+                    key: key
+                });
+            }
+        }
         return properties_1.resolveProperties(transaction).then(function (tx) {
             var rawTx = transaction_1.serialize(tx);
             var signature = _this.signingKey.signDigest(keccak256_1.keccak256(rawTx));
@@ -16376,15 +16415,16 @@ var Wallet = /** @class */ (function (_super) {
         if (tx.to != null) {
             tx.to = this.provider.resolveName(tx.to);
         }
-        if (tx.gasLimit == null) {
-            tx.from = this.getAddress();
-            tx.gasLimit = this.provider.estimateGas(tx);
-        }
         if (tx.gasPrice == null) {
             tx.gasPrice = this.provider.getGasPrice();
         }
         if (tx.nonce == null) {
             tx.nonce = this.getTransactionCount();
+        }
+        if (tx.gasLimit == null) {
+            var estimate = properties_1.shallowCopy(tx);
+            estimate.from = this.getAddress();
+            tx.gasLimit = this.provider.estimateGas(estimate);
         }
         if (tx.chainId == null) {
             tx.chainId = this.provider.getNetwork().then(function (network) { return network.chainId; });

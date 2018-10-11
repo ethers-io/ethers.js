@@ -44,7 +44,7 @@ export declare class BaseProvider extends Provider {
     getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
     sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
     _wrapTransaction(tx: Transaction, hash?: string): TransactionResponse;
-    call(transaction: TransactionRequest): Promise<string>;
+    call(transaction: TransactionRequest, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
     estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
     getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block>;
     getTransaction(transactionHash: string): Promise<TransactionResponse>;

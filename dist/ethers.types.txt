@@ -260,7 +260,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.4";
+    export const version = "4.0.5";
 }
 
 declare module 'ethers/utils/bignumber' {
@@ -523,7 +523,7 @@ declare module 'ethers/providers/abstract-provider' {
         abstract getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
         abstract getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
         abstract sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
-        abstract call(transaction: TransactionRequest): Promise<string>;
+        abstract call(transaction: TransactionRequest, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
         abstract estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
         abstract getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block>;
         abstract getTransaction(transactionHash: string): Promise<TransactionResponse>;
@@ -741,7 +741,7 @@ declare module 'ethers/providers/base-provider' {
         getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
         sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
         _wrapTransaction(tx: Transaction, hash?: string): TransactionResponse;
-        call(transaction: TransactionRequest): Promise<string>;
+        call(transaction: TransactionRequest, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
         estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
         getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block>;
         getTransaction(transactionHash: string): Promise<TransactionResponse>;
@@ -839,7 +839,11 @@ declare module 'ethers/providers/json-rpc-provider' {
         perform(method: string, params: any): Promise<any>;
         protected _startPending(): void;
         protected _stopPending(): void;
-        static hexlifyTransaction(transaction: TransactionRequest): any;
+        static hexlifyTransaction(transaction: TransactionRequest, allowExtra?: {
+            [key: string]: boolean;
+        }): {
+            [key: string]: string;
+        };
     }
 }
 

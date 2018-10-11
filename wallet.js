@@ -31,6 +31,9 @@ var transaction_1 = require("./utils/transaction");
 var abstract_signer_1 = require("./abstract-signer");
 var abstract_provider_1 = require("./providers/abstract-provider");
 var errors = __importStar(require("./errors"));
+var allowedTransactionKeys = {
+    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+};
 var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);
     function Wallet(privateKey, provider) {
@@ -80,6 +83,15 @@ var Wallet = /** @class */ (function (_super) {
     };
     Wallet.prototype.sign = function (transaction) {
         var _this = this;
+        for (var key in transaction) {
+            if (!allowedTransactionKeys[key]) {
+                errors.throwError('unsupported transaction property - ' + key, errors.INVALID_ARGUMENT, {
+                    argument: 'transaction',
+                    value: transaction,
+                    key: key
+                });
+            }
+        }
         return properties_1.resolveProperties(transaction).then(function (tx) {
             var rawTx = transaction_1.serialize(tx);
             var signature = _this.signingKey.signDigest(keccak256_1.keccak256(rawTx));
@@ -112,15 +124,16 @@ var Wallet = /** @class */ (function (_super) {
         if (tx.to != null) {
             tx.to = this.provider.resolveName(tx.to);
         }
-        if (tx.gasLimit == null) {
-            tx.from = this.getAddress();
-            tx.gasLimit = this.provider.estimateGas(tx);
-        }
         if (tx.gasPrice == null) {
             tx.gasPrice = this.provider.getGasPrice();
         }
         if (tx.nonce == null) {
             tx.nonce = this.getTransactionCount();
+        }
+        if (tx.gasLimit == null) {
+            var estimate = properties_1.shallowCopy(tx);
+            estimate.from = this.getAddress();
+            tx.gasLimit = this.provider.estimateGas(estimate);
         }
         if (tx.chainId == null) {
             tx.chainId = this.provider.getNetwork().then(function (network) { return network.chainId; });

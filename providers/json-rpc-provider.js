@@ -171,6 +171,9 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     return JsonRpcSigner;
 }(abstract_signer_1.Signer));
 exports.JsonRpcSigner = JsonRpcSigner;
+var allowedTransactionKeys = {
+    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+};
 var JsonRpcProvider = /** @class */ (function (_super) {
     __extends(JsonRpcProvider, _super);
     function JsonRpcProvider(url, network) {
@@ -276,9 +279,9 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             case 'getTransactionReceipt':
                 return this.send('eth_getTransactionReceipt', [params.transactionHash]);
             case 'call':
-                return this.send('eth_call', [JsonRpcProvider.hexlifyTransaction(params.transaction), 'latest']);
+                return this.send('eth_call', [JsonRpcProvider.hexlifyTransaction(params.transaction, { from: true }), params.blockTag]);
             case 'estimateGas':
-                return this.send('eth_estimateGas', [JsonRpcProvider.hexlifyTransaction(params.transaction)]);
+                return this.send('eth_estimateGas', [JsonRpcProvider.hexlifyTransaction(params.transaction, { from: true })]);
             case 'getLogs':
                 if (params.filter && params.filter.address != null) {
                     params.filter.address = getLowerCase(params.filter.address);
@@ -336,8 +339,21 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     //  - gasLimit => gas
     //  - All values hexlified
     //  - All numeric values zero-striped
-    // @TODO: Not any, a dictionary of string to strings
-    JsonRpcProvider.hexlifyTransaction = function (transaction) {
+    // NOTE: This allows a TransactionRequest, but all values should be resolved
+    //       before this is called
+    JsonRpcProvider.hexlifyTransaction = function (transaction, allowExtra) {
+        if (!allowExtra) {
+            allowExtra = {};
+        }
+        for (var key in transaction) {
+            if (!allowedTransactionKeys[key] && !allowExtra[key]) {
+                errors.throwError('invalid key - ' + key, errors.INVALID_ARGUMENT, {
+                    argument: 'transaction',
+                    value: transaction,
+                    key: key
+                });
+            }
+        }
         var result = {};
         // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
         ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function (key) {

@@ -112,9 +112,14 @@ function runMethod(contract, functionName, estimateOnly) {
             params[_i] = arguments[_i];
         }
         var tx = {};
+        var blockTag = null;
         // If 1 extra parameter was passed in, it contains overrides
         if (params.length === method.inputs.length + 1 && typeof (params[params.length - 1]) === 'object') {
             tx = properties_1.shallowCopy(params.pop());
+            if (tx.blockTag != null) {
+                blockTag = tx.blockTag;
+                delete tx.blockTag;
+            }
             // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
             for (var key in tx) {
                 if (!allowedTransactionKeys[key]) {
@@ -154,7 +159,7 @@ function runMethod(contract, functionName, estimateOnly) {
                 if (tx.from == null && contract.signer) {
                     tx.from = contract.signer.getAddress();
                 }
-                return contract.provider.call(tx).then(function (value) {
+                return contract.provider.call(tx, blockTag).then(function (value) {
                     if ((bytes_1.hexDataLength(value) % 32) === 4 && bytes_1.hexDataSlice(value, 0, 4) === '0x08c379a0') {
                         var reason = abi_coder_1.defaultAbiCoder.decode(['string'], bytes_1.hexDataSlice(value, 4));
                         errors.throwError('call revert exception', errors.CALL_EXCEPTION, {
