@@ -176,6 +176,10 @@ export class JsonRpcSigner extends Signer {
     }
 }
 
+const allowedTransactionKeys: { [ key: string ]: boolean } = {
+    chainId: true, data: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
+}
+
 export class JsonRpcProvider extends BaseProvider {
     readonly connection: ConnectionInfo;
 
@@ -300,10 +304,10 @@ export class JsonRpcProvider extends BaseProvider {
                 return this.send('eth_getTransactionReceipt', [ params.transactionHash ]);
 
             case 'call':
-                return this.send('eth_call', [ JsonRpcProvider.hexlifyTransaction(params.transaction), 'latest' ]);
+                return this.send('eth_call', [ JsonRpcProvider.hexlifyTransaction(params.transaction, { from: true }), params.blockTag ]);
 
             case 'estimateGas':
-                return this.send('eth_estimateGas', [ JsonRpcProvider.hexlifyTransaction(params.transaction) ]);
+                return this.send('eth_estimateGas', [ JsonRpcProvider.hexlifyTransaction(params.transaction, { from: true }) ]);
 
             case 'getLogs':
                 if (params.filter && params.filter.address != null) {
@@ -369,9 +373,22 @@ export class JsonRpcProvider extends BaseProvider {
     //  - gasLimit => gas
     //  - All values hexlified
     //  - All numeric values zero-striped
-    // @TODO: Not any, a dictionary of string to strings
-    static hexlifyTransaction(transaction: TransactionRequest): any {
-        var result: any = {};
+    // NOTE: This allows a TransactionRequest, but all values should be resolved
+    //       before this is called
+    static hexlifyTransaction(transaction: TransactionRequest, allowExtra?: { [key: string]: boolean }): { [key: string]: string } {
+        if (!allowExtra) { allowExtra = {}; }
+
+        for (let key in transaction) {
+            if (!allowedTransactionKeys[key] && !allowExtra[key]) {
+                errors.throwError('invalid key - ' + key, errors.INVALID_ARGUMENT, {
+                    argument: 'transaction',
+                    value: transaction,
+                    key: key
+                });
+            }
+        }
+
+        let result: { [key: string]: string } = {};
 
         // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
         ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function(key) {
@@ -384,7 +401,7 @@ export class JsonRpcProvider extends BaseProvider {
         ['from', 'to', 'data'].forEach(function(key) {
             if ((<any>transaction)[key] == null) { return; }
             result[key] = hexlify((<any>transaction)[key]);
-         });
+        });
 
         return result;
     }

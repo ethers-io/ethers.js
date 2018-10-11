@@ -16,7 +16,7 @@ import { UnsignedTransaction } from './utils/transaction';
 ///////////////////////////////
 // Imported Abstracts
 
-import { Provider } from './providers/abstract-provider';
+import { BlockTag, Provider } from './providers/abstract-provider';
 import { Signer } from './abstract-signer';
 
 ///////////////////////////////
@@ -148,14 +148,21 @@ type RunFunction = (...params: Array<any>) => Promise<any>;
 function runMethod(contract: Contract, functionName: string, estimateOnly: boolean): RunFunction {
     let method = contract.interface.functions[functionName];
     return function(...params): Promise<any> {
-        var tx: any = {}
+        let tx: any = {}
+
+        let blockTag: BlockTag = null;
 
         // If 1 extra parameter was passed in, it contains overrides
         if (params.length === method.inputs.length + 1 && typeof(params[params.length - 1]) === 'object') {
             tx = shallowCopy(params.pop());
 
+            if (tx.blockTag != null) {
+                blockTag = tx.blockTag;
+                delete tx.blockTag;
+            }
+
             // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
-            for (var key in tx) {
+            for (let key in tx) {
                 if (!allowedTransactionKeys[key]) {
                     throw new Error('unknown transaction override ' + key);
                 }
@@ -202,7 +209,7 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                     tx.from = contract.signer.getAddress()
                 }
 
-                return contract.provider.call(tx).then((value) => {
+                return contract.provider.call(tx, blockTag).then((value) => {
 
                     if ((hexDataLength(value) % 32) === 4 && hexDataSlice(value, 0, 4) === '0x08c379a0') {
                         let reason = defaultAbiCoder.decode([ 'string' ], hexDataSlice(value, 4));

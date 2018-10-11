@@ -108,9 +108,7 @@ export class EtherscanProvider extends BaseProvider{
 
 
     perform(method: string, params: any) {
-        //if (!params) { params = {}; }
-
-        var url = this.baseUrl;
+        let url = this.baseUrl;
 
         let apiKey = '';
         if (this.apiKey) { apiKey += '&apikey=' + this.apiKey; }
@@ -118,7 +116,7 @@ export class EtherscanProvider extends BaseProvider{
         switch (method) {
             case 'getBlockNumber':
                 url += '/api?module=proxy&action=eth_blockNumber' + apiKey;
-            return fetchJson(url, null, getJsonResult);
+                return fetchJson(url, null, getJsonResult);
 
             case 'getGasPrice':
                 url += '/api?module=proxy&action=eth_gasPrice' + apiKey;
@@ -193,19 +191,25 @@ export class EtherscanProvider extends BaseProvider{
                 return fetchJson(url, null, getJsonResult);
 
 
-            case 'call':
-                var transaction = getTransactionString(params.transaction);
+            case 'call': {
+                let transaction = getTransactionString(params.transaction);
                 if (transaction) { transaction = '&' + transaction; }
                 url += '/api?module=proxy&action=eth_call' + transaction;
+                //url += '&tag=' + params.blockTag + apiKey;
+                if (params.blockTag !== 'latest') {
+                    throw new Error('EtherscanProvider does not support blockTag for call');
+                }
                 url += apiKey;
                 return fetchJson(url, null, getJsonResult);
+            }
 
-            case 'estimateGas':
-                var transaction = getTransactionString(params.transaction);
+            case 'estimateGas': {
+                let transaction = getTransactionString(params.transaction);
                 if (transaction) { transaction = '&' + transaction; }
                 url += '/api?module=proxy&action=eth_estimateGas&' + transaction;
                 url += apiKey;
                 return fetchJson(url, null, getJsonResult);
+            }
 
             case 'getLogs':
                 url += '/api?module=logs&action=getLogs';
@@ -227,7 +231,7 @@ export class EtherscanProvider extends BaseProvider{
                         if (params.filter.topics.length > 1) {
                             throw new Error('unsupported topic format');
                         }
-                        var topic0 = params.filter.topics[0];
+                        let topic0 = params.filter.topics[0];
                         if (typeof(topic0) !== 'string' || topic0.length !== 66) {
                             throw new Error('unsupported topic0 format');
                         }
