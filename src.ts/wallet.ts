@@ -24,6 +24,9 @@ import { BlockTag, TransactionRequest, TransactionResponse } from './providers/a
 
 import * as errors from './errors';
 
+const allowedTransactionKeys: { [ key: string ]: boolean } = {
+    chainId: true, data: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
+}
 
 export class Wallet extends AbstractSigner {
 
@@ -69,6 +72,15 @@ export class Wallet extends AbstractSigner {
     }
 
     sign(transaction: TransactionRequest): Promise<string> {
+        for (let key in transaction) {
+            if (!allowedTransactionKeys[key]) {
+                errors.throwError('unsupported transaction property - ' + key, errors.INVALID_ARGUMENT, {
+                    argument: 'transaction',
+                    value: transaction,
+                    key: key
+                });
+            }
+        }
         return resolveProperties(transaction).then((tx) => {
             let rawTx = serializeTransaction(tx);
             let signature = this.signingKey.signDigest(keccak256(rawTx));
@@ -98,15 +110,10 @@ export class Wallet extends AbstractSigner {
             throw new Error('invalid transaction object');
         }
 
-        var tx = shallowCopy(transaction);
+        let tx = shallowCopy(transaction);
 
         if (tx.to != null) {
             tx.to = this.provider.resolveName(tx.to);
-        }
-
-        if (tx.gasLimit == null) {
-            tx.from = this.getAddress();
-            tx.gasLimit = this.provider.estimateGas(tx);
         }
 
         if (tx.gasPrice == null) {
@@ -115,6 +122,12 @@ export class Wallet extends AbstractSigner {
 
         if (tx.nonce == null) {
             tx.nonce = this.getTransactionCount();
+        }
+
+        if (tx.gasLimit == null) {
+            let estimate = shallowCopy(tx);
+            estimate.from = this.getAddress();
+            tx.gasLimit = this.provider.estimateGas(estimate);
         }
 
         if (tx.chainId == null) {
