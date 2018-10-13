@@ -182,19 +182,21 @@ class _EventDescription extends Description implements EventDescription {
 
         let topics: Array<string> = [];
         if (!this.anonymous) { topics.push(this.topic); }
+
         params.forEach((arg, index) => {
-            if (arg === null) {
-                topics.push(null);
-                return;
-            }
 
             let param = this.inputs[index];
 
             if (!param.indexed) {
-                errors.throwError('cannot filter non-indexed parameters; must be null', errors.INVALID_ARGUMENT, { argument: (param.name || index), value: arg });
+                if (arg != null) {
+                    errors.throwError('cannot filter non-indexed parameters; must be null', errors.INVALID_ARGUMENT, { argument: (param.name || index), value: arg });
+                }
+                return;
             }
 
-            if (param.type === 'string') {
+            if (arg == null) {
+                topics.push(null);
+            } else if (param.type === 'string') {
                  topics.push(id(arg));
             } else if (param.type === 'bytes') {
                  topics.push(keccak256(arg));
