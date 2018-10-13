@@ -446,9 +446,9 @@ describe('Test Filters', function() {
     // @TODO: Add a LOT more tests here
     function doTest(test) {
         it(test.name, function() {
-            let iface = new ethers.utils.Interface([ test.signature ]);
-            let eventDescription = iface.events[test.event];
-            let filter = eventDescription.encodeTopics(test.args);
+            var iface = new ethers.utils.Interface([ test.signature ]);
+            var eventDescription = iface.events[test.event];
+            var filter = eventDescription.encodeTopics(test.args);
             assert.equal(filter.length, test.expected.length, 'filter length matches - ' + test.name);
             filter.forEach(function(expected, index) {
                 assert.equal(expected, test.expected[index], 'signature topic matches - ' + index + ' - ' + test.name);
@@ -506,7 +506,7 @@ describe('Test Filters', function() {
         }
     ];
 
-    Tests.forEach((test) => {
+    Tests.forEach(function(test) {
         doTest(test);
     });
 });
