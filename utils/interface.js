@@ -128,15 +128,17 @@ var _EventDescription = /** @class */ (function (_super) {
             topics.push(this.topic);
         }
         params.forEach(function (arg, index) {
-            if (arg === null) {
-                topics.push(null);
-                return;
-            }
             var param = _this.inputs[index];
             if (!param.indexed) {
-                errors.throwError('cannot filter non-indexed parameters; must be null', errors.INVALID_ARGUMENT, { argument: (param.name || index), value: arg });
+                if (arg != null) {
+                    errors.throwError('cannot filter non-indexed parameters; must be null', errors.INVALID_ARGUMENT, { argument: (param.name || index), value: arg });
+                }
+                return;
             }
-            if (param.type === 'string') {
+            if (arg == null) {
+                topics.push(null);
+            }
+            else if (param.type === 'string') {
                 topics.push(hash_1.id(arg));
             }
             else if (param.type === 'bytes') {

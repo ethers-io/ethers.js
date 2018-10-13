@@ -441,3 +441,72 @@ describe('Test Fixed Bytes Coder', function() {
         });
     });
 });
+
+describe('Test Filters', function() {
+    // @TODO: Add a LOT more tests here
+    function doTest(test) {
+        it(test.name, function() {
+            let iface = new ethers.utils.Interface([ test.signature ]);
+            let eventDescription = iface.events[test.event];
+            let filter = eventDescription.encodeTopics(test.args);
+            assert.equal(filter.length, test.expected.length, 'filter length matches - ' + test.name);
+            filter.forEach(function(expected, index) {
+                assert.equal(expected, test.expected[index], 'signature topic matches - ' + index + ' - ' + test.name);
+            });
+        });
+    }
+
+    var Tests = [
+
+        // Skips null in non-indexed fields
+        // See: https://github.com/ethers-io/ethers.js/issues/305
+        {
+            name: "creates correct filters for null non-indexed fields",
+
+            args: [ null, 2, null, null ],
+            event: "LogSomething",
+            signature: "event LogSomething(int hup, int indexed two, bool three, address indexed four)",
+
+            expected: [
+                "0xf6b983969813047dce97b9ff8a48cfb0a13306eb2caae2ef186b280bc27491c8",
+                "0x0000000000000000000000000000000000000000000000000000000000000002"
+            ]
+        },
+
+        // https://etherscan.io/tx/0x820cc57bc77be44d8f4f024a18e18f64a8b6e62a82a3d7897db5970dbe181ba1
+        {
+            name: "transfer filtering from",
+
+            args: [
+                "0x59DEa134510ebce4a0c7146595dc8A61Eb9D0D79"
+            ],
+            event: "Transfer",
+            signature: "event Transfer(address indexed from, address indexed to, uint value)",
+
+            expected: [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                "0x00000000000000000000000059dea134510ebce4a0c7146595dc8a61eb9d0d79"
+            ]
+        },
+        {
+            name: "transfer filtering to",
+
+            args: [
+                null,
+                "0x851b9167B7cbf772D38eFaf89705b35022880A07"
+            ],
+            event: "Transfer",
+            signature: "event Transfer(address indexed from, address indexed to, uint value)",
+
+            expected: [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                null,
+                "0x000000000000000000000000851b9167b7cbf772d38efaf89705b35022880a07"
+            ]
+        }
+    ];
+
+    Tests.forEach((test) => {
+        doTest(test);
+    });
+});
