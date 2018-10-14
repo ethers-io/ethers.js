@@ -9,6 +9,7 @@ import { getAddress } from './address';
 import { BigNumber, bigNumberify } from './bignumber';
 import { arrayify, hexlify, hexZeroPad, splitSignature, stripZeros, } from './bytes';
 import { keccak256 } from './keccak256';
+import { checkProperties, resolveProperties, shallowCopy } from './properties';
 
 import * as RLP from './rlp';
 
@@ -18,6 +19,8 @@ import * as RLP from './rlp';
 
 import { Arrayish, Signature } from './bytes';
 import { BigNumberish } from './bignumber';
+
+import { Provider } from '../providers/abstract-provider';
 
 ///////////////////////////////
 // Exported Types
@@ -65,7 +68,7 @@ function handleNumber(value: string): BigNumber {
     return bigNumberify(value);
 }
 
-var transactionFields = [
+const transactionFields = [
     { name: 'nonce',    maxLength: 32 },
     { name: 'gasPrice', maxLength: 32 },
     { name: 'gasLimit', maxLength: 32 },
@@ -74,8 +77,14 @@ var transactionFields = [
     { name: 'data' },
 ];
 
+const allowedTransactionKeys: { [ key: string ]: boolean } = {
+    chainId: true, data: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
+}
+
 export function serialize(transaction: UnsignedTransaction, signature?: Arrayish | Signature): string {
-    var raw: Array<string | Uint8Array> = [];
+    checkProperties(transaction, allowedTransactionKeys);
+
+    let raw: Array<string | Uint8Array> = [];
 
     transactionFields.forEach(function(fieldInfo) {
         let value = (<any>transaction)[fieldInfo.name] || ([]);
@@ -115,7 +124,7 @@ export function serialize(transaction: UnsignedTransaction, signature?: Arrayish
     let sig = splitSignature(signature);
 
     // We pushed a chainId and null r, s on for hashing only; remove those
-    var v = 27 + sig.recoveryParam
+    let v = 27 + sig.recoveryParam
     if (raw.length === 9) {
         raw.pop();
         raw.pop();
@@ -171,7 +180,7 @@ export function parse(rawTransaction: Arrayish): Transaction {
         tx.chainId = Math.floor((tx.v - 35) / 2);
         if (tx.chainId < 0) { tx.chainId = 0; }
 
-        var recoveryParam = tx.v - 27;
+        let recoveryParam = tx.v - 27;
 
         let raw = transaction.slice(0, 6);
 
@@ -182,7 +191,7 @@ export function parse(rawTransaction: Arrayish): Transaction {
             recoveryParam -= tx.chainId * 2 + 8;
         }
 
-        var digest = keccak256(RLP.encode(raw));
+        let digest = keccak256(RLP.encode(raw));
         try {
             tx.from = recoverAddress(digest, { r: hexlify(tx.r), s: hexlify(tx.s), recoveryParam: recoveryParam });
         } catch (error) {
@@ -193,4 +202,42 @@ export function parse(rawTransaction: Arrayish): Transaction {
     }
 
     return tx;
+}
+
+export function populateTransaction(transaction: any, provider: Provider, from: string | Promise<string>): Promise<Transaction> {
+
+    if (!Provider.isProvider(provider)) {
+        errors.throwError('missing provider', errors.INVALID_ARGUMENT, {
+            argument: 'provider',
+            value: provider
+        });
+    }
+
+    checkProperties(transaction, allowedTransactionKeys);
+
+    let tx = shallowCopy(transaction);
+
+    if (tx.to != null) {
+        tx.to = provider.resolveName(tx.to);
+    }
+
+    if (tx.gasPrice == null) {
+        tx.gasPrice = provider.getGasPrice();
+    }
+
+    if (tx.nonce == null) {
+        tx.nonce = provider.getTransactionCount(from);
+    }
+
+    if (tx.gasLimit == null) {
+        let estimate = shallowCopy(tx);
+        estimate.from = from;
+        tx.gasLimit = provider.estimateGas(estimate);
+    }
+
+    if (tx.chainId == null) {
+        tx.chainId = provider.getNetwork().then((network) => network.chainId);
+    }
+
+    return resolveProperties(tx);
 }

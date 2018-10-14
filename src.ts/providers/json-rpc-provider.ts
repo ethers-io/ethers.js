@@ -6,11 +6,14 @@ import { BaseProvider } from './base-provider';
 
 import { Signer } from '../abstract-signer';
 
+import * as errors from '../errors';
+
 import { getAddress } from '../utils/address';
 import { BigNumber } from '../utils/bignumber';
 import { hexlify, hexStripZeros } from '../utils/bytes';
 import { getNetwork } from '../utils/networks';
-import { defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
+import { checkProperties, defineReadOnly, shallowCopy } from '../utils/properties';
+import { populateTransaction } from '../utils/transaction';
 import { toUtf8Bytes } from '../utils/utf8';
 import { fetchJson, poll } from '../utils/web';
 
@@ -18,9 +21,8 @@ import { fetchJson, poll } from '../utils/web';
 import { Arrayish } from '../utils/bytes';
 import { Network, Networkish } from '../utils/networks';
 import { ConnectionInfo } from '../utils/web';
-import { BlockTag, TransactionRequest, TransactionResponse } from '../providers/abstract-provider';
 
-import * as errors from '../errors';
+import { BlockTag, TransactionRequest, TransactionResponse } from '../providers/abstract-provider';
 
 function timer(timeout: number): Promise<any> {
     return new Promise(function(resolve) {
@@ -78,15 +80,6 @@ export class JsonRpcSigner extends Signer {
         }
     }
 
-    /* May add back in the future; for now it is considered confusing. :)
-    get address(): string {
-        if (!this._address) {
-            errors.throwError('no sync sync address available; use getAddress', errors.UNSUPPORTED_OPERATION, { operation: 'address' });
-        }
-        return this._address
-    }
-    */
-
     getAddress(): Promise<string> {
         if (this._address) {
             return Promise.resolve(this._address);
@@ -110,21 +103,18 @@ export class JsonRpcSigner extends Signer {
     }
 
     sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
-        let tx: TransactionRequest = shallowCopy(transaction);
 
-        if (tx.from == null) {
-            tx.from = this.getAddress().then((address) => {
-                if (!address) { return null; }
-                return address.toLowerCase();
-            });
-        }
+        // Once populateTransaction resolves, the from address will be populated from getAddress
+        let from: string = null;
+        let getAddress = this.getAddress().then((address) => {
+            if (address) { from = address.toLowerCase(); }
+            return from;
+        });
 
-        if (transaction.gasLimit == null) {
-            tx.gasLimit = this.provider.estimateGas(tx);
-        }
-
-        return resolveProperties(tx).then((tx) => {
-            return this.provider.send('eth_sendTransaction', [ JsonRpcProvider.hexlifyTransaction(tx) ]).then((hash) => {
+        return populateTransaction(transaction, this.provider, getAddress).then((tx) => {
+            let hexTx = JsonRpcProvider.hexlifyTransaction(tx);
+            hexTx.from = from;
+            return this.provider.send('eth_sendTransaction', [ hexTx ]).then((hash) => {
                 return poll(() => {
                     return this.provider.getTransaction(hash).then((tx: TransactionResponse) => {
                         if (tx === null) { return undefined; }
@@ -376,21 +366,19 @@ export class JsonRpcProvider extends BaseProvider {
     // NOTE: This allows a TransactionRequest, but all values should be resolved
     //       before this is called
     static hexlifyTransaction(transaction: TransactionRequest, allowExtra?: { [key: string]: boolean }): { [key: string]: string } {
-        if (!allowExtra) { allowExtra = {}; }
 
-        for (let key in transaction) {
-            if (!allowedTransactionKeys[key] && !allowExtra[key]) {
-                errors.throwError('invalid key - ' + key, errors.INVALID_ARGUMENT, {
-                    argument: 'transaction',
-                    value: transaction,
-                    key: key
-                });
+        // Check only allowed properties are given
+        let allowed = shallowCopy(allowedTransactionKeys);
+        if (allowExtra) {
+            for (let key in allowExtra) {
+                if (allowExtra[key]) { allowed[key] = true; }
             }
         }
+        checkProperties(transaction, allowed);
 
         let result: { [key: string]: string } = {};
 
-        // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
+        // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like leading zeros.
         ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function(key) {
             if ((<any>transaction)[key] == null) { return; }
             let value = hexStripZeros(hexlify((<any>transaction)[key]));

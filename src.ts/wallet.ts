@@ -10,7 +10,7 @@ import { defineReadOnly, resolveProperties, shallowCopy } from './utils/properti
 import { randomBytes } from './utils/random-bytes';
 import * as secretStorage from './utils/secret-storage';
 import { SigningKey } from './utils/signing-key';
-import { serialize as serializeTransaction } from './utils/transaction';
+import { populateTransaction, serialize as serializeTransaction } from './utils/transaction';
 import { Wordlist } from './utils/wordlist';
 
 // Imported Abstracts
@@ -23,10 +23,6 @@ import { Arrayish } from './utils/bytes';
 import { BlockTag, TransactionRequest, TransactionResponse } from './providers/abstract-provider';
 
 import * as errors from './errors';
-
-const allowedTransactionKeys: { [ key: string ]: boolean } = {
-    chainId: true, data: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
-}
 
 export class Wallet extends AbstractSigner {
 
@@ -72,19 +68,10 @@ export class Wallet extends AbstractSigner {
     }
 
     sign(transaction: TransactionRequest): Promise<string> {
-        for (let key in transaction) {
-            if (!allowedTransactionKeys[key]) {
-                errors.throwError('unsupported transaction property - ' + key, errors.INVALID_ARGUMENT, {
-                    argument: 'transaction',
-                    value: transaction,
-                    key: key
-                });
-            }
-        }
         return resolveProperties(transaction).then((tx) => {
             let rawTx = serializeTransaction(tx);
             let signature = this.signingKey.signDigest(keccak256(rawTx));
-            return Promise.resolve(serializeTransaction(tx, signature));
+            return serializeTransaction(tx, signature);
         });
     }
 
@@ -104,37 +91,11 @@ export class Wallet extends AbstractSigner {
     }
 
     sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
-        if (!this.provider) { throw new Error('missing provider'); }
-
-        if (!transaction || typeof(transaction) !== 'object') {
-            throw new Error('invalid transaction object');
-        }
-
-        let tx = shallowCopy(transaction);
-
-        if (tx.to != null) {
-            tx.to = this.provider.resolveName(tx.to);
-        }
-
-        if (tx.gasPrice == null) {
-            tx.gasPrice = this.provider.getGasPrice();
-        }
-
-        if (tx.nonce == null) {
-            tx.nonce = this.getTransactionCount();
-        }
-
-        if (tx.gasLimit == null) {
-            let estimate = shallowCopy(tx);
-            estimate.from = this.getAddress();
-            tx.gasLimit = this.provider.estimateGas(estimate);
-        }
-
-        if (tx.chainId == null) {
-            tx.chainId = this.provider.getNetwork().then((network) => network.chainId);
-        }
-
-        return this.provider.sendTransaction(this.sign(tx));
+        return populateTransaction(transaction, this.provider, this.address).then((tx) => {
+             return this.sign(tx).then((signedTransaction) => {
+                 return this.provider.sendTransaction(signedTransaction);
+             });
+        });
     }
 
     encrypt(password: Arrayish | string, options?: any, progressCallback?: ProgressCallback): Promise<string> {

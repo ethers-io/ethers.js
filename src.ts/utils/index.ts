@@ -14,10 +14,11 @@ import { sha256 } from './sha2';
 import { keccak256 as solidityKeccak256, pack as solidityPack, sha256 as soliditySha256 } from './solidity';
 import { randomBytes } from './random-bytes';
 import { getNetwork } from './networks';
-import { deepCopy, defineReadOnly, resolveProperties, shallowCopy } from './properties';
+import { checkProperties, deepCopy, defineReadOnly, resolveProperties, shallowCopy } from './properties';
 import * as RLP from './rlp';
 import { computeAddress, computePublicKey, recoverAddress, recoverPublicKey, verifyMessage } from './secp256k1';
 import { SigningKey } from './signing-key';
+import { populateTransaction } from './transaction';
 import { parse as parseTransaction, serialize as serializeTransaction } from './transaction';
 import { formatBytes32String, parseBytes32String, toUtf8Bytes, toUtf8String } from './utf8';
 import { commify, formatEther, parseEther, formatUnits, parseUnits } from './units';
@@ -60,6 +61,7 @@ export {
     fetchJson,
     getNetwork,
 
+    checkProperties,
     deepCopy,
     defineReadOnly,
     resolveProperties,
@@ -122,6 +124,7 @@ export {
     joinSignature,
 
     parseTransaction,
+    populateTransaction,
     serializeTransaction,
 
     getJsonWalletAddress,

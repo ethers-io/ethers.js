@@ -1,5 +1,7 @@
 'use strict';
 
+import * as errors from '../errors';
+
 export function defineReadOnly(object: any, name: string, value: any): void {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -39,6 +41,25 @@ export function resolveProperties(object: any): Promise<any> {
 
     return Promise.all(promises).then(() => {
         return result;
+    });
+}
+
+export function checkProperties(object: any, properties: { [ name: string ]: boolean }): void {
+    if (!object || typeof(object) !== 'object') {
+        errors.throwError('invalid object', errors.INVALID_ARGUMENT, {
+            argument: 'object',
+            value: object
+        });
+    }
+
+    Object.keys(object).forEach((key) => {
+        if (!properties[key]) {
+            errors.throwError('invalid object key - ' + key, errors.INVALID_ARGUMENT, {
+                argument: 'transaction',
+                value: object,
+                key: key
+            });
+        }
     });
 }
 
