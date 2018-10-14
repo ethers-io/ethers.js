@@ -1212,6 +1212,8 @@ export class BaseProvider extends Provider {
             return !(event.once);
         });
 
+        if (this.listenerCount() === 0) { this.polling = false; }
+
         return result;
     }
 
@@ -1261,6 +1263,7 @@ export class BaseProvider extends Provider {
 
         return this;
     }
+
 }
 
 defineReadOnly(Provider, 'inherits', inheritable(Provider));
