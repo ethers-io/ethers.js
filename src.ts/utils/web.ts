@@ -3,6 +3,7 @@
 import { XMLHttpRequest } from 'xmlhttprequest';
 
 import { encode as base64Encode } from './base64';
+import { shallowCopy } from './properties';
 import { toUtf8Bytes } from './utf8';
 
 import * as errors from '../errors';
@@ -180,6 +181,7 @@ export function fetchJson(connection: string | ConnectionInfo, json: string, pro
 
 export function poll(func: () => Promise<any>, options?: PollOptions): Promise<any> {
     if (!options) { options = {}; }
+    options = shallowCopy(options);
     if (options.floor == null) { options.floor = 0; }
     if (options.ceiling == null) { options.ceiling = 10000; }
     if (options.interval == null) { options.interval = 250; }
