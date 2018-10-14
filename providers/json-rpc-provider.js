@@ -20,13 +20,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 var base_provider_1 = require("./base-provider");
 var abstract_signer_1 = require("../abstract-signer");
+var errors = __importStar(require("../errors"));
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var networks_1 = require("../utils/networks");
 var properties_1 = require("../utils/properties");
+var transaction_1 = require("../utils/transaction");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
-var errors = __importStar(require("../errors"));
 function timer(timeout) {
     return new Promise(function (resolve) {
         setTimeout(function () {
@@ -77,14 +78,6 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         }
         return _this;
     }
-    /* May add back in the future; for now it is considered confusing. :)
-    get address(): string {
-        if (!this._address) {
-            errors.throwError('no sync sync address available; use getAddress', errors.UNSUPPORTED_OPERATION, { operation: 'address' });
-        }
-        return this._address
-    }
-    */
     JsonRpcSigner.prototype.getAddress = function () {
         var _this = this;
         if (this._address) {
@@ -106,20 +99,18 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     };
     JsonRpcSigner.prototype.sendTransaction = function (transaction) {
         var _this = this;
-        var tx = properties_1.shallowCopy(transaction);
-        if (tx.from == null) {
-            tx.from = this.getAddress().then(function (address) {
-                if (!address) {
-                    return null;
-                }
-                return address.toLowerCase();
-            });
-        }
-        if (transaction.gasLimit == null) {
-            tx.gasLimit = this.provider.estimateGas(tx);
-        }
-        return properties_1.resolveProperties(tx).then(function (tx) {
-            return _this.provider.send('eth_sendTransaction', [JsonRpcProvider.hexlifyTransaction(tx)]).then(function (hash) {
+        // Once populateTransaction resolves, the from address will be populated from getAddress
+        var from = null;
+        var getAddress = this.getAddress().then(function (address) {
+            if (address) {
+                from = address.toLowerCase();
+            }
+            return from;
+        });
+        return transaction_1.populateTransaction(transaction, this.provider, getAddress).then(function (tx) {
+            var hexTx = JsonRpcProvider.hexlifyTransaction(tx);
+            hexTx.from = from;
+            return _this.provider.send('eth_sendTransaction', [hexTx]).then(function (hash) {
                 return web_1.poll(function () {
                     return _this.provider.getTransaction(hash).then(function (tx) {
                         if (tx === null) {
@@ -342,20 +333,18 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     // NOTE: This allows a TransactionRequest, but all values should be resolved
     //       before this is called
     JsonRpcProvider.hexlifyTransaction = function (transaction, allowExtra) {
-        if (!allowExtra) {
-            allowExtra = {};
-        }
-        for (var key in transaction) {
-            if (!allowedTransactionKeys[key] && !allowExtra[key]) {
-                errors.throwError('invalid key - ' + key, errors.INVALID_ARGUMENT, {
-                    argument: 'transaction',
-                    value: transaction,
-                    key: key
-                });
+        // Check only allowed properties are given
+        var allowed = properties_1.shallowCopy(allowedTransactionKeys);
+        if (allowExtra) {
+            for (var key in allowExtra) {
+                if (allowExtra[key]) {
+                    allowed[key] = true;
+                }
             }
         }
+        properties_1.checkProperties(transaction, allowed);
         var result = {};
-        // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
+        // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like leading zeros.
         ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function (key) {
             if (transaction[key] == null) {
                 return;

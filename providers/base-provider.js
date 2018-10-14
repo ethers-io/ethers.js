@@ -1095,6 +1095,9 @@ var BaseProvider = /** @class */ (function (_super) {
             result = true;
             return !(event.once);
         });
+        if (this.listenerCount() === 0) {
+            this.polling = false;
+        }
         return result;
     };
     BaseProvider.prototype.listenerCount = function (eventName) {

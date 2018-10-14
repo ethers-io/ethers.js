@@ -1,6 +1,7 @@
 import { BigNumber } from './bignumber';
 import { Arrayish, Signature } from './bytes';
 import { BigNumberish } from './bignumber';
+import { Provider } from '../providers/abstract-provider';
 export declare type UnsignedTransaction = {
     to?: string;
     nonce?: number;
@@ -26,3 +27,4 @@ export interface Transaction {
 }
 export declare function serialize(transaction: UnsignedTransaction, signature?: Arrayish | Signature): string;
 export declare function parse(rawTransaction: Arrayish): Transaction;
+export declare function populateTransaction(transaction: any, provider: Provider, from: string | Promise<string>): Promise<Transaction>;

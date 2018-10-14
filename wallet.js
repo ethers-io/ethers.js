@@ -31,9 +31,6 @@ var transaction_1 = require("./utils/transaction");
 var abstract_signer_1 = require("./abstract-signer");
 var abstract_provider_1 = require("./providers/abstract-provider");
 var errors = __importStar(require("./errors"));
-var allowedTransactionKeys = {
-    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
-};
 var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);
     function Wallet(privateKey, provider) {
@@ -83,19 +80,10 @@ var Wallet = /** @class */ (function (_super) {
     };
     Wallet.prototype.sign = function (transaction) {
         var _this = this;
-        for (var key in transaction) {
-            if (!allowedTransactionKeys[key]) {
-                errors.throwError('unsupported transaction property - ' + key, errors.INVALID_ARGUMENT, {
-                    argument: 'transaction',
-                    value: transaction,
-                    key: key
-                });
-            }
-        }
         return properties_1.resolveProperties(transaction).then(function (tx) {
             var rawTx = transaction_1.serialize(tx);
             var signature = _this.signingKey.signDigest(keccak256_1.keccak256(rawTx));
-            return Promise.resolve(transaction_1.serialize(tx, signature));
+            return transaction_1.serialize(tx, signature);
         });
     };
     Wallet.prototype.signMessage = function (message) {
@@ -114,31 +102,12 @@ var Wallet = /** @class */ (function (_super) {
         return this.provider.getTransactionCount(this.address, blockTag);
     };
     Wallet.prototype.sendTransaction = function (transaction) {
-        if (!this.provider) {
-            throw new Error('missing provider');
-        }
-        if (!transaction || typeof (transaction) !== 'object') {
-            throw new Error('invalid transaction object');
-        }
-        var tx = properties_1.shallowCopy(transaction);
-        if (tx.to != null) {
-            tx.to = this.provider.resolveName(tx.to);
-        }
-        if (tx.gasPrice == null) {
-            tx.gasPrice = this.provider.getGasPrice();
-        }
-        if (tx.nonce == null) {
-            tx.nonce = this.getTransactionCount();
-        }
-        if (tx.gasLimit == null) {
-            var estimate = properties_1.shallowCopy(tx);
-            estimate.from = this.getAddress();
-            tx.gasLimit = this.provider.estimateGas(estimate);
-        }
-        if (tx.chainId == null) {
-            tx.chainId = this.provider.getNetwork().then(function (network) { return network.chainId; });
-        }
-        return this.provider.sendTransaction(this.sign(tx));
+        var _this = this;
+        return transaction_1.populateTransaction(transaction, this.provider, this.address).then(function (tx) {
+            return _this.sign(tx).then(function (signedTransaction) {
+                return _this.provider.sendTransaction(signedTransaction);
+            });
+        });
     };
     Wallet.prototype.encrypt = function (password, options, progressCallback) {
         if (typeof (options) === 'function' && !progressCallback) {

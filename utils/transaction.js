@@ -14,7 +14,9 @@ var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
 var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
+var properties_1 = require("./properties");
 var RLP = __importStar(require("./rlp"));
+var abstract_provider_1 = require("../providers/abstract-provider");
 ///////////////////////////////
 function handleAddress(value) {
     if (value === '0x') {
@@ -36,7 +38,11 @@ var transactionFields = [
     { name: 'value', maxLength: 32 },
     { name: 'data' },
 ];
+var allowedTransactionKeys = {
+    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+};
 function serialize(transaction, signature) {
+    properties_1.checkProperties(transaction, allowedTransactionKeys);
     var raw = [];
     transactionFields.forEach(function (fieldInfo) {
         var value = transaction[fieldInfo.name] || ([]);
@@ -139,3 +145,32 @@ function parse(rawTransaction) {
     return tx;
 }
 exports.parse = parse;
+function populateTransaction(transaction, provider, from) {
+    if (!abstract_provider_1.Provider.isProvider(provider)) {
+        errors.throwError('missing provider', errors.INVALID_ARGUMENT, {
+            argument: 'provider',
+            value: provider
+        });
+    }
+    properties_1.checkProperties(transaction, allowedTransactionKeys);
+    var tx = properties_1.shallowCopy(transaction);
+    if (tx.to != null) {
+        tx.to = provider.resolveName(tx.to);
+    }
+    if (tx.gasPrice == null) {
+        tx.gasPrice = provider.getGasPrice();
+    }
+    if (tx.nonce == null) {
+        tx.nonce = provider.getTransactionCount(from);
+    }
+    if (tx.gasLimit == null) {
+        var estimate = properties_1.shallowCopy(tx);
+        estimate.from = from;
+        tx.gasLimit = provider.estimateGas(estimate);
+    }
+    if (tx.chainId == null) {
+        tx.chainId = provider.getNetwork().then(function (network) { return network.chainId; });
+    }
+    return properties_1.resolveProperties(tx);
+}
+exports.populateTransaction = populateTransaction;

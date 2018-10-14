@@ -9,6 +9,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var xmlhttprequest_1 = require("xmlhttprequest");
 var base64_1 = require("./base64");
+var properties_1 = require("./properties");
 var utf8_1 = require("./utf8");
 var errors = __importStar(require("../errors"));
 function fetchJson(connection, json, processFunc) {
@@ -144,6 +145,7 @@ function poll(func, options) {
     if (!options) {
         options = {};
     }
+    options = properties_1.shallowCopy(options);
     if (options.floor == null) {
         options.floor = 0;
     }

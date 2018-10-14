@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.6";
+exports.version = "4.0.7";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -10938,6 +10938,9 @@ var BaseProvider = /** @class */ (function (_super) {
             result = true;
             return !(event.once);
         });
+        if (this.listenerCount() === 0) {
+            this.polling = false;
+        }
         return result;
     };
     BaseProvider.prototype.listenerCount = function (eventName) {
@@ -11538,13 +11541,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 var base_provider_1 = require("./base-provider");
 var abstract_signer_1 = require("../abstract-signer");
+var errors = __importStar(require("../errors"));
 var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var networks_1 = require("../utils/networks");
 var properties_1 = require("../utils/properties");
+var transaction_1 = require("../utils/transaction");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
-var errors = __importStar(require("../errors"));
 function timer(timeout) {
     return new Promise(function (resolve) {
         setTimeout(function () {
@@ -11595,14 +11599,6 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         }
         return _this;
     }
-    /* May add back in the future; for now it is considered confusing. :)
-    get address(): string {
-        if (!this._address) {
-            errors.throwError('no sync sync address available; use getAddress', errors.UNSUPPORTED_OPERATION, { operation: 'address' });
-        }
-        return this._address
-    }
-    */
     JsonRpcSigner.prototype.getAddress = function () {
         var _this = this;
         if (this._address) {
@@ -11624,20 +11620,18 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     };
     JsonRpcSigner.prototype.sendTransaction = function (transaction) {
         var _this = this;
-        var tx = properties_1.shallowCopy(transaction);
-        if (tx.from == null) {
-            tx.from = this.getAddress().then(function (address) {
-                if (!address) {
-                    return null;
-                }
-                return address.toLowerCase();
-            });
-        }
-        if (transaction.gasLimit == null) {
-            tx.gasLimit = this.provider.estimateGas(tx);
-        }
-        return properties_1.resolveProperties(tx).then(function (tx) {
-            return _this.provider.send('eth_sendTransaction', [JsonRpcProvider.hexlifyTransaction(tx)]).then(function (hash) {
+        // Once populateTransaction resolves, the from address will be populated from getAddress
+        var from = null;
+        var getAddress = this.getAddress().then(function (address) {
+            if (address) {
+                from = address.toLowerCase();
+            }
+            return from;
+        });
+        return transaction_1.populateTransaction(transaction, this.provider, getAddress).then(function (tx) {
+            var hexTx = JsonRpcProvider.hexlifyTransaction(tx);
+            hexTx.from = from;
+            return _this.provider.send('eth_sendTransaction', [hexTx]).then(function (hash) {
                 return web_1.poll(function () {
                     return _this.provider.getTransaction(hash).then(function (tx) {
                         if (tx === null) {
@@ -11860,20 +11854,18 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     // NOTE: This allows a TransactionRequest, but all values should be resolved
     //       before this is called
     JsonRpcProvider.hexlifyTransaction = function (transaction, allowExtra) {
-        if (!allowExtra) {
-            allowExtra = {};
-        }
-        for (var key in transaction) {
-            if (!allowedTransactionKeys[key] && !allowExtra[key]) {
-                errors.throwError('invalid key - ' + key, errors.INVALID_ARGUMENT, {
-                    argument: 'transaction',
-                    value: transaction,
-                    key: key
-                });
+        // Check only allowed properties are given
+        var allowed = properties_1.shallowCopy(allowedTransactionKeys);
+        if (allowExtra) {
+            for (var key in allowExtra) {
+                if (allowExtra[key]) {
+                    allowed[key] = true;
+                }
             }
         }
+        properties_1.checkProperties(transaction, allowed);
         var result = {};
-        // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like extra zeros.
+        // Some nodes (INFURA ropsten; INFURA mainnet is fine) don't like leading zeros.
         ['gasLimit', 'gasPrice', 'nonce', 'value'].forEach(function (key) {
             if (transaction[key] == null) {
                 return;
@@ -11896,7 +11888,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
 }(base_provider_1.BaseProvider));
 exports.JsonRpcProvider = JsonRpcProvider;
 
-},{"../abstract-signer":2,"../errors":5,"../utils/address":59,"../utils/bytes":62,"../utils/networks":70,"../utils/properties":72,"../utils/utf8":83,"../utils/web":84,"./base-provider":50}],57:[function(require,module,exports){
+},{"../abstract-signer":2,"../errors":5,"../utils/address":59,"../utils/bytes":62,"../utils/networks":70,"../utils/properties":72,"../utils/transaction":81,"../utils/utf8":83,"../utils/web":84,"./base-provider":50}],57:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -13918,6 +13910,7 @@ exports.randomBytes = random_bytes_1.randomBytes;
 var networks_1 = require("./networks");
 exports.getNetwork = networks_1.getNetwork;
 var properties_1 = require("./properties");
+exports.checkProperties = properties_1.checkProperties;
 exports.deepCopy = properties_1.deepCopy;
 exports.defineReadOnly = properties_1.defineReadOnly;
 exports.resolveProperties = properties_1.resolveProperties;
@@ -13933,8 +13926,10 @@ exports.verifyMessage = secp256k1_1.verifyMessage;
 var signing_key_1 = require("./signing-key");
 exports.SigningKey = signing_key_1.SigningKey;
 var transaction_1 = require("./transaction");
-exports.parseTransaction = transaction_1.parse;
-exports.serializeTransaction = transaction_1.serialize;
+exports.populateTransaction = transaction_1.populateTransaction;
+var transaction_2 = require("./transaction");
+exports.parseTransaction = transaction_2.parse;
+exports.serializeTransaction = transaction_2.serialize;
 var utf8_1 = require("./utf8");
 exports.formatBytes32String = utf8_1.formatBytes32String;
 exports.parseBytes32String = utf8_1.parseBytes32String;
@@ -14557,7 +14552,15 @@ exports.pbkdf2 = pbkdf2;
 
 },{"../utils/bytes":62,"./hmac":65}],72:[function(require,module,exports){
 'use strict';
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var errors = __importStar(require("../errors"));
 function defineReadOnly(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -14596,6 +14599,24 @@ function resolveProperties(object) {
     });
 }
 exports.resolveProperties = resolveProperties;
+function checkProperties(object, properties) {
+    if (!object || typeof (object) !== 'object') {
+        errors.throwError('invalid object', errors.INVALID_ARGUMENT, {
+            argument: 'object',
+            value: object
+        });
+    }
+    Object.keys(object).forEach(function (key) {
+        if (!properties[key]) {
+            errors.throwError('invalid object key - ' + key, errors.INVALID_ARGUMENT, {
+                argument: 'transaction',
+                value: object,
+                key: key
+            });
+        }
+    });
+}
+exports.checkProperties = checkProperties;
 function shallowCopy(object) {
     var result = {};
     for (var key in object) {
@@ -14669,7 +14690,7 @@ function inheritable(parent) {
 }
 exports.inheritable = inheritable;
 
-},{}],73:[function(require,module,exports){
+},{"../errors":5}],73:[function(require,module,exports){
 (function (global){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -15532,7 +15553,9 @@ var address_1 = require("./address");
 var bignumber_1 = require("./bignumber");
 var bytes_1 = require("./bytes");
 var keccak256_1 = require("./keccak256");
+var properties_1 = require("./properties");
 var RLP = __importStar(require("./rlp"));
+var abstract_provider_1 = require("../providers/abstract-provider");
 ///////////////////////////////
 function handleAddress(value) {
     if (value === '0x') {
@@ -15554,7 +15577,11 @@ var transactionFields = [
     { name: 'value', maxLength: 32 },
     { name: 'data' },
 ];
+var allowedTransactionKeys = {
+    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+};
 function serialize(transaction, signature) {
+    properties_1.checkProperties(transaction, allowedTransactionKeys);
     var raw = [];
     transactionFields.forEach(function (fieldInfo) {
         var value = transaction[fieldInfo.name] || ([]);
@@ -15657,8 +15684,37 @@ function parse(rawTransaction) {
     return tx;
 }
 exports.parse = parse;
+function populateTransaction(transaction, provider, from) {
+    if (!abstract_provider_1.Provider.isProvider(provider)) {
+        errors.throwError('missing provider', errors.INVALID_ARGUMENT, {
+            argument: 'provider',
+            value: provider
+        });
+    }
+    properties_1.checkProperties(transaction, allowedTransactionKeys);
+    var tx = properties_1.shallowCopy(transaction);
+    if (tx.to != null) {
+        tx.to = provider.resolveName(tx.to);
+    }
+    if (tx.gasPrice == null) {
+        tx.gasPrice = provider.getGasPrice();
+    }
+    if (tx.nonce == null) {
+        tx.nonce = provider.getTransactionCount(from);
+    }
+    if (tx.gasLimit == null) {
+        var estimate = properties_1.shallowCopy(tx);
+        estimate.from = from;
+        tx.gasLimit = provider.estimateGas(estimate);
+    }
+    if (tx.chainId == null) {
+        tx.chainId = provider.getNetwork().then(function (network) { return network.chainId; });
+    }
+    return properties_1.resolveProperties(tx);
+}
+exports.populateTransaction = populateTransaction;
 
-},{"../constants":3,"../errors":5,"./address":59,"./bignumber":61,"./bytes":62,"./keccak256":69,"./rlp":74,"./secp256k1":75}],82:[function(require,module,exports){
+},{"../constants":3,"../errors":5,"../providers/abstract-provider":49,"./address":59,"./bignumber":61,"./bytes":62,"./keccak256":69,"./properties":72,"./rlp":74,"./secp256k1":75}],82:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -16032,6 +16088,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var xmlhttprequest_1 = require("xmlhttprequest");
 var base64_1 = require("./base64");
+var properties_1 = require("./properties");
 var utf8_1 = require("./utf8");
 var errors = __importStar(require("../errors"));
 function fetchJson(connection, json, processFunc) {
@@ -16167,6 +16224,7 @@ function poll(func, options) {
     if (!options) {
         options = {};
     }
+    options = properties_1.shallowCopy(options);
     if (options.floor == null) {
         options.floor = 0;
     }
@@ -16233,7 +16291,7 @@ function poll(func, options) {
 }
 exports.poll = poll;
 
-},{"../errors":5,"./base64":60,"./utf8":83,"xmlhttprequest":48}],85:[function(require,module,exports){
+},{"../errors":5,"./base64":60,"./properties":72,"./utf8":83,"xmlhttprequest":48}],85:[function(require,module,exports){
 (function (global){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -16324,9 +16382,6 @@ var transaction_1 = require("./utils/transaction");
 var abstract_signer_1 = require("./abstract-signer");
 var abstract_provider_1 = require("./providers/abstract-provider");
 var errors = __importStar(require("./errors"));
-var allowedTransactionKeys = {
-    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
-};
 var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);
     function Wallet(privateKey, provider) {
@@ -16376,19 +16431,10 @@ var Wallet = /** @class */ (function (_super) {
     };
     Wallet.prototype.sign = function (transaction) {
         var _this = this;
-        for (var key in transaction) {
-            if (!allowedTransactionKeys[key]) {
-                errors.throwError('unsupported transaction property - ' + key, errors.INVALID_ARGUMENT, {
-                    argument: 'transaction',
-                    value: transaction,
-                    key: key
-                });
-            }
-        }
         return properties_1.resolveProperties(transaction).then(function (tx) {
             var rawTx = transaction_1.serialize(tx);
             var signature = _this.signingKey.signDigest(keccak256_1.keccak256(rawTx));
-            return Promise.resolve(transaction_1.serialize(tx, signature));
+            return transaction_1.serialize(tx, signature);
         });
     };
     Wallet.prototype.signMessage = function (message) {
@@ -16407,31 +16453,12 @@ var Wallet = /** @class */ (function (_super) {
         return this.provider.getTransactionCount(this.address, blockTag);
     };
     Wallet.prototype.sendTransaction = function (transaction) {
-        if (!this.provider) {
-            throw new Error('missing provider');
-        }
-        if (!transaction || typeof (transaction) !== 'object') {
-            throw new Error('invalid transaction object');
-        }
-        var tx = properties_1.shallowCopy(transaction);
-        if (tx.to != null) {
-            tx.to = this.provider.resolveName(tx.to);
-        }
-        if (tx.gasPrice == null) {
-            tx.gasPrice = this.provider.getGasPrice();
-        }
-        if (tx.nonce == null) {
-            tx.nonce = this.getTransactionCount();
-        }
-        if (tx.gasLimit == null) {
-            var estimate = properties_1.shallowCopy(tx);
-            estimate.from = this.getAddress();
-            tx.gasLimit = this.provider.estimateGas(estimate);
-        }
-        if (tx.chainId == null) {
-            tx.chainId = this.provider.getNetwork().then(function (network) { return network.chainId; });
-        }
-        return this.provider.sendTransaction(this.sign(tx));
+        var _this = this;
+        return transaction_1.populateTransaction(transaction, this.provider, this.address).then(function (tx) {
+            return _this.sign(tx).then(function (signedTransaction) {
+                return _this.provider.sendTransaction(signedTransaction);
+            });
+        });
     };
     Wallet.prototype.encrypt = function (password, options, progressCallback) {
         if (typeof (options) === 'function' && !progressCallback) {
