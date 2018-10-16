@@ -331,8 +331,6 @@ utils.defineProperty(EtherscanProvider.prototype, 'tokenbalance', function(addre
         url += '/api?module=account&action=tokenbalance&address=' + address;
         url += '&contractaddress=' + token;
         url += '&tag=latest'
-        console.log('url', url)
-
         return Provider.fetchJSON(url, null, getResult).then(function(result) {
             return result;
         });
