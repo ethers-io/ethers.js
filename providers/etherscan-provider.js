@@ -320,4 +320,23 @@ utils.defineProperty(EtherscanProvider.prototype, 'tokentx', function(addressOrN
     });
 });
 
+utils.defineProperty(EtherscanProvider.prototype, 'tokenbalance', function(addressOrName, token) {
+
+    var url = this.baseUrl;
+
+    var apiKey = '';
+    if (this.apiKey) { apiKey += '&apikey=' + this.apiKey; }
+
+    return this.resolveName(addressOrName).then(function(address) {
+        url += '/api?module=account&action=tokenbalance&address=' + address;
+        url += '&contractaddress=' + token;
+        url += '&tag=latest'
+        console.log('url', url)
+
+        return Provider.fetchJSON(url, null, getResult).then(function(result) {
+            return result;
+        });
+    });
+});
+
 module.exports = EtherscanProvider;;
