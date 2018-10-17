@@ -950,7 +950,9 @@ var AbiCoder = /** @class */ (function () {
             }
             coders.push(getParamCoder(this.coerceFunc, typeObject));
         }, this);
-        return new CoderTuple(this.coerceFunc, coders, '_').decode(bytes_1.arrayify(data), 0).value;
+        
+        // offse change to 4, becase data is start with 0x
+        return new CoderTuple(this.coerceFunc, coders, '_').decode(bytes_1.arrayify(data), 4).value;
     };
     return AbiCoder;
 }());
