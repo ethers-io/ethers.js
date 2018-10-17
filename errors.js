@@ -93,10 +93,10 @@ function checkArgumentCount(count, expectedCount, suffix) {
         suffix = '';
     }
     if (count < expectedCount) {
-        throwError('missing argument' + suffix, exports.MISSING_ARGUMENT, { count: count, expectedCount: expectedCount });
+        throwError('missing argument ' + suffix, exports.MISSING_ARGUMENT, { count: count, expectedCount: expectedCount });
     }
     if (count > expectedCount) {
-        throwError('too many arguments' + suffix, exports.UNEXPECTED_ARGUMENT, { count: count, expectedCount: expectedCount });
+        throwError('too many arguments ' + suffix, exports.UNEXPECTED_ARGUMENT, { count: count, expectedCount: expectedCount });
     }
 }
 exports.checkArgumentCount = checkArgumentCount;
