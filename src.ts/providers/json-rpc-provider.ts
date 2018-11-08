@@ -230,14 +230,22 @@ export class JsonRpcProvider extends BaseProvider {
     }
 
     send(method: string, params: any): Promise<any> {
-        var request = {
+        let request = {
             method: method,
             params: params,
             id: 42,
             jsonrpc: "2.0"
         };
 
-        return fetchJson(this.connection, JSON.stringify(request), getResult);
+        return fetchJson(this.connection, JSON.stringify(request), getResult).then((result) => {
+            this.emit('debug', {
+                action: 'send',
+                request: request,
+                response: result,
+                provider: this
+            });
+            return result;
+        });
     }
 
     perform(method: string, params: any): Promise<any> {

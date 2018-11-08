@@ -113,43 +113,55 @@ export class EtherscanProvider extends BaseProvider{
         let apiKey = '';
         if (this.apiKey) { apiKey += '&apikey=' + this.apiKey; }
 
+        let get = (url: string, procFunc?: (value: any) => any) => {
+            return fetchJson(url, null, procFunc || getJsonResult).then((result) => {
+                this.emit('debug', {
+                    action: 'perform',
+                    request: url,
+                    response: result,
+                    provider: this
+                });
+                return result;
+            });
+        };
+
         switch (method) {
             case 'getBlockNumber':
                 url += '/api?module=proxy&action=eth_blockNumber' + apiKey;
-                return fetchJson(url, null, getJsonResult);
+                return get(url);
 
             case 'getGasPrice':
                 url += '/api?module=proxy&action=eth_gasPrice' + apiKey;
-                return fetchJson(url, null, getJsonResult);
+                return get(url);
 
             case 'getBalance':
                 // Returns base-10 result
                 url += '/api?module=account&action=balance&address=' + params.address;
                 url += '&tag=' + params.blockTag + apiKey;
-                return fetchJson(url, null, getResult);
+                return get(url, getResult);
 
             case 'getTransactionCount':
                 url += '/api?module=proxy&action=eth_getTransactionCount&address=' + params.address;
                 url += '&tag=' + params.blockTag + apiKey;
-                return fetchJson(url, null, getJsonResult);
+                return get(url);
 
 
             case 'getCode':
                 url += '/api?module=proxy&action=eth_getCode&address=' + params.address;
                 url += '&tag=' + params.blockTag + apiKey;
-                return fetchJson(url, null, getJsonResult);
+                return get(url, getJsonResult);
 
             case 'getStorageAt':
                 url += '/api?module=proxy&action=eth_getStorageAt&address=' + params.address;
                 url += '&position=' + params.position;
                 url += '&tag=' + params.blockTag + apiKey;
-                return fetchJson(url, null, getJsonResult);
+                return get(url, getJsonResult);
 
 
             case 'sendTransaction':
                 url += '/api?module=proxy&action=eth_sendRawTransaction&hex=' + params.signedTransaction;
                 url += apiKey;
-                return fetchJson(url, null, getJsonResult).catch((error) => {
+                return get(url).catch((error) => {
                     if (error.responseText) {
                         // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
                         if (error.responseText.toLowerCase().indexOf('insufficient funds') >= 0) {
@@ -176,19 +188,19 @@ export class EtherscanProvider extends BaseProvider{
                         url += '&boolean=false';
                     }
                     url += apiKey;
-                    return fetchJson(url, null, getJsonResult);
+                    return get(url);
                 }
                 throw new Error('getBlock by blockHash not implmeneted');
 
             case 'getTransaction':
                 url += '/api?module=proxy&action=eth_getTransactionByHash&txhash=' + params.transactionHash;
                 url += apiKey;
-                return fetchJson(url, null, getJsonResult);
+                return get(url);
 
             case 'getTransactionReceipt':
                 url += '/api?module=proxy&action=eth_getTransactionReceipt&txhash=' + params.transactionHash;
                 url += apiKey;
-                return fetchJson(url, null, getJsonResult);
+                return get(url);
 
 
             case 'call': {
@@ -200,7 +212,7 @@ export class EtherscanProvider extends BaseProvider{
                     throw new Error('EtherscanProvider does not support blockTag for call');
                 }
                 url += apiKey;
-                return fetchJson(url, null, getJsonResult);
+                return get(url);
             }
 
             case 'estimateGas': {
@@ -208,7 +220,7 @@ export class EtherscanProvider extends BaseProvider{
                 if (transaction) { transaction = '&' + transaction; }
                 url += '/api?module=proxy&action=eth_estimateGas&' + transaction;
                 url += apiKey;
-                return fetchJson(url, null, getJsonResult);
+                return get(url);
             }
 
             case 'getLogs':
@@ -244,7 +256,7 @@ export class EtherscanProvider extends BaseProvider{
                 url += apiKey;
 
                 var self = this;
-                return fetchJson(url, null, getResult).then(function(logs: Array<any>) {
+                return get(url, getResult).then(function(logs: Array<any>) {
                     var txs: { [hash: string]: string } = {};
 
                     var seq = Promise.resolve();
@@ -272,7 +284,7 @@ export class EtherscanProvider extends BaseProvider{
                 if (this.network.name !== 'homestead') { return Promise.resolve(0.0); }
                 url += '/api?module=stats&action=ethprice';
                 url += apiKey;
-                return fetchJson(url, null, getResult).then(function(result) {
+                return get(url, getResult).then(function(result) {
                     return parseFloat(result.ethusd);
                 });
 
@@ -301,6 +313,12 @@ export class EtherscanProvider extends BaseProvider{
             url += '&sort=asc' + apiKey;
 
             return fetchJson(url, null, getResult).then((result: Array<any>) => {
+                this.emit('debug', {
+                    action: 'getHistory',
+                    request: url,
+                    response: result,
+                    provider: this
+                });
                 var output: Array<TransactionResponse> = [];
                 result.forEach((tx) => {
                     ['contractAddress', 'to'].forEach(function(key) {
