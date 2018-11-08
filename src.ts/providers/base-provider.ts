@@ -38,10 +38,10 @@ import { Network, Networkish } from '../utils/networks';
 
 // @TODO: not any?
 function check(format: any, object: any): any {
-    var result: any = {};
-    for (var key in format) {
+    let result: any = {};
+    for (let key in format) {
         try {
-            var value = format[key](object[key]);
+            let value = format[key](object[key]);
             if (value !== undefined) { result[key] = value; }
         } catch (error) {
             error.checkKey = key;
@@ -72,7 +72,7 @@ function arrayOf(check: CheckFunc): CheckFunc {
     return (function(array: any): Array<any> {
         if (!Array.isArray(array)) { throw new Error('not an array'); }
 
-        var result: any = [];
+        let result: any = [];
 
         array.forEach(function(value) {
             result.push(check(value));
@@ -204,7 +204,7 @@ function checkTransactionResponse(transaction: any): TransactionResponse {
 
         // Very loose providers (e.g. TestRPC) don't provide a signature or raw
         if (transaction.v && transaction.r && transaction.s) {
-            var raw = [
+            let raw = [
                 stripZeros(hexlify(transaction.nonce)),
                 stripZeros(hexlify(transaction.gasPrice)),
                 stripZeros(hexlify(transaction.gasLimit)),
@@ -221,9 +221,9 @@ function checkTransactionResponse(transaction: any): TransactionResponse {
     }
 
 
-    var result = check(formatTransaction, transaction);
+    let result = check(formatTransaction, transaction);
 
-    var networkId = transaction.networkId;
+    let networkId = transaction.networkId;
 
     if (isHexString(networkId)) {
         networkId = bigNumberify(networkId).toNumber();
@@ -324,7 +324,7 @@ function checkTransactionReceipt(transactionReceipt: any): TransactionReceipt {
     //var status = transactionReceipt.status;
     //var root = transactionReceipt.root;
 
-    var result: TransactionReceipt = check(formatTransactionReceipt, transactionReceipt);
+    let result: TransactionReceipt = check(formatTransactionReceipt, transactionReceipt);
     result.logs.forEach(function(entry, index) {
         if (entry.transactionLogIndex == null) {
             entry.transactionLogIndex = index;
@@ -425,11 +425,12 @@ function getEventTag(eventName: EventType): string {
 
         eventName = eventName.toLowerCase();
 
-        if (eventName === 'block' || eventName === 'pending' || eventName === 'error') {
-            return eventName;
-
-        } else if (hexDataLength(eventName) === 32) {
+        if (hexDataLength(eventName) === 32) {
             return 'tx:' + eventName;
+        }
+
+        if (eventName.indexOf(':') === -1) {
+            return eventName;
         }
 
     } else if (Array.isArray(eventName)) {
@@ -550,7 +551,7 @@ export class BaseProvider extends Provider {
             if (this._lastBlockNumber === -2) { this._lastBlockNumber = blockNumber - 1; }
 
             // Notify all listener for each block that has passed
-            for (var i = this._lastBlockNumber + 1; i <= blockNumber; i++) {
+            for (let i = this._lastBlockNumber + 1; i <= blockNumber; i++) {
                 if (this._emitted.block < i) {
                     this._emitted.block = i;
 
@@ -568,7 +569,7 @@ export class BaseProvider extends Provider {
             }
 
             // Sweep balances and remove addresses we no longer have events for
-            var newBalances: any = {};
+            let newBalances: any = {};
 
             // Find all transaction hashes we are waiting on
             this._events.forEach((event) => {
@@ -591,7 +592,7 @@ export class BaseProvider extends Provider {
                             newBalances[address] = this._balances[address];
                         }
                         this.getBalance(address, 'latest').then(function(balance) {
-                            var lastBalance = this._balances[address];
+                            let lastBalance = this._balances[address];
                             if (lastBalance && balance.eq(lastBalance)) { return; }
                             this._balances[address] = balance;
                             this.emit(address, balance);
@@ -601,14 +602,14 @@ export class BaseProvider extends Provider {
                     }
 
                     case 'filter': {
-                        let address = comps[1];
                         let topics = deserializeTopics(comps[2]);
                         let filter = {
-                            address: address,
+                            address: comps[1],
                             fromBlock: this._lastBlockNumber + 1,
                             toBlock: blockNumber,
                             topics: topics
                         }
+                        if (!filter.address) { delete filter.address; }
                         this.getLogs(filter).then((logs) => {
                             if (logs.length === 0) { return; }
                             logs.forEach((log: Log) => {
@@ -751,7 +752,7 @@ export class BaseProvider extends Provider {
         return this.ready.then(() => {
             return resolveProperties({ addressOrName: addressOrName, blockTag: blockTag }).then(({ addressOrName, blockTag }) => {
                 return this.resolveName(addressOrName).then((address) => {
-                    var params = { address: address, blockTag: checkBlockTag(blockTag) };
+                    let params = { address: address, blockTag: checkBlockTag(blockTag) };
                     return this.perform('getBalance', params).then((result) => {
                         return bigNumberify(result);
                     });
@@ -764,7 +765,7 @@ export class BaseProvider extends Provider {
         return this.ready.then(() => {
             return resolveProperties({ addressOrName: addressOrName, blockTag: blockTag }).then(({ addressOrName, blockTag }) => {
                 return this.resolveName(addressOrName).then((address) => {
-                    var params = { address: address, blockTag: checkBlockTag(blockTag) };
+                    let params = { address: address, blockTag: checkBlockTag(blockTag) };
                     return this.perform('getTransactionCount', params).then((result) => {
                         return bigNumberify(result).toNumber();
                     });
@@ -777,7 +778,7 @@ export class BaseProvider extends Provider {
         return this.ready.then(() => {
             return resolveProperties({ addressOrName: addressOrName, blockTag: blockTag }).then(({ addressOrName, blockTag }) => {
                 return this.resolveName(addressOrName).then((address) => {
-                    var params = {address: address, blockTag: checkBlockTag(blockTag)};
+                    let params = {address: address, blockTag: checkBlockTag(blockTag)};
                     return this.perform('getCode', params).then((result) => {
                         return hexlify(result);
                     });
@@ -790,7 +791,7 @@ export class BaseProvider extends Provider {
         return this.ready.then(() => {
             return resolveProperties({ addressOrName: addressOrName, position: position, blockTag: blockTag }).then(({ addressOrName, position, blockTag }) => {
                 return this.resolveName(addressOrName).then((address) => {
-                    var params = {
+                    let params = {
                         address: address,
                         blockTag: checkBlockTag(blockTag),
                         position: hexStripZeros(hexlify(position)),
@@ -806,7 +807,7 @@ export class BaseProvider extends Provider {
     sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse> {
         return this.ready.then(() => {
             return resolveProperties({ signedTransaction: signedTransaction }).then(({ signedTransaction }) => {
-                var params = { signedTransaction: hexlify(signedTransaction) };
+                let params = { signedTransaction: hexlify(signedTransaction) };
                 return this.perform('sendTransaction', params).then((hash) => {
                     return this._wrapTransaction(parseTransaction(signedTransaction), hash);
                 }, function (error) {
@@ -876,7 +877,7 @@ export class BaseProvider extends Provider {
         return this.ready.then(() => {
             return resolveProperties(tx).then((tx) => {
                 return this._resolveNames(tx, [ 'to', 'from' ]).then((tx) => {
-                    var params = { transaction: checkTransactionRequest(tx) };
+                    let params = { transaction: checkTransactionRequest(tx) };
                     return this.perform('estimateGas', params).then((result) => {
                         return bigNumberify(result);
                     });
@@ -889,7 +890,7 @@ export class BaseProvider extends Provider {
         return this.ready.then(() => {
             return resolveProperties({ blockHashOrBlockTag: blockHashOrBlockTag }).then(({ blockHashOrBlockTag }) => {
                 try {
-                    var blockHash = hexlify(blockHashOrBlockTag);
+                    let blockHash = hexlify(blockHashOrBlockTag);
                     if (hexDataLength(blockHash) === 32) {
                         return poll(() => {
                             return this.perform('getBlock', { blockHash: blockHash, includeTransactions: !!includeTransactions }).then((block) => {
@@ -1013,7 +1014,7 @@ export class BaseProvider extends Provider {
         return this.ready.then(() => {
             return resolveProperties(filter).then((filter) => {
                 return this._resolveNames(filter, ['address']).then((filter) => {
-                    var params = { filter: checkFilter(filter) };
+                    let params = { filter: checkFilter(filter) };
                     return this.perform('getLogs', params).then((result) => {
                         return arrayOf(checkLog)(result);
                     });
@@ -1033,9 +1034,9 @@ export class BaseProvider extends Provider {
 
     // @TODO: Could probably use resolveProperties instead?
     private _resolveNames(object: any, keys: Array<string>): Promise<{ [key: string]: string }> {
-        var promises: Array<Promise<void>> = [];
+        let promises: Array<Promise<void>> = [];
 
-        var result: { [key: string ]: string } = shallowCopy(object);
+        let result: { [key: string ]: string } = shallowCopy(object);
 
         keys.forEach(function(key) {
             if (result[key] == null) { return; }
@@ -1062,8 +1063,8 @@ export class BaseProvider extends Provider {
             }
 
             // keccak256('resolver(bytes32)')
-            var data = '0x0178b8bf' + namehash(name).substring(2);
-            var transaction = { to: network.ensAddress, data: data };
+            let data = '0x0178b8bf' + namehash(name).substring(2);
+            let transaction = { to: network.ensAddress, data: data };
 
             return this.call(transaction).then((data) => {
 
@@ -1088,22 +1089,22 @@ export class BaseProvider extends Provider {
             return Promise.resolve(getAddress(name));
         } catch (error) { }
 
-        var self = this;
+        let self = this;
 
-        var nodeHash = namehash(name);
+        let nodeHash = namehash(name);
 
         // Get the addr from the resovler
         return this._getResolver(name).then(function(resolverAddress) {
 
             // keccak256('addr(bytes32)')
-            var data = '0x3b3b57de' + nodeHash.substring(2);
-            var transaction = { to: resolverAddress, data: data };
+            let data = '0x3b3b57de' + nodeHash.substring(2);
+            let transaction = { to: resolverAddress, data: data };
             return self.call(transaction);
 
         // extract the address from the data
         }).then(function(data) {
             if (hexDataLength(data) !== 32) { return null; }
-            var address = getAddress(hexDataSlice(data, 12));
+            let address = getAddress(hexDataSlice(data, 12));
             if (address === '0x0000000000000000000000000000000000000000') { return null; }
             return address;
         });
@@ -1118,17 +1119,17 @@ export class BaseProvider extends Provider {
 
         address = getAddress(address);
 
-        var name = address.substring(2) + '.addr.reverse'
-        var nodehash = namehash(name);
+        let name = address.substring(2) + '.addr.reverse'
+        let nodehash = namehash(name);
 
-        var self = this;
+        let self = this;
 
         return this._getResolver(name).then(function(resolverAddress) {
             if (!resolverAddress) { return null; }
 
             // keccak('name(bytes32)')
-            var data = '0x691f3431' + nodehash.substring(2);
-            var transaction = { to: resolverAddress, data: data };
+            let data = '0x691f3431' + nodehash.substring(2);
+            let transaction = { to: resolverAddress, data: data };
             return self.call(transaction);
 
         }).then(function(data) {
@@ -1140,12 +1141,12 @@ export class BaseProvider extends Provider {
             data = data.substring(64);
 
             if (data.length < 64) { return null; }
-            var length = bigNumberify('0x' + data.substring(0, 64)).toNumber();
+            let length = bigNumberify('0x' + data.substring(0, 64)).toNumber();
             data = data.substring(64);
 
             if (2 * length > data.length) { return null; }
 
-            var name = toUtf8String('0x' + data.substring(0, 2 * length));
+            let name = toUtf8String('0x' + data.substring(0, 2 * length));
 
             // Make sure the reverse record matches the foward record
             return self.resolveName(name).then(function(addr) {
