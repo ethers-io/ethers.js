@@ -112,40 +112,52 @@ var EtherscanProvider = /** @class */ (function (_super) {
         return _this;
     }
     EtherscanProvider.prototype.perform = function (method, params) {
+        var _this = this;
         var url = this.baseUrl;
         var apiKey = '';
         if (this.apiKey) {
             apiKey += '&apikey=' + this.apiKey;
         }
+        var get = function (url, procFunc) {
+            return web_1.fetchJson(url, null, procFunc || getJsonResult).then(function (result) {
+                _this.emit('debug', {
+                    action: 'perform',
+                    request: url,
+                    response: result,
+                    provider: _this
+                });
+                return result;
+            });
+        };
         switch (method) {
             case 'getBlockNumber':
                 url += '/api?module=proxy&action=eth_blockNumber' + apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url);
             case 'getGasPrice':
                 url += '/api?module=proxy&action=eth_gasPrice' + apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url);
             case 'getBalance':
                 // Returns base-10 result
                 url += '/api?module=account&action=balance&address=' + params.address;
                 url += '&tag=' + params.blockTag + apiKey;
-                return web_1.fetchJson(url, null, getResult);
+                return get(url, getResult);
             case 'getTransactionCount':
                 url += '/api?module=proxy&action=eth_getTransactionCount&address=' + params.address;
                 url += '&tag=' + params.blockTag + apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url);
             case 'getCode':
                 url += '/api?module=proxy&action=eth_getCode&address=' + params.address;
                 url += '&tag=' + params.blockTag + apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url, getJsonResult);
             case 'getStorageAt':
                 url += '/api?module=proxy&action=eth_getStorageAt&address=' + params.address;
                 url += '&position=' + params.position;
                 url += '&tag=' + params.blockTag + apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url, getJsonResult);
             case 'sendTransaction':
                 url += '/api?module=proxy&action=eth_sendRawTransaction&hex=' + params.signedTransaction;
                 url += apiKey;
-                return web_1.fetchJson(url, null, getJsonResult).catch(function (error) {
+                return get(url).catch(function (error) {
                     if (error.responseText) {
                         // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
                         if (error.responseText.toLowerCase().indexOf('insufficient funds') >= 0) {
@@ -172,17 +184,17 @@ var EtherscanProvider = /** @class */ (function (_super) {
                         url += '&boolean=false';
                     }
                     url += apiKey;
-                    return web_1.fetchJson(url, null, getJsonResult);
+                    return get(url);
                 }
                 throw new Error('getBlock by blockHash not implmeneted');
             case 'getTransaction':
                 url += '/api?module=proxy&action=eth_getTransactionByHash&txhash=' + params.transactionHash;
                 url += apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url);
             case 'getTransactionReceipt':
                 url += '/api?module=proxy&action=eth_getTransactionReceipt&txhash=' + params.transactionHash;
                 url += apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url);
             case 'call': {
                 var transaction = getTransactionString(params.transaction);
                 if (transaction) {
@@ -194,7 +206,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                     throw new Error('EtherscanProvider does not support blockTag for call');
                 }
                 url += apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url);
             }
             case 'estimateGas': {
                 var transaction = getTransactionString(params.transaction);
@@ -203,7 +215,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 }
                 url += '/api?module=proxy&action=eth_estimateGas&' + transaction;
                 url += apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url);
             }
             case 'getLogs':
                 url += '/api?module=logs&action=getLogs';
@@ -234,7 +246,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 }
                 url += apiKey;
                 var self = this;
-                return web_1.fetchJson(url, null, getResult).then(function (logs) {
+                return get(url, getResult).then(function (logs) {
                     var txs = {};
                     var seq = Promise.resolve();
                     logs.forEach(function (log) {
@@ -263,7 +275,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 }
                 url += '/api?module=stats&action=ethprice';
                 url += apiKey;
-                return web_1.fetchJson(url, null, getResult).then(function (result) {
+                return get(url, getResult).then(function (result) {
                     return parseFloat(result.ethusd);
                 });
             default:
@@ -273,6 +285,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
     };
     // @TODO: Allow startBlock and endBlock to be Promises
     EtherscanProvider.prototype.getHistory = function (addressOrName, startBlock, endBlock) {
+        var _this = this;
         var url = this.baseUrl;
         var apiKey = '';
         if (this.apiKey) {
@@ -290,6 +303,12 @@ var EtherscanProvider = /** @class */ (function (_super) {
             url += '&endblock=' + endBlock;
             url += '&sort=asc' + apiKey;
             return web_1.fetchJson(url, null, getResult).then(function (result) {
+                _this.emit('debug', {
+                    action: 'getHistory',
+                    request: url,
+                    response: result,
+                    provider: _this
+                });
                 var output = [];
                 result.forEach(function (tx) {
                     ['contractAddress', 'to'].forEach(function (key) {

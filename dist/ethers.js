@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.7";
+exports.version = "4.0.8";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -166,8 +166,8 @@ function runMethod(contract, functionName, estimateOnly) {
             tx = properties_1.shallowCopy(params.pop());
             if (tx.blockTag != null) {
                 blockTag = tx.blockTag;
-                delete tx.blockTag;
             }
+            delete tx.blockTag;
             // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
             for (var key in tx) {
                 if (!allowedTransactionKeys[key]) {
@@ -10218,11 +10218,11 @@ function getEventTag(eventName) {
             return 'address:' + address_1.getAddress(eventName);
         }
         eventName = eventName.toLowerCase();
-        if (eventName === 'block' || eventName === 'pending' || eventName === 'error') {
-            return eventName;
-        }
-        else if (bytes_1.hexDataLength(eventName) === 32) {
+        if (bytes_1.hexDataLength(eventName) === 32) {
             return 'tx:' + eventName;
+        }
+        if (eventName.indexOf(':') === -1) {
+            return eventName;
         }
     }
     else if (Array.isArray(eventName)) {
@@ -10284,8 +10284,7 @@ var BaseProvider = /** @class */ (function (_super) {
             if (_this._lastBlockNumber === -2) {
                 _this._lastBlockNumber = blockNumber - 1;
             }
-            // Notify all listener for each block that has passed
-            for (var i = _this._lastBlockNumber + 1; i <= blockNumber; i++) {
+            var _loop_1 = function (i) {
                 if (_this._emitted.block < i) {
                     _this._emitted.block = i;
                     // Evict any transaction hashes or block hashes over 12 blocks
@@ -10300,6 +10299,10 @@ var BaseProvider = /** @class */ (function (_super) {
                     });
                 }
                 _this.emit('block', i);
+            };
+            // Notify all listener for each block that has passed
+            for (var i = _this._lastBlockNumber + 1; i <= blockNumber; i++) {
+                _loop_1(i);
             }
             // Sweep balances and remove addresses we no longer have events for
             var newBalances = {};
@@ -10336,14 +10339,16 @@ var BaseProvider = /** @class */ (function (_super) {
                         break;
                     }
                     case 'filter': {
-                        var address = comps[1];
                         var topics = deserializeTopics(comps[2]);
                         var filter_1 = {
-                            address: address,
+                            address: comps[1],
                             fromBlock: _this._lastBlockNumber + 1,
                             toBlock: blockNumber,
                             topics: topics
                         };
+                        if (!filter_1.address) {
+                            delete filter_1.address;
+                        }
                         _this.getLogs(filter_1).then(function (logs) {
                             if (logs.length === 0) {
                                 return;
@@ -10636,12 +10641,12 @@ var BaseProvider = /** @class */ (function (_super) {
             return properties_1.resolveProperties({ blockHashOrBlockTag: blockHashOrBlockTag }).then(function (_a) {
                 var blockHashOrBlockTag = _a.blockHashOrBlockTag;
                 try {
-                    var blockHash = bytes_1.hexlify(blockHashOrBlockTag);
-                    if (bytes_1.hexDataLength(blockHash) === 32) {
+                    var blockHash_1 = bytes_1.hexlify(blockHashOrBlockTag);
+                    if (bytes_1.hexDataLength(blockHash_1) === 32) {
                         return web_1.poll(function () {
-                            return _this.perform('getBlock', { blockHash: blockHash, includeTransactions: !!includeTransactions }).then(function (block) {
+                            return _this.perform('getBlock', { blockHash: blockHash_1, includeTransactions: !!includeTransactions }).then(function (block) {
                                 if (block == null) {
-                                    if (_this._emitted['b:' + blockHash] == null) {
+                                    if (_this._emitted['b:' + blockHash_1] == null) {
                                         return null;
                                     }
                                     return undefined;
@@ -11114,40 +11119,52 @@ var EtherscanProvider = /** @class */ (function (_super) {
         return _this;
     }
     EtherscanProvider.prototype.perform = function (method, params) {
+        var _this = this;
         var url = this.baseUrl;
         var apiKey = '';
         if (this.apiKey) {
             apiKey += '&apikey=' + this.apiKey;
         }
+        var get = function (url, procFunc) {
+            return web_1.fetchJson(url, null, procFunc || getJsonResult).then(function (result) {
+                _this.emit('debug', {
+                    action: 'perform',
+                    request: url,
+                    response: result,
+                    provider: _this
+                });
+                return result;
+            });
+        };
         switch (method) {
             case 'getBlockNumber':
                 url += '/api?module=proxy&action=eth_blockNumber' + apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url);
             case 'getGasPrice':
                 url += '/api?module=proxy&action=eth_gasPrice' + apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url);
             case 'getBalance':
                 // Returns base-10 result
                 url += '/api?module=account&action=balance&address=' + params.address;
                 url += '&tag=' + params.blockTag + apiKey;
-                return web_1.fetchJson(url, null, getResult);
+                return get(url, getResult);
             case 'getTransactionCount':
                 url += '/api?module=proxy&action=eth_getTransactionCount&address=' + params.address;
                 url += '&tag=' + params.blockTag + apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url);
             case 'getCode':
                 url += '/api?module=proxy&action=eth_getCode&address=' + params.address;
                 url += '&tag=' + params.blockTag + apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url, getJsonResult);
             case 'getStorageAt':
                 url += '/api?module=proxy&action=eth_getStorageAt&address=' + params.address;
                 url += '&position=' + params.position;
                 url += '&tag=' + params.blockTag + apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url, getJsonResult);
             case 'sendTransaction':
                 url += '/api?module=proxy&action=eth_sendRawTransaction&hex=' + params.signedTransaction;
                 url += apiKey;
-                return web_1.fetchJson(url, null, getJsonResult).catch(function (error) {
+                return get(url).catch(function (error) {
                     if (error.responseText) {
                         // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
                         if (error.responseText.toLowerCase().indexOf('insufficient funds') >= 0) {
@@ -11174,17 +11191,17 @@ var EtherscanProvider = /** @class */ (function (_super) {
                         url += '&boolean=false';
                     }
                     url += apiKey;
-                    return web_1.fetchJson(url, null, getJsonResult);
+                    return get(url);
                 }
                 throw new Error('getBlock by blockHash not implmeneted');
             case 'getTransaction':
                 url += '/api?module=proxy&action=eth_getTransactionByHash&txhash=' + params.transactionHash;
                 url += apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url);
             case 'getTransactionReceipt':
                 url += '/api?module=proxy&action=eth_getTransactionReceipt&txhash=' + params.transactionHash;
                 url += apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url);
             case 'call': {
                 var transaction = getTransactionString(params.transaction);
                 if (transaction) {
@@ -11196,7 +11213,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                     throw new Error('EtherscanProvider does not support blockTag for call');
                 }
                 url += apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url);
             }
             case 'estimateGas': {
                 var transaction = getTransactionString(params.transaction);
@@ -11205,7 +11222,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 }
                 url += '/api?module=proxy&action=eth_estimateGas&' + transaction;
                 url += apiKey;
-                return web_1.fetchJson(url, null, getJsonResult);
+                return get(url);
             }
             case 'getLogs':
                 url += '/api?module=logs&action=getLogs';
@@ -11236,7 +11253,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 }
                 url += apiKey;
                 var self = this;
-                return web_1.fetchJson(url, null, getResult).then(function (logs) {
+                return get(url, getResult).then(function (logs) {
                     var txs = {};
                     var seq = Promise.resolve();
                     logs.forEach(function (log) {
@@ -11265,7 +11282,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 }
                 url += '/api?module=stats&action=ethprice';
                 url += apiKey;
-                return web_1.fetchJson(url, null, getResult).then(function (result) {
+                return get(url, getResult).then(function (result) {
                     return parseFloat(result.ethusd);
                 });
             default:
@@ -11275,6 +11292,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
     };
     // @TODO: Allow startBlock and endBlock to be Promises
     EtherscanProvider.prototype.getHistory = function (addressOrName, startBlock, endBlock) {
+        var _this = this;
         var url = this.baseUrl;
         var apiKey = '';
         if (this.apiKey) {
@@ -11292,6 +11310,12 @@ var EtherscanProvider = /** @class */ (function (_super) {
             url += '&endblock=' + endBlock;
             url += '&sort=asc' + apiKey;
             return web_1.fetchJson(url, null, getResult).then(function (result) {
+                _this.emit('debug', {
+                    action: 'getHistory',
+                    request: url,
+                    response: result,
+                    provider: _this
+                });
                 var output = [];
                 result.forEach(function (tx) {
                     ['contractAddress', 'to'].forEach(function (key) {
@@ -11738,13 +11762,22 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         });
     };
     JsonRpcProvider.prototype.send = function (method, params) {
+        var _this = this;
         var request = {
             method: method,
             params: params,
             id: 42,
             jsonrpc: "2.0"
         };
-        return web_1.fetchJson(this.connection, JSON.stringify(request), getResult);
+        return web_1.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
+            _this.emit('debug', {
+                action: 'send',
+                request: request,
+                response: result,
+                provider: _this
+            });
+            return result;
+        });
     };
     JsonRpcProvider.prototype.perform = function (method, params) {
         switch (method) {

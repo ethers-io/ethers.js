@@ -1,6 +1,6 @@
 {
   "name": "ethers",
-  "version": "4.0.7",
+  "version": "4.0.8",
   "description": "Ethereum wallet library.",
   "main": "./index.js",
   "types": "./index.d.ts",
@@ -53,7 +53,7 @@
     "vinyl-source-stream": "^2.0.0",
     "web3-providers-http": "1.0.0-beta.35"
   },
-  "browser": "./dist/ethers.js",
+  "browser": "./dist/ethers.min.js",
   "keywords": [
     "ethereum",
     "library",

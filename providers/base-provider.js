@@ -375,11 +375,11 @@ function getEventTag(eventName) {
             return 'address:' + address_1.getAddress(eventName);
         }
         eventName = eventName.toLowerCase();
-        if (eventName === 'block' || eventName === 'pending' || eventName === 'error') {
-            return eventName;
-        }
-        else if (bytes_1.hexDataLength(eventName) === 32) {
+        if (bytes_1.hexDataLength(eventName) === 32) {
             return 'tx:' + eventName;
+        }
+        if (eventName.indexOf(':') === -1) {
+            return eventName;
         }
     }
     else if (Array.isArray(eventName)) {
@@ -441,8 +441,7 @@ var BaseProvider = /** @class */ (function (_super) {
             if (_this._lastBlockNumber === -2) {
                 _this._lastBlockNumber = blockNumber - 1;
             }
-            // Notify all listener for each block that has passed
-            for (var i = _this._lastBlockNumber + 1; i <= blockNumber; i++) {
+            var _loop_1 = function (i) {
                 if (_this._emitted.block < i) {
                     _this._emitted.block = i;
                     // Evict any transaction hashes or block hashes over 12 blocks
@@ -457,6 +456,10 @@ var BaseProvider = /** @class */ (function (_super) {
                     });
                 }
                 _this.emit('block', i);
+            };
+            // Notify all listener for each block that has passed
+            for (var i = _this._lastBlockNumber + 1; i <= blockNumber; i++) {
+                _loop_1(i);
             }
             // Sweep balances and remove addresses we no longer have events for
             var newBalances = {};
@@ -493,14 +496,16 @@ var BaseProvider = /** @class */ (function (_super) {
                         break;
                     }
                     case 'filter': {
-                        var address = comps[1];
                         var topics = deserializeTopics(comps[2]);
                         var filter_1 = {
-                            address: address,
+                            address: comps[1],
                             fromBlock: _this._lastBlockNumber + 1,
                             toBlock: blockNumber,
                             topics: topics
                         };
+                        if (!filter_1.address) {
+                            delete filter_1.address;
+                        }
                         _this.getLogs(filter_1).then(function (logs) {
                             if (logs.length === 0) {
                                 return;
@@ -793,12 +798,12 @@ var BaseProvider = /** @class */ (function (_super) {
             return properties_1.resolveProperties({ blockHashOrBlockTag: blockHashOrBlockTag }).then(function (_a) {
                 var blockHashOrBlockTag = _a.blockHashOrBlockTag;
                 try {
-                    var blockHash = bytes_1.hexlify(blockHashOrBlockTag);
-                    if (bytes_1.hexDataLength(blockHash) === 32) {
+                    var blockHash_1 = bytes_1.hexlify(blockHashOrBlockTag);
+                    if (bytes_1.hexDataLength(blockHash_1) === 32) {
                         return web_1.poll(function () {
-                            return _this.perform('getBlock', { blockHash: blockHash, includeTransactions: !!includeTransactions }).then(function (block) {
+                            return _this.perform('getBlock', { blockHash: blockHash_1, includeTransactions: !!includeTransactions }).then(function (block) {
                                 if (block == null) {
-                                    if (_this._emitted['b:' + blockHash] == null) {
+                                    if (_this._emitted['b:' + blockHash_1] == null) {
                                         return null;
                                     }
                                     return undefined;

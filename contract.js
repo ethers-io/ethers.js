@@ -118,8 +118,8 @@ function runMethod(contract, functionName, estimateOnly) {
             tx = properties_1.shallowCopy(params.pop());
             if (tx.blockTag != null) {
                 blockTag = tx.blockTag;
-                delete tx.blockTag;
             }
+            delete tx.blockTag;
             // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
             for (var key in tx) {
                 if (!allowedTransactionKeys[key]) {

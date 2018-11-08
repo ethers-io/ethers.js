@@ -217,13 +217,22 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         });
     };
     JsonRpcProvider.prototype.send = function (method, params) {
+        var _this = this;
         var request = {
             method: method,
             params: params,
             id: 42,
             jsonrpc: "2.0"
         };
-        return web_1.fetchJson(this.connection, JSON.stringify(request), getResult);
+        return web_1.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
+            _this.emit('debug', {
+                action: 'send',
+                request: request,
+                response: result,
+                provider: _this
+            });
+            return result;
+        });
     };
     JsonRpcProvider.prototype.perform = function (method, params) {
         switch (method) {
