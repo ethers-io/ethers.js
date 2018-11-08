@@ -158,8 +158,9 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
 
             if (tx.blockTag != null) {
                 blockTag = tx.blockTag;
-                delete tx.blockTag;
             }
+
+            delete tx.blockTag;
 
             // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
             for (let key in tx) {
