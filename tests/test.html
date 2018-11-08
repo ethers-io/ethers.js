@@ -11,37 +11,7 @@
     <body>
         <div id="mocha"></div>
         <script src="../node_modules/mocha/mocha.js"></script>
-
-        <!--
-           Shim for PhantomJS: Promise
-           See: https://github.com/stefanpenner/es6-promise
-        -->
-        <script src="./dist/es6-promise.auto.js"></script>
-
-        <!--
-           Shim for String.prototype.normalize
-           See: https://github.com/walling/unorm
-        -->
-        <script src="./dist/unorm.js"></script>
-
-        <!--
-           Shims for PhantomJS
-        -->
-        <script type="text/javascript">
-
-            // ArrayBuffer.isView
-            if (!ArrayBuffer.isView) {
-                 ArrayBuffer.isView = function(obj) {
-                     // @TODO: This should probably check various instanceof aswell
-                     return !!(obj.buffer);
-                 }
-            }
-
-            // nextTick
-            if (!window.nextTick) {
-                window.nextTick = function (callback) { setTimeout(callback, 0); }
-            }
-        </script>
+        <script src="../dist/shims.js"></script>
 
         <!-- Inject the mocha describe and it functions -->
         <script type="text/javascript">

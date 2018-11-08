@@ -1,14 +1,14 @@
 {
   "name": "ethers",
-  "version": "4.0.8",
+  "version": "4.0.9",
   "description": "Ethereum wallet library.",
   "main": "./index.js",
   "types": "./index.d.ts",
   "scripts": {
     "build": "npm run dist-version && tsc -p ./tsconfig.json",
     "auto-build": "npm run build -- -w",
-    "dist": "npm run dist-version && npm run build && gulp default minified && npm run dist-types",
-    "dist-test": "gulp default-test minified-test",
+    "dist": "npm run dist-version && npm run build && gulp default minified shims && npm run dist-types",
+    "dist-test": "gulp default-test minified-test shims",
     "dist-bip39": "gulp bip39-es bip39-fr bip39-it bip39-ja bip39-ko bip39-zh",
     "dist-types": "dts-bundle --name ethers --main ./index.d.ts --out ./dist/ethers.types.txt",
     "dist-version": "node -e \"let v = require('./package.json').version; require('fs').writeFileSync('./src.ts/_version.ts', 'export const version = \\\"' + v +'\\\";\\n')\"",
@@ -31,7 +31,7 @@
     "xmlhttprequest": "1.8.0"
   },
   "devDependencies": {
-    "browserify": "^16.2.2",
+    "browserify": "^16.2.3",
     "browserify-zlib": "^0.2.0",
     "dts-bundle": "^0.7.3",
     "eslint": "^5.0.1",

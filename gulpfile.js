@@ -174,6 +174,28 @@ taskBundle("minified", { filename: "ethers.min.js", dest: 'dist', minify: true }
 // Creates dist/ethers.min.js
 taskBundle("minified-test", { filename: "ethers.min.js", dest: 'tests/dist', minify: true });
 
+gulp.task('shims', function () {
+
+        var result = browserify({
+            basedir: '.',
+            debug: false,
+            entries: [ './tests/shims/index.js' ],
+            cache: { },
+            packageCache: {},
+            standalone: "_shims",
+            insertGlobalVars: {
+               process: function() { return; },
+            }
+        })
+        .bundle()
+        .pipe(source('shims.js'))
+        .pipe(buffer())
+        .pipe(uglify())
+        .pipe(gulp.dest('dist'));
+
+        return result;
+});
+
 /*
 // Dump the TypeScript definitions to dist/types/
 gulp.task("types", function() {
