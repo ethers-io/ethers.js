@@ -152,7 +152,9 @@ function taskBundle(name, options) {
         if (options.minify) {
             result = result.pipe(buffer())
             .pipe(sourcemaps.init({ loadMaps: true }))
-            .pipe(uglify())
+            .pipe(uglify({
+                output: { ascii_only: true }
+            }))
             .pipe(sourcemaps.write('./'))
         }
 
@@ -190,7 +192,9 @@ gulp.task('shims', function () {
         .bundle()
         .pipe(source('shims.js'))
         .pipe(buffer())
-        .pipe(uglify())
+        .pipe(uglify({
+            output: { ascii_only: true }
+        }))
         .pipe(gulp.dest('dist'));
 
         return result;
@@ -287,7 +291,9 @@ function taskLang(locale) {
         .bundle()
         .pipe(source("wordlist-" + locale + ".js"))
         .pipe(buffer())
-        .pipe(uglify())
+        .pipe(uglify({
+            output: { ascii_only: true }
+        }))
         .pipe(gulp.dest("dist"));
     });
 }

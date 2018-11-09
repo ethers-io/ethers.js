@@ -1,7 +1,20 @@
 'use strict';
 
 // Shim String.prototype.normalize
-var unorm = require('./unorm.js');
+try {
+    // Some platforms have a native normalize, but it is broken; so we force our shim
+    if (String.fromCharCode(0xe9).normalize('NFD') !== String.fromCharCode(0x65, 0x0301)) {
+        throw new Error('bad normalize');
+    }
+} catch (error) {
+    var unorm = require('./unorm.js');
+    console.log("Broken String.prototype.normalize... Forcing shim.");
+    String.prototype.normalize = function(form) {
+        var func = unorm[(form || 'NFC').toLowerCase()];
+        if (!func) { throw new RangeError('invalid form - ' + form); }
+        return func(this);
+    }
+}
 
 // Shim atob and btoa
 var base64 = require('./base64.js');
