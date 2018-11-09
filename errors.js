@@ -108,3 +108,14 @@ function setCensorship(censorship, permanent) {
     _permanentCensorErrors = !!permanent;
 }
 exports.setCensorship = setCensorship;
+function checkNormalize() {
+    try {
+        if (String.fromCharCode(0xe9).normalize('NFD') !== String.fromCharCode(0x65, 0x0301)) {
+            throw new Error('broken');
+        }
+    }
+    catch (error) {
+        throwError('platform missing String.prototype.normalize', exports.UNSUPPORTED_OPERATION, { operation: 'String.prototype.normalize' });
+    }
+}
+exports.checkNormalize = checkNormalize;

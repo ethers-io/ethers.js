@@ -1,6 +1,7 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var constants_1 = require("../constants");
+var errors_1 = require("../errors");
 var bytes_1 = require("./bytes");
 ///////////////////////////////
 var UnicodeNormalizationForm;
@@ -16,6 +17,7 @@ var UnicodeNormalizationForm;
 function toUtf8Bytes(str, form) {
     if (form === void 0) { form = UnicodeNormalizationForm.current; }
     if (form != UnicodeNormalizationForm.current) {
+        errors_1.checkNormalize();
         str = str.normalize(form);
     }
     var result = [];

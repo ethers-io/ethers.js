@@ -188,6 +188,7 @@ declare module 'ethers/errors' {
     export function checkNew(self: any, kind: any): void;
     export function checkArgumentCount(count: number, expectedCount: number, suffix?: string): void;
     export function setCensorship(censorship: boolean, permanent?: boolean): void;
+    export function checkNormalize(): void;
 }
 
 declare module 'ethers/providers' {
@@ -261,7 +262,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.9";
+    export const version = "4.0.10";
 }
 
 declare module 'ethers/utils/bignumber' {

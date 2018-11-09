@@ -166,6 +166,7 @@ function mnemonicToEntropy(mnemonic, wordlist) {
     if (!wordlist) {
         wordlist = lang_en_1.langEn;
     }
+    errors.checkNormalize();
     var words = wordlist.split(mnemonic);
     if ((words.length % 3) !== 0) {
         throw new Error('invalid mnemonic');

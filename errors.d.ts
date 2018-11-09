@@ -14,3 +14,4 @@ export declare function throwError(message: string, code: string, params: any): 
 export declare function checkNew(self: any, kind: any): void;
 export declare function checkArgumentCount(count: number, expectedCount: number, suffix?: string): void;
 export declare function setCensorship(censorship: boolean, permanent?: boolean): void;
+export declare function checkNormalize(): void;
