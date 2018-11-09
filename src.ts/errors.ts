@@ -122,3 +122,13 @@ export function setCensorship(censorship: boolean, permanent?: boolean): void {
     _censorErrors = !!censorship;
     _permanentCensorErrors = !!permanent;
 }
+
+export function checkNormalize(): void {
+    try {
+        if (String.fromCharCode(0xe9).normalize('NFD') !== String.fromCharCode(0x65, 0x0301)) {
+            throw new Error('broken')
+        }
+    } catch (error) {
+        throwError('platform missing String.prototype.normalize', UNSUPPORTED_OPERATION, { operation: 'String.prototype.normalize' });
+    }
+}

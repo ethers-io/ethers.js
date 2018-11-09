@@ -201,6 +201,8 @@ export function mnemonicToSeed(mnemonic: string, password?: string): string {
 export function mnemonicToEntropy(mnemonic: string, wordlist?: Wordlist): string {
     if (!wordlist) { wordlist = langEn; }
 
+    errors.checkNormalize();
+        
     var words = wordlist.split(mnemonic);
     if ((words.length % 3) !== 0) { throw new Error('invalid mnemonic'); }
 

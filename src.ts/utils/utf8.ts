@@ -1,7 +1,7 @@
 'use strict';
 
 import { HashZero } from '../constants';
-
+import { checkNormalize } from '../errors';
 import { arrayify, concat, hexlify } from './bytes';
 
 ///////////////////////////////
@@ -23,6 +23,7 @@ export enum UnicodeNormalizationForm {
 export function toUtf8Bytes(str: string, form: UnicodeNormalizationForm = UnicodeNormalizationForm.current): Uint8Array {
 
     if (form != UnicodeNormalizationForm.current) {
+        checkNormalize();
         str = str.normalize(form);
     }
 

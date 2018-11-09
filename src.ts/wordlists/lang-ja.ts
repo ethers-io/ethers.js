@@ -132,9 +132,7 @@ class LangJa extends Wordlist {
     }
 
     split(mnemonic: string): Array<string> {
-        if (!mnemonic.normalize) {
-            errors.throwError('Japanese is unsupported on this platform; missing String.prototype.normalize', errors.UNSUPPORTED_OPERATION, { operation: 'String.prototype.normalize' });
-        }
+        errors.checkNormalize();
         return mnemonic.split(/(?:\u3000| )+/g);
     }
 
