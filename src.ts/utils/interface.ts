@@ -103,7 +103,7 @@ class _DeployDescription extends Description implements DeployDescription {
             });
         }
 
-        errors.checkArgumentCount(params.length, this.inputs.length, 'in Interface constructor');
+        errors.checkArgumentCount(params.length, this.inputs.length, ' in Interface constructor');
 
         try {
             return (bytecode + defaultAbiCoder.encode(this.inputs, params).substring(2));
@@ -132,7 +132,7 @@ class _FunctionDescription extends Description implements FunctionDescription {
     readonly gas: BigNumber;
 
     encode(params: Array<any>): string {
-        errors.checkArgumentCount(params.length, this.inputs.length, 'in interface function ' + this.name);
+        errors.checkArgumentCount(params.length, this.inputs.length, ' in interface function ' + this.name);
 
         try {
             return this.sighash + defaultAbiCoder.encode(this.inputs, params).substring(2);

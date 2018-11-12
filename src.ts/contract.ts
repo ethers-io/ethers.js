@@ -799,7 +799,7 @@ export class ContractFactory {
         });
 
         // Make sure the call matches the constructor signature
-        errors.checkArgumentCount(args.length, this.interface.deployFunction.inputs.length, 'in Contract constructor');
+        errors.checkArgumentCount(args.length, this.interface.deployFunction.inputs.length, ' in Contract constructor');
 
         // Set the data to the bytecode + the encoded constructor arguments
         tx.data = this.interface.deployFunction.encode(this.bytecode, args);
