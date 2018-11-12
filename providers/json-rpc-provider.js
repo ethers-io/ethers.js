@@ -308,6 +308,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                     }
                     var seq = Promise.resolve();
                     hashes.forEach(function (hash) {
+                        // @TODO: This should be garbage collected at some point... How? When?
                         self._emitted['t:' + hash.toLowerCase()] = 'pending';
                         seq = seq.then(function () {
                             return self.getTransaction(hash).then(function (tx) {

@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.10";
+exports.version = "4.0.11";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -703,7 +703,7 @@ var ContractFactory = /** @class */ (function () {
             errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
         });
         // Make sure the call matches the constructor signature
-        errors.checkArgumentCount(args.length, this.interface.deployFunction.inputs.length, 'in Contract constructor');
+        errors.checkArgumentCount(args.length, this.interface.deployFunction.inputs.length, ' in Contract constructor');
         // Set the data to the bytecode + the encoded constructor arguments
         tx.data = this.interface.deployFunction.encode(this.bytecode, args);
         return tx;
@@ -10276,11 +10276,7 @@ var BaseProvider = /** @class */ (function (_super) {
         // Events being listened to
         _this._events = [];
         _this._pollingInterval = 4000;
-        // We use this to track recent emitted events; for example, if we emit a "block" of 100
-        // and we get a `getBlock(100)` request which would result in null, we should retry
-        // until we get a response. This provides devs with a consistent view. Similarly for
-        // transaction hashes.
-        _this._emitted = { block: _this._lastBlockNumber };
+        _this._emitted = { block: -2 };
         _this._fastQueryDate = 0;
         return _this;
     }
@@ -10292,28 +10288,40 @@ var BaseProvider = /** @class */ (function (_super) {
             if (blockNumber === _this._lastBlockNumber) {
                 return;
             }
-            if (_this._lastBlockNumber === -2) {
-                _this._lastBlockNumber = blockNumber - 1;
+            // First polling cycle, trigger a "block" events
+            if (_this._emitted.block === -2) {
+                _this._emitted.block = blockNumber - 1;
             }
-            var _loop_1 = function (i) {
-                if (_this._emitted.block < i) {
-                    _this._emitted.block = i;
+            // Notify all listener for each block that has passed
+            for (var i = _this._emitted.block + 1; i <= blockNumber; i++) {
+                _this.emit('block', i);
+            }
+            // The emitted block was updated, check for obsolete events
+            if (_this._emitted.block !== blockNumber) {
+                _this._emitted.block = blockNumber;
+                Object.keys(_this._emitted).forEach(function (key) {
+                    // The block event does not expire
+                    if (key === 'block') {
+                        return;
+                    }
+                    // The block we were at when we emitted this event
+                    var eventBlockNumber = _this._emitted[key];
+                    // We cannot garbage collect pending transactions or blocks here
+                    // They should be garbage collected by the Provider when setting
+                    // "pending" events
+                    if (eventBlockNumber === 'pending') {
+                        return;
+                    }
                     // Evict any transaction hashes or block hashes over 12 blocks
                     // old, since they should not return null anyways
-                    Object.keys(_this._emitted).forEach(function (key) {
-                        if (key === 'block') {
-                            return;
-                        }
-                        if (_this._emitted[key] > i + 12) {
-                            delete _this._emitted[key];
-                        }
-                    });
-                }
-                _this.emit('block', i);
-            };
-            // Notify all listener for each block that has passed
-            for (var i = _this._lastBlockNumber + 1; i <= blockNumber; i++) {
-                _loop_1(i);
+                    if (blockNumber - eventBlockNumber > 12) {
+                        delete _this._emitted[key];
+                    }
+                });
+            }
+            // First polling cycle
+            if (_this._lastBlockNumber === -2) {
+                _this._lastBlockNumber = blockNumber - 1;
             }
             // Sweep balances and remove addresses we no longer have events for
             var newBalances = {};
@@ -10339,12 +10347,12 @@ var BaseProvider = /** @class */ (function (_super) {
                             newBalances[address_2] = _this._balances[address_2];
                         }
                         _this.getBalance(address_2, 'latest').then(function (balance) {
-                            var lastBalance = this._balances[address_2];
+                            var lastBalance = _this._balances[address_2];
                             if (lastBalance && balance.eq(lastBalance)) {
                                 return;
                             }
-                            this._balances[address_2] = balance;
-                            this.emit(address_2, balance);
+                            _this._balances[address_2] = balance;
+                            _this.emit(address_2, balance);
                             return null;
                         }).catch(function (error) { _this.emit('error', error); });
                         break;
@@ -10382,8 +10390,10 @@ var BaseProvider = /** @class */ (function (_super) {
         this.doPoll();
     };
     BaseProvider.prototype.resetEventsBlock = function (blockNumber) {
-        this._lastBlockNumber = blockNumber;
-        this._doPoll();
+        this._lastBlockNumber = blockNumber - 1;
+        if (this.polling) {
+            this._doPoll();
+        }
     };
     Object.defineProperty(BaseProvider.prototype, "network", {
         get: function () {
@@ -10397,10 +10407,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     Object.defineProperty(BaseProvider.prototype, "blockNumber", {
         get: function () {
-            if (this._lastBlockNumber < 0) {
-                return null;
-            }
-            return this._lastBlockNumber;
+            return this._fastBlockNumber;
         },
         enumerable: true,
         configurable: true
@@ -10474,13 +10481,15 @@ var BaseProvider = /** @class */ (function (_super) {
     //        this will be used once we move to the WebSocket or other alternatives to polling
     BaseProvider.prototype.waitForTransaction = function (transactionHash, confirmations) {
         var _this = this;
-        if (!confirmations) {
+        if (confirmations == null) {
             confirmations = 1;
         }
         return web_1.poll(function () {
             return _this.getTransactionReceipt(transactionHash).then(function (receipt) {
-                if (receipt == null || receipt.confirmations < confirmations) {
-                    return undefined;
+                if (receipt == null && confirmations !== 0) {
+                    if (receipt.confirmations < confirmations) {
+                        return undefined;
+                    }
                 }
                 return receipt;
             });
@@ -10596,10 +10605,17 @@ var BaseProvider = /** @class */ (function (_super) {
         if (hash != null && tx.hash !== hash) {
             errors.throwError('Transaction hash mismatch from Provider.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
-        this._emitted['t:' + tx.hash] = 'pending';
         // @TODO: (confirmations? number, timeout? number)
         result.wait = function (confirmations) {
+            // We know this transaction *must* exist (whether it gets mined is
+            // another story), so setting an emitted value forces us to
+            // wait even if the node returns null for the receipt
+            if (confirmations !== 0) {
+                _this._emitted['t:' + tx.hash] = 'pending';
+            }
             return _this.waitForTransaction(tx.hash, confirmations).then(function (receipt) {
+                // No longer pending, allow the polling loop to garbage collect this
+                _this._emitted['t:' + tx.hash] = receipt.blockNumber;
                 if (receipt.status === 0) {
                     errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
                         transactionHash: tx.hash,
@@ -10677,7 +10693,7 @@ var BaseProvider = /** @class */ (function (_super) {
                     return web_1.poll(function () {
                         return _this.perform('getBlock', { blockTag: blockTag_1, includeTransactions: !!includeTransactions }).then(function (block) {
                             if (block == null) {
-                                if (blockNumber_1 > _this._emitted.block) {
+                                if (blockNumber_1 <= _this._emitted.block) {
                                     return undefined;
                                 }
                                 return null;
@@ -11864,6 +11880,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                     }
                     var seq = Promise.resolve();
                     hashes.forEach(function (hash) {
+                        // @TODO: This should be garbage collected at some point... How? When?
                         self._emitted['t:' + hash.toLowerCase()] = 'pending';
                         seq = seq.then(function () {
                             return self.getTransaction(hash).then(function (tx) {
@@ -12755,7 +12772,7 @@ var CoderArray = /** @class */ (function (_super) {
             count = value.length;
             result = uint256Coder.encode(count);
         }
-        errors.checkArgumentCount(count, value.length, 'in coder array' + (this.localName ? (" " + this.localName) : ""));
+        errors.checkArgumentCount(count, value.length, ' in coder array' + (this.localName ? (" " + this.localName) : ""));
         var coders = [];
         for (var i = 0; i < value.length; i++) {
             coders.push(this.coder);
@@ -14056,7 +14073,7 @@ var _DeployDescription = /** @class */ (function (_super) {
                 value: bytecode
             });
         }
-        errors.checkArgumentCount(params.length, this.inputs.length, 'in Interface constructor');
+        errors.checkArgumentCount(params.length, this.inputs.length, ' in Interface constructor');
         try {
             return (bytecode + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2));
         }
@@ -14077,7 +14094,7 @@ var _FunctionDescription = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     _FunctionDescription.prototype.encode = function (params) {
-        errors.checkArgumentCount(params.length, this.inputs.length, 'in interface function ' + this.name);
+        errors.checkArgumentCount(params.length, this.inputs.length, ' in interface function ' + this.name);
         try {
             return this.sighash + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2);
         }

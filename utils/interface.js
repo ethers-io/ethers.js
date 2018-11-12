@@ -56,7 +56,7 @@ var _DeployDescription = /** @class */ (function (_super) {
                 value: bytecode
             });
         }
-        errors.checkArgumentCount(params.length, this.inputs.length, 'in Interface constructor');
+        errors.checkArgumentCount(params.length, this.inputs.length, ' in Interface constructor');
         try {
             return (bytecode + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2));
         }
@@ -77,7 +77,7 @@ var _FunctionDescription = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     _FunctionDescription.prototype.encode = function (params) {
-        errors.checkArgumentCount(params.length, this.inputs.length, 'in interface function ' + this.name);
+        errors.checkArgumentCount(params.length, this.inputs.length, ' in interface function ' + this.name);
         try {
             return this.sighash + abi_coder_1.defaultAbiCoder.encode(this.inputs, params).substring(2);
         }

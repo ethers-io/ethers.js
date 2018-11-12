@@ -422,11 +422,7 @@ var BaseProvider = /** @class */ (function (_super) {
         // Events being listened to
         _this._events = [];
         _this._pollingInterval = 4000;
-        // We use this to track recent emitted events; for example, if we emit a "block" of 100
-        // and we get a `getBlock(100)` request which would result in null, we should retry
-        // until we get a response. This provides devs with a consistent view. Similarly for
-        // transaction hashes.
-        _this._emitted = { block: _this._lastBlockNumber };
+        _this._emitted = { block: -2 };
         _this._fastQueryDate = 0;
         return _this;
     }
@@ -438,28 +434,40 @@ var BaseProvider = /** @class */ (function (_super) {
             if (blockNumber === _this._lastBlockNumber) {
                 return;
             }
-            if (_this._lastBlockNumber === -2) {
-                _this._lastBlockNumber = blockNumber - 1;
+            // First polling cycle, trigger a "block" events
+            if (_this._emitted.block === -2) {
+                _this._emitted.block = blockNumber - 1;
             }
-            var _loop_1 = function (i) {
-                if (_this._emitted.block < i) {
-                    _this._emitted.block = i;
+            // Notify all listener for each block that has passed
+            for (var i = _this._emitted.block + 1; i <= blockNumber; i++) {
+                _this.emit('block', i);
+            }
+            // The emitted block was updated, check for obsolete events
+            if (_this._emitted.block !== blockNumber) {
+                _this._emitted.block = blockNumber;
+                Object.keys(_this._emitted).forEach(function (key) {
+                    // The block event does not expire
+                    if (key === 'block') {
+                        return;
+                    }
+                    // The block we were at when we emitted this event
+                    var eventBlockNumber = _this._emitted[key];
+                    // We cannot garbage collect pending transactions or blocks here
+                    // They should be garbage collected by the Provider when setting
+                    // "pending" events
+                    if (eventBlockNumber === 'pending') {
+                        return;
+                    }
                     // Evict any transaction hashes or block hashes over 12 blocks
                     // old, since they should not return null anyways
-                    Object.keys(_this._emitted).forEach(function (key) {
-                        if (key === 'block') {
-                            return;
-                        }
-                        if (_this._emitted[key] > i + 12) {
-                            delete _this._emitted[key];
-                        }
-                    });
-                }
-                _this.emit('block', i);
-            };
-            // Notify all listener for each block that has passed
-            for (var i = _this._lastBlockNumber + 1; i <= blockNumber; i++) {
-                _loop_1(i);
+                    if (blockNumber - eventBlockNumber > 12) {
+                        delete _this._emitted[key];
+                    }
+                });
+            }
+            // First polling cycle
+            if (_this._lastBlockNumber === -2) {
+                _this._lastBlockNumber = blockNumber - 1;
             }
             // Sweep balances and remove addresses we no longer have events for
             var newBalances = {};
@@ -485,12 +493,12 @@ var BaseProvider = /** @class */ (function (_super) {
                             newBalances[address_2] = _this._balances[address_2];
                         }
                         _this.getBalance(address_2, 'latest').then(function (balance) {
-                            var lastBalance = this._balances[address_2];
+                            var lastBalance = _this._balances[address_2];
                             if (lastBalance && balance.eq(lastBalance)) {
                                 return;
                             }
-                            this._balances[address_2] = balance;
-                            this.emit(address_2, balance);
+                            _this._balances[address_2] = balance;
+                            _this.emit(address_2, balance);
                             return null;
                         }).catch(function (error) { _this.emit('error', error); });
                         break;
@@ -528,8 +536,10 @@ var BaseProvider = /** @class */ (function (_super) {
         this.doPoll();
     };
     BaseProvider.prototype.resetEventsBlock = function (blockNumber) {
-        this._lastBlockNumber = blockNumber;
-        this._doPoll();
+        this._lastBlockNumber = blockNumber - 1;
+        if (this.polling) {
+            this._doPoll();
+        }
     };
     Object.defineProperty(BaseProvider.prototype, "network", {
         get: function () {
@@ -543,10 +553,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     Object.defineProperty(BaseProvider.prototype, "blockNumber", {
         get: function () {
-            if (this._lastBlockNumber < 0) {
-                return null;
-            }
-            return this._lastBlockNumber;
+            return this._fastBlockNumber;
         },
         enumerable: true,
         configurable: true
@@ -620,13 +627,15 @@ var BaseProvider = /** @class */ (function (_super) {
     //        this will be used once we move to the WebSocket or other alternatives to polling
     BaseProvider.prototype.waitForTransaction = function (transactionHash, confirmations) {
         var _this = this;
-        if (!confirmations) {
+        if (confirmations == null) {
             confirmations = 1;
         }
         return web_1.poll(function () {
             return _this.getTransactionReceipt(transactionHash).then(function (receipt) {
-                if (receipt == null || receipt.confirmations < confirmations) {
-                    return undefined;
+                if (receipt == null && confirmations !== 0) {
+                    if (receipt.confirmations < confirmations) {
+                        return undefined;
+                    }
                 }
                 return receipt;
             });
@@ -742,10 +751,17 @@ var BaseProvider = /** @class */ (function (_super) {
         if (hash != null && tx.hash !== hash) {
             errors.throwError('Transaction hash mismatch from Provider.sendTransaction.', errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
-        this._emitted['t:' + tx.hash] = 'pending';
         // @TODO: (confirmations? number, timeout? number)
         result.wait = function (confirmations) {
+            // We know this transaction *must* exist (whether it gets mined is
+            // another story), so setting an emitted value forces us to
+            // wait even if the node returns null for the receipt
+            if (confirmations !== 0) {
+                _this._emitted['t:' + tx.hash] = 'pending';
+            }
             return _this.waitForTransaction(tx.hash, confirmations).then(function (receipt) {
+                // No longer pending, allow the polling loop to garbage collect this
+                _this._emitted['t:' + tx.hash] = receipt.blockNumber;
                 if (receipt.status === 0) {
                     errors.throwError('transaction failed', errors.CALL_EXCEPTION, {
                         transactionHash: tx.hash,
@@ -823,7 +839,7 @@ var BaseProvider = /** @class */ (function (_super) {
                     return web_1.poll(function () {
                         return _this.perform('getBlock', { blockTag: blockTag_1, includeTransactions: !!includeTransactions }).then(function (block) {
                             if (block == null) {
-                                if (blockNumber_1 > _this._emitted.block) {
+                                if (blockNumber_1 <= _this._emitted.block) {
                                     return undefined;
                                 }
                                 return null;

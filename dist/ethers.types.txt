@@ -262,7 +262,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.10";
+    export const version = "4.0.11";
 }
 
 declare module 'ethers/utils/bignumber' {
@@ -716,7 +716,9 @@ declare module 'ethers/providers/base-provider' {
     import { Transaction } from 'ethers/utils/transaction';
     import { Network, Networkish } from 'ethers/utils/networks';
     export class BaseProvider extends Provider {
-        protected _emitted: any;
+        protected _emitted: {
+            [eventName: string]: number | 'pending';
+        };
         /**
           *  ready
           *

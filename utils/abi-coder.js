@@ -733,7 +733,7 @@ var CoderArray = /** @class */ (function (_super) {
             count = value.length;
             result = uint256Coder.encode(count);
         }
-        errors.checkArgumentCount(count, value.length, 'in coder array' + (this.localName ? (" " + this.localName) : ""));
+        errors.checkArgumentCount(count, value.length, ' in coder array' + (this.localName ? (" " + this.localName) : ""));
         var coders = [];
         for (var i = 0; i < value.length; i++) {
             coders.push(this.coder);

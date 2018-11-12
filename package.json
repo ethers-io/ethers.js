@@ -1,6 +1,6 @@
 {
   "name": "ethers",
-  "version": "4.0.10",
+  "version": "4.0.11",
   "description": "Ethereum wallet library.",
   "main": "./index.js",
   "types": "./index.d.ts",

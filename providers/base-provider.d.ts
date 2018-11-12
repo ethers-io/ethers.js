@@ -7,7 +7,9 @@ import { Network, Networkish } from '../utils/networks';
 export declare class BaseProvider extends Provider {
     private _network;
     private _events;
-    protected _emitted: any;
+    protected _emitted: {
+        [eventName: string]: number | 'pending';
+    };
     private _pollingInterval;
     private _poller;
     private _lastBlockNumber;

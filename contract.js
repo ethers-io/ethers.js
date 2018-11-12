@@ -655,7 +655,7 @@ var ContractFactory = /** @class */ (function () {
             errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
         });
         // Make sure the call matches the constructor signature
-        errors.checkArgumentCount(args.length, this.interface.deployFunction.inputs.length, 'in Contract constructor');
+        errors.checkArgumentCount(args.length, this.interface.deployFunction.inputs.length, ' in Contract constructor');
         // Set the data to the bytecode + the encoded constructor arguments
         tx.data = this.interface.deployFunction.encode(this.bytecode, args);
         return tx;
