@@ -632,10 +632,11 @@ var BaseProvider = /** @class */ (function (_super) {
         }
         return web_1.poll(function () {
             return _this.getTransactionReceipt(transactionHash).then(function (receipt) {
-                if (receipt == null && confirmations !== 0) {
-                    if (receipt.confirmations < confirmations) {
-                        return undefined;
-                    }
+                if (confirmations === 0) {
+                    return receipt;
+                }
+                if (receipt == null || receipt.confirmations < confirmations) {
+                    return undefined;
                 }
                 return receipt;
             });
@@ -760,6 +761,9 @@ var BaseProvider = /** @class */ (function (_super) {
                 _this._emitted['t:' + tx.hash] = 'pending';
             }
             return _this.waitForTransaction(tx.hash, confirmations).then(function (receipt) {
+                if (receipt == null && confirmations === 0) {
+                    return null;
+                }
                 // No longer pending, allow the polling loop to garbage collect this
                 _this._emitted['t:' + tx.hash] = receipt.blockNumber;
                 if (receipt.status === 0) {
