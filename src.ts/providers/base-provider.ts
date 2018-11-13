@@ -751,8 +751,9 @@ export class BaseProvider extends Provider {
         if (confirmations == null) { confirmations = 1; }
         return poll(() => {
             return this.getTransactionReceipt(transactionHash).then((receipt) => {
-                if (receipt == null && confirmations !== 0) {
-                    if (receipt.confirmations < confirmations) { return undefined; }
+                if (confirmations === 0) { return receipt; }
+                if (receipt == null || receipt.confirmations < confirmations) {
+                    return undefined;
                 }
                 return receipt;
             });
@@ -874,6 +875,7 @@ export class BaseProvider extends Provider {
             }
 
             return this.waitForTransaction(tx.hash, confirmations).then((receipt) => {
+                if (receipt == null && confirmations === 0) { return null; }
 
                 // No longer pending, allow the polling loop to garbage collect this
                 this._emitted['t:' + tx.hash] = receipt.blockNumber;
