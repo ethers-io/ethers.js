@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.12";
+exports.version = "4.0.13";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -912,10 +912,11 @@ exports.version = _version_1.version;
 ////////////////////////
 // Helper Functions
 function getDefaultProvider(network) {
-    return new providers.FallbackProvider([
-        new providers.InfuraProvider(network),
-        new providers.EtherscanProvider(network),
-    ]);
+    var n = utils.getNetwork(network || 'homestead');
+    if (!n || !n._defaultProvider) {
+        return null;
+    }
+    return n._defaultProvider(providers);
 }
 exports.getDefaultProvider = getDefaultProvider;
 
@@ -9933,9 +9934,15 @@ function arrayOf(check) {
         return result;
     });
 }
-function checkHash(hash) {
-    if (typeof (hash) === 'string' && bytes_1.hexDataLength(hash) === 32) {
-        return hash.toLowerCase();
+function checkHash(hash, requirePrefix) {
+    if (typeof (hash) === 'string') {
+        // geth-etc does add a "0x" prefix on receipt.root
+        if (!requirePrefix && hash.substring(0, 2) !== '0x') {
+            hash = '0x' + hash;
+        }
+        if (bytes_1.hexDataLength(hash) === 32) {
+            return hash.toLowerCase();
+        }
     }
     errors.throwError('invalid hash', errors.INVALID_ARGUMENT, { arg: 'hash', value: hash });
     return null;
@@ -10056,6 +10063,10 @@ function checkTransactionResponse(transaction) {
     }
     var result = check(formatTransaction, transaction);
     var networkId = transaction.networkId;
+    // geth-etc returns chainId
+    if (transaction.chainId != null && networkId == null && result.v == null) {
+        networkId = transaction.chainId;
+    }
     if (bytes_1.isHexString(networkId)) {
         networkId = bignumber_1.bigNumberify(networkId).toNumber();
     }
@@ -10716,7 +10727,7 @@ var BaseProvider = /** @class */ (function (_super) {
         return this.ready.then(function () {
             return properties_1.resolveProperties({ transactionHash: transactionHash }).then(function (_a) {
                 var transactionHash = _a.transactionHash;
-                var params = { transactionHash: checkHash(transactionHash) };
+                var params = { transactionHash: checkHash(transactionHash, true) };
                 return web_1.poll(function () {
                     return _this.perform('getTransaction', params).then(function (result) {
                         if (result == null) {
@@ -10751,7 +10762,7 @@ var BaseProvider = /** @class */ (function (_super) {
         return this.ready.then(function () {
             return properties_1.resolveProperties({ transactionHash: transactionHash }).then(function (_a) {
                 var transactionHash = _a.transactionHash;
-                var params = { transactionHash: checkHash(transactionHash) };
+                var params = { transactionHash: checkHash(transactionHash, true) };
                 return web_1.poll(function () {
                     return _this.perform('getTransactionReceipt', params).then(function (result) {
                         if (result == null) {
@@ -11414,7 +11425,8 @@ function checkNetworks(networks) {
         // Matches!
         if (check.name === network.name &&
             check.chainId === network.chainId &&
-            check.ensAddress === network.ensAddress) {
+            ((check.ensAddress === network.ensAddress) ||
+                (check.ensAddress == null && network.ensAddress == null))) {
             return;
         }
         errors.throwError('provider mismatch', errors.INVALID_ARGUMENT, { arg: 'networks', value: networks });
@@ -14475,39 +14487,78 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var errors = __importStar(require("../errors"));
+function ethDefaultProvider(network) {
+    return function (providers) {
+        var providerList = [];
+        if (providers.InfuraProvider) {
+            providerList.push(new providers.InfuraProvider(network));
+        }
+        if (providers.EtherscanProvider) {
+            providerList.push(new providers.EtherscanProvider(network));
+        }
+        if (providerList.length === 0) {
+            return null;
+        }
+        if (providers.FallbackProvider) {
+            return new providers.FallbackProvider(providerList);
+            ;
+        }
+        return providerList[0];
+    };
+}
+function etcDefaultProvider(url, network) {
+    return function (providers) {
+        if (providers.JsonRpcProvider) {
+            return new providers.JsonRpcProvider(url, network);
+        }
+        return null;
+    };
+}
 var homestead = {
     chainId: 1,
     ensAddress: "0x314159265dd8dbb310642f98f50c066173c1259b",
-    name: "homestead"
+    name: "homestead",
+    _defaultProvider: ethDefaultProvider('homestead')
 };
 var ropsten = {
     chainId: 3,
     ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
-    name: "ropsten"
+    name: "ropsten",
+    _defaultProvider: ethDefaultProvider('ropsten')
 };
 var networks = {
     unspecified: {
-        chainId: 0
+        chainId: 0,
+        name: 'unspecified'
     },
     homestead: homestead,
     mainnet: homestead,
     morden: {
-        chainId: 2
+        chainId: 2,
+        name: 'morden'
     },
     ropsten: ropsten,
     testnet: ropsten,
     rinkeby: {
         chainId: 4,
-        ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A"
+        ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A",
+        name: 'rinkeby',
+        _defaultProvider: ethDefaultProvider('rinkeby')
     },
     kovan: {
-        chainId: 42
+        chainId: 42,
+        name: 'kovan',
+        _defaultProvider: ethDefaultProvider('kovan')
     },
     classic: {
-        chainId: 61
+        chainId: 61,
+        name: 'classic',
+        _defaultProvider: etcDefaultProvider('https://web3.gastracker.io', 'classic')
     },
     classicTestnet: {
-        chainId: 62
+        chainId: 62,
+        name: 'classicTestnet',
+        _defaultProvider: etcDefaultProvider('https://web3.gastracker.io/morden', 'classicTestnet')
     }
 };
 /**
@@ -14517,18 +14568,19 @@ var networks = {
  *  and verifies a network is a valid Network..
  */
 function getNetwork(network) {
-    // No network (null) or unspecified (chainId = 0)
-    if (!network) {
+    // No network (null)
+    if (network == null) {
         return null;
     }
     if (typeof (network) === 'number') {
-        for (var name in networks) {
-            var n_1 = networks[name];
+        for (var name_1 in networks) {
+            var n_1 = networks[name_1];
             if (n_1.chainId === network) {
                 return {
-                    name: name,
+                    name: n_1.name,
                     chainId: n_1.chainId,
-                    ensAddress: n_1.ensAddress
+                    ensAddress: (n_1.ensAddress || null),
+                    _defaultProvider: (n_1._defaultProvider || null)
                 };
             }
         }
@@ -14543,9 +14595,10 @@ function getNetwork(network) {
             return null;
         }
         return {
-            name: network,
+            name: n_2.name,
             chainId: n_2.chainId,
-            ensAddress: n_2.ensAddress
+            ensAddress: n_2.ensAddress,
+            _defaultProvider: (n_2._defaultProvider || null)
         };
     }
     var n = networks[network.name];
@@ -14560,11 +14613,12 @@ function getNetwork(network) {
     if (network.chainId !== 0 && network.chainId !== n.chainId) {
         errors.throwError('network chainId mismatch', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
     }
-    // Standard Network
+    // Standard Network (allow overriding the ENS address)
     return {
         name: network.name,
         chainId: n.chainId,
-        ensAddress: n.ensAddress
+        ensAddress: (network.ensAddress || n.ensAddress || null),
+        _defaultProvider: (network._defaultProvider || n._defaultProvider || null)
     };
 }
 exports.getNetwork = getNetwork;

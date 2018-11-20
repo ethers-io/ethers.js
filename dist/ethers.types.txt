@@ -262,7 +262,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.12";
+    export const version = "4.0.13";
 }
 
 declare module 'ethers/utils/bignumber' {
@@ -926,6 +926,7 @@ declare module 'ethers/utils/networks' {
         name: string;
         chainId: number;
         ensAddress?: string;
+        _defaultProvider?: (providers: any) => any;
     };
     export type Networkish = Network | string | number;
     /**

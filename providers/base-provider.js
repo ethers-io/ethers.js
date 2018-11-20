@@ -79,9 +79,15 @@ function arrayOf(check) {
         return result;
     });
 }
-function checkHash(hash) {
-    if (typeof (hash) === 'string' && bytes_1.hexDataLength(hash) === 32) {
-        return hash.toLowerCase();
+function checkHash(hash, requirePrefix) {
+    if (typeof (hash) === 'string') {
+        // geth-etc does add a "0x" prefix on receipt.root
+        if (!requirePrefix && hash.substring(0, 2) !== '0x') {
+            hash = '0x' + hash;
+        }
+        if (bytes_1.hexDataLength(hash) === 32) {
+            return hash.toLowerCase();
+        }
     }
     errors.throwError('invalid hash', errors.INVALID_ARGUMENT, { arg: 'hash', value: hash });
     return null;
@@ -202,6 +208,10 @@ function checkTransactionResponse(transaction) {
     }
     var result = check(formatTransaction, transaction);
     var networkId = transaction.networkId;
+    // geth-etc returns chainId
+    if (transaction.chainId != null && networkId == null && result.v == null) {
+        networkId = transaction.chainId;
+    }
     if (bytes_1.isHexString(networkId)) {
         networkId = bignumber_1.bigNumberify(networkId).toNumber();
     }
@@ -862,7 +872,7 @@ var BaseProvider = /** @class */ (function (_super) {
         return this.ready.then(function () {
             return properties_1.resolveProperties({ transactionHash: transactionHash }).then(function (_a) {
                 var transactionHash = _a.transactionHash;
-                var params = { transactionHash: checkHash(transactionHash) };
+                var params = { transactionHash: checkHash(transactionHash, true) };
                 return web_1.poll(function () {
                     return _this.perform('getTransaction', params).then(function (result) {
                         if (result == null) {
@@ -897,7 +907,7 @@ var BaseProvider = /** @class */ (function (_super) {
         return this.ready.then(function () {
             return properties_1.resolveProperties({ transactionHash: transactionHash }).then(function (_a) {
                 var transactionHash = _a.transactionHash;
-                var params = { transactionHash: checkHash(transactionHash) };
+                var params = { transactionHash: checkHash(transactionHash, true) };
                 return web_1.poll(function () {
                     return _this.perform('getTransactionReceipt', params).then(function (result) {
                         if (result == null) {

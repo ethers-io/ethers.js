@@ -8,39 +8,78 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var errors = __importStar(require("../errors"));
+function ethDefaultProvider(network) {
+    return function (providers) {
+        var providerList = [];
+        if (providers.InfuraProvider) {
+            providerList.push(new providers.InfuraProvider(network));
+        }
+        if (providers.EtherscanProvider) {
+            providerList.push(new providers.EtherscanProvider(network));
+        }
+        if (providerList.length === 0) {
+            return null;
+        }
+        if (providers.FallbackProvider) {
+            return new providers.FallbackProvider(providerList);
+            ;
+        }
+        return providerList[0];
+    };
+}
+function etcDefaultProvider(url, network) {
+    return function (providers) {
+        if (providers.JsonRpcProvider) {
+            return new providers.JsonRpcProvider(url, network);
+        }
+        return null;
+    };
+}
 var homestead = {
     chainId: 1,
     ensAddress: "0x314159265dd8dbb310642f98f50c066173c1259b",
-    name: "homestead"
+    name: "homestead",
+    _defaultProvider: ethDefaultProvider('homestead')
 };
 var ropsten = {
     chainId: 3,
     ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
-    name: "ropsten"
+    name: "ropsten",
+    _defaultProvider: ethDefaultProvider('ropsten')
 };
 var networks = {
     unspecified: {
-        chainId: 0
+        chainId: 0,
+        name: 'unspecified'
     },
     homestead: homestead,
     mainnet: homestead,
     morden: {
-        chainId: 2
+        chainId: 2,
+        name: 'morden'
     },
     ropsten: ropsten,
     testnet: ropsten,
     rinkeby: {
         chainId: 4,
-        ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A"
+        ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A",
+        name: 'rinkeby',
+        _defaultProvider: ethDefaultProvider('rinkeby')
     },
     kovan: {
-        chainId: 42
+        chainId: 42,
+        name: 'kovan',
+        _defaultProvider: ethDefaultProvider('kovan')
     },
     classic: {
-        chainId: 61
+        chainId: 61,
+        name: 'classic',
+        _defaultProvider: etcDefaultProvider('https://web3.gastracker.io', 'classic')
     },
     classicTestnet: {
-        chainId: 62
+        chainId: 62,
+        name: 'classicTestnet',
+        _defaultProvider: etcDefaultProvider('https://web3.gastracker.io/morden', 'classicTestnet')
     }
 };
 /**
@@ -50,18 +89,19 @@ var networks = {
  *  and verifies a network is a valid Network..
  */
 function getNetwork(network) {
-    // No network (null) or unspecified (chainId = 0)
-    if (!network) {
+    // No network (null)
+    if (network == null) {
         return null;
     }
     if (typeof (network) === 'number') {
-        for (var name in networks) {
-            var n_1 = networks[name];
+        for (var name_1 in networks) {
+            var n_1 = networks[name_1];
             if (n_1.chainId === network) {
                 return {
-                    name: name,
+                    name: n_1.name,
                     chainId: n_1.chainId,
-                    ensAddress: n_1.ensAddress
+                    ensAddress: (n_1.ensAddress || null),
+                    _defaultProvider: (n_1._defaultProvider || null)
                 };
             }
         }
@@ -76,9 +116,10 @@ function getNetwork(network) {
             return null;
         }
         return {
-            name: network,
+            name: n_2.name,
             chainId: n_2.chainId,
-            ensAddress: n_2.ensAddress
+            ensAddress: n_2.ensAddress,
+            _defaultProvider: (n_2._defaultProvider || null)
         };
     }
     var n = networks[network.name];
@@ -93,11 +134,12 @@ function getNetwork(network) {
     if (network.chainId !== 0 && network.chainId !== n.chainId) {
         errors.throwError('network chainId mismatch', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
     }
-    // Standard Network
+    // Standard Network (allow overriding the ENS address)
     return {
         name: network.name,
         chainId: n.chainId,
-        ensAddress: n.ensAddress
+        ensAddress: (network.ensAddress || n.ensAddress || null),
+        _defaultProvider: (network._defaultProvider || n._defaultProvider || null)
     };
 }
 exports.getNetwork = getNetwork;

@@ -36,9 +36,10 @@ exports.version = _version_1.version;
 ////////////////////////
 // Helper Functions
 function getDefaultProvider(network) {
-    return new providers.FallbackProvider([
-        new providers.InfuraProvider(network),
-        new providers.EtherscanProvider(network),
-    ]);
+    var n = utils.getNetwork(network || 'homestead');
+    if (!n || !n._defaultProvider) {
+        return null;
+    }
+    return n._defaultProvider(providers);
 }
 exports.getDefaultProvider = getDefaultProvider;

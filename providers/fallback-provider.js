@@ -40,7 +40,8 @@ function checkNetworks(networks) {
         // Matches!
         if (check.name === network.name &&
             check.chainId === network.chainId &&
-            check.ensAddress === network.ensAddress) {
+            ((check.ensAddress === network.ensAddress) ||
+                (check.ensAddress == null && network.ensAddress == null))) {
             return;
         }
         errors.throwError('provider mismatch', errors.INVALID_ARGUMENT, { arg: 'networks', value: networks });
