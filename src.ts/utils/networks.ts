@@ -7,33 +7,69 @@ export type Network = {
     name: string,
     chainId: number,
     ensAddress?: string,
+    _defaultProvider?: (providers: any) => any
 }
 
 export type Networkish = Network | string | number;
 
+function ethDefaultProvider(network: string): (providers: any) => any {
+    return function(providers: any): any {
+        let providerList: Array<any> = [];
+
+        if (providers.InfuraProvider) {
+            providerList.push(new providers.InfuraProvider(network));
+        }
+
+        if (providers.EtherscanProvider) {
+            providerList.push(new providers.EtherscanProvider(network));
+        }
+
+        if (providerList.length === 0) { return null; }
+
+        if (providers.FallbackProvider) {
+            return new providers.FallbackProvider(providerList);;
+        }
+
+        return providerList[0];
+    }
+}
+
+function etcDefaultProvider(url: string, network: string): (providers: any) => any {
+    return function(providers: any): any {
+        if (providers.JsonRpcProvider) {
+            return new providers.JsonRpcProvider(url, network);
+        }
+
+        return null;
+    }
+}
 
 const homestead: Network = {
     chainId: 1,
     ensAddress: "0x314159265dd8dbb310642f98f50c066173c1259b",
-    name: "homestead"
+    name: "homestead",
+    _defaultProvider: ethDefaultProvider('homestead')
 };
 
 const ropsten: Network = {
     chainId: 3,
     ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
-    name: "ropsten"
+    name: "ropsten",
+    _defaultProvider: ethDefaultProvider('ropsten')
 };
 
-const networks: { [name: string]: { chainId: number, ensAddress?: string } } = {
+const networks: { [name: string]: Network } = {
     unspecified: {
-        chainId: 0
+        chainId: 0,
+        name: 'unspecified'
     },
 
     homestead: homestead,
     mainnet: homestead,
 
     morden: {
-        chainId: 2
+        chainId: 2,
+        name: 'morden'
     },
 
     ropsten: ropsten,
@@ -41,19 +77,27 @@ const networks: { [name: string]: { chainId: number, ensAddress?: string } } = {
 
     rinkeby: {
         chainId: 4,
-        ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A"
+        ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A",
+        name: 'rinkeby',
+        _defaultProvider: ethDefaultProvider('rinkeby')
     },
 
     kovan: {
-        chainId: 42
+        chainId: 42,
+        name: 'kovan',
+        _defaultProvider: ethDefaultProvider('kovan')
     },
 
     classic: {
-        chainId: 61
+        chainId: 61,
+        name: 'classic',
+        _defaultProvider: etcDefaultProvider('https://web3.gastracker.io', 'classic')
     },
 
     classicTestnet: {
-        chainId: 62
+        chainId: 62,
+        name: 'classicTestnet',
+        _defaultProvider: etcDefaultProvider('https://web3.gastracker.io/morden', 'classicTestnet')
     }
 }
 
@@ -64,17 +108,18 @@ const networks: { [name: string]: { chainId: number, ensAddress?: string } } = {
  *  and verifies a network is a valid Network..
  */
 export function getNetwork(network: Networkish): Network {
-    // No network (null) or unspecified (chainId = 0)
-    if (!network) { return null; }
+    // No network (null)
+    if (network == null) { return null; }
 
     if (typeof(network) === 'number') {
-        for (var name in networks) {
+        for (let name in networks) {
             let n = networks[name];
             if (n.chainId === network) {
                 return {
-                    name: name,
+                    name: n.name,
                     chainId: n.chainId,
-                    ensAddress: n.ensAddress
+                    ensAddress: (n.ensAddress || null),
+                    _defaultProvider: (n._defaultProvider || null)
                 };
             }
         }
@@ -89,9 +134,10 @@ export function getNetwork(network: Networkish): Network {
         let n = networks[network];
         if (n == null) { return null; }
         return {
-            name: network,
+            name: n.name,
             chainId: n.chainId,
-            ensAddress: n.ensAddress
+            ensAddress: n.ensAddress,
+            _defaultProvider: (n._defaultProvider || null)
         };
     }
 
@@ -110,10 +156,11 @@ export function getNetwork(network: Networkish): Network {
         errors.throwError('network chainId mismatch', errors.INVALID_ARGUMENT, { arg: 'network', value: network });
     }
 
-    // Standard Network
+    // Standard Network (allow overriding the ENS address)
     return {
         name: network.name,
         chainId: n.chainId,
-        ensAddress: n.ensAddress
+        ensAddress: (network.ensAddress || n.ensAddress || null),
+        _defaultProvider: (network._defaultProvider || n._defaultProvider || null)
     };
 }

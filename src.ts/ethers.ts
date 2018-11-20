@@ -33,10 +33,9 @@ import { ContractFunction, ContractTransaction, Event, EventFilter } from './con
 // Helper Functions
 
 function getDefaultProvider(network?: utils.Network | string): providers.BaseProvider {
-    return new providers.FallbackProvider([
-        new providers.InfuraProvider(network),
-        new providers.EtherscanProvider(network),
-    ]);
+    let n = utils.getNetwork(network || 'homestead');
+    if (!n || !n._defaultProvider) { return null; }
+    return n._defaultProvider(providers);
 }
 
 

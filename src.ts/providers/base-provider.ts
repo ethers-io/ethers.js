@@ -82,9 +82,13 @@ function arrayOf(check: CheckFunc): CheckFunc {
     });
 }
 
-function checkHash(hash: any): string {
-    if (typeof(hash) === 'string' && hexDataLength(hash) === 32) {
-       return hash.toLowerCase();
+function checkHash(hash: any, requirePrefix?: boolean): string {
+    if (typeof(hash) === 'string') {
+        // geth-etc does add a "0x" prefix on receipt.root
+        if (!requirePrefix && hash.substring(0, 2) !== '0x') { hash = '0x' + hash; }
+        if (hexDataLength(hash) === 32) {
+           return hash.toLowerCase();
+        }
     }
     errors.throwError('invalid hash', errors.INVALID_ARGUMENT, { arg: 'hash', value: hash });
     return null;
@@ -220,10 +224,14 @@ function checkTransactionResponse(transaction: any): TransactionResponse {
         }
     }
 
-
     let result = check(formatTransaction, transaction);
 
     let networkId = transaction.networkId;
+
+    // geth-etc returns chainId
+    if (transaction.chainId != null && networkId == null && result.v == null) {
+        networkId = transaction.chainId;
+    }
 
     if (isHexString(networkId)) {
         networkId = bigNumberify(networkId).toNumber();
@@ -979,7 +987,7 @@ export class BaseProvider extends Provider {
     getTransaction(transactionHash: string): Promise<TransactionResponse> {
         return this.ready.then(() => {
             return resolveProperties({ transactionHash: transactionHash }).then(({ transactionHash }) => {
-                let params = { transactionHash: checkHash(transactionHash) };
+                let params = { transactionHash: checkHash(transactionHash, true) };
                 return poll(() => {
                     return this.perform('getTransaction', params).then((result) => {
                         if (result == null) {
@@ -1016,7 +1024,7 @@ export class BaseProvider extends Provider {
     getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt> {
         return this.ready.then(() => {
             return resolveProperties({ transactionHash: transactionHash }).then(({ transactionHash }) => {
-                let params = { transactionHash: checkHash(transactionHash) };
+                let params = { transactionHash: checkHash(transactionHash, true) };
                 return poll(() => {
                     return this.perform('getTransactionReceipt', params).then((result) => {
                         if (result == null) {
