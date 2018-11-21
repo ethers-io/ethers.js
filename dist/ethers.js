@@ -912,9 +912,15 @@ exports.version = _version_1.version;
 ////////////////////////
 // Helper Functions
 function getDefaultProvider(network) {
-    var n = utils.getNetwork(network || 'homestead');
+    if (network == null) {
+        network = 'homestead';
+    }
+    var n = utils.getNetwork(network);
     if (!n || !n._defaultProvider) {
-        return null;
+        errors.throwError('unsupported getDefaultProvider network', errors.UNSUPPORTED_OPERATION, {
+            operation: 'getDefaultProvider',
+            network: network
+        });
     }
     return n._defaultProvider(providers);
 }
