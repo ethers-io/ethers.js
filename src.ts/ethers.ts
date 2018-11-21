@@ -33,8 +33,14 @@ import { ContractFunction, ContractTransaction, Event, EventFilter } from './con
 // Helper Functions
 
 function getDefaultProvider(network?: utils.Network | string): providers.BaseProvider {
-    let n = utils.getNetwork(network || 'homestead');
-    if (!n || !n._defaultProvider) { return null; }
+    if (network == null) { network = 'homestead'; }
+    let n = utils.getNetwork(network);
+    if (!n || !n._defaultProvider) {
+        errors.throwError('unsupported getDefaultProvider network', errors.UNSUPPORTED_OPERATION, {
+            operation: 'getDefaultProvider',
+            network: network
+        });
+    }
     return n._defaultProvider(providers);
 }
 
