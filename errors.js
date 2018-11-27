@@ -110,12 +110,21 @@ function setCensorship(censorship, permanent) {
 exports.setCensorship = setCensorship;
 function checkNormalize() {
     try {
+        // Make sure all forms of normalization are supported
+        ["NFD", "NFC", "NFKD", "NFKC"].forEach(function (form) {
+            try {
+                "test".normalize(form);
+            }
+            catch (error) {
+                throw new Error('missing ' + form);
+            }
+        });
         if (String.fromCharCode(0xe9).normalize('NFD') !== String.fromCharCode(0x65, 0x0301)) {
-            throw new Error('broken');
+            throw new Error('broken implementation');
         }
     }
     catch (error) {
-        throwError('platform missing String.prototype.normalize', exports.UNSUPPORTED_OPERATION, { operation: 'String.prototype.normalize' });
+        throwError('platform missing String.prototype.normalize', exports.UNSUPPORTED_OPERATION, { operation: 'String.prototype.normalize', form: error.message });
     }
 }
 exports.checkNormalize = checkNormalize;
