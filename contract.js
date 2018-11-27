@@ -106,7 +106,6 @@ function resolveAddresses(provider, value, paramType) {
 function runMethod(contract, functionName, estimateOnly) {
     var method = contract.interface.functions[functionName];
     return function () {
-        var _this = this;
         var params = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             params[_i] = arguments[_i];
@@ -218,19 +217,19 @@ function runMethod(contract, functionName, estimateOnly) {
                         return wait(confirmations).then(function (receipt) {
                             receipt.events = receipt.logs.map(function (log) {
                                 var event = properties_1.deepCopy(log);
-                                var parsed = _this.interface.parseLog(log);
+                                var parsed = contract.interface.parseLog(log);
                                 if (parsed) {
                                     event.args = parsed.values;
                                     event.decode = parsed.decode;
                                     event.event = parsed.name;
                                     event.eventSignature = parsed.signature;
                                 }
-                                event.removeListener = function () { return _this.provider; };
+                                event.removeListener = function () { return contract.provider; };
                                 event.getBlock = function () {
-                                    return _this.provider.getBlock(receipt.blockHash);
+                                    return contract.provider.getBlock(receipt.blockHash);
                                 };
                                 event.getTransaction = function () {
-                                    return _this.provider.getTransaction(receipt.transactionHash);
+                                    return contract.provider.getTransaction(receipt.transactionHash);
                                 };
                                 event.getTransactionReceipt = function () {
                                     return Promise.resolve(receipt);
