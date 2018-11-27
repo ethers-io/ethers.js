@@ -280,7 +280,7 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                             receipt.events = receipt.logs.map((log) => {
                                  let event: Event = (<Event>deepCopy(log));
 
-                                 let parsed = this.interface.parseLog(log);
+                                 let parsed = contract.interface.parseLog(log);
                                  if (parsed) {
                                      event.args = parsed.values;
                                      event.decode = parsed.decode;
@@ -288,12 +288,12 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                                      event.eventSignature = parsed.signature;
                                 }
 
-                                event.removeListener = () => { return this.provider; }
+                                event.removeListener = () => { return contract.provider; }
                                 event.getBlock = () => {
-                                    return this.provider.getBlock(receipt.blockHash);
+                                    return contract.provider.getBlock(receipt.blockHash);
                                 }
                                 event.getTransaction = () => {
-                                    return this.provider.getTransaction(receipt.transactionHash);
+                                    return contract.provider.getTransaction(receipt.transactionHash);
                                 }
                                 event.getTransactionReceipt = () => {
                                     return Promise.resolve(receipt);
