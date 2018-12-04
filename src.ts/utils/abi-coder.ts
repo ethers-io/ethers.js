@@ -107,9 +107,12 @@ type ParseNode = {
 
 
 function parseParam(param: string, allowIndexed?: boolean): ParamType {
+
+    let originalParam = param;
     function throwError(i: number) {
-        throw new Error('unexpected character "' + param[i] + '" at position ' + i + ' in "' + param + '"');
+        throw new Error('unexpected character "' + originalParam[i] + '" at position ' + i + ' in "' + originalParam + '"');
     }
+    param = param.replace(/\s/g, ' ');
 
     var parent: ParseNode = { type: '', name: '', state: { allowType: true } };
     var node = parent;
@@ -380,6 +383,7 @@ export function formatSignature(fragment: EventFragment | FunctionFragment): str
 export function parseSignature(fragment: string): EventFragment | FunctionFragment {
     if(typeof(fragment) === 'string') {
         // Make sure the "returns" is surrounded by a space and all whitespace is exactly one space
+        fragment = fragment.replace(/\s/g, ' ');
         fragment = fragment.replace(/\(/g, ' (').replace(/\)/g, ') ').replace(/\s+/g, ' ');
         fragment = fragment.trim();
 
