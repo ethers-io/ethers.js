@@ -12,8 +12,7 @@ import { getAddress } from '../utils/address';
 import { BigNumber } from '../utils/bignumber';
 import { hexlify, hexStripZeros } from '../utils/bytes';
 import { getNetwork } from '../utils/networks';
-import { checkProperties, defineReadOnly, shallowCopy } from '../utils/properties';
-import { populateTransaction } from '../utils/transaction';
+import { checkProperties, defineReadOnly, resolveProperties, shallowCopy } from '../utils/properties';
 import { toUtf8Bytes } from '../utils/utf8';
 import { fetchJson, poll } from '../utils/web';
 
@@ -104,16 +103,18 @@ export class JsonRpcSigner extends Signer {
 
     sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
 
-        // Once populateTransaction resolves, the from address will be populated from getAddress
-        let from: string = null;
-        let getAddress = this.getAddress().then((address) => {
-            if (address) { from = address.toLowerCase(); }
-            return from;
+        let fromAddress = this.getAddress().then((address) => {
+            if (address) { address = address.toLowerCase(); }
+            return address;
         });
 
-        return populateTransaction(transaction, this.provider, getAddress).then((tx) => {
+        return Promise.all([
+            resolveProperties(transaction),
+            fromAddress
+        ]).then((results) => {
+            let tx = results[0];
             let hexTx = JsonRpcProvider.hexlifyTransaction(tx);
-            hexTx.from = from;
+            hexTx.from = results[1];
             return this.provider.send('eth_sendTransaction', [ hexTx ]).then((hash) => {
                 return poll(() => {
                     return this.provider.getTransaction(hash).then((tx: TransactionResponse) => {
