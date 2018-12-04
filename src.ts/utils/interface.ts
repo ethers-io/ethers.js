@@ -436,7 +436,7 @@ export class Interface {
                     name: name,
                     signature: func.signature,
                     sighash: func.sighash,
-                    value: bigNumberify(tx.value || null),
+                    value: bigNumberify(tx.value || '0'),
                 });
             }
         }
