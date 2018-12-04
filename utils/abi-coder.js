@@ -51,9 +51,11 @@ function verifyType(type) {
     return type;
 }
 function parseParam(param, allowIndexed) {
+    var originalParam = param;
     function throwError(i) {
-        throw new Error('unexpected character "' + param[i] + '" at position ' + i + ' in "' + param + '"');
+        throw new Error('unexpected character "' + originalParam[i] + '" at position ' + i + ' in "' + originalParam + '"');
     }
+    param = param.replace(/\s/g, ' ');
     var parent = { type: '', name: '', state: { allowType: true } };
     var node = parent;
     for (var i = 0; i < param.length; i++) {
@@ -298,6 +300,7 @@ exports.formatSignature = formatSignature;
 function parseSignature(fragment) {
     if (typeof (fragment) === 'string') {
         // Make sure the "returns" is surrounded by a space and all whitespace is exactly one space
+        fragment = fragment.replace(/\s/g, ' ');
         fragment = fragment.replace(/\(/g, ' (').replace(/\)/g, ') ').replace(/\s+/g, ' ');
         fragment = fragment.trim();
         if (fragment.substring(0, 6) === 'event ') {

@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.15";
+exports.version = "4.0.16";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -11627,7 +11627,6 @@ var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var networks_1 = require("../utils/networks");
 var properties_1 = require("../utils/properties");
-var transaction_1 = require("../utils/transaction");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
 function timer(timeout) {
@@ -11701,17 +11700,19 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     };
     JsonRpcSigner.prototype.sendTransaction = function (transaction) {
         var _this = this;
-        // Once populateTransaction resolves, the from address will be populated from getAddress
-        var from = null;
-        var getAddress = this.getAddress().then(function (address) {
+        var fromAddress = this.getAddress().then(function (address) {
             if (address) {
-                from = address.toLowerCase();
+                address = address.toLowerCase();
             }
-            return from;
+            return address;
         });
-        return transaction_1.populateTransaction(transaction, this.provider, getAddress).then(function (tx) {
+        return Promise.all([
+            properties_1.resolveProperties(transaction),
+            fromAddress
+        ]).then(function (results) {
+            var tx = results[0];
             var hexTx = JsonRpcProvider.hexlifyTransaction(tx);
-            hexTx.from = from;
+            hexTx.from = results[1];
             return _this.provider.send('eth_sendTransaction', [hexTx]).then(function (hash) {
                 return web_1.poll(function () {
                     return _this.provider.getTransaction(hash).then(function (tx) {
@@ -11979,7 +11980,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
 }(base_provider_1.BaseProvider));
 exports.JsonRpcProvider = JsonRpcProvider;
 
-},{"../abstract-signer":2,"../errors":5,"../utils/address":59,"../utils/bytes":62,"../utils/networks":70,"../utils/properties":72,"../utils/transaction":81,"../utils/utf8":83,"../utils/web":84,"./base-provider":50}],57:[function(require,module,exports){
+},{"../abstract-signer":2,"../errors":5,"../utils/address":59,"../utils/bytes":62,"../utils/networks":70,"../utils/properties":72,"../utils/utf8":83,"../utils/web":84,"./base-provider":50}],57:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -12120,9 +12121,11 @@ function verifyType(type) {
     return type;
 }
 function parseParam(param, allowIndexed) {
+    var originalParam = param;
     function throwError(i) {
-        throw new Error('unexpected character "' + param[i] + '" at position ' + i + ' in "' + param + '"');
+        throw new Error('unexpected character "' + originalParam[i] + '" at position ' + i + ' in "' + originalParam + '"');
     }
+    param = param.replace(/\s/g, ' ');
     var parent = { type: '', name: '', state: { allowType: true } };
     var node = parent;
     for (var i = 0; i < param.length; i++) {
@@ -12367,6 +12370,7 @@ exports.formatSignature = formatSignature;
 function parseSignature(fragment) {
     if (typeof (fragment) === 'string') {
         // Make sure the "returns" is surrounded by a space and all whitespace is exactly one space
+        fragment = fragment.replace(/\s/g, ' ');
         fragment = fragment.replace(/\(/g, ' (').replace(/\)/g, ') ').replace(/\s+/g, ' ');
         fragment = fragment.trim();
         if (fragment.substring(0, 6) === 'event ') {
@@ -14389,7 +14393,7 @@ var Interface = /** @class */ (function () {
                     name: name,
                     signature: func.signature,
                     sighash: func.sighash,
-                    value: bignumber_1.bigNumberify(tx.value || null),
+                    value: bignumber_1.bigNumberify(tx.value || '0'),
                 });
             }
         }

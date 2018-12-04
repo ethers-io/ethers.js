@@ -342,7 +342,7 @@ var Interface = /** @class */ (function () {
                     name: name,
                     signature: func.signature,
                     sighash: func.sighash,
-                    value: bignumber_1.bigNumberify(tx.value || null),
+                    value: bignumber_1.bigNumberify(tx.value || '0'),
                 });
             }
         }

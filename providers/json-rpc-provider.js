@@ -25,7 +25,6 @@ var address_1 = require("../utils/address");
 var bytes_1 = require("../utils/bytes");
 var networks_1 = require("../utils/networks");
 var properties_1 = require("../utils/properties");
-var transaction_1 = require("../utils/transaction");
 var utf8_1 = require("../utils/utf8");
 var web_1 = require("../utils/web");
 function timer(timeout) {
@@ -99,17 +98,19 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     };
     JsonRpcSigner.prototype.sendTransaction = function (transaction) {
         var _this = this;
-        // Once populateTransaction resolves, the from address will be populated from getAddress
-        var from = null;
-        var getAddress = this.getAddress().then(function (address) {
+        var fromAddress = this.getAddress().then(function (address) {
             if (address) {
-                from = address.toLowerCase();
+                address = address.toLowerCase();
             }
-            return from;
+            return address;
         });
-        return transaction_1.populateTransaction(transaction, this.provider, getAddress).then(function (tx) {
+        return Promise.all([
+            properties_1.resolveProperties(transaction),
+            fromAddress
+        ]).then(function (results) {
+            var tx = results[0];
             var hexTx = JsonRpcProvider.hexlifyTransaction(tx);
-            hexTx.from = from;
+            hexTx.from = results[1];
             return _this.provider.send('eth_sendTransaction', [hexTx]).then(function (hash) {
                 return web_1.poll(function () {
                     return _this.provider.getTransaction(hash).then(function (tx) {
