@@ -530,6 +530,9 @@ export class BaseProvider extends Provider {
                 return network;
             }));
 
+            // Squash any "unhandled promise" errors; the don't need to be handled
+            this.ready.catch((error) => { });
+
         } else {
             let knownNetwork = getNetwork((network == null) ? 'homestead': network);
             if (knownNetwork) {
