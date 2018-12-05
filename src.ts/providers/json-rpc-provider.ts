@@ -102,11 +102,21 @@ export class JsonRpcSigner extends Signer {
     }
 
     sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
+        transaction = shallowCopy(transaction);
 
         let fromAddress = this.getAddress().then((address) => {
             if (address) { address = address.toLowerCase(); }
             return address;
         });
+
+        // The JSON-RPC for eth_sendTransaction uses 90000 gas; if the user
+        // wishes to use this, it is easy to specify explicitly, otherwise
+        // we look it up for them.
+        if (transaction.gasLimit == null) {
+            let estimate = shallowCopy(transaction);
+            estimate.from = fromAddress;
+            transaction.gasLimit = this.provider.estimateGas(estimate);
+        }
 
         return Promise.all([
             resolveProperties(transaction),

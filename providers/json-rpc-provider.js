@@ -98,12 +98,21 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     };
     JsonRpcSigner.prototype.sendTransaction = function (transaction) {
         var _this = this;
+        transaction = properties_1.shallowCopy(transaction);
         var fromAddress = this.getAddress().then(function (address) {
             if (address) {
                 address = address.toLowerCase();
             }
             return address;
         });
+        // The JSON-RPC for eth_sendTransaction uses 90000 gas; if the user
+        // wishes to use this, it is easy to specify explicitly, otherwise
+        // we look it up for them.
+        if (transaction.gasLimit == null) {
+            var estimate = properties_1.shallowCopy(transaction);
+            estimate.from = fromAddress;
+            transaction.gasLimit = this.provider.estimateGas(estimate);
+        }
         return Promise.all([
             properties_1.resolveProperties(transaction),
             fromAddress
