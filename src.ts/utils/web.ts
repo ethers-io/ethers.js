@@ -135,6 +135,9 @@ export function fetchJson(connection: string | ConnectionInfo, json: string, pro
                 let jsonError: any = new Error('invalid json response');
                 jsonError.orginialError = error;
                 jsonError.responseText = request.responseText;
+                if (json != null) {
+                    jsonError.requestBody = json;
+                }
                 jsonError.url = url;
                 reject(jsonError);
                 return;
@@ -163,7 +166,7 @@ export function fetchJson(connection: string | ConnectionInfo, json: string, pro
         }
 
         try {
-            if (json) {
+            if (json != null) {
                 request.send(json);
             } else {
                 request.send();
