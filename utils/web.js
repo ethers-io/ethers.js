@@ -99,6 +99,9 @@ function fetchJson(connection, json, processFunc) {
                 var jsonError = new Error('invalid json response');
                 jsonError.orginialError = error;
                 jsonError.responseText = request.responseText;
+                if (json != null) {
+                    jsonError.requestBody = json;
+                }
                 jsonError.url = url;
                 reject(jsonError);
                 return;
@@ -124,7 +127,7 @@ function fetchJson(connection, json, processFunc) {
             reject(error);
         };
         try {
-            if (json) {
+            if (json != null) {
                 request.send(json);
             }
             else {

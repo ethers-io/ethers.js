@@ -415,6 +415,8 @@ var BaseProvider = /** @class */ (function (_super) {
                 properties_1.defineReadOnly(_this, '_network', network);
                 return network;
             }));
+            // Squash any "unhandled promise" errors; the don't need to be handled
+            _this.ready.catch(function (error) { });
         }
         else {
             var knownNetwork = networks_1.getNetwork((network == null) ? 'homestead' : network);

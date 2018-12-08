@@ -262,7 +262,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.17";
+    export const version = "4.0.18";
 }
 
 declare module 'ethers/utils/bignumber' {

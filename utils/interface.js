@@ -249,6 +249,7 @@ function addMethod(method) {
                 gas: method.gas,
                 payable: (method.payable == null || !!method.payable),
                 type: ((method.constant) ? 'call' : 'transaction'),
+                name: method.name,
                 signature: signature,
                 sighash: sighash,
             });
@@ -339,7 +340,7 @@ var Interface = /** @class */ (function () {
                 return new _TransactionDescription({
                     args: result,
                     decode: func.decode,
-                    name: name,
+                    name: func.name,
                     signature: func.signature,
                     sighash: func.sighash,
                     value: bignumber_1.bigNumberify(tx.value || '0'),
