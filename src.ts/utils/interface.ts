@@ -320,6 +320,7 @@ function addMethod(method: any): void {
                 payable: (method.payable == null || !!method.payable),
                 type: ((method.constant) ? 'call': 'transaction'),
 
+                name: method.name,
                 signature: signature,
                 sighash: sighash,
             });
@@ -433,7 +434,7 @@ export class Interface {
                 return new _TransactionDescription({
                     args: result,
                     decode: func.decode,
-                    name: name,
+                    name: func.name,
                     signature: func.signature,
                     sighash: func.sighash,
                     value: bigNumberify(tx.value || '0'),
