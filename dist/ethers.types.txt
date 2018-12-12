@@ -262,7 +262,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.18";
+    export const version = "4.0.19";
 }
 
 declare module 'ethers/utils/bignumber' {
@@ -860,7 +860,7 @@ declare module 'ethers/providers/web3-provider' {
         isMetaMask?: boolean;
         host?: string;
         path?: string;
-        sendAsync?: (request: any, callback: (error: any, response: any) => void) => void;
+        sendAsync?: (request: any, callback: (error: any, response?: any) => void) => void;
         send?: (request: any, callback: (error: any, response: any) => void) => void;
     };
     export class Web3Provider extends JsonRpcProvider {

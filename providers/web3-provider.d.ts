@@ -4,7 +4,7 @@ export declare type AsyncSendable = {
     isMetaMask?: boolean;
     host?: string;
     path?: string;
-    sendAsync?: (request: any, callback: (error: any, response: any) => void) => void;
+    sendAsync?: (request: any, callback: (error: any, response?: any) => void) => void;
     send?: (request: any, callback: (error: any, response: any) => void) => void;
 };
 export declare class Web3Provider extends JsonRpcProvider {
