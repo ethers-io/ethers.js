@@ -327,3 +327,24 @@ describe('Test Bytes32String coder', function() {
         assert.equal(str2, str, "parsed correctly");
     });
 });
+
+describe('Test BigNumber', function() {
+    it("computes absoltue values", function() {
+        function testAbs(test) {
+            var value = ethers.utils.bigNumberify(test.value);
+            var expected = ethers.utils.bigNumberify(test.expected);
+            assert.ok(value.abs().eq(expected), 'BigNumber.abs - ' + test.value);
+        }
+
+        [
+            { value: "0x0", expected: "0x0" },
+            { value: "-0x0", expected: "0x0" },
+            { value: "0x5", expected: "0x5" },
+            { value: "-0x5", expected: "0x5" },
+            { value: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+            { value: "-0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+            { value: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+            { value: "-0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+        ].forEach(testAbs);
+    });
+});

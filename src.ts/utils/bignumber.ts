@@ -47,7 +47,6 @@ function _bnify(value: BigNumber): BN.BN {
     return new BN.BN(hex.substring(2), 16);
 }
 
-
 export type BigNumberish = BigNumber | string | number | Arrayish;
 
 export class BigNumber implements Hexable {
@@ -106,6 +105,13 @@ export class BigNumber implements Hexable {
 
     toTwos(value: number): BigNumber {
         return toBigNumber(_bnify(this).toTwos(value));
+    }
+
+    abs(): BigNumber {
+        if (this._hex[0] === '-') {
+            return toBigNumber(_bnify(this).mul(BN_1));
+        }
+        return this;
     }
 
     add(other: BigNumberish): BigNumber {
