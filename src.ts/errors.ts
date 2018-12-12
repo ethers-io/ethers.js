@@ -23,7 +23,7 @@ export const MISSING_NEW = 'MISSING_NEW';
 export const CALL_EXCEPTION = 'CALL_EXCEPTION';
 
 // Invalid argument (e.g. value is incompatible with type) to a function:
-//   - arg: The argument name that was invalid
+//   - argument: The argument name that was invalid
 //   - value: The value of the argument
 export const INVALID_ARGUMENT = 'INVALID_ARGUMENT';
 
@@ -116,7 +116,7 @@ export function checkArgumentCount(count: number, expectedCount: number, suffix?
 
 export function setCensorship(censorship: boolean, permanent?: boolean): void {
     if (_permanentCensorErrors) {
-        throwError('error censorship permanent', UNSUPPORTED_OPERATION, { operation: 'setCersorship' });
+        throwError('error censorship permanent', UNSUPPORTED_OPERATION, { operation: 'setCensorship' });
     }
 
     _censorErrors = !!censorship;
