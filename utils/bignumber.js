@@ -105,6 +105,12 @@ var BigNumber = /** @class */ (function () {
     BigNumber.prototype.toTwos = function (value) {
         return toBigNumber(_bnify(this).toTwos(value));
     };
+    BigNumber.prototype.abs = function () {
+        if (this._hex[0] === '-') {
+            return toBigNumber(_bnify(this).mul(BN_1));
+        }
+        return this;
+    };
     BigNumber.prototype.add = function (other) {
         return toBigNumber(_bnify(this).add(toBN(other)));
     };

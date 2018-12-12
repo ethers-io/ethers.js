@@ -18,7 +18,7 @@ exports.MISSING_NEW = 'MISSING_NEW';
 //  - reason: The reason (only for EIP848 "Error(string)")
 exports.CALL_EXCEPTION = 'CALL_EXCEPTION';
 // Invalid argument (e.g. value is incompatible with type) to a function:
-//   - arg: The argument name that was invalid
+//   - argument: The argument name that was invalid
 //   - value: The value of the argument
 exports.INVALID_ARGUMENT = 'INVALID_ARGUMENT';
 // Missing argument to a function:
@@ -102,7 +102,7 @@ function checkArgumentCount(count, expectedCount, suffix) {
 exports.checkArgumentCount = checkArgumentCount;
 function setCensorship(censorship, permanent) {
     if (_permanentCensorErrors) {
-        throwError('error censorship permanent', exports.UNSUPPORTED_OPERATION, { operation: 'setCersorship' });
+        throwError('error censorship permanent', exports.UNSUPPORTED_OPERATION, { operation: 'setCensorship' });
     }
     _censorErrors = !!censorship;
     _permanentCensorErrors = !!permanent;

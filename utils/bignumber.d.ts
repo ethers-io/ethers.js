@@ -6,6 +6,7 @@ export declare class BigNumber implements Hexable {
     constructor(value: BigNumberish);
     fromTwos(value: number): BigNumber;
     toTwos(value: number): BigNumber;
+    abs(): BigNumber;
     add(other: BigNumberish): BigNumber;
     sub(other: BigNumberish): BigNumber;
     div(other: BigNumberish): BigNumber;

@@ -31,6 +31,7 @@ exports.hexDataLength = bytes_1.hexDataLength;
 exports.hexlify = bytes_1.hexlify;
 exports.hexStripZeros = bytes_1.hexStripZeros;
 exports.hexZeroPad = bytes_1.hexZeroPad;
+exports.isHexString = bytes_1.isHexString;
 exports.joinSignature = bytes_1.joinSignature;
 exports.padZeros = bytes_1.padZeros;
 exports.splitSignature = bytes_1.splitSignature;

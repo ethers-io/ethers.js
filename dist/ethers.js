@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.18";
+exports.version = "4.0.19";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -770,7 +770,7 @@ exports.MISSING_NEW = 'MISSING_NEW';
 //  - reason: The reason (only for EIP848 "Error(string)")
 exports.CALL_EXCEPTION = 'CALL_EXCEPTION';
 // Invalid argument (e.g. value is incompatible with type) to a function:
-//   - arg: The argument name that was invalid
+//   - argument: The argument name that was invalid
 //   - value: The value of the argument
 exports.INVALID_ARGUMENT = 'INVALID_ARGUMENT';
 // Missing argument to a function:
@@ -854,7 +854,7 @@ function checkArgumentCount(count, expectedCount, suffix) {
 exports.checkArgumentCount = checkArgumentCount;
 function setCensorship(censorship, permanent) {
     if (_permanentCensorErrors) {
-        throwError('error censorship permanent', exports.UNSUPPORTED_OPERATION, { operation: 'setCersorship' });
+        throwError('error censorship permanent', exports.UNSUPPORTED_OPERATION, { operation: 'setCensorship' });
     }
     _censorErrors = !!censorship;
     _permanentCensorErrors = !!permanent;
@@ -13299,6 +13299,12 @@ var BigNumber = /** @class */ (function () {
     BigNumber.prototype.toTwos = function (value) {
         return toBigNumber(_bnify(this).toTwos(value));
     };
+    BigNumber.prototype.abs = function () {
+        if (this._hex[0] === '-') {
+            return toBigNumber(_bnify(this).mul(BN_1));
+        }
+        return this;
+    };
     BigNumber.prototype.add = function (other) {
         return toBigNumber(_bnify(this).add(toBN(other)));
     };
@@ -13642,7 +13648,15 @@ exports.joinSignature = joinSignature;
 
 },{"../errors":5}],63:[function(require,module,exports){
 'use strict';
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var errors = __importStar(require("../errors"));
 var bytes_1 = require("./bytes");
 var utf8_1 = require("./utf8");
 var keccak256_1 = require("./keccak256");
@@ -13651,13 +13665,22 @@ var Zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 var Partition = new RegExp("^((.*)\\.)?([^.]+)$");
 var UseSTD3ASCIIRules = new RegExp("^[a-z0-9.-]*$");
 function namehash(name) {
+    if (typeof (name) !== 'string') {
+        errors.throwError('invalid address - ' + String(name), errors.INVALID_ARGUMENT, {
+            argument: 'name',
+            value: name
+        });
+    }
     name = name.toLowerCase();
     // Supporting the full UTF-8 space requires additional (and large)
     // libraries, so for now we simply do not support them.
     // It should be fairly easy in the future to support systems with
     // String.normalize, but that is future work.
     if (!name.match(UseSTD3ASCIIRules)) {
-        throw new Error('contains invalid UseSTD3ASCIIRules characters');
+        errors.throwError('contains invalid UseSTD3ASCIIRules characters', errors.INVALID_ARGUMENT, {
+            argument: 'name',
+            value: name
+        });
     }
     var result = Zeros;
     while (name.length) {
@@ -13674,16 +13697,15 @@ function id(text) {
 }
 exports.id = id;
 function hashMessage(message) {
-    var payload = bytes_1.concat([
+    return keccak256_1.keccak256(bytes_1.concat([
         utf8_1.toUtf8Bytes('\x19Ethereum Signed Message:\n'),
         utf8_1.toUtf8Bytes(String(message.length)),
         ((typeof (message) === 'string') ? utf8_1.toUtf8Bytes(message) : message)
-    ]);
-    return keccak256_1.keccak256(payload);
+    ]));
 }
 exports.hashMessage = hashMessage;
 
-},{"./bytes":62,"./keccak256":69,"./utf8":83}],64:[function(require,module,exports){
+},{"../errors":5,"./bytes":62,"./keccak256":69,"./utf8":83}],64:[function(require,module,exports){
 'use strict';
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -13990,6 +14012,7 @@ exports.hexDataLength = bytes_1.hexDataLength;
 exports.hexlify = bytes_1.hexlify;
 exports.hexStripZeros = bytes_1.hexStripZeros;
 exports.hexZeroPad = bytes_1.hexZeroPad;
+exports.isHexString = bytes_1.isHexString;
 exports.joinSignature = bytes_1.joinSignature;
 exports.padZeros = bytes_1.padZeros;
 exports.splitSignature = bytes_1.splitSignature;

@@ -54,7 +54,7 @@ export interface TransactionReceipt {
 export declare type TransactionRequest = {
     to?: string | Promise<string>;
     from?: string | Promise<string>;
-    nonce?: number | string | Promise<number | string>;
+    nonce?: BigNumberish | Promise<BigNumberish>;
     gasLimit?: BigNumberish | Promise<BigNumberish>;
     gasPrice?: BigNumberish | Promise<BigNumberish>;
     data?: Arrayish | Promise<Arrayish>;
