@@ -62,7 +62,6 @@ export class Wallet extends AbstractSigner {
         return new Wallet(this.signingKey, provider);
     }
 
-
     getAddress(): Promise<string> {
         return Promise.resolve(this.address);
     }
@@ -91,6 +90,13 @@ export class Wallet extends AbstractSigner {
     }
 
     sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
+        if (!this.provider) { throw new Error('missing provider'); }
+
+        if (transaction.nonce == null) {
+            transaction = shallowCopy(transaction);
+            transaction.nonce = this.getTransactionCount("pending");
+        }
+
         return populateTransaction(transaction, this.provider, this.address).then((tx) => {
              return this.sign(tx).then((signedTransaction) => {
                  return this.provider.sendTransaction(signedTransaction);
