@@ -34,7 +34,7 @@ function timer(timeout: number): Promise<any> {
 function getResult(payload: { error?: { code?: number, data?: any, message?: string }, result?: any }): any {
     if (payload.error) {
         // @TODO: not any
-        var error: any = new Error(payload.error.message);
+        let error: any = new Error(payload.error.message);
         error.code = payload.error.code;
         error.data = payload.error.data;
         throw error;
@@ -101,7 +101,7 @@ export class JsonRpcSigner extends Signer {
         return this.provider.getTransactionCount(this.getAddress(), blockTag);
     }
 
-    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
+    sendUncheckedTransaction(transaction: TransactionRequest): Promise<string> {
         transaction = shallowCopy(transaction);
 
         let fromAddress = this.getAddress().then((address) => {
@@ -126,15 +126,7 @@ export class JsonRpcSigner extends Signer {
             let hexTx = JsonRpcProvider.hexlifyTransaction(tx);
             hexTx.from = results[1];
             return this.provider.send('eth_sendTransaction', [ hexTx ]).then((hash) => {
-                return poll(() => {
-                    return this.provider.getTransaction(hash).then((tx: TransactionResponse) => {
-                        if (tx === null) { return undefined; }
-                        return this.provider._wrapTransaction(tx, hash);
-                    });
-                }, { onceBlock: this.provider }).catch((error: Error) => {
-                    (<any>error).transactionHash = hash;
-                    throw error;
-                });
+                return hash;
             }, (error) => {
                 if (error.responseText) {
                     // See: JsonRpcProvider.sendTransaction (@TODO: Expose a ._throwError??)
@@ -159,8 +151,22 @@ export class JsonRpcSigner extends Signer {
         });
     }
 
+    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
+        return this.sendUncheckedTransaction(transaction).then((hash) => {
+            return poll(() => {
+                return this.provider.getTransaction(hash).then((tx: TransactionResponse) => {
+                    if (tx === null) { return undefined; }
+                    return this.provider._wrapTransaction(tx, hash);
+                });
+            }, { onceBlock: this.provider }).catch((error: Error) => {
+                (<any>error).transactionHash = hash;
+                throw error;
+            });
+        });
+    }
+
     signMessage(message: Arrayish | string): Promise<string> {
-        var data = ((typeof(message) === 'string') ? toUtf8Bytes(message): message);
+        let data = ((typeof(message) === 'string') ? toUtf8Bytes(message): message);
         return this.getAddress().then((address) => {
 
             // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
@@ -169,7 +175,7 @@ export class JsonRpcSigner extends Signer {
     }
 
     unlock(password: string): Promise<boolean> {
-        var provider = this.provider;
+        let provider = this.provider;
 
         return this.getAddress().then(function(address) {
             return provider.send('personal_unlockAccount', [ address.toLowerCase(), password, null ]);
@@ -334,9 +340,9 @@ export class JsonRpcProvider extends BaseProvider {
 
     protected _startPending(): void {
         if (this._pendingFilter != null) { return; }
-        var self = this;
+        let self = this;
 
-        var pendingFilter: Promise<number> = this.send('eth_newPendingTransactionFilter', []);
+        let pendingFilter: Promise<number> = this.send('eth_newPendingTransactionFilter', []);
         this._pendingFilter = pendingFilter;
 
         pendingFilter.then(function(filterId) {
@@ -344,7 +350,7 @@ export class JsonRpcProvider extends BaseProvider {
                 self.send('eth_getFilterChanges', [ filterId ]).then(function(hashes: Array<string>) {
                     if (self._pendingFilter != pendingFilter) { return null; }
 
-                    var seq = Promise.resolve();
+                    let seq = Promise.resolve();
                     hashes.forEach(function(hash) {
                         // @TODO: This should be garbage collected at some point... How? When?
                         self._emitted['t:' + hash.toLowerCase()] = 'pending';
