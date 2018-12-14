@@ -13,6 +13,7 @@ export declare class JsonRpcSigner extends Signer {
     getAddress(): Promise<string>;
     getBalance(blockTag?: BlockTag): Promise<BigNumber>;
     getTransactionCount(blockTag?: BlockTag): Promise<number>;
+    sendUncheckedTransaction(transaction: TransactionRequest): Promise<string>;
     sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
     signMessage(message: Arrayish | string): Promise<string>;
     unlock(password: string): Promise<boolean>;

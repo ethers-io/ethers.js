@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.19";
+exports.version = "4.0.20";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -11700,7 +11700,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     JsonRpcSigner.prototype.getTransactionCount = function (blockTag) {
         return this.provider.getTransactionCount(this.getAddress(), blockTag);
     };
-    JsonRpcSigner.prototype.sendTransaction = function (transaction) {
+    JsonRpcSigner.prototype.sendUncheckedTransaction = function (transaction) {
         var _this = this;
         transaction = properties_1.shallowCopy(transaction);
         var fromAddress = this.getAddress().then(function (address) {
@@ -11725,17 +11725,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             var hexTx = JsonRpcProvider.hexlifyTransaction(tx);
             hexTx.from = results[1];
             return _this.provider.send('eth_sendTransaction', [hexTx]).then(function (hash) {
-                return web_1.poll(function () {
-                    return _this.provider.getTransaction(hash).then(function (tx) {
-                        if (tx === null) {
-                            return undefined;
-                        }
-                        return _this.provider._wrapTransaction(tx, hash);
-                    });
-                }, { onceBlock: _this.provider }).catch(function (error) {
-                    error.transactionHash = hash;
-                    throw error;
-                });
+                return hash;
             }, function (error) {
                 if (error.responseText) {
                     // See: JsonRpcProvider.sendTransaction (@TODO: Expose a ._throwError??)
@@ -11755,6 +11745,22 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                         });
                     }
                 }
+                throw error;
+            });
+        });
+    };
+    JsonRpcSigner.prototype.sendTransaction = function (transaction) {
+        var _this = this;
+        return this.sendUncheckedTransaction(transaction).then(function (hash) {
+            return web_1.poll(function () {
+                return _this.provider.getTransaction(hash).then(function (tx) {
+                    if (tx === null) {
+                        return undefined;
+                    }
+                    return _this.provider._wrapTransaction(tx, hash);
+                });
+            }, { onceBlock: _this.provider }).catch(function (error) {
+                error.transactionHash = hash;
                 throw error;
             });
         });
@@ -16632,6 +16638,13 @@ var Wallet = /** @class */ (function (_super) {
     };
     Wallet.prototype.sendTransaction = function (transaction) {
         var _this = this;
+        if (!this.provider) {
+            throw new Error('missing provider');
+        }
+        if (transaction.nonce == null) {
+            transaction = properties_1.shallowCopy(transaction);
+            transaction.nonce = this.getTransactionCount("pending");
+        }
         return transaction_1.populateTransaction(transaction, this.provider, this.address).then(function (tx) {
             return _this.sign(tx).then(function (signedTransaction) {
                 return _this.provider.sendTransaction(signedTransaction);

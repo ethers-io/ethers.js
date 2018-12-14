@@ -262,7 +262,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.19";
+    export const version = "4.0.20";
 }
 
 declare module 'ethers/utils/bignumber' {
@@ -833,6 +833,7 @@ declare module 'ethers/providers/json-rpc-provider' {
         getAddress(): Promise<string>;
         getBalance(blockTag?: BlockTag): Promise<BigNumber>;
         getTransactionCount(blockTag?: BlockTag): Promise<number>;
+        sendUncheckedTransaction(transaction: TransactionRequest): Promise<string>;
         sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
         signMessage(message: Arrayish | string): Promise<string>;
         unlock(password: string): Promise<boolean>;

@@ -103,6 +103,13 @@ var Wallet = /** @class */ (function (_super) {
     };
     Wallet.prototype.sendTransaction = function (transaction) {
         var _this = this;
+        if (!this.provider) {
+            throw new Error('missing provider');
+        }
+        if (transaction.nonce == null) {
+            transaction = properties_1.shallowCopy(transaction);
+            transaction.nonce = this.getTransactionCount("pending");
+        }
         return transaction_1.populateTransaction(transaction, this.provider, this.address).then(function (tx) {
             return _this.sign(tx).then(function (signedTransaction) {
                 return _this.provider.sendTransaction(signedTransaction);

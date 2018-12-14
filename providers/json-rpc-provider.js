@@ -96,7 +96,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     JsonRpcSigner.prototype.getTransactionCount = function (blockTag) {
         return this.provider.getTransactionCount(this.getAddress(), blockTag);
     };
-    JsonRpcSigner.prototype.sendTransaction = function (transaction) {
+    JsonRpcSigner.prototype.sendUncheckedTransaction = function (transaction) {
         var _this = this;
         transaction = properties_1.shallowCopy(transaction);
         var fromAddress = this.getAddress().then(function (address) {
@@ -121,17 +121,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             var hexTx = JsonRpcProvider.hexlifyTransaction(tx);
             hexTx.from = results[1];
             return _this.provider.send('eth_sendTransaction', [hexTx]).then(function (hash) {
-                return web_1.poll(function () {
-                    return _this.provider.getTransaction(hash).then(function (tx) {
-                        if (tx === null) {
-                            return undefined;
-                        }
-                        return _this.provider._wrapTransaction(tx, hash);
-                    });
-                }, { onceBlock: _this.provider }).catch(function (error) {
-                    error.transactionHash = hash;
-                    throw error;
-                });
+                return hash;
             }, function (error) {
                 if (error.responseText) {
                     // See: JsonRpcProvider.sendTransaction (@TODO: Expose a ._throwError??)
@@ -151,6 +141,22 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                         });
                     }
                 }
+                throw error;
+            });
+        });
+    };
+    JsonRpcSigner.prototype.sendTransaction = function (transaction) {
+        var _this = this;
+        return this.sendUncheckedTransaction(transaction).then(function (hash) {
+            return web_1.poll(function () {
+                return _this.provider.getTransaction(hash).then(function (tx) {
+                    if (tx === null) {
+                        return undefined;
+                    }
+                    return _this.provider._wrapTransaction(tx, hash);
+                });
+            }, { onceBlock: _this.provider }).catch(function (error) {
+                error.transactionHash = hash;
                 throw error;
             });
         });
