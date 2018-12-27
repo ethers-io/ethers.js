@@ -15,3 +15,6 @@ export declare function checkNew(self: any, kind: any): void;
 export declare function checkArgumentCount(count: number, expectedCount: number, suffix?: string): void;
 export declare function setCensorship(censorship: boolean, permanent?: boolean): void;
 export declare function checkNormalize(): void;
+export declare function setLogLevel(logLevel: string): void;
+export declare function warn(...args: Array<any>): void;
+export declare function info(...args: Array<any>): void;

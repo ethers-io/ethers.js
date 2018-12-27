@@ -109,7 +109,7 @@ function parse(rawTransaction) {
         tx.v = bignumber_1.bigNumberify(transaction[6]).toNumber();
     }
     catch (error) {
-        console.log(error);
+        errors.info(error);
         return tx;
     }
     tx.r = bytes_1.hexZeroPad(transaction[7], 32);
@@ -138,7 +138,7 @@ function parse(rawTransaction) {
             tx.from = secp256k1_1.recoverAddress(digest, { r: bytes_1.hexlify(tx.r), s: bytes_1.hexlify(tx.s), recoveryParam: recoveryParam });
         }
         catch (error) {
-            console.log(error);
+            errors.info(error);
         }
         tx.hash = keccak256_1.keccak256(rawTransaction);
     }

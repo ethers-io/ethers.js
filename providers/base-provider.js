@@ -1088,7 +1088,7 @@ var BaseProvider = /** @class */ (function (_super) {
         return null;
     };
     BaseProvider.prototype._startPending = function () {
-        console.log('WARNING: this provider does not support pending events');
+        errors.warn('WARNING: this provider does not support pending events');
     };
     BaseProvider.prototype._stopPending = function () {
     };

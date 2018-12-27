@@ -196,7 +196,7 @@ function parseSignatureEvent(fragment) {
             case '':
                 break;
             default:
-                console.log('unknown modifier: ' + modifier);
+                errors.info('unknown modifier: ' + modifier);
         }
     });
     if (abi.name && !abi.name.match(regexIdentifier)) {
@@ -260,7 +260,7 @@ function parseSignatureFunction(fragment) {
             case '':
                 break;
             default:
-                console.log('unknown modifier: ' + modifier);
+                errors.info('unknown modifier: ' + modifier);
         }
     });
     // We have outputs

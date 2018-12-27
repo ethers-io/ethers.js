@@ -128,3 +128,36 @@ function checkNormalize() {
     }
 }
 exports.checkNormalize = checkNormalize;
+var LogLevels = { debug: 1, "default": 2, info: 2, warn: 3, error: 4, off: 5 };
+var LogLevel = LogLevels["default"];
+function setLogLevel(logLevel) {
+    var level = LogLevels[logLevel];
+    if (level == null) {
+        warn("invliad log level - " + logLevel);
+        return;
+    }
+    LogLevel = level;
+}
+exports.setLogLevel = setLogLevel;
+function log(logLevel, args) {
+    if (LogLevel > LogLevels[logLevel]) {
+        return;
+    }
+    console.log.apply(console, args);
+}
+function warn() {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    log("warn", args);
+}
+exports.warn = warn;
+function info() {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    log("info", args);
+}
+exports.info = info;

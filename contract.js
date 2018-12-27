@@ -304,7 +304,6 @@ var Contract = /** @class */ (function () {
                 }
                 return address;
             }).catch(function (error) {
-                console.log('ERROR: Cannot find Contract - ' + addressOrName);
                 throw error;
             }));
         }
@@ -323,7 +322,7 @@ var Contract = /** @class */ (function () {
                 properties_1.defineReadOnly(_this, name, run);
             }
             else {
-                console.log('WARNING: Multiple definitions for ' + name);
+                errors.warn('WARNING: Multiple definitions for ' + name);
             }
             if (_this.functions[name] == null) {
                 properties_1.defineReadOnly(_this.functions, name, run);

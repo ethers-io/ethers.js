@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.20";
+exports.version = "4.0.21";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -352,7 +352,6 @@ var Contract = /** @class */ (function () {
                 }
                 return address;
             }).catch(function (error) {
-                console.log('ERROR: Cannot find Contract - ' + addressOrName);
                 throw error;
             }));
         }
@@ -371,7 +370,7 @@ var Contract = /** @class */ (function () {
                 properties_1.defineReadOnly(_this, name, run);
             }
             else {
-                console.log('WARNING: Multiple definitions for ' + name);
+                errors.warn('WARNING: Multiple definitions for ' + name);
             }
             if (_this.functions[name] == null) {
                 properties_1.defineReadOnly(_this.functions, name, run);
@@ -880,6 +879,39 @@ function checkNormalize() {
     }
 }
 exports.checkNormalize = checkNormalize;
+var LogLevels = { debug: 1, "default": 2, info: 2, warn: 3, error: 4, off: 5 };
+var LogLevel = LogLevels["default"];
+function setLogLevel(logLevel) {
+    var level = LogLevels[logLevel];
+    if (level == null) {
+        warn("invliad log level - " + logLevel);
+        return;
+    }
+    LogLevel = level;
+}
+exports.setLogLevel = setLogLevel;
+function log(logLevel, args) {
+    if (LogLevel > LogLevels[logLevel]) {
+        return;
+    }
+    console.log.apply(console, args);
+}
+function warn() {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    log("warn", args);
+}
+exports.warn = warn;
+function info() {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    log("info", args);
+}
+exports.info = info;
 
 },{"./_version":1}],6:[function(require,module,exports){
 'use strict';
@@ -10957,7 +10989,7 @@ var BaseProvider = /** @class */ (function (_super) {
         return null;
     };
     BaseProvider.prototype._startPending = function () {
-        console.log('WARNING: this provider does not support pending events');
+        errors.warn('WARNING: this provider does not support pending events');
     };
     BaseProvider.prototype._stopPending = function () {
     };
@@ -11584,7 +11616,7 @@ var InfuraProvider = /** @class */ (function (_super) {
         return _this;
     }
     InfuraProvider.prototype._startPending = function () {
-        console.log('WARNING: INFURA does not support pending filters');
+        errors.warn('WARNING: INFURA does not support pending filters');
     };
     InfuraProvider.prototype.getSigner = function (address) {
         errors.throwError('INFURA does not support signing', errors.UNSUPPORTED_OPERATION, { operation: 'getSigner' });
@@ -12283,7 +12315,7 @@ function parseSignatureEvent(fragment) {
             case '':
                 break;
             default:
-                console.log('unknown modifier: ' + modifier);
+                errors.info('unknown modifier: ' + modifier);
         }
     });
     if (abi.name && !abi.name.match(regexIdentifier)) {
@@ -12347,7 +12379,7 @@ function parseSignatureFunction(fragment) {
             case '':
                 break;
             default:
-                console.log('unknown modifier: ' + modifier);
+                errors.info('unknown modifier: ' + modifier);
         }
     });
     // We have outputs
@@ -14344,9 +14376,14 @@ function addMethod(method) {
                 signature: signature,
                 sighash: sighash,
             });
-            // Expose the first (and hopefully unique named function
-            if (method.name && this.functions[method.name] == null) {
-                properties_1.defineReadOnly(this.functions, method.name, description);
+            // Expose the first (and hopefully unique named function)
+            if (method.name) {
+                if (this.functions[method.name] == null) {
+                    properties_1.defineReadOnly(this.functions, method.name, description);
+                }
+                else {
+                    errors.warn('WARNING: Multiple definitions for ' + method.name);
+                }
             }
             // Expose all methods by their signature, for overloaded functions
             if (this.functions[description.signature] == null) {
@@ -14377,7 +14414,7 @@ function addMethod(method) {
             // Nothing to do for fallback
             break;
         default:
-            console.log('WARNING: unsupported ABI type - ' + method.type);
+            errors.warn('WARNING: unsupported ABI type - ' + method.type);
             break;
     }
 }
@@ -15827,7 +15864,7 @@ function parse(rawTransaction) {
         tx.v = bignumber_1.bigNumberify(transaction[6]).toNumber();
     }
     catch (error) {
-        console.log(error);
+        errors.info(error);
         return tx;
     }
     tx.r = bytes_1.hexZeroPad(transaction[7], 32);
@@ -15856,7 +15893,7 @@ function parse(rawTransaction) {
             tx.from = secp256k1_1.recoverAddress(digest, { r: bytes_1.hexlify(tx.r), s: bytes_1.hexlify(tx.s), recoveryParam: recoveryParam });
         }
         catch (error) {
-            console.log(error);
+            errors.info(error);
         }
         tx.hash = keccak256_1.keccak256(rawTransaction);
     }

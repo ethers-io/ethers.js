@@ -49,7 +49,7 @@ var InfuraProvider = /** @class */ (function (_super) {
         return _this;
     }
     InfuraProvider.prototype._startPending = function () {
-        console.log('WARNING: INFURA does not support pending filters');
+        errors.warn('WARNING: INFURA does not support pending filters');
     };
     InfuraProvider.prototype.getSigner = function (address) {
         errors.throwError('INFURA does not support signing', errors.UNSUPPORTED_OPERATION, { operation: 'getSigner' });
