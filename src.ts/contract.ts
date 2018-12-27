@@ -411,7 +411,6 @@ export class Contract {
                 if (address == null) { throw new Error('name not found'); }
                 return address;
             }).catch((error: Error) => {
-                console.log('ERROR: Cannot find Contract - ' + addressOrName);
                 throw error;
             }));
         } else {
@@ -429,7 +428,7 @@ export class Contract {
             if ((<any>this)[name] == null) {
                 defineReadOnly(this, name, run);
             } else {
-                console.log('WARNING: Multiple definitions for ' + name);
+                errors.warn('WARNING: Multiple definitions for ' + name);
             }
 
             if (this.functions[name] == null) {

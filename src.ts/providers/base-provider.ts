@@ -1224,7 +1224,7 @@ export class BaseProvider extends Provider {
     }
 
     protected _startPending(): void {
-        console.log('WARNING: this provider does not support pending events');
+        errors.warn('WARNING: this provider does not support pending events');
     }
 
     protected _stopPending(): void {

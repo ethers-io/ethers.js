@@ -266,7 +266,7 @@ function parseSignatureEvent(fragment: string): EventFragment {
             case '':
                 break;
             default:
-                console.log('unknown modifier: ' + modifier);
+                errors.info('unknown modifier: ' + modifier);
         }
     });
 
@@ -336,7 +336,7 @@ function parseSignatureFunction(fragment: string): FunctionFragment {
             case '':
                 break;
             default:
-                console.log('unknown modifier: ' + modifier);
+                errors.info('unknown modifier: ' + modifier);
         }
     });
 

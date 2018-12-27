@@ -162,7 +162,7 @@ export function parse(rawTransaction: Arrayish): Transaction {
         tx.v = bigNumberify(transaction[6]).toNumber();
 
     } catch (error) {
-        console.log(error);
+        errors.info(error);
         return tx;
     }
 
@@ -195,7 +195,7 @@ export function parse(rawTransaction: Arrayish): Transaction {
         try {
             tx.from = recoverAddress(digest, { r: hexlify(tx.r), s: hexlify(tx.s), recoveryParam: recoveryParam });
         } catch (error) {
-            console.log(error);
+            errors.info(error);
         }
 
         tx.hash = keccak256(rawTransaction);

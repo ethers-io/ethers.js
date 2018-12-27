@@ -325,9 +325,13 @@ function addMethod(method: any): void {
                 sighash: sighash,
             });
 
-            // Expose the first (and hopefully unique named function
-            if (method.name && this.functions[method.name] == null) {
-                defineReadOnly(this.functions, method.name, description);
+            // Expose the first (and hopefully unique named function)
+            if (method.name) {
+                if (this.functions[method.name] == null) {
+                    defineReadOnly(this.functions, method.name, description);
+                } else {
+                    errors.warn('WARNING: Multiple definitions for ' + method.name);
+                }
             }
 
             // Expose all methods by their signature, for overloaded functions
@@ -368,7 +372,7 @@ function addMethod(method: any): void {
             break;
 
         default:
-            console.log('WARNING: unsupported ABI type - ' + method.type);
+            errors.warn('WARNING: unsupported ABI type - ' + method.type);
             break;
     }
 }

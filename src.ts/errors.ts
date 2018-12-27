@@ -141,3 +141,28 @@ export function checkNormalize(): void {
         throwError('platform missing String.prototype.normalize', UNSUPPORTED_OPERATION, { operation: 'String.prototype.normalize', form: error.message });
     }
 }
+
+const LogLevels: { [ name: string ]: number } = { debug: 1, "default": 2, info: 2, warn: 3, error: 4, off: 5 };
+let LogLevel = LogLevels["default"];
+
+export function setLogLevel(logLevel: string): void {
+    let level = LogLevels[logLevel];
+    if (level == null) {
+        warn("invliad log level - " + logLevel);
+        return;
+    }
+    LogLevel = level;
+}
+
+function log(logLevel: string, args: Array<any>): void {
+    if (LogLevel > LogLevels[logLevel]) { return; }
+    console.log.apply(console, args);
+}
+
+export function warn(...args: Array<any>): void {
+    log("warn", args);
+}
+
+export function info(...args: Array<any>): void {
+    log("info", args);
+}

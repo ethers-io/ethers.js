@@ -41,7 +41,7 @@ export class InfuraProvider extends JsonRpcProvider {
     }
 
     protected _startPending(): void {
-        console.log('WARNING: INFURA does not support pending filters');
+        errors.warn('WARNING: INFURA does not support pending filters');
     }
 
     getSigner(address?: string): JsonRpcSigner {
