@@ -6,12 +6,10 @@ var os = require('os');
 var path = require('path');
 var {IpcProvider} = require('../providers/ipc-provider');
 
-const sleep = (ms) => new Promise(res => setTimeout(res, ms, ms));
-
 describe('IpcProvider', () => {
-    describe('.send', () => {
-        var srv
-        var ipcFilename = path.basename(__filename) + '.ipc'
+    describe('#send', () => {
+        var srv;
+        var ipcFilename = path.basename(__filename) + '.ipc';
         var ipcPath = path.join(os.tmpdir(), ipcFilename);
 
         beforeEach(() => srv = net.createServer({allowHalfOpen: true}));
@@ -21,15 +19,17 @@ describe('IpcProvider', () => {
             it('concatenates them before parsing it as JSON', done => {
                 srv.on('connection', socket => {
                     socket.on('data', _data => "throw away");
-                    socket.on('end', async () => {
-                        const [chunk1, chunk2] = [
-                            '{ "result"',
-                            ': {"success": true} }'
+                    socket.on('end', () => {
+                        var [chunk1, chunk2] = [
+                            '{ "result": {"suc',
+                            'cess": true} }'
                         ];
                         socket.write(chunk1);
-                        await sleep(1); // Ensure delivery of chunk1
-                        socket.write(chunk2);
-                        socket.end();
+                        // Ensure delivery of chunk1
+                        setTimeout(() => {
+                            socket.write(chunk2);
+                            socket.end();
+                        }, 10);
                     });
                 });
                 srv.on('error', done);
