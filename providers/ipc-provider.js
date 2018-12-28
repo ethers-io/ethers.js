@@ -51,18 +51,20 @@ var IpcProvider = /** @class */ (function (_super) {
         });
         return new Promise(function (resolve, reject) {
             var stream = net_1.default.connect(_this.path);
+            stream.setEncoding('utf8');
+            var response = '';
             stream.on('data', function (data) {
-                try {
-                    resolve(JSON.parse(data.toString('utf8')).result);
-                    // @TODO: Better pull apart the error
-                    stream.destroy();
-                }
-                catch (error) {
-                    reject(error);
-                    stream.destroy();
-                }
+                response += data;
             });
             stream.on('end', function () {
+                try {
+                    resolve(JSON.parse(response).result);
+                    // @TODO: Better pull apart the error
+                }
+                catch (error) {
+                    error.message += ':\n' + response;
+                    reject(error);
+                }
                 stream.destroy();
             });
             stream.on('error', function (error) {

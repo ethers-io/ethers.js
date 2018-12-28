@@ -41,18 +41,21 @@ export class IpcProvider extends JsonRpcProvider {
 
         return new Promise((resolve, reject) => {
             var stream = net.connect(this.path);
+            stream.setEncoding('utf8');
+            var response = '';
+
             stream.on('data', function(data) {
-                try {
-                    resolve(JSON.parse(data.toString('utf8')).result);
-                    // @TODO: Better pull apart the error
-                    stream.destroy();
-                } catch (error) {
-                    reject(error);
-                    stream.destroy();
-                }
+                response += data;
             });
 
             stream.on('end', function() {
+                try {
+                    resolve(JSON.parse(response).result);
+                    // @TODO: Better pull apart the error
+                } catch (error) {
+                    error.message += ':\n' + response;
+                    reject(error);
+                }
                 stream.destroy();
             });
 
