@@ -554,12 +554,19 @@ var Contract = /** @class */ (function () {
         }).map(function (event) { return event.listener; });
     };
     Contract.prototype.removeAllListeners = function (eventName) {
+        var _this = this;
         if (!this.provider) {
             return this;
         }
         var eventFilter = this._getEventFilter(eventName);
         this._events = this._events.filter(function (event) {
-            return event.eventFilter.eventTag !== eventFilter.eventTag;
+            // Keep all other events
+            if (event.eventFilter.eventTag !== eventFilter.eventTag) {
+                return true;
+            }
+            // Deregister this event from the provider and filter it out
+            _this.provider.removeListener(event.eventFilter.filter, event.wrappedListener);
+            return false;
         });
         return this;
     };
