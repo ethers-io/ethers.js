@@ -696,7 +696,15 @@ export class Contract {
 
         let eventFilter = this._getEventFilter(eventName);
         this._events = this._events.filter((event) => {
-            return event.eventFilter.eventTag !== eventFilter.eventTag
+
+            // Keep all other events
+            if (event.eventFilter.eventTag !== eventFilter.eventTag) {
+                return true;
+            }
+
+            // Deregister this event from the provider and filter it out
+            this.provider.removeListener(event.eventFilter.filter, event.wrappedListener);
+            return false;
         });
 
         return this;
