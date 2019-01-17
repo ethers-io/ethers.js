@@ -31,7 +31,7 @@ describe('Test JSON Wallets', function() {
     // A few extra test cases to test encrypting/decrypting
     ['one', 'two', 'three'].forEach(function(i) {
         var password = 'foobar' + i;
-        var wallet = new Wallet(utils.randomHexString('test-' + i, 32));
+        var wallet = Wallet.createRandom({ path: "m/56'/82", extraEntropy: utils.randomHexString('test-' + i, 32) });
         it('encrypts and decrypts a random wallet - ' + i, function() {
             this.timeout(1200000);
 
@@ -39,6 +39,10 @@ describe('Test JSON Wallets', function() {
                 return Wallet.fromEncryptedJson(json, password).then(function(decryptedWallet) {
                     assert.equal(decryptedWallet.address, wallet.address,
                         'decrypted wallet - ' + wallet.privateKey);
+                    assert.equal(decryptedWallet.mnemonic, wallet.mnemonic,
+                        "decrypted wallet menonic - " + wallet.privateKey);
+                    assert.equal(decryptedWallet.path, wallet.path,
+                        "decrypted wallet path - " + wallet.privateKey);
                     return decryptedWallet.encrypt(password).then(function(encryptedWallet) {
                         var parsedWallet = JSON.parse(encryptedWallet);
                         assert.equal(decryptedWallet.address.toLowerCase().substring(2), parsedWallet.address,

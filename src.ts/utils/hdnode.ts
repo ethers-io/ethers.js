@@ -109,7 +109,7 @@ export class HDNode {
         // Base path
         var mnemonic = this.mnemonic;
         var path = this.path;
-        if (path) { path += '/' + index; }
+        if (path) { path += '/' + (index & ~HardenedBit); }
 
         if (index & HardenedBit) {
             // Data = 0x00 || ser_256(k_par)

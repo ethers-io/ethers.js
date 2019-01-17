@@ -47,7 +47,7 @@ export class Wallet extends AbstractSigner {
     get address(): string { return this.signingKey.address; }
 
     get mnemonic(): string { return this.signingKey.mnemonic; }
-    get path(): string { return this.signingKey.mnemonic; }
+    get path(): string { return this.signingKey.path; }
 
     get privateKey(): string { return this.signingKey.privateKey; }
 

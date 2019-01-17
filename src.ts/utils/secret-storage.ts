@@ -438,6 +438,7 @@ export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | 
                         gethFilename: ('UTC--' + timestamp + '--' + data.address),
                         mnemonicCounter: hexlify(mnemonicIv).substring(2),
                         mnemonicCiphertext: hexlify(mnemonicCiphertext).substring(2),
+                        path: path,
                         version: "0.1"
                     };
                 }
