@@ -57,7 +57,7 @@ var Wallet = /** @class */ (function (_super) {
         configurable: true
     });
     Object.defineProperty(Wallet.prototype, "path", {
-        get: function () { return this.signingKey.mnemonic; },
+        get: function () { return this.signingKey.path; },
         enumerable: true,
         configurable: true
     });

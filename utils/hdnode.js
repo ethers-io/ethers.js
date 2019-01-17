@@ -75,7 +75,7 @@ var HDNode = /** @class */ (function () {
         var mnemonic = this.mnemonic;
         var path = this.path;
         if (path) {
-            path += '/' + index;
+            path += '/' + (index & ~HardenedBit);
         }
         if (index & HardenedBit) {
             // Data = 0x00 || ser_256(k_par)

@@ -384,6 +384,7 @@ function encrypt(privateKey, password, options, progressCallback) {
                         gethFilename: ('UTC--' + timestamp + '--' + data.address),
                         mnemonicCounter: bytes_1.hexlify(mnemonicIv).substring(2),
                         mnemonicCiphertext: bytes_1.hexlify(mnemonicCiphertext).substring(2),
+                        path: path,
                         version: "0.1"
                     };
                 }
