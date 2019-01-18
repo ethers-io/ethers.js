@@ -166,10 +166,9 @@ export class Wallet extends AbstractSigner {
         return Promise.reject('invalid wallet JSON');
     }
 
-    static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Promise<Wallet> {
+    static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet {
         if (!path) { path = defaultPath; }
-        return fromMnemonic(mnemonic, wordlist).then(hdNode => {
-            return new Wallet(hdNode.derivePath(path))
-        })
+
+        return new Wallet(fromMnemonic(mnemonic, wordlist).derivePath(path))
     }
 }

@@ -147,10 +147,7 @@ function _fromSeed(seed, mnemonic) {
 function fromMnemonic(mnemonic, wordlist) {
     // Check that the checksum s valid (will throw an error)
     mnemonicToEntropy(mnemonic, wordlist);
-    // return _fromSeed(mnemonicToSeed(mnemonic), mnemonic);
-    return mnemonicToSeed(mnemonic).then(function (seed) {
-        return _fromSeed(seed, mnemonic);
-    });
+    return _fromSeed(mnemonicToSeed(mnemonic), mnemonic);
 }
 exports.fromMnemonic = fromMnemonic;
 function fromSeed(seed) {
@@ -162,9 +159,7 @@ function mnemonicToSeed(mnemonic, password) {
         password = '';
     }
     var salt = utf8_1.toUtf8Bytes('mnemonic' + password, utf8_1.UnicodeNormalizationForm.NFKD);
-    return pbkdf2_1.pbkdf2(utf8_1.toUtf8Bytes(mnemonic, utf8_1.UnicodeNormalizationForm.NFKD), salt, 2048, 64, 'sha512').then(function (derviedKey) {
-        return bytes_1.hexlify(derviedKey);
-    });
+    return bytes_1.hexlify(pbkdf2_1.pbkdf2(utf8_1.toUtf8Bytes(mnemonic, utf8_1.UnicodeNormalizationForm.NFKD), salt, 2048, 64, 'sha512'));
 }
 exports.mnemonicToSeed = mnemonicToSeed;
 function mnemonicToEntropy(mnemonic, wordlist) {

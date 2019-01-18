@@ -20,7 +20,7 @@ declare module 'ethers/ethers' {
     import { platform } from 'ethers/utils/shims';
     import { version } from 'ethers/_version';
     import { ContractFunction, ContractTransaction, Event, EventFilter } from 'ethers/contract';
-    import libraries from 'ethers/libraries';
+    import libraries from 'ethers/utils/libraries';
     function getDefaultProvider(network?: utils.Network | string): providers.BaseProvider;
     export { Signer, Wallet, VoidSigner, getDefaultProvider, providers, Contract, ContractFactory, constants, errors, utils, wordlists, libraries, platform, version, ContractFunction, ContractTransaction, Event, EventFilter };
 }
@@ -156,7 +156,7 @@ declare module 'ethers/wallet' {
                 */
             static createRandom(options?: any): Promise<Wallet>;
             static fromEncryptedJson(json: string, password: Arrayish, progressCallback?: ProgressCallback): Promise<Wallet>;
-            static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Promise<Wallet>;
+            static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet;
     }
 }
 
@@ -271,12 +271,10 @@ declare module 'ethers/_version' {
     export const version = "4.0.22";
 }
 
-declare module 'ethers/libraries' {
+declare module 'ethers/utils/libraries' {
     import scrypt from 'scrypt-js';
-    export const setPbkdf2: (pbkdf2Fn: any) => void;
     export const setScrypt: (scryptFn: typeof scrypt) => void;
     const libraries: {
-        readonly pbkdf2: any;
         readonly scrypt: typeof scrypt;
     };
     export default libraries;
@@ -661,9 +659,9 @@ declare module 'ethers/utils/hdnode' {
         derivePath(path: string): HDNode;
         static isHDNode(value: any): value is HDNode;
     }
-    export function fromMnemonic(mnemonic: string, wordlist?: Wordlist): Promise<HDNode>;
+    export function fromMnemonic(mnemonic: string, wordlist?: Wordlist): HDNode;
     export function fromSeed(seed: Arrayish): HDNode;
-    export function mnemonicToSeed(mnemonic: string, password?: string): Promise<string>;
+    export function mnemonicToSeed(mnemonic: string, password?: string): string;
     export function mnemonicToEntropy(mnemonic: string, wordlist?: Wordlist): string;
     export function entropyToMnemonic(entropy: Arrayish, wordlist?: Wordlist): string;
     export function isValidMnemonic(mnemonic: string, wordlist?: Wordlist): boolean;

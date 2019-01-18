@@ -230,9 +230,7 @@ var Wallet = /** @class */ (function (_super) {
         if (!path) {
             path = hdnode_1.defaultPath;
         }
-        return hdnode_1.fromMnemonic(mnemonic, wordlist).then(function (hdNode) {
-            return new Wallet(hdNode.derivePath(path));
-        });
+        return new Wallet(hdnode_1.fromMnemonic(mnemonic, wordlist).derivePath(path));
     };
     return Wallet;
 }(abstract_signer_1.Signer));

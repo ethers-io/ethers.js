@@ -27,7 +27,7 @@ import { version } from './_version';
 // Types
 
 import { ContractFunction, ContractTransaction, Event, EventFilter } from './contract';
-import libraries from './libraries';
+import libraries from './utils/libraries';
 
 
 ////////////////////////

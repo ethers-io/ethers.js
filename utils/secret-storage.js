@@ -49,7 +49,7 @@ var aes_js_1 = __importDefault(require("aes-js"));
 var uuid_1 = __importDefault(require("uuid"));
 var signing_key_1 = require("./signing-key");
 var HDNode = __importStar(require("./hdnode"));
-var libraries_1 = __importDefault(require("../libraries"));
+var libraries_1 = __importDefault(require("./libraries"));
 var address_1 = require("./address");
 var bytes_1 = require("./bytes");
 var pbkdf2_1 = require("./pbkdf2");
@@ -103,34 +103,29 @@ function decryptCrowdsale(json, password) {
     return __awaiter(this, void 0, void 0, function () {
         var data, ethaddr, encseed, key, iv, encryptedSeed, aesCbc, seed, seedHex, i, seedHexBytes, signingKey;
         return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    data = JSON.parse(json);
-                    password = getPassword(password);
-                    ethaddr = address_1.getAddress(searchPath(data, 'ethaddr'));
-                    encseed = looseArrayify(searchPath(data, 'encseed'));
-                    if (!encseed || (encseed.length % 16) !== 0) {
-                        throw new Error('invalid encseed');
-                    }
-                    return [4 /*yield*/, pbkdf2_1.pbkdf2(password, password, 2000, 32, 'sha256')];
-                case 1:
-                    key = (_a.sent()).slice(0, 16);
-                    iv = encseed.slice(0, 16);
-                    encryptedSeed = encseed.slice(16);
-                    aesCbc = new aes_js_1.default.ModeOfOperation.cbc(key, iv);
-                    seed = bytes_1.arrayify(aesCbc.decrypt(encryptedSeed));
-                    seed = aes_js_1.default.padding.pkcs7.strip(seed);
-                    seedHex = '';
-                    for (i = 0; i < seed.length; i++) {
-                        seedHex += String.fromCharCode(seed[i]);
-                    }
-                    seedHexBytes = utf8_1.toUtf8Bytes(seedHex);
-                    signingKey = new signing_key_1.SigningKey(keccak256_1.keccak256(seedHexBytes));
-                    if (signingKey.address !== ethaddr) {
-                        throw new Error('corrupt crowdsale wallet');
-                    }
-                    return [2 /*return*/, signingKey];
+            data = JSON.parse(json);
+            password = getPassword(password);
+            ethaddr = address_1.getAddress(searchPath(data, 'ethaddr'));
+            encseed = looseArrayify(searchPath(data, 'encseed'));
+            if (!encseed || (encseed.length % 16) !== 0) {
+                throw new Error('invalid encseed');
             }
+            key = pbkdf2_1.pbkdf2(password, password, 2000, 32, 'sha256').slice(0, 16);
+            iv = encseed.slice(0, 16);
+            encryptedSeed = encseed.slice(16);
+            aesCbc = new aes_js_1.default.ModeOfOperation.cbc(key, iv);
+            seed = bytes_1.arrayify(aesCbc.decrypt(encryptedSeed));
+            seed = aes_js_1.default.padding.pkcs7.strip(seed);
+            seedHex = '';
+            for (i = 0; i < seed.length; i++) {
+                seedHex += String.fromCharCode(seed[i]);
+            }
+            seedHexBytes = utf8_1.toUtf8Bytes(seedHex);
+            signingKey = new signing_key_1.SigningKey(keccak256_1.keccak256(seedHexBytes));
+            if (signingKey.address !== ethaddr) {
+                throw new Error('corrupt crowdsale wallet');
+            }
+            return [2 /*return*/, signingKey];
         });
     });
 }
@@ -159,44 +154,40 @@ function decrypt(json, password, progressCallback) {
                 return __awaiter(this, void 0, void 0, function () {
                     var ciphertext, computedMAC, privateKey, mnemonicKey, signingKey, mnemonicCiphertext, mnemonicIv, mnemonicCounter, mnemonicAesCtr, path, entropy, mnemonic, node;
                     return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0:
-                                ciphertext = looseArrayify(searchPath(data, 'crypto/ciphertext'));
-                                computedMAC = bytes_1.hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
-                                if (computedMAC !== searchPath(data, 'crypto/mac').toLowerCase()) {
-                                    reject(new Error('invalid password'));
-                                    return [2 /*return*/, null];
-                                }
-                                privateKey = decrypt(key.slice(0, 16), ciphertext);
-                                mnemonicKey = key.slice(32, 64);
-                                if (!privateKey) {
-                                    reject(new Error('unsupported cipher'));
-                                    return [2 /*return*/, null];
-                                }
-                                signingKey = new signing_key_1.SigningKey(privateKey);
-                                if (signingKey.address !== address_1.getAddress(data.address)) {
-                                    reject(new Error('address mismatch'));
-                                    return [2 /*return*/, null];
-                                }
-                                if (!(searchPath(data, 'x-ethers/version') === '0.1')) return [3 /*break*/, 2];
-                                mnemonicCiphertext = looseArrayify(searchPath(data, 'x-ethers/mnemonicCiphertext'));
-                                mnemonicIv = looseArrayify(searchPath(data, 'x-ethers/mnemonicCounter'));
-                                mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
-                                mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-                                path = searchPath(data, 'x-ethers/path') || HDNode.defaultPath;
-                                entropy = bytes_1.arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
-                                mnemonic = HDNode.entropyToMnemonic(entropy);
-                                return [4 /*yield*/, HDNode.fromMnemonic(mnemonic)];
-                            case 1:
-                                node = (_a.sent()).derivePath(path);
-                                if (node.privateKey != bytes_1.hexlify(privateKey)) {
-                                    reject(new Error('mnemonic mismatch'));
-                                    return [2 /*return*/, null];
-                                }
-                                signingKey = new signing_key_1.SigningKey(node);
-                                _a.label = 2;
-                            case 2: return [2 /*return*/, signingKey];
+                        ciphertext = looseArrayify(searchPath(data, 'crypto/ciphertext'));
+                        computedMAC = bytes_1.hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
+                        if (computedMAC !== searchPath(data, 'crypto/mac').toLowerCase()) {
+                            reject(new Error('invalid password'));
+                            return [2 /*return*/, null];
                         }
+                        privateKey = decrypt(key.slice(0, 16), ciphertext);
+                        mnemonicKey = key.slice(32, 64);
+                        if (!privateKey) {
+                            reject(new Error('unsupported cipher'));
+                            return [2 /*return*/, null];
+                        }
+                        signingKey = new signing_key_1.SigningKey(privateKey);
+                        if (signingKey.address !== address_1.getAddress(data.address)) {
+                            reject(new Error('address mismatch'));
+                            return [2 /*return*/, null];
+                        }
+                        // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
+                        if (searchPath(data, 'x-ethers/version') === '0.1') {
+                            mnemonicCiphertext = looseArrayify(searchPath(data, 'x-ethers/mnemonicCiphertext'));
+                            mnemonicIv = looseArrayify(searchPath(data, 'x-ethers/mnemonicCounter'));
+                            mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
+                            mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
+                            path = searchPath(data, 'x-ethers/path') || HDNode.defaultPath;
+                            entropy = bytes_1.arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
+                            mnemonic = HDNode.entropyToMnemonic(entropy);
+                            node = HDNode.fromMnemonic(mnemonic).derivePath(path);
+                            if (node.privateKey != bytes_1.hexlify(privateKey)) {
+                                reject(new Error('mnemonic mismatch'));
+                                return [2 /*return*/, null];
+                            }
+                            signingKey = new signing_key_1.SigningKey(node);
+                        }
+                        return [2 /*return*/, signingKey];
                     });
                 });
             };
@@ -207,7 +198,7 @@ function decrypt(json, password, progressCallback) {
                             switch (_a.label) {
                                 case 0:
                                     kdf = searchPath(data, 'crypto/kdf');
-                                    if (!(kdf && typeof (kdf) === 'string')) return [3 /*break*/, 6];
+                                    if (!(kdf && typeof (kdf) === 'string')) return [3 /*break*/, 5];
                                     if (!(kdf.toLowerCase() === 'scrypt')) return [3 /*break*/, 1];
                                     salt = looseArrayify(searchPath(data, 'crypto/kdfparams/salt'));
                                     N = parseInt(searchPath(data, 'crypto/kdfparams/n'));
@@ -251,9 +242,9 @@ function decrypt(json, password, progressCallback) {
                                             return progressCallback(progress);
                                         }
                                     });
-                                    return [3 /*break*/, 5];
+                                    return [3 /*break*/, 4];
                                 case 1:
-                                    if (!(kdf.toLowerCase() === 'pbkdf2')) return [3 /*break*/, 4];
+                                    if (!(kdf.toLowerCase() === 'pbkdf2')) return [3 /*break*/, 3];
                                     salt = looseArrayify(searchPath(data, 'crypto/kdfparams/salt'));
                                     prfFunc = null;
                                     prf = searchPath(data, 'crypto/kdfparams/prf');
@@ -273,25 +264,23 @@ function decrypt(json, password, progressCallback) {
                                         reject(new Error('unsupported key-derivation derived-key length'));
                                         return [2 /*return*/];
                                     }
-                                    return [4 /*yield*/, pbkdf2_1.pbkdf2(passwordBytes, salt, c, dkLen, prfFunc)];
-                                case 2:
-                                    key = _a.sent();
+                                    key = pbkdf2_1.pbkdf2(passwordBytes, salt, c, dkLen, prfFunc);
                                     return [4 /*yield*/, getSigningKey(key, reject)];
-                                case 3:
+                                case 2:
                                     signingKey = _a.sent();
                                     if (!signingKey) {
                                         return [2 /*return*/];
                                     }
                                     resolve(signingKey);
-                                    return [3 /*break*/, 5];
-                                case 4:
+                                    return [3 /*break*/, 4];
+                                case 3:
                                     reject(new Error('unsupported key-derivation function'));
-                                    _a.label = 5;
-                                case 5: return [3 /*break*/, 7];
-                                case 6:
+                                    _a.label = 4;
+                                case 4: return [3 /*break*/, 6];
+                                case 5:
                                     reject(new Error('unsupported key-derivation function'));
-                                    _a.label = 7;
-                                case 7: return [2 /*return*/];
+                                    _a.label = 6;
+                                case 6: return [2 /*return*/];
                             }
                         });
                     });

@@ -5,7 +5,7 @@ import uuid from 'uuid';
 
 import { SigningKey } from './signing-key';
 import * as HDNode from './hdnode';
-import libraries from '../libraries'
+import libraries from './libraries'
 
 import { getAddress } from './address';
 import { arrayify, concat, hexlify } from './bytes';
@@ -102,7 +102,7 @@ export async function decryptCrowdsale(json: string, password: Arrayish | string
         throw new Error('invalid encseed');
     }
 
-    let key = (await pbkdf2(password, password, 2000, 32, 'sha256')).slice(0, 16);
+    let key = pbkdf2(password, password, 2000, 32, 'sha256').slice(0, 16);
 
     var iv = encseed.slice(0, 16);
     var encryptedSeed = encseed.slice(16);
@@ -189,7 +189,7 @@ export async function decrypt(json: string, password: Arrayish, progressCallback
             var entropy = arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
             var mnemonic = HDNode.entropyToMnemonic(entropy);
 
-            var node = (await HDNode.fromMnemonic(mnemonic)).derivePath(path);
+            var node = HDNode.fromMnemonic(mnemonic).derivePath(path);
             if (node.privateKey != hexlify(privateKey)) {
                 reject(new Error('mnemonic mismatch'));
                 return null;
@@ -272,7 +272,7 @@ export async function decrypt(json: string, password: Arrayish, progressCallback
                     return;
                 }
 
-                var key = await pbkdf2(passwordBytes, salt, c, dkLen, prfFunc);
+                var key = pbkdf2(passwordBytes, salt, c, dkLen, prfFunc);
 
                 var signingKey = await getSigningKey(key, reject);
                 if (!signingKey) { return; }
