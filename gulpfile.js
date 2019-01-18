@@ -158,8 +158,7 @@ function taskBundle(name, options) {
     "ethers.js/utils/pbkdf2.js": readShim("pbkdf2"),
     "ethers.js/utils/random-bytes.js": readShim("random-bytes"),
     "ethers.js/utils/shims.js": readShim("shims"),
-    "ethers.js/wordlists/index.js": readShim("wordlists"),
-    crypto: empty
+    "ethers.js/wordlists/index.js": readShim("wordlists")
   };
 
   gulp.task(name, function() {
