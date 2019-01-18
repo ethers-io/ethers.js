@@ -1,11 +1,11 @@
 'use strict';
 
 import aes from 'aes-js';
-import scrypt from 'scrypt-js';
 import uuid from 'uuid';
 
 import { SigningKey } from './signing-key';
 import * as HDNode from './hdnode';
+import libraries from '../libraries'
 
 import { getAddress } from './address';
 import { arrayify, concat, hexlify } from './bytes';
@@ -88,7 +88,7 @@ function searchPath(object: any, path: string): string {
 
 // @TODO: Make a type for string or arrayish
 // See: https://github.com/ethereum/pyethsaletool
-export function decryptCrowdsale(json: string, password: Arrayish | string): SigningKey {
+export async function decryptCrowdsale(json: string, password: Arrayish | string): Promise<SigningKey> {
     var data = JSON.parse(json);
 
     password = getPassword(password);
@@ -102,7 +102,7 @@ export function decryptCrowdsale(json: string, password: Arrayish | string): Sig
         throw new Error('invalid encseed');
     }
 
-    let key = pbkdf2(password, password, 2000, 32, 'sha256').slice(0, 16);
+    let key = (await pbkdf2(password, password, 2000, 32, 'sha256')).slice(0, 16);
 
     var iv = encseed.slice(0, 16);
     var encryptedSeed = encseed.slice(16);
@@ -130,7 +130,7 @@ export function decryptCrowdsale(json: string, password: Arrayish | string): Sig
 }
 
 //@TODO: string or arrayish
-export function decrypt(json: string, password: Arrayish, progressCallback?: ProgressCallback): Promise<SigningKey> {
+export async function decrypt(json: string, password: Arrayish, progressCallback?: ProgressCallback): Promise<SigningKey> {
     var data = JSON.parse(json);
 
     let passwordBytes = getPassword(password);
@@ -153,7 +153,7 @@ export function decrypt(json: string, password: Arrayish, progressCallback?: Pro
         return keccak256(concat([derivedHalf, ciphertext]));
     }
 
-    var getSigningKey = function(key: Uint8Array, reject: (error?: Error) => void) {
+    var getSigningKey = async function(key: Uint8Array, reject: (error?: Error) => void) {
         var ciphertext = looseArrayify(searchPath(data, 'crypto/ciphertext'));
 
         var computedMAC = hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
@@ -189,7 +189,7 @@ export function decrypt(json: string, password: Arrayish, progressCallback?: Pro
             var entropy = arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
             var mnemonic = HDNode.entropyToMnemonic(entropy);
 
-            var node = HDNode.fromMnemonic(mnemonic).derivePath(path);
+            var node = (await HDNode.fromMnemonic(mnemonic)).derivePath(path);
             if (node.privateKey != hexlify(privateKey)) {
                 reject(new Error('mnemonic mismatch'));
                 return null;
@@ -202,7 +202,7 @@ export function decrypt(json: string, password: Arrayish, progressCallback?: Pro
     }
 
 
-    return new Promise(function(resolve, reject) {
+    return new Promise<SigningKey>(async function(resolve, reject) {
         var kdf = searchPath(data, 'crypto/kdf');
         if (kdf && typeof(kdf) === 'string') {
             if (kdf.toLowerCase() === 'scrypt') {
@@ -228,6 +228,9 @@ export function decrypt(json: string, password: Arrayish, progressCallback?: Pro
                 }
 
                 if (progressCallback) { progressCallback(0); }
+
+                const scrypt = libraries.scrypt
+
                 scrypt(passwordBytes, salt, N, r, p, 64, function(error, progress, key) {
                     if (error) {
                         error.progress = progress;
@@ -269,9 +272,9 @@ export function decrypt(json: string, password: Arrayish, progressCallback?: Pro
                     return;
                 }
 
-                var key = pbkdf2(passwordBytes, salt, c, dkLen, prfFunc);
+                var key = await pbkdf2(passwordBytes, salt, c, dkLen, prfFunc);
 
-                var signingKey = getSigningKey(key, reject);
+                var signingKey = await getSigningKey(key, reject);
                 if (!signingKey) { return; }
 
                 resolve(signingKey);
@@ -370,7 +373,7 @@ export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | 
         // We take 64 bytes:
         //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
         //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
-        scrypt(passwordBytes, salt, N, r, p, 64, function(error, progress, key) {
+        libraries.scrypt(passwordBytes, salt, N, r, p, 64, function(error, progress, key) {
             if (error) {
                 error.progress = progress;
                 reject(error);

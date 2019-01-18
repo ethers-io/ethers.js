@@ -132,7 +132,7 @@ export class Wallet extends AbstractSigner {
     /**
      *  Static methods to create Wallet instances.
      */
-    static createRandom(options?: any): Wallet {
+    static async createRandom(options?: any): Promise<Wallet> {
         var entropy: Uint8Array = randomBytes(16);
 
         if (!options) { options = { }; }
@@ -145,11 +145,11 @@ export class Wallet extends AbstractSigner {
         return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
     }
 
-    static fromEncryptedJson(json: string, password: Arrayish, progressCallback?: ProgressCallback): Promise<Wallet> {
+    static async fromEncryptedJson(json: string, password: Arrayish, progressCallback?: ProgressCallback): Promise<Wallet> {
         if (isCrowdsaleWallet(json)) {
             try {
                 if (progressCallback) { progressCallback(0); }
-                let privateKey = secretStorage.decryptCrowdsale(json, password);
+                let privateKey = await secretStorage.decryptCrowdsale(json, password);
                 if (progressCallback) { progressCallback(1); }
                 return Promise.resolve(new Wallet(privateKey));
             } catch (error) {
@@ -166,8 +166,10 @@ export class Wallet extends AbstractSigner {
         return Promise.reject('invalid wallet JSON');
     }
 
-    static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet {
+    static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Promise<Wallet> {
         if (!path) { path = defaultPath; }
-        return new Wallet(fromMnemonic(mnemonic, wordlist).derivePath(path));
+        return fromMnemonic(mnemonic, wordlist).then(hdNode => {
+            return new Wallet(hdNode.derivePath(path))
+        })
     }
 }

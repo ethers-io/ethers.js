@@ -1,16 +1,38 @@
-'use strict';
+"use strict";
 
-import { pbkdf2Sync as _pbkdf2 } from 'crypto';
-
-import { arrayify } from './bytes';
+import { arrayify } from "./bytes";
 
 // Imported Types
-import { Arrayish } from './bytes';
+import { Arrayish } from "./bytes";
+import libraries from "../libraries";
 
 function bufferify(value: Arrayish): Buffer {
-    return Buffer.from(arrayify(value));
+  return Buffer.from(arrayify(value));
 }
 
-export function pbkdf2(password: Arrayish, salt: Arrayish, iterations: number, keylen: number, hashAlgorithm: string): Uint8Array {
-    return arrayify(_pbkdf2(bufferify(password), bufferify(salt), iterations, keylen, hashAlgorithm));
+export function pbkdf2(
+  password: Arrayish,
+  salt: Arrayish,
+  iterations: number,
+  keylen: number,
+  hashAlgorithm: string
+): Promise<Uint8Array> {
+  return new Promise((resolve, reject) => {
+    libraries.pbkdf2(
+      bufferify(password),
+      bufferify(salt),
+      iterations,
+      keylen,
+      hashAlgorithm,
+      (err, derivedKey) => {
+        if (err) {
+          reject(err);
+
+          return;
+        }
+
+        resolve(arrayify(derivedKey));
+      }
+    );
+  });
 }

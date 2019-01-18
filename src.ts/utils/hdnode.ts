@@ -179,23 +179,28 @@ function _fromSeed(seed: Arrayish, mnemonic: string): HDNode {
     return new HDNode(_constructorGuard, I.slice(0, 32), I.slice(32), 0, 0, mnemonic, 'm');
 }
 
-export function fromMnemonic(mnemonic: string, wordlist?: Wordlist): HDNode {
+export function fromMnemonic(mnemonic: string, wordlist?: Wordlist): Promise<HDNode> {
     // Check that the checksum s valid (will throw an error)
     mnemonicToEntropy(mnemonic, wordlist);
 
-    return _fromSeed(mnemonicToSeed(mnemonic), mnemonic);
+    // return _fromSeed(mnemonicToSeed(mnemonic), mnemonic);
+    return mnemonicToSeed(mnemonic).then(seed => {
+        return _fromSeed(seed, mnemonic)
+    })
 }
 
 export function fromSeed(seed: Arrayish): HDNode {
     return _fromSeed(seed, null);
 }
 
-export function mnemonicToSeed(mnemonic: string, password?: string): string {
+export function mnemonicToSeed(mnemonic: string, password?: string): Promise<string> {
     if (!password) { password = ''; }
 
     var salt = toUtf8Bytes('mnemonic' + password, UnicodeNormalizationForm.NFKD);
 
-    return hexlify(pbkdf2(toUtf8Bytes(mnemonic, UnicodeNormalizationForm.NFKD), salt, 2048, 64, 'sha512'));
+    return pbkdf2(toUtf8Bytes(mnemonic, UnicodeNormalizationForm.NFKD), salt, 2048, 64, 'sha512').then(derviedKey => {
+        return hexlify(derviedKey)
+    })
 }
 
 export function mnemonicToEntropy(mnemonic: string, wordlist?: Wordlist): string {

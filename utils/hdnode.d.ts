@@ -23,9 +23,9 @@ export declare class HDNode {
     derivePath(path: string): HDNode;
     static isHDNode(value: any): value is HDNode;
 }
-export declare function fromMnemonic(mnemonic: string, wordlist?: Wordlist): HDNode;
+export declare function fromMnemonic(mnemonic: string, wordlist?: Wordlist): Promise<HDNode>;
 export declare function fromSeed(seed: Arrayish): HDNode;
-export declare function mnemonicToSeed(mnemonic: string, password?: string): string;
+export declare function mnemonicToSeed(mnemonic: string, password?: string): Promise<string>;
 export declare function mnemonicToEntropy(mnemonic: string, wordlist?: Wordlist): string;
 export declare function entropyToMnemonic(entropy: Arrayish, wordlist?: Wordlist): string;
 export declare function isValidMnemonic(mnemonic: string, wordlist?: Wordlist): boolean;

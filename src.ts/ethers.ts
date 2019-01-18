@@ -27,6 +27,7 @@ import { version } from './_version';
 // Types
 
 import { ContractFunction, ContractTransaction, Event, EventFilter } from './contract';
+import libraries from './libraries';
 
 
 ////////////////////////
@@ -66,6 +67,8 @@ export {
     utils,
 
     wordlists,
+
+    libraries,
 
     ////////////////////////
     // Compile-Time Constants

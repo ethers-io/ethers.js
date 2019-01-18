@@ -15,6 +15,6 @@ export declare type EncryptOptions = {
         p?: number;
     };
 };
-export declare function decryptCrowdsale(json: string, password: Arrayish | string): SigningKey;
+export declare function decryptCrowdsale(json: string, password: Arrayish | string): Promise<SigningKey>;
 export declare function decrypt(json: string, password: Arrayish, progressCallback?: ProgressCallback): Promise<SigningKey>;
 export declare function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | string, options?: EncryptOptions, progressCallback?: ProgressCallback): Promise<string>;
