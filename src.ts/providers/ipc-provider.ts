@@ -1,3 +1,4 @@
+"use strict";
 
 import net from 'net';
 
@@ -10,12 +11,15 @@ import { Networkish } from '../utils/networks';
 
 import * as errors from '../errors';
 
+
 export class IpcProvider extends JsonRpcProvider {
     readonly path: string;
 
     constructor(path: string, network?: Networkish) {
         if (path == null) {
-            errors.throwError('missing path', errors.MISSING_ARGUMENT, { arg: 'path' });
+            errors.throwError('missing path', errors.MISSING_ARGUMENT, {
+                argument: 'path'
+            });
         }
 
         super('ipc://' + path, network);
@@ -32,7 +36,7 @@ export class IpcProvider extends JsonRpcProvider {
         // advantage we are aiming for now is security. This simplifies
         // multiplexing requests (since we do not need to multiplex).
 
-        var payload = JSON.stringify({
+        let payload = JSON.stringify({
             method: method,
             params: params,
             id: 42,
@@ -40,10 +44,17 @@ export class IpcProvider extends JsonRpcProvider {
         });
 
         return new Promise((resolve, reject) => {
-            var stream = net.connect(this.path);
-            stream.on('data', function(data) {
+            let response = Buffer.alloc(0);
+
+            let stream = net.connect(this.path);
+
+            stream.on('data', (data) => {
+                response = Buffer.concat([ response, data ]);
+            });
+
+            stream.on("end", () => {
                 try {
-                    resolve(JSON.parse(data.toString('utf8')).result);
+                    resolve(JSON.parse(response.toString('utf8')).result);
                     // @TODO: Better pull apart the error
                     stream.destroy();
                 } catch (error) {
@@ -52,14 +63,11 @@ export class IpcProvider extends JsonRpcProvider {
                 }
             });
 
-            stream.on('end', function() {
-                stream.destroy();
-            });
-
-            stream.on('error', function(error) {
+            stream.on('error', (error) => {
                 reject(error);
                 stream.destroy();
             });
+
             stream.write(payload);
             stream.end();
         });
