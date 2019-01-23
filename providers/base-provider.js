@@ -280,6 +280,8 @@ function checkTransactionReceiptLog(log) {
     return check(formatTransactionReceiptLog, log);
 }
 var formatTransactionReceipt = {
+    to: allowNull(address_1.getAddress, null),
+    from: address_1.getAddress,
     contractAddress: allowNull(address_1.getAddress, null),
     transactionIndex: checkNumber,
     root: allowNull(checkHash),

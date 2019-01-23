@@ -487,6 +487,8 @@ declare module 'ethers/providers/abstract-provider' {
         logIndex?: number;
     }
     export interface TransactionReceipt {
+        to?: string;
+        from?: string;
         contractAddress?: string;
         transactionIndex?: number;
         root?: string;
@@ -815,7 +817,8 @@ declare module 'ethers/providers/infura-provider' {
     import { Networkish } from 'ethers/utils/networks';
     export class InfuraProvider extends JsonRpcProvider {
         readonly apiAccessToken: string;
-        constructor(network?: Networkish, apiAccessToken?: string);
+        readonly projectId: string;
+        constructor(network?: Networkish, projectId?: string);
         protected _startPending(): void;
         getSigner(address?: string): JsonRpcSigner;
         listAccounts(): Promise<Array<string>>;

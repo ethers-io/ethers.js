@@ -29,7 +29,9 @@ var IpcProvider = /** @class */ (function (_super) {
     function IpcProvider(path, network) {
         var _this = this;
         if (path == null) {
-            errors.throwError('missing path', errors.MISSING_ARGUMENT, { arg: 'path' });
+            errors.throwError('missing path', errors.MISSING_ARGUMENT, {
+                argument: 'path'
+            });
         }
         _this = _super.call(this, 'ipc://' + path, network) || this;
         errors.checkNew(_this, IpcProvider);
@@ -50,10 +52,14 @@ var IpcProvider = /** @class */ (function (_super) {
             jsonrpc: "2.0"
         });
         return new Promise(function (resolve, reject) {
+            var response = Buffer.alloc(0);
             var stream = net_1.default.connect(_this.path);
             stream.on('data', function (data) {
+                response = Buffer.concat([response, data]);
+            });
+            stream.on("end", function () {
                 try {
-                    resolve(JSON.parse(data.toString('utf8')).result);
+                    resolve(JSON.parse(response.toString('utf8')).result);
                     // @TODO: Better pull apart the error
                     stream.destroy();
                 }
@@ -61,9 +67,6 @@ var IpcProvider = /** @class */ (function (_super) {
                     reject(error);
                     stream.destroy();
                 }
-            });
-            stream.on('end', function () {
-                stream.destroy();
             });
             stream.on('error', function (error) {
                 reject(error);
