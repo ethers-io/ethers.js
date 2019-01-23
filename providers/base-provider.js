@@ -291,7 +291,9 @@ var formatTransactionReceipt = {
     blockNumber: checkNumber,
     confirmations: allowNull(checkNumber, null),
     cumulativeGasUsed: bignumber_1.bigNumberify,
-    status: allowNull(checkNumber)
+    status: allowNull(checkNumber),
+    from: address_1.getAddress,
+    to: allowNull(address_1.getAddress, null)
 };
 function checkTransactionReceipt(transactionReceipt) {
     //var status = transactionReceipt.status;

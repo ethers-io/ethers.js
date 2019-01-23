@@ -325,7 +325,9 @@ const formatTransactionReceipt = {
     blockNumber: checkNumber,
     confirmations: allowNull(checkNumber, null),
     cumulativeGasUsed: bigNumberify,
-    status: allowNull(checkNumber)
+    status: allowNull(checkNumber),
+    from: getAddress,
+    to: allowNull(getAddress, null)
 };
 
 function checkTransactionReceipt(transactionReceipt: any): TransactionReceipt {

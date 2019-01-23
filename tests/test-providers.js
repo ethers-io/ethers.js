@@ -307,6 +307,13 @@ function testProvider(providerName, networkName) {
                 assert.equal(typeof(receipt.confirmations), 'number', 'confirmations is a number');
                 delete receipt.confirmations;
 
+                // These are different for different networks
+                assert.equal(typeof(receipt.to), "string", '"to" address is present');
+                delete receipt.to;
+
+                assert.equal(typeof(receipt.from), "string", '"from" address is present');
+                delete receipt.from;
+
                 for (var key in receipt) {
                     equals((title + key), receipt[key], expected[key]);
                 }
