@@ -2,6 +2,7 @@
 
 import { JsonRpcProvider, JsonRpcSigner } from './json-rpc-provider';
 
+import { isHexString } from "../utils/bytes";
 import { getNetwork } from '../utils/networks';
 import { defineReadOnly } from '../utils/properties';
 
@@ -10,14 +11,18 @@ import { Networkish } from '../utils/networks';
 
 import * as errors from '../errors';
 
+const defaultProjectId = "7d0d81d0919f4f05b9ab6634be01ee73";
+
 export class InfuraProvider extends JsonRpcProvider {
     readonly apiAccessToken: string;
+    readonly projectId: string;
 
-    constructor(network?: Networkish, apiAccessToken?: string) {
-        network = getNetwork((network == null) ? 'homestead': network);
+    constructor(network?: Networkish, projectId?: string) {
+        let standard = getNetwork((network == null) ? 'homestead': network);
+        if (projectId == null) { projectId = defaultProjectId; }
 
-        var host = null;
-        switch(network.name) {
+        let host = null;
+        switch(standard.name) {
             case 'homestead':
                 host = 'mainnet.infura.io';
                 break;
@@ -31,13 +36,26 @@ export class InfuraProvider extends JsonRpcProvider {
                 host = 'kovan.infura.io';
                 break;
             default:
-                throw new Error('unsupported network');
+                errors.throwError('unsupported network', errors.INVALID_ARGUMENT, {
+                    argument: "network",
+                    value: network
+                });
         }
 
-        super('https://' + host + '/' + (apiAccessToken || ''), network);
-        errors.checkNew(this, InfuraProvider);
+        // New-style Project ID
+        if (isHexString("0x" + projectId, 16)) {
+            super('https://' + host + '/v3/' + projectId, standard);
+            defineReadOnly(this, 'apiAccessToken', null);
+            defineReadOnly(this, 'projectId', projectId);
 
-        defineReadOnly(this, 'apiAccessToken', apiAccessToken || null);
+        // Legacy API Access Token
+        } else {
+            super('https://' + host + '/' + projectId, standard);
+            defineReadOnly(this, 'apiAccessToken', projectId);
+            defineReadOnly(this, 'projectId', null);
+        }
+
+        errors.checkNew(this, InfuraProvider);
     }
 
     protected _startPending(): void {
@@ -45,12 +63,11 @@ export class InfuraProvider extends JsonRpcProvider {
     }
 
     getSigner(address?: string): JsonRpcSigner {
-        errors.throwError(
+        return errors.throwError(
             'INFURA does not support signing',
             errors.UNSUPPORTED_OPERATION,
             { operation: 'getSigner' }
         );
-        return null;
     }
 
     listAccounts(): Promise<Array<string>> {
