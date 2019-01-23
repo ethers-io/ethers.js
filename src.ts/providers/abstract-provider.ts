@@ -60,6 +60,8 @@ export interface Log {
 }
 
 export interface TransactionReceipt {
+    to?: string;
+    from?: string;
     contractAddress?: string,
     transactionIndex?: number,
     root?: string,
