@@ -315,7 +315,7 @@ function checkTransactionReceiptLog(log: any): any {
 
 const formatTransactionReceipt = {
     to: allowNull(getAddress, null),
-    from: getAddress,
+    from: allowNull(getAddress, null),            // Gaanche does not populate this (#400)
     contractAddress: allowNull(getAddress, null),
     transactionIndex: checkNumber,
     root: allowNull(checkHash),
