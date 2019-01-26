@@ -486,8 +486,12 @@ var BaseProvider = /** @class */ (function (_super) {
             // Sweep balances and remove addresses we no longer have events for
             var newBalances = {};
             // Find all transaction hashes we are waiting on
+            var uniqueEventTags = {};
             _this._events.forEach(function (event) {
-                var comps = event.tag.split(':');
+                uniqueEventTags[event.tag] = true;
+            });
+            Object.keys(uniqueEventTags).forEach(function (tag) {
+                var comps = tag.split(':');
                 switch (comps[0]) {
                     case 'tx': {
                         var hash_2 = comps[1];
