@@ -611,8 +611,13 @@ export class BaseProvider extends Provider {
             let newBalances: any = {};
 
             // Find all transaction hashes we are waiting on
+            let uniqueEventTags: { [ tag: string ]: boolean } = { };
             this._events.forEach((event) => {
-                let comps = event.tag.split(':');
+                uniqueEventTags[event.tag] = true;
+            });
+
+            Object.keys(uniqueEventTags).forEach((tag) => {
+                let comps = tag.split(':');
                 switch (comps[0]) {
                     case 'tx': {
                         let hash = comps[1];
