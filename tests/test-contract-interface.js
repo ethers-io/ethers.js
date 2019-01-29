@@ -125,10 +125,8 @@ describe('ABI Coder Decoding', function() {
 
         it(('decodes parameters - ' + test.name + ' - ' + test.types), function() {
             this.timeout(120000);
-
             var decoded = coder.decode(types, result);
-
-            assert.ok(equals(decoded, values), 'decoded parameters - ' + title);
+            assert.equal(decoded, values, 'decoded parameters - ' + title);
         });
     });
 });
