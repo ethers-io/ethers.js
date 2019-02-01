@@ -65,6 +65,11 @@ declare module "elliptic" {
         recoveryParam: number
     }
 
+    interface Point {
+        add(point: Point): Point;
+        encodeCompressed(enc: string): string
+    }
+
     interface KeyPair {
         sign(message: Uint8Array, options: { canonical?: boolean }): Signature;
         getPublic(compressed: boolean, encoding?: string): string;
@@ -72,6 +77,7 @@ declare module "elliptic" {
         getPrivate(encoding?: string): string;
         encode(encoding: string, compressed: boolean): string;
         derive(publicKey: BN): BN;
+        pub: Point;
         priv: BN;
     }
 
@@ -83,6 +89,8 @@ declare module "elliptic" {
         keyFromPublic(publicKey: string | Uint8Array): KeyPair;
         keyFromPrivate(privateKey: string | Uint8Array): KeyPair;
         recoverPubKey(data: Uint8Array, signature: BasicSignature, recoveryParam: number): KeyPair;
+
+//        curve: Curve;
     }
 }
 

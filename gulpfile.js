@@ -111,7 +111,7 @@ function taskBundle(name, options) {
         "elliptic/package.json" : ellipticPackage,
 
         // Remove RIPEMD160 and unneeded hashing algorithms
-        "hash.js/lib/hash/ripemd.js": "module.exports = {ripemd160: null}",
+        //"hash.js/lib/hash/ripemd.js": "module.exports = {ripemd160: null}",
         "hash.js/lib/hash/sha/1.js": empty,
         "hash.js/lib/hash/sha/224.js": empty,
         "hash.js/lib/hash/sha/384.js": empty,

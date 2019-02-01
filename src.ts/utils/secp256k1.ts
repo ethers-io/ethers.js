@@ -62,6 +62,12 @@ export class KeyPair {
         let otherKeyPair = getCurve().keyFromPublic(arrayify(computePublicKey(otherKey)));
         return hexZeroPad('0x' + keyPair.derive(otherKeyPair.getPublic()).toString(16), 32);
     }
+
+    _addPoint(other: Arrayish | string): string {
+        let p0 =  getCurve().keyFromPublic(arrayify(this.publicKey));
+        let p1 =  getCurve().keyFromPublic(arrayify(other));
+        return "0x" + p0.pub.add(p1.pub).encodeCompressed("hex");
+    }
 }
 
 export function computePublicKey(key: Arrayish | string, compressed?: boolean): string {
