@@ -33,15 +33,15 @@ describe('Test HD Node Derivation', function(test) {
                     'HDNode address matches - ' + nodeTest.privateKey);
 
                 // Test public extended key derivation
-                let lastHardened = nodeTest.path.match(/^(.*)'([^']*)$/);
+                var lastHardened = nodeTest.path.match(/^(.*)'([^']*)$/);
                 if (lastHardened && lastHardened[2].trim() !== "") {
 
                 // Derive as far as we can for hardened, then derive the remaining from neutered
                 var hardNode = rootNode.derivePath(lastHardened[1] + "'");
-                    let neutered = hardNode.neuter();
-                    let nodeXpriv = ethers.utils.HDNode.fromExtendedKey(hardNode.extendedKey);
+                    var neutered = hardNode.neuter();
+                    var nodeXpriv = ethers.utils.HDNode.fromExtendedKey(hardNode.extendedKey);
                     nodeXpriv = nodeXpriv.derivePath(lastHardened[2].substring(1));
-                    let nodeXpub = ethers.utils.HDNode.fromExtendedKey(neutered.extendedKey);
+                    var nodeXpub = ethers.utils.HDNode.fromExtendedKey(neutered.extendedKey);
                     nodeXpub = nodeXpub.derivePath(lastHardened[2].substring(1));
 
                     assert.equal(neutered.privateKey, null,
