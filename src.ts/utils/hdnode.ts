@@ -216,10 +216,39 @@ export class HDNode {
     static isHDNode(value: any): value is HDNode {
         return isType(value, 'HDNode');
     }
+}
 
-    static fromExtendedKey(extendedKey: string): HDNode {
-        return null;
+export function fromExtendedKey(extendedKey: string): HDNode {
+    let bytes = Base58.decode(extendedKey);
+
+    if (bytes.length !== 82 || base58check(bytes.slice(0, 78)) !== extendedKey) {
+        errors.throwError("invalid extended key", errors.INVALID_ARGUMENT, {
+            argument: "extendedKey",
+            value: "[REDACTED]"
+        });
     }
+
+    let depth = bytes[4];
+    let parentFingerprint = hexlify(bytes.slice(5, 9));
+    let index = parseInt(hexlify(bytes.slice(9, 13)).substring(2), 16);
+    let chainCode = hexlify(bytes.slice(13, 45));
+    let key = bytes.slice(45, 78);
+
+    switch (hexlify(bytes.slice(0, 4))) {
+        // Public Key
+        case "0x0488b21e": case "0x043587cf":
+            return new HDNode(_constructorGuard, null, hexlify(key), parentFingerprint, chainCode, index, depth, null, null);
+
+        // Private Key
+        case "0x0488ade4": case "0x04358394 ":
+            if (key[0] !== 0) { break; }
+            return new HDNode(_constructorGuard, hexlify(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null, null);
+    }
+
+    return errors.throwError("invalid extended key", errors.INVALID_ARGUMENT, {
+        argument: "extendedKey",
+        value: "[REDACTED]"
+    });
 }
 
 function _fromSeed(seed: Arrayish, mnemonic: string): HDNode {
@@ -231,11 +260,11 @@ function _fromSeed(seed: Arrayish, mnemonic: string): HDNode {
     return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic, 'm');
 }
 
-export function fromMnemonic(mnemonic: string, wordlist?: Wordlist): HDNode {
+export function fromMnemonic(mnemonic: string, wordlist?: Wordlist, password?: string): HDNode {
     // Check that the checksum s valid (will throw an error)
     mnemonicToEntropy(mnemonic, wordlist);
 
-    return _fromSeed(mnemonicToSeed(mnemonic), mnemonic);
+    return _fromSeed(mnemonicToSeed(mnemonic, password), mnemonic);
 }
 
 export function fromSeed(seed: Arrayish): HDNode {
