@@ -45,6 +45,11 @@ var KeyPair = /** @class */ (function () {
         var otherKeyPair = getCurve().keyFromPublic(bytes_1.arrayify(computePublicKey(otherKey)));
         return bytes_1.hexZeroPad('0x' + keyPair.derive(otherKeyPair.getPublic()).toString(16), 32);
     };
+    KeyPair.prototype._addPoint = function (other) {
+        var p0 = getCurve().keyFromPublic(bytes_1.arrayify(this.publicKey));
+        var p1 = getCurve().keyFromPublic(bytes_1.arrayify(other));
+        return "0x" + p0.pub.add(p1.pub).encodeCompressed("hex");
+    };
     return KeyPair;
 }());
 exports.KeyPair = KeyPair;

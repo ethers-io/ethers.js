@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -16,6 +16,7 @@ var lang_en_1 = require("../wordlists/lang-en");
 // Automatically register English?
 //import { register } from '../wordlists/wordlist';
 //register(langEn);
+var basex_1 = require("./basex");
 var bytes_1 = require("./bytes");
 var bignumber_1 = require("./bignumber");
 var utf8_1 = require("./utf8");
@@ -36,6 +37,13 @@ function getUpperMask(bits) {
 function getLowerMask(bits) {
     return (1 << bits) - 1;
 }
+function bytes32(value) {
+    return bytes_1.hexZeroPad(bytes_1.hexlify(value), 32);
+}
+function base58check(data) {
+    var checksum = bytes_1.hexDataSlice(sha2_1.sha256(sha2_1.sha256(data)), 0, 4);
+    return basex_1.Base58.encode(bytes_1.concat([data, checksum]));
+}
 var _constructorGuard = {};
 exports.defaultPath = "m/44'/60'/0'/0/0";
 var HDNode = /** @class */ (function () {
@@ -46,38 +54,69 @@ var HDNode = /** @class */ (function () {
      *   - fromMnemonic
      *   - fromSeed
      */
-    function HDNode(constructorGuard, privateKey, chainCode, index, depth, mnemonic, path) {
+    function HDNode(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonic, path) {
         errors.checkNew(this, HDNode);
         if (constructorGuard !== _constructorGuard) {
             throw new Error('HDNode constructor cannot be called directly');
         }
-        properties_1.defineReadOnly(this, 'keyPair', new secp256k1_1.KeyPair(privateKey));
-        properties_1.defineReadOnly(this, 'privateKey', this.keyPair.privateKey);
-        properties_1.defineReadOnly(this, 'publicKey', this.keyPair.compressedPublicKey);
+        if (privateKey) {
+            var keyPair = new secp256k1_1.KeyPair(privateKey);
+            properties_1.defineReadOnly(this, 'privateKey', keyPair.privateKey);
+            properties_1.defineReadOnly(this, 'publicKey', keyPair.compressedPublicKey);
+        }
+        else {
+            properties_1.defineReadOnly(this, 'privateKey', null);
+            properties_1.defineReadOnly(this, 'publicKey', bytes_1.hexlify(publicKey));
+        }
+        properties_1.defineReadOnly(this, 'parentFingerprint', parentFingerprint);
+        properties_1.defineReadOnly(this, 'fingerprint', bytes_1.hexDataSlice(sha2_1.ripemd160(sha2_1.sha256(this.publicKey)), 0, 4));
         properties_1.defineReadOnly(this, 'address', secp256k1_1.computeAddress(this.publicKey));
-        properties_1.defineReadOnly(this, 'chainCode', bytes_1.hexlify(chainCode));
+        properties_1.defineReadOnly(this, 'chainCode', chainCode);
         properties_1.defineReadOnly(this, 'index', index);
         properties_1.defineReadOnly(this, 'depth', depth);
         properties_1.defineReadOnly(this, 'mnemonic', mnemonic);
         properties_1.defineReadOnly(this, 'path', path);
         properties_1.setType(this, 'HDNode');
     }
-    HDNode.prototype._derive = function (index) {
-        // Public parent key -> public child key
-        if (!this.privateKey) {
-            if (index >= HardenedBit) {
-                throw new Error('cannot derive child of neutered node');
+    Object.defineProperty(HDNode.prototype, "extendedKey", {
+        get: function () {
+            // We only support the mainnet values for now, but if anyone needs
+            // testnet values, let me know. I believe current senitment is that
+            // we should always use mainnet, and use BIP-44 to derive the network
+            //   - Mainnet: public=0x0488B21E, private=0x0488ADE4
+            //   - Testnet: public=0x043587CF, private=0x04358394
+            if (this.depth >= 256) {
+                throw new Error("Depth too large!");
             }
-            throw new Error('not implemented');
+            return base58check(bytes_1.concat([
+                ((this.privateKey != null) ? "0x0488ADE4" : "0x0488B21E"),
+                bytes_1.hexlify(this.depth),
+                this.parentFingerprint,
+                bytes_1.hexZeroPad(bytes_1.hexlify(this.index), 4),
+                this.chainCode,
+                ((this.privateKey != null) ? bytes_1.concat(["0x00", this.privateKey]) : this.publicKey),
+            ]));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    HDNode.prototype.neuter = function () {
+        return new HDNode(_constructorGuard, null, this.publicKey, this.parentFingerprint, this.chainCode, this.index, this.depth, null, this.path);
+    };
+    HDNode.prototype._derive = function (index) {
+        if (index > 0xffffffff) {
+            throw new Error("invalid index - " + String(index));
         }
-        var data = new Uint8Array(37);
         // Base path
-        var mnemonic = this.mnemonic;
         var path = this.path;
         if (path) {
             path += '/' + (index & ~HardenedBit);
         }
+        var data = new Uint8Array(37);
         if (index & HardenedBit) {
+            if (!this.privateKey) {
+                throw new Error('cannot derive child of neutered node');
+            }
             // Data = 0x00 || ser_256(k_par)
             data.set(bytes_1.arrayify(this.privateKey), 1);
             // Hardened path
@@ -87,22 +126,32 @@ var HDNode = /** @class */ (function () {
         }
         else {
             // Data = ser_p(point(k_par))
-            data.set(this.keyPair.publicKeyBytes);
+            data.set(bytes_1.arrayify(this.publicKey));
         }
         // Data += ser_32(i)
         for (var i = 24; i >= 0; i -= 8) {
             data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff);
         }
         var I = hmac_1.computeHmac(hmac_1.SupportedAlgorithms.sha512, this.chainCode, data);
-        var IL = bignumber_1.bigNumberify(I.slice(0, 32));
+        var IL = I.slice(0, 32);
         var IR = I.slice(32);
-        var ki = IL.add(this.keyPair.privateKey).mod(N);
-        return new HDNode(_constructorGuard, bytes_1.arrayify(ki), IR, index, this.depth + 1, mnemonic, path);
+        // The private key
+        var ki = null;
+        // The public key
+        var Ki = null;
+        if (this.privateKey) {
+            ki = bytes32(bignumber_1.bigNumberify(IL).add(this.privateKey).mod(N));
+        }
+        else {
+            var ek = new secp256k1_1.KeyPair(bytes_1.hexlify(IL));
+            Ki = ek._addPoint(this.publicKey);
+        }
+        return new HDNode(_constructorGuard, ki, Ki, this.fingerprint, bytes32(IR), index, this.depth + 1, this.mnemonic, path);
     };
     HDNode.prototype.derivePath = function (path) {
         var components = path.split('/');
         if (components.length === 0 || (components[0] === 'm' && this.depth !== 0)) {
-            throw new Error('invalid path');
+            throw new Error('invalid path - ' + path);
         }
         if (components[0] === 'm') {
             components.shift();
@@ -136,18 +185,50 @@ var HDNode = /** @class */ (function () {
     return HDNode;
 }());
 exports.HDNode = HDNode;
+function fromExtendedKey(extendedKey) {
+    var bytes = basex_1.Base58.decode(extendedKey);
+    if (bytes.length !== 82 || base58check(bytes.slice(0, 78)) !== extendedKey) {
+        errors.throwError("invalid extended key", errors.INVALID_ARGUMENT, {
+            argument: "extendedKey",
+            value: "[REDACTED]"
+        });
+    }
+    var depth = bytes[4];
+    var parentFingerprint = bytes_1.hexlify(bytes.slice(5, 9));
+    var index = parseInt(bytes_1.hexlify(bytes.slice(9, 13)).substring(2), 16);
+    var chainCode = bytes_1.hexlify(bytes.slice(13, 45));
+    var key = bytes.slice(45, 78);
+    switch (bytes_1.hexlify(bytes.slice(0, 4))) {
+        // Public Key
+        case "0x0488b21e":
+        case "0x043587cf":
+            return new HDNode(_constructorGuard, null, bytes_1.hexlify(key), parentFingerprint, chainCode, index, depth, null, null);
+        // Private Key
+        case "0x0488ade4":
+        case "0x04358394 ":
+            if (key[0] !== 0) {
+                break;
+            }
+            return new HDNode(_constructorGuard, bytes_1.hexlify(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null, null);
+    }
+    return errors.throwError("invalid extended key", errors.INVALID_ARGUMENT, {
+        argument: "extendedKey",
+        value: "[REDACTED]"
+    });
+}
+exports.fromExtendedKey = fromExtendedKey;
 function _fromSeed(seed, mnemonic) {
     var seedArray = bytes_1.arrayify(seed);
     if (seedArray.length < 16 || seedArray.length > 64) {
         throw new Error('invalid seed');
     }
     var I = bytes_1.arrayify(hmac_1.computeHmac(hmac_1.SupportedAlgorithms.sha512, MasterSecret, seedArray));
-    return new HDNode(_constructorGuard, I.slice(0, 32), I.slice(32), 0, 0, mnemonic, 'm');
+    return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic, 'm');
 }
-function fromMnemonic(mnemonic, wordlist) {
+function fromMnemonic(mnemonic, wordlist, password) {
     // Check that the checksum s valid (will throw an error)
     mnemonicToEntropy(mnemonic, wordlist);
-    return _fromSeed(mnemonicToSeed(mnemonic), mnemonic);
+    return _fromSeed(mnemonicToSeed(mnemonic, password), mnemonic);
 }
 exports.fromMnemonic = fromMnemonic;
 function fromSeed(seed) {

@@ -632,6 +632,8 @@ declare module 'ethers/utils/hdnode' {
     export class HDNode {
         readonly privateKey: string;
         readonly publicKey: string;
+        readonly fingerprint: string;
+        readonly parentFingerprint: string;
         readonly address: string;
         readonly mnemonic: string;
         readonly path: string;
@@ -645,11 +647,14 @@ declare module 'ethers/utils/hdnode' {
           *   - fromMnemonic
           *   - fromSeed
           */
-        constructor(constructorGuard: any, privateKey: Arrayish, chainCode: Uint8Array, index: number, depth: number, mnemonic: string, path: string);
+        constructor(constructorGuard: any, privateKey: string, publicKey: string, parentFingerprint: string, chainCode: string, index: number, depth: number, mnemonic: string, path: string);
+        readonly extendedKey: string;
+        neuter(): HDNode;
         derivePath(path: string): HDNode;
         static isHDNode(value: any): value is HDNode;
     }
-    export function fromMnemonic(mnemonic: string, wordlist?: Wordlist): HDNode;
+    export function fromExtendedKey(extendedKey: string): HDNode;
+    export function fromMnemonic(mnemonic: string, wordlist?: Wordlist, password?: string): HDNode;
     export function fromSeed(seed: Arrayish): HDNode;
     export function mnemonicToSeed(mnemonic: string, password?: string): string;
     export function mnemonicToEntropy(mnemonic: string, wordlist?: Wordlist): string;
@@ -915,6 +920,7 @@ declare module 'ethers/utils/keccak256' {
 
 declare module 'ethers/utils/sha2' {
     import { Arrayish } from 'ethers/utils/bytes';
+    export function ripemd160(data: Arrayish): string;
     export function sha256(data: Arrayish): string;
     export function sha512(data: Arrayish): string;
 }
@@ -975,6 +981,7 @@ declare module 'ethers/utils/secp256k1' {
         constructor(privateKey: Arrayish | string);
         sign(digest: Arrayish | string): Signature;
         computeSharedSecret(otherKey: Arrayish | string): string;
+        _addPoint(other: Arrayish | string): string;
     }
     export function computePublicKey(key: Arrayish | string, compressed?: boolean): string;
     export function computeAddress(key: Arrayish | string): string;

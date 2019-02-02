@@ -5,6 +5,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var hash_js_1 = __importDefault(require("hash.js"));
 var bytes_1 = require("./bytes");
+function ripemd160(data) {
+    return '0x' + (hash_js_1.default.ripemd160().update(bytes_1.arrayify(data)).digest('hex'));
+}
+exports.ripemd160 = ripemd160;
 function sha256(data) {
     return '0x' + (hash_js_1.default.sha256().update(bytes_1.arrayify(data)).digest('hex'));
 }

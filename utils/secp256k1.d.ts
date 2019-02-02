@@ -7,6 +7,7 @@ export declare class KeyPair {
     constructor(privateKey: Arrayish | string);
     sign(digest: Arrayish | string): Signature;
     computeSharedSecret(otherKey: Arrayish | string): string;
+    _addPoint(other: Arrayish | string): string;
 }
 export declare function computePublicKey(key: Arrayish | string, compressed?: boolean): string;
 export declare function computeAddress(key: Arrayish | string): string;
