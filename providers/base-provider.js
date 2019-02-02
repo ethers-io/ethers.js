@@ -321,6 +321,7 @@ function checkTopics(topics) {
     return topics;
 }
 var formatFilter = {
+    blockHash: allowNull(checkHash, undefined),
     fromBlock: allowNull(checkBlockTag, undefined),
     toBlock: allowNull(checkBlockTag, undefined),
     address: allowNull(address_1.getAddress, undefined),

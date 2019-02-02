@@ -360,6 +360,7 @@ function checkTopics(topics: any): any {
 }
 
 const formatFilter = {
+    blockHash: allowNull(checkHash, undefined),
     fromBlock: allowNull(checkBlockTag, undefined),
     toBlock: allowNull(checkBlockTag, undefined),
     address: allowNull(getAddress, undefined),

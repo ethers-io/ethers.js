@@ -34,12 +34,20 @@ export interface Block {
 
 export type BlockTag = string | number;
 
-export type Filter = {
+export type FilterByBlockHash = {
+    blockHash: string;
+    address?: string,
+    topics?: Array<string | Array<string>>,
+}
+
+export type FilterByBlockRange = {
     fromBlock?: BlockTag,
     toBlock?: BlockTag,
     address?: string,
     topics?: Array<string | Array<string>>,
 }
+
+export type Filter = FilterByBlockHash | FilterByBlockRange;
 
 export interface Log {
     blockNumber?: number;

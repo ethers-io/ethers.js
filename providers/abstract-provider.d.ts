@@ -18,12 +18,18 @@ export interface Block {
     transactions: Array<string>;
 }
 export declare type BlockTag = string | number;
-export declare type Filter = {
+export declare type FilterByBlockHash = {
+    blockHash: string;
+    address?: string;
+    topics?: Array<string | Array<string>>;
+};
+export declare type FilterByBlockRange = {
     fromBlock?: BlockTag;
     toBlock?: BlockTag;
     address?: string;
     topics?: Array<string | Array<string>>;
 };
+export declare type Filter = FilterByBlockHash | FilterByBlockRange;
 export interface Log {
     blockNumber?: number;
     blockHash?: string;
