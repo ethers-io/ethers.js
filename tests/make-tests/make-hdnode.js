@@ -32,6 +32,9 @@ function getHD(seed) {
         path: 'm',
         privateKey: '0x' + privateKey.toString('hex'),
         address: '0x' + ethereumUtil.privateToAddress(privateKey).toString('hex'),
+        parentFingerprint: rootNode.parentFingerprint,
+        xpriv: rootNode.toBase58(),
+        xpub: rootNode.neutered().toBase58(),
     }];
 
     for (var j = 0; j < 5; j++) {
@@ -42,6 +45,9 @@ function getHD(seed) {
             path: path,
             privateKey: '0x' + privateKey.toString('hex'),
             address: '0x' + ethereumUtil.privateToAddress(privateKey).toString('hex'),
+            parentFingerprint: node.parentFingerprint,
+            xpriv: node.toBase58(),
+            xpub: node.neutered().toBase58(),
         });
     }
 
@@ -96,6 +102,8 @@ Testcases['axic'] = {
             path: "m/44'/60'/0'/0/0",
             address: '0xac39b311dceb2a4b2f5d8461c1cdaf756f4f7ae9',
             privateKey: '0xb96e9ccb774cc33213cbcb2c69d3cdae17b0fe4888a1ccd343cbd1a17fd98b18',
+            xpriv: "xprvA2xEQ2iTe9QB22rvf5cbfpUxEBmMdvc7stEFxLhiMXmdLrwLbqugPCHRZiRfEq2puC5vTgwyFneV38hppF8oTf9aoaUv7M8u2XvnACTe6r4",
+            xpub: "xpub6FwaoYFMUWxUEWwPm79c2xRgnDbr3PKyF79rkj7KusJcDfGV9PDvvzbuQz32JYu3y2EpqY7xUag5Zw89YXokCKVtWLrfJ1RDUAYLLzTR8En"
         }
     ]
 }

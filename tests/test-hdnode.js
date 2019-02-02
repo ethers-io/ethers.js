@@ -9,21 +9,76 @@ describe('Test HD Node Derivation', function(test) {
 
     var tests = utils.loadTests('hdnode');
     tests.forEach(function(test) {
-        it('Derives the HD nodes - ' + test.name, function() {
+       it('Derives the HD nodes - ' + test.name, function() {
             this.timeout(10000);
 
-            var rootNode = new ethers.utils.HDNode.fromSeed(test.seed);
-            test.hdnodes.forEach(function(nodeTest) {
+            //var rootNode = new ethers.utils.HDNode.fromSeed(test.seed);
+            var rootNode = new ethers.utils.HDNode.fromMnemonic(test.mnemonic, null, test.password || null);
 
+            test.hdnodes.forEach(function(nodeTest) {
                 var node = rootNode.derivePath(nodeTest.path);
                 assert.equal(node.privateKey, nodeTest.privateKey,
                     'Generates privateKey - ' + nodeTest.privateKey);
+
+                assert.equal(node.extendedKey, nodeTest.xpriv,
+                    "Child Extended privateKey - " + nodeTest.privateKey);
+                assert.equal(node.neuter().extendedKey, nodeTest.xpub,
+                    "Child Extended privateKey - " + nodeTest.privateKey);
 
                 var wallet = new ethers.Wallet(node.privateKey);
                 assert.equal(wallet.address.toLowerCase(), nodeTest.address,
                     'Generates address - ' + nodeTest.privateKey);
 
-                assert.equal(node.address, (new ethers.Wallet(node)).address, 'HDNode address matches - ' + nodeTest.privateKey);
+                assert.equal(node.address, (new ethers.Wallet(node)).address,
+                    'HDNode address matches - ' + nodeTest.privateKey);
+
+                // Test public extended key derivation
+                let lastHardened = nodeTest.path.match(/^(.*)'([^']*)$/);
+                if (lastHardened && lastHardened[2].trim() !== "") {
+
+                // Derive as far as we can for hardened, then derive the remaining from neutered
+                var hardNode = rootNode.derivePath(lastHardened[1] + "'");
+                    let neutered = hardNode.neuter();
+                    let nodeXpriv = ethers.utils.HDNode.fromExtendedKey(hardNode.extendedKey);
+                    nodeXpriv = nodeXpriv.derivePath(lastHardened[2].substring(1));
+                    let nodeXpub = ethers.utils.HDNode.fromExtendedKey(neutered.extendedKey);
+                    nodeXpub = nodeXpub.derivePath(lastHardened[2].substring(1));
+
+                    assert.equal(neutered.privateKey, null,
+                        'Neutered HDNode privateKey null - ' + nodeTest.privateKey);
+                    assert.equal(neutered.xpriv, null,
+                        'Neutered HDNode xpriv null - ' + nodeTest.privateKey);
+
+                    neutered = neutered.derivePath(lastHardened[2].substring(1));
+
+                    assert.equal(neutered.address.toLowerCase(), nodeTest.address,
+                        'Derived Neutered HDNode address matches - ' + nodeTest.privateKey);
+
+                    assert.equal(neutered.xpub, node.xpub,
+                        'Derived Neutered HDNode xpub matches - ' + nodeTest.privateKey);
+
+                    assert.equal(neutered.privateKey, null,
+                        'Derived Neutered HDNode privateKey null - ' + nodeTest.privateKey);
+                    assert.equal(neutered.xpriv, null,
+                        'Neutered HDNode xpriv null - ' + nodeTest.privateKey);
+
+                    // Test extended key derivation
+                    assert.equal(nodeXpub.xpriv, null,
+                        'Serialized Neutered HDNode xpriv null - ' + nodeTest.privateKey);
+                    assert.equal(nodeXpriv.extendedKey, node.extendedKey,
+                        'Serialized HDNode xpriv matches - ' + nodeTest.privateKey);
+                    assert.equal(nodeXpub.extendedKey, neutered.extendedKey,
+                        'Serialized Neutered HDNode xpub matches - ' + nodeTest.privateKey);
+                }
+
+                // Test serialization
+                var deserializedNode = ethers.utils.HDNode.fromExtendedKey(nodeTest.xpriv);
+
+                assert.equal(deserializedNode.extendedKey, nodeTest.xpriv,
+                    'Neutered HDNode xpriv null - ' + nodeTest.privateKey);
+                assert.equal(deserializedNode.neuter().extendedKey, nodeTest.xpub,
+                    'Neutered HDNode xpriv null - ' + nodeTest.privateKey);
+
             });
         });
     });
