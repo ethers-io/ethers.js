@@ -130,7 +130,7 @@ export class BaseX {
             bytes.push(0)
         }
 
-        return new Uint8Array(bytes.reverse())
+        return arrayify(new Uint8Array(bytes.reverse()))
     }
 }
 

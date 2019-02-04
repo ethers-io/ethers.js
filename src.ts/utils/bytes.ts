@@ -40,7 +40,7 @@ function addSlice(array: Uint8Array): Uint8Array {
 
     array.slice = function() {
         var args = Array.prototype.slice.call(arguments);
-        return new Uint8Array(Array.prototype.slice.apply(array, args));
+        return addSlice(new Uint8Array(Array.prototype.slice.apply(array, args)));
     }
 
     return array;
