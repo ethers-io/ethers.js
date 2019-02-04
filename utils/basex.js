@@ -110,7 +110,7 @@ var BaseX = /** @class */ (function () {
         for (var k = 0; value[k] === this._leader && k < value.length - 1; ++k) {
             bytes.push(0);
         }
-        return new Uint8Array(bytes.reverse());
+        return bytes_1.arrayify(new Uint8Array(bytes.reverse()));
     };
     return BaseX;
 }());

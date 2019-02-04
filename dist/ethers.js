@@ -13518,7 +13518,7 @@ var BaseX = /** @class */ (function () {
         for (var k = 0; value[k] === this._leader && k < value.length - 1; ++k) {
             bytes.push(0);
         }
-        return new Uint8Array(bytes.reverse());
+        return bytes_1.arrayify(new Uint8Array(bytes.reverse()));
     };
     return BaseX;
 }());
@@ -13742,7 +13742,7 @@ function addSlice(array) {
     }
     array.slice = function () {
         var args = Array.prototype.slice.call(arguments);
-        return new Uint8Array(Array.prototype.slice.apply(array, args));
+        return addSlice(new Uint8Array(Array.prototype.slice.apply(array, args)));
     };
     return array;
 }
