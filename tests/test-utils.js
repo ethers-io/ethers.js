@@ -348,3 +348,20 @@ describe('Test BigNumber', function() {
         ].forEach(testAbs);
     });
 });
+
+describe("Hexlify", function() {
+    it("hexlify on string of unsafe number", function() {
+        assert(ethers.utils.hexlify(ethers.utils.bigNumberify("9985956830000000000")), "0x8a953ed43a892c00", "hexlify on large BigNumber");
+    });
+
+    [9007199254740991, 9985956830000000000].forEach((value) => {
+        it('hexlify fails on unsafe number - ' + value, function() {
+            assert.throws(function() {
+                var result = ethers.utils.hexlify(value);
+                console.log('Result', result);
+            }, function(error) {
+                return (error.code === "NUMERIC_FAULT" && error.fault === "out-of-safe-range");
+            }, "hexlify throws on out-of-range value - " + value);
+        });
+    });
+});
