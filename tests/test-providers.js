@@ -223,6 +223,39 @@ var blockchainData = {
             transactionIndex: 0x2
         },
     },
+    goerli: {
+        balance: {
+            address: "0x58Bb4221245461E1d4cf886f18a01E3Df40Bd359",
+            balance: bigNumberify("6250000000000000000")
+        },
+        block3: {
+            hash: '0xd5daa825732729bb0d2fd187a1b888e6bfc890f1fc5333984740d9052afb2920',
+            parentHash: '0xe675f1362d82cdd1ec260b16fb046c17f61d8a84808150f5d715ccce775f575e',
+            number: 3,
+            timestamp: 1548947483,
+            difficulty: 2,
+            gasLimit: bigNumberify('10455073'),
+            gasUsed: bigNumberify('0'),
+            miner: '0x0000000000000000000000000000000000000000',
+            extraData: '0x506172697479205465636820417574686f7269747900000000000000000000002822e1b202411c38084d96c84302b8361ec4840a51cd2fad9cb4bd9921cad7e64bc2e5dc7b41f3f75b33358be3aec718cf4d4317ace940e01b3581a95c9259ac01',
+            transactions: []
+        },
+        transactionReceipt: {
+            blockHash: '0x2384e8e8bdcf6eb87ec7c138fa503ac34adb32cac817e4b35f14d4339eaa1993',
+            blockNumber: 47464,
+            byzantium: true,
+            contractAddress: null,
+            cumulativeGasUsed: bigNumberify(21000),
+            from: '0x8c1e1e5b47980D214965f3bd8ea34C413E120ae4',
+            gasUsed: bigNumberify(21000),
+            logsBloom: '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+            to: '0x58Bb4221245461E1d4cf886f18a01E3Df40Bd359',
+            transactionHash: '0xec8b1ac5d787f36c738cc7793fec606283b41f1efa69df4ae6b2a014dcd12797',
+            transactionIndex: 0,
+            logs: [],
+            status: 1
+        }
+    }
 }
 
 blockchainData['default'] = blockchainData.homestead;
@@ -378,8 +411,14 @@ function testProvider(providerName, networkName) {
     });
 }
 
-['default', 'homestead', 'ropsten', 'rinkeby', 'kovan'].forEach(function(networkName) {
+['default', 'homestead', 'ropsten', 'rinkeby', 'kovan', 'goerli'].forEach(function(networkName) {
     ['getDefaultProvider', 'InfuraProvider', 'EtherscanProvider', 'Web3Provider'].forEach(function(providerName) {
+
+        if (networkName === "goerli") {
+            if (providerName === "InfuraProvider" || providerName === "Web3Provider") {
+                return;
+            }
+        }
 
         // @TODO: Remove this! Temporary because Etherscan is down
         //if (providerName === 'EtherscanProvider') {

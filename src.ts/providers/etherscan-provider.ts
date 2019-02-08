@@ -98,6 +98,9 @@ export class EtherscanProvider extends BaseProvider{
             case 'kovan':
                 baseUrl = 'https://api-kovan.etherscan.io';
                 break;
+            case 'goerli':
+                baseUrl = 'https://api-goerli.etherscan.io';
+                break;
             default:
                 throw new Error('unsupported network');
         }
