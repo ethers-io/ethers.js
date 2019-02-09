@@ -237,6 +237,16 @@ export class EtherscanProvider extends BaseProvider{
                         url += '&toBlock=' + checkLogTag(params.filter.toBlock);
                     }
 
+                    if (params.filter.blockHash) {
+                        try {
+                            errors.throwError("Etherscan does not support blockHash filters", errors.UNSUPPORTED_OPERATION, {
+                                operation: "getLogs(blockHash)"
+                            });
+                        } catch (error) {
+                            return Promise.reject(error);
+                        }
+                    }
+
                     if (params.filter.address) {
                         url += '&address=' + params.filter.address;
                     }

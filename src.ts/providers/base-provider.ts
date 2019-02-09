@@ -23,7 +23,7 @@ import { Provider } from './abstract-provider';
 
 import {
     Block, BlockTag,
-    EventType, Filter,
+    EventType, Filter, FilterByBlock,
     Listener,
     Log,
     TransactionReceipt, TransactionRequest, TransactionResponse
@@ -366,7 +366,16 @@ const formatFilter = {
     topics: allowNull(checkTopics, undefined),
 };
 
+const formatFilterByBlock = {
+    blockHash: allowNull(checkHash, undefined),
+    address: allowNull(getAddress, undefined),
+    topics: allowNull(checkTopics, undefined),
+};
+
 function checkFilter(filter: any): any {
+    if (filter && filter.blockHash) {
+        return check(formatFilterByBlock, filter);
+    }
     return check(formatFilter, filter);
 }
 
@@ -1071,7 +1080,7 @@ export class BaseProvider extends Provider {
         });
     }
 
-    getLogs(filter: Filter): Promise<Array<Log>> {
+    getLogs(filter: Filter | FilterByBlock): Promise<Array<Log>> {
         return this.ready.then(() => {
             return resolveProperties(filter).then((filter) => {
                 return this._resolveNames(filter, ['address']).then((filter) => {

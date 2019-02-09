@@ -41,6 +41,16 @@ export type Filter = {
     topics?: Array<string | Array<string>>,
 }
 
+// @TODO: This is not supported as an EventType yet, as it will
+//        need some additional work to adhere to the serialized
+//        format for events. But we want to allow it for getLogs
+//        for now.
+export type FilterByBlock = {
+    blockHash?: string,
+    address?: string,
+    topics?: Array<string | Array<string>>,
+}
+
 export interface Log {
     blockNumber?: number;
     blockHash?: string;
@@ -134,7 +144,7 @@ export abstract class Provider implements OnceBlockable {
     abstract getTransaction(transactionHash: string): Promise<TransactionResponse>;
     abstract getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
 
-    abstract getLogs(filter: Filter): Promise<Array<Log>>;
+    abstract getLogs(filter: Filter | FilterByBlock): Promise<Array<Log>>;
 
     abstract resolveName(name: string | Promise<string>): Promise<string>;
     abstract lookupAddress(address: string | Promise<string>): Promise<string>;
