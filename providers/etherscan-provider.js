@@ -104,6 +104,9 @@ var EtherscanProvider = /** @class */ (function (_super) {
             case 'kovan':
                 baseUrl = 'https://api-kovan.etherscan.io';
                 break;
+            case 'goerli':
+                baseUrl = 'https://api-goerli.etherscan.io';
+                break;
             default:
                 throw new Error('unsupported network');
         }
@@ -225,6 +228,16 @@ var EtherscanProvider = /** @class */ (function (_super) {
                     }
                     if (params.filter.toBlock) {
                         url += '&toBlock=' + checkLogTag(params.filter.toBlock);
+                    }
+                    if (params.filter.blockHash) {
+                        try {
+                            errors.throwError("Etherscan does not support blockHash filters", errors.UNSUPPORTED_OPERATION, {
+                                operation: "getLogs(blockHash)"
+                            });
+                        }
+                        catch (error) {
+                            return Promise.reject(error);
+                        }
                     }
                     if (params.filter.address) {
                         url += '&address=' + params.filter.address;

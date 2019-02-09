@@ -474,6 +474,11 @@ declare module 'ethers/providers/abstract-provider' {
         address?: string;
         topics?: Array<string | Array<string>>;
     };
+    export type FilterByBlock = {
+        blockHash?: string;
+        address?: string;
+        topics?: Array<string | Array<string>>;
+    };
     export interface Log {
         blockNumber?: number;
         blockHash?: string;
@@ -538,7 +543,7 @@ declare module 'ethers/providers/abstract-provider' {
         abstract getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block>;
         abstract getTransaction(transactionHash: string): Promise<TransactionResponse>;
         abstract getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
-        abstract getLogs(filter: Filter): Promise<Array<Log>>;
+        abstract getLogs(filter: Filter | FilterByBlock): Promise<Array<Log>>;
         abstract resolveName(name: string | Promise<string>): Promise<string>;
         abstract lookupAddress(address: string | Promise<string>): Promise<string>;
         abstract on(eventName: EventType, listener: Listener): Provider;
@@ -722,7 +727,7 @@ declare module 'ethers/utils/secret-storage' {
 declare module 'ethers/providers/base-provider' {
     import { BigNumber } from 'ethers/utils/bignumber';
     import { Provider } from 'ethers/providers/abstract-provider';
-    import { Block, BlockTag, EventType, Filter, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from 'ethers/providers/abstract-provider';
+    import { Block, BlockTag, EventType, Filter, FilterByBlock, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from 'ethers/providers/abstract-provider';
     import { BigNumberish } from 'ethers/utils/bignumber';
     import { Transaction } from 'ethers/utils/transaction';
     import { Network, Networkish } from 'ethers/utils/networks';
@@ -763,7 +768,7 @@ declare module 'ethers/providers/base-provider' {
         getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block>;
         getTransaction(transactionHash: string): Promise<TransactionResponse>;
         getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
-        getLogs(filter: Filter): Promise<Array<Log>>;
+        getLogs(filter: Filter | FilterByBlock): Promise<Array<Log>>;
         getEtherPrice(): Promise<number>;
         resolveName(name: string | Promise<string>): Promise<string>;
         lookupAddress(address: string | Promise<string>): Promise<string>;

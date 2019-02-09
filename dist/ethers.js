@@ -10380,7 +10380,15 @@ var formatFilter = {
     address: allowNull(address_1.getAddress, undefined),
     topics: allowNull(checkTopics, undefined),
 };
+var formatFilterByBlock = {
+    blockHash: allowNull(checkHash, undefined),
+    address: allowNull(address_1.getAddress, undefined),
+    topics: allowNull(checkTopics, undefined),
+};
 function checkFilter(filter) {
+    if (filter && filter.blockHash) {
+        return check(formatFilterByBlock, filter);
+    }
     return check(formatFilter, filter);
 }
 var formatLog = {
@@ -11360,6 +11368,9 @@ var EtherscanProvider = /** @class */ (function (_super) {
             case 'kovan':
                 baseUrl = 'https://api-kovan.etherscan.io';
                 break;
+            case 'goerli':
+                baseUrl = 'https://api-goerli.etherscan.io';
+                break;
             default:
                 throw new Error('unsupported network');
         }
@@ -11481,6 +11492,16 @@ var EtherscanProvider = /** @class */ (function (_super) {
                     }
                     if (params.filter.toBlock) {
                         url += '&toBlock=' + checkLogTag(params.filter.toBlock);
+                    }
+                    if (params.filter.blockHash) {
+                        try {
+                            errors.throwError("Etherscan does not support blockHash filters", errors.UNSUPPORTED_OPERATION, {
+                                operation: "getLogs(blockHash)"
+                            });
+                        }
+                        catch (error) {
+                            return Promise.reject(error);
+                        }
                     }
                     if (params.filter.address) {
                         url += '&address=' + params.filter.address;
@@ -13854,6 +13875,14 @@ function hexlify(value) {
         if (value < 0) {
             errors.throwError('cannot hexlify negative value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
         }
+        // @TODO: Roll this into the above error as a numeric fault (overflow); next version, not backward compatible
+        // We can about (value == MAX_INT) to as well, since that may indicate we underflowed already
+        if (value >= 9007199254740991) {
+            errors.throwError("out-of-range", errors.NUMERIC_FAULT, {
+                operartion: "hexlify",
+                fault: "out-of-safe-range"
+            });
+        }
         var hex = '';
         while (value) {
             hex = HexCharacters[value & 0x0f] + hex;
@@ -15022,6 +15051,17 @@ var networks = {
         ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A",
         name: 'rinkeby',
         _defaultProvider: ethDefaultProvider('rinkeby')
+    },
+    goerli: {
+        chainId: 5,
+        ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
+        name: "goerli",
+        _defaultProvider: function (providers) {
+            if (providers.EtherscanProvider) {
+                return new providers.EtherscanProvider("goerli");
+            }
+            return null;
+        }
     },
     kovan: {
         chainId: 42,

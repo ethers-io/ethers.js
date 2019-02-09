@@ -135,6 +135,14 @@ function hexlify(value) {
         if (value < 0) {
             errors.throwError('cannot hexlify negative value', errors.INVALID_ARGUMENT, { arg: 'value', value: value });
         }
+        // @TODO: Roll this into the above error as a numeric fault (overflow); next version, not backward compatible
+        // We can about (value == MAX_INT) to as well, since that may indicate we underflowed already
+        if (value >= 9007199254740991) {
+            errors.throwError("out-of-range", errors.NUMERIC_FAULT, {
+                operartion: "hexlify",
+                fault: "out-of-safe-range"
+            });
+        }
         var hex = '';
         while (value) {
             hex = HexCharacters[value & 0x0f] + hex;

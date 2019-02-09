@@ -1,6 +1,6 @@
 import { BigNumber } from '../utils/bignumber';
 import { Provider } from './abstract-provider';
-import { Block, BlockTag, EventType, Filter, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from './abstract-provider';
+import { Block, BlockTag, EventType, Filter, FilterByBlock, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from './abstract-provider';
 import { BigNumberish } from '../utils/bignumber';
 import { Transaction } from '../utils/transaction';
 import { Network, Networkish } from '../utils/networks';
@@ -51,7 +51,7 @@ export declare class BaseProvider extends Provider {
     getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block>;
     getTransaction(transactionHash: string): Promise<TransactionResponse>;
     getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
-    getLogs(filter: Filter): Promise<Array<Log>>;
+    getLogs(filter: Filter | FilterByBlock): Promise<Array<Log>>;
     getEtherPrice(): Promise<number>;
     private _resolveNames;
     private _getResolver;

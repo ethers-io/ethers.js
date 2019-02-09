@@ -326,7 +326,15 @@ var formatFilter = {
     address: allowNull(address_1.getAddress, undefined),
     topics: allowNull(checkTopics, undefined),
 };
+var formatFilterByBlock = {
+    blockHash: allowNull(checkHash, undefined),
+    address: allowNull(address_1.getAddress, undefined),
+    topics: allowNull(checkTopics, undefined),
+};
 function checkFilter(filter) {
+    if (filter && filter.blockHash) {
+        return check(formatFilterByBlock, filter);
+    }
     return check(formatFilter, filter);
 }
 var formatLog = {
