@@ -354,7 +354,7 @@ describe("Hexlify", function() {
         assert(ethers.utils.hexlify(ethers.utils.bigNumberify("9985956830000000000")), "0x8a953ed43a892c00", "hexlify on large BigNumber");
     });
 
-    [9007199254740991, 9985956830000000000].forEach((value) => {
+    [9007199254740991, 9985956830000000000].forEach(function(value) {
         it('hexlify fails on unsafe number - ' + value, function() {
             assert.throws(function() {
                 var result = ethers.utils.hexlify(value);
