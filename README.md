@@ -9,7 +9,7 @@ Complete Ethereum wallet implementation and utilities in JavaScript (and TypeScr
 
 - Keep your private keys in your client, **safe** and sound
 - Import and export **JSON wallets** (Geth, Parity and crowdsale)
-- Import and export BIP 39 **mnemonic phrases** (12 word backup phrases) and **HD Wallets** (English, Italian, Japanese, Korean, Simplified Chinese, Traditional Chinese; more coming soon)
+- Import and export BIP 39 **mnemonic phrases** (12 word backup phrases) and **HD Wallets** (English, French, Italian, Japanese, Korean, Simplified Chinese, Spanish, Traditional Chinese)
 - Meta-classes create JavaScript objects from any contract ABI, including **ABIv2** and **Human-Readable ABI**
 - Connect to Ethereum nodes over [JSON-RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC), [INFURA](https://infura.io), [Etherscan](https://etherscan.io), or [MetaMask](https://metamask.io)
 - **ENS names** are first-class citizens; they can be used anywhere an Ethereum addresses can be used
