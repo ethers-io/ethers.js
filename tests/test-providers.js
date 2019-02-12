@@ -225,8 +225,8 @@ var blockchainData = {
     },
     goerli: {
         balance: {
-            address: "0x58Bb4221245461E1d4cf886f18a01E3Df40Bd359",
-            balance: bigNumberify("6250000000000000000")
+            address: "0x06B5955A67D827CDF91823E3bB8F069e6c89c1D6",
+            balance: bigNumberify("314159000000000000")
         },
         block3: {
             hash: '0xd5daa825732729bb0d2fd187a1b888e6bfc890f1fc5333984740d9052afb2920',
