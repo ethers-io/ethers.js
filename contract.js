@@ -135,8 +135,7 @@ function runMethod(contract, functionName, estimateOnly) {
                 errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
             }
         });
-        // Send to the contract address (after checking the contract is deployed)
-        tx.to = contract.deployed().then(function () {
+        tx.to = contract._deployed(blockTag).then(function () {
             return contract.addressPromise;
         });
         return resolveAddresses(contract.provider, params, method.inputs).then(function (params) {
@@ -332,11 +331,14 @@ var Contract = /** @class */ (function () {
     }
     // @TODO: Allow timeout?
     Contract.prototype.deployed = function () {
+        return this._deployed();
+    };
+    Contract.prototype._deployed = function (blockTag) {
         var _this = this;
-        if (!this._deployed) {
+        if (!this._deployedPromise) {
             // If we were just deployed, we know the transaction we should occur in
             if (this.deployTransaction) {
-                this._deployed = this.deployTransaction.wait().then(function () {
+                this._deployedPromise = this.deployTransaction.wait().then(function () {
                     return _this;
                 });
             }
@@ -344,7 +346,7 @@ var Contract = /** @class */ (function () {
                 // @TODO: Once we allow a timeout to be passed in, we will wait
                 // up to that many blocks for getCode
                 // Otherwise, poll for our code to be deployed
-                this._deployed = this.provider.getCode(this.address).then(function (code) {
+                this._deployedPromise = this.provider.getCode(this.address, blockTag).then(function (code) {
                     if (code === '0x') {
                         errors.throwError('contract not deployed', errors.UNSUPPORTED_OPERATION, {
                             contractAddress: _this.address,
@@ -355,7 +357,7 @@ var Contract = /** @class */ (function () {
                 });
             }
         }
-        return this._deployed;
+        return this._deployedPromise;
     };
     // @TODO:
     // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>

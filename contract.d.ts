@@ -1,7 +1,7 @@
 import { BigNumber } from './utils/bignumber';
 import { Indexed, Interface } from './utils/interface';
 import { UnsignedTransaction } from './utils/transaction';
-import { Provider } from './providers/abstract-provider';
+import { BlockTag, Provider } from './providers/abstract-provider';
 import { Signer } from './abstract-signer';
 import { Arrayish } from './utils/bytes';
 import { ParamType } from './utils/abi-coder';
@@ -50,9 +50,10 @@ export declare class Contract {
     readonly [name: string]: ContractFunction | any;
     readonly addressPromise: Promise<string>;
     readonly deployTransaction: TransactionResponse;
-    private _deployed;
+    private _deployedPromise;
     constructor(addressOrName: string, contractInterface: Array<string | ParamType> | string | Interface, signerOrProvider: Signer | Provider);
     deployed(): Promise<Contract>;
+    _deployed(blockTag?: BlockTag): Promise<Contract>;
     fallback(overrides?: TransactionRequest): Promise<TransactionResponse>;
     connect(signerOrProvider: Signer | Provider | string): Contract;
     attach(addressOrName: string): Contract;

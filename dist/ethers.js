@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.24";
+exports.version = "4.0.25";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -183,8 +183,7 @@ function runMethod(contract, functionName, estimateOnly) {
                 errors.throwError('cannot override ' + key, errors.UNSUPPORTED_OPERATION, { operation: key });
             }
         });
-        // Send to the contract address (after checking the contract is deployed)
-        tx.to = contract.deployed().then(function () {
+        tx.to = contract._deployed(blockTag).then(function () {
             return contract.addressPromise;
         });
         return resolveAddresses(contract.provider, params, method.inputs).then(function (params) {
@@ -380,11 +379,14 @@ var Contract = /** @class */ (function () {
     }
     // @TODO: Allow timeout?
     Contract.prototype.deployed = function () {
+        return this._deployed();
+    };
+    Contract.prototype._deployed = function (blockTag) {
         var _this = this;
-        if (!this._deployed) {
+        if (!this._deployedPromise) {
             // If we were just deployed, we know the transaction we should occur in
             if (this.deployTransaction) {
-                this._deployed = this.deployTransaction.wait().then(function () {
+                this._deployedPromise = this.deployTransaction.wait().then(function () {
                     return _this;
                 });
             }
@@ -392,7 +394,7 @@ var Contract = /** @class */ (function () {
                 // @TODO: Once we allow a timeout to be passed in, we will wait
                 // up to that many blocks for getCode
                 // Otherwise, poll for our code to be deployed
-                this._deployed = this.provider.getCode(this.address).then(function (code) {
+                this._deployedPromise = this.provider.getCode(this.address, blockTag).then(function (code) {
                     if (code === '0x') {
                         errors.throwError('contract not deployed', errors.UNSUPPORTED_OPERATION, {
                             contractAddress: _this.address,
@@ -403,7 +405,7 @@ var Contract = /** @class */ (function () {
                 });
             }
         }
-        return this._deployed;
+        return this._deployedPromise;
     };
     // @TODO:
     // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>

@@ -26,7 +26,7 @@ declare module 'ethers/contract' {
     import { BigNumber } from 'ethers/utils/bignumber';
     import { Indexed, Interface } from 'ethers/utils/interface';
     import { UnsignedTransaction } from 'ethers/utils/transaction';
-    import { Provider } from 'ethers/providers/abstract-provider';
+    import { BlockTag, Provider } from 'ethers/providers/abstract-provider';
     import { Signer } from 'ethers/abstract-signer';
     import { Arrayish } from 'ethers/utils/bytes';
     import { ParamType } from 'ethers/utils/abi-coder';
@@ -77,6 +77,7 @@ declare module 'ethers/contract' {
         readonly deployTransaction: TransactionResponse;
         constructor(addressOrName: string, contractInterface: Array<string | ParamType> | string | Interface, signerOrProvider: Signer | Provider);
         deployed(): Promise<Contract>;
+        _deployed(blockTag?: BlockTag): Promise<Contract>;
         fallback(overrides?: TransactionRequest): Promise<TransactionResponse>;
         connect(signerOrProvider: Signer | Provider | string): Contract;
         attach(addressOrName: string): Contract;
@@ -265,7 +266,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.24";
+    export const version = "4.0.25";
 }
 
 declare module 'ethers/utils/bignumber' {
