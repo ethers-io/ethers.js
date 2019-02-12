@@ -69,6 +69,6 @@ export declare class BaseProvider extends Provider {
     emit(eventName: EventType, ...args: Array<any>): boolean;
     listenerCount(eventName?: EventType): number;
     listeners(eventName: EventType): Array<Listener>;
-    removeAllListeners(eventName: EventType): Provider;
+    removeAllListeners(eventName?: EventType): Provider;
     removeListener(eventName: EventType, listener: Listener): Provider;
 }

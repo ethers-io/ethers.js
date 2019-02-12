@@ -10712,17 +10712,19 @@ var BaseProvider = /** @class */ (function (_super) {
         if (confirmations == null) {
             confirmations = 1;
         }
-        return web_1.poll(function () {
-            return _this.getTransactionReceipt(transactionHash).then(function (receipt) {
-                if (confirmations === 0) {
-                    return receipt;
+        if (confirmations === 0) {
+            return this.getTransactionReceipt(transactionHash);
+        }
+        return new Promise(function (resolve) {
+            var handler = function (receipt) {
+                if (receipt.confirmations < confirmations) {
+                    return;
                 }
-                if (receipt == null || receipt.confirmations < confirmations) {
-                    return undefined;
-                }
-                return receipt;
-            });
-        }, { onceBlock: this });
+                _this.removeListener(transactionHash, handler);
+                resolve(receipt);
+            };
+            _this.on(transactionHash, handler);
+        });
     };
     BaseProvider.prototype.getBlockNumber = function () {
         var _this = this;
@@ -11225,12 +11227,18 @@ var BaseProvider = /** @class */ (function (_super) {
         });
     };
     BaseProvider.prototype.removeAllListeners = function (eventName) {
-        var eventTag = getEventTag(eventName);
-        this._events = this._events.filter(function (event) {
-            return (event.tag !== eventTag);
-        });
-        if (eventName === 'pending') {
+        if (eventName == null) {
+            this._events = [];
             this._stopPending();
+        }
+        else {
+            var eventTag_1 = getEventTag(eventName);
+            this._events = this._events.filter(function (event) {
+                return (event.tag !== eventTag_1);
+            });
+            if (eventName === 'pending') {
+                this._stopPending();
+            }
         }
         if (this._events.length === 0) {
             this.polling = false;
@@ -11241,13 +11249,13 @@ var BaseProvider = /** @class */ (function (_super) {
         var found = false;
         var eventTag = getEventTag(eventName);
         this._events = this._events.filter(function (event) {
-            if (event.tag !== eventTag) {
+            if (event.tag !== eventTag || event.listener != listener) {
                 return true;
             }
             if (found) {
                 return true;
             }
-            found = false;
+            found = true;
             return false;
         });
         if (eventName === 'pending' && this.listenerCount('pending') === 0) {
