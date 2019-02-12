@@ -776,15 +776,19 @@ export class BaseProvider extends Provider {
 
     waitForTransaction(transactionHash: string, confirmations?: number): Promise<TransactionReceipt> {
         if (confirmations == null) { confirmations = 1; }
-        return poll(() => {
-            return this.getTransactionReceipt(transactionHash).then((receipt) => {
-                if (confirmations === 0) { return receipt; }
-                if (receipt == null || receipt.confirmations < confirmations) {
-                    return undefined;
-                }
-                return receipt;
-            });
-        }, { onceBlock: this });
+
+        if (confirmations === 0) {
+            return this.getTransactionReceipt(transactionHash);
+        }
+
+        return new Promise((resolve) => {
+            let handler = (receipt: TransactionReceipt) => {
+                if (receipt.confirmations < confirmations) { return; }
+                this.removeListener(transactionHash, handler);
+                resolve(receipt);
+            }
+            this.on(transactionHash, handler);
+        });
     }
 
     getBlockNumber(): Promise<number> {
@@ -1306,13 +1310,18 @@ export class BaseProvider extends Provider {
         });
     }
 
-    removeAllListeners(eventName: EventType): Provider {
-        let eventTag = getEventTag(eventName);
-        this._events = this._events.filter((event) => {
-            return (event.tag !== eventTag);
-        });
+    removeAllListeners(eventName?: EventType): Provider {
+        if (eventName == null) {
+            this._events = [ ];
+            this._stopPending();
+        } else {
+            let eventTag = getEventTag(eventName);
+            this._events = this._events.filter((event) => {
+                return (event.tag !== eventTag);
+            });
+            if (eventName === 'pending') { this._stopPending(); }
+        }
 
-        if (eventName === 'pending') { this._stopPending(); }
         if (this._events.length === 0) { this.polling = false; }
 
         return this;
@@ -1323,9 +1332,9 @@ export class BaseProvider extends Provider {
 
         let eventTag = getEventTag(eventName);
         this._events = this._events.filter((event) => {
-            if (event.tag !== eventTag) { return true; }
+            if (event.tag !== eventTag || event.listener != listener) { return true; }
             if (found) { return true; }
-            found = false;
+            found = true;
             return false;
         });
 
