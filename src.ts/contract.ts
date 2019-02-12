@@ -181,8 +181,7 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
             }
         });
 
-        // Send to the contract address (after checking the contract is deployed)
-        tx.to = contract.deployed().then(() => {
+        tx.to = contract._deployed(blockTag).then(() => {
             return contract.addressPromise;
         });
 
@@ -211,7 +210,6 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                 }
 
                 return contract.provider.call(tx, blockTag).then((value) => {
-
                     if ((hexDataLength(value) % 32) === 4 && hexDataSlice(value, 0, 4) === '0x08c379a0') {
                         let reason = defaultAbiCoder.decode([ 'string' ], hexDataSlice(value, 4));
                         errors.throwError('call revert exception', errors.CALL_EXCEPTION, {
@@ -360,7 +358,7 @@ export class Contract {
     // This is only set if the contract was created with a call to deploy
     readonly deployTransaction: TransactionResponse;
 
-    private _deployed: Promise<Contract>;
+    private _deployedPromise: Promise<Contract>;
 
     // https://github.com/Microsoft/TypeScript/issues/5453
     // Once this issue is resolved (there are open PR) we can do this nicer
@@ -440,11 +438,15 @@ export class Contract {
 
     // @TODO: Allow timeout?
     deployed(): Promise<Contract> {
-        if (!this._deployed) {
+        return this._deployed();
+    }
+
+    _deployed(blockTag?: BlockTag): Promise<Contract> {
+        if (!this._deployedPromise) {
 
             // If we were just deployed, we know the transaction we should occur in
             if (this.deployTransaction) {
-                this._deployed = this.deployTransaction.wait().then(() => {
+                this._deployedPromise = this.deployTransaction.wait().then(() => {
                     return this;
                 });
 
@@ -453,7 +455,7 @@ export class Contract {
                 // up to that many blocks for getCode
 
                 // Otherwise, poll for our code to be deployed
-                this._deployed = this.provider.getCode(this.address).then((code) => {
+                this._deployedPromise = this.provider.getCode(this.address, blockTag).then((code) => {
                     if (code === '0x') {
                         errors.throwError('contract not deployed', errors.UNSUPPORTED_OPERATION, {
                             contractAddress: this.address,
@@ -465,7 +467,7 @@ export class Contract {
             }
         }
 
-        return this._deployed;
+        return this._deployedPromise;
     }
 
     // @TODO:
