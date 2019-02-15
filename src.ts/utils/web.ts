@@ -28,7 +28,8 @@ export type PollOptions = {
     floor?: number,
     ceiling?: number,
     interval?: number,
-    onceBlock?: OnceBlockable
+    onceBlock?: OnceBlockable,
+    fastRetry?: number
 };
 
 
@@ -208,6 +209,8 @@ export function poll(func: () => Promise<any>, options?: PollOptions): Promise<a
             }, options.timeout)
         }
 
+        let fastTimeout = options.fastRetry || null;
+
         let attempt = 0;
         function check() {
             return func().then(function(result) {
@@ -226,6 +229,13 @@ export function poll(func: () => Promise<any>, options?: PollOptions): Promise<a
                     let timeout = options.interval * parseInt(String(Math.random() * Math.pow(2, attempt)));
                     if (timeout < options.floor) { timeout = options.floor; }
                     if (timeout > options.ceiling) { timeout = options.ceiling; }
+
+                    // Fast Timeout, means we quickly try again the first time
+                    if (fastTimeout) {
+                        attempt--;
+                        timeout = fastTimeout;
+                        fastTimeout = null;
+                    }
 
                     setTimeout(check, timeout);
                 }

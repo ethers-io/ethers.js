@@ -158,7 +158,7 @@ export class JsonRpcSigner extends Signer {
                     if (tx === null) { return undefined; }
                     return this.provider._wrapTransaction(tx, hash);
                 });
-            }, { onceBlock: this.provider }).catch((error: Error) => {
+            }, { fastRetry: 250, onceBlock: this.provider }).catch((error: Error) => {
                 (<any>error).transactionHash = hash;
                 throw error;
             });
