@@ -777,17 +777,19 @@ export class BaseProvider extends Provider {
     waitForTransaction(transactionHash: string, confirmations?: number): Promise<TransactionReceipt> {
         if (confirmations == null) { confirmations = 1; }
 
-        if (confirmations === 0) {
-            return this.getTransactionReceipt(transactionHash);
-        }
-
-        return new Promise((resolve) => {
-            let handler = (receipt: TransactionReceipt) => {
-                if (receipt.confirmations < confirmations) { return; }
-                this.removeListener(transactionHash, handler);
-                resolve(receipt);
+        return this.getTransactionReceipt(transactionHash).then((receipt) => {
+            if (confirmations === 0 || (receipt && receipt.confirmations >= confirmations)) {
+                return receipt;
             }
-            this.on(transactionHash, handler);
+
+            return <Promise<TransactionReceipt>>(new Promise((resolve) => {
+                let handler = (receipt: TransactionReceipt) => {
+                    if (receipt.confirmations < confirmations) { return; }
+                    this.removeListener(transactionHash, handler);
+                    resolve(receipt);
+                }
+                this.on(transactionHash, handler);
+            }));
         });
     }
 
