@@ -266,7 +266,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.25";
+    export const version = "4.0.26";
 }
 
 declare module 'ethers/utils/bignumber' {
@@ -1041,6 +1041,7 @@ declare module 'ethers/utils/web' {
         ceiling?: number;
         interval?: number;
         onceBlock?: OnceBlockable;
+        fastRetry?: number;
     };
     export function fetchJson(connection: string | ConnectionInfo, json: string, processFunc: (value: any) => any): Promise<any>;
     export function poll(func: () => Promise<any>, options?: PollOptions): Promise<any>;

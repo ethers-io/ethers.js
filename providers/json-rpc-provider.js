@@ -155,7 +155,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                     }
                     return _this.provider._wrapTransaction(tx, hash);
                 });
-            }, { onceBlock: _this.provider }).catch(function (error) {
+            }, { fastRetry: 250, onceBlock: _this.provider }).catch(function (error) {
                 error.transactionHash = hash;
                 throw error;
             });

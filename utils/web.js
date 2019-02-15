@@ -179,6 +179,7 @@ function poll(func, options) {
                 }
             }, options.timeout);
         }
+        var fastTimeout = options.fastRetry || null;
         var attempt = 0;
         function check() {
             return func().then(function (result) {
@@ -200,6 +201,12 @@ function poll(func, options) {
                     }
                     if (timeout > options.ceiling) {
                         timeout = options.ceiling;
+                    }
+                    // Fast Timeout, means we quickly try again the first time
+                    if (fastTimeout) {
+                        attempt--;
+                        timeout = fastTimeout;
+                        fastTimeout = null;
                     }
                     setTimeout(check, timeout);
                 }

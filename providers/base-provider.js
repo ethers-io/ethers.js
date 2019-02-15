@@ -656,18 +656,20 @@ var BaseProvider = /** @class */ (function (_super) {
         if (confirmations == null) {
             confirmations = 1;
         }
-        if (confirmations === 0) {
-            return this.getTransactionReceipt(transactionHash);
-        }
-        return new Promise(function (resolve) {
-            var handler = function (receipt) {
-                if (receipt.confirmations < confirmations) {
-                    return;
-                }
-                _this.removeListener(transactionHash, handler);
-                resolve(receipt);
-            };
-            _this.on(transactionHash, handler);
+        return this.getTransactionReceipt(transactionHash).then(function (receipt) {
+            if (confirmations === 0 || (receipt && receipt.confirmations >= confirmations)) {
+                return receipt;
+            }
+            return (new Promise(function (resolve) {
+                var handler = function (receipt) {
+                    if (receipt.confirmations < confirmations) {
+                        return;
+                    }
+                    _this.removeListener(transactionHash, handler);
+                    resolve(receipt);
+                };
+                _this.on(transactionHash, handler);
+            }));
         });
     };
     BaseProvider.prototype.getBlockNumber = function () {
