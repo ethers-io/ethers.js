@@ -414,12 +414,6 @@ function testProvider(providerName, networkName) {
 ['default', 'homestead', 'ropsten', 'rinkeby', 'kovan', 'goerli'].forEach(function(networkName) {
     ['getDefaultProvider', 'InfuraProvider', 'EtherscanProvider', 'Web3Provider'].forEach(function(providerName) {
 
-        if (networkName === "goerli") {
-            if (providerName === "InfuraProvider" || providerName === "Web3Provider") {
-                return;
-            }
-        }
-
         // @TODO: Remove this! Temporary because Etherscan is down
         //if (providerName === 'EtherscanProvider') {
         //    console.log("******** Remove this soon! Etherscan is having issues.");
