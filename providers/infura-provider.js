@@ -42,6 +42,9 @@ var InfuraProvider = /** @class */ (function (_super) {
             case 'rinkeby':
                 host = 'rinkeby.infura.io';
                 break;
+            case 'goerli':
+                host = 'goerli.infura.io';
+                break;
             case 'kovan':
                 host = 'kovan.infura.io';
                 break;

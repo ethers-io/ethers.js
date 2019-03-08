@@ -70,12 +70,7 @@ var networks = {
         chainId: 5,
         ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
         name: "goerli",
-        _defaultProvider: function (providers) {
-            if (providers.EtherscanProvider) {
-                return new providers.EtherscanProvider("goerli");
-            }
-            return null;
-        }
+        _defaultProvider: ethDefaultProvider('goerli')
     },
     kovan: {
         chainId: 42,
