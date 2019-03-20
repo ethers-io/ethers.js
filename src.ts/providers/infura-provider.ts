@@ -53,9 +53,9 @@ export class InfuraProvider extends JsonRpcProvider {
 
         // Legacy API Access Token
         } else {
-            super('https://' + host + '/' + projectId, standard);
-            defineReadOnly(this, 'apiAccessToken', projectId);
-            defineReadOnly(this, 'projectId', null);
+            errors.throwError(
+                'Legacy INFURA API is deprecated. Please create use the new Project ID', 
+                errors.INVALID_ARGUMENT, { accessToken: projectId });
         }
 
         errors.checkNew(this, InfuraProvider);
