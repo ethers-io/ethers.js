@@ -190,7 +190,7 @@ export function parseBytes32String(bytes: Arrayish): string {
 
     // Must be 32 bytes with a null-termination
     if (data.length !== 32) { throw new Error('invalid bytes32 - not 32 bytes long'); }
-    if (data[31] !== 0) { throw new Error('invalid bytes32 sdtring - no null terminator'); }
+    if (data[31] !== 0) { throw new Error('invalid bytes32 string - no null terminator'); }
 
     // Find the null termination
     let length = 31;
