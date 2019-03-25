@@ -299,6 +299,8 @@ function testProvider(providerName, networkName) {
             } else if (providerName === 'Web3Provider') {
                 var infuraUrl = (new ethers.providers.InfuraProvider()).connection.url;
                 provider = new ethers.providers.Web3Provider(new Web3HttpProvider(infuraUrl));
+            } else if (providerName === 'NodesmithProvider') {
+                provider = new ethers.providers[providerName]('ETHERS_JS_INTEGRATION_TEST');
             } else {
                 provider = new ethers.providers[providerName]();
             }
@@ -308,6 +310,8 @@ function testProvider(providerName, networkName) {
             } else if (providerName === 'Web3Provider') {
                 var infuraUrl = (new ethers.providers.InfuraProvider(networkName)).connection.url;
                 provider = new ethers.providers.Web3Provider(new Web3HttpProvider(infuraUrl), networkName);
+            } else if (providerName === 'NodesmithProvider') {
+                provider = new ethers.providers[providerName]('ETHERS_JS_INTEGRATION_TEST', networkName);
             } else {
                 provider = new ethers.providers[providerName](networkName);
             }
@@ -412,7 +416,7 @@ function testProvider(providerName, networkName) {
 }
 
 ['default', 'homestead', 'ropsten', 'rinkeby', 'kovan', 'goerli'].forEach(function(networkName) {
-    ['getDefaultProvider', 'InfuraProvider', 'EtherscanProvider', 'Web3Provider'].forEach(function(providerName) {
+    ['getDefaultProvider', 'InfuraProvider', 'NodesmithProvider', 'EtherscanProvider', 'Web3Provider'].forEach(function(providerName) {
 
         // @TODO: Remove this! Temporary because Etherscan is down
         //if (providerName === 'EtherscanProvider') {
