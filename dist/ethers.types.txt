@@ -845,7 +845,6 @@ declare module 'ethers/providers/nodesmith-provider' {
         constructor(apiKey: string, network?: Networkish);
         protected _startPending(): void;
         getSigner(address?: string): JsonRpcSigner;
-        listAccounts(): Promise<Array<string>>;
     }
 }
 

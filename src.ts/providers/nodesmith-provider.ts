@@ -9,6 +9,7 @@ import { Networkish } from '../utils/networks';
 
 import * as errors from '../errors';
 
+// Provider for connecting to Nodesmith's hosted JSON RPC endpoints
 export class NodesmithProvider extends JsonRpcProvider {
     readonly apiKey: string;
 
@@ -55,9 +56,5 @@ export class NodesmithProvider extends JsonRpcProvider {
             errors.UNSUPPORTED_OPERATION,
             { operation: 'getSigner' }
         );
-    }
-
-    listAccounts(): Promise<Array<string>> {
-        return Promise.resolve([]);
     }
 }

@@ -12267,6 +12267,7 @@ var json_rpc_provider_1 = require("./json-rpc-provider");
 var networks_1 = require("../utils/networks");
 var properties_1 = require("../utils/properties");
 var errors = __importStar(require("../errors"));
+// Provider for connecting to Nodesmith's hosted JSON RPC endpoints
 var NodesmithProvider = /** @class */ (function (_super) {
     __extends(NodesmithProvider, _super);
     function NodesmithProvider(apiKey, network) {
@@ -12303,9 +12304,6 @@ var NodesmithProvider = /** @class */ (function (_super) {
     };
     NodesmithProvider.prototype.getSigner = function (address) {
         return errors.throwError('NODESMITH does not support signing', errors.UNSUPPORTED_OPERATION, { operation: 'getSigner' });
-    };
-    NodesmithProvider.prototype.listAccounts = function () {
-        return Promise.resolve([]);
     };
     return NodesmithProvider;
 }(json_rpc_provider_1.JsonRpcProvider));
