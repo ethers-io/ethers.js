@@ -202,11 +202,12 @@ declare module 'ethers/providers' {
     import { FallbackProvider } from 'ethers/providers/fallback-provider';
     import { IpcProvider } from 'ethers/providers/ipc-provider';
     import { InfuraProvider } from 'ethers/providers/infura-provider';
+    import { NodesmithProvider } from 'ethers/providers/nodesmith-provider';
     import { JsonRpcProvider, JsonRpcSigner } from 'ethers/providers/json-rpc-provider';
     import { Web3Provider } from 'ethers/providers/web3-provider';
     import { Block, BlockTag, EventType, Filter, Log, Listener, TransactionReceipt, TransactionRequest, TransactionResponse } from 'ethers/providers/abstract-provider';
     import { AsyncSendable } from 'ethers/providers/web3-provider';
-    export { Provider, BaseProvider, FallbackProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, Web3Provider, IpcProvider, JsonRpcSigner, Block, BlockTag, EventType, Filter, Log, Listener, TransactionReceipt, TransactionRequest, TransactionResponse, AsyncSendable };
+    export { Provider, BaseProvider, FallbackProvider, EtherscanProvider, InfuraProvider, NodesmithProvider, JsonRpcProvider, Web3Provider, IpcProvider, JsonRpcSigner, Block, BlockTag, EventType, Filter, Log, Listener, TransactionReceipt, TransactionRequest, TransactionResponse, AsyncSendable };
 }
 
 declare module 'ethers/utils' {
@@ -266,7 +267,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.27";
+    export const version = "4.0.28";
 }
 
 declare module 'ethers/utils/bignumber' {
@@ -830,6 +831,18 @@ declare module 'ethers/providers/infura-provider' {
         readonly apiAccessToken: string;
         readonly projectId: string;
         constructor(network?: Networkish, projectId?: string);
+        protected _startPending(): void;
+        getSigner(address?: string): JsonRpcSigner;
+        listAccounts(): Promise<Array<string>>;
+    }
+}
+
+declare module 'ethers/providers/nodesmith-provider' {
+    import { JsonRpcProvider, JsonRpcSigner } from 'ethers/providers/json-rpc-provider';
+    import { Networkish } from 'ethers/utils/networks';
+    export class NodesmithProvider extends JsonRpcProvider {
+        readonly apiKey: string;
+        constructor(apiKey: string, network?: Networkish);
         protected _startPending(): void;
         getSigner(address?: string): JsonRpcSigner;
         listAccounts(): Promise<Array<string>>;
