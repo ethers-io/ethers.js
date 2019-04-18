@@ -50,6 +50,11 @@ function getLowerCase(value: string): string {
 
 const _constructorGuard = {};
 
+// Some environments (Trust Wallet and company) use a global map
+// to track JSON-RPC ID, so we try to keep IDs unique across all
+// connections. See #489.
+let _nextId = 42;
+
 export class JsonRpcSigner extends Signer {
     readonly provider: JsonRpcProvider;
     private _index: number;
@@ -250,7 +255,7 @@ export class JsonRpcProvider extends BaseProvider {
         let request = {
             method: method,
             params: params,
-            id: 42,
+            id: (_nextId++),
             jsonrpc: "2.0"
         };
 
