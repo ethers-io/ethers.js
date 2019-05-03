@@ -11039,6 +11039,15 @@ var BaseProvider = /** @class */ (function (_super) {
             });
         });
     };
+    BaseProvider.prototype.getEtherPriceBtc = function () {
+        var _this = this;
+        return this.ready.then(function () {
+            return _this.perform('getEtherPriceBtc', {}).then(function (result) {
+                // @TODO: Check valid float
+                return result;
+            });
+        });
+    };
     // @TODO: Could probably use resolveProperties instead?
     BaseProvider.prototype._resolveNames = function (object, keys) {
         var promises = [];
@@ -11566,6 +11575,15 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 url += apiKey;
                 return get(url, getResult).then(function (result) {
                     return parseFloat(result.ethusd);
+                });
+            case 'getEtherPriceBtc':
+                if (this.network.name !== 'homestead') {
+                    return Promise.resolve(0.0);
+                }
+                url += '/api?module=stats&action=ethprice';
+                url += apiKey;
+                return get(url, getResult).then(function (result) {
+                    return parseFloat(result.ethbtc);
                 });
             default:
                 break;

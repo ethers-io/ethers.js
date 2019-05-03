@@ -983,6 +983,15 @@ var BaseProvider = /** @class */ (function (_super) {
             });
         });
     };
+    BaseProvider.prototype.getEtherPriceBtc = function () {
+        var _this = this;
+        return this.ready.then(function () {
+            return _this.perform('getEtherPriceBtc', {}).then(function (result) {
+                // @TODO: Check valid float
+                return result;
+            });
+        });
+    };
     // @TODO: Could probably use resolveProperties instead?
     BaseProvider.prototype._resolveNames = function (object, keys) {
         var promises = [];

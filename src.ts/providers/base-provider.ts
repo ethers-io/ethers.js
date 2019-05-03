@@ -1108,6 +1108,15 @@ export class BaseProvider extends Provider {
         });
     }
 
+    getEtherPriceBtc(): Promise<number> {
+        return this.ready.then(() => {
+            return this.perform('getEtherPriceBtc', {}).then((result) => {
+                // @TODO: Check valid float
+                return result;
+            });
+        });
+    }
+
     // @TODO: Could probably use resolveProperties instead?
     private _resolveNames(object: any, keys: Array<string>): Promise<{ [key: string]: string }> {
         let promises: Array<Promise<void>> = [];

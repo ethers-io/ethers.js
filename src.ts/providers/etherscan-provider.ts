@@ -46,7 +46,7 @@ function getResult(result: { status?: number, message?: string, result?: any }):
     return result.result;
 }
 
-function getJsonResult(result: { jsonrpc: string, result?: any, error?: { code?: number, data?: any, message?: string} } ): any {
+function getJsonResult(result: { jsonrpc: string, result?: any, error?: { code?: number, data?: any, message?: string } }): any {
     if (result.jsonrpc != '2.0') {
         // @TODO: not any
         let error: any = new Error('invalid response');
@@ -74,7 +74,7 @@ function checkLogTag(blockTag: string): number | "latest" {
 }
 
 
-export class EtherscanProvider extends BaseProvider{
+export class EtherscanProvider extends BaseProvider {
     readonly baseUrl: string;
     readonly apiKey: string;
     constructor(network?: Networkish, apiKey?: string) {
@@ -85,7 +85,7 @@ export class EtherscanProvider extends BaseProvider{
         if (this.network) { name = this.network.name; }
 
         let baseUrl = null;
-        switch(name) {
+        switch (name) {
             case 'homestead':
                 baseUrl = 'https://api.etherscan.io';
                 break;
@@ -168,15 +168,15 @@ export class EtherscanProvider extends BaseProvider{
                     if (error.responseText) {
                         // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
                         if (error.responseText.toLowerCase().indexOf('insufficient funds') >= 0) {
-                            errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, { });
+                            errors.throwError('insufficient funds', errors.INSUFFICIENT_FUNDS, {});
                         }
                         // "Transaction with the same hash was already imported."
                         if (error.responseText.indexOf('same hash was already imported') >= 0) {
-                            errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, { });
+                            errors.throwError('nonce has already been used', errors.NONCE_EXPIRED, {});
                         }
                         // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
                         if (error.responseText.indexOf('another transaction with same nonce') >= 0) {
-                            errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, { });
+                            errors.throwError('replacement fee too low', errors.REPLACEMENT_UNDERPRICED, {});
                         }
                     }
                     throw error;
@@ -257,7 +257,7 @@ export class EtherscanProvider extends BaseProvider{
                             throw new Error('unsupported topic format');
                         }
                         let topic0 = params.filter.topics[0];
-                        if (typeof(topic0) !== 'string' || topic0.length !== 66) {
+                        if (typeof (topic0) !== 'string' || topic0.length !== 66) {
                             throw new Error('unsupported topic0 format');
                         }
                         url += '&topic0=' + topic0;
@@ -269,16 +269,16 @@ export class EtherscanProvider extends BaseProvider{
                 url += apiKey;
 
                 var self = this;
-                return get(url, getResult).then(function(logs: Array<any>) {
+                return get(url, getResult).then(function (logs: Array<any>) {
                     var txs: { [hash: string]: string } = {};
 
                     var seq = Promise.resolve();
-                    logs.forEach(function(log) {
-                        seq = seq.then(function() {
+                    logs.forEach(function (log) {
+                        seq = seq.then(function () {
                             if (log.blockHash != null) { return null; }
                             log.blockHash = txs[log.transactionHash];
                             if (log.blockHash == null) {
-                                return self.getTransaction(log.transactionHash).then(function(tx) {
+                                return self.getTransaction(log.transactionHash).then(function (tx) {
                                     txs[log.transactionHash] = tx.blockHash;
                                     log.blockHash = tx.blockHash;
                                     return null;
@@ -288,7 +288,7 @@ export class EtherscanProvider extends BaseProvider{
                         });
                     });
 
-                    return seq.then(function() {
+                    return seq.then(function () {
                         return logs;
                     });
                 });
@@ -297,13 +297,21 @@ export class EtherscanProvider extends BaseProvider{
                 if (this.network.name !== 'homestead') { return Promise.resolve(0.0); }
                 url += '/api?module=stats&action=ethprice';
                 url += apiKey;
-                return get(url, getResult).then(function(result) {
+                return get(url, getResult).then(function (result) {
                     return parseFloat(result.ethusd);
+                });
+
+            case 'getEtherPriceBtc':
+                if (this.network.name !== 'homestead') { return Promise.resolve(0.0); }
+                url += '/api?module=stats&action=ethprice';
+                url += apiKey;
+                return get(url, getResult).then(function (result) {
+                    return parseFloat(result.ethbtc);
                 });
 
             default:
                 break;
-         }
+        }
 
         return super.perform(method, params);
     }
@@ -334,7 +342,7 @@ export class EtherscanProvider extends BaseProvider{
                 });
                 var output: Array<TransactionResponse> = [];
                 result.forEach((tx) => {
-                    ['contractAddress', 'to'].forEach(function(key) {
+                    ['contractAddress', 'to'].forEach(function (key) {
                         if (tx[key] == '') { delete tx[key]; }
                     });
                     if (tx.creates == null && tx.contractAddress != null) {

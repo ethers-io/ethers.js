@@ -291,6 +291,15 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 return get(url, getResult).then(function (result) {
                     return parseFloat(result.ethusd);
                 });
+            case 'getEtherPriceBtc':
+                if (this.network.name !== 'homestead') {
+                    return Promise.resolve(0.0);
+                }
+                url += '/api?module=stats&action=ethprice';
+                url += apiKey;
+                return get(url, getResult).then(function (result) {
+                    return parseFloat(result.ethbtc);
+                });
             default:
                 break;
         }
