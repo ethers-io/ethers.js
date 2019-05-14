@@ -51,6 +51,10 @@ function getLowerCase(value) {
     return value;
 }
 var _constructorGuard = {};
+// Some environments (Trust Wallet and company) use a global map
+// to track JSON-RPC ID, so we try to keep IDs unique across all
+// connections. See #489.
+var _nextId = 42;
 var JsonRpcSigner = /** @class */ (function (_super) {
     __extends(JsonRpcSigner, _super);
     function JsonRpcSigner(constructorGuard, provider, addressOrIndex) {
@@ -237,7 +241,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         var request = {
             method: method,
             params: params,
-            id: 42,
+            id: (_nextId++),
             jsonrpc: "2.0"
         };
         return web_1.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
