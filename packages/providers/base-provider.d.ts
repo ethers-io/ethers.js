@@ -1,0 +1,96 @@
+import { Block, BlockTag, BlockWithTransactions, EventType, Filter, FilterByBlockHash, Listener, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
+import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
+import { Network, Networkish } from "@ethersproject/networks";
+import { Transaction } from "@ethersproject/transactions";
+import { Formatter } from "./formatter";
+/**
+ *  EventType
+ *   - "block"
+ *   - "pending"
+ *   - "error"
+ *   - filter
+ *   - topics array
+ *   - transaction hash
+ */
+declare class Event {
+    readonly listener: Listener;
+    readonly once: boolean;
+    readonly tag: string;
+    constructor(tag: string, listener: Listener, once: boolean);
+    pollable(): boolean;
+}
+export declare class BaseProvider extends Provider {
+    _network: Network;
+    _events: Array<Event>;
+    formatter: Formatter;
+    _emitted: {
+        [eventName: string]: number | "pending";
+    };
+    _pollingInterval: number;
+    _poller: any;
+    _lastBlockNumber: number;
+    _fastBlockNumber: number;
+    _fastBlockNumberPromise: Promise<number>;
+    _fastQueryDate: number;
+    /**
+     *  ready
+     *
+     *  A Promise<Network> that resolves only once the provider is ready.
+     *
+     *  Sub-classes that call the super with a network without a chainId
+     *  MUST set this. Standard named networks have a known chainId.
+     *
+     */
+    ready: Promise<Network>;
+    constructor(network: Networkish | Promise<Network>);
+    static getFormatter(): Formatter;
+    poll(): void;
+    resetEventsBlock(blockNumber: number): void;
+    readonly network: Network;
+    getNetwork(): Promise<Network>;
+    readonly blockNumber: number;
+    polling: boolean;
+    pollingInterval: number;
+    _getFastBlockNumber(): Promise<number>;
+    _setFastBlockNumber(blockNumber: number): void;
+    waitForTransaction(transactionHash: string, confirmations?: number): Promise<TransactionReceipt>;
+    _runPerform(method: string, params: {
+        [key: string]: () => any;
+    }): Promise<any>;
+    getBlockNumber(): Promise<number>;
+    getGasPrice(): Promise<BigNumber>;
+    getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber>;
+    getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number>;
+    getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
+    getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
+    _wrapTransaction(tx: Transaction, hash?: string): TransactionResponse;
+    sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
+    _getTransactionRequest(transaction: TransactionRequest | Promise<TransactionRequest>): Promise<Transaction>;
+    _getFilter(filter: Filter | FilterByBlockHash | Promise<Filter | FilterByBlockHash>): Promise<Filter | FilterByBlockHash>;
+    call(transaction: TransactionRequest | Promise<TransactionRequest>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
+    estimateGas(transaction: TransactionRequest | Promise<TransactionRequest>): Promise<BigNumber>;
+    _getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block | BlockWithTransactions>;
+    getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block>;
+    getBlockWithTransactions(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<BlockWithTransactions>;
+    getTransaction(transactionHash: string): Promise<TransactionResponse>;
+    getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
+    getLogs(filter: Filter | FilterByBlockHash | Promise<Filter | FilterByBlockHash>): Promise<Array<Log>>;
+    getEtherPrice(): Promise<number>;
+    _getBlockTag(blockTag: BlockTag | Promise<BlockTag>): Promise<BlockTag>;
+    _getResolver(name: string): Promise<string>;
+    resolveName(name: string | Promise<string>): Promise<string>;
+    lookupAddress(address: string | Promise<string>): Promise<string>;
+    perform(method: string, params: any): Promise<any>;
+    _startPending(): void;
+    _stopPending(): void;
+    _checkPolling(): void;
+    _addEventListener(eventName: EventType, listener: Listener, once: boolean): this;
+    on(eventName: EventType, listener: Listener): this;
+    once(eventName: EventType, listener: Listener): this;
+    emit(eventName: EventType, ...args: Array<any>): boolean;
+    listenerCount(eventName?: EventType): number;
+    listeners(eventName?: EventType): Array<Listener>;
+    off(eventName: EventType, listener?: Listener): this;
+    removeAllListeners(eventName?: EventType): this;
+}
+export {};
