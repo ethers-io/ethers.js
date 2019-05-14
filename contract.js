@@ -198,7 +198,7 @@ function runMethod(contract, functionName, estimateOnly) {
                     if (tx.from == null && contract.signer) {
                         tx.from = contract.signer.getAddress();
                     }
-                    return contract.provider.estimateGas(tx);
+                    return contract.provider.estimateGas(tx, blockTag);
                 }
                 if (tx.gasLimit == null && method.gas != null) {
                     tx.gasLimit = bignumber_1.bigNumberify(method.gas).add(21000);
