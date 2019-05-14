@@ -2,7 +2,7 @@
 
 import assert from "assert";
 
-import { ethers } from "@ethersproject/ethers";
+import { ethers } from "ethers";
 
 
 const provider = new ethers.providers.InfuraProvider('rinkeby');

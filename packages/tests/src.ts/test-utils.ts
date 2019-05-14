@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 
-import { ethers } from "@ethersproject/ethers";
+import { ethers } from "ethers";
 import { loadTests, TestCase } from "@ethersproject/testcases";
 
 import * as utils from './utils';

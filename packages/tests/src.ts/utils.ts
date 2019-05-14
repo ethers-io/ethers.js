@@ -1,6 +1,6 @@
 'use strict';
 
-import { ethers } from "@ethersproject/ethers";
+import { ethers } from "ethers";
 
 function randomBytes(seed: string, lower: number, upper?: number): Uint8Array {
     if (!upper) { upper = lower; }

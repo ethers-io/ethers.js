@@ -2,8 +2,8 @@
 
 import assert from "assert";
 
+import { ethers } from "ethers";
 import { loadTests, TestCase } from "@ethersproject/testcases";
-import { ethers } from "@ethersproject/ethers";
 
 describe('Test HD Node Derivation from Seed', function() {
 
