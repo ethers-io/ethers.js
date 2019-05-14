@@ -1,0 +1,29 @@
+{
+  "name": "@ethersproject/web",
+  "version": "5.0.0-beta.124",
+  "description": "Error utility functions for ethers.",
+  "main": "index.js",
+  "browser": {
+    "xmlhttprequest": "./browser-xmlhttprequest.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/base64": ">5.0.0-beta.0",
+    "@ethersproject/errors": ">5.0.0-beta.0",
+    "@ethersproject/properties": ">5.0.0-beta.0",
+    "@ethersproject/strings": ">5.0.0-beta.0",
+    "xmlhttprequest": "1.8.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0x99cdd9c80d988aedf6bedc30316fb519b36b4c86aadb4fd0fe6f6bf71bb2c138"
+}

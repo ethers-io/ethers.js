@@ -1,0 +1,60 @@
+{
+  "name": "ethers",
+  "version": "5.0.0-beta.134",
+  "description": "Error utility functions for ethers.",
+  "main": "index.js",
+  "scripts": {
+    "dist": "npm run dist-browser && npm run dist-minified",
+    "dist-browser": "browserify -s ethers -g ./scripts/transform index.js -o ./dist/ethers.js",
+    "dist-minified": "uglifyjs --compress --mangle --output ./dist/ethers.min.js -- ./dist/ethers.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/abi": ">5.0.0-beta.0",
+    "@ethersproject/abstract-provider": ">5.0.0-beta.0",
+    "@ethersproject/abstract-signer": ">5.0.0-beta.0",
+    "@ethersproject/address": ">5.0.0-beta.0",
+    "@ethersproject/base64": ">5.0.0-beta.0",
+    "@ethersproject/bignumber": ">5.0.0-beta.0",
+    "@ethersproject/bytes": ">5.0.0-beta.0",
+    "@ethersproject/constants": ">5.0.0-beta.0",
+    "@ethersproject/contracts": ">5.0.0-beta.0",
+    "@ethersproject/errors": ">5.0.0-beta.0",
+    "@ethersproject/hash": ">5.0.0-beta.0",
+    "@ethersproject/hdnode": ">5.0.0-beta.0",
+    "@ethersproject/json-wallets": ">5.0.0-beta.0",
+    "@ethersproject/keccak256": ">5.0.0-beta.0",
+    "@ethersproject/networks": ">5.0.0-beta.0",
+    "@ethersproject/pbkdf2": ">5.0.0-beta.0",
+    "@ethersproject/properties": ">5.0.0-beta.0",
+    "@ethersproject/providers": ">5.0.0-beta.0",
+    "@ethersproject/random": ">5.0.0-beta.0",
+    "@ethersproject/rlp": ">5.0.0-beta.0",
+    "@ethersproject/sha2": ">5.0.0-beta.0",
+    "@ethersproject/signing-key": ">5.0.0-beta.0",
+    "@ethersproject/solidity": ">5.0.0-beta.0",
+    "@ethersproject/strings": ">5.0.0-beta.0",
+    "@ethersproject/transactions": ">5.0.0-beta.0",
+    "@ethersproject/units": ">5.0.0-beta.0",
+    "@ethersproject/wallet": ">5.0.0-beta.0",
+    "@ethersproject/web": ">5.0.0-beta.0",
+    "@ethersproject/wordlists": ">5.0.0-beta.0"
+  },
+  "devDependencies": {
+    "browserify": "16.2.3",
+    "uglify-es": "3.3.9"
+  },
+  "browser": {
+    "platform.js": "browser-platform.js"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "tag": "next"
+  },
+  "tarballHash": "0x9fcccdd98830d1bd0cc18d45a2ec5592170c442fd3346109c427689ed2aa43a1"
+}

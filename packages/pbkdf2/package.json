@@ -1,0 +1,25 @@
+{
+  "name": "@ethersproject/pbkdf2",
+  "version": "5.0.0-beta.124",
+  "description": "Error utility functions for ethers.",
+  "main": "index.js",
+  "browser": "browser.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/bytes": ">5.0.0-beta.0",
+    "@ethersproject/sha2": ">5.0.0-beta.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers",
+    "pbkdf2"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0xa09dfd11dd48c714f383bb8543ed26b1258dcdcb9b9b84b8b9e86ef0d5e6348b"
+}

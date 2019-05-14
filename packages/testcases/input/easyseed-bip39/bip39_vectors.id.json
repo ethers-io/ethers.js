@@ -1,0 +1,317 @@
+[
+	{
+		"entropy": "00000000000000000000000000000000",
+		"mnemonic": "abad abad abad abad abad abad abad abad abad abad abad abstrak",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "11ca6bbb04770ec44d7101ca69a290c12d14128f274a3377332b8e17a399f75ff82c377e403be51cbea7c6aca4ad7e7a7f23544aedd8e3d71d41985828d1371e",
+		"bip32_xprv": "xprv9s21ZrQH143K4A5MZyrxaMwCbifFJFw7kkeVskuG8MK8nkpPk5rTe3BHNSPxbT8AGpcyQx98tWT2YAEJ7gks5t2n73u1n1dfBmtqZNNx1nw"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000",
+		"mnemonic": "abad abad abad abad abad abad abad abad abad abad abad abad abad abad ajaran",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "adc6f3fc1717764fb1cb0b6a538ccfb8088e9f2b6fa6abc5308b2626a4da931745a2926af178cbba757596c390cfe9f241e8fa5e45487e1e5920532cb0a85eae",
+		"bip32_xprv": "xprv9s21ZrQH143K3DAFz9jnB7tVfG7pfGRbSqpZLFcCD2wmcYDyqKM7e79L7ucDH1AejgeJ93gp5FnmxCt513JtUuHjEJ69hWRW2QKGbry3VHM"
+	},
+	{
+		"entropy": "000000000000000000000000000000000000000000000000",
+		"mnemonic": "abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad akta",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "412231f85aeaa6f486727617f4be864df7b07ec10b2b3df46f882881bad79f140850bf1af437b07b47563f8cb77c0a0903e9b5cc0a3d58f3191ff8bd403abe9a",
+		"bip32_xprv": "xprv9s21ZrQH143K2qBAacXpWUvhnpiuNKDGhUrWwuKdyQqhE9GLbdScALcRqadaQrACLgf1hAB5JvCjZn16rNYB7T6XByxe96THxgPSLveJcm5"
+	},
+	{
+		"entropy": "00000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad akal",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "d8dbe3be6489b52ab8957fb215544aa1ebf5939bf421f520d4c5b87160c8f38cce9405e58e42510be1f98cbe6473d08b9326de8bc05bc525781d6fe6407f2bca",
+		"bip32_xprv": "xprv9s21ZrQH143K4aPKnuZ7T1e7QSyX7xMZp2pP4mgKY9AXus1mxuTm6nnejzM6WZejimzbEgsdYLGaPFxKFqgzv6xq4bhZcHrhx75zpEsqksW"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad abad arwah",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "8611834f8655ce5c44947ab3f30f8e8497ebc352bd4d898fd52d22f9b79ac8dfc03590f0583ae63da179d41c32fb97abb303ab0957b85850901dc1ff5bf40428",
+		"bip32_xprv": "xprv9s21ZrQH143K3a3C32oYX4Ethrn39wtfDWCCNWBV2uph5VmwV7PHmf8hZ8GRcACaBKr1HccNEiPZmMhwAK35bakw7snhobwft8gpYc9K7db"
+	},
+	{
+		"entropy": "01010101010101010101010101010101",
+		"mnemonic": "adanya amat ekor adonan audisi kurang akhir buatan adanya amat ekor akademik",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "49f9603126a23dc14ab1e1c3119df1b6e9d4b546b0ff75971b82509d0b24e2d8851b9d04c85261a9d1387f1a8c1e1461a0450fd4515051089e460c994b91eff2",
+		"bip32_xprv": "xprv9s21ZrQH143K4LpDvMMfgVjgF5SXdgPFaE2EcVqxAHHD7jczQcAZLuNPi1FGN3EGRHGxMbug6W9GmGw5iXebxdXQ9FPzjswYu759LZ7AetX"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101",
+		"mnemonic": "adanya amat ekor adonan audisi kurang akhir buatan adanya amat ekor adonan audisi kurang albumnya",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "e22f3edc914e94f9814a9faf7e5ed31878296b886ff54f9708dc7720b6fac96e5f7246b2c2a8bfe169b33ab9a7ecbbb939fe0a108e2d045326cd7906373a675b",
+		"bip32_xprv": "xprv9s21ZrQH143K3bkW2R5ZuKqDqFfTfRpHkNckiJV4toMyZARoJTAWG2Rb774wGbwhf15TMLZTkgrzcRSGSTqtA4uWimX68mQXZ75eNP2yF9j"
+	},
+	{
+		"entropy": "010101010101010101010101010101010101010101010101",
+		"mnemonic": "adanya amat ekor adonan audisi kurang akhir buatan adanya amat ekor adonan audisi kurang akhir buatan adanya apapun",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "f48f7758e252af093fd70654133da18328f22c69673aca0227dd309ff6f22a85e6a896be3c204bd45d5c0a17ed14d679a396048845fed277ac3299c38f18ca7a",
+		"bip32_xprv": "xprv9s21ZrQH143K25mezh229c6fSc5SADSk9puUHFYxw3K7wBfvU1NTXwuQk46fxVn8Et6urC6hpqJ9u1bLEjSgDaQugGYAq5dA2ZhpH41Suoq"
+	},
+	{
+		"entropy": "01010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "adanya amat ekor adonan audisi kurang akhir buatan adanya amat ekor adonan audisi kurang akhir buatan adanya amat ekor adonan bahu",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "c11f03941080eda67f1c5326bda6b02c42f040076c160ca932ef0cebf6e2c8c904570a3e23453257e87b6af1468e9086740313576bcc48a6a95c70c8d15abc65",
+		"bip32_xprv": "xprv9s21ZrQH143K3KWsQTXvBdvbcHgp2LEicphaqm4tDE5JMgRYf35fYLnEkcGiNwrSoTidcbMc4NzFgas7i6iw1UP3skMJxwGcZ66Lb5d9vz2"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "adanya amat ekor adonan audisi kurang akhir buatan adanya amat ekor adonan audisi kurang akhir buatan adanya amat ekor adonan audisi kurang akhir deskripsi",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "45f3da312a0bb76fd3f066e99f0233b5021b990127b6791b69ed0e3c6aab991f55cef29dd2b05d94aba298d3e1b5659096ba0d8f7ea9212263cace4c454cac4b",
+		"bip32_xprv": "xprv9s21ZrQH143K3p4uA5PR2sbEDausdZNXsoUisMcaA2cpVWKnZWFK3Enb4aAff1RZsmJzoKDEw8Gq3RuGKp2qsLSPBchVMYPQqLgLJvLbbWk"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "kulit waduk subspesies wujud unsur raih wartawan tipe kulit waduk subspesies yaitu",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "9c11f30e2e526dd85e50858a8a7e28dc9ebcb075b0bf1712b3c1af245bd147db7b27b6acb2fd2a363b4b7b177c835b9509643c2d395da2929da0cabaf4f27f7a",
+		"bip32_xprv": "xprv9s21ZrQH143K3ecdyvJtk9NcNKMKoc3TyJJsdfpmMhLZtwvGGkRU4oVNsozz5MP2rKpBdk6HWHo3qysEUTpLcTj6K4VEXwuKfzD7ZrfTm5L"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "kulit waduk subspesies wujud unsur raih wartawan tipe kulit waduk subspesies wujud unsur raih wajah",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "a4c1562fce7b0462795ae274070685d5d925e3758542e289b38d6e72caefa60d6df694eb51495f8144211c84319c3713b6d6c68d78d1f6931bba5282bfaa7d6c",
+		"bip32_xprv": "xprv9s21ZrQH143K2SUa58EjS4S73ERG93HEdvwSjcmZpFqsyMameAmWFoKCMDpQd7o8PQP78GHx1ZaMaU8wHE2i4uUPMNdNgZfEsyBQEh5fLh5"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "kulit waduk subspesies wujud unsur raih wartawan tipe kulit waduk subspesies wujud unsur raih wartawan tipe kulit visi",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "c86a5f2ca6e543189c641493ea1960d712a709ca5ecef00545b0533ca3dd9b4b9716627e8c1112a9f33fb53f64f4764e30a8bed5c02577b35858016eb4ea5d46",
+		"bip32_xprv": "xprv9s21ZrQH143K2V8jHien2x2s3W7QKAJeMZ8LfYnTxXQU4E3k8at6g62Vxg89Q3urT1cX4hffrFMDeNgy5uFBrGSdKTkuptc9kYVwU7qfqeo"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "kulit waduk subspesies wujud unsur raih wartawan tipe kulit waduk subspesies wujud unsur raih wartawan tipe kulit waduk subspesies wujud tulang",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "29076dc77b85029549f4b353c58d8756f5e88bd7c2050394ae86c3247edb3b18c584a5c235a4da72e1fe11e4348c40e84edbc66b25b637103935c47c82c7b651",
+		"bip32_xprv": "xprv9s21ZrQH143K3MGTXFpwQQsM3VxUJXoA9h9wxCKDLLS53QMEmsnhXnuazBCxDXJcWqMbdo7tYr9FCNM74FrUi3t5YaH13QcyBSBhnjomfUc"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "kulit waduk subspesies wujud unsur raih wartawan tipe kulit waduk subspesies wujud unsur raih wartawan tipe kulit waduk subspesies wujud unsur raih wartawan surya",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "64e68536b2ffbe2bba3f1248ae33a07a971fe57d0efb47a8801e110b27ff7abdca60e75a13a9bb87ee4d3b6e31853c8de47e3b85500e137cd7960bcd8b712da5",
+		"bip32_xprv": "xprv9s21ZrQH143K3SwH4MWf6Y1VUXMkw2RgwWgqG58CQwK3gV382bPdqXESLMGpnmRHJwaXtXpz2NdATdUZpY3pjPUnVxBE8MkwxYbG5xap3uW"
+	},
+	{
+		"entropy": "80808080808080808080808080808080",
+		"mnemonic": "kurang akhir buatan adanya amat ekor adonan audisi kurang akhir buatan acak",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "d4c50117812a5e5c94278396e23a775512ad109ab40d24b6a59c604ddbd3523220d86f74592ff8e0a89e32a818581f1b3ac4126d298ec6ab87f796ad1dc4e755",
+		"bip32_xprv": "xprv9s21ZrQH143K2NA9RbsQLfK5nLn8nbeCr859EvSdPJpNKyG5T7SRwQHG7RmkikcTVqDRunAAQMEecpNHG39CnMhTLiJXrXQ1oQJfyam5krz"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080",
+		"mnemonic": "kurang akhir buatan adanya amat ekor adonan audisi kurang akhir buatan adanya amat ekor adegan",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "724b1659b2bcc729e9732f8ee7d1fcf798a961e9a7d328f6448febe86857a96d0231e812ba22543fd5f2ceef42f6b1b5b9819872a157ccc6defbb076ee0b0cf8",
+		"bip32_xprv": "xprv9s21ZrQH143K3sN3MLgneyk3u9HvbA8hyxcnHK2UqbVKgAF8MQFn6v7hfdXnkhWZ9vGyQjo7gBsRcFh6u19XWQb3HbhhNEsgx4gDVWha3QU"
+	},
+	{
+		"entropy": "808080808080808080808080808080808080808080808080",
+		"mnemonic": "kurang akhir buatan adanya amat ekor adonan audisi kurang akhir buatan adanya amat ekor adonan audisi kurang alun",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "d5c51ba7d90bb5bf58a7c63adfae4725f07d6d36379b25f72aaad9c3232451a9fca324f5ef836b0afbab3a3eca5bd2916280d05803bc8c858641e097164696a4",
+		"bip32_xprv": "xprv9s21ZrQH143K2d523K8scUdvSaYPvHx3PtSE7tXKHFRdUia8TsUHkJjuv6sDrKoyzsRYc1ZtRnccjnuVLuJDgeaDFC5bKf1GMihDEXrhAaQ"
+	},
+	{
+		"entropy": "80808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "kurang akhir buatan adanya amat ekor adonan audisi kurang akhir buatan adanya amat ekor adonan audisi kurang akhir buatan adanya anumerta",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "bcb099b8e32a585449470ee3770fed07bc8c342bbf8d899b3b44b37599b3a92d889c888469b69e05a1fc7caf3c246a3453aa20c353415db0955477bff32a6700",
+		"bip32_xprv": "xprv9s21ZrQH143K38Lin18fW22iBBqZQTvW1R8uRoFm78ZhcxNtcns41tRU5g5HCrqjEDEtgmHtdScbgBpzTS4NN1DrfP8DGQgp9SsSNNT4vKa"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "kurang akhir buatan adanya amat ekor adonan audisi kurang akhir buatan adanya amat ekor adonan audisi kurang akhir buatan adanya amat ekor adonan bencana",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "3a09e308e31f7dfb20f3fbbc8853b3195247830920e425b2071f6eb71f602d9d7c4abb0dee410e9357a79d65f0f3d0903980ff94adfec3c3e8e861c85856ddc2",
+		"bip32_xprv": "xprv9s21ZrQH143K3mGH5Rve98GL5Zk7G3Jgktn9bydjEeXtZguEUbeEt2Hgx19wuSmKxkBfstfj9928EB1dBrBKWK6XoCCKfvNBgP4gye3SpRB"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefe",
+		"mnemonic": "wujud unsur raih wartawan tipe kulit waduk subspesies wujud unsur raih wajib",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "f8b19c6965ff9be2d19071ac1f3ff6f9d0520467e22628493d20287d427b9f118f8e1fdafe2a5f85b6585445b8b9ee6a00d6e75a5df8200897bec8f1e2da9cfd",
+		"bip32_xprv": "xprv9s21ZrQH143K2j4bfYqb8kMVw6igSXWb5bzXAbRGNcMMXDxZoqgACBnJVgcc3bqS8BcA1e7L9kXiRk5eHNMaKQFSLUERQdwfCg45yjJJig4"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "wujud unsur raih wartawan tipe kulit waduk subspesies wujud unsur raih wartawan tipe kulit versi",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "9c048609c3c9595b3dc37da088417301b738b9638ca431cbb7e917e5581382e6b8541df46f1f5fa1be2efba8f032fedc43fe4d376f893c58631f4c46be18a991",
+		"bip32_xprv": "xprv9s21ZrQH143K3QqhCx38Xe2uoEFpR4w5tGjVvznsNxqTQ4odQXrjGi4Pmb2LDjMGQU2UL81EsQZwNprL8d4WqUnVbgSRErPok2d2U4WqqqK"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "wujud unsur raih wartawan tipe kulit waduk subspesies wujud unsur raih wartawan tipe kulit waduk subspesies wujud umur",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "2dd31fb5f86dc6ababb2736933a51232baa4f8a34a8433e99e9051d34260082bce83d1d8f18b5f9c86c9c82987804108cd8fb6c4b67c96065a8eea281c037679",
+		"bip32_xprv": "xprv9s21ZrQH143K4ZQYuFsHEnWBHBJkDQa2p36SvfwtE3Bcr3YHLt62sVQ7g3J5kvgvYf8F7unWjf6tyYvJPAaY3xjJJatqeo5mgMiTERcZZtN"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "wujud unsur raih wartawan tipe kulit waduk subspesies wujud unsur raih wartawan tipe kulit waduk subspesies wujud unsur raih wartawan tanjung",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "91f2b33a68268955dee70a07292c3c36e5a4e534c8378621277951b37b8902fa4ef06828016bcfb1a808c938c0eb94ccfc25f1997d34cb3db4f310f02c0ed4b1",
+		"bip32_xprv": "xprv9s21ZrQH143K34XUfauxT3dg7ZSsZgtQA7aaeRsx4Z35NgDvgutpWK4yDK3xh6Ehf2QiWQajuvsaKEJgmYy1DLnfgNK3GSMZrFW3U5UBGR5"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "wujud unsur raih wartawan tipe kulit waduk subspesies wujud unsur raih wartawan tipe kulit waduk subspesies wujud unsur raih wartawan tipe kulit waduk siluman",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "4c3cf01e6a68cf59ff0976d64455166e7a4bfccaf38320814ee41ac6d4559174c3c7ae2428a99eccae675dcade0ff567de408e84fd29e468b5770b3c5e42004c",
+		"bip32_xprv": "xprv9s21ZrQH143K2TRipBuyVghXX89YcYdcRvjDt4PXebWpBbNYPL1Pjq7GgHwibVTo1pnVXkyCVzvY3tAiW31V9zkzeRem7rhCTo45RvuCnnG"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffff",
+		"mnemonic": "zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman wilayah",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "e2850bd646c9c0455b1266cc181d106434d2d14b1a5eab10b1f2bf202a8b4d832dc03957e19c6f38775906bae58b1faae43e3d371f9cd496f2b9c42b717d0b26",
+		"bip32_xprv": "xprv9s21ZrQH143K2XvLUGiHQUYVJjDu98sRkY7LMDvR1Du6VgQjCt2nZ1DKzjdbb5EkgadNXHxKrHgzhTMq4my11vpHiHvTbVCstvay2LweJRs"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman wayang",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "f53f573e9a7758bffb6587a84b2d425857b741e0f2241c3f1b6ae8f5f127e0c90b1306c7d03fd99114a2fa4fa087d98b0952ea3d0df12ce45ed6dda48b3e2555",
+		"bip32_xprv": "xprv9s21ZrQH143K3svLtiDWgMoBPpv9ftibtHx9Y1irLmD4FnRVyVBwzEWAj2NdWR4co3GRQCvG4oyHSTo5PEwfy8sMTSYuJi96b8emCnpbnPW"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman utusan",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "b0a9536e5f9cdf6ddc0b4eb28f16c643bfe931fcb3153c4c1cb7d4ccd5fb27ab32fd3e294e69ad3bc3b79107604c7af60d0ce6750f65018d83162384702875d5",
+		"bip32_xprv": "xprv9s21ZrQH143K4M5aPXD5YUj6hZmau7T51rGEymKLSdMDxkbtMSVLBEJDHGxrmqFFdWqD57B6AQcBWDBLJzMa1cDhpng96yNfsgrSEQ1Cok9"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman tukang",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "a76505b83eff36f895d235970ddda9a33cb9ea3231c89d3b158f443ccae351f67221a7eeded1dcfbcf8163cd28e95c26b43ecdedfabbe8eef458480e40eafaea",
+		"bip32_xprv": "xprv9s21ZrQH143K3ujvg5irBtuY5UttW7meioysthcrZvYW8oPfCQd18TR611YaGS4XxUYuJ4MMNn1s52U6kypBCPZguBrhHNt9a8BNQhULgcd"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman zaman ukuran",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "8eb15cbb2ea1e3bffb742ee97253863b67fe243356fda4d4806e534ab68b5a20a054b398f67230de2fa3c261ccc543539dfa73f403955b40e512526ba29a9f9b",
+		"bip32_xprv": "xprv9s21ZrQH143K3Tog7rSXhKMB8mwvBuEPdcWLap3ZGLLvUgrP6McDKa6vkzpTscb4SRFK4R6bU4e2Fu6rGmgvHLJjqQ3FHQLymz8po9rTCTH"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan hingga",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "b876be4055f5b25478b505f8b39a535db4dbda452d47c7c20009f47d9a64c5cca55434776e77a6651bdbc255160e40ea729fff93a78d9d02b0fc699380db3609",
+		"bip32_xprv": "xprv9s21ZrQH143K2bsdmWEiy49APH8wtCmvo1tf6uMgzAEEUEM386UvGqoxpeaTSrXFVDfBcBqarG1XGnekMST2bG7QvvfCpFSw5NZzntksw7Y"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan panas",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "3dc24d43b8293cab0b158eee60faec55970790ddff8c1330550aa8b5a4a1850e416539850ca2d569795af9b7dd3a6ba7932d820e23e2137e00ffe2a65d6c9974",
+		"bip32_xprv": "xprv9s21ZrQH143K2D34CuAWUWAFr6NAusyUdrgqEFbt4VvbeE1Ndcbva15kFs9YGFZ9j1oLrRSTNS12fJwm52BQ1vGfAiuK3hhJyJg7JCLiXrg"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan hilir",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "43c70790a6b3887bd0b7d8b7508ec8a5eb71fae1c2447a86ce872e8baa35de55d1ea2ae82c2ac784ce2c6e3673fc937848b1db0c0c5a366ac5fc8b998fed455c",
+		"bip32_xprv": "xprv9s21ZrQH143K2dNyteQc118VenBX69ibgVXoTyjjUwjKypC7R8wbeo1RyrQ5hU323DddTS2KzxqJf5XWJeDW4WYQvTD2fFWyTGXv7i5zgFS"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan pekan",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "fec71dd64aaf39f8fc44b6a96c37707c8d0335e6c270f132614f8104238cc8d37501a5b2ed9e1ec57ac6c752d28077748c04dd2cafe174aa81f65fac9f4d4759",
+		"bip32_xprv": "xprv9s21ZrQH143K37JTSbwWieEkEZajt1nFV7xpEgeKwpGMuFmNz8KxmYTkoLhe5BV7KGrVVatzjL29HUBQYGCKEeJ66nVsAoHzgtPiU9ZqHGT"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan inovasi",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "6e6ac7ef520f739cff48165c7023641f349d8a3bce2a86d2151eb309b94d26ee5231f4a360fa7b099141ddf73f78283f61273a99d273582c9dc3cf4ffb9ebd8b",
+		"bip32_xprv": "xprv9s21ZrQH143K3SRZUm33VRB9bBahsH2LVtRfvcDpD6bgCkF9hUT2bNgBLNnj8dVXqrScVZenxiZbC9ukttQZ1n9J4E3p1MeyiLzkMit2jQG"
+	},
+	{
+		"entropy": "55555555555555555555555555555555",
+		"mnemonic": "himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan partai",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "e2d642af25fa4fcf8402c409b7b918dab46848c51ef40d8d00a32c54ca5d2721d5463e5caf3d482eb89db88e60d5e02253af7a7f2e48e5525f3adccfa8012d6e",
+		"bip32_xprv": "xprv9s21ZrQH143K48QYD7Hauyp5L77MafZGRRyzmM9hZ4C5HbyqvcSoTndgJagUhmtsG9GRZrEQ16Beuw1o38MN8oEFJzzNqibtkEBNb1VKTx5"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555",
+		"mnemonic": "himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan hijau",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "0efcb3d92ef9c6244f6fa425eb420540d811b193ede651edf211012b9e59cca28e92064e0ef9d079c0d0b016e26c5a323bc97ab4723c0e3752b40c5433eb3fc9",
+		"bip32_xprv": "xprv9s21ZrQH143K3Kub74NQcipybsR6mwU737sbC21eADFUbi4sjzYV3EZGJ5T1VEpodKU3CThSnWDDJeagbeTPGdAzu2fJGjacBfm5P3Fd49D"
+	},
+	{
+		"entropy": "555555555555555555555555555555555555555555555555",
+		"mnemonic": "himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan pasir",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "ce678c945bfaa5b2bab5c73318171d427f2bf38010d1654bc23bdbb057100e4945b8a9cf241739989061e7da79b9aae57ebdc6eaf7f5805c33190bc7b4934bf5",
+		"bip32_xprv": "xprv9s21ZrQH143K4Rd3wJPa47ftm2tZi6Cur8oiH1eQVfLKsnP7A13q6xxKq65s3G8TSvuh1YbUHCxGfKfGMjEVjxfpXY9Doh5VnYqLAX397dU"
+	},
+	{
+		"entropy": "55555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan hijau",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "643d941f72cd027a42e88cfaf5e7012937b70d7584e4c4eb6487826ccd13b331a786f740a75c5c7136082517036d71fd445e9e8e4a579ef305671ba784b1a3a8",
+		"bip32_xprv": "xprv9s21ZrQH143K2UdUcwNp6FfKBe13szGA91NouevnPbBx3esQAfjLoChKCC3JyWYVhasEjrKgShUKhnV2YFy331ac9rcs5BrFip3qi9GxAar"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan papan himpunan pengguna",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "e6b141c121ddb1120cadd286973effb8ffd2d4807d707d39b5fa1452f745e0d6f214a0d3554718e1396fd2ef1ed25a52bd002628fe368a3ce9282bae2b34bcfa",
+		"bip32_xprv": "xprv9s21ZrQH143K2GmJEaqSNRTh7vMceGZptSRbGvCz4qMexnnMXmwM9n1eob3YKLf35FTTyf89TkqEJhsXHKoHhaWM6Mir46GMmQKtcCzCfmT"
+	},
+	{
+		"entropy": "9e885d952ad362caeb4efe34a8e91bd2",
+		"mnemonic": "mutasi ensiklopedia kabupaten historis dilakukan kaca pecahan subspesies diizinkan fleksibel firman nyawa",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "07123ea95d56527edd2c0bb1992ff72ac217d3707eefd93bac8555d58815271ec51e1edf84fe7c85e223cbd69e731863d5de79e8d30c13e7c94fa4883947ac7a",
+		"bip32_xprv": "xprv9s21ZrQH143K2LKhiuWEQzBnkJLer8c7ehSD4qWpk4wNGFeD23urXKpoeLFfQanPFcrwoTxjSxM68hHB2VexemY2o8tKXsVjyCeWcAfQy2w"
+	},
+	{
+		"entropy": "6610b25967cdcca9d59875f5cb50b0ea75433311869e930b",
+		"mnemonic": "kaidah lazim menunjukkan sebuah sosial hijrah horor asuhan ukiran individu definisi sentral hiasan minuman fiktif semoga medis indah",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "cb98e4f1c959ec0850dd82cbc00c35df0c10a77e5e35b47fd69ae1b9c37e9beba58c65d39bb8c17f7dad5db0c4310c998deae97285c3686cb4e48f35c12fcfa0",
+		"bip32_xprv": "xprv9s21ZrQH143K3dGKKdC8hbpebXiYNG96e8hC3YujFXQAtJJebapxuxb7R6bz7yZ7EyT2jhc8cZCB4ycRoggiXQxp5yi255TpXTdfSxJstfg"
+	},
+	{
+		"entropy": "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+		"mnemonic": "kanji dokumen parlemen evolusi campuran disingkat parlemen literatur salah swasta perhatian berikut kanon harta juta suaminya lereng drastis lama waralaba rohani kepribadian disingkat kuning",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "4a316afc6a35d6779d554bc5921fe6e2b8ab0eebdbd7bf7f6350d8c9ebdd4e1bb31029bb1f29dd9b5ce3d3054bb7444b4ec0471e1a230ea2853084c33794e21e",
+		"bip32_xprv": "xprv9s21ZrQH143K2vs5iCbgSqQjgZ9GpjfcfLWPsTVayCZFo7xLPG5o5i95s39EnophjrbWsxQW7mCXDrKZYmuFGSq4oaq6XPbxMhE4pe4uPm5"
+	},
+	{
+		"entropy": "b3ffe8f56d54805218090de337779328a3a2e758",
+		"mnemonic": "pertama yakni domestik sirip fotografi dada janji bumbu susu proyek tahta hamba disponsori kerajaan jarak",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "289fa7b5c4a44adc18666a7932b7a9e741c8f0a7761f540b944dd989a2df1b185cd05fcb982f4124a4e8bcac623947f520c925c29d5594121181f0b11e483fe6",
+		"bip32_xprv": "xprv9s21ZrQH143K2DvMZPeHEnHUyzYHKGocCSGwPFBpLZwD9cPBzVvhFTKQSCdf2bm7qBmYbaN9sAqm5ygAfev77c27WKNVxtfJsH1mMGyQziD"
+	},
+	{
+		"entropy": "437dd688276ceb711cda3a126eab879a188a30b097b769a931bea6fe",
+		"mnemonic": "enzim tiga newspaper gravitasi sawah poros kepribadian fleksibel baik ketika suntingan diikuti lilin benua realitas umur karbon gaji kehidupan gitar tidur",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Bahasa Indonesia",
+		"seed": "3421c7b5c15e0bd5c4f7d86685a701d0b8a14eb3db6e3403fc52b52ac4dc57ccb1109c59e7211ac9df5bb1ffe8290300f09ea281836575b45ff54d309816fd49",
+		"bip32_xprv": "xprv9s21ZrQH143K4PpMzKACSWuF6ypc6KDo8MDCN8x2pivD6X1sC91vSwN1WezPRsEvCBn9r3LgV9Tt8u7BoGsh2pm8KX9ZzqV2SEyPAfVthjJ"
+	}
+]

@@ -1,0 +1,317 @@
+[
+	{
+		"entropy": "00000000000000000000000000000000",
+		"mnemonic": "abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace agrese",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "6e188725b15cd20cdf0061c36644844da7661ea034c4819e76cba25c8bdd02816ebd7936e4326dbf5f3c644c20098a66cdfec8ca8af3521002cb8b55a8d6676e",
+		"bip32_xprv": "xprv9s21ZrQH143K36RVv2FbJSwbKMNucnFP82GcKBZqnbC4sdB19uMkfq27hgMT93Vu5pMHENd4vrRcEbTqu8XNafjHBquV2qEZ6jBEncAfroU"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000",
+		"mnemonic": "abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace babka",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "cf44ddd0488d45e46f434d8167a2f862ce42d0d686956e3e20c5fb3156a9eec058feff4453f8135fbc2c0ddbc1211d6c0bd5f73b8e0800f7d69d31e773dbcb08",
+		"bip32_xprv": "xprv9s21ZrQH143K3Hp3BH3xtx7VDRC8u1vWZTCav96Vnxa2uYWsnV1jzEnRVywEU7moAVYc1AywvtbT9M7fCMe6uWksw5PwQ9EPKU2i6K7dDKa"
+	},
+	{
+		"entropy": "000000000000000000000000000000000000000000000000",
+		"mnemonic": "abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace balonek",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "c936cfaf084af36298ae7a164a7beddbece3d01779220a46d99090da7ce4ff4b3ddc97655041af2a4a3729a24a925ce40bda447d7bc9021d08c5a34a26caa17d",
+		"bip32_xprv": "xprv9s21ZrQH143K31xJtWA6Kh2hRqVG9RyJxidG6GWHFT18DzB55Ji2Fguae64Bq4MZ71fVBwZTT6Limgw4Cf2cukJ9s3WtF9549qo4QdahAHM"
+	},
+	{
+		"entropy": "00000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace bacil",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "108e2d5b369694affd646b9f730ac4975c74ea8f65e54d5dabfaa42f2e3c3c2f77ddd426589a5e7bb17e03275f8302fbaa6e88719cb7b48bee2473b499556d30",
+		"bip32_xprv": "xprv9s21ZrQH143K4KMnxhGyZTHC5wiSVL6Ax9sWLazEjRSkFdCdBToaNRg2iriCBTbfu1H6SvnfYH2BDCduvEEXpjhQPAmvwdi69e1QkJQnnqd"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace abdikace branka",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "2b909f12a644ec73d2560cfd266bb7f0af5b7cd810353c1fce779148e7e050aea88440de8b7eea1029eadcad4b2b9eb4b081cadb91bb150af2675b1f9bff74cf",
+		"bip32_xprv": "xprv9s21ZrQH143K3z8Usj5QxDRJnC2xsHpZqz8xqFc7yiH8E3rSdTzdyjH2u9787HCZgoS9Ps7JmU3TwzjYh6kCSncqS6TSWwwHUxxRhejodxJ"
+	},
+	{
+		"entropy": "01010101010101010101010101010101",
+		"mnemonic": "amputace bidlo jedle arogance butik obvinit bageta doma amputace bidlo jedle bachor",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "5524c91b83325197444612dca35d44342a3f0bb988384c28a9cb5074c9c9f6eb0c87275624366aaf593bd19864d36a35f4d6ed090c75ba0a6f07f98be271d459",
+		"bip32_xprv": "xprv9s21ZrQH143K4VriVxHyaHTY4j3rCLnG9SvPtTZwbSLkjjwnCjSx1mUSPUstsjCnTgiyN6aW9AHu2cwtzPm3RvPKYdVx6hcDJAQki93XAEK"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101",
+		"mnemonic": "amputace bidlo jedle arogance butik obvinit bageta doma amputace bidlo jedle arogance butik obvinit bavlna",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "2d8fae1703e526fe9c6e2ac6c356d3ba26b8068382d88df06839ec2d7d9cad71a81941750a395696f2765fbeb9cdb11060592a382f4f6f60a906fc91cacba84f",
+		"bip32_xprv": "xprv9s21ZrQH143K3w44THyjaefJGYcMy8GSPkAmkzzxUNbVrj5kUzJVGzq8MXghLAEF88QzCHFEo5yZTw1rBqgeZoQEAWVDNkMfKzMxqpigSbX"
+	},
+	{
+		"entropy": "010101010101010101010101010101010101010101010101",
+		"mnemonic": "amputace bidlo jedle arogance butik obvinit bageta doma amputace bidlo jedle arogance butik obvinit bageta doma amputace bohatost",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "4a3cfe75ebc5c77bcc101165c1809cdba0a7558df661fbe5e46b61a8038372764076008e75c76445e8c9a9a635a6402fd82a5f7868277206a7de606b1acb5997",
+		"bip32_xprv": "xprv9s21ZrQH143K34QMFdZKdwoMau6Mvr6FgYsyJV4RfmHBxtJEhob1zqKx4ncnqYCam64kTuHYTUCqXBB2rp3jRtwAXeftwymBygePVkxwg2Z"
+	},
+	{
+		"entropy": "01010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "amputace bidlo jedle arogance butik obvinit bageta doma amputace bidlo jedle arogance butik obvinit bageta doma amputace bidlo jedle arogance cenina",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "a01fff5a068728b3d140b54599b94d4e8446b107716e3a32982c0f8d32cb32fe968c457eff2fa0515307dcd6f744a0e8d7879b22904bc0a548d280ce6cfc8cda",
+		"bip32_xprv": "xprv9s21ZrQH143K2CEaQarhiAiKm3t7sx84Xhcngv8cayM2AYdQRkCT4S3cYadKknZHTC2znyBBXsAGKU46rPynEJrm63KVc7Hi9fiDHHpVQSW"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "amputace bidlo jedle arogance butik obvinit bageta doma amputace bidlo jedle arogance butik obvinit bageta doma amputace bidlo jedle arogance butik obvinit bageta gilotina",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "d2afc855bf76ba540ccb9730c183751b311a4d84ef9a236e933873f4461b46ecd12d282e5e33807ec819181b23e00ed704a347ff7813e83284cb4d7de09281e0",
+		"bip32_xprv": "xprv9s21ZrQH143K3Sk5vC6PLYAHqRkw7TJ492muGepukVuHu86HsPVwog7j42LAwsLaEtGVz984nLbp1U89rDDvzL1wjfsL456yUsnGLdoQ8sz"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "obrazec znak uznat zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubr",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "b2fba2ca4540b517f96772a359058474ce44826a9e15c6cedb3b100df986a9ce072fb5640d1174da1a46537a55437f91b6e294ede790436f5e56e683c541129b",
+		"bip32_xprv": "xprv9s21ZrQH143K2iTmBXmPimpBqfv7FjhijaYmLvRWjSvEfapdNzCZSnqTDFgnLvVS43LZtVjvV9md8vVHHLo2VnWqDmyX2vDk9fCE5RMskUL"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "obrazec znak uznat zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubovina zeman skupina zobrazit",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "c4ffe663d556a106812606462dd91a3907b9aadb05d99bb77b29922a3fc6fa9b2f74e227a5d0ed4091794598197a6c9c7b0a2f3d51a6a2f43e0145335771b2ce",
+		"bip32_xprv": "xprv9s21ZrQH143K29RhA8xTtqqDhf2oMnspvcdQ5ZDS5HRcULiAoWzd4wLqWFCDwCueiMfv7zYTUtch1cX1YugyFsf2MSMVSLiXL71tDVgSZ22"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "obrazec znak uznat zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubovina zeman skupina zrcadlo vzchopit obrazec zmije",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "0812227490c96c6f267182ed76023370bd3df66ef602bbb88851e906c5cfa23527ff15dce8bf7c3dc2b8d47ad9d5266d3b3a7967f979dcb8d41d0a55292079f0",
+		"bip32_xprv": "xprv9s21ZrQH143K4DEuZzWpXcQkB8y6y7AEMtSMrWd1MFk8dJ6A65xUwRY8Qd6bSmcUc4FqTH3A7ab9s8BpStaTwJcB1KwudShUiaqxiGuWY9A"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "obrazec znak uznat zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubovina zaklepat",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "5ab052abe645c668f0e96230edb4395c91ebdc6f61069e135ec43554fa80ce51eecaf156215aca5c36abeb2bd78da127f5782f2aa9034c0c105f6c8bd16d3d75",
+		"bip32_xprv": "xprv9s21ZrQH143K2Bn9StRKt7e5qSAyn25pXT6jD5ePcS9XLMGZzoWJzuLML2B5B5fG8vSDr82yapE216bmxLqHuFWxSMpBZ5vbSPA6bafER6y"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "obrazec znak uznat zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubovina zeman skupina zrcadlo veskrze",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "ebe2ab45d0e95bb324b4989ed748de50ed032f97546977b5ad2b57014fa88e3bbc313362ce2af5c18d8b47a4bc1c487e1f144e6e8b55620d48cc818e50396c48",
+		"bip32_xprv": "xprv9s21ZrQH143K3La9BZWP1hxip9nKKGysmQb9WdabLKXEuwZtNFNrBxxz7H8CcDRQWzb2CQdPcw3cWQCH7Es59KBV8ofaoX7hfmg9ZAyMr6E"
+	},
+	{
+		"entropy": "80808080808080808080808080808080",
+		"mnemonic": "obvinit bageta doma amputace bidlo jedle arogance butik obvinit bageta doma akce",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "a60d43ba308e641c5b138bd9aa56fd6d3350093a8cbc6ef793764578720d2a3d8d1bfd1633546f298ec3b531b922c72a96c5e3135e6a6315d8396ebd7672ad8c",
+		"bip32_xprv": "xprv9s21ZrQH143K2xxLbT55NBxXgeqP33Aw9mRT5SB9Rjo9ECJxZdjM5gDAKQWZjxVpxSimaDr87CjN5MrKzZNkuoDAa6QgwmicTLkftkk2d6Q"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080",
+		"mnemonic": "obvinit bageta doma amputace bidlo jedle arogance butik obvinit bageta doma amputace bidlo jedle anekdota",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "1797e05c366d2027c6b2acbbd700d03d5f4b7d957d6729c165193822f5706729f365c7b75c6c828d3dc484ab81590d6b38e9195d4ef5ab255617ee95fb12fd47",
+		"bip32_xprv": "xprv9s21ZrQH143K3LMzszRqkHarmt6psphRThweUHoZRvrUqWQRyeQxhJXgbhR2NAxdCsEJivnbHprnkmX1VXWfK9rQwDo574NY2UKKFriGiAh"
+	},
+	{
+		"entropy": "808080808080808080808080808080808080808080808080",
+		"mnemonic": "obvinit bageta doma amputace bidlo jedle arogance butik obvinit bageta doma amputace bidlo jedle arogance butik obvinit bezinka",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "62ecc35b9bef42714795e4e758d89c37e22eea676b29f5d434ea2986a87bcc568090ca5502d976a04907586a04771c499557f9fdd69f1aad57b8e16109caab7b",
+		"bip32_xprv": "xprv9s21ZrQH143K4DySh4RiUDAnhqjsqTiuNgMYespE1w5hiixBhsJgK5ztkyCbPb6u5HUT9oHotqnQdMR9HUsBH9CndscbGiwTtXndGEXq6xU"
+	},
+	{
+		"entropy": "80808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "obvinit bageta doma amputace bidlo jedle arogance butik obvinit bageta doma amputace bidlo jedle arogance butik obvinit bageta doma amputace bobek",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "70dd6b616bf3b9d6bb6ab2972ea99ea9251d04f6b4b6b193208cc332cfab557936fa3235d3710e63e96aa07019fc89816776379ada418ad50fda229e51e3f712",
+		"bip32_xprv": "xprv9s21ZrQH143K3RF6jszc7J8W4ExB8JmkCaiAt1z7MwyA36VFvf4sLCg8aoKZvb7NbSudcXMRvAjxg6e1tfZ9J3cHfyjbrNV9NpnS2GnycNV"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "obvinit bageta doma amputace bidlo jedle arogance butik obvinit bageta doma amputace bidlo jedle arogance butik obvinit bageta doma amputace bidlo jedle arogance cihla",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "deb14601c0db9a2e6e26be9a6055ff9ba130de517c916e818ea3924756341f0ea7a711694012d06a26c678a48de8ff9ea05be744b94f2b51b754b82b767bece2",
+		"bip32_xprv": "xprv9s21ZrQH143K3VS9kiYd7Z2GdpnLSvYiBnTcDEJrDoHjm7JWT8iU1NDXQFae5AZxpC8wsQStVJf3JW8HWJc3F4H9Q91kyvdy6hDgEWTjaEL"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefe",
+		"mnemonic": "zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubovina zeman skupina zotavit",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "dec8787dc572a353cc9f1f91aa6b0893b6cb31b311b9db2d304cd18a5c6a345c40e68a538c0e9d1416eea8baa36522d9b90fb7c2aa4a065fb748ba7d3a8cb7be",
+		"bip32_xprv": "xprv9s21ZrQH143K2PKUcWtsVZJE3U3YAX5BiQ7eXNZBvM1KuxaKgUGbJdwdNVw1NKM9rijUDkFSoghsZYogPEvg5GZzp9SVs4pFZU55C6zZue1"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubovina zeman skupina zrcadlo vzchopit obrazec zmar",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "2b137d164901d93f7d803ed6b8dba83606bd80198165fd483e2f23ad1beae333360aaf9e62bb1eb9ea755c958be5d898c3597d09580ceaf63dcb1eabd78263e4",
+		"bip32_xprv": "xprv9s21ZrQH143K3UWqVtAKT5UZLsnD82NTmRGozDec8EaRYwcryg9BmntMsuYLGdg2eZN34Le8mHhcjaPjQum98D12jZW9rsss6sK9K5H3rL5"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubovina zdarma",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "32a7fdfcc8e5deb880f70c58f886e9de5789b654caea96b31418d0b9f36fb57c47137380953840105e97835ad1ed0d692483c1b128e72af3473f45d15fc220d5",
+		"bip32_xprv": "xprv9s21ZrQH143K4Z5rtSdE2yScsQtZR5c6u5NAoWztgYcsHLfAqdVAK4g7F7r8yfMjbF9gxp7tnXbK2kneJhczHpjVWaKv2VGE55NUwQASvSo"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubovina zeman skupina zrcadlo vodivost",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "f196bf98086c1fac05a702f7a3f02d1e393e63ed93b1c7ce0163c677d123d6ddf14e8a6881e1b790ce6e3fbb272c5d67bf4854d397deb38050f66e842b60ca71",
+		"bip32_xprv": "xprv9s21ZrQH143K2sS85evpKLyGM4J4ugoxxX5PQ6SHJMdZKEtd8Rx18Zw4VU87bLpdeRDf7Mnz9EsNVfCmXeMDQo8bw6uSyX9zQMrtuMv2ekp"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubovina zeman skupina zrcadlo vzchopit obrazec znak uznat zubovina zeman skupina zrcadlo vzchopit obrazec znak ubrousek",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "81233ae0b3de7d7e4e0f5f5724b3e5af4aea6656c8fe527a106cb6f3edd2b90e52405dd72595ac68dfd96582785b44400050ba24d6133c7f6345defe3667ec2b",
+		"bip32_xprv": "xprv9s21ZrQH143K3S3iuTpwVaXmudaNdD7uAXYgoSsXnemprjaGFWdNuYTQaxo1yShs3vxqFsi5DT3GE5RMwig5gt1a5qjZnHSz74yuPUj1pLZ"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffff",
+		"mnemonic": "zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zticha",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "26adcebcbfe87139eab30d1a832c73085a27e1256da61e01a7860e5026942df6033c0a83c9267b6b7cb3a448b613d48c4e9b472038e34b3e7cd79b5098e05775",
+		"bip32_xprv": "xprv9s21ZrQH143K2tExKYqSKiSdy5rsAQRfdDwhQncv8BFSTHfwXo3dQJRMpnpwQxbNLQJbPkkrAd3trMnoPoQ4La4zjaYyXSPCm8KxNhFishW"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zrychlit",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "30b188259637a8de8ce6e5ca34c332d419d16d9b87014eaee4005e2ec09a31936e382d6211ef1d253b95c7c9b2a79babf4d8c0502d3c2f9e70c298facce0a780",
+		"bip32_xprv": "xprv9s21ZrQH143K2PpUrwjt956i2LySEdKC1PASWCtRLP8XLLZyVu5sBRYsdpZ6mueSvrbgBZiC9DMHr7ERU9tr3WkJwy81daDEBM1ndpbEW3m"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zlehka",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "39fff562a11de3a1eaadd36757bea3b5a8779ee1875db11ad395d1ac1a0d8cfd86a393a978e29970577137965b240476d6b10824ab7715aa68e9ca607d6a994f",
+		"bip32_xprv": "xprv9s21ZrQH143K3QTssByy3o7q2PzWyH9E1Vv3xB3pmkihkQ5t1ELHGwefyLkNVbXCSnyekRG6VHydonTgTUQmk1xHbh2fnG1CkiyPkL4GuWn"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zajistit",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "253b55a6f8a1a3bfc7ebb399865574f353d69dbce32d834e1fc8990fe745b1e4625a3c07d17f60ff2cfb4ee4da93c7e69d6f956090ac0ea4f0a190d4ed2856ef",
+		"bip32_xprv": "xprv9s21ZrQH143K41NZByfmvbYcRazMisKYmqQEqBe5JTqrAwFXV4q1UtmP5RJq4q1JKZcLKY7nAb5mbLGrFfA9jAZaUKjBhTWsWw25m8vqHPB"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zvyk zavolat",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "b1d943b71df8cfaae9da978e78a4e2dd74c4772bbd2206ccdb38ad13e9a8c8b8d2c45e745c806746d4a50e04239716d8977d85b8290cffbd4a5c099a9c293c2e",
+		"bip32_xprv": "xprv9s21ZrQH143K3Tn1Ymx2NecDAftxThFtqUWka6MKpfUApZG1jGucAHYPD23Q9YA4ZJ2PLT67gCWHopUCkWb89QtCFoaCaoGJ8faUgK45dGo"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo kronika",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "6c51361bc4332d9ef231af22581f0bd657e8fa6dc2298feccdd56540789f765fd07078f6ab80a8e8568c0470ffcc00a0ccba63fc7b36434776fbe1a6633d5b6c",
+		"bip32_xprv": "xprv9s21ZrQH143K3Vr42nSYmgoU72iw3n5AnCFUjFTTNLHGbxPosFTaqV6avGzGkZaX5B5zYEoENH4wu5vQqEmhhoow1CEu6GZTH8BWkBhGie7"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok prudkost",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "547bc376fb960bb1d20f309f61db9d7a3dc2ff63fd0bd18f6871ca728440546d7692408120a5cac17cc883bf2bad1f95204e9bd32e34c435ee6da759a68cf33b",
+		"bip32_xprv": "xprv9s21ZrQH143K2Br79wBev2LQNK64brzoopZjHffxuemrA4xvA29Xqo2CjenKnbkHzyhsyogAihozrZaSMmwepkitEoqsZRH8rAbjU3xsKCb"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krocan",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "2a47f2565ebbacae55af62f479ef33c2658aed70a99db4fbc435cfd0f28e274295e8a3d8c4b354a17a817c491f8689dbc87dd574ac2d8c412c78b4bfc9318be0",
+		"bip32_xprv": "xprv9s21ZrQH143K4E1TnbHDgUMq6u6CU4sKU7Ce8HPKPGtzfWbqU274dtSbfkSwKAbUPeW56hk1aE46guoRkwUa1NVEAF5GZRip8cQghD3nHZh"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok rande",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "f943cea42e071d24b295da4bdb1c288b28aa8666ded30fe6fe4c0d3e456bb4bd31d375e1de8b01e976a00679fb1864ec9da1b200b747feb9e50baa5a660de67f",
+		"bip32_xprv": "xprv9s21ZrQH143K3khtTk7cPi4x5yht8Nxacm3Pgb3KUVTpSHG6EFD2MDh92eTfThAiNUmcb6KBuCkrNgSR8VhfVcEYEWGxrJdtYHPh4Ewr7hd"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo lednice",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "612f57058b142dc7b9b8e54665e4f2ecdd32e0c080318f7dfb4d483cb29d0b08853248c749e05e3fea3969b468c1461a9184a00ce7066726e320b0e0b2df03b6",
+		"bip32_xprv": "xprv9s21ZrQH143K3TEd3hLoUdUpgPcDJ7HAMs8pZqz1uVkVpFTzuirTVuTUffifwt9M8QcCEe9RPwAtDTUC9CzHT1kvc2TcVegK2xBXsW2bC9x"
+	},
+	{
+		"entropy": "55555555555555555555555555555555",
+		"mnemonic": "krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok pukrle",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "1247923d38ede6338154f125566e8117f04f8ddf230af8c5a63186bf98339ae6831ad84c6eb1c310de97cad1fba6d35a86cce66d43078c25b5505270e9aa410e",
+		"bip32_xprv": "xprv9s21ZrQH143K3pqcWqhkqtCCmdam2ATpM1S7xQXD9BbfouHbTBeyqk6Zv33v3TwNZhJuZYucnCsXhbTL5jUjMCW9Tqr1EKi2NQFrsTSXK5X"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555",
+		"mnemonic": "krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krkavec",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "cff8ea146f2f731d029ee40675d31d60fbb944f5aafb2392dc5f055bb26d9489d9f1a3f70f3ca6fe6c137f01334c0ca7f53c3ca4d7b548cb9094ed1b2db8d54d",
+		"bip32_xprv": "xprv9s21ZrQH143K41VWEtJNVb1Mpm1Gru38vxX4Pw9kz7ERkZ6hfngn7SyqLai7D8wiTDBBbocwL5faJfb1DrsdJG1q6d5McxrFCXrV2ctt8Z5"
+	},
+	{
+		"entropy": "555555555555555555555555555555555555555555555555",
+		"mnemonic": "krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok pupen",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "3e0dc622c8ba34e2cc36cfce0851311a5d957f9ae82e3e88b8b895cb54a3a970c70a7490f8000018f2d9eb0e4773a38cfa4ea1c1799cdd7a3ae1ae8bb60a47dd",
+		"bip32_xprv": "xprv9s21ZrQH143K3G4w7cGwhzR69QZPWzCMrtTXvu4VjboBZBvcasLQxYe59ERY4VutXQ7SCVvEZU1wQDiRdZK2amFqYRz9jan8xr8GcdaGpq6"
+	},
+	{
+		"entropy": "55555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krkavec",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "c51002aa59061a304a2c7a764e82b9278ce5de27385bdb6d462009c4c7b74f33e219a326f9bea26b6ab8c0d7269c7f7be49c586615dd2436c6408879807bc968",
+		"bip32_xprv": "xprv9s21ZrQH143K2LhpYhSVRu4Ztxp2szSZB8jc1SWyqxftLV4ZJoNK1qVciNWer9sgy3Gqf17ydv56gNPuMUdYYnuyUTsAq8D6Mv74XxC6dsE"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok ptactvo krok rekrut",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "bc5af1502d6a0a8cf4990aa1154fd73f5bb4f291023c0f2b99068d9c52378b4faf01312a387e100016c2adb6465372a922da43ff50835ad2b3f29eb16dbd63d5",
+		"bip32_xprv": "xprv9s21ZrQH143K3fsmPicdBPHRTz9K7c5vEghkRzmh6nebVxQccrhtPW38QNDhMSr1Ey5B9YirPWsWc16V6CAKJeeerAiEYT6L7kjvFUPBMDg"
+	},
+	{
+		"entropy": "9e885d952ad362caeb4efe34a8e91bd2",
+		"mnemonic": "pokoj jogurt malovat kroupa holub malvice rachot uznat hnout kasa karamel potupa",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "b6e48c665d233a0486f317e71a84fc9625de67fc59d19f3e7cd9fadc149c17d27c69008be8804834c5e7fec55d1aa053ea9286419bc43c81858ef41c5acb21af",
+		"bip32_xprv": "xprv9s21ZrQH143K2SNLkxUSDNWRgWp3i1nH1xLXT5UT7Kx6m59fBpPG1k6pf7TNqBKHY4zKjfKRm18KuT8a1Km7uTEHeSeNSNzKUcjRSEAJRBc"
+	},
+	{
+		"entropy": "6610b25967cdcca9d59875f5cb50b0ea75433311869e930b",
+		"mnemonic": "masakr odtok pijavice tajga upravit krmelec krvinka buditel zavinit lakomec flirt traktor kresba plevel kapitola tlupa paseka ladnost",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "65a5d85c6ac2aa958ca429284387683e28aa51704bb88783fa24ecde1d02a03c3a5793c82615c5dcc6530d148be9e17e06764d190178c1a9eb1fb9f10ca7b848",
+		"bip32_xprv": "xprv9s21ZrQH143K2i3LTUmkBGyGoodD7zmCWZJKPGtDSdFLAiZEMK2oJy5upiWn75eJhRMgmGn5JHpVnQR1Bi18NwTPkfk1VqazBP1gKEVQm6Z"
+	},
+	{
+		"entropy": "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+		"mnemonic": "migrace iluze pukavec kaktus drogerie hrobka pukavec onehdy suchar veterina rorejs cukr mihule koza makovice uvozovka oklika inzerce odhadce zprudka spousta namluvit hrobka obsluha",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "2f48e89a541f88ef78629e4796d07dd2c6c35543b26d5f0baa957c4f3c229e2ad3adb378d0d7c794aeb646af8ffef0acbdfcf24b6039e069f3de44e4abb3cba2",
+		"bip32_xprv": "xprv9s21ZrQH143K4BQnThamrxx1XLm7r8zuFkC2qs33cnK1AXGcaUCexaytiBRSZjQAw9ejU2XkaX3eWZ5vsVeraejmDGnNXYGtc8RdsM2bGXa"
+	},
+	{
+		"entropy": "b3ffe8f56d54805218090de337779328a3a2e758",
+		"mnemonic": "rovina zvenku inflace ujmout kazajka exkurze litina dorost vespodu sesuv vize koruna hrot naoko lobista",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "ca99ca7e2805d68608da88bd801f1046d72650d6f2f277afd56cd6ecc05c02cba3b6926c24baf90492a75b1572c6d21251954b4bc45bdb687f71a5e1a7e47d43",
+		"bip32_xprv": "xprv9s21ZrQH143K3eecPpbTyPZcBRy4Q2SJZsi3JaMiVBru2aD4pa2hxenNA9t81ZgQ8mgYHa6KAGKW5mhasPHfc8NoAMn7tTsBhd9aFEh8EGe"
+	},
+	{
+		"entropy": "437dd688276ceb711cda3a126eab879a188a30b097b769a931bea6fe",
+		"mnemonic": "kabinet vytasit porucha komunita sysel sasanka namluvit kasa cenovka nasekat veletrh hmota okurka citrus slupka zdarma mimika klapot muflon kolo vysypat",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Čeština",
+		"seed": "a2463c3e8ee776b39b4e0b24787aa041b60ce4080091a9cb3e979702b6b26d57d60220617f7c56eb6f9652b01ed9a7caa8ebc997ae16c77dc2b94b49afcd8074",
+		"bip32_xprv": "xprv9s21ZrQH143K36aRTU3a4RxusrKSeWbdUnxuytXAzXuKJ7cZVwxSMgZSWEHBkarBA4nE7rrKGkLjuLFtD5RVTyWBmppdvbpVWGmuEWCEBNB"
+	}
+]

@@ -1,0 +1,22 @@
+{
+  "name": "@ethersproject/constants",
+  "version": "5.0.0-beta.126",
+  "description": "Error utility functions for ethers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/bignumber": ">5.0.0-beta.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0xf33835528c26572d9703ffa048dedf600435f5e4061867a22c5f0a80a8b2da7d"
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@ethersproject/strings",
+  "version": "5.0.0-beta.124",
+  "description": "String utility functions.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/bytes": ">5.0.0-beta.0",
+    "@ethersproject/constants": ">5.0.0-beta.0",
+    "@ethersproject/errors": ">5.0.0-beta.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers",
+    "strings",
+    "utf8"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0x07db51c71e10e30a890a69b4a7e7da9a052e9d2f5d736c8325de0925519e34b6"
+}

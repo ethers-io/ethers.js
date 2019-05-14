@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.package.json",
+  "compilerOptions": {
+    "rootDir": "./src.ts",
+    "outDir": "./"
+  },
+  "include": [
+      "./thirdparty.d.ts",
+      "./src.ts/*",
+      "./src.ts/bin/*"
+  ],
+  "exclude": [ ]
+}
+

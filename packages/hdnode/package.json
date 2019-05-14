@@ -1,0 +1,33 @@
+{
+  "name": "@ethersproject/hdnode",
+  "version": "5.0.0-beta.125",
+  "description": "BIP32 Hierarchal Deterministic Node operations.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/abstract-signer": ">5.0.0-beta.0",
+    "@ethersproject/basex": ">5.0.0-beta.0",
+    "@ethersproject/bignumber": ">5.0.0-beta.0",
+    "@ethersproject/bytes": ">5.0.0-beta.0",
+    "@ethersproject/errors": ">5.0.0-beta.0",
+    "@ethersproject/pbkdf2": ">5.0.0-beta.0",
+    "@ethersproject/properties": ">5.0.0-beta.0",
+    "@ethersproject/sha2": ">5.0.0-beta.0",
+    "@ethersproject/signing-key": ">5.0.0-beta.0",
+    "@ethersproject/strings": ">5.0.0-beta.0",
+    "@ethersproject/transactions": ">5.0.0-beta.0",
+    "@ethersproject/wordlists": ">5.0.0-beta.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0xa4ea4ba02e4291ed5731089d4cfddf37e6567ea5195342fc884a5cb39083e1b7"
+}

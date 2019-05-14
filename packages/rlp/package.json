@@ -1,0 +1,23 @@
+{
+  "name": "@ethersproject/rlp",
+  "version": "5.0.0-beta.124",
+  "description": "Recursive-Length Prefix (RLP) coder.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/bytes": ">5.0.0-beta.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers",
+    "rlp"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0xd016b9a8cbeacb891eb40af683ace142e4618568cfa00234e2d5d82efbc26bc8"
+}

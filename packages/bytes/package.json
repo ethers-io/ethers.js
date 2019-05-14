@@ -1,0 +1,24 @@
+{
+  "name": "@ethersproject/bytes",
+  "version": "5.0.0-beta.126",
+  "description": "Bytes utility functions for ethers.",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json",
+    "auto-build": "npm run build -- -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/errors": ">5.0.0-beta.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0xb1a6e6e8b38d5c28de285c858a6a7fe0a505a0de9cb2baa0d07a7c0e3af167d1"
+}

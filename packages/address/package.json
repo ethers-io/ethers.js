@@ -1,0 +1,27 @@
+{
+  "name": "@ethersproject/address",
+  "version": "5.0.0-beta.125",
+  "description": "Error utility functions for ethers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/bignumber": ">5.0.0-beta.0",
+    "@ethersproject/bytes": ">5.0.0-beta.0",
+    "@ethersproject/errors": ">5.0.0-beta.0",
+    "@ethersproject/keccak256": ">5.0.0-beta.0",
+    "@ethersproject/rlp": ">5.0.0-beta.0",
+    "bn.js": "^4.4.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0x962ac58ce384cd1b220fd2d7fbd66e914f4c55f38440d75afd12ba560cffc7f1"
+}

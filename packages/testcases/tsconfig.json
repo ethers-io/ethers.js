@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.package.json",
+  "compilerOptions": {
+    "rootDir": "./src.ts",
+    "outDir": "./",
+
+    "resolveJsonModule": true
+  },
+  "include": [
+    "./thirdparty.d.ts",
+    "./src.ts/*",
+    "./src.ts/generation-scripts/*"
+  ],
+  "exclude": [ ]
+}
+

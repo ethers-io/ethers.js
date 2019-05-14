@@ -1,0 +1,22 @@
+{
+  "name": "@ethersproject/networks",
+  "version": "5.0.0-beta.125",
+  "description": "Network definitions for ethers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/errors": ">5.0.0-beta.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0x00ddc55c9d4a55e9bdb76344f8fed34b0733a4e132666e505f227c40a91748f3"
+}

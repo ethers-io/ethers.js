@@ -1,0 +1,216 @@
+"use strict";
+
+import { BlockTag, Provider, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
+import { BigNumber } from "@ethersproject/bignumber";
+import { Bytes } from "@ethersproject/bytes";
+import * as errors from "@ethersproject/errors";
+import { defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
+
+const allowedTransactionKeys: Array<string> = [
+    "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "value"
+];
+
+// Sub-classes of Signer may optionally extend this interface to indicate
+// they have a private key available synchronously
+export interface ExternallyOwnedAccount {
+    readonly address: string;
+    readonly privateKey: string;
+    readonly mnemonic?: string;
+    readonly path?: string;
+}
+
+// Sub-Class Notes:
+//  - A Signer MUST always make sure, that if present, the "from" field
+//    matches the Signer, before sending or signing a transaction
+//  - A Signer SHOULD always wrap private information (such as a private
+//    key or mnemonic) in a function, so that console.log does not leak
+//    the data
+
+export abstract class Signer {
+    readonly provider?: Provider;
+
+    ///////////////////
+    // Sub-classes MUST implement these
+
+    // Returns the checksum address
+    abstract getAddress(): Promise<string>
+
+    // Returns the signed prefixed-message. This MUST treat:
+    // - Bytes as a binary message
+    // - string as a UTF8-message
+    // i.e. "0x1234" is a SIX (6) byte string, NOT 2 bytes of data
+    abstract signMessage(message: Bytes | string): Promise<string>;
+
+    // Signs a transaxction and returns the fully serialized, signed transaction.
+    // The EXACT transaction MUST be signed, and NO additional properties to be added.
+    // - This MAY throw if signing transactions is not supports, but if
+    //   it does, sentTransaction MUST be overridden.
+    abstract signTransaction(transaction: TransactionRequest): Promise<string>;
+
+    // Returns a new instance of the Signer, connected to provider.
+    // This MAY throw if changing providers is not supported.
+    abstract connect(provider: Provider): Signer;
+
+
+    ///////////////////
+    // Sub-classes MUST call super
+    constructor() {
+        errors.checkAbstract(new.target, Signer);
+    }
+
+
+    ///////////////////
+    // Sub-classes MAY override these
+
+    getBalance(blockTag?: BlockTag): Promise<BigNumber> {
+        this._checkProvider("getBalance");
+        return this.provider.getBalance(this.getAddress(), blockTag);
+    }
+
+    getTransactionCount(blockTag?: BlockTag): Promise<number> {
+        this._checkProvider("getTransactionCount");
+        return this.provider.getTransactionCount(this.getAddress(), blockTag);
+    }
+
+    // Populates "from" if unspecified, and estimates the gas for the transation
+    estimateGas(transaction: TransactionRequest): Promise<BigNumber> {
+        this._checkProvider("estimateGas");
+        return resolveProperties(this.checkTransaction(transaction)).then((tx) => {
+            return this.provider.estimateGas(tx);
+        });
+    }
+
+    // Populates "from" if unspecified, and calls with the transation
+    call(transaction: TransactionRequest, blockTag?: BlockTag): Promise<string> {
+        this._checkProvider("call");
+        return resolveProperties(this.checkTransaction(transaction)).then((tx) => {
+            return this.provider.call(tx);
+        });
+    }
+
+    // Populates all fields in a transaction, signs it and sends it to the network
+    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
+        this._checkProvider("sendTransaction");
+        return this.populateTransaction(transaction).then((tx) => {
+            return this.signTransaction(tx).then((signedTx) => {
+                return this.provider.sendTransaction(signedTx);
+            });
+        });
+    }
+
+    getChainId(): Promise<number> {
+        this._checkProvider("getChainId");
+        return this.provider.getNetwork().then((network) => network.chainId);
+    }
+
+    getGasPrice(): Promise<BigNumber> {
+        this._checkProvider("getGasPrice");
+        return this.provider.getGasPrice();
+    }
+
+    resolveName(name: string): Promise<string> {
+        this._checkProvider("resolveName");
+        return this.provider.resolveName(name);
+    }
+
+
+
+
+    // Checks a transaction does not contain invalid keys and if
+    // no "from" is provided, populates it.
+    // - does NOT require a provider
+    // - adds "from" is not present
+    // - returns a COPY (safe to mutate the result)
+    // By default called from: (overriding these prevents it)
+    //   - call
+    //   - estimateGas
+    //   - populateTransaction (and therefor sendTransaction)
+    checkTransaction(transaction: TransactionRequest): TransactionRequest {
+        for (let key in transaction) {
+            if (allowedTransactionKeys.indexOf(key) === -1) {
+                errors.throwArgumentError("invalid transaction key: " + key, "transaction", transaction);
+            }
+        }
+
+        let tx = shallowCopy(transaction);
+        if (tx.from == null) { tx.from = this.getAddress(); }
+        return tx;
+    }
+
+    // Populates ALL keys for a transaction and checks that "from" matches
+    // this Signer. Should be used by sendTransaction but NOT by signTransaction.
+    // By default called from: (overriding these prevents it)
+    //   - sendTransaction
+    populateTransaction(transaction: TransactionRequest): Promise<TransactionRequest> {
+        return resolveProperties(this.checkTransaction(transaction)).then((tx) => {
+
+            if (tx.to != null) { tx.to = Promise.resolve(tx.to).then((to) => this.resolveName(to)); }
+            if (tx.gasPrice == null) { tx.gasPrice = this.getGasPrice(); }
+            if (tx.nonce == null) { tx.nonce = this.getTransactionCount("pending"); }
+
+            // Make sure any provided address matches this signer
+            if (tx.from == null) {
+                tx.from = this.getAddress();
+            } else {
+                tx.from = Promise.all([
+                    this.getAddress(),
+                    this.provider.resolveName(tx.from)
+                ]).then((results) => {
+                    if (results[0] !== results[1]) {
+                        errors.throwArgumentError("from address mismatch", "transaction", transaction);
+                    }
+                    return results[0];
+                });
+            }
+
+            if (tx.gasLimit == null) { tx.gasLimit = this.estimateGas(tx);  }
+            if (tx.chainId == null) { tx.chainId = this.getChainId(); }
+
+            return resolveProperties(tx);
+        });
+    }
+
+
+    ///////////////////
+    // Sub-classes SHOULD leave these alone
+
+    _checkProvider(operation?: string): void {
+        if (!this.provider) { errors.throwError("missing provider", errors.UNSUPPORTED_OPERATION, {
+            operation: (operation || "_checkProvider") });
+        }
+    }
+}
+
+export class VoidSigner extends Signer {
+    readonly address: string;
+
+    constructor(address: string, provider?: Provider) {
+        errors.checkNew(new.target, VoidSigner);
+        super();
+        defineReadOnly(this, "address", address);
+        defineReadOnly(this, "provider", provider || null);
+    }
+
+    getAddress(): Promise<string> {
+        return Promise.resolve(this.address);
+    }
+
+    _fail(message: string, operation: string): Promise<any> {
+        return Promise.resolve().then(() => {
+            errors.throwError(message, errors.UNSUPPORTED_OPERATION, { operation: operation });
+        });
+    }
+
+    signMessage(message: Bytes | string): Promise<string> {
+        return this._fail("VoidSigner cannot sign messages", "signMessage");
+    }
+
+    signTransaction(transaction: TransactionRequest): Promise<string> {
+        return this._fail("VoidSigner cannot sign transactions", "signTransaction");
+    }
+
+    connect(provider: Provider): VoidSigner {
+        return new VoidSigner(this.address, provider);
+    }
+}
+

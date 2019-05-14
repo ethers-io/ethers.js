@@ -1,0 +1,317 @@
+[
+	{
+		"entropy": "00000000000000000000000000000000",
+		"mnemonic": "的 的 的 的 的 的 的 的 的 的 的 在",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "ffcbd7bdf4e8b8fdca65edf8eaa5d23495af24eef7ecb6ede130bb754b5a7db0e3ad0f365398d4ec57114bc443e96349aeae0556f345290cd77ef69244fefc9d",
+		"bip32_xprv": "xprv9s21ZrQH143K3vykqRXVwNCsHv4qehHP12ohWiJmoAU5DePHiyF6eLyxJHAxgJjvdh1djBmVBmeuxyaFvJuDNNHpxEBSuQmpBQhNdUEvLx8"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000",
+		"mnemonic": "的 的 的 的 的 的 的 的 的 的 的 的 的 的 地",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "79643600685d29e90189a3824c11987638876cb52a09cec8a32a7c41dc7eac89e88182cbb9385309f880a96cfe49ee2a739eb3da5dfd936941ae4ffe6e764e13",
+		"bip32_xprv": "xprv9s21ZrQH143K4QvhoY5sn6HPGLRAziWigJBzFstcHDpWJ1VVFp8QSGP5KLeWbjSkPjGkVbKMMe7VX5ViiXPpWeeGzjUJYvzDw86UNSxjJJy"
+	},
+	{
+		"entropy": "000000000000000000000000000000000000000000000000",
+		"mnemonic": "的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 動",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "e0064e96c5304d7db689e123370e1cb6595588bcbf37759b49bd7419f77da70777bb581a3d68370b21fbf1dbe5173d4eca26a1fd584f16b11d57598efed052f0",
+		"bip32_xprv": "xprv9s21ZrQH143K3FsUsUgZGeCzNpHDPLX3Zb4AqJHdEoTn7qrYSE64vB74MeTG9mFjQz5qNnvbPcn1e8aNfeNWkWbzbk4LrBXxNbP63mCRZ6y"
+	},
+	{
+		"entropy": "00000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 出",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "3da50615797be8814a6412954f8c040ecf16daa3e6d59b42ca6707bed2989ca05d1d917a7bd9e7e057c962603f58f0c7943a7bba6766699b9b5149871a8a4cc6",
+		"bip32_xprv": "xprv9s21ZrQH143K3cxPc1em9nrJaEK7XfFyC8wKHKVWtiYCopueu4uVvJT8xTDMb95uRTMPHJKLTcYhRDTcjYtkgAutYw5LzeWLs5nYtyUaB7E"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 的 性",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "a6795c3e0531fe201bf6b216bd54162e17c62eeadb7ff5e1f7c9c4a8d5b4b7f55008c865c2d43f76f9bb2bd407f99a2c9c2d38ba95ef74c0e79880fb84e553ef",
+		"bip32_xprv": "xprv9s21ZrQH143K2nhd2XxmcX42umD2MdDAJANkiKF96kPBCzCvkN3d3LwssRkiw3RsyCDea1b8m45uER2qbVGFmn4g8QLYCrFcHhW5UfaagP6"
+	},
+	{
+		"entropy": "01010101010101010101010101010101",
+		"mnemonic": "人 三 談 我 表 壤 對 據 人 三 談 於",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "e675aaeb5f62b32d6c4926091765681ec89dbb358668bf913435d11bd7e1fdf35c32a7d65480e8ea82e044df0ea8e696c0320a62409a3229b83edb34f64869c4",
+		"bip32_xprv": "xprv9s21ZrQH143K2esM1rEVA48qT3fvxcu8H7TpNcxHQjpM8QMWS2ZbQaxtFmzHHWjPHX5az25GwVmvP5aArLR231wqHW2BJktAJZPauD4mida"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101",
+		"mnemonic": "人 三 談 我 表 壤 對 據 人 三 談 我 表 壤 而",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "ee8581f8a234efd53a4a2e7e886cff8cd1563f3699d5e504d4881a911dd72a5335a6c059725950e75ffc9576d1fe38ce7cec5e43158cf83624ded5091e33273d",
+		"bip32_xprv": "xprv9s21ZrQH143K3My1E5K4KqVSTjbAGPz6scVpRPfzoTddMz8r74Boh7bEKdyuNRnTpmzEVSxSwaEqNiGdKT3BbFtUNx1W8ffvkKhfFk1E4xB"
+	},
+	{
+		"entropy": "010101010101010101010101010101010101010101010101",
+		"mnemonic": "人 三 談 我 表 壤 對 據 人 三 談 我 表 壤 對 據 人 實",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "5bed36f80142daffe16df01060f1417b8cb61aaec03fdc4c9600c7114768b43d295c558ffd0dc6d2a83bf79709be3e3e3c0aa3beeb359bd36d039a6582912f1b",
+		"bip32_xprv": "xprv9s21ZrQH143K4RV9PM8aamcfgnFwafJeU975gJ8xnozffyd59tnLAukiro5YZjJAJsWWb5Qa9iDL8uy4tuqJbYo9WNzvaY7y4EANyCYFoYF"
+	},
+	{
+		"entropy": "01010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "人 三 談 我 表 壤 對 據 人 三 談 我 表 壤 對 據 人 三 談 我 原",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "4bd83974d83b702587096ca4a2b9d8b1c0b3811372ced9503c437d298e9f96467c1dc262c4d0caa9b083b9a2dbafc40dd55fe3644e88bb56f0611746af2a8362",
+		"bip32_xprv": "xprv9s21ZrQH143K3gsWqLoXDNEbsawcr5WZSYJMpDKBDT1MHT8ERkLtE5cCc747qMZUsXF1oLhUP1FKbs9FFYVjwi95qV6NxsqHDQVuDGBkxDu"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "人 三 談 我 表 壤 對 據 人 三 談 我 表 壤 對 據 人 三 談 我 表 壤 對 研",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "090994ff576ec6d641fa46b71821a9df7a284b0b97b8be12cb9386e5334d6f7eb8dab4c5e00c5ba0d9d0bb76d457c27971f2bc95c159fa74c781ffd9727962e7",
+		"bip32_xprv": "xprv9s21ZrQH143K3F6gQQbPngJLbV1as1owZioxyoKjbNBCWc46zZm3HB7hvfG19UuEsw8Tuzu6zpoAWegmhh511NtZJzLG3sbG2xUqvEq1iCK"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "槍 疫 黴 嘗 倆 鬧 餓 賢 槍 疫 黴 卿",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "fa5c00f041f13d84d85cb2374bf544bd4fed781656af851ed1ba3e8307f5b6d6f70a9e23f962a9c14fa8b74a945c56eaea89ecce4ddadfb8aef813d16c227d9d",
+		"bip32_xprv": "xprv9s21ZrQH143K3WEVo9vrNmNpJ7SQx8hUJ4E3HWV65EMUTaWcCGWgQBZa45tnSxePrA9Rpw54biPmmmhgYZ55hR5wsSLbpnAVGdqAycA3XtA"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "槍 疫 黴 嘗 倆 鬧 餓 賢 槍 疫 黴 嘗 倆 鬧 沫",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "2976bc4eae7859b15c063983f6e8e7b6c85e8ab60403c01c5bfc7b2eab33d33b413a921136656d7a5a0a4acd86d90eeaa042fb57303de7e86b993bb115e53775",
+		"bip32_xprv": "xprv9s21ZrQH143K3XvvXtRPdzj5Y1mxd3dnBjENxYrrWp1oaeGtnYegHAJg7r4t7vsKwQZj3yT3p8JvHVshKUs2TonCevFNGDVJXZ9SCtFb93V"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "槍 疫 黴 嘗 倆 鬧 餓 賢 槍 疫 黴 嘗 倆 鬧 餓 賢 槍 殿",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "ad3f915afa61165e670ef77a8e44e5614b563e8073a25ebc4e4f937d0cdcb0c998365890868b85ff83dc7d10a681fd09f4f1c2ef5d74f0c288d61a591835c9ee",
+		"bip32_xprv": "xprv9s21ZrQH143K48Tqe3GDX2kygZMH4ygMVSTEpoYTaRyvprVE8Hyfvm3XjuRVgWpdh7ZovNDSzxQyxwBmwhJzdwDexueMY5dnHzYW9Sn4Khs"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "槍 疫 黴 嘗 倆 鬧 餓 賢 槍 疫 黴 嘗 倆 鬧 餓 賢 槍 疫 黴 嘗 盈",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "30511f67b3ef770fa315ebef96822e64026ccc9d1dd1030eeccd8397998730408077a4fd831e4a881796d699c1c71a56a5242f20b6a9df38e17db5069d2dd67b",
+		"bip32_xprv": "xprv9s21ZrQH143K4VKLpxqJ4sFhMSeYS9kvdv2QPDsd4KMJcSXrPPsZbTQJ5eVkKJurAyckYYFhQTnCAghgeCnQRTUG2bDSAU9vbFSsxrbrBZ8"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "槍 疫 黴 嘗 倆 鬧 餓 賢 槍 疫 黴 嘗 倆 鬧 餓 賢 槍 疫 黴 嘗 倆 鬧 餓 搭",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "0bb96a63950eabb97ee63baf9a4eb4992939da546a369b052baa29a1627dc6b5ef12fa20e50c6983fc7cd9b7b7e2536c5d1565b6c716721f5516a21ffd0ecf1e",
+		"bip32_xprv": "xprv9s21ZrQH143K4R9PcneA9LCdbLN4qM8xCEX31Yn1DPrGAMHzw6aHuq9tFrLNdQuVFDoPCSd37tp1UHYPVZQWBjXTVrEQQagHH5gdGdjKdyf"
+	},
+	{
+		"entropy": "80808080808080808080808080808080",
+		"mnemonic": "壤 對 據 人 三 談 我 表 壤 對 據 不",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "fc6b7f0e517ff0a75ad00789dfac1a0fe83ad622366f0034cb777fe421a45f396ac8e25305ec60eae9b9c7ea1b759cadbcc854a10232d336af3885445764531a",
+		"bip32_xprv": "xprv9s21ZrQH143K2V4U94YmLpmbBwYGQbiBxToG9PCrREgMnmuY395UDUG1Zs2ctERCzgSQwqM8E9k1j2pMESRnVPGQKTddH4AmpQev3QBxP7H"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080",
+		"mnemonic": "壤 對 據 人 三 談 我 表 壤 對 據 人 三 談 大",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "0de3ad7d918e48a3551c99855e142c9e0d228a11a91b9b99d4662c738a776b1fa7fb9b236100c2baf9c3389f71e638320a9f87148c5efdc5283bacb781d5a773",
+		"bip32_xprv": "xprv9s21ZrQH143K3HuKDFMneZ1SMe1hir7KdPzmBWck8yaem7HjXD3vKCu2P1MiAiGdrQjmeYVzt2dPd7Kh6hAQq9MuvNjRsrcSPNN3WE9G789"
+	},
+	{
+		"entropy": "808080808080808080808080808080808080808080808080",
+		"mnemonic": "壤 對 據 人 三 談 我 表 壤 對 據 人 三 談 我 表 壤 民",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "6b994ffd10af76495a2a3de4ba5b2bc750e96845c631749227b7254490dc210a584952831ef593ce3e8cd1b09e222dc94e8f453e7ad30b5c1f99ccd2088e95a0",
+		"bip32_xprv": "xprv9s21ZrQH143K2XJhgAf4kjmgPrE5p8tqoCoc1ygGEHjz26zLKxDWaDD3hxykiGyvKC9knjEQpUNUUNFgbNHAQmBVMDhK7KoCDGLq1oCAxPU"
+	},
+	{
+		"entropy": "80808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "壤 對 據 人 三 談 我 表 壤 對 據 人 三 談 我 表 壤 對 據 人 起",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "24d488e4bb7025b1d79de515350477f3e866a79b80a0d34c23f0449bc048685e7bafabc6812205da576f3ed54086f58c9a34f5fd8614567e5df9ef2c4e220231",
+		"bip32_xprv": "xprv9s21ZrQH143K3RASx1mZQi7jeVLqHLQSZ7zBvighdDx1WUytLU2cksYNGz5S26BxdWhsRNE4tEqvCj1k25fLr6uUoKvCdKisbVBacBBKhnw"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "壤 對 據 人 三 談 我 表 壤 對 據 人 三 談 我 表 壤 對 據 人 三 談 我 五",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "f1bf5ea488ff2e720efe887f8b9357d345335689270beb80219cf3192474aae1e86e1a9e73f39d3f9065cc68a06a3d85582cf05e1349123baedf4c24940ce5fb",
+		"bip32_xprv": "xprv9s21ZrQH143K3eaW39PiyawaK42mico1MbAmkMTASSiccVwFL1VyUPma36va7SQxcjivGsc5AsgrXLsPJPcMTrHZfjp7Y19LU8NF8T58MHM"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefe",
+		"mnemonic": "嘗 倆 鬧 餓 賢 槍 疫 黴 嘗 倆 鬧 皺",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "018f3752ba1760be86a65337731de5eab0e11af028fc3247f22e7104739f98f94576ea0131715d0cbf0c6ea1f40a40b6aeccbb3b3f595fef64c6e1945f38f354",
+		"bip32_xprv": "xprv9s21ZrQH143K2pwJidqxs1Dp9wbMNjYeJWPWz6hJkq5S6X1JsFmbS537PYPt2dfvNfumFv13TVe1U1S96HTgcMQHuK5cqh1ZoejatwCpKCU"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "嘗 倆 鬧 餓 賢 槍 疫 黴 嘗 倆 鬧 餓 賢 槍 曬",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "b23d95709c974f4282adfe1ee4b95482b76b19cb6566ba0f8044aabe0d4df1007d892ccd6af7590860177c378ae87ce7fda5a6d284c7cffae1f0ac5ac265a999",
+		"bip32_xprv": "xprv9s21ZrQH143K3mDprcxhB5Yzc6D16MHJrQJLZQRLmGuHQr6sTTeAeiboVa438tV6VFCMiKaPGPmPwtYovYCmvXQMRNBZqyhosSHegDcDeEA"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "嘗 倆 鬧 餓 賢 槍 疫 黴 嘗 倆 鬧 餓 賢 槍 疫 黴 嘗 潑",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "1cd6544b7e0b6cee61b94811dfdd32a2ef89db0157212d02966bdb8d0ffcfd8e83c086c4e6754606c5d37a8246556c9b98fd1fb5481384de280d074f05c17420",
+		"bip32_xprv": "xprv9s21ZrQH143K26EXyqPCMVzj2bj2yVtN37Zbg4gZ6L14xrGZctJRKCTXjxTGUzGAr8TpfKbBebivmSaVHciC3PKBZQRdYE9pa714Zv3bTZF"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "嘗 倆 鬧 餓 賢 槍 疫 黴 嘗 倆 鬧 餓 賢 槍 疫 黴 嘗 倆 鬧 餓 坯",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "7120d92e00f3f86516658d11c694415ec72986c6ff2e446b6c1f58fc5d878dc83f52f6908eadc305bee470bd9856d4c319beb9f9ffda7f91d37922b06fc287a3",
+		"bip32_xprv": "xprv9s21ZrQH143K4LivfWgKkDT5ftdjYuJ7YCnZsJKHva5i2niXu9rvcMFRGyPV6kxv6mWtkRKd6Cry9TRBbdq4ECHUDVaWdyuzNrBoFJvdrwR"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "嘗 倆 鬧 餓 賢 槍 疫 黴 嘗 倆 鬧 餓 賢 槍 疫 黴 嘗 倆 鬧 餓 賢 槍 疫 蓄",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "82cc20b41e3a2fcdfa0d5a5d9cdf3997f995be1bac66da4ab4b7e592353fbf83aa071e643034e161bef23eba4e7d4ddbaf4dc36800aa0243ce415fdd421252b0",
+		"bip32_xprv": "xprv9s21ZrQH143K4S59HQurGv1GPK3JU3B5AjHhguVvR16bMk9MebCJsoyJc25rPX3o1xTNg36QDnN1UjnDQZddvdz5o1PRPwFaEuz1qa2Wc6x"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffff",
+		"mnemonic": "歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 邏",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "8483090d4ebb5d95b067dd79700f99a7dfca5df072d99c53435d50d4f658ed5c25a6cbcf3d0cd2f558507bd23ecb3cbe938dd4c281a145e0356d702888ad86fb",
+		"bip32_xprv": "xprv9s21ZrQH143K2JHJbzrJA6dpxwyCSDiG42MutxtMQKu4AR79Xq57yzP6PnJuob8T42n2U1yp9WiekpnPLiE8b4yTVB85quUH6P9mhn3dxYF"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 溜",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "ea7ef94655a0818bedb430249a7542bbe8c2a2555a48ef76314b34eafd617f79128b0478aa725be8aae40fc1dd9b03b3c829695f667fd3f1550d95ed4e16180c",
+		"bip32_xprv": "xprv9s21ZrQH143K3jUVX73JGu4iwATbqTfFBpCyPH7KjGgUSZuGPoNzsqPQq7qNXjudT8LZBJSGRmwi122y4WFG6vnZmEpondheP1qke4CqGm6"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 裕",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "aef1e2d2def86ef048137c603f9316fc4b02b15365560c9e42b676e7a66e92f044de16d76158012030fb891ecc49fd70d842b5034a513fe892d6b02b69d14254",
+		"bip32_xprv": "xprv9s21ZrQH143K3JDh5HEyC27mUae1VQYm2jsurqfuZ3kvcQL9BWcZAnp4CBMCidkD2BzWowUrzcoNuuqozXgVUjqTHLi4U5t4KmbjGifsQpL"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 躺",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "5f52270a16f76d650b58397a98ca62c651c8092385bb59c1dc55aed74d77bf2f9f44e3f427a546adeb14ea88fc9f6db5686f6a150eaec37e2338836b70e4cff8",
+		"bip32_xprv": "xprv9s21ZrQH143K3xMQ84y2Fw3iq1Npy6hRiUxcFcXppRvrxLPsej51AmSmLzpBEZPXLhjx3AGaZCFW3xf3YpJirypzc3ySmPdpo6duwBQ66fj"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 歇 佳",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "31b0fb9c9f0ce630d36dee706ebef9c4de58f4d418ef19b1568ab0b6cbec3dd50e99d972e308c684b8da38c98a54eb57945067f89d677652c750dd4c429aa4a3",
+		"bip32_xprv": "xprv9s21ZrQH143K3Mhe5DxXdEfkcZnmhcJ7RY9usXq6JD5sJ4YG1S2aiEEZPrsQueyPz4gbsWTDadPbv2sYuCQmzoWj2iNkeQCNDB1Ban8cYtJ"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 找",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "fc86a668066753181dcbac79e6ccf49c1c5526623f8be769f3b9eb3424293dddece99ec28d2a52b5b0ef4db3fc5f15b1993d663c9b0094778d46d3b8bf2a8e96",
+		"bip32_xprv": "xprv9s21ZrQH143K3TBhHsNpHMLSsfnNQVDBN8bvHmq6zCqEMqmE6VRrJgRRnwtyfSF18TjAM6vtx6W3WR1YRKKbf3tPpakUeHR9WnzYupC97Sy"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 氏",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "9c2e64140fbfe072c1e5f81f9b5c6498820a21843ea315ea338730181f961932b70ef4357948e8b07efdefc647bb656f292a4d3aedb1f9b40c6ff6c5df25cfe5",
+		"bip32_xprv": "xprv9s21ZrQH143K2PkgTb1dGG39333aHxcawggsammahuG3ZMmPEiJ5Qb781pesVUabLnHvj9zVLufhewyjigqnetZnRxx1ZH8wUvhoRfjiA9e"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 良",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "187c3cfc46a1e81035d8fdd50e3b4928a9de8bfaaad99720324e36669f91464a3accbf4f3fafceed0be03bb91844165b3f6365dec5dc5dc915069da22f1ac298",
+		"bip32_xprv": "xprv9s21ZrQH143K49ttyZ6CVEN4LNWxmAHiHLhEWvfbmsUzc2XYdA8oFVVk6sRXMZNxALabz7dUjScG2k1xRx4fzMKUyNuF6G1QVCHFBW5CXSa"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 拍",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "d71136f9838f15c76084781902b38cda51f1ebb422ba5f424a8363627d3841f521397fd9ee583a842eaa476c82d90e481c67a3f5fcf19f7e5774820186d9fed8",
+		"bip32_xprv": "xprv9s21ZrQH143K2bi4gaKr6QuKvwyo8dkYVm5oPxRchADpCTgYbJPWjCB5MvcSQiKNC8TrSf3wFmbbCAGfoCbL7j4kh12BJ9AtyrpxNe4m2y7"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 既",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "e0270f1f594afa411909db038c338d8276f0ccb1a03473704b0fd8f5d6098baf36888ea7506202ba0c5303fd436735792fac150a5457af17a7e865c77e0b6e73",
+		"bip32_xprv": "xprv9s21ZrQH143K2vinfZUW7pWVq37B8R48CHWFBdnhQpHMAFjnUnRabYmUQR98Tgf1uk9ZHdyJvAjamsppT1jtjDNBxZfKu92V9vWeE6nqMvC"
+	},
+	{
+		"entropy": "55555555555555555555555555555555",
+		"mnemonic": "軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 腰",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "4c18b927aed8436dea6c9d306b90c7df3f1dd90587422d97731a3406910698b4d6c417a19948776bae1834b892ca710da740356b79aec790109eca267c52f1d7",
+		"bip32_xprv": "xprv9s21ZrQH143K43ie5WmxhTc13SNu8kn2PyJa42cYYGhaHo4pL5V73dkxUGq56KBVbyb6vavRRXFJNnwY8g8kXKHgJymW9jPAyzpafyb4pW9"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555",
+		"mnemonic": "軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 讓",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "27483cd991a82cca06dd0eaa41f2cc7f1e1f4412787bf7d7f232361123f9ca7790d38eabe03cf3d81c60fc84943a637f8b848bf8a2760e6e1e85d71e5f46f1e4",
+		"bip32_xprv": "xprv9s21ZrQH143K3fUHyWqGagnwqsTaVAdp21hz6Avke6bWUpe1YGbFFbe3dR89kPT6U4BQdGPgcPapwYviokqjA3wf5jjFBQcC9PfGVW7wuxD"
+	},
+	{
+		"entropy": "555555555555555555555555555555555555555555555555",
+		"mnemonic": "軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 森",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "ddde40fc505a58764a92d8fa74b06bfa8486cf9ecc1a6532887a2b75a39eceb55e55ac4c10be6605aadaae45f7ff6c2243e2b2c29f02c56c4b2852ce5db06f51",
+		"bip32_xprv": "xprv9s21ZrQH143K44wsRvcPyhXkGCmfdD1ZXeaSEuQzeGxtYBhx83AhQhUmDxue9r2nMkAMPPvucHNXzEGbELKgfYCnUvoRM5cv8tzzKfrZNHr"
+	},
+	{
+		"entropy": "55555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 讓",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "f50d5c2d97b377a0e2fdbf4e3fa3994bf4b285c4428ec99f0f0310ecaa43d9d5a670160478465d54719478e5365ec9a3a096245e5653990e5554c4c90ef2b264",
+		"bip32_xprv": "xprv9s21ZrQH143K42ArFkxRVV5ZFPyhRRcBFEuFbdrxrAponHHWsJ5sgH56Vf5ZaGS7uvg3KRRNZMthm4gPnDDrwsXfUnZFzq72Z4yVih419gP"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 琴 軸 獎",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "aca6b7cab8613a28665b0ad6d671e0348693a1629febd5a2debd83a1fbfe80c657fb6adbdefac8665f19b2d41d13e874164683ac912dfb5adbb302037c37344f",
+		"bip32_xprv": "xprv9s21ZrQH143K2wDx7i9N4aepezLWq2xTRrjBDJrsJ4NLvFz5j9LBLV6M7B4D3Xeh6YqvmuCRjRjNXpuXXUZRcwQAS6UEoUD5twM1noPeyVt"
+	},
+	{
+		"entropy": "9e885d952ad362caeb4efe34a8e91bd2",
+		"mnemonic": "蒙 台 脫 紀 構 硫 漿 黴 感 僅 魚 湯",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "b51d582ab7007956cd310ebf342c93e0efa5ceeb86dca2ed85c8942fc3420cf4278d0b4c171b430af7c93c9945e6ae6a4ea02d984fdb0861864c559ec38abf07",
+		"bip32_xprv": "xprv9s21ZrQH143K3Q1xM7LbqhNj66c74dHmJrfb7ref9MvjVkMgSkfZzou1Wn5nBhATqXWyUwJByqfT4mz7WTmiP5rbB1GjuNhZbh99rr1mUWp"
+	},
+	{
+		"entropy": "6610b25967cdcca9d59875f5cb50b0ea75433311869e930b",
+		"mnemonic": "父 泥 煉 脅 鞋 控 載 政 慘 逐 整 碗 環 慣 案 棒 訂 移",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "a36e504d8c1254e2eb632486397c3e14afc09adc79cf0e387ea62f98b45e1271ddc853651055ef06a4759457523669040e21066de748851a6b0b0a33e3360026",
+		"bip32_xprv": "xprv9s21ZrQH143K2UCcQKYBcjYeiju3rEeGq7F6ePp16ZJwp65RcHbfmLyGrK4XGDobvpuREvdzykJhf9ED64KLTvgEDnbEzFSHNGFaUGyyryE"
+	},
+	{
+		"entropy": "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+		"mnemonic": "寧 照 違 材 交 養 違 野 悉 偷 梅 設 貴 帝 鮮 仰 圈 首 荷 鉤 隙 抓 養 熟",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "0177e904c38b9dd2722dfcf3fef64e513ad835d5afaea4b2f3675729b1ea281c9e13916a400b1b9e115ba13e738c92b3d51a7b3d020c13120851c6a83b5b5011",
+		"bip32_xprv": "xprv9s21ZrQH143K3s3kHEMcENfDSrCDBEex1B3FACztWXREkNAgtn5y7ZKSF4RA7s6rC49FYcauYGA7VhP8UMH8pFFTSVFNPVEZ1MwbbiMQvf6"
+	},
+	{
+		"entropy": "b3ffe8f56d54805218090de337779328a3a2e758",
+		"mnemonic": "懂 艇 細 斥 早 目 湖 造 籠 祥 逮 未 置 胞 損",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "da352efb5b89a7a00f41efb037b4f911f15ac1cc5e61774f85db61208cfea98a1e8bfc3d0210d005dc1290714ec365521a74b8c49652d68ae5808737b81450f9",
+		"bip32_xprv": "xprv9s21ZrQH143K4Bh1WY87HePpcRdwNuqtkLJRNf4ECcLi1yayBt39S9GPWABo3CyWj7jqr4Fof7gJdDWNuRhNhUW342njAaFT6qz7guiRaF4"
+	},
+	{
+		"entropy": "437dd688276ceb711cda3a126eab879a188a30b097b769a931bea6fe",
+		"mnemonic": "輪 醇 畢 跟 矽 隆 抓 僅 麼 危 緯 約 尺 革 鞏 潑 香 護 踐 春 旨",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 漢語",
+		"seed": "59aba23fcf0e9e6439b256aa76b7bd70e06b6db7772a3e9e64cf3581d3bc68c670318a9c0c41b09beafbe67f5c3e581168dc2b9471bcfd8dd135d582409d9696",
+		"bip32_xprv": "xprv9s21ZrQH143K4CpADdDuSM5eintFqX4YqrprEvC76qupQ8f1kZUguXNzooCzi7wc6xe81khaYkZ8awrgbhnyumCFgzfgbPRxLPE7iUDndpS"
+	}
+]

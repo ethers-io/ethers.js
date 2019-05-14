@@ -1,0 +1,36 @@
+{
+  "name": "@ethersproject/testcases",
+  "version": "5.0.0-beta.125",
+  "description": "Testcases for Ethereum and scripts to generate testcases.",
+  "main": "index.js",
+  "browser": "browser.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/bignumber": ">5.0.0-beta.0",
+    "@ethersproject/bytes": ">5.0.0-beta.0",
+    "@ethersproject/keccak256": ">5.0.0-beta.0",
+    "@ethersproject/strings": ">5.0.0-beta.0",
+    "browserify-zlib": "^0.2.0"
+  },
+  "devDependencies": {
+    "@types/bip39": "2.4.1",
+    "@types/bitcoinjs-lib": "3.3.2",
+    "bip39": "2.5.0",
+    "bitcoinjs-lib": "3.3.2",
+    "ethereumjs-tx": "^1.3.5",
+    "ethereumjs-util": "^5.2.0",
+    "solc": "0.5.5"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0x59026aebabad3dc7c5ca94f2509e69016ccf734ecc4ea29c48da68aff7301c63"
+}

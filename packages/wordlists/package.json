@@ -1,0 +1,27 @@
+{
+  "name": "@ethersproject/wordlists",
+  "version": "5.0.0-beta.124",
+  "description": "Word lists for BIP39 wallets.",
+  "main": "index.js",
+  "browser": "browser.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/bytes": ">5.0.0-beta.0",
+    "@ethersproject/errors": ">5.0.0-beta.0",
+    "@ethersproject/hash": ">5.0.0-beta.0",
+    "@ethersproject/properties": ">5.0.0-beta.0",
+    "@ethersproject/strings": ">5.0.0-beta.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0x80da91bc1bfb05fac487a553d48b38f48cdebb623472213008853834113c9435"
+}

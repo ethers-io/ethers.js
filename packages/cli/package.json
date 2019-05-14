@@ -1,0 +1,31 @@
+{
+  "name": "@ethersproject/cli",
+  "version": "5.0.0-beta.129",
+  "description": "Command-Line Interface scripts and releated utilities.",
+  "main": "index.js",
+  "scripts": {
+    "test": "exit 1"
+  },
+  "bin": {
+    "ethers": "./bin/ethers.js",
+    "ethers-ts": "./bin/ethers-ts.js"
+  },
+  "dependencies": {
+    "@types/node": "^10.3.2",
+    "ethers": ">5.0.0-beta.0",
+    "mime-types": "2.1.11",
+    "solc": "^0.5.5",
+    "solidity-parser-antlr": "^0.3.2"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers",
+    "cli"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0xf1056c4f8e2c3d6896510821ac3042b3e73bee3312c9c046518115c9fe9df45b"
+}

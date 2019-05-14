@@ -1,0 +1,23 @@
+{
+  "name": "@ethersproject/keccak256",
+  "version": "5.0.0-beta.124",
+  "description": "Error utility functions for ethers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/bytes": ">5.0.0-beta.0",
+    "js-sha3": "0.5.7"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0xa98932040e5874dff6fe54c61917a7ae1fd4cc40cbcba3c684c67e416c49b574"
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@ethersproject/signing-key",
+  "version": "5.0.0-beta.125",
+  "description": "Elliptic curve library functions for the secp256k1 curve.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/bytes": ">5.0.0-beta.0",
+    "@ethersproject/errors": ">5.0.0-beta.0",
+    "@ethersproject/properties": ">5.0.0-beta.0",
+    "elliptic": "6.3.3"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0x3f0419edaa2a79a0b62ab5221b243388c2600dec79cc169cb20b9c4ce906ce27"
+}

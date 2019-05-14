@@ -1,0 +1,52 @@
+These test cases are provided by eadyseed:
+  https://github.com/nym-zone/easyseed
+
+Please note, this is NOT a derivation work, so clause 2 and
+4 are not relevant to projects which use this library. It is
+used for test cases, which are not packaged in the version
+installed by NPM, and are only available from the GitHub
+page.
+
+Also, I am not a lawyer.
+
+----
+
+By nullius <nullius@nym.zone>
+PGP: 0xC2E91CD74A4C57A105F6C21B5A00591B2F307E0C
+Bitcoin: 3NULL3ZCUXr7RDLxXeLPDMZDZYxuaYkCnG
+
+Copyright (c) 2017-18.  All rights reserved.
+
+The Antiviral License (AVL) v0.0.1, with added Bitcoin Consensus Clause:
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of the source code must retain the above copyright
+   and credit notices, this list of conditions, and the following
+   disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   and credit notices, this list of conditions, and the following
+   disclaimer in the documentation and/or other materials provided
+   with the distribution.
+3. Derivative works hereof MUST NOT be redistributed under any license
+   containing terms which require derivative works and/or usages to
+   publish source code, viz. what is commonly known as a "copyleft"
+   or "viral" license.
+4. Derivative works hereof which have any functionality related to
+   digital money (so-called "cryptocurrency") MUST EITHER adhere to
+   consensus rules fully compatible with Bitcoin Core, OR use a name
+   which does not contain the word "Bitcoin".
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.

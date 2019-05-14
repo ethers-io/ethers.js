@@ -1,0 +1,36 @@
+{
+  "name": "@ethersproject/tests",
+  "version": "5.0.0-beta.127",
+  "description": "Testing package for ethers.",
+  "main": "index.js",
+  "browser": {
+    "@ethersproject/ethers": "./tests/browser-ethers.js"
+  },
+  "scripts": {
+    "dist-phantomjs": "browserify -g @ethersproject/testcases/scripts/browser-fs.js -s tests ./tests/browser.js -o ./dist/tests.js",
+    "test": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
+    "test-node": "mocha --no-colors --reporter tests/reporter tests/test-*.js",
+    "test-phantomjs": "npm run dist-phantomjs && phantomjs --web-security=false ../../node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./test.html ./tests/reporter.js"
+  },
+  "dependencies": {
+    "@ethersproject/testcases": ">5.0.0-beta.0",
+    "@types/mocha": "^5.2.0",
+    "ethers": ">5.0.0-beta.0",
+    "mocha-phantomjs-core": "2.1.2"
+  },
+  "devDependencies": {
+    "browserify": "16.2.3",
+    "mocha": "^5.2.0",
+    "web3-providers-http": "1.0.0-beta.35"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0x7b265e8157829c0398816e9965aa233c366097ed3a3b37bfbe614213eb50e2db"
+}

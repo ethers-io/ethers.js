@@ -1,0 +1,26 @@
+{
+  "name": "@ethersproject/units",
+  "version": "5.0.0-beta.124",
+  "description": "Unit conversion functions for Ethereum.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/bignumber": ">5.0.0-beta.0",
+    "@ethersproject/constants": ">5.0.0-beta.0",
+    "@ethersproject/errors": ">5.0.0-beta.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers",
+    "units",
+    "conversion"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0x4b7e5d4cda519e6e142a2653feae62f677464dc4e4c82e6bb1241f77afc9c36b"
+}

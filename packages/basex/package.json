@@ -1,0 +1,23 @@
+{
+  "name": "@ethersproject/basex",
+  "version": "5.0.0-beta.124",
+  "description": "Base-X without Buffer.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/bytes": ">5.0.0-beta.0",
+    "@ethersproject/properties": ">5.0.0-beta.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0x8243e502fd9c51780351423f21ff95978c66005a9a9691cabd98e805ca69fe40"
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@ethersproject/hash",
+  "version": "5.0.0-beta.124",
+  "description": "Hash utility functions for Ethereum.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/bytes": ">5.0.0-beta.0",
+    "@ethersproject/errors": ">5.0.0-beta.0",
+    "@ethersproject/keccak256": ">5.0.0-beta.0",
+    "@ethersproject/strings": ">5.0.0-beta.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0xb57fea0e087099e9814038a44a3462bedfeea17aa424e24d7a05e4e23212b298"
+}

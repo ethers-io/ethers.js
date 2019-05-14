@@ -1,0 +1,25 @@
+{
+  "name": "@ethersproject/sha2",
+  "version": "5.0.0-beta.124",
+  "description": "Error utility functions for ethers.",
+  "main": "index.js",
+  "browser": "browser.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/bytes": ">5.0.0-beta.0",
+    "@ethersproject/errors": ">5.0.0-beta.0",
+    "hash.js": "1.1.3"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0x5deeeeba2b49c9f7dcaf8ccc7ff399a5af73dadd64ebbb400e65f85f99ef3e21"
+}

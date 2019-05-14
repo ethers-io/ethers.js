@@ -1,0 +1,35 @@
+{
+  "name": "root",
+  "private": true,
+  "scripts": {
+    "auto-build": "npm run build -- -w",
+    "bootstrap": "node ./admin/cmds/update-depgraph && lerna bootstrap --hoist",
+    "build": "tsc --build ./tsconfig.project.json",
+    "clean": "tsc --build --clean ./tsconfig.project.json",
+    "_dist": "npm run clean && npm run bootstrap && npm run build && lerna run dist",
+    "test": "npm run _dist && npm run test-check",
+    "test-check": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
+    "test-node": "cd packages/tests && mocha --no-colors --reporter ./tests/reporter ./tests/test-*.js",
+    "test-phantomjs": "cd packages/tests && npm run dist-phantomjs && phantomjs --web-security=false ../../node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./test.html ./tests/reporter.js",
+    "test-aion": "npm run dist && npm run test-aion-node",
+    "test-aion-node": "cd packages/aion-tests && mocha --no-colors --reporter ../tests/tests/reporter ./tests/test-*.js",
+    "update-versions": "npm run clean && npm run bootstrap && npm run build && node ./admin/cmds/update-versions",
+    "publish-all": "node ./admin/cmds/publish"
+  },
+  "devDependencies": {
+    "@types/assert": "^1.4.1",
+    "@types/mocha": "^5.2.0",
+    "aes-js": "3.0.0",
+    "browserify": "16.2.3",
+    "diff": "4.0.1",
+    "npm-packlist": "1.4.1",
+    "lerna": "^3.13.0",
+    "libnpm": "2.0.1",
+    "mocha": "^5.2.0",
+    "mocha-phantomjs-core": "2.1.2",
+    "scrypt-js": "2.0.4",
+    "semver": "^5.6.0",
+    "tar": "4.4.8",
+    "typescript": "^3.3.3"
+  }
+}

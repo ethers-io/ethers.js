@@ -1,0 +1,317 @@
+[
+	{
+		"entropy": "00000000000000000000000000000000",
+		"mnemonic": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "61f3aa13adcf5f4b8661fc062501d67eca3a53fc0ed129076ad7a22983b6b5ed0e84e47b24cff23b7fca57e127f62f28c1584ed487872d4bfbc773257bdbc434",
+		"bip32_xprv": "xprv9s21ZrQH143K2oBy4iDupX5ZdoZp2MGMoX6YbJPkYNVjrnMtYQk5EnJzqrqPABT2ScaZ9BaynRGEheG3RFGQx3wM72Yckj1qJ842y8G5SyD"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000",
+		"mnemonic": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon address",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "0cca06b31cb92bea841d348862853e6240c9632fcdcba32a89f893ef7c8ec69bf7b49f7d7759fd68eacea1546caee6bf42a625979185a90cbed8698ded85ab54",
+		"bip32_xprv": "xprv9s21ZrQH143K3yG3FrTyi2ombDJrypw3Aront56ejDhcjpUzHooubU68U5TjxnrXRVwoauS6Jme3Homzwyp6o22fsFnt91i2rBZEEL9EAhm"
+	},
+	{
+		"entropy": "000000000000000000000000000000000000000000000000",
+		"mnemonic": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon agent",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "8e0708837fa79d6a32ab5778b0030f4a0e837fc1e51e7c8093a475a9bfd7088d3679bfd5c02aec9b79297bfaf147ab46c4c76fd7f576862309d1f7d6e66b7730",
+		"bip32_xprv": "xprv9s21ZrQH143K491wwg1KZsQf1RTtfXKQTHRQTxD8xecRdouA5M2rNWXsXHvgbbFHPdpma2LjsA5VBGFFJK1SygMRufEVYvxkTZYp3sWQiqb"
+	},
+	{
+		"entropy": "00000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon admit",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "03678988d02c0f7fe0c384200f6e23246099ceb8753d0a6746efd37175ac668653815e84a046450dd6bd3d1f317c63f1101e4d2d4f2ff04d510e70e799337acd",
+		"bip32_xprv": "xprv9s21ZrQH143K2NvnH6TvugCMsmV6uewe8RdpZgtBCCbhs37FQhc6sQW3aRqYKiVSqRw4MLXbLzaEvKNvBwBmqzdZfVk6ThmYx8hZ7K3zzBK"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "35be70fbf3fae56367a3121f25c69ddd0c4751921298402dcea25d107eb0ca2b05d165e48e4df13571ecb10dac6036864c8ea788e99d203574c8d145fc717cb9",
+		"bip32_xprv": "xprv9s21ZrQH143K2FxWGg9pQYbRbrPApUVBdu4r49n1n9QqD8ZMTaAdCxHgY3t3NVYhoRqiY9an4PNZrHaQ8WpL5pCQN6LNd5iJdVuT55H2XEX"
+	},
+	{
+		"entropy": "01010101010101010101010101010101",
+		"mnemonic": "absurd amount doctor acoustic avoid letter advice cage absurd amount doctor adjust",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "25397b8eade97482b315ad69effb6e7bfd02968e46b70a971e95a37230d416fd890ff41b3ad7f3acc369b93555a41119d7b09d957b4ef4773acbc1f3ef7543a3",
+		"bip32_xprv": "xprv9s21ZrQH143K3sePU7Er4npLr13HbnnsdKUXRYEHVadvHT26tVuKPyU6Rh4T4CTpMGo9cBsgaqhm9KvrwiUCYkKSEtA7cLdrsXUcAVFKirK"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101",
+		"mnemonic": "absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter all",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "3028751d811a60dc04039d4b5eebe8539a1beea2cae3e0805a0a775f8623b0f9e2a5d6b7a213c478faa0652e4eb940935ac20742171536275baccc1c46a5d016",
+		"bip32_xprv": "xprv9s21ZrQH143K295vt3M26MiWTsc1hSxLd18uXZbSkWjEdSX4quWMXvVTU59gaYviSp62RQMAYyQda1TGqCWzBPZVU3Qyj11BWWn2i8EWTyX"
+	},
+	{
+		"entropy": "010101010101010101010101010101010101010101010101",
+		"mnemonic": "absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd approve",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "5109df39def8773eeadbca1cf691d418582fbc88339fd68ae2b867eba4943676d4e51f343c425d2c38eb662a536750fbd19c5acb933c488f9defca37f3001821",
+		"bip32_xprv": "xprv9s21ZrQH143K2vrvMtf65ZRKiTcPWdedCkJLWSWoiDoDg4adjFCRMUPNxXXqZjV2YcCZpkts5jZv8osFA9Jp8F7tKsLzPP9EFq4u6V6ESpr"
+	},
+	{
+		"entropy": "01010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic banana",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "3ba8cbe8b2b876626700733e2827bf353775b4c639e8cdca458867c6f8ac95e28ea9863133b413459afebf6ae6fad3871a43b16fe2a03dd55a279b48ac406020",
+		"bip32_xprv": "xprv9s21ZrQH143K3UqU6yk1gVFtLXuacgRzuwNhMznTEr5NzWBnUoCcMRiTjxau3JiA432RdVq6Kru4CDMP5ZbY4hDzBMdis3WCNnru2iZMpTm"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter advice comic",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "d660b23da3fce0208800a8bc4aeac4a695c665ddcbd1d15f47733f440bfd843f29d2c8a3dfe9ef0c60bbe93e11865092ace79cd27e829b6078a7a2e80c8c4e6a",
+		"bip32_xprv": "xprv9s21ZrQH143K3EfaogkH9ExMUynMm9YLkNjUVxCEi7B47NnLEJMKdM1JFyUrEWnDfmUJDDQTariK3kqQmTrf2bVGsVSiLKL3bSvnPB4iDq7"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "legal winner thank year wave sausage worth useful legal winner thank yellow",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "a60764794cd73778912385c6841c1c8936998fba1f6db93f7840ebd39f3fa5931520bb4cbabac858711eaa9da676ecd50e83b25093ebb69a69ae32391d7f7222",
+		"bip32_xprv": "xprv9s21ZrQH143K4M5QiwPsh7Jnn7Lsddz4Fzzcs953aL96NvJhfKQcPzsxoC1tr8qPNv7FpM4ZoTLwS2LMLcZQjajuwTfSRAgKeeCMUSnr3V3"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "legal winner thank year wave sausage worth useful legal winner thank year wave sausage wise",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "dda1e7cbbebcbb1516e94eb21a09f04458dac4e52a5335fd49f2765eee25c4fa1cab492bdc9c791cec15f1c72e9eed1efff9ec1cfa068430b91c2fa8a09afdba",
+		"bip32_xprv": "xprv9s21ZrQH143K4CBGh64CWjhCigSEauZJng9kw2EC7HV5KLbgE5q65enTKp6GR2CjFSbmWMZkCrhtbzBAa9CMUkJauD8huqXxBZiKUuCyWB1"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth useful legal will",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "b527bb515aa1160395db2320633a76bf3143f954a5c081ca33b9ad71e8fcae2217664dc986d0588f64006b6a59e46009b99a904cbc72653fdb13d6121cbb6c18",
+		"bip32_xprv": "xprv9s21ZrQH143K4Y8ruYUkJT54wjW3xeGFLyqKp6Wq3saWKuxLpY1xwB2fNRgv2n95aWf1gEKeWwUepsj17qZeAg6i7w3km91tSgXUriYWNCc"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth useful legal winner thank year viable",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "b2c9284e24609fad725b66776b58d84f8b45a25269de2e9aac622ad56ce62179af4582e0bd25170af7be57abf0a3858ac74018fdc2772a7cce7e2d7266752384",
+		"bip32_xprv": "xprv9s21ZrQH143K2KPUtPoCwQpzkKnSavjcFvhrQtyv1XaedJ8F32zEQc79QzBRUFMCgJu3PHEM8x5EnL3yE9s3F8bWsSrvo41uhMQm4vFj6PD"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth title",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "589449b6d3bdd33dad68e8bcf3ee6447f77562eb0908d999b3cb37af19c4556de80550f147b6d2d2e6d77230bf1dff639c5008e42bbf23710e5fd9e388614c1a",
+		"bip32_xprv": "xprv9s21ZrQH143K28trwxXVhAR3X1krcj56nCsr7X1gkNx1ZH6hFS82TBcZtxFn4yHE9euaRCtThf7w2kVD6wKQ3CyfSSDp4yz8oXHjsBLSQQn"
+	},
+	{
+		"entropy": "80808080808080808080808080808080",
+		"mnemonic": "letter advice cage absurd amount doctor acoustic avoid letter advice cage above",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "c426052557598fa9cdf0a9ccd7f2137f3edbc7b13049e5185f9f41ff12978ea97396afda532e1e0dd1af32f105ec8955f6891addeef9f45c82f2ad7d239ef1df",
+		"bip32_xprv": "xprv9s21ZrQH143K2M4CymLqsw7xDYtFSNGpnvdKG1Xc6XsRLNR4wW1k8MqZS3kSwJ46yDxhJXjV1h4ADB8Mf9ZJg25qNzPKjSJVtGzm8XVq8hs"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080",
+		"mnemonic": "letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor accident",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "e1b10c8cf971fe5006a3745eeed6a1dd55a25bf939a967ef6230efd4976bcbd6ead845ae922739c6250e68ee892923d03a89574ab179277ea47c928dd6e839bd",
+		"bip32_xprv": "xprv9s21ZrQH143K3Ch4VD4ZN54z5FxMRJDFZKXFesvGDyaHvuYF8rZzDiaBXGDx91daoK2ynLVET2qUwm1imDPkaLCzfjeXCV3idYBe7bh152N"
+	},
+	{
+		"entropy": "808080808080808080808080808080808080808080808080",
+		"mnemonic": "letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter always",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "088a6fdd9df1c9b0c799b8b9d0214b67251035f81cc3b58edf4365294da2bfad508b2191155b5733c5e1aeca85b3da018205464c38239570e4166783e5cd0c3d",
+		"bip32_xprv": "xprv9s21ZrQH143K3xk8B24tqmBvCE4uwwiC9mRJRUdk4A36DMNf1djcdAKfX9SvxLtN2ETjymSzZ9UKs8y83uKfLkXDgbaE7kPhzCUSbwtujPH"
+	},
+	{
+		"entropy": "80808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd apart",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "56486e4746789893935ebaeff4a27195143bd979bc576f9c04b4889a2628afb01ab9a4da24ab6dfb6e93b2ae2db88e5cfd43661374ae656de7f56f9e59228b0d",
+		"bip32_xprv": "xprv9s21ZrQH143K2wdnh72kx7rxikvE2YNQv2Vx49SyJDZGh3giGHyEEy2xRgxu2v5CzWHB1qQqmXsrEYubCDp2T8Ur7bBS4d1UpF1gY9xJjqN"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic bless",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "eaa5f3e14164547a784c5ffa8ca09fa786d7ad6a975a99a4805d183b5e6c44165822abea1b4b9c24291894df146f47ad175467bf91b19c1bda46a3a44469968c",
+		"bip32_xprv": "xprv9s21ZrQH143K49PLUvX2vEjmkcg8oxdMnEppEZa5m5k8mYskq27ZvLRmZJNV4XXneRckMcXSxLip4S7At9tc7mKsyDe7FXvjy9h4vPjaXTC"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefe",
+		"mnemonic": "year wave sausage worth useful legal winner thank year wave sausage wish",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "3551c1ea38ce37d0823fb1917cfb75a4b4f9eebd7ba943403c20709dd72cf6418134aab74fcf513444ca34acec3cfae799ba5d220f22ffb3e6365cb871653bcc",
+		"bip32_xprv": "xprv9s21ZrQH143K2FDGfFoKBBkjfJLPYAKcibPNao2yvAtgxZh7sfayBW9RYzQiZ5WeYj5KzD1voEwuMW8dHzzqTavRGLUkHMhng4dYVP4PrZB"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "year wave sausage worth useful legal winner thank year wave sausage worth useful legal wife",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "d5028e05ac3eb5227e245b3f738fcb044fec5dc9e1992fa2ae23bc072ff29dc3588a0b96c028905580237e666b94cc924a8367f01894caff439c3a336e0abcc0",
+		"bip32_xprv": "xprv9s21ZrQH143K3MtYqdAF7byHottNCQHvtwoEWK7i1jaweasjCz4twmwpzDMe4inUCVB27h1LH6dJaBpuU3bA8w3z197289YWmjGsrvZKKTD"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "year wave sausage worth useful legal winner thank year wave sausage worth useful legal winner thank year want",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "361bbfdfa65add06b97dc6db512f70e745e485ed95870f195bd170a67da69305cb46fb2cc6ea0298bb2b9c24f4607839511563a7e52f89f3639c4ef8d930d41b",
+		"bip32_xprv": "xprv9s21ZrQH143K3F6BtdnyYESrfSqMKAq769Ghn1wrXBRqZSR5QikJtx1H3h6bF7Z8UZ5R1oMcqNkt4qKsm241za729vmqZUCxTaMvAnnkQRh"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "year wave sausage worth useful legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth traffic",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "39d095bafe26e7c255cb6042879fa173de6b37a02d0a2dfd3acf17ba59dc2c1ec6a705b9cb137efbe78b51675f275bd1062ae14d791885a8b8f9b529674d1851",
+		"bip32_xprv": "xprv9s21ZrQH143K4UwpLiMxjsARHTik9jB2AxQ8VCgNZmeccFEEf5vJWwEz2rEcyo48TdURB8K4epd8h9NFssHMw4KCYEAqJyDSXNFks57c8wn"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "year wave sausage worth useful legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth useful legal winner sunset",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "dc351f459293bdd198d33a52c651f3c8e01d4236dbf4bbb7efb9ae7c2fbf0691e6af751bc76bcc5cfa637642b8e78b54c595a56a5a0bb1520ce0ff129293bca5",
+		"bip32_xprv": "xprv9s21ZrQH143K4JCY7pXXeSQmj6L8RKgSeD6qC1KzQpgeVT3MVZDwh21bNWo4Zk58DYK53ovZqcsFZnYot3Bh4TZFARJgwJve9oJkT19kjqV"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffff",
+		"mnemonic": "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo wrong",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "b10ea56197d6d630a293e017635edf06d670a838cb36adfca7ff893dc158300cab9756828798bb2e288245f7e4c6c5a72278b7ebcfe90388dd17503c31aae2a8",
+		"bip32_xprv": "xprv9s21ZrQH143K4TmgRzwLgWnhkCYrJtbwKkmNvCLytq4JARurzoKaitRgxVwYnPrW5q2SxpTxFbDJmngvwEuhBKjGueafnbV36NFyHAPu3WT"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo wrist",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "41505fcb877c4818af84e319875994b755d515f648d16a9542f60c26320f461fc5b49f67a452670ffaa3d56b4b4d707b5053d6b5960690b7fd270930c5ef6c27",
+		"bip32_xprv": "xprv9s21ZrQH143K4V2FDoP3ESCmCBkBRWofE4o2QagvVtc36VzF4YKnAsNyyKPXhBbD54bBLEo1SVMafj8iK8bpe4T87ngjacWQbCsmoefBG1j"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo when",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "3c555054296d226a55b8de8bc2a1e5515f456b26303088b0cec6f203aeff66f11e698df3ca140561a05846f7e0c5ecf3be8dd9a832249a9c8decde5296660788",
+		"bip32_xprv": "xprv9s21ZrQH143K27ab2NZfGWX6Cbgu8LNXcB1g5kRgVpSLGns7wHAcSUo4hHbWb7jRFfECwCNQT1uaa3zAnEKBica7EALTNWw9cLVbYDd1gUn"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo veteran",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "15b461996be50cb82bd88a64189c45ee53d3d2c2ee5b70d27171e5d8cc3ed8ddf7fde85cb71d5bd2b8025ec2a7a131752b3b2921c7edb6b0844a0850fff7c922",
+		"bip32_xprv": "xprv9s21ZrQH143K2zppHqmyV7LTNCXmTHJucpaC66Ey2nhFMRMtAQ6ffVfzBnrUQNiW3KJfCywJcjxNaA7vFgrXZnYekDedjc86E3y8Fpdy5kE"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "cb266ab107f38d7e0c0f24052df9e4c4d2380a0d5ac4e1fe0590c421fa628a7e4041c69e8113c9ed7435cb85b5e592f7accda83d5a0c3237699ff8b768b85b5f",
+		"bip32_xprv": "xprv9s21ZrQH143K2qrhjU4xqroRbcGiqaejRNfzJ2sfSGmTQY8bGGmmLEzHK6JxSQmzM2Rd3aDn3qK22yxCHMQMfEgcHTYr96Ld17SfmbDikNd"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "primary fetch primary fetch primary fetch primary fetch primary fetch primary fever",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "e3a7da5847449f39f034a2859bbd1a29d5572cfeaa4322543df2d81415c34f891345132095238414d445c06757b7898650ebef5057a6bb81761f2b7fb8c6ed61",
+		"bip32_xprv": "xprv9s21ZrQH143K4YZEKzskEBaTKdtNRRH3mLvPhtLZXcmyW4ubcAK1DZ7HoG44ca4ejs9UovxvQyUJYojmuqHEWMoyzxn5khFQGLmEY2Rq7Xw"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch prefer",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "945e54c7c710118e5485da990ba1330210027472dd33b559cdea5f8c5cb82535e334bed374e79c2ad4ba004e5a7bf907d9247087a1b6bc036bc757c62de0c695",
+		"bip32_xprv": "xprv9s21ZrQH143K3HrSPcnQxsedXwDLpjRfiZo9UQoQpQCSSXUanHfL1GCMihEg2Gm7DUc8Au3D3UwXKDZB9wMvdCX7mgWjuzM1NPeUaDxhQSi"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary festival",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "ff810961217480191fb419e2cca46845d5e029ae52c0a03b321ec901df012a49e3dcf1ace56cf010ce6ae91b16a286befee446c451da11a1a4da42c3912d6ccc",
+		"bip32_xprv": "xprv9s21ZrQH143K3nHSf2pwnrtgWDhZ8YygsK5eA6uppiqiFVw3FJcbCzk6U13jwnKkQBnsdx3z5C6KNPjsPEZULwNeGsPY5UHfqJkAxvg3zKH"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch purpose",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "6903ea8a4758ebc5bfd9520a30476035495c55cc8ba5aaf7ac978e072a252b6a81aed4bc8868b0adda2b3e582faa3db1cf6905873d997ccead90b2c2715ecda8",
+		"bip32_xprv": "xprv9s21ZrQH143K2fZ9bmLjnycoNeTi3UcJTuxK8YCvqhQPXgvumB4tUn91Dp2wSdKVrrTskHacubxJZkzF3vCDjE16KSunA2Jk8JQgKyxUM1z"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary foster",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "72e0ae5b6b4884a82e927e83430fef76ef3af622bc37eb3de743c8ff5fa228a3c7b7a132de2553b9e9810a2c689db1d0a9a623bbef87cd77766d2d52bb832b67",
+		"bip32_xprv": "xprv9s21ZrQH143K2YHWevpiXBrYsKGPnw1AePszvmCE5LDdTRbG7gN1PjQtjvNEXK9Uv3wRhDKahKwncAbWuMh9CM1siJqvTnenVd9r1fVX83P"
+	},
+	{
+		"entropy": "55555555555555555555555555555555",
+		"mnemonic": "fetch primary fetch primary fetch primary fetch primary fetch primary fetch problem",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "d31884cb4256e0a28e0034638c04878dec64b751abbcc7e257538347173d60082b9518399440169e5a85507836fb37b05b0bf3e0c3d536114ca442102a7afe30",
+		"bip32_xprv": "xprv9s21ZrQH143K4QTT28Rxc7QJGy7urL1RpfEbiKM1gssKrjyV5Mw7kFdkP8gYSE7Ubk4WQujgumzbA4iZ1kkbeuigvtqoMSMXdsknEC7GzQD"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555",
+		"mnemonic": "fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary feel",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "3a2e3dcc5479797e5a74ba618a18e8b1145b7c18f8e08e741649d4634ffcd2d486bea213d50247f94b23b2b2363cdbde794816840e178ae9c401c45a1ce9bc05",
+		"bip32_xprv": "xprv9s21ZrQH143K2CdfPEt4biSthHBjxpwMhdBWsMorhwVMscXKbwYHTUA4jmP4gy7usB6ivmRZXiy5T8B7LBDRqUSTEdkLBEMF4zGHrKeg9A9"
+	},
+	{
+		"entropy": "555555555555555555555555555555555555555555555555",
+		"mnemonic": "fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch program",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "d93a86b6bdbf75e7918087ec31f76669a3bdb8065de1bb0857ebd4dfebec1e8802eae715cb9a2b7476c08718b8931191623506de643ffcd98a72c62c1c08db45",
+		"bip32_xprv": "xprv9s21ZrQH143K2gDdf1K6WLbzrWWcNae7r9YPq3miTc2Mx3Xzxt2Kdg6XEUCkiBPHizQwRw5Midk5rGmwsauRLSRiUCNMgDoRuEeX5dGvVny"
+	},
+	{
+		"entropy": "55555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary feel",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "9e3f7d5347735a402c309e682cf0091befcce35dbfd524425888243dee1eec458bcb8eae380233c78478f7a613736dafcd9c4f9516b92004fb1db521506eb11f",
+		"bip32_xprv": "xprv9s21ZrQH143K37Q2JGtJWi8p61twpDiqgD8PgvGkQ3HFpYvpG74wtkeiszwzvQaBtyLNQoPsYQtZ6eNKqZG23T1P3ojhd2qSe5skZ99oVm9"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch primary fetch rack",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "2746fa9493c113bab21019ec9a42df0dc7899e5a9c8c8494db6ae46291dfb69e267911b334641732eda8e3ea9fa890f8987a9ddb396a47d2c59e83c0091c0ad3",
+		"bip32_xprv": "xprv9s21ZrQH143K2s9oQzr5MjxwLgyHCGxeuNE8o2KdSmNNfGfJ3W8xZEovtbmL1bqyzF8Rr3zvq4fZQctg3JpAQesDQmZw4CFVjuJGEboWfDY"
+	},
+	{
+		"entropy": "9e885d952ad362caeb4efe34a8e91bd2",
+		"mnemonic": "ozone drill grab fiber curtain grace pudding thank cruise elder eight picnic",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "0d17d8adad6c8c2a539d6fb2a644cd0e21a3c4869ad3f78c81d85c6b906d97a1e66acf499100c4559f80cf7f4b210dbb1373e9a8bd95587b6233e4dea93c68e6",
+		"bip32_xprv": "xprv9s21ZrQH143K3KFC5R3Dz36jPM68hGXyR6ykRTQowT4Aofcdi6xPHNrG6B4NqajSiPVeNrJMjqxFdbGAdoYrnHCdrMFDisoaPq5KXBRMJ3K"
+	},
+	{
+		"entropy": "6610b25967cdcca9d59875f5cb50b0ea75433311869e930b",
+		"mnemonic": "gravity machine north sort system female filter attitude volume fold club stay feature office ecology stable narrow fog",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "26c8aeeb114519f8ea1d9850d430917a9802aa6d926c453d22b41ce2a0365a19d44eab3901f5b84b5810b450d17371c3951ae3633ad48e30fb19f19cfa17d3bb",
+		"bip32_xprv": "xprv9s21ZrQH143K4NiUGbnbR1BCN2G7fpmb8LACo5gYk2uaNLrF5PJQeFc4vwzm6ku9rJgYUznSaYPZStDg7kNDGhm2w14yvDmSJ6n5JH9LaYK"
+	},
+	{
+		"entropy": "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+		"mnemonic": "hamster diagram private dutch cause delay private meat slide toddler razor book happy fancy gospel tennis maple dilemma loan word shrug inflict delay length",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "3e1ef5f05252631077865496fa9e298e9dd6d24bf483d9e63d9621f79df236e2c63bab9ef57573fa91cf4ce665e78d93125a239166541ff8e2b5a1dcc2fed887",
+		"bip32_xprv": "xprv9s21ZrQH143K3g71Wg2ircXZMYA7cBhXBZjasDRyt7neWE2xUpJmM8ANoxU9d4NNvnep9d2MgvTSBXhSsYijw2KEp7ipAkhq4zZzQiNCbYW"
+	},
+	{
+		"entropy": "b3ffe8f56d54805218090de337779328a3a2e758",
+		"mnemonic": "recycle young diary survey elite cinnamon gasp canvas tobacco roof tooth eyebrow demand inhale gather",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "5f45cbdf0f08860f9b74ff278d72f8857223d0e2c58ec85d26e87919bd235d105f53f5b715ad963f28fcb15e35bb1ac21fc8718222a0e771257f1ab2be394ede",
+		"bip32_xprv": "xprv9s21ZrQH143K2QjmhwkFDYJQh8Sw1rzMXkvbuoymUBddE2Amu5Nz6QUEuNTMWoxqrvp7teNgvdgrvJ7fuuvNepicFRiJoUfXXaMN8s52fXG"
+	},
+	{
+		"entropy": "437dd688276ceb711cda3a126eab879a188a30b097b769a931bea6fe",
+		"mnemonic": "drop upgrade pear excite solid review inflict elder bar inspire tiger crouch master blue seat want have end hurry evil update",
+		"passphrase": "nullius　à　nym.zone ¹teſts² English",
+		"seed": "d82344c6a7fe12f0797c81b2d727e31da983d8ca7853c6022b620cdb30b5af4fcfd793dd69573a13a48526137f96b571bd658a3ec38a90b010b040a8fcb2d7ec",
+		"bip32_xprv": "xprv9s21ZrQH143K2dZDex2em8CzpE177rFvSnR5gUrTA6wa6BLb3vqABDwRgujKXqrKi5maXzeMGqRb8DUFADHLpNxFRvNqMJmC1hT3vQ92k6j"
+	}
+]

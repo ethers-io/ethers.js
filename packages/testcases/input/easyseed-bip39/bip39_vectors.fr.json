@@ -1,0 +1,317 @@
+[
+	{
+		"entropy": "00000000000000000000000000000000",
+		"mnemonic": "abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abeille",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "4450d45b72d1367715bcf72f34527fddcc317531974be86055a704270d3da3edb56d7f8261ad7e29306e5566aaa172d9036777adcfcd2b0d59630773df732c54",
+		"bip32_xprv": "xprv9s21ZrQH143K2EvkYB8iu2Br7bduTbmKsr6T3NrCtdSYXwXaXy58gttekCacCgsKhi63YLSiEi7YjPYJXA3pjwu5YW9b94NcFtZTqbSKXxd"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000",
+		"mnemonic": "abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser acerbe",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "02330cda5ac50ccd31cf1182e2f443489e11b80e7bb36c45220209371b43b222a81c6fb0eb584ba9df087fd7fc6573cc2c7ed59614915c68085f77738113f54d",
+		"bip32_xprv": "xprv9s21ZrQH143K3ifb8n19ppDLf8FjD2U6CXED4bKc3BBayBy4n2B1WS2Fujmv7mN9ht5ecD3GupRAiUsGGCBkPZ2LyfiXXUGfTAGSBzbC6Vy"
+	},
+	{
+		"entropy": "000000000000000000000000000000000000000000000000",
+		"mnemonic": "abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser adéquat",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "5cdcd23d9db393238b2f6428cc0445add217b00eed679d69caac9d42bfee8bb067ba804411229612f438ed47e71e7eaf119ca127ed77b8af3379a030d608deb6",
+		"bip32_xprv": "xprv9s21ZrQH143K4WaWqSxnHpStnpy5cA1yU7QpcZUAFc7vcGNSqYDgrbsEz2g3rLUyZTjiDgHg1v64FjSuzXdnpHWAC8rBVR9kshVY7JAWsZT"
+	},
+	{
+		"entropy": "00000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser acheter",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "31d8c6d29db914f075fe5f945e0963875a6f9dc2fda98d43b73e6344cdf2f61f9018dc98c13097dfaf934ac98d64ca6576d33d4057dd069c8990760c8989740c",
+		"bip32_xprv": "xprv9s21ZrQH143K3cX7BfHqcHhqP44GF7CUEPx2ez3DhDU14iLE9c9udf7eHhdTR1rbTL5KdiyY5tnkyYrEDacYYdUZvgJkTVxEzjS7wmxoH6k"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser abaisser anaphore",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "a393fcee6b79c309db25cee09bb1c54ff6079ddb5b4bb31a1c4c0e7a691c431ea55a78603a3103d5f8aac3c98ba13af1eb5360b438d2b3b7a3376ca02897663d",
+		"bip32_xprv": "xprv9s21ZrQH143K3GNqtLrPTJR7NAQhcoW59yRSnfzds9u8xz89iuXcGz3z8naJvQ2VVkBbJVtHjmPLw5wBJwGBVM44izMenPrLErYMD12P3ct"
+	},
+	{
+		"entropy": "01010101010101010101010101010101",
+		"mnemonic": "abrasif agréable dédale abusif appuyer indexer acompte bolide abrasif agréable dédale achat",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "4fb6fa5d94a8c2153000e810feba736fd643acb9750da6b5767415c0e9636009191c08ec1061e9ee3399dee860c289823d5f66d2b5957fb0d7582a6348e2ae9e",
+		"bip32_xprv": "xprv9s21ZrQH143K2GjKpht6JQ3MQcGqA8h3G9LAWskpffRdhQRjH8N4prAu8NVb4qKQ7DQk25jvJivpgGcufMT4R9g6EUZWVrZQZTnykPJn1eb"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101",
+		"mnemonic": "abrasif agréable dédale abusif appuyer indexer acompte bolide abrasif agréable dédale abusif appuyer indexer adverbe",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "47b9ac0a41d7741041acee8371a248209763236350fc135d398c49d92e159ca6aa9775a613cbd146183f76128da1d9ffa289503a5d9ea2603bf6b7bcb2a22207",
+		"bip32_xprv": "xprv9s21ZrQH143K2uhLxs8xgQ3jcYUzoxYo8xB2HoxwhCTtYejh95yJvXnFunrNBvoAASa1smzSZc4R6TC1RmyGzTFwcx5Z8ZwqvbM8TGRQ6km"
+	},
+	{
+		"entropy": "010101010101010101010101010101010101010101010101",
+		"mnemonic": "abrasif agréable dédale abusif appuyer indexer acompte bolide abrasif agréable dédale abusif appuyer indexer acompte bolide abrasif altesse",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "813d368933342e58758c0db0804d5d1f3fbf6b8f22df9365479b2758d88abebf71ee861326a2505d33475b6972c08c7c5f074b6fe9e8d348397b32dabddcff07",
+		"bip32_xprv": "xprv9s21ZrQH143K39yMTwnuJiKiAhyGQAzhS43pqHyd4rX5SZg6QxBBq9TvEKeM3CPxQL1HowUNwHPfUiBj6heA7Spd9uW2vbEkF1zrg8QcLWR"
+	},
+	{
+		"entropy": "01010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "abrasif agréable dédale abusif appuyer indexer acompte bolide abrasif agréable dédale abusif appuyer indexer acompte bolide abrasif agréable dédale abusif arsenic",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "d264e009c237804c5e246f2e61007670bbc4c9ceac6632ab6a2b1a61cfdeaac9be322d2ae075ce3028c128763e6a84398622cd0758609523447968fee45a1321",
+		"bip32_xprv": "xprv9s21ZrQH143K31brfCw8vssgfwq5pomBT1r4kj2BkMZVD4iKQTFNkHVHxLsZXB3X7B88iR6n68ovC3UFoYhs2vEwPs9Deo4ADsvQDQmrZg7"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "abrasif agréable dédale abusif appuyer indexer acompte bolide abrasif agréable dédale abusif appuyer indexer acompte bolide abrasif agréable dédale abusif appuyer indexer acompte charbon",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "7119dd9fe4d6939ace20a8f95f769187ea2be348042ebc6b55a1a63c5bbfd1eae57507276f1cfa74275b4207885abcc68be75398f9aecee572fde7da2c3828d4",
+		"bip32_xprv": "xprv9s21ZrQH143K3HQ1tC8sXXL9P3yzNSV9GvVJ1t9cmmuFyEby3dSL3rfbqjuMLxhDJ8P9sC9aWRhqoMorDP7wNUrCYF2TmBZ52z29hJGJWa8"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "implorer visage sonnette voyage véloce pourpre volaille tribunal implorer visage sonnette voyelle",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "6eee2d3f953ba5fb99e85c9cdd8335f19f8dd3ab21b4b5c8d105ed2f20d2c05fea74eb618829e970cff853dde5fa1d4eafa36150f3a8c546b7895e54485cc103",
+		"bip32_xprv": "xprv9s21ZrQH143K3Fz8X2SK9QysmjU8EPcrtBV4rhWpfqzSmR5VJcHTLYf9X28fJCXioX58DVAm3dNWV8uheQp7kPrSWjdavEzKbSU7QWugyUE"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "implorer visage sonnette voyage véloce pourpre volaille tribunal implorer visage sonnette voyage véloce pourpre visuel",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "f1840d22c6dc3e2113433dfeacee01e14cbffe8ed92f2387109fc866c57dfd97b870902787fc47bf6b4465799efd728a9e6a6eb8dae475ec135d09a389c5fedc",
+		"bip32_xprv": "xprv9s21ZrQH143K2Pfdfyq2RoZQHCf8kNniVCeXvK6dWv4umVxMvmBXHU5yLvjkSgGeYdbpKVtn95Y9X2xWwHa3xJijxW1FNp92kL4MAKkoNYY"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "implorer visage sonnette voyage véloce pourpre volaille tribunal implorer visage sonnette voyage véloce pourpre volaille tribunal implorer vinaigre",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "8f96e490657de18d29439f44de8bcc0971b11001a8a4aef909c5a98ea60ef98e9fd4b19e46a96e1be6595c471986750d9f12a92cbd6a2c7238ce4d424bf80f96",
+		"bip32_xprv": "xprv9s21ZrQH143K3hxLTRwKFMfUao75QzmNWKtTZx1VZFbLtLEdkTyQgyDyx8oHu7iQ2LuoJrcUJUuEgVZRv3rLUwPMFHbry5Y9Ah3Sj88Qv69"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "implorer visage sonnette voyage véloce pourpre volaille tribunal implorer visage sonnette voyage véloce pourpre volaille tribunal implorer visage sonnette voyage unifier",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "72d38f708ccbe70f7a259f2527a71b3593328650fb34a947fe578de8174c77f804b0f1b15c606b5915d38e9ff5003d1cae531a86e04f3d5900b4e4e3730cd4f5",
+		"bip32_xprv": "xprv9s21ZrQH143K2E1h8gskG2Z3igvq1Q8twkLDsABt7NuFRxgbjVYQMoazLbg3V2rKBrBgCGGmvgncsQP4yo9eJGJKKf1xzJs8MRgVuWbneeg"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "implorer visage sonnette voyage véloce pourpre volaille tribunal implorer visage sonnette voyage véloce pourpre volaille tribunal implorer visage sonnette voyage véloce pourpre volaille studieux",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "ab5d9c0518db841bc49d80b4ade583a35f73ad5729a342cbf32a5af28215fdf59cf8be92db842dd4dbd1bc05b321a7a75fe33d5d4a07eac70d091456d8134864",
+		"bip32_xprv": "xprv9s21ZrQH143K3r2pmL4DEP8h9y2yxsU8XtNf53jowDTLAvmmtCxdmUVX84CGLWnjChy5kGMae8SQCXxD1131hiV2FjoFCCUTX9d56jZ8stV"
+	},
+	{
+		"entropy": "80808080808080808080808080808080",
+		"mnemonic": "indexer acompte bolide abrasif agréable dédale abusif appuyer indexer acompte bolide abolir",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "bf9276ab5c7ba6908686819c83648e0f883cef83ca00908507f256ae480d7f9e127a7baaf244359c1d18bc6ef1027379d21bd0f313e4f415bb06912b4cadd611",
+		"bip32_xprv": "xprv9s21ZrQH143K2hCbwjY3oFwnqu8Mfi2r93NUkFKDrdTZhffckKNTYRDrn3RbPp7o3asWrsDNgF2KfLbUGi87HRoG1MWB469jYKqBX5Hdi5V"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080",
+		"mnemonic": "indexer acompte bolide abrasif agréable dédale abusif appuyer indexer acompte bolide abrasif agréable dédale abroger",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "93326d5b0caf00c7d4114362f5edd2ddc75fbe7abb6d676fccf4da7c5fc47a43713438038416f8213ab3fa18cbd22b46748402f14d0513445812bf88252ddaf8",
+		"bip32_xprv": "xprv9s21ZrQH143K4JKW32Lw9aejw4YzwUMYTpxK3NzzG7cjBeyg6Yn5GiHRgzkgyRA1Ho7vB8WZC2GfNcW2kFRWgC8tYFAErvxYa5Ce8PULdHv"
+	},
+	{
+		"entropy": "808080808080808080808080808080808080808080808080",
+		"mnemonic": "indexer acompte bolide abrasif agréable dédale abusif appuyer indexer acompte bolide abrasif agréable dédale abusif appuyer indexer agencer",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "97ae3d265da596ff04d4bc5ffb1c6b414c31ce24eacacf0a4355adcd8f8ae4f453d570f7ec5e32a1df4698f84df7ac852ade8c44976c0882d3fec412ce06703a",
+		"bip32_xprv": "xprv9s21ZrQH143K2vnFpNiUR5vRjBwjStLcUW2sHrx7cWRnb3MMVZM1yFWzVyseqg7WL9HH6iSJaLpMNRCDsEKfVyUPZmgLqEfP1tchEAFzKsM"
+	},
+	{
+		"entropy": "80808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "indexer acompte bolide abrasif agréable dédale abusif appuyer indexer acompte bolide abrasif agréable dédale abusif appuyer indexer acompte bolide abrasif allouer",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "12a9d88ecae0bc061eb3905e9ac245b4ca1729480196c4580b814b8ffb6cf5bc95cea0773f2e54b3b3a4be75fcffc980dff8dfef776ed2dd4a01213831ae38f6",
+		"bip32_xprv": "xprv9s21ZrQH143K4RsXKxgZ4d4acXF2j62CZAH6WCwdAmV27NQUiiBNccnYTEj612D4BmweAUibD3ArLt4jsCWvccCKFDh8onBasC4c8ncC6or"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "indexer acompte bolide abrasif agréable dédale abusif appuyer indexer acompte bolide abrasif agréable dédale abusif appuyer indexer acompte bolide abrasif agréable dédale abusif axiome",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "5450ab7127405425ac2edf53d523843485ec5d5c65409f1deb49c74af187d5cf4229965501417262a795c1075cd380e1baa89d44b4d643d6b3272d8cec2d68d1",
+		"bip32_xprv": "xprv9s21ZrQH143K2FHLJmso2XTvnKrdWhJK7KwzTHyGYCz4aUuumZuLcF12dS6ZBfywH7LBcUgA8wihwPYv36ZDzuiKQGzfcFgoQkJSRNfpna7"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefe",
+		"mnemonic": "voyage véloce pourpre volaille tribunal implorer visage sonnette voyage véloce pourpre vital",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "b1a5a56093ca470b4ce0196260ed0207a1358c9377ea1b366b2c6f2296e783f8c18713efe0668cbcd583ae36d3a03fccca2d281ef731e2ee3a623e8220408d96",
+		"bip32_xprv": "xprv9s21ZrQH143K2cEjxYSMfdgAt9jcsSYeeJMxMh4o7VZT86Ux9k9vXV8KZJrpDutZCsr5t7JNESwsguh2TuCPyctiX5c6awQs8ZcYrSD9vfQ"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "voyage véloce pourpre volaille tribunal implorer visage sonnette voyage véloce pourpre volaille tribunal implorer vilain",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "414b9c8d0b24c2105786f235c125bafcd57dfe087c6a127a1f768caa1febfbd5756e50e184f997d03ec4b3ad88b6e088a6e42432abb0f51889ed59e3136c9330",
+		"bip32_xprv": "xprv9s21ZrQH143K4GuSsE8EjMmNLFP4rGeb4EqStY6ZQbfQAVoL4jd67GmNRNYwm1ESyduHqkU59NUH3Bw3mLbRAsT7CbPi7ZtQt4jGuWWDhNd"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "voyage véloce pourpre volaille tribunal implorer visage sonnette voyage véloce pourpre volaille tribunal implorer visage sonnette voyage vaseux",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "712dae3338eebf12891a0a08bbc50e78143e0711ccc74395e18112cbd3b3008de6e8e7afb8a17cae5e7f6269af40b46e283a603105f72fe5045c4dda80c45bd6",
+		"bip32_xprv": "xprv9s21ZrQH143K3YP9wexxyMxDgdHBRYbh5Rn5Qns5Z1X6nT4QVdiBGFCiJeeXVxbwPT7oUsmNPXVWbrwedrVGt7bBEfyXz4HBKoexrykNdep"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "voyage véloce pourpre volaille tribunal implorer visage sonnette voyage véloce pourpre volaille tribunal implorer visage sonnette voyage véloce pourpre volaille tailler",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "bb5eda48eb27acf0f35e521eedc7a0f4a1d40be38c2ad971e7975351a511e696b6d6a0f246c983f3646254c32b20c64a842c10199bb8c7c9196fa0b39649cab0",
+		"bip32_xprv": "xprv9s21ZrQH143K3NakZYb4rPCwHmwgezgQt5XdE6vTLw1nZqWEu7PUivVPmuKcLocovCveLNrSDGE7phpirpE2dKUN4PX6pQu6BkX8Bxmp8Es"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "voyage véloce pourpre volaille tribunal implorer visage sonnette voyage véloce pourpre volaille tribunal implorer visage sonnette voyage véloce pourpre volaille tribunal implorer visage séjour",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "f60d9bceb43d1c57c7feb89738e10fc5fdcde3923e4f7199c6996e8e1727fb0731f448a830d3e616fe0d1f1368e9cb515640a6f2a8b9ae125d6b4e25296568ca",
+		"bip32_xprv": "xprv9s21ZrQH143K3r97wNiLX8TeEFnkgAps9VTzktpsZXFNQHTszjaUbnuezpXtm3HXgB6NBTuZGDsj2qHW8JqWPWiBVBevgQN9ey34QL8ZyLP"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffff",
+		"mnemonic": "zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie voter",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "5c1805eaaafc299aad1dbc7aad92cf6a171e5cb3236e3136ae39daaa7dbf0c4417b9f7f75f8086f92737fc06c5aef8eef31228fedfeaa39fed64068069d56441",
+		"bip32_xprv": "xprv9s21ZrQH143K2uBuGmtSjDHDCRvagNhJPQkpLbrfzAbdGSxqSx8SHnP2NXqrvNVNjaSW6SuFQyypx1Zsbtdur848BR3Jjfz3JeHgMumBz4K"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie vorace",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "a0b37f29ed5b2a144a222e8009ec7a16c9852c12aea458ebf19ec393bffb1ada53f4b5a2feee29c3e9159654057e9eb0c42e3162c06d43e49caea2f4c601c7df",
+		"bip32_xprv": "xprv9s21ZrQH143K3TmikaKvSZAb1LpmsMdobdDSEvmLur4rMu3TCctiKKwNuhZhabpK6LVBBF5fmCPe99KcG42rCR7V6QqfgNJcxYjENzCDYgG"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie viande",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "bd70280bee4bc9e87ec9f6f875593a6db8f21bc69acc865c53f2fa803aadfbf4de26c263f72a5c807e0742371be12cf3da4d75f660264731c2eaf0fcd6559534",
+		"bip32_xprv": "xprv9s21ZrQH143K3cyWwyjxxjBXkVZpXNc5pUvX9yFB18pc51MkdwnRmXWFznQXUKq9HhYNEcuT6HCAbNLAszapGbMjQNpqHhaz89LRaApP8L4"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie unanime",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "15ef71232aae4576ea4597cd91a0f4090e0c2f34018d62fbe783410cebdab9b2b8d47108e22b2c72dac5ac3ed9c01f040f5d6dfb79608210f39ee4e158ed5247",
+		"bip32_xprv": "xprv9s21ZrQH143K27LyYotPXhuVNVYf9d1MGsiMMe42Ptuzs2V67e89MjW8f4DyUEYWmjTYNhrLm7euLXpzAtTvsNGdmRBqauQstmG3Mxebj6p"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie zoologie valable",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "342dcd0927927d1b3c94f52e20d58b2dc233ed5172afe87ba4e378001c987901eb63a9600c9f927730d789fccf85aaa8d6b7ffc1033ad9f337604d7dd66f00e7",
+		"bip32_xprv": "xprv9s21ZrQH143K3E8m5vcjSYXrBmMS4HtJwZjaTmu2PKooBojN15NvZQ51KjQMiBSBCnshgVyuPE1NYmJNBNrQvQcPaiJLu3BEZAty7xGbwZz"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrobage",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "78c61f178003f778c90733158ad4334ab759208f542ae9a6f369af283f4997f288e073081ff8140c4351884a5fad09789b55e2908a7f34002f906a0bf9a3c158",
+		"bip32_xprv": "xprv9s21ZrQH143K2zN2jgaueBjxy5LvQrsFmVbe2u7ifyCg7bDn5WA821tGnuN16eLW6FWckQBtYGtGq96y9WA5fzuFMLFx91WP3jY79hHkkAH"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir octobre",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "946808bcc8e9b536b951d55bb6e066eecb55cbb1ce6f87686b384ebfa5bff764719b8a4c3ae986082e1672dfa034d49190daa75429dc277b4bcdf0ff33c1a347",
+		"bip32_xprv": "xprv9s21ZrQH143K3gEVsmJXF7kuqpw925751zVS3biKaRy3hkNo1oVsynpVSCqpWcxPVqbbarxLKY1DfPGn5dUGGFHG7sPDJFUT1NnedwEzH7p"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier ennuyeux",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "fe29db74ba04179d95940227c8a39cce414465ab89e97b0d86e60b0c347ec17479efb89dceeece487bf6566b87c6b14b0fa9a923d008bbec09c7c33f57f92bb5",
+		"bip32_xprv": "xprv9s21ZrQH143K3APZULRoQGsi7poRS72TRWDntTsqNJXFSjgePMWhseVw6kza6yyfxMAKLRkyp9GSkVLZjRQre7yTf8wsUhtxgDvY7WJVSxT"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir orque",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "be5517c14c7b48f0adf1a765f223aa87ffae4ee65af196a364f9ce25626885f29c891b2c7da504b5d82914934fafcb0d0ca571e2cd494f086d9481876adaa91e",
+		"bip32_xprv": "xprv9s21ZrQH143K3dawRRxDJq32Q47Z3RsnzNeS6QrZPxtpbcLbiuH4Z2TZxvPL8DQBDLkDbq4rz9WBWzRscuyFDkfQcDn19WujrAHEHezD7sf"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier étendoir",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "554d823f985e3e058c5161f54f78239da28fe27f4110cfeda6b029cd6c5355e5ece57ac8ec12fba90b82e31fb3e24897ba092706cc44baaad506c0b7c8383b38",
+		"bip32_xprv": "xprv9s21ZrQH143K2hokJQXCJAyqsgJm4hKL5FwRCabdobjXpacg4q6ZcUax3g2fvnvvsLJV8Ryse68fKuygA1DXFCNGjtxorfC8BJ7Uc5v94mJ"
+	},
+	{
+		"entropy": "55555555555555555555555555555555",
+		"mnemonic": "enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir olivier",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "ff7fb0a7d0a73af4a5e7df6643efc08b09676d27db3bb773406973bf99783ae5564ccc974dadf0ecfed4e8b5f69cc4af7941f09203b8f2f47b8ea5e3d4db3830",
+		"bip32_xprv": "xprv9s21ZrQH143K43DMMBQ2ceJ83Yh2o2ijcCM27NDR85PKKd8Tn5C12GL4aJnfkjz4bz2hAEjfXm6hPubKKUwBMWQemC6otb4CjJcVN4CcrNV"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555",
+		"mnemonic": "enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enjeu",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "f53a7ecec238bcad6b7e5373a23be02f0b437f93e560d501b254a1a5579c9bd41a3049e2e4e48d4ed2ba4b40c15dc2d9d1f57b8bdf1e6bb81f2c5dab63c4ec3b",
+		"bip32_xprv": "xprv9s21ZrQH143K2vYn71fNmfGJaJAu7tEb8LkgM9xdZddGxWQYeBN4UrQvwf6cbPqyaPUwg9wTceCjB4jbKpuYHX4qvBqzaegeYSjcAAPzyzd"
+	},
+	{
+		"entropy": "555555555555555555555555555555555555555555555555",
+		"mnemonic": "enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir onduler",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "c3624b100649745984d5227f084a9f0cda5c61561754a60b2949e747dce40a340fc704daf76d66d729e4ddf80703ccba0a293f19dcaadfae59228be331b944fd",
+		"bip32_xprv": "xprv9s21ZrQH143K38TQz8d1rZNk5UDQPwnQDRVC3fU6QrkvBZdkJpbWhkcp1jnku5QTepP2WvRrQpV3k9EwAVjnfG5kWGJXsFXCo9NGQ71Qjke"
+	},
+	{
+		"entropy": "55555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enjeu",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "521ce6d133cd84bd64069c227fa0d823d6c4dad795402dcd1e6c4aac63e32b08b4a8582f228bf2de642175ea7b150d3a95ff85527ce76e2abe667b3df88e0974",
+		"bip32_xprv": "xprv9s21ZrQH143K48rZEm3yupZvQjsq4xXJwQuXMhBWY2h2YqJbamB2aQg6k8SCx3v43fR35zBMYs3Tc3wFZJHTLAfzQwvnbSc5GuVC37DCe2c"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir officier enrichir palmarès",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "1d4abe127dca293e037fbe99254a747a9c1cdf78bb461ea336ae5670a63ff583393281bf6042c80bd2fe2802e6848eb4075055c7e15665b9de7e1865964b251f",
+		"bip32_xprv": "xprv9s21ZrQH143K3q4QRqsRJhFen18wjZgqxkhrNBSUNfWjMfi67DDthQep2axvY5ibkzY4tD8J6CP3X3taoQ1kYH9JbfwwUmsaK7urePWrQT2"
+	},
+	{
+		"entropy": "9e885d952ad362caeb4efe34a8e91bd2",
+		"mnemonic": "monument dépenser féroce entasser comédie ferveur optique sonnette codifier discuter dioxyde nerveux",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "d67b568d140d57fa76c5797eb9a2d75e84a336fe672316cb07cf3ae394b3af5fec88ce2cda710c476c6235d158a6be094ccfa330a24d57247b1c522d19745950",
+		"bip32_xprv": "xprv9s21ZrQH143K2F5TuWYgothNNHJZQrZ5wUEk1PJBuhoQi8HgeRG85vbWE95PvULd6saRN1UAeZaW4G1sYftr75EYt9kFNu7ZHRnsF3rUa7y"
+	},
+	{
+		"entropy": "6610b25967cdcca9d59875f5cb50b0ea75433311869e930b",
+		"mnemonic": "fiasco ivoire mardi révulsif signal enlever envahir anormal vaisseau essayer céleste sagesse engager mener différer ruisseau lutter esprit",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "4bb3164412ef1596b865f99b9d9f952600d405a196ecf40e86aeb3cb6ba64279ef9a59fac5fabb95bb455c801ceaf747dcf6a83cf9164c3af0dfcdd6efc5d100",
+		"bip32_xprv": "xprv9s21ZrQH143K2bqjZasJ3JgRbRQr8NC9uGQorQak9yKDu33asaaFM5dYXAnXbGMLEqRfh2Jj1A2nieVziXKMBBdu2waNjpVK8XCd8ceuW9Y"
+	},
+	{
+		"entropy": "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+		"mnemonic": "flatteur cultiver oisillon destrier brusque crainte oisillon labourer remède substrat parfumer banquier flèche enclave fémur sombre jongler damier insigne voguer rasage gomme crainte incendie",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "fed9e4aa11e4b4294f93755da5613fa8142ccdfe66394fa790087fcc3f9a244329984ad70bb99c2c9b409046a8e33b9cf65e4b66509593f2fa365157deeaa47b",
+		"bip32_xprv": "xprv9s21ZrQH143K3RCJrNZbdjtcAprrCLQoair94oNWyoHfoyRsTmovGicDBraYZ1xegsU9mF68vpfPPMo5sMA865wcGV9nYxuXapUHaTdZJZk"
+	},
+	{
+		"entropy": "b3ffe8f56d54805218090de337779328a3a2e758",
+		"mnemonic": "paternel xénon curatif séparer docile capable exigence boulon styliste plexus surface embryon crayon gorge exister",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "cff9ffd2b23549e73601db4129a334c81b28a40f0ee819b5d6a54c409999f0dfb6b89df17cae6408c96786165c205403d283baadc03ffdd391a490923b7d9493",
+		"bip32_xprv": "xprv9s21ZrQH143K2UjXswfAYB9whuUynvsmUtqePhpYk7TRvu7qcyvGhxgq4C7JHGC3eq1DP9JUMKUkSpkrhGmXfuEJWq4BwXzXMGpZhSWewtJ"
+	},
+	{
+		"entropy": "437dd688276ceb711cda3a126eab879a188a30b097b769a931bea6fe",
+		"mnemonic": "déranger tragique nageur effigie retomber phrase gomme discuter article gratuit sphère cobra junior baignade progrès vaseux fluide dorure gardien écrou trafic",
+		"passphrase": "nullius　à　nym.zone ¹teſts² Français",
+		"seed": "e2e0ad77880fe67d5f687f80244360a33ee6589e58ae529b9b79b005553d532945db78a40eefa3af24895dde862fd039bc6e54a59f9af5229223044d7bc364c5",
+		"bip32_xprv": "xprv9s21ZrQH143K3jnbp6bxGpuoD5PYmyGtm22dKZECxzZCZq65LXQLrb2vJxhyVX8kiuX3QqJFb1pVnnThtWWXVQ6TsLQRfvy3LXrZMNJXWq4"
+	}
+]

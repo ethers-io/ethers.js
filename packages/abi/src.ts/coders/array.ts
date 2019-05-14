@@ -1,0 +1,159 @@
+"use strict";
+
+import * as errors from "@ethersproject/errors";
+
+import { Coder, Reader, Writer } from "./abstract-coder";
+import { AnonymousCoder } from "./anonymous";
+
+export function pack(writer: Writer, coders: Array<Coder>, values: Array<any>): number {
+
+    if (Array.isArray(values)) {
+       // do nothing
+
+    } else if (values && typeof(values) === "object") {
+        let arrayValues: Array<any> = [];
+        coders.forEach(function(coder) {
+            arrayValues.push((<any>values)[coder.localName]);
+        });
+        values = arrayValues;
+
+    } else {
+        errors.throwError("invalid tuple value", errors.INVALID_ARGUMENT, {
+            coderType: "tuple",
+            value: values
+        });
+    }
+
+    if (coders.length !== values.length) {
+        errors.throwError("types/value length mismatch", errors.INVALID_ARGUMENT, {
+            coderType: "tuple",
+            value: values
+        });
+    }
+
+    let staticWriter = new Writer(writer.wordSize);
+    let dynamicWriter = new Writer(writer.wordSize);
+
+    let updateFuncs: Array<(baseOffset: number) => void> = [];
+    coders.forEach((coder, index) => {
+        let value = values[index];
+
+        if (coder.dynamic) {
+            // Get current dynamic offset (for the future pointer)
+            let dynamicOffset = dynamicWriter.length;
+
+            // Encode the dynamic value into the dynamicWriter
+            coder.encode(dynamicWriter, value);
+
+            // Prepare to populate the correct offset once we are done
+            let updateFunc = staticWriter.writeUpdatableValue();
+            updateFuncs.push((baseOffset: number) => {
+                updateFunc(baseOffset + dynamicOffset);
+            });
+
+        } else {
+            coder.encode(staticWriter, value);
+        }
+    });
+
+    // Backfill all the dynamic offsets, now that we know the static length
+    updateFuncs.forEach((func) => { func(staticWriter.length); });
+
+    let length = writer.writeBytes(staticWriter.data);
+    length += writer.writeBytes(dynamicWriter.data);
+    return length;
+}
+
+export function unpack(reader: Reader, coders: Array<Coder>): Array<any> {
+    let values: any = [];
+
+    // A reader anchored to this base
+    let baseReader = reader.subReader(0);
+
+    // The amount of dynamic data read; to consume later to synchronize
+    let dynamicLength = 0;
+
+    coders.forEach((coder) => {
+        let value: any = null;
+
+        if (coder.dynamic) {
+            let offset = reader.readValue();
+            let offsetReader = baseReader.subReader(offset.toNumber());
+            value = coder.decode(offsetReader);
+            dynamicLength += offsetReader.consumed;
+        } else {
+            value = coder.decode(reader);
+        }
+
+        if (value != undefined) {
+            values.push(value);
+        }
+    });
+
+// @TODO: get rid of this an see if it still works?
+    // Consume the dynamic components in the main reader
+    reader.readBytes(dynamicLength);
+
+    // Add any named parameters (i.e. tuples)
+    coders.forEach((coder: Coder, index: number) => {
+        let name: string = coder.localName;
+        if (!name) { return; }
+
+        if (name === "length") { name = "_length"; }
+
+        if (values[name] != null) { return; }
+
+        values[name] = values[index];
+    });
+
+    return values;
+}
+
+
+export class ArrayCoder extends Coder {
+    readonly coder: Coder;
+    readonly length: number;
+
+    constructor(coder: Coder, length: number, localName: string) {
+        const type = (coder.type + "[" + (length >= 0 ? length: "") + "]");
+        const dynamic = (length === -1 || coder.dynamic);
+        super("array", type, localName, dynamic);
+
+        this.coder = coder;
+        this.length = length;
+    }
+
+    encode(writer: Writer, value: Array<any>): number {
+        if (!Array.isArray(value)) {
+            this._throwError("expected array value", value);
+        }
+
+        let count = this.length;
+
+        //let result = new Uint8Array(0);
+        if (count === -1) {
+            count = value.length;
+            writer.writeValue(value.length);
+        }
+
+        errors.checkArgumentCount(count, value.length, " in coder array" + (this.localName? (" "+ this.localName): ""));
+
+        let coders = [];
+        for (let i = 0; i < value.length; i++) { coders.push(this.coder); }
+
+        return pack(writer, coders, value);
+    }
+
+    decode(reader: Reader): any {
+        let count = this.length;
+        if (count === -1) {
+            count = reader.readValue().toNumber();
+        }
+
+        let coders = [];
+        for (let i = 0; i < count; i++) { coders.push(new AnonymousCoder(this.coder)); }
+
+        return reader.coerce(this.name, unpack(reader, coders));
+    }
+}
+

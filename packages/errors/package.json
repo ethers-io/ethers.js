@@ -1,0 +1,19 @@
+{
+  "name": "@ethersproject/errors",
+  "version": "5.0.0-beta.125",
+  "description": "Error utility functions for ethers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0xdaa9e78cc9425c9c650900552749b0fd0889e1d325b3f80261433811811e70e4"
+}

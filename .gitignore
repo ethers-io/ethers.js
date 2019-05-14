@@ -1,0 +1,15 @@
+node_modules/
+obsolete/
+.DS_Store
+.tmp/
+dist/types/shims/
+shims/*.d.ts
+**/*.swp
+
+# Weird intermediate files tsc generates for references
+**/src.ts/*.js
+
+# Weird file Browserify sometimes leaves lying around.
+**/*.tmp-browserify-*
+
+lerna-debug.log

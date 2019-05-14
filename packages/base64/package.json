@@ -1,0 +1,23 @@
+{
+  "name": "@ethersproject/base64",
+  "version": "5.0.0-beta.124",
+  "description": "Base64 coder.",
+  "main": "index.js",
+  "browser": "browser.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/bytes": ">5.0.0-beta.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0xe5da4b9df9188216fed902efb45ee9af1cdb9a47c1212d9a674a93c5adb716bd"
+}

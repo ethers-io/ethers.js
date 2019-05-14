@@ -1,0 +1,317 @@
+[
+	{
+		"entropy": "00000000000000000000000000000000",
+		"mnemonic": "가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가능",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "a1aab56e819befcd802ca8f7f0207277e7b52c5d1c484cd80a4e7c61d0450b58f32f751f069794e10b7600954dc550cbe9921da626bc0440f0530b5b1c98a595",
+		"bip32_xprv": "xprv9s21ZrQH143K4PSLna2ShAbusJFUDGMRz53KP5Kmtiv89pFcGobxTpbPJ5FwYaLhBfmLeZb6BoJX818XBVfiDymuFUg3qjLKHh4TbD63w1u"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000",
+		"mnemonic": "가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 갈비",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "1c227a72ccecf5ddcfe325c05c3285d29440cf31a7a30beb93ce1df6379c8b0a00f048bbee5b5c555a1dd16f018c79b8c326b59ae54a2a06fe635be11d88b2cd",
+		"bip32_xprv": "xprv9s21ZrQH143K38YAwMRhWw54RSe1Qrd7uVpApz7pxazaEtwskHMgPmJnW6o7rUQ1Vybn7WSdMVEJwLsZTnNKbFVRvUgPa2TyJYLtXi7BwaP"
+	},
+	{
+		"entropy": "000000000000000000000000000000000000000000000000",
+		"mnemonic": "가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 강도",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "af252340571dfa0131f7f475970555feb6a4206b479aad584e3a33eae840ae1aff7b057699620fa4394affc4976613e4f152ad1a96117125b79adeb276110e55",
+		"bip32_xprv": "xprv9s21ZrQH143K3h6mtwSX5FZqFbG97LD7wWiycf5CUzKwF24UG6TSgxKmmK4BwYUrX8PZ4Pjy77ZvdfT4GYinKV5FQbyg8ebmdPCYRTSxe9j"
+	},
+	{
+		"entropy": "00000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 갈증",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "9450f7bdc77240878d63ef847cedd52ace8b5dd5bf536b84e0d2004b1eb23717015a36f4c0f27096975cc38e7e6a44f847dba4cf7a858e58905516c05b9659d3",
+		"bip32_xprv": "xprv9s21ZrQH143K2crrhJLRwLo7NsCoe5CdmfougR3rgLjxr8y1M2pBK4LaSm6kvbBiPBYQ7YZ5RB6T5t7f3Q35d3CMxPMzfAsfJjMybKrj1xC"
+	},
+	{
+		"entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+		"mnemonic": "가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 계단",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "6486fcaa1de0604a21be7412d7653547e0709d59f99fd7f0f00d322bc1d862717d5702fedcb714561f8414102c3239ee048f7cced4dfab6976231b239f48bd5a",
+		"bip32_xprv": "xprv9s21ZrQH143K46zyZt9zT46xWTEPB17x2L31UNs1PvQJUKxki8x1f6pMqgLds9KwomRQJSxUaMKfdNeZ9uhm5F9voWoZJ666YuqAjFU6qfo"
+	},
+	{
+		"entropy": "01010101010101010101010101010101",
+		"mnemonic": "가상 걱정 무슨 가족 공간 실현 감소 기법 가상 걱정 무슨 갈색",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "6ccb2474d952b659a96e2d90f76994e645da1670cac4967d777699ea324da18d57ac120b94733f4980bf43eeb22be880f3a0c80b5642aa714df3316d17ebf368",
+		"bip32_xprv": "xprv9s21ZrQH143K3VQBXDRATcWuSp4jvXaDC7E5Y51deysFJ2hs6EZM2fXJs5VoL1LAiek84eVQsQb4zQ1vWynVfkhZe7rXC22Aj5ywtJMM2qn"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101",
+		"mnemonic": "가상 걱정 무슨 가족 공간 실현 감소 기법 가상 걱정 무슨 가족 공간 실현 개구리",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "5c33b1ad537488b043bb8f4e28056f2674e33d242396f704d5f25d8f68d3b7e87200444942f144c210e6843d0122a96d3214a58c3e35ca8f6e653706f6a1e887",
+		"bip32_xprv": "xprv9s21ZrQH143K3QaGgvSM5GHcAHNJc3a9Rt7EUP3hQyc87BmNbuD6RgxPhpYqCKDdpcLoMM1vnYz8GjMQ6ochtf2w1cZ6tNN9KLK98gQFQwj"
+	},
+	{
+		"entropy": "010101010101010101010101010101010101010101010101",
+		"mnemonic": "가상 걱정 무슨 가족 공간 실현 감소 기법 가상 걱정 무슨 가족 공간 실현 감소 기법 가상 경고",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "643b8dffbfc8545c31627bb84732c7f43da242ddec3e3c4f8ecf71b83587682f9b39c1071da99e635eb3c09aebf4f26068889b1e9e29f95ea8fc9d032157a992",
+		"bip32_xprv": "xprv9s21ZrQH143K2PUvomun9dYfxKeBKztXBPxqaVszR4Xky6GAmuCYvdsf3qBbCzmVtfMdR7jCVS7BmRTNpHR91DqJJTWMzsrV4EKAX25DbzN"
+	},
+	{
+		"entropy": "01010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "가상 걱정 무슨 가족 공간 실현 감소 기법 가상 걱정 무슨 가족 공간 실현 감소 기법 가상 걱정 무슨 가족 공통",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "bdd5f2dc652a54b3f674a719a0bc0b1e9dab9596dd08402b03ae5cfc3be7e6c3c071b5a2999b121ae141040b2f594754a1995ffd416f24b63aed867a1d2fa0a7",
+		"bip32_xprv": "xprv9s21ZrQH143K3M48Vw9bSTKU1Tkm7842XcCpR1V2PdXvWQtdtXbpt55H2BbUVvqMfy94jmTyht33Ma4vrKvxZufkKUZHrFqYLXqyKzZHXy5"
+	},
+	{
+		"entropy": "0101010101010101010101010101010101010101010101010101010101010101",
+		"mnemonic": "가상 걱정 무슨 가족 공간 실현 감소 기법 가상 걱정 무슨 가족 공간 실현 감소 기법 가상 걱정 무슨 가족 공간 실현 감소 담임",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "67263e6e5f1f00574119f2b12767a951ee182db5a274a3e914466514bc90b34918b6bf858b8cabfa467ad95cd797e2d3adc33b711e52266dd8168d1979913431",
+		"bip32_xprv": "xprv9s21ZrQH143K3VLD1psn871P6SSJkMpUiV9B2UKeumkRaS3U61dQ2YXAH6aDVG7YuMeCvr8mpTsP2LSHeSkDG4WNjSHiWC7mWB9e8VGiJMz"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "실장 활동 큰절 흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔히",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "16e0da3c0f2372180c351be5ad922558d481b41bc85a0880fed7a71d840bde9ea0e35bc16437c35e91833a8058cbd3a9fabeec0806f5a4fd00e35d8d81949514",
+		"bip32_xprv": "xprv9s21ZrQH143K49NpTgmaYXoLd3AJcFyRUtPWPmwvu1svwtkMKkxyFXWXvyVpGVyxxFyLCKmFpCXWAZ1uzpVqaWr1N3uTudoK5w3nnLT2TgF"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "실장 활동 큰절 흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔적 형제 제대로 회견",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "5d5b517f16656926550816ac5eb3175b9fe4ad3fe18800c9beb65bb775f4e595b3cbde4de374f4a4abaafa2d5288556d83f729ac512e63848cebe530c5320b77",
+		"bip32_xprv": "xprv9s21ZrQH143K2DyHnkTcfpVaySZeJfdZ2k3zymtzugB1m8WJWKHVodUvC8PNVbSBFXXocpdHD5mYfYtJNDu2yU2LW6HVivsB7Lz1umGsyQD"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "실장 활동 큰절 흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔적 형제 제대로 훈련 한글 실장 환갑",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "30d50e373f5a61c5b1c51d181a695f63cc32b1d12463669439ae150d4aad8801a4e24793f4e7d4d7b6cff4d59e20b633041dbe2560a57929ef53296d7d8e38d1",
+		"bip32_xprv": "xprv9s21ZrQH143K2zCRW9iEnZWC31dGmBHvQyvPByAuhgBiKgr4coR4BP9Tk7u4QmuCYFLVjtPvVHnMqZ5zynJ2y2DWghgby62EbWLzrmKgNp1"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "실장 활동 큰절 흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔적 해답",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "49608bb6978fe04467fd64a35d86b7dfd311ccccf0a7b6a979851ea239954b294c12c971a49a7b7253849a76557f0a2244e890aedd40c112da633899f153cb76",
+		"bip32_xprv": "xprv9s21ZrQH143K4D9M8ugTJ4bXaHu9eFyNbQNzvUchVJ2n21jKMiNPvgwecjjcPtGmK9EE4DD5fkiuvzyxTSauuvfETGfR7Qbun5aG7fAHptx"
+	},
+	{
+		"entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+		"mnemonic": "실장 활동 큰절 흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔적 형제 제대로 훈련 통로",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "aaf3a4658608ffa1732b8f70920ca86906f1f2874665e1ecb0d1cfba7f69fe0fa54260594f02fba6ffd664c32a8d16be21c8d16cfbb9141ccd4f4d53d2d0482a",
+		"bip32_xprv": "xprv9s21ZrQH143K3sKACtqnaAgbNne1H6CGQ746toDpbrkHjmTdrvWHydpw1QLG3QdtXZcA3rGJekh7ZtoPaHfuYJEAQ54xoyY8hUAWXuJk7nk"
+	},
+	{
+		"entropy": "80808080808080808080808080808080",
+		"mnemonic": "실현 감소 기법 가상 걱정 무슨 가족 공간 실현 감소 기법 가득",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "5efb2b6264604507cb066afb2ca584ba511c7fb5059dec67c256a04a956ccdf1fc30bed8df8b5f27dbf82d1cfbd17e102c2bc3641d95671b4960907eb0469f9f",
+		"bip32_xprv": "xprv9s21ZrQH143K2hd378z1qPgLg4zQ2Gw73SKYAjdQd9KMqNRVR5cgvQ7om9piEcDZtdBKZBDsn5RJ7TBM5AKkgGpkmFqqpJ1RzHLazswVKoA"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080",
+		"mnemonic": "실현 감소 기법 가상 걱정 무슨 가족 공간 실현 감소 기법 가상 걱정 무슨 가을",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "2d756e45a4565df06e72889d2d9b4b6afc76a766049b995830990440be64de11684c0455f6ffba44f6e88e17d6abbab9304e3e2cba86b2af531d36fea4cb70a3",
+		"bip32_xprv": "xprv9s21ZrQH143K2jH6idboRugeLVwBYDums5gGBvJcDy2yVjXpNsTphjZnu8Rq2k9omvG9EruuVSDpGQarjVxfjS72QLEbjMfcahbyH36Z4jk"
+	},
+	{
+		"entropy": "808080808080808080808080808080808080808080808080",
+		"mnemonic": "실현 감소 기법 가상 걱정 무슨 가족 공간 실현 감소 기법 가상 걱정 무슨 가족 공간 실현 거액",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "13522740b92356d8ddb114e9caabd0d98c66a9a0fd6e8d0fc2dcae19c7ec84c8b28db32bf5c8e7308076b0bb0daba842baa8570157068060de18ca964250b075",
+		"bip32_xprv": "xprv9s21ZrQH143K2FS5S4iafhGPui8Z7e4Th7jgMyiZvc5hi8daNChKd8iDwj4XiNLt83xVboHPQprhkLB6s2hCy8P5UUQ63zRon8iFfxPYiNj"
+	},
+	{
+		"entropy": "80808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "실현 감소 기법 가상 걱정 무슨 가족 공간 실현 감소 기법 가상 걱정 무슨 가족 공간 실현 감소 기법 가상 결심",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "a4b53c5c5a3f1a49bb0a213d5f38f6bbdb7c6685ed2bb3af0e4df72212b6d9419ea66a58b1b5c60b4810289303cb225da39bced79bce980c9d0c1298d6ac6b19",
+		"bip32_xprv": "xprv9s21ZrQH143K41xETuzusAwYvjfT376ad9beHoouGJkp1xdXMZ9LDWM65gz6u8916c6tDxZ4LgujMbUnCsJ5aC4EkTGY8inEscw3FQW7Fxd"
+	},
+	{
+		"entropy": "8080808080808080808080808080808080808080808080808080808080808080",
+		"mnemonic": "실현 감소 기법 가상 걱정 무슨 가족 공간 실현 감소 기법 가상 걱정 무슨 가족 공간 실현 감소 기법 가상 걱정 무슨 가족 구속",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "8807b10e91564b550e4c2455a9084223a771076a310fd6cdad440360efd41654712a408c94328a0936ac2bfb3d2bd24508cd4ac682e90737248a07316031f098",
+		"bip32_xprv": "xprv9s21ZrQH143K2h1jvqcuoCWBCyuP6WhZMvaMSmMv57h3QxYHnuGvxKfmq6aKViy9BFMYmkVUwygHMqZYYeSxDnvswV35LNguccSBR78FpaN"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefe",
+		"mnemonic": "흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔적 형제 제대로 회관",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "871d0b90525db8bb9a311ceff96bc8fd7b077846cc75f7611da4b9446c87ed3e17c11d3bdf113f1ba5d8686baa5608a704970735cc72f63efc33f2ba2154c9f9",
+		"bip32_xprv": "xprv9s21ZrQH143K3KYLtQznenqwwq8x7CqWYhTpxQKnk9YrBK2A9KwTGqEDo7YP37cQkF38Mhys3zvjpMjqJuAcT31BxD87NDghiBMaeTRwJJN"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔적 형제 제대로 훈련 한글 실장 확장",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "16a62b2f3ff9807640adc647ec994e9e14c0ad437e4e4ee076bb13c96003438a05553ae19103258d86397e8aeacaf1e181a078d815fcd4f3c960f596a7216440",
+		"bip32_xprv": "xprv9s21ZrQH143K3N6wVGiqbKqXN5yg3nSBDbQSk2oqwKSfS9M4yeHVu8PywHAmnuvz7TBAuBEjsZi9rcQKP6bdfvBeHdYH2pfvwDXjXkvx4sp"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔적 현재",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "80e52cea7a129e59359899f611349aa662c029892800fa1cd291b18b3519927745329d7ee8b1928650e2c2763b1347cbdf8aca1c8531531f7c9bab75e204303a",
+		"bip32_xprv": "xprv9s21ZrQH143K3uAEN5NJPYtmtoZJ6hzoJTnkGxdsCs59BNeUWaPrHAuPARbAKkWrVVPvJy7C5KieFZ7kvvctN4zvwHYZ6B5KvKXWNxvJED1"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔적 형제 제대로 훈련 팝송",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "578f78a8e9570192b3ae54a28eeff77905e2403be5aa29a2361979510b8372c637bb421262312973470511b815e2819d178ced28ff3e59b52b839c68c7e60744",
+		"bip32_xprv": "xprv9s21ZrQH143K3oBz3bgh4G6Pm8SSm8FrxXvaPfKpD9qQxZ7frJrggAiJMPPweMszZh4nfVNpVxFYRGWxQ2TmY8hYrCTiacn8Ltf94vTgr4E"
+	},
+	{
+		"entropy": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe",
+		"mnemonic": "흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔적 형제 제대로 훈련 한글 실장 활동 큰절 흔적 형제 제대로 훈련 한글 실장 활동 출산",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "ef0c19cff9a43f736c3d8ab375b0a2b7a8dce7f0fc426557ab26d5efe721df86c64abe298289d479f580ce41cbe2cb989b8f8f1876184906b365cc5a85efb612",
+		"bip32_xprv": "xprv9s21ZrQH143K2t8GeYx8EWXtXYxs8sK4g64WamvNB99H6wCgRW9dgcnA48YaJgBH4HDAJafVrEr79uHaQQeXxTk9yf1C2k9k5FKJnfhBxRj"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffff",
+		"mnemonic": "힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 흑백",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "4cbbc2afce579100a49b150c78dc0791aff9a9b7b45b44b5b4317d8c5fc9200886105f78197ba90a32fce7997c3ffea47462eaaaa07434f4f9c8e021dd705dd3",
+		"bip32_xprv": "xprv9s21ZrQH143K2QHYWzR5LBEBsUhXnsY4gGdh2x66R4GKkewAmbkAVDpCF32Fmkt195r1mesE7Pg7QQzpD6A27CKT6PSCY5AUAooQ5gw58AD"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 흉내",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "67b4f51e1850d58af6005016a27ff27b5e7cc3b601235da600b98e1a43c802664a00927fba828d2f9751c249350e64480439bbbfdc6474c796029769299d1651",
+		"bip32_xprv": "xprv9s21ZrQH143K3hxQeUHREDqWsJtEKwTd3WcVQqbwLh2p93CbsjHGdBGJCNP4X9x4WQfDBt7Ji42AuSb6c3yLCBYoudZZ9Ud22HJkjcXvrCw"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 화살",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "1de9549e012e0db31be3291b9e22a0819a649e4cb45e3cd18301543871142c394f90eb7f2721a4952179afe5b786e87dd67d4fc80e88500ae632ba493c75136e",
+		"bip32_xprv": "xprv9s21ZrQH143K39feVk1gvyDUX12MWytbG4ssMQFhw2kBJvoDZu8g8SxFW7wTdZb4AYCEuAgAyz9mT9KhZvv2J5iE2iBpd22kxNcRoh73hD9"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 해군",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "564cef4ca5f7c79312e8c19dc74274e2838b4e3dbd0055166ff63e9e9b9a86dbb62d042115cf26a0b84906fc234d42e70981dfbe14fb04b2c552d949ec24258d",
+		"bip32_xprv": "xprv9s21ZrQH143K2nbNStKe1HuEG1pc8kUZ6c64JMQ7AHD4sWFy2oM31Mp2iqK3L2U2E7kJh2hUXbCL3hzRVENUkQEMeQ6SF8VCsZjNv2mCWvq"
+	},
+	{
+		"entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		"mnemonic": "힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 힘껏 허용",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "f98597e3ba0c15c43715ca4d84e210ae5c719ea7df25d50cade9ef5c4ee889b22bcd149ec9944503625765bb42f1b6e2f19dbe72b609a11b225775d81b9593e0",
+		"bip32_xprv": "xprv9s21ZrQH143K2uniuED4SUorsQtLR5Gd9rYkkJ52ScZjmwA4XRGccAKtQLBgM5139ny66UgzNvK4fqJPdVCA6UHunvhgs7n47cPR26YsoBT"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부문",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "a91cd7cb18f7d07d74ed4976f78f32843e747621a7d6e885e3c9532889912fbb9c708515be99d53529ab8f373ce512f3504c4708c2d6a69fb24be7ad557d6a75",
+		"bip32_xprv": "xprv9s21ZrQH143K3t1f8Ri4BJ15aUk84ATTCK1kfrrkP7conWVnaVpjvWCn9L7M8oWu4bBBJAKoX9VDkaZWJz9zFC15CAAspA7xGsof8j31zVM"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인생",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "b982468dbe91b78c89143e99b251ffd74e7153b0c5564cea520bf5f669f570dddadc660652b6941358388ddcfd412cf44a95c7569db35d5a931b6e10a8fe5cd0",
+		"bip32_xprv": "xprv9s21ZrQH143K3NSM8gMEpHJgEcGwx3NYGpmrqMSFPPLGPkcf5PjEKJ2Vb4GwHRGaYLvSdEC8AtHHvHh63T1zvGb34G86ELDt4s37hnsWwL5"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부담",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "853fb5bb6fc961887f8c1aec9a1170c0ffaf5af32c412d95db3ee11402b12147223f2f78ea8caae48a9f0b6160cb26208d4dd634c2b7b31fad1a42b02a9d379d",
+		"bip32_xprv": "xprv9s21ZrQH143K3ty7yZpQX5k98wCSLiQRbgqCvuban9wHPfJ5Tk1wH96NvTivQjcZvnG8jGrx1XZaCwJsh7kVnfFwMNaYmr1YabxJx7umpEj"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 입사",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "bad0982e05abc064a91f49aa8bf996226a5578cd4f08f58de3ca8e9d96197e9c115704c5eade4d4ef19a97e88d0cc7ee9eeb7bd716597a00772a5a0e3f416c79",
+		"bip32_xprv": "xprv9s21ZrQH143K2HDnyrz7TuWLTEqh5vndkkVDB5zf37yyYyarNjeBjdZwDY4MCYm2gQugG4jEBDHmrkGz1fUERkpPL6VFWjZDSmqGEpfBGnt"
+	},
+	{
+		"entropy": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mnemonic": "인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 비판",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "12e619b2c0e2bab74c49c1002eaddae3471e8e1c41db6fc8ca5ceb1fd1670f4b219d9469859a00d46eca71e829d05598da80ecb4cc4dda4dce665c92ec60b22c",
+		"bip32_xprv": "xprv9s21ZrQH143K3h8VBeLENWfMhFhrkXukmNy9rnrNoSXdaeFW7JVQ9TGtXAa8MwQHkXtUmYgVWNirj9HdDauFeEpHF2oT1H5J3nNe9ToVL8f"
+	},
+	{
+		"entropy": "55555555555555555555555555555555",
+		"mnemonic": "부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 일단",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "6fe383ba117ea723d828ebf266f9feb78c186bfa752a15c8ae59a3f6f12dd5cb4786fd8ce1393d4fd1987c1603556d42da371d7ac771dcdc609cbde48813c51b",
+		"bip32_xprv": "xprv9s21ZrQH143K2813mNTGYRL7ApLs7iuuouBZQ4ygoZa6xXYX8N31MwFJ2FvHckhCGgGjeRqqEcsgbdohahLzDDxm7bDWojtBcs92NFhnanj"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555",
+		"mnemonic": "부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 봉투",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "8befa8bc920ae3b3b243f3e4d696146531eb943106fcd12fbcf79749162854cea3e401861d466874fb5f04bd2d571b1f3cc5a97f17e01406e22dafeebe134bfe",
+		"bip32_xprv": "xprv9s21ZrQH143K34Zwncmc5tVNZx2SYxvoKD6SfFtqKEmzeteVWWcj2eNCHU5LYPYjP1N6rLksbea2DpU65kWmpjxFvnkzV1YrR6ArNuYaG21"
+	},
+	{
+		"entropy": "555555555555555555555555555555555555555555555555",
+		"mnemonic": "부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 일본",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "f7f6547088ea7f6ea3250b3546cb574589070b996c295f22e9a1faccea44a9b7f8a521b0afa2d910c029e5ae128509558a1b458e0a11006690c09f5361b8e27d",
+		"bip32_xprv": "xprv9s21ZrQH143K269yuT54wNHRBf5XT4G3KpdaKZaiNDpu2PYtFhxaaSX4Svw7ryhw576fkZEtk7RQ6YPigwNAMSmHCHwYsyrgFcHvMfUUtGH"
+	},
+	{
+		"entropy": "55555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 봉투",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "53ff23877609b4d1f62110ad5b80658a9a5d70415bd80561b540a145c63fcd6dc2347c5298186ec61bb52dcfc2ed091704f64f9d93de4ce38fe9c37f1a75777c",
+		"bip32_xprv": "xprv9s21ZrQH143K2faVjPsTyCrinakSy2JEZTgw4odvDt1CRBroq6SmHQpFkcSjAMMq7s3PMvwCRXXpnhRZ4xFhnTNrq2oczHCHvJQ8bprNFrR"
+	},
+	{
+		"entropy": "5555555555555555555555555555555555555555555555555555555555555555",
+		"mnemonic": "부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 인체 부동산 자전거",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "ae2d2e2e8fb6a784b1dd54d546da729449c88a2a77fad1ebba491e8ca3c1be56917d78df5e5f729f178f4f3239d9faad20b04fb6746043f34c1ff4bccee333b1",
+		"bip32_xprv": "xprv9s21ZrQH143K2UxpeCzkUn2MNv9HFQGUpYkSuWG2vVK8mxJ3rFMnSe3eGCrSv51e8YoEJz3LDiqGvUj2jZSDfyaCgQW1qnLdSmhLzjsBahb"
+	},
+	{
+		"entropy": "9e885d952ad362caeb4efe34a8e91bd2",
+		"mnemonic": "원고 물질 생일 부산 마요네즈 생활 일찍 큰절 동화책 반성 반드시 의식",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "1a486f863d97d6a37092fbf733e11e381c068d5bdd53e290252fc387240afb91a53df0db9a7395fe07991ac840a9d1622599cad316b29e4e843e01b97c596aca",
+		"bip32_xprv": "xprv9s21ZrQH143K4aUK3zhGV79DjVGuAptFBLizGyQswzKCpj25YvqgAtaQKkbnB4ymJn8q7YLoerXL5CeXcMVx3KtbqH59aBUvXMLfpWSjCs6"
+	},
+	{
+		"entropy": "6610b25967cdcca9d59875f5cb50b0ea75433311869e930b",
+		"mnemonic": "서비스 알코올 오로지 착각 카운터 부근 부정 고양이 허락 비디오 단맛 체온 본인 완전 바람 철학 영하 비닐",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "011cc2166a15833f22d09f75d78e6989c10db2449d1c183dc7a0412659175fa0912a74761c2c7379aa7a23d4ef88ad4d9d7b427e1b32c7eac2f4ecf282538092",
+		"bip32_xprv": "xprv9s21ZrQH143K2hcbLcj2G1HEydsApnL3epHBETAXmUSW7dN5zYaKHbTU4GsNK75Wvu3igW4zp19wZwCQRw5aQMXjo8H6sdynx9knVFvsPFC"
+	},
+	{
+		"entropy": "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+		"mnemonic": "설렁탕 모범 일곱 민간 낙엽 매스컴 일곱 언어 지진 통장 잠시 국제 설문 복도 생방송 큰딸 약수 목소리 아직 횡단보도 중독 수필 매스컴 실컷",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "cc8bad7e09efb0c0ea0804d024c25dd2b52e212d46f5d9b07fec5610f03fff732974a156b1934995ca18a39118fdeb28327d7bf44cf9655ab52fecaccbdf5314",
+		"bip32_xprv": "xprv9s21ZrQH143K3S22FJd9AhoG911XXDpEfqA4Ss8xDLgZevTjDnB2iCScnB4UwkgDEbeygqP4Yodxd875pZdz3wA4R5CHjNysiu1NxQ1RdLc"
+	},
+	{
+		"entropy": "b3ffe8f56d54805218090de337779328a3a2e758",
+		"mnemonic": "장마 흥분 모임 충분히 받침 놀이 사투리 기준 통역 절차 특별 보너스 매장 수험생 산길",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "b679457ff480a029b11070fc499ce187e492bb444347dc1166f3c02500a2eb58f2c2ea393d5a58b9c5fa62282351155f38ef719a14b6e1e011ed25bbb5bb8363",
+		"bip32_xprv": "xprv9s21ZrQH143K3akSsiGZFMMdoahmioCgPNRiD6pTPqkymKnvYfKQ56WswJ2vHd8h6xcyhKBvHbrQdJfiW8obqudWcs7CVZfz1Ku6NXBdEeV"
+	},
+	{
+		"entropy": "437dd688276ceb711cda3a126eab879a188a30b097b769a931bea6fe",
+		"mnemonic": "미사일 학비 유형 범죄 차남 적응 수필 반성 공항 숫자 테스트 독립 양파 국가 조절 현재 성공 발톱 손질 번지 학부모",
+		"passphrase": "nullius　à　nym.zone ¹teſts² 한국어",
+		"seed": "0bab0c576d7dd9551c370a43f428e86644109abb99aabb72194a0aabfd58b26023a5b4a4f1d13c49e1dea4974a24a5c1fc8e39d7d6817d057b6fe576bb821450",
+		"bip32_xprv": "xprv9s21ZrQH143K4VJoApYtMMofhJUu1Tfd95yJYxRq2Ejpd2G7gyoiJLW6X7HN8BDFYms3fnByAbzn9qPhBXmH3XoagnZWLR7PhbFMDVZT2tN"
+	}
+]

@@ -1,0 +1,36 @@
+{
+  "name": "@ethersproject/wallet",
+  "version": "5.0.0-beta.126",
+  "description": "Error utility functions for ethers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/abstract-provider": ">5.0.0-beta.0",
+    "@ethersproject/abstract-signer": ">5.0.0-beta.0",
+    "@ethersproject/address": ">5.0.0-beta.0",
+    "@ethersproject/bignumber": ">5.0.0-beta.0",
+    "@ethersproject/bytes": ">5.0.0-beta.0",
+    "@ethersproject/errors": ">5.0.0-beta.0",
+    "@ethersproject/hash": ">5.0.0-beta.0",
+    "@ethersproject/hdnode": ">5.0.0-beta.0",
+    "@ethersproject/json-wallets": ">5.0.0-beta.0",
+    "@ethersproject/keccak256": ">5.0.0-beta.0",
+    "@ethersproject/properties": ">5.0.0-beta.0",
+    "@ethersproject/random": ">5.0.0-beta.0",
+    "@ethersproject/signing-key": ">5.0.0-beta.0",
+    "@ethersproject/transactions": ">5.0.0-beta.0",
+    "@ethersproject/wordlists": ">5.0.0-beta.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0xd686eb36478b47f97c2355ddd7d6197ea7e78ef744b98f18054c1c9dbf3510d6"
+}

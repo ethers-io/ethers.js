@@ -1,0 +1,158 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "es2015",
+      "es5",
+      "dom"
+    ],
+    "preserveWatchOutput": true,
+    "pretty": false
+  },
+  "references": [
+    {
+      "path": "./packages/errors"
+    },
+    {
+      "path": "./packages/bytes"
+    },
+    {
+      "path": "./packages/base64"
+    },
+    {
+      "path": "./packages/keccak256"
+    },
+    {
+      "path": "./packages/networks"
+    },
+    {
+      "path": "./packages/properties"
+    },
+    {
+      "path": "./packages/aion-networks"
+    },
+    {
+      "path": "./packages/aion-signing-key"
+    },
+    {
+      "path": "./packages/basex"
+    },
+    {
+      "path": "./packages/bignumber"
+    },
+    {
+      "path": "./packages/constants"
+    },
+    {
+      "path": "./packages/random"
+    },
+    {
+      "path": "./packages/rlp"
+    },
+    {
+      "path": "./packages/address"
+    },
+    {
+      "path": "./packages/sha2"
+    },
+    {
+      "path": "./packages/pbkdf2"
+    },
+    {
+      "path": "./packages/signing-key"
+    },
+    {
+      "path": "./packages/strings"
+    },
+    {
+      "path": "./packages/aion-blake2b"
+    },
+    {
+      "path": "./packages/aion-address"
+    },
+    {
+      "path": "./packages/aion-hash"
+    },
+    {
+      "path": "./packages/aion-testcases"
+    },
+    {
+      "path": "./packages/aion-transactions"
+    },
+    {
+      "path": "./packages/hash"
+    },
+    {
+      "path": "./packages/abi"
+    },
+    {
+      "path": "./packages/aion-abi"
+    },
+    {
+      "path": "./packages/solidity"
+    },
+    {
+      "path": "./packages/testcases"
+    },
+    {
+      "path": "./packages/transactions"
+    },
+    {
+      "path": "./packages/units"
+    },
+    {
+      "path": "./packages/web"
+    },
+    {
+      "path": "./packages/abstract-provider"
+    },
+    {
+      "path": "./packages/abstract-signer"
+    },
+    {
+      "path": "./packages/contracts"
+    },
+    {
+      "path": "./packages/aion-contracts"
+    },
+    {
+      "path": "./packages/providers"
+    },
+    {
+      "path": "./packages/aion-providers"
+    },
+    {
+      "path": "./packages/wordlists"
+    },
+    {
+      "path": "./packages/hdnode"
+    },
+    {
+      "path": "./packages/json-wallets"
+    },
+    {
+      "path": "./packages/aion-wallet"
+    },
+    {
+      "path": "./packages/aion-ethers"
+    },
+    {
+      "path": "./packages/aion-tests"
+    },
+    {
+      "path": "./packages/wallet"
+    },
+    {
+      "path": "./packages/ethers"
+    },
+    {
+      "path": "./packages/cli"
+    },
+    {
+      "path": "./packages/experimental"
+    },
+    {
+      "path": "./packages/tests"
+    }
+  ],
+  "files": []
+}

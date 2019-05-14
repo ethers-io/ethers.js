@@ -1,0 +1,6 @@
+# We do not need the TypeScipt source in deployments
+tsconfig.json
+src.ts/
+
+# To run tests, checkout GitHub
+tests/

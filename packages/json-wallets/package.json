@@ -1,0 +1,35 @@
+{
+  "name": "@ethersproject/json-wallets",
+  "version": "5.0.0-beta.124",
+  "description": "Wallet management utilities for KeyStore and Crowdsale JSON wallets.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ethersproject/abstract-signer": ">5.0.0-beta.0",
+    "@ethersproject/address": ">5.0.0-beta.0",
+    "@ethersproject/bytes": ">5.0.0-beta.0",
+    "@ethersproject/errors": ">5.0.0-beta.0",
+    "@ethersproject/hdnode": ">5.0.0-beta.0",
+    "@ethersproject/keccak256": ">5.0.0-beta.0",
+    "@ethersproject/pbkdf2": ">5.0.0-beta.0",
+    "@ethersproject/properties": ">5.0.0-beta.0",
+    "@ethersproject/random": ">5.0.0-beta.0",
+    "@ethersproject/strings": ">5.0.0-beta.0",
+    "@ethersproject/transactions": ">5.0.0-beta.0",
+    "aes-js": "3.0.0",
+    "scrypt-js": "2.0.4",
+    "uuid": "2.0.1"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0x4d9580ee8583276571285078677d76242e93047965013975d7c335e5aa97a3ac"
+}
