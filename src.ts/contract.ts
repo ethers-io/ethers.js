@@ -254,7 +254,7 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                         tx.from = contract.signer.getAddress()
                     }
 
-                    return contract.provider.estimateGas(tx);
+                    return contract.provider.estimateGas(tx, blockTag);
                 }
 
                 if (tx.gasLimit == null && method.gas != null) {
