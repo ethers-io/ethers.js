@@ -98,7 +98,7 @@ export function fetchJson(connection: string | ConnectionInfo, json: string, pro
             if (timer == null) { return; }
             clearTimeout(timer);
             timer = null;
-        }
+        };
 
         if (json) {
             request.open('POST', url, true);

@@ -822,7 +822,7 @@ var BaseProvider = /** @class */ (function (_super) {
             });
         });
     };
-    BaseProvider.prototype.estimateGas = function (transaction) {
+    BaseProvider.prototype.estimateGas = function (transaction, blockTag) {
         var _this = this;
         var tx = {
             to: transaction.to,
@@ -832,9 +832,10 @@ var BaseProvider = /** @class */ (function (_super) {
             value: transaction.value
         };
         return this.ready.then(function () {
-            return properties_1.resolveProperties(tx).then(function (tx) {
+            return properties_1.resolveProperties({ blockTag: blockTag, tx: tx }).then(function (_a) {
+                var blockTag = _a.blockTag, tx = _a.tx;
                 return _this._resolveNames(tx, ['to', 'from']).then(function (tx) {
-                    var params = { transaction: checkTransactionRequest(tx) };
+                    var params = { blockTag: checkBlockTag(blockTag), transaction: checkTransactionRequest(tx) };
                     return _this.perform('estimateGas', params).then(function (result) {
                         return bignumber_1.bigNumberify(result);
                     });

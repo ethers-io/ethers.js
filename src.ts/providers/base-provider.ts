@@ -941,7 +941,7 @@ export class BaseProvider extends Provider {
         });
     }
 
-    estimateGas(transaction: TransactionRequest) {
+    estimateGas(transaction: TransactionRequest, blockTag?: BlockTag | Promise<BlockTag>) {
         let tx: TransactionRequest = {
             to: transaction.to,
             from: transaction.from,
@@ -951,9 +951,9 @@ export class BaseProvider extends Provider {
         };
 
         return this.ready.then(() => {
-            return resolveProperties(tx).then((tx) => {
+            return resolveProperties({ blockTag: blockTag, tx: tx }).then(({ blockTag, tx }) => {
                 return this._resolveNames(tx, [ 'to', 'from' ]).then((tx) => {
-                    let params = { transaction: checkTransactionRequest(tx) };
+                    let params = { blockTag: checkBlockTag(blockTag), transaction: checkTransactionRequest(tx) };
                     return this.perform('estimateGas', params).then((result) => {
                         return bigNumberify(result);
                     });

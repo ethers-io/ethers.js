@@ -297,7 +297,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             case 'call':
                 return this.send('eth_call', [JsonRpcProvider.hexlifyTransaction(params.transaction, { from: true }), params.blockTag]);
             case 'estimateGas':
-                return this.send('eth_estimateGas', [JsonRpcProvider.hexlifyTransaction(params.transaction, { from: true })]);
+                return this.send('eth_estimateGas', [JsonRpcProvider.hexlifyTransaction(params.transaction, { from: true }), params.blockTag]);
             case 'getLogs':
                 if (params.filter && params.filter.address != null) {
                     params.filter.address = getLowerCase(params.filter.address);

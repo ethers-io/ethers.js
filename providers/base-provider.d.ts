@@ -47,7 +47,7 @@ export declare class BaseProvider extends Provider {
     sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
     _wrapTransaction(tx: Transaction, hash?: string): TransactionResponse;
     call(transaction: TransactionRequest, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
-    estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
+    estimateGas(transaction: TransactionRequest, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber>;
     getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block>;
     getTransaction(transactionHash: string): Promise<TransactionResponse>;
     getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
