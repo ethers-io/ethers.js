@@ -30,6 +30,6 @@
     "scrypt-js": "2.0.4",
     "semver": "^5.6.0",
     "tar": "4.4.8",
-    "typescript": "^3.3.3"
+    "typescript": "3.3.3"
   }
 }
