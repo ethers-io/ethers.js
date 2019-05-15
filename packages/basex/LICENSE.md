@@ -1,6 +1,16 @@
-MIT License
+Forked from https://github.com/cryptocoinjs/bs58
+Originally written by Mike Hearn for BitcoinJ
+Copyright (c) 2011 Google Inc
 
+Ported to JavaScript by Stefan Thomas
+Merged Buffer refactorings from base58-native by Stephen Pair
+Copyright (c) 2013 BitPay Inc
+
+Removed Buffer Dependency
 Copyright (c) 2019 Richard Moore
+
+
+MIT License
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
