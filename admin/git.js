@@ -143,10 +143,23 @@ async function getDiff(filename, tag, nameOnly) {
     if (tag == null) { tag = "HEAD"; }
     let cmd = [ "diff", "--name-only", tag, "--", filename ]
     if (!nameOnly) { cmd.splice(1, 1); }
-    let result = await git(cmd);
-    result = result.trim();
-    if (result === "") { return [ ]; }
-    return result.split("\n");
+    try {
+       let result = await git(cmd);
+       result = result.trim();
+       if (result === "") { return [ ]; }
+       return result.split("\n");
+    } catch (error) {
+        // This tag does not exist, so compare against beginning of time
+        // This happens when there is a new history (like an orphan branch)
+        if (error.stderr.trim().match(/^fatal: bad object/)) {
+            console.log("Could not find history; showing all");
+            let cmd = [ "rev-list", "--max-parents=0", "HEAD" ];
+            let tag = await git(cmd);
+            return getDiff(filename, tag.trim(), nameOnly);
+        }
+
+        throw error;
+    }
 }
 
 async function getUntracked(filename) {
