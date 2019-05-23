@@ -53,6 +53,7 @@ export declare class BaseProvider extends Provider {
     getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
     getLogs(filter: Filter | FilterByBlock): Promise<Array<Log>>;
     getEtherPrice(): Promise<number>;
+    _getAddress(addressOrName: string): Promise<string>;
     private _resolveNames;
     private _getResolver;
     resolveName(name: string | Promise<string>): Promise<string>;

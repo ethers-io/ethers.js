@@ -10076,6 +10076,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var address_1 = require("../utils/address");
 var bignumber_1 = require("../utils/bignumber");
 var bytes_1 = require("../utils/bytes");
+var constants_1 = require("../constants");
 var hash_1 = require("../utils/hash");
 var networks_1 = require("../utils/networks");
 var properties_1 = require("../utils/properties");
@@ -10754,7 +10755,7 @@ var BaseProvider = /** @class */ (function (_super) {
         return this.ready.then(function () {
             return properties_1.resolveProperties({ addressOrName: addressOrName, blockTag: blockTag }).then(function (_a) {
                 var addressOrName = _a.addressOrName, blockTag = _a.blockTag;
-                return _this.resolveName(addressOrName).then(function (address) {
+                return _this._getAddress(addressOrName).then(function (address) {
                     var params = { address: address, blockTag: checkBlockTag(blockTag) };
                     return _this.perform('getBalance', params).then(function (result) {
                         return bignumber_1.bigNumberify(result);
@@ -10768,7 +10769,7 @@ var BaseProvider = /** @class */ (function (_super) {
         return this.ready.then(function () {
             return properties_1.resolveProperties({ addressOrName: addressOrName, blockTag: blockTag }).then(function (_a) {
                 var addressOrName = _a.addressOrName, blockTag = _a.blockTag;
-                return _this.resolveName(addressOrName).then(function (address) {
+                return _this._getAddress(addressOrName).then(function (address) {
                     var params = { address: address, blockTag: checkBlockTag(blockTag) };
                     return _this.perform('getTransactionCount', params).then(function (result) {
                         return bignumber_1.bigNumberify(result).toNumber();
@@ -10782,7 +10783,7 @@ var BaseProvider = /** @class */ (function (_super) {
         return this.ready.then(function () {
             return properties_1.resolveProperties({ addressOrName: addressOrName, blockTag: blockTag }).then(function (_a) {
                 var addressOrName = _a.addressOrName, blockTag = _a.blockTag;
-                return _this.resolveName(addressOrName).then(function (address) {
+                return _this._getAddress(addressOrName).then(function (address) {
                     var params = { address: address, blockTag: checkBlockTag(blockTag) };
                     return _this.perform('getCode', params).then(function (result) {
                         return bytes_1.hexlify(result);
@@ -10796,7 +10797,7 @@ var BaseProvider = /** @class */ (function (_super) {
         return this.ready.then(function () {
             return properties_1.resolveProperties({ addressOrName: addressOrName, position: position, blockTag: blockTag }).then(function (_a) {
                 var addressOrName = _a.addressOrName, position = _a.position, blockTag = _a.blockTag;
-                return _this.resolveName(addressOrName).then(function (address) {
+                return _this._getAddress(addressOrName).then(function (address) {
                     var params = {
                         address: address,
                         blockTag: checkBlockTag(blockTag),
@@ -11039,6 +11040,14 @@ var BaseProvider = /** @class */ (function (_super) {
             });
         });
     };
+    BaseProvider.prototype._getAddress = function (addressOrName) {
+        return this.resolveName(addressOrName).then(function (address) {
+            if (address == null) {
+                errors.throwError("ENS name not configured", errors.UNSUPPORTED_OPERATION, { operation: "resolveName(" + JSON.stringify(addressOrName) + ")" });
+            }
+            return address;
+        });
+    };
     // @TODO: Could probably use resolveProperties instead?
     BaseProvider.prototype._resolveNames = function (object, keys) {
         var promises = [];
@@ -11047,7 +11056,7 @@ var BaseProvider = /** @class */ (function (_super) {
             if (result[key] == null) {
                 return;
             }
-            promises.push(this.resolveName(result[key]).then(function (address) {
+            promises.push(this._getAddress(result[key]).then(function (address) {
                 result[key] = address;
                 return;
             }));
@@ -11070,7 +11079,11 @@ var BaseProvider = /** @class */ (function (_super) {
                 if (bytes_1.hexDataLength(data) !== 32) {
                     return null;
                 }
-                return address_1.getAddress(bytes_1.hexDataSlice(data, 12));
+                var address = address_1.getAddress(bytes_1.hexDataSlice(data, 12));
+                if (address === constants_1.AddressZero) {
+                    return null;
+                }
+                return address;
             });
         });
     };
@@ -11091,6 +11104,9 @@ var BaseProvider = /** @class */ (function (_super) {
         var nodeHash = hash_1.namehash(name);
         // Get the addr from the resovler
         return this._getResolver(name).then(function (resolverAddress) {
+            if (resolverAddress == null) {
+                return null;
+            }
             // keccak256('addr(bytes32)')
             var data = '0x3b3b57de' + nodeHash.substring(2);
             var transaction = { to: resolverAddress, data: data };
@@ -11101,7 +11117,7 @@ var BaseProvider = /** @class */ (function (_super) {
                 return null;
             }
             var address = address_1.getAddress(bytes_1.hexDataSlice(data, 12));
-            if (address === '0x0000000000000000000000000000000000000000') {
+            if (address === constants_1.AddressZero) {
                 return null;
             }
             return address;
@@ -11273,7 +11289,7 @@ var BaseProvider = /** @class */ (function (_super) {
 exports.BaseProvider = BaseProvider;
 properties_1.defineReadOnly(abstract_provider_1.Provider, 'inherits', properties_1.inheritable(abstract_provider_1.Provider));
 
-},{"../errors":5,"../utils/address":59,"../utils/bignumber":62,"../utils/bytes":63,"../utils/hash":64,"../utils/networks":71,"../utils/properties":73,"../utils/rlp":75,"../utils/transaction":82,"../utils/utf8":84,"../utils/web":85,"./abstract-provider":49}],51:[function(require,module,exports){
+},{"../constants":3,"../errors":5,"../utils/address":59,"../utils/bignumber":62,"../utils/bytes":63,"../utils/hash":64,"../utils/networks":71,"../utils/properties":73,"../utils/rlp":75,"../utils/transaction":82,"../utils/utf8":84,"../utils/web":85,"./abstract-provider":49}],51:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
