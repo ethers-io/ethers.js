@@ -125,7 +125,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             fromAddress
         ]).then(function (results) {
             var tx = results[0];
-            var hexTx = _this.constructor.hexlifyTransaction(tx);
+            var hexTx = _this.provider.constructor.hexlifyTransaction(tx);
             hexTx.from = results[1];
             return _this.provider.send("eth_sendTransaction", [hexTx]).then(function (hash) {
                 return hash;

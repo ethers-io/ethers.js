@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/providers",
-  "version": "5.0.0-beta.129",
+  "version": "5.0.0-beta.130",
   "description": "Error utility functions for ethers.",
   "main": "index.js",
   "browser": {
@@ -27,6 +27,9 @@
     "@ethersproject/transactions": ">5.0.0-beta.0",
     "@ethersproject/web": ">5.0.0-beta.0"
   },
+  "devDependencies": {
+    "@types/node": "10.3.2"
+  },
   "keywords": [
     "Ethereum",
     "ethers"
@@ -36,5 +39,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x2c10c49a8773e705470f3ba599a4e63652460cd12023aa1bb6f7c87779f90cd1"
+  "tarballHash": "0x387a07d46e78db49a81027c6679e3472b3de0461731033c947431629d5226328"
 }

@@ -10535,6 +10535,10 @@ var Interface = /** @class */ (function () {
             eventFragment = this.getEvent(eventFragment);
         }
         if (topics != null && !eventFragment.anonymous) {
+            var topicHash = this.getEventTopic(eventFragment);
+            if (!bytes_1.isHexString(topics[0], 32) || topics[0].toLowerCase() !== topicHash) {
+                errors.throwError("fragment/topic mismatch", errors.INVALID_ARGUMENT, { argument: "topics[0]", expected: topicHash, value: topics[0] });
+            }
             topics = topics.slice(1);
         }
         var indexed = [];
@@ -12278,6 +12282,19 @@ exports.MaxUint256 = MaxUint256;
 
 },{"@ethersproject/bignumber":62}],65:[function(require,module,exports){
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -12299,9 +12316,7 @@ var properties_1 = require("@ethersproject/properties");
 var allowedTransactionKeys = {
     chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
 };
-// Recursively replaces ENS names with promises to resolve the name and
-// stalls until all promises have returned
-// @TODO: Expand this to resolve any promises too
+// Recursively replaces ENS names with promises to resolve the name and resolves all properties
 function resolveAddresses(signerOrProvider, value, paramType) {
     if (Array.isArray(paramType)) {
         return Promise.all(paramType.map(function (paramType, index) {
@@ -12314,8 +12329,6 @@ function resolveAddresses(signerOrProvider, value, paramType) {
     if (paramType.type === "tuple") {
         return resolveAddresses(signerOrProvider, value, paramType.components);
     }
-    // Strips one level of array indexing off the end to recuse into
-    //let isArrayMatch = paramType.type.match(/(.*)(\[[0-9]*\]$)/);
     if (paramType.baseType === "array") {
         if (!Array.isArray(value)) {
             throw new Error("invalid value for array");
@@ -12422,7 +12435,7 @@ function runMethod(contract, functionName, options) {
                 errors.throwError("sending a transaction require a signer", errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
             }
             if (options.transaction) {
-                return tx;
+                return properties_1.resolveProperties(tx);
             }
             return contract.signer.sendTransaction(tx).then(function (tx) {
                 var wait = tx.wait.bind(tx);
@@ -12465,10 +12478,109 @@ function getEventTag(filter) {
     }
     return (filter.address || "*") + "@" + (filter.topics ? filter.topics.join(":") : "");
 }
+var RunningEvent = /** @class */ (function () {
+    function RunningEvent(tag, filter) {
+        properties_1.defineReadOnly(this, "tag", tag);
+        properties_1.defineReadOnly(this, "filter", filter);
+        this._listeners = [];
+    }
+    RunningEvent.prototype.addListener = function (listener, once) {
+        this._listeners.push({ listener: listener, once: once });
+    };
+    RunningEvent.prototype.removeListener = function (listener) {
+        var done = false;
+        this._listeners = this._listeners.filter(function (item) {
+            if (done || item.listener !== listener) {
+                return true;
+            }
+            done = true;
+            return false;
+        });
+    };
+    RunningEvent.prototype.removeAllListeners = function () {
+        this._listeners = [];
+    };
+    RunningEvent.prototype.listeners = function () {
+        return this._listeners.map(function (i) { return i.listener; });
+    };
+    RunningEvent.prototype.listenerCount = function () {
+        return this._listeners.length;
+    };
+    RunningEvent.prototype.run = function (args) {
+        var _this = this;
+        var listenerCount = this.listenerCount();
+        this._listeners = this._listeners.filter(function (item) {
+            var argsCopy = args.slice();
+            // Call the callback in the next event loop
+            setTimeout(function () {
+                item.listener.apply(_this, argsCopy);
+            }, 0);
+            // Reschedule it if it not "once"
+            return !(item.once);
+        });
+        return listenerCount;
+    };
+    RunningEvent.prototype.prepareEvent = function (event) {
+    };
+    return RunningEvent;
+}());
+var ErrorRunningEvent = /** @class */ (function (_super) {
+    __extends(ErrorRunningEvent, _super);
+    function ErrorRunningEvent() {
+        return _super.call(this, "error", null) || this;
+    }
+    return ErrorRunningEvent;
+}(RunningEvent));
+var FragmentRunningEvent = /** @class */ (function (_super) {
+    __extends(FragmentRunningEvent, _super);
+    function FragmentRunningEvent(address, contractInterface, fragment) {
+        var _this = this;
+        var filter = {
+            address: address,
+            topics: [contractInterface.getEventTopic(fragment)]
+        };
+        _this = _super.call(this, getEventTag(filter), filter) || this;
+        properties_1.defineReadOnly(_this, "address", address);
+        properties_1.defineReadOnly(_this, "interface", contractInterface);
+        properties_1.defineReadOnly(_this, "fragment", fragment);
+        return _this;
+    }
+    FragmentRunningEvent.prototype.prepareEvent = function (event) {
+        var _this = this;
+        _super.prototype.prepareEvent.call(this, event);
+        event.event = this.fragment.name;
+        event.eventSignature = this.fragment.format();
+        event.decode = function (data, topics) {
+            return _this.interface.decodeEventLog(_this.fragment, data, topics);
+        };
+        event.values = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+    };
+    return FragmentRunningEvent;
+}(RunningEvent));
+var WildcardRunningEvent = /** @class */ (function (_super) {
+    __extends(WildcardRunningEvent, _super);
+    function WildcardRunningEvent(address, contractInterface) {
+        var _this = _super.call(this, "*", { address: address }) || this;
+        properties_1.defineReadOnly(_this, "address", address);
+        properties_1.defineReadOnly(_this, "interface", contractInterface);
+        return _this;
+    }
+    WildcardRunningEvent.prototype.prepareEvent = function (event) {
+        var _this = this;
+        _super.prototype.prepareEvent.call(this, event);
+        var parsed = this.interface.parseLog(event);
+        if (parsed) {
+            event.event = parsed.name;
+            event.eventSignature = parsed.signature;
+            event.decode = function (data, topics) {
+                return _this.interface.decodeEventLog(parsed.eventFragment, data, topics);
+            };
+            event.values = parsed.values;
+        }
+    };
+    return WildcardRunningEvent;
+}(RunningEvent));
 var Contract = /** @class */ (function () {
-    // https://github.com/Microsoft/TypeScript/issues/5453
-    // Once this issue is resolved (there are open PR) we can do this nicer
-    // by making addressOrName default to null for 2 operand calls. :)
     function Contract(addressOrName, contractInterface, signerOrProvider) {
         var _newTarget = this.constructor;
         var _this = this;
@@ -12505,7 +12617,8 @@ var Contract = /** @class */ (function () {
                 };
             });
         });
-        this._events = [];
+        properties_1.defineReadOnly(this, "_runningEvents", {});
+        properties_1.defineReadOnly(this, "_wrappedEmits", {});
         properties_1.defineReadOnly(this, "address", addressOrName);
         if (this.provider) {
             properties_1.defineReadOnly(this, "addressPromise", this.provider.resolveName(addressOrName).then(function (address) {
@@ -12624,135 +12737,132 @@ var Contract = /** @class */ (function () {
     Contract.isIndexed = function (value) {
         return properties_1.isNamedInstance(abi_1.Indexed, value);
     };
-    Contract.prototype._getEventFilter = function (eventName) {
-        var _this = this;
+    Contract.prototype._normalizeRunningEvent = function (runningEvent) {
+        // Already have an instance of this event running; we can re-use it
+        if (this._runningEvents[runningEvent.tag]) {
+            return this._runningEvents[runningEvent.tag];
+        }
+        return runningEvent;
+    };
+    Contract.prototype._getRunningEvent = function (eventName) {
         if (typeof (eventName) === "string") {
+            // Listen for "error" events (if your contract has an error event, include
+            // the full signature to bypass this special event keyword)
+            if (eventName === "error") {
+                return this._normalizeRunningEvent(new ErrorRunningEvent());
+            }
             // Listen for any event
             if (eventName === "*") {
-                return {
-                    prepareEvent: function (e) {
-                        var parsed = _this.interface.parseLog(e);
-                        if (parsed) {
-                            e.values = parsed.values;
-                            e.decode = function (data, topics) {
-                                return _this.interface.decodeEventLog(parsed.eventFragment, data, topics);
-                            },
-                                e.event = parsed.name;
-                            e.eventSignature = parsed.signature;
-                        }
-                    },
-                    eventTag: "*",
-                    filter: { address: this.address },
-                };
+                return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
             }
-            var fragment_1 = this.interface.getEvent(eventName);
-            if (!fragment_1) {
+            var fragment = this.interface.getEvent(eventName);
+            if (!fragment) {
                 errors.throwError("unknown event - " + eventName, errors.INVALID_ARGUMENT, { argumnet: "eventName", value: eventName });
             }
-            var filter_1 = {
-                address: this.address,
-                topics: [this.interface.getEventTopic(fragment_1)]
-            };
-            return {
-                prepareEvent: function (e) {
-                    e.values = _this.interface.decodeEventLog(fragment_1, e.data, e.topics);
-                },
-                fragment: fragment_1,
-                eventTag: getEventTag(filter_1),
-                filter: filter_1
-            };
+            return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
         }
         var filter = {
             address: this.address
         };
         // Find the matching event in the ABI; if none, we still allow filtering
         // since it may be a filter for an otherwise unknown event
-        var fragment = null;
-        if (eventName.topics && eventName.topics[0]) {
-            filter.topics = eventName.topics;
-            fragment = this.interface.getEvent(eventName.topics[0]);
-        }
-        return {
-            prepareEvent: function (e) {
-                if (!fragment) {
-                    return;
+        if (eventName.topics) {
+            if (eventName.topics[0]) {
+                var fragment = this.interface.getEvent(eventName.topics[0]);
+                if (fragment) {
+                    return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
                 }
-                e.values = _this.interface.decodeEventLog(fragment, e.data, e.topics);
-            },
-            fragment: fragment,
-            eventTag: getEventTag(filter),
-            filter: filter
-        };
+            }
+            filter.topics = eventName.topics;
+        }
+        return this._normalizeRunningEvent(new RunningEvent(getEventTag(filter), filter));
     };
-    // @TODO: move this to _EventFilter.wrapLog. Maybe into prepareEvent?
-    Contract.prototype._wrapEvent = function (eventFilter, log, listener) {
+    Contract.prototype._checkRunningEvents = function (runningEvent) {
+        if (runningEvent.listenerCount() === 0) {
+            delete this._runningEvents[runningEvent.tag];
+        }
+        // If we have a poller for this, remove it
+        var emit = this._wrappedEmits[runningEvent.tag];
+        if (emit) {
+            this.provider.off(runningEvent.filter, emit);
+            delete this._wrappedEmits[runningEvent.tag];
+        }
+    };
+    Contract.prototype._wrapEvent = function (runningEvent, log, listener) {
         var _this = this;
         var event = properties_1.deepCopy(log);
-        // @TODO: Move all the below stuff into prepare
-        eventFilter.prepareEvent(event);
-        if (eventFilter.fragment) {
-            event.decode = function (data, topics) {
-                return _this.interface.decodeEventLog(eventFilter.fragment, data, topics);
-            },
-                event.event = eventFilter.fragment.name;
-            event.eventSignature = eventFilter.fragment.format();
+        try {
+            runningEvent.prepareEvent(event);
+        }
+        catch (error) {
+            this.emit("error", error);
+            throw error;
         }
         event.removeListener = function () {
             if (!listener) {
                 return;
             }
-            _this.removeListener(eventFilter.filter, listener);
+            runningEvent.removeListener(listener);
+            _this._checkRunningEvents(runningEvent);
         };
         event.getBlock = function () { return _this.provider.getBlock(log.blockHash); };
         event.getTransaction = function () { return _this.provider.getTransaction(log.transactionHash); };
         event.getTransactionReceipt = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
         return event;
     };
-    Contract.prototype._addEventListener = function (eventFilter, listener, once) {
+    Contract.prototype._addEventListener = function (runningEvent, listener, once) {
         var _this = this;
         if (!this.provider) {
             errors.throwError("events require a provider or a signer with a provider", errors.UNSUPPORTED_OPERATION, { operation: "once" });
         }
-        var wrappedListener = function (log) {
-            var event = _this._wrapEvent(eventFilter, log, listener);
-            var values = (event.values || []);
-            values.push(event);
-            _this.emit.apply(_this, [eventFilter.filter].concat(values));
-        };
-        this.provider.on(eventFilter.filter, wrappedListener);
-        this._events.push({ eventFilter: eventFilter, listener: listener, wrappedListener: wrappedListener, once: once });
-    };
-    Contract.prototype.queryFilter = function (event, fromBlockOrBlockhash, toBlock) {
-        var _this = this;
-        var eventFilter = this._getEventFilter(event);
-        var filter = properties_1.shallowCopy(eventFilter.filter);
-        if (typeof (fromBlockOrBlockhash) === "string" && bytes_1.isHexString(fromBlockOrBlockhash, 32)) {
-            filter.blockhash = fromBlockOrBlockhash;
-            if (toBlock != null) {
-                errors.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
+        runningEvent.addListener(listener, once);
+        // Track this running event and its listeners (may already be there; but no hard in updating)
+        this._runningEvents[runningEvent.tag] = runningEvent;
+        // If we are not polling the provider, start
+        if (!this._wrappedEmits[runningEvent.tag]) {
+            var wrappedEmit = function (log) {
+                var event = _this._wrapEvent(runningEvent, log, listener);
+                var values = (event.values || []);
+                values.push(event);
+                _this.emit.apply(_this, [runningEvent.filter].concat(values));
+            };
+            this._wrappedEmits[runningEvent.tag] = wrappedEmit;
+            // Special events, like "error" do not have a filter
+            if (runningEvent.filter != null) {
+                this.provider.on(runningEvent.filter, wrappedEmit);
             }
         }
-        else {
-            filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash : 0);
-            filter.toBlock = ((toBlock != null) ? toBlock : "latest");
-        }
-        return this.provider.getLogs(filter).then(function (logs) {
-            return logs.map(function (log) { return _this._wrapEvent(eventFilter, log, null); });
-        });
+    };
+    Contract.prototype.queryFilter = function (event, fromBlockOrBlockhash, toBlock) {
+        /*
+            let runningEvent = this._getRunningEvent(event);
+            let filter = shallowCopy(runningEvent.filter);
+    
+            if (typeof(fromBlockOrBlockhash) === "string" && isHexString(fromBlockOrBlockhash, 32)) {
+                filter.blockhash = fromBlockOrBlockhash;
+                if (toBlock != null) {
+                    errors.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
+                }
+            } else {
+                 filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash: 0);
+                 filter.toBlock = ((toBlock != null) ? toBlock: "latest");
+            }
+    
+            return this.provider.getLogs(filter).then((logs) => {
+                return logs.map((log) => this._wrapEvent(eventFilter, log, null));
+            });
+            */
+        return null;
     };
     Contract.prototype.on = function (event, listener) {
-        this._addEventListener(this._getEventFilter(event), listener, false);
+        this._addEventListener(this._getRunningEvent(event), listener, false);
         return this;
     };
     Contract.prototype.once = function (event, listener) {
-        this._addEventListener(this._getEventFilter(event), listener, true);
+        this._addEventListener(this._getRunningEvent(event), listener, true);
         return this;
     };
-    Contract.prototype.addListener = function (eventName, listener) {
-        return this.on(eventName, listener);
-    };
     Contract.prototype.emit = function (eventName) {
-        var _this = this;
         var args = [];
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
@@ -12760,85 +12870,58 @@ var Contract = /** @class */ (function () {
         if (!this.provider) {
             return false;
         }
-        var result = false;
-        var eventFilter = this._getEventFilter(eventName);
-        this._events = this._events.filter(function (event) {
-            // Not this event (keep it for later)
-            if (event.eventFilter.eventTag !== eventFilter.eventTag) {
-                return true;
-            }
-            // Call the callback in the next event loop
-            setTimeout(function () {
-                event.listener.apply(_this, args);
-            }, 0);
-            result = true;
-            // Reschedule it if it not "once"
-            return !(event.once);
-        });
+        var runningEvent = this._getRunningEvent(eventName);
+        var result = (runningEvent.run(args) > 0);
+        // May have drained all the "once" events; check for living events
+        this._checkRunningEvents(runningEvent);
         return result;
     };
     Contract.prototype.listenerCount = function (eventName) {
         if (!this.provider) {
             return 0;
         }
-        var eventFilter = this._getEventFilter(eventName);
-        return this._events.filter(function (event) {
-            return event.eventFilter.eventTag === eventFilter.eventTag;
-        }).length;
+        return this._getRunningEvent(eventName).listenerCount();
     };
     Contract.prototype.listeners = function (eventName) {
         if (!this.provider) {
             return [];
         }
         if (eventName == null) {
-            return this._events.map(function (event) { return event.listener; });
+            var result_1 = [];
+            for (var tag in this._runningEvents) {
+                this._runningEvents[tag].listeners().forEach(function (listener) {
+                    result_1.push(listener);
+                });
+            }
+            return result_1;
         }
-        var eventFilter = this._getEventFilter(eventName);
-        return this._events
-            .filter(function (event) { return (event.eventFilter.eventTag === eventFilter.eventTag); })
-            .map(function (event) { return event.listener; });
+        return this._getRunningEvent(eventName).listeners();
     };
     Contract.prototype.removeAllListeners = function (eventName) {
-        var _this = this;
         if (!this.provider) {
             return this;
         }
-        var eventFilter = this._getEventFilter(eventName);
-        this._events = this._events.filter(function (event) {
-            // Keep non-matching events
-            if (event.eventFilter.eventTag !== eventFilter.eventTag) {
-                return true;
+        if (eventName == null) {
+            for (var tag in this._runningEvents) {
+                var runningEvent_1 = this._runningEvents[tag];
+                runningEvent_1.removeAllListeners();
+                this._checkRunningEvents(runningEvent_1);
             }
-            // De-register this event from the provider and filter it out
-            _this.provider.removeListener(event.eventFilter.filter, event.wrappedListener);
-            return false;
-        });
+            return this;
+        }
+        // Delete any listeners
+        var runningEvent = this._getRunningEvent(eventName);
+        runningEvent.removeAllListeners();
+        this._checkRunningEvents(runningEvent);
         return this;
     };
     Contract.prototype.off = function (eventName, listener) {
-        var _this = this;
         if (!this.provider) {
             return this;
         }
-        var found = false;
-        var eventFilter = this._getEventFilter(eventName);
-        this._events = this._events.filter(function (event) {
-            // Make sure this event and listener match
-            if (event.eventFilter.eventTag !== eventFilter.eventTag) {
-                return true;
-            }
-            if (event.listener !== listener) {
-                return true;
-            }
-            _this.provider.removeListener(event.eventFilter.filter, event.wrappedListener);
-            // Already found a matching event in a previous loop
-            if (found) {
-                return true;
-            }
-            // Remove this event (returning false filters us out)
-            found = true;
-            return false;
-        });
+        var runningEvent = this._getRunningEvent(eventName);
+        runningEvent.removeListener(listener);
+        this._checkRunningEvents(runningEvent);
         return this;
     };
     Contract.prototype.removeListener = function (eventName, listener) {
@@ -13231,7 +13314,7 @@ exports.info = info;
 },{}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "5.0.0-beta.134";
+exports.version = "5.0.0-beta.135";
 
 },{}],68:[function(require,module,exports){
 "use strict";
@@ -15241,7 +15324,7 @@ var BaseProvider = /** @class */ (function (_super) {
     BaseProvider.prototype.getBalance = function (addressOrName, blockTag) {
         var _this = this;
         return this._runPerform("getBalance", {
-            address: function () { return _this.resolveName(addressOrName); },
+            address: function () { return _this._getAddress(addressOrName); },
             blockTag: function () { return _this._getBlockTag(blockTag); }
         }).then(function (result) {
             return bignumber_1.BigNumber.from(result);
@@ -15250,7 +15333,7 @@ var BaseProvider = /** @class */ (function (_super) {
     BaseProvider.prototype.getTransactionCount = function (addressOrName, blockTag) {
         var _this = this;
         return this._runPerform("getTransactionCount", {
-            address: function () { return _this.resolveName(addressOrName); },
+            address: function () { return _this._getAddress(addressOrName); },
             blockTag: function () { return _this._getBlockTag(blockTag); }
         }).then(function (result) {
             return bignumber_1.BigNumber.from(result).toNumber();
@@ -15259,7 +15342,7 @@ var BaseProvider = /** @class */ (function (_super) {
     BaseProvider.prototype.getCode = function (addressOrName, blockTag) {
         var _this = this;
         return this._runPerform("getCode", {
-            address: function () { return _this.resolveName(addressOrName); },
+            address: function () { return _this._getAddress(addressOrName); },
             blockTag: function () { return _this._getBlockTag(blockTag); }
         }).then(function (result) {
             return bytes_1.hexlify(result);
@@ -15268,7 +15351,7 @@ var BaseProvider = /** @class */ (function (_super) {
     BaseProvider.prototype.getStorageAt = function (addressOrName, position, blockTag) {
         var _this = this;
         return this._runPerform("getStorageAt", {
-            address: function () { return _this.resolveName(addressOrName); },
+            address: function () { return _this._getAddress(addressOrName); },
             blockTag: function () { return _this._getBlockTag(blockTag); },
             position: function () { return Promise.resolve(position).then(function (p) { return bytes_1.hexValue(p); }); }
         }).then(function (result) {
@@ -15333,7 +15416,7 @@ var BaseProvider = /** @class */ (function (_super) {
                 if (t[key] == null) {
                     return;
                 }
-                tx[key] = Promise.resolve(t[key]).then(function (a) { return (a ? _this.resolveName(a) : null); });
+                tx[key] = Promise.resolve(t[key]).then(function (a) { return (a ? _this._getAddress(a) : null); });
             });
             ["data", "gasLimit", "gasPrice", "value"].forEach(function (key) {
                 if (t[key] == null) {
@@ -15349,7 +15432,10 @@ var BaseProvider = /** @class */ (function (_super) {
         return Promise.resolve(filter).then(function (f) {
             var filter = {};
             if (f.address != null) {
-                filter.address = _this.resolveName(f.address);
+                filter.address = _this._getAddress(f.address);
+            }
+            if (f.topics) {
+                filter.topics = f.topics;
             }
             if (f.blockHash != null) {
                 filter.blockHash = f.blockHash;
@@ -15378,6 +15464,16 @@ var BaseProvider = /** @class */ (function (_super) {
             transaction: function () { return _this._getTransactionRequest(transaction); }
         }).then(function (result) {
             return bignumber_1.BigNumber.from(result);
+        });
+    };
+    BaseProvider.prototype._getAddress = function (addressOrName) {
+        return this.resolveName(addressOrName).then(function (address) {
+            if (address == null) {
+                errors.throwError("ENS name not configured", errors.UNSUPPORTED_OPERATION, {
+                    operation: "resolveName(" + JSON.stringify(addressOrName) + ")"
+                });
+            }
+            return address;
         });
     };
     BaseProvider.prototype._getBlock = function (blockHashOrBlockTag, includeTransactions) {
@@ -16947,7 +17043,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             fromAddress
         ]).then(function (results) {
             var tx = results[0];
-            var hexTx = _this.constructor.hexlifyTransaction(tx);
+            var hexTx = _this.provider.constructor.hexlifyTransaction(tx);
             hexTx.from = results[1];
             return _this.provider.send("eth_sendTransaction", [hexTx]).then(function (hash) {
                 return hash;
@@ -17354,7 +17450,8 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
         var _newTarget = this.constructor;
         var _this = this;
         errors.checkAbstract(_newTarget, UrlJsonRpcProvider);
-        network = networks_1.getNetwork((network == null) ? "homestead" : network);
+        // Normalize the Network and API Key
+        network = _newTarget.getNetwork(network);
         apiKey = _newTarget.getApiKey(apiKey);
         var url = _newTarget.getUrl(network, apiKey);
         _this = _super.call(this, url, network) || this;
@@ -17370,6 +17467,9 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
     };
     UrlJsonRpcProvider.prototype.listAccounts = function () {
         return Promise.resolve([]);
+    };
+    UrlJsonRpcProvider.getNetwork = function (network) {
+        return networks_1.getNetwork((network == null) ? "homestead" : network);
     };
     // Return a defaultApiKey if null, otherwise validate the API key
     UrlJsonRpcProvider.getApiKey = function (apiKey) {

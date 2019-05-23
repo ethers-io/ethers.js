@@ -30,7 +30,8 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
         var _newTarget = this.constructor;
         var _this = this;
         errors.checkAbstract(_newTarget, UrlJsonRpcProvider);
-        network = networks_1.getNetwork((network == null) ? "homestead" : network);
+        // Normalize the Network and API Key
+        network = _newTarget.getNetwork(network);
         apiKey = _newTarget.getApiKey(apiKey);
         var url = _newTarget.getUrl(network, apiKey);
         _this = _super.call(this, url, network) || this;
@@ -46,6 +47,9 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
     };
     UrlJsonRpcProvider.prototype.listAccounts = function () {
         return Promise.resolve([]);
+    };
+    UrlJsonRpcProvider.getNetwork = function (network) {
+        return networks_1.getNetwork((network == null) ? "homestead" : network);
     };
     // Return a defaultApiKey if null, otherwise validate the API key
     UrlJsonRpcProvider.getApiKey = function (apiKey) {

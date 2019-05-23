@@ -268,6 +268,10 @@ var Interface = /** @class */ (function () {
             eventFragment = this.getEvent(eventFragment);
         }
         if (topics != null && !eventFragment.anonymous) {
+            var topicHash = this.getEventTopic(eventFragment);
+            if (!bytes_1.isHexString(topics[0], 32) || topics[0].toLowerCase() !== topicHash) {
+                errors.throwError("fragment/topic mismatch", errors.INVALID_ARGUMENT, { argument: "topics[0]", expected: topicHash, value: topics[0] });
+            }
             topics = topics.slice(1);
         }
         var indexed = [];

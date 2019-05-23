@@ -10,6 +10,9 @@ var contract = (function () {
     var data = require('../contracts/test-contract.json');
     return new ethers_1.ethers.Contract(data.contractAddress, data.interface, provider);
 })();
+//let event = contract.foo("TestP0");
+//console.log(event);
+//process.exit();
 function equals(name, actual, expected) {
     if (Array.isArray(expected)) {
         assert_1.default.equal(actual.length, expected.length, 'array length mismatch - ' + name);
@@ -35,6 +38,11 @@ function equals(name, actual, expected) {
 function TestContractEvents() {
     return ethers_1.ethers.utils.fetchJson('https://api.ethers.io/api/v1/?action=triggerTest&address=' + contract.address).then(function (data) {
         console.log('  *** Triggered Transaction Hash: ' + data.hash);
+        contract.on("error", function (error) {
+            console.log(error);
+            assert_1.default(false);
+            contract.removeAllListeners();
+        });
         function waitForEvent(eventName, expected) {
             return new Promise(function (resolve, reject) {
                 contract.on(eventName, function () {

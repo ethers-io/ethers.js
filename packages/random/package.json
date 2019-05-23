@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/random",
-  "version": "5.0.0-beta.124",
+  "version": "5.0.0-beta.125",
   "description": "Random utility functions for ethers.",
   "main": "index.js",
   "browser": "browser.js",
@@ -9,8 +9,10 @@
   },
   "dependencies": {
     "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/errors": ">5.0.0-beta.0",
-    "@types/node": "^10.3.2"
+    "@ethersproject/errors": ">5.0.0-beta.0"
+  },
+  "devDependencies": {
+    "@types/node": "10.3.2"
   },
   "keywords": [
     "Ethereum",
@@ -22,5 +24,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x8c5e3559cbbd8dd93f0badc75c974ef48a349354acf66eba819475d676c076b7"
+  "tarballHash": "0xb71915eaa926582ee8d30e310ef262d9031052d7ee7ff61a0f3a2b6a6122f737"
 }

@@ -1,4 +1,4 @@
-import { EventFragment, Fragment, Indexed, Interface, JsonFragment } from "@ethersproject/abi";
+import { Fragment, Indexed, Interface, JsonFragment } from "@ethersproject/abi";
 import { Block, BlockTag, Listener, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { Signer } from "@ethersproject/abstract-signer";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
@@ -40,12 +40,19 @@ export interface ContractTransaction extends TransactionResponse {
 interface Bucket<T> {
     [name: string]: T;
 }
-declare type _EventFilter = {
-    prepareEvent: (event: Event) => void;
-    fragment?: EventFragment;
-    eventTag: string;
-    filter: EventFilter;
-};
+declare class RunningEvent {
+    readonly tag: string;
+    readonly filter: EventFilter;
+    private _listeners;
+    constructor(tag: string, filter: EventFilter);
+    addListener(listener: Listener, once: boolean): void;
+    removeListener(listener: Listener): void;
+    removeAllListeners(): void;
+    listeners(): Array<Listener>;
+    listenerCount(): number;
+    run(args: Array<any>): number;
+    prepareEvent(event: Event): void;
+}
 export declare type ContractInterface = string | Array<Fragment | JsonFragment | string> | Interface;
 export declare class Contract {
     readonly address: string;
@@ -60,7 +67,9 @@ export declare class Contract {
     readonly [name: string]: ContractFunction | any;
     readonly addressPromise: Promise<string>;
     readonly deployTransaction: TransactionResponse;
-    _deployedPromise: Promise<Contract>;
+    private _deployedPromise;
+    private _runningEvents;
+    private _wrappedEmits;
     constructor(addressOrName: string, contractInterface: ContractInterface, signerOrProvider: Signer | Provider);
     static getContractAddress(transaction: {
         from: string;
@@ -73,20 +82,20 @@ export declare class Contract {
     connect(signerOrProvider: Signer | Provider | string): Contract;
     attach(addressOrName: string): Contract;
     static isIndexed(value: any): value is Indexed;
-    private _events;
-    private _getEventFilter;
-    _wrapEvent(eventFilter: _EventFilter, log: Log, listener: Listener): Event;
+    private _normalizeRunningEvent;
+    private _getRunningEvent;
+    _checkRunningEvents(runningEvent: RunningEvent): void;
+    private _wrapEvent;
     private _addEventListener;
     queryFilter(event: EventFilter, fromBlockOrBlockhash?: BlockTag | string, toBlock?: BlockTag): Promise<Array<Event>>;
-    on(event: EventFilter | string, listener: Listener): Contract;
-    once(event: EventFilter | string, listener: Listener): Contract;
-    addListener(eventName: EventFilter | string, listener: Listener): Contract;
+    on(event: EventFilter | string, listener: Listener): this;
+    once(event: EventFilter | string, listener: Listener): this;
     emit(eventName: EventFilter | string, ...args: Array<any>): boolean;
     listenerCount(eventName?: EventFilter | string): number;
     listeners(eventName?: EventFilter | string): Array<Listener>;
-    removeAllListeners(eventName: EventFilter | string): Contract;
-    off(eventName: any, listener: Listener): Contract;
-    removeListener(eventName: any, listener: Listener): Contract;
+    removeAllListeners(eventName?: EventFilter | string): this;
+    off(eventName: EventFilter | string, listener: Listener): this;
+    removeListener(eventName: EventFilter | string, listener: Listener): this;
 }
 export declare class ContractFactory {
     readonly interface: Interface;

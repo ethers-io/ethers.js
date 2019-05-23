@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/basex",
-  "version": "5.0.0-beta.124",
+  "version": "5.0.0-beta.125",
   "description": "Base-X without Buffer.",
   "main": "index.js",
   "scripts": {
@@ -19,5 +19,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x8243e502fd9c51780351423f21ff95978c66005a9a9691cabd98e805ca69fe40"
+  "tarballHash": "0x9718df45bebfef04f2bd19dca4a17096de8b71cb20a0953ffca85f2f48d7af42"
 }

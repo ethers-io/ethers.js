@@ -400,7 +400,7 @@ var BaseProvider = /** @class */ (function (_super) {
     BaseProvider.prototype.getBalance = function (addressOrName, blockTag) {
         var _this = this;
         return this._runPerform("getBalance", {
-            address: function () { return _this.resolveName(addressOrName); },
+            address: function () { return _this._getAddress(addressOrName); },
             blockTag: function () { return _this._getBlockTag(blockTag); }
         }).then(function (result) {
             return bignumber_1.BigNumber.from(result);
@@ -409,7 +409,7 @@ var BaseProvider = /** @class */ (function (_super) {
     BaseProvider.prototype.getTransactionCount = function (addressOrName, blockTag) {
         var _this = this;
         return this._runPerform("getTransactionCount", {
-            address: function () { return _this.resolveName(addressOrName); },
+            address: function () { return _this._getAddress(addressOrName); },
             blockTag: function () { return _this._getBlockTag(blockTag); }
         }).then(function (result) {
             return bignumber_1.BigNumber.from(result).toNumber();
@@ -418,7 +418,7 @@ var BaseProvider = /** @class */ (function (_super) {
     BaseProvider.prototype.getCode = function (addressOrName, blockTag) {
         var _this = this;
         return this._runPerform("getCode", {
-            address: function () { return _this.resolveName(addressOrName); },
+            address: function () { return _this._getAddress(addressOrName); },
             blockTag: function () { return _this._getBlockTag(blockTag); }
         }).then(function (result) {
             return bytes_1.hexlify(result);
@@ -427,7 +427,7 @@ var BaseProvider = /** @class */ (function (_super) {
     BaseProvider.prototype.getStorageAt = function (addressOrName, position, blockTag) {
         var _this = this;
         return this._runPerform("getStorageAt", {
-            address: function () { return _this.resolveName(addressOrName); },
+            address: function () { return _this._getAddress(addressOrName); },
             blockTag: function () { return _this._getBlockTag(blockTag); },
             position: function () { return Promise.resolve(position).then(function (p) { return bytes_1.hexValue(p); }); }
         }).then(function (result) {
@@ -492,7 +492,7 @@ var BaseProvider = /** @class */ (function (_super) {
                 if (t[key] == null) {
                     return;
                 }
-                tx[key] = Promise.resolve(t[key]).then(function (a) { return (a ? _this.resolveName(a) : null); });
+                tx[key] = Promise.resolve(t[key]).then(function (a) { return (a ? _this._getAddress(a) : null); });
             });
             ["data", "gasLimit", "gasPrice", "value"].forEach(function (key) {
                 if (t[key] == null) {
@@ -508,7 +508,10 @@ var BaseProvider = /** @class */ (function (_super) {
         return Promise.resolve(filter).then(function (f) {
             var filter = {};
             if (f.address != null) {
-                filter.address = _this.resolveName(f.address);
+                filter.address = _this._getAddress(f.address);
+            }
+            if (f.topics) {
+                filter.topics = f.topics;
             }
             if (f.blockHash != null) {
                 filter.blockHash = f.blockHash;
@@ -537,6 +540,16 @@ var BaseProvider = /** @class */ (function (_super) {
             transaction: function () { return _this._getTransactionRequest(transaction); }
         }).then(function (result) {
             return bignumber_1.BigNumber.from(result);
+        });
+    };
+    BaseProvider.prototype._getAddress = function (addressOrName) {
+        return this.resolveName(addressOrName).then(function (address) {
+            if (address == null) {
+                errors.throwError("ENS name not configured", errors.UNSUPPORTED_OPERATION, {
+                    operation: "resolveName(" + JSON.stringify(addressOrName) + ")"
+                });
+            }
+            return address;
         });
     };
     BaseProvider.prototype._getBlock = function (blockHashOrBlockTag, includeTransactions) {
