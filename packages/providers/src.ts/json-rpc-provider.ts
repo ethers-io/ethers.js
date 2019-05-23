@@ -118,7 +118,7 @@ export class JsonRpcSigner extends Signer {
             fromAddress
         ]).then((results) => {
             let tx = results[0];
-            let hexTx = (<any>this.constructor).hexlifyTransaction(tx);
+            let hexTx = (<any>this.provider.constructor).hexlifyTransaction(tx);
             hexTx.from = results[1];
             return this.provider.send("eth_sendTransaction", [ hexTx ]).then((hash) => {
                 return hash;

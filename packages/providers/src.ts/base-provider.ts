@@ -564,6 +564,10 @@ export class BaseProvider extends Provider {
                filter.address = this.resolveName(f.address);
             }
 
+            if (f.topics) {
+               filter.topics = f.topics;
+            }
+
             if (f.blockHash != null) {
                 filter.blockHash = f.blockHash;
             }

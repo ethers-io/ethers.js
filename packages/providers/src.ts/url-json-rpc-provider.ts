@@ -12,7 +12,8 @@ export class UrlJsonRpcProvider extends JsonRpcProvider {
     constructor(network?: Networkish, apiKey?: string) {
         errors.checkAbstract(new.target, UrlJsonRpcProvider);
 
-        network = getNetwork((network == null) ? "homestead": network);
+        // Normalize the Network and API Key
+        network = new.target.getNetwork(network);
         apiKey = new.target.getApiKey(apiKey);
 
         let url = new.target.getUrl(network, apiKey);
@@ -39,6 +40,10 @@ export class UrlJsonRpcProvider extends JsonRpcProvider {
         return Promise.resolve([]);
     }
 
+    static getNetwork(network?: Networkish): Network {
+        return getNetwork((network == null) ? "homestead": network);
+    }
+
     // Return a defaultApiKey if null, otherwise validate the API key
     static getApiKey(apiKey: string): string {
         return apiKey;
@@ -50,5 +55,4 @@ export class UrlJsonRpcProvider extends JsonRpcProvider {
             operation: "getUrl"
         });
     }
-
 }

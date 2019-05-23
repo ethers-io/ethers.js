@@ -74,9 +74,7 @@ const allowedTransactionKeys: { [ key: string ]: boolean } = {
     chainId: true, data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
 }
 
-// Recursively replaces ENS names with promises to resolve the name and
-// stalls until all promises have returned
-// @TODO: Expand this to resolve any promises too
+// Recursively replaces ENS names with promises to resolve the name and resolves all properties that are promises
 function resolveAddresses(signerOrProvider: Signer | Provider, value: any, paramType: ParamType | Array<ParamType>): Promise<any> {
     if (Array.isArray(paramType)) {
         return Promise.all(paramType.map((paramType, index) => {
@@ -226,7 +224,7 @@ function runMethod(contract: Contract, functionName: string, options: RunOptions
                 errors.throwError("sending a transaction require a signer", errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" })
             }
 
-            if (options.transaction) { return tx; }
+            if (options.transaction) { return resolveProperties(tx); }
 
             return contract.signer.sendTransaction(tx).then((tx) => {
                 let wait = tx.wait.bind(tx);
@@ -280,7 +278,7 @@ function getEventTag(filter: EventFilter): string {
 interface Bucket<T> {
     [name: string]: T;
 }
-
+/*
 type _EventFilter = {
     prepareEvent: (event: Event) => void;
     fragment?: EventFragment;
@@ -294,6 +292,129 @@ type _Event = {
     once: boolean;
     wrappedListener: Listener;
 };
+*/
+class RunningEvent {
+    readonly tag: string;
+    readonly filter: EventFilter;
+    private _listeners: Array<{ listener: Listener, once: boolean }>;
+
+    constructor(tag: string, filter: EventFilter) {
+        defineReadOnly(this, "tag", tag);
+        defineReadOnly(this, "filter", filter);
+        this._listeners = [ ];
+    }
+
+    addListener(listener: Listener, once: boolean): void {
+        this._listeners.push({ listener: listener, once: once });
+    }
+
+    removeListener(listener: Listener): void {
+        let done = false;
+        this._listeners = this._listeners.filter((item) => {
+            if (done || item.listener !== listener) { return true; }
+            done = true;
+            return false;
+        });
+    }
+
+    removeAllListeners(): void {
+        this._listeners = [];
+    }
+
+    listeners(): Array<Listener> {
+        return this._listeners.map((i) => i.listener);
+    }
+
+    listenerCount(): number {
+        return this._listeners.length;
+    }
+
+    run(args: Array<any>): number {
+        let listenerCount = this.listenerCount();
+        this._listeners = this._listeners.filter((item) => {
+
+            let argsCopy = args.slice();
+
+            // Call the callback in the next event loop
+            setTimeout(() => {
+                item.listener.apply(this, argsCopy);
+            }, 0);
+
+            // Reschedule it if it not "once"
+            return !(item.once);
+        });
+
+        return listenerCount;
+    }
+
+    prepareEvent(event: Event): void {
+    }
+}
+
+class ErrorRunningEvent extends RunningEvent {
+    constructor() {
+        super("error", null);
+    }
+}
+
+class FragmentRunningEvent extends RunningEvent {
+    readonly address: string;
+    readonly interface: Interface;
+    readonly fragment: EventFragment;
+
+    constructor(address: string, contractInterface: Interface, fragment: EventFragment) {
+        let filter = {
+            address: address,
+            topics: [ contractInterface.getEventTopic(fragment) ]
+        }
+
+        super(getEventTag(filter), filter);
+        defineReadOnly(this, "address", address);
+        defineReadOnly(this, "interface", contractInterface);
+        defineReadOnly(this, "fragment", fragment);
+    }
+
+
+    prepareEvent(event: Event): void {
+        super.prepareEvent(event);
+
+        event.event = this.fragment.name;
+        event.eventSignature = this.fragment.format();
+
+        event.decode = (data: BytesLike, topics?: Array<string>) => {
+            return this.interface.decodeEventLog(this.fragment, data, topics);
+        };
+
+        event.values = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+    }
+}
+
+class WildcardRunningEvent extends RunningEvent {
+    readonly address: string;
+    readonly interface: Interface;
+
+    constructor(address :string, contractInterface: Interface) {
+        super("*", { address: address });
+        defineReadOnly(this, "address", address);
+        defineReadOnly(this, "interface", contractInterface);
+    }
+
+    prepareEvent(event: Event): void {
+        super.prepareEvent(event);
+
+        let parsed = this.interface.parseLog(event);
+        if (parsed) {
+            event.event = parsed.name;
+            event.eventSignature = parsed.signature;
+
+            event.decode = (data: BytesLike, topics?: Array<string>) => {
+                return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
+            };
+
+            event.values = parsed.values;
+        }
+    }
+}
 
 export type ContractInterface = string | Array<Fragment | JsonFragment | string> | Interface;
 
@@ -319,11 +440,10 @@ export class Contract {
     // This is only set if the contract was created with a call to deploy
     readonly deployTransaction: TransactionResponse;
 
-    _deployedPromise: Promise<Contract>;
+    private _deployedPromise: Promise<Contract>;
 
-    // https://github.com/Microsoft/TypeScript/issues/5453
-    // Once this issue is resolved (there are open PR) we can do this nicer
-    // by making addressOrName default to null for 2 operand calls. :)
+    private _runningEvents: { [ eventTag: string ]: RunningEvent };
+    private _wrappedEmits: { [ eventTag: string ]: (...args: Array<any>) => void };
 
     constructor(addressOrName: string, contractInterface: ContractInterface, signerOrProvider: Signer | Provider) {
         errors.checkNew(new.target, Contract);
@@ -360,7 +480,8 @@ export class Contract {
             });
         });
 
-        this._events = [];
+        defineReadOnly(this, "_runningEvents", { });
+        defineReadOnly(this, "_wrappedEmits", { });
 
         defineReadOnly(this, "address", addressOrName);
         if (this.provider) {
@@ -496,28 +617,27 @@ export class Contract {
         return isNamedInstance<Indexed>(Indexed, value);
     }
 
-    private _events: Array<_Event>;
+    private _normalizeRunningEvent(runningEvent: RunningEvent): RunningEvent {
+        // Already have an instance of this event running; we can re-use it
+        if (this._runningEvents[runningEvent.tag]) {
+            return this._runningEvents[runningEvent.tag];
+         }
+         return runningEvent
+    }
 
-    private _getEventFilter(eventName: EventFilter | string): _EventFilter {
+    private _getRunningEvent(eventName: EventFilter | string): RunningEvent {
         if (typeof(eventName) === "string") {
+
+
+            // Listen for "error" events (if your contract has an error event, include
+            // the full signature to bypass this special event keyword)
+            if (eventName === "error") {
+                return this._normalizeRunningEvent(new ErrorRunningEvent());
+            }
 
             // Listen for any event
             if (eventName === "*") {
-                return {
-                    prepareEvent: (e: Event) => {
-                        let parsed = this.interface.parseLog(e);
-                        if (parsed) {
-                            e.values = parsed.values;
-                            e.decode = (data: BytesLike, topics?: Array<string>) => {
-                                return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
-                            },
-                            e.event = parsed.name;
-                            e.eventSignature = parsed.signature;
-                        }
-                    },
-                    eventTag: "*",
-                    filter: { address: this.address },
-                };
+                return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
             }
 
             let fragment = this.interface.getEvent(eventName)
@@ -525,19 +645,7 @@ export class Contract {
                 errors.throwError("unknown event - " + eventName, errors.INVALID_ARGUMENT, { argumnet: "eventName", value: eventName });
             }
 
-            let filter = {
-                address: this.address,
-                topics: [ this.interface.getEventTopic(fragment) ]
-            }
-
-            return {
-                prepareEvent: (e: Event) => {
-                    e.values = this.interface.decodeEventLog(fragment, e.data, e.topics);
-                },
-                fragment: fragment,
-                eventTag: getEventTag(filter),
-                filter: filter
-            };
+            return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
         }
 
         let filter: EventFilter = {
@@ -546,41 +654,47 @@ export class Contract {
 
         // Find the matching event in the ABI; if none, we still allow filtering
         // since it may be a filter for an otherwise unknown event
-        let fragment: EventFragment = null;
-        if (eventName.topics && eventName.topics[0]) {
+        if (eventName.topics) {
+            if (eventName.topics[0]) {
+                let fragment = this.interface.getEvent(eventName.topics[0]);
+                if (fragment) {
+                    return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
+                }
+            }
+
             filter.topics = eventName.topics;
-            fragment = this.interface.getEvent(eventName.topics[0]);
         }
 
-        return {
-            prepareEvent: (e: Event) => {
-                if (!fragment) { return; }
-                e.values = this.interface.decodeEventLog(fragment, e.data, e.topics);
-            },
-            fragment: fragment,
-            eventTag: getEventTag(filter),
-            filter: filter
+        return this._normalizeRunningEvent(new RunningEvent(getEventTag(filter), filter));
+    }
+
+    _checkRunningEvents(runningEvent: RunningEvent): void {
+        if (runningEvent.listenerCount() === 0) {
+            delete this._runningEvents[runningEvent.tag];
+        }
+
+        // If we have a poller for this, remove it
+        let emit = this._wrappedEmits[runningEvent.tag];
+        if (emit) {
+            this.provider.off(runningEvent.filter, emit);
+            delete this._wrappedEmits[runningEvent.tag];
         }
     }
 
-    // @TODO: move this to _EventFilter.wrapLog. Maybe into prepareEvent?
-    _wrapEvent(eventFilter: _EventFilter, log: Log, listener: Listener): Event {
+    private _wrapEvent(runningEvent: RunningEvent, log: Log, listener: Listener): Event {
         let event = <Event>deepCopy(log);
 
-        // @TODO: Move all the below stuff into prepare
-        eventFilter.prepareEvent(event);
-
-        if (eventFilter.fragment) {
-            event.decode = (data: BytesLike, topics?: Array<string>) => {
-                return this.interface.decodeEventLog(eventFilter.fragment, data, topics);
-            },
-            event.event = eventFilter.fragment.name;
-            event.eventSignature = eventFilter.fragment.format();
+        try {
+            runningEvent.prepareEvent(event);
+        } catch (error) {
+            this.emit("error", error);
+            throw error;
         }
 
         event.removeListener = () => {
             if (!listener) { return; }
-            this.removeListener(eventFilter.filter, listener);
+            runningEvent.removeListener(listener);
+            this._checkRunningEvents(runningEvent);
         };
 
         event.getBlock = () => { return this.provider.getBlock(log.blockHash); }
@@ -590,25 +704,37 @@ export class Contract {
         return event;
     }
 
-    private _addEventListener(eventFilter: _EventFilter, listener: Listener, once: boolean): void {
+    private _addEventListener(runningEvent: RunningEvent, listener: Listener, once: boolean): void {
         if (!this.provider) {
             errors.throwError("events require a provider or a signer with a provider", errors.UNSUPPORTED_OPERATION, { operation: "once" })
         }
 
-        let wrappedListener = (log: Log) => {
-            let event = this._wrapEvent(eventFilter, log, listener);
-            let values = (event.values || []);
-            values.push(event);
-            this.emit(eventFilter.filter, ...values);
-        };
+        runningEvent.addListener(listener, once);
 
-        this.provider.on(eventFilter.filter, wrappedListener);
-        this._events.push({ eventFilter: eventFilter, listener: listener, wrappedListener: wrappedListener, once: once });
+        // Track this running event and its listeners (may already be there; but no hard in updating)
+        this._runningEvents[runningEvent.tag] = runningEvent;
+
+        // If we are not polling the provider, start
+        if (!this._wrappedEmits[runningEvent.tag]) {
+            let wrappedEmit = (log: Log) => {
+                let event = this._wrapEvent(runningEvent, log, listener);
+                let values = (event.values || []);
+                values.push(event);
+                this.emit(runningEvent.filter, ...values);
+            };
+            this._wrappedEmits[runningEvent.tag] = wrappedEmit;
+
+            // Special events, like "error" do not have a filter
+            if (runningEvent.filter != null) {
+                this.provider.on(runningEvent.filter, wrappedEmit);
+            }
+        }
     }
 
     queryFilter(event: EventFilter, fromBlockOrBlockhash?: BlockTag | string, toBlock?: BlockTag): Promise<Array<Event>> {
-        let eventFilter = this._getEventFilter(event);
-        let filter = shallowCopy(eventFilter.filter);
+    /*
+        let runningEvent = this._getRunningEvent(event);
+        let filter = shallowCopy(runningEvent.filter);
 
         if (typeof(fromBlockOrBlockhash) === "string" && isHexString(fromBlockOrBlockhash, 32)) {
             filter.blockhash = fromBlockOrBlockhash;
@@ -623,111 +749,82 @@ export class Contract {
         return this.provider.getLogs(filter).then((logs) => {
             return logs.map((log) => this._wrapEvent(eventFilter, log, null));
         });
+        */
+        return null;
     }
 
-    on(event: EventFilter | string, listener: Listener): Contract {
-        this._addEventListener(this._getEventFilter(event), listener, false);
+    on(event: EventFilter | string, listener: Listener): this {
+        this._addEventListener(this._getRunningEvent(event), listener, false);
         return this;
     }
 
-    once(event: EventFilter | string, listener: Listener): Contract {
-        this._addEventListener(this._getEventFilter(event), listener, true);
+    once(event: EventFilter | string, listener: Listener): this {
+        this._addEventListener(this._getRunningEvent(event), listener, true);
         return this;
-    }
-
-    addListener(eventName: EventFilter | string, listener: Listener): Contract {
-        return this.on(eventName, listener);
     }
 
     emit(eventName: EventFilter | string, ...args: Array<any>): boolean {
         if (!this.provider) { return false; }
 
-        let result = false;
+        let runningEvent = this._getRunningEvent(eventName);
+        let result = (runningEvent.run(args) > 0);
 
-        let eventFilter = this._getEventFilter(eventName);
-        this._events = this._events.filter((event) => {
-
-            // Not this event (keep it for later)
-            if (event.eventFilter.eventTag !== eventFilter.eventTag) { return true; }
-
-            // Call the callback in the next event loop
-            setTimeout(() => {
-                event.listener.apply(this, args);
-            }, 0);
-            result = true;
-
-            // Reschedule it if it not "once"
-            return !(event.once);
-        });
+        // May have drained all the "once" events; check for living events
+        this._checkRunningEvents(runningEvent);
 
         return result;
     }
 
     listenerCount(eventName?: EventFilter | string): number {
         if (!this.provider) { return 0; }
-
-        let eventFilter = this._getEventFilter(eventName);
-        return this._events.filter((event) => {
-            return event.eventFilter.eventTag === eventFilter.eventTag
-        }).length;
+        return this._getRunningEvent(eventName).listenerCount();
     }
 
     listeners(eventName?: EventFilter | string): Array<Listener> {
         if (!this.provider) { return []; }
 
         if (eventName == null) {
-            return this._events.map((event) => event.listener);
+            let result: Array<Listener> = [ ];
+            for (let tag in this._runningEvents) {
+                this._runningEvents[tag].listeners().forEach((listener) => {
+                    result.push(listener)
+                });
+            }
+            return result;
         }
 
-        let eventFilter = this._getEventFilter(eventName);
-        return this._events
-            .filter((event) => (event.eventFilter.eventTag === eventFilter.eventTag))
-            .map((event) => event.listener);
+        return this._getRunningEvent(eventName).listeners();
     }
 
-    removeAllListeners(eventName: EventFilter | string): Contract {
+    removeAllListeners(eventName?: EventFilter | string): this {
         if (!this.provider) { return this; }
 
-        let eventFilter = this._getEventFilter(eventName);
-        this._events = this._events.filter((event) => {
-            // Keep non-matching events
-            if (event.eventFilter.eventTag !== eventFilter.eventTag) {
-                return true;
+        if (eventName == null) {
+            for (let tag in this._runningEvents) {
+                let runningEvent = this._runningEvents[tag];
+                runningEvent.removeAllListeners();
+                this._checkRunningEvents(runningEvent);
             }
+            return this;
+        }
 
-            // De-register this event from the provider and filter it out
-            this.provider.removeListener(event.eventFilter.filter, event.wrappedListener);
-            return false;
-        });
+        // Delete any listeners
+        let runningEvent = this._getRunningEvent(eventName);
+        runningEvent.removeAllListeners();
+        this._checkRunningEvents(runningEvent);
 
         return this;
     }
 
-    off(eventName: any, listener: Listener): Contract {
+    off(eventName: EventFilter | string, listener: Listener): this {
         if (!this.provider) { return this; }
-
-        let found = false;
-
-        let eventFilter = this._getEventFilter(eventName);
-        this._events = this._events.filter((event) => {
-
-            // Make sure this event and listener match
-            if (event.eventFilter.eventTag !== eventFilter.eventTag) { return true; }
-            if (event.listener !== listener) { return true; }
-            this.provider.removeListener(event.eventFilter.filter, event.wrappedListener);
-
-            // Already found a matching event in a previous loop
-            if (found) { return true; }
-
-            // Remove this event (returning false filters us out)
-            found = true;
-            return false;
-        });
-
+        let runningEvent = this._getRunningEvent(eventName);
+        runningEvent.removeListener(listener);
+        this._checkRunningEvents(runningEvent);
         return this;
     }
 
-    removeListener(eventName: any, listener: Listener): Contract {
+    removeListener(eventName: EventFilter | string, listener: Listener): this {
         return this.off(eventName, listener);
     }
 
