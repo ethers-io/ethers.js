@@ -74,7 +74,7 @@ const allowedTransactionKeys: { [ key: string ]: boolean } = {
     chainId: true, data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
 }
 
-// Recursively replaces ENS names with promises to resolve the name and resolves all properties that are promises
+// Recursively replaces ENS names with promises to resolve the name and resolves all properties
 function resolveAddresses(signerOrProvider: Signer | Provider, value: any, paramType: ParamType | Array<ParamType>): Promise<any> {
     if (Array.isArray(paramType)) {
         return Promise.all(paramType.map((paramType, index) => {
@@ -94,8 +94,6 @@ function resolveAddresses(signerOrProvider: Signer | Provider, value: any, param
         return resolveAddresses(signerOrProvider, value, paramType.components);
     }
 
-    // Strips one level of array indexing off the end to recuse into
-    //let isArrayMatch = paramType.type.match(/(.*)(\[[0-9]*\]$)/);
     if (paramType.baseType === "array") {
         if (!Array.isArray(value)) { throw new Error("invalid value for array"); }
         return Promise.all(value.map((v) => resolveAddresses(signerOrProvider, v, paramType.arrayChildren)));
@@ -278,21 +276,7 @@ function getEventTag(filter: EventFilter): string {
 interface Bucket<T> {
     [name: string]: T;
 }
-/*
-type _EventFilter = {
-    prepareEvent: (event: Event) => void;
-    fragment?: EventFragment;
-    eventTag: string;
-    filter: EventFilter;
-};
 
-type _Event = {
-    eventFilter: _EventFilter;
-    listener: Listener;
-    once: boolean;
-    wrappedListener: Listener;
-};
-*/
 class RunningEvent {
     readonly tag: string;
     readonly filter: EventFilter;
@@ -442,7 +426,10 @@ export class Contract {
 
     private _deployedPromise: Promise<Contract>;
 
+    // A list of RunningEvents to track listsners for each event tag
     private _runningEvents: { [ eventTag: string ]: RunningEvent };
+
+    // Wrapped functions to call emit and allow deregistration from the provider
     private _wrappedEmits: { [ eventTag: string ]: (...args: Array<any>) => void };
 
     constructor(addressOrName: string, contractInterface: ContractInterface, signerOrProvider: Signer | Provider) {
