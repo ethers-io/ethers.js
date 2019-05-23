@@ -452,7 +452,7 @@ export class BaseProvider extends Provider {
 
     getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber> {
         return this._runPerform("getBalance", {
-            address: () => this.resolveName(addressOrName),
+            address: () => this._getAddress(addressOrName),
             blockTag: () => this._getBlockTag(blockTag)
         }).then((result) => {
             return BigNumber.from(result);
@@ -461,7 +461,7 @@ export class BaseProvider extends Provider {
 
     getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number> {
         return this._runPerform("getTransactionCount", {
-            address: () => this.resolveName(addressOrName),
+            address: () => this._getAddress(addressOrName),
             blockTag: () => this._getBlockTag(blockTag)
         }).then((result) => {
             return BigNumber.from(result).toNumber();
@@ -470,7 +470,7 @@ export class BaseProvider extends Provider {
 
     getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
         return this._runPerform("getCode", {
-            address: () => this.resolveName(addressOrName),
+            address: () => this._getAddress(addressOrName),
             blockTag: () => this._getBlockTag(blockTag)
         }).then((result) => {
             return hexlify(result);
@@ -479,7 +479,7 @@ export class BaseProvider extends Provider {
 
     getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
         return this._runPerform("getStorageAt", {
-            address: () => this.resolveName(addressOrName),
+            address: () => this._getAddress(addressOrName),
             blockTag: () => this._getBlockTag(blockTag),
             position: () => Promise.resolve(position).then((p) => hexValue(p))
         }).then((result) => {
@@ -546,7 +546,7 @@ export class BaseProvider extends Provider {
             let tx: any = { };
             ["from", "to"].forEach((key) => {
                 if (t[key] == null) { return; }
-                tx[key] = Promise.resolve(t[key]).then(a => (a ? this.resolveName(a): null))
+                tx[key] = Promise.resolve(t[key]).then(a => (a ? this._getAddress(a): null))
             });
             ["data", "gasLimit", "gasPrice", "value"].forEach((key) => {
                 if (t[key] == null) { return; }
@@ -561,7 +561,7 @@ export class BaseProvider extends Provider {
             let filter: any = { };
 
             if (f.address != null) {
-               filter.address = this.resolveName(f.address);
+               filter.address = this._getAddress(f.address);
             }
 
             if (f.topics) {
@@ -596,6 +596,17 @@ export class BaseProvider extends Provider {
             transaction: () => this._getTransactionRequest(transaction)
         }).then((result) => {
             return BigNumber.from(result);
+        });
+    }
+
+    _getAddress(addressOrName: string | Promise<string>): Promise<string> {
+        return this.resolveName(addressOrName).then((address) => {
+            if (address == null) {
+                errors.throwError("ENS name not configured", errors.UNSUPPORTED_OPERATION, {
+                    operation: `resolveName(${ JSON.stringify(addressOrName) })`
+                });
+            }
+            return address;
         });
     }
 
