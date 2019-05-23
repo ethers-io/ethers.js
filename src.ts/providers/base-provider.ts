@@ -3,6 +3,7 @@
 import { getAddress, getContractAddress } from '../utils/address';
 import { BigNumber, bigNumberify } from '../utils/bignumber';
 import { hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, stripZeros } from '../utils/bytes';
+import { AddressZero } from "../constants";
 import { namehash } from '../utils/hash';
 import { getNetwork } from '../utils/networks';
 import { defineReadOnly, inheritable, resolveProperties, shallowCopy } from '../utils/properties';
@@ -816,7 +817,7 @@ export class BaseProvider extends Provider {
     getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber> {
         return this.ready.then(() => {
             return resolveProperties({ addressOrName: addressOrName, blockTag: blockTag }).then(({ addressOrName, blockTag }) => {
-                return this.resolveName(addressOrName).then((address) => {
+                return this._getAddress(addressOrName).then((address) => {
                     let params = { address: address, blockTag: checkBlockTag(blockTag) };
                     return this.perform('getBalance', params).then((result) => {
                         return bigNumberify(result);
@@ -829,7 +830,7 @@ export class BaseProvider extends Provider {
     getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number> {
         return this.ready.then(() => {
             return resolveProperties({ addressOrName: addressOrName, blockTag: blockTag }).then(({ addressOrName, blockTag }) => {
-                return this.resolveName(addressOrName).then((address) => {
+                return this._getAddress(addressOrName).then((address) => {
                     let params = { address: address, blockTag: checkBlockTag(blockTag) };
                     return this.perform('getTransactionCount', params).then((result) => {
                         return bigNumberify(result).toNumber();
@@ -842,7 +843,7 @@ export class BaseProvider extends Provider {
     getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
         return this.ready.then(() => {
             return resolveProperties({ addressOrName: addressOrName, blockTag: blockTag }).then(({ addressOrName, blockTag }) => {
-                return this.resolveName(addressOrName).then((address) => {
+                return this._getAddress(addressOrName).then((address) => {
                     let params = {address: address, blockTag: checkBlockTag(blockTag)};
                     return this.perform('getCode', params).then((result) => {
                         return hexlify(result);
@@ -855,7 +856,7 @@ export class BaseProvider extends Provider {
     getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
         return this.ready.then(() => {
             return resolveProperties({ addressOrName: addressOrName, position: position, blockTag: blockTag }).then(({ addressOrName, position, blockTag }) => {
-                return this.resolveName(addressOrName).then((address) => {
+                return this._getAddress(addressOrName).then((address) => {
                     let params = {
                         address: address,
                         blockTag: checkBlockTag(blockTag),
@@ -1108,6 +1109,15 @@ export class BaseProvider extends Provider {
         });
     }
 
+    _getAddress(addressOrName: string): Promise<string> {
+        return this.resolveName(addressOrName).then((address) => {
+            if (address == null) {
+                errors.throwError("ENS name not configured", errors.UNSUPPORTED_OPERATION, { operation: "resolveName(" + JSON.stringify(addressOrName) + ")" });
+            }
+            return address;
+        });
+    }
+
     // @TODO: Could probably use resolveProperties instead?
     private _resolveNames(object: any, keys: Array<string>): Promise<{ [key: string]: string }> {
         let promises: Array<Promise<void>> = [];
@@ -1116,7 +1126,7 @@ export class BaseProvider extends Provider {
 
         keys.forEach(function(key) {
             if (result[key] == null) { return; }
-            promises.push(this.resolveName(result[key]).then((address: string) => {
+            promises.push(this._getAddress(result[key]).then((address: string) => {
                 result[key] = address;
                 return;
             }));
@@ -1143,10 +1153,11 @@ export class BaseProvider extends Provider {
             let transaction = { to: network.ensAddress, data: data };
 
             return this.call(transaction).then((data) => {
-
                 // extract the address from the data
                 if (hexDataLength(data) !== 32) { return null; }
-                return getAddress(hexDataSlice(data, 12));
+                let address = getAddress(hexDataSlice(data, 12));
+                if (address === AddressZero) { return null; }
+                return address;
             });
         });
     }
@@ -1171,6 +1182,7 @@ export class BaseProvider extends Provider {
 
         // Get the addr from the resovler
         return this._getResolver(name).then(function(resolverAddress) {
+            if (resolverAddress == null) { return null; }
 
             // keccak256('addr(bytes32)')
             let data = '0x3b3b57de' + nodeHash.substring(2);
@@ -1181,7 +1193,7 @@ export class BaseProvider extends Provider {
         }).then(function(data) {
             if (hexDataLength(data) !== 32) { return null; }
             let address = getAddress(hexDataSlice(data, 12));
-            if (address === '0x0000000000000000000000000000000000000000') { return null; }
+            if (address === AddressZero) { return null; }
             return address;
         });
     }
