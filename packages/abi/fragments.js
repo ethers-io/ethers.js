@@ -25,6 +25,7 @@ var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
 ;
 var _constructorGuard = {};
+var storageClasses = { calldata: true, memory: true, storage: true };
 // @TODO: Make sure that children of an indexed tuple are marked with a null indexed
 function parseParamType(param, allowIndexed) {
     var originalParam = param;
@@ -55,11 +56,15 @@ function parseParamType(param, allowIndexed) {
                 break;
             case ")":
                 delete node.state;
-                if (allowIndexed) {
-                    if (node.name === "indexed") {
-                        node.indexed = true;
-                        node.name = "";
+                if (node.name === "indexed") {
+                    if (!allowIndexed) {
+                        throwError(i);
                     }
+                    node.indexed = true;
+                    node.name = "";
+                }
+                if (storageClasses[node.name]) {
+                    node.name = "";
                 }
                 node.type = verifyType(node.type);
                 var child = node;
@@ -74,11 +79,15 @@ function parseParamType(param, allowIndexed) {
                 break;
             case ",":
                 delete node.state;
-                if (allowIndexed) {
-                    if (node.name === "indexed") {
-                        node.indexed = true;
-                        node.name = "";
+                if (node.name === "indexed") {
+                    if (!allowIndexed) {
+                        throwError(i);
                     }
+                    node.indexed = true;
+                    node.name = "";
+                }
+                if (storageClasses[node.name]) {
+                    node.name = "";
                 }
                 node.type = verifyType(node.type);
                 var sibling = newNode(node.parent);
@@ -101,14 +110,18 @@ function parseParamType(param, allowIndexed) {
                 // If reading name, the name is done
                 if (node.state.allowName) {
                     if (node.name !== "") {
-                        if (allowIndexed) {
-                            if (node.name === "indexed") {
-                                if (node.indexed) {
-                                    throwError(i);
-                                }
-                                node.indexed = true;
-                                node.name = "";
+                        if (node.name === "indexed") {
+                            if (!allowIndexed) {
+                                throwError(i);
                             }
+                            if (node.indexed) {
+                                throwError(i);
+                            }
+                            node.indexed = true;
+                            node.name = "";
+                        }
+                        else if (storageClasses[node.name]) {
+                            node.name = "";
                         }
                         else {
                             node.state.allowName = false;
@@ -156,14 +169,18 @@ function parseParamType(param, allowIndexed) {
         throw new Error("unexpected eof");
     }
     delete parent.state;
-    if (allowIndexed) {
-        if (node.name === "indexed") {
-            if (node.indexed) {
-                throwError(originalParam.length - 7);
-            }
-            node.indexed = true;
-            node.name = "";
+    if (node.name === "indexed") {
+        if (!allowIndexed) {
+            throwError(originalParam.length - 7);
         }
+        if (node.indexed) {
+            throwError(originalParam.length - 7);
+        }
+        node.indexed = true;
+        node.name = "";
+    }
+    else if (storageClasses[node.name]) {
+        node.name = "";
     }
     parent.type = verifyType(parent.type);
     return parent;
@@ -418,7 +435,7 @@ function parseModifiers(value, params) {
     params.constant = false;
     params.payable = false;
     // @TODO: Should this be initialized to "nonpayable"?
-    params.stateMutability = null;
+    params.stateMutability = "nonpayable";
     value.split(" ").forEach(function (modifier) {
         switch (modifier.trim()) {
             case "constant":

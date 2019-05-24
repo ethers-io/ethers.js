@@ -551,25 +551,22 @@ var Contract = /** @class */ (function () {
         }
     };
     Contract.prototype.queryFilter = function (event, fromBlockOrBlockhash, toBlock) {
-        /*
-            let runningEvent = this._getRunningEvent(event);
-            let filter = shallowCopy(runningEvent.filter);
-    
-            if (typeof(fromBlockOrBlockhash) === "string" && isHexString(fromBlockOrBlockhash, 32)) {
-                filter.blockhash = fromBlockOrBlockhash;
-                if (toBlock != null) {
-                    errors.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
-                }
-            } else {
-                 filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash: 0);
-                 filter.toBlock = ((toBlock != null) ? toBlock: "latest");
+        var _this = this;
+        var runningEvent = this._getRunningEvent(event);
+        var filter = properties_1.shallowCopy(runningEvent.filter);
+        if (typeof (fromBlockOrBlockhash) === "string" && bytes_1.isHexString(fromBlockOrBlockhash, 32)) {
+            if (toBlock != null) {
+                errors.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
             }
-    
-            return this.provider.getLogs(filter).then((logs) => {
-                return logs.map((log) => this._wrapEvent(eventFilter, log, null));
-            });
-            */
-        return null;
+            filter.blockhash = fromBlockOrBlockhash;
+        }
+        else {
+            filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash : 0);
+            filter.toBlock = ((toBlock != null) ? toBlock : "latest");
+        }
+        return this.provider.getLogs(filter).then(function (logs) {
+            return logs.map(function (log) { return _this._wrapEvent(runningEvent, log, null); });
+        });
     };
     Contract.prototype.on = function (event, listener) {
         this._addEventListener(this._getRunningEvent(event), listener, false);

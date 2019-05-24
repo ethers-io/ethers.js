@@ -9665,6 +9665,7 @@ var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
 ;
 var _constructorGuard = {};
+var storageClasses = { calldata: true, memory: true, storage: true };
 // @TODO: Make sure that children of an indexed tuple are marked with a null indexed
 function parseParamType(param, allowIndexed) {
     var originalParam = param;
@@ -9695,11 +9696,15 @@ function parseParamType(param, allowIndexed) {
                 break;
             case ")":
                 delete node.state;
-                if (allowIndexed) {
-                    if (node.name === "indexed") {
-                        node.indexed = true;
-                        node.name = "";
+                if (node.name === "indexed") {
+                    if (!allowIndexed) {
+                        throwError(i);
                     }
+                    node.indexed = true;
+                    node.name = "";
+                }
+                if (storageClasses[node.name]) {
+                    node.name = "";
                 }
                 node.type = verifyType(node.type);
                 var child = node;
@@ -9714,11 +9719,15 @@ function parseParamType(param, allowIndexed) {
                 break;
             case ",":
                 delete node.state;
-                if (allowIndexed) {
-                    if (node.name === "indexed") {
-                        node.indexed = true;
-                        node.name = "";
+                if (node.name === "indexed") {
+                    if (!allowIndexed) {
+                        throwError(i);
                     }
+                    node.indexed = true;
+                    node.name = "";
+                }
+                if (storageClasses[node.name]) {
+                    node.name = "";
                 }
                 node.type = verifyType(node.type);
                 var sibling = newNode(node.parent);
@@ -9741,14 +9750,18 @@ function parseParamType(param, allowIndexed) {
                 // If reading name, the name is done
                 if (node.state.allowName) {
                     if (node.name !== "") {
-                        if (allowIndexed) {
-                            if (node.name === "indexed") {
-                                if (node.indexed) {
-                                    throwError(i);
-                                }
-                                node.indexed = true;
-                                node.name = "";
+                        if (node.name === "indexed") {
+                            if (!allowIndexed) {
+                                throwError(i);
                             }
+                            if (node.indexed) {
+                                throwError(i);
+                            }
+                            node.indexed = true;
+                            node.name = "";
+                        }
+                        else if (storageClasses[node.name]) {
+                            node.name = "";
                         }
                         else {
                             node.state.allowName = false;
@@ -9796,14 +9809,18 @@ function parseParamType(param, allowIndexed) {
         throw new Error("unexpected eof");
     }
     delete parent.state;
-    if (allowIndexed) {
-        if (node.name === "indexed") {
-            if (node.indexed) {
-                throwError(originalParam.length - 7);
-            }
-            node.indexed = true;
-            node.name = "";
+    if (node.name === "indexed") {
+        if (!allowIndexed) {
+            throwError(originalParam.length - 7);
         }
+        if (node.indexed) {
+            throwError(originalParam.length - 7);
+        }
+        node.indexed = true;
+        node.name = "";
+    }
+    else if (storageClasses[node.name]) {
+        node.name = "";
     }
     parent.type = verifyType(parent.type);
     return parent;
@@ -10058,7 +10075,7 @@ function parseModifiers(value, params) {
     params.constant = false;
     params.payable = false;
     // @TODO: Should this be initialized to "nonpayable"?
-    params.stateMutability = null;
+    params.stateMutability = "nonpayable";
     value.split(" ").forEach(function (modifier) {
         switch (modifier.trim()) {
             case "constant":
@@ -12834,25 +12851,22 @@ var Contract = /** @class */ (function () {
         }
     };
     Contract.prototype.queryFilter = function (event, fromBlockOrBlockhash, toBlock) {
-        /*
-            let runningEvent = this._getRunningEvent(event);
-            let filter = shallowCopy(runningEvent.filter);
-    
-            if (typeof(fromBlockOrBlockhash) === "string" && isHexString(fromBlockOrBlockhash, 32)) {
-                filter.blockhash = fromBlockOrBlockhash;
-                if (toBlock != null) {
-                    errors.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
-                }
-            } else {
-                 filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash: 0);
-                 filter.toBlock = ((toBlock != null) ? toBlock: "latest");
+        var _this = this;
+        var runningEvent = this._getRunningEvent(event);
+        var filter = properties_1.shallowCopy(runningEvent.filter);
+        if (typeof (fromBlockOrBlockhash) === "string" && bytes_1.isHexString(fromBlockOrBlockhash, 32)) {
+            if (toBlock != null) {
+                errors.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
             }
-    
-            return this.provider.getLogs(filter).then((logs) => {
-                return logs.map((log) => this._wrapEvent(eventFilter, log, null));
-            });
-            */
-        return null;
+            filter.blockhash = fromBlockOrBlockhash;
+        }
+        else {
+            filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash : 0);
+            filter.toBlock = ((toBlock != null) ? toBlock : "latest");
+        }
+        return this.provider.getLogs(filter).then(function (logs) {
+            return logs.map(function (log) { return _this._wrapEvent(runningEvent, log, null); });
+        });
     };
     Contract.prototype.on = function (event, listener) {
         this._addEventListener(this._getRunningEvent(event), listener, false);
@@ -13314,7 +13328,7 @@ exports.info = info;
 },{}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "5.0.0-beta.135";
+exports.version = "5.0.0-beta.136";
 
 },{}],68:[function(require,module,exports){
 "use strict";
@@ -17181,6 +17195,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         else {
             _this.connection = url;
         }
+        _this._nextId = 42;
         return _this;
     }
     JsonRpcProvider.prototype.getSigner = function (addressOrIndex) {
@@ -17200,7 +17215,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         var request = {
             method: method,
             params: params,
-            id: 42,
+            id: (this._nextId++),
             jsonrpc: "2.0"
         };
         return web_1.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
@@ -18144,7 +18159,7 @@ function parseBytes32String(bytes) {
         throw new Error("invalid bytes32 - not 32 bytes long");
     }
     if (data[31] !== 0) {
-        throw new Error("invalid bytes32 sdtring - no null terminator");
+        throw new Error("invalid bytes32 string - no null terminator");
     }
     // Find the null termination
     var length = 31;

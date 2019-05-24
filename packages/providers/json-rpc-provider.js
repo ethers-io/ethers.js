@@ -263,6 +263,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         else {
             _this.connection = url;
         }
+        _this._nextId = 42;
         return _this;
     }
     JsonRpcProvider.prototype.getSigner = function (addressOrIndex) {
@@ -282,7 +283,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         var request = {
             method: method,
             params: params,
-            id: 42,
+            id: (this._nextId++),
             jsonrpc: "2.0"
         };
         return web_1.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
