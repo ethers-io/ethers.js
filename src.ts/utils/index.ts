@@ -22,7 +22,7 @@ import { populateTransaction } from './transaction';
 import { parse as parseTransaction, serialize as serializeTransaction } from './transaction';
 import { formatBytes32String, parseBytes32String, toUtf8Bytes, toUtf8String } from './utf8';
 import { commify, formatEther, parseEther, formatUnits, parseUnits } from './units';
-import { fetchJson } from './web';
+import { fetchJson, poll } from './web';
 
 
 ////////////////////////
@@ -135,6 +135,8 @@ export {
     recoverAddress,
     recoverPublicKey,
     verifyMessage,
+
+    poll,
 
 
     ////////////////////////
