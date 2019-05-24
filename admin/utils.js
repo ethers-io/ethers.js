@@ -15,9 +15,23 @@ function zpad(value) {
     return value;
 }
 
+function getDate(date) {
+    return [
+        date.getFullYear(),
+        zpad(date.getMonth() + 1),
+        zpad(date.getDate())
+    ].join("-");
+}
+
+function getDateTime(date) {
+    return getDate(date) + " " + [
+        date.getHours(),
+        zpad(date.getMinutes() + 1)
+    ].join(":");
+}
+
 function today() {
-    let now = new Date();
-    return [ now.getFullYear(), zpad(now.getMonth() + 1), zpad(now.getDate()) ].join("-");
+    return getDate(new Date());
 }
 
 function loadJson(filename) {
@@ -43,5 +57,8 @@ module.exports = {
     saveJson: saveJson,
 
     repeat: repeat,
-    today: today
+
+    today: today,
+    getDate: getDate,
+    getDateTime: getDateTime
 }

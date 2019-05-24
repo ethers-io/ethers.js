@@ -10,8 +10,9 @@ const fs = require("fs");
 const semver = require("semver");
 
 const { runBuild, runDist } = require("../build");
+const { ChangelogPath, generate } = require("../changelog");
 const { getOrdered, loadPackage } = require("../depgraph");
-const { getDiff, getGitTag } = require("../git");
+const { getDiff, getStatus, getGitTag } = require("../git");
 const { updatePackage } = require("../local");
 const { getPackageVersion } = require("../npm");
 const { resolve } = require("../utils");
@@ -40,6 +41,7 @@ if (process.argv.length > 2) {
 }
 
 (async function() {
+
     let progress = getProgressBar(colorify("Updating versions", "bold"));
 
     for (let i = 0; i < dirnames.length; i++) {
@@ -125,6 +127,18 @@ if (process.argv.length > 2) {
             }
         });
         log("");
+    }
+
+    let existing = fs.readFileSync(ChangelogPath).toString();
+    let changelog = await generate();
+    if (existing !== changelog) {
+        let changelogStatus = await getStatus(ChangelogPath);
+        if (changelogStatus !== "unmodified") {
+            log("<bold:WARNING:> There are local changes to the CHANGELOG (they will be discarded)");
+            console.log(existing);
+        }
+        log("<bold:Updating CHANGELOG>...");
+        fs.writeFileSync(ChangelogPath, changelog);
     }
 
 

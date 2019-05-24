@@ -5,97 +5,106 @@ const resolve = require("path").resolve;
 
 const git = require("./git");
 const local = require("./local");
+const npm = require("./npm");
 const utils = require("./utils");
+
+const ChangelogPath = resolve(__dirname, "../CHANGELOG.md");
 
 async function generate() {
 
-    let version = local.loadPackage("ethers").version;
-    let latest = await git.getLatestTag();
-    let date = utils.today();
-    let ethersVersion = "ethers/" + version;
-    let log = await git.run([ "log", "--format=%B", (latest + "..") ])
-
-    let existing = fs.readFileSync(resolve(__dirname, "../CHANGELOG.md")).toString().split("\n");
-
-    let sections = [ [ ] ];
-
-    for (let i = 0; i < existing.length; i++) {
-        let line = existing[i];
-        let lastSection = sections[sections.length - 1];
-        if (line.substring(0, 3) === "---" || line.substring(0, 3) === "===") {
-            sections.push([ lastSection.pop(), line ])
-        } else {
-            lastSection.push(line);
+    // Get each section of the Changelog
+    let existing = fs.readFileSync(ChangelogPath).toString().split("\n");
+    let sections = [ ];
+    let lastLine = existing[0];
+    existing.slice(1).forEach((line) => {
+        if (line.substring(0, 5) === "=====" || line.substring(0, 5) === "-----") {
+            sections.push({
+                title: lastLine,
+                underline: line.substring(0, 1),
+                body: [ ]
+            });
+            lastLine = null;
+            return;
+        } else if (lastLine) {
+            sections[sections.length - 1].body.push(lastLine);
         }
-    }
+        lastLine = line;
+    });
+    sections[sections.length - 1].body.push(lastLine);
 
-    // Snip off the dummy first section
-    sections.shift();
+    let lastVersion = await npm.getPackageVersion("ethers");
 
-    let output = [ ];
+    let logs = await git.run([ "log", (lastVersion.gitHead + "..") ]);
 
-    let addSection = (section) => {
-
-        // Add the header with the same underline style
-        let header = section[0];
-        output.push(header);
-        output.push(utils.repeat(section[1], header.length));
-
-        // Add gap before body
-        output.push("");
-
-        // For each line, properly indent it (the root body does not get indented)
-        section.slice(2).forEach((line) => {
+    let changes = [ ];
+    logs.split("\n").forEach((line) => {
+        if (line.toLowerCase().substring(0, 6) === "commit") {
+            changes.push({
+                commit: line.substring(6).trim(),
+                body: [ ]
+            });
+        } else if (line.toLowerCase().substring(0, 5) === "date:") {
+            changes[changes.length - 1].date = utils.getDateTime(new Date(line.substring(5).trim()));
+        } else if (line.substring(0, 1) === " ") {
             line = line.trim();
             if (line === "") { return; }
-            if (header.trim().toLowerCase() !== "changelog") {
-                if (line.substring(0, 1) !== "*") {
-                    line = "  " + line;
-                }
-                line = "  " + line;
-            }
-            output.push(line);
-        });
-
-        // Add gap after body
-        output.push("");
-    }
-
-    let newSection = [];
-    {
-        let header = "ethers/" + version + " (" + date + ")";
-        newSection.push(header);
-        newSection.push(utils.repeat("-", header.length));
-        log.split("\n").forEach((line) => {
-        line = line.trim();
-            if (line === "") { return; }
-            newSection.push("  * " + line);
-        });
-    }
-
-    sections.forEach((section) => {
-        let header = section[0].split(" ");
-
-        // Check if this is the current version, we may need to update
-        if (header.length === 2) {
-            // This new section obsoletes the old new section...
-            if (header[0] === ethersVersion) {
-                addSection(newSection);
-                newSection = null;
-                return;
-
-            // Put the new section before any old sections
-            } else if (newSection) {
-                addSection(newSection);
-            }
+            changes[changes.length - 1].body += line + " ";
         }
-
-        addSection(section);
     });
 
-    return output.join("\n") + "\n";
+    // @TODO:
+    // ethers/version ([date](tag))
+    let newSection = {
+        title: "ethers/" + local.loadPackage("ethers").version,
+        underline: "-",
+        body: [ ]
+    }
+
+    // Delete duplicate sections for the same version (ran update multiple times)
+    while (sections[1].title === newSection.title) {
+        sections.splice(1, 1);
+    }
+
+    changes.forEach((change) => {
+        let body = change.body.trim();
+        let link = body.match(/(\((.*#.*)\))/)
+        if (link) {
+            body = body.replace(/ *(\(.*#.*)\) */, "");
+            link = link[2] + "; " + change.commit;
+        } else {
+            link = change.commit;
+        }
+        newSection.body.push(`  - ${body} (${link})`);
+    });
+
+    sections.splice(1, 0, newSection);
+
+
+    let formatted = [ ];
+    sections.forEach((section) => {
+        formatted.push(section.title);
+        formatted.push(utils.repeat(section.underline, section.title.length));
+        formatted.push("");
+        section.body.forEach((line) => {
+            line = line.trim();
+            if (line === "") { return; }
+            if (line.substring(0, 1) === "-") {
+                line = "- " + line.substring(1).trim();
+            }
+            if (section.underline === "-") {
+                line = "  " + line;
+            }
+            formatted.push(line);
+        });
+        formatted.push("");
+    });
+
+    return formatted.join("\n") + "\n";
 }
 
 module.exports = {
-    generate: generate
+    generate: generate,
+    ChangelogPath: ChangelogPath,
 }
+
+
