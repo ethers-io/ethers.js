@@ -1,49 +1,21 @@
 Admin Tool
 ==========
 
-This tool is meant for admin taks related to ethers.js.
+This tool is meant for admin tasks related to ethers.js.
 
 
 Workflow
 --------
 
-After a new change is made and `npm run build` has been used to compile the
-TypeScript, the following steps should be completed to publish it.
+After a new series of changes have been made and tested:
 
-1. Run `admin status` or `admin diff` to update the package.json (tarballHash and version) and audit changes
-2. Run `admin add-source` to stage changed source files
-3. Run `git commit -S -m "message..."`
-4. Run `npm dist` to create the changelog and all dist files
-5. Update the changelog as needed
-6. Run `admin add-dist` to stage the dist files
-7. Run test cases
-8. Run `git commit -S -m "Updated dist files."`
-9. Run `git push`
-10. Wait for TravisCI to complete running test cases
-11. Run `admin publish` to publish changed packages to NPM and tag GitHub
-
-
-Status: admin status
---------------------
-
-- Updates all package.json `tarballHash`
-- List all files that are different from the most recent published files.
-
-Diff: admin diff
-----------------
-
-- Updates all package.json `tarballHash`
-- List all diffs between the local files and the most recent published files.
-
-Add Source: admin add-source
-----------------------------
-
-- Stages all changed files which are library source files
-
-Add Dist: admin add-dist
-------------------------
-
-- Stages all changed files which are dist files
+1. Run `npm run update-versions` to update and build all packages
+2. Make any human-necessary changes to the automatically updated `CHANGELOG.md`
+3. Run `git add .`
+4. Run `git commit -S -m "Updated dist files."`
+5. Run `git push`
+6. Wait for TravisCI to complete running test cases
+7. Run `npm run publish-all` to publish changed packages to NPM and tag GitHub
 
 
 Update Dependency Graph: admin/cmds/update-depgraph
@@ -58,23 +30,30 @@ Update Versions: admin/cmds/update-versions
 -------------------------------------------
 
 Run using the `npm run update-versions`, which also cleans, bootstraps  and
-rebuilds the project.
+rebuilds the project before running the script.
 
 For each package that has changed from the version in NPM (the published
 tarballs are compared):
 
 - Update the `version` in the **package.json**
-- Update the **src.ts/_version.js** (matches the **package.json**)
+- Update the `src.ts/_version.ts` (matches the **package.json**)
 - Updates the `tarballHash` in the **package.json**
-- Compiles the TypeScript (which updates the **_version.js** and **_version.d.js**)
-- Lists all changed files
+- Compiles the TypeScript (which updates the `_version.js` and `_version.d.js`)
+- Lists all changed files (highlighting src.ts files)
+
+Then:
+
+- Generate the distribution files
+- Update the `CHANGELOG.md`
 
 
 Publish: admin/cmds/publish
-----------------------------
+---------------------------
 
-Run using `node admin/cmds/publish`.
+Run using `npm run publish-all`. This requires a password for the secure
+local config and the OTP for NPM.
 
 - Publish (in dependency order) changed files to NPM
 - The `gitHead` is updated in **only** the NPM **package.json**
+- @TODO: Cut a release on GitHub including the relevant CHANGELOG entry
 
