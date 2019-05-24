@@ -211,6 +211,7 @@ export class JsonRpcProvider extends BaseProvider {
     readonly connection: ConnectionInfo;
 
     _pendingFilter: Promise<number>;
+    _nextId: number;
 
     constructor(url?: ConnectionInfo | string, network?: Networkish) {
         errors.checkNew(new.target, JsonRpcProvider);
@@ -257,6 +258,7 @@ export class JsonRpcProvider extends BaseProvider {
             this.connection = url;
         }
 
+        this._nextId = 42;
     }
 
     getSigner(addressOrIndex?: string | number): JsonRpcSigner {
@@ -277,7 +279,7 @@ export class JsonRpcProvider extends BaseProvider {
         let request = {
             method: method,
             params: params,
-            id: 42,
+            id: (this._nextId++),
             jsonrpc: "2.0"
         };
 
