@@ -62,6 +62,7 @@ var InfuraProvider = /** @class */ (function (_super) {
             // Legacy API Access Token
         }
         else {
+            errors.warn("The legacy INFURA apiAccesToken API is deprecated; please upgrade to a Project ID instead (see INFURA dshboard; https://infura.io)");
             _this = _super.call(this, 'https://' + host + '/' + projectId, standard) || this;
             properties_1.defineReadOnly(_this, 'apiAccessToken', projectId);
             properties_1.defineReadOnly(_this, 'projectId', null);

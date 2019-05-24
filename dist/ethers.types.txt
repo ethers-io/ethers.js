@@ -232,7 +232,7 @@ declare module 'ethers/utils' {
     import { parse as parseTransaction, serialize as serializeTransaction } from 'ethers/utils/transaction';
     import { formatBytes32String, parseBytes32String, toUtf8Bytes, toUtf8String } from 'ethers/utils/utf8';
     import { commify, formatEther, parseEther, formatUnits, parseUnits } from 'ethers/utils/units';
-    import { fetchJson } from 'ethers/utils/web';
+    import { fetchJson, poll } from 'ethers/utils/web';
     import { SupportedAlgorithms } from 'ethers/utils/hmac';
     import { UnicodeNormalizationForm } from 'ethers/utils/utf8';
     import { CoerceFunc, EventFragment, FunctionFragment, ParamType } from 'ethers/utils/abi-coder';
@@ -244,7 +244,7 @@ declare module 'ethers/utils' {
     import { ConnectionInfo, OnceBlockable, PollOptions } from 'ethers/utils/web';
     import { EncryptOptions, ProgressCallback } from 'ethers/utils/secret-storage';
     import { Wordlist } from 'ethers/utils/wordlist';
-    export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, getNetwork, checkProperties, deepCopy, defineReadOnly, resolveProperties, shallowCopy, arrayify, concat, padZeros, stripZeros, HDNode, SigningKey, Interface, base64, BigNumber, bigNumberify, hexlify, isHexString, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, formatBytes32String, parseBytes32String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, commify, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, populateTransaction, serializeTransaction, getJsonWalletAddress, computeAddress, computePublicKey, recoverAddress, recoverPublicKey, verifyMessage, SupportedAlgorithms, UnicodeNormalizationForm, CoerceFunc, EventFragment, FunctionFragment, ParamType, BigNumberish, Arrayish, Hexable, Signature, Indexed, DeployDescription, EventDescription, FunctionDescription, LogDescription, TransactionDescription, Network, Networkish, Transaction, UnsignedTransaction, ConnectionInfo, OnceBlockable, PollOptions, EncryptOptions, ProgressCallback, Wordlist, };
+    export { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType, RLP, fetchJson, getNetwork, checkProperties, deepCopy, defineReadOnly, resolveProperties, shallowCopy, arrayify, concat, padZeros, stripZeros, HDNode, SigningKey, Interface, base64, BigNumber, bigNumberify, hexlify, isHexString, hexStripZeros, hexZeroPad, hexDataLength, hexDataSlice, toUtf8Bytes, toUtf8String, formatBytes32String, parseBytes32String, hashMessage, namehash, id, getAddress, getIcapAddress, getContractAddress, formatEther, parseEther, formatUnits, parseUnits, commify, keccak256, sha256, randomBytes, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, populateTransaction, serializeTransaction, getJsonWalletAddress, computeAddress, computePublicKey, recoverAddress, recoverPublicKey, verifyMessage, poll, SupportedAlgorithms, UnicodeNormalizationForm, CoerceFunc, EventFragment, FunctionFragment, ParamType, BigNumberish, Arrayish, Hexable, Signature, Indexed, DeployDescription, EventDescription, FunctionDescription, LogDescription, TransactionDescription, Network, Networkish, Transaction, UnsignedTransaction, ConnectionInfo, OnceBlockable, PollOptions, EncryptOptions, ProgressCallback, Wordlist, };
 }
 
 declare module 'ethers/wordlists' {
@@ -266,7 +266,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.28";
+    export const version = "4.0.29";
 }
 
 declare module 'ethers/utils/bignumber' {

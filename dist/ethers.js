@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.28";
+exports.version = "4.0.29";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -11837,6 +11837,7 @@ var InfuraProvider = /** @class */ (function (_super) {
             // Legacy API Access Token
         }
         else {
+            errors.warn("The legacy INFURA apiAccesToken API is deprecated; please upgrade to a Project ID instead (see INFURA dshboard; https://infura.io)");
             _this = _super.call(this, 'https://' + host + '/' + projectId, standard) || this;
             properties_1.defineReadOnly(_this, 'apiAccessToken', projectId);
             properties_1.defineReadOnly(_this, 'projectId', null);
@@ -14557,6 +14558,7 @@ exports.formatUnits = units_1.formatUnits;
 exports.parseUnits = units_1.parseUnits;
 var web_1 = require("./web");
 exports.fetchJson = web_1.fetchJson;
+exports.poll = web_1.poll;
 ////////////////////////
 // Enums
 var hmac_1 = require("./hmac");
@@ -16744,7 +16746,7 @@ function parseBytes32String(bytes) {
         throw new Error('invalid bytes32 - not 32 bytes long');
     }
     if (data[31] !== 0) {
-        throw new Error('invalid bytes32 sdtring - no null terminator');
+        throw new Error('invalid bytes32 string - no null terminator');
     }
     // Find the null termination
     var length = 31;

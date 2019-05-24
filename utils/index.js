@@ -92,6 +92,7 @@ exports.formatUnits = units_1.formatUnits;
 exports.parseUnits = units_1.parseUnits;
 var web_1 = require("./web");
 exports.fetchJson = web_1.fetchJson;
+exports.poll = web_1.poll;
 ////////////////////////
 // Enums
 var hmac_1 = require("./hmac");
