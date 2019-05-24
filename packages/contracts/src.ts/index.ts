@@ -719,25 +719,22 @@ export class Contract {
     }
 
     queryFilter(event: EventFilter, fromBlockOrBlockhash?: BlockTag | string, toBlock?: BlockTag): Promise<Array<Event>> {
-    /*
         let runningEvent = this._getRunningEvent(event);
         let filter = shallowCopy(runningEvent.filter);
 
         if (typeof(fromBlockOrBlockhash) === "string" && isHexString(fromBlockOrBlockhash, 32)) {
-            filter.blockhash = fromBlockOrBlockhash;
             if (toBlock != null) {
                 errors.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
             }
+            filter.blockhash = fromBlockOrBlockhash;
         } else {
              filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash: 0);
              filter.toBlock = ((toBlock != null) ? toBlock: "latest");
         }
 
         return this.provider.getLogs(filter).then((logs) => {
-            return logs.map((log) => this._wrapEvent(eventFilter, log, null));
+            return logs.map((log) => this._wrapEvent(runningEvent, log, null));
         });
-        */
-        return null;
     }
 
     on(event: EventFilter | string, listener: Listener): this {
