@@ -199,11 +199,11 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                 }
 
                 // Check overrides make sense
-                ['gasLimit', 'gasPrice', 'value'].forEach(function(key) {
+   /*             ['gasLimit', 'gasPrice', 'value'].forEach(function(key) {
                     if (tx[key] != null) {
                         throw new Error('call cannot override ' + key) ;
                     }
-                });
+                }); */
 
                 if (tx.from == null && contract.signer) {
                     tx.from = contract.signer.getAddress()
