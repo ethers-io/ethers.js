@@ -6,7 +6,7 @@ import { NegativeOne, Zero, One, MaxUint256 } from '../constants';
 
 import * as errors from '../errors';
 
-import { getAddress } from  './address';
+import { getAddress } from './address';
 import { BigNumber, bigNumberify } from './bignumber';
 import { arrayify, concat, hexlify, padZeros } from './bytes';
 import { toUtf8Bytes, toUtf8String } from './utf8';
@@ -62,8 +62,9 @@ export type FunctionFragment = {
 const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 const paramTypeArray = new RegExp(/^(.*)\[([0-9]*)\]$/);
+const paramTypeFixedDecimal = new RegExp(/^fixed168x10$/);
 
-export const defaultCoerceFunc: CoerceFunc = function(type: string, value: any): any {
+export const defaultCoerceFunc: CoerceFunc = function (type: string, value: any): any {
     var match = type.match(paramTypeNumber)
     if (match && parseInt(match[2]) <= 48) { return value.toNumber(); }
     return value;
@@ -124,7 +125,7 @@ function parseParam(param: string, allowIndexed?: boolean): ParamType {
                 if (!node.state.allowParams) { throwError(i); }
                 node.state.allowType = false;
                 node.type = verifyType(node.type);
-                node.components = [ { type: '', name: '', parent: node, state: { allowType: true } } ];
+                node.components = [{ type: '', name: '', parent: node, state: { allowType: true } }];
                 node = node.components[0];
                 break;
 
@@ -252,14 +253,14 @@ function parseSignatureEvent(fragment: string): EventFragment {
 
     abi.name = match[1].trim();
 
-    splitNesting(match[2]).forEach(function(param) {
+    splitNesting(match[2]).forEach(function (param) {
         param = parseParam(param, true);
         param.indexed = !!param.indexed;
         abi.inputs.push(param);
     });
 
-    match[3].split(' ').forEach(function(modifier) {
-        switch(modifier) {
+    match[3].split(' ').forEach(function (modifier) {
+        switch (modifier) {
             case 'anonymous':
                 abi.anonymous = true;
                 break;
@@ -310,11 +311,11 @@ function parseSignatureFunction(fragment: string): FunctionFragment {
         throw new Error('invalid identifier: "' + left[1] + '"');
     }
 
-    splitNesting(left[2]).forEach(function(param) {
+    splitNesting(left[2]).forEach(function (param) {
         abi.inputs.push(parseParam(param));
     });
 
-    left[3].split(' ').forEach(function(modifier) {
+    left[3].split(' ').forEach(function (modifier) {
         switch (modifier) {
             case 'constant':
                 abi.constant = true;
@@ -347,7 +348,7 @@ function parseSignatureFunction(fragment: string): FunctionFragment {
             throw new Error('unexpected tokens');
         }
 
-        splitNesting(right[2]).forEach(function(param) {
+        splitNesting(right[2]).forEach(function (param) {
             abi.outputs.push(parseParam(param));
         });
     }
@@ -381,14 +382,14 @@ export function formatSignature(fragment: EventFragment | FunctionFragment): str
 }
 
 export function parseSignature(fragment: string): EventFragment | FunctionFragment {
-    if(typeof(fragment) === 'string') {
+    if (typeof (fragment) === 'string') {
         // Make sure the "returns" is surrounded by a space and all whitespace is exactly one space
         fragment = fragment.replace(/\s/g, ' ');
         fragment = fragment.replace(/\(/g, ' (').replace(/\)/g, ') ').replace(/\s+/g, ' ');
         fragment = fragment.trim();
 
         if (fragment.substring(0, 6) === 'event ') {
-           return parseSignatureEvent(fragment.substring(6).trim());
+            return parseSignatureEvent(fragment.substring(6).trim());
 
         } else {
             if (fragment.substring(0, 9) === 'function ') {
@@ -457,7 +458,7 @@ class CoderNumber extends Coder {
     readonly size: number;
     readonly signed: boolean;
     constructor(coerceFunc: CoerceFunc, size: number, signed: boolean, localName: string) {
-        const name = ((signed ? 'int': 'uint') + (size * 8));
+        const name = ((signed ? 'int' : 'uint') + (size * 8));
         super(coerceFunc, name, name, localName, false);
 
         this.size = size;
@@ -515,7 +516,7 @@ class CoderNumber extends Coder {
         }
     }
 }
-var uint256Coder = new CoderNumber(function(type: string, value: any) { return value; }, 32, false, 'none');
+var uint256Coder = new CoderNumber(function (type: string, value: any) { return value; }, 32, false, 'none');
 
 class CoderBoolean extends Coder {
     constructor(coerceFunc: CoerceFunc, localName: string) {
@@ -523,7 +524,7 @@ class CoderBoolean extends Coder {
     }
 
     encode(value: boolean): Uint8Array {
-        return uint256Coder.encode(!!value ? 1: 0);
+        return uint256Coder.encode(!!value ? 1 : 0);
     }
 
     decode(data: Uint8Array, offset: number): DecodedResult {
@@ -616,7 +617,7 @@ class CoderAddress extends Coder {
         return {
             consumed: 32,
             value: this.coerceFunc('address', getAddress(hexlify(data.slice(offset + 12, offset + 32))))
-       }
+        }
     }
 }
 
@@ -695,7 +696,7 @@ class CoderString extends Coder {
     }
 
     encode(value: string): Uint8Array {
-        if (typeof(value) !== 'string') {
+        if (typeof (value) !== 'string') {
             errors.throwError('invalid string value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
                 coderType: 'string',
@@ -719,11 +720,11 @@ function alignSize(size: number): number {
 function pack(coders: Array<Coder>, values: Array<any>): Uint8Array {
 
     if (Array.isArray(values)) {
-       // do nothing
+        // do nothing
 
-    } else if (values && typeof(values) === 'object') {
+    } else if (values && typeof (values) === 'object') {
         var arrayValues: Array<any> = [];
-        coders.forEach(function(coder) {
+        coders.forEach(function (coder) {
             arrayValues.push((<any>values)[coder.localName]);
         });
         values = arrayValues;
@@ -744,12 +745,12 @@ function pack(coders: Array<Coder>, values: Array<any>): Uint8Array {
 
     var parts: Array<{ dynamic: boolean, value: any }> = [];
 
-    coders.forEach(function(coder, index) {
+    coders.forEach(function (coder, index) {
         parts.push({ dynamic: coder.dynamic, value: coder.encode(values[index]) });
     });
 
     var staticSize = 0, dynamicSize = 0;
-    parts.forEach(function(part) {
+    parts.forEach(function (part) {
         if (part.dynamic) {
             staticSize += 32;
             dynamicSize += alignSize(part.value.length);
@@ -761,7 +762,7 @@ function pack(coders: Array<Coder>, values: Array<any>): Uint8Array {
     var offset = 0, dynamicOffset = staticSize;
     var data = new Uint8Array(staticSize + dynamicSize);
 
-    parts.forEach(function(part) {
+    parts.forEach(function (part) {
         if (part.dynamic) {
             //uint256Coder.encode(dynamicOffset).copy(data, offset);
             data.set(uint256Coder.encode(dynamicOffset), offset);
@@ -784,7 +785,7 @@ function unpack(coders: Array<Coder>, data: Uint8Array, offset: number): Decoded
     var baseOffset = offset;
     var consumed = 0;
     var value: any = [];
-    coders.forEach(function(coder) {
+    coders.forEach(function (coder) {
         if (coder.dynamic) {
             var dynamicOffset = uint256Coder.decode(data, offset);
             var result = coder.decode(data, baseOffset + dynamicOffset.value.toNumber());
@@ -802,7 +803,7 @@ function unpack(coders: Array<Coder>, data: Uint8Array, offset: number): Decoded
         consumed += result.consumed;
     });
 
-    coders.forEach(function(coder: Coder, index: number) {
+    coders.forEach(function (coder: Coder, index: number) {
         let name: string = coder.localName;
         if (!name) { return; }
 
@@ -823,7 +824,7 @@ class CoderArray extends Coder {
     readonly coder: Coder;
     readonly length: number;
     constructor(coerceFunc: CoerceFunc, coder: Coder, length: number, localName: string) {
-        const type = (coder.type + '[' + (length >= 0 ? length: '') + ']');
+        const type = (coder.type + '[' + (length >= 0 ? length : '') + ']');
         const dynamic = (length === -1 || coder.dynamic);
         super(coerceFunc, 'array', type, localName, dynamic);
 
@@ -848,7 +849,7 @@ class CoderArray extends Coder {
             result = uint256Coder.encode(count);
         }
 
-        errors.checkArgumentCount(count, value.length, ' in coder array' + (this.localName? (" "+ this.localName): ""));
+        errors.checkArgumentCount(count, value.length, ' in coder array' + (this.localName ? (" " + this.localName) : ""));
 
         var coders = [];
         for (var i = 0; i < value.length; i++) { coders.push(this.coder); }
@@ -873,18 +874,18 @@ class CoderArray extends Coder {
                     coderType: 'array',
                     value: error.value
                 });
-             }
-             try {
-                 count = decodedLength.value.toNumber();
-             } catch (error) {
-                 errors.throwError('array count too large', errors.INVALID_ARGUMENT, {
-                     arg: this.localName,
-                     coderType: 'array',
-                     value: decodedLength.value.toString()
-                 });
-             }
-             consumed += decodedLength.consumed;
-             offset += decodedLength.consumed;
+            }
+            try {
+                count = decodedLength.value.toNumber();
+            } catch (error) {
+                errors.throwError('array count too large', errors.INVALID_ARGUMENT, {
+                    arg: this.localName,
+                    coderType: 'array',
+                    value: decodedLength.value.toString()
+                });
+            }
+            consumed += decodedLength.consumed;
+            offset += decodedLength.consumed;
         }
 
         var coders = [];
@@ -902,7 +903,7 @@ class CoderTuple extends Coder {
     constructor(coerceFunc: CoerceFunc, coders: Array<Coder>, localName: string) {
         var dynamic = false;
         var types: Array<string> = [];
-        coders.forEach(function(coder) {
+        coders.forEach(function (coder) {
             if (coder.dynamic) { dynamic = true; }
             types.push(coder.type);
         });
@@ -967,7 +968,7 @@ const paramTypeSimple: { [key: string]: any } = {
 function getTupleParamCoder(coerceFunc: CoerceFunc, components: Array<any>, localName: string): CoderTuple {
     if (!components) { components = []; }
     var coders: Array<Coder> = [];
-    components.forEach(function(component) {
+    components.forEach(function (component) {
         coders.push(getParamCoder(coerceFunc, component));
     });
 
@@ -1010,8 +1011,14 @@ function getParamCoder(coerceFunc: CoerceFunc, param: ParamType): Coder {
         return new CoderArray(coerceFunc, getParamCoder(coerceFunc, param), size, param.name);
     }
 
+
     if (param.type.substring(0, 5) === 'tuple') {
         return getTupleParamCoder(coerceFunc, param.components, param.name);
+    }
+
+    var match = param.type.match(paramTypeFixedDecimal);
+    if (match) {
+        return new CoderNull(coerceFunc, param.name);
     }
 
     if (param.type === '') {
@@ -1046,13 +1053,13 @@ export class AbiCoder {
         }
 
         var coders: Array<Coder> = [];
-        types.forEach(function(type) {
+        types.forEach(function (type) {
             // Convert types to type objects
             //   - "uint foo" => { type: "uint", name: "foo" }
             //   - "tuple(uint, uint)" => { type: "tuple", components: [ { type: "uint" }, { type: "uint" }, ] }
 
             let typeObject: ParamType = null;
-            if (typeof(type) === 'string') {
+            if (typeof (type) === 'string') {
                 typeObject = parseParam(type);
             } else {
                 typeObject = type;
@@ -1068,11 +1075,11 @@ export class AbiCoder {
     decode(types: Array<string | ParamType>, data: Arrayish): any {
 
         var coders: Array<Coder> = [];
-        types.forEach(function(type) {
+        types.forEach(function (type) {
 
             // See encode for details
             let typeObject: ParamType = null;
-            if (typeof(type) === 'string') {
+            if (typeof (type) === 'string') {
                 typeObject = parseParam(type);
             } else {
                 typeObject = deepCopy(type);

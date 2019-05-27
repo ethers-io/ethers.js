@@ -12381,6 +12381,7 @@ var properties_1 = require("./properties");
 var paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 var paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 var paramTypeArray = new RegExp(/^(.*)\[([0-9]*)\]$/);
+var paramTypeFixedDecimal = new RegExp(/^fixed168x10$/);
 exports.defaultCoerceFunc = function (type, value) {
     var match = type.match(paramTypeNumber);
     if (match && parseInt(match[2]) <= 48) {
@@ -13251,6 +13252,10 @@ function getParamCoder(coerceFunc, param) {
     }
     if (param.type.substring(0, 5) === 'tuple') {
         return getTupleParamCoder(coerceFunc, param.components, param.name);
+    }
+    var match = param.type.match(paramTypeFixedDecimal);
+    if (match) {
+        return new CoderNull(coerceFunc, param.name);
     }
     if (param.type === '') {
         return new CoderNull(coerceFunc, param.name);
