@@ -353,7 +353,7 @@ export abstract class Fragment {
         result += "(" + this.inputs.map((i) => i.format(expanded)).join(expanded ? ", ": ",") + ") ";
 
         // @TODO: Handle returns, modifiers, etc.
-        if (expanded) {
+        if (expanded && this.type !== "event") {
             result += "public ";
             if ((<any>this).mutabilityState) {
                 result += (<any>this).mutabilityState + " ";
@@ -362,7 +362,7 @@ export abstract class Fragment {
             }
 
             if ((<any>this).outputs && (<any>this).outputs.length) {
-                result += "(" + (<any>this).outputs.map((i: ParamType) => i.format(expanded)).join(", ") + ") ";
+                result += "returns (" + (<any>this).outputs.map((i: ParamType) => i.format(expanded)).join(", ") + ") ";
             }
         }
 
