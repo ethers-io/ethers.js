@@ -58,18 +58,18 @@ export class JsonRpcSigner extends Signer {
 
         defineReadOnly(this, "provider", provider);
 
-        // Statically attach to a given address
         if (addressOrIndex == null) { addressOrIndex = 0; }
-        if (addressOrIndex) {
-            if (typeof(addressOrIndex) === "string") {
-                defineReadOnly(this, "_address", this.provider.formatter.address(addressOrIndex));
-                defineReadOnly(this, "_index", null);
-            } else if (typeof(addressOrIndex) === "number") {
-                defineReadOnly(this, "_index", addressOrIndex);
-                defineReadOnly(this, "_address", null);
-            } else {
-                errors.throwError("invalid address or index", errors.INVALID_ARGUMENT, { argument: "addressOrIndex", value: addressOrIndex });
-            }
+
+        if (typeof(addressOrIndex) === "string") {
+            defineReadOnly(this, "_address", this.provider.formatter.address(addressOrIndex));
+            defineReadOnly(this, "_index", null);
+
+        } else if (typeof(addressOrIndex) === "number") {
+            defineReadOnly(this, "_index", addressOrIndex);
+            defineReadOnly(this, "_address", null);
+
+        } else {
+            errors.throwError("invalid address or index", errors.INVALID_ARGUMENT, { argument: "addressOrIndex", value: addressOrIndex });
         }
     }
 
