@@ -9943,7 +9943,7 @@ var Fragment = /** @class */ (function () {
         }
         result += "(" + this.inputs.map(function (i) { return i.format(expanded); }).join(expanded ? ", " : ",") + ") ";
         // @TODO: Handle returns, modifiers, etc.
-        if (expanded) {
+        if (expanded && this.type !== "event") {
             result += "public ";
             if (this.mutabilityState) {
                 result += this.mutabilityState + " ";
@@ -9952,7 +9952,7 @@ var Fragment = /** @class */ (function () {
                 result += "view ";
             }
             if (this.outputs && this.outputs.length) {
-                result += "(" + this.outputs.map(function (i) { return i.format(expanded); }).join(", ") + ") ";
+                result += "returns (" + this.outputs.map(function (i) { return i.format(expanded); }).join(", ") + ") ";
             }
         }
         return result.trim();
@@ -13328,7 +13328,7 @@ exports.info = info;
 },{}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "5.0.0-beta.136";
+exports.version = "5.0.0-beta.137";
 
 },{}],68:[function(require,module,exports){
 "use strict";
@@ -16996,22 +16996,19 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             throw new Error("do not call the JsonRpcSigner constructor directly; use provider.getSigner");
         }
         properties_1.defineReadOnly(_this, "provider", provider);
-        // Statically attach to a given address
         if (addressOrIndex == null) {
             addressOrIndex = 0;
         }
-        if (addressOrIndex) {
-            if (typeof (addressOrIndex) === "string") {
-                properties_1.defineReadOnly(_this, "_address", _this.provider.formatter.address(addressOrIndex));
-                properties_1.defineReadOnly(_this, "_index", null);
-            }
-            else if (typeof (addressOrIndex) === "number") {
-                properties_1.defineReadOnly(_this, "_index", addressOrIndex);
-                properties_1.defineReadOnly(_this, "_address", null);
-            }
-            else {
-                errors.throwError("invalid address or index", errors.INVALID_ARGUMENT, { argument: "addressOrIndex", value: addressOrIndex });
-            }
+        if (typeof (addressOrIndex) === "string") {
+            properties_1.defineReadOnly(_this, "_address", _this.provider.formatter.address(addressOrIndex));
+            properties_1.defineReadOnly(_this, "_index", null);
+        }
+        else if (typeof (addressOrIndex) === "number") {
+            properties_1.defineReadOnly(_this, "_index", addressOrIndex);
+            properties_1.defineReadOnly(_this, "_address", null);
+        }
+        else {
+            errors.throwError("invalid address or index", errors.INVALID_ARGUMENT, { argument: "addressOrIndex", value: addressOrIndex });
         }
         return _this;
     }
@@ -17803,7 +17800,7 @@ function computeHmac(algorithm, key, data) {
             algorithm: algorithm
         });
     }
-    return "0x" + hash.hmac(hash[algorithm], bytes_1.arrayify(key)).update(bytes_1.arrayify(data)).digest();
+    return "0x" + hash.hmac(hash[algorithm], bytes_1.arrayify(key)).update(bytes_1.arrayify(data)).digest("hex");
 }
 exports.computeHmac = computeHmac;
 

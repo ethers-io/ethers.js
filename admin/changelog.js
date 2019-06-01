@@ -55,7 +55,7 @@ async function generate() {
     // @TODO:
     // ethers/version ([date](tag))
     let newSection = {
-        title: "ethers/" + local.loadPackage("ethers").version,
+        title: `ethers/v${ local.loadPackage("ethers").version } (${utils.getDateTime(new Date())})`,
         underline: "-",
         body: [ ]
     }
@@ -68,11 +68,14 @@ async function generate() {
     changes.forEach((change) => {
         let body = change.body.trim();
         let link = body.match(/(\((.*#.*)\))/)
+        let commit = `[${change.commit.substring(0, 7)}](https://github.com/ethers-io/ethers.js/commit/${change.commit})`;
         if (link) {
             body = body.replace(/ *(\(.*#.*)\) */, "");
-            link = link[2] + "; " + change.commit;
+            link = link[2].replace(/#([0-9]+)/g, (issue) => {
+                return `[#${issue}](https://github.com/ethers-io/ethers.js/issues/ + issue)`;
+            }) + "; " + commit;
         } else {
-            link = change.commit;
+            link = commit;
         }
         newSection.body.push(`  - ${body} (${link})`);
     });

@@ -3,6 +3,14 @@ Changelog
 
 This change log is managed by `scripts/cmd/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.137 (2019-06-01 14:06)
+-----------------------------------------
+
+  - Fixed invalid arrayify value in browser for SHA2-HMAC. ([#530](https://github.com/ethers-io/ethers.js/issues/ + issue); [c4a494b](https://github.com/ethers-io/ethers.js/commit/c4a494b528f2e5f706c159d916d8ff0ffd96a211))
+  - Fix event and function fragment formatting. ([a2d4b29](https://github.com/ethers-io/ethers.js/commit/a2d4b2907184d9480a72fe6f67652489074af86e))
+  - Fixed default JsonRpcSigner. ([#532](https://github.com/ethers-io/ethers.js/issues/ + issue); [5ba6a61](https://github.com/ethers-io/ethers.js/commit/5ba6a616a6f969b1f28f8c6367c21488f497a7ae))
+  - Added changelog management to update-versions. ([4a3f719](https://github.com/ethers-io/ethers.js/commit/4a3f7190dc04275030d313289e1ba6a2b31407ec))
+
 ethers/5.0.0-beta.136
 ---------------------
 

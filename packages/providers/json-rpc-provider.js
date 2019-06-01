@@ -64,22 +64,19 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             throw new Error("do not call the JsonRpcSigner constructor directly; use provider.getSigner");
         }
         properties_1.defineReadOnly(_this, "provider", provider);
-        // Statically attach to a given address
         if (addressOrIndex == null) {
             addressOrIndex = 0;
         }
-        if (addressOrIndex) {
-            if (typeof (addressOrIndex) === "string") {
-                properties_1.defineReadOnly(_this, "_address", _this.provider.formatter.address(addressOrIndex));
-                properties_1.defineReadOnly(_this, "_index", null);
-            }
-            else if (typeof (addressOrIndex) === "number") {
-                properties_1.defineReadOnly(_this, "_index", addressOrIndex);
-                properties_1.defineReadOnly(_this, "_address", null);
-            }
-            else {
-                errors.throwError("invalid address or index", errors.INVALID_ARGUMENT, { argument: "addressOrIndex", value: addressOrIndex });
-            }
+        if (typeof (addressOrIndex) === "string") {
+            properties_1.defineReadOnly(_this, "_address", _this.provider.formatter.address(addressOrIndex));
+            properties_1.defineReadOnly(_this, "_index", null);
+        }
+        else if (typeof (addressOrIndex) === "number") {
+            properties_1.defineReadOnly(_this, "_index", addressOrIndex);
+            properties_1.defineReadOnly(_this, "_address", null);
+        }
+        else {
+            errors.throwError("invalid address or index", errors.INVALID_ARGUMENT, { argument: "addressOrIndex", value: addressOrIndex });
         }
         return _this;
     }

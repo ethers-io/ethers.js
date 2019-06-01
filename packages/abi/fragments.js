@@ -303,7 +303,7 @@ var Fragment = /** @class */ (function () {
         }
         result += "(" + this.inputs.map(function (i) { return i.format(expanded); }).join(expanded ? ", " : ",") + ") ";
         // @TODO: Handle returns, modifiers, etc.
-        if (expanded) {
+        if (expanded && this.type !== "event") {
             result += "public ";
             if (this.mutabilityState) {
                 result += this.mutabilityState + " ";
@@ -312,7 +312,7 @@ var Fragment = /** @class */ (function () {
                 result += "view ";
             }
             if (this.outputs && this.outputs.length) {
-                result += "(" + this.outputs.map(function (i) { return i.format(expanded); }).join(", ") + ") ";
+                result += "returns (" + this.outputs.map(function (i) { return i.format(expanded); }).join(", ") + ") ";
             }
         }
         return result.trim();
