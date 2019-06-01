@@ -29,6 +29,6 @@ export function computeHmac(algorithm: SupportedAlgorithms, key: BytesLike, data
         });
     }
 
-    return "0x" + hash.hmac((<any>hash)[algorithm], arrayify(key)).update(arrayify(data)).digest();
+    return "0x" + hash.hmac((<any>hash)[algorithm], arrayify(key)).update(arrayify(data)).digest("hex");
 }
 
