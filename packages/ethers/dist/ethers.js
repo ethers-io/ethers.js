@@ -13328,7 +13328,7 @@ exports.info = info;
 },{}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "5.0.0-beta.137";
+exports.version = "5.0.0-beta.138";
 
 },{}],68:[function(require,module,exports){
 "use strict";
@@ -16876,7 +16876,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var bytes_1 = require("@ethersproject/bytes");
 var errors = __importStar(require("@ethersproject/errors"));
 var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
 var defaultProjectId = "84842078b09946638c03157f83405213";
@@ -16893,9 +16892,6 @@ var InfuraProvider = /** @class */ (function (_super) {
     InfuraProvider.getApiKey = function (apiKey) {
         if (apiKey == null) {
             return defaultProjectId;
-        }
-        if (!bytes_1.isHexString(apiKey, 16)) {
-            errors.throwArgumentError("invalid projectId", "projectId", apiKey);
         }
         return apiKey;
     };
@@ -16923,13 +16919,13 @@ var InfuraProvider = /** @class */ (function (_super) {
                     value: network
                 });
         }
-        return "https://" + host + "/v3/" + apiKey;
+        return "https:/" + "/" + host + "/v3/" + apiKey;
     };
     return InfuraProvider;
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));
 exports.InfuraProvider = InfuraProvider;
 
-},{"./url-json-rpc-provider":93,"@ethersproject/bytes":63,"@ethersproject/errors":66}],91:[function(require,module,exports){
+},{"./url-json-rpc-provider":93,"@ethersproject/errors":66}],91:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {

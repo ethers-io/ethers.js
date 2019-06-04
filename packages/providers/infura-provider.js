@@ -20,7 +20,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var bytes_1 = require("@ethersproject/bytes");
 var errors = __importStar(require("@ethersproject/errors"));
 var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
 var defaultProjectId = "84842078b09946638c03157f83405213";
@@ -37,9 +36,6 @@ var InfuraProvider = /** @class */ (function (_super) {
     InfuraProvider.getApiKey = function (apiKey) {
         if (apiKey == null) {
             return defaultProjectId;
-        }
-        if (!bytes_1.isHexString(apiKey, 16)) {
-            errors.throwArgumentError("invalid projectId", "projectId", apiKey);
         }
         return apiKey;
     };
@@ -67,7 +63,7 @@ var InfuraProvider = /** @class */ (function (_super) {
                     value: network
                 });
         }
-        return "https://" + host + "/v3/" + apiKey;
+        return "https:/" + "/" + host + "/v3/" + apiKey;
     };
     return InfuraProvider;
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));
