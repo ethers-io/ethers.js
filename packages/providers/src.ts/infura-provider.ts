@@ -1,6 +1,5 @@
 "use strict";
 
-import { isHexString } from "@ethersproject/bytes";
 import * as errors from "@ethersproject/errors";
 import { Network } from "@ethersproject/networks";
 
@@ -14,9 +13,6 @@ export class InfuraProvider extends UrlJsonRpcProvider {
 
     static getApiKey(apiKey: string): string {
         if (apiKey == null) { return defaultProjectId; }
-        if (!isHexString(apiKey, 16)) {
-            errors.throwArgumentError("invalid projectId", "projectId", apiKey);
-        }
         return apiKey;
     }
 
@@ -45,6 +41,6 @@ export class InfuraProvider extends UrlJsonRpcProvider {
                 });
         }
 
-        return "https://" + host + "/v3/" + apiKey;
+        return "https:/" + "/" + host + "/v3/" + apiKey;
     }
 }
