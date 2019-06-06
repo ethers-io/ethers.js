@@ -54,6 +54,8 @@ var IpcProvider = /** @class */ (function (_super) {
         return new Promise(function (resolve, reject) {
             var response = Buffer.alloc(0);
             var stream = net_1.default.connect(_this.path);
+            stream.setTimeout(5e3, function () { return stream.destroy(); });
+            stream.once('connect', function () { return stream.setTimeout(0); });
             stream.on('data', function (data) {
                 response = Buffer.concat([response, data]);
             });

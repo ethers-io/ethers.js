@@ -48,6 +48,9 @@ export class IpcProvider extends JsonRpcProvider {
 
             let stream = net.connect(this.path);
 
+            stream.setTimeout(5e3, () => stream.destroy());
+            stream.once('connect', () => stream.setTimeout(0));
+
             stream.on('data', (data) => {
                 response = Buffer.concat([ response, data ]);
             });
