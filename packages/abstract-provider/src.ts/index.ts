@@ -28,6 +28,8 @@ export type TransactionRequest = {
 }
 
 export interface TransactionResponse extends Transaction {
+    hash: string;
+
     // Only if a transaction has been mined
     blockNumber?: number,
     blockHash?: string,
