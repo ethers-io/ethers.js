@@ -18,7 +18,7 @@ import { formatBytes32String, parseBytes32String, toUtf8Bytes, toUtf8String } fr
 import { computeAddress, parse as parseTransaction, recoverAddress, serialize as serializeTransaction } from "@ethersproject/transactions";
 import { commify, formatEther, parseEther, formatUnits, parseUnits } from "@ethersproject/units";
 import { verifyMessage } from "@ethersproject/wallet";
-import { fetchJson } from "@ethersproject/web";
+import { fetchJson, poll } from "@ethersproject/web";
 
 ////////////////////////
 // Enums
@@ -50,6 +50,7 @@ export {
     RLP,
 
     fetchJson,
+    poll,
 
     checkProperties,
     deepCopy,
