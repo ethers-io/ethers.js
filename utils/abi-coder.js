@@ -480,7 +480,7 @@ var CoderFixedBytes = /** @class */ (function (_super) {
     };
     CoderFixedBytes.prototype.decode = function (data, offset) {
         if (data.length < offset + 32) {
-            errors.throwError('insufficient data for ' + name + ' type', errors.INVALID_ARGUMENT, {
+            errors.throwError('insufficient data for ' + this.name + ' type', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
                 coderType: this.name,
                 value: bytes_1.hexlify(data.slice(offset, offset + 32))
