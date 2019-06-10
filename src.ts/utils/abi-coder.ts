@@ -574,7 +574,7 @@ class CoderFixedBytes extends Coder {
 
     decode(data: Uint8Array, offset: number): DecodedResult {
         if (data.length < offset + 32) {
-            errors.throwError('insufficient data for ' + name + ' type', errors.INVALID_ARGUMENT, {
+            errors.throwError('insufficient data for ' + this.name + ' type', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
                 coderType: this.name,
                 value: hexlify(data.slice(offset, offset + 32))
