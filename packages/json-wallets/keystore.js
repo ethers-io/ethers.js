@@ -34,8 +34,8 @@ var KeystoreAccount = /** @class */ (function (_super) {
     function KeystoreAccount() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    KeystoreAccount.prototype.isType = function (value) {
-        return properties_1.Description.isType(value);
+    KeystoreAccount.prototype.isKeystoreAccount = function (value) {
+        return !!(value && value._isKeystoreAccount);
     };
     return KeystoreAccount;
 }(properties_1.Description));
@@ -81,6 +81,7 @@ function decrypt(json, password, progressCallback) {
         }
         catch (e) { }
         var account = {
+            _isKeystoreAccount: true,
             address: address,
             privateKey: bytes_1.hexlify(privateKey)
         };

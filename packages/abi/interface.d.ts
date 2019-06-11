@@ -20,6 +20,7 @@ export declare class TransactionDescription extends Description {
 }
 export declare class Indexed extends Description {
     readonly hash: string;
+    static isIndexed(value: any): value is Indexed;
 }
 export declare class Result {
     [key: string]: any;
@@ -41,6 +42,7 @@ export declare class Interface {
     };
     readonly deploy: ConstructorFragment;
     readonly _abiCoder: AbiCoder;
+    static _isInterface: boolean;
     constructor(fragments: string | Array<Fragment | JsonFragment | string>);
     static getAbiCoder(): AbiCoder;
     static getAddress(address: string): string;
@@ -64,4 +66,5 @@ export declare class Interface {
         topics: Array<string>;
         data: string;
     }): LogDescription;
+    static isInterface(value: any): value is Interface;
 }

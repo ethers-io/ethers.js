@@ -9,7 +9,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
 var errors = __importStar(require("@ethersproject/errors"));
-var properties_1 = require("@ethersproject/properties");
 var bignumber_1 = require("./bignumber");
 var _constructorGuard = {};
 var Zero = bignumber_1.BigNumber.from(0);
@@ -114,12 +113,12 @@ function parseFixed(value, decimals) {
 exports.parseFixed = parseFixed;
 var FixedFormat = /** @class */ (function () {
     function FixedFormat(constructorGuard, signed, width, decimals) {
-        properties_1.defineReadOnly(this, "signed", signed);
-        properties_1.defineReadOnly(this, "width", width);
-        properties_1.defineReadOnly(this, "decimals", decimals);
-        var name = (signed ? "" : "u") + "fixed" + String(width) + "x" + String(decimals);
-        properties_1.defineReadOnly(this, "name", name);
-        properties_1.defineReadOnly(this, "_multiplier", getMultiplier(decimals));
+        this.signed = signed;
+        this.width = width;
+        this.decimals = decimals;
+        this.name = (signed ? "" : "u") + "fixed" + String(width) + "x" + String(decimals);
+        this._multiplier = getMultiplier(decimals);
+        Object.freeze(this);
     }
     FixedFormat.from = function (value) {
         if (value instanceof FixedFormat) {
@@ -167,9 +166,6 @@ var FixedFormat = /** @class */ (function () {
         }
         return new FixedFormat(_constructorGuard, signed, width, decimals);
     };
-    FixedFormat.isInstance = function (value) {
-        return properties_1.isNamedInstance(this, value);
-    };
     return FixedFormat;
 }());
 exports.FixedFormat = FixedFormat;
@@ -177,9 +173,11 @@ var FixedNumber = /** @class */ (function () {
     function FixedNumber(constructorGuard, hex, value, format) {
         var _newTarget = this.constructor;
         errors.checkNew(_newTarget, FixedNumber);
-        properties_1.defineReadOnly(this, 'format', format);
-        properties_1.defineReadOnly(this, '_hex', hex);
-        properties_1.defineReadOnly(this, '_value', value);
+        this.format = format;
+        this._hex = hex;
+        this._value = value;
+        this._isFixedNumber = true;
+        Object.freeze(this);
     }
     FixedNumber.prototype._checkFormat = function (other) {
         if (this.format.name !== other.format.name) {
@@ -246,7 +244,7 @@ var FixedNumber = /** @class */ (function () {
     };
     FixedNumber.fromValue = function (value, decimals, format) {
         // If decimals looks more like a format, and there is no format, shift the parameters
-        if (format == null && decimals != null && (FixedFormat.isInstance(decimals) || typeof (decimals) === "string")) {
+        if (format == null && decimals != null && !bignumber_1.isBigNumberish(decimals)) {
             format = decimals;
             decimals = null;
         }
@@ -256,14 +254,13 @@ var FixedNumber = /** @class */ (function () {
         if (format == null) {
             format = "fixed";
         }
-        var fixedFormat = (FixedFormat.isInstance(format) ? format : FixedFormat.from(format));
-        return FixedNumber.fromString(formatFixed(value, decimals), fixedFormat);
+        return FixedNumber.fromString(formatFixed(value, decimals), FixedFormat.from(format));
     };
     FixedNumber.fromString = function (value, format) {
         if (format == null) {
             format = "fixed";
         }
-        var fixedFormat = (FixedFormat.isInstance(format) ? format : FixedFormat.from(format));
+        var fixedFormat = FixedFormat.from(format);
         var numeric = parseFixed(value, fixedFormat.decimals);
         if (!fixedFormat.signed && numeric.lt(Zero)) {
             throwFault("unsigned value cannot be negative", "overflow", "value", value);
@@ -283,7 +280,7 @@ var FixedNumber = /** @class */ (function () {
         if (format == null) {
             format = "fixed";
         }
-        var fixedFormat = (FixedFormat.isInstance(format) ? format : FixedFormat.from(format));
+        var fixedFormat = FixedFormat.from(format);
         if (bytes_1.arrayify(value).length > fixedFormat.width / 8) {
             throw new Error("overflow");
         }
@@ -314,7 +311,7 @@ var FixedNumber = /** @class */ (function () {
         return errors.throwArgumentError("invalid FixedNumber value", "value", value);
     };
     FixedNumber.isFixedNumber = function (value) {
-        return properties_1.isNamedInstance(this, value);
+        return !!(value && value._isFixedNumber);
     };
     return FixedNumber;
 }());

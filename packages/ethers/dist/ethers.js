@@ -9855,6 +9855,8 @@ var ParamType = /** @class */ (function () {
                 baseType: ((this.components != null) ? "tuple" : this.type)
             });
         }
+        this._isParamType = true;
+        Object.freeze(this);
     }
     // Format the parameter fragment
     //   - non-expanded: "(uint256,address)"
@@ -9894,7 +9896,7 @@ var ParamType = /** @class */ (function () {
         return ParamType.fromObject(value);
     };
     ParamType.fromObject = function (value) {
-        if (properties_1.isNamedInstance(ParamType, value)) {
+        if (ParamType.isParamType(value)) {
             return value;
         }
         return new ParamType(_constructorGuard, {
@@ -9915,6 +9917,9 @@ var ParamType = /** @class */ (function () {
         }
         return ParamTypify(parseParamType(value, !!allowIndexed));
     };
+    ParamType.isParamType = function (value) {
+        return !!(value != null && value._isParamType);
+    };
     return ParamType;
 }());
 exports.ParamType = ParamType;
@@ -9928,6 +9933,8 @@ var Fragment = /** @class */ (function () {
             throw new Error("use a static from method");
         }
         populate(this, params);
+        this._isFragment = true;
+        Object.freeze(this);
     }
     // @TOOD: move logic to sub-classes; make this abstract
     Fragment.prototype.format = function (expanded) {
@@ -9958,13 +9965,16 @@ var Fragment = /** @class */ (function () {
         return result.trim();
     };
     Fragment.from = function (value) {
+        if (Fragment.isFragment(value)) {
+            return value;
+        }
         if (typeof (value) === "string") {
             return Fragment.fromString(value);
         }
         return Fragment.fromObject(value);
     };
     Fragment.fromObject = function (value) {
-        if (properties_1.isNamedInstance(Fragment, value)) {
+        if (Fragment.isFragment(value)) {
             return value;
         }
         if (value.type === "function") {
@@ -10001,6 +10011,9 @@ var Fragment = /** @class */ (function () {
         }
         throw new Error("unknown fragment");
     };
+    Fragment.isFragment = function (value) {
+        return !!(value && value._isFragment);
+    };
     return Fragment;
 }());
 exports.Fragment = Fragment;
@@ -10016,7 +10029,7 @@ var EventFragment = /** @class */ (function (_super) {
         return EventFragment.fromObject(value);
     };
     EventFragment.fromObject = function (value) {
-        if (properties_1.isNamedInstance(EventFragment, value)) {
+        if (EventFragment.isEventFragment(value)) {
             return value;
         }
         if (value.type !== "event") {
@@ -10052,6 +10065,9 @@ var EventFragment = /** @class */ (function (_super) {
             inputs: parseParams(match[2], true),
             type: "event"
         });
+    };
+    EventFragment.isEventFragment = function (value) {
+        return (value && value._isFragment && value.type === "event");
     };
     return EventFragment;
 }(Fragment));
@@ -10114,7 +10130,7 @@ var ConstructorFragment = /** @class */ (function (_super) {
         return ConstructorFragment.fromObject(value);
     };
     ConstructorFragment.fromObject = function (value) {
-        if (properties_1.isNamedInstance(ConstructorFragment, value)) {
+        if (ConstructorFragment.isConstructorFragment(value)) {
             return value;
         }
         if (value.type !== "constructor") {
@@ -10141,6 +10157,9 @@ var ConstructorFragment = /** @class */ (function (_super) {
         parseModifiers(parens[3].trim(), params);
         return ConstructorFragment.fromObject(params);
     };
+    ConstructorFragment.isConstructorFragment = function (value) {
+        return (value && value._isFragment && value.type === "constructor");
+    };
     return ConstructorFragment;
 }(Fragment));
 exports.ConstructorFragment = ConstructorFragment;
@@ -10156,7 +10175,7 @@ var FunctionFragment = /** @class */ (function (_super) {
         return FunctionFragment.fromObject(value);
     };
     FunctionFragment.fromObject = function (value) {
-        if (properties_1.isNamedInstance(FunctionFragment, value)) {
+        if (FunctionFragment.isFunctionFragment(value)) {
             return value;
         }
         if (value.type !== "function") {
@@ -10202,6 +10221,9 @@ var FunctionFragment = /** @class */ (function (_super) {
             params.outputs = [];
         }
         return FunctionFragment.fromObject(params);
+    };
+    FunctionFragment.isFunctionFragment = function (value) {
+        return (value && value._isFragment && value.type === "function");
     };
     return FunctionFragment;
 }(ConstructorFragment));
@@ -10334,6 +10356,9 @@ var Indexed = /** @class */ (function (_super) {
     function Indexed() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    Indexed.isIndexed = function (value) {
+        return !!(value && value._isIndexed);
+    };
     return Indexed;
 }(properties_1.Description));
 exports.Indexed = Indexed;
@@ -10356,9 +10381,6 @@ var Interface = /** @class */ (function () {
             abi = fragments;
         }
         properties_1.defineReadOnly(this, "fragments", abi.map(function (fragment) {
-            if (properties_1.isNamedInstance(fragments_1.Fragment, fragment)) {
-                return fragment;
-            }
             return fragments_1.Fragment.from(fragment);
         }).filter(function (fragment) { return (fragment != null); }));
         properties_1.defineReadOnly(this, "_abiCoder", _newTarget.getAbiCoder());
@@ -10409,6 +10431,7 @@ var Interface = /** @class */ (function () {
         if (!this.deploy) {
             properties_1.defineReadOnly(this, "deploy", fragments_1.ConstructorFragment.from({ type: "constructor" }));
         }
+        properties_1.defineReadOnly(this, "_isInterface", true);
     }
     Interface.getAbiCoder = function () {
         return abi_coder_1.defaultAbiCoder;
@@ -10584,10 +10607,10 @@ var Interface = /** @class */ (function () {
         eventFragment.inputs.forEach(function (param, index) {
             if (param.indexed) {
                 if (resultIndexed == null) {
-                    result[index] = new Indexed({ hash: null });
+                    result[index] = new Indexed({ _isIndexed: true, hash: null });
                 }
                 else if (dynamic[index]) {
-                    result[index] = new Indexed({ hash: resultIndexed[indexedIndex++] });
+                    result[index] = new Indexed({ _isIndexed: true, hash: resultIndexed[indexedIndex++] });
                 }
                 else {
                     result[index] = resultIndexed[indexedIndex++];
@@ -10627,6 +10650,20 @@ var Interface = /** @class */ (function () {
             topic: this.getEventTopic(fragment),
             values: this.decodeEventLog(fragment, log.data, log.topics)
         });
+    };
+    /*
+    static from(value: Array<Fragment | string | JsonAbi> | string | Interface) {
+        if (Interface.isInterface(value)) {
+            return value;
+        }
+        if (typeof(value) === "string") {
+            return new Interface(JSON.parse(value));
+        }
+        return new Interface(value);
+    }
+    */
+    Interface.isInterface = function (value) {
+        return !!(value && value._isInterface);
     };
     return Interface;
 }());
@@ -10688,12 +10725,16 @@ var properties_1 = require("@ethersproject/properties");
 //export type CallTransactionable = {
 //    call(transaction: TransactionRequest): Promise<TransactionResponse>;
 //};
-var ForkEvent = /** @class */ (function () {
-    function ForkEvent(expiry) {
-        properties_1.defineReadOnly(this, "expiry", expiry || 0);
+var ForkEvent = /** @class */ (function (_super) {
+    __extends(ForkEvent, _super);
+    function ForkEvent() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
+    ForkEvent.isForkEvent = function (value) {
+        return !!(value && value._isForkEvent);
+    };
     return ForkEvent;
-}());
+}(properties_1.Description));
 exports.ForkEvent = ForkEvent;
 var BlockForkEvent = /** @class */ (function (_super) {
     __extends(BlockForkEvent, _super);
@@ -10702,8 +10743,12 @@ var BlockForkEvent = /** @class */ (function (_super) {
         if (!bytes_1.isHexString(blockhash, 32)) {
             errors.throwArgumentError("invalid blockhash", "blockhash", blockhash);
         }
-        _this = _super.call(this, expiry) || this;
-        properties_1.defineReadOnly(_this, "blockhash", blockhash);
+        _this = _super.call(this, {
+            _isForkEvent: true,
+            _isBlockForkEvent: true,
+            expiry: (expiry || 0),
+            blockHash: blockhash
+        }) || this;
         return _this;
     }
     return BlockForkEvent;
@@ -10716,8 +10761,12 @@ var TransactionForkEvent = /** @class */ (function (_super) {
         if (!bytes_1.isHexString(hash, 32)) {
             errors.throwArgumentError("invalid transaction hash", "hash", hash);
         }
-        _this = _super.call(this, expiry) || this;
-        properties_1.defineReadOnly(_this, "hash", hash);
+        _this = _super.call(this, {
+            _isForkEvent: true,
+            _isTransactionForkEvent: true,
+            expiry: (expiry || 0),
+            hash: hash
+        }) || this;
         return _this;
     }
     return TransactionForkEvent;
@@ -10733,9 +10782,13 @@ var TransactionOrderForkEvent = /** @class */ (function (_super) {
         if (!bytes_1.isHexString(afterHash, 32)) {
             errors.throwArgumentError("invalid transaction hash", "afterHash", afterHash);
         }
-        _this = _super.call(this, expiry) || this;
-        properties_1.defineReadOnly(_this, "beforeHash", beforeHash);
-        properties_1.defineReadOnly(_this, "afterHash", afterHash);
+        _this = _super.call(this, {
+            _isForkEvent: true,
+            _isTransactionOrderForkEvent: true,
+            expiry: (expiry || 0),
+            beforeHash: beforeHash,
+            afterHash: afterHash
+        }) || this;
         return _this;
     }
     return TransactionOrderForkEvent;
@@ -10747,6 +10800,7 @@ var Provider = /** @class */ (function () {
     function Provider() {
         var _newTarget = this.constructor;
         errors_1.checkAbstract(_newTarget, Provider);
+        properties_1.defineReadOnly(this, "_isProvider", true);
     }
     // Alias for "on"
     Provider.prototype.addListener = function (eventName, listener) {
@@ -10755,6 +10809,9 @@ var Provider = /** @class */ (function () {
     // Alias for "off"
     Provider.prototype.removeListener = function (eventName, listener) {
         return this.off(eventName, listener);
+    };
+    Provider.isProvider = function (value) {
+        return !!(value && value._isProvider);
     };
     return Provider;
 }());
@@ -10800,6 +10857,7 @@ var Signer = /** @class */ (function () {
     function Signer() {
         var _newTarget = this.constructor;
         errors.checkAbstract(_newTarget, Signer);
+        properties_1.defineReadOnly(this, "_isSigner", true);
     }
     ///////////////////
     // Sub-classes MAY override these
@@ -10918,6 +10976,9 @@ var Signer = /** @class */ (function () {
                 operation: (operation || "_checkProvider")
             });
         }
+    };
+    Signer.isSigner = function (value) {
+        return !!(value && value._isSigner);
     };
     return Signer;
 }());
@@ -11261,19 +11322,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 var BN = __importStar(require("bn.js"));
 var bytes_1 = require("@ethersproject/bytes");
-var properties_1 = require("@ethersproject/properties");
 var errors = __importStar(require("@ethersproject/errors"));
 var _constructorGuard = {};
 var MAX_SAFE = 0x1fffffffffffff;
-/*
-export function isBigNumberLike(value: any): value is BigNumberish {
-    return (BigNumber.isBigNumber(value) ||
-            (!!((<any>value).toHexString)) ||
-            isBytes(value) ||
-            value.match(/^-?([0-9]+|0x[0-9a-f]+)$/i) ||
-            typeof(value) === "number");
+function isBigNumberish(value) {
+    return (value != null) && (BigNumber.isBigNumber(value) ||
+        (typeof (value) === "number" && (value % 1) === 0) ||
+        (typeof (value) === "string" && !!value.match(/^-?[0-9]+$/)) ||
+        bytes_1.isHexString(value) ||
+        (typeof (value) === "bigint") ||
+        bytes_1.isBytes(value));
 }
-*/
+exports.isBigNumberish = isBigNumberish;
 var BigNumber = /** @class */ (function () {
     function BigNumber(constructorGuard, hex) {
         var _newTarget = this.constructor;
@@ -11283,7 +11343,9 @@ var BigNumber = /** @class */ (function () {
                 operation: "new (BigNumber)"
             });
         }
-        properties_1.defineReadOnly(this, "_hex", hex);
+        this._hex = hex;
+        this._isBigNumber = true;
+        Object.freeze(this);
     }
     BigNumber.prototype.fromTwos = function (value) {
         return toBigNumber(toBN(this).fromTwos(value));
@@ -11399,101 +11461,11 @@ var BigNumber = /** @class */ (function () {
         return errors.throwArgumentError("invalid BigNumber value", "value", value);
     };
     BigNumber.isBigNumber = function (value) {
-        return properties_1.isNamedInstance(this, value);
+        return !!(value && value._isBigNumber);
     };
     return BigNumber;
 }());
 exports.BigNumber = BigNumber;
-/*
-export function bigNumberify(value: BigNumberish): BigNumber {
-    if (BigNumber.isBigNumber(value)) { return value; }
-    return new BigNumber(value);
-}
-*/
-/*
-function zeros(length) {
-    let result = "";
-    while (result.length < length) { tens += "0"; }
-    return result;
-}
-export class FixedNumber {
-    readonly value: BigNumber;
-    readonly decimalPlaces: number;
-
-    constructor(value: BigNumberish, decimalPlaces: number) {
-        defineReadOnly(this, "value", bigNumberify(value));
-        defineReadOnly(this, "decimalPlaces", decimalPlaces);
-    }
-
-    toString(): string {
-        return formatUnits(this.value, this.decimalPlaces);
-    }
-
-    static fromString(value: string): FixedNumber {
-        let comps = value.split(".");
-        let decimalPlaces = 0;
-        if (comps.length === 2) { decimalPlaces = comps[1].length; }
-        return new FixedNumber(parseUnits(value, decimalPlaces), decimalPlaces);
-    }
-*/
-/*
-    
-    readonly negative: boolean;
-    readonly whole: BigNumber;
-    readonly fraction: BigNumber;
-    constructor(whole: BigNumberish, fraction: BigNumberish, negative?: boolean) {
-        if (whole.lt(constants.Zero)) {
-            errors.throwError("whole component must be positive", errors.INVALID_ARGUMENT, {
-                argument: whole,
-                value: whole
-            });
-        }
-        defineReadOnly(this, "whole", bigNumberify(whole));
-        defineReadOnly(this, "fraction", bigNumberify(fraction));
-        defineReadOnly(this, "negative", !!boolean);
-    }
-*/
-/*
-    toHexString(bitWidth?: number, decimalPlaces?: number, signed?: boolean): string {
-        if (bitWidth == null) { bitWidth = 128; }
-        if (decimalPlaces == null) { decimalPlaces = 18; }
-        if (signed == null) { signed = true; }
-        return null;
-    }
-    static fromValue(value: BigNumberish, decimalPlaces: number): FixedNumber {
-        let negative = false;
-        if (value.lt(constants.Zero)) {
-            negative = true;
-            value = value.abs();
-        }
-        let tens = bigNumberify("1" + zeros(decimalPlaces));
-        return new FixedNumber(value.divide(tens), value.mod(tens), negative);
-    }
-        let negative = false;
-        if (value.substring(0, 1) === "-") {
-            negative = true;
-            value = value.substring(1);
-        }
-
-        if (value !== "." && value !== "") {
-            let comps = value.split(".");
-            if (comps.length === 1) {
-                return new FixedNumber(comps[0], 0, negative);
-            } else if (comps.length === 2) {
-                if (comps[0] === "") { comps[0] = "0"; }
-                if (comps[1] === "") { comps[1] = "0"; }
-                return new FixedNumber(comps[0], comps[1], negative);
-            }
-        }
-
-        errors.throwError("invalid fixed-point value", errors.INVALID_ARGUMENT, {
-            argument: "value",
-            value: value
-        });
-
-        return null;
-*/
-//}
 // Normalize the hex string
 function toHex(value) {
     // For BN, call on the hex string
@@ -11553,7 +11525,7 @@ function throwFault(fault, operation, value) {
     return errors.throwError(fault, errors.NUMERIC_FAULT, params);
 }
 
-},{"@ethersproject/bytes":63,"@ethersproject/errors":66,"@ethersproject/properties":82,"bn.js":2}],61:[function(require,module,exports){
+},{"@ethersproject/bytes":63,"@ethersproject/errors":66,"bn.js":2}],61:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -11565,7 +11537,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
 var errors = __importStar(require("@ethersproject/errors"));
-var properties_1 = require("@ethersproject/properties");
 var bignumber_1 = require("./bignumber");
 var _constructorGuard = {};
 var Zero = bignumber_1.BigNumber.from(0);
@@ -11670,12 +11641,12 @@ function parseFixed(value, decimals) {
 exports.parseFixed = parseFixed;
 var FixedFormat = /** @class */ (function () {
     function FixedFormat(constructorGuard, signed, width, decimals) {
-        properties_1.defineReadOnly(this, "signed", signed);
-        properties_1.defineReadOnly(this, "width", width);
-        properties_1.defineReadOnly(this, "decimals", decimals);
-        var name = (signed ? "" : "u") + "fixed" + String(width) + "x" + String(decimals);
-        properties_1.defineReadOnly(this, "name", name);
-        properties_1.defineReadOnly(this, "_multiplier", getMultiplier(decimals));
+        this.signed = signed;
+        this.width = width;
+        this.decimals = decimals;
+        this.name = (signed ? "" : "u") + "fixed" + String(width) + "x" + String(decimals);
+        this._multiplier = getMultiplier(decimals);
+        Object.freeze(this);
     }
     FixedFormat.from = function (value) {
         if (value instanceof FixedFormat) {
@@ -11723,9 +11694,6 @@ var FixedFormat = /** @class */ (function () {
         }
         return new FixedFormat(_constructorGuard, signed, width, decimals);
     };
-    FixedFormat.isInstance = function (value) {
-        return properties_1.isNamedInstance(this, value);
-    };
     return FixedFormat;
 }());
 exports.FixedFormat = FixedFormat;
@@ -11733,9 +11701,11 @@ var FixedNumber = /** @class */ (function () {
     function FixedNumber(constructorGuard, hex, value, format) {
         var _newTarget = this.constructor;
         errors.checkNew(_newTarget, FixedNumber);
-        properties_1.defineReadOnly(this, 'format', format);
-        properties_1.defineReadOnly(this, '_hex', hex);
-        properties_1.defineReadOnly(this, '_value', value);
+        this.format = format;
+        this._hex = hex;
+        this._value = value;
+        this._isFixedNumber = true;
+        Object.freeze(this);
     }
     FixedNumber.prototype._checkFormat = function (other) {
         if (this.format.name !== other.format.name) {
@@ -11802,7 +11772,7 @@ var FixedNumber = /** @class */ (function () {
     };
     FixedNumber.fromValue = function (value, decimals, format) {
         // If decimals looks more like a format, and there is no format, shift the parameters
-        if (format == null && decimals != null && (FixedFormat.isInstance(decimals) || typeof (decimals) === "string")) {
+        if (format == null && decimals != null && !bignumber_1.isBigNumberish(decimals)) {
             format = decimals;
             decimals = null;
         }
@@ -11812,14 +11782,13 @@ var FixedNumber = /** @class */ (function () {
         if (format == null) {
             format = "fixed";
         }
-        var fixedFormat = (FixedFormat.isInstance(format) ? format : FixedFormat.from(format));
-        return FixedNumber.fromString(formatFixed(value, decimals), fixedFormat);
+        return FixedNumber.fromString(formatFixed(value, decimals), FixedFormat.from(format));
     };
     FixedNumber.fromString = function (value, format) {
         if (format == null) {
             format = "fixed";
         }
-        var fixedFormat = (FixedFormat.isInstance(format) ? format : FixedFormat.from(format));
+        var fixedFormat = FixedFormat.from(format);
         var numeric = parseFixed(value, fixedFormat.decimals);
         if (!fixedFormat.signed && numeric.lt(Zero)) {
             throwFault("unsigned value cannot be negative", "overflow", "value", value);
@@ -11839,7 +11808,7 @@ var FixedNumber = /** @class */ (function () {
         if (format == null) {
             format = "fixed";
         }
-        var fixedFormat = (FixedFormat.isInstance(format) ? format : FixedFormat.from(format));
+        var fixedFormat = FixedFormat.from(format);
         if (bytes_1.arrayify(value).length > fixedFormat.width / 8) {
             throw new Error("overflow");
         }
@@ -11870,13 +11839,13 @@ var FixedNumber = /** @class */ (function () {
         return errors.throwArgumentError("invalid FixedNumber value", "value", value);
     };
     FixedNumber.isFixedNumber = function (value) {
-        return properties_1.isNamedInstance(this, value);
+        return !!(value && value._isFixedNumber);
     };
     return FixedNumber;
 }());
 exports.FixedNumber = FixedNumber;
 
-},{"./bignumber":60,"@ethersproject/bytes":63,"@ethersproject/errors":66,"@ethersproject/properties":82}],62:[function(require,module,exports){
+},{"./bignumber":60,"@ethersproject/bytes":63,"@ethersproject/errors":66}],62:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("./bignumber");
@@ -12605,11 +12574,11 @@ var Contract = /** @class */ (function () {
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
         properties_1.defineReadOnly(this, "interface", _newTarget.getInterface(contractInterface));
-        if (properties_1.isNamedInstance(abstract_signer_1.Signer, signerOrProvider)) {
-            properties_1.defineReadOnly(this, "provider", signerOrProvider.provider);
+        if (abstract_signer_1.Signer.isSigner(signerOrProvider)) {
+            properties_1.defineReadOnly(this, "provider", signerOrProvider.provider || null);
             properties_1.defineReadOnly(this, "signer", signerOrProvider);
         }
-        else if (properties_1.isNamedInstance(abstract_provider_1.Provider, signerOrProvider)) {
+        else if (abstract_provider_1.Provider.isProvider(signerOrProvider)) {
             properties_1.defineReadOnly(this, "provider", signerOrProvider);
             properties_1.defineReadOnly(this, "signer", null);
         }
@@ -12680,7 +12649,7 @@ var Contract = /** @class */ (function () {
         return address_1.getContractAddress(transaction);
     };
     Contract.getInterface = function (contractInterface) {
-        if (properties_1.isNamedInstance(abi_1.Interface, contractInterface)) {
+        if (abi_1.Interface.isInterface(contractInterface)) {
             return contractInterface;
         }
         return new abi_1.Interface(contractInterface);
@@ -12752,7 +12721,7 @@ var Contract = /** @class */ (function () {
         return new (this.constructor)(addressOrName, this.interface, this.signer || this.provider);
     };
     Contract.isIndexed = function (value) {
-        return properties_1.isNamedInstance(abi_1.Indexed, value);
+        return abi_1.Indexed.isIndexed(value);
     };
     Contract.prototype._normalizeRunningEvent = function (runningEvent) {
         // Already have an instance of this event running; we can re-use it
@@ -12971,7 +12940,7 @@ var ContractFactory = /** @class */ (function () {
             errors.throwArgumentError("invalid bytecode", "bytecode", bytecode);
         }
         // If we have a signer, make sure it is valid
-        if (signer && !properties_1.isNamedInstance(abstract_signer_1.Signer, signer)) {
+        if (signer && !abstract_signer_1.Signer.isSigner(signer)) {
             errors.throwArgumentError("invalid signer", "signer", signer);
         }
         properties_1.defineReadOnly(this, "bytecode", bytecodeHex);
@@ -13328,7 +13297,7 @@ exports.info = info;
 },{}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "5.0.0-beta.138";
+exports.version = "5.0.0-beta.139";
 
 },{}],68:[function(require,module,exports){
 "use strict";
@@ -13503,6 +13472,7 @@ var wallet_1 = require("@ethersproject/wallet");
 exports.verifyMessage = wallet_1.verifyMessage;
 var web_1 = require("@ethersproject/web");
 exports.fetchJson = web_1.fetchJson;
+exports.poll = web_1.poll;
 ////////////////////////
 // Enums
 var sha2_2 = require("@ethersproject/sha2");
@@ -13931,8 +13901,8 @@ var CrowdsaleAccount = /** @class */ (function (_super) {
     function CrowdsaleAccount() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    CrowdsaleAccount.prototype.isType = function (value) {
-        return properties_1.Description.isType(value);
+    CrowdsaleAccount.prototype.isCrowdsaleAccount = function (value) {
+        return !!(value && value._isCrowdsaleAccount);
     };
     return CrowdsaleAccount;
 }(properties_1.Description));
@@ -13966,6 +13936,7 @@ function decrypt(json, password) {
     var seedHexBytes = strings_1.toUtf8Bytes(seedHex);
     var privateKey = keccak256_1.keccak256(seedHexBytes);
     return new CrowdsaleAccount({
+        _isCrowdsaleAccount: true,
         address: ethaddr,
         privateKey: privateKey
     });
@@ -14093,8 +14064,8 @@ var KeystoreAccount = /** @class */ (function (_super) {
     function KeystoreAccount() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    KeystoreAccount.prototype.isType = function (value) {
-        return properties_1.Description.isType(value);
+    KeystoreAccount.prototype.isKeystoreAccount = function (value) {
+        return !!(value && value._isKeystoreAccount);
     };
     return KeystoreAccount;
 }(properties_1.Description));
@@ -14140,6 +14111,7 @@ function decrypt(json, password, progressCallback) {
         }
         catch (e) { }
         var account = {
+            _isKeystoreAccount: true,
             address: address,
             privateKey: bytes_1.hexlify(privateKey)
         };
@@ -14725,46 +14697,6 @@ function defineReadOnly(object, name, value) {
     });
 }
 exports.defineReadOnly = defineReadOnly;
-// There are some issues with instanceof with npm link, so we use this
-// to ensure types are what we expect. We use this for a little extra
-// protection to make sure the correct types are being passed around.
-function getType(object) {
-    var type = typeof (object);
-    if (type !== "function") {
-        return null;
-    }
-    var types = [];
-    var obj = object;
-    while (true) {
-        var type_1 = obj.name;
-        if (!type_1) {
-            break;
-        }
-        types.push(type_1);
-        obj = Object.getPrototypeOf(obj);
-    }
-    return types.join(" ");
-}
-function hasSuffix(text, suffix) {
-    return text.substring(text.length - suffix.length) === suffix;
-}
-function isNamedInstance(type, value) {
-    var name = getType(type);
-    if (!name) {
-        return false;
-    }
-    // Not a string...
-    if (typeof (value) !== "string") {
-        // Not an instance...
-        if (typeof (value) !== "object") {
-            return false;
-        }
-        // Get the instance type
-        value = getType(value.constructor);
-    }
-    return (name === value || hasSuffix(value, " " + name));
-}
-exports.isNamedInstance = isNamedInstance;
 function resolveProperties(object) {
     var result = {};
     var promises = [];
@@ -14811,29 +14743,21 @@ function shallowCopy(object) {
     return result;
 }
 exports.shallowCopy = shallowCopy;
-var opaque = { boolean: true, number: true, string: true };
-function deepCopy(object, frozen) {
+var opaque = { bigint: true, boolean: true, number: true, string: true };
+// Returns a new copy of object, such that no properties may be replaced.
+// New properties may be added only to objects.
+function deepCopy(object) {
     // Opaque objects are not mutable, so safe to copy by assignment
     if (object === undefined || object === null || opaque[typeof (object)]) {
         return object;
     }
     // Arrays are mutable, so we need to create a copy
     if (Array.isArray(object)) {
-        var result = object.map(function (item) { return deepCopy(item, frozen); });
-        if (frozen) {
-            Object.freeze(result);
-        }
-        return result;
+        return Object.freeze(object.map(function (item) { return deepCopy(item); }));
     }
     if (typeof (object) === "object") {
-        // Some internal objects, which are already immutable
-        if (isNamedInstance("BigNumber", object)) {
-            return object;
-        }
-        if (isNamedInstance("Description", object)) {
-            return object;
-        }
-        if (isNamedInstance("Indexed", object)) {
+        // Immutable objects are safe to just use
+        if (Object.isFrozen(object)) {
             return object;
         }
         var result = {};
@@ -14842,10 +14766,7 @@ function deepCopy(object, frozen) {
             if (value === undefined) {
                 continue;
             }
-            defineReadOnly(result, key, deepCopy(value, frozen));
-        }
-        if (frozen) {
-            Object.freeze(result);
+            defineReadOnly(result, key, deepCopy(value));
         }
         return result;
     }
@@ -14859,13 +14780,10 @@ exports.deepCopy = deepCopy;
 var Description = /** @class */ (function () {
     function Description(info) {
         for (var key in info) {
-            defineReadOnly(this, key, deepCopy(info[key], true));
+            this[key] = deepCopy(info[key]);
         }
         Object.freeze(this);
     }
-    Description.isType = function (value) {
-        return isNamedInstance(this, value);
-    };
     return Description;
 }());
 exports.Description = Description;
@@ -15022,7 +14940,7 @@ function getEventTag(eventName) {
     else if (Array.isArray(eventName)) {
         return "filter:*:" + serializeTopics(eventName);
     }
-    else if (properties_1.isNamedInstance(abstract_provider_1.ForkEvent, eventName)) {
+    else if (abstract_provider_1.ForkEvent.isForkEvent(eventName)) {
         errors.warn("not implemented");
         throw new Error("not implemented");
     }
@@ -17828,6 +17746,7 @@ var SigningKey = /** @class */ (function () {
         var keyPair = getCurve().keyFromPrivate(bytes_1.arrayify(this.privateKey));
         properties_1.defineReadOnly(this, "publicKey", "0x" + keyPair.getPublic(false, "hex"));
         properties_1.defineReadOnly(this, "compressedPublicKey", "0x" + keyPair.getPublic(true, "hex"));
+        properties_1.defineReadOnly(this, "_isSigningKey", true);
     }
     SigningKey.prototype._addPoint = function (other) {
         var p0 = getCurve().keyFromPublic(bytes_1.arrayify(this.publicKey));
@@ -17847,6 +17766,9 @@ var SigningKey = /** @class */ (function () {
         var keyPair = getCurve().keyFromPrivate(bytes_1.arrayify(this.privateKey));
         var otherKeyPair = getCurve().keyFromPublic(bytes_1.arrayify(computePublicKey(otherKey)));
         return bytes_1.hexZeroPad("0x" + keyPair.derive(otherKeyPair.getPublic()).toString(16), 32);
+    };
+    SigningKey.isSigningKey = function (value) {
+        return !!(value && value._isSigningKey);
     };
     return SigningKey;
 }());
@@ -18480,7 +18402,10 @@ var Wallet = /** @class */ (function (_super) {
             }
         }
         else {
-            if (properties_1.isNamedInstance(signing_key_1.SigningKey, privateKey)) {
+            if (signing_key_1.SigningKey.isSigningKey(privateKey)) {
+                if (privateKey.curve !== "secp256k1") {
+                    errors.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
+                }
                 properties_1.defineReadOnly(_this, "_signingKey", function () { return privateKey; });
             }
             else {
@@ -18491,7 +18416,7 @@ var Wallet = /** @class */ (function (_super) {
             properties_1.defineReadOnly(_this, "path", null);
             properties_1.defineReadOnly(_this, "address", transactions_1.computeAddress(_this.publicKey));
         }
-        if (provider && !properties_1.isNamedInstance(abstract_provider_1.Provider, provider)) {
+        if (provider && !abstract_provider_1.Provider.isProvider(provider)) {
             errors.throwError("invalid provider", errors.INVALID_ARGUMENT, {
                 argument: "provider",
                 value: provider

@@ -305,11 +305,11 @@ var Contract = /** @class */ (function () {
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
         properties_1.defineReadOnly(this, "interface", _newTarget.getInterface(contractInterface));
-        if (properties_1.isNamedInstance(abstract_signer_1.Signer, signerOrProvider)) {
-            properties_1.defineReadOnly(this, "provider", signerOrProvider.provider);
+        if (abstract_signer_1.Signer.isSigner(signerOrProvider)) {
+            properties_1.defineReadOnly(this, "provider", signerOrProvider.provider || null);
             properties_1.defineReadOnly(this, "signer", signerOrProvider);
         }
-        else if (properties_1.isNamedInstance(abstract_provider_1.Provider, signerOrProvider)) {
+        else if (abstract_provider_1.Provider.isProvider(signerOrProvider)) {
             properties_1.defineReadOnly(this, "provider", signerOrProvider);
             properties_1.defineReadOnly(this, "signer", null);
         }
@@ -380,7 +380,7 @@ var Contract = /** @class */ (function () {
         return address_1.getContractAddress(transaction);
     };
     Contract.getInterface = function (contractInterface) {
-        if (properties_1.isNamedInstance(abi_1.Interface, contractInterface)) {
+        if (abi_1.Interface.isInterface(contractInterface)) {
             return contractInterface;
         }
         return new abi_1.Interface(contractInterface);
@@ -452,7 +452,7 @@ var Contract = /** @class */ (function () {
         return new (this.constructor)(addressOrName, this.interface, this.signer || this.provider);
     };
     Contract.isIndexed = function (value) {
-        return properties_1.isNamedInstance(abi_1.Indexed, value);
+        return abi_1.Indexed.isIndexed(value);
     };
     Contract.prototype._normalizeRunningEvent = function (runningEvent) {
         // Already have an instance of this event running; we can re-use it
@@ -671,7 +671,7 @@ var ContractFactory = /** @class */ (function () {
             errors.throwArgumentError("invalid bytecode", "bytecode", bytecode);
         }
         // If we have a signer, make sure it is valid
-        if (signer && !properties_1.isNamedInstance(abstract_signer_1.Signer, signer)) {
+        if (signer && !abstract_signer_1.Signer.isSigner(signer)) {
             errors.throwArgumentError("invalid signer", "signer", signer);
         }
         properties_1.defineReadOnly(this, "bytecode", bytecodeHex);

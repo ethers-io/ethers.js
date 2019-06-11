@@ -1,6 +1,7 @@
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike } from "@ethersproject/bytes";
 import { Network } from "@ethersproject/networks";
+import { Description } from "@ethersproject/properties";
 import { Transaction } from "@ethersproject/transactions";
 import { OnceBlockable } from "@ethersproject/web";
 export declare type TransactionRequest = {
@@ -14,6 +15,7 @@ export declare type TransactionRequest = {
     chainId?: number | Promise<number>;
 };
 export interface TransactionResponse extends Transaction {
+    hash: string;
     blockNumber?: number;
     blockHash?: string;
     timestamp?: number;
@@ -81,9 +83,10 @@ export interface Filter extends EventFilter {
 export interface FilterByBlockHash extends EventFilter {
     blockhash?: string;
 }
-export declare class ForkEvent {
+export declare abstract class ForkEvent extends Description {
     readonly expiry: number;
-    constructor(expiry?: number);
+    readonly _isForkEvent: boolean;
+    static isForkEvent(value: any): value is ForkEvent;
 }
 export declare class BlockForkEvent extends ForkEvent {
     readonly blockhash: string;
@@ -128,6 +131,8 @@ export declare abstract class Provider implements OnceBlockable {
     addListener(eventName: EventType, listener: Listener): Provider;
     removeListener(eventName: EventType, listener: Listener): Provider;
     abstract waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt>;
+    readonly _isProvider: boolean;
     constructor();
+    static isProvider(value: any): value is Provider;
 }
 export {};

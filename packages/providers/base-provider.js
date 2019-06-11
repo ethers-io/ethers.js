@@ -84,7 +84,7 @@ function getEventTag(eventName) {
     else if (Array.isArray(eventName)) {
         return "filter:*:" + serializeTopics(eventName);
     }
-    else if (properties_1.isNamedInstance(abstract_provider_1.ForkEvent, eventName)) {
+    else if (abstract_provider_1.ForkEvent.isForkEvent(eventName)) {
         errors.warn("not implemented");
         throw new Error("not implemented");
     }

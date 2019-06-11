@@ -91,6 +91,7 @@ var wallet_1 = require("@ethersproject/wallet");
 exports.verifyMessage = wallet_1.verifyMessage;
 var web_1 = require("@ethersproject/web");
 exports.fetchJson = web_1.fetchJson;
+exports.poll = web_1.poll;
 ////////////////////////
 // Enums
 var sha2_2 = require("@ethersproject/sha2");

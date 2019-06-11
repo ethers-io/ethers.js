@@ -37,6 +37,7 @@ var Signer = /** @class */ (function () {
     function Signer() {
         var _newTarget = this.constructor;
         errors.checkAbstract(_newTarget, Signer);
+        properties_1.defineReadOnly(this, "_isSigner", true);
     }
     ///////////////////
     // Sub-classes MAY override these
@@ -155,6 +156,9 @@ var Signer = /** @class */ (function () {
                 operation: (operation || "_checkProvider")
             });
         }
+    };
+    Signer.isSigner = function (value) {
+        return !!(value && value._isSigner);
     };
     return Signer;
 }());

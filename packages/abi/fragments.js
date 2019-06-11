@@ -215,6 +215,8 @@ var ParamType = /** @class */ (function () {
                 baseType: ((this.components != null) ? "tuple" : this.type)
             });
         }
+        this._isParamType = true;
+        Object.freeze(this);
     }
     // Format the parameter fragment
     //   - non-expanded: "(uint256,address)"
@@ -254,7 +256,7 @@ var ParamType = /** @class */ (function () {
         return ParamType.fromObject(value);
     };
     ParamType.fromObject = function (value) {
-        if (properties_1.isNamedInstance(ParamType, value)) {
+        if (ParamType.isParamType(value)) {
             return value;
         }
         return new ParamType(_constructorGuard, {
@@ -275,6 +277,9 @@ var ParamType = /** @class */ (function () {
         }
         return ParamTypify(parseParamType(value, !!allowIndexed));
     };
+    ParamType.isParamType = function (value) {
+        return !!(value != null && value._isParamType);
+    };
     return ParamType;
 }());
 exports.ParamType = ParamType;
@@ -288,6 +293,8 @@ var Fragment = /** @class */ (function () {
             throw new Error("use a static from method");
         }
         populate(this, params);
+        this._isFragment = true;
+        Object.freeze(this);
     }
     // @TOOD: move logic to sub-classes; make this abstract
     Fragment.prototype.format = function (expanded) {
@@ -318,13 +325,16 @@ var Fragment = /** @class */ (function () {
         return result.trim();
     };
     Fragment.from = function (value) {
+        if (Fragment.isFragment(value)) {
+            return value;
+        }
         if (typeof (value) === "string") {
             return Fragment.fromString(value);
         }
         return Fragment.fromObject(value);
     };
     Fragment.fromObject = function (value) {
-        if (properties_1.isNamedInstance(Fragment, value)) {
+        if (Fragment.isFragment(value)) {
             return value;
         }
         if (value.type === "function") {
@@ -361,6 +371,9 @@ var Fragment = /** @class */ (function () {
         }
         throw new Error("unknown fragment");
     };
+    Fragment.isFragment = function (value) {
+        return !!(value && value._isFragment);
+    };
     return Fragment;
 }());
 exports.Fragment = Fragment;
@@ -376,7 +389,7 @@ var EventFragment = /** @class */ (function (_super) {
         return EventFragment.fromObject(value);
     };
     EventFragment.fromObject = function (value) {
-        if (properties_1.isNamedInstance(EventFragment, value)) {
+        if (EventFragment.isEventFragment(value)) {
             return value;
         }
         if (value.type !== "event") {
@@ -412,6 +425,9 @@ var EventFragment = /** @class */ (function (_super) {
             inputs: parseParams(match[2], true),
             type: "event"
         });
+    };
+    EventFragment.isEventFragment = function (value) {
+        return (value && value._isFragment && value.type === "event");
     };
     return EventFragment;
 }(Fragment));
@@ -474,7 +490,7 @@ var ConstructorFragment = /** @class */ (function (_super) {
         return ConstructorFragment.fromObject(value);
     };
     ConstructorFragment.fromObject = function (value) {
-        if (properties_1.isNamedInstance(ConstructorFragment, value)) {
+        if (ConstructorFragment.isConstructorFragment(value)) {
             return value;
         }
         if (value.type !== "constructor") {
@@ -501,6 +517,9 @@ var ConstructorFragment = /** @class */ (function (_super) {
         parseModifiers(parens[3].trim(), params);
         return ConstructorFragment.fromObject(params);
     };
+    ConstructorFragment.isConstructorFragment = function (value) {
+        return (value && value._isFragment && value.type === "constructor");
+    };
     return ConstructorFragment;
 }(Fragment));
 exports.ConstructorFragment = ConstructorFragment;
@@ -516,7 +535,7 @@ var FunctionFragment = /** @class */ (function (_super) {
         return FunctionFragment.fromObject(value);
     };
     FunctionFragment.fromObject = function (value) {
-        if (properties_1.isNamedInstance(FunctionFragment, value)) {
+        if (FunctionFragment.isFunctionFragment(value)) {
             return value;
         }
         if (value.type !== "function") {
@@ -562,6 +581,9 @@ var FunctionFragment = /** @class */ (function (_super) {
             params.outputs = [];
         }
         return FunctionFragment.fromObject(params);
+    };
+    FunctionFragment.isFunctionFragment = function (value) {
+        return (value && value._isFragment && value.type === "function");
     };
     return FunctionFragment;
 }(ConstructorFragment));

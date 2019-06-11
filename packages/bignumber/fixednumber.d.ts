@@ -7,15 +7,15 @@ export declare class FixedFormat {
     readonly width: number;
     readonly decimals: number;
     readonly name: string;
-    readonly _multiplier: BigNumber;
+    readonly _multiplier: string;
     constructor(constructorGuard: any, signed: boolean, width: number, decimals: number);
     static from(value: any): FixedFormat;
-    static isInstance(value: any): value is FixedFormat;
 }
 export declare class FixedNumber {
     readonly format: FixedFormat;
     readonly _hex: string;
     readonly _value: string;
+    readonly _isFixedNumber: boolean;
     constructor(constructorGuard: any, hex: string, value: string, format?: FixedFormat);
     _checkFormat(other: FixedNumber): void;
     addUnsafe(other: FixedNumber): FixedNumber;

@@ -29,12 +29,16 @@ var properties_1 = require("@ethersproject/properties");
 //export type CallTransactionable = {
 //    call(transaction: TransactionRequest): Promise<TransactionResponse>;
 //};
-var ForkEvent = /** @class */ (function () {
-    function ForkEvent(expiry) {
-        properties_1.defineReadOnly(this, "expiry", expiry || 0);
+var ForkEvent = /** @class */ (function (_super) {
+    __extends(ForkEvent, _super);
+    function ForkEvent() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
+    ForkEvent.isForkEvent = function (value) {
+        return !!(value && value._isForkEvent);
+    };
     return ForkEvent;
-}());
+}(properties_1.Description));
 exports.ForkEvent = ForkEvent;
 var BlockForkEvent = /** @class */ (function (_super) {
     __extends(BlockForkEvent, _super);
@@ -43,8 +47,12 @@ var BlockForkEvent = /** @class */ (function (_super) {
         if (!bytes_1.isHexString(blockhash, 32)) {
             errors.throwArgumentError("invalid blockhash", "blockhash", blockhash);
         }
-        _this = _super.call(this, expiry) || this;
-        properties_1.defineReadOnly(_this, "blockhash", blockhash);
+        _this = _super.call(this, {
+            _isForkEvent: true,
+            _isBlockForkEvent: true,
+            expiry: (expiry || 0),
+            blockHash: blockhash
+        }) || this;
         return _this;
     }
     return BlockForkEvent;
@@ -57,8 +65,12 @@ var TransactionForkEvent = /** @class */ (function (_super) {
         if (!bytes_1.isHexString(hash, 32)) {
             errors.throwArgumentError("invalid transaction hash", "hash", hash);
         }
-        _this = _super.call(this, expiry) || this;
-        properties_1.defineReadOnly(_this, "hash", hash);
+        _this = _super.call(this, {
+            _isForkEvent: true,
+            _isTransactionForkEvent: true,
+            expiry: (expiry || 0),
+            hash: hash
+        }) || this;
         return _this;
     }
     return TransactionForkEvent;
@@ -74,9 +86,13 @@ var TransactionOrderForkEvent = /** @class */ (function (_super) {
         if (!bytes_1.isHexString(afterHash, 32)) {
             errors.throwArgumentError("invalid transaction hash", "afterHash", afterHash);
         }
-        _this = _super.call(this, expiry) || this;
-        properties_1.defineReadOnly(_this, "beforeHash", beforeHash);
-        properties_1.defineReadOnly(_this, "afterHash", afterHash);
+        _this = _super.call(this, {
+            _isForkEvent: true,
+            _isTransactionOrderForkEvent: true,
+            expiry: (expiry || 0),
+            beforeHash: beforeHash,
+            afterHash: afterHash
+        }) || this;
         return _this;
     }
     return TransactionOrderForkEvent;
@@ -88,6 +104,7 @@ var Provider = /** @class */ (function () {
     function Provider() {
         var _newTarget = this.constructor;
         errors_1.checkAbstract(_newTarget, Provider);
+        properties_1.defineReadOnly(this, "_isProvider", true);
     }
     // Alias for "on"
     Provider.prototype.addListener = function (eventName, listener) {
@@ -96,6 +113,9 @@ var Provider = /** @class */ (function () {
     // Alias for "off"
     Provider.prototype.removeListener = function (eventName, listener) {
         return this.off(eventName, listener);
+    };
+    Provider.isProvider = function (value) {
+        return !!(value && value._isProvider);
     };
     return Provider;
 }());

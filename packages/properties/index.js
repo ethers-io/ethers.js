@@ -16,46 +16,6 @@ function defineReadOnly(object, name, value) {
     });
 }
 exports.defineReadOnly = defineReadOnly;
-// There are some issues with instanceof with npm link, so we use this
-// to ensure types are what we expect. We use this for a little extra
-// protection to make sure the correct types are being passed around.
-function getType(object) {
-    var type = typeof (object);
-    if (type !== "function") {
-        return null;
-    }
-    var types = [];
-    var obj = object;
-    while (true) {
-        var type_1 = obj.name;
-        if (!type_1) {
-            break;
-        }
-        types.push(type_1);
-        obj = Object.getPrototypeOf(obj);
-    }
-    return types.join(" ");
-}
-function hasSuffix(text, suffix) {
-    return text.substring(text.length - suffix.length) === suffix;
-}
-function isNamedInstance(type, value) {
-    var name = getType(type);
-    if (!name) {
-        return false;
-    }
-    // Not a string...
-    if (typeof (value) !== "string") {
-        // Not an instance...
-        if (typeof (value) !== "object") {
-            return false;
-        }
-        // Get the instance type
-        value = getType(value.constructor);
-    }
-    return (name === value || hasSuffix(value, " " + name));
-}
-exports.isNamedInstance = isNamedInstance;
 function resolveProperties(object) {
     var result = {};
     var promises = [];
@@ -102,29 +62,21 @@ function shallowCopy(object) {
     return result;
 }
 exports.shallowCopy = shallowCopy;
-var opaque = { boolean: true, number: true, string: true };
-function deepCopy(object, frozen) {
+var opaque = { bigint: true, boolean: true, number: true, string: true };
+// Returns a new copy of object, such that no properties may be replaced.
+// New properties may be added only to objects.
+function deepCopy(object) {
     // Opaque objects are not mutable, so safe to copy by assignment
     if (object === undefined || object === null || opaque[typeof (object)]) {
         return object;
     }
     // Arrays are mutable, so we need to create a copy
     if (Array.isArray(object)) {
-        var result = object.map(function (item) { return deepCopy(item, frozen); });
-        if (frozen) {
-            Object.freeze(result);
-        }
-        return result;
+        return Object.freeze(object.map(function (item) { return deepCopy(item); }));
     }
     if (typeof (object) === "object") {
-        // Some internal objects, which are already immutable
-        if (isNamedInstance("BigNumber", object)) {
-            return object;
-        }
-        if (isNamedInstance("Description", object)) {
-            return object;
-        }
-        if (isNamedInstance("Indexed", object)) {
+        // Immutable objects are safe to just use
+        if (Object.isFrozen(object)) {
             return object;
         }
         var result = {};
@@ -133,10 +85,7 @@ function deepCopy(object, frozen) {
             if (value === undefined) {
                 continue;
             }
-            defineReadOnly(result, key, deepCopy(value, frozen));
-        }
-        if (frozen) {
-            Object.freeze(result);
+            defineReadOnly(result, key, deepCopy(value));
         }
         return result;
     }
@@ -150,13 +99,10 @@ exports.deepCopy = deepCopy;
 var Description = /** @class */ (function () {
     function Description(info) {
         for (var key in info) {
-            defineReadOnly(this, key, deepCopy(info[key], true));
+            this[key] = deepCopy(info[key]);
         }
         Object.freeze(this);
     }
-    Description.isType = function (value) {
-        return isNamedInstance(this, value);
-    };
     return Description;
 }());
 exports.Description = Description;

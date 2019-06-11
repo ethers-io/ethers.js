@@ -66,7 +66,10 @@ var Wallet = /** @class */ (function (_super) {
             }
         }
         else {
-            if (properties_1.isNamedInstance(signing_key_1.SigningKey, privateKey)) {
+            if (signing_key_1.SigningKey.isSigningKey(privateKey)) {
+                if (privateKey.curve !== "secp256k1") {
+                    errors.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
+                }
                 properties_1.defineReadOnly(_this, "_signingKey", function () { return privateKey; });
             }
             else {
@@ -77,7 +80,7 @@ var Wallet = /** @class */ (function (_super) {
             properties_1.defineReadOnly(_this, "path", null);
             properties_1.defineReadOnly(_this, "address", transactions_1.computeAddress(_this.publicKey));
         }
-        if (provider && !properties_1.isNamedInstance(abstract_provider_1.Provider, provider)) {
+        if (provider && !abstract_provider_1.Provider.isProvider(provider)) {
             errors.throwError("invalid provider", errors.INVALID_ARGUMENT, {
                 argument: "provider",
                 value: provider

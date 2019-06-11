@@ -50,6 +50,9 @@ var Indexed = /** @class */ (function (_super) {
     function Indexed() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    Indexed.isIndexed = function (value) {
+        return !!(value && value._isIndexed);
+    };
     return Indexed;
 }(properties_1.Description));
 exports.Indexed = Indexed;
@@ -72,9 +75,6 @@ var Interface = /** @class */ (function () {
             abi = fragments;
         }
         properties_1.defineReadOnly(this, "fragments", abi.map(function (fragment) {
-            if (properties_1.isNamedInstance(fragments_1.Fragment, fragment)) {
-                return fragment;
-            }
             return fragments_1.Fragment.from(fragment);
         }).filter(function (fragment) { return (fragment != null); }));
         properties_1.defineReadOnly(this, "_abiCoder", _newTarget.getAbiCoder());
@@ -125,6 +125,7 @@ var Interface = /** @class */ (function () {
         if (!this.deploy) {
             properties_1.defineReadOnly(this, "deploy", fragments_1.ConstructorFragment.from({ type: "constructor" }));
         }
+        properties_1.defineReadOnly(this, "_isInterface", true);
     }
     Interface.getAbiCoder = function () {
         return abi_coder_1.defaultAbiCoder;
@@ -300,10 +301,10 @@ var Interface = /** @class */ (function () {
         eventFragment.inputs.forEach(function (param, index) {
             if (param.indexed) {
                 if (resultIndexed == null) {
-                    result[index] = new Indexed({ hash: null });
+                    result[index] = new Indexed({ _isIndexed: true, hash: null });
                 }
                 else if (dynamic[index]) {
-                    result[index] = new Indexed({ hash: resultIndexed[indexedIndex++] });
+                    result[index] = new Indexed({ _isIndexed: true, hash: resultIndexed[indexedIndex++] });
                 }
                 else {
                     result[index] = resultIndexed[indexedIndex++];
@@ -343,6 +344,20 @@ var Interface = /** @class */ (function () {
             topic: this.getEventTopic(fragment),
             values: this.decodeEventLog(fragment, log.data, log.topics)
         });
+    };
+    /*
+    static from(value: Array<Fragment | string | JsonAbi> | string | Interface) {
+        if (Interface.isInterface(value)) {
+            return value;
+        }
+        if (typeof(value) === "string") {
+            return new Interface(JSON.parse(value));
+        }
+        return new Interface(value);
+    }
+    */
+    Interface.isInterface = function (value) {
+        return !!(value && value._isInterface);
     };
     return Interface;
 }());

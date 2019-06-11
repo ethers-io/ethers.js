@@ -6,7 +6,8 @@ export declare class KeystoreAccount extends Description implements ExternallyOw
     readonly privateKey: string;
     readonly mnemonic?: string;
     readonly path?: string;
-    isType(value: any): value is KeystoreAccount;
+    readonly _isKeystoreAccount: boolean;
+    isKeystoreAccount(value: any): value is KeystoreAccount;
 }
 export declare type ProgressCallback = (percent: number) => void;
 export declare type EncryptOptions = {

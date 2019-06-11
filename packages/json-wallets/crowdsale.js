@@ -37,8 +37,8 @@ var CrowdsaleAccount = /** @class */ (function (_super) {
     function CrowdsaleAccount() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    CrowdsaleAccount.prototype.isType = function (value) {
-        return properties_1.Description.isType(value);
+    CrowdsaleAccount.prototype.isCrowdsaleAccount = function (value) {
+        return !!(value && value._isCrowdsaleAccount);
     };
     return CrowdsaleAccount;
 }(properties_1.Description));
@@ -72,6 +72,7 @@ function decrypt(json, password) {
     var seedHexBytes = strings_1.toUtf8Bytes(seedHex);
     var privateKey = keccak256_1.keccak256(seedHexBytes);
     return new CrowdsaleAccount({
+        _isCrowdsaleAccount: true,
         address: ethaddr,
         privateKey: privateKey
     });

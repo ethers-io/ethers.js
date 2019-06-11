@@ -13,6 +13,7 @@ export declare abstract class Signer {
     abstract signMessage(message: Bytes | string): Promise<string>;
     abstract signTransaction(transaction: TransactionRequest): Promise<string>;
     abstract connect(provider: Provider): Signer;
+    readonly _isSigner: boolean;
     constructor();
     getBalance(blockTag?: BlockTag): Promise<BigNumber>;
     getTransactionCount(blockTag?: BlockTag): Promise<number>;
@@ -25,6 +26,7 @@ export declare abstract class Signer {
     checkTransaction(transaction: TransactionRequest): TransactionRequest;
     populateTransaction(transaction: TransactionRequest): Promise<TransactionRequest>;
     _checkProvider(operation?: string): void;
+    static isSigner(value: any): value is Signer;
 }
 export declare class VoidSigner extends Signer {
     readonly address: string;

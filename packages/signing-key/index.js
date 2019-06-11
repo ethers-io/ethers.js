@@ -25,6 +25,7 @@ var SigningKey = /** @class */ (function () {
         var keyPair = getCurve().keyFromPrivate(bytes_1.arrayify(this.privateKey));
         properties_1.defineReadOnly(this, "publicKey", "0x" + keyPair.getPublic(false, "hex"));
         properties_1.defineReadOnly(this, "compressedPublicKey", "0x" + keyPair.getPublic(true, "hex"));
+        properties_1.defineReadOnly(this, "_isSigningKey", true);
     }
     SigningKey.prototype._addPoint = function (other) {
         var p0 = getCurve().keyFromPublic(bytes_1.arrayify(this.publicKey));
@@ -44,6 +45,9 @@ var SigningKey = /** @class */ (function () {
         var keyPair = getCurve().keyFromPrivate(bytes_1.arrayify(this.privateKey));
         var otherKeyPair = getCurve().keyFromPublic(bytes_1.arrayify(computePublicKey(otherKey)));
         return bytes_1.hexZeroPad("0x" + keyPair.derive(otherKeyPair.getPublic()).toString(16), 32);
+    };
+    SigningKey.isSigningKey = function (value) {
+        return !!(value && value._isSigningKey);
     };
     return SigningKey;
 }());

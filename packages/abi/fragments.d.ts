@@ -24,27 +24,32 @@ export declare class ParamType {
     readonly components: Array<ParamType>;
     readonly arrayLength: number;
     readonly arrayChildren: ParamType;
+    readonly _isParamType: boolean;
     constructor(constructorGuard: any, params: any);
     format(expanded?: boolean): string;
     static from(value: string | JsonFragmentType | ParamType, allowIndexed?: boolean): ParamType;
     static fromObject(value: JsonFragmentType | ParamType): ParamType;
     static fromString(value: string, allowIndexed?: boolean): ParamType;
+    static isParamType(value: any): value is ParamType;
 }
 export declare abstract class Fragment {
     readonly type: string;
     readonly name: string;
     readonly inputs: Array<ParamType>;
+    readonly _isFragment: boolean;
     constructor(constructorGuard: any, params: any);
     format(expanded?: boolean): string;
     static from(value: Fragment | JsonFragment | string): Fragment;
     static fromObject(value: Fragment | JsonFragment): Fragment;
     static fromString(value: string): Fragment;
+    static isFragment(value: any): value is Fragment;
 }
 export declare class EventFragment extends Fragment {
     readonly anonymous: boolean;
     static from(value: EventFragment | JsonFragment | string): EventFragment;
     static fromObject(value: JsonFragment | EventFragment): EventFragment;
     static fromString(value: string): EventFragment;
+    static isEventFragment(value: any): value is EventFragment;
 }
 export declare class ConstructorFragment extends Fragment {
     stateMutability: string;
@@ -53,6 +58,7 @@ export declare class ConstructorFragment extends Fragment {
     static from(value: ConstructorFragment | JsonFragment | string): ConstructorFragment;
     static fromObject(value: ConstructorFragment | JsonFragment): ConstructorFragment;
     static fromString(value: string): ConstructorFragment;
+    static isConstructorFragment(value: any): value is ConstructorFragment;
 }
 export declare class FunctionFragment extends ConstructorFragment {
     constant: boolean;
@@ -60,4 +66,5 @@ export declare class FunctionFragment extends ConstructorFragment {
     static from(value: FunctionFragment | JsonFragment | string): FunctionFragment;
     static fromObject(value: FunctionFragment | JsonFragment): FunctionFragment;
     static fromString(value: string): FunctionFragment;
+    static isFunctionFragment(value: any): value is FunctionFragment;
 }
