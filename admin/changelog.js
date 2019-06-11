@@ -68,16 +68,16 @@ async function generate() {
     changes.forEach((change) => {
         let body = change.body.trim();
         let link = body.match(/(\((.*#.*)\))/)
-        let commit = `[${change.commit.substring(0, 7)}](https://github.com/ethers-io/ethers.js/commit/${change.commit})`;
+        let commit = `[${ change.commit.substring(0, 7) }](https://github.com/ethers-io/ethers.js/commit/${ change.commit })`;
         if (link) {
             body = body.replace(/ *(\(.*#.*)\) */, "");
-            link = link[2].replace(/#([0-9]+)/g, (issue) => {
-                return `[#${issue}](https://github.com/ethers-io/ethers.js/issues/ + issue)`;
+            link = link[2].replace(/#([0-9]+)/g, (all, issue) => {
+                return `[#${ issue }](https://github.com/ethers-io/ethers.js/issues/${ issue })`;
             }) + "; " + commit;
         } else {
             link = commit;
         }
-        newSection.body.push(`  - ${body} (${link})`);
+        newSection.body.push(`  - ${ body } (${ link })`);
     });
 
     sections.splice(1, 0, newSection);
