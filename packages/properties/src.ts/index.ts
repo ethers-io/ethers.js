@@ -58,18 +58,18 @@ export function shallowCopy(object: any): any {
     return result;
 }
 
-let opaque: { [key: string]: boolean } = { boolean: true, number: true, string: true };
+let opaque: { [key: string]: boolean } = { bigint: true, boolean: true, number: true, string: true };
 
-export function deepCopy(object: any, frozen?: boolean): any {
+// Returns a new copy of object, such that no properties may be replaced.
+// New properties may be added only to objects.
+export function deepCopy(object: any): any {
 
     // Opaque objects are not mutable, so safe to copy by assignment
     if (object === undefined || object === null || opaque[typeof(object)]) { return object; }
 
     // Arrays are mutable, so we need to create a copy
     if (Array.isArray(object)) {
-        let result = object.map((item) => deepCopy(item, frozen));
-        if (frozen) { Object.freeze(result); }
-        return result
+        return Object.freeze(object.map((item) => deepCopy(item)));
     }
 
     if (typeof(object) === "object") {
@@ -81,10 +81,8 @@ export function deepCopy(object: any, frozen?: boolean): any {
         for (let key in object) {
             let value = object[key];
             if (value === undefined) { continue; }
-            defineReadOnly(result, key, deepCopy(value, frozen));
+            defineReadOnly(result, key, deepCopy(value));
         }
-
-        if (frozen) { Object.freeze(result); }
 
         return result;
     }
@@ -100,7 +98,7 @@ export function deepCopy(object: any, frozen?: boolean): any {
 export class Description {
     constructor(info: any) {
         for (let key in info) {
-            defineReadOnly(this, key, deepCopy(info[key], true));
+            (<any>this)[key] = deepCopy(info[key]);
         }
         Object.freeze(this);
     }
