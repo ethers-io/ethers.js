@@ -51,11 +51,14 @@ export abstract class Signer {
     // This MAY throw if changing providers is not supported.
     abstract connect(provider: Provider): Signer;
 
+    readonly _isSigner: boolean;
+
 
     ///////////////////
     // Sub-classes MUST call super
     constructor() {
         errors.checkAbstract(new.target, Signer);
+        defineReadOnly(this, "_isSigner", true);
     }
 
 
@@ -178,6 +181,10 @@ export abstract class Signer {
         if (!this.provider) { errors.throwError("missing provider", errors.UNSUPPORTED_OPERATION, {
             operation: (operation || "_checkProvider") });
         }
+    }
+
+    static isSigner(value: any): value is Signer {
+        return !!(value && value._isSigner);
     }
 }
 

@@ -2,9 +2,8 @@
 
 import { arrayify, BytesLike, hexZeroPad, isBytes } from "@ethersproject/bytes";
 import * as errors from "@ethersproject/errors";
-import { defineReadOnly, isNamedInstance } from "@ethersproject/properties";
 
-import { BigNumber, BigNumberish } from "./bignumber";
+import { BigNumber, BigNumberish, isBigNumberish } from "./bignumber";
 
 const _constructorGuard = { };
 
@@ -115,17 +114,18 @@ export class FixedFormat {
     readonly width: number;
     readonly decimals: number;
     readonly name: string;
-    readonly _multiplier: BigNumber;
+    readonly _multiplier: string;
 
     constructor(constructorGuard: any, signed: boolean, width: number, decimals: number) {
-        defineReadOnly(this, "signed", signed);
-        defineReadOnly(this, "width", width);
-        defineReadOnly(this, "decimals", decimals);
+        this.signed = signed;
+        this.width = width;
+        this.decimals = decimals;
 
-        let name = (signed ? "": "u") + "fixed" + String(width) + "x" + String(decimals);
-        defineReadOnly(this, "name", name);
+        this.name = (signed ? "": "u") + "fixed" + String(width) + "x" + String(decimals);
 
-        defineReadOnly(this, "_multiplier", getMultiplier(decimals));
+        this._multiplier = getMultiplier(decimals);
+
+        Object.freeze(this);
     }
 
     static from(value: any): FixedFormat {
@@ -170,10 +170,6 @@ export class FixedFormat {
 
         return new FixedFormat(_constructorGuard, signed, width, decimals);
     }
-
-    static isInstance(value: any): value is FixedFormat {
-        return isNamedInstance(this, value);
-    }
 }
 
 export class FixedNumber {
@@ -181,13 +177,19 @@ export class FixedNumber {
     readonly _hex: string;
     readonly _value: string;
 
+    readonly _isFixedNumber: boolean;
+
     constructor(constructorGuard: any, hex: string, value: string, format?: FixedFormat) {
         errors.checkNew(new.target, FixedNumber);
-        defineReadOnly(this, 'format', format);
-        defineReadOnly(this, '_hex', hex);
-        defineReadOnly(this, '_value', value);
-    }
 
+        this.format = format;
+        this._hex = hex;
+        this._value = value;
+
+        this._isFixedNumber = true;
+
+        Object.freeze(this);
+    }
 
     _checkFormat(other: FixedNumber): void {
         if (this.format.name !== other.format.name) {
@@ -261,7 +263,7 @@ export class FixedNumber {
 
     static fromValue(value: BigNumber, decimals?: BigNumberish, format?: FixedFormat | string): FixedNumber {
         // If decimals looks more like a format, and there is no format, shift the parameters
-        if (format == null && decimals != null && (FixedFormat.isInstance(decimals) || typeof(decimals) === "string")) {
+        if (format == null && decimals != null && !isBigNumberish(decimals)) {
             format = decimals;
             decimals = null;
         }
@@ -269,15 +271,14 @@ export class FixedNumber {
         if (decimals == null) { decimals = 0; }
         if (format == null) { format = "fixed"; }
 
-        let fixedFormat = (FixedFormat.isInstance(format) ? format: FixedFormat.from(format));
-        return FixedNumber.fromString(formatFixed(value, decimals), fixedFormat);
+        return FixedNumber.fromString(formatFixed(value, decimals), FixedFormat.from(format));
     }
 
 
     static fromString(value: string, format?: FixedFormat | string): FixedNumber {
         if (format == null) { format = "fixed"; }
 
-        let fixedFormat = (FixedFormat.isInstance(format) ? format: FixedFormat.from(format));
+        let fixedFormat = FixedFormat.from(format);
 
         let numeric = parseFixed(value, fixedFormat.decimals);
 
@@ -301,7 +302,7 @@ export class FixedNumber {
     static fromBytes(value: BytesLike, format?: FixedFormat | string): FixedNumber {
         if (format == null) { format = "fixed"; }
 
-        let fixedFormat = (FixedFormat.isInstance(format) ? format: FixedFormat.from(format));
+        let fixedFormat = FixedFormat.from(format);
 
         if (arrayify(value).length > fixedFormat.width / 8) {
             throw new Error("overflow");
@@ -338,6 +339,6 @@ export class FixedNumber {
     }
 
     static isFixedNumber(value: any): value is FixedNumber {
-        return isNamedInstance<FixedNumber>(this, value);
+        return !!(value && value._isFixedNumber);
     }
 }

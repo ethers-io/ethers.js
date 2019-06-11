@@ -2,7 +2,7 @@
 
 import { BigNumber } from "@ethersproject/bignumber";
 import * as errors from "@ethersproject/errors";
-import { defineReadOnly, isNamedInstance } from "@ethersproject/properties";
+import { defineReadOnly } from "@ethersproject/properties";
 
 
 export interface JsonFragmentType {
@@ -238,6 +238,8 @@ export class ParamType {
     readonly arrayLength: number;
     readonly arrayChildren: ParamType;
 
+    readonly _isParamType: boolean;
+
     constructor(constructorGuard: any, params: any) {
         if (constructorGuard !== _constructorGuard) { throw new Error("use fromString"); }
         populate(this, params);
@@ -259,6 +261,10 @@ export class ParamType {
                 baseType: ((this.components != null) ? "tuple": this.type)
             });
         }
+
+        this._isParamType = true;
+
+        Object.freeze(this);
     }
 
     // Format the parameter fragment
@@ -298,7 +304,7 @@ export class ParamType {
     }
 
     static fromObject(value: JsonFragmentType | ParamType): ParamType {
-        if (isNamedInstance<ParamType>(ParamType, value)) { return value; }
+        if (ParamType.isParamType(value)) { return value; }
 
         return new ParamType(_constructorGuard, {
             name: (value.name || null),
@@ -320,6 +326,10 @@ export class ParamType {
 
         return ParamTypify(parseParamType(value, !!allowIndexed));
     }
+
+    static isParamType(value: any): value is ParamType {
+        return !!(value != null && value._isParamType);
+    }
 };
 
 function parseParams(value: string, allowIndex: boolean): Array<ParamType> {
@@ -332,9 +342,15 @@ export abstract class Fragment {
     readonly name: string;
     readonly inputs: Array<ParamType>;
 
+    readonly _isFragment: boolean;
+
     constructor(constructorGuard: any, params: any) {
         if (constructorGuard !== _constructorGuard) { throw new Error("use a static from method"); }
         populate(this, params);
+
+        this._isFragment = true;
+
+        Object.freeze(this);
     }
 
     // @TOOD: move logic to sub-classes; make this abstract
@@ -370,14 +386,17 @@ export abstract class Fragment {
     }
 
     static from(value: Fragment | JsonFragment | string): Fragment {
+        if (Fragment.isFragment(value)) { return value; }
+
         if (typeof(value) === "string") {
             return Fragment.fromString(value);
         }
+
         return Fragment.fromObject(value);
     }
 
     static fromObject(value: Fragment | JsonFragment): Fragment {
-        if (isNamedInstance<Fragment>(Fragment, value)) { return value; }
+        if (Fragment.isFragment(value)) { return value; }
 
         if (value.type === "function") {
             return FunctionFragment.fromObject(value);
@@ -412,6 +431,10 @@ export abstract class Fragment {
 
         throw new Error("unknown fragment");
     }
+
+    static isFragment(value: any): value is Fragment {
+        return !!(value && value._isFragment);
+    }
 }
 
 export class EventFragment extends Fragment {
@@ -425,7 +448,7 @@ export class EventFragment extends Fragment {
     }
 
     static fromObject(value: JsonFragment | EventFragment): EventFragment {
-        if (isNamedInstance<EventFragment>(EventFragment, value)) { return value; }
+        if (EventFragment.isEventFragment(value)) { return value; }
 
         if (value.type !== "event") { throw new Error("invalid event object - " + value.type); }
 
@@ -461,6 +484,10 @@ export class EventFragment extends Fragment {
             inputs: parseParams(match[2], true),
             type: "event"
         });
+    }
+
+    static isEventFragment(value: any): value is EventFragment {
+        return (value && value._isFragment && value.type === "event");
     }
 }
 
@@ -528,7 +555,7 @@ export class ConstructorFragment extends Fragment {
     }
 
     static fromObject(value: ConstructorFragment | JsonFragment): ConstructorFragment {
-        if (isNamedInstance<ConstructorFragment>(ConstructorFragment, value)) { return value; }
+        if (ConstructorFragment.isConstructorFragment(value)) { return value; }
 
         if (value.type !== "constructor") { throw new Error("invalid constructor object - " + value.type); }
 
@@ -557,6 +584,9 @@ export class ConstructorFragment extends Fragment {
         return ConstructorFragment.fromObject(params);
     }
 
+    static isConstructorFragment(value: any): value is ConstructorFragment {
+        return (value && value._isFragment && value.type === "constructor");
+    }
 }
 
 export class FunctionFragment extends ConstructorFragment {
@@ -571,7 +601,7 @@ export class FunctionFragment extends ConstructorFragment {
     }
 
     static fromObject(value: FunctionFragment | JsonFragment): FunctionFragment {
-        if (isNamedInstance<FunctionFragment>(FunctionFragment, value)) { return value; }
+        if (FunctionFragment.isFunctionFragment(value)) { return value; }
 
         if (value.type !== "function") { throw new Error("invalid function object - " + value.type); }
 
@@ -618,6 +648,10 @@ export class FunctionFragment extends ConstructorFragment {
         }
 
         return FunctionFragment.fromObject(params);
+    }
+
+    static isFunctionFragment(value: any): value is FunctionFragment {
+        return (value && value._isFragment && value.type === "function");
     }
 }
 

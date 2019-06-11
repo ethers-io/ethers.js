@@ -6,7 +6,7 @@ import { arrayify, BytesLike, concat, hexDataSlice, hexlify, hexZeroPad, isHexSt
 import { id } from "@ethersproject/hash";
 import { keccak256 } from "@ethersproject/keccak256"
 import * as errors from "@ethersproject/errors";
-import { defineReadOnly, Description, isNamedInstance } from "@ethersproject/properties";
+import { defineReadOnly, Description } from "@ethersproject/properties";
 
 import { AbiCoder, defaultAbiCoder } from "./abi-coder";
 import { ConstructorFragment, EventFragment, Fragment, FunctionFragment, JsonFragment, ParamType } from "./fragments";
@@ -31,6 +31,10 @@ export class TransactionDescription extends Description {
 
 export class Indexed extends Description {
     readonly hash: string;
+
+    static isIndexed(value: any): value is Indexed {
+        return !!(value && value._isIndexed);
+    }
 }
 
 export class Result {
@@ -51,6 +55,8 @@ export class Interface {
 
     readonly _abiCoder: AbiCoder;
 
+    static _isInterface: boolean;
+
     constructor(fragments: string | Array<Fragment | JsonFragment | string>) {
         errors.checkNew(new.target, Interface);
 
@@ -62,9 +68,6 @@ export class Interface {
         }
 
         defineReadOnly(this, "fragments", abi.map((fragment) => {
-            if (isNamedInstance<Fragment>(Fragment, fragment)) {
-                return fragment
-            }
             return Fragment.from(fragment);
         }).filter((fragment) => (fragment != null)));
 
@@ -122,6 +125,8 @@ export class Interface {
         if (!this.deploy) {
             defineReadOnly(this, "deploy", ConstructorFragment.from( { type: "constructor" } ));
         }
+
+        defineReadOnly(this, "_isInterface", true);
     }
 
     static getAbiCoder(): AbiCoder {
@@ -325,10 +330,10 @@ export class Interface {
         eventFragment.inputs.forEach((param, index) => {
             if (param.indexed) {
                 if (resultIndexed == null) {
-                    result[index] = new Indexed({ hash: null });
+                    result[index] = new Indexed({ _isIndexed: true, hash: null });
 
                 } else if (dynamic[index]) {
-                    result[index] = new Indexed({ hash: resultIndexed[indexedIndex++] });
+                    result[index] = new Indexed({ _isIndexed: true, hash: resultIndexed[indexedIndex++] });
 
                 } else {
                     result[index] = resultIndexed[indexedIndex++];
@@ -387,6 +392,10 @@ export class Interface {
         return new Interface(value);
     }
     */
+
+    static isInterface(value: any): value is Interface {
+        return !!(value && value._isInterface);
+    }
 }
 
 function getFragment(hash: string, calcFunc: (f: Fragment) => string, items: { [ sig: string ]: Fragment } ) {

@@ -9,7 +9,7 @@ import { arrayify, hexDataLength, hexlify, hexValue, isHexString } from "@ethers
 import * as errors from "@ethersproject/errors";
 import { namehash } from "@ethersproject/hash";
 import { getNetwork, Network, Networkish } from "@ethersproject/networks";
-import { defineReadOnly, isNamedInstance, resolveProperties } from "@ethersproject/properties";
+import { defineReadOnly, resolveProperties } from "@ethersproject/properties";
 import { Transaction } from "@ethersproject/transactions";
 import { toUtf8String } from "@ethersproject/strings";
 import { poll } from "@ethersproject/web";
@@ -77,7 +77,7 @@ function getEventTag(eventName: EventType): string {
     } else if (Array.isArray(eventName)) {
         return "filter:*:" + serializeTopics(eventName);
 
-    } else if (isNamedInstance<ForkEvent>(ForkEvent, eventName)) {
+    } else if (ForkEvent.isForkEvent(eventName)) {
         errors.warn("not implemented");
         throw new Error("not implemented");
 

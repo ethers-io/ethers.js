@@ -19,8 +19,10 @@ export class CrowdsaleAccount extends Description implements ExternallyOwnedAcco
     readonly mnemonic?: string;
     readonly path?: string;
 
-    isType(value: any): value is CrowdsaleAccount {
-        return Description.isType(value);
+    readonly _isCrowdsaleAccount: boolean;
+
+    isCrowdsaleAccount(value: any): value is CrowdsaleAccount {
+        return !!(value && value._isCrowdsaleAccount);
     }
 }
 
@@ -63,6 +65,7 @@ export function decrypt(json: string, password: Bytes | string): ExternallyOwned
     let privateKey = keccak256(seedHexBytes);
 
     return new CrowdsaleAccount ({
+        _isCrowdsaleAccount: true,
         address: ethaddr,
         privateKey: privateKey
     });

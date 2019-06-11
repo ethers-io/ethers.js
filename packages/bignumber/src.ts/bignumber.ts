@@ -11,7 +11,6 @@
 import * as BN from "bn.js";
 
 import { Bytes, Hexable, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
-import { defineReadOnly, isNamedInstance } from "@ethersproject/properties";
 
 import * as errors from "@ethersproject/errors";
 
@@ -22,18 +21,20 @@ const MAX_SAFE = 0x1fffffffffffff;
 
 export type BigNumberish = BigNumber | Bytes | string | number;
 
-/*
-export function isBigNumberLike(value: any): value is BigNumberish {
-    return (BigNumber.isBigNumber(value) ||
-            (!!((<any>value).toHexString)) ||
-            isBytes(value) ||
-            value.match(/^-?([0-9]+|0x[0-9a-f]+)$/i) ||
-            typeof(value) === "number");
+export function isBigNumberish(value: any): value is BigNumberish {
+    return (value != null) && (
+        BigNumber.isBigNumber(value) ||
+        (typeof(value) === "number" && (value % 1) === 0) ||
+        (typeof(value) === "string" && !!value.match(/^-?[0-9]+$/)) ||
+        isHexString(value) ||
+        (typeof(value) === "bigint") ||
+        isBytes(value)
+    );
 }
-*/
 
 export class BigNumber implements Hexable {
     readonly _hex: string;
+    readonly _isBigNumber: boolean;
 
     constructor(constructorGuard: any, hex: string) {
         errors.checkNew(new.target, BigNumber);
@@ -44,7 +45,10 @@ export class BigNumber implements Hexable {
             });
         }
 
-        defineReadOnly(this, "_hex", hex);
+        this._hex = hex;
+        this._isBigNumber = true;
+
+        Object.freeze(this);
     }
 
     fromTwos(value: number): BigNumber {
@@ -189,103 +193,9 @@ export class BigNumber implements Hexable {
     }
 
     static isBigNumber(value: any): value is BigNumber {
-        return isNamedInstance<BigNumber>(this, value);
+        return !!(value && value._isBigNumber);
     }
 }
-
-/*
-export function bigNumberify(value: BigNumberish): BigNumber {
-    if (BigNumber.isBigNumber(value)) { return value; }
-    return new BigNumber(value);
-}
-*/
-
-/*
-function zeros(length) {
-    let result = "";
-    while (result.length < length) { tens += "0"; }
-    return result;
-}
-export class FixedNumber {
-    readonly value: BigNumber;
-    readonly decimalPlaces: number;
-
-    constructor(value: BigNumberish, decimalPlaces: number) {
-        defineReadOnly(this, "value", bigNumberify(value));
-        defineReadOnly(this, "decimalPlaces", decimalPlaces);
-    }
-
-    toString(): string {
-        return formatUnits(this.value, this.decimalPlaces);
-    }
-
-    static fromString(value: string): FixedNumber {
-        let comps = value.split(".");
-        let decimalPlaces = 0;
-        if (comps.length === 2) { decimalPlaces = comps[1].length; }
-        return new FixedNumber(parseUnits(value, decimalPlaces), decimalPlaces);
-    }
-*/
-/*
-    
-    readonly negative: boolean;
-    readonly whole: BigNumber;
-    readonly fraction: BigNumber;
-    constructor(whole: BigNumberish, fraction: BigNumberish, negative?: boolean) {
-        if (whole.lt(constants.Zero)) {
-            errors.throwError("whole component must be positive", errors.INVALID_ARGUMENT, {
-                argument: whole,
-                value: whole
-            });
-        }
-        defineReadOnly(this, "whole", bigNumberify(whole));
-        defineReadOnly(this, "fraction", bigNumberify(fraction));
-        defineReadOnly(this, "negative", !!boolean);
-    }
-*/
-/*
-    toHexString(bitWidth?: number, decimalPlaces?: number, signed?: boolean): string {
-        if (bitWidth == null) { bitWidth = 128; }
-        if (decimalPlaces == null) { decimalPlaces = 18; }
-        if (signed == null) { signed = true; }
-        return null;
-    }
-    static fromValue(value: BigNumberish, decimalPlaces: number): FixedNumber {
-        let negative = false;
-        if (value.lt(constants.Zero)) {
-            negative = true;
-            value = value.abs();
-        }
-        let tens = bigNumberify("1" + zeros(decimalPlaces));
-        return new FixedNumber(value.divide(tens), value.mod(tens), negative);
-    }
-        let negative = false;
-        if (value.substring(0, 1) === "-") {
-            negative = true;
-            value = value.substring(1);
-        }
-
-        if (value !== "." && value !== "") {
-            let comps = value.split(".");
-            if (comps.length === 1) {
-                return new FixedNumber(comps[0], 0, negative);
-            } else if (comps.length === 2) {
-                if (comps[0] === "") { comps[0] = "0"; }
-                if (comps[1] === "") { comps[1] = "0"; }
-                return new FixedNumber(comps[0], comps[1], negative);
-            }
-        }
-
-        errors.throwError("invalid fixed-point value", errors.INVALID_ARGUMENT, {
-            argument: "value",
-            value: value
-        });
-
-        return null;
-*/
-
-//}
-
 
 // Normalize the hex string
 function toHex(value: string | BN.BN): string {

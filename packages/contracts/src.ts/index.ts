@@ -8,7 +8,7 @@ import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike, concat, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
 import { Zero } from "@ethersproject/constants";
 import * as errors from "@ethersproject/errors";
-import { defineReadOnly, deepCopy, isNamedInstance, resolveProperties, shallowCopy } from "@ethersproject/properties";
+import { defineReadOnly, deepCopy, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { UnsignedTransaction } from "@ethersproject/transactions";
 
 
@@ -440,10 +440,10 @@ export class Contract {
 
         defineReadOnly(this, "interface", new.target.getInterface(contractInterface));
 
-        if (isNamedInstance<Signer>(Signer, signerOrProvider)) {
-            defineReadOnly(this, "provider", signerOrProvider.provider);
+        if (Signer.isSigner(signerOrProvider)) {
+            defineReadOnly(this, "provider", signerOrProvider.provider || null);
             defineReadOnly(this, "signer", signerOrProvider);
-        } else if (isNamedInstance<Provider>(Provider, signerOrProvider)) {
+        } else if (Provider.isProvider(signerOrProvider)) {
             defineReadOnly(this, "provider", signerOrProvider);
             defineReadOnly(this, "signer", null);
         } else {
@@ -518,7 +518,7 @@ export class Contract {
     }
 
     static getInterface(contractInterface: ContractInterface): Interface {
-        if (isNamedInstance<Interface>(Interface, contractInterface)) {
+        if (Interface.isInterface(contractInterface)) {
             return contractInterface;
         }
         return new Interface(contractInterface);
@@ -601,7 +601,7 @@ export class Contract {
     }
 
     static isIndexed(value: any): value is Indexed {
-        return isNamedInstance<Indexed>(Indexed, value);
+        return Indexed.isIndexed(value);
     }
 
     private _normalizeRunningEvent(runningEvent: RunningEvent): RunningEvent {
@@ -845,7 +845,7 @@ export class ContractFactory {
         }
 
         // If we have a signer, make sure it is valid
-        if (signer && !isNamedInstance<Signer>(Signer, signer)) {
+        if (signer && !Signer.isSigner(signer)) {
             errors.throwArgumentError("invalid signer", "signer", signer);
         }
 

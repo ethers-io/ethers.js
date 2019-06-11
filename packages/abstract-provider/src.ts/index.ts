@@ -5,7 +5,7 @@ import { BytesLike, isHexString } from "@ethersproject/bytes";
 import * as errors from "@ethersproject/errors";
 import { checkAbstract } from "@ethersproject/errors";
 import { Network } from "@ethersproject/networks";
-import { defineReadOnly } from "@ethersproject/properties";
+import { Description, defineReadOnly } from "@ethersproject/properties";
 import { Transaction } from "@ethersproject/transactions";
 import { OnceBlockable } from "@ethersproject/web";
 
@@ -128,11 +128,13 @@ export interface FilterByBlockHash extends EventFilter {
 //    call(transaction: TransactionRequest): Promise<TransactionResponse>;
 //};
 
-export class ForkEvent {
+export abstract class ForkEvent extends Description {
     readonly expiry: number;
 
-    constructor(expiry?: number) {
-        defineReadOnly(this, "expiry", expiry || 0);
+    readonly _isForkEvent: boolean;
+
+    static isForkEvent(value: any): value is ForkEvent {
+        return !!(value && value._isForkEvent);
     }
 }
 
@@ -143,8 +145,13 @@ export class BlockForkEvent extends ForkEvent {
         if (!isHexString(blockhash, 32)) {
             errors.throwArgumentError("invalid blockhash", "blockhash", blockhash);
         }
-        super(expiry);
-        defineReadOnly(this, "blockhash", blockhash);
+
+        super({
+            _isForkEvent: true,
+            _isBlockForkEvent: true,
+            expiry: (expiry || 0),
+            blockHash: blockhash
+        });
     }
 }
 
@@ -155,8 +162,13 @@ export class TransactionForkEvent extends ForkEvent {
         if (!isHexString(hash, 32)) {
             errors.throwArgumentError("invalid transaction hash", "hash", hash);
         }
-        super(expiry);
-        defineReadOnly(this, "hash", hash);
+
+        super({
+            _isForkEvent: true,
+            _isTransactionForkEvent: true,
+            expiry: (expiry || 0),
+            hash: hash
+        });
     }
 }
 
@@ -171,9 +183,14 @@ export class TransactionOrderForkEvent extends ForkEvent {
         if (!isHexString(afterHash, 32)) {
             errors.throwArgumentError("invalid transaction hash", "afterHash", afterHash);
         }
-        super(expiry);
-        defineReadOnly(this, "beforeHash", beforeHash);
-        defineReadOnly(this, "afterHash", afterHash);
+
+        super({
+            _isForkEvent: true,
+            _isTransactionOrderForkEvent: true,
+            expiry: (expiry || 0),
+            beforeHash: beforeHash,
+            afterHash: afterHash
+        });
     }
 }
 
@@ -239,8 +256,15 @@ export abstract class Provider implements OnceBlockable {
     // @TODO: This *could* be implemented here, but would pull in events...
     abstract waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt>;
 
+    readonly _isProvider: boolean;
+
     constructor() {
         checkAbstract(new.target, Provider);
+        defineReadOnly(this, "_isProvider", true);
+    }
+
+    static isProvider(value: any): value is Provider {
+        return !!(value && value._isProvider);
     }
 
 /*

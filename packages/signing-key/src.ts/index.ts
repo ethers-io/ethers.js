@@ -22,7 +22,9 @@ export class SigningKey {
     readonly publicKey: string;
     readonly compressedPublicKey: string;
 
-    readonly address: string;
+    //readonly address: string;
+
+    readonly _isSigningKey: boolean;
 
     constructor(privateKey: BytesLike) {
         defineReadOnly(this, "curve", "secp256k1");
@@ -33,6 +35,8 @@ export class SigningKey {
 
         defineReadOnly(this, "publicKey", "0x" + keyPair.getPublic(false, "hex"));
         defineReadOnly(this, "compressedPublicKey", "0x" + keyPair.getPublic(true, "hex"));
+
+        defineReadOnly(this, "_isSigningKey", true);
     }
 
     _addPoint(other: BytesLike): string {
@@ -55,6 +59,10 @@ export class SigningKey {
         let keyPair = getCurve().keyFromPrivate(arrayify(this.privateKey));
         let otherKeyPair = getCurve().keyFromPublic(arrayify(computePublicKey(otherKey)));
         return hexZeroPad("0x" + keyPair.derive(otherKeyPair.getPublic()).toString(16), 32);
+    }
+
+    static isSigningKey(value: any): value is SigningKey {
+        return !!(value && value._isSigningKey);
     }
 }
 

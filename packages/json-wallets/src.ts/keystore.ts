@@ -24,8 +24,10 @@ export class KeystoreAccount extends Description implements ExternallyOwnedAccou
     readonly mnemonic?: string;
     readonly path?: string;
 
-    isType(value: any): value is KeystoreAccount {
-        return Description.isType(value);
+    readonly _isKeystoreAccount: boolean;
+
+    isKeystoreAccount(value: any): value is KeystoreAccount {
+        return !!(value && value._isKeystoreAccount);
     }
 }
 
@@ -95,6 +97,7 @@ export function decrypt(json: string, password: Bytes | string, progressCallback
         } catch (e) { }
 
         let account: any = {
+            _isKeystoreAccount: true,
             address: address,
             privateKey: hexlify(privateKey)
         };

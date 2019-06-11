@@ -10,47 +10,6 @@ export function defineReadOnly(object: any, name: string, value: any): void {
     });
 }
 
-// There are some issues with instanceof with npm link, so we use this
-// to ensure types are what we expect. We use this for a little extra
-// protection to make sure the correct types are being passed around.
-
-function getType(object: any) {
-
-    let type = typeof(object);
-    if (type !== "function") { return null; }
-
-    let types = [ ];
-    let obj = object;
-    while (true) {
-        let type = obj.name;
-        if (!type) { break; }
-        types.push(type);
-        obj = Object.getPrototypeOf(obj);
-    }
-    return types.join(" ");
-}
-
-function hasSuffix(text: string, suffix: string) {
-    return text.substring(text.length - suffix.length) === suffix;
-}
-
-export function isNamedInstance<T>(type: Function | string, value: any): value is T {
-    let name = getType(type);
-    if (!name) { return false; }
-
-    // Not a string...
-    if (typeof(value) !== "string") {
-
-        // Not an instance...
-        if (typeof(value) !== "object") { return false; }
-
-        // Get the instance type
-        value = getType(value.constructor);
-    }
-
-    return (name === value || hasSuffix(value, " " + name));
-}
-
 export function resolveProperties(object: any): Promise<any> {
     let result: any = {};
 
@@ -115,10 +74,8 @@ export function deepCopy(object: any, frozen?: boolean): any {
 
     if (typeof(object) === "object") {
 
-        // Some internal objects, which are already immutable
-        if (isNamedInstance("BigNumber", object)) { return object; }
-        if (isNamedInstance("Description", object)) { return object; }
-        if (isNamedInstance("Indexed", object)) { return object; }
+        // Immutable objects are safe to just use
+        if (Object.isFrozen(object)) { return object; }
 
         let result: { [ key: string ]: any } = {};
         for (let key in object) {
@@ -146,9 +103,5 @@ export class Description {
             defineReadOnly(this, key, deepCopy(info[key], true));
         }
         Object.freeze(this);
-    }
-
-    static isType(value: any): boolean {
-        return isNamedInstance(this, value);
     }
 }

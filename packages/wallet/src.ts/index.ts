@@ -8,7 +8,7 @@ import * as errors from "@ethersproject/errors";
 import { hashMessage } from "@ethersproject/hash";
 import { defaultPath, HDNode, entropyToMnemonic } from "@ethersproject/hdnode";
 import { keccak256 } from "@ethersproject/keccak256";
-import { defineReadOnly, isNamedInstance, resolveProperties } from "@ethersproject/properties";
+import { defineReadOnly, resolveProperties } from "@ethersproject/properties";
 import { randomBytes } from "@ethersproject/random";
 import { SigningKey } from "@ethersproject/signing-key";
 import { decryptJsonWallet, encryptKeystore, ProgressCallback } from "@ethersproject/json-wallets";
@@ -61,7 +61,10 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
 
 
         } else {
-            if (isNamedInstance<SigningKey>(SigningKey, privateKey)) {
+            if (SigningKey.isSigningKey(privateKey)) {
+                if (privateKey.curve !== "secp256k1") {
+                    errors.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
+                }
                 defineReadOnly(this, "_signingKey", () => privateKey);
             } else {
                 let signingKey = new SigningKey(privateKey);
@@ -72,7 +75,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
             defineReadOnly(this, "address", computeAddress(this.publicKey));
         }
 
-        if (provider && !isNamedInstance<Provider>(Provider, provider)) {
+        if (provider && !Provider.isProvider(provider)) {
             errors.throwError("invalid provider", errors.INVALID_ARGUMENT, {
                 argument: "provider",
                 value: provider
