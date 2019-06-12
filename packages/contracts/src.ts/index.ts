@@ -8,7 +8,7 @@ import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike, concat, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
 import { Zero } from "@ethersproject/constants";
 import * as errors from "@ethersproject/errors";
-import { defineReadOnly, deepCopy, resolveProperties, shallowCopy } from "@ethersproject/properties";
+import { defineReadOnly, deepCopy, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { UnsignedTransaction } from "@ethersproject/transactions";
 
 
@@ -402,6 +402,8 @@ class WildcardRunningEvent extends RunningEvent {
 
 export type ContractInterface = string | Array<Fragment | JsonFragment | string> | Interface;
 
+type InterfaceFunc = (contractInterface: ContractInterface) => Interface;
+
 export class Contract {
     readonly address: string;
     readonly interface: Interface;
@@ -437,8 +439,8 @@ export class Contract {
 
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
-
-        defineReadOnly(this, "interface", new.target.getInterface(contractInterface));
+console.log(getStatic(new.target, "getInterface"));
+        defineReadOnly(this, "interface", getStatic<InterfaceFunc>(new.target, "getInterface")(contractInterface));
 
         if (Signer.isSigner(signerOrProvider)) {
             defineReadOnly(this, "provider", signerOrProvider.provider || null);
@@ -850,7 +852,7 @@ export class ContractFactory {
         }
 
         defineReadOnly(this, "bytecode", bytecodeHex);
-        defineReadOnly(this, "interface", new.target.getInterface(contractInterface));
+        defineReadOnly(this, "interface", getStatic<InterfaceFunc>(new.target, "getInterface")(contractInterface));
         defineReadOnly(this, "signer", signer || null);
     }
 

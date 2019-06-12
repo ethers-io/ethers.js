@@ -10,6 +10,16 @@ export function defineReadOnly(object: any, name: string, value: any): void {
     });
 }
 
+// Crawl up the constructor chain to find a static method
+export function getStatic<T>(ctor: any, key: string): T {
+    for (let i = 0; i < 32; i++) {
+        if (ctor[key]) { return ctor[key]; }
+        if (!ctor.prototype || typeof(ctor.prototype) !== "object") { break; }
+        ctor = Object.getPrototypeOf(ctor.prototype).constructor;
+    }
+    return null;
+}
+
 export function resolveProperties(object: any): Promise<any> {
     let result: any = {};
 

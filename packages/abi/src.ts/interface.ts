@@ -6,7 +6,7 @@ import { arrayify, BytesLike, concat, hexDataSlice, hexlify, hexZeroPad, isHexSt
 import { id } from "@ethersproject/hash";
 import { keccak256 } from "@ethersproject/keccak256"
 import * as errors from "@ethersproject/errors";
-import { defineReadOnly, Description } from "@ethersproject/properties";
+import { defineReadOnly, Description, getStatic } from "@ethersproject/properties";
 
 import { AbiCoder, defaultAbiCoder } from "./abi-coder";
 import { ConstructorFragment, EventFragment, Fragment, FunctionFragment, JsonFragment, ParamType } from "./fragments";
@@ -71,7 +71,7 @@ export class Interface {
             return Fragment.from(fragment);
         }).filter((fragment) => (fragment != null)));
 
-        defineReadOnly(this, "_abiCoder", new.target.getAbiCoder());
+        defineReadOnly(this, "_abiCoder", getStatic<() => AbiCoder>(new.target, "getAbiCoder")());
 
         defineReadOnly(this, "functions", { });
         defineReadOnly(this, "errors", { });
