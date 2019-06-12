@@ -10,8 +10,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var node_fetch_1 = __importDefault(require("node-fetch"));
-var fetch = node_fetch_1.default.bind(global);
+var cross_fetch_1 = __importDefault(require("cross-fetch"));
 var base64_1 = require("@ethersproject/base64");
 var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
@@ -88,7 +87,7 @@ function fetchJson(connection, json, processFunc) {
             flatHeaders[header.key] = header.value;
         });
         options.headers = flatHeaders;
-        return fetch(url, options).then(function (response) {
+        return cross_fetch_1.default(url, options).then(function (response) {
             return response.text().then(function (body) {
                 if (!response.ok) {
                     errors.throwError("bad response", errors.SERVER_ERROR, {

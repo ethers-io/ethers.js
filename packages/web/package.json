@@ -11,10 +11,7 @@
     "@ethersproject/errors": ">5.0.0-beta.0",
     "@ethersproject/properties": ">5.0.0-beta.0",
     "@ethersproject/strings": ">5.0.0-beta.0",
-    "node-fetch": "2.6.0"
-  },
-  "devDependencies": {
-    "@types/node-fetch": "2.3.5"
+    "cross-fetch": "3.0.4"
   },
   "keywords": [
     "Ethereum",
@@ -25,5 +22,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x992d517b898d7d5d41df04abe58d11a2840e4443d1614e32f2dfde4c6549f6a8"
+  "tarballHash": "0x0f9e617f859e6d9d0dbd16146a9653390219cf5aadd418030212b804f16a3af4"
 }
