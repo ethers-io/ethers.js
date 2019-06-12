@@ -1,6 +1,6 @@
 "use strict";
 
-import { XMLHttpRequest } from "xmlhttprequest";
+import { default as fetch } from "node-fetch";
 
 import { encode as base64Encode } from "@ethersproject/base64";
 import * as errors from "@ethersproject/errors";
@@ -13,7 +13,7 @@ export type ConnectionInfo = {
     url: string,
     user?: string,
     password?: string,
-    allowInsecure?: boolean,
+    allowInsecureAuthentication?: boolean,
     timeout?: number,
     headers?: { [key: string]: string | number }
 };
@@ -40,14 +40,24 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
 
     let url: string = null;
 
+    // @TODO: Allow ConnectionInfo to override some of these values
+    let options: any = {
+        method: "GET",
+        mode: "cors",               // no-cors, cors, *same-origin
+        cache: "no-cache",          // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, *same-origin, omit
+        redirect: "follow",         // manual, *follow, error
+        referrer: "client",         // no-referrer, *client
+    };
+
     let timeout = 2 * 60 * 1000;
 
     if (typeof(connection) === "string") {
         url = connection;
 
     } else if (typeof(connection) === "object") {
-        if (connection.url == null) {
-            errors.throwError("missing URL", errors.MISSING_ARGUMENT, { arg: "url" });
+        if (connection == null || connection.url == null) {
+            errors.throwArgumentError("missing URL", "connection.url", connection);
         }
 
         url = connection.url;
@@ -63,7 +73,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
         }
 
         if (connection.user != null && connection.password != null) {
-            if (url.substring(0, 6) !== "https:" && connection.allowInsecure !== true) {
+            if (url.substring(0, 6) !== "https:" && connection.allowInsecureAuthentication !== true) {
                 errors.throwError(
                     "basic authentication requires a secure https url",
                     errors.INVALID_ARGUMENT,
@@ -80,18 +90,19 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
     }
 
     return new Promise(function(resolve, reject) {
-        let request = new XMLHttpRequest();
 
         let timer: any = null;
-        timer = setTimeout(() => {
-            if (timer == null) { return; }
-            timer = null;
+        if (timeout) {
+            timer = setTimeout(() => {
+                if (timer == null) { return; }
+                timer = null;
 
-            reject(new Error("timeout"));
-            setTimeout(() => {
-                request.abort();
-            }, 0);
-        }, timeout);
+                reject(errors.makeError("timeout", errors.TIMEOUT, { }));
+                //setTimeout(() => {
+                //    request.abort();
+                //}, 0);
+            }, timeout);
+        }
 
         let cancelTimeout = () => {
             if (timer == null) { return; }
@@ -100,85 +111,66 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
         }
 
         if (json) {
-            request.open("POST", url, true);
+            options.method = "POST";
+            options.body = json;
             headers["content-type"] = { key: "Content-Type", value: "application/json" };
-        } else {
-            request.open("GET", url, true);
         }
 
+        let flatHeaders: { [ key: string ]: string } = { };
         Object.keys(headers).forEach((key) => {
             let header = headers[key];
-            request.setRequestHeader(header.key, header.value);
+            flatHeaders[header.key] = header.value;
         });
+        options.headers = flatHeaders;
 
-        request.onreadystatechange = function() {
-            if (request.readyState !== 4) { return; }
-
-            if (request.status != 200) {
-                cancelTimeout();
-                // @TODO: not any!
-                let error: any = new Error("invalid response - " + request.status);
-                error.statusCode = request.status;
-                if (request.responseText) {
-                    error.responseText = request.responseText;
+        return fetch(url, options).then((response) => {
+            return response.text().then((body) => {
+                if (!response.ok) {
+                    errors.throwError("bad response", errors.SERVER_ERROR, {
+                        status: response.status,
+                        body: body,
+                        type: response.type,
+                        url: response.url
+                    });
                 }
-                reject(error);
-                return;
-            }
 
-            let result: any = null;
+                return body;
+            });
+
+        }).then((text) => {
+            let json: any = null;
             try {
-                result = JSON.parse(request.responseText);
+                json = JSON.parse(text);
             } catch (error) {
-                cancelTimeout();
-                // @TODO: not any!
-                let jsonError: any = new Error("invalid json response");
-                jsonError.orginialError = error;
-                jsonError.responseText = request.responseText;
-                if (json != null) {
-                    jsonError.requestBody = json;
-                }
-                jsonError.url = url;
-                reject(jsonError);
-                return;
+                errors.throwError("invalid JSON", errors.SERVER_ERROR, {
+                    body: text,
+                    error: error,
+                    url: url
+                });
             }
 
             if (processFunc) {
                 try {
-                    result = processFunc(result);
+                    json = processFunc(json);
                 } catch (error) {
-                    cancelTimeout();
-                    error.url = url;
-                    error.body = json;
-                    error.responseText = request.responseText;
-                    reject(error);
-                    return;
+                    errors.throwError("processing response error", errors.SERVER_ERROR, {
+                        body: json,
+                        error: error
+                    });
                 }
             }
 
+            return json;
+
+        }, (error) => {
+            throw error;
+        }).then((result) => {
             cancelTimeout();
             resolve(result);
-        };
-
-        request.onerror = function(error) {
+        }, (error) => {
             cancelTimeout();
             reject(error);
-        }
-
-        try {
-            if (json != null) {
-                request.send(json);
-            } else {
-                request.send();
-            }
-
-        } catch (error) {
-            cancelTimeout();
-            // @TODO: not any!
-            let connectionError: any = new Error("connection error");
-            connectionError.error = error;
-            reject(connectionError);
-        }
+        });
     });
 }
 

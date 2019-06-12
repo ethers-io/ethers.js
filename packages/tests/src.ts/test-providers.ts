@@ -460,7 +460,7 @@ describe('Test Basic Authentication', function() {
         url: string;
         user: string;
         password: string;
-        allowInsecure?: boolean;
+        allowInsecureAuthentication?: boolean;
     };
 
     function test(name: string, url: TestCase): void {
@@ -488,7 +488,7 @@ describe('Test Basic Authentication', function() {
         url: 'http://httpbin.org/basic-auth/user/passwd',
         user: 'user',
         password: 'passwd',
-        allowInsecure: true
+        allowInsecureAuthentication: true
     };
 
     test('secure url', secure);

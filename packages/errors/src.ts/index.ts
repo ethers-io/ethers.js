@@ -17,9 +17,14 @@ export const NOT_IMPLEMENTED = "NOT_IMPLEMENTED";
 //   - operation
 export const UNSUPPORTED_OPERATION = "UNSUPPORTED_OPERATION";
 
-// Network Error
+// Network Error (i.e. Ethereum Network, such as an invalid chain ID)
 export const NETWORK_ERROR = "NETWORK_ERROR";
 
+// Some sort of bad response from the server
+export const SERVER_ERROR = "SERVER_ERROR";
+
+// Timeout
+export const TIMEOUT = "TIMEOUT";
 
 ///////////////////
 // Operational  Errors
