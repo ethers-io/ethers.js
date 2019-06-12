@@ -6,10 +6,11 @@
 
 import { Wordlist } from "./wordlist";
 
-import { langEn as _en } from "./lang-en";
+import { langEn as en } from "./lang-en";
 
-const en: Wordlist = _en;
+const wordlists: { en: Wordlist } = { en: en };
 
 export {
-    en
+    Wordlist,
+    wordlists
 }

@@ -4,10 +4,6 @@
 // See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
 
-// The English language word list.
-// For additional word lists, please see @ethersproject//wordlists
-import { langEn } from "@ethersproject/wordlists/lang-en";
-
 import { ExternallyOwnedAccount } from "@ethersproject/abstract-signer";
 import { Base58 } from "@ethersproject/basex";
 import * as errors from "@ethersproject/errors";
@@ -19,10 +15,9 @@ import { defineReadOnly } from "@ethersproject/properties";
 import { SigningKey } from "@ethersproject/signing-key";
 import { computeHmac, ripemd160, sha256, SupportedAlgorithms } from "@ethersproject/sha2";
 import { computeAddress } from "@ethersproject/transactions";
+import { Wordlist, wordlists } from "@ethersproject/wordlists";
 
 const N = BigNumber.from("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
-
-import { Wordlist } from "@ethersproject/wordlists/wordlist";
 
 
 // "Bitcoin seed"
@@ -271,7 +266,7 @@ export function mnemonicToSeed(mnemonic: string, password?: string): string {
 }
 
 export function mnemonicToEntropy(mnemonic: string, wordlist?: Wordlist): string {
-    if (!wordlist) { wordlist = langEn; }
+    if (!wordlist) { wordlist = wordlists["en"]; }
 
     errors.checkNormalize();
 
@@ -348,7 +343,7 @@ export function entropyToMnemonic(entropy: BytesLike, wordlist?: Wordlist): stri
     indices[indices.length - 1] <<= checksumBits;
     indices[indices.length - 1] |= (checksum >> (8 - checksumBits));
 
-    if (!wordlist) { wordlist = langEn; }
+    if (!wordlist) { wordlist = wordlists["en"]; }
 
     return wordlist.join(indices.map((index) => wordlist.getWord(index)));
 }
