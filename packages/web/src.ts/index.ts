@@ -1,7 +1,6 @@
 "use strict";
 
-import { default as _fetch, Response, RequestInfo, RequestInit } from "node-fetch";
-const fetch: (url: RequestInfo, options: RequestInit) => Promise<Response> = _fetch.bind(global);
+import fetch from "cross-fetch";
 
 import { encode as base64Encode } from "@ethersproject/base64";
 import * as errors from "@ethersproject/errors";
