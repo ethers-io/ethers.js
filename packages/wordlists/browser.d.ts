@@ -1,3 +1,5 @@
 import { Wordlist } from "./wordlist";
-declare const en: Wordlist;
-export { en };
+declare const wordlists: {
+    en: Wordlist;
+};
+export { Wordlist, wordlists };

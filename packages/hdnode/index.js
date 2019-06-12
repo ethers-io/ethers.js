@@ -7,11 +7,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// See: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
-// See: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
-// The English language word list.
-// For additional word lists, please see @ethersproject//wordlists
-var lang_en_1 = require("@ethersproject/wordlists/lang-en");
 var basex_1 = require("@ethersproject/basex");
 var errors = __importStar(require("@ethersproject/errors"));
 var bytes_1 = require("@ethersproject/bytes");
@@ -22,6 +17,7 @@ var properties_1 = require("@ethersproject/properties");
 var signing_key_1 = require("@ethersproject/signing-key");
 var sha2_1 = require("@ethersproject/sha2");
 var transactions_1 = require("@ethersproject/transactions");
+var wordlists_1 = require("@ethersproject/wordlists");
 var N = bignumber_1.BigNumber.from("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 // "Bitcoin seed"
 var MasterSecret = strings_1.toUtf8Bytes("Bitcoin seed");
@@ -236,7 +232,7 @@ function mnemonicToSeed(mnemonic, password) {
 exports.mnemonicToSeed = mnemonicToSeed;
 function mnemonicToEntropy(mnemonic, wordlist) {
     if (!wordlist) {
-        wordlist = lang_en_1.langEn;
+        wordlist = wordlists_1.wordlists["en"];
     }
     errors.checkNormalize();
     var words = wordlist.split(mnemonic);
@@ -299,7 +295,7 @@ function entropyToMnemonic(entropy, wordlist) {
     indices[indices.length - 1] <<= checksumBits;
     indices[indices.length - 1] |= (checksum >> (8 - checksumBits));
     if (!wordlist) {
-        wordlist = lang_en_1.langEn;
+        wordlist = wordlists_1.wordlists["en"];
     }
     return wordlist.join(indices.map(function (index) { return wordlist.getWord(index); }));
 }

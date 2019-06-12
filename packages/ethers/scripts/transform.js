@@ -40,8 +40,7 @@ let show = { transformed: true, preserved: true };
         // We only use the version from this JSON package
         "elliptic/package.json" : ellipticPackage,
 
-        // Remove RIPEMD160 and unneeded hashing algorithms
-        //"hash.js/lib/hash/ripemd.js": "module.exports = {ripemd160: null}",
+        // Remove unneeded hashing algorithms
         "hash.js/lib/hash/sha/1.js": empty,
         "hash.js/lib/hash/sha/224.js": empty,
         "hash.js/lib/hash/sha/384.js": empty,
@@ -49,19 +48,11 @@ let show = { transformed: true, preserved: true };
         // Swap out borland for the random bytes we already have
         "brorand/index.js": brorand,
 
-//        "xmlhttprequest/lib/XMLHttpRequest.js": readShim("xmlhttprequest"),
-        // Used by sha3 if it exists; (so make it no exist)
+        // Used by sha3 if it exists; (so make it not exist)
         "process/browser.js": process,
         "timers-browserify/main.js": timers,
 
-//        "ethers.js/utils/base64.js": readShim("base64"),
-//        "ethers.js/providers/ipc-provider.js": readShim("empty"),
-//        "ethers.js/utils/hmac.js": readShim("hmac"),
-//        "ethers.js/utils/pbkdf2.js": readShim("pbkdf2"),
-//        "ethers.js/utils/random-bytes.js": readShim("random-bytes"),
-//        "ethers.js/utils/shims.js": readShim("shims"),
-//        "ethers.js/wordlists/index.js": readShim("wordlists"),
-
+        "ethers/platform.js": '"use strict";\n\nexports.platform = "browser\"',
     };
 
     function padding(length) {

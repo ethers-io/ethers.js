@@ -1,6 +1,6 @@
 import { ExternallyOwnedAccount } from "@ethersproject/abstract-signer";
 import { BytesLike } from "@ethersproject/bytes";
-import { Wordlist } from "@ethersproject/wordlists/wordlist";
+import { Wordlist } from "@ethersproject/wordlists";
 export declare const defaultPath = "m/44'/60'/0'/0/0";
 export declare class HDNode implements ExternallyOwnedAccount {
     readonly privateKey: string;
