@@ -11,8 +11,12 @@ exports.NOT_IMPLEMENTED = "NOT_IMPLEMENTED";
 // Unsupported Operation
 //   - operation
 exports.UNSUPPORTED_OPERATION = "UNSUPPORTED_OPERATION";
-// Network Error
+// Network Error (i.e. Ethereum Network, such as an invalid chain ID)
 exports.NETWORK_ERROR = "NETWORK_ERROR";
+// Some sort of bad response from the server
+exports.SERVER_ERROR = "SERVER_ERROR";
+// Timeout
+exports.TIMEOUT = "TIMEOUT";
 ///////////////////
 // Operational  Errors
 // Buffer Overrun

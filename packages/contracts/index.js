@@ -304,7 +304,8 @@ var Contract = /** @class */ (function () {
         errors.checkNew(_newTarget, Contract);
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
-        properties_1.defineReadOnly(this, "interface", _newTarget.getInterface(contractInterface));
+        console.log(properties_1.getStatic(_newTarget, "getInterface"));
+        properties_1.defineReadOnly(this, "interface", properties_1.getStatic((_newTarget), "getInterface")(contractInterface));
         if (abstract_signer_1.Signer.isSigner(signerOrProvider)) {
             properties_1.defineReadOnly(this, "provider", signerOrProvider.provider || null);
             properties_1.defineReadOnly(this, "signer", signerOrProvider);
@@ -675,7 +676,7 @@ var ContractFactory = /** @class */ (function () {
             errors.throwArgumentError("invalid signer", "signer", signer);
         }
         properties_1.defineReadOnly(this, "bytecode", bytecodeHex);
-        properties_1.defineReadOnly(this, "interface", _newTarget.getInterface(contractInterface));
+        properties_1.defineReadOnly(this, "interface", properties_1.getStatic((_newTarget), "getInterface")(contractInterface));
         properties_1.defineReadOnly(this, "signer", signer || null);
     }
     ContractFactory.prototype.getDeployTransaction = function () {

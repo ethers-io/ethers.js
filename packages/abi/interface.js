@@ -77,7 +77,7 @@ var Interface = /** @class */ (function () {
         properties_1.defineReadOnly(this, "fragments", abi.map(function (fragment) {
             return fragments_1.Fragment.from(fragment);
         }).filter(function (fragment) { return (fragment != null); }));
-        properties_1.defineReadOnly(this, "_abiCoder", _newTarget.getAbiCoder());
+        properties_1.defineReadOnly(this, "_abiCoder", properties_1.getStatic((_newTarget), "getAbiCoder")());
         properties_1.defineReadOnly(this, "functions", {});
         properties_1.defineReadOnly(this, "errors", {});
         properties_1.defineReadOnly(this, "events", {});

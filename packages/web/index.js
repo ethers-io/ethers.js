@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -7,7 +10,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var xmlhttprequest_1 = require("xmlhttprequest");
+var node_fetch_1 = __importDefault(require("node-fetch"));
+var fetch = node_fetch_1.default.bind(global);
 var base64_1 = require("@ethersproject/base64");
 var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
@@ -15,13 +19,22 @@ var strings_1 = require("@ethersproject/strings");
 function fetchJson(connection, json, processFunc) {
     var headers = {};
     var url = null;
+    // @TODO: Allow ConnectionInfo to override some of these values
+    var options = {
+        method: "GET",
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
+        redirect: "follow",
+        referrer: "client",
+    };
     var timeout = 2 * 60 * 1000;
     if (typeof (connection) === "string") {
         url = connection;
     }
     else if (typeof (connection) === "object") {
-        if (connection.url == null) {
-            errors.throwError("missing URL", errors.MISSING_ARGUMENT, { arg: "url" });
+        if (connection == null || connection.url == null) {
+            errors.throwArgumentError("missing URL", "connection.url", connection);
         }
         url = connection.url;
         if (typeof (connection.timeout) === "number" && connection.timeout > 0) {
@@ -33,7 +46,7 @@ function fetchJson(connection, json, processFunc) {
             }
         }
         if (connection.user != null && connection.password != null) {
-            if (url.substring(0, 6) !== "https:" && connection.allowInsecure !== true) {
+            if (url.substring(0, 6) !== "https:" && connection.allowInsecureAuthentication !== true) {
                 errors.throwError("basic authentication requires a secure https url", errors.INVALID_ARGUMENT, { arg: "url", url: url, user: connection.user, password: "[REDACTED]" });
             }
             var authorization = connection.user + ":" + connection.password;
@@ -44,18 +57,19 @@ function fetchJson(connection, json, processFunc) {
         }
     }
     return new Promise(function (resolve, reject) {
-        var request = new xmlhttprequest_1.XMLHttpRequest();
         var timer = null;
-        timer = setTimeout(function () {
-            if (timer == null) {
-                return;
-            }
-            timer = null;
-            reject(new Error("timeout"));
-            setTimeout(function () {
-                request.abort();
-            }, 0);
-        }, timeout);
+        if (timeout) {
+            timer = setTimeout(function () {
+                if (timer == null) {
+                    return;
+                }
+                timer = null;
+                reject(errors.makeError("timeout", errors.TIMEOUT, {}));
+                //setTimeout(() => {
+                //    request.abort();
+                //}, 0);
+            }, timeout);
+        }
         var cancelTimeout = function () {
             if (timer == null) {
                 return;
@@ -64,83 +78,61 @@ function fetchJson(connection, json, processFunc) {
             timer = null;
         };
         if (json) {
-            request.open("POST", url, true);
+            options.method = "POST";
+            options.body = json;
             headers["content-type"] = { key: "Content-Type", value: "application/json" };
         }
-        else {
-            request.open("GET", url, true);
-        }
+        var flatHeaders = {};
         Object.keys(headers).forEach(function (key) {
             var header = headers[key];
-            request.setRequestHeader(header.key, header.value);
+            flatHeaders[header.key] = header.value;
         });
-        request.onreadystatechange = function () {
-            if (request.readyState !== 4) {
-                return;
-            }
-            if (request.status != 200) {
-                cancelTimeout();
-                // @TODO: not any!
-                var error = new Error("invalid response - " + request.status);
-                error.statusCode = request.status;
-                if (request.responseText) {
-                    error.responseText = request.responseText;
+        options.headers = flatHeaders;
+        return fetch(url, options).then(function (response) {
+            return response.text().then(function (body) {
+                if (!response.ok) {
+                    errors.throwError("bad response", errors.SERVER_ERROR, {
+                        status: response.status,
+                        body: body,
+                        type: response.type,
+                        url: response.url
+                    });
                 }
-                reject(error);
-                return;
-            }
-            var result = null;
+                return body;
+            });
+        }).then(function (text) {
+            var json = null;
             try {
-                result = JSON.parse(request.responseText);
+                json = JSON.parse(text);
             }
             catch (error) {
-                cancelTimeout();
-                // @TODO: not any!
-                var jsonError = new Error("invalid json response");
-                jsonError.orginialError = error;
-                jsonError.responseText = request.responseText;
-                if (json != null) {
-                    jsonError.requestBody = json;
-                }
-                jsonError.url = url;
-                reject(jsonError);
-                return;
+                errors.throwError("invalid JSON", errors.SERVER_ERROR, {
+                    body: text,
+                    error: error,
+                    url: url
+                });
             }
             if (processFunc) {
                 try {
-                    result = processFunc(result);
+                    json = processFunc(json);
                 }
                 catch (error) {
-                    cancelTimeout();
-                    error.url = url;
-                    error.body = json;
-                    error.responseText = request.responseText;
-                    reject(error);
-                    return;
+                    errors.throwError("processing response error", errors.SERVER_ERROR, {
+                        body: json,
+                        error: error
+                    });
                 }
             }
+            return json;
+        }, function (error) {
+            throw error;
+        }).then(function (result) {
             cancelTimeout();
             resolve(result);
-        };
-        request.onerror = function (error) {
+        }, function (error) {
             cancelTimeout();
             reject(error);
-        };
-        try {
-            if (json != null) {
-                request.send(json);
-            }
-            else {
-                request.send();
-            }
-        }
-        catch (error) {
-            cancelTimeout();
-            // @TODO: not any!
-            var connectionError = new Error("connection error");
-            connectionError.error = error;
-            reject(connectionError);
-        }
+        });
     });
 }
 exports.fetchJson = fetchJson;

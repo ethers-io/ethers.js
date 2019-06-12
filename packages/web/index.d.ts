@@ -2,7 +2,7 @@ export declare type ConnectionInfo = {
     url: string;
     user?: string;
     password?: string;
-    allowInsecure?: boolean;
+    allowInsecureAuthentication?: boolean;
     timeout?: number;
     headers?: {
         [key: string]: string | number;

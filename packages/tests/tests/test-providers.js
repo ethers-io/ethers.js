@@ -470,7 +470,7 @@ describe('Test Basic Authentication', function () {
         url: 'http://httpbin.org/basic-auth/user/passwd',
         user: 'user',
         password: 'passwd',
-        allowInsecure: true
+        allowInsecureAuthentication: true
     };
     test('secure url', secure);
     test('insecure url', insecureForced);

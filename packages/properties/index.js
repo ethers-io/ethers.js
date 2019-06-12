@@ -16,6 +16,20 @@ function defineReadOnly(object, name, value) {
     });
 }
 exports.defineReadOnly = defineReadOnly;
+// Crawl up the constructor chain to find a static method
+function getStatic(ctor, key) {
+    for (var i = 0; i < 32; i++) {
+        if (ctor[key]) {
+            return ctor[key];
+        }
+        if (!ctor.prototype || typeof (ctor.prototype) !== "object") {
+            break;
+        }
+        ctor = Object.getPrototypeOf(ctor.prototype).constructor;
+    }
+    return null;
+}
+exports.getStatic = getStatic;
 function resolveProperties(object) {
     var result = {};
     var promises = [];
