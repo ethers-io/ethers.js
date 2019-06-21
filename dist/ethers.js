@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.30";
+exports.version = "4.0.31";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -12292,6 +12292,7 @@ utils.defineProperty(Web3Signer, 'onchange', {
 });
 
 */
+var _nextId = 42;
 var Web3Provider = /** @class */ (function (_super) {
     __extends(Web3Provider, _super);
     function Web3Provider(web3Provider, network) {
@@ -12325,7 +12326,7 @@ var Web3Provider = /** @class */ (function (_super) {
             var request = {
                 method: method,
                 params: params,
-                id: 42,
+                id: (_nextId++),
                 jsonrpc: "2.0"
             };
             _this._sendAsync(request, function (error, result) {
@@ -12335,10 +12336,10 @@ var Web3Provider = /** @class */ (function (_super) {
                 }
                 if (result.error) {
                     // @TODO: not any
-                    var error = new Error(result.error.message);
-                    error.code = result.error.code;
-                    error.data = result.error.data;
-                    reject(error);
+                    var error_1 = new Error(result.error.message);
+                    error_1.code = result.error.code;
+                    error_1.data = result.error.data;
+                    reject(error_1);
                     return;
                 }
                 resolve(result.result);
