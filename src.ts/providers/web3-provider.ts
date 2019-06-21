@@ -27,6 +27,8 @@ utils.defineProperty(Web3Signer, 'onchange', {
 
 */
 
+let _nextId = 42;
+
 export class Web3Provider extends JsonRpcProvider {
     readonly _web3Provider: AsyncSendable;
     private _sendAsync: (request: any, callback: (error: any, response: any) => void) => void;
@@ -65,10 +67,10 @@ export class Web3Provider extends JsonRpcProvider {
         }
 
         return new Promise((resolve, reject) => {
-            var request = {
+            let request = {
                 method: method,
                 params: params,
-                id: 42,
+                id: (_nextId++),
                 jsonrpc: "2.0"
             };
 
@@ -80,7 +82,7 @@ export class Web3Provider extends JsonRpcProvider {
 
                 if (result.error) {
                     // @TODO: not any
-                    var error: any = new Error(result.error.message);
+                    let error: any = new Error(result.error.message);
                     error.code = result.error.code;
                     error.data = result.error.data;
                     reject(error);
