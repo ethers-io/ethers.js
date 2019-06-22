@@ -39,6 +39,7 @@ export type UnsignedTransaction = {
 
 export interface Transaction {
     hash?: string;
+    digest?: string;
 
     to?: string;
     from?: string;
@@ -54,6 +55,48 @@ export interface Transaction {
     r?: string;
     s?: string;
     v?: number;
+}
+
+class TransactionImpl implements Transaction {
+    hash?: string;
+    digest?: string;
+
+    to?: string;
+    nonce: number;
+
+    gasLimit: BigNumber;
+    gasPrice: BigNumber;
+
+    data: string;
+    value: BigNumber;
+    chainId: number;
+
+    r?: string;
+    s?: string;
+    v?: number;
+
+    private _from: string;
+
+    get from(): string {
+        if (!this._from) {
+            let recoveryParam = this.v - 27;
+            if (this.chainId !== 0) {
+                recoveryParam -= this.chainId * 2 + 8;
+            }
+
+            try {
+                this._from = recoverAddress(this.digest, { r: hexlify(this.r), s: hexlify(this.s), recoveryParam: recoveryParam });
+            } catch (error) {
+                errors.info(error);
+            }
+        }
+
+        return this._from;
+    }
+
+    set from(value: string) {
+        this._from = value;
+    }
 }
 
 ///////////////////////////////
@@ -145,15 +188,14 @@ export function parse(rawTransaction: Arrayish): Transaction {
         errors.throwError('invalid raw transaction', errors.INVALID_ARGUMENT, { arg: 'rawTransactin', value: rawTransaction });
     }
 
-    let tx: Transaction = {
-        nonce:    handleNumber(transaction[0]).toNumber(),
-        gasPrice: handleNumber(transaction[1]),
-        gasLimit: handleNumber(transaction[2]),
-        to:       handleAddress(transaction[3]),
-        value:    handleNumber(transaction[4]),
-        data:     transaction[5],
-        chainId:  0
-    };
+    let tx: Transaction = new TransactionImpl();
+    tx.nonce = handleNumber(transaction[0]).toNumber();
+    tx.gasPrice = handleNumber(transaction[1]);
+    tx.gasLimit = handleNumber(transaction[2]);
+    tx.to = handleAddress(transaction[3]);
+    tx.value = handleNumber(transaction[4]);
+    tx.data = transaction[5];
+    tx.chainId = 0;
 
     // Legacy unsigned transaction
     if (transaction.length === 6) { return tx; }
@@ -180,23 +222,15 @@ export function parse(rawTransaction: Arrayish): Transaction {
         tx.chainId = Math.floor((tx.v - 35) / 2);
         if (tx.chainId < 0) { tx.chainId = 0; }
 
-        let recoveryParam = tx.v - 27;
-
         let raw = transaction.slice(0, 6);
 
         if (tx.chainId !== 0) {
             raw.push(hexlify(tx.chainId));
             raw.push('0x');
             raw.push('0x');
-            recoveryParam -= tx.chainId * 2 + 8;
         }
 
-        let digest = keccak256(RLP.encode(raw));
-        try {
-            tx.from = recoverAddress(digest, { r: hexlify(tx.r), s: hexlify(tx.s), recoveryParam: recoveryParam });
-        } catch (error) {
-            errors.info(error);
-        }
+        tx.digest = keccak256(RLP.encode(raw));
 
         tx.hash = keccak256(rawTransaction);
     }
