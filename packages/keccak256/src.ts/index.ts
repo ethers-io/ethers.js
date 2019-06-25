@@ -1,6 +1,6 @@
 "use strict";
 
-import sha3 = require("js-sha3");
+import sha3 from "js-sha3";
 
 import { arrayify, BytesLike } from "@ethersproject/bytes";
 
