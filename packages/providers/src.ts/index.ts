@@ -28,6 +28,7 @@ import { NodesmithProvider } from "./nodesmith-provider";
 import { Web3Provider } from "./web3-provider";
 
 import { AsyncSendable } from "./web3-provider";
+import IFrameProvider from './iframe-provider';
 
 
 ////////////////////////
@@ -51,7 +52,7 @@ export {
     JsonRpcProvider,
     NodesmithProvider,
     Web3Provider,
-
+    IFrameProvider,
     IpcProvider,
 
 

@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 exports.Provider = abstract_provider_1.Provider;
@@ -23,3 +26,5 @@ var nodesmith_provider_1 = require("./nodesmith-provider");
 exports.NodesmithProvider = nodesmith_provider_1.NodesmithProvider;
 var web3_provider_1 = require("./web3-provider");
 exports.Web3Provider = web3_provider_1.Web3Provider;
+var iframe_provider_1 = __importDefault(require("./iframe-provider"));
+exports.IFrameProvider = iframe_provider_1.default;

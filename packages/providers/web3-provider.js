@@ -52,6 +52,12 @@ var Web3Provider = /** @class */ (function (_super) {
         properties_1.defineReadOnly(_this, "_web3Provider", web3Provider);
         return _this;
     }
+    /**
+     * Generate a unique identifier for a JSON RPC.
+     */
+    Web3Provider.getUniqueId = function () {
+        return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+    };
     Web3Provider.prototype.send = function (method, params) {
         var _this = this;
         // Metamask complains about eth_sign (and on some versions hangs)
@@ -61,10 +67,11 @@ var Web3Provider = /** @class */ (function (_super) {
             params = [params[1], params[0]];
         }
         return new Promise(function (resolve, reject) {
+            var uniqueId = Web3Provider.getUniqueId();
             var request = {
                 method: method,
                 params: params,
-                id: 42,
+                id: uniqueId,
                 jsonrpc: "2.0"
             };
             _this._sendAsync(request, function (error, result) {

@@ -7,13 +7,20 @@ import { defineReadOnly } from "@ethersproject/properties";
 import { JsonRpcProvider } from "./json-rpc-provider";
 
 
+export type JsonRpc<TMethod = any, TParams = any> = {
+    jsonrpc: '2.0';
+    id: number;
+    method: TMethod;
+    params: TParams;
+}
+
 // Exported Types
 export type AsyncSendable = {
     isMetaMask?: boolean;
     host?: string;
     path?: string;
-    sendAsync?: (request: any, callback: (error: any, response: any) => void) => void
-    send?: (request: any, callback: (error: any, response: any) => void) => void
+    sendAsync?: (request: JsonRpc, callback: (error: any, response: any) => void) => void
+    send?: (request: JsonRpc, callback: (error: any, response: any) => void) => void
 }
 
 /*
@@ -53,6 +60,14 @@ export class Web3Provider extends JsonRpcProvider {
         defineReadOnly(this, "_web3Provider", web3Provider);
     }
 
+    /**
+     * Generate a unique identifier for a JSON RPC.
+     */
+    private static getUniqueId(): number {
+        return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+    }
+
+
     send(method: string, params: any): Promise<any> {
 
         // Metamask complains about eth_sign (and on some versions hangs)
@@ -63,10 +78,12 @@ export class Web3Provider extends JsonRpcProvider {
         }
 
         return new Promise((resolve, reject) => {
+            const uniqueId = Web3Provider.getUniqueId();
+
             let request = {
                 method: method,
                 params: params,
-                id: 42,
+                id: uniqueId,
                 jsonrpc: "2.0"
             };
 
