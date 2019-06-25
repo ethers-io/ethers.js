@@ -304,7 +304,6 @@ var Contract = /** @class */ (function () {
         errors.checkNew(_newTarget, Contract);
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
-        console.log(properties_1.getStatic(_newTarget, "getInterface"));
         properties_1.defineReadOnly(this, "interface", properties_1.getStatic((_newTarget), "getInterface")(contractInterface));
         if (abstract_signer_1.Signer.isSigner(signerOrProvider)) {
             properties_1.defineReadOnly(this, "provider", signerOrProvider.provider || null);
@@ -716,14 +715,16 @@ var ContractFactory = /** @class */ (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
-        // Get the deployment transaction (with optional overrides)
-        var tx = this.getDeployTransaction.apply(this, args);
-        // Send the deployment transaction
-        return this.signer.sendTransaction(tx).then(function (tx) {
-            var address = (_this.constructor).getContractAddress(tx);
-            var contract = (_this.constructor).getContract(address, _this.interface, _this.signer);
-            properties_1.defineReadOnly(contract, "deployTransaction", tx);
-            return contract;
+        return resolveAddresses(this.signer, args, this.interface.deploy.inputs).then(function (args) {
+            // Get the deployment transaction (with optional overrides)
+            var tx = _this.getDeployTransaction.apply(_this, args);
+            // Send the deployment transaction
+            return _this.signer.sendTransaction(tx).then(function (tx) {
+                var address = (_this.constructor).getContractAddress(tx);
+                var contract = (_this.constructor).getContract(address, _this.interface, _this.signer);
+                properties_1.defineReadOnly(contract, "deployTransaction", tx);
+                return contract;
+            });
         });
     };
     ContractFactory.prototype.attach = function (address) {

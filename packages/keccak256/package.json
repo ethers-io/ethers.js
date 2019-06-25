@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/keccak256",
-  "version": "5.0.0-beta.124",
+  "version": "5.0.0-beta.125",
   "description": "Error utility functions for ethers.",
   "main": "index.js",
   "scripts": {
@@ -19,5 +19,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0xa98932040e5874dff6fe54c61917a7ae1fd4cc40cbcba3c684c67e416c49b574"
+  "tarballHash": "0xef127b17ba325b05d0ca2f84c462fe2d795b9cfdf3528234f9fda2ae9570010f"
 }

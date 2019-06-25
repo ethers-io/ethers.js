@@ -13120,7 +13120,6 @@ var Contract = /** @class */ (function () {
         errors.checkNew(_newTarget, Contract);
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
-        console.log(properties_1.getStatic(_newTarget, "getInterface"));
         properties_1.defineReadOnly(this, "interface", properties_1.getStatic((_newTarget), "getInterface")(contractInterface));
         if (abstract_signer_1.Signer.isSigner(signerOrProvider)) {
             properties_1.defineReadOnly(this, "provider", signerOrProvider.provider || null);
@@ -13532,14 +13531,16 @@ var ContractFactory = /** @class */ (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
-        // Get the deployment transaction (with optional overrides)
-        var tx = this.getDeployTransaction.apply(this, args);
-        // Send the deployment transaction
-        return this.signer.sendTransaction(tx).then(function (tx) {
-            var address = (_this.constructor).getContractAddress(tx);
-            var contract = (_this.constructor).getContract(address, _this.interface, _this.signer);
-            properties_1.defineReadOnly(contract, "deployTransaction", tx);
-            return contract;
+        return resolveAddresses(this.signer, args, this.interface.deploy.inputs).then(function (args) {
+            // Get the deployment transaction (with optional overrides)
+            var tx = _this.getDeployTransaction.apply(_this, args);
+            // Send the deployment transaction
+            return _this.signer.sendTransaction(tx).then(function (tx) {
+                var address = (_this.constructor).getContractAddress(tx);
+                var contract = (_this.constructor).getContract(address, _this.interface, _this.signer);
+                properties_1.defineReadOnly(contract, "deployTransaction", tx);
+                return contract;
+            });
         });
     };
     ContractFactory.prototype.attach = function (address) {
@@ -14996,11 +14997,14 @@ exports.searchPath = searchPath;
 
 },{"@ethersproject/bytes":64,"@ethersproject/strings":102}],80:[function(require,module,exports){
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var sha3 = require("js-sha3");
+var js_sha3_1 = __importDefault(require("js-sha3"));
 var bytes_1 = require("@ethersproject/bytes");
 function keccak256(data) {
-    return '0x' + sha3.keccak_256(bytes_1.arrayify(data));
+    return '0x' + js_sha3_1.default.keccak_256(bytes_1.arrayify(data));
 }
 exports.keccak256 = keccak256;
 

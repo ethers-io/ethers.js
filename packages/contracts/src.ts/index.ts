@@ -439,7 +439,6 @@ export class Contract {
 
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
-console.log(getStatic(new.target, "getInterface"));
         defineReadOnly(this, "interface", getStatic<InterfaceFunc>(new.target, "getInterface")(contractInterface));
 
         if (Signer.isSigner(signerOrProvider)) {
@@ -889,16 +888,18 @@ export class ContractFactory {
     }
 
     deploy(...args: Array<any>): Promise<Contract> {
+        return resolveAddresses(this.signer, args, this.interface.deploy.inputs).then((args) => {
 
-        // Get the deployment transaction (with optional overrides)
-        let tx = this.getDeployTransaction(...args);
+            // Get the deployment transaction (with optional overrides)
+            let tx = this.getDeployTransaction(...args);
 
-        // Send the deployment transaction
-        return this.signer.sendTransaction(tx).then((tx) => {
-            let address = (<any>(this.constructor)).getContractAddress(tx);
-            let contract = (<any>(this.constructor)).getContract(address, this.interface, this.signer);
-            defineReadOnly(contract, "deployTransaction", tx);
-            return contract;
+            // Send the deployment transaction
+            return this.signer.sendTransaction(tx).then((tx) => {
+                let address = (<any>(this.constructor)).getContractAddress(tx);
+                let contract = (<any>(this.constructor)).getContract(address, this.interface, this.signer);
+                defineReadOnly(contract, "deployTransaction", tx);
+                return contract;
+            });
         });
     }
 

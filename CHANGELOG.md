@@ -3,7 +3,13 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.0-beta.140 (2019-06-12 1:25)
+ethers/v5.0.0-beta.141 (2019-06-24 21:25)
+-----------------------------------------
+
+  - Fix non-ES6 import in keccak256. ([5eb393d](https://github.com/ethers-io/ethers.js/commit/5eb393d828328b34567566d3c0d622b4aef1e202))
+  - Refactored wordlist exports to export Wordlist directly. ([746d255](https://github.com/ethers-io/ethers.js/commit/746d255b741844b615583b2de3ffd07631b4e872))
+
+ethers/v5.0.0-beta.140 (2019-06-12 01:25)
 ----------------------------------------
 
   - Move from node-fetch to cross-fetch; better browser fallback implementation. ([826ffbc](https://github.com/ethers-io/ethers.js/commit/826ffbc7c4ed1c301f30e6f264eedeaf3c243ca8))
