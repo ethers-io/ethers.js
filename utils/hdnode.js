@@ -205,7 +205,7 @@ function fromExtendedKey(extendedKey) {
             return new HDNode(_constructorGuard, null, bytes_1.hexlify(key), parentFingerprint, chainCode, index, depth, null, null);
         // Private Key
         case "0x0488ade4":
-        case "0x04358394 ":
+        case "0x04358394":
             if (key[0] !== 0) {
                 break;
             }
