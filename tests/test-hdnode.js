@@ -128,3 +128,44 @@ testEasySeed(ethers.wordlists.zh_cn, 'zh_cn');
 testEasySeed(ethers.wordlists.zh_tw, 'zh_tw');
 testEasySeed(ethers.wordlists.it, 'it');
 testEasySeed(ethers.wordlists.ko, 'ko');
+
+describe('Testnet Extended Key (#553)', function testMnemonic() {
+    var tests = [
+        {
+            name: "testnet extended public key",
+            extended: "tpubD6NzVbkrYhZ4Xbv9K5Ajt49a8XEPydLyfyFBNvqt3TRBa9S8L3PVoKBthRS8gimY2ZU2LQ3gXQKpXHRR6fu9W1rWp6jaBToyZ5ar7wbRNYs",
+            node: {
+                publicKey: "0x02ead6f326f28baf5af54ab4a1688d5784f92848bba73c004365da8871b1e8677e",
+                parentFingerprint: "0x00000000",
+                fingerprint: "0x68ff1104",
+                address: "0xc17Ee49BA46A41FBdA2306d00DA5Ce410925a7cb",
+                chainCode: "0x7eee1a867c6938de05f0677d290769a6db3d135d4c1b5ba84c753b56b027cfb7",
+                index: 0,
+                depth: 0
+            }
+        },
+        {
+            name: "testnet extended private key",
+            extended: "tprv8ZgxMBicQKsPe8tMRRW9UeVTZViTpJA56feQ6QoadBcnjfBMheZucpa2XHqF6iuRJSngkasg1yXD7VpGgGafFJwhY5RoETMSbiyEDBzxdCd",
+            node: {
+                privateKey: "0x949219063180d462349e358ec93cec1067fc346b37530e44b592a8a6dbe96d4c",
+                publicKey: "0x02ead6f326f28baf5af54ab4a1688d5784f92848bba73c004365da8871b1e8677e",
+                parentFingerprint: "0x00000000",
+                fingerprint: "0x68ff1104",
+                address: "0xc17Ee49BA46A41FBdA2306d00DA5Ce410925a7cb",
+                chainCode: "0x7eee1a867c6938de05f0677d290769a6db3d135d4c1b5ba84c753b56b027cfb7",
+                index: 0,
+                depth: 0
+            }
+        }
+    ];
+
+    tests.forEach(function(test) {
+        it(test.name, function() {
+            var node = ethers.utils.HDNode.fromExtendedKey(test.extended);
+            Object.keys(test.node).forEach(function(key) {
+                assert.equal(node[key], test.node[key], "does not match " + key);
+            });
+        });
+    });
+});
