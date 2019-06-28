@@ -3,6 +3,12 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.142 (2019-06-28 16:13)
+-----------------------------------------
+
+  - Do not require a Signer for contract.populateTransaction. ([0e78386](https://github.com/ethers-io/ethers.js/commit/0e78386a08d3d3a0a98c8d03cd665b8992ab3ea2))
+  - Bumping version of solc to 0.5.9. ([e2da447](https://github.com/ethers-io/ethers.js/commit/e2da447c7bc05937966bc4909c47291e4819d2a9))
+
 ethers/v5.0.0-beta.141 (2019-06-24 21:25)
 -----------------------------------------
 
@@ -10,7 +16,7 @@ ethers/v5.0.0-beta.141 (2019-06-24 21:25)
   - Refactored wordlist exports to export Wordlist directly. ([746d255](https://github.com/ethers-io/ethers.js/commit/746d255b741844b615583b2de3ffd07631b4e872))
 
 ethers/v5.0.0-beta.140 (2019-06-12 01:25)
-----------------------------------------
+-----------------------------------------
 
   - Move from node-fetch to cross-fetch; better browser fallback implementation. ([826ffbc](https://github.com/ethers-io/ethers.js/commit/826ffbc7c4ed1c301f30e6f264eedeaf3c243ca8))
   - Added getStatic with support for inheritance of static methods. ([5e4535e](https://github.com/ethers-io/ethers.js/commit/5e4535e939fdb9d9d23bd14b3e2590873d3eb508))

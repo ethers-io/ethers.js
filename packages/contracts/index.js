@@ -148,11 +148,11 @@ function runMethod(contract, functionName, options) {
                     method: method.format()
                 });
             }
-            if (!contract.signer) {
-                errors.throwError("sending a transaction require a signer", errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
-            }
             if (options.transaction) {
                 return properties_1.resolveProperties(tx);
+            }
+            if (!contract.signer) {
+                errors.throwError("sending a transaction require a signer", errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
             }
             return contract.signer.sendTransaction(tx).then(function (tx) {
                 var wait = tx.wait.bind(tx);

@@ -12964,11 +12964,11 @@ function runMethod(contract, functionName, options) {
                     method: method.format()
                 });
             }
-            if (!contract.signer) {
-                errors.throwError("sending a transaction require a signer", errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
-            }
             if (options.transaction) {
                 return properties_1.resolveProperties(tx);
+            }
+            if (!contract.signer) {
+                errors.throwError("sending a transaction require a signer", errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
             }
             return contract.signer.sendTransaction(tx).then(function (tx) {
                 var wait = tx.wait.bind(tx);
@@ -13850,7 +13850,7 @@ exports.info = info;
 },{}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "5.0.0-beta.141";
+exports.version = "5.0.0-beta.142";
 
 },{}],69:[function(require,module,exports){
 "use strict";
