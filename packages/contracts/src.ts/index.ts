@@ -218,11 +218,11 @@ function runMethod(contract: Contract, functionName: string, options: RunOptions
                 })
             }
 
+            if (options.transaction) { return resolveProperties(tx); }
+
             if (!contract.signer) {
                 errors.throwError("sending a transaction require a signer", errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" })
             }
-
-            if (options.transaction) { return resolveProperties(tx); }
 
             return contract.signer.sendTransaction(tx).then((tx) => {
                 let wait = tx.wait.bind(tx);
