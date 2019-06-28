@@ -240,7 +240,7 @@ export function fromExtendedKey(extendedKey: string): HDNode {
             return new HDNode(_constructorGuard, null, hexlify(key), parentFingerprint, chainCode, index, depth, null, null);
 
         // Private Key
-        case "0x0488ade4": case "0x04358394 ":
+        case "0x0488ade4": case "0x04358394":
             if (key[0] !== 0) { break; }
             return new HDNode(_constructorGuard, hexlify(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null, null);
     }
