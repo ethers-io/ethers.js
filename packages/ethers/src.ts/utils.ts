@@ -5,7 +5,7 @@ import { getAddress, getContractAddress, getIcapAddress, isAddress } from "@ethe
 import * as base64 from "@ethersproject/base64";
 import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexValue, hexZeroPad, isHexString, joinSignature, zeroPad, splitSignature, stripZeros } from "@ethersproject/bytes";
 import { hashMessage, id, namehash } from "@ethersproject/hash";
-import { entropyToMnemonic, HDNode, isValidMnemonic, mnemonicToEntropy, mnemonicToSeed } from "@ethersproject/hdnode";
+import { defaultPath, entropyToMnemonic, HDNode, isValidMnemonic, mnemonicToEntropy, mnemonicToSeed } from "@ethersproject/hdnode";
 import { getJsonWalletAddress } from "@ethersproject/json-wallets";
 import { keccak256 } from "@ethersproject/keccak256";
 import { sha256 } from "@ethersproject/sha2";
@@ -64,6 +64,7 @@ export {
     stripZeros,
     zeroPad,
 
+    defaultPath,
     HDNode,
     SigningKey,
 
