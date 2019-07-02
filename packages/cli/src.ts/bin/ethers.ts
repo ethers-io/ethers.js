@@ -314,6 +314,7 @@ class SendPlugin extends Plugin {
     toAddress: string;
     value: ethers.BigNumber;
     allowZero: boolean;
+    data: string;
 
     static getHelp(): Help {
         return {
@@ -327,6 +328,10 @@ class SendPlugin extends Plugin {
             {
                 name: "[ --allow-zero ]",
                 help: "Allow sending to the address zero"
+            },
+            {
+                name: "[ --data DATA ]",
+                help: "Include data in the transaction"
             }
         ];
     }
@@ -338,6 +343,7 @@ class SendPlugin extends Plugin {
             this.throwUsageError("send requires exacly one account");
         }
 
+        this.data = ethers.utils.hexlify(argParser.consumeOption("data") || "0x");
         this.allowZero = argParser.consumeFlag("allow-zero");
     }
 
@@ -355,6 +361,7 @@ class SendPlugin extends Plugin {
     async run(): Promise<void> {
         await this.accounts[0].sendTransaction({
             to: this.toAddress,
+            data: this.data,
             value: this.value
         });;
     }

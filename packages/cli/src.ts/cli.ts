@@ -12,6 +12,19 @@ class UsageError extends Error { }
 /////////////////////////////
 // Signer
 
+/*
+const signerStates = new WeakMap();
+
+class SignerState {
+    signerFunc: () => Promise<ethers.Signer>;
+    signer: ethers.Signer;
+    alwaysAllow: boolean;
+
+    static get(wrapper: WrappedSigner): SignerState {
+        return signerStates.get(wrapper);
+    }
+}
+*/
 const signerFuncs = new WeakMap();
 const signers = new WeakMap();
 const alwaysAllow = new WeakMap();
@@ -147,6 +160,25 @@ class WrappedSigner extends ethers.Signer {
         return result;
     }
 
+    async populateTransaction(transactionRequest: ethers.providers.TransactionRequest): Promise<ethers.providers.TransactionRequest> {
+        transactionRequest = ethers.utils.shallowCopy(transactionRequest);
+
+        if (this.plugin.gasPrice != null) {
+            transactionRequest.gasPrice = this.plugin.gasPrice;
+        }
+
+        if (this.plugin.gasLimit != null) {
+            transactionRequest.gasLimit = this.plugin.gasLimit;
+        }
+
+        if (this.plugin.nonce != null) {
+            transactionRequest.nonce = this.plugin.nonce;
+        }
+
+        let signer = await getSigner(this);
+        return signer.populateTransaction(transactionRequest);
+    }
+
     async signTransaction(transactionRequest: ethers.providers.TransactionRequest): Promise<string> {
         let signer = await getSigner(this);
 
@@ -162,7 +194,6 @@ class WrappedSigner extends ethers.Signer {
         info["Gas Limit"] = ethers.BigNumber.from(tx.gasLimit || 0).toString();
         info["Gas Price"] = (ethers.utils.formatUnits(tx.gasPrice || 0, "gwei") + " gwei"),
         info["Chain ID"] = (tx.chainId || 0);
-        info["Data"] = ethers.utils.hexlify(tx.data || "0x");
         info["Network"] = network.name;
 
         dump("Transaction:", info);
@@ -189,7 +220,7 @@ class WrappedSigner extends ethers.Signer {
 
         let network = await this.provider.getNetwork();
 
-        let tx: any = await signer.populateTransaction(transactionRequest);
+        let tx: any = await this.populateTransaction(transactionRequest);
         tx = await ethers.utils.resolveProperties(tx);
 
         let info: any = { };
@@ -200,7 +231,6 @@ class WrappedSigner extends ethers.Signer {
         info["Gas Limit"] = ethers.BigNumber.from(tx.gasLimit || 0).toString();
         info["Gas Price"] = (ethers.utils.formatUnits(tx.gasPrice || 0, "gwei") + " gwei"),
         info["Chain ID"] = (tx.chainId || 0);
-        info["Data"] = ethers.utils.hexlify(tx.data || "0x");
         info["Network"] = network.name;
 
         dump("Transaction:", info);
@@ -221,6 +251,16 @@ class WrappedSigner extends ethers.Signer {
     }
 }
 
+class OfflineProvider extends ethers.providers.BaseProvider {
+    perform(method: string, params: any): Promise<any> {
+        if (method === "sendTransaction") {
+            console.log("Signed Transaction:");
+            console.log(params.signedTransaction);
+            return Promise.resolve(ethers.utils.keccak256(params.signedTransaction));
+        }
+        return super.perform(method, params);
+    }
+}
 
 /////////////////////////////
 // Argument Parser
@@ -327,12 +367,12 @@ export class ArgParser {
 //   - JSON Wallet filename (which will require a password to unlock)
 //   - raw private key
 //   - mnemonic
-async function loadAccount(arg: string, plugin: Plugin): Promise<WrappedSigner> {
+async function loadAccount(arg: string, plugin: Plugin, preventFile?: boolean): Promise<WrappedSigner> {
 
     // Secure entry; use prompt with mask
     if (arg === "-") {
         let content = await getPassword("Private Key / Mnemonic:");
-        return loadAccount(content, plugin);
+        return loadAccount(content, plugin, true);
     }
 
     // Raw private key
@@ -343,13 +383,27 @@ async function loadAccount(arg: string, plugin: Plugin): Promise<WrappedSigner> 
 
     // Mnemonic
     if (ethers.utils.isValidMnemonic(arg)) {
-        let signer = ethers.Wallet.fromMnemonic(arg).connect(plugin.provider);
-        return Promise.resolve(new WrappedSigner(signer.getAddress(), () => Promise.resolve(signer), plugin));
+        let signerPromise: Promise<ethers.Wallet> = null;
+        if (plugin.mnemonicPassword) {
+            signerPromise = getPassword("Password (mnemonic): ").then((password) => {
+                let node = ethers.utils.HDNode.fromMnemonic(arg, password).derivePath(ethers.utils.defaultPath);
+                return new ethers.Wallet(node.privateKey, plugin.provider);
+            });
+        } else {
+            signerPromise = Promise.resolve(ethers.Wallet.fromMnemonic(arg).connect(plugin.provider));
+        }
+
+        return Promise.resolve(new WrappedSigner(
+             signerPromise.then((wallet) => wallet.getAddress()),
+             () => signerPromise,
+             plugin
+        ));
     }
 
     // Check for a JSON wallet
     try {
         let content = fs.readFileSync(arg).toString();
+
         let address = ethers.utils.getJsonWalletAddress(content);
         if (address) {
             return Promise.resolve(new WrappedSigner(
@@ -363,7 +417,10 @@ async function loadAccount(arg: string, plugin: Plugin): Promise<WrappedSigner> 
                     });
                 },
                 plugin));
+        } else {
+            return loadAccount(content.trim(), plugin, true);
         }
+
     } catch (error) {
         if (error.message === "cancelled") {
             throw new Error("Cancelled.");
@@ -396,12 +453,12 @@ export class Plugin {
     provider: ethers.providers.Provider;
 
     accounts: Array<WrappedSigner>;
+    mnemonicPassword: boolean;
 
     gasLimit: ethers.BigNumber;
     gasPrice: ethers.BigNumber;
     nonce: number;
     data: string;
-    value: ethers.BigNumber;
     yes: boolean;
 
     constructor() {
@@ -449,17 +506,23 @@ export class Plugin {
             providers.push(new ethers.providers.NodesmithProvider(network));
         }
 
+        if (argParser.consumeFlag("offline")) {
+            providers.push(new OfflineProvider(network));
+        }
+
         if (providers.length === 1) {
-            this.provider = providers[0];
+            ethers.utils.defineReadOnly(this, "provider", providers[0]);
         } else if (providers.length) {
-            this.provider = new ethers.providers.FallbackProvider(providers);
+            ethers.utils.defineReadOnly(this, "provider", new ethers.providers.FallbackProvider(providers));
         } else {
-            this.provider = ethers.getDefaultProvider(network);
+            ethers.utils.defineReadOnly(this, "provider", ethers.getDefaultProvider(network));
         }
 
 
         /////////////////////
         // Accounts
+
+        ethers.utils.defineReadOnly(this, "mnemonicPassword", argParser.consumeFlag("mnemonic-password"));
 
         let accounts: Array<WrappedSigner> = [ ];
 
@@ -501,7 +564,7 @@ export class Plugin {
             }
         }
 
-        this.accounts = accounts;
+        ethers.utils.defineReadOnly(this, "accounts", Object.freeze(accounts));
 
 
         /////////////////////
@@ -509,12 +572,16 @@ export class Plugin {
 
         let gasPrice = argParser.consumeOption("gas-price");
         if (gasPrice) {
-            this.gasPrice = ethers.utils.parseUnits(gasPrice, "gwei");
+            ethers.utils.defineReadOnly(this, "gasPrice", ethers.utils.parseUnits(gasPrice, "gwei"));
+        } else {
+            ethers.utils.defineReadOnly(this, "gasPrice", null);
         }
 
         let gasLimit = argParser.consumeOption("gas-limit");
         if (gasLimit) {
-            this.gasLimit = ethers.BigNumber.from(gasLimit);
+            ethers.utils.defineReadOnly(this, "gasLimit", ethers.BigNumber.from(gasLimit));
+        } else {
+            ethers.utils.defineReadOnly(this, "gasLimit", null);
         }
 
         let nonce = argParser.consumeOption("nonce");
@@ -522,26 +589,16 @@ export class Plugin {
             this.nonce = ethers.BigNumber.from(nonce).toNumber();
         }
 
-        let value = argParser.consumeOption("value");
-        if (value) {
-            this.value = ethers.utils.parseEther(value);
-        }
-
-        let data = argParser.consumeOption("data");
-        if (data) {
-            this.data = ethers.utils.hexlify(data);
-        }
-
 
         // Now wait for all asynchronous options to load
 
         runners.push(this.provider.getNetwork().then((network) => {
-            this.network = network;
+            ethers.utils.defineReadOnly(this, "network", Object.freeze(network));
         }, (error) => {
-            this.network = {
+            ethers.utils.defineReadOnly(this, "network", Object.freeze({
                 chainId: 0,
                 name: "no-network"
-            }
+            }));
         }));
 
         try {
@@ -592,7 +649,6 @@ export class Plugin {
 
 export class CLI {
     readonly defaultCommand: string;
-    //readonly plugins: { [ command: string ]: { new(...args: any[]): Plugin; getHelp(): Help; } };
     readonly plugins: { [ command: string ]: PluginType };
 
     constructor(defaultCommand: string) {
@@ -646,7 +702,7 @@ export class CLI {
         }
 
         console.log("ACCOUNT OPTIONS");
-        console.log("  --account FILENAME          Load a JSON Wallet (crowdsale or keystore)");
+        console.log("  --account FILENAME          Load from a file (JSON, RAW or mnemonic)");
         console.log("  --account RAW_KEY           Use a private key (insecure *)");
         console.log("  --account 'MNEMONIC'        Use a mnemonic (insecure *)");
         console.log("  --account -                 Use secure entry for a raw key or mnemonic");
@@ -654,6 +710,7 @@ export class CLI {
         console.log("  --account-void ENS_NAME     Add the resolved address as a void signer");
         console.log("  --account-rpc ADDRESS       Add the address from a JSON-RPC provider");
         console.log("  --account-rpc INDEX         Add the index from a JSON-RPC provider");
+        console.log("  --mnemonic-password         Prompt for a password for mnemonics");
         console.log("");
         console.log("PROVIDER OPTIONS (default: getDefaultProvider)");
         console.log("  --alchemy                   Include Alchemy");
@@ -661,6 +718,7 @@ export class CLI {
         console.log("  --infura                    Include INFURA");
         console.log("  --nodesmith                 Include nodesmith");
         console.log("  --rpc URL                   Include a custom JSON-RPC");
+        console.log("  --offline                   Dump signed transactions (no send)");
         console.log("  --network NETWORK           Network to connect to (default: homestead)");
         console.log("");
         console.log("TRANSACTION OPTIONS (default: query the network)");
@@ -696,14 +754,14 @@ export class CLI {
         {
             let argParser = new ArgParser(args);
 
-            [ "debug", "help", "yes"].forEach((key) => {
+            [ "debug", "help", "mnemonic-password", "offline", "yes"].forEach((key) => {
                 argParser.consumeFlag(key);
             });
 
             [ "alchemy", "etherscan", "infura", "nodesmith" ].forEach((flag) => {
                 argParser.consumeFlag(flag);
             });
-            [ "network", "rpc", "account", "account-rpc", "account-void", "gas-price", "gas-limit", "nonce", "data" ].forEach((option) => {
+            [ "network", "rpc", "account", "account-rpc", "account-void", "gas-price", "gas-limit", "nonce" ].forEach((option) => {
                 argParser.consumeOption(option);
             });
 
