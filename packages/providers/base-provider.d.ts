@@ -44,6 +44,7 @@ export declare class BaseProvider extends Provider {
     ready: Promise<Network>;
     constructor(network: Networkish | Promise<Network>);
     static getFormatter(): Formatter;
+    static getNetwork(network: Networkish): Network;
     poll(): void;
     resetEventsBlock(blockNumber: number): void;
     readonly network: Network;

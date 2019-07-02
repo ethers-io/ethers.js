@@ -445,6 +445,10 @@ var SendPlugin = /** @class */ (function (_super) {
             {
                 name: "[ --allow-zero ]",
                 help: "Allow sending to the address zero"
+            },
+            {
+                name: "[ --data DATA ]",
+                help: "Include data in the transaction"
             }
         ];
     };
@@ -458,6 +462,7 @@ var SendPlugin = /** @class */ (function (_super) {
                         if (this.accounts.length !== 1) {
                             this.throwUsageError("send requires exacly one account");
                         }
+                        this.data = ethers_1.ethers.utils.hexlify(argParser.consumeOption("data") || "0x");
                         this.allowZero = argParser.consumeFlag("allow-zero");
                         return [2 /*return*/];
                 }
@@ -491,6 +496,7 @@ var SendPlugin = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.accounts[0].sendTransaction({
                             to: this.toAddress,
+                            data: this.data,
                             value: this.value
                         })];
                     case 1:

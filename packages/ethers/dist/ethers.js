@@ -13850,7 +13850,7 @@ exports.info = info;
 },{}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "5.0.0-beta.142";
+exports.version = "5.0.0-beta.143";
 
 },{}],69:[function(require,module,exports){
 "use strict";
@@ -13975,6 +13975,7 @@ exports.hashMessage = hash_1.hashMessage;
 exports.id = hash_1.id;
 exports.namehash = hash_1.namehash;
 var hdnode_1 = require("@ethersproject/hdnode");
+exports.defaultPath = hdnode_1.defaultPath;
 exports.entropyToMnemonic = hdnode_1.entropyToMnemonic;
 exports.HDNode = hdnode_1.HDNode;
 exports.isValidMnemonic = hdnode_1.isValidMnemonic;
@@ -15560,7 +15561,7 @@ var BaseProvider = /** @class */ (function (_super) {
             _this.ready.catch(function (error) { });
         }
         else {
-            var knownNetwork = networks_1.getNetwork((network == null) ? "homestead" : network);
+            var knownNetwork = properties_1.getStatic((_newTarget), "getNetwork")(network);
             if (knownNetwork) {
                 properties_1.defineReadOnly(_this, "_network", knownNetwork);
                 properties_1.defineReadOnly(_this, "ready", Promise.resolve(_this._network));
@@ -15582,6 +15583,9 @@ var BaseProvider = /** @class */ (function (_super) {
             defaultFormatter = new formatter_1.Formatter();
         }
         return defaultFormatter;
+    };
+    BaseProvider.getNetwork = function (network) {
+        return networks_1.getNetwork((network == null) ? "homestead" : network);
     };
     BaseProvider.prototype.poll = function () {
         var _this = this;

@@ -63,6 +63,19 @@ var UsageError = /** @class */ (function (_super) {
 }(Error));
 /////////////////////////////
 // Signer
+/*
+const signerStates = new WeakMap();
+
+class SignerState {
+    signerFunc: () => Promise<ethers.Signer>;
+    signer: ethers.Signer;
+    alwaysAllow: boolean;
+
+    static get(wrapper: WrappedSigner): SignerState {
+        return signerStates.get(wrapper);
+    }
+}
+*/
 var signerFuncs = new WeakMap();
 var signers = new WeakMap();
 var alwaysAllow = new WeakMap();
@@ -223,6 +236,30 @@ var WrappedSigner = /** @class */ (function (_super) {
             });
         });
     };
+    WrappedSigner.prototype.populateTransaction = function (transactionRequest) {
+        return __awaiter(this, void 0, void 0, function () {
+            var signer;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        transactionRequest = ethers_1.ethers.utils.shallowCopy(transactionRequest);
+                        if (this.plugin.gasPrice != null) {
+                            transactionRequest.gasPrice = this.plugin.gasPrice;
+                        }
+                        if (this.plugin.gasLimit != null) {
+                            transactionRequest.gasLimit = this.plugin.gasLimit;
+                        }
+                        if (this.plugin.nonce != null) {
+                            transactionRequest.nonce = this.plugin.nonce;
+                        }
+                        return [4 /*yield*/, getSigner(this)];
+                    case 1:
+                        signer = _a.sent();
+                        return [2 /*return*/, signer.populateTransaction(transactionRequest)];
+                }
+            });
+        });
+    };
     WrappedSigner.prototype.signTransaction = function (transactionRequest) {
         return __awaiter(this, void 0, void 0, function () {
             var signer, network, tx, info, result, signature;
@@ -251,7 +288,6 @@ var WrappedSigner = /** @class */ (function (_super) {
                         info["Gas Limit"] = ethers_1.ethers.BigNumber.from(tx.gasLimit || 0).toString();
                         info["Gas Price"] = (ethers_1.ethers.utils.formatUnits(tx.gasPrice || 0, "gwei") + " gwei"),
                             info["Chain ID"] = (tx.chainId || 0);
-                        info["Data"] = ethers_1.ethers.utils.hexlify(tx.data || "0x");
                         info["Network"] = network.name;
                         dump("Transaction:", info);
                         return [4 /*yield*/, isAllowed(this, "Sign Transaction?")];
@@ -285,7 +321,7 @@ var WrappedSigner = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.provider.getNetwork()];
                     case 2:
                         network = _a.sent();
-                        return [4 /*yield*/, signer.populateTransaction(transactionRequest)];
+                        return [4 /*yield*/, this.populateTransaction(transactionRequest)];
                     case 3:
                         tx = _a.sent();
                         return [4 /*yield*/, ethers_1.ethers.utils.resolveProperties(tx)];
@@ -305,7 +341,6 @@ var WrappedSigner = /** @class */ (function (_super) {
                         info["Gas Limit"] = ethers_1.ethers.BigNumber.from(tx.gasLimit || 0).toString();
                         info["Gas Price"] = (ethers_1.ethers.utils.formatUnits(tx.gasPrice || 0, "gwei") + " gwei"),
                             info["Chain ID"] = (tx.chainId || 0);
-                        info["Data"] = ethers_1.ethers.utils.hexlify(tx.data || "0x");
                         info["Network"] = network.name;
                         dump("Transaction:", info);
                         return [4 /*yield*/, isAllowed(this, "Send Transaction?")];
@@ -336,6 +371,21 @@ var WrappedSigner = /** @class */ (function (_super) {
     };
     return WrappedSigner;
 }(ethers_1.ethers.Signer));
+var OfflineProvider = /** @class */ (function (_super) {
+    __extends(OfflineProvider, _super);
+    function OfflineProvider() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    OfflineProvider.prototype.perform = function (method, params) {
+        if (method === "sendTransaction") {
+            console.log("Signed Transaction:");
+            console.log(params.signedTransaction);
+            return Promise.resolve(ethers_1.ethers.utils.keccak256(params.signedTransaction));
+        }
+        return _super.prototype.perform.call(this, method, params);
+    };
+    return OfflineProvider;
+}(ethers_1.ethers.providers.BaseProvider));
 /////////////////////////////
 // Argument Parser
 var ArgParser = /** @class */ (function () {
@@ -434,9 +484,9 @@ exports.ArgParser = ArgParser;
 //   - JSON Wallet filename (which will require a password to unlock)
 //   - raw private key
 //   - mnemonic
-function loadAccount(arg, plugin) {
+function loadAccount(arg, plugin, preventFile) {
     return __awaiter(this, void 0, void 0, function () {
-        var content, signer_1, signer_2, content_1, address;
+        var content, signer_1, signerPromise_1, content_1, address;
         var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -445,7 +495,7 @@ function loadAccount(arg, plugin) {
                     return [4 /*yield*/, prompt_1.getPassword("Private Key / Mnemonic:")];
                 case 1:
                     content = _a.sent();
-                    return [2 /*return*/, loadAccount(content, plugin)];
+                    return [2 /*return*/, loadAccount(content, plugin, true)];
                 case 2:
                     // Raw private key
                     if (ethers_1.ethers.utils.isHexString(arg, 32)) {
@@ -454,8 +504,17 @@ function loadAccount(arg, plugin) {
                     }
                     // Mnemonic
                     if (ethers_1.ethers.utils.isValidMnemonic(arg)) {
-                        signer_2 = ethers_1.ethers.Wallet.fromMnemonic(arg).connect(plugin.provider);
-                        return [2 /*return*/, Promise.resolve(new WrappedSigner(signer_2.getAddress(), function () { return Promise.resolve(signer_2); }, plugin))];
+                        signerPromise_1 = null;
+                        if (plugin.mnemonicPassword) {
+                            signerPromise_1 = prompt_1.getPassword("Password (mnemonic): ").then(function (password) {
+                                var node = ethers_1.ethers.utils.HDNode.fromMnemonic(arg, password).derivePath(ethers_1.ethers.utils.defaultPath);
+                                return new ethers_1.ethers.Wallet(node.privateKey, plugin.provider);
+                            });
+                        }
+                        else {
+                            signerPromise_1 = Promise.resolve(ethers_1.ethers.Wallet.fromMnemonic(arg).connect(plugin.provider));
+                        }
+                        return [2 /*return*/, Promise.resolve(new WrappedSigner(signerPromise_1.then(function (wallet) { return wallet.getAddress(); }), function () { return signerPromise_1; }, plugin))];
                     }
                     // Check for a JSON wallet
                     try {
@@ -476,6 +535,9 @@ function loadAccount(arg, plugin) {
                                         }
                                     });
                                 }); }, plugin))];
+                        }
+                        else {
+                            return [2 /*return*/, loadAccount(content_1.trim(), plugin, true)];
                         }
                     }
                     catch (error) {
@@ -502,7 +564,7 @@ var Plugin = /** @class */ (function () {
     };
     Plugin.prototype.prepareOptions = function (argParser) {
         return __awaiter(this, void 0, void 0, function () {
-            var runners, network, providers, rpc, accounts, accountOptions, _loop_1, this_1, i, gasPrice, gasLimit, nonce, value, data, error_2;
+            var runners, network, providers, rpc, accounts, accountOptions, _loop_1, this_1, i, gasPrice, gasLimit, nonce, error_2;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -529,19 +591,25 @@ var Plugin = /** @class */ (function () {
                         if (argParser.consumeFlag("nodesmith")) {
                             providers.push(new ethers_1.ethers.providers.NodesmithProvider(network));
                         }
+                        if (argParser.consumeFlag("offline")) {
+                            providers.push(new OfflineProvider(network));
+                        }
                         if (providers.length === 1) {
-                            this.provider = providers[0];
+                            ethers_1.ethers.utils.defineReadOnly(this, "provider", providers[0]);
                         }
                         else if (providers.length) {
-                            this.provider = new ethers_1.ethers.providers.FallbackProvider(providers);
+                            ethers_1.ethers.utils.defineReadOnly(this, "provider", new ethers_1.ethers.providers.FallbackProvider(providers));
                         }
                         else {
-                            this.provider = ethers_1.ethers.getDefaultProvider(network);
+                            ethers_1.ethers.utils.defineReadOnly(this, "provider", ethers_1.ethers.getDefaultProvider(network));
                         }
+                        /////////////////////
+                        // Accounts
+                        ethers_1.ethers.utils.defineReadOnly(this, "mnemonicPassword", argParser.consumeFlag("mnemonic-password"));
                         accounts = [];
                         accountOptions = argParser.consumeMultiOptions(["account", "account-rpc", "account-void"]);
                         _loop_1 = function (i) {
-                            var account, _a, wrappedSigner, signer_3, addressPromise, signerPromise_1;
+                            var account, _a, wrappedSigner, signer_2, addressPromise, signerPromise_2;
                             return __generator(this, function (_b) {
                                 switch (_b.label) {
                                     case 0:
@@ -563,14 +631,14 @@ var Plugin = /** @class */ (function () {
                                             this_1.throwUsageError("--account-rpc requires exactly one JSON-RPC provider");
                                         }
                                         try {
-                                            signer_3 = null;
+                                            signer_2 = null;
                                             if (account.value.match(/^[0-9]+$/)) {
-                                                signer_3 = rpc[0].getSigner(parseInt(account.value));
+                                                signer_2 = rpc[0].getSigner(parseInt(account.value));
                                             }
                                             else {
-                                                signer_3 = rpc[0].getSigner(ethers_1.ethers.utils.getAddress(account.value));
+                                                signer_2 = rpc[0].getSigner(ethers_1.ethers.utils.getAddress(account.value));
                                             }
-                                            accounts.push(new WrappedSigner(signer_3.getAddress(), function () { return Promise.resolve(signer_3); }, this_1));
+                                            accounts.push(new WrappedSigner(signer_2.getAddress(), function () { return Promise.resolve(signer_2); }, this_1));
                                         }
                                         catch (error) {
                                             this_1.throwUsageError("invalid --account-rpc - " + account.value);
@@ -579,10 +647,10 @@ var Plugin = /** @class */ (function () {
                                     case 4:
                                         {
                                             addressPromise = this_1.provider.resolveName(account.value);
-                                            signerPromise_1 = addressPromise.then(function (addr) {
+                                            signerPromise_2 = addressPromise.then(function (addr) {
                                                 return new ethers_1.ethers.VoidSigner(addr, _this.provider);
                                             });
-                                            accounts.push(new WrappedSigner(addressPromise, function () { return signerPromise_1; }, this_1));
+                                            accounts.push(new WrappedSigner(addressPromise, function () { return signerPromise_2; }, this_1));
                                             return [3 /*break*/, 5];
                                         }
                                         _b.label = 5;
@@ -603,35 +671,33 @@ var Plugin = /** @class */ (function () {
                         i++;
                         return [3 /*break*/, 1];
                     case 4:
-                        this.accounts = accounts;
+                        ethers_1.ethers.utils.defineReadOnly(this, "accounts", Object.freeze(accounts));
                         gasPrice = argParser.consumeOption("gas-price");
                         if (gasPrice) {
-                            this.gasPrice = ethers_1.ethers.utils.parseUnits(gasPrice, "gwei");
+                            ethers_1.ethers.utils.defineReadOnly(this, "gasPrice", ethers_1.ethers.utils.parseUnits(gasPrice, "gwei"));
+                        }
+                        else {
+                            ethers_1.ethers.utils.defineReadOnly(this, "gasPrice", null);
                         }
                         gasLimit = argParser.consumeOption("gas-limit");
                         if (gasLimit) {
-                            this.gasLimit = ethers_1.ethers.BigNumber.from(gasLimit);
+                            ethers_1.ethers.utils.defineReadOnly(this, "gasLimit", ethers_1.ethers.BigNumber.from(gasLimit));
+                        }
+                        else {
+                            ethers_1.ethers.utils.defineReadOnly(this, "gasLimit", null);
                         }
                         nonce = argParser.consumeOption("nonce");
                         if (nonce) {
                             this.nonce = ethers_1.ethers.BigNumber.from(nonce).toNumber();
                         }
-                        value = argParser.consumeOption("value");
-                        if (value) {
-                            this.value = ethers_1.ethers.utils.parseEther(value);
-                        }
-                        data = argParser.consumeOption("data");
-                        if (data) {
-                            this.data = ethers_1.ethers.utils.hexlify(data);
-                        }
                         // Now wait for all asynchronous options to load
                         runners.push(this.provider.getNetwork().then(function (network) {
-                            _this.network = network;
+                            ethers_1.ethers.utils.defineReadOnly(_this, "network", Object.freeze(network));
                         }, function (error) {
-                            _this.network = {
+                            ethers_1.ethers.utils.defineReadOnly(_this, "network", Object.freeze({
                                 chainId: 0,
                                 name: "no-network"
-                            };
+                            }));
                         }));
                         _a.label = 5;
                     case 5:
@@ -731,7 +797,7 @@ var CLI = /** @class */ (function () {
             console.log("");
         }
         console.log("ACCOUNT OPTIONS");
-        console.log("  --account FILENAME          Load a JSON Wallet (crowdsale or keystore)");
+        console.log("  --account FILENAME          Load from a file (JSON, RAW or mnemonic)");
         console.log("  --account RAW_KEY           Use a private key (insecure *)");
         console.log("  --account 'MNEMONIC'        Use a mnemonic (insecure *)");
         console.log("  --account -                 Use secure entry for a raw key or mnemonic");
@@ -739,6 +805,7 @@ var CLI = /** @class */ (function () {
         console.log("  --account-void ENS_NAME     Add the resolved address as a void signer");
         console.log("  --account-rpc ADDRESS       Add the address from a JSON-RPC provider");
         console.log("  --account-rpc INDEX         Add the index from a JSON-RPC provider");
+        console.log("  --mnemonic-password         Prompt for a password for mnemonics");
         console.log("");
         console.log("PROVIDER OPTIONS (default: getDefaultProvider)");
         console.log("  --alchemy                   Include Alchemy");
@@ -746,6 +813,7 @@ var CLI = /** @class */ (function () {
         console.log("  --infura                    Include INFURA");
         console.log("  --nodesmith                 Include nodesmith");
         console.log("  --rpc URL                   Include a custom JSON-RPC");
+        console.log("  --offline                   Dump signed transactions (no send)");
         console.log("  --network NETWORK           Network to connect to (default: homestead)");
         console.log("");
         console.log("TRANSACTION OPTIONS (default: query the network)");
@@ -780,13 +848,13 @@ var CLI = /** @class */ (function () {
                         // We run a temporary argument parser to check for a command by processing standard options
                         {
                             argParser_1 = new ArgParser(args);
-                            ["debug", "help", "yes"].forEach(function (key) {
+                            ["debug", "help", "mnemonic-password", "offline", "yes"].forEach(function (key) {
                                 argParser_1.consumeFlag(key);
                             });
                             ["alchemy", "etherscan", "infura", "nodesmith"].forEach(function (flag) {
                                 argParser_1.consumeFlag(flag);
                             });
-                            ["network", "rpc", "account", "account-rpc", "account-void", "gas-price", "gas-limit", "nonce", "data"].forEach(function (option) {
+                            ["network", "rpc", "account", "account-rpc", "account-void", "gas-price", "gas-limit", "nonce"].forEach(function (option) {
                                 argParser_1.consumeOption(option);
                             });
                             commandIndex = argParser_1._checkCommandIndex();

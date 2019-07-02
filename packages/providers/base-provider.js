@@ -139,7 +139,7 @@ var BaseProvider = /** @class */ (function (_super) {
             _this.ready.catch(function (error) { });
         }
         else {
-            var knownNetwork = networks_1.getNetwork((network == null) ? "homestead" : network);
+            var knownNetwork = properties_1.getStatic((_newTarget), "getNetwork")(network);
             if (knownNetwork) {
                 properties_1.defineReadOnly(_this, "_network", knownNetwork);
                 properties_1.defineReadOnly(_this, "ready", Promise.resolve(_this._network));
@@ -161,6 +161,9 @@ var BaseProvider = /** @class */ (function (_super) {
             defaultFormatter = new formatter_1.Formatter();
         }
         return defaultFormatter;
+    };
+    BaseProvider.getNetwork = function (network) {
+        return networks_1.getNetwork((network == null) ? "homestead" : network);
     };
     BaseProvider.prototype.poll = function () {
         var _this = this;

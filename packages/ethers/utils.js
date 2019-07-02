@@ -42,6 +42,7 @@ exports.hashMessage = hash_1.hashMessage;
 exports.id = hash_1.id;
 exports.namehash = hash_1.namehash;
 var hdnode_1 = require("@ethersproject/hdnode");
+exports.defaultPath = hdnode_1.defaultPath;
 exports.entropyToMnemonic = hdnode_1.entropyToMnemonic;
 exports.HDNode = hdnode_1.HDNode;
 exports.isValidMnemonic = hdnode_1.isValidMnemonic;

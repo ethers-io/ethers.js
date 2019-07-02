@@ -3,6 +3,13 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.143 (2019-07-02 16:12)
+-----------------------------------------
+
+  - Adding more support for offline signing in the CLI. ([9cc269c](https://github.com/ethers-io/ethers.js/commit/9cc269ceb5d33b2d88542d4bc6771279f729e733))
+  - Allow providers to prepare their Network object. ([6484908](https://github.com/ethers-io/ethers.js/commit/6484908cb25dd35e5d98b2672dca72ed3f30cbe1))
+  - Export BIP-44 default path in ethers.utils. ([04bdf45](https://github.com/ethers-io/ethers.js/commit/04bdf456eb07aa72872265e0ee01e3231d2b6cf1))
+
 ethers/v5.0.0-beta.142 (2019-06-28 16:13)
 -----------------------------------------
 

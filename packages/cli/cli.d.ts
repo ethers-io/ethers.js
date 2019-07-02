@@ -8,6 +8,7 @@ declare class WrappedSigner extends ethers.Signer {
     connect(provider?: ethers.providers.Provider): ethers.Signer;
     getAddress(): Promise<string>;
     signMessage(message: string | ethers.utils.Bytes): Promise<string>;
+    populateTransaction(transactionRequest: ethers.providers.TransactionRequest): Promise<ethers.providers.TransactionRequest>;
     signTransaction(transactionRequest: ethers.providers.TransactionRequest): Promise<string>;
     sendTransaction(transactionRequest: ethers.providers.TransactionRequest): Promise<ethers.providers.TransactionResponse>;
     unlock(): Promise<void>;
@@ -39,11 +40,11 @@ export declare class Plugin {
     network: ethers.providers.Network;
     provider: ethers.providers.Provider;
     accounts: Array<WrappedSigner>;
+    mnemonicPassword: boolean;
     gasLimit: ethers.BigNumber;
     gasPrice: ethers.BigNumber;
     nonce: number;
     data: string;
-    value: ethers.BigNumber;
     yes: boolean;
     constructor();
     static getHelp(): Help;

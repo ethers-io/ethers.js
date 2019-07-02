@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/providers",
-  "version": "5.0.0-beta.134",
+  "version": "5.0.0-beta.135",
   "description": "Error utility functions for ethers.",
   "main": "index.js",
   "browser": {
@@ -39,5 +39,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x2c6f5aa6d90887b48a28a828a5102ae32f65864b405e4e1ff5bc7f876c3237f4"
+  "tarballHash": "0xbad9062a78cf40c1236c46a09c90148282685a87864186f7a7646a8633f838ad"
 }
