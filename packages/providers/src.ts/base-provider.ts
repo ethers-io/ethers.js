@@ -9,7 +9,7 @@ import { arrayify, hexDataLength, hexlify, hexValue, isHexString } from "@ethers
 import * as errors from "@ethersproject/errors";
 import { namehash } from "@ethersproject/hash";
 import { getNetwork, Network, Networkish } from "@ethersproject/networks";
-import { defineReadOnly, resolveProperties } from "@ethersproject/properties";
+import { defineReadOnly, getStatic, resolveProperties } from "@ethersproject/properties";
 import { Transaction } from "@ethersproject/transactions";
 import { toUtf8String } from "@ethersproject/strings";
 import { poll } from "@ethersproject/web";
@@ -187,7 +187,7 @@ export class BaseProvider extends Provider {
             this.ready.catch((error) => { });
 
         } else {
-            let knownNetwork = getNetwork((network == null) ? "homestead": network);
+            let knownNetwork = getStatic<(network: Networkish) => Network>(new.target, "getNetwork")(network);
             if (knownNetwork) {
                 defineReadOnly(this, "_network", knownNetwork);
                 defineReadOnly(this, "ready", Promise.resolve(this._network));
@@ -214,6 +214,10 @@ export class BaseProvider extends Provider {
             defaultFormatter = new Formatter();
         }
         return defaultFormatter;
+    }
+
+    static getNetwork(network: Networkish): Network {
+        return getNetwork((network == null) ? "homestead": network);
     }
 
     poll(): void {
