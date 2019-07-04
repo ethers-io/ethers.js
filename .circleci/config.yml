@@ -1,25 +1,8 @@
 version: 2
 jobs:
 
-  whitesource:
-    working_directory: ~/ethers.js
-    docker:
-      - image: circleci/openjdk:8-node-browsers
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/ethers.js/workspace
-      - run :
-          name: Setup WhiteSource
-          command: curl -LJO https://github.com/whitesource/fs-agent-distribution/raw/master/standAlone/wss_agent.sh
-      - run:
-          name: execute whitesource
-          command: |
-            cd .whitesource/
-            chmod +x wss_agent.sh && ./wss_agent.sh -apiKey $WHITESOURCE_API_KEY -c ./whitesource-fs-agent.config  -project ethers.js -f files.list
 
 workflows:
   version: 2
   test_and_deploy:
     jobs:
-      - whitesource
