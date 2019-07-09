@@ -3,7 +3,33 @@
 import assert from "assert";
 
 import { ethers } from "ethers";
-import { loadTests, TestCase } from "@ethersproject/testcases";
+import { loadTests, randomNumber, TestCase } from "@ethersproject/testcases";
+
+function randomCase(seed: string, text: string): string {
+    return text.split("").map(function(c, index) {
+       if (randomNumber(seed + "-" + index, 0, 2)) {
+           return c.toUpperCase();
+       }
+       return c
+    }).join("");
+}
+
+describe('Test HD Node Derivation is Case Agnostic', function() {
+    let tests: Array<TestCase.HDWallet> = loadTests('hdnode');
+    tests.forEach((test) => {
+        it("Normalizes case - " + test.name, function() {
+            this.timeout(10000);
+            let wordlist = (<{ [ locale: string ]: ethers.Wordlist }>(ethers.wordlists))[test.locale];
+
+            let rootNode = ethers.utils.HDNode.fromMnemonic(test.mnemonic, test.password || null, wordlist);
+
+            let altMnemonic = randomCase(test.name, test.mnemonic);
+            let altNode = ethers.utils.HDNode.fromMnemonic(altMnemonic, test.password || null, wordlist);
+
+            assert.equal(altNode.privateKey, rootNode.privateKey, altMnemonic);
+        });
+    });
+});
 
 describe('Test HD Node Derivation from Seed', function() {
 

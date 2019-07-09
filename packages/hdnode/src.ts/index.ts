@@ -212,8 +212,8 @@ export class HDNode implements ExternallyOwnedAccount {
     }
 
     static fromMnemonic(mnemonic: string, password?: string, wordlist?: Wordlist): HDNode {
-        // Check that the checksum s valid (will throw an error)
-        mnemonicToEntropy(mnemonic, wordlist);
+        // Normalize the case and spacing in the mnemonic (throws if the mnemonic is invalid)
+        mnemonic = entropyToMnemonic(mnemonicToEntropy(mnemonic, wordlist), wordlist);
 
         return HDNode._fromSeed(mnemonicToSeed(mnemonic, password), mnemonic);
     }
