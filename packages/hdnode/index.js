@@ -181,8 +181,8 @@ var HDNode = /** @class */ (function () {
         return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic, "m");
     };
     HDNode.fromMnemonic = function (mnemonic, password, wordlist) {
-        // Check that the checksum s valid (will throw an error)
-        mnemonicToEntropy(mnemonic, wordlist);
+        // Normalize the case and spacing in the mnemonic (throws if the mnemonic is invalid)
+        mnemonic = entropyToMnemonic(mnemonicToEntropy(mnemonic, wordlist), wordlist);
         return HDNode._fromSeed(mnemonicToSeed(mnemonic, password), mnemonic);
     };
     HDNode.fromSeed = function (seed) {

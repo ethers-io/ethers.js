@@ -3,6 +3,11 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.144 (2019-07-09 17:28)
+-----------------------------------------
+
+  - Make mnemonic phrases case agnostic. ([#557](https://github.com/ethers-io/ethers.js/issues/557); [e4423b7](https://github.com/ethers-io/ethers.js/commit/e4423b7a277e7e1be1c02d345d4ab1eab484c9b8))
+
 ethers/v5.0.0-beta.143 (2019-07-02 16:12)
 -----------------------------------------
 

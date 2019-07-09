@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/hdnode",
-  "version": "5.0.0-beta.126",
+  "version": "5.0.0-beta.127",
   "description": "BIP32 Hierarchal Deterministic Node operations.",
   "main": "index.js",
   "scripts": {
@@ -29,5 +29,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x2a7bd80760329de5b0059d3858f9c54af3836d6727f0f9ac40a030a3b19023fe"
+  "tarballHash": "0xff879047a41e893228ed4e40a5d1d800f3c4c7793ffefda57df068c819f43666"
 }

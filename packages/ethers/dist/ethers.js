@@ -8199,24 +8199,28 @@ exports.shr64_lo = shr64_lo;
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
+    if (superCtor) {
+      ctor.super_ = superCtor
+      ctor.prototype = Object.create(superCtor.prototype, {
+        constructor: {
+          value: ctor,
+          enumerable: false,
+          writable: true,
+          configurable: true
+        }
+      })
+    }
   };
 } else {
   // old school shim for old browsers
   module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
+    if (superCtor) {
+      ctor.super_ = superCtor
+      var TempCtor = function () {}
+      TempCtor.prototype = superCtor.prototype
+      ctor.prototype = new TempCtor()
+      ctor.prototype.constructor = ctor
+    }
   }
 }
 
@@ -13850,7 +13854,7 @@ exports.info = info;
 },{}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "5.0.0-beta.143";
+exports.version = "5.0.0-beta.144";
 
 },{}],69:[function(require,module,exports){
 "use strict";
@@ -14281,8 +14285,8 @@ var HDNode = /** @class */ (function () {
         return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic, "m");
     };
     HDNode.fromMnemonic = function (mnemonic, password, wordlist) {
-        // Check that the checksum s valid (will throw an error)
-        mnemonicToEntropy(mnemonic, wordlist);
+        // Normalize the case and spacing in the mnemonic (throws if the mnemonic is invalid)
+        mnemonic = entropyToMnemonic(mnemonicToEntropy(mnemonic, wordlist), wordlist);
         return HDNode._fromSeed(mnemonicToSeed(mnemonic, password), mnemonic);
     };
     HDNode.fromSeed = function (seed) {

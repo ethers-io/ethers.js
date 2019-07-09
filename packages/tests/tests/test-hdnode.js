@@ -6,6 +6,27 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var assert_1 = __importDefault(require("assert"));
 var ethers_1 = require("ethers");
 var testcases_1 = require("@ethersproject/testcases");
+function randomCase(seed, text) {
+    return text.split("").map(function (c, index) {
+        if (testcases_1.randomNumber(seed + "-" + index, 0, 2)) {
+            return c.toUpperCase();
+        }
+        return c;
+    }).join("");
+}
+describe('Test HD Node Derivation is Case Agnostic', function () {
+    var tests = testcases_1.loadTests('hdnode');
+    tests.forEach(function (test) {
+        it("Normalizes case - " + test.name, function () {
+            this.timeout(10000);
+            var wordlist = (ethers_1.ethers.wordlists)[test.locale];
+            var rootNode = ethers_1.ethers.utils.HDNode.fromMnemonic(test.mnemonic, test.password || null, wordlist);
+            var altMnemonic = randomCase(test.name, test.mnemonic);
+            var altNode = ethers_1.ethers.utils.HDNode.fromMnemonic(altMnemonic, test.password || null, wordlist);
+            assert_1.default.equal(altNode.privateKey, rootNode.privateKey, altMnemonic);
+        });
+    });
+});
 describe('Test HD Node Derivation from Seed', function () {
     var tests = testcases_1.loadTests('hdnode');
     tests.forEach(function (test) {
