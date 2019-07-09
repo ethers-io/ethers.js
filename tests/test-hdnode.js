@@ -169,3 +169,30 @@ describe('Testnet Extended Key (#553)', function testMnemonic() {
         });
     });
 });
+
+describe("Test Mnemonic is Case Agnostic", function() {
+    function randomCase(seed, text) {
+        return text.split("").map(function(c, index) {
+           if (utils.randomNumber(seed + "-" + index, 0, 1000) > 500) {
+               return c.toUpperCase();
+           }
+           return c
+        }).join("");
+    }
+
+    function addTest(mnemonic, altMnemonic) {
+        it(altMnemonic, function() {
+            var node = ethers.utils.HDNode.fromMnemonic(mnemonic);
+            var altNode = ethers.utils.HDNode.fromMnemonic(altMnemonic);
+            assert.equal(node.privateKey, altNode.privateKey, altMnemonic);
+        });
+    }
+
+    for (var i = 0; i < 128; i++) {
+        var seed = "test-" + i;
+        var entropy = utils.randomBytes(seed, 16, 16);
+        var mnemonic = ethers.utils.HDNode.entropyToMnemonic(entropy);
+        var altMnemonic = randomCase(seed, mnemonic);
+        addTest(mnemonic, altMnemonic);
+    }
+});
