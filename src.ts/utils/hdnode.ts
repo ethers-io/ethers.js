@@ -261,8 +261,8 @@ function _fromSeed(seed: Arrayish, mnemonic: string): HDNode {
 }
 
 export function fromMnemonic(mnemonic: string, wordlist?: Wordlist, password?: string): HDNode {
-    // Check that the checksum s valid (will throw an error)
-    mnemonicToEntropy(mnemonic, wordlist);
+    // Normalize the mnemonic (also throws if the checksum is invalid)
+    mnemonic = entropyToMnemonic(mnemonicToEntropy(mnemonic, wordlist), wordlist);
 
     return _fromSeed(mnemonicToSeed(mnemonic, password), mnemonic);
 }
