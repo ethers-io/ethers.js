@@ -5,11 +5,20 @@ var assert = require('assert');
 var utils = require('./utils');
 var ethers = utils.getEthers(__filename);
 
+function skip(name) {
+    var match = name.match(/^random-([0-9]+)$/);
+    if (match && parseInt(match[1]) > 512) {
+        return true;
+    }
+    return false;
+}
+
 describe('Test HD Node Derivation', function(test) {
 
     var tests = utils.loadTests('hdnode');
     tests.forEach(function(test) {
-       it('Derives the HD nodes - ' + test.name, function() {
+        if (skip(test.name)) { return; }
+        it('Derives the HD nodes - ' + test.name, function() {
             this.timeout(10000);
 
             //var rootNode = new ethers.utils.HDNode.fromSeed(test.seed);
@@ -87,6 +96,7 @@ describe('Test HD Node Derivation', function(test) {
 describe('Test HD Mnemonic Phrases', function testMnemonic() {
     var tests = utils.loadTests('hdnode');
     tests.forEach(function(test) {
+        if (skip(test.name)) { return; }
         it(('converts mnemonic phrases - ' + test.name), function() {
             this.timeout(1000000);
 
