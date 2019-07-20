@@ -29,6 +29,7 @@ import { Web3Provider } from "./web3-provider";
 
 import { AsyncSendable } from "./web3-provider";
 
+import { Formatter } from "./formatter";
 
 ////////////////////////
 // Exports
@@ -65,6 +66,12 @@ export {
     // Functions
 
     getNetwork,
+
+
+    ///////////////////////
+    // Objects
+
+    Formatter,
 
 
     ///////////////////////
