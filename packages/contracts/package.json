@@ -1,7 +1,7 @@
 {
   "name": "@ethersproject/contracts",
   "version": "5.0.0-beta.133",
-  "description": "Error utility functions for ethers.",
+  "description": "Contract abstraction meta-class for ethers.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
