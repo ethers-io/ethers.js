@@ -3,6 +3,7 @@
 import fs from "fs";
 
 import { ethers } from "ethers";
+import scrypt from "scrypt-js";
 
 import { getChoice, getPassword, getProgressBar } from "./prompt";
 
@@ -383,12 +384,36 @@ async function loadAccount(arg: string, plugin: Plugin, preventFile?: boolean): 
 
     // Mnemonic
     if (ethers.utils.isValidMnemonic(arg)) {
+        const mnemonic = arg;
         let signerPromise: Promise<ethers.Wallet> = null;
         if (plugin.mnemonicPassword) {
             signerPromise = getPassword("Password (mnemonic): ").then((password) => {
-                let node = ethers.utils.HDNode.fromMnemonic(arg, password).derivePath(ethers.utils.defaultPath);
+                let node = ethers.utils.HDNode.fromMnemonic(mnemonic, password).derivePath(ethers.utils.defaultPath);
                 return new ethers.Wallet(node.privateKey, plugin.provider);
             });
+
+        } else if (plugin._xxxMnemonicPasswordHard) {
+            signerPromise = getPassword("Password (mnemonic; experimental - hard): ").then((password) => {
+                let passwordBytes = ethers.utils.toUtf8Bytes(password, ethers.utils.UnicodeNormalizationForm.NFKC);
+                let saltBytes = ethers.utils.arrayify(ethers.utils.HDNode.fromMnemonic(mnemonic).privateKey);
+
+                let progressBar = getProgressBar("Decrypting");
+                return (<Promise<ethers.Wallet>>(new Promise((resolve, reject) => {
+                    scrypt(passwordBytes, saltBytes, (1 << 20), 8, 1, 32, (error, progress, key) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            progressBar(progress);
+                            if (key) {
+                                let derivedPassword = ethers.utils.hexlify(key).substring(2);
+                                let node = ethers.utils.HDNode.fromMnemonic(mnemonic, derivedPassword).derivePath(ethers.utils.defaultPath);
+                                resolve(new ethers.Wallet(node.privateKey, plugin.provider));
+                            }
+                        }
+                    });
+                })));
+            });
+
         } else {
             signerPromise = Promise.resolve(ethers.Wallet.fromMnemonic(arg).connect(plugin.provider));
         }
@@ -454,6 +479,7 @@ export class Plugin {
 
     accounts: Array<WrappedSigner>;
     mnemonicPassword: boolean;
+    _xxxMnemonicPasswordHard: boolean;
 
     gasLimit: ethers.BigNumber;
     gasPrice: ethers.BigNumber;
@@ -523,6 +549,7 @@ export class Plugin {
         // Accounts
 
         ethers.utils.defineReadOnly(this, "mnemonicPassword", argParser.consumeFlag("mnemonic-password"));
+        ethers.utils.defineReadOnly(this, "_xxxMnemonicPasswordHard", argParser.consumeFlag("xxx-mnemonic-password"));
 
         let accounts: Array<WrappedSigner> = [ ];
 
@@ -711,6 +738,7 @@ export class CLI {
         console.log("  --account-rpc ADDRESS       Add the address from a JSON-RPC provider");
         console.log("  --account-rpc INDEX         Add the index from a JSON-RPC provider");
         console.log("  --mnemonic-password         Prompt for a password for mnemonics");
+        console.log("  --xxx-mnemonic-password     Prompt for a (experimental) hard password");
         console.log("");
         console.log("PROVIDER OPTIONS (default: getDefaultProvider)");
         console.log("  --alchemy                   Include Alchemy");
@@ -754,7 +782,7 @@ export class CLI {
         {
             let argParser = new ArgParser(args);
 
-            [ "debug", "help", "mnemonic-password", "offline", "yes"].forEach((key) => {
+            [ "debug", "help", "mnemonic-password", "offline", "xxx-mnemonic-password", "yes"].forEach((key) => {
                 argParser.consumeFlag(key);
             });
 
