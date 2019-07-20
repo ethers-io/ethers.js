@@ -50,7 +50,18 @@ type ParseNode = {
     components?: Array<ParseNode>
 };
 
-let storageClasses: { [ name: string ]: boolean } = { calldata: true, memory: true, storage: true };
+let ModifiersBytes: { [ name: string ]: boolean } = { calldata: true, memory: true, storage: true };
+function checkModifier(type: string, name: string): boolean {
+    if (type === "bytes" || type === "string") {
+        if (ModifiersBytes[name]) { return true; }
+    } else if (type === "address") {
+        if (name === "payable") { return true; }
+    }
+    if (ModifiersBytes[name] || name === "payable") {
+        errors.throwArgumentError("invalid modifier", "name", name);
+    }
+    return false;
+}
 
 // @TODO: Make sure that children of an indexed tuple are marked with a null indexed
 function parseParamType(param: string, allowIndexed: boolean): ParseNode {
@@ -90,7 +101,7 @@ function parseParamType(param: string, allowIndexed: boolean): ParseNode {
                     node.name = "";
                 }
 
-                if (storageClasses[node.name]) { node.name = ""; }
+                if (checkModifier(node.type, node.name)) { node.name = ""; }
 
                 node.type = verifyType(node.type);
 
@@ -112,7 +123,7 @@ function parseParamType(param: string, allowIndexed: boolean): ParseNode {
                     node.name = "";
                 }
 
-                if (storageClasses[node.name]) { node.name = ""; }
+                if (checkModifier(node.type, node.name)) { node.name = ""; }
 
                 node.type = verifyType(node.type);
 
@@ -144,7 +155,7 @@ function parseParamType(param: string, allowIndexed: boolean): ParseNode {
                             if (node.indexed) { throwError(i); }
                             node.indexed = true;
                             node.name = "";
-                        } else if (storageClasses[node.name]) {
+                        } else if (checkModifier(node.type, node.name)) {
                             node.name = "";
                         } else {
                             node.state.allowName = false;
@@ -199,7 +210,7 @@ function parseParamType(param: string, allowIndexed: boolean): ParseNode {
         if (node.indexed) { throwError(originalParam.length - 7); }
         node.indexed = true;
         node.name = "";
-    } else if (storageClasses[node.name]) {
+    } else if (checkModifier(node.type, node.name)) {
         node.name = "";
     }
 
@@ -211,6 +222,20 @@ function parseParamType(param: string, allowIndexed: boolean): ParseNode {
 function populate(object: any, params: any) {
     for (let key in params) { defineReadOnly(object, key, params[key]); }
 }
+
+export const FormatTypes: { [ name: string ]: string } = Object.freeze({
+    // Bare formatting, as is needed for computing a sighash of an event or function
+    sighash: "sighash",
+
+    // Human-Readable with Minimal spacing and without names (compact human-readable)
+    minimal: "minimal",
+
+    // Human-Readble with nice spacing, including all names
+    full: "full",
+
+    // JSON-format a la Solidity
+    json: "json"
+});
 
 const paramTypeArray = new RegExp(/^(.*)\[([0-9]*)\]$/);
 
@@ -268,29 +293,51 @@ export class ParamType {
     }
 
     // Format the parameter fragment
-    //   - non-expanded: "(uint256,address)"
-    //   - expanded:     "tuple(uint256 foo, addres bar) indexed baz"
-    format(expanded?: boolean): string {
+    //   - sighash: "(uint256,address)"
+    //   - minimal: "tuple(uint256,address) indexed"
+    //   - full:    "tuple(uint256 foo, addres bar) indexed baz"
+    format(format?: string): string {
+        if (!format) { format = FormatTypes.sighash; }
+        if (!FormatTypes[format]) {
+            errors.throwArgumentError("invalid format type", "format", format);
+        }
+
+        if (format === FormatTypes.json) {
+            let result: any = {
+                type: ((this.baseType === "tuple") ? "tuple": this.type),
+                name: (this.name || undefined)
+            };
+            if (typeof(this.indexed) === "boolean") { result.indexed = this.indexed; }
+            if (this.components) {
+                result.components = this.components.map((comp) => JSON.parse(comp.format(format)));
+            }
+            return JSON.stringify(result);
+        }
+
         let result = "";
 
         // Array
         if (this.baseType === "array") {
-            result += this.arrayChildren.format(expanded);
+            result += this.arrayChildren.format(format);
             result += "[" + (this.arrayLength < 0 ? "": String(this.arrayLength)) + "]";
         } else {
             if (this.baseType === "tuple") {
-                if (expanded) {
+                if (format !== FormatTypes.sighash) {
                     result += this.type;
                 }
-                result += "(" + this.components.map((c) => c.format(expanded)).join(expanded ? ", ": ",") + ")";
+                result += "(" + this.components.map(
+                    (comp) => comp.format(format)
+                ).join((format === FormatTypes.full) ? ", ": ",") + ")";
             } else {
                 result += this.type;
             }
         }
 
-        if (expanded) {
+        if (format !== FormatTypes.sighash) {
             if (this.indexed === true) { result += " indexed"; }
-            if (this.name) { result += " " + this.name; }
+            if (format === FormatTypes.full && this.name) {
+                result += " " + this.name;
+            }
         }
 
         return result;
@@ -353,37 +400,7 @@ export abstract class Fragment {
         Object.freeze(this);
     }
 
-    // @TOOD: move logic to sub-classes; make this abstract
-    format(expanded?: boolean): string {
-        let result = "";
-
-        if (this.type === "constructor") {
-            result += "constructor";
-        } else {
-            if (expanded) {
-                result += this.type + " ";
-            }
-            result += this.name;
-        }
-
-        result += "(" + this.inputs.map((i) => i.format(expanded)).join(expanded ? ", ": ",") + ") ";
-
-        // @TODO: Handle returns, modifiers, etc.
-        if (expanded && this.type !== "event") {
-            result += "public ";
-            if ((<any>this).mutabilityState) {
-                result += (<any>this).mutabilityState + " ";
-            } else if ((<any>this).constant) {
-                result += "view ";
-            }
-
-            if ((<any>this).outputs && (<any>this).outputs.length) {
-                result += "returns (" + (<any>this).outputs.map((i: ParamType) => i.format(expanded)).join(", ") + ") ";
-            }
-        }
-
-        return result.trim();
-    }
+    abstract format(format?: string): string;
 
     static from(value: Fragment | JsonFragment | string): Fragment {
         if (Fragment.isFragment(value)) { return value; }
@@ -409,10 +426,7 @@ export abstract class Fragment {
             return null;
         }
 
-        return errors.throwError("invalid fragment object", errors.INVALID_ARGUMENT, {
-            argument: "value",
-            value: value
-        });
+        return errors.throwArgumentError("invalid fragment object", "value", value);
     }
 
     static fromString(value: string): Fragment {
@@ -439,6 +453,40 @@ export abstract class Fragment {
 
 export class EventFragment extends Fragment {
     readonly anonymous: boolean;
+
+    format(format?: string): string {
+        if (!format) { format = FormatTypes.sighash; }
+        if (!FormatTypes[format]) {
+            errors.throwArgumentError("invalid format type", "format", format);
+        }
+
+        if (format === FormatTypes.json) {
+            return JSON.stringify({
+                type: "event",
+                anonymous: this.anonymous,
+                name: this.name,
+                inputs: this.inputs.map((input) => JSON.parse(input.format(format)))
+            });
+        }
+
+        let result = "";
+
+        if (format !== FormatTypes.sighash) {
+            result += "event ";
+        }
+
+        result += this.name + "(" + this.inputs.map(
+            (input) => input.format(format)
+        ).join((format === FormatTypes.full) ? ", ": ",") + ") ";
+
+        if (format !== FormatTypes.sighash) {
+            if (this.anonymous) {
+                result += "anonymous ";
+            }
+        }
+
+        return result.trim();
+    }
 
     static from(value: EventFragment | JsonFragment | string): EventFragment {
         if (typeof(value) === "string") {
@@ -512,7 +560,6 @@ function parseGas(value: string, params: any): string {
 function parseModifiers(value: string, params: any): void {
     params.constant = false;
     params.payable = false;
-    // @TODO: Should this be initialized to "nonpayable"?
     params.stateMutability = "nonpayable";
 
     value.split(" ").forEach((modifier) => {
@@ -542,10 +589,84 @@ function parseModifiers(value: string, params: any): void {
     });
 }
 
+function verifyState(value: any): { constant: boolean, payable: boolean, stateMutability: string } {
+    let result: any = {
+        constant: false,
+        payable: true,
+        stateMutability: "payable"
+    };
+
+    if (value.stateMutability != null) {
+        result.stateMutability = value.stateMutability;
+
+        result.constant = (result.stateMutability === "view" || result.stateMutability === "pure");
+        if (value.constant != null) {
+            if ((!!value.constant) !== result.constant) {
+                throw new Error("cannot have constant function with mutability " + result.stateMutability);
+            }
+        }
+
+        result.payable = (result.stateMutability === "payable");
+        if (value.payable != null) {
+            if ((!!value.payable) !== result.payable) {
+                throw new Error("cannot have payable function with mutability " + result.stateMutability);
+            }
+        }
+
+    } else if (value.payable != null) {
+        result.payable = !!value.payable;
+        result.stateMutability = (result.payable ? "payable": "nonpayable");
+        result.constant = !result.payable;
+        if (value.constant != null && (value.constant !== result.constant)) {
+            throw new Error("cannot have constant payable function");
+        }
+
+    } else if (value.constant != null) {
+        result.constant = !!value.constant;
+        result.payable = !result.constant;
+        result.stateMutability = (result.constant ? "view": "payable");
+    }
+
+    return result;
+}
+
 export class ConstructorFragment extends Fragment {
     stateMutability: string;
     payable: boolean;
     gas?: BigNumber;
+
+    format(format?: string): string {
+        if (!format) { format = FormatTypes.sighash; }
+        if (!FormatTypes[format]) {
+            errors.throwArgumentError("invalid format type", "format", format);
+        }
+
+        if (format === FormatTypes.json) {
+            return JSON.stringify({
+                type: "constructor",
+                stateMutability: ((this.stateMutability !== "nonpayable") ? this.stateMutability: undefined),
+                payble: this.payable,
+                gas: (this.gas ? this.gas.toNumber(): undefined),
+                inputs: this.inputs.map((input) => JSON.parse(input.format(format)))
+            });
+        }
+
+        if (format === FormatTypes.sighash) {
+            errors.throwError("cannot format a constructor for sighash", errors.UNSUPPORTED_OPERATION, {
+                operation: "format(sighash)"
+            });
+        }
+
+        let result = "constructor(" + this.inputs.map(
+            (input) => input.format(format)
+        ).join((format === FormatTypes.full) ? ", ": ",") + ") ";
+
+        if (this.stateMutability && this.stateMutability !== "nonpayable") {
+            result += this.stateMutability + " ";
+        }
+
+        return result.trim();
+    }
 
     static from(value: ConstructorFragment | JsonFragment | string): ConstructorFragment {
         if (typeof(value) === "string") {
@@ -559,10 +680,15 @@ export class ConstructorFragment extends Fragment {
 
         if (value.type !== "constructor") { throw new Error("invalid constructor object - " + value.type); }
 
+        let state = verifyState(value);
+        if (state.constant) {
+            throw new Error("constructor cannot be constant");
+        }
+
         return new ConstructorFragment(_constructorGuard, {
             type: value.type,
             inputs: (value.inputs ? value.inputs.map(ParamType.fromObject): []),
-            payable: ((value.payable == null) ? true: !!value.payable),
+            payable: state.payable,
             gas: (value.gas ? BigNumber.from(value.gas): null)
         });
     }
@@ -593,6 +719,58 @@ export class FunctionFragment extends ConstructorFragment {
     constant: boolean;
     outputs?: Array<ParamType>;
 
+    format(format?: string): string {
+        if (!format) { format = FormatTypes.sighash; }
+        if (!FormatTypes[format]) {
+            errors.throwArgumentError("invalid format type", "format", format);
+        }
+
+        if (format === FormatTypes.json) {
+            return JSON.stringify({
+                type: "function",
+                name: this.name,
+                constant: this.constant,
+                stateMutability: ((this.stateMutability !== "nonpayable") ? this.stateMutability: undefined),
+                payble: this.payable,
+                gas: (this.gas ? this.gas.toNumber(): undefined),
+                inputs: this.inputs.map((input) => JSON.parse(input.format(format))),
+                ouputs: this.outputs.map((output) => JSON.parse(output.format(format))),
+            });
+        }
+
+        let result = "";
+
+        if (format !== FormatTypes.sighash) {
+            result += "function ";
+        }
+
+        result += this.name + "(" + this.inputs.map(
+            (input) => input.format(format)
+        ).join((format === FormatTypes.full) ? ", ": ",") + ") ";
+
+        if (format !== FormatTypes.sighash) {
+            if (this.stateMutability) {
+                if (this.stateMutability !== "nonpayable") {
+                    result += (this.stateMutability + " ");
+                }
+            } else if (this.constant) {
+                result += "view ";
+            }
+
+            if (this.outputs && this.outputs.length) {
+                result += "returns (" + this.outputs.map(
+                    (output) => output.format(format)
+                ).join(", ") + ") ";
+            }
+
+            if (this.gas != null) {
+                result += "@" + this.gas.toString() + " ";
+            }
+        }
+
+        return result.trim();
+    }
+
     static from(value: FunctionFragment | JsonFragment | string): FunctionFragment {
         if (typeof(value) === "string") {
             return FunctionFragment.fromString(value);
@@ -605,14 +783,16 @@ export class FunctionFragment extends ConstructorFragment {
 
         if (value.type !== "function") { throw new Error("invalid function object - " + value.type); }
 
+        let state = verifyState(value);
+
         return new FunctionFragment(_constructorGuard, {
             type: value.type,
             name: verifyIdentifier(value.name),
-            constant: !!value.constant,
+            constant: state.constant,
             inputs: (value.inputs ? value.inputs.map(ParamType.fromObject): []),
             outputs: (value.outputs ? value.outputs.map(ParamType.fromObject): [ ]),
-            payable: ((value.payable == null) ? true: !!value.payable),
-            stateMutability: ((value.stateMutability != null) ?verifyString(value.stateMutability): null),
+            payable: state.payable,
+            stateMutability: state.stateMutability,
             gas: (value.gas ? BigNumber.from(value.gas): null)
         });
     }
@@ -660,11 +840,6 @@ export class FunctionFragment extends ConstructorFragment {
 
 //export class StructFragment extends Fragment {
 //}
-
-function verifyString(value: string): string {
-    if (typeof(value) !== "string") { throw new Error("requires a string"); }
-    return value;
-}
 
 function verifyType(type: string): string {
 
