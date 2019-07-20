@@ -1,6 +1,6 @@
 "use strict";
 
-import { AbiCoder, defaultAbiCoder, EventFragment, Fragment, FunctionFragment, Indexed, Interface, ParamType } from "@ethersproject/abi";
+import { AbiCoder, defaultAbiCoder, EventFragment, FormatTypes, Fragment, FunctionFragment, Indexed, Interface, ParamType } from "@ethersproject/abi";
 import { getAddress, getContractAddress, getIcapAddress, isAddress } from "@ethersproject/address";
 import * as base64 from "@ethersproject/base64";
 import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexValue, hexZeroPad, isHexString, joinSignature, zeroPad, splitSignature, stripZeros } from "@ethersproject/bytes";
@@ -46,6 +46,7 @@ export {
     EventFragment,
     FunctionFragment,
     ParamType,
+    FormatTypes,
 
     RLP,
 
