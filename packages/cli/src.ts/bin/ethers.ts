@@ -634,7 +634,7 @@ class CompilePlugin extends Plugin {
             output[contract.name] = {
                 bytecode: contract.bytecode,
                 runtime: contract.runtime,
-                interface: contract.interface.fragments.map((f) => f.format(true))
+                interface: contract.interface.fragments.map((f) => f.format(ethers.utils.FormatTypes.full))
             };
         });
 
@@ -715,7 +715,7 @@ class DeployPlugin extends Plugin {
             Contract: codes[0].name,
             Address: contract.address,
             Bytecode: codes[0].bytecode,
-            Interface: codes[0].interface.fragments.map((f) => f.format(true))
+            Interface: codes[0].interface.fragments.map((f) => f.format(ethers.utils.FormatTypes.full))
         });
     }
 }

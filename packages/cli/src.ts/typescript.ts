@@ -115,7 +115,7 @@ export function generate(contract: ContractCode, bytecode?: string): string {
     lines.push("    static ABI(): Array<string> {");
     lines.push("        return [");
     contract.interface.fragments.forEach((fragment) => {
-        lines.push(`            "${fragment.format(true)}",`);
+        lines.push(`            "${fragment.format(ethers.utils.FormatTypes.full)}",`);
     });
     lines.push("        ];");
     lines.push("    }");
