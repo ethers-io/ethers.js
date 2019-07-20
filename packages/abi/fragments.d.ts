@@ -16,6 +16,9 @@ export interface JsonFragment {
     outputs?: Array<JsonFragmentType>;
     gas?: string;
 }
+export declare const FormatTypes: {
+    [name: string]: string;
+};
 export declare class ParamType {
     readonly name: string;
     readonly type: string;
@@ -26,7 +29,7 @@ export declare class ParamType {
     readonly arrayChildren: ParamType;
     readonly _isParamType: boolean;
     constructor(constructorGuard: any, params: any);
-    format(expanded?: boolean): string;
+    format(format?: string): string;
     static from(value: string | JsonFragmentType | ParamType, allowIndexed?: boolean): ParamType;
     static fromObject(value: JsonFragmentType | ParamType): ParamType;
     static fromString(value: string, allowIndexed?: boolean): ParamType;
@@ -38,7 +41,7 @@ export declare abstract class Fragment {
     readonly inputs: Array<ParamType>;
     readonly _isFragment: boolean;
     constructor(constructorGuard: any, params: any);
-    format(expanded?: boolean): string;
+    abstract format(format?: string): string;
     static from(value: Fragment | JsonFragment | string): Fragment;
     static fromObject(value: Fragment | JsonFragment): Fragment;
     static fromString(value: string): Fragment;
@@ -46,6 +49,7 @@ export declare abstract class Fragment {
 }
 export declare class EventFragment extends Fragment {
     readonly anonymous: boolean;
+    format(format?: string): string;
     static from(value: EventFragment | JsonFragment | string): EventFragment;
     static fromObject(value: JsonFragment | EventFragment): EventFragment;
     static fromString(value: string): EventFragment;
@@ -55,6 +59,7 @@ export declare class ConstructorFragment extends Fragment {
     stateMutability: string;
     payable: boolean;
     gas?: BigNumber;
+    format(format?: string): string;
     static from(value: ConstructorFragment | JsonFragment | string): ConstructorFragment;
     static fromObject(value: ConstructorFragment | JsonFragment): ConstructorFragment;
     static fromString(value: string): ConstructorFragment;
@@ -63,6 +68,7 @@ export declare class ConstructorFragment extends Fragment {
 export declare class FunctionFragment extends ConstructorFragment {
     constant: boolean;
     outputs?: Array<ParamType>;
+    format(format?: string): string;
     static from(value: FunctionFragment | JsonFragment | string): FunctionFragment;
     static fromObject(value: FunctionFragment | JsonFragment): FunctionFragment;
     static fromString(value: string): FunctionFragment;

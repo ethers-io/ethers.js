@@ -23,3 +23,5 @@ var nodesmith_provider_1 = require("./nodesmith-provider");
 exports.NodesmithProvider = nodesmith_provider_1.NodesmithProvider;
 var web3_provider_1 = require("./web3-provider");
 exports.Web3Provider = web3_provider_1.Web3Provider;
+var formatter_1 = require("./formatter");
+exports.Formatter = formatter_1.Formatter;

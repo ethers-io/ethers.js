@@ -3,6 +3,15 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.145 (2019-07-20 20:12)
+-----------------------------------------
+
+  - Export provider.Formatter. ([#562](https://github.com/ethers-io/ethers.js/issues/562); [083fd76](https://github.com/ethers-io/ethers.js/commit/083fd76a3a638ec16d5f9bf652101e5a150c7347))
+  - Update CLI to use new Fragment.format style. ([9a41199](https://github.com/ethers-io/ethers.js/commit/9a4119910b07d1ad61bafafb38ac18a9dae1d9ed))
+  - Added FormatTypes to utils. ([a05027c](https://github.com/ethers-io/ethers.js/commit/a05027c744102bbe1be5e13dd89b9c1e64b3b526))
+  - Added experimental memory-hard password scheme for password-protected mnemonics to the CLI. ([5877418](https://github.com/ethers-io/ethers.js/commit/5877418de94256a69fdf2ad466ba579309b9dee8))
+  - Added more flexible output options to fragment.format (JSON and minimal) and better JSON object parsing. ([e9558c8](https://github.com/ethers-io/ethers.js/commit/e9558c8d4fe6df889f4d7ba6ac6448aa543ef99d))
+
 ethers/v5.0.0-beta.144 (2019-07-09 17:28)
 -----------------------------------------
 

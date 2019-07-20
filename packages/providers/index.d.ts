@@ -11,4 +11,5 @@ import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 import { NodesmithProvider } from "./nodesmith-provider";
 import { Web3Provider } from "./web3-provider";
 import { AsyncSendable } from "./web3-provider";
-export { Provider, BaseProvider, FallbackProvider, AlchemyProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, NodesmithProvider, Web3Provider, IpcProvider, JsonRpcSigner, getNetwork, Block, BlockTag, EventType, Filter, Log, Listener, TransactionReceipt, TransactionRequest, TransactionResponse, AsyncSendable, Network, Networkish };
+import { Formatter } from "./formatter";
+export { Provider, BaseProvider, FallbackProvider, AlchemyProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, NodesmithProvider, Web3Provider, IpcProvider, JsonRpcSigner, getNetwork, Formatter, Block, BlockTag, EventType, Filter, Log, Listener, TransactionReceipt, TransactionRequest, TransactionResponse, AsyncSendable, Network, Networkish };

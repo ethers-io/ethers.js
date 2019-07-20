@@ -41,6 +41,7 @@ export declare class Plugin {
     provider: ethers.providers.Provider;
     accounts: Array<WrappedSigner>;
     mnemonicPassword: boolean;
+    _xxxMnemonicPasswordHard: boolean;
     gasLimit: ethers.BigNumber;
     gasPrice: ethers.BigNumber;
     nonce: number;

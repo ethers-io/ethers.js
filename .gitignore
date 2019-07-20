@@ -5,6 +5,7 @@ obsolete/
 dist/types/shims/
 shims/*.d.ts
 **/*.swp
+*~
 
 # Weird intermediate files tsc generates for references
 **/src.ts/*.js

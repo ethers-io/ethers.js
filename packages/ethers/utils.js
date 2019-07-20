@@ -11,6 +11,7 @@ var abi_1 = require("@ethersproject/abi");
 exports.AbiCoder = abi_1.AbiCoder;
 exports.defaultAbiCoder = abi_1.defaultAbiCoder;
 exports.EventFragment = abi_1.EventFragment;
+exports.FormatTypes = abi_1.FormatTypes;
 exports.Fragment = abi_1.Fragment;
 exports.FunctionFragment = abi_1.FunctionFragment;
 exports.Indexed = abi_1.Indexed;

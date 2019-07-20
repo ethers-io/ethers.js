@@ -53,6 +53,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = __importDefault(require("fs"));
 var ethers_1 = require("ethers");
+var scrypt_js_1 = __importDefault(require("scrypt-js"));
 var prompt_1 = require("./prompt");
 var UsageError = /** @class */ (function (_super) {
     __extends(UsageError, _super);
@@ -486,7 +487,7 @@ exports.ArgParser = ArgParser;
 //   - mnemonic
 function loadAccount(arg, plugin, preventFile) {
     return __awaiter(this, void 0, void 0, function () {
-        var content, signer_1, signerPromise_1, content_1, address;
+        var content, signer_1, mnemonic_1, signerPromise_1, content_1, address;
         var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -504,11 +505,34 @@ function loadAccount(arg, plugin, preventFile) {
                     }
                     // Mnemonic
                     if (ethers_1.ethers.utils.isValidMnemonic(arg)) {
+                        mnemonic_1 = arg;
                         signerPromise_1 = null;
                         if (plugin.mnemonicPassword) {
                             signerPromise_1 = prompt_1.getPassword("Password (mnemonic): ").then(function (password) {
-                                var node = ethers_1.ethers.utils.HDNode.fromMnemonic(arg, password).derivePath(ethers_1.ethers.utils.defaultPath);
+                                var node = ethers_1.ethers.utils.HDNode.fromMnemonic(mnemonic_1, password).derivePath(ethers_1.ethers.utils.defaultPath);
                                 return new ethers_1.ethers.Wallet(node.privateKey, plugin.provider);
+                            });
+                        }
+                        else if (plugin._xxxMnemonicPasswordHard) {
+                            signerPromise_1 = prompt_1.getPassword("Password (mnemonic; experimental - hard): ").then(function (password) {
+                                var passwordBytes = ethers_1.ethers.utils.toUtf8Bytes(password, ethers_1.ethers.utils.UnicodeNormalizationForm.NFKC);
+                                var saltBytes = ethers_1.ethers.utils.arrayify(ethers_1.ethers.utils.HDNode.fromMnemonic(mnemonic_1).privateKey);
+                                var progressBar = prompt_1.getProgressBar("Decrypting");
+                                return (new Promise(function (resolve, reject) {
+                                    scrypt_js_1.default(passwordBytes, saltBytes, (1 << 20), 8, 1, 32, function (error, progress, key) {
+                                        if (error) {
+                                            reject(error);
+                                        }
+                                        else {
+                                            progressBar(progress);
+                                            if (key) {
+                                                var derivedPassword = ethers_1.ethers.utils.hexlify(key).substring(2);
+                                                var node = ethers_1.ethers.utils.HDNode.fromMnemonic(mnemonic_1, derivedPassword).derivePath(ethers_1.ethers.utils.defaultPath);
+                                                resolve(new ethers_1.ethers.Wallet(node.privateKey, plugin.provider));
+                                            }
+                                        }
+                                    });
+                                }));
                             });
                         }
                         else {
@@ -606,6 +630,7 @@ var Plugin = /** @class */ (function () {
                         /////////////////////
                         // Accounts
                         ethers_1.ethers.utils.defineReadOnly(this, "mnemonicPassword", argParser.consumeFlag("mnemonic-password"));
+                        ethers_1.ethers.utils.defineReadOnly(this, "_xxxMnemonicPasswordHard", argParser.consumeFlag("xxx-mnemonic-password"));
                         accounts = [];
                         accountOptions = argParser.consumeMultiOptions(["account", "account-rpc", "account-void"]);
                         _loop_1 = function (i) {
@@ -806,6 +831,7 @@ var CLI = /** @class */ (function () {
         console.log("  --account-rpc ADDRESS       Add the address from a JSON-RPC provider");
         console.log("  --account-rpc INDEX         Add the index from a JSON-RPC provider");
         console.log("  --mnemonic-password         Prompt for a password for mnemonics");
+        console.log("  --xxx-mnemonic-password     Prompt for a (experimental) hard password");
         console.log("");
         console.log("PROVIDER OPTIONS (default: getDefaultProvider)");
         console.log("  --alchemy                   Include Alchemy");
@@ -848,7 +874,7 @@ var CLI = /** @class */ (function () {
                         // We run a temporary argument parser to check for a command by processing standard options
                         {
                             argParser_1 = new ArgParser(args);
-                            ["debug", "help", "mnemonic-password", "offline", "yes"].forEach(function (key) {
+                            ["debug", "help", "mnemonic-password", "offline", "xxx-mnemonic-password", "yes"].forEach(function (key) {
                                 argParser_1.consumeFlag(key);
                             });
                             ["alchemy", "etherscan", "infura", "nodesmith"].forEach(function (flag) {

@@ -881,7 +881,7 @@ var CompilePlugin = /** @class */ (function (_super) {
                     output[contract.name] = {
                         bytecode: contract.bytecode,
                         runtime: contract.runtime,
-                        interface: contract.interface.fragments.map(function (f) { return f.format(true); })
+                        interface: contract.interface.fragments.map(function (f) { return f.format(ethers_1.ethers.utils.FormatTypes.full); })
                     };
                 });
                 console.log(JSON.stringify(output, null, 4));
@@ -975,7 +975,7 @@ var DeployPlugin = /** @class */ (function (_super) {
                             Contract: codes[0].name,
                             Address: contract.address,
                             Bytecode: codes[0].bytecode,
-                            Interface: codes[0].interface.fragments.map(function (f) { return f.format(true); })
+                            Interface: codes[0].interface.fragments.map(function (f) { return f.format(ethers_1.ethers.utils.FormatTypes.full); })
                         });
                         return [2 /*return*/];
                 }

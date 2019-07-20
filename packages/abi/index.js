@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var fragments_1 = require("./fragments");
 exports.ConstructorFragment = fragments_1.ConstructorFragment;
 exports.EventFragment = fragments_1.EventFragment;
+exports.FormatTypes = fragments_1.FormatTypes;
 exports.Fragment = fragments_1.Fragment;
 exports.FunctionFragment = fragments_1.FunctionFragment;
 exports.ParamType = fragments_1.ParamType;
