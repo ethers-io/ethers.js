@@ -3,6 +3,12 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.146 (2019-07-20 21:06)
+-----------------------------------------
+
+  - Keep extra filter topics when using Frgment filters in Contracts. ([efaafb2](https://github.com/ethers-io/ethers.js/commit/efaafb203feaf703de803df7e346652372e9fb75))
+  - Updated package.json description for Contract package. ([#561](https://github.com/ethers-io/ethers.js/issues/561); [d88ee45](https://github.com/ethers-io/ethers.js/commit/d88ee45937b3484b68f72e3f72ad6c29556c984b))
+
 ethers/v5.0.0-beta.145 (2019-07-20 20:12)
 -----------------------------------------
 

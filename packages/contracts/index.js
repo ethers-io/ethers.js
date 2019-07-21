@@ -250,12 +250,21 @@ var ErrorRunningEvent = /** @class */ (function (_super) {
 }(RunningEvent));
 var FragmentRunningEvent = /** @class */ (function (_super) {
     __extends(FragmentRunningEvent, _super);
-    function FragmentRunningEvent(address, contractInterface, fragment) {
+    function FragmentRunningEvent(address, contractInterface, fragment, topics) {
         var _this = this;
         var filter = {
-            address: address,
-            topics: [contractInterface.getEventTopic(fragment)]
+            address: address
         };
+        var topic = contractInterface.getEventTopic(fragment);
+        if (topics) {
+            if (topic !== topics[0]) {
+                errors.throwArgumentError("topic mismatch", "topics", topics);
+            }
+            filter.topics = topics.slice();
+        }
+        else {
+            filter.topics = [topic];
+        }
         _this = _super.call(this, getEventTag(filter), filter) || this;
         properties_1.defineReadOnly(_this, "address", address);
         properties_1.defineReadOnly(_this, "interface", contractInterface);
@@ -487,7 +496,7 @@ var Contract = /** @class */ (function () {
             if (eventName.topics[0]) {
                 var fragment = this.interface.getEvent(eventName.topics[0]);
                 if (fragment) {
-                    return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
+                    return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
                 }
             }
             filter.topics = eventName.topics;

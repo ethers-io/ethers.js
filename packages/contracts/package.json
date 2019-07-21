@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/contracts",
-  "version": "5.0.0-beta.133",
+  "version": "5.0.0-beta.134",
   "description": "Contract abstraction meta-class for ethers.",
   "main": "index.js",
   "scripts": {
@@ -27,5 +27,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x36273887374b3b52f35f3d051b3851d6cb121cfb4c3ead3a2b269a115aaee88e"
+  "tarballHash": "0x6b25925f92f10c31dc8d9a61012e7f70ae09094896da0d252e59f42823981c27"
 }
