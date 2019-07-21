@@ -346,10 +346,17 @@ class FragmentRunningEvent extends RunningEvent {
     readonly interface: Interface;
     readonly fragment: EventFragment;
 
-    constructor(address: string, contractInterface: Interface, fragment: EventFragment) {
-        let filter = {
-            address: address,
-            topics: [ contractInterface.getEventTopic(fragment) ]
+    constructor(address: string, contractInterface: Interface, fragment: EventFragment, topics?: Array<string>) {
+        let filter: EventFilter = {
+            address: address
+        }
+
+        let topic = contractInterface.getEventTopic(fragment);
+        if (topics) {
+            if (topic !== topics[0]) { errors.throwArgumentError("topic mismatch", "topics", topics); }
+            filter.topics = topics.slice();
+        } else {
+            filter.topics = [ topic ];
         }
 
         super(getEventTag(filter), filter);
@@ -646,7 +653,7 @@ export class Contract {
             if (eventName.topics[0]) {
                 let fragment = this.interface.getEvent(eventName.topics[0]);
                 if (fragment) {
-                    return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
+                    return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
                 }
             }
 
