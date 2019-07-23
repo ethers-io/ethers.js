@@ -26,10 +26,10 @@ describe('Test Contract Address Generation', function() {
 
     // @TODO: Mine a large collection of these from the blockchain
 
-    var getContractAddress = ethers.utils.getContractAddress;
+    let getContractAddress = ethers.utils.getContractAddress;
 
     // Transaction: 0x939aa17985bc2a52a0c1cba9497ef09e092355a805a8150e30e24b753bac6864
-    var Tests = [
+    let Tests = [
         {
             address: '0x3474627D4F63A678266BC17171D87f8570936622',
             name: 'tx-0x939aa17985bc2a52a0c1cba9497ef09e092355a805a8150e30e24b753bac6864',
@@ -229,11 +229,11 @@ describe('Test Solidity splitSignature', function() {
 
     it('splits a canonical signature', function() {
         this.timeout(120000);
-        var r = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
-        var s = '0xcafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7e';
-        for (var v = 27; v <= 28; v++) {
-            var signature = ethers.utils.concat([ r, s, [ v ] ]);
-            var sig = ethers.utils.splitSignature(signature);
+        let r = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
+        let s = '0xcafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7e';
+        for (let v = 27; v <= 28; v++) {
+            let signature = ethers.utils.concat([ r, s, [ v ] ]);
+            let sig = ethers.utils.splitSignature(signature);
             assert.equal(sig.r, r, 'split r correctly');
             assert.equal(sig.s, s, 'split s correctly');
             assert.equal(sig.v, v, 'split v correctly');
@@ -242,11 +242,11 @@ describe('Test Solidity splitSignature', function() {
 
     it('splits a legacy signature', function() {
         this.timeout(120000);
-        var r = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
-        var s = '0xcafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7e';
-        for (var v = 27; v <= 28; v++) {
-            var signature = ethers.utils.concat([ r, s, [ v - 27 ] ]);
-            var sig = ethers.utils.splitSignature(signature);
+        let r = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
+        let s = '0xcafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7e';
+        for (let v = 27; v <= 28; v++) {
+            let signature = ethers.utils.concat([ r, s, [ v - 27 ] ]);
+            let sig = ethers.utils.splitSignature(signature);
             assert.equal(sig.r, r, 'split r correctly');
             assert.equal(sig.s, s, 'split s correctly');
             assert.equal(sig.v, v, 'split v correctly');
@@ -259,16 +259,16 @@ describe('Test Base64 coder', function() {
     // https://en.wikipedia.org/wiki/Base64#Examples
     it('encodes and decodes the example from wikipedia', function() {
         this.timeout(120000);
-        var decodedText = 'Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure.';
-        var decoded = ethers.utils.toUtf8Bytes(decodedText);
-        var encoded = 'TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=';
+        let decodedText = 'Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure.';
+        let decoded = ethers.utils.toUtf8Bytes(decodedText);
+        let encoded = 'TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=';
         assert.equal(ethers.utils.base64.encode(decoded), encoded, 'encodes to base64 string');
         assert.equal(ethers.utils.toUtf8String(ethers.utils.base64.decode(encoded)), decodedText, 'decodes from base64 sstring');
     });
 });
 
 describe('Test UTF-8 coder', function() {
-    var BadUTF = [
+    let BadUTF = [
         // See: https://en.wikipedia.org/wiki/UTF-8#Overlong_encodings
         { bytes: [ 0xF0,0x82, 0x82, 0xAC ], reason: 'overlong', name: 'wikipedia overlong encoded Euro sign' },
         { bytes: [ 0xc0, 0x80 ], reason: 'overlong', name: '2-byte overlong - 0xc080' },
@@ -297,7 +297,7 @@ describe('Test UTF-8 coder', function() {
     BadUTF.forEach(function(test) {
         it('toUtf8String - ' + test.name, function() {
             assert.throws(function() {
-                var result = ethers.utils.toUtf8String(test.bytes);
+                let result = ethers.utils.toUtf8String(test.bytes);
                 console.log('Result', result);
             }, function(error: Error) {
                 return (error.message.split(';').pop().trim() === test.reason)
@@ -317,8 +317,8 @@ describe('Test UTF-8 coder', function() {
                 case 2:
                     return String.fromCharCode(utils.randomNumber(seed + '-value', 0xdfff + 1, 0xffff));
                 case 3:
-                    var left = utils.randomNumber(seed + '-value', 0xd800, 0xdbff + 1);
-                    var right = utils.randomNumber(seed + '-value', 0xdc00, 0xdfff + 1);
+                    let left = utils.randomNumber(seed + '-value', 0xd800, 0xdbff + 1);
+                    let right = utils.randomNumber(seed + '-value', 0xdc00, 0xdfff + 1);
                     return String.fromCharCode(left, right);
             }
 
@@ -326,23 +326,25 @@ describe('Test UTF-8 coder', function() {
         }
 
         function randomString(seed: string) {
-            var length = utils.randomNumber(seed + '-length', 1, 5);
-            var str = '';
-            for (var i = 0; i < length; i++) {
+            let length = utils.randomNumber(seed + '-length', 1, 5);
+            let str = '';
+            for (let i = 0; i < length; i++) {
                 str += randomChar(seed + '-char-' + i);
             }
             return str;
         }
 
-        for (var i = 0; i < 100000; i++) {
-            var seed = 'test-' + String(i);
-            var str = randomString(seed);
+        for (let i = 0; i < 100000; i++) {
+            let seed = 'test-' + String(i);
+            let str = randomString(seed);
 
-            var bytes = ethers.utils.toUtf8Bytes(str)
-            var str2 = ethers.utils.toUtf8String(bytes);
+            let bytes = ethers.utils.toUtf8Bytes(str)
+            let str2 = ethers.utils.toUtf8String(bytes);
+            let escaped = JSON.parse(ethers.utils._toEscapedUtf8String(bytes));
 
             assert.ok(Buffer.from(str).equals(Buffer.from(bytes)), 'bytes not generated correctly - ' + bytes)
             assert.equal(str2, str, 'conversion not reflexive - ' + bytes);
+            assert.equal(escaped, str, 'conversion not reflexive - ' + bytes);
         }
     });
 });
@@ -350,9 +352,9 @@ describe('Test UTF-8 coder', function() {
 describe('Test Bytes32String coder', function() {
     // @TODO: a LOT more test cases; generated from Solidity
     it("encodes an ens name", function() {
-        var str = "ricmoo.firefly.eth";
-        var bytes32 = ethers.utils.formatBytes32String(str);
-        var str2 = ethers.utils.parseBytes32String(bytes32);
+        let str = "ricmoo.firefly.eth";
+        let bytes32 = ethers.utils.formatBytes32String(str);
+        let str2 = ethers.utils.parseBytes32String(bytes32);
         assert.equal(bytes32, '0x7269636d6f6f2e66697265666c792e6574680000000000000000000000000000', 'formatted correctly');
         assert.equal(str2, str, "parsed correctly");
     });
@@ -361,8 +363,8 @@ describe('Test Bytes32String coder', function() {
 describe('Test BigNumber', function() {
     it("computes absoltue values", function() {
         function testAbs(test: { expected: string, value: string }) {
-            var value = ethers.BigNumber.from(test.value);
-            var expected = ethers.BigNumber.from(test.expected);
+            let value = ethers.BigNumber.from(test.value);
+            let expected = ethers.BigNumber.from(test.expected);
             assert.ok(value.abs().eq(expected), 'BigNumber.abs - ' + test.value);
         }
 

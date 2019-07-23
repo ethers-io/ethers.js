@@ -60,8 +60,10 @@ export function toUtf8Bytes(str: string, form: UnicodeNormalizationForm = Unicod
 };
 
 
+type ProcessFunc = (left: number, right?: number) => string;
+
 // http://stackoverflow.com/questions/13356493/decode-utf-8-with-javascript#13691499
-export function toUtf8String(bytes: BytesLike, ignoreErrors?: boolean): string {
+function processUtf8String(bytes: BytesLike, processFunc: ProcessFunc, ignoreErrors: boolean): string {
     bytes = arrayify(bytes);
 
     let result = "";
@@ -73,7 +75,7 @@ export function toUtf8String(bytes: BytesLike, ignoreErrors?: boolean): string {
         let c = bytes[i++];
         // 0xxx xxxx
         if (c >> 7 === 0) {
-            result += String.fromCharCode(c);
+            result += processFunc(c);
             continue;
         }
 
@@ -158,15 +160,53 @@ export function toUtf8String(bytes: BytesLike, ignoreErrors?: boolean): string {
         }
 
         if (res <= 0xffff) {
-            result += String.fromCharCode(res);
+            result += processFunc(res);
             continue;
         }
 
         res -= 0x10000;
-        result += String.fromCharCode(((res >> 10) & 0x3ff) + 0xd800, (res & 0x3ff) + 0xdc00);
+        result += processFunc(((res >> 10) & 0x3ff) + 0xd800, (res & 0x3ff) + 0xdc00);
     }
 
     return result;
+}
+
+function escapeChar(value: number) {
+    let hex = ("0000" + value.toString(16));
+    return "\\u" + hex.substring(hex.length - 4);
+}
+
+export function _toEscapedUtf8String(bytes: BytesLike, ignoreErrors?: boolean): string {
+    return '"' + processUtf8String(bytes, (left, right) => {
+        if (right == null) {
+            if (left < 256) {
+                switch (left) {
+                    case 8:  return "\\b";
+                    case 9:  return "\\t";
+                    case 10: return "\\n"
+                    case 13: return "\\r";
+                    case 34: return "\\\"";
+                    case 92: return "\\\\";
+                }
+
+                if (left >= 32 && left < 127) {
+                    return String.fromCharCode(left);
+                }
+            }
+
+            return escapeChar(left);
+        }
+        return escapeChar(left) + escapeChar(right);
+    }, ignoreErrors) + '"';
+}
+
+export function toUtf8String(bytes: BytesLike, ignoreErrors?: boolean): string {
+    return processUtf8String(bytes, (left, right) => {
+        if (right == null) {
+            return String.fromCharCode(left);
+        }
+        return String.fromCharCode(left, right);
+    }, ignoreErrors);
 }
 
 export function formatBytes32String(text: string): string {

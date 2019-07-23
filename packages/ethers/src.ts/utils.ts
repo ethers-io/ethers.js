@@ -14,7 +14,7 @@ import { randomBytes } from "@ethersproject/random";
 import { checkProperties, deepCopy, defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import * as RLP from "@ethersproject/rlp";
 import { computePublicKey, recoverPublicKey, SigningKey } from "@ethersproject/signing-key";
-import { formatBytes32String, parseBytes32String, toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
+import { formatBytes32String, parseBytes32String, _toEscapedUtf8String, toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
 import { computeAddress, parse as parseTransaction, recoverAddress, serialize as serializeTransaction } from "@ethersproject/transactions";
 import { commify, formatEther, parseEther, formatUnits, parseUnits } from "@ethersproject/units";
 import { verifyMessage } from "@ethersproject/wallet";
@@ -81,6 +81,7 @@ export {
     hexDataLength,
     hexDataSlice,
 
+    _toEscapedUtf8String,
     toUtf8Bytes,
     toUtf8String,
 
