@@ -67,9 +67,6 @@
       "path": "./packages/solidity"
     },
     {
-      "path": "./packages/testcases"
-    },
-    {
       "path": "./packages/transactions"
     },
     {
@@ -110,6 +107,9 @@
     },
     {
       "path": "./packages/experimental"
+    },
+    {
+      "path": "./packages/testcases"
     },
     {
       "path": "./packages/tests"

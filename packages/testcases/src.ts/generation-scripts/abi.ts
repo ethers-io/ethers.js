@@ -2,7 +2,8 @@
 
 //let web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8549'));
 
-import { compile as _compile } from "solc";
+//import { compile as _compile } from "solc";
+import { compile } from "@ethersproject/cli/solc";
 
 import { randomHexString, randomNumber } from ".."
 import { BN, keccak256, toChecksumAddress } from "ethereumjs-util";
@@ -56,41 +57,6 @@ class Code {
 
         if (open) { this.depth++; }
     }
-}
-
-function compile(source: string): string {
-    let input = {
-        language: "Solidity",
-        sources: {
-            "test.sol": {
-                content: source
-            }
-        },
-        settings: {
-           optimizer: {
-               enabled: true,
-               runs: 200
-           },
-            evmVersion: "byzantium",
-            outputSelection: {
-                "*": {
-                    "*": [ "evm.bytecode" ]
-                }
-            }
-        }
-    };
-
-    let output = JSON.parse(_compile(JSON.stringify(input)));
-    let errors = ((<any>output).errors || []).filter((e : any) => (e.severity == "error"));
-
-    if (errors.length) {
-        errors.forEach((error: any) => {
-            console.log(error.formattedMessage);
-        });
-        process.exit();
-    }
-
-    return "0x" + output.contracts["test.sol"].Test.evm.bytecode.object;
 }
 
 //idea:  "tuple(address)/*StructABCDEFG*/"
@@ -651,7 +617,7 @@ for (let i = 0; i < 100; i++) {
     let solidity = generateSolidity(params);
     console.log(solidity);
     console.log(i);
-    let bytecode = compile(solidity);
+    let bytecode = compile(solidity)[0].bytecode;
     //console.log(params.map(p => p.type).join(", "));
     //console.log(bytecode);
     let testcase = {
