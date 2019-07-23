@@ -76,6 +76,7 @@ exports.SigningKey = signing_key_1.SigningKey;
 var strings_1 = require("@ethersproject/strings");
 exports.formatBytes32String = strings_1.formatBytes32String;
 exports.parseBytes32String = strings_1.parseBytes32String;
+exports._toEscapedUtf8String = strings_1._toEscapedUtf8String;
 exports.toUtf8Bytes = strings_1.toUtf8Bytes;
 exports.toUtf8String = strings_1.toUtf8String;
 var transactions_1 = require("@ethersproject/transactions");

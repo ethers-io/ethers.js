@@ -3,6 +3,13 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.147 (2019-07-23 1:04)
+----------------------------------------
+
+  - Use the CLI solc instead of solc directly for ABI testcase generation. ([99c7b1c](https://github.com/ethers-io/ethers.js/commit/99c7b1ca94382490b9757fd51375a7ad4259b831))
+  - Added experimental UTF-8 functions for escaping non-ascii strings. ([b132e32](https://github.com/ethers-io/ethers.js/commit/b132e32172c9d63e59209628dadd5796dd6291c8))
+  - Bump Solidity version in CLI to 0.5.10. ([6005248](https://github.com/ethers-io/ethers.js/commit/600524842e1a4b857e8428a45c0c7d1baa0624ee))
+
 ethers/v5.0.0-beta.146 (2019-07-20 21:06)
 -----------------------------------------
 

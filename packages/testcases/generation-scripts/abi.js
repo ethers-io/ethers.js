@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 //let web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8549'));
-var solc_1 = require("solc");
+//import { compile as _compile } from "solc";
+var solc_1 = require("@ethersproject/cli/solc");
 var __1 = require("..");
 var ethereumjs_util_1 = require("ethereumjs-util");
 function hasPrefix(str, prefix) {
@@ -54,37 +55,6 @@ var Code = /** @class */ (function () {
     };
     return Code;
 }());
-function compile(source) {
-    var input = {
-        language: "Solidity",
-        sources: {
-            "test.sol": {
-                content: source
-            }
-        },
-        settings: {
-            optimizer: {
-                enabled: true,
-                runs: 200
-            },
-            evmVersion: "byzantium",
-            outputSelection: {
-                "*": {
-                    "*": ["evm.bytecode"]
-                }
-            }
-        }
-    };
-    var output = JSON.parse(solc_1.compile(JSON.stringify(input)));
-    var errors = (output.errors || []).filter(function (e) { return (e.severity == "error"); });
-    if (errors.length) {
-        errors.forEach(function (error) {
-            console.log(error.formattedMessage);
-        });
-        process.exit();
-    }
-    return "0x" + output.contracts["test.sol"].Test.evm.bytecode.object;
-}
 var chars = [];
 function addChars(start, length) {
     for (var i = start; i < start + length; i++) {
@@ -546,7 +516,7 @@ for (var i = 0; i < 100; i++) {
     var solidity = generateSolidity(params);
     console.log(solidity);
     console.log(i);
-    var bytecode = compile(solidity);
+    var bytecode = solc_1.compile(solidity)[0].bytecode;
     //console.log(params.map(p => p.type).join(", "));
     //console.log(bytecode);
     var testcase = {

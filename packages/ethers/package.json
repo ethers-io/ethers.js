@@ -1,6 +1,6 @@
 {
   "name": "ethers",
-  "version": "5.0.0-beta.146",
+  "version": "5.0.0-beta.147",
   "description": "Error utility functions for ethers.",
   "main": "index.js",
   "scripts": {
@@ -56,5 +56,5 @@
   "publishConfig": {
     "tag": "next"
   },
-  "tarballHash": "0x9360b235b2db232c03a9ffd7a5608a778a815c9c6cb62ec48733a60a6b179e15"
+  "tarballHash": "0xf1e4a7160dd3434770165090dccbc143a917afec0e23dd4bd581c0484b11270c"
 }

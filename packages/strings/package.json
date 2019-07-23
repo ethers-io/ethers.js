@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/strings",
-  "version": "5.0.0-beta.125",
+  "version": "5.0.0-beta.126",
   "description": "String utility functions.",
   "main": "index.js",
   "scripts": {
@@ -22,5 +22,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x9e647e336090067257da0bb65710eb42992ce8bd99fc0a8af4b29c360afdf73b"
+  "tarballHash": "0x4a8d8de5aa1d3e72db5a2bb3554c7efa1681257b0b3d2c0764d3edf8c221879b"
 }
