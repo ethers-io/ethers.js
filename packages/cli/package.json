@@ -15,7 +15,7 @@
     "ethers": ">5.0.0-beta.0",
     "mime-types": "2.1.11",
     "scrypt-js": "2.0.4",
-    "solc": "0.5.9",
+    "solc": "0.5.10",
     "solidity-parser-antlr": "^0.3.2"
   },
   "keywords": [
