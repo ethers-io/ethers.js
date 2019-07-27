@@ -9,6 +9,8 @@ function getType(param: ethers.utils.ParamType, flexible?: boolean): string {
 
     if (param.type === "address" || param.type === "string") { return "string"; }
 
+    if (param.type === "bool") { return "boolean" }
+
     if (param.type.substring(0, 5) === "bytes") {
         if (flexible) {
             return "string | ethers.utils.BytesLike";
@@ -76,7 +78,15 @@ export function generate(contract: ContractCode, bytecode?: string): string {
             if (fragment.outputs.length === 1) {
                 output = "Promise<" + getType(fragment.outputs[0]) + ">";
             } else {
-                throw new Error('not implemented yet');
+                // If all output parameters are names, we can specify the struct
+                if (fragment.outputs.filter((o) => (!!o.name)).length === fragment.outputs.length) {
+                    output = "Promise<{ " + fragment.outputs.map((o, i) =>
+                        ((o.name || ("arg" + String(i)))+ ": " + getType(o))
+                    ).join(", ") + " }>";
+                } else {
+                    // Otherwise, all we know is that it will be an Array
+                    output = "Promise<{ Array<any> }>"
+                }
             }
         }
 
