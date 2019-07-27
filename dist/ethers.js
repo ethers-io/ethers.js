@@ -11593,24 +11593,65 @@ var EtherscanProvider = /** @class */ (function (_super) {
         return _super.prototype.perform.call(this, method, params);
     };
     // @TODO: Allow startBlock and endBlock to be Promises
-    EtherscanProvider.prototype.getHistory = function (addressOrName, startBlock, endBlock) {
+    EtherscanProvider.prototype.getHistory = function (addressOrName, startBlock, endBlock, sort) {
         var _this = this;
+        if (startBlock === void 0) { startBlock = 0; }
+        if (endBlock === void 0) { endBlock = 99999999; }
+        if (sort === void 0) { sort = 'asc'; }
         var url = this.baseUrl;
         var apiKey = '';
         if (this.apiKey) {
             apiKey += '&apikey=' + this.apiKey;
         }
-        if (startBlock == null) {
-            startBlock = 0;
-        }
-        if (endBlock == null) {
-            endBlock = 99999999;
-        }
         return this.resolveName(addressOrName).then(function (address) {
             url += '/api?module=account&action=txlist&address=' + address;
             url += '&startblock=' + startBlock;
             url += '&endblock=' + endBlock;
-            url += '&sort=asc' + apiKey;
+            url += '&sort=' + sort;
+            url += apiKey;
+            return web_1.fetchJson(url, null, getResult).then(function (result) {
+                _this.emit('debug', {
+                    action: 'getHistory',
+                    request: url,
+                    response: result,
+                    provider: _this
+                });
+                var output = [];
+                result.forEach(function (tx) {
+                    ['contractAddress', 'to'].forEach(function (key) {
+                        if (tx[key] == '') {
+                            delete tx[key];
+                        }
+                    });
+                    if (tx.creates == null && tx.contractAddress != null) {
+                        tx.creates = tx.contractAddress;
+                    }
+                    var item = base_provider_1.BaseProvider.checkTransactionResponse(tx);
+                    if (tx.timeStamp) {
+                        item.timestamp = parseInt(tx.timeStamp);
+                    }
+                    output.push(item);
+                });
+                return output;
+            });
+        });
+    };
+    EtherscanProvider.prototype.getHistoryPaginated = function (addressOrName, page, offset, sort) {
+        var _this = this;
+        if (page === void 0) { page = 1; }
+        if (offset === void 0) { offset = 10; }
+        if (sort === void 0) { sort = 'asc'; }
+        var url = this.baseUrl;
+        var apiKey = '';
+        if (this.apiKey) {
+            apiKey += '&apikey=' + this.apiKey;
+        }
+        return this.resolveName(addressOrName).then(function (address) {
+            url += '/api?module=account&action=txlist&address=' + address;
+            url += '&page=' + page;
+            url += '&offset=' + offset;
+            url += '&sort=' + sort;
+            url += apiKey;
             return web_1.fetchJson(url, null, getResult).then(function (result) {
                 _this.emit('debug', {
                     action: 'getHistory',

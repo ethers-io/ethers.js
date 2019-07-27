@@ -122,6 +122,9 @@ export type EventType = string | Array<string> | Filter;
 
 export type Listener = (...args: Array<any>) => void;
 
+export type Page = string | number;
+export type Order = 'asc' | 'desc';
+
 ///////////////////////////////
 // Exported Abstracts
 

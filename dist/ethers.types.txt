@@ -530,6 +530,8 @@ declare module 'ethers/providers/abstract-provider' {
     }
     export type EventType = string | Array<string> | Filter;
     export type Listener = (...args: Array<any>) => void;
+    export type Page = string | number;
+    export type Order = 'asc' | 'desc';
     export abstract class Provider implements OnceBlockable {
         abstract getNetwork(): Promise<Network>;
         abstract getBlockNumber(): Promise<number>;
@@ -792,14 +794,15 @@ declare module 'ethers/providers/base-provider' {
 
 declare module 'ethers/providers/etherscan-provider' {
     import { BaseProvider } from 'ethers/providers/base-provider';
-    import { BlockTag, TransactionResponse } from 'ethers/providers/abstract-provider';
+    import { BlockTag, Order, Page, TransactionResponse } from 'ethers/providers/abstract-provider';
     import { Networkish } from 'ethers/utils/networks';
     export class EtherscanProvider extends BaseProvider {
         readonly baseUrl: string;
         readonly apiKey: string;
         constructor(network?: Networkish, apiKey?: string);
         perform(method: string, params: any): Promise<any>;
-        getHistory(addressOrName: string | Promise<string>, startBlock?: BlockTag, endBlock?: BlockTag): Promise<Array<TransactionResponse>>;
+        getHistory(addressOrName: string | Promise<string>, startBlock?: BlockTag, endBlock?: BlockTag, sort?: Order): Promise<Array<TransactionResponse>>;
+        getHistoryPaginated(addressOrName: string | Promise<string>, page?: Page, offset?: Page, sort?: Order): Promise<Array<TransactionResponse>>;
     }
 }
 

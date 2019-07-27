@@ -79,6 +79,8 @@ export interface TransactionResponse extends Transaction {
 }
 export declare type EventType = string | Array<string> | Filter;
 export declare type Listener = (...args: Array<any>) => void;
+export declare type Page = string | number;
+export declare type Order = 'asc' | 'desc';
 export declare abstract class Provider implements OnceBlockable {
     abstract getNetwork(): Promise<Network>;
     abstract getBlockNumber(): Promise<number>;
