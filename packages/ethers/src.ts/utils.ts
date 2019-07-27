@@ -4,17 +4,17 @@ import { AbiCoder, defaultAbiCoder, EventFragment, FormatTypes, Fragment, Functi
 import { getAddress, getContractAddress, getIcapAddress, isAddress } from "@ethersproject/address";
 import * as base64 from "@ethersproject/base64";
 import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexValue, hexZeroPad, isHexString, joinSignature, zeroPad, splitSignature, stripZeros } from "@ethersproject/bytes";
-import { hashMessage, id, namehash } from "@ethersproject/hash";
+import { hashMessage, id, isValidName, namehash } from "@ethersproject/hash";
 import { defaultPath, entropyToMnemonic, HDNode, isValidMnemonic, mnemonicToEntropy, mnemonicToSeed } from "@ethersproject/hdnode";
 import { getJsonWalletAddress } from "@ethersproject/json-wallets";
 import { keccak256 } from "@ethersproject/keccak256";
 import { sha256 } from "@ethersproject/sha2";
 import { keccak256 as solidityKeccak256, pack as solidityPack, sha256 as soliditySha256 } from "@ethersproject/solidity";
 import { randomBytes } from "@ethersproject/random";
-import { checkProperties, deepCopy, defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
+import { checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import * as RLP from "@ethersproject/rlp";
 import { computePublicKey, recoverPublicKey, SigningKey } from "@ethersproject/signing-key";
-import { formatBytes32String, parseBytes32String, _toEscapedUtf8String, toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
+import { formatBytes32String, nameprep, parseBytes32String, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String } from "@ethersproject/strings";
 import { computeAddress, parse as parseTransaction, recoverAddress, serialize as serializeTransaction } from "@ethersproject/transactions";
 import { commify, formatEther, parseEther, formatUnits, parseUnits } from "@ethersproject/units";
 import { verifyMessage } from "@ethersproject/wallet";
@@ -56,6 +56,7 @@ export {
     checkProperties,
     deepCopy,
     defineReadOnly,
+    getStatic,
     resolveProperties,
     shallowCopy,
 
@@ -81,8 +82,10 @@ export {
     hexDataLength,
     hexDataSlice,
 
+    nameprep,
     _toEscapedUtf8String,
     toUtf8Bytes,
+    toUtf8CodePoints,
     toUtf8String,
 
     formatBytes32String,
@@ -90,6 +93,7 @@ export {
 
     hashMessage,
     namehash,
+    isValidName,
     id,
 
     getAddress,
