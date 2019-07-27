@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/cli",
-  "version": "5.0.0-beta.134",
+  "version": "5.0.0-beta.135",
   "description": "Command-Line Interface scripts and releated utilities.",
   "main": "index.js",
   "scripts": {
@@ -8,6 +8,7 @@
   },
   "bin": {
     "ethers": "./bin/ethers.js",
+    "ethers-ens": "./bin/ethers-ens.js",
     "ethers-ts": "./bin/ethers-ts.js"
   },
   "dependencies": {
@@ -28,5 +29,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0xa43400fbcdc8b1642a96f867b45531429e4cdce0bbbbad31f68bfd43b6961e8a"
+  "tarballHash": "0x273492dacdf9a87887fa1d84c132525199dce4922f81235004dbac8628213e5f"
 }

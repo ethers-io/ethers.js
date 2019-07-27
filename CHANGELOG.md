@@ -3,6 +3,15 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.148 (2019-07-27 18:56)
+-----------------------------------------
+
+  - Initial drop of new ENS CLI tool. ([c3c65b2](https://github.com/ethers-io/ethers.js/commit/c3c65b2fa19e117d6433c2e0b3d20decfe506c74))
+  - Added TypeScript tool support for functions with multiple outputs. ([6de4a5d](https://github.com/ethers-io/ethers.js/commit/6de4a5d8a9d114c4c33c58f8a304b60e7370eeff))
+  - Added CLI support for stand-alone (no sub-command) tools. ([b67b121](https://github.com/ethers-io/ethers.js/commit/b67b12123996f1aaf7cbe3c8648fd85a22d6674e))
+  - Make utils.resolveProperties preserve object parameter order. ([74dbc28](https://github.com/ethers-io/ethers.js/commit/74dbc281ede042c5eeaa7b45150b215dea860a88))
+  - Added initial IDNA support for full UTF-8 support in namehash. ([#42](https://github.com/ethers-io/ethers.js/issues/42); [28eb38e](https://github.com/ethers-io/ethers.js/commit/28eb38ee703288aaad9f730b2d93fe3aeea7ada6))
+
 ethers/v5.0.0-beta.147 (2019-07-23 1:04)
 ----------------------------------------
 

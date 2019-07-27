@@ -52,9 +52,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = __importDefault(require("fs"));
+var path_1 = require("path");
 var ethers_1 = require("ethers");
 var scrypt_js_1 = __importDefault(require("scrypt-js"));
 var prompt_1 = require("./prompt");
+var _version_1 = require("./_version");
 var UsageError = /** @class */ (function (_super) {
     __extends(UsageError, _super);
     function UsageError() {
@@ -757,100 +759,191 @@ var Plugin = /** @class */ (function () {
                 _this.throwError("ENS name not configured - " + addressOrName);
             }
             if (address === ethers_1.ethers.constants.AddressZero && !allowZero) {
-                _this.throwError(message);
+                _this.throwError(message || "cannot use the zero address");
             }
             return address;
         });
     };
+    // Dumps formatted data
+    Plugin.prototype.dump = function (header, info) {
+        dump(header, info);
+    };
+    // Throwing a UsageError causes the --help to be shown above
+    // the error.message
     Plugin.prototype.throwUsageError = function (message) {
         throw new UsageError(message);
     };
+    // Shows error.message
     Plugin.prototype.throwError = function (message) {
         throw new Error(message);
     };
     return Plugin;
 }());
 exports.Plugin = Plugin;
-/////////////////////////////
-// Command Line Runner
+var CheckPlugin = /** @class */ (function (_super) {
+    __extends(CheckPlugin, _super);
+    function CheckPlugin() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return CheckPlugin;
+}(Plugin));
 var CLI = /** @class */ (function () {
-    function CLI(defaultCommand) {
+    function CLI(defaultCommand, options) {
+        var _this = this;
+        ethers_1.ethers.utils.defineReadOnly(this, "options", {
+            account: true,
+            provider: true,
+            transaction: true
+        });
+        if (options) {
+            ["account", "provider", "transaction"].forEach(function (key) {
+                if (options[key] == null) {
+                    return;
+                }
+                (_this.options)[key] = !!(options[key]);
+            });
+        }
+        Object.freeze(this.options);
         ethers_1.ethers.utils.defineReadOnly(this, "defaultCommand", defaultCommand || null);
         ethers_1.ethers.utils.defineReadOnly(this, "plugins", {});
     }
+    CLI.getAppName = function () {
+        var appName = "ethers";
+        try {
+            appName = path_1.basename(process.mainModule.filename).split(".")[0];
+        }
+        catch (error) { }
+        return appName;
+    };
+    // @TODO: Better way to specify default; i.e. may not have args
     CLI.prototype.addPlugin = function (command, plugin) {
-        this.plugins[command] = plugin;
+        if (this.standAlone) {
+            ethers_1.ethers.errors.throwError("only setPlugin or addPlugin may be used at once", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
+                operation: "addPlugin"
+            });
+        }
+        else if (this.plugins[command]) {
+            ethers_1.ethers.errors.throwError("command already exists", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
+                operation: "addPlugin",
+                command: command
+            });
+        }
+        ethers_1.ethers.utils.defineReadOnly(this.plugins, command, plugin);
+    };
+    CLI.prototype.setPlugin = function (plugin) {
+        if (Object.keys(this.plugins).length !== 0) {
+            ethers_1.ethers.errors.throwError("only setPlugin or addPlugin may be used at once", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
+                operation: "setPlugin"
+            });
+        }
+        if (this.standAlone) {
+            ethers_1.ethers.errors.throwError("cannot setPlugin more than once", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
+                operation: "setPlugin"
+            });
+        }
+        ethers_1.ethers.utils.defineReadOnly(this, "standAlone", plugin);
     };
     CLI.prototype.showUsage = function (message, status) {
         // Limit:    |                                                                             |
         console.log("Usage:");
-        var lines = [];
-        for (var cmd in this.plugins) {
-            var plugin = this.plugins[cmd];
-            var help = (plugin.getHelp ? plugin.getHelp() : null);
-            if (help == null) {
-                continue;
-            }
-            var helpLine = "   " + help.name;
-            if (helpLine.length > 28) {
-                lines.push(helpLine);
-                lines.push(repeat(" ", 30) + help.help);
-            }
-            else {
-                helpLine += repeat(" ", 30 - helpLine.length);
-                lines.push(helpLine + help.help);
-            }
-            var optionHelp = (plugin.getOptionHelp ? plugin.getOptionHelp() : []);
+        if (this.standAlone) {
+            var help = ethers_1.ethers.utils.getStatic(this.standAlone, "getHelp")();
+            console.log("   " + CLI.getAppName() + " " + help.name + " [ OPTIONS ]");
+            console.log("");
+            var lines_1 = [];
+            var optionHelp = ethers_1.ethers.utils.getStatic(this.standAlone, "getOptionHelp")();
             optionHelp.forEach(function (help) {
-                lines.push("      " + help.name + repeat(" ", 27 - help.name.length) + help.help);
+                lines_1.push("  " + help.name + repeat(" ", 28 - help.name.length) + help.help);
             });
-        }
-        if (lines.length) {
-            if (this.defaultCommand) {
-                console.log("   ethers [ COMMAND ] [ ARGS ] [ OPTIONS ]");
+            if (lines_1.length) {
+                console.log("OPTIONS");
+                lines_1.forEach(function (line) {
+                    console.log(line);
+                });
                 console.log("");
-                console.log("COMMANDS (default: " + this.defaultCommand + ")");
+            }
+        }
+        else {
+            if (this.defaultCommand) {
+                console.log("   " + CLI.getAppName() + " [ COMMAND ] [ ARGS ] [ OPTIONS ]");
+                console.log("");
             }
             else {
-                console.log("   ethers COMMAND [ ARGS ] [ OPTIONS ]");
+                console.log("   " + CLI.getAppName() + " COMMAND [ ARGS ] [ OPTIONS ]");
                 console.log("");
-                console.log("COMMANDS");
             }
-            lines.forEach(function (line) {
-                console.log(line);
-            });
+            var lines_2 = [];
+            for (var cmd in this.plugins) {
+                var plugin = this.plugins[cmd];
+                var help = ethers_1.ethers.utils.getStatic(plugin, "getHelp")();
+                if (help == null) {
+                    continue;
+                }
+                var helpLine = "   " + help.name;
+                if (helpLine.length > 28) {
+                    lines_2.push(helpLine);
+                    lines_2.push(repeat(" ", 30) + help.help);
+                }
+                else {
+                    helpLine += repeat(" ", 30 - helpLine.length);
+                    lines_2.push(helpLine + help.help);
+                }
+                var optionHelp = ethers_1.ethers.utils.getStatic(plugin, "getOptionHelp")();
+                optionHelp.forEach(function (help) {
+                    lines_2.push("      " + help.name + repeat(" ", 27 - help.name.length) + help.help);
+                });
+            }
+            if (lines_2.length) {
+                if (this.defaultCommand) {
+                    console.log("COMMANDS (default: " + this.defaultCommand + ")");
+                }
+                else {
+                    console.log("COMMANDS");
+                }
+                lines_2.forEach(function (line) {
+                    console.log(line);
+                });
+                console.log("");
+            }
+        }
+        if (this.options.account) {
+            console.log("ACCOUNT OPTIONS");
+            console.log("  --account FILENAME          Load from a file (JSON, RAW or mnemonic)");
+            console.log("  --account RAW_KEY           Use a private key (insecure *)");
+            console.log("  --account 'MNEMONIC'        Use a mnemonic (insecure *)");
+            console.log("  --account -                 Use secure entry for a raw key or mnemonic");
+            console.log("  --account-void ADDRESS      Udd an address as a void signer");
+            console.log("  --account-void ENS_NAME     Add the resolved address as a void signer");
+            console.log("  --account-rpc ADDRESS       Add the address from a JSON-RPC provider");
+            console.log("  --account-rpc INDEX         Add the index from a JSON-RPC provider");
+            console.log("  --mnemonic-password         Prompt for a password for mnemonics");
+            console.log("  --xxx-mnemonic-password     Prompt for a (experimental) hard password");
             console.log("");
         }
-        console.log("ACCOUNT OPTIONS");
-        console.log("  --account FILENAME          Load from a file (JSON, RAW or mnemonic)");
-        console.log("  --account RAW_KEY           Use a private key (insecure *)");
-        console.log("  --account 'MNEMONIC'        Use a mnemonic (insecure *)");
-        console.log("  --account -                 Use secure entry for a raw key or mnemonic");
-        console.log("  --account-void ADDRESS      Udd an address as a void signer");
-        console.log("  --account-void ENS_NAME     Add the resolved address as a void signer");
-        console.log("  --account-rpc ADDRESS       Add the address from a JSON-RPC provider");
-        console.log("  --account-rpc INDEX         Add the index from a JSON-RPC provider");
-        console.log("  --mnemonic-password         Prompt for a password for mnemonics");
-        console.log("  --xxx-mnemonic-password     Prompt for a (experimental) hard password");
-        console.log("");
-        console.log("PROVIDER OPTIONS (default: getDefaultProvider)");
-        console.log("  --alchemy                   Include Alchemy");
-        console.log("  --etherscan                 Include Etherscan");
-        console.log("  --infura                    Include INFURA");
-        console.log("  --nodesmith                 Include nodesmith");
-        console.log("  --rpc URL                   Include a custom JSON-RPC");
-        console.log("  --offline                   Dump signed transactions (no send)");
-        console.log("  --network NETWORK           Network to connect to (default: homestead)");
-        console.log("");
-        console.log("TRANSACTION OPTIONS (default: query the network)");
-        console.log("  --gasPrice GWEI             Default gas price for transactions(in wei)");
-        console.log("  --gasLimit GAS              Default gas limit for transactions");
-        console.log("  --nonce NONCE               Initial nonce for the first transaction");
-        console.log("  --value VALUE               Default value (in ether) for transactions");
-        console.log("  --yes                       Always accept Siging and Sending");
-        console.log("");
+        if (this.options.provider) {
+            console.log("PROVIDER OPTIONS (default: all + homestead)");
+            console.log("  --alchemy                   Include Alchemy");
+            console.log("  --etherscan                 Include Etherscan");
+            console.log("  --infura                    Include INFURA");
+            console.log("  --nodesmith                 Include nodesmith");
+            console.log("  --rpc URL                   Include a custom JSON-RPC");
+            console.log("  --offline                   Dump signed transactions (no send)");
+            console.log("  --network NETWORK           Network to connect to (default: homestead)");
+            console.log("");
+        }
+        if (this.options.transaction) {
+            console.log("TRANSACTION OPTIONS (default: query network)");
+            console.log("  --gasPrice GWEI             Default gas price for transactions(in wei)");
+            console.log("  --gasLimit GAS              Default gas limit for transactions");
+            console.log("  --nonce NONCE               Initial nonce for the first transaction");
+            console.log("  --value VALUE               Default value (in ether) for transactions");
+            console.log("  --yes                       Always accept Siging and Sending");
+            console.log("");
+        }
         console.log("OTHER OPTIONS");
-        console.log("  --help                      Show this usage and quit");
+        console.log("  --debug                     Show stack traces for errors");
+        console.log("  --help                      Show this usage and exit");
+        console.log("  --version                   Show this version and exit");
         console.log("");
         console.log("(*) By including mnemonics or private keys on the command line they are");
         console.log("    possibly readable by other users on your system and may get stored in");
@@ -865,24 +958,37 @@ var CLI = /** @class */ (function () {
     };
     CLI.prototype.run = function (args) {
         return __awaiter(this, void 0, void 0, function () {
-            var command, argParser_1, commandIndex, argParser, debug, plugin, error_3;
+            var command, argParser_1, plugin_1, commandIndex, argParser, app, debug, plugin, error_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         args = args.slice();
+                        if (this.defaultCommand && !this.plugins[this.defaultCommand]) {
+                            throw new Error("missing defaultCommand plugin");
+                        }
                         command = null;
-                        // We run a temporary argument parser to check for a command by processing standard options
-                        {
-                            argParser_1 = new ArgParser(args);
-                            ["debug", "help", "mnemonic-password", "offline", "xxx-mnemonic-password", "yes"].forEach(function (key) {
-                                argParser_1.consumeFlag(key);
-                            });
-                            ["alchemy", "etherscan", "infura", "nodesmith"].forEach(function (flag) {
-                                argParser_1.consumeFlag(flag);
-                            });
-                            ["network", "rpc", "account", "account-rpc", "account-void", "gas-price", "gas-limit", "nonce"].forEach(function (option) {
-                                argParser_1.consumeOption(option);
-                            });
+                        argParser_1 = new ArgParser(args);
+                        plugin_1 = new CheckPlugin();
+                        return [4 /*yield*/, plugin_1.prepareOptions(argParser_1)];
+                    case 1:
+                        _a.sent();
+                        ["debug", "help", "version"].forEach(function (key) {
+                            argParser_1.consumeFlag(key);
+                        });
+                        /*
+                        [ "mnemonic-password", "offline", "xxx-mnemonic-password", "yes"].forEach((key) => {
+                            argParser.consumeFlag(key);
+                        });
+            
+                        [ "alchemy", "etherscan", "infura", "nodesmith" ].forEach((flag) => {
+                            argParser.consumeFlag(flag);
+                        });
+                        [ "network", "rpc", "account", "account-rpc", "account-void", "gas-price", "gas-limit", "nonce" ].forEach((option) => {
+                            argParser.consumeOption(option);
+                        });
+                        */
+                        // Find the first unconsumed argument
+                        if (!this.standAlone) {
                             commandIndex = argParser_1._checkCommandIndex();
                             if (commandIndex === -1) {
                                 command = this.defaultCommand;
@@ -893,47 +999,61 @@ var CLI = /** @class */ (function () {
                             }
                         }
                         argParser = new ArgParser(args);
+                        if (argParser.consumeFlag("version")) {
+                            app = "ethers";
+                            try {
+                                app = path_1.basename(process.mainModule.filename).split(".")[0];
+                            }
+                            catch (error) { }
+                            console.log(app + "/" + _version_1.version);
+                            return [2 /*return*/];
+                        }
                         if (argParser.consumeFlag("help")) {
                             return [2 /*return*/, this.showUsage()];
                         }
                         debug = argParser.consumeFlag("debug");
                         plugin = null;
-                        try {
-                            plugin = new this.plugins[command]();
+                        if (this.standAlone) {
+                            plugin = new this.standAlone;
                         }
-                        catch (error) {
-                            if (command) {
-                                this.showUsage("unknown command - " + command);
+                        else {
+                            try {
+                                plugin = new this.plugins[command]();
                             }
-                            return [2 /*return*/, this.showUsage("no command provided", 1)];
+                            catch (error) {
+                                if (command) {
+                                    this.showUsage("unknown command - " + command);
+                                }
+                                return [2 /*return*/, this.showUsage("no command provided", 1)];
+                            }
                         }
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 5, , 6]);
-                        return [4 /*yield*/, plugin.prepareOptions(argParser)];
+                        _a.label = 2;
                     case 2:
-                        _a.sent();
-                        return [4 /*yield*/, plugin.prepareArgs(argParser._finalizeArgs())];
+                        _a.trys.push([2, 6, , 7]);
+                        return [4 /*yield*/, plugin.prepareOptions(argParser)];
                     case 3:
                         _a.sent();
-                        return [4 /*yield*/, plugin.run()];
+                        return [4 /*yield*/, plugin.prepareArgs(argParser._finalizeArgs())];
                     case 4:
                         _a.sent();
-                        return [3 /*break*/, 6];
+                        return [4 /*yield*/, plugin.run()];
                     case 5:
+                        _a.sent();
+                        return [3 /*break*/, 7];
+                    case 6:
                         error_3 = _a.sent();
+                        if (error_3 instanceof UsageError) {
+                            return [2 /*return*/, this.showUsage(error_3.message, 1)];
+                        }
                         if (debug) {
                             console.log("----- <DEBUG> ------");
                             console.log(error_3);
                             console.log("----- </DEBUG> -----");
                         }
-                        if (error_3 instanceof UsageError) {
-                            return [2 /*return*/, this.showUsage(error_3.message, 1)];
-                        }
                         console.log("Error: " + error_3.message);
                         process.exit(2);
-                        return [3 /*break*/, 6];
-                    case 6: return [2 /*return*/];
+                        return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
                 }
             });
         });

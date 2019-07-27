@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/hash",
-  "version": "5.0.0-beta.124",
+  "version": "5.0.0-beta.125",
   "description": "Hash utility functions for Ethereum.",
   "main": "index.js",
   "scripts": {
@@ -21,5 +21,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0xb57fea0e087099e9814038a44a3462bedfeea17aa424e24d7a05e4e23212b298"
+  "tarballHash": "0xaf57b1789e1e19a2daf619e73a170095b225512f8339916c4602a0545bed68f0"
 }

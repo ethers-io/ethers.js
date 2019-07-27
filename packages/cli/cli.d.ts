@@ -36,7 +36,7 @@ export interface PluginType {
     getHelp?: () => Help;
     getOptionHelp?: () => Array<Help>;
 }
-export declare class Plugin {
+export declare abstract class Plugin {
     network: ethers.providers.Network;
     provider: ethers.providers.Provider;
     accounts: Array<WrappedSigner>;
@@ -54,16 +54,26 @@ export declare class Plugin {
     prepareArgs(args: Array<string>): Promise<void>;
     run(): Promise<void>;
     getAddress(addressOrName: string, message?: string, allowZero?: boolean): Promise<string>;
+    dump(header: string, info: any): void;
     throwUsageError(message?: string): never;
     throwError(message: string): never;
 }
+export declare type Options = {
+    account?: boolean;
+    provider?: boolean;
+    transaction?: boolean;
+};
 export declare class CLI {
     readonly defaultCommand: string;
     readonly plugins: {
         [command: string]: PluginType;
     };
-    constructor(defaultCommand: string);
+    readonly standAlone: PluginType;
+    readonly options: Options;
+    constructor(defaultCommand?: string, options?: Options);
+    static getAppName(): string;
     addPlugin(command: string, plugin: PluginType): void;
+    setPlugin(plugin: PluginType): void;
     showUsage(message?: string, status?: number): never;
     run(args: Array<string>): Promise<void>;
 }

@@ -1,13 +1,4 @@
-import { BytesLike } from "@ethersproject/bytes";
-export declare enum UnicodeNormalizationForm {
-    current = "",
-    NFC = "NFC",
-    NFD = "NFD",
-    NFKC = "NFKC",
-    NFKD = "NFKD"
-}
-export declare function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm): Uint8Array;
-export declare function _toEscapedUtf8String(bytes: BytesLike, ignoreErrors?: boolean): string;
-export declare function toUtf8String(bytes: BytesLike, ignoreErrors?: boolean): string;
-export declare function formatBytes32String(text: string): string;
-export declare function parseBytes32String(bytes: BytesLike): string;
+import { formatBytes32String, parseBytes32String } from "./bytes32";
+import { nameprep } from "./idna";
+import { _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, UnicodeNormalizationForm } from "./utf8";
+export { _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, UnicodeNormalizationForm, formatBytes32String, parseBytes32String, nameprep };

@@ -95,12 +95,42 @@ function walkFilenames(filenames) {
     });
     return result;
 }
-var cli = new cli_1.CLI("generate");
+var cli = new cli_1.CLI(null, {
+    account: false,
+    provider: false,
+    transaction: false
+});
 var GeneratePlugin = /** @class */ (function (_super) {
     __extends(GeneratePlugin, _super);
     function GeneratePlugin() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    GeneratePlugin.getHelp = function () {
+        return {
+            name: "FILENAME [ ... ]",
+            help: "Generates a TypeScript file of all Contracts. May specify folders."
+        };
+    };
+    GeneratePlugin.getOptionHelp = function () {
+        return [
+            {
+                name: "--output FILENAME",
+                help: "Write the output to FILENAME (default: stdout)"
+            },
+            {
+                name: "--force",
+                help: "Overwrite files if they already exist"
+            },
+            {
+                name: "--no-optimize",
+                help: "Do not run the solc optimizer"
+            },
+            {
+                name: "--no-bytecode",
+                help: "Do not include bytecode and Factory methods"
+            }
+        ];
+    };
     GeneratePlugin.prototype.prepareOptions = function (argParser) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -110,7 +140,7 @@ var GeneratePlugin = /** @class */ (function (_super) {
                         _a.sent();
                         this.output = argParser.consumeOption("output");
                         this.force = argParser.consumeFlag("force");
-                        this.optimize = argParser.consumeFlag("no-optimize");
+                        this.optimize = !argParser.consumeFlag("no-optimize");
                         this.noBytecode = argParser.consumeFlag("no-bytecode");
                         return [2 /*return*/];
                 }
@@ -178,5 +208,5 @@ var GeneratePlugin = /** @class */ (function (_super) {
     };
     return GeneratePlugin;
 }(cli_1.Plugin));
-cli.addPlugin("generate", GeneratePlugin);
+cli.setPlugin(GeneratePlugin);
 cli.run(process.argv.slice(2));

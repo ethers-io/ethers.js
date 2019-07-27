@@ -31,22 +31,21 @@ function getStatic(ctor, key) {
 }
 exports.getStatic = getStatic;
 function resolveProperties(object) {
-    var result = {};
-    var promises = [];
-    Object.keys(object).forEach(function (key) {
+    var promises = Object.keys(object).map(function (key) {
         var value = object[key];
-        if (value instanceof Promise) {
-            promises.push(value.then(function (value) {
-                result[key] = value;
-                return null;
-            }));
+        if (!(value instanceof Promise)) {
+            return Promise.resolve({ key: key, value: value });
         }
-        else {
-            result[key] = value;
-        }
+        return value.then(function (value) {
+            return { key: key, value: value };
+        });
     });
-    return Promise.all(promises).then(function () {
-        return result;
+    return Promise.all(promises).then(function (results) {
+        var result = {};
+        return results.reduce(function (accum, result) {
+            accum[result.key] = result.value;
+            return accum;
+        }, result);
     });
 }
 exports.resolveProperties = resolveProperties;
