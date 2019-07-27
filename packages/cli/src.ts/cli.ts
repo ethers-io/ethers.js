@@ -1,11 +1,14 @@
 "use strict";
 
 import fs from "fs";
+import { basename } from "path";
 
 import { ethers } from "ethers";
 import scrypt from "scrypt-js";
 
 import { getChoice, getPassword, getProgressBar } from "./prompt";
+
+import { version } from "./_version";
 
 class UsageError extends Error { }
 
@@ -473,7 +476,7 @@ export interface PluginType {
     getOptionHelp?: () => Array<Help>;
 }
 
-export class Plugin {
+export abstract class Plugin {
     network: ethers.providers.Network;
     provider: ethers.providers.Provider;
 
@@ -654,110 +657,212 @@ export class Plugin {
             }
 
             if (address === ethers.constants.AddressZero && !allowZero) {
-                this.throwError(message);
+                this.throwError(message || "cannot use the zero address");
             }
 
             return address;
         });
     }
 
+    // Dumps formatted data
+    dump(header: string, info: any): void {
+        dump(header, info);
+    }
+
+    // Throwing a UsageError causes the --help to be shown above
+    // the error.message
     throwUsageError(message?: string): never {
         throw new UsageError(message);
     }
 
+    // Shows error.message
     throwError(message: string): never {
         throw new Error(message);
     }
 }
 
+class CheckPlugin extends Plugin { }
+
 
 /////////////////////////////
 // Command Line Runner
 
+export type Options = {
+    account?: boolean;
+    provider?: boolean;
+    transaction?: boolean;
+};
+
 export class CLI {
     readonly defaultCommand: string;
     readonly plugins: { [ command: string ]: PluginType };
+    readonly standAlone: PluginType;
+    readonly options: Options;
 
-    constructor(defaultCommand: string) {
+    constructor(defaultCommand?: string, options?: Options) {
+        ethers.utils.defineReadOnly(this, "options", {
+            account: true,
+            provider: true,
+            transaction: true
+        });
+
+        if (options) {
+            ["account", "provider", "transaction"].forEach((key) => {
+                if ((<any>options)[key] == null) { return; }
+                (<any>(this.options))[key] = !!((<any>options)[key]);
+            });
+        }
+        Object.freeze(this.options);
+
         ethers.utils.defineReadOnly(this, "defaultCommand", defaultCommand || null);
         ethers.utils.defineReadOnly(this, "plugins", { });
     }
 
+    static getAppName(): string {
+        let appName = "ethers";
+        try {
+            appName = basename(process.mainModule.filename).split(".")[0];
+        } catch (error) { }
+        return appName;
+    }
+
+    // @TODO: Better way to specify default; i.e. may not have args
+
     addPlugin(command: string, plugin: PluginType) {
-        this.plugins[command] = plugin;
+        if (this.standAlone) {
+            ethers.errors.throwError("only setPlugin or addPlugin may be used at once", ethers.errors.UNSUPPORTED_OPERATION, {
+                operation: "addPlugin"
+            });
+        } else if (this.plugins[command]) {
+            ethers.errors.throwError("command already exists", ethers.errors.UNSUPPORTED_OPERATION, {
+                operation: "addPlugin",
+                command: command
+            });
+        }
+        ethers.utils.defineReadOnly(this.plugins, command, plugin);
+    }
+
+    setPlugin(plugin: PluginType) {
+        if (Object.keys(this.plugins).length !== 0) {
+            ethers.errors.throwError("only setPlugin or addPlugin may be used at once", ethers.errors.UNSUPPORTED_OPERATION, {
+                operation: "setPlugin"
+            });
+        }
+        if (this.standAlone) {
+            ethers.errors.throwError("cannot setPlugin more than once", ethers.errors.UNSUPPORTED_OPERATION, {
+                operation: "setPlugin"
+            });
+        }
+        ethers.utils.defineReadOnly(this, "standAlone", plugin);
     }
 
     showUsage(message?: string, status?: number): never {
         // Limit:    |                                                                             |
         console.log("Usage:");
 
-        let lines: Array<string> = [];
-        for (let cmd in this.plugins) {
-            let plugin = this.plugins[cmd];
-            let help = (plugin.getHelp ? plugin.getHelp(): null);
-            if (help == null) { continue; }
-            let helpLine = "   " + help.name;
-            if (helpLine.length > 28) {
-                lines.push(helpLine);
-                lines.push(repeat(" ", 30) + help.help);
+        if (this.standAlone) {
+            let help = ethers.utils.getStatic<() => Help>(this.standAlone, "getHelp")();
+            console.log(`   ${ CLI.getAppName() } ${ help.name } [ OPTIONS ]`);
+            console.log("");
+
+            let lines: Array<string> = [];
+            let optionHelp = ethers.utils.getStatic<() => Array<Help>>(this.standAlone, "getOptionHelp")();
+            optionHelp.forEach((help) => {
+                lines.push("  " + help.name + repeat(" ", 28 - help.name.length) + help.help);
+            });
+
+            if (lines.length) {
+                console.log("OPTIONS");
+                lines.forEach((line) => {
+                    console.log(line);
+                });
+                console.log("");
+            }
+        } else {
+
+            if (this.defaultCommand) {
+                console.log(`   ${ CLI.getAppName() } [ COMMAND ] [ ARGS ] [ OPTIONS ]`);
+                console.log("");
             } else {
-                helpLine += repeat(" ", 30 - helpLine.length);
-                lines.push(helpLine + help.help);
+                console.log(`   ${ CLI.getAppName() } COMMAND [ ARGS ] [ OPTIONS ]`);
+                console.log("");
             }
 
-            let optionHelp = (plugin.getOptionHelp ? plugin.getOptionHelp(): [ ]);
-            optionHelp.forEach((help) => {
-                lines.push("      " + help.name + repeat(" ", 27 - help.name.length) + help.help);
-            });
+            let lines: Array<string> = [];
+            for (let cmd in this.plugins) {
+                let plugin = this.plugins[cmd];
+                let help = ethers.utils.getStatic<() => Help>(plugin, "getHelp")();
+                if (help == null) { continue; }
+                let helpLine = "   " + help.name;
+                if (helpLine.length > 28) {
+                    lines.push(helpLine);
+                    lines.push(repeat(" ", 30) + help.help);
+                } else {
+                    helpLine += repeat(" ", 30 - helpLine.length);
+                    lines.push(helpLine + help.help);
+                }
+
+                let optionHelp = ethers.utils.getStatic<() => Array<Help>>(plugin, "getOptionHelp")();
+                optionHelp.forEach((help) => {
+                    lines.push("      " + help.name + repeat(" ", 27 - help.name.length) + help.help);
+                });
+            }
+
+            if (lines.length) {
+                if (this.defaultCommand) {
+                    console.log(`COMMANDS (default: ${ this.defaultCommand })`);
+                } else {
+                    console.log("COMMANDS");
+                }
+
+                lines.forEach((line) => {
+                    console.log(line);
+                });
+                console.log("");
+            }
         }
 
-        if (lines.length) {
-            if (this.defaultCommand) {
-                console.log("   ethers [ COMMAND ] [ ARGS ] [ OPTIONS ]");
-                console.log("");
-                console.log(`COMMANDS (default: ${this.defaultCommand})`);
-            } else {
-                console.log("   ethers COMMAND [ ARGS ] [ OPTIONS ]");
-                console.log("");
-                console.log("COMMANDS");
-            }
-
-            lines.forEach((line) => {
-                console.log(line);
-            });
+        if (this.options.account) {
+            console.log("ACCOUNT OPTIONS");
+            console.log("  --account FILENAME          Load from a file (JSON, RAW or mnemonic)");
+            console.log("  --account RAW_KEY           Use a private key (insecure *)");
+            console.log("  --account 'MNEMONIC'        Use a mnemonic (insecure *)");
+            console.log("  --account -                 Use secure entry for a raw key or mnemonic");
+            console.log("  --account-void ADDRESS      Udd an address as a void signer");
+            console.log("  --account-void ENS_NAME     Add the resolved address as a void signer");
+            console.log("  --account-rpc ADDRESS       Add the address from a JSON-RPC provider");
+            console.log("  --account-rpc INDEX         Add the index from a JSON-RPC provider");
+            console.log("  --mnemonic-password         Prompt for a password for mnemonics");
+            console.log("  --xxx-mnemonic-password     Prompt for a (experimental) hard password");
             console.log("");
         }
 
-        console.log("ACCOUNT OPTIONS");
-        console.log("  --account FILENAME          Load from a file (JSON, RAW or mnemonic)");
-        console.log("  --account RAW_KEY           Use a private key (insecure *)");
-        console.log("  --account 'MNEMONIC'        Use a mnemonic (insecure *)");
-        console.log("  --account -                 Use secure entry for a raw key or mnemonic");
-        console.log("  --account-void ADDRESS      Udd an address as a void signer");
-        console.log("  --account-void ENS_NAME     Add the resolved address as a void signer");
-        console.log("  --account-rpc ADDRESS       Add the address from a JSON-RPC provider");
-        console.log("  --account-rpc INDEX         Add the index from a JSON-RPC provider");
-        console.log("  --mnemonic-password         Prompt for a password for mnemonics");
-        console.log("  --xxx-mnemonic-password     Prompt for a (experimental) hard password");
-        console.log("");
-        console.log("PROVIDER OPTIONS (default: getDefaultProvider)");
-        console.log("  --alchemy                   Include Alchemy");
-        console.log("  --etherscan                 Include Etherscan");
-        console.log("  --infura                    Include INFURA");
-        console.log("  --nodesmith                 Include nodesmith");
-        console.log("  --rpc URL                   Include a custom JSON-RPC");
-        console.log("  --offline                   Dump signed transactions (no send)");
-        console.log("  --network NETWORK           Network to connect to (default: homestead)");
-        console.log("");
-        console.log("TRANSACTION OPTIONS (default: query the network)");
-        console.log("  --gasPrice GWEI             Default gas price for transactions(in wei)");
-        console.log("  --gasLimit GAS              Default gas limit for transactions");
-        console.log("  --nonce NONCE               Initial nonce for the first transaction");
-        console.log("  --value VALUE               Default value (in ether) for transactions");
-        console.log("  --yes                       Always accept Siging and Sending");
-        console.log("");
+        if (this.options.provider) {
+            console.log("PROVIDER OPTIONS (default: all + homestead)");
+            console.log("  --alchemy                   Include Alchemy");
+            console.log("  --etherscan                 Include Etherscan");
+            console.log("  --infura                    Include INFURA");
+            console.log("  --nodesmith                 Include nodesmith");
+            console.log("  --rpc URL                   Include a custom JSON-RPC");
+            console.log("  --offline                   Dump signed transactions (no send)");
+            console.log("  --network NETWORK           Network to connect to (default: homestead)");
+            console.log("");
+        }
+
+        if (this.options.transaction) {
+            console.log("TRANSACTION OPTIONS (default: query network)");
+            console.log("  --gasPrice GWEI             Default gas price for transactions(in wei)");
+            console.log("  --gasLimit GAS              Default gas limit for transactions");
+            console.log("  --nonce NONCE               Initial nonce for the first transaction");
+            console.log("  --value VALUE               Default value (in ether) for transactions");
+            console.log("  --yes                       Always accept Siging and Sending");
+            console.log("");
+        }
+
         console.log("OTHER OPTIONS");
-        console.log("  --help                      Show this usage and quit");
+        console.log("  --debug                     Show stack traces for errors");
+        console.log("  --help                      Show this usage and exit");
+        console.log("  --version                   Show this version and exit");
         console.log("");
         console.log("(*) By including mnemonics or private keys on the command line they are");
         console.log("    possibly readable by other users on your system and may get stored in");
@@ -776,13 +881,25 @@ export class CLI {
     async run(args: Array<string>): Promise<void> {
         args = args.slice();
 
+        if (this.defaultCommand && !this.plugins[this.defaultCommand]) {
+            throw new Error("missing defaultCommand plugin");
+        }
+
         let command: string = null;
 
         // We run a temporary argument parser to check for a command by processing standard options
         {
             let argParser = new ArgParser(args);
 
-            [ "debug", "help", "mnemonic-password", "offline", "xxx-mnemonic-password", "yes"].forEach((key) => {
+            let plugin = new CheckPlugin();
+            await plugin.prepareOptions(argParser);
+
+            [ "debug", "help", "version"].forEach((key) => {
+                argParser.consumeFlag(key);
+            });
+
+            /*
+            [ "mnemonic-password", "offline", "xxx-mnemonic-password", "yes"].forEach((key) => {
                 argParser.consumeFlag(key);
             });
 
@@ -792,31 +909,49 @@ export class CLI {
             [ "network", "rpc", "account", "account-rpc", "account-void", "gas-price", "gas-limit", "nonce" ].forEach((option) => {
                 argParser.consumeOption(option);
             });
+            */
 
-            let commandIndex = argParser._checkCommandIndex();
-            if (commandIndex === -1) {
-                command = this.defaultCommand;
-            } else {
-                command = args[commandIndex];
-                args.splice(commandIndex, 1);
+            // Find the first unconsumed argument
+            if (!this.standAlone) {
+                let commandIndex = argParser._checkCommandIndex();
+                if (commandIndex === -1) {
+                    command = this.defaultCommand;
+                } else {
+                    command = args[commandIndex];
+                    args.splice(commandIndex, 1);
+                }
             }
         }
 
         // Reset the argument parser
         let argParser = new ArgParser(args);
+
+        if (argParser.consumeFlag("version")) {
+            let app = "ethers";
+            try {
+                app = basename(process.mainModule.filename).split(".")[0];
+            } catch (error) { }
+            console.log(app + "/" + version);
+            return;
+        }
+
         if (argParser.consumeFlag("help")) {
             return this.showUsage();
         }
 
         let debug = argParser.consumeFlag("debug");
 
-        // Create PLug-in instance
+        // Create Plug-in instance
         let plugin: Plugin = null;
-        try {
-            plugin = new this.plugins[command]();
-        } catch (error) {
-            if (command) { this.showUsage("unknown command - " + command); }
-            return this.showUsage("no command provided", 1);
+        if (this.standAlone) {
+            plugin = new this.standAlone;
+        } else {
+            try {
+                plugin = new this.plugins[command]();
+            } catch (error) {
+                if (command) { this.showUsage("unknown command - " + command); }
+                return this.showUsage("no command provided", 1);
+            }
         }
 
         try {
@@ -825,14 +960,16 @@ export class CLI {
             await plugin.run();
 
         } catch (error) {
+            if (error instanceof UsageError) {
+                return this.showUsage(error.message, 1);
+            }
+
             if (debug) {
                 console.log("----- <DEBUG> ------")
                 console.log(error);
                 console.log("----- </DEBUG> -----")
             }
-            if (error instanceof UsageError) {
-                return this.showUsage(error.message, 1);
-            }
+
             console.log("Error: " + error.message);
             process.exit(2);
         }

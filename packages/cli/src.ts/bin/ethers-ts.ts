@@ -7,7 +7,7 @@ import { join as pathJoin } from "path";
 
 import { ethers } from 'ethers';
 
-import { ArgParser, CLI, Plugin } from '../cli';
+import { ArgParser, CLI, Help, Plugin } from '../cli';
 import { header as Header, generate as generateTypeScript } from "../typescript";
 import { compile, ContractCode } from "../solc";
 
@@ -50,7 +50,11 @@ function walkFilenames(filenames: Array<string>): Array<string> {
     return result;
 }
 
-let cli = new CLI("generate");
+let cli = new CLI(null, {
+    account: false,
+    provider: false,
+    transaction: false
+});
 
 class GeneratePlugin extends Plugin {
 
@@ -60,12 +64,39 @@ class GeneratePlugin extends Plugin {
     optimize: boolean;
     noBytecode: boolean;
 
+    static getHelp(): Help {
+        return {
+            name: "FILENAME [ ... ]",
+            help: "Generates a TypeScript file of all Contracts. May specify folders."
+        };
+    }
+    static getOptionHelp(): Array<Help> {
+        return [
+            {
+                name: "--output FILENAME",
+                help: "Write the output to FILENAME (default: stdout)"
+            },
+            {
+                name: "--force",
+                help: "Overwrite files if they already exist"
+            },
+            {
+                name: "--no-optimize",
+                help: "Do not run the solc optimizer"
+            },
+            {
+                name: "--no-bytecode",
+                help: "Do not include bytecode and Factory methods"
+            }
+        ];
+    }
+
     async prepareOptions(argParser: ArgParser): Promise<void> {
         await super.prepareOptions(argParser);
 
         this.output = argParser.consumeOption("output");
         this.force = argParser.consumeFlag("force");
-        this.optimize = argParser.consumeFlag("no-optimize");
+        this.optimize = !argParser.consumeFlag("no-optimize");
         this.noBytecode = argParser.consumeFlag("no-bytecode");
     }
 
@@ -121,6 +152,6 @@ class GeneratePlugin extends Plugin {
         return Promise.resolve(null);
     }
 }
-cli.addPlugin("generate", GeneratePlugin);
+cli.setPlugin(GeneratePlugin);
 
 cli.run(process.argv.slice(2))
