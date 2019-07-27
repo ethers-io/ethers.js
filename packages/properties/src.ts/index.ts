@@ -20,26 +20,27 @@ export function getStatic<T>(ctor: any, key: string): T {
     return null;
 }
 
+type Result = { key: string, value: any};
 export function resolveProperties(object: any): Promise<any> {
-    let result: any = {};
 
-    let promises: Array<Promise<void>> = [];
-    Object.keys(object).forEach((key) => {
+    let promises: Array<Promise<Result>> = Object.keys(object).map((key) => {
         let value = object[key];
-        if (value instanceof Promise) {
-            promises.push(
-                value.then((value) => {
-                    result[key] = value;
-                    return null;
-                })
-            );
-        } else {
-            result[key] = value;
+
+        if (!(value instanceof Promise)) {
+            return Promise.resolve({ key: key, value: value });
         }
+
+        return value.then((value) => {
+            return { key: key, value: value };
+        });
     });
 
-    return Promise.all(promises).then(() => {
-        return result;
+    return Promise.all(promises).then((results) => {
+        let result: any = { };
+        return results.reduce((accum, result) => {
+            accum[result.key] = result.value;
+            return accum;
+        }, result);
     });
 }
 
