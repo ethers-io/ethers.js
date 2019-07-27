@@ -10,7 +10,7 @@ import * as errors from '../errors';
 ///////////////////////////////
 // Imported Types
 
-import { BlockTag, TransactionRequest, TransactionResponse } from './abstract-provider';
+import {BlockTag, Order, Page, TransactionRequest, TransactionResponse} from './abstract-provider';
 
 import { Networkish } from '../utils/networks';
 
@@ -309,21 +309,57 @@ export class EtherscanProvider extends BaseProvider{
     }
 
     // @TODO: Allow startBlock and endBlock to be Promises
-    getHistory(addressOrName: string | Promise<string>, startBlock?: BlockTag, endBlock?: BlockTag): Promise<Array<TransactionResponse>> {
+    getHistory(addressOrName: string | Promise<string>, startBlock: BlockTag = 0, endBlock: BlockTag = 99999999, sort: Order = 'asc'): Promise<Array<TransactionResponse>> {
 
         let url = this.baseUrl;
 
         let apiKey = '';
         if (this.apiKey) { apiKey += '&apikey=' + this.apiKey; }
 
-        if (startBlock == null) { startBlock = 0; }
-        if (endBlock == null) { endBlock = 99999999; }
-
         return this.resolveName(addressOrName).then((address) => {
             url += '/api?module=account&action=txlist&address=' + address;
             url += '&startblock=' + startBlock;
             url += '&endblock=' + endBlock;
-            url += '&sort=asc' + apiKey;
+            url += '&sort=' + sort;
+            url += apiKey;
+
+            return fetchJson(url, null, getResult).then((result: Array<any>) => {
+                this.emit('debug', {
+                    action: 'getHistory',
+                    request: url,
+                    response: result,
+                    provider: this
+                });
+                var output: Array<TransactionResponse> = [];
+                result.forEach((tx) => {
+                    ['contractAddress', 'to'].forEach(function(key) {
+                        if (tx[key] == '') { delete tx[key]; }
+                    });
+                    if (tx.creates == null && tx.contractAddress != null) {
+                        tx.creates = tx.contractAddress;
+                    }
+                    let item = BaseProvider.checkTransactionResponse(tx);
+                    if (tx.timeStamp) { item.timestamp = parseInt(tx.timeStamp); }
+                    output.push(item);
+                });
+                return output;
+            });
+        });
+    }
+
+    getHistoryPaginated(addressOrName: string | Promise<string>, page: Page = 1, offset: Page = 10, sort: Order = 'asc'): Promise<Array<TransactionResponse>> {
+
+        let url = this.baseUrl;
+
+        let apiKey = '';
+        if (this.apiKey) { apiKey += '&apikey=' + this.apiKey; }
+
+        return this.resolveName(addressOrName).then((address) => {
+            url += '/api?module=account&action=txlist&address=' + address;
+            url += '&page=' + page;
+            url += '&offset=' + offset;
+            url += '&sort=' + sort;
+            url += apiKey;
 
             return fetchJson(url, null, getResult).then((result: Array<any>) => {
                 this.emit('debug', {
