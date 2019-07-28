@@ -6,7 +6,7 @@ import { hexDataLength, hexDataSlice, hexlify, hexStripZeros, isHexString, strip
 import { AddressZero } from "../constants";
 import { namehash } from '../utils/hash';
 import { getNetwork } from '../utils/networks';
-import { defineReadOnly, inheritable, resolveProperties, shallowCopy } from '../utils/properties';
+import { defineReadOnly, inheritable, isPromise, resolveProperties, shallowCopy } from '../utils/properties';
 import { encode as rlpEncode } from '../utils/rlp';
 import { parse as parseTransaction } from '../utils/transaction';
 import { toUtf8String } from '../utils/utf8';
@@ -536,7 +536,7 @@ export class BaseProvider extends Provider {
         super();
         errors.checkNew(this, Provider);
 
-        if (network instanceof Promise) {
+        if (isPromise(network)) {
             defineReadOnly(this, 'ready', network.then((network) => {
                 defineReadOnly(this, '_network', network);
                 return network;
@@ -1165,7 +1165,7 @@ export class BaseProvider extends Provider {
     resolveName(name: string | Promise<string>): Promise<string> {
 
         // If it is a promise, resolve it then recurse
-        if (name instanceof Promise) {
+        if (isPromise(name)) {
             return name.then((addressOrName) => {
                 return this.resolveName(addressOrName);
             });
@@ -1199,7 +1199,7 @@ export class BaseProvider extends Provider {
     }
 
     lookupAddress(address: string | Promise<string>): Promise<string> {
-        if (address instanceof Promise) {
+        if (isPromise(address)) {
             return address.then((address) => {
                 return this.lookupAddress(address);
             });

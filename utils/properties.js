@@ -26,12 +26,16 @@ function isType(object, type) {
     return (object && object._ethersType === type);
 }
 exports.isType = isType;
+function isPromise(object) {
+    return (object && typeof object.then === 'function');
+}
+exports.isPromise = isPromise;
 function resolveProperties(object) {
     var result = {};
     var promises = [];
     Object.keys(object).forEach(function (key) {
         var value = object[key];
-        if (value instanceof Promise) {
+        if (isPromise(value)) {
             promises.push(value.then(function (value) {
                 result[key] = value;
                 return null;

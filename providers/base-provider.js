@@ -421,7 +421,7 @@ var BaseProvider = /** @class */ (function (_super) {
     function BaseProvider(network) {
         var _this = _super.call(this) || this;
         errors.checkNew(_this, abstract_provider_1.Provider);
-        if (network instanceof Promise) {
+        if (properties_1.isPromise(network)) {
             properties_1.defineReadOnly(_this, 'ready', network.then(function (network) {
                 properties_1.defineReadOnly(_this, '_network', network);
                 return network;
@@ -1034,7 +1034,7 @@ var BaseProvider = /** @class */ (function (_super) {
     BaseProvider.prototype.resolveName = function (name) {
         var _this = this;
         // If it is a promise, resolve it then recurse
-        if (name instanceof Promise) {
+        if (properties_1.isPromise(name)) {
             return name.then(function (addressOrName) {
                 return _this.resolveName(addressOrName);
             });
@@ -1069,7 +1069,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.lookupAddress = function (address) {
         var _this = this;
-        if (address instanceof Promise) {
+        if (properties_1.isPromise(address)) {
             return address.then(function (address) {
                 return _this.lookupAddress(address);
             });

@@ -21,13 +21,17 @@ export function isType(object: any, type: string): boolean {
     return (object && object._ethersType === type);
 }
 
+export function isPromise(object: any): boolean {
+    return object && typeof object.then === 'function';
+}
+
 export function resolveProperties(object: any): Promise<any> {
     let result: any = {};
 
     let promises: Array<Promise<void>> = [];
     Object.keys(object).forEach((key) => {
         let value = object[key];
-        if (value instanceof Promise) {
+        if (isPromise(value)) {
             promises.push(
                 value.then((value) => {
                     result[key] = value;
