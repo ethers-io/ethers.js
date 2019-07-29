@@ -14291,7 +14291,7 @@ var HDNode = /** @class */ (function () {
                 result = result._derive(index);
             }
             else {
-                throw new Error('invlaid path component - ' + component);
+                throw new Error('invalid path component - ' + component);
             }
         }
         return result;
@@ -15507,7 +15507,7 @@ function _decode(data, offset) {
     else if (data[offset] >= 0x80) {
         var length = data[offset] - 0x80;
         if (offset + 1 + length > data.length) {
-            throw new Error('invlaid rlp data');
+            throw new Error('invalid rlp data');
         }
         var result = bytes_1.hexlify(data.slice(offset + 1, offset + 1 + length));
         return { consumed: (1 + length), result: result };
