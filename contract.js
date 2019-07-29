@@ -204,7 +204,7 @@ function runMethod(contract, functionName, estimateOnly) {
                     tx.gasLimit = bignumber_1.bigNumberify(method.gas).add(21000);
                 }
                 if (!contract.signer) {
-                    errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' });
+                    errors.throwError('sending a transaction requires a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' });
                 }
                 // Make sure they aren't overriding something they shouldn't
                 if (tx.from != null) {
@@ -366,7 +366,7 @@ var Contract = /** @class */ (function () {
     Contract.prototype.fallback = function (overrides) {
         var _this = this;
         if (!this.signer) {
-            errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' });
+            errors.throwError('sending a transaction requires a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' });
         }
         var tx = properties_1.shallowCopy(overrides || {});
         ['from', 'to'].forEach(function (key) {
