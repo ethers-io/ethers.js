@@ -11,8 +11,8 @@
     "@ethersproject/bignumber": ">5.0.0-beta.0",
     "@ethersproject/bytes": ">5.0.0-beta.0",
     "@ethersproject/constants": ">5.0.0-beta.0",
-    "@ethersproject/errors": ">5.0.0-beta.0",
     "@ethersproject/keccak256": ">5.0.0-beta.0",
+    "@ethersproject/logger": ">5.0.0-beta.0",
     "@ethersproject/properties": ">5.0.0-beta.0",
     "@ethersproject/rlp": ">5.0.0-beta.0",
     "@ethersproject/signing-key": ">5.0.0-beta.0"

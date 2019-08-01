@@ -6,7 +6,6 @@
 
 import { ExternallyOwnedAccount } from "@ethersproject/abstract-signer";
 import { Base58 } from "@ethersproject/basex";
-import * as errors from "@ethersproject/errors";
 import { arrayify, BytesLike, concat, hexDataSlice, hexZeroPad, hexlify } from "@ethersproject/bytes";
 import { BigNumber } from "@ethersproject/bignumber";
 import { toUtf8Bytes, UnicodeNormalizationForm } from "@ethersproject/strings";
@@ -16,6 +15,10 @@ import { SigningKey } from "@ethersproject/signing-key";
 import { computeHmac, ripemd160, sha256, SupportedAlgorithms } from "@ethersproject/sha2";
 import { computeAddress } from "@ethersproject/transactions";
 import { Wordlist, wordlists } from "@ethersproject/wordlists";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 const N = BigNumber.from("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 
@@ -73,7 +76,7 @@ export class HDNode implements ExternallyOwnedAccount {
      *   - fromSeed
      */
     constructor(constructorGuard: any, privateKey: string, publicKey: string, parentFingerprint: string, chainCode: string, index: number, depth: number, mnemonic: string, path: string) {
-        errors.checkNew(new.target, HDNode);
+        logger.checkNew(new.target, HDNode);
 
         if (constructorGuard !== _constructorGuard) {
             throw new Error("HDNode constructor cannot be called directly");
@@ -226,10 +229,7 @@ export class HDNode implements ExternallyOwnedAccount {
         let bytes = Base58.decode(extendedKey);
 
         if (bytes.length !== 82 || base58check(bytes.slice(0, 78)) !== extendedKey) {
-            errors.throwError("invalid extended key", errors.INVALID_ARGUMENT, {
-                argument: "extendedKey",
-                value: "[REDACTED]"
-            });
+            logger.throwArgumentError("invalid extended key", "extendedKey", "[REDACTED]");
         }
 
         let depth = bytes[4];
@@ -249,10 +249,7 @@ export class HDNode implements ExternallyOwnedAccount {
                 return new HDNode(_constructorGuard, hexlify(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null, null);
         }
 
-        return errors.throwError("invalid extended key", errors.INVALID_ARGUMENT, {
-            argument: "extendedKey",
-            value: "[REDACTED]"
-        });
+        return logger.throwError("invalid extended key", "extendedKey", "[REDACTED]");
 
     }
 }
@@ -268,7 +265,7 @@ export function mnemonicToSeed(mnemonic: string, password?: string): string {
 export function mnemonicToEntropy(mnemonic: string, wordlist?: Wordlist): string {
     if (!wordlist) { wordlist = wordlists["en"]; }
 
-    errors.checkNormalize();
+    logger.checkNormalize();
 
     let words = wordlist.split(mnemonic);
     if ((words.length % 3) !== 0) { throw new Error("invalid mnemonic"); }

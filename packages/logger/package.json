@@ -1,0 +1,19 @@
+{
+  "name": "@ethersproject/logger",
+  "version": "5.0.0-beta.127",
+  "description": "Logger utility functions for ethers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "tarballHash": "0xd285051d17a97638f3840564e5121f34ac194907818e337e0a1339784d8daeff"
+}

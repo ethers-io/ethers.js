@@ -1,9 +1,12 @@
 "use strict";
 
-import * as errors from "@ethersproject/errors";
 import { Network } from "@ethersproject/networks";
 import { shuffled } from "@ethersproject/random";
 import { deepCopy, defineReadOnly } from "@ethersproject/properties";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { BaseProvider } from "./base-provider";
 
@@ -37,11 +40,7 @@ function checkNetworks(networks: Array<Network>): boolean {
             ((check.ensAddress === network.ensAddress) ||
                 (check.ensAddress == null && network.ensAddress == null))) { return; }
 
-        errors.throwError(
-            "provider mismatch",
-            errors.INVALID_ARGUMENT,
-            { arg: "networks", value: networks }
-        );
+        logger.throwArgumentError("provider mismatch", "networks", networks);
     });
 
     return result;
@@ -87,20 +86,20 @@ export class FallbackProvider extends BaseProvider {
     readonly quorum: number;
 
     constructor(providers: Array<BaseProvider>, quorum?: number, weights?: Array<number>) {
-        errors.checkNew(new.target, FallbackProvider);
+        logger.checkNew(new.target, FallbackProvider);
 
         if (providers.length === 0) {
-            errors.throwArgumentError("missing providers", "providers", providers);
+            logger.throwArgumentError("missing providers", "providers", providers);
         }
 
         if (weights != null && weights.length !== providers.length) {
-            errors.throwArgumentError("too many weights", "weights", weights);
+            logger.throwArgumentError("too many weights", "weights", weights);
         } else if (!weights) {
             weights = providers.map((p) => 1);
         } else {
             weights.forEach((w) => {
                 if (w % 1 || w > 512 || w < 1) {
-                    errors.throwArgumentError("invalid weight; must be integer in [1, 512]", "weights", weights);
+                    logger.throwArgumentError("invalid weight; must be integer in [1, 512]", "weights", weights);
                 }
             });
         }
@@ -111,7 +110,7 @@ export class FallbackProvider extends BaseProvider {
             quorum = total / 2;
         } else {
             if (quorum > total) {
-                errors.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
+                logger.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
             }
         }
 
@@ -125,7 +124,7 @@ export class FallbackProvider extends BaseProvider {
             // The network won't be known until all child providers know
             let ready = Promise.all(providers.map((p) => p.getNetwork())).then((networks) => {
                 if (!checkNetworks(networks)) {
-                    errors.throwError("getNetwork returned null", errors.UNKNOWN_ERROR, { })
+                    logger.throwError("getNetwork returned null", Logger.errors.UNKNOWN_ERROR)
                 }
                 return networks[0];
             });

@@ -6,13 +6,16 @@ import {
 } from "@ethersproject/abstract-provider";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { arrayify, hexDataLength, hexlify, hexValue, isHexString } from "@ethersproject/bytes";
-import * as errors from "@ethersproject/errors";
 import { namehash } from "@ethersproject/hash";
 import { getNetwork, Network, Networkish } from "@ethersproject/networks";
 import { defineReadOnly, getStatic, resolveProperties } from "@ethersproject/properties";
 import { Transaction } from "@ethersproject/transactions";
 import { toUtf8String } from "@ethersproject/strings";
 import { poll } from "@ethersproject/web";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { Formatter } from "./formatter";
 
@@ -23,7 +26,7 @@ import { Formatter } from "./formatter";
 function checkTopic(topic: string): string {
      if (topic == null) { return "null"; }
      if (hexDataLength(topic) !== 32) {
-         errors.throwArgumentError("invalid topic", "topic", topic);
+         logger.throwArgumentError("invalid topic", "topic", topic);
      }
      return topic.toLowerCase();
 }
@@ -78,7 +81,7 @@ function getEventTag(eventName: EventType): string {
         return "filter:*:" + serializeTopics(eventName);
 
     } else if (ForkEvent.isForkEvent(eventName)) {
-        errors.warn("not implemented");
+        logger.warn("not implemented");
         throw new Error("not implemented");
 
     } else if (eventName && typeof(eventName) === "object") {
@@ -171,7 +174,7 @@ export class BaseProvider extends Provider {
     ready: Promise<Network>;
 
     constructor(network: Networkish | Promise<Network>) {
-        errors.checkNew(new.target, Provider);
+        logger.checkNew(new.target, Provider);
 
         super();
 
@@ -193,7 +196,7 @@ export class BaseProvider extends Provider {
                 defineReadOnly(this, "ready", Promise.resolve(this._network));
 
             } else {
-                errors.throwError("invalid network", errors.INVALID_ARGUMENT, { arg: "network", value: network });
+                logger.throwArgumentError("invalid network", "network", network);
             }
         }
 
@@ -499,7 +502,7 @@ export class BaseProvider extends Provider {
 
         // Check the hash we expect is the same as the hash the server reported
         if (hash != null && tx.hash !== hash) {
-            errors.throwError("Transaction hash mismatch from Provider.sendTransaction.", errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
+            logger.throwError("Transaction hash mismatch from Provider.sendTransaction.", Logger.errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
 
         // @TODO: (confirmations? number, timeout? number)
@@ -519,7 +522,7 @@ export class BaseProvider extends Provider {
                 this._emitted["t:" + tx.hash] = receipt.blockNumber;
 
                 if (receipt.status === 0) {
-                    errors.throwError("transaction failed", errors.CALL_EXCEPTION, {
+                    logger.throwError("transaction failed", Logger.errors.CALL_EXCEPTION, {
                         transactionHash: tx.hash,
                         transaction: tx
                     });
@@ -606,7 +609,7 @@ export class BaseProvider extends Provider {
     _getAddress(addressOrName: string | Promise<string>): Promise<string> {
         return this.resolveName(addressOrName).then((address) => {
             if (address == null) {
-                errors.throwError("ENS name not configured", errors.UNSUPPORTED_OPERATION, {
+                logger.throwError("ENS name not configured", Logger.errors.UNSUPPORTED_OPERATION, {
                     operation: `resolveName(${ JSON.stringify(addressOrName) })`
                 });
             }
@@ -637,7 +640,7 @@ export class BaseProvider extends Provider {
                             blockNumber = parseInt(params.blockTag.substring(2), 16);
                         }
                     } catch (error) {
-                        errors.throwError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
+                        logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
                     }
                 }
 
@@ -782,7 +785,7 @@ export class BaseProvider extends Provider {
 
         if (typeof(blockTag) === "number" && blockTag < 0) {
             if (blockTag % 1) {
-                errors.throwArgumentError("invalid BlockTag", "blockTag", blockTag);
+                logger.throwArgumentError("invalid BlockTag", "blockTag", blockTag);
             }
 
             return this._getFastBlockNumber().then((bn) => {
@@ -802,9 +805,9 @@ export class BaseProvider extends Provider {
 
             // No ENS...
             if (!network.ensAddress) {
-                errors.throwError(
+                logger.throwError(
                     "network does support ENS",
-                    errors.UNSUPPORTED_OPERATION,
+                    Logger.errors.UNSUPPORTED_OPERATION,
                     { operation: "ENS", network: network.name }
                 );
             }
@@ -883,7 +886,7 @@ export class BaseProvider extends Provider {
     }
 
     perform(method: string, params: any): Promise<any> {
-        return errors.throwError(method + " not implemented", errors.NOT_IMPLEMENTED, { operation: method });
+        return logger.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
     }
 
     _startPending(): void {

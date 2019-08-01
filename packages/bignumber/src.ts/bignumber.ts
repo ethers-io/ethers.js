@@ -12,7 +12,9 @@ import * as BN from "bn.js";
 
 import { Bytes, Hexable, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
 
-import * as errors from "@ethersproject/errors";
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 const _constructorGuard = { };
 
@@ -37,10 +39,10 @@ export class BigNumber implements Hexable {
     readonly _isBigNumber: boolean;
 
     constructor(constructorGuard: any, hex: string) {
-        errors.checkNew(new.target, BigNumber);
+        logger.checkNew(new.target, BigNumber);
 
         if (constructorGuard !== _constructorGuard) {
-            errors.throwError("cannot call consturtor directly; use BigNumber.from", errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("cannot call consturtor directly; use BigNumber.from", Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "new (BigNumber)"
             });
         }
@@ -134,7 +136,7 @@ export class BigNumber implements Hexable {
     toString(): string {
         // Lots of people expect this, which we do not support, so check
         if (arguments.length !== 0) {
-            errors.throwError("bigNumber.toString does not accept parameters", errors.UNEXPECTED_ARGUMENT, { });
+            logger.throwError("bigNumber.toString does not accept parameters", Logger.errors.UNEXPECTED_ARGUMENT, { });
         }
         return toBN(this).toString(10);
     }
@@ -155,7 +157,7 @@ export class BigNumber implements Hexable {
                 return new BigNumber(_constructorGuard, toHex(new BN.BN(value)));
             }
 
-            return errors.throwArgumentError("invalid BigNumber string", "value", value);
+            return logger.throwArgumentError("invalid BigNumber string", "value", value);
         }
 
         if (typeof(value) === "number") {
@@ -189,7 +191,7 @@ export class BigNumber implements Hexable {
             }
         }
 
-        return errors.throwArgumentError("invalid BigNumber value", "value", value);
+        return logger.throwArgumentError("invalid BigNumber value", "value", value);
     }
 
     static isBigNumber(value: any): value is BigNumber {
@@ -211,7 +213,7 @@ function toHex(value: string | BN.BN): string {
         value = value.substring(1);
 
         // Cannot have mulitple negative signs (e.g. "--0x04")
-        if (value[0] === "-") { errors.throwArgumentError("invalid hex", "value", value); }
+        if (value[0] === "-") { logger.throwArgumentError("invalid hex", "value", value); }
 
         // Call toHex on the positive component
         value = toHex(value);
@@ -256,5 +258,5 @@ function throwFault(fault: string, operation: string, value?: any): never {
     let params: any = { fault: fault, operation: operation };
     if (value != null) { params.value = value; }
 
-    return errors.throwError(fault, errors.NUMERIC_FAULT, params);
+    return logger.throwError(fault, Logger.errors.NUMERIC_FAULT, params);
 }

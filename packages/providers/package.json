@@ -1,7 +1,7 @@
 {
   "name": "@ethersproject/providers",
   "version": "5.0.0-beta.136",
-  "description": "Error utility functions for ethers.",
+  "description": "Ethereum Providers for ethers.",
   "main": "index.js",
   "browser": {
     "net": "./browser-net.js",
@@ -17,8 +17,8 @@
     "@ethersproject/bignumber": ">5.0.0-beta.0",
     "@ethersproject/bytes": ">5.0.0-beta.0",
     "@ethersproject/constants": ">5.0.0-beta.0",
-    "@ethersproject/errors": ">5.0.0-beta.0",
     "@ethersproject/hash": ">5.0.0-beta.0",
+    "@ethersproject/logger": ">5.0.0-beta.0",
     "@ethersproject/networks": ">5.0.0-beta.0",
     "@ethersproject/properties": ">5.0.0-beta.0",
     "@ethersproject/random": ">5.0.0-beta.0",

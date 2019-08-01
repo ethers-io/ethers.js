@@ -1,8 +1,11 @@
 "use strict";
 
-import * as errors from "@ethersproject/errors";
 import { getNetwork, Network, Networkish } from "@ethersproject/networks";
 import { defineReadOnly } from "@ethersproject/properties";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 
@@ -10,7 +13,7 @@ export class UrlJsonRpcProvider extends JsonRpcProvider {
     readonly apiKey: string;
 
     constructor(network?: Networkish, apiKey?: string) {
-        errors.checkAbstract(new.target, UrlJsonRpcProvider);
+        logger.checkAbstract(new.target, UrlJsonRpcProvider);
 
         // Normalize the Network and API Key
         network = new.target.getNetwork(network);
@@ -24,13 +27,13 @@ export class UrlJsonRpcProvider extends JsonRpcProvider {
     }
 
     _startPending(): void {
-        errors.warn("WARNING: API provider does not support pending filters");
+        logger.warn("WARNING: API provider does not support pending filters");
     }
 
     getSigner(address?: string): JsonRpcSigner {
-        errors.throwError(
+        logger.throwError(
             "API provider does not support signing",
-            errors.UNSUPPORTED_OPERATION,
+            Logger.errors.UNSUPPORTED_OPERATION,
             { operation: "getSigner" }
         );
         return null;
@@ -51,7 +54,7 @@ export class UrlJsonRpcProvider extends JsonRpcProvider {
 
     // Returns the url for the given network and API key
     static getUrl(network: Network, apiKey: string): string {
-        return errors.throwError("not implemented; sub-classes must override getUrl", errors.NOT_IMPLEMENTED, {
+        return logger.throwError("not implemented; sub-classes must override getUrl", Logger.errors.NOT_IMPLEMENTED, {
             operation: "getUrl"
         });
     }

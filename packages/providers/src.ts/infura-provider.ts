@@ -1,7 +1,10 @@
 "use strict";
 
-import * as errors from "@ethersproject/errors";
 import { Network } from "@ethersproject/networks";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 
@@ -35,7 +38,7 @@ export class InfuraProvider extends UrlJsonRpcProvider {
                 host = "goerli.infura.io";
                 break;
             default:
-                errors.throwError("unsupported network", errors.INVALID_ARGUMENT, {
+                logger.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
                     argument: "network",
                     value: network
                 });

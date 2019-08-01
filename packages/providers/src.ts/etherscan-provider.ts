@@ -2,10 +2,13 @@
 
 import { BlockTag, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { hexlify, hexValue } from "@ethersproject/bytes";
-import * as errors from "@ethersproject/errors";
 import { Networkish } from "@ethersproject/networks";
 import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 import { fetchJson } from "@ethersproject/web";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { BaseProvider } from "./base-provider";
 
@@ -72,7 +75,7 @@ export class EtherscanProvider extends BaseProvider{
     readonly baseUrl: string;
     readonly apiKey: string;
     constructor(network?: Networkish, apiKey?: string) {
-        errors.checkNew(new.target, EtherscanProvider);
+        logger.checkNew(new.target, EtherscanProvider);
 
         super(network);
 
@@ -169,15 +172,15 @@ export class EtherscanProvider extends BaseProvider{
                     if (error.responseText) {
                         // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
                         if (error.responseText.toLowerCase().indexOf("insufficient funds") >= 0) {
-                            errors.throwError("insufficient funds", errors.INSUFFICIENT_FUNDS, { });
+                            logger.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, { });
                         }
                         // "Transaction with the same hash was already imported."
                         if (error.responseText.indexOf("same hash was already imported") >= 0) {
-                            errors.throwError("nonce has already been used", errors.NONCE_EXPIRED, { });
+                            logger.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, { });
                         }
                         // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
                         if (error.responseText.indexOf("another transaction with same nonce") >= 0) {
-                            errors.throwError("replacement fee too low", errors.REPLACEMENT_UNDERPRICED, { });
+                            logger.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, { });
                         }
                     }
                     throw error;

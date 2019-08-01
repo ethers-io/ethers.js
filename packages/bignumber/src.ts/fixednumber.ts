@@ -1,7 +1,10 @@
 "use strict";
 
 import { arrayify, BytesLike, hexZeroPad, isBytes } from "@ethersproject/bytes";
-import * as errors from "@ethersproject/errors";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { BigNumber, BigNumberish, isBigNumberish } from "./bignumber";
 
@@ -13,7 +16,7 @@ const NegativeOne = BigNumber.from(-1);
 function throwFault(message: string, fault: string, operation: string, value?: any): never {
     let params: any = { fault: fault, operation: operation };
     if (value !== undefined) { params.value = value; }
-    return errors.throwError(message, errors.NUMERIC_FAULT, params);
+    return logger.throwError(message, Logger.errors.NUMERIC_FAULT, params);
 }
 
 // Constant to pull zeros from for multipliers
@@ -33,7 +36,7 @@ function getMultiplier(decimals: BigNumberish): string {
         return ("1" + zeros.substring(0, decimals));
     }
 
-    return errors.throwArgumentError("invalid decimal size", "decimals", decimals);
+    return logger.throwArgumentError("invalid decimal size", "decimals", decimals);
 }
 
 export function formatFixed(value: BigNumberish, decimals?: string | BigNumberish): string {
@@ -66,7 +69,7 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
     let multiplier = getMultiplier(decimals);
 
     if (typeof(value) !== "string" || !value.match(/^-?[0-9.,]+$/)) {
-        errors.throwArgumentError("invalid decimal value", "value", value);
+        logger.throwArgumentError("invalid decimal value", "value", value);
     }
 
     if (multiplier.length - 1 === 0) {
@@ -78,13 +81,13 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
     if (negative) { value = value.substring(1); }
 
     if (value === ".") {
-        errors.throwArgumentError("missing value", "value", value);
+        logger.throwArgumentError("missing value", "value", value);
     }
 
     // Split it into a whole and fractional part
     let comps = value.split(".");
     if (comps.length > 2) {
-        errors.throwArgumentError("too many decimal points", "value", value);
+        logger.throwArgumentError("too many decimal points", "value", value);
     }
 
     let whole = comps[0], fraction = comps[1];
@@ -142,7 +145,7 @@ export class FixedFormat {
                 signed = false;
             } else if (value != null) {
                 let match = value.match(/^(u?)fixed([0-9]+)x([0-9]+)$/);
-                if (!match) { errors.throwArgumentError("invalid fixed format", "format", value); }
+                if (!match) { logger.throwArgumentError("invalid fixed format", "format", value); }
                 signed = (match[1] !== "u");
                 width = parseInt(match[2]);
                 decimals = parseInt(match[3]);
@@ -151,7 +154,7 @@ export class FixedFormat {
             let check = (key: string, type: string, defaultValue: any): any => {
                 if (value[key] == null) { return defaultValue; }
                 if (typeof(value[key]) !== type) {
-                    errors.throwArgumentError("invalid fixed format (" + key + " not " + type +")", "format." + key, value[key]);
+                    logger.throwArgumentError("invalid fixed format (" + key + " not " + type +")", "format." + key, value[key]);
                 }
                 return value[key];
             }
@@ -161,11 +164,11 @@ export class FixedFormat {
         }
 
         if (width % 8) {
-            errors.throwArgumentError("invalid fixed format width (not byte aligned)", "format.width", width);
+            logger.throwArgumentError("invalid fixed format width (not byte aligned)", "format.width", width);
         }
 
         if (decimals > 80) {
-            errors.throwArgumentError("invalid fixed format (decimals too large)", "format.decimals", decimals);
+            logger.throwArgumentError("invalid fixed format (decimals too large)", "format.decimals", decimals);
         }
 
         return new FixedFormat(_constructorGuard, signed, width, decimals);
@@ -180,7 +183,7 @@ export class FixedNumber {
     readonly _isFixedNumber: boolean;
 
     constructor(constructorGuard: any, hex: string, value: string, format?: FixedFormat) {
-        errors.checkNew(new.target, FixedNumber);
+        logger.checkNew(new.target, FixedNumber);
 
         this.format = format;
         this._hex = hex;
@@ -193,7 +196,7 @@ export class FixedNumber {
 
     _checkFormat(other: FixedNumber): void {
         if (this.format.name !== other.format.name) {
-            errors.throwArgumentError("incompatible format; use fixedNumber.toFormat", "other", other);
+            logger.throwArgumentError("incompatible format; use fixedNumber.toFormat", "other", other);
         }
     }
 
@@ -229,7 +232,7 @@ export class FixedNumber {
     round(decimals?: number): FixedNumber {
         if (decimals == null) { decimals = 0; }
         if (decimals < 0 || decimals > 80 || (decimals % 1)) {
-            errors.throwArgumentError("invalid decimal cound", "decimals", decimals);
+            logger.throwArgumentError("invalid decimal cound", "decimals", decimals);
         }
 
         // If we are already in range, we're done
@@ -249,7 +252,7 @@ export class FixedNumber {
 
     toHexString(width?: number): string {
         if (width == null) { return this._hex; }
-        if (width % 8) { errors.throwArgumentError("invalid byte width", "width", width); }
+        if (width % 8) { logger.throwArgumentError("invalid byte width", "width", width); }
         let hex = BigNumber.from(this._hex).fromTwos(this.format.width).toTwos(width).toHexString();
         return hexZeroPad(hex, width / 8);
     }
@@ -330,12 +333,12 @@ export class FixedNumber {
             return FixedNumber.fromValue(value, 0, format);
         } catch (error) {
             // Allow NUMERIC_FAULT to bubble up
-            if (error.code !== errors.INVALID_ARGUMENT) {
+            if (error.code !== Logger.errors.INVALID_ARGUMENT) {
                 throw error;
             }
         }
 
-        return errors.throwArgumentError("invalid FixedNumber value", "value", value);
+        return logger.throwArgumentError("invalid FixedNumber value", "value", value);
     }
 
     static isFixedNumber(value: any): value is FixedNumber {

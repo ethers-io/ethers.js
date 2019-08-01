@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/errors": ">5.0.0-beta.0",
+    "@ethersproject/logger": ">5.0.0-beta.0",
     "@ethersproject/properties": ">5.0.0-beta.0",
     "elliptic": "6.3.3"
   },

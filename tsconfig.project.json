@@ -13,6 +13,9 @@
       "path": "./packages/errors"
     },
     {
+      "path": "./packages/logger"
+    },
+    {
       "path": "./packages/bytes"
     },
     {

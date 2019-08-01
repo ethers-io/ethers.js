@@ -3,10 +3,12 @@
 import fetch from "cross-fetch";
 
 import { encode as base64Encode } from "@ethersproject/base64";
-import * as errors from "@ethersproject/errors";
 import { shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes } from "@ethersproject/strings";
 
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 // Exported Types
 export type ConnectionInfo = {
@@ -57,7 +59,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
 
     } else if (typeof(connection) === "object") {
         if (connection == null || connection.url == null) {
-            errors.throwArgumentError("missing URL", "connection.url", connection);
+            logger.throwArgumentError("missing URL", "connection.url", connection);
         }
 
         url = connection.url;
@@ -74,10 +76,10 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
 
         if (connection.user != null && connection.password != null) {
             if (url.substring(0, 6) !== "https:" && connection.allowInsecureAuthentication !== true) {
-                errors.throwError(
+                logger.throwError(
                     "basic authentication requires a secure https url",
-                    errors.INVALID_ARGUMENT,
-                    { arg: "url", url: url, user: connection.user, password: "[REDACTED]" }
+                    Logger.errors.INVALID_ARGUMENT,
+                    { argument: "url", url: url, user: connection.user, password: "[REDACTED]" }
                 );
             }
 
@@ -97,10 +99,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
                 if (timer == null) { return; }
                 timer = null;
 
-                reject(errors.makeError("timeout", errors.TIMEOUT, { }));
-                //setTimeout(() => {
-                //    request.abort();
-                //}, 0);
+                reject(logger.makeError("timeout", Logger.errors.TIMEOUT, { timeout: timeout }));
             }, timeout);
         }
 
@@ -126,7 +125,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
         return fetch(url, options).then((response) => {
             return response.text().then((body) => {
                 if (!response.ok) {
-                    errors.throwError("bad response", errors.SERVER_ERROR, {
+                    logger.throwError("bad response", Logger.errors.SERVER_ERROR, {
                         status: response.status,
                         body: body,
                         type: response.type,
@@ -142,7 +141,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
             try {
                 json = JSON.parse(text);
             } catch (error) {
-                errors.throwError("invalid JSON", errors.SERVER_ERROR, {
+                logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
                     body: text,
                     error: error,
                     url: url
@@ -153,7 +152,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
                 try {
                     json = processFunc(json);
                 } catch (error) {
-                    errors.throwError("processing response error", errors.SERVER_ERROR, {
+                    logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
                         body: json,
                         error: error
                     });

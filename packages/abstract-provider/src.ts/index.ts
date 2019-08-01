@@ -2,13 +2,15 @@
 
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike, isHexString } from "@ethersproject/bytes";
-import * as errors from "@ethersproject/errors";
 import { checkAbstract } from "@ethersproject/errors";
 import { Network } from "@ethersproject/networks";
 import { Description, defineReadOnly } from "@ethersproject/properties";
 import { Transaction } from "@ethersproject/transactions";
 import { OnceBlockable } from "@ethersproject/web";
 
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 ///////////////////////////////
 // Exported Types
@@ -143,7 +145,7 @@ export class BlockForkEvent extends ForkEvent {
 
     constructor(blockhash: string, expiry?: number) {
         if (!isHexString(blockhash, 32)) {
-            errors.throwArgumentError("invalid blockhash", "blockhash", blockhash);
+            logger.throwArgumentError("invalid blockhash", "blockhash", blockhash);
         }
 
         super({
@@ -160,7 +162,7 @@ export class TransactionForkEvent extends ForkEvent {
 
     constructor(hash: string, expiry?: number) {
         if (!isHexString(hash, 32)) {
-            errors.throwArgumentError("invalid transaction hash", "hash", hash);
+            logger.throwArgumentError("invalid transaction hash", "hash", hash);
         }
 
         super({
@@ -178,10 +180,10 @@ export class TransactionOrderForkEvent extends ForkEvent {
 
     constructor(beforeHash: string, afterHash: string, expiry?: number) {
         if (!isHexString(beforeHash, 32)) {
-            errors.throwArgumentError("invalid transaction hash", "beforeHash", beforeHash);
+            logger.throwArgumentError("invalid transaction hash", "beforeHash", beforeHash);
         }
         if (!isHexString(afterHash, 32)) {
-            errors.throwArgumentError("invalid transaction hash", "afterHash", afterHash);
+            logger.throwArgumentError("invalid transaction hash", "afterHash", afterHash);
         }
 
         super({

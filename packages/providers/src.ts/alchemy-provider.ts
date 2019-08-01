@@ -1,7 +1,10 @@
 "use strict";
 
-import * as errors from "@ethersproject/errors";
 import { Network } from "@ethersproject/networks";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 
@@ -36,7 +39,7 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
                 host = "eth-kovan.alchemyapi.io/jsonrpc/";
                 break;
             default:
-               errors.throwArgumentError("unsupported network", "network", arguments[0]);
+               logger.throwArgumentError("unsupported network", "network", arguments[0]);
         }
 
         return ("https:/" + "/" + host + apiKey);

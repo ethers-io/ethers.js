@@ -3,10 +3,12 @@
 // This gets overriddenby gulp during bip39-XX
 let exportWordlist = false;
 
-import { checkAbstract } from "@ethersproject/errors";
 import { id } from "@ethersproject/hash";
 import { defineReadOnly } from "@ethersproject/properties";
 
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 export function check(wordlist: Wordlist) {
     let words = [];
@@ -22,7 +24,7 @@ export abstract class Wordlist {
     readonly locale: string;
 
     constructor(locale: string) {
-        checkAbstract(new.target, Wordlist);
+        logger.checkAbstract(new.target, Wordlist);
         defineReadOnly(this, "locale", locale);
     }
 

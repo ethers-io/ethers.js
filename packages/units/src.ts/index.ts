@@ -2,8 +2,10 @@
 
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { formatFixed, parseFixed } from "@ethersproject/bignumber/fixednumber";
-import * as errors from "@ethersproject/errors";
 
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 const names = [
     "wei",
@@ -22,7 +24,7 @@ export function commify(value: string | number): string {
     let comps = String(value).split(".");
 
     if (comps.length > 2 || !comps[0].match(/^-?[0-9]*$/) || (comps[1] && !comps[1].match(/^[0-9]*$/)) || value === "." || value === "-.") {
-        errors.throwError("invalid value", errors.INVALID_ARGUMENT, { argument: "value", value: value });
+        logger.throwArgumentError("invalid value", "value", value);
     }
 
     // Make sure we have at least one whole digit (0 if none)

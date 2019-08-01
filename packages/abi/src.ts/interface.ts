@@ -5,12 +5,14 @@ import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { arrayify, BytesLike, concat, hexDataSlice, hexlify, hexZeroPad, isHexString } from "@ethersproject/bytes";
 import { id } from "@ethersproject/hash";
 import { keccak256 } from "@ethersproject/keccak256"
-import * as errors from "@ethersproject/errors";
 import { defineReadOnly, Description, getStatic } from "@ethersproject/properties";
 
 import { AbiCoder, defaultAbiCoder } from "./abi-coder";
 import { ConstructorFragment, EventFragment, Fragment, FunctionFragment, JsonFragment, ParamType } from "./fragments";
 
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 export class LogDescription extends Description {
     readonly eventFragment: EventFragment;
@@ -58,7 +60,7 @@ export class Interface {
     static _isInterface: boolean;
 
     constructor(fragments: string | Array<Fragment | JsonFragment | string>) {
-        errors.checkNew(new.target, Interface);
+        logger.checkNew(new.target, Interface);
 
         let abi: Array<Fragment | JsonFragment | string> = [ ];
         if (typeof(fragments) === "string") {
@@ -84,7 +86,7 @@ export class Interface {
             switch (fragment.type) {
                 case "constructor":
                     if (this.deploy) {
-                        errors.warn("duplicate definition - constructor");
+                        logger.warn("duplicate definition - constructor");
                         return;
                     }
                     defineReadOnly(this, "deploy", fragment);
@@ -101,7 +103,7 @@ export class Interface {
 
             let signature = fragment.format();
             if (bucket[signature]) {
-                errors.warn("duplicate definition - " + signature);
+                logger.warn("duplicate definition - " + signature);
                 return;
             }
 
@@ -114,7 +116,7 @@ export class Interface {
             Object.keys(bucket).forEach((signature) => {
                 let fragment = bucket[signature];
                 if (count[fragment.name] !== 1) {
-                   errors.warn("duplicate definition - " + fragment.name);
+                   logger.warn("duplicate definition - " + fragment.name);
                    return;
                 }
                 bucket[fragment.name] = fragment;
@@ -233,7 +235,7 @@ export class Interface {
                 break;
         }
 
-        return errors.throwError("call revert exception", errors.CALL_EXCEPTION, {
+        return logger.throwError("call revert exception", Logger.errors.CALL_EXCEPTION, {
             method: functionFragment.format(),
             errorSignature: errorSignature,
             errorArgs: [ reason ],
@@ -247,7 +249,7 @@ export class Interface {
         }
 
         if (values.length > eventFragment.inputs.length) {
-            errors.throwError("too many arguments for " + eventFragment.format(), errors.UNEXPECTED_ARGUMENT, {
+            logger.throwError("too many arguments for " + eventFragment.format(), Logger.errors.UNEXPECTED_ARGUMENT, {
                 argument: "values",
                 value: values
             })
@@ -262,7 +264,7 @@ export class Interface {
 
             if (!param.indexed) {
                 if (value != null) {
-                    errors.throwArgumentError("cannot filter non-indexed parameters; must be null", ("contract." + param.name), value);
+                    logger.throwArgumentError("cannot filter non-indexed parameters; must be null", ("contract." + param.name), value);
                 }
                 return;
             }
@@ -274,7 +276,7 @@ export class Interface {
             } else if (param.type === "bytes") {
                  topics.push(keccak256(hexlify(value)));
             } else if (param.type.indexOf("[") !== -1 || param.type.substring(0, 5) === "tuple") {
-                errors.throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
+                logger.throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
             } else {
                 // Check addresses are valid
                 if (param.type === "address") { this._abiCoder.encode( [ "address" ], [ value ]); }
@@ -298,7 +300,7 @@ export class Interface {
         if (topics != null && !eventFragment.anonymous) {
             let topicHash = this.getEventTopic(eventFragment);
             if (!isHexString(topics[0], 32) || topics[0].toLowerCase() !== topicHash) {
-                errors.throwError("fragment/topic mismatch", errors.INVALID_ARGUMENT, { argument: "topics[0]", expected: topicHash, value: topics[0] });
+                logger.throwError("fragment/topic mismatch", Logger.errors.INVALID_ARGUMENT, { argument: "topics[0]", expected: topicHash, value: topics[0] });
             }
             topics = topics.slice(1);
         }

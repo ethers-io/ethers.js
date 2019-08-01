@@ -1,6 +1,8 @@
 "use strict";
 
-import * as errors from "@ethersproject/errors";
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { Network, Networkish } from "./types";
 
@@ -167,14 +169,14 @@ export function getNetwork(network: Networkish): Network {
     // Not a standard network; check that it is a valid network in general
     if (!standard) {
         if (typeof(network.chainId) !== "number") {
-            errors.throwError("invalid network chainId", errors.INVALID_ARGUMENT, { arg: "network", value: network });
+            logger.throwArgumentError("invalid network chainId", "network", network);
         }
         return network;
     }
 
     // Make sure the chainId matches the expected network chainId (or is 0; disable EIP-155)
     if (network.chainId !== 0 && network.chainId !== standard.chainId) {
-        errors.throwError("network chainId mismatch", errors.INVALID_ARGUMENT, { arg: "network", value: network });
+        logger.throwArgumentError("network chainId mismatch", "network", network);
     }
 
     // Standard Network (allow overriding the ENS address)

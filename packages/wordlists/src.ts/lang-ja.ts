@@ -1,8 +1,11 @@
 "use strict";
 
 import { hexlify } from "@ethersproject/bytes";
-import * as errors from "@ethersproject/errors";
 import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { check, register, Wordlist } from "./wordlist";
 
@@ -133,7 +136,7 @@ class LangJa extends Wordlist {
     }
 
     split(mnemonic: string): Array<string> {
-        errors.checkNormalize();
+        logger.checkNormalize();
         return mnemonic.split(/(?:\u3000| )+/g);
     }
 

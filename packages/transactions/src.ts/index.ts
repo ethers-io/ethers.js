@@ -4,11 +4,14 @@ import { getAddress } from "@ethersproject/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { arrayify, BytesLike, hexDataSlice, hexlify, hexZeroPad, SignatureLike, splitSignature, stripZeros, } from "@ethersproject/bytes";
 import { Zero } from "@ethersproject/constants";
-import * as errors from "@ethersproject/errors";
 import { keccak256 } from "@ethersproject/keccak256";
 import { checkProperties } from "@ethersproject/properties";
 import * as RLP from "@ethersproject/rlp";
 import { computePublicKey, recoverPublicKey } from "@ethersproject/signing-key";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 ///////////////////////////////
 // Exported Types
@@ -90,14 +93,14 @@ export function serialize(transaction: UnsignedTransaction, signature?: Signatur
 
         // Fixed-width field
         if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
-            errors.throwError("invalid length for " + fieldInfo.name, errors.INVALID_ARGUMENT, { arg: ("transaction" + fieldInfo.name), value: value });
+            logger.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value);
         }
 
         // Variable-width (with a maximum)
         if (fieldInfo.maxLength) {
             value = stripZeros(value);
             if (value.length > fieldInfo.maxLength) {
-                errors.throwError("invalid length for " + fieldInfo.name, errors.INVALID_ARGUMENT, { arg: ("transaction" + fieldInfo.name), value: value });
+                logger.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value );
             }
         }
 
@@ -140,7 +143,7 @@ export function serialize(transaction: UnsignedTransaction, signature?: Signatur
 export function parse(rawTransaction: BytesLike): Transaction {
     let transaction = RLP.decode(rawTransaction);
     if (transaction.length !== 9 && transaction.length !== 6) {
-        errors.throwError("invalid raw transaction", errors.INVALID_ARGUMENT, { arg: "rawTransactin", value: rawTransaction });
+        logger.throwArgumentError("invalid raw transaction", "rawTransactin", rawTransaction);
     }
 
     let tx: Transaction = {

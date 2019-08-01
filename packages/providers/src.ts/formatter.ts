@@ -5,9 +5,12 @@ import { getAddress, getContractAddress } from "@ethersproject/address";
 import { BigNumber } from "@ethersproject/bignumber";
 import { hexDataLength, hexDataSlice, hexValue, hexZeroPad, isHexString } from "@ethersproject/bytes";
 import { AddressZero } from "@ethersproject/constants";
-import * as errors from "@ethersproject/errors";
 import { shallowCopy } from "@ethersproject/properties";
 import { parse as parseTransaction } from "@ethersproject/transactions";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 export type FormatFunc = (value: any) => any;
 
@@ -28,7 +31,7 @@ export class Formatter {
     readonly formats: Formats;
 
     constructor() {
-        errors.checkNew(new.target, Formatter);
+        logger.checkNew(new.target, Formatter);
         this.formats = this.getDefaultFormats();
     }
 
@@ -188,10 +191,7 @@ export class Formatter {
                return value.toLowerCase();
             }
         }
-        return errors.throwError("invalid hash", errors.INVALID_ARGUMENT, {
-            argument: "value",
-            value: value
-        });
+        return logger.throwArgumentError("invalid hash", "value", value);
     }
 
     data(value: any, strict?: boolean): string {
@@ -239,10 +239,7 @@ export class Formatter {
     hash(value: any, strict?: boolean): string {
         let result = this.hex(value, strict);
         if (hexDataLength(result) !== 32) {
-            return errors.throwError("invalid hash", errors.INVALID_ARGUMENT, {
-                argument: "value",
-                value: value
-            });
+            return logger.throwArgumentError("invalid hash", "value", value);
         }
         return result;
     }

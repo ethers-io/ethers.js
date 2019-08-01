@@ -13,7 +13,7 @@
   "dependencies": {
     "@ethersproject/bignumber": ">5.0.0-beta.0",
     "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/errors": ">5.0.0-beta.0",
+    "@ethersproject/logger": ">5.0.0-beta.0",
     "@ethersproject/networks": ">5.0.0-beta.0",
     "@ethersproject/properties": ">5.0.0-beta.0",
     "@ethersproject/transactions": ">5.0.0-beta.0",

@@ -3,8 +3,11 @@
 import { BlockTag, Provider, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { BigNumber } from "@ethersproject/bignumber";
 import { Bytes } from "@ethersproject/bytes";
-import * as errors from "@ethersproject/errors";
 import { defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 const allowedTransactionKeys: Array<string> = [
     "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "value"
@@ -57,7 +60,7 @@ export abstract class Signer {
     ///////////////////
     // Sub-classes MUST call super
     constructor() {
-        errors.checkAbstract(new.target, Signer);
+        logger.checkAbstract(new.target, Signer);
         defineReadOnly(this, "_isSigner", true);
     }
 
@@ -131,7 +134,7 @@ export abstract class Signer {
     checkTransaction(transaction: TransactionRequest): TransactionRequest {
         for (let key in transaction) {
             if (allowedTransactionKeys.indexOf(key) === -1) {
-                errors.throwArgumentError("invalid transaction key: " + key, "transaction", transaction);
+                logger.throwArgumentError("invalid transaction key: " + key, "transaction", transaction);
             }
         }
 
@@ -160,7 +163,7 @@ export abstract class Signer {
                     this.provider.resolveName(tx.from)
                 ]).then((results) => {
                     if (results[0] !== results[1]) {
-                        errors.throwArgumentError("from address mismatch", "transaction", transaction);
+                        logger.throwArgumentError("from address mismatch", "transaction", transaction);
                     }
                     return results[0];
                 });
@@ -178,7 +181,7 @@ export abstract class Signer {
     // Sub-classes SHOULD leave these alone
 
     _checkProvider(operation?: string): void {
-        if (!this.provider) { errors.throwError("missing provider", errors.UNSUPPORTED_OPERATION, {
+        if (!this.provider) { logger.throwError("missing provider", Logger.errors.UNSUPPORTED_OPERATION, {
             operation: (operation || "_checkProvider") });
         }
     }
@@ -192,7 +195,7 @@ export class VoidSigner extends Signer {
     readonly address: string;
 
     constructor(address: string, provider?: Provider) {
-        errors.checkNew(new.target, VoidSigner);
+        logger.checkNew(new.target, VoidSigner);
         super();
         defineReadOnly(this, "address", address);
         defineReadOnly(this, "provider", provider || null);
@@ -204,7 +207,7 @@ export class VoidSigner extends Signer {
 
     _fail(message: string, operation: string): Promise<any> {
         return Promise.resolve().then(() => {
-            errors.throwError(message, errors.UNSUPPORTED_OPERATION, { operation: operation });
+            logger.throwError(message, Logger.errors.UNSUPPORTED_OPERATION, { operation: operation });
         });
     }
 

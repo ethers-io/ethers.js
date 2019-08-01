@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@ethersproject/base64": ">5.0.0-beta.0",
-    "@ethersproject/errors": ">5.0.0-beta.0",
+    "@ethersproject/logger": ">5.0.0-beta.0",
     "@ethersproject/properties": ">5.0.0-beta.0",
     "@ethersproject/strings": ">5.0.0-beta.0",
     "cross-fetch": "3.0.4"

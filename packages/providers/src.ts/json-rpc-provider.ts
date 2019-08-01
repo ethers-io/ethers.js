@@ -6,11 +6,14 @@ import { Provider, TransactionRequest, TransactionResponse } from "@ethersprojec
 import { Signer } from "@ethersproject/abstract-signer";
 import { BigNumber } from "@ethersproject/bignumber";
 import { Bytes, hexlify, hexValue } from "@ethersproject/bytes";
-import * as errors from "@ethersproject/errors";
 import { getNetwork, Network, Networkish } from "@ethersproject/networks";
 import { checkProperties, deepCopy, defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes } from "@ethersproject/strings";
 import { ConnectionInfo, fetchJson, poll } from "@ethersproject/web";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { BaseProvider } from "./base-provider";
 
@@ -48,7 +51,7 @@ export class JsonRpcSigner extends Signer {
     _address: string;
 
     constructor(constructorGuard: any, provider: JsonRpcProvider, addressOrIndex?: string | number) {
-        errors.checkNew(new.target, JsonRpcSigner);
+        logger.checkNew(new.target, JsonRpcSigner);
 
         super();
 
@@ -69,12 +72,12 @@ export class JsonRpcSigner extends Signer {
             defineReadOnly(this, "_address", null);
 
         } else {
-            errors.throwError("invalid address or index", errors.INVALID_ARGUMENT, { argument: "addressOrIndex", value: addressOrIndex });
+            logger.throwArgumentError("invalid address or index", "addressOrIndex", addressOrIndex);
         }
     }
 
     connect(provider: Provider): JsonRpcSigner {
-        return errors.throwError("cannot alter JSON-RPC Signer connection", errors.UNSUPPORTED_OPERATION, {
+        return logger.throwError("cannot alter JSON-RPC Signer connection", Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "connect"
         });
     }
@@ -90,7 +93,9 @@ export class JsonRpcSigner extends Signer {
 
         return this.provider.send("eth_accounts", []).then((accounts) => {
             if (accounts.length <= this._index) {
-                errors.throwError("unknown account #" + this._index, errors.UNSUPPORTED_OPERATION, { operation: "getAddress" });
+                logger.throwError("unknown account #" + this._index, Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: "getAddress"
+                });
             }
             return this.provider.formatter.address(accounts[this._index])
         });
@@ -126,17 +131,17 @@ export class JsonRpcSigner extends Signer {
                 if (error.responseText) {
                     // See: JsonRpcProvider.sendTransaction (@TODO: Expose a ._throwError??)
                     if (error.responseText.indexOf("insufficient funds") >= 0) {
-                        errors.throwError("insufficient funds", errors.INSUFFICIENT_FUNDS, {
+                        logger.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, {
                             transaction: tx
                         });
                     }
                     if (error.responseText.indexOf("nonce too low") >= 0) {
-                        errors.throwError("nonce has already been used", errors.NONCE_EXPIRED, {
+                        logger.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {
                             transaction: tx
                         });
                     }
                     if (error.responseText.indexOf("replacement transaction underpriced") >= 0) {
-                        errors.throwError("replacement fee too low", errors.REPLACEMENT_UNDERPRICED, {
+                        logger.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {
                             transaction: tx
                         });
                     }
@@ -147,7 +152,7 @@ export class JsonRpcSigner extends Signer {
     }
 
     signTransaction(transaction: TransactionRequest): Promise<string> {
-        return errors.throwError("signing transactions is unsupported", errors.UNSUPPORTED_OPERATION, {
+        return logger.throwError("signing transactions is unsupported", Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "signTransaction"
         });
     }
@@ -214,7 +219,7 @@ export class JsonRpcProvider extends BaseProvider {
     _nextId: number;
 
     constructor(url?: ConnectionInfo | string, network?: Networkish) {
-        errors.checkNew(new.target, JsonRpcProvider);
+        logger.checkNew(new.target, JsonRpcProvider);
 
         // One parameter, but it is a network name, so swap it with the URL
         if (typeof(url) === "string") {
@@ -239,7 +244,7 @@ export class JsonRpcProvider extends BaseProvider {
                         this.send("net_version", [ ]).then((result) => {
                             resolve(getNetwork(BigNumber.from(result).toNumber()));
                         }).catch((error) => {
-                            reject(errors.makeError("could not detect network", errors.NETWORK_ERROR, { })); 
+                            reject(logger.makeError("could not detect network", Logger.errors.NETWORK_ERROR));
                         });
                     });
                 });
@@ -325,15 +330,15 @@ export class JsonRpcProvider extends BaseProvider {
                     if (error.responseText) {
                         // "insufficient funds for gas * price + value"
                         if (error.responseText.indexOf("insufficient funds") > 0) {
-                            errors.throwError("insufficient funds", errors.INSUFFICIENT_FUNDS, { });
+                            logger.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, { });
                         }
                         // "nonce too low"
                         if (error.responseText.indexOf("nonce too low") > 0) {
-                            errors.throwError("nonce has already been used", errors.NONCE_EXPIRED, { });
+                            logger.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, { });
                         }
                         // "replacement transaction underpriced"
                         if (error.responseText.indexOf("replacement transaction underpriced") > 0) {
-                            errors.throwError("replacement fee too low", errors.REPLACEMENT_UNDERPRICED, { });
+                            logger.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, { });
                         }
                     }
                     throw error;
@@ -369,7 +374,7 @@ export class JsonRpcProvider extends BaseProvider {
                 break;
         }
 
-        return errors.throwError(method + " not implemented", errors.NOT_IMPLEMENTED, { operation: method });
+        return logger.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
     }
 
     _startPending(): void {

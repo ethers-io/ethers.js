@@ -1,7 +1,10 @@
 "use strict";
 
-import { checkNormalize } from "@ethersproject/errors";
 import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { check, register, Wordlist } from "./wordlist";
 
@@ -12,7 +15,7 @@ let lookup: { [word: string]: number } = {};
 let wordlist: Array<string> = null;
 
 function dropDiacritic(word: string): string {
-    checkNormalize();
+    logger.checkNormalize();
     return toUtf8String(Array.prototype.filter.call(toUtf8Bytes(word.normalize("NFD").toLowerCase()), (c: number) => {
         return ((c >= 65 && c <= 90) || (c >= 97 && c <= 123));
     }));

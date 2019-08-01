@@ -1,10 +1,11 @@
 "use strict";
 
-import * as errors from "@ethersproject/errors";
-
 import { Network } from "@ethersproject/networks";
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 // Special API key provided by Nodesmith for ethers.js
 const defaultApiKey = "ETHERS_JS_SHARED";
@@ -34,7 +35,7 @@ export class NodesmithProvider extends UrlJsonRpcProvider {
                 host = "https://ethereum.api.nodesmith.io/v1/kovan/jsonrpc";
                 break;
             default:
-               errors.throwArgumentError("unsupported network", "network", arguments[0]);
+               logger.throwArgumentError("unsupported network", "network", arguments[0]);
         }
 
         return (host + "?apiKey=" + apiKey);

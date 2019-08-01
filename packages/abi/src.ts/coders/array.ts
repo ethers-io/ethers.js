@@ -1,6 +1,8 @@
 "use strict";
 
-import * as errors from "@ethersproject/errors";
+import { Logger } from "@ethersproject/logger";
+import { version } from "../_version";
+const logger = new Logger(version);
 
 import { Coder, Reader, Writer } from "./abstract-coder";
 import { AnonymousCoder } from "./anonymous";
@@ -18,17 +20,11 @@ export function pack(writer: Writer, coders: Array<Coder>, values: Array<any>): 
         values = arrayValues;
 
     } else {
-        errors.throwError("invalid tuple value", errors.INVALID_ARGUMENT, {
-            coderType: "tuple",
-            value: values
-        });
+        logger.throwArgumentError("invalid tuple value", "tuple", values);
     }
 
     if (coders.length !== values.length) {
-        errors.throwError("types/value length mismatch", errors.INVALID_ARGUMENT, {
-            coderType: "tuple",
-            value: values
-        });
+        logger.throwArgumentError("types/value length mismatch", "tuple", values);
     }
 
     let staticWriter = new Writer(writer.wordSize);
@@ -136,7 +132,7 @@ export class ArrayCoder extends Coder {
             writer.writeValue(value.length);
         }
 
-        errors.checkArgumentCount(count, value.length, " in coder array" + (this.localName? (" "+ this.localName): ""));
+        logger.checkArgumentCount(count, value.length, "coder array" + (this.localName? (" "+ this.localName): ""));
 
         let coders = [];
         for (let i = 0; i < value.length; i++) { coders.push(this.coder); }

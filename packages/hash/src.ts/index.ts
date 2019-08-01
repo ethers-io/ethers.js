@@ -1,10 +1,12 @@
 "use strict";
 
-import * as errors from "@ethersproject/errors";
-
 import { Bytes, concat, hexlify } from "@ethersproject/bytes";
 import { nameprep, toUtf8Bytes } from "@ethersproject/strings";
 import { keccak256 } from "@ethersproject/keccak256";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 ///////////////////////////////
 
@@ -26,10 +28,7 @@ export function isValidName(name: string): boolean {
 
 export function namehash(name: string): string {
     if (typeof(name) !== "string") {
-        errors.throwError("invalid address - " + String(name), errors.INVALID_ARGUMENT, {
-            argument: "name",
-            value: name
-        });
+        logger.throwArgumentError("invalid address - " + String(name), "name", name);
     }
 
     let result: string | Uint8Array = Zeros;

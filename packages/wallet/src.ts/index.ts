@@ -4,7 +4,6 @@ import { getAddress } from "@ethersproject/address";
 import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
 import { ExternallyOwnedAccount, Signer } from "@ethersproject/abstract-signer";
 import { arrayify, Bytes, BytesLike, concat, hexDataSlice, isHexString, joinSignature, SignatureLike } from "@ethersproject/bytes";
-import * as errors from "@ethersproject/errors";
 import { hashMessage } from "@ethersproject/hash";
 import { defaultPath, HDNode, entropyToMnemonic } from "@ethersproject/hdnode";
 import { keccak256 } from "@ethersproject/keccak256";
@@ -14,6 +13,10 @@ import { SigningKey } from "@ethersproject/signing-key";
 import { decryptJsonWallet, encryptKeystore, ProgressCallback } from "@ethersproject/json-wallets";
 import { computeAddress, recoverAddress, serialize } from "@ethersproject/transactions";
 import { Wordlist } from "@ethersproject/wordlists/wordlist";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 function isAccount(value: any): value is ExternallyOwnedAccount {
     return (value != null && isHexString(value.privateKey, 32) && value.address != null);
@@ -32,7 +35,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
     readonly _mnemonic: () => string;
 
     constructor(privateKey: BytesLike | ExternallyOwnedAccount | SigningKey, provider?: Provider) {
-        errors.checkNew(new.target, Wallet);
+        logger.checkNew(new.target, Wallet);
 
         super();
 
@@ -42,7 +45,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
             defineReadOnly(this, "address", computeAddress(this.publicKey));
 
             if (this.address !== getAddress(privateKey.address)) {
-                errors.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDCACTED]");
+                logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDCACTED]");
             }
 
             if (privateKey.mnemonic != null) {
@@ -52,7 +55,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
                 defineReadOnly(this, "path", privateKey.path);
                 let node = HDNode.fromMnemonic(mnemonic).derivePath(path);
                 if (computeAddress(node.privateKey) !== this.address) {
-                    errors.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDCACTED]");
+                    logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDCACTED]");
                 }
             } else {
                 defineReadOnly(this, "_mnemonic", (): string => null);
@@ -63,7 +66,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
         } else {
             if (SigningKey.isSigningKey(privateKey)) {
                 if (privateKey.curve !== "secp256k1") {
-                    errors.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
+                    logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
                 }
                 defineReadOnly(this, "_signingKey", () => privateKey);
             } else {
@@ -76,10 +79,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
         }
 
         if (provider && !Provider.isProvider(provider)) {
-            errors.throwError("invalid provider", errors.INVALID_ARGUMENT, {
-                argument: "provider",
-                value: provider
-            });
+            logger.throwArgumentError("invalid provider", "provider", provider);
         }
 
         defineReadOnly(this, "provider", provider || null);

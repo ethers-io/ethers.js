@@ -3,8 +3,11 @@
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
 import { arrayify, BytesLike } from "@ethersproject/bytes";
-import * as errors from "@ethersproject/errors";
 import { defineReadOnly } from "@ethersproject/properties";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { Coder, Reader, Writer } from "./coders/abstract-coder";
 import { AddressCoder } from "./coders/address";
@@ -30,7 +33,7 @@ export class AbiCoder {
     readonly coerceFunc: CoerceFunc;
 
     constructor(coerceFunc?: CoerceFunc) {
-        errors.checkNew(new.target, AbiCoder);
+        logger.checkNew(new.target, AbiCoder);
         defineReadOnly(this, "coerceFunc", coerceFunc || null);
     }
 
@@ -60,10 +63,7 @@ export class AbiCoder {
         if (match) {
             let size = parseInt(match[2] || "256");
             if (size === 0 || size > 256 || (size % 8) !== 0) {
-                errors.throwError("invalid " + match[1] + " bit length", errors.INVALID_ARGUMENT, {
-                    arg: "param",
-                    value: param
-                });
+                logger.throwArgumentError("invalid " + match[1] + " bit length", "param", param);
             }
             return new NumberCoder(size / 8, (match[1] === "int"), param.name);
         }
@@ -73,18 +73,12 @@ export class AbiCoder {
         if (match) {
             let size = parseInt(match[1]);
             if (size === 0 || size > 32) {
-                errors.throwError("invalid bytes length", errors.INVALID_ARGUMENT, {
-                    arg: "param",
-                    value: param
-                });
+                logger.throwArgumentError("invalid bytes length", "param", param);
             }
             return new FixedBytesCoder(size, param.name);
         }
 
-        return errors.throwError("invalid type", errors.INVALID_ARGUMENT, {
-            arg: "type",
-            value: param.type
-        });
+        return logger.throwError("invalid type", "type", param.type);
     }
 
     _getWordSize(): number { return 32; }
@@ -99,7 +93,7 @@ export class AbiCoder {
 
     encode(types: Array<string | ParamType>, values: Array<any>): string {
         if (types.length !== values.length) {
-            errors.throwError("types/values length mismatch", errors.INVALID_ARGUMENT, {
+            logger.throwError("types/values length mismatch", Logger.errors.INVALID_ARGUMENT, {
                 count: { types: types.length, values: values.length },
                 value: { types: types, values: values }
             });

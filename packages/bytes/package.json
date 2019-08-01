@@ -9,7 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/errors": ">5.0.0-beta.0"
+    "@ethersproject/logger": ">5.0.0-beta.0"
   },
   "keywords": [
     "Ethereum",

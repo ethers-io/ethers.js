@@ -1,8 +1,11 @@
 "use strict";
 
-import * as errors from "@ethersproject/errors";
 import { Networkish } from "@ethersproject/networks";
 import { defineReadOnly } from "@ethersproject/properties";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { JsonRpcProvider } from "./json-rpc-provider";
 
@@ -29,7 +32,7 @@ export class Web3Provider extends JsonRpcProvider {
     private _sendAsync: (request: any, callback: (error: any, response: any) => void) => void;
 
     constructor(web3Provider: AsyncSendable, network?: Networkish) {
-        errors.checkNew(new.target, Web3Provider);
+        logger.checkNew(new.target, Web3Provider);
 
         // HTTP has a host; IPC has a path.
         super(web3Provider.host || web3Provider.path || "", network);
@@ -43,11 +46,7 @@ export class Web3Provider extends JsonRpcProvider {
         }
 
         if (!web3Provider || !this._sendAsync) {
-            errors.throwError(
-                "invalid web3Provider",
-                errors.INVALID_ARGUMENT,
-                { arg: "web3Provider", value: web3Provider }
-            );
+            logger.throwArgumentError("invalid web3Provider", "web3Provider", web3Provider);
         }
 
         defineReadOnly(this, "_web3Provider", web3Provider);

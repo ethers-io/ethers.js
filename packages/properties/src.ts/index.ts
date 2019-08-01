@@ -1,6 +1,8 @@
 "use strict";
 
-import * as errors from "@ethersproject/errors";
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 export function defineReadOnly(object: any, name: string, value: any): void {
     Object.defineProperty(object, name, {
@@ -46,19 +48,12 @@ export function resolveProperties(object: any): Promise<any> {
 
 export function checkProperties(object: any, properties: { [ name: string ]: boolean }): void {
     if (!object || typeof(object) !== "object") {
-        errors.throwError("invalid object", errors.INVALID_ARGUMENT, {
-            argument: "object",
-            value: object
-        });
+        logger.throwArgumentError("invalid object", "object", object);
     }
 
     Object.keys(object).forEach((key) => {
         if (!properties[key]) {
-            errors.throwError("invalid object key - " + key, errors.INVALID_ARGUMENT, {
-                argument: "transaction",
-                value: object,
-                key: key
-            });
+            logger.throwArgumentError("invalid object key - " + key, "transaction:" + key, object);
         }
     });
 }

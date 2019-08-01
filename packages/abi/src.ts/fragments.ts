@@ -1,9 +1,11 @@
 "use strict";
 
 import { BigNumber } from "@ethersproject/bignumber";
-import * as errors from "@ethersproject/errors";
 import { defineReadOnly } from "@ethersproject/properties";
 
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 export interface JsonFragmentType {
     name?: string;
@@ -58,7 +60,7 @@ function checkModifier(type: string, name: string): boolean {
         if (name === "payable") { return true; }
     }
     if (ModifiersBytes[name] || name === "payable") {
-        errors.throwArgumentError("invalid modifier", "name", name);
+        logger.throwArgumentError("invalid modifier", "name", name);
     }
     return false;
 }
@@ -299,7 +301,7 @@ export class ParamType {
     format(format?: string): string {
         if (!format) { format = FormatTypes.sighash; }
         if (!FormatTypes[format]) {
-            errors.throwArgumentError("invalid format type", "format", format);
+            logger.throwArgumentError("invalid format type", "format", format);
         }
 
         if (format === FormatTypes.json) {
@@ -426,7 +428,7 @@ export abstract class Fragment {
             return null;
         }
 
-        return errors.throwArgumentError("invalid fragment object", "value", value);
+        return logger.throwArgumentError("invalid fragment object", "value", value);
     }
 
     static fromString(value: string): Fragment {
@@ -457,7 +459,7 @@ export class EventFragment extends Fragment {
     format(format?: string): string {
         if (!format) { format = FormatTypes.sighash; }
         if (!FormatTypes[format]) {
-            errors.throwArgumentError("invalid format type", "format", format);
+            logger.throwArgumentError("invalid format type", "format", format);
         }
 
         if (format === FormatTypes.json) {
@@ -522,7 +524,7 @@ export class EventFragment extends Fragment {
                 case "":
                     break;
                 default:
-                    errors.warn("unknown modifier: " + modifier);
+                    logger.warn("unknown modifier: " + modifier);
             }
         });
 
@@ -638,7 +640,7 @@ export class ConstructorFragment extends Fragment {
     format(format?: string): string {
         if (!format) { format = FormatTypes.sighash; }
         if (!FormatTypes[format]) {
-            errors.throwArgumentError("invalid format type", "format", format);
+            logger.throwArgumentError("invalid format type", "format", format);
         }
 
         if (format === FormatTypes.json) {
@@ -652,7 +654,7 @@ export class ConstructorFragment extends Fragment {
         }
 
         if (format === FormatTypes.sighash) {
-            errors.throwError("cannot format a constructor for sighash", errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("cannot format a constructor for sighash", Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "format(sighash)"
             });
         }
@@ -722,7 +724,7 @@ export class FunctionFragment extends ConstructorFragment {
     format(format?: string): string {
         if (!format) { format = FormatTypes.sighash; }
         if (!FormatTypes[format]) {
-            errors.throwArgumentError("invalid format type", "format", format);
+            logger.throwArgumentError("invalid format type", "format", format);
         }
 
         if (format === FormatTypes.json) {

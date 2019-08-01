@@ -2,9 +2,12 @@
 
 import net from "net";
 
-import * as errors from "@ethersproject/errors";
 import { defineReadOnly } from "@ethersproject/properties";
 import { Networkish } from "@ethersproject/networks";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { JsonRpcProvider } from "./json-rpc-provider";
 
@@ -13,10 +16,10 @@ export class IpcProvider extends JsonRpcProvider {
     readonly path: string;
 
     constructor(path: string, network?: Networkish) {
-        errors.checkNew(new.target, IpcProvider);
+        logger.checkNew(new.target, IpcProvider);
 
         if (path == null) {
-            errors.throwError("missing path", errors.MISSING_ARGUMENT, { arg: "path" });
+            logger.throwError("missing path", Logger.errors.MISSING_ARGUMENT, { arg: "path" });
         }
 
         super("ipc://" + path, network);

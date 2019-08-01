@@ -5,11 +5,14 @@ import aes from "aes-js";
 import { ExternallyOwnedAccount } from "@ethersproject/abstract-signer";
 import { getAddress } from "@ethersproject/address";
 import { arrayify, Bytes } from "@ethersproject/bytes";
-import * as errors from "@ethersproject/errors";
 import { keccak256 } from "@ethersproject/keccak256";
 import { pbkdf2 } from "@ethersproject/pbkdf2";
 import { toUtf8Bytes } from "@ethersproject/strings";
 import { Description } from "@ethersproject/properties";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 import { getPassword, looseArrayify, searchPath } from "./utils";
 
@@ -38,10 +41,7 @@ export function decrypt(json: string, password: Bytes | string): ExternallyOwned
     // Encrypted Seed
     let encseed = looseArrayify(searchPath(data, "encseed"));
     if (!encseed || (encseed.length % 16) !== 0) {
-        errors.throwError("invalid encseed", errors.INVALID_ARGUMENT, {
-            argument: "json",
-            value: json
-        });
+        logger.throwArgumentError("invalid encseed", "json", json);
     }
 
     let key = arrayify(pbkdf2(password, password, 2000, 32, "sha256")).slice(0, 16);

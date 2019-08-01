@@ -3,17 +3,18 @@
 // We use this for base 36 maths
 import * as BN from "bn.js";
 
-import * as errors from "@ethersproject/errors";
-
 import { arrayify, hexDataSlice, isHexString, stripZeros } from "@ethersproject/bytes";
 import { BigNumberish } from "@ethersproject/bignumber";
 import { keccak256 } from "@ethersproject/keccak256";
 import { encode } from "@ethersproject/rlp";
 
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 function getChecksumAddress(address: string): string {
     if (!isHexString(address, 20)) {
-        errors.throwError("invalid address", errors.INVALID_ARGUMENT, { arg: "address", value: address });
+        logger.throwArgumentError("invalid address", "address", address);
     }
 
     address = address.toLowerCase();
@@ -82,7 +83,7 @@ export function getAddress(address: string): string {
     let result = null;
 
     if (typeof(address) !== "string") {
-        errors.throwArgumentError("invalid address", "address", address);
+        logger.throwArgumentError("invalid address", "address", address);
     }
 
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
@@ -94,7 +95,7 @@ export function getAddress(address: string): string {
 
         // It is a checksummed address with a bad checksum
         if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
-            errors.throwArgumentError("bad address checksum", "address", address);
+            logger.throwArgumentError("bad address checksum", "address", address);
         }
 
     // Maybe ICAP? (we only support direct mode)
@@ -102,7 +103,7 @@ export function getAddress(address: string): string {
 
         // It is an ICAP address with a bad checksum
         if (address.substring(2, 4) !== ibanChecksum(address)) {
-            errors.throwArgumentError("bad icap checksum", "address", address);
+            logger.throwArgumentError("bad icap checksum", "address", address);
         }
 
         result = (new BN.BN(address.substring(4), 36)).toString(16);
@@ -110,7 +111,7 @@ export function getAddress(address: string): string {
         result = getChecksumAddress("0x" + result);
 
     } else {
-        errors.throwArgumentError("invalid address", "address", address);
+        logger.throwArgumentError("invalid address", "address", address);
     }
 
     return result;
@@ -136,7 +137,7 @@ export function getContractAddress(transaction: { from: string, nonce: BigNumber
     try {
         from = getAddress(transaction.from);
     } catch (error) {
-        errors.throwArgumentError("missing from address", "transaction", transaction);
+        logger.throwArgumentError("missing from address", "transaction", transaction);
     }
 
     let nonce = stripZeros(arrayify(transaction.nonce));

@@ -3,8 +3,11 @@
 import { ec as EC } from "elliptic";
 
 import { arrayify, BytesLike, hexlify, hexZeroPad, Signature, SignatureLike, splitSignature } from "@ethersproject/bytes";
-import * as errors from "@ethersproject/errors";
 import { defineReadOnly } from "@ethersproject/properties";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 let _curve: EC = null
 function getCurve() {
@@ -91,6 +94,6 @@ export function computePublicKey(key: BytesLike, compressed?: boolean): string {
         return "0x" + getCurve().keyFromPublic(bytes).getPublic(true, "hex");
     }
 
-    return errors.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
+    return logger.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 

@@ -2,8 +2,11 @@
 
 import { arrayify, BytesLike, concat, hexlify } from "@ethersproject/bytes";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
-import * as errors from "@ethersproject/errors";
 import { defineReadOnly } from "@ethersproject/properties";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "../_version";
+const logger = new Logger(version);
 
 export type CoerceFunc = (type: string, value: any) => any;
 
@@ -34,11 +37,7 @@ export abstract class Coder {
     }
 
     _throwError(message: string, value: any): void {
-        errors.throwError(message, errors.INVALID_ARGUMENT, {
-            argument: this.localName,
-            coder: this,
-            value: value
-        });
+        logger.throwArgumentError(message, this.localName, value);
     }
 
     abstract encode(writer: Writer, value: any): number;
@@ -77,7 +76,7 @@ export class Writer {
     _getValue(value: BigNumberish): Uint8Array {
         let bytes = arrayify(BigNumber.from(value));
         if (bytes.length > this.wordSize) {
-            errors.throwError("value out-of-bounds", errors.BUFFER_OVERRUN, {
+            logger.throwError("value out-of-bounds", Logger.errors.BUFFER_OVERRUN, {
                 length: this.wordSize,
                 offset: bytes.length
             });
@@ -136,7 +135,7 @@ export class Reader {
     _peekBytes(offset: number, length: number): Uint8Array {
         let alignedLength = Math.ceil(length / this.wordSize) * this.wordSize;
         if (this._offset + alignedLength > this._data.length) {
-            errors.throwError("data out-of-bounds", errors.BUFFER_OVERRUN, {
+            logger.throwError("data out-of-bounds", Logger.errors.BUFFER_OVERRUN, {
                 length: this._data.length,
                 offset: this._offset + alignedLength
             });
