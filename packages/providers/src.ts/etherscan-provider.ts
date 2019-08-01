@@ -4,7 +4,7 @@ import { BlockTag, TransactionRequest, TransactionResponse } from "@ethersprojec
 import { hexlify, hexValue } from "@ethersproject/bytes";
 import * as errors from "@ethersproject/errors";
 import { Networkish } from "@ethersproject/networks";
-import { defineReadOnly } from "@ethersproject/properties";
+import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 import { fetchJson } from "@ethersproject/web";
 
 import { BaseProvider } from "./base-provider";
@@ -112,11 +112,17 @@ export class EtherscanProvider extends BaseProvider{
         if (this.apiKey) { apiKey += "&apikey=" + this.apiKey; }
 
         let get = (url: string, procFunc?: (value: any) => any) => {
+            this.emit("debug", {
+                action: "request",
+                request: url,
+                provider: this
+            });
+
             return fetchJson(url, null, procFunc || getJsonResult).then((result) => {
                 this.emit("debug", {
-                    action: "perform",
+                    action: "response",
                     request: url,
-                    response: result,
+                    response: deepCopy(result),
                     provider: this
                 });
                 return result;
@@ -310,13 +316,20 @@ export class EtherscanProvider extends BaseProvider{
             url += "&endblock=" + endBlock;
             url += "&sort=asc" + apiKey;
 
+            this.emit("debug", {
+                action: "request",
+                request: url,
+                provider: this
+            });
+
             return fetchJson(url, null, getResult).then((result: Array<any>) => {
                 this.emit("debug", {
-                    action: "getHistory",
+                    action: "response",
                     request: url,
-                    response: result,
+                    response: deepCopy(result),
                     provider: this
                 });
+
                 let output: Array<TransactionResponse> = [];
                 result.forEach((tx) => {
                     ["contractAddress", "to"].forEach(function(key) {

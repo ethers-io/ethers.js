@@ -8,7 +8,7 @@ import { BigNumber } from "@ethersproject/bignumber";
 import { Bytes, hexlify, hexValue } from "@ethersproject/bytes";
 import * as errors from "@ethersproject/errors";
 import { getNetwork, Network, Networkish } from "@ethersproject/networks";
-import { checkProperties, defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
+import { checkProperties, deepCopy, defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes } from "@ethersproject/strings";
 import { ConnectionInfo, fetchJson, poll } from "@ethersproject/web";
 
@@ -283,9 +283,15 @@ export class JsonRpcProvider extends BaseProvider {
             jsonrpc: "2.0"
         };
 
+        this.emit("debug", {
+            action: "request",
+            request: deepCopy(request),
+            provider: this
+        });
+
         return fetchJson(this.connection, JSON.stringify(request), getResult).then((result) => {
             this.emit("debug", {
-                action: "send",
+                action: "response",
                 request: request,
                 response: result,
                 provider: this

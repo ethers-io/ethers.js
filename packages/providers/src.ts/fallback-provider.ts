@@ -3,7 +3,7 @@
 import * as errors from "@ethersproject/errors";
 import { Network } from "@ethersproject/networks";
 import { shuffled } from "@ethersproject/random";
-import { defineReadOnly } from "@ethersproject/properties";
+import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 
 import { BaseProvider } from "./base-provider";
 
@@ -148,14 +148,32 @@ export class FallbackProvider extends BaseProvider {
                 run: () => {
                     let t0 = now();
                     let start = t0 - T0;
-                    this.emit("debug", "perform", rid, { weight, start, provider, method, params });
+                    this.emit("debug", {
+                        action: "request",
+                        rid: rid,
+                        backend: { weight, start, provider },
+                        request: { method: method, params: deepCopy(params) },
+                        provider: this
+                    });
                     return provider.perform(method, params).then((result) => {
                         let duration = now() - t0;
-                        this.emit("debug", "result", rid, { duration, result });
+                        this.emit("debug", {
+                            action: "response",
+                            rid: rid,
+                            backend: { weight, start, duration, provider },
+                            request: { method: method, params: deepCopy(params) },
+                            response: deepCopy(result)
+                        });
                         return { weight: weight, result: result };
                     }, (error) => {
                         let duration = now() - t0;
-                        this.emit("debug", "error", rid, { duration, error });
+                        this.emit("debug", {
+                            action: "response",
+                            rid: rid,
+                            backend: { weight, start, duration, provider },
+                            request: { method: method, params: deepCopy(params) },
+                            error: error
+                        });
                         return { weight: weight, error: error };
                     });
                 },
