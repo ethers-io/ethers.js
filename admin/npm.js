@@ -24,7 +24,7 @@ async function getPackage(name) {
         cache[name] = result;
         return result;
     }, (error) => {
-        if (error.statusCode === 404) {
+        if (error.status === 404) {
             return null;
         }
         throw error;
