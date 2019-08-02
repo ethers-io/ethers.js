@@ -4,27 +4,31 @@ import { ethers } from "ethers";
 
 import scrypt from "scrypt-js";
 
+import { version } from "./_version";
+
+const logger = new ethers.utils.Logger(version);
+
 let warned = false;
 
 export class BrainWallet extends ethers.Wallet {
 
     static _generate(username: ethers.Bytes | string, password: ethers.Bytes | string, legacy: boolean, progressCallback?: ethers.utils.ProgressCallback): Promise<BrainWallet> {
         if (!warned) {
-            ethers.errors.warn("Warning: using Brain Wallets should be considered insecure (this warning will not be repeated)");
+            logger.warn("Warning: using Brain Wallets should be considered insecure (this warning will not be repeated)");
             warned = true;
         }
         let usernameBytes: Uint8Array = null;
         let passwordBytes: Uint8Array = null;
 
         if (typeof(username) === 'string') {
-            ethers.errors.checkNormalize();
+            logger.checkNormalize();
             usernameBytes = ethers.utils.toUtf8Bytes(username.normalize('NFKC'));
         } else {
             usernameBytes = ethers.utils.arrayify(username);
         }
 
         if (typeof(password) === 'string') {
-            ethers.errors.checkNormalize();
+            logger.checkNormalize();
             passwordBytes = ethers.utils.toUtf8Bytes(password.normalize('NFKC'));
         } else {
             passwordBytes = ethers.utils.arrayify(password);

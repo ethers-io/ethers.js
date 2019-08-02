@@ -2,6 +2,10 @@
 
 import { ethers } from "ethers";
 
+import { version } from "./_version";
+
+const logger = new ethers.utils.Logger(version);
+
 export class NonceManager extends ethers.Signer {
     readonly signer: ethers.Signer;
     readonly provider: ethers.providers.Provider;
@@ -9,7 +13,7 @@ export class NonceManager extends ethers.Signer {
     _transactionCount: Promise<number>;
 
     constructor(signer: ethers.Signer) {
-        ethers.errors.checkNew(new.target, NonceManager);
+        logger.checkNew(new.target, NonceManager);
         super();
         ethers.utils.defineReadOnly(this, "signer", signer);
     }

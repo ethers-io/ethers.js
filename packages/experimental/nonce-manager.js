@@ -14,12 +14,14 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var ethers_1 = require("ethers");
+var _version_1 = require("./_version");
+var logger = new ethers_1.ethers.utils.Logger(_version_1.version);
 var NonceManager = /** @class */ (function (_super) {
     __extends(NonceManager, _super);
     function NonceManager(signer) {
         var _newTarget = this.constructor;
         var _this = this;
-        ethers_1.ethers.errors.checkNew(_newTarget, NonceManager);
+        logger.checkNew(_newTarget, NonceManager);
         _this = _super.call(this) || this;
         ethers_1.ethers.utils.defineReadOnly(_this, "signer", signer);
         return _this;

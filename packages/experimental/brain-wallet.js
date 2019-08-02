@@ -18,6 +18,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var ethers_1 = require("ethers");
 var scrypt_js_1 = __importDefault(require("scrypt-js"));
+var _version_1 = require("./_version");
+var logger = new ethers_1.ethers.utils.Logger(_version_1.version);
 var warned = false;
 var BrainWallet = /** @class */ (function (_super) {
     __extends(BrainWallet, _super);
@@ -26,20 +28,20 @@ var BrainWallet = /** @class */ (function (_super) {
     }
     BrainWallet._generate = function (username, password, legacy, progressCallback) {
         if (!warned) {
-            ethers_1.ethers.errors.warn("Warning: using Brain Wallets should be considered insecure (this warning will not be repeated)");
+            logger.warn("Warning: using Brain Wallets should be considered insecure (this warning will not be repeated)");
             warned = true;
         }
         var usernameBytes = null;
         var passwordBytes = null;
         if (typeof (username) === 'string') {
-            ethers_1.ethers.errors.checkNormalize();
+            logger.checkNormalize();
             usernameBytes = ethers_1.ethers.utils.toUtf8Bytes(username.normalize('NFKC'));
         }
         else {
             usernameBytes = ethers_1.ethers.utils.arrayify(username);
         }
         if (typeof (password) === 'string') {
-            ethers_1.ethers.errors.checkNormalize();
+            logger.checkNormalize();
             passwordBytes = ethers_1.ethers.utils.toUtf8Bytes(password.normalize('NFKC'));
         }
         else {

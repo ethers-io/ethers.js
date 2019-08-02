@@ -2,10 +2,13 @@
 
 'use strict';
 
-
 import { ethers } from 'ethers';
 
 import { ArgParser, CLI, Help, Plugin } from '../cli';
+
+import { version } from "../_version";
+
+const logger = new ethers.utils.Logger(version);
 
 const ensAbi = [
     "function setOwner(bytes32 node, address owner) external @500000",
@@ -168,7 +171,7 @@ abstract class AccountPlugin extends Plugin {
     _wait: boolean;
 
     static getHelp(): Help {
-        return ethers.errors.throwError("subclasses must implemetn this", ethers.errors.UNSUPPORTED_OPERATION, {
+        return logger.throwError("subclasses must implemetn this", ethers.errors.UNSUPPORTED_OPERATION, {
             operation: "getHelp"
         });
     }

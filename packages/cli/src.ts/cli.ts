@@ -10,6 +10,8 @@ import { getChoice, getPassword, getProgressBar } from "./prompt";
 
 import { version } from "./_version";
 
+const logger = new ethers.utils.Logger(version);
+
 class UsageError extends Error { }
 
 
@@ -730,11 +732,11 @@ export class CLI {
 
     addPlugin(command: string, plugin: PluginType) {
         if (this.standAlone) {
-            ethers.errors.throwError("only setPlugin or addPlugin may be used at once", ethers.errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("only setPlugin or addPlugin may be used at once", ethers.errors.UNSUPPORTED_OPERATION, {
                 operation: "addPlugin"
             });
         } else if (this.plugins[command]) {
-            ethers.errors.throwError("command already exists", ethers.errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("command already exists", ethers.errors.UNSUPPORTED_OPERATION, {
                 operation: "addPlugin",
                 command: command
             });
@@ -744,12 +746,12 @@ export class CLI {
 
     setPlugin(plugin: PluginType) {
         if (Object.keys(this.plugins).length !== 0) {
-            ethers.errors.throwError("only setPlugin or addPlugin may be used at once", ethers.errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("only setPlugin or addPlugin may be used at once", ethers.errors.UNSUPPORTED_OPERATION, {
                 operation: "setPlugin"
             });
         }
         if (this.standAlone) {
-            ethers.errors.throwError("cannot setPlugin more than once", ethers.errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("cannot setPlugin more than once", ethers.errors.UNSUPPORTED_OPERATION, {
                 operation: "setPlugin"
             });
         }

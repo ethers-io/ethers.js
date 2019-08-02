@@ -57,6 +57,7 @@ var ethers_1 = require("ethers");
 var scrypt_js_1 = __importDefault(require("scrypt-js"));
 var prompt_1 = require("./prompt");
 var _version_1 = require("./_version");
+var logger = new ethers_1.ethers.utils.Logger(_version_1.version);
 var UsageError = /** @class */ (function (_super) {
     __extends(UsageError, _super);
     function UsageError() {
@@ -818,12 +819,12 @@ var CLI = /** @class */ (function () {
     // @TODO: Better way to specify default; i.e. may not have args
     CLI.prototype.addPlugin = function (command, plugin) {
         if (this.standAlone) {
-            ethers_1.ethers.errors.throwError("only setPlugin or addPlugin may be used at once", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("only setPlugin or addPlugin may be used at once", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
                 operation: "addPlugin"
             });
         }
         else if (this.plugins[command]) {
-            ethers_1.ethers.errors.throwError("command already exists", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("command already exists", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
                 operation: "addPlugin",
                 command: command
             });
@@ -832,12 +833,12 @@ var CLI = /** @class */ (function () {
     };
     CLI.prototype.setPlugin = function (plugin) {
         if (Object.keys(this.plugins).length !== 0) {
-            ethers_1.ethers.errors.throwError("only setPlugin or addPlugin may be used at once", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("only setPlugin or addPlugin may be used at once", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
                 operation: "setPlugin"
             });
         }
         if (this.standAlone) {
-            ethers_1.ethers.errors.throwError("cannot setPlugin more than once", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("cannot setPlugin more than once", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
                 operation: "setPlugin"
             });
         }

@@ -8,6 +8,7 @@ import { hashMessage, id, isValidName, namehash } from "@ethersproject/hash";
 import { defaultPath, entropyToMnemonic, HDNode, isValidMnemonic, mnemonicToEntropy, mnemonicToSeed } from "@ethersproject/hdnode";
 import { getJsonWalletAddress } from "@ethersproject/json-wallets";
 import { keccak256 } from "@ethersproject/keccak256";
+import { Logger } from "@ethersproject/logger";
 import { sha256 } from "@ethersproject/sha2";
 import { keccak256 as solidityKeccak256, pack as solidityPack, sha256 as soliditySha256 } from "@ethersproject/solidity";
 import { randomBytes } from "@ethersproject/random";
@@ -47,6 +48,8 @@ export {
     FunctionFragment,
     ParamType,
     FormatTypes,
+
+    Logger,
 
     RLP,
 

@@ -51,6 +51,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var ethers_1 = require("ethers");
 var cli_1 = require("../cli");
+var _version_1 = require("../_version");
+var logger = new ethers_1.ethers.utils.Logger(_version_1.version);
 var ensAbi = [
     "function setOwner(bytes32 node, address owner) external @500000",
     "function setSubnodeOwner(bytes32 node, bytes32 label, address owner) external @500000",
@@ -226,7 +228,7 @@ var AccountPlugin = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     AccountPlugin.getHelp = function () {
-        return ethers_1.ethers.errors.throwError("subclasses must implemetn this", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
+        return logger.throwError("subclasses must implemetn this", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
             operation: "getHelp"
         });
     };

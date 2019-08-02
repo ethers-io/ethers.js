@@ -10,6 +10,9 @@
 import { ethers } from "ethers";
 import { poll } from "@ethersproject/web";
 
+import { version } from "./_version";
+
+const logger = new ethers.utils.Logger(version);
 
 export type RetryOptions = {
     // Maximum time in total to retry
@@ -33,7 +36,7 @@ export class RetryProvider extends ethers.providers.BaseProvider {
     readonly options: RetryOptions;
 
     constructor(provider: ethers.providers.BaseProvider, options?: RetryOptions) {
-        ethers.errors.checkNew(new.target, RetryProvider);
+        logger.checkNew(new.target, RetryProvider);
         super(provider.getNetwork());
         ethers.utils.defineReadOnly(this, "provider", provider);
         ethers.utils.defineReadOnly(this, "options", options || { });

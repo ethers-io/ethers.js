@@ -1,7 +1,7 @@
 {
   "name": "ethers",
   "version": "5.0.0-beta.149",
-  "description": "Error utility functions for ethers.",
+  "description": "Umbrella package for most common Ethers libraries.",
   "main": "index.js",
   "scripts": {
     "dist": "npm run dist-browser && npm run dist-minified",
@@ -19,11 +19,11 @@
     "@ethersproject/bytes": ">5.0.0-beta.0",
     "@ethersproject/constants": ">5.0.0-beta.0",
     "@ethersproject/contracts": ">5.0.0-beta.0",
-    "@ethersproject/errors": ">5.0.0-beta.0",
     "@ethersproject/hash": ">5.0.0-beta.0",
     "@ethersproject/hdnode": ">5.0.0-beta.0",
     "@ethersproject/json-wallets": ">5.0.0-beta.0",
     "@ethersproject/keccak256": ">5.0.0-beta.0",
+    "@ethersproject/logger": ">5.0.0-beta.0",
     "@ethersproject/networks": ">5.0.0-beta.0",
     "@ethersproject/pbkdf2": ">5.0.0-beta.0",
     "@ethersproject/properties": ">5.0.0-beta.0",
@@ -56,5 +56,5 @@
   "publishConfig": {
     "tag": "next"
   },
-  "tarballHash": "0x331cb7370079df867415803325653d5fff45477f39e50abc0daabd4f4c920c07"
+  "tarballHash": "0xabcf56fe40ab0d8e6fb183e947773be07ddc4b52d6cdfcc0e7fd06e880de4b80"
 }

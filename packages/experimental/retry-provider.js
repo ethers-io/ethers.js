@@ -20,12 +20,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethers-io/ethers.js/issues/427
 var ethers_1 = require("ethers");
 var web_1 = require("@ethersproject/web");
+var _version_1 = require("./_version");
+var logger = new ethers_1.ethers.utils.Logger(_version_1.version);
 var RetryProvider = /** @class */ (function (_super) {
     __extends(RetryProvider, _super);
     function RetryProvider(provider, options) {
         var _newTarget = this.constructor;
         var _this = this;
-        ethers_1.ethers.errors.checkNew(_newTarget, RetryProvider);
+        logger.checkNew(_newTarget, RetryProvider);
         _this = _super.call(this, provider.getNetwork()) || this;
         ethers_1.ethers.utils.defineReadOnly(_this, "provider", provider);
         ethers_1.ethers.utils.defineReadOnly(_this, "options", options || {});

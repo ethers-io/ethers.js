@@ -2,6 +2,9 @@
 
 import { ethers } from "ethers";
 
+import { version } from "./_version";
+
+const logger = new ethers.utils.Logger(version);
 
 export class MetamaskProvider extends ethers.providers.Web3Provider {
 
@@ -12,7 +15,7 @@ export class MetamaskProvider extends ethers.providers.Web3Provider {
         if (!ethereum) {
             ethereum = (<any>global).ethereum;
             if (!ethereum) {
-                ethers.errors.throwError("could not auto-detect global.ethereum", ethers.errors.UNSUPPORTED_OPERATION, {
+                logger.throwError("could not auto-detect global.ethereum", ethers.errors.UNSUPPORTED_OPERATION, {
                     operation: "window.ethereum"
                 });
             }
