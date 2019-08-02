@@ -299,3 +299,32 @@ describe('Test BigNumber', function () {
         ].forEach(testAbs);
     });
 });
+function getHex(value) {
+    return "0x" + Buffer.from(value).toString("hex");
+}
+describe("Test nameprep", function () {
+    var Tests = testcases_1.loadTests("nameprep");
+    Tests.forEach(function (test) {
+        it(test.comment, function () {
+            var input = ethers_1.ethers.utils.toUtf8String(test.input);
+            if (test.output) {
+                var expected = ethers_1.ethers.utils.toUtf8String(test.output);
+                var actual = ethers_1.ethers.utils.nameprep(input);
+                assert_1.default.equal(actual, expected, "actual(\"" + getHex(actual) + "\") !== expected(\"" + getHex(expected) + "\")");
+            }
+            else {
+                var ok = true;
+                var reason = "";
+                try {
+                    var actual = ethers_1.ethers.utils.nameprep(input);
+                    console.log(actual);
+                    reason = "should has thrown " + test.rc + " - actual(\"" + getHex(actual) + "\")";
+                    ok = false;
+                }
+                catch (error) {
+                }
+                assert_1.default.ok(ok, reason);
+            }
+        });
+    });
+});

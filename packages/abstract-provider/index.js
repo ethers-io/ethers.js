@@ -12,18 +12,13 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var errors_1 = require("@ethersproject/errors");
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 ;
 ;
 //export type CallTransactionable = {
@@ -45,7 +40,7 @@ var BlockForkEvent = /** @class */ (function (_super) {
     function BlockForkEvent(blockhash, expiry) {
         var _this = this;
         if (!bytes_1.isHexString(blockhash, 32)) {
-            errors.throwArgumentError("invalid blockhash", "blockhash", blockhash);
+            logger.throwArgumentError("invalid blockhash", "blockhash", blockhash);
         }
         _this = _super.call(this, {
             _isForkEvent: true,
@@ -63,7 +58,7 @@ var TransactionForkEvent = /** @class */ (function (_super) {
     function TransactionForkEvent(hash, expiry) {
         var _this = this;
         if (!bytes_1.isHexString(hash, 32)) {
-            errors.throwArgumentError("invalid transaction hash", "hash", hash);
+            logger.throwArgumentError("invalid transaction hash", "hash", hash);
         }
         _this = _super.call(this, {
             _isForkEvent: true,
@@ -81,10 +76,10 @@ var TransactionOrderForkEvent = /** @class */ (function (_super) {
     function TransactionOrderForkEvent(beforeHash, afterHash, expiry) {
         var _this = this;
         if (!bytes_1.isHexString(beforeHash, 32)) {
-            errors.throwArgumentError("invalid transaction hash", "beforeHash", beforeHash);
+            logger.throwArgumentError("invalid transaction hash", "beforeHash", beforeHash);
         }
         if (!bytes_1.isHexString(afterHash, 32)) {
-            errors.throwArgumentError("invalid transaction hash", "afterHash", afterHash);
+            logger.throwArgumentError("invalid transaction hash", "afterHash", afterHash);
         }
         _this = _super.call(this, {
             _isForkEvent: true,

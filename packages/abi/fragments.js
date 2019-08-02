@@ -12,17 +12,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("@ethersproject/bignumber");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 ;
 var _constructorGuard = {};
 var ModifiersBytes = { calldata: true, memory: true, storage: true };
@@ -38,7 +33,7 @@ function checkModifier(type, name) {
         }
     }
     if (ModifiersBytes[name] || name === "payable") {
-        errors.throwArgumentError("invalid modifier", "name", name);
+        logger.throwArgumentError("invalid modifier", "name", name);
     }
     return false;
 }
@@ -253,7 +248,7 @@ var ParamType = /** @class */ (function () {
             format = exports.FormatTypes.sighash;
         }
         if (!exports.FormatTypes[format]) {
-            errors.throwArgumentError("invalid format type", "format", format);
+            logger.throwArgumentError("invalid format type", "format", format);
         }
         if (format === exports.FormatTypes.json) {
             var result_1 = {
@@ -368,7 +363,7 @@ var Fragment = /** @class */ (function () {
             // @TODO:
             return null;
         }
-        return errors.throwArgumentError("invalid fragment object", "value", value);
+        return logger.throwArgumentError("invalid fragment object", "value", value);
     };
     Fragment.fromString = function (value) {
         // Make sure the "returns" is surrounded by a space and all whitespace is exactly one space
@@ -402,7 +397,7 @@ var EventFragment = /** @class */ (function (_super) {
             format = exports.FormatTypes.sighash;
         }
         if (!exports.FormatTypes[format]) {
-            errors.throwArgumentError("invalid format type", "format", format);
+            logger.throwArgumentError("invalid format type", "format", format);
         }
         if (format === exports.FormatTypes.json) {
             return JSON.stringify({
@@ -458,7 +453,7 @@ var EventFragment = /** @class */ (function (_super) {
                 case "":
                     break;
                 default:
-                    errors.warn("unknown modifier: " + modifier);
+                    logger.warn("unknown modifier: " + modifier);
             }
         });
         return EventFragment.fromObject({
@@ -565,7 +560,7 @@ var ConstructorFragment = /** @class */ (function (_super) {
             format = exports.FormatTypes.sighash;
         }
         if (!exports.FormatTypes[format]) {
-            errors.throwArgumentError("invalid format type", "format", format);
+            logger.throwArgumentError("invalid format type", "format", format);
         }
         if (format === exports.FormatTypes.json) {
             return JSON.stringify({
@@ -577,7 +572,7 @@ var ConstructorFragment = /** @class */ (function (_super) {
             });
         }
         if (format === exports.FormatTypes.sighash) {
-            errors.throwError("cannot format a constructor for sighash", errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("cannot format a constructor for sighash", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "format(sighash)"
             });
         }
@@ -641,7 +636,7 @@ var FunctionFragment = /** @class */ (function (_super) {
             format = exports.FormatTypes.sighash;
         }
         if (!exports.FormatTypes[format]) {
-            errors.throwArgumentError("invalid format type", "format", format);
+            logger.throwArgumentError("invalid format type", "format", format);
         }
         if (format === exports.FormatTypes.json) {
             return JSON.stringify({

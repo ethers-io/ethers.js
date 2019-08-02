@@ -2,9 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // This gets overriddenby gulp during bip39-XX
 var exportWordlist = false;
-var errors_1 = require("@ethersproject/errors");
 var hash_1 = require("@ethersproject/hash");
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 function check(wordlist) {
     var words = [];
     for (var i = 0; i < 2048; i++) {
@@ -20,7 +22,7 @@ exports.check = check;
 var Wordlist = /** @class */ (function () {
     function Wordlist(locale) {
         var _newTarget = this.constructor;
-        errors_1.checkAbstract(_newTarget, Wordlist);
+        logger.checkAbstract(_newTarget, Wordlist);
         properties_1.defineReadOnly(this, "locale", locale);
     }
     // Subclasses may override this

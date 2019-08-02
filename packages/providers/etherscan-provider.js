@@ -12,18 +12,13 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
 var web_1 = require("@ethersproject/web");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var base_provider_1 = require("./base-provider");
 // The transaction has already been sanitized by the calls in Provider
 function getTransactionString(transaction) {
@@ -88,7 +83,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
     function EtherscanProvider(network, apiKey) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, EtherscanProvider);
+        logger.checkNew(_newTarget, EtherscanProvider);
         _this = _super.call(this, network) || this;
         var name = "invalid";
         if (_this.network) {
@@ -126,11 +121,16 @@ var EtherscanProvider = /** @class */ (function (_super) {
             apiKey += "&apikey=" + this.apiKey;
         }
         var get = function (url, procFunc) {
+            _this.emit("debug", {
+                action: "request",
+                request: url,
+                provider: _this
+            });
             return web_1.fetchJson(url, null, procFunc || getJsonResult).then(function (result) {
                 _this.emit("debug", {
-                    action: "perform",
+                    action: "response",
                     request: url,
-                    response: result,
+                    response: properties_1.deepCopy(result),
                     provider: _this
                 });
                 return result;
@@ -168,15 +168,15 @@ var EtherscanProvider = /** @class */ (function (_super) {
                     if (error.responseText) {
                         // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
                         if (error.responseText.toLowerCase().indexOf("insufficient funds") >= 0) {
-                            errors.throwError("insufficient funds", errors.INSUFFICIENT_FUNDS, {});
+                            logger.throwError("insufficient funds", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {});
                         }
                         // "Transaction with the same hash was already imported."
                         if (error.responseText.indexOf("same hash was already imported") >= 0) {
-                            errors.throwError("nonce has already been used", errors.NONCE_EXPIRED, {});
+                            logger.throwError("nonce has already been used", logger_1.Logger.errors.NONCE_EXPIRED, {});
                         }
                         // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
                         if (error.responseText.indexOf("another transaction with same nonce") >= 0) {
-                            errors.throwError("replacement fee too low", errors.REPLACEMENT_UNDERPRICED, {});
+                            logger.throwError("replacement fee too low", logger_1.Logger.errors.REPLACEMENT_UNDERPRICED, {});
                         }
                     }
                     throw error;
@@ -309,11 +309,16 @@ var EtherscanProvider = /** @class */ (function (_super) {
             url += "&startblock=" + startBlock;
             url += "&endblock=" + endBlock;
             url += "&sort=asc" + apiKey;
+            _this.emit("debug", {
+                action: "request",
+                request: url,
+                provider: _this
+            });
             return web_1.fetchJson(url, null, getResult).then(function (result) {
                 _this.emit("debug", {
-                    action: "getHistory",
+                    action: "response",
                     request: url,
-                    response: result,
+                    response: properties_1.deepCopy(result),
                     provider: _this
                 });
                 var output = [];

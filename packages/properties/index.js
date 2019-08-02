@@ -1,13 +1,8 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 function defineReadOnly(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -51,18 +46,11 @@ function resolveProperties(object) {
 exports.resolveProperties = resolveProperties;
 function checkProperties(object, properties) {
     if (!object || typeof (object) !== "object") {
-        errors.throwError("invalid object", errors.INVALID_ARGUMENT, {
-            argument: "object",
-            value: object
-        });
+        logger.throwArgumentError("invalid object", "object", object);
     }
     Object.keys(object).forEach(function (key) {
         if (!properties[key]) {
-            errors.throwError("invalid object key - " + key, errors.INVALID_ARGUMENT, {
-                argument: "transaction",
-                value: object,
-                key: key
-            });
+            logger.throwArgumentError("invalid object key - " + key, "transaction:" + key, object);
         }
     });
 }

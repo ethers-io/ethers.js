@@ -1,14 +1,9 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var bignumber_1 = require("./bignumber");
 var _constructorGuard = {};
 var Zero = bignumber_1.BigNumber.from(0);
@@ -18,7 +13,7 @@ function throwFault(message, fault, operation, value) {
     if (value !== undefined) {
         params.value = value;
     }
-    return errors.throwError(message, errors.NUMERIC_FAULT, params);
+    return logger.throwError(message, logger_1.Logger.errors.NUMERIC_FAULT, params);
 }
 // Constant to pull zeros from for multipliers
 var zeros = "0";
@@ -36,7 +31,7 @@ function getMultiplier(decimals) {
     if (typeof (decimals) === "number" && decimals >= 0 && decimals <= 256 && !(decimals % 1)) {
         return ("1" + zeros.substring(0, decimals));
     }
-    return errors.throwArgumentError("invalid decimal size", "decimals", decimals);
+    return logger.throwArgumentError("invalid decimal size", "decimals", decimals);
 }
 function formatFixed(value, decimals) {
     if (decimals == null) {
@@ -69,7 +64,7 @@ function parseFixed(value, decimals) {
     }
     var multiplier = getMultiplier(decimals);
     if (typeof (value) !== "string" || !value.match(/^-?[0-9.,]+$/)) {
-        errors.throwArgumentError("invalid decimal value", "value", value);
+        logger.throwArgumentError("invalid decimal value", "value", value);
     }
     if (multiplier.length - 1 === 0) {
         return bignumber_1.BigNumber.from(value);
@@ -80,12 +75,12 @@ function parseFixed(value, decimals) {
         value = value.substring(1);
     }
     if (value === ".") {
-        errors.throwArgumentError("missing value", "value", value);
+        logger.throwArgumentError("missing value", "value", value);
     }
     // Split it into a whole and fractional part
     var comps = value.split(".");
     if (comps.length > 2) {
-        errors.throwArgumentError("too many decimal points", "value", value);
+        logger.throwArgumentError("too many decimal points", "value", value);
     }
     var whole = comps[0], fraction = comps[1];
     if (!whole) {
@@ -137,7 +132,7 @@ var FixedFormat = /** @class */ (function () {
             else if (value != null) {
                 var match = value.match(/^(u?)fixed([0-9]+)x([0-9]+)$/);
                 if (!match) {
-                    errors.throwArgumentError("invalid fixed format", "format", value);
+                    logger.throwArgumentError("invalid fixed format", "format", value);
                 }
                 signed = (match[1] !== "u");
                 width = parseInt(match[2]);
@@ -150,7 +145,7 @@ var FixedFormat = /** @class */ (function () {
                     return defaultValue;
                 }
                 if (typeof (value[key]) !== type) {
-                    errors.throwArgumentError("invalid fixed format (" + key + " not " + type + ")", "format." + key, value[key]);
+                    logger.throwArgumentError("invalid fixed format (" + key + " not " + type + ")", "format." + key, value[key]);
                 }
                 return value[key];
             };
@@ -159,10 +154,10 @@ var FixedFormat = /** @class */ (function () {
             decimals = check("decimals", "number", decimals);
         }
         if (width % 8) {
-            errors.throwArgumentError("invalid fixed format width (not byte aligned)", "format.width", width);
+            logger.throwArgumentError("invalid fixed format width (not byte aligned)", "format.width", width);
         }
         if (decimals > 80) {
-            errors.throwArgumentError("invalid fixed format (decimals too large)", "format.decimals", decimals);
+            logger.throwArgumentError("invalid fixed format (decimals too large)", "format.decimals", decimals);
         }
         return new FixedFormat(_constructorGuard, signed, width, decimals);
     };
@@ -172,7 +167,7 @@ exports.FixedFormat = FixedFormat;
 var FixedNumber = /** @class */ (function () {
     function FixedNumber(constructorGuard, hex, value, format) {
         var _newTarget = this.constructor;
-        errors.checkNew(_newTarget, FixedNumber);
+        logger.checkNew(_newTarget, FixedNumber);
         this.format = format;
         this._hex = hex;
         this._value = value;
@@ -181,7 +176,7 @@ var FixedNumber = /** @class */ (function () {
     }
     FixedNumber.prototype._checkFormat = function (other) {
         if (this.format.name !== other.format.name) {
-            errors.throwArgumentError("incompatible format; use fixedNumber.toFormat", "other", other);
+            logger.throwArgumentError("incompatible format; use fixedNumber.toFormat", "other", other);
         }
     };
     FixedNumber.prototype.addUnsafe = function (other) {
@@ -214,7 +209,7 @@ var FixedNumber = /** @class */ (function () {
             decimals = 0;
         }
         if (decimals < 0 || decimals > 80 || (decimals % 1)) {
-            errors.throwArgumentError("invalid decimal cound", "decimals", decimals);
+            logger.throwArgumentError("invalid decimal cound", "decimals", decimals);
         }
         // If we are already in range, we're done
         var comps = this.toString().split(".");
@@ -233,7 +228,7 @@ var FixedNumber = /** @class */ (function () {
             return this._hex;
         }
         if (width % 8) {
-            errors.throwArgumentError("invalid byte width", "width", width);
+            logger.throwArgumentError("invalid byte width", "width", width);
         }
         var hex = bignumber_1.BigNumber.from(this._hex).fromTwos(this.format.width).toTwos(width).toHexString();
         return bytes_1.hexZeroPad(hex, width / 8);
@@ -304,11 +299,11 @@ var FixedNumber = /** @class */ (function () {
         }
         catch (error) {
             // Allow NUMERIC_FAULT to bubble up
-            if (error.code !== errors.INVALID_ARGUMENT) {
+            if (error.code !== logger_1.Logger.errors.INVALID_ARGUMENT) {
                 throw error;
             }
         }
-        return errors.throwArgumentError("invalid FixedNumber value", "value", value);
+        return logger.throwArgumentError("invalid FixedNumber value", "value", value);
     };
     FixedNumber.isFixedNumber = function (value) {
         return !!(value && value._isFixedNumber);

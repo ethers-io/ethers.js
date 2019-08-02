@@ -1,13 +1,8 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 function ethDefaultProvider(network) {
     return function (providers, options) {
         if (options == null) {
@@ -153,13 +148,13 @@ function getNetwork(network) {
     // Not a standard network; check that it is a valid network in general
     if (!standard) {
         if (typeof (network.chainId) !== "number") {
-            errors.throwError("invalid network chainId", errors.INVALID_ARGUMENT, { arg: "network", value: network });
+            logger.throwArgumentError("invalid network chainId", "network", network);
         }
         return network;
     }
     // Make sure the chainId matches the expected network chainId (or is 0; disable EIP-155)
     if (network.chainId !== 0 && network.chainId !== standard.chainId) {
-        errors.throwError("network chainId mismatch", errors.INVALID_ARGUMENT, { arg: "network", value: network });
+        logger.throwArgumentError("network chainId mismatch", "network", network);
     }
     // Standard Network (allow overriding the ENS address)
     return {

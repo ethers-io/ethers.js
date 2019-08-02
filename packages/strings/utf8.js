@@ -1,7 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors_1 = require("@ethersproject/errors");
 var bytes_1 = require("@ethersproject/bytes");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 ///////////////////////////////
 var UnicodeNormalizationForm;
 (function (UnicodeNormalizationForm) {
@@ -113,7 +115,7 @@ function getUtf8CodePoints(bytes, ignoreErrors) {
 function toUtf8Bytes(str, form) {
     if (form === void 0) { form = UnicodeNormalizationForm.current; }
     if (form != UnicodeNormalizationForm.current) {
-        errors_1.checkNormalize();
+        logger.checkNormalize();
         str = str.normalize(form);
     }
     var result = [];
@@ -176,14 +178,18 @@ function _toEscapedUtf8String(bytes, ignoreErrors) {
     }).join("") + '"';
 }
 exports._toEscapedUtf8String = _toEscapedUtf8String;
-function toUtf8String(bytes, ignoreErrors) {
-    return getUtf8CodePoints(bytes, ignoreErrors).map(function (codePoint) {
+function _toUtf8String(codePoints) {
+    return codePoints.map(function (codePoint) {
         if (codePoint <= 0xffff) {
             return String.fromCharCode(codePoint);
         }
         codePoint -= 0x10000;
         return String.fromCharCode((((codePoint >> 10) & 0x3ff) + 0xd800), ((codePoint & 0x3ff) + 0xdc00));
     }).join("");
+}
+exports._toUtf8String = _toUtf8String;
+function toUtf8String(bytes, ignoreErrors) {
+    return _toUtf8String(getUtf8CodePoints(bytes, ignoreErrors));
 }
 exports.toUtf8String = toUtf8String;
 function toUtf8CodePoints(str, form) {

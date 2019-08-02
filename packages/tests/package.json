@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/tests",
-  "version": "5.0.0-beta.133",
+  "version": "5.0.0-beta.134",
   "description": "Testing package for ethers.",
   "main": "index.js",
   "browser": {
@@ -32,5 +32,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x0a8f2bdc128213d07671ec9d813d7f725d0a7146a497d49a4e03705a825d116b"
+  "tarballHash": "0x498d371d99178e7e361be221075d69d7d2c3f67889ece5d658c694b0855fcea5"
 }

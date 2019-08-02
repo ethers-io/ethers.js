@@ -1,23 +1,18 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var address_1 = require("@ethersproject/address");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
 var constants_1 = require("@ethersproject/constants");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
 var transactions_1 = require("@ethersproject/transactions");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var Formatter = /** @class */ (function () {
     function Formatter() {
         var _newTarget = this.constructor;
-        errors.checkNew(_newTarget, Formatter);
+        logger.checkNew(_newTarget, Formatter);
         this.formats = this.getDefaultFormats();
     }
     Formatter.prototype.getDefaultFormats = function () {
@@ -155,10 +150,7 @@ var Formatter = /** @class */ (function () {
                 return value.toLowerCase();
             }
         }
-        return errors.throwError("invalid hash", errors.INVALID_ARGUMENT, {
-            argument: "value",
-            value: value
-        });
+        return logger.throwArgumentError("invalid hash", "value", value);
     };
     Formatter.prototype.data = function (value, strict) {
         var result = this.hex(value, strict);
@@ -202,10 +194,7 @@ var Formatter = /** @class */ (function () {
     Formatter.prototype.hash = function (value, strict) {
         var result = this.hex(value, strict);
         if (bytes_1.hexDataLength(result) !== 32) {
-            return errors.throwError("invalid hash", errors.INVALID_ARGUMENT, {
-                argument: "value",
-                value: value
-            });
+            return logger.throwArgumentError("invalid hash", "value", value);
         }
         return result;
     };

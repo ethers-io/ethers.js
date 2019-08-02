@@ -12,23 +12,18 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var address_1 = require("@ethersproject/address");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
 var hash_1 = require("@ethersproject/hash");
 var keccak256_1 = require("@ethersproject/keccak256");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
 var abi_coder_1 = require("./abi-coder");
 var fragments_1 = require("./fragments");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var LogDescription = /** @class */ (function (_super) {
     __extends(LogDescription, _super);
     function LogDescription() {
@@ -66,7 +61,7 @@ var Interface = /** @class */ (function () {
     function Interface(fragments) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, Interface);
+        logger.checkNew(_newTarget, Interface);
         var abi = [];
         if (typeof (fragments) === "string") {
             abi = JSON.parse(fragments);
@@ -88,7 +83,7 @@ var Interface = /** @class */ (function () {
             switch (fragment.type) {
                 case "constructor":
                     if (_this.deploy) {
-                        errors.warn("duplicate definition - constructor");
+                        logger.warn("duplicate definition - constructor");
                         return;
                     }
                     properties_1.defineReadOnly(_this, "deploy", fragment);
@@ -104,7 +99,7 @@ var Interface = /** @class */ (function () {
             }
             var signature = fragment.format();
             if (bucket[signature]) {
-                errors.warn("duplicate definition - " + signature);
+                logger.warn("duplicate definition - " + signature);
                 return;
             }
             bucket[signature] = fragment;
@@ -115,7 +110,7 @@ var Interface = /** @class */ (function () {
             Object.keys(bucket).forEach(function (signature) {
                 var fragment = bucket[signature];
                 if (count[fragment.name] !== 1) {
-                    errors.warn("duplicate definition - " + fragment.name);
+                    logger.warn("duplicate definition - " + fragment.name);
                     return;
                 }
                 bucket[fragment.name] = fragment;
@@ -208,7 +203,7 @@ var Interface = /** @class */ (function () {
                 }
                 break;
         }
-        return errors.throwError("call revert exception", errors.CALL_EXCEPTION, {
+        return logger.throwError("call revert exception", logger_1.Logger.errors.CALL_EXCEPTION, {
             method: functionFragment.format(),
             errorSignature: errorSignature,
             errorArgs: [reason],
@@ -221,7 +216,7 @@ var Interface = /** @class */ (function () {
             eventFragment = this.getEvent(eventFragment);
         }
         if (values.length > eventFragment.inputs.length) {
-            errors.throwError("too many arguments for " + eventFragment.format(), errors.UNEXPECTED_ARGUMENT, {
+            logger.throwError("too many arguments for " + eventFragment.format(), logger_1.Logger.errors.UNEXPECTED_ARGUMENT, {
                 argument: "values",
                 value: values
             });
@@ -234,7 +229,7 @@ var Interface = /** @class */ (function () {
             var param = eventFragment.inputs[index];
             if (!param.indexed) {
                 if (value != null) {
-                    errors.throwArgumentError("cannot filter non-indexed parameters; must be null", ("contract." + param.name), value);
+                    logger.throwArgumentError("cannot filter non-indexed parameters; must be null", ("contract." + param.name), value);
                 }
                 return;
             }
@@ -248,7 +243,7 @@ var Interface = /** @class */ (function () {
                 topics.push(keccak256_1.keccak256(bytes_1.hexlify(value)));
             }
             else if (param.type.indexOf("[") !== -1 || param.type.substring(0, 5) === "tuple") {
-                errors.throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
+                logger.throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
             }
             else {
                 // Check addresses are valid
@@ -271,7 +266,7 @@ var Interface = /** @class */ (function () {
         if (topics != null && !eventFragment.anonymous) {
             var topicHash = this.getEventTopic(eventFragment);
             if (!bytes_1.isHexString(topics[0], 32) || topics[0].toLowerCase() !== topicHash) {
-                errors.throwError("fragment/topic mismatch", errors.INVALID_ARGUMENT, { argument: "topics[0]", expected: topicHash, value: topics[0] });
+                logger.throwError("fragment/topic mismatch", logger_1.Logger.errors.INVALID_ARGUMENT, { argument: "topics[0]", expected: topicHash, value: topics[0] });
             }
             topics = topics.slice(1);
         }

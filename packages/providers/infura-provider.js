@@ -12,15 +12,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
 var defaultProjectId = "84842078b09946638c03157f83405213";
 var InfuraProvider = /** @class */ (function (_super) {
@@ -58,7 +53,7 @@ var InfuraProvider = /** @class */ (function (_super) {
                 host = "goerli.infura.io";
                 break;
             default:
-                errors.throwError("unsupported network", errors.INVALID_ARGUMENT, {
+                logger.throwError("unsupported network", logger_1.Logger.errors.INVALID_ARGUMENT, {
                     argument: "network",
                     value: network
                 });

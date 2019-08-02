@@ -12,22 +12,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var abstract_signer_1 = require("@ethersproject/abstract-signer");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var networks_1 = require("@ethersproject/networks");
 var properties_1 = require("@ethersproject/properties");
 var strings_1 = require("@ethersproject/strings");
 var web_1 = require("@ethersproject/web");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var base_provider_1 = require("./base-provider");
 function timer(timeout) {
     return new Promise(function (resolve) {
@@ -58,7 +53,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     function JsonRpcSigner(constructorGuard, provider, addressOrIndex) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, JsonRpcSigner);
+        logger.checkNew(_newTarget, JsonRpcSigner);
         _this = _super.call(this) || this;
         if (constructorGuard !== _constructorGuard) {
             throw new Error("do not call the JsonRpcSigner constructor directly; use provider.getSigner");
@@ -76,12 +71,12 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             properties_1.defineReadOnly(_this, "_address", null);
         }
         else {
-            errors.throwError("invalid address or index", errors.INVALID_ARGUMENT, { argument: "addressOrIndex", value: addressOrIndex });
+            logger.throwArgumentError("invalid address or index", "addressOrIndex", addressOrIndex);
         }
         return _this;
     }
     JsonRpcSigner.prototype.connect = function (provider) {
-        return errors.throwError("cannot alter JSON-RPC Signer connection", errors.UNSUPPORTED_OPERATION, {
+        return logger.throwError("cannot alter JSON-RPC Signer connection", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "connect"
         });
     };
@@ -95,7 +90,9 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         }
         return this.provider.send("eth_accounts", []).then(function (accounts) {
             if (accounts.length <= _this._index) {
-                errors.throwError("unknown account #" + _this._index, errors.UNSUPPORTED_OPERATION, { operation: "getAddress" });
+                logger.throwError("unknown account #" + _this._index, logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: "getAddress"
+                });
             }
             return _this.provider.formatter.address(accounts[_this._index]);
         });
@@ -130,17 +127,17 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                 if (error.responseText) {
                     // See: JsonRpcProvider.sendTransaction (@TODO: Expose a ._throwError??)
                     if (error.responseText.indexOf("insufficient funds") >= 0) {
-                        errors.throwError("insufficient funds", errors.INSUFFICIENT_FUNDS, {
+                        logger.throwError("insufficient funds", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {
                             transaction: tx
                         });
                     }
                     if (error.responseText.indexOf("nonce too low") >= 0) {
-                        errors.throwError("nonce has already been used", errors.NONCE_EXPIRED, {
+                        logger.throwError("nonce has already been used", logger_1.Logger.errors.NONCE_EXPIRED, {
                             transaction: tx
                         });
                     }
                     if (error.responseText.indexOf("replacement transaction underpriced") >= 0) {
-                        errors.throwError("replacement fee too low", errors.REPLACEMENT_UNDERPRICED, {
+                        logger.throwError("replacement fee too low", logger_1.Logger.errors.REPLACEMENT_UNDERPRICED, {
                             transaction: tx
                         });
                     }
@@ -150,7 +147,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         });
     };
     JsonRpcSigner.prototype.signTransaction = function (transaction) {
-        return errors.throwError("signing transactions is unsupported", errors.UNSUPPORTED_OPERATION, {
+        return logger.throwError("signing transactions is unsupported", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "signTransaction"
         });
     };
@@ -219,7 +216,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     function JsonRpcProvider(url, network) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, JsonRpcProvider);
+        logger.checkNew(_newTarget, JsonRpcProvider);
         // One parameter, but it is a network name, so swap it with the URL
         if (typeof (url) === "string") {
             if (network === null && networks_1.getNetwork(url)) {
@@ -241,7 +238,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                         _this.send("net_version", []).then(function (result) {
                             resolve(networks_1.getNetwork(bignumber_1.BigNumber.from(result).toNumber()));
                         }).catch(function (error) {
-                            reject(errors.makeError("could not detect network", errors.NETWORK_ERROR, {}));
+                            reject(logger.makeError("could not detect network", logger_1.Logger.errors.NETWORK_ERROR));
                         });
                     });
                 });
@@ -283,9 +280,14 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             id: (this._nextId++),
             jsonrpc: "2.0"
         };
+        this.emit("debug", {
+            action: "request",
+            request: properties_1.deepCopy(request),
+            provider: this
+        });
         return web_1.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
             _this.emit("debug", {
-                action: "send",
+                action: "response",
                 request: request,
                 response: result,
                 provider: _this
@@ -312,15 +314,15 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                     if (error.responseText) {
                         // "insufficient funds for gas * price + value"
                         if (error.responseText.indexOf("insufficient funds") > 0) {
-                            errors.throwError("insufficient funds", errors.INSUFFICIENT_FUNDS, {});
+                            logger.throwError("insufficient funds", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {});
                         }
                         // "nonce too low"
                         if (error.responseText.indexOf("nonce too low") > 0) {
-                            errors.throwError("nonce has already been used", errors.NONCE_EXPIRED, {});
+                            logger.throwError("nonce has already been used", logger_1.Logger.errors.NONCE_EXPIRED, {});
                         }
                         // "replacement transaction underpriced"
                         if (error.responseText.indexOf("replacement transaction underpriced") > 0) {
-                            errors.throwError("replacement fee too low", errors.REPLACEMENT_UNDERPRICED, {});
+                            logger.throwError("replacement fee too low", logger_1.Logger.errors.REPLACEMENT_UNDERPRICED, {});
                         }
                     }
                     throw error;
@@ -349,7 +351,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             default:
                 break;
         }
-        return errors.throwError(method + " not implemented", errors.NOT_IMPLEMENTED, { operation: method });
+        return logger.throwError(method + " not implemented", logger_1.Logger.errors.NOT_IMPLEMENTED, { operation: method });
     };
     JsonRpcProvider.prototype._startPending = function () {
         if (this._pendingFilter != null) {

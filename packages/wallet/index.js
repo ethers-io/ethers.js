@@ -12,19 +12,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var address_1 = require("@ethersproject/address");
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 var abstract_signer_1 = require("@ethersproject/abstract-signer");
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var hash_1 = require("@ethersproject/hash");
 var hdnode_1 = require("@ethersproject/hdnode");
 var keccak256_1 = require("@ethersproject/keccak256");
@@ -33,6 +25,9 @@ var random_1 = require("@ethersproject/random");
 var signing_key_1 = require("@ethersproject/signing-key");
 var json_wallets_1 = require("@ethersproject/json-wallets");
 var transactions_1 = require("@ethersproject/transactions");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 function isAccount(value) {
     return (value != null && bytes_1.isHexString(value.privateKey, 32) && value.address != null);
 }
@@ -41,14 +36,14 @@ var Wallet = /** @class */ (function (_super) {
     function Wallet(privateKey, provider) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, Wallet);
+        logger.checkNew(_newTarget, Wallet);
         _this = _super.call(this) || this;
         if (isAccount(privateKey)) {
             var signingKey_1 = new signing_key_1.SigningKey(privateKey.privateKey);
             properties_1.defineReadOnly(_this, "_signingKey", function () { return signingKey_1; });
             properties_1.defineReadOnly(_this, "address", transactions_1.computeAddress(_this.publicKey));
             if (_this.address !== address_1.getAddress(privateKey.address)) {
-                errors.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDCACTED]");
+                logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDCACTED]");
             }
             if (privateKey.mnemonic != null) {
                 var mnemonic_1 = privateKey.mnemonic;
@@ -57,7 +52,7 @@ var Wallet = /** @class */ (function (_super) {
                 properties_1.defineReadOnly(_this, "path", privateKey.path);
                 var node = hdnode_1.HDNode.fromMnemonic(mnemonic_1).derivePath(path);
                 if (transactions_1.computeAddress(node.privateKey) !== _this.address) {
-                    errors.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDCACTED]");
+                    logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDCACTED]");
                 }
             }
             else {
@@ -68,7 +63,7 @@ var Wallet = /** @class */ (function (_super) {
         else {
             if (signing_key_1.SigningKey.isSigningKey(privateKey)) {
                 if (privateKey.curve !== "secp256k1") {
-                    errors.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
+                    logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
                 }
                 properties_1.defineReadOnly(_this, "_signingKey", function () { return privateKey; });
             }
@@ -81,10 +76,7 @@ var Wallet = /** @class */ (function (_super) {
             properties_1.defineReadOnly(_this, "address", transactions_1.computeAddress(_this.publicKey));
         }
         if (provider && !abstract_provider_1.Provider.isProvider(provider)) {
-            errors.throwError("invalid provider", errors.INVALID_ARGUMENT, {
-                argument: "provider",
-                value: provider
-            });
+            logger.throwArgumentError("invalid provider", "provider", provider);
         }
         properties_1.defineReadOnly(_this, "provider", provider || null);
         return _this;

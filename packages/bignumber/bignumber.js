@@ -16,7 +16,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 var BN = __importStar(require("bn.js"));
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var _constructorGuard = {};
 var MAX_SAFE = 0x1fffffffffffff;
 function isBigNumberish(value) {
@@ -31,9 +33,9 @@ exports.isBigNumberish = isBigNumberish;
 var BigNumber = /** @class */ (function () {
     function BigNumber(constructorGuard, hex) {
         var _newTarget = this.constructor;
-        errors.checkNew(_newTarget, BigNumber);
+        logger.checkNew(_newTarget, BigNumber);
         if (constructorGuard !== _constructorGuard) {
-            errors.throwError("cannot call consturtor directly; use BigNumber.from", errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("cannot call consturtor directly; use BigNumber.from", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "new (BigNumber)"
             });
         }
@@ -108,7 +110,7 @@ var BigNumber = /** @class */ (function () {
     BigNumber.prototype.toString = function () {
         // Lots of people expect this, which we do not support, so check
         if (arguments.length !== 0) {
-            errors.throwError("bigNumber.toString does not accept parameters", errors.UNEXPECTED_ARGUMENT, {});
+            logger.throwError("bigNumber.toString does not accept parameters", logger_1.Logger.errors.UNEXPECTED_ARGUMENT, {});
         }
         return toBN(this).toString(10);
     };
@@ -126,7 +128,7 @@ var BigNumber = /** @class */ (function () {
             if (value.match(/^-?[0-9]+$/)) {
                 return new BigNumber(_constructorGuard, toHex(new BN.BN(value)));
             }
-            return errors.throwArgumentError("invalid BigNumber string", "value", value);
+            return logger.throwArgumentError("invalid BigNumber string", "value", value);
         }
         if (typeof (value) === "number") {
             if (value % 1) {
@@ -152,7 +154,7 @@ var BigNumber = /** @class */ (function () {
                 return BigNumber.from(value);
             }
         }
-        return errors.throwArgumentError("invalid BigNumber value", "value", value);
+        return logger.throwArgumentError("invalid BigNumber value", "value", value);
     };
     BigNumber.isBigNumber = function (value) {
         return !!(value && value._isBigNumber);
@@ -172,7 +174,7 @@ function toHex(value) {
         value = value.substring(1);
         // Cannot have mulitple negative signs (e.g. "--0x04")
         if (value[0] === "-") {
-            errors.throwArgumentError("invalid hex", "value", value);
+            logger.throwArgumentError("invalid hex", "value", value);
         }
         // Call toHex on the positive component
         value = toHex(value);
@@ -216,5 +218,5 @@ function throwFault(fault, operation, value) {
     if (value != null) {
         params.value = value;
     }
-    return errors.throwError(fault, errors.NUMERIC_FAULT, params);
+    return logger.throwError(fault, logger_1.Logger.errors.NUMERIC_FAULT, params);
 }

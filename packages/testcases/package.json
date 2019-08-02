@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/testcases",
-  "version": "5.0.0-beta.127",
+  "version": "5.0.0-beta.128",
   "description": "Testcases for Ethereum and scripts to generate testcases.",
   "main": "index.js",
   "browser": "browser.js",
@@ -32,5 +32,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0xd661e673f06d0cd44fec8bbef06c1f6e0b0c5113b6311ea0ec236af4310a5b19"
+  "tarballHash": "0x82af9e03fd2c102b2b76bc2579f5bd7500cdc2ca1eb11ca6c81d04cf023dbdf3"
 }

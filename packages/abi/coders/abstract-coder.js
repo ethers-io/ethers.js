@@ -1,17 +1,12 @@
 "use trict";
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
 var bignumber_1 = require("@ethersproject/bignumber");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("../_version");
+var logger = new logger_1.Logger(_version_1.version);
 var Coder = /** @class */ (function () {
     function Coder(name, type, localName, dynamic) {
         this.name = name;
@@ -20,11 +15,7 @@ var Coder = /** @class */ (function () {
         this.dynamic = dynamic;
     }
     Coder.prototype._throwError = function (message, value) {
-        errors.throwError(message, errors.INVALID_ARGUMENT, {
-            argument: this.localName,
-            coder: this,
-            value: value
-        });
+        logger.throwArgumentError(message, this.localName, value);
     };
     return Coder;
 }());
@@ -60,7 +51,7 @@ var Writer = /** @class */ (function () {
     Writer.prototype._getValue = function (value) {
         var bytes = bytes_1.arrayify(bignumber_1.BigNumber.from(value));
         if (bytes.length > this.wordSize) {
-            errors.throwError("value out-of-bounds", errors.BUFFER_OVERRUN, {
+            logger.throwError("value out-of-bounds", logger_1.Logger.errors.BUFFER_OVERRUN, {
                 length: this.wordSize,
                 offset: bytes.length
             });
@@ -119,7 +110,7 @@ var Reader = /** @class */ (function () {
     Reader.prototype._peekBytes = function (offset, length) {
         var alignedLength = Math.ceil(length / this.wordSize) * this.wordSize;
         if (this._offset + alignedLength > this._data.length) {
-            errors.throwError("data out-of-bounds", errors.BUFFER_OVERRUN, {
+            logger.throwError("data out-of-bounds", logger_1.Logger.errors.BUFFER_OVERRUN, {
                 length: this._data.length,
                 offset: this._offset + alignedLength
             });

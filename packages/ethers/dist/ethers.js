@@ -9402,18 +9402,18 @@ module.exports = uuid;
 
 },{"./rng":39}],41:[function(require,module,exports){
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.version = "5.0.0-beta.135";
+
+},{}],42:[function(require,module,exports){
+"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var abstract_coder_1 = require("./coders/abstract-coder");
 var address_1 = require("./coders/address");
 var array_1 = require("./coders/array");
@@ -9430,7 +9430,7 @@ var paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 var AbiCoder = /** @class */ (function () {
     function AbiCoder(coerceFunc) {
         var _newTarget = this.constructor;
-        errors.checkNew(_newTarget, AbiCoder);
+        logger.checkNew(_newTarget, AbiCoder);
         properties_1.defineReadOnly(this, "coerceFunc", coerceFunc || null);
     }
     AbiCoder.prototype._getCoder = function (param) {
@@ -9458,10 +9458,7 @@ var AbiCoder = /** @class */ (function () {
         if (match) {
             var size = parseInt(match[2] || "256");
             if (size === 0 || size > 256 || (size % 8) !== 0) {
-                errors.throwError("invalid " + match[1] + " bit length", errors.INVALID_ARGUMENT, {
-                    arg: "param",
-                    value: param
-                });
+                logger.throwArgumentError("invalid " + match[1] + " bit length", "param", param);
             }
             return new number_1.NumberCoder(size / 8, (match[1] === "int"), param.name);
         }
@@ -9470,17 +9467,11 @@ var AbiCoder = /** @class */ (function () {
         if (match) {
             var size = parseInt(match[1]);
             if (size === 0 || size > 32) {
-                errors.throwError("invalid bytes length", errors.INVALID_ARGUMENT, {
-                    arg: "param",
-                    value: param
-                });
+                logger.throwArgumentError("invalid bytes length", "param", param);
             }
             return new fixed_bytes_1.FixedBytesCoder(size, param.name);
         }
-        return errors.throwError("invalid type", errors.INVALID_ARGUMENT, {
-            arg: "type",
-            value: param.type
-        });
+        return logger.throwError("invalid type", "type", param.type);
     };
     AbiCoder.prototype._getWordSize = function () { return 32; };
     AbiCoder.prototype._getReader = function (data) {
@@ -9492,7 +9483,7 @@ var AbiCoder = /** @class */ (function () {
     AbiCoder.prototype.encode = function (types, values) {
         var _this = this;
         if (types.length !== values.length) {
-            errors.throwError("types/values length mismatch", errors.INVALID_ARGUMENT, {
+            logger.throwError("types/values length mismatch", logger_1.Logger.errors.INVALID_ARGUMENT, {
                 count: { types: types.length, values: values.length },
                 value: { types: types, values: values }
             });
@@ -9514,21 +9505,16 @@ var AbiCoder = /** @class */ (function () {
 exports.AbiCoder = AbiCoder;
 exports.defaultAbiCoder = new AbiCoder();
 
-},{"./coders/abstract-coder":42,"./coders/address":43,"./coders/array":45,"./coders/boolean":46,"./coders/bytes":47,"./coders/fixed-bytes":48,"./coders/null":49,"./coders/number":50,"./coders/string":51,"./coders/tuple":52,"./fragments":53,"@ethersproject/bytes":64,"@ethersproject/errors":67,"@ethersproject/properties":83}],42:[function(require,module,exports){
+},{"./_version":41,"./coders/abstract-coder":43,"./coders/address":44,"./coders/array":46,"./coders/boolean":47,"./coders/bytes":48,"./coders/fixed-bytes":49,"./coders/null":50,"./coders/number":51,"./coders/string":52,"./coders/tuple":53,"./fragments":54,"@ethersproject/bytes":70,"@ethersproject/logger":92,"@ethersproject/properties":97}],43:[function(require,module,exports){
 "use trict";
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
 var bignumber_1 = require("@ethersproject/bignumber");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("../_version");
+var logger = new logger_1.Logger(_version_1.version);
 var Coder = /** @class */ (function () {
     function Coder(name, type, localName, dynamic) {
         this.name = name;
@@ -9537,11 +9523,7 @@ var Coder = /** @class */ (function () {
         this.dynamic = dynamic;
     }
     Coder.prototype._throwError = function (message, value) {
-        errors.throwError(message, errors.INVALID_ARGUMENT, {
-            argument: this.localName,
-            coder: this,
-            value: value
-        });
+        logger.throwArgumentError(message, this.localName, value);
     };
     return Coder;
 }());
@@ -9577,7 +9559,7 @@ var Writer = /** @class */ (function () {
     Writer.prototype._getValue = function (value) {
         var bytes = bytes_1.arrayify(bignumber_1.BigNumber.from(value));
         if (bytes.length > this.wordSize) {
-            errors.throwError("value out-of-bounds", errors.BUFFER_OVERRUN, {
+            logger.throwError("value out-of-bounds", logger_1.Logger.errors.BUFFER_OVERRUN, {
                 length: this.wordSize,
                 offset: bytes.length
             });
@@ -9636,7 +9618,7 @@ var Reader = /** @class */ (function () {
     Reader.prototype._peekBytes = function (offset, length) {
         var alignedLength = Math.ceil(length / this.wordSize) * this.wordSize;
         if (this._offset + alignedLength > this._data.length) {
-            errors.throwError("data out-of-bounds", errors.BUFFER_OVERRUN, {
+            logger.throwError("data out-of-bounds", logger_1.Logger.errors.BUFFER_OVERRUN, {
                 length: this._data.length,
                 offset: this._offset + alignedLength
             });
@@ -9659,7 +9641,7 @@ var Reader = /** @class */ (function () {
 }());
 exports.Reader = Reader;
 
-},{"@ethersproject/bignumber":63,"@ethersproject/bytes":64,"@ethersproject/errors":67,"@ethersproject/properties":83}],43:[function(require,module,exports){
+},{"../_version":41,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/logger":92,"@ethersproject/properties":97}],44:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -9699,7 +9681,7 @@ var AddressCoder = /** @class */ (function (_super) {
 }(abstract_coder_1.Coder));
 exports.AddressCoder = AddressCoder;
 
-},{"./abstract-coder":42,"@ethersproject/address":58,"@ethersproject/bytes":64}],44:[function(require,module,exports){
+},{"./abstract-coder":43,"@ethersproject/address":62,"@ethersproject/bytes":70}],45:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -9734,7 +9716,7 @@ var AnonymousCoder = /** @class */ (function (_super) {
 }(abstract_coder_1.Coder));
 exports.AnonymousCoder = AnonymousCoder;
 
-},{"./abstract-coder":42}],45:[function(require,module,exports){
+},{"./abstract-coder":43}],46:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -9749,15 +9731,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("../_version");
+var logger = new logger_1.Logger(_version_1.version);
 var abstract_coder_1 = require("./abstract-coder");
 var anonymous_1 = require("./anonymous");
 function pack(writer, coders, values) {
@@ -9772,16 +9749,10 @@ function pack(writer, coders, values) {
         values = arrayValues_1;
     }
     else {
-        errors.throwError("invalid tuple value", errors.INVALID_ARGUMENT, {
-            coderType: "tuple",
-            value: values
-        });
+        logger.throwArgumentError("invalid tuple value", "tuple", values);
     }
     if (coders.length !== values.length) {
-        errors.throwError("types/value length mismatch", errors.INVALID_ARGUMENT, {
-            coderType: "tuple",
-            value: values
-        });
+        logger.throwArgumentError("types/value length mismatch", "tuple", values);
     }
     var staticWriter = new abstract_coder_1.Writer(writer.wordSize);
     var dynamicWriter = new abstract_coder_1.Writer(writer.wordSize);
@@ -9872,7 +9843,7 @@ var ArrayCoder = /** @class */ (function (_super) {
             count = value.length;
             writer.writeValue(value.length);
         }
-        errors.checkArgumentCount(count, value.length, " in coder array" + (this.localName ? (" " + this.localName) : ""));
+        logger.checkArgumentCount(count, value.length, "coder array" + (this.localName ? (" " + this.localName) : ""));
         var coders = [];
         for (var i = 0; i < value.length; i++) {
             coders.push(this.coder);
@@ -9894,7 +9865,7 @@ var ArrayCoder = /** @class */ (function (_super) {
 }(abstract_coder_1.Coder));
 exports.ArrayCoder = ArrayCoder;
 
-},{"./abstract-coder":42,"./anonymous":44,"@ethersproject/errors":67}],46:[function(require,module,exports){
+},{"../_version":41,"./abstract-coder":43,"./anonymous":45,"@ethersproject/logger":92}],47:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -9926,7 +9897,7 @@ var BooleanCoder = /** @class */ (function (_super) {
 }(abstract_coder_1.Coder));
 exports.BooleanCoder = BooleanCoder;
 
-},{"./abstract-coder":42}],47:[function(require,module,exports){
+},{"./abstract-coder":43}],48:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -9973,7 +9944,7 @@ var BytesCoder = /** @class */ (function (_super) {
 }(DynamicBytesCoder));
 exports.BytesCoder = BytesCoder;
 
-},{"./abstract-coder":42,"@ethersproject/bytes":64}],48:[function(require,module,exports){
+},{"./abstract-coder":43,"@ethersproject/bytes":70}],49:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -10015,7 +9986,7 @@ var FixedBytesCoder = /** @class */ (function (_super) {
 }(abstract_coder_1.Coder));
 exports.FixedBytesCoder = FixedBytesCoder;
 
-},{"./abstract-coder":42,"@ethersproject/bytes":64}],49:[function(require,module,exports){
+},{"./abstract-coder":43,"@ethersproject/bytes":70}],50:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -10051,7 +10022,7 @@ var NullCoder = /** @class */ (function (_super) {
 }(abstract_coder_1.Coder));
 exports.NullCoder = NullCoder;
 
-},{"./abstract-coder":42}],50:[function(require,module,exports){
+},{"./abstract-coder":43}],51:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -10110,7 +10081,7 @@ var NumberCoder = /** @class */ (function (_super) {
 }(abstract_coder_1.Coder));
 exports.NumberCoder = NumberCoder;
 
-},{"./abstract-coder":42,"@ethersproject/bignumber":63,"@ethersproject/constants":65}],51:[function(require,module,exports){
+},{"./abstract-coder":43,"@ethersproject/bignumber":68,"@ethersproject/constants":71}],52:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -10143,7 +10114,7 @@ var StringCoder = /** @class */ (function (_super) {
 }(bytes_1.DynamicBytesCoder));
 exports.StringCoder = StringCoder;
 
-},{"./bytes":47,"@ethersproject/strings":104}],52:[function(require,module,exports){
+},{"./bytes":48,"@ethersproject/strings":123}],53:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -10188,7 +10159,7 @@ var TupleCoder = /** @class */ (function (_super) {
 }(abstract_coder_1.Coder));
 exports.TupleCoder = TupleCoder;
 
-},{"./abstract-coder":42,"./array":45}],53:[function(require,module,exports){
+},{"./abstract-coder":43,"./array":46}],54:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -10203,17 +10174,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("@ethersproject/bignumber");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 ;
 var _constructorGuard = {};
 var ModifiersBytes = { calldata: true, memory: true, storage: true };
@@ -10229,7 +10195,7 @@ function checkModifier(type, name) {
         }
     }
     if (ModifiersBytes[name] || name === "payable") {
-        errors.throwArgumentError("invalid modifier", "name", name);
+        logger.throwArgumentError("invalid modifier", "name", name);
     }
     return false;
 }
@@ -10444,7 +10410,7 @@ var ParamType = /** @class */ (function () {
             format = exports.FormatTypes.sighash;
         }
         if (!exports.FormatTypes[format]) {
-            errors.throwArgumentError("invalid format type", "format", format);
+            logger.throwArgumentError("invalid format type", "format", format);
         }
         if (format === exports.FormatTypes.json) {
             var result_1 = {
@@ -10559,7 +10525,7 @@ var Fragment = /** @class */ (function () {
             // @TODO:
             return null;
         }
-        return errors.throwArgumentError("invalid fragment object", "value", value);
+        return logger.throwArgumentError("invalid fragment object", "value", value);
     };
     Fragment.fromString = function (value) {
         // Make sure the "returns" is surrounded by a space and all whitespace is exactly one space
@@ -10593,7 +10559,7 @@ var EventFragment = /** @class */ (function (_super) {
             format = exports.FormatTypes.sighash;
         }
         if (!exports.FormatTypes[format]) {
-            errors.throwArgumentError("invalid format type", "format", format);
+            logger.throwArgumentError("invalid format type", "format", format);
         }
         if (format === exports.FormatTypes.json) {
             return JSON.stringify({
@@ -10649,7 +10615,7 @@ var EventFragment = /** @class */ (function (_super) {
                 case "":
                     break;
                 default:
-                    errors.warn("unknown modifier: " + modifier);
+                    logger.warn("unknown modifier: " + modifier);
             }
         });
         return EventFragment.fromObject({
@@ -10756,7 +10722,7 @@ var ConstructorFragment = /** @class */ (function (_super) {
             format = exports.FormatTypes.sighash;
         }
         if (!exports.FormatTypes[format]) {
-            errors.throwArgumentError("invalid format type", "format", format);
+            logger.throwArgumentError("invalid format type", "format", format);
         }
         if (format === exports.FormatTypes.json) {
             return JSON.stringify({
@@ -10768,7 +10734,7 @@ var ConstructorFragment = /** @class */ (function (_super) {
             });
         }
         if (format === exports.FormatTypes.sighash) {
-            errors.throwError("cannot format a constructor for sighash", errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("cannot format a constructor for sighash", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "format(sighash)"
             });
         }
@@ -10832,7 +10798,7 @@ var FunctionFragment = /** @class */ (function (_super) {
             format = exports.FormatTypes.sighash;
         }
         if (!exports.FormatTypes[format]) {
-            errors.throwArgumentError("invalid format type", "format", format);
+            logger.throwArgumentError("invalid format type", "format", format);
         }
         if (format === exports.FormatTypes.json) {
             return JSON.stringify({
@@ -10983,7 +10949,7 @@ function splitNesting(value) {
     return result;
 }
 
-},{"@ethersproject/bignumber":63,"@ethersproject/errors":67,"@ethersproject/properties":83}],54:[function(require,module,exports){
+},{"./_version":41,"@ethersproject/bignumber":68,"@ethersproject/logger":92,"@ethersproject/properties":97}],55:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var fragments_1 = require("./fragments");
@@ -11000,7 +10966,7 @@ var interface_1 = require("./interface");
 exports.Indexed = interface_1.Indexed;
 exports.Interface = interface_1.Interface;
 
-},{"./abi-coder":41,"./fragments":53,"./interface":55}],55:[function(require,module,exports){
+},{"./abi-coder":42,"./fragments":54,"./interface":56}],56:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -11015,23 +10981,18 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var address_1 = require("@ethersproject/address");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
 var hash_1 = require("@ethersproject/hash");
 var keccak256_1 = require("@ethersproject/keccak256");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
 var abi_coder_1 = require("./abi-coder");
 var fragments_1 = require("./fragments");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var LogDescription = /** @class */ (function (_super) {
     __extends(LogDescription, _super);
     function LogDescription() {
@@ -11069,7 +11030,7 @@ var Interface = /** @class */ (function () {
     function Interface(fragments) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, Interface);
+        logger.checkNew(_newTarget, Interface);
         var abi = [];
         if (typeof (fragments) === "string") {
             abi = JSON.parse(fragments);
@@ -11091,7 +11052,7 @@ var Interface = /** @class */ (function () {
             switch (fragment.type) {
                 case "constructor":
                     if (_this.deploy) {
-                        errors.warn("duplicate definition - constructor");
+                        logger.warn("duplicate definition - constructor");
                         return;
                     }
                     properties_1.defineReadOnly(_this, "deploy", fragment);
@@ -11107,7 +11068,7 @@ var Interface = /** @class */ (function () {
             }
             var signature = fragment.format();
             if (bucket[signature]) {
-                errors.warn("duplicate definition - " + signature);
+                logger.warn("duplicate definition - " + signature);
                 return;
             }
             bucket[signature] = fragment;
@@ -11118,7 +11079,7 @@ var Interface = /** @class */ (function () {
             Object.keys(bucket).forEach(function (signature) {
                 var fragment = bucket[signature];
                 if (count[fragment.name] !== 1) {
-                    errors.warn("duplicate definition - " + fragment.name);
+                    logger.warn("duplicate definition - " + fragment.name);
                     return;
                 }
                 bucket[fragment.name] = fragment;
@@ -11211,7 +11172,7 @@ var Interface = /** @class */ (function () {
                 }
                 break;
         }
-        return errors.throwError("call revert exception", errors.CALL_EXCEPTION, {
+        return logger.throwError("call revert exception", logger_1.Logger.errors.CALL_EXCEPTION, {
             method: functionFragment.format(),
             errorSignature: errorSignature,
             errorArgs: [reason],
@@ -11224,7 +11185,7 @@ var Interface = /** @class */ (function () {
             eventFragment = this.getEvent(eventFragment);
         }
         if (values.length > eventFragment.inputs.length) {
-            errors.throwError("too many arguments for " + eventFragment.format(), errors.UNEXPECTED_ARGUMENT, {
+            logger.throwError("too many arguments for " + eventFragment.format(), logger_1.Logger.errors.UNEXPECTED_ARGUMENT, {
                 argument: "values",
                 value: values
             });
@@ -11237,7 +11198,7 @@ var Interface = /** @class */ (function () {
             var param = eventFragment.inputs[index];
             if (!param.indexed) {
                 if (value != null) {
-                    errors.throwArgumentError("cannot filter non-indexed parameters; must be null", ("contract." + param.name), value);
+                    logger.throwArgumentError("cannot filter non-indexed parameters; must be null", ("contract." + param.name), value);
                 }
                 return;
             }
@@ -11251,7 +11212,7 @@ var Interface = /** @class */ (function () {
                 topics.push(keccak256_1.keccak256(bytes_1.hexlify(value)));
             }
             else if (param.type.indexOf("[") !== -1 || param.type.substring(0, 5) === "tuple") {
-                errors.throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
+                logger.throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
             }
             else {
                 // Check addresses are valid
@@ -11274,7 +11235,7 @@ var Interface = /** @class */ (function () {
         if (topics != null && !eventFragment.anonymous) {
             var topicHash = this.getEventTopic(eventFragment);
             if (!bytes_1.isHexString(topics[0], 32) || topics[0].toLowerCase() !== topicHash) {
-                errors.throwError("fragment/topic mismatch", errors.INVALID_ARGUMENT, { argument: "topics[0]", expected: topicHash, value: topics[0] });
+                logger.throwError("fragment/topic mismatch", logger_1.Logger.errors.INVALID_ARGUMENT, { argument: "topics[0]", expected: topicHash, value: topics[0] });
             }
             topics = topics.slice(1);
         }
@@ -11390,7 +11351,12 @@ function getNameCount(fragments) {
     return unique;
 }
 
-},{"./abi-coder":41,"./fragments":53,"@ethersproject/address":58,"@ethersproject/bignumber":63,"@ethersproject/bytes":64,"@ethersproject/errors":67,"@ethersproject/hash":73,"@ethersproject/keccak256":80,"@ethersproject/properties":83}],56:[function(require,module,exports){
+},{"./_version":41,"./abi-coder":42,"./fragments":54,"@ethersproject/address":62,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/hash":81,"@ethersproject/keccak256":90,"@ethersproject/logger":92,"@ethersproject/properties":97}],57:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.version = "5.0.0-beta.128";
+
+},{}],58:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -11405,18 +11371,13 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var errors_1 = require("@ethersproject/errors");
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 ;
 ;
 //export type CallTransactionable = {
@@ -11438,7 +11399,7 @@ var BlockForkEvent = /** @class */ (function (_super) {
     function BlockForkEvent(blockhash, expiry) {
         var _this = this;
         if (!bytes_1.isHexString(blockhash, 32)) {
-            errors.throwArgumentError("invalid blockhash", "blockhash", blockhash);
+            logger.throwArgumentError("invalid blockhash", "blockhash", blockhash);
         }
         _this = _super.call(this, {
             _isForkEvent: true,
@@ -11456,7 +11417,7 @@ var TransactionForkEvent = /** @class */ (function (_super) {
     function TransactionForkEvent(hash, expiry) {
         var _this = this;
         if (!bytes_1.isHexString(hash, 32)) {
-            errors.throwArgumentError("invalid transaction hash", "hash", hash);
+            logger.throwArgumentError("invalid transaction hash", "hash", hash);
         }
         _this = _super.call(this, {
             _isForkEvent: true,
@@ -11474,10 +11435,10 @@ var TransactionOrderForkEvent = /** @class */ (function (_super) {
     function TransactionOrderForkEvent(beforeHash, afterHash, expiry) {
         var _this = this;
         if (!bytes_1.isHexString(beforeHash, 32)) {
-            errors.throwArgumentError("invalid transaction hash", "beforeHash", beforeHash);
+            logger.throwArgumentError("invalid transaction hash", "beforeHash", beforeHash);
         }
         if (!bytes_1.isHexString(afterHash, 32)) {
-            errors.throwArgumentError("invalid transaction hash", "afterHash", afterHash);
+            logger.throwArgumentError("invalid transaction hash", "afterHash", afterHash);
         }
         _this = _super.call(this, {
             _isForkEvent: true,
@@ -11514,7 +11475,9 @@ var Provider = /** @class */ (function () {
 }());
 exports.Provider = Provider;
 
-},{"@ethersproject/bytes":64,"@ethersproject/errors":67,"@ethersproject/properties":83}],57:[function(require,module,exports){
+},{"./_version":57,"@ethersproject/bytes":70,"@ethersproject/errors":74,"@ethersproject/logger":92,"@ethersproject/properties":97}],59:[function(require,module,exports){
+arguments[4][57][0].apply(exports,arguments)
+},{"dup":57}],60:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -11529,16 +11492,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var allowedTransactionKeys = [
     "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "value"
 ];
@@ -11553,7 +11511,7 @@ var Signer = /** @class */ (function () {
     // Sub-classes MUST call super
     function Signer() {
         var _newTarget = this.constructor;
-        errors.checkAbstract(_newTarget, Signer);
+        logger.checkAbstract(_newTarget, Signer);
         properties_1.defineReadOnly(this, "_isSigner", true);
     }
     ///////////////////
@@ -11616,7 +11574,7 @@ var Signer = /** @class */ (function () {
     Signer.prototype.checkTransaction = function (transaction) {
         for (var key in transaction) {
             if (allowedTransactionKeys.indexOf(key) === -1) {
-                errors.throwArgumentError("invalid transaction key: " + key, "transaction", transaction);
+                logger.throwArgumentError("invalid transaction key: " + key, "transaction", transaction);
             }
         }
         var tx = properties_1.shallowCopy(transaction);
@@ -11651,7 +11609,7 @@ var Signer = /** @class */ (function () {
                     _this.provider.resolveName(tx.from)
                 ]).then(function (results) {
                     if (results[0] !== results[1]) {
-                        errors.throwArgumentError("from address mismatch", "transaction", transaction);
+                        logger.throwArgumentError("from address mismatch", "transaction", transaction);
                     }
                     return results[0];
                 });
@@ -11669,7 +11627,7 @@ var Signer = /** @class */ (function () {
     // Sub-classes SHOULD leave these alone
     Signer.prototype._checkProvider = function (operation) {
         if (!this.provider) {
-            errors.throwError("missing provider", errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("missing provider", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: (operation || "_checkProvider")
             });
         }
@@ -11685,7 +11643,7 @@ var VoidSigner = /** @class */ (function (_super) {
     function VoidSigner(address, provider) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, VoidSigner);
+        logger.checkNew(_newTarget, VoidSigner);
         _this = _super.call(this) || this;
         properties_1.defineReadOnly(_this, "address", address);
         properties_1.defineReadOnly(_this, "provider", provider || null);
@@ -11696,7 +11654,7 @@ var VoidSigner = /** @class */ (function (_super) {
     };
     VoidSigner.prototype._fail = function (message, operation) {
         return Promise.resolve().then(function () {
-            errors.throwError(message, errors.UNSUPPORTED_OPERATION, { operation: operation });
+            logger.throwError(message, logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: operation });
         });
     };
     VoidSigner.prototype.signMessage = function (message) {
@@ -11712,7 +11670,12 @@ var VoidSigner = /** @class */ (function (_super) {
 }(Signer));
 exports.VoidSigner = VoidSigner;
 
-},{"@ethersproject/errors":67,"@ethersproject/properties":83}],58:[function(require,module,exports){
+},{"./_version":59,"@ethersproject/logger":92,"@ethersproject/properties":97}],61:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.version = "5.0.0-beta.126";
+
+},{}],62:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -11724,13 +11687,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 // We use this for base 36 maths
 var BN = __importStar(require("bn.js"));
-var errors = __importStar(require("@ethersproject/errors"));
 var bytes_1 = require("@ethersproject/bytes");
 var keccak256_1 = require("@ethersproject/keccak256");
 var rlp_1 = require("@ethersproject/rlp");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 function getChecksumAddress(address) {
     if (!bytes_1.isHexString(address, 20)) {
-        errors.throwError("invalid address", errors.INVALID_ARGUMENT, { arg: "address", value: address });
+        logger.throwArgumentError("invalid address", "address", address);
     }
     address = address.toLowerCase();
     var chars = address.substring(2).split("");
@@ -11790,7 +11755,7 @@ function ibanChecksum(address) {
 function getAddress(address) {
     var result = null;
     if (typeof (address) !== "string") {
-        errors.throwArgumentError("invalid address", "address", address);
+        logger.throwArgumentError("invalid address", "address", address);
     }
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
         // Missing the 0x prefix
@@ -11800,14 +11765,14 @@ function getAddress(address) {
         result = getChecksumAddress(address);
         // It is a checksummed address with a bad checksum
         if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
-            errors.throwArgumentError("bad address checksum", "address", address);
+            logger.throwArgumentError("bad address checksum", "address", address);
         }
         // Maybe ICAP? (we only support direct mode)
     }
     else if (address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
         // It is an ICAP address with a bad checksum
         if (address.substring(2, 4) !== ibanChecksum(address)) {
-            errors.throwArgumentError("bad icap checksum", "address", address);
+            logger.throwArgumentError("bad icap checksum", "address", address);
         }
         result = (new BN.BN(address.substring(4), 36)).toString(16);
         while (result.length < 40) {
@@ -11816,7 +11781,7 @@ function getAddress(address) {
         result = getChecksumAddress("0x" + result);
     }
     else {
-        errors.throwArgumentError("invalid address", "address", address);
+        logger.throwArgumentError("invalid address", "address", address);
     }
     return result;
 }
@@ -11845,14 +11810,14 @@ function getContractAddress(transaction) {
         from = getAddress(transaction.from);
     }
     catch (error) {
-        errors.throwArgumentError("missing from address", "transaction", transaction);
+        logger.throwArgumentError("missing from address", "transaction", transaction);
     }
     var nonce = bytes_1.stripZeros(bytes_1.arrayify(transaction.nonce));
     return getAddress(bytes_1.hexDataSlice(keccak256_1.keccak256(rlp_1.encode([from, nonce])), 12));
 }
 exports.getContractAddress = getContractAddress;
 
-},{"@ethersproject/bytes":64,"@ethersproject/errors":67,"@ethersproject/keccak256":80,"@ethersproject/rlp":98,"bn.js":2}],59:[function(require,module,exports){
+},{"./_version":61,"@ethersproject/bytes":70,"@ethersproject/keccak256":90,"@ethersproject/logger":92,"@ethersproject/rlp":114,"bn.js":2}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
@@ -11875,7 +11840,7 @@ function encode(data) {
 }
 exports.encode = encode;
 
-},{"@ethersproject/bytes":64}],60:[function(require,module,exports){
+},{"@ethersproject/bytes":70}],64:[function(require,module,exports){
 "use strict";
 /**
  * var basex = require("base-x");
@@ -12000,7 +11965,9 @@ exports.Base58 = Base58;
 //console.log(Base58.decode("Qmd2V777o5XvJbYMeMb8k2nU5f8d3ciUQ5YpYuWhzv8iDj"))
 //console.log(Base58.encode(Base58.decode("Qmd2V777o5XvJbYMeMb8k2nU5f8d3ciUQ5YpYuWhzv8iDj")))
 
-},{"@ethersproject/bytes":64,"@ethersproject/properties":83}],61:[function(require,module,exports){
+},{"@ethersproject/bytes":70,"@ethersproject/properties":97}],65:[function(require,module,exports){
+arguments[4][57][0].apply(exports,arguments)
+},{"dup":57}],66:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -12019,7 +11986,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 var BN = __importStar(require("bn.js"));
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var _constructorGuard = {};
 var MAX_SAFE = 0x1fffffffffffff;
 function isBigNumberish(value) {
@@ -12034,9 +12003,9 @@ exports.isBigNumberish = isBigNumberish;
 var BigNumber = /** @class */ (function () {
     function BigNumber(constructorGuard, hex) {
         var _newTarget = this.constructor;
-        errors.checkNew(_newTarget, BigNumber);
+        logger.checkNew(_newTarget, BigNumber);
         if (constructorGuard !== _constructorGuard) {
-            errors.throwError("cannot call consturtor directly; use BigNumber.from", errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("cannot call consturtor directly; use BigNumber.from", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "new (BigNumber)"
             });
         }
@@ -12111,7 +12080,7 @@ var BigNumber = /** @class */ (function () {
     BigNumber.prototype.toString = function () {
         // Lots of people expect this, which we do not support, so check
         if (arguments.length !== 0) {
-            errors.throwError("bigNumber.toString does not accept parameters", errors.UNEXPECTED_ARGUMENT, {});
+            logger.throwError("bigNumber.toString does not accept parameters", logger_1.Logger.errors.UNEXPECTED_ARGUMENT, {});
         }
         return toBN(this).toString(10);
     };
@@ -12129,7 +12098,7 @@ var BigNumber = /** @class */ (function () {
             if (value.match(/^-?[0-9]+$/)) {
                 return new BigNumber(_constructorGuard, toHex(new BN.BN(value)));
             }
-            return errors.throwArgumentError("invalid BigNumber string", "value", value);
+            return logger.throwArgumentError("invalid BigNumber string", "value", value);
         }
         if (typeof (value) === "number") {
             if (value % 1) {
@@ -12155,7 +12124,7 @@ var BigNumber = /** @class */ (function () {
                 return BigNumber.from(value);
             }
         }
-        return errors.throwArgumentError("invalid BigNumber value", "value", value);
+        return logger.throwArgumentError("invalid BigNumber value", "value", value);
     };
     BigNumber.isBigNumber = function (value) {
         return !!(value && value._isBigNumber);
@@ -12175,7 +12144,7 @@ function toHex(value) {
         value = value.substring(1);
         // Cannot have mulitple negative signs (e.g. "--0x04")
         if (value[0] === "-") {
-            errors.throwArgumentError("invalid hex", "value", value);
+            logger.throwArgumentError("invalid hex", "value", value);
         }
         // Call toHex on the positive component
         value = toHex(value);
@@ -12219,21 +12188,16 @@ function throwFault(fault, operation, value) {
     if (value != null) {
         params.value = value;
     }
-    return errors.throwError(fault, errors.NUMERIC_FAULT, params);
+    return logger.throwError(fault, logger_1.Logger.errors.NUMERIC_FAULT, params);
 }
 
-},{"@ethersproject/bytes":64,"@ethersproject/errors":67,"bn.js":2}],62:[function(require,module,exports){
+},{"./_version":65,"@ethersproject/bytes":70,"@ethersproject/logger":92,"bn.js":2}],67:[function(require,module,exports){
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var bignumber_1 = require("./bignumber");
 var _constructorGuard = {};
 var Zero = bignumber_1.BigNumber.from(0);
@@ -12243,7 +12207,7 @@ function throwFault(message, fault, operation, value) {
     if (value !== undefined) {
         params.value = value;
     }
-    return errors.throwError(message, errors.NUMERIC_FAULT, params);
+    return logger.throwError(message, logger_1.Logger.errors.NUMERIC_FAULT, params);
 }
 // Constant to pull zeros from for multipliers
 var zeros = "0";
@@ -12261,7 +12225,7 @@ function getMultiplier(decimals) {
     if (typeof (decimals) === "number" && decimals >= 0 && decimals <= 256 && !(decimals % 1)) {
         return ("1" + zeros.substring(0, decimals));
     }
-    return errors.throwArgumentError("invalid decimal size", "decimals", decimals);
+    return logger.throwArgumentError("invalid decimal size", "decimals", decimals);
 }
 function formatFixed(value, decimals) {
     if (decimals == null) {
@@ -12294,7 +12258,7 @@ function parseFixed(value, decimals) {
     }
     var multiplier = getMultiplier(decimals);
     if (typeof (value) !== "string" || !value.match(/^-?[0-9.,]+$/)) {
-        errors.throwArgumentError("invalid decimal value", "value", value);
+        logger.throwArgumentError("invalid decimal value", "value", value);
     }
     if (multiplier.length - 1 === 0) {
         return bignumber_1.BigNumber.from(value);
@@ -12305,12 +12269,12 @@ function parseFixed(value, decimals) {
         value = value.substring(1);
     }
     if (value === ".") {
-        errors.throwArgumentError("missing value", "value", value);
+        logger.throwArgumentError("missing value", "value", value);
     }
     // Split it into a whole and fractional part
     var comps = value.split(".");
     if (comps.length > 2) {
-        errors.throwArgumentError("too many decimal points", "value", value);
+        logger.throwArgumentError("too many decimal points", "value", value);
     }
     var whole = comps[0], fraction = comps[1];
     if (!whole) {
@@ -12362,7 +12326,7 @@ var FixedFormat = /** @class */ (function () {
             else if (value != null) {
                 var match = value.match(/^(u?)fixed([0-9]+)x([0-9]+)$/);
                 if (!match) {
-                    errors.throwArgumentError("invalid fixed format", "format", value);
+                    logger.throwArgumentError("invalid fixed format", "format", value);
                 }
                 signed = (match[1] !== "u");
                 width = parseInt(match[2]);
@@ -12375,7 +12339,7 @@ var FixedFormat = /** @class */ (function () {
                     return defaultValue;
                 }
                 if (typeof (value[key]) !== type) {
-                    errors.throwArgumentError("invalid fixed format (" + key + " not " + type + ")", "format." + key, value[key]);
+                    logger.throwArgumentError("invalid fixed format (" + key + " not " + type + ")", "format." + key, value[key]);
                 }
                 return value[key];
             };
@@ -12384,10 +12348,10 @@ var FixedFormat = /** @class */ (function () {
             decimals = check("decimals", "number", decimals);
         }
         if (width % 8) {
-            errors.throwArgumentError("invalid fixed format width (not byte aligned)", "format.width", width);
+            logger.throwArgumentError("invalid fixed format width (not byte aligned)", "format.width", width);
         }
         if (decimals > 80) {
-            errors.throwArgumentError("invalid fixed format (decimals too large)", "format.decimals", decimals);
+            logger.throwArgumentError("invalid fixed format (decimals too large)", "format.decimals", decimals);
         }
         return new FixedFormat(_constructorGuard, signed, width, decimals);
     };
@@ -12397,7 +12361,7 @@ exports.FixedFormat = FixedFormat;
 var FixedNumber = /** @class */ (function () {
     function FixedNumber(constructorGuard, hex, value, format) {
         var _newTarget = this.constructor;
-        errors.checkNew(_newTarget, FixedNumber);
+        logger.checkNew(_newTarget, FixedNumber);
         this.format = format;
         this._hex = hex;
         this._value = value;
@@ -12406,7 +12370,7 @@ var FixedNumber = /** @class */ (function () {
     }
     FixedNumber.prototype._checkFormat = function (other) {
         if (this.format.name !== other.format.name) {
-            errors.throwArgumentError("incompatible format; use fixedNumber.toFormat", "other", other);
+            logger.throwArgumentError("incompatible format; use fixedNumber.toFormat", "other", other);
         }
     };
     FixedNumber.prototype.addUnsafe = function (other) {
@@ -12439,7 +12403,7 @@ var FixedNumber = /** @class */ (function () {
             decimals = 0;
         }
         if (decimals < 0 || decimals > 80 || (decimals % 1)) {
-            errors.throwArgumentError("invalid decimal cound", "decimals", decimals);
+            logger.throwArgumentError("invalid decimal cound", "decimals", decimals);
         }
         // If we are already in range, we're done
         var comps = this.toString().split(".");
@@ -12458,7 +12422,7 @@ var FixedNumber = /** @class */ (function () {
             return this._hex;
         }
         if (width % 8) {
-            errors.throwArgumentError("invalid byte width", "width", width);
+            logger.throwArgumentError("invalid byte width", "width", width);
         }
         var hex = bignumber_1.BigNumber.from(this._hex).fromTwos(this.format.width).toTwos(width).toHexString();
         return bytes_1.hexZeroPad(hex, width / 8);
@@ -12529,11 +12493,11 @@ var FixedNumber = /** @class */ (function () {
         }
         catch (error) {
             // Allow NUMERIC_FAULT to bubble up
-            if (error.code !== errors.INVALID_ARGUMENT) {
+            if (error.code !== logger_1.Logger.errors.INVALID_ARGUMENT) {
                 throw error;
             }
         }
-        return errors.throwArgumentError("invalid FixedNumber value", "value", value);
+        return logger.throwArgumentError("invalid FixedNumber value", "value", value);
     };
     FixedNumber.isFixedNumber = function (value) {
         return !!(value && value._isFixedNumber);
@@ -12542,7 +12506,7 @@ var FixedNumber = /** @class */ (function () {
 }());
 exports.FixedNumber = FixedNumber;
 
-},{"./bignumber":61,"@ethersproject/bytes":64,"@ethersproject/errors":67}],63:[function(require,module,exports){
+},{"./_version":65,"./bignumber":66,"@ethersproject/bytes":70,"@ethersproject/logger":92}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("./bignumber");
@@ -12550,17 +12514,17 @@ exports.BigNumber = bignumber_1.BigNumber;
 var fixednumber_1 = require("./fixednumber");
 exports.FixedNumber = fixednumber_1.FixedNumber;
 
-},{"./bignumber":61,"./fixednumber":62}],64:[function(require,module,exports){
+},{"./bignumber":66,"./fixednumber":67}],69:[function(require,module,exports){
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
+exports.version = "5.0.0-beta.127";
+
+},{}],70:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 ///////////////////////////////
 function isHexable(value) {
     return !!(value.toHexString);
@@ -12606,7 +12570,7 @@ function arrayify(value, options) {
         options = {};
     }
     if (typeof (value) === "number") {
-        errors.checkSafeUint53(value, "invalid arrayify value");
+        logger.checkSafeUint53(value, "invalid arrayify value");
         var result = [];
         while (value) {
             result.unshift(value & 0xff);
@@ -12626,7 +12590,7 @@ function arrayify(value, options) {
     if (isHexString(value)) {
         var hex = value.substring(2);
         if (!options.allowOddLength && hex.length % 2) {
-            errors.throwArgumentError("hex data is odd-length", "value", value);
+            logger.throwArgumentError("hex data is odd-length", "value", value);
         }
         var result = [];
         for (var i = 0; i < hex.length; i += 2) {
@@ -12637,7 +12601,7 @@ function arrayify(value, options) {
     if (isBytes(value)) {
         return addSlice(new Uint8Array(value));
     }
-    return errors.throwArgumentError("invalid arrayify value", "value", value);
+    return logger.throwArgumentError("invalid arrayify value", "value", value);
 }
 exports.arrayify = arrayify;
 function concat(items) {
@@ -12671,7 +12635,7 @@ exports.stripZeros = stripZeros;
 function zeroPad(value, length) {
     value = arrayify(value);
     if (value.length > length) {
-        errors.throwArgumentError("value out of range", "value", arguments[0]);
+        logger.throwArgumentError("value out of range", "value", arguments[0]);
     }
     var result = new Uint8Array(length);
     result.set(value, length - value.length);
@@ -12694,7 +12658,7 @@ function hexlify(value, options) {
         options = {};
     }
     if (typeof (value) === "number") {
-        errors.checkSafeUint53(value, "invalid hexlify value");
+        logger.checkSafeUint53(value, "invalid hexlify value");
         var hex = "";
         while (value) {
             hex = HexCharacters[value & 0x0f] + hex;
@@ -12716,7 +12680,7 @@ function hexlify(value, options) {
     }
     if (isHexString(value)) {
         if (!options.allowOddLength && value.length % 2) {
-            errors.throwArgumentError("hex data is odd-length", "value", value);
+            logger.throwArgumentError("hex data is odd-length", "value", value);
         }
         return value.toLowerCase();
     }
@@ -12728,7 +12692,7 @@ function hexlify(value, options) {
         }
         return result;
     }
-    return errors.throwArgumentError("invalid hexlify value", "value", value);
+    return logger.throwArgumentError("invalid hexlify value", "value", value);
 }
 exports.hexlify = hexlify;
 /*
@@ -12754,7 +12718,7 @@ function hexDataSlice(data, offset, endOffset) {
         data = hexlify(data);
     }
     else if (!isHexString(data) || (data.length % 2)) {
-        errors.throwArgumentError("invalid hexData", "value", data);
+        logger.throwArgumentError("invalid hexData", "value", data);
     }
     offset = 2 + 2 * offset;
     if (endOffset != null) {
@@ -12784,7 +12748,7 @@ function hexStripZeros(value) {
         value = hexlify(value);
     }
     if (!isHexString(value)) {
-        errors.throwArgumentError("invalid hex string", "value", value);
+        logger.throwArgumentError("invalid hex string", "value", value);
     }
     value = value.substring(2);
     var offset = 0;
@@ -12799,10 +12763,10 @@ function hexZeroPad(value, length) {
         value = hexlify(value);
     }
     else if (!isHexString(value)) {
-        errors.throwArgumentError("invalid hex string", "value", value);
+        logger.throwArgumentError("invalid hex string", "value", value);
     }
     if (value.length > 2 * length + 2) {
-        errors.throwArgumentError("value out of range", "value", arguments[1]);
+        logger.throwArgumentError("value out of range", "value", arguments[1]);
     }
     while (value.length < 2 * length + 2) {
         value = "0x0" + value.substring(2);
@@ -12821,7 +12785,7 @@ function splitSignature(signature) {
     if (isBytesLike(signature)) {
         var bytes = arrayify(signature);
         if (bytes.length !== 65) {
-            errors.throwArgumentError("invalid signature string; must be 65 bytes", "signature", signature);
+            logger.throwArgumentError("invalid signature string; must be 65 bytes", "signature", signature);
         }
         // Get the r and s
         result.r = hexlify(bytes.slice(0, 32));
@@ -12858,7 +12822,7 @@ function splitSignature(signature) {
         }
         else if (result.recoveryParam != null && result.v != null) {
             if (result.v !== 27 + result.recoveryParam) {
-                errors.throwArgumentError("signature v mismatch recoveryParam", "signature", signature);
+                logger.throwArgumentError("signature v mismatch recoveryParam", "signature", signature);
             }
         }
         // Make sure r and s are padded properly
@@ -12873,7 +12837,7 @@ function splitSignature(signature) {
         if (result._vs != null) {
             result._vs = hexZeroPad(result._vs, 32);
             if (result._vs.length > 66) {
-                errors.throwArgumentError("signature _vs overflow", "signature", signature);
+                logger.throwArgumentError("signature _vs overflow", "signature", signature);
             }
             var vs = arrayify(result._vs);
             var recoveryParam = ((vs[0] >= 128) ? 1 : 0);
@@ -12886,37 +12850,37 @@ function splitSignature(signature) {
                 result.s = s;
             }
             else if (result.s !== s) {
-                errors.throwArgumentError("signature v mismatch _vs", "signature", signature);
+                logger.throwArgumentError("signature v mismatch _vs", "signature", signature);
             }
             if (result.v == null) {
                 result.v = v;
             }
             else if (result.v !== v) {
-                errors.throwArgumentError("signature v mismatch _vs", "signature", signature);
+                logger.throwArgumentError("signature v mismatch _vs", "signature", signature);
             }
             if (recoveryParam == null) {
                 result.recoveryParam = recoveryParam;
             }
             else if (result.recoveryParam !== recoveryParam) {
-                errors.throwArgumentError("signature recoveryParam mismatch _vs", "signature", signature);
+                logger.throwArgumentError("signature recoveryParam mismatch _vs", "signature", signature);
             }
         }
         // After all populating, both v and recoveryParam are still missing...
         if (result.v == null && result.recoveryParam == null) {
-            errors.throwArgumentError("signature requires at least one of recoveryParam, v or _vs", "signature", signature);
+            logger.throwArgumentError("signature requires at least one of recoveryParam, v or _vs", "signature", signature);
         }
         // Check for canonical v
         if (result.v !== 27 && result.v !== 28) {
-            errors.throwArgumentError("signature v not canonical", "signature", signature);
+            logger.throwArgumentError("signature v not canonical", "signature", signature);
         }
         // Check that r and s are in range
         if (result.r.length > 66 || result.s.length > 66) {
-            errors.throwArgumentError("signature overflow r or s", "signature", signature);
+            logger.throwArgumentError("signature overflow r or s", "signature", signature);
         }
         if (result._vs == null) {
             var vs = arrayify(result.s);
             if (vs[0] >= 128) {
-                errors.throwArgumentError("signature s out of range", "signature", signature);
+                logger.throwArgumentError("signature s out of range", "signature", signature);
             }
             if (result.recoveryParam) {
                 vs[0] |= 0x80;
@@ -12937,7 +12901,7 @@ function joinSignature(signature) {
 }
 exports.joinSignature = joinSignature;
 
-},{"@ethersproject/errors":67}],65:[function(require,module,exports){
+},{"./_version":69,"@ethersproject/logger":92}],71:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("@ethersproject/bignumber");
@@ -12963,7 +12927,9 @@ exports.WeiPerEther = WeiPerEther;
 var MaxUint256 = bignumber_1.BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 exports.MaxUint256 = MaxUint256;
 
-},{"@ethersproject/bignumber":63}],66:[function(require,module,exports){
+},{"@ethersproject/bignumber":68}],72:[function(require,module,exports){
+arguments[4][41][0].apply(exports,arguments)
+},{"dup":41}],73:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -12978,13 +12944,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var abi_1 = require("@ethersproject/abi");
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
@@ -12993,8 +12952,10 @@ var address_1 = require("@ethersproject/address");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
 var constants_1 = require("@ethersproject/constants");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 ///////////////////////////////
 var allowedTransactionKeys = {
     chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
@@ -13040,15 +13001,15 @@ function runMethod(contract, functionName, options) {
             // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
             for (var key in tx) {
                 if (!allowedTransactionKeys[key]) {
-                    errors.throwError(("unknown transaxction override - " + key), "overrides", tx);
+                    logger.throwError(("unknown transaxction override - " + key), "overrides", tx);
                 }
             }
         }
-        errors.checkArgumentCount(params.length, method.inputs.length, "passed to contract");
+        logger.checkArgumentCount(params.length, method.inputs.length, "passed to contract");
         // Check overrides make sense
         ["data", "to"].forEach(function (key) {
             if (tx[key] != null) {
-                errors.throwError("cannot override " + key, errors.UNSUPPORTED_OPERATION, { operation: key });
+                logger.throwError("cannot override " + key, logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
             }
         });
         // If the contract was just deployed, wait until it is minded
@@ -13068,7 +13029,7 @@ function runMethod(contract, functionName, options) {
                     return Promise.resolve(constants_1.Zero);
                 }
                 if (!contract.provider && !contract.signer) {
-                    errors.throwError("call (constant functions) require a provider or signer", errors.UNSUPPORTED_OPERATION, { operation: "call" });
+                    logger.throwError("call (constant functions) require a provider or signer", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "call" });
                 }
                 // Check overrides make sense
                 ["gasLimit", "gasPrice", "value"].forEach(function (key) {
@@ -13088,7 +13049,7 @@ function runMethod(contract, functionName, options) {
                         return result;
                     }
                     catch (error) {
-                        if (error.code === errors.CALL_EXCEPTION) {
+                        if (error.code === logger_1.Logger.errors.CALL_EXCEPTION) {
                             error.address = contract.address;
                             error.args = params;
                             error.transaction = tx;
@@ -13100,7 +13061,7 @@ function runMethod(contract, functionName, options) {
             // Only computing the transaction estimate
             if (options.estimate) {
                 if (!contract.provider && !contract.signer) {
-                    errors.throwError("estimate require a provider or signer", errors.UNSUPPORTED_OPERATION, { operation: "estimateGas" });
+                    logger.throwError("estimate require a provider or signer", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "estimateGas" });
                 }
                 return (contract.signer || contract.provider).estimateGas(tx);
             }
@@ -13108,17 +13069,13 @@ function runMethod(contract, functionName, options) {
                 tx.gasLimit = bignumber_1.BigNumber.from(method.gas).add(21000);
             }
             if (tx.value != null && !method.payable) {
-                errors.throwError("contract method is not payable", errors.INVALID_ARGUMENT, {
-                    argument: "sendTransaction",
-                    value: tx,
-                    method: method.format()
-                });
+                logger.throwArgumentError("contract method is not payable", "sendTransaction:" + method.format(), tx);
             }
             if (options.transaction) {
                 return properties_1.resolveProperties(tx);
             }
             if (!contract.signer) {
-                errors.throwError("sending a transaction require a signer", errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
+                logger.throwError("sending a transaction require a signer", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
             }
             return contract.signer.sendTransaction(tx).then(function (tx) {
                 var wait = tx.wait.bind(tx);
@@ -13224,7 +13181,7 @@ var FragmentRunningEvent = /** @class */ (function (_super) {
         var topic = contractInterface.getEventTopic(fragment);
         if (topics) {
             if (topic !== topics[0]) {
-                errors.throwArgumentError("topic mismatch", "topics", topics);
+                logger.throwArgumentError("topic mismatch", "topics", topics);
             }
             filter.topics = topics.slice();
         }
@@ -13276,7 +13233,7 @@ var Contract = /** @class */ (function () {
     function Contract(addressOrName, contractInterface, signerOrProvider) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, Contract);
+        logger.checkNew(_newTarget, Contract);
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
         properties_1.defineReadOnly(this, "interface", properties_1.getStatic((_newTarget), "getInterface")(contractInterface));
@@ -13289,7 +13246,7 @@ var Contract = /** @class */ (function () {
             properties_1.defineReadOnly(this, "signer", null);
         }
         else {
-            errors.throwError("invalid signer or provider", errors.INVALID_ARGUMENT, { arg: "signerOrProvider", value: signerOrProvider });
+            logger.throwArgumentError("invalid signer or provider", "signerOrProvider", signerOrProvider);
         }
         properties_1.defineReadOnly(this, "callStatic", {});
         properties_1.defineReadOnly(this, "estimate", {});
@@ -13329,7 +13286,7 @@ var Contract = /** @class */ (function () {
             }
             catch (error) {
                 // Without a provider, we cannot use ENS names
-                errors.throwError("provider is required to use non-address contract address", errors.INVALID_ARGUMENT, { argument: "addressOrName", value: addressOrName });
+                logger.throwArgumentError("provider is required to use non-address contract address", "addressOrName", addressOrName);
             }
         }
         Object.keys(this.interface.functions).forEach(function (name) {
@@ -13379,7 +13336,7 @@ var Contract = /** @class */ (function () {
                 // Otherwise, poll for our code to be deployed
                 this._deployedPromise = this.provider.getCode(this.address, blockTag).then(function (code) {
                     if (code === "0x") {
-                        errors.throwError("contract not deployed", errors.UNSUPPORTED_OPERATION, {
+                        logger.throwError("contract not deployed", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                             contractAddress: _this.address,
                             operation: "getDeployed"
                         });
@@ -13397,14 +13354,14 @@ var Contract = /** @class */ (function () {
     Contract.prototype.fallback = function (overrides) {
         var _this = this;
         if (!this.signer) {
-            errors.throwError("sending a transaction require a signer", errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
+            logger.throwError("sending a transaction require a signer", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
         }
         var tx = properties_1.shallowCopy(overrides || {});
         ["from", "to"].forEach(function (key) {
             if (tx[key] == null) {
                 return;
             }
-            errors.throwError("cannot override " + key, errors.UNSUPPORTED_OPERATION, { operation: key });
+            logger.throwError("cannot override " + key, logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
         });
         tx.to = this.addressPromise;
         return this.deployed().then(function () {
@@ -13449,7 +13406,7 @@ var Contract = /** @class */ (function () {
             }
             var fragment = this.interface.getEvent(eventName);
             if (!fragment) {
-                errors.throwError("unknown event - " + eventName, errors.INVALID_ARGUMENT, { argumnet: "eventName", value: eventName });
+                logger.throwArgumentError("unknown event - " + eventName, "eventName", eventName);
             }
             return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
         }
@@ -13505,7 +13462,7 @@ var Contract = /** @class */ (function () {
     Contract.prototype._addEventListener = function (runningEvent, listener, once) {
         var _this = this;
         if (!this.provider) {
-            errors.throwError("events require a provider or a signer with a provider", errors.UNSUPPORTED_OPERATION, { operation: "once" });
+            logger.throwError("events require a provider or a signer with a provider", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "once" });
         }
         runningEvent.addListener(listener, once);
         // Track this running event and its listeners (may already be there; but no hard in updating)
@@ -13531,7 +13488,7 @@ var Contract = /** @class */ (function () {
         var filter = properties_1.shallowCopy(runningEvent.filter);
         if (typeof (fromBlockOrBlockhash) === "string" && bytes_1.isHexString(fromBlockOrBlockhash, 32)) {
             if (toBlock != null) {
-                errors.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
+                logger.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
             }
             filter.blockhash = fromBlockOrBlockhash;
         }
@@ -13643,11 +13600,11 @@ var ContractFactory = /** @class */ (function () {
         }
         // Make sure the final result is valid bytecode
         if (!bytes_1.isHexString(bytecodeHex) || (bytecodeHex.length % 2)) {
-            errors.throwArgumentError("invalid bytecode", "bytecode", bytecode);
+            logger.throwArgumentError("invalid bytecode", "bytecode", bytecode);
         }
         // If we have a signer, make sure it is valid
         if (signer && !abstract_signer_1.Signer.isSigner(signer)) {
-            errors.throwArgumentError("invalid signer", "signer", signer);
+            logger.throwArgumentError("invalid signer", "signer", signer);
         }
         properties_1.defineReadOnly(this, "bytecode", bytecodeHex);
         properties_1.defineReadOnly(this, "interface", properties_1.getStatic((_newTarget), "getInterface")(contractInterface));
@@ -13673,10 +13630,10 @@ var ContractFactory = /** @class */ (function () {
             if (tx[key] == null) {
                 return;
             }
-            errors.throwError("cannot override " + key, errors.UNSUPPORTED_OPERATION, { operation: key });
+            logger.throwError("cannot override " + key, logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
         });
         // Make sure the call matches the constructor signature
-        errors.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
+        logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
         // Set the data to the bytecode + the encoded constructor arguments
         tx.data = bytes_1.hexlify(bytes_1.concat([
             this.bytecode,
@@ -13710,7 +13667,7 @@ var ContractFactory = /** @class */ (function () {
     };
     ContractFactory.fromSolidity = function (compilerOutput, signer) {
         if (compilerOutput == null) {
-            errors.throwError("missing compiler output", errors.MISSING_ARGUMENT, { argument: "compilerOutput" });
+            logger.throwError("missing compiler output", logger_1.Logger.errors.MISSING_ARGUMENT, { argument: "compilerOutput" });
         }
         if (typeof (compilerOutput) === "string") {
             compilerOutput = JSON.parse(compilerOutput);
@@ -13738,7 +13695,7 @@ var ContractFactory = /** @class */ (function () {
 }());
 exports.ContractFactory = ContractFactory;
 
-},{"@ethersproject/abi":54,"@ethersproject/abstract-provider":56,"@ethersproject/abstract-signer":57,"@ethersproject/address":58,"@ethersproject/bignumber":63,"@ethersproject/bytes":64,"@ethersproject/constants":65,"@ethersproject/errors":67,"@ethersproject/properties":83}],67:[function(require,module,exports){
+},{"./_version":72,"@ethersproject/abi":55,"@ethersproject/abstract-provider":58,"@ethersproject/abstract-signer":60,"@ethersproject/address":62,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/constants":71,"@ethersproject/logger":92,"@ethersproject/properties":97}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 //import { version } from "./_version";
@@ -14006,12 +13963,12 @@ function info() {
 }
 exports.info = info;
 
-},{}],68:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "5.0.0-beta.148";
+exports.version = "5.0.0-beta.149";
 
-},{}],69:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14068,7 +14025,7 @@ function getDefaultProvider(network, options) {
 }
 exports.getDefaultProvider = getDefaultProvider;
 
-},{"./_version":68,"./platform":71,"./utils":72,"@ethersproject/abstract-signer":57,"@ethersproject/bignumber":63,"@ethersproject/constants":65,"@ethersproject/contracts":66,"@ethersproject/errors":67,"@ethersproject/providers":90,"@ethersproject/wallet":108,"@ethersproject/wordlists":110}],70:[function(require,module,exports){
+},{"./_version":75,"./platform":78,"./utils":79,"@ethersproject/abstract-signer":60,"@ethersproject/bignumber":68,"@ethersproject/constants":71,"@ethersproject/contracts":73,"@ethersproject/errors":74,"@ethersproject/providers":105,"@ethersproject/wallet":130,"@ethersproject/wordlists":134}],77:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -14085,11 +14042,11 @@ var ethers = __importStar(require("./ethers"));
 exports.ethers = ethers;
 __export(require("./ethers"));
 
-},{"./ethers":69}],71:[function(require,module,exports){
+},{"./ethers":76}],78:[function(require,module,exports){
 "use strict";
 
 exports.platform = "browser"
-},{}],72:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -14198,20 +14155,17 @@ exports.SupportedAlgorithms = sha2_2.SupportedAlgorithms;
 var strings_2 = require("@ethersproject/strings");
 exports.UnicodeNormalizationForm = strings_2.UnicodeNormalizationForm;
 
-},{"@ethersproject/abi":54,"@ethersproject/address":58,"@ethersproject/base64":59,"@ethersproject/bytes":64,"@ethersproject/hash":73,"@ethersproject/hdnode":74,"@ethersproject/json-wallets":76,"@ethersproject/keccak256":80,"@ethersproject/properties":83,"@ethersproject/random":96,"@ethersproject/rlp":98,"@ethersproject/sha2":99,"@ethersproject/signing-key":100,"@ethersproject/solidity":101,"@ethersproject/strings":104,"@ethersproject/transactions":106,"@ethersproject/units":107,"@ethersproject/wallet":108,"@ethersproject/web":109}],73:[function(require,module,exports){
+},{"@ethersproject/abi":55,"@ethersproject/address":62,"@ethersproject/base64":63,"@ethersproject/bytes":70,"@ethersproject/hash":81,"@ethersproject/hdnode":83,"@ethersproject/json-wallets":86,"@ethersproject/keccak256":90,"@ethersproject/properties":97,"@ethersproject/random":112,"@ethersproject/rlp":114,"@ethersproject/sha2":116,"@ethersproject/signing-key":118,"@ethersproject/solidity":119,"@ethersproject/strings":123,"@ethersproject/transactions":126,"@ethersproject/units":128,"@ethersproject/wallet":130,"@ethersproject/web":132}],80:[function(require,module,exports){
+arguments[4][61][0].apply(exports,arguments)
+},{"dup":61}],81:[function(require,module,exports){
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
 var bytes_1 = require("@ethersproject/bytes");
 var strings_1 = require("@ethersproject/strings");
 var keccak256_1 = require("@ethersproject/keccak256");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 ///////////////////////////////
 var Zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 var Partition = new RegExp("^((.*)\\.)?([^.]+)$");
@@ -14231,10 +14185,7 @@ function isValidName(name) {
 exports.isValidName = isValidName;
 function namehash(name) {
     if (typeof (name) !== "string") {
-        errors.throwError("invalid address - " + String(name), errors.INVALID_ARGUMENT, {
-            argument: "name",
-            value: name
-        });
+        logger.throwArgumentError("invalid address - " + String(name), "name", name);
     }
     var result = Zeros;
     while (name.length) {
@@ -14263,18 +14214,12 @@ function hashMessage(message) {
 }
 exports.hashMessage = hashMessage;
 
-},{"@ethersproject/bytes":64,"@ethersproject/errors":67,"@ethersproject/keccak256":80,"@ethersproject/strings":104}],74:[function(require,module,exports){
+},{"./_version":80,"@ethersproject/bytes":70,"@ethersproject/keccak256":90,"@ethersproject/logger":92,"@ethersproject/strings":123}],82:[function(require,module,exports){
+arguments[4][57][0].apply(exports,arguments)
+},{"dup":57}],83:[function(require,module,exports){
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var basex_1 = require("@ethersproject/basex");
-var errors = __importStar(require("@ethersproject/errors"));
 var bytes_1 = require("@ethersproject/bytes");
 var bignumber_1 = require("@ethersproject/bignumber");
 var strings_1 = require("@ethersproject/strings");
@@ -14284,6 +14229,9 @@ var signing_key_1 = require("@ethersproject/signing-key");
 var sha2_1 = require("@ethersproject/sha2");
 var transactions_1 = require("@ethersproject/transactions");
 var wordlists_1 = require("@ethersproject/wordlists");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var N = bignumber_1.BigNumber.from("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 // "Bitcoin seed"
 var MasterSecret = strings_1.toUtf8Bytes("Bitcoin seed");
@@ -14315,7 +14263,7 @@ var HDNode = /** @class */ (function () {
      */
     function HDNode(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonic, path) {
         var _newTarget = this.constructor;
-        errors.checkNew(_newTarget, HDNode);
+        logger.checkNew(_newTarget, HDNode);
         if (constructorGuard !== _constructorGuard) {
             throw new Error("HDNode constructor cannot be called directly");
         }
@@ -14457,10 +14405,7 @@ var HDNode = /** @class */ (function () {
     HDNode.fromExtendedKey = function (extendedKey) {
         var bytes = basex_1.Base58.decode(extendedKey);
         if (bytes.length !== 82 || base58check(bytes.slice(0, 78)) !== extendedKey) {
-            errors.throwError("invalid extended key", errors.INVALID_ARGUMENT, {
-                argument: "extendedKey",
-                value: "[REDACTED]"
-            });
+            logger.throwArgumentError("invalid extended key", "extendedKey", "[REDACTED]");
         }
         var depth = bytes[4];
         var parentFingerprint = bytes_1.hexlify(bytes.slice(5, 9));
@@ -14480,10 +14425,7 @@ var HDNode = /** @class */ (function () {
                 }
                 return new HDNode(_constructorGuard, bytes_1.hexlify(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null, null);
         }
-        return errors.throwError("invalid extended key", errors.INVALID_ARGUMENT, {
-            argument: "extendedKey",
-            value: "[REDACTED]"
-        });
+        return logger.throwError("invalid extended key", "extendedKey", "[REDACTED]");
     };
     return HDNode;
 }());
@@ -14500,7 +14442,7 @@ function mnemonicToEntropy(mnemonic, wordlist) {
     if (!wordlist) {
         wordlist = wordlists_1.wordlists["en"];
     }
-    errors.checkNormalize();
+    logger.checkNormalize();
     var words = wordlist.split(mnemonic);
     if ((words.length % 3) !== 0) {
         throw new Error("invalid mnemonic");
@@ -14576,7 +14518,9 @@ function isValidMnemonic(mnemonic, wordlist) {
 }
 exports.isValidMnemonic = isValidMnemonic;
 
-},{"@ethersproject/basex":60,"@ethersproject/bignumber":63,"@ethersproject/bytes":64,"@ethersproject/errors":67,"@ethersproject/pbkdf2":82,"@ethersproject/properties":83,"@ethersproject/sha2":99,"@ethersproject/signing-key":100,"@ethersproject/strings":104,"@ethersproject/transactions":106,"@ethersproject/wordlists":110}],75:[function(require,module,exports){
+},{"./_version":82,"@ethersproject/basex":64,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/logger":92,"@ethersproject/pbkdf2":95,"@ethersproject/properties":97,"@ethersproject/sha2":116,"@ethersproject/signing-key":118,"@ethersproject/strings":123,"@ethersproject/transactions":126,"@ethersproject/wordlists":134}],84:[function(require,module,exports){
+arguments[4][61][0].apply(exports,arguments)
+},{"dup":61}],85:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -14594,22 +14538,17 @@ var __extends = (this && this.__extends) || (function () {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var aes_js_1 = __importDefault(require("aes-js"));
 var address_1 = require("@ethersproject/address");
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var keccak256_1 = require("@ethersproject/keccak256");
 var pbkdf2_1 = require("@ethersproject/pbkdf2");
 var strings_1 = require("@ethersproject/strings");
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var utils_1 = require("./utils");
 var CrowdsaleAccount = /** @class */ (function (_super) {
     __extends(CrowdsaleAccount, _super);
@@ -14631,10 +14570,7 @@ function decrypt(json, password) {
     // Encrypted Seed
     var encseed = utils_1.looseArrayify(utils_1.searchPath(data, "encseed"));
     if (!encseed || (encseed.length % 16) !== 0) {
-        errors.throwError("invalid encseed", errors.INVALID_ARGUMENT, {
-            argument: "json",
-            value: json
-        });
+        logger.throwArgumentError("invalid encseed", "json", json);
     }
     var key = bytes_1.arrayify(pbkdf2_1.pbkdf2(password, password, 2000, 32, "sha256")).slice(0, 16);
     var iv = encseed.slice(0, 16);
@@ -14658,7 +14594,7 @@ function decrypt(json, password) {
 }
 exports.decrypt = decrypt;
 
-},{"./utils":79,"@ethersproject/address":58,"@ethersproject/bytes":64,"@ethersproject/errors":67,"@ethersproject/keccak256":80,"@ethersproject/pbkdf2":82,"@ethersproject/properties":83,"@ethersproject/strings":104,"aes-js":1}],76:[function(require,module,exports){
+},{"./_version":84,"./utils":89,"@ethersproject/address":62,"@ethersproject/bytes":70,"@ethersproject/keccak256":90,"@ethersproject/logger":92,"@ethersproject/pbkdf2":95,"@ethersproject/properties":97,"@ethersproject/strings":123,"aes-js":1}],86:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var crowdsale_1 = require("./crowdsale");
@@ -14688,7 +14624,7 @@ function decryptJsonWallet(json, password, progressCallback) {
 }
 exports.decryptJsonWallet = decryptJsonWallet;
 
-},{"./crowdsale":75,"./inspect":77,"./keystore":78}],77:[function(require,module,exports){
+},{"./crowdsale":85,"./inspect":87,"./keystore":88}],87:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var address_1 = require("@ethersproject/address");
@@ -14742,7 +14678,7 @@ function getJsonWalletAddress(json) {
 }
 exports.getJsonWalletAddress = getJsonWalletAddress;
 
-},{"@ethersproject/address":58}],78:[function(require,module,exports){
+},{"@ethersproject/address":62}],88:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -15098,7 +15034,7 @@ function encrypt(account, password, options, progressCallback) {
 }
 exports.encrypt = encrypt;
 
-},{"./utils":79,"@ethersproject/address":58,"@ethersproject/bytes":64,"@ethersproject/hdnode":74,"@ethersproject/keccak256":80,"@ethersproject/pbkdf2":82,"@ethersproject/properties":83,"@ethersproject/random":96,"@ethersproject/transactions":106,"aes-js":1,"scrypt-js":37,"uuid":40}],79:[function(require,module,exports){
+},{"./utils":89,"@ethersproject/address":62,"@ethersproject/bytes":70,"@ethersproject/hdnode":83,"@ethersproject/keccak256":90,"@ethersproject/pbkdf2":95,"@ethersproject/properties":97,"@ethersproject/random":112,"@ethersproject/transactions":126,"aes-js":1,"scrypt-js":37,"uuid":40}],89:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
@@ -15162,7 +15098,7 @@ function searchPath(object, path) {
 }
 exports.searchPath = searchPath;
 
-},{"@ethersproject/bytes":64,"@ethersproject/strings":104}],80:[function(require,module,exports){
+},{"@ethersproject/bytes":70,"@ethersproject/strings":123}],90:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -15175,17 +15111,300 @@ function keccak256(data) {
 }
 exports.keccak256 = keccak256;
 
-},{"@ethersproject/bytes":64,"js-sha3":34}],81:[function(require,module,exports){
+},{"@ethersproject/bytes":70,"js-sha3":34}],91:[function(require,module,exports){
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
+exports.version = "willbeaddedlater";
+
+},{}],92:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var _permanentCensorErrors = false;
+var _censorErrors = false;
+var LogLevels = { debug: 1, "default": 2, info: 2, warn: 3, error: 4, off: 5 };
+var LogLevel = LogLevels["default"];
+var _version_1 = require("./_version");
+var _globalLogger = null;
+function _checkNormalize() {
+    try {
+        var missing_1 = [];
+        // Make sure all forms of normalization are supported
+        ["NFD", "NFC", "NFKD", "NFKC"].forEach(function (form) {
+            try {
+                if ("test".normalize(form) !== "test") {
+                    throw new Error("bad normalize");
+                }
+                ;
+            }
+            catch (error) {
+                missing_1.push(form);
+            }
+        });
+        if (missing_1.length) {
+            throw new Error("missing " + missing_1.join(", "));
+        }
+        if (String.fromCharCode(0xe9).normalize("NFD") !== String.fromCharCode(0x65, 0x0301)) {
+            throw new Error("broken implementation");
+        }
+    }
+    catch (error) {
+        return error.message;
+    }
+    return null;
+}
+var _normalizeError = _checkNormalize();
+var Logger = /** @class */ (function () {
+    function Logger(version) {
+        Object.defineProperty(this, "version", {
+            enumerable: true,
+            value: version,
+            writable: false
+        });
+    }
+    Logger.prototype.setLogLevel = function (logLevel) {
+        var level = LogLevels[logLevel];
+        if (level == null) {
+            this.warn("invliad log level - " + logLevel);
+            return;
+        }
+        LogLevel = level;
+    };
+    Logger.prototype._log = function (logLevel, args) {
+        if (LogLevel > LogLevels[logLevel]) {
+            return;
+        }
+        console.log.apply(console, args);
+    };
+    Logger.prototype.debug = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        this._log(Logger.levels.DEBUG, args);
+    };
+    Logger.prototype.info = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        this._log(Logger.levels.INFO, args);
+    };
+    Logger.prototype.warn = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        this._log(Logger.levels.WARNING, args);
+    };
+    Logger.prototype.makeError = function (message, code, params) {
+        if (_censorErrors) {
+            return new Error("unknown error");
+        }
+        if (!code) {
+            code = Logger.errors.UNKNOWN_ERROR;
+        }
+        if (!params) {
+            params = {};
+        }
+        var messageDetails = [];
+        Object.keys(params).forEach(function (key) {
+            try {
+                messageDetails.push(key + "=" + JSON.stringify(params[key]));
+            }
+            catch (error) {
+                messageDetails.push(key + "=" + JSON.stringify(params[key].toString()));
+            }
+        });
+        messageDetails.push("version=" + this.version);
+        var reason = message;
+        if (messageDetails.length) {
+            message += " (" + messageDetails.join(", ") + ")";
+        }
+        // @TODO: Any??
+        var error = new Error(message);
+        error.reason = reason;
+        error.code = code;
+        Object.keys(params).forEach(function (key) {
+            error[key] = params[key];
+        });
+        return error;
+    };
+    Logger.prototype.throwError = function (message, code, params) {
+        throw this.makeError(message, code, params);
+    };
+    Logger.prototype.throwArgumentError = function (message, name, value) {
+        return this.throwError(message, Logger.errors.INVALID_ARGUMENT, {
+            argument: name,
+            value: value
+        });
+    };
+    Logger.prototype.checkNormalize = function (message) {
+        if (message == null) {
+            message = "platform missing String.prototype.normalize";
+        }
+        if (_normalizeError) {
+            this.throwError("platform missing String.prototype.normalize", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "String.prototype.normalize", form: _normalizeError
+            });
+        }
+    };
+    Logger.prototype.checkSafeUint53 = function (value, message) {
+        if (typeof (value) !== "number") {
+            return;
+        }
+        if (message == null) {
+            message = "value not safe";
+        }
+        if (value < 0 || value >= 0x1fffffffffffff) {
+            this.throwError(message, Logger.errors.NUMERIC_FAULT, {
+                operation: "checkSafeInteger",
+                fault: "out-of-safe-range",
+                value: value
+            });
+        }
+        if (value % 1) {
+            this.throwError(message, Logger.errors.NUMERIC_FAULT, {
+                operation: "checkSafeInteger",
+                fault: "non-integer",
+                value: value
+            });
+        }
+    };
+    Logger.prototype.checkArgumentCount = function (count, expectedCount, message) {
+        if (message) {
+            message = ": " + message;
+        }
+        else {
+            message = "";
+        }
+        if (count < expectedCount) {
+            this.throwError("missing argument" + message, Logger.errors.MISSING_ARGUMENT, {
+                count: count,
+                expectedCount: expectedCount
+            });
+        }
+        if (count > expectedCount) {
+            this.throwError("too many arguments" + message, Logger.errors.UNEXPECTED_ARGUMENT, {
+                count: count,
+                expectedCount: expectedCount
+            });
+        }
+    };
+    Logger.prototype.checkNew = function (target, kind) {
+        if (target === Object || target == null) {
+            this.throwError("missing new", Logger.errors.MISSING_NEW, { name: kind.name });
+        }
+    };
+    Logger.prototype.checkAbstract = function (target, kind) {
+        if (target === kind) {
+            this.throwError("cannot instantiate abstract class " + JSON.stringify(kind.name) + " directly; use a sub-class", Logger.errors.UNSUPPORTED_OPERATION, { name: target.name, operation: "new" });
+        }
+        else if (target === Object || target == null) {
+            this.throwError("missing new", Logger.errors.MISSING_NEW, { name: kind.name });
+        }
+    };
+    Logger.globalLogger = function () {
+        if (!_globalLogger) {
+            _globalLogger = new Logger(_version_1.version);
+        }
+        return _globalLogger;
+    };
+    Logger.setCensorship = function (censorship, permanent) {
+        if (_permanentCensorErrors) {
+            if (!censorship) {
+                return;
+            }
+            this.globalLogger().throwError("error censorship permanent", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "setCensorship"
+            });
+        }
+        _censorErrors = !!censorship;
+        _permanentCensorErrors = !!permanent;
+    };
+    Logger.errors = {
+        ///////////////////
+        // Generic Errors
+        // Unknown Error
+        UNKNOWN_ERROR: "UNKNOWN_ERROR",
+        // Not Implemented
+        NOT_IMPLEMENTED: "NOT_IMPLEMENTED",
+        // Unsupported Operation
+        //   - operation
+        UNSUPPORTED_OPERATION: "UNSUPPORTED_OPERATION",
+        // Network Error (i.e. Ethereum Network, such as an invalid chain ID)
+        NETWORK_ERROR: "NETWORK_ERROR",
+        // Some sort of bad response from the server
+        SERVER_ERROR: "SERVER_ERROR",
+        // Timeout
+        TIMEOUT: "TIMEOUT",
+        ///////////////////
+        // Operational  Errors
+        // Buffer Overrun
+        BUFFER_OVERRUN: "BUFFER_OVERRUN",
+        // Numeric Fault
+        //   - operation: the operation being executed
+        //   - fault: the reason this faulted
+        NUMERIC_FAULT: "NUMERIC_FAULT",
+        ///////////////////
+        // Argument Errors
+        // Missing new operator to an object
+        //  - name: The name of the class
+        MISSING_NEW: "MISSING_NEW",
+        // Invalid argument (e.g. value is incompatible with type) to a function:
+        //   - argument: The argument name that was invalid
+        //   - value: The value of the argument
+        INVALID_ARGUMENT: "INVALID_ARGUMENT",
+        // Missing argument to a function:
+        //   - count: The number of arguments received
+        //   - expectedCount: The number of arguments expected
+        MISSING_ARGUMENT: "MISSING_ARGUMENT",
+        // Too many arguments
+        //   - count: The number of arguments received
+        //   - expectedCount: The number of arguments expected
+        UNEXPECTED_ARGUMENT: "UNEXPECTED_ARGUMENT",
+        ///////////////////
+        // Blockchain Errors
+        // Call exception
+        //  - transaction: the transaction
+        //  - address?: the contract address
+        //  - args?: The arguments passed into the function
+        //  - method?: The Solidity method signature
+        //  - errorSignature?: The EIP848 error signature
+        //  - errorArgs?: The EIP848 error parameters
+        //  - reason: The reason (only for EIP848 "Error(string)")
+        CALL_EXCEPTION: "CALL_EXCEPTION",
+        // Insufficien funds (< value + gasLimit * gasPrice)
+        //   - transaction: the transaction attempted
+        INSUFFICIENT_FUNDS: "INSUFFICIENT_FUNDS",
+        // Nonce has already been used
+        //   - transaction: the transaction attempted
+        NONCE_EXPIRED: "NONCE_EXPIRED",
+        // The replacement fee for the transaction is too low
+        //   - transaction: the transaction attempted
+        REPLACEMENT_UNDERPRICED: "REPLACEMENT_UNDERPRICED",
+        // The gas limit could not be estimated
+        //   - transaction: the transaction passed to estimateGas
+        UNPREDICTABLE_GAS_LIMIT: "UNPREDICTABLE_GAS_LIMIT",
+    };
+    Logger.levels = {
+        DEBUG: "DEBUG",
+        INFO: "INFO",
+        WARNING: "WARNING",
+        ERROR: "ERROR",
+        OFF: "OFF"
+    };
+    return Logger;
+}());
+exports.Logger = Logger;
+
+},{"./_version":91}],93:[function(require,module,exports){
+arguments[4][61][0].apply(exports,arguments)
+},{"dup":61}],94:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 function ethDefaultProvider(network) {
     return function (providers, options) {
         if (options == null) {
@@ -15331,13 +15550,13 @@ function getNetwork(network) {
     // Not a standard network; check that it is a valid network in general
     if (!standard) {
         if (typeof (network.chainId) !== "number") {
-            errors.throwError("invalid network chainId", errors.INVALID_ARGUMENT, { arg: "network", value: network });
+            logger.throwArgumentError("invalid network chainId", "network", network);
         }
         return network;
     }
     // Make sure the chainId matches the expected network chainId (or is 0; disable EIP-155)
     if (network.chainId !== 0 && network.chainId !== standard.chainId) {
-        errors.throwError("network chainId mismatch", errors.INVALID_ARGUMENT, { arg: "network", value: network });
+        logger.throwArgumentError("network chainId mismatch", "network", network);
     }
     // Standard Network (allow overriding the ENS address)
     return {
@@ -15349,7 +15568,7 @@ function getNetwork(network) {
 }
 exports.getNetwork = getNetwork;
 
-},{"@ethersproject/errors":67}],82:[function(require,module,exports){
+},{"./_version":93,"@ethersproject/logger":92}],95:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
@@ -15396,17 +15615,17 @@ function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
 }
 exports.pbkdf2 = pbkdf2;
 
-},{"@ethersproject/bytes":64,"@ethersproject/sha2":99}],83:[function(require,module,exports){
+},{"@ethersproject/bytes":70,"@ethersproject/sha2":116}],96:[function(require,module,exports){
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
+exports.version = "5.0.0-beta.129";
+
+},{}],97:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 function defineReadOnly(object, name, value) {
     Object.defineProperty(object, name, {
         enumerable: true,
@@ -15450,18 +15669,11 @@ function resolveProperties(object) {
 exports.resolveProperties = resolveProperties;
 function checkProperties(object, properties) {
     if (!object || typeof (object) !== "object") {
-        errors.throwError("invalid object", errors.INVALID_ARGUMENT, {
-            argument: "object",
-            value: object
-        });
+        logger.throwArgumentError("invalid object", "object", object);
     }
     Object.keys(object).forEach(function (key) {
         if (!properties[key]) {
-            errors.throwError("invalid object key - " + key, errors.INVALID_ARGUMENT, {
-                argument: "transaction",
-                value: object,
-                key: key
-            });
+            logger.throwArgumentError("invalid object key - " + key, "transaction:" + key, object);
         }
     });
 }
@@ -15519,7 +15731,12 @@ var Description = /** @class */ (function () {
 }());
 exports.Description = Description;
 
-},{"@ethersproject/errors":67}],84:[function(require,module,exports){
+},{"./_version":96,"@ethersproject/logger":92}],98:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.version = "5.0.0-beta.137";
+
+},{}],99:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -15534,15 +15751,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
 // This key was provided to ethers.js by Alchemy to be used by the
 // default provider, but it is recommended that for your own
@@ -15576,7 +15788,7 @@ var AlchemyProvider = /** @class */ (function (_super) {
                 host = "eth-kovan.alchemyapi.io/jsonrpc/";
                 break;
             default:
-                errors.throwArgumentError("unsupported network", "network", arguments[0]);
+                logger.throwArgumentError("unsupported network", "network", arguments[0]);
         }
         return ("https:/" + "/" + host + apiKey);
     };
@@ -15584,7 +15796,7 @@ var AlchemyProvider = /** @class */ (function (_super) {
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));
 exports.AlchemyProvider = AlchemyProvider;
 
-},{"./url-json-rpc-provider":94,"@ethersproject/errors":67}],85:[function(require,module,exports){
+},{"./_version":98,"./url-json-rpc-provider":109,"@ethersproject/logger":92}],100:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -15599,23 +15811,18 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var hash_1 = require("@ethersproject/hash");
 var networks_1 = require("@ethersproject/networks");
 var properties_1 = require("@ethersproject/properties");
 var strings_1 = require("@ethersproject/strings");
 var web_1 = require("@ethersproject/web");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var formatter_1 = require("./formatter");
 //////////////////////////////
 // Event Serializeing
@@ -15624,7 +15831,7 @@ function checkTopic(topic) {
         return "null";
     }
     if (bytes_1.hexDataLength(topic) !== 32) {
-        errors.throwArgumentError("invalid topic", "topic", topic);
+        logger.throwArgumentError("invalid topic", "topic", topic);
     }
     return topic.toLowerCase();
 }
@@ -15672,7 +15879,7 @@ function getEventTag(eventName) {
         return "filter:*:" + serializeTopics(eventName);
     }
     else if (abstract_provider_1.ForkEvent.isForkEvent(eventName)) {
-        errors.warn("not implemented");
+        logger.warn("not implemented");
         throw new Error("not implemented");
     }
     else if (eventName && typeof (eventName) === "object") {
@@ -15714,7 +15921,7 @@ var BaseProvider = /** @class */ (function (_super) {
     function BaseProvider(network) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, abstract_provider_1.Provider);
+        logger.checkNew(_newTarget, abstract_provider_1.Provider);
         _this = _super.call(this) || this;
         _this.formatter = _newTarget.getFormatter();
         if (network instanceof Promise) {
@@ -15732,7 +15939,7 @@ var BaseProvider = /** @class */ (function (_super) {
                 properties_1.defineReadOnly(_this, "ready", Promise.resolve(_this._network));
             }
             else {
-                errors.throwError("invalid network", errors.INVALID_ARGUMENT, { arg: "network", value: network });
+                logger.throwArgumentError("invalid network", "network", network);
             }
         }
         _this._lastBlockNumber = -2;
@@ -16033,7 +16240,7 @@ var BaseProvider = /** @class */ (function (_super) {
         var result = tx;
         // Check the hash we expect is the same as the hash the server reported
         if (hash != null && tx.hash !== hash) {
-            errors.throwError("Transaction hash mismatch from Provider.sendTransaction.", errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
+            logger.throwError("Transaction hash mismatch from Provider.sendTransaction.", logger_1.Logger.errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
         // @TODO: (confirmations? number, timeout? number)
         result.wait = function (confirmations) {
@@ -16050,7 +16257,7 @@ var BaseProvider = /** @class */ (function (_super) {
                 // No longer pending, allow the polling loop to garbage collect this
                 _this._emitted["t:" + tx.hash] = receipt.blockNumber;
                 if (receipt.status === 0) {
-                    errors.throwError("transaction failed", errors.CALL_EXCEPTION, {
+                    logger.throwError("transaction failed", logger_1.Logger.errors.CALL_EXCEPTION, {
                         transactionHash: tx.hash,
                         transaction: tx
                     });
@@ -16135,7 +16342,7 @@ var BaseProvider = /** @class */ (function (_super) {
     BaseProvider.prototype._getAddress = function (addressOrName) {
         return this.resolveName(addressOrName).then(function (address) {
             if (address == null) {
-                errors.throwError("ENS name not configured", errors.UNSUPPORTED_OPERATION, {
+                logger.throwError("ENS name not configured", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                     operation: "resolveName(" + JSON.stringify(addressOrName) + ")"
                 });
             }
@@ -16165,7 +16372,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         }
                     }
                     catch (error) {
-                        errors.throwError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
+                        logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
                     }
                 }
                 return web_1.poll(function () {
@@ -16299,7 +16506,7 @@ var BaseProvider = /** @class */ (function (_super) {
         }
         if (typeof (blockTag) === "number" && blockTag < 0) {
             if (blockTag % 1) {
-                errors.throwArgumentError("invalid BlockTag", "blockTag", blockTag);
+                logger.throwArgumentError("invalid BlockTag", "blockTag", blockTag);
             }
             return this._getFastBlockNumber().then(function (bn) {
                 bn += blockTag;
@@ -16317,7 +16524,7 @@ var BaseProvider = /** @class */ (function (_super) {
         return this.getNetwork().then(function (network) {
             // No ENS...
             if (!network.ensAddress) {
-                errors.throwError("network does support ENS", errors.UNSUPPORTED_OPERATION, { operation: "ENS", network: network.name });
+                logger.throwError("network does support ENS", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "ENS", network: network.name });
             }
             // keccak256("resolver(bytes32)")
             var data = "0x0178b8bf" + hash_1.namehash(name).substring(2);
@@ -16391,7 +16598,7 @@ var BaseProvider = /** @class */ (function (_super) {
         });
     };
     BaseProvider.prototype.perform = function (method, params) {
-        return errors.throwError(method + " not implemented", errors.NOT_IMPLEMENTED, { operation: method });
+        return logger.throwError(method + " not implemented", logger_1.Logger.errors.NOT_IMPLEMENTED, { operation: method });
     };
     BaseProvider.prototype._startPending = function () {
         console.log("WARNING: this provider does not support pending events");
@@ -16502,11 +16709,11 @@ var BaseProvider = /** @class */ (function (_super) {
 }(abstract_provider_1.Provider));
 exports.BaseProvider = BaseProvider;
 
-},{"./formatter":89,"@ethersproject/abstract-provider":56,"@ethersproject/bignumber":63,"@ethersproject/bytes":64,"@ethersproject/errors":67,"@ethersproject/hash":73,"@ethersproject/networks":81,"@ethersproject/properties":83,"@ethersproject/strings":104,"@ethersproject/web":109}],86:[function(require,module,exports){
+},{"./_version":98,"./formatter":104,"@ethersproject/abstract-provider":58,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/hash":81,"@ethersproject/logger":92,"@ethersproject/networks":94,"@ethersproject/properties":97,"@ethersproject/strings":123,"@ethersproject/web":132}],101:[function(require,module,exports){
 "use strict";
 module.exports.IpcProvider = null;
 
-},{}],87:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -16521,18 +16728,13 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
 var web_1 = require("@ethersproject/web");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var base_provider_1 = require("./base-provider");
 // The transaction has already been sanitized by the calls in Provider
 function getTransactionString(transaction) {
@@ -16597,7 +16799,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
     function EtherscanProvider(network, apiKey) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, EtherscanProvider);
+        logger.checkNew(_newTarget, EtherscanProvider);
         _this = _super.call(this, network) || this;
         var name = "invalid";
         if (_this.network) {
@@ -16635,11 +16837,16 @@ var EtherscanProvider = /** @class */ (function (_super) {
             apiKey += "&apikey=" + this.apiKey;
         }
         var get = function (url, procFunc) {
+            _this.emit("debug", {
+                action: "request",
+                request: url,
+                provider: _this
+            });
             return web_1.fetchJson(url, null, procFunc || getJsonResult).then(function (result) {
                 _this.emit("debug", {
-                    action: "perform",
+                    action: "response",
                     request: url,
-                    response: result,
+                    response: properties_1.deepCopy(result),
                     provider: _this
                 });
                 return result;
@@ -16677,15 +16884,15 @@ var EtherscanProvider = /** @class */ (function (_super) {
                     if (error.responseText) {
                         // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
                         if (error.responseText.toLowerCase().indexOf("insufficient funds") >= 0) {
-                            errors.throwError("insufficient funds", errors.INSUFFICIENT_FUNDS, {});
+                            logger.throwError("insufficient funds", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {});
                         }
                         // "Transaction with the same hash was already imported."
                         if (error.responseText.indexOf("same hash was already imported") >= 0) {
-                            errors.throwError("nonce has already been used", errors.NONCE_EXPIRED, {});
+                            logger.throwError("nonce has already been used", logger_1.Logger.errors.NONCE_EXPIRED, {});
                         }
                         // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
                         if (error.responseText.indexOf("another transaction with same nonce") >= 0) {
-                            errors.throwError("replacement fee too low", errors.REPLACEMENT_UNDERPRICED, {});
+                            logger.throwError("replacement fee too low", logger_1.Logger.errors.REPLACEMENT_UNDERPRICED, {});
                         }
                     }
                     throw error;
@@ -16818,11 +17025,16 @@ var EtherscanProvider = /** @class */ (function (_super) {
             url += "&startblock=" + startBlock;
             url += "&endblock=" + endBlock;
             url += "&sort=asc" + apiKey;
+            _this.emit("debug", {
+                action: "request",
+                request: url,
+                provider: _this
+            });
             return web_1.fetchJson(url, null, getResult).then(function (result) {
                 _this.emit("debug", {
-                    action: "getHistory",
+                    action: "response",
                     request: url,
-                    response: result,
+                    response: properties_1.deepCopy(result),
                     provider: _this
                 });
                 var output = [];
@@ -16849,7 +17061,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
 }(base_provider_1.BaseProvider));
 exports.EtherscanProvider = EtherscanProvider;
 
-},{"./base-provider":85,"@ethersproject/bytes":64,"@ethersproject/errors":67,"@ethersproject/properties":83,"@ethersproject/web":109}],88:[function(require,module,exports){
+},{"./_version":98,"./base-provider":100,"@ethersproject/bytes":70,"@ethersproject/logger":92,"@ethersproject/properties":97,"@ethersproject/web":132}],103:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -16864,17 +17076,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
 var random_1 = require("@ethersproject/random");
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var base_provider_1 = require("./base-provider");
 function now() { return (new Date()).getTime(); }
 // Returns:
@@ -16902,7 +17109,7 @@ function checkNetworks(networks) {
                 (check.ensAddress == null && network.ensAddress == null))) {
             return;
         }
-        errors.throwError("provider mismatch", errors.INVALID_ARGUMENT, { arg: "networks", value: networks });
+        logger.throwArgumentError("provider mismatch", "networks", networks);
     });
     return result;
 }
@@ -16934,12 +17141,12 @@ var FallbackProvider = /** @class */ (function (_super) {
     function FallbackProvider(providers, quorum, weights) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, FallbackProvider);
+        logger.checkNew(_newTarget, FallbackProvider);
         if (providers.length === 0) {
-            errors.throwArgumentError("missing providers", "providers", providers);
+            logger.throwArgumentError("missing providers", "providers", providers);
         }
         if (weights != null && weights.length !== providers.length) {
-            errors.throwArgumentError("too many weights", "weights", weights);
+            logger.throwArgumentError("too many weights", "weights", weights);
         }
         else if (!weights) {
             weights = providers.map(function (p) { return 1; });
@@ -16947,7 +17154,7 @@ var FallbackProvider = /** @class */ (function (_super) {
         else {
             weights.forEach(function (w) {
                 if (w % 1 || w > 512 || w < 1) {
-                    errors.throwArgumentError("invalid weight; must be integer in [1, 512]", "weights", weights);
+                    logger.throwArgumentError("invalid weight; must be integer in [1, 512]", "weights", weights);
                 }
             });
         }
@@ -16957,7 +17164,7 @@ var FallbackProvider = /** @class */ (function (_super) {
         }
         else {
             if (quorum > total) {
-                errors.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
+                logger.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
             }
         }
         // All networks are ready, we can know the network for certain
@@ -16969,7 +17176,7 @@ var FallbackProvider = /** @class */ (function (_super) {
             // The network won't be known until all child providers know
             var ready_1 = Promise.all(providers.map(function (p) { return p.getNetwork(); })).then(function (networks) {
                 if (!checkNetworks(networks)) {
-                    errors.throwError("getNetwork returned null", errors.UNKNOWN_ERROR, {});
+                    logger.throwError("getNetwork returned null", logger_1.Logger.errors.UNKNOWN_ERROR);
                 }
                 return networks[0];
             });
@@ -16991,14 +17198,32 @@ var FallbackProvider = /** @class */ (function (_super) {
                 run: function () {
                     var t0 = now();
                     var start = t0 - T0;
-                    _this.emit("debug", "perform", rid, { weight: weight, start: start, provider: provider, method: method, params: params });
+                    _this.emit("debug", {
+                        action: "request",
+                        rid: rid,
+                        backend: { weight: weight, start: start, provider: provider },
+                        request: { method: method, params: properties_1.deepCopy(params) },
+                        provider: _this
+                    });
                     return provider.perform(method, params).then(function (result) {
                         var duration = now() - t0;
-                        _this.emit("debug", "result", rid, { duration: duration, result: result });
+                        _this.emit("debug", {
+                            action: "response",
+                            rid: rid,
+                            backend: { weight: weight, start: start, duration: duration, provider: provider },
+                            request: { method: method, params: properties_1.deepCopy(params) },
+                            response: properties_1.deepCopy(result)
+                        });
                         return { weight: weight, result: result };
                     }, function (error) {
                         var duration = now() - t0;
-                        _this.emit("debug", "error", rid, { duration: duration, error: error });
+                        _this.emit("debug", {
+                            action: "response",
+                            rid: rid,
+                            backend: { weight: weight, start: start, duration: duration, provider: provider },
+                            request: { method: method, params: properties_1.deepCopy(params) },
+                            error: error
+                        });
                         return { weight: weight, error: error };
                     });
                 },
@@ -17081,27 +17306,22 @@ var FallbackProvider = /** @class */ (function (_super) {
 }(base_provider_1.BaseProvider));
 exports.FallbackProvider = FallbackProvider;
 
-},{"./base-provider":85,"@ethersproject/errors":67,"@ethersproject/properties":83,"@ethersproject/random":96}],89:[function(require,module,exports){
+},{"./_version":98,"./base-provider":100,"@ethersproject/logger":92,"@ethersproject/properties":97,"@ethersproject/random":112}],104:[function(require,module,exports){
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var address_1 = require("@ethersproject/address");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
 var constants_1 = require("@ethersproject/constants");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
 var transactions_1 = require("@ethersproject/transactions");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var Formatter = /** @class */ (function () {
     function Formatter() {
         var _newTarget = this.constructor;
-        errors.checkNew(_newTarget, Formatter);
+        logger.checkNew(_newTarget, Formatter);
         this.formats = this.getDefaultFormats();
     }
     Formatter.prototype.getDefaultFormats = function () {
@@ -17239,10 +17459,7 @@ var Formatter = /** @class */ (function () {
                 return value.toLowerCase();
             }
         }
-        return errors.throwError("invalid hash", errors.INVALID_ARGUMENT, {
-            argument: "value",
-            value: value
-        });
+        return logger.throwArgumentError("invalid hash", "value", value);
     };
     Formatter.prototype.data = function (value, strict) {
         var result = this.hex(value, strict);
@@ -17286,10 +17503,7 @@ var Formatter = /** @class */ (function () {
     Formatter.prototype.hash = function (value, strict) {
         var result = this.hex(value, strict);
         if (bytes_1.hexDataLength(result) !== 32) {
-            return errors.throwError("invalid hash", errors.INVALID_ARGUMENT, {
-                argument: "value",
-                value: value
-            });
+            return logger.throwArgumentError("invalid hash", "value", value);
         }
         return result;
     };
@@ -17478,7 +17692,7 @@ var Formatter = /** @class */ (function () {
 }());
 exports.Formatter = Formatter;
 
-},{"@ethersproject/address":58,"@ethersproject/bignumber":63,"@ethersproject/bytes":64,"@ethersproject/constants":65,"@ethersproject/errors":67,"@ethersproject/properties":83,"@ethersproject/transactions":106}],90:[function(require,module,exports){
+},{"./_version":98,"@ethersproject/address":62,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/constants":71,"@ethersproject/logger":92,"@ethersproject/properties":97,"@ethersproject/transactions":126}],105:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
@@ -17507,7 +17721,7 @@ exports.Web3Provider = web3_provider_1.Web3Provider;
 var formatter_1 = require("./formatter");
 exports.Formatter = formatter_1.Formatter;
 
-},{"./alchemy-provider":84,"./base-provider":85,"./etherscan-provider":87,"./fallback-provider":88,"./formatter":89,"./infura-provider":91,"./ipc-provider":86,"./json-rpc-provider":92,"./nodesmith-provider":93,"./web3-provider":95,"@ethersproject/abstract-provider":56,"@ethersproject/networks":81}],91:[function(require,module,exports){
+},{"./alchemy-provider":99,"./base-provider":100,"./etherscan-provider":102,"./fallback-provider":103,"./formatter":104,"./infura-provider":106,"./ipc-provider":101,"./json-rpc-provider":107,"./nodesmith-provider":108,"./web3-provider":110,"@ethersproject/abstract-provider":58,"@ethersproject/networks":94}],106:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -17522,15 +17736,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
 var defaultProjectId = "84842078b09946638c03157f83405213";
 var InfuraProvider = /** @class */ (function (_super) {
@@ -17568,7 +17777,7 @@ var InfuraProvider = /** @class */ (function (_super) {
                 host = "goerli.infura.io";
                 break;
             default:
-                errors.throwError("unsupported network", errors.INVALID_ARGUMENT, {
+                logger.throwError("unsupported network", logger_1.Logger.errors.INVALID_ARGUMENT, {
                     argument: "network",
                     value: network
                 });
@@ -17579,7 +17788,7 @@ var InfuraProvider = /** @class */ (function (_super) {
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));
 exports.InfuraProvider = InfuraProvider;
 
-},{"./url-json-rpc-provider":94,"@ethersproject/errors":67}],92:[function(require,module,exports){
+},{"./_version":98,"./url-json-rpc-provider":109,"@ethersproject/logger":92}],107:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -17594,22 +17803,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var abstract_signer_1 = require("@ethersproject/abstract-signer");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var networks_1 = require("@ethersproject/networks");
 var properties_1 = require("@ethersproject/properties");
 var strings_1 = require("@ethersproject/strings");
 var web_1 = require("@ethersproject/web");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var base_provider_1 = require("./base-provider");
 function timer(timeout) {
     return new Promise(function (resolve) {
@@ -17640,7 +17844,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     function JsonRpcSigner(constructorGuard, provider, addressOrIndex) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, JsonRpcSigner);
+        logger.checkNew(_newTarget, JsonRpcSigner);
         _this = _super.call(this) || this;
         if (constructorGuard !== _constructorGuard) {
             throw new Error("do not call the JsonRpcSigner constructor directly; use provider.getSigner");
@@ -17658,12 +17862,12 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             properties_1.defineReadOnly(_this, "_address", null);
         }
         else {
-            errors.throwError("invalid address or index", errors.INVALID_ARGUMENT, { argument: "addressOrIndex", value: addressOrIndex });
+            logger.throwArgumentError("invalid address or index", "addressOrIndex", addressOrIndex);
         }
         return _this;
     }
     JsonRpcSigner.prototype.connect = function (provider) {
-        return errors.throwError("cannot alter JSON-RPC Signer connection", errors.UNSUPPORTED_OPERATION, {
+        return logger.throwError("cannot alter JSON-RPC Signer connection", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "connect"
         });
     };
@@ -17677,7 +17881,9 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         }
         return this.provider.send("eth_accounts", []).then(function (accounts) {
             if (accounts.length <= _this._index) {
-                errors.throwError("unknown account #" + _this._index, errors.UNSUPPORTED_OPERATION, { operation: "getAddress" });
+                logger.throwError("unknown account #" + _this._index, logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: "getAddress"
+                });
             }
             return _this.provider.formatter.address(accounts[_this._index]);
         });
@@ -17712,17 +17918,17 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                 if (error.responseText) {
                     // See: JsonRpcProvider.sendTransaction (@TODO: Expose a ._throwError??)
                     if (error.responseText.indexOf("insufficient funds") >= 0) {
-                        errors.throwError("insufficient funds", errors.INSUFFICIENT_FUNDS, {
+                        logger.throwError("insufficient funds", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {
                             transaction: tx
                         });
                     }
                     if (error.responseText.indexOf("nonce too low") >= 0) {
-                        errors.throwError("nonce has already been used", errors.NONCE_EXPIRED, {
+                        logger.throwError("nonce has already been used", logger_1.Logger.errors.NONCE_EXPIRED, {
                             transaction: tx
                         });
                     }
                     if (error.responseText.indexOf("replacement transaction underpriced") >= 0) {
-                        errors.throwError("replacement fee too low", errors.REPLACEMENT_UNDERPRICED, {
+                        logger.throwError("replacement fee too low", logger_1.Logger.errors.REPLACEMENT_UNDERPRICED, {
                             transaction: tx
                         });
                     }
@@ -17732,7 +17938,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         });
     };
     JsonRpcSigner.prototype.signTransaction = function (transaction) {
-        return errors.throwError("signing transactions is unsupported", errors.UNSUPPORTED_OPERATION, {
+        return logger.throwError("signing transactions is unsupported", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "signTransaction"
         });
     };
@@ -17801,7 +18007,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     function JsonRpcProvider(url, network) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, JsonRpcProvider);
+        logger.checkNew(_newTarget, JsonRpcProvider);
         // One parameter, but it is a network name, so swap it with the URL
         if (typeof (url) === "string") {
             if (network === null && networks_1.getNetwork(url)) {
@@ -17823,7 +18029,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                         _this.send("net_version", []).then(function (result) {
                             resolve(networks_1.getNetwork(bignumber_1.BigNumber.from(result).toNumber()));
                         }).catch(function (error) {
-                            reject(errors.makeError("could not detect network", errors.NETWORK_ERROR, {}));
+                            reject(logger.makeError("could not detect network", logger_1.Logger.errors.NETWORK_ERROR));
                         });
                     });
                 });
@@ -17865,9 +18071,14 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             id: (this._nextId++),
             jsonrpc: "2.0"
         };
+        this.emit("debug", {
+            action: "request",
+            request: properties_1.deepCopy(request),
+            provider: this
+        });
         return web_1.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
             _this.emit("debug", {
-                action: "send",
+                action: "response",
                 request: request,
                 response: result,
                 provider: _this
@@ -17894,15 +18105,15 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                     if (error.responseText) {
                         // "insufficient funds for gas * price + value"
                         if (error.responseText.indexOf("insufficient funds") > 0) {
-                            errors.throwError("insufficient funds", errors.INSUFFICIENT_FUNDS, {});
+                            logger.throwError("insufficient funds", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {});
                         }
                         // "nonce too low"
                         if (error.responseText.indexOf("nonce too low") > 0) {
-                            errors.throwError("nonce has already been used", errors.NONCE_EXPIRED, {});
+                            logger.throwError("nonce has already been used", logger_1.Logger.errors.NONCE_EXPIRED, {});
                         }
                         // "replacement transaction underpriced"
                         if (error.responseText.indexOf("replacement transaction underpriced") > 0) {
-                            errors.throwError("replacement fee too low", errors.REPLACEMENT_UNDERPRICED, {});
+                            logger.throwError("replacement fee too low", logger_1.Logger.errors.REPLACEMENT_UNDERPRICED, {});
                         }
                     }
                     throw error;
@@ -17931,7 +18142,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             default:
                 break;
         }
-        return errors.throwError(method + " not implemented", errors.NOT_IMPLEMENTED, { operation: method });
+        return logger.throwError(method + " not implemented", logger_1.Logger.errors.NOT_IMPLEMENTED, { operation: method });
     };
     JsonRpcProvider.prototype._startPending = function () {
         if (this._pendingFilter != null) {
@@ -18017,7 +18228,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
 }(base_provider_1.BaseProvider));
 exports.JsonRpcProvider = JsonRpcProvider;
 
-},{"./base-provider":85,"@ethersproject/abstract-signer":57,"@ethersproject/bignumber":63,"@ethersproject/bytes":64,"@ethersproject/errors":67,"@ethersproject/networks":81,"@ethersproject/properties":83,"@ethersproject/strings":104,"@ethersproject/web":109}],93:[function(require,module,exports){
+},{"./_version":98,"./base-provider":100,"@ethersproject/abstract-signer":60,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/logger":92,"@ethersproject/networks":94,"@ethersproject/properties":97,"@ethersproject/strings":123,"@ethersproject/web":132}],108:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18032,16 +18243,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
 var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 // Special API key provided by Nodesmith for ethers.js
 var defaultApiKey = "ETHERS_JS_SHARED";
 var NodesmithProvider = /** @class */ (function (_super) {
@@ -18071,7 +18277,7 @@ var NodesmithProvider = /** @class */ (function (_super) {
                 host = "https://ethereum.api.nodesmith.io/v1/kovan/jsonrpc";
                 break;
             default:
-                errors.throwArgumentError("unsupported network", "network", arguments[0]);
+                logger.throwArgumentError("unsupported network", "network", arguments[0]);
         }
         return (host + "?apiKey=" + apiKey);
     };
@@ -18079,7 +18285,7 @@ var NodesmithProvider = /** @class */ (function (_super) {
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));
 exports.NodesmithProvider = NodesmithProvider;
 
-},{"./url-json-rpc-provider":94,"@ethersproject/errors":67}],94:[function(require,module,exports){
+},{"./_version":98,"./url-json-rpc-provider":109,"@ethersproject/logger":92}],109:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18094,24 +18300,19 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
 var networks_1 = require("@ethersproject/networks");
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var json_rpc_provider_1 = require("./json-rpc-provider");
 var UrlJsonRpcProvider = /** @class */ (function (_super) {
     __extends(UrlJsonRpcProvider, _super);
     function UrlJsonRpcProvider(network, apiKey) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkAbstract(_newTarget, UrlJsonRpcProvider);
+        logger.checkAbstract(_newTarget, UrlJsonRpcProvider);
         // Normalize the Network and API Key
         network = _newTarget.getNetwork(network);
         apiKey = _newTarget.getApiKey(apiKey);
@@ -18121,10 +18322,10 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
         return _this;
     }
     UrlJsonRpcProvider.prototype._startPending = function () {
-        errors.warn("WARNING: API provider does not support pending filters");
+        logger.warn("WARNING: API provider does not support pending filters");
     };
     UrlJsonRpcProvider.prototype.getSigner = function (address) {
-        errors.throwError("API provider does not support signing", errors.UNSUPPORTED_OPERATION, { operation: "getSigner" });
+        logger.throwError("API provider does not support signing", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "getSigner" });
         return null;
     };
     UrlJsonRpcProvider.prototype.listAccounts = function () {
@@ -18139,7 +18340,7 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
     };
     // Returns the url for the given network and API key
     UrlJsonRpcProvider.getUrl = function (network, apiKey) {
-        return errors.throwError("not implemented; sub-classes must override getUrl", errors.NOT_IMPLEMENTED, {
+        return logger.throwError("not implemented; sub-classes must override getUrl", logger_1.Logger.errors.NOT_IMPLEMENTED, {
             operation: "getUrl"
         });
     };
@@ -18147,7 +18348,7 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.UrlJsonRpcProvider = UrlJsonRpcProvider;
 
-},{"./json-rpc-provider":92,"@ethersproject/errors":67,"@ethersproject/networks":81,"@ethersproject/properties":83}],95:[function(require,module,exports){
+},{"./_version":98,"./json-rpc-provider":107,"@ethersproject/logger":92,"@ethersproject/networks":94,"@ethersproject/properties":97}],110:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18162,16 +18363,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var json_rpc_provider_1 = require("./json-rpc-provider");
 /*
 @TODO
@@ -18185,7 +18381,7 @@ var Web3Provider = /** @class */ (function (_super) {
     function Web3Provider(web3Provider, network) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, Web3Provider);
+        logger.checkNew(_newTarget, Web3Provider);
         // HTTP has a host; IPC has a path.
         _this = _super.call(this, web3Provider.host || web3Provider.path || "", network) || this;
         if (web3Provider) {
@@ -18197,7 +18393,7 @@ var Web3Provider = /** @class */ (function (_super) {
             }
         }
         if (!web3Provider || !_this._sendAsync) {
-            errors.throwError("invalid web3Provider", errors.INVALID_ARGUMENT, { arg: "web3Provider", value: web3Provider });
+            logger.throwArgumentError("invalid web3Provider", "web3Provider", web3Provider);
         }
         properties_1.defineReadOnly(_this, "_web3Provider", web3Provider);
         return _this;
@@ -18238,27 +18434,24 @@ var Web3Provider = /** @class */ (function (_super) {
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.Web3Provider = Web3Provider;
 
-},{"./json-rpc-provider":92,"@ethersproject/errors":67,"@ethersproject/properties":83}],96:[function(require,module,exports){
+},{"./_version":98,"./json-rpc-provider":107,"@ethersproject/logger":92,"@ethersproject/properties":97}],111:[function(require,module,exports){
+arguments[4][61][0].apply(exports,arguments)
+},{"dup":61}],112:[function(require,module,exports){
 (function (global){
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var shuffle_1 = require("./shuffle");
 exports.shuffled = shuffle_1.shuffled;
 var crypto = global.crypto || global.msCrypto;
 if (!crypto || !crypto.getRandomValues) {
-    errors.warn("WARNING: Missing strong random number source");
+    logger.warn("WARNING: Missing strong random number source");
     crypto = {
         getRandomValues: function (buffer) {
-            return errors.throwError("no secure random source avaialble", errors.UNSUPPORTED_OPERATION, {
+            return logger.throwError("no secure random source avaialble", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "crypto.getRandomValues"
             });
         }
@@ -18266,10 +18459,7 @@ if (!crypto || !crypto.getRandomValues) {
 }
 function randomBytes(length) {
     if (length <= 0 || length > 1024 || parseInt(String(length)) != length) {
-        errors.throwError("invalid length", errors.INVALID_ARGUMENT, {
-            argument: "length",
-            value: length
-        });
+        logger.throwArgumentError("invalid length", "length", length);
     }
     var result = new Uint8Array(length);
     crypto.getRandomValues(result);
@@ -18279,7 +18469,7 @@ exports.randomBytes = randomBytes;
 ;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./shuffle":97,"@ethersproject/bytes":64,"@ethersproject/errors":67}],97:[function(require,module,exports){
+},{"./_version":111,"./shuffle":113,"@ethersproject/bytes":70,"@ethersproject/logger":92}],113:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function shuffled(array) {
@@ -18294,7 +18484,7 @@ function shuffled(array) {
 }
 exports.shuffled = shuffled;
 
-},{}],98:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 //See: https://github.com/ethereum/wiki/wiki/RLP
@@ -18412,7 +18602,9 @@ function decode(data) {
 }
 exports.decode = decode;
 
-},{"@ethersproject/bytes":64}],99:[function(require,module,exports){
+},{"@ethersproject/bytes":70}],115:[function(require,module,exports){
+arguments[4][61][0].apply(exports,arguments)
+},{"dup":61}],116:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -18424,7 +18616,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var hash = __importStar(require("hash.js"));
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var SupportedAlgorithms;
 (function (SupportedAlgorithms) {
     SupportedAlgorithms["sha256"] = "sha256";
@@ -18445,7 +18639,7 @@ function sha512(data) {
 exports.sha512 = sha512;
 function computeHmac(algorithm, key, data) {
     if (!SupportedAlgorithms[algorithm]) {
-        errors.throwError("unsupported algorithm " + algorithm, errors.UNSUPPORTED_OPERATION, {
+        logger.throwError("unsupported algorithm " + algorithm, logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "hmac",
             algorithm: algorithm
         });
@@ -18454,20 +18648,17 @@ function computeHmac(algorithm, key, data) {
 }
 exports.computeHmac = computeHmac;
 
-},{"@ethersproject/bytes":64,"@ethersproject/errors":67,"hash.js":21}],100:[function(require,module,exports){
+},{"./_version":115,"@ethersproject/bytes":70,"@ethersproject/logger":92,"hash.js":21}],117:[function(require,module,exports){
+arguments[4][69][0].apply(exports,arguments)
+},{"dup":69}],118:[function(require,module,exports){
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var elliptic_1 = require("elliptic");
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var _curve = null;
 function getCurve() {
     if (!_curve) {
@@ -18536,11 +18727,11 @@ function computePublicKey(key, compressed) {
         }
         return "0x" + getCurve().keyFromPublic(bytes).getPublic(true, "hex");
     }
-    return errors.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
+    return logger.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 exports.computePublicKey = computePublicKey;
 
-},{"@ethersproject/bytes":64,"@ethersproject/errors":67,"@ethersproject/properties":83,"elliptic":6}],101:[function(require,module,exports){
+},{"./_version":117,"@ethersproject/bytes":70,"@ethersproject/logger":92,"@ethersproject/properties":97,"elliptic":6}],119:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("@ethersproject/bignumber");
@@ -18633,7 +18824,9 @@ function sha256(types, values) {
 }
 exports.sha256 = sha256;
 
-},{"@ethersproject/bignumber":63,"@ethersproject/bytes":64,"@ethersproject/keccak256":80,"@ethersproject/sha2":99,"@ethersproject/strings":104}],102:[function(require,module,exports){
+},{"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/keccak256":90,"@ethersproject/sha2":116,"@ethersproject/strings":123}],120:[function(require,module,exports){
+arguments[4][57][0].apply(exports,arguments)
+},{"dup":57}],121:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var constants_1 = require("@ethersproject/constants");
@@ -18669,10 +18862,11 @@ function parseBytes32String(bytes) {
 }
 exports.parseBytes32String = parseBytes32String;
 
-},{"./utf8":105,"@ethersproject/bytes":64,"@ethersproject/constants":65}],103:[function(require,module,exports){
+},{"./utf8":124,"@ethersproject/bytes":70,"@ethersproject/constants":71}],122:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var utf8_1 = require("./utf8");
+var _tmp = 0;
 function bytes2(data) {
     if ((data.length % 4) !== 0) {
         throw new Error("bad data");
@@ -18687,74 +18881,85 @@ function createTable(data, func) {
     if (!func) {
         func = function (value) { return [parseInt(value, 16)]; };
     }
+    var lo = 0;
     var result = {};
     data.split(",").forEach(function (pair) {
         var comps = pair.split(":");
-        result[parseInt(comps[0], 16)] = func(comps[1]);
+        lo += parseInt(comps[0], 16);
+        result[lo] = func(comps[1]);
     });
     return result;
 }
+// @TODO: Make this relative...
 var Table_B_1_flags = "ad,34f,1806,180b,180c,180d,200b,200c,200d,2060,feff".split(",").map(function (v) { return parseInt(v, 16); });
 var Table_B_2_ranges = [
-    { h: 25, s: -120335, l: 120432 },
-    { h: 25, s: -120283, l: 120380 },
-    { h: 25, s: -120231, l: 120328 },
-    { h: 25, s: -120179, l: 120276 },
-    { h: 25, s: -120127, l: 120224 },
-    { h: 25, s: -120075, l: 120172 },
-    { h: 24, s: -120023, e: [2, 7, 13, 15, 16, 17], l: 120120 },
-    { h: 24, s: -119971, e: [2, 7, 8, 17], l: 120068 },
-    { h: 25, s: -119919, l: 120016 },
-    { h: 25, s: -119867, e: [1, 4, 5, 7, 8, 11, 12, 17], l: 119964 },
-    { h: 25, s: -119815, l: 119912 },
-    { h: 24, s: -119775, e: [17], l: 120720 },
-    { h: 25, s: -119763, l: 119860 },
-    { h: 24, s: -119717, e: [17], l: 120662 },
-    { h: 25, s: -119711, l: 119808 },
-    { h: 24, s: -119659, e: [17], l: 120604 },
-    { h: 24, s: -119601, e: [17], l: 120546 },
-    { h: 24, s: -119543, e: [17], l: 120488 },
-    { h: 54, s: 1, e: [48], l: 256, d: 2 },
-    { h: 14, s: 1, l: 313, d: 2 },
-    { h: 44, s: 1, l: 330, d: 2 },
-    { h: 10, s: 1, e: [2, 6, 8], l: 391, d: 2 },
-    { h: 16, s: 1, l: 459, d: 2 },
-    { h: 84, s: 1, e: [18, 24, 66], l: 478, d: 2 },
-    { h: 22, s: 1, l: 984, d: 2 },
-    { h: 32, s: 1, l: 1120, d: 2 },
-    { h: 52, s: 1, l: 1162, d: 2 },
-    { h: 12, s: 1, l: 1217, d: 2 },
-    { h: 40, s: 1, e: [38], l: 1232, d: 2 },
-    { h: 14, s: 1, l: 1280, d: 2 },
-    { h: 148, s: 1, l: 7680, d: 2 },
-    { h: 88, s: 1, l: 7840, d: 2 },
-    { h: 15, s: 16, l: 8544 },
-    { h: 25, s: 26, l: 9398 },
     { h: 25, s: 32, l: 65 },
-    { h: 30, s: 32, e: [23], l: 192 },
-    { h: 26, s: 32, e: [17], l: 913 },
-    { h: 31, s: 32, l: 1040 },
-    { h: 25, s: 32, l: 65313 },
-    { h: 37, s: 40, l: 66560 },
-    { h: 37, s: 48, l: 1329 },
-    { h: 15, s: 80, l: 1024 }
+    { h: 30, s: 32, e: [23], l: 127 },
+    { h: 54, s: 1, e: [48], l: 64, d: 2 },
+    { h: 14, s: 1, l: 57, d: 2 },
+    { h: 44, s: 1, l: 17, d: 2 },
+    { h: 10, s: 1, e: [2, 6, 8], l: 61, d: 2 },
+    { h: 16, s: 1, l: 68, d: 2 },
+    { h: 84, s: 1, e: [18, 24, 66], l: 19, d: 2 },
+    { h: 26, s: 32, e: [17], l: 435 },
+    { h: 22, s: 1, l: 71, d: 2 },
+    { h: 15, s: 80, l: 40 },
+    { h: 31, s: 32, l: 16 },
+    { h: 32, s: 1, l: 80, d: 2 },
+    { h: 52, s: 1, l: 42, d: 2 },
+    { h: 12, s: 1, l: 55, d: 2 },
+    { h: 40, s: 1, e: [38], l: 15, d: 2 },
+    { h: 14, s: 1, l: 48, d: 2 },
+    { h: 37, s: 48, l: 49 },
+    { h: 148, s: 1, l: 6351, d: 2 },
+    { h: 88, s: 1, l: 160, d: 2 },
+    { h: 15, s: 16, l: 704 },
+    { h: 25, s: 26, l: 854 },
+    { h: 25, s: 32, l: 55915 },
+    { h: 37, s: 40, l: 1247 },
+    { h: 25, s: -119711, l: 53248 },
+    { h: 25, s: -119763, l: 52 },
+    { h: 25, s: -119815, l: 52 },
+    { h: 25, s: -119867, e: [1, 4, 5, 7, 8, 11, 12, 17], l: 52 },
+    { h: 25, s: -119919, l: 52 },
+    { h: 24, s: -119971, e: [2, 7, 8, 17], l: 52 },
+    { h: 24, s: -120023, e: [2, 7, 13, 15, 16, 17], l: 52 },
+    { h: 25, s: -120075, l: 52 },
+    { h: 25, s: -120127, l: 52 },
+    { h: 25, s: -120179, l: 52 },
+    { h: 25, s: -120231, l: 52 },
+    { h: 25, s: -120283, l: 52 },
+    { h: 25, s: -120335, l: 52 },
+    { h: 24, s: -119543, e: [17], l: 56 },
+    { h: 24, s: -119601, e: [17], l: 58 },
+    { h: 24, s: -119659, e: [17], l: 58 },
+    { h: 24, s: -119717, e: [17], l: 58 },
+    { h: 24, s: -119775, e: [17], l: 58 }
 ];
-var Table_B_2_lut_abs = createTable("b5:956,178:255,17f:115,181:595,186:596,189:598,18a:599,18f:601,190:603,193:608,194:611,196:617,197:616,19c:623,19d:626,19f:629,1a6:640,1a9:643,1ae:648,1b1:650,1b2:651,1b7:658,1f6:405,1f7:447,220:414,345:953,3d0:946,3d1:952,3d2:965,3d5:966,3d6:960,3f0:954,3f1:961,3f2:963,3f4:952,3f5:949,1fbe:953,1fda:8054,1fdb:8055,1fea:8058,1feb:8059,1ff8:8056,1ff9:8057,1ffa:8060,1ffb:8061,2102:99,2107:603,210b:104,210c:104,210d:104,2110:105,2111:105,2112:108,2115:110,2119:112,211a:113,211b:114,211c:114,211d:114,2124:122,2126:969,2128:122,212a:107,212b:229,212c:98,212d:99,2130:101,2131:102,2133:109,213e:947,213f:960,2145:100,1d6b9:952,1d6d3:963,1d6f3:952,1d70d:963,1d72d:952,1d747:963,1d767:952,1d781:963,1d7a1:952,1d7bb:963");
-var Table_B_2_lut_rel = createTable("18e:79,1c4:2,1c7:2,1ca:2,1f1:2,2f2:1,2f4:1,2f6:1,304:1,306:1,330:1,340:1,342:1,344:1,34e:1,358:1,35e:1,360:1,362:1,364:1,370:1,372:1,374:1,386:38,388:37,389:37,38a:37,38c:64,38e:63,38f:63,390:1,3d3:-6,3d4:-9,784:1,1e9b:-58,1fba:-74,1fbb:-74,1fc8:-86,1fc9:-86,1fca:-86,1fcb:-86,1fec:-7,3e10:-8,3e11:-8,3e12:-8,3e13:-8,3e14:-8,3e15:-8,3e16:-8,3e17:-8,3e30:-8,3e31:-8,3e32:-8,3e33:-8,3e34:-8,3e35:-8,3e50:-8,3e51:-8,3e52:-8,3e53:-8,3e54:-8,3e55:-8,3e56:-8,3e57:-8,3e70:-8,3e71:-8,3e72:-8,3e73:-8,3e74:-8,3e75:-8,3e76:-8,3e77:-8,3e90:-8,3e91:-8,3e92:-8,3e93:-8,3e94:-8,3e95:-8,3eb2:-8,3eb3:-8,3eb4:-8,3eb5:-8,3eb6:-8,3eb7:-8,3eb8:-8,3ed0:-8,3ed1:-8,3ed2:-8,3ed3:-8,3ed4:-8,3ed5:-8,3ed6:-8,3ed7:-8,3f70:-8,3f71:-8,3fb0:-8,3fb1:-8,3fd0:-8,3fd1:-8");
-var Table_B_2_complex = createTable("df:00730073,130:00690307,149:02BC006E,1f0:006A030C,37a:002003B9,390:03B903080301,3b0:03C503080301,587:05650582,1e96:00680331,1e97:00740308,1e98:0077030A,1e99:0079030A,1e9a:006102BE,1f50:03C50313,1f52:03C503130300,1f54:03C503130301,1f56:03C503130342,1f80:1F0003B9,1f81:1F0103B9,1f82:1F0203B9,1f83:1F0303B9,1f84:1F0403B9,1f85:1F0503B9,1f86:1F0603B9,1f87:1F0703B9,1f88:1F0003B9,1f89:1F0103B9,1f8a:1F0203B9,1f8b:1F0303B9,1f8c:1F0403B9,1f8d:1F0503B9,1f8e:1F0603B9,1f8f:1F0703B9,1f90:1F2003B9,1f91:1F2103B9,1f92:1F2203B9,1f93:1F2303B9,1f94:1F2403B9,1f95:1F2503B9,1f96:1F2603B9,1f97:1F2703B9,1f98:1F2003B9,1f99:1F2103B9,1f9a:1F2203B9,1f9b:1F2303B9,1f9c:1F2403B9,1f9d:1F2503B9,1f9e:1F2603B9,1f9f:1F2703B9,1fa0:1F6003B9,1fa1:1F6103B9,1fa2:1F6203B9,1fa3:1F6303B9,1fa4:1F6403B9,1fa5:1F6503B9,1fa6:1F6603B9,1fa7:1F6703B9,1fa8:1F6003B9,1fa9:1F6103B9,1faa:1F6203B9,1fab:1F6303B9,1fac:1F6403B9,1fad:1F6503B9,1fae:1F6603B9,1faf:1F6703B9,1fb2:1F7003B9,1fb3:03B103B9,1fb4:03AC03B9,1fb6:03B10342,1fb7:03B1034203B9,1fbc:03B103B9,1fc2:1F7403B9,1fc3:03B703B9,1fc4:03AE03B9,1fc6:03B70342,1fc7:03B7034203B9,1fcc:03B703B9,1fd2:03B903080300,1fd3:03B903080301,1fd6:03B90342,1fd7:03B903080342,1fe2:03C503080300,1fe3:03C503080301,1fe4:03C10313,1fe6:03C50342,1fe7:03C503080342,1ff2:1F7C03B9,1ff3:03C903B9,1ff4:03CE03B9,1ff6:03C90342,1ff7:03C9034203B9,1ffc:03C903B9,20a8:00720073,2103:00B00063,2109:00B00066,2116:006E006F,2120:0073006D,2121:00740065006C,2122:0074006D,3371:006800700061,3373:00610075,3375:006F0076,3380:00700061,3381:006E0061,3382:03BC0061,3383:006D0061,3384:006B0061,3385:006B0062,3386:006D0062,3387:00670062,338a:00700066,338b:006E0066,338c:03BC0066,3390:0068007A,3391:006B0068007A,3392:006D0068007A,3393:00670068007A,3394:00740068007A,33a9:00700061,33aa:006B00700061,33ab:006D00700061,33ac:006700700061,33b4:00700076,33b5:006E0076,33b6:03BC0076,33b7:006D0076,33b8:006B0076,33b9:006D0076,33ba:00700077,33bb:006E0077,33bc:03BC0077,33bd:006D0077,33be:006B0077,33bf:006D0077,33c0:006B03C9,33c1:006D03C9,33c3:00620071,33c6:00632215006B0067,33c7:0063006F002E,33c8:00640062,33c9:00670079,33cb:00680070,33cd:006B006B,33ce:006B006D,33d7:00700068,33d9:00700070006D,33da:00700072,33dc:00730076,33dd:00770062,fb00:00660066,fb01:00660069,fb02:0066006C,fb03:006600660069,fb04:00660066006C,fb05:00730074,fb06:00730074,fb13:05740576,fb14:05740565,fb15:0574056B,fb16:057E0576,fb17:0574056D", bytes2);
-var Table_C_flags = "80,70f,1680,180e,2000,d800,fff9,e0020".split(",").map(function (v) { return parseInt(v, 16); });
-var Table_C_ranges = "80-20,340,2000-f,2028-7,205f-4,206a-5,2ff0-b,d800-20ff,fdd0-1f,fff9-6,1d173-7,1fffe,2fffe,3fffe,4fffe,5fffe,6fffe,7fffe,8fffe,9fffe,afffe,bfffe,cfffe,dfffe,e0020-5f".split(",").map(function (v) {
+var Table_B_2_lut_abs = createTable("b5:3bc,c3:ff,7:73,2:253,5:254,3:256,1:257,5:259,1:25b,3:260,1:263,2:269,1:268,5:26f,1:272,2:275,7:280,3:283,5:288,3:28a,1:28b,5:292,3f:195,1:1bf,29:19e,125:3b9,8b:3b2,1:3b8,1:3c5,3:3c6,1:3c0,1a:3ba,1:3c1,1:3c3,2:3b8,1:3b5,1bc9:3b9,1c:1f76,1:1f77,f:1f7a,1:1f7b,d:1f78,1:1f79,1:1f7c,1:1f7d,107:63,5:25b,4:68,1:68,1:68,3:69,1:69,1:6c,3:6e,4:70,1:71,1:72,1:72,1:72,7:7a,2:3c9,2:7a,2:6b,1:e5,1:62,1:63,3:65,1:66,2:6d,b:3b3,1:3c0,6:64,1b574:3b8,1a:3c3,20:3b8,1a:3c3,20:3b8,1a:3c3,20:3b8,1a:3c3,20:3b8,1a:3c3");
+var Table_B_2_lut_rel = createTable("179:1,2:1,2:1,5:1,2:1,a:4f,a:1,8:1,2:1,2:1,3:1,5:1,3:1,4:1,2:1,3:1,4:1,8:2,1:1,2:2,1:1,2:2,27:2,195:26,2:25,1:25,1:25,2:40,2:3f,1:3f,33:1,11:-6,1:-9,1ac7:-3a,6d:-8,1:-8,1:-8,1:-8,1:-8,1:-8,1:-8,1:-8,9:-8,1:-8,1:-8,1:-8,1:-8,1:-8,b:-8,1:-8,1:-8,1:-8,1:-8,1:-8,1:-8,1:-8,9:-8,1:-8,1:-8,1:-8,1:-8,1:-8,1:-8,1:-8,9:-8,1:-8,1:-8,1:-8,1:-8,1:-8,c:-8,2:-8,2:-8,2:-8,9:-8,1:-8,1:-8,1:-8,1:-8,1:-8,1:-8,1:-8,49:-8,1:-8,1:-4a,1:-4a,d:-56,1:-56,1:-56,1:-56,d:-8,1:-8,f:-8,1:-8,3:-7");
+var Table_B_2_complex = createTable("df:00730073,51:00690307,19:02BC006E,a7:006A030C,18a:002003B9,16:03B903080301,20:03C503080301,1d7:05650582,190f:00680331,1:00740308,1:0077030A,1:0079030A,1:006102BE,b6:03C50313,2:03C503130300,2:03C503130301,2:03C503130342,2a:1F0003B9,1:1F0103B9,1:1F0203B9,1:1F0303B9,1:1F0403B9,1:1F0503B9,1:1F0603B9,1:1F0703B9,1:1F0003B9,1:1F0103B9,1:1F0203B9,1:1F0303B9,1:1F0403B9,1:1F0503B9,1:1F0603B9,1:1F0703B9,1:1F2003B9,1:1F2103B9,1:1F2203B9,1:1F2303B9,1:1F2403B9,1:1F2503B9,1:1F2603B9,1:1F2703B9,1:1F2003B9,1:1F2103B9,1:1F2203B9,1:1F2303B9,1:1F2403B9,1:1F2503B9,1:1F2603B9,1:1F2703B9,1:1F6003B9,1:1F6103B9,1:1F6203B9,1:1F6303B9,1:1F6403B9,1:1F6503B9,1:1F6603B9,1:1F6703B9,1:1F6003B9,1:1F6103B9,1:1F6203B9,1:1F6303B9,1:1F6403B9,1:1F6503B9,1:1F6603B9,1:1F6703B9,3:1F7003B9,1:03B103B9,1:03AC03B9,2:03B10342,1:03B1034203B9,5:03B103B9,6:1F7403B9,1:03B703B9,1:03AE03B9,2:03B70342,1:03B7034203B9,5:03B703B9,6:03B903080300,1:03B903080301,3:03B90342,1:03B903080342,b:03C503080300,1:03C503080301,1:03C10313,2:03C50342,1:03C503080342,b:1F7C03B9,1:03C903B9,1:03CE03B9,2:03C90342,1:03C9034203B9,5:03C903B9,ac:00720073,5b:00B00063,6:00B00066,d:006E006F,a:0073006D,1:00740065006C,1:0074006D,124f:006800700061,2:00610075,2:006F0076,b:00700061,1:006E0061,1:03BC0061,1:006D0061,1:006B0061,1:006B0062,1:006D0062,1:00670062,3:00700066,1:006E0066,1:03BC0066,4:0068007A,1:006B0068007A,1:006D0068007A,1:00670068007A,1:00740068007A,15:00700061,1:006B00700061,1:006D00700061,1:006700700061,8:00700076,1:006E0076,1:03BC0076,1:006D0076,1:006B0076,1:006D0076,1:00700077,1:006E0077,1:03BC0077,1:006D0077,1:006B0077,1:006D0077,1:006B03C9,1:006D03C9,2:00620071,3:00632215006B0067,1:0063006F002E,1:00640062,1:00670079,2:00680070,2:006B006B,1:006B006D,9:00700068,2:00700070006D,1:00700072,2:00730076,1:00770062,c723:00660066,1:00660069,1:0066006C,1:006600660069,1:00660066006C,1:00730074,1:00730074,d:05740576,1:05740565,1:0574056B,1:057E0576,1:0574056D", bytes2);
+_tmp = 0;
+var Table_C_flags = "70f,f71,18e".split(",").map(function (v) {
+    _tmp += parseInt(v, 16);
+    return _tmp;
+});
+_tmp = 0;
+var Table_C_ranges = "80-20,2c0,1cc0-f,28-7,37-4,b-5,f86-b,a810-20ff,25d0-1f,229-6,d17a-7,2e8b,10000,10000,10000,10000,10000,10000,10000,10000,10000,10000,10000,10000,22-5f".split(",").map(function (v) {
     var comps = v.split("-");
     if (comps.length === 1) {
         comps[1] = "1";
     }
-    return { l: parseInt(comps[0], 16), h: parseInt(comps[1], 16) };
+    _tmp += parseInt(comps[0], 16);
+    return { l: _tmp, h: parseInt(comps[1], 16) };
 });
 function matchMap(value, ranges) {
+    var lo = 0;
     for (var i = 0; i < ranges.length; i++) {
         var range = ranges[i];
-        if (value >= range.l && value <= range.l + range.h) {
-            if (range.e && range.e.indexOf(value - range.l) == -1) {
+        lo += range.l;
+        if (value >= lo && value <= lo + range.h && ((value - lo) % (range.d || 1)) === 0) {
+            if (range.e && range.e.indexOf(value - lo) !== -1) {
                 continue;
             }
             return range;
@@ -18768,6 +18973,26 @@ function flatten(values) {
         return accum;
     }, []);
 }
+function _nameprepTableB2(codepoint) {
+    var match = matchMap(codepoint, Table_B_2_ranges);
+    if (match) {
+        return [codepoint + match.s];
+    }
+    var codes = Table_B_2_lut_abs[codepoint];
+    if (codes) {
+        return codes;
+    }
+    var shift = Table_B_2_lut_rel[codepoint];
+    if (shift) {
+        return [codepoint + shift[0]];
+    }
+    var complex = Table_B_2_complex[codepoint];
+    if (complex) {
+        return complex;
+    }
+    return null;
+}
+exports._nameprepTableB2 = _nameprepTableB2;
 function nameprep(value) {
     // This allows platforms with incomplete normalize to bypass
     // it for very basic names which the built-in toLowerCase
@@ -18778,7 +19003,7 @@ function nameprep(value) {
     // Get the code points (keeping the current normalization)
     var codes = utf8_1.toUtf8CodePoints(value);
     codes = flatten(codes.map(function (code) {
-        // Substitute Table B.1 (Maps to Nothin)
+        // Substitute Table B.1 (Maps to Nothing)
         if (Table_B_1_flags.indexOf(code) >= 0) {
             return [];
         }
@@ -18786,27 +19011,15 @@ function nameprep(value) {
             return [];
         }
         // Substitute Table B.2 (Case Folding)
-        var match = matchMap(code, Table_B_2_ranges);
-        if (match) {
-            return [code + match.s];
-        }
-        var codes = Table_B_2_lut_abs[code];
-        if (codes) {
-            return codes;
-        }
-        var shift = Table_B_2_lut_rel[code];
-        if (shift) {
-            return [code + shift[0]];
-        }
-        var complex = Table_B_2_complex[code];
-        if (complex) {
-            return complex;
+        var codesTableB2 = _nameprepTableB2(code);
+        if (codesTableB2) {
+            return codesTableB2;
         }
         // No Substitution
         return [code];
     }));
     // Normalize using fomr KC
-    codes = utf8_1.toUtf8CodePoints(String.fromCharCode.apply(String, codes), utf8_1.UnicodeNormalizationForm.NFKC);
+    codes = utf8_1.toUtf8CodePoints(utf8_1._toUtf8String(codes), utf8_1.UnicodeNormalizationForm.NFKC);
     // Prohibit C.1.2, C.2.2, C.3, C.4, C.5, C.6, C.7, C.8, C.9
     codes.forEach(function (code) {
         if (Table_C_flags.indexOf(code) >= 0) {
@@ -18814,16 +19027,25 @@ function nameprep(value) {
         }
         Table_C_ranges.forEach(function (range) {
             if (code >= range.l && code <= range.l + range.h) {
-                throw new Error("invalid character code");
+                throw new Error("STRINGPREP_CONTAINS_PROHIBITED");
             }
         });
     });
-    // Prohibit IDNA (@TODO: add this list)
-    return String.fromCharCode.apply(String, codes);
+    // IDNA extras
+    var name = utf8_1._toUtf8String(codes);
+    // IDNA: 4.2.3.1
+    if (name.substring(0, 1) === "-" || name.substring(2, 4) === "--" || name.substring(name.length - 1) === "-") {
+        throw new Error("invalid hyphen");
+    }
+    // IDNA: 4.2.4
+    if (name.length > 63) {
+        throw new Error("too long");
+    }
+    return name;
 }
 exports.nameprep = nameprep;
 
-},{"./utf8":105}],104:[function(require,module,exports){
+},{"./utf8":124}],123:[function(require,module,exports){
 "use strcit";
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -18839,11 +19061,13 @@ exports.toUtf8CodePoints = utf8_1.toUtf8CodePoints;
 exports.toUtf8String = utf8_1.toUtf8String;
 exports.UnicodeNormalizationForm = utf8_1.UnicodeNormalizationForm;
 
-},{"./bytes32":102,"./idna":103,"./utf8":105}],105:[function(require,module,exports){
+},{"./bytes32":121,"./idna":122,"./utf8":124}],124:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors_1 = require("@ethersproject/errors");
 var bytes_1 = require("@ethersproject/bytes");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 ///////////////////////////////
 var UnicodeNormalizationForm;
 (function (UnicodeNormalizationForm) {
@@ -18955,7 +19179,7 @@ function getUtf8CodePoints(bytes, ignoreErrors) {
 function toUtf8Bytes(str, form) {
     if (form === void 0) { form = UnicodeNormalizationForm.current; }
     if (form != UnicodeNormalizationForm.current) {
-        errors_1.checkNormalize();
+        logger.checkNormalize();
         str = str.normalize(form);
     }
     var result = [];
@@ -19018,14 +19242,18 @@ function _toEscapedUtf8String(bytes, ignoreErrors) {
     }).join("") + '"';
 }
 exports._toEscapedUtf8String = _toEscapedUtf8String;
-function toUtf8String(bytes, ignoreErrors) {
-    return getUtf8CodePoints(bytes, ignoreErrors).map(function (codePoint) {
+function _toUtf8String(codePoints) {
+    return codePoints.map(function (codePoint) {
         if (codePoint <= 0xffff) {
             return String.fromCharCode(codePoint);
         }
         codePoint -= 0x10000;
         return String.fromCharCode((((codePoint >> 10) & 0x3ff) + 0xd800), ((codePoint & 0x3ff) + 0xdc00));
     }).join("");
+}
+exports._toUtf8String = _toUtf8String;
+function toUtf8String(bytes, ignoreErrors) {
+    return _toUtf8String(getUtf8CodePoints(bytes, ignoreErrors));
 }
 exports.toUtf8String = toUtf8String;
 function toUtf8CodePoints(str, form) {
@@ -19034,7 +19262,9 @@ function toUtf8CodePoints(str, form) {
 }
 exports.toUtf8CodePoints = toUtf8CodePoints;
 
-},{"@ethersproject/bytes":64,"@ethersproject/errors":67}],106:[function(require,module,exports){
+},{"./_version":120,"@ethersproject/bytes":70,"@ethersproject/logger":92}],125:[function(require,module,exports){
+arguments[4][61][0].apply(exports,arguments)
+},{"dup":61}],126:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -19048,11 +19278,13 @@ var address_1 = require("@ethersproject/address");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
 var constants_1 = require("@ethersproject/constants");
-var errors = __importStar(require("@ethersproject/errors"));
 var keccak256_1 = require("@ethersproject/keccak256");
 var properties_1 = require("@ethersproject/properties");
 var RLP = __importStar(require("@ethersproject/rlp"));
 var signing_key_1 = require("@ethersproject/signing-key");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 ///////////////////////////////
 function handleAddress(value) {
     if (value === "0x") {
@@ -19094,13 +19326,13 @@ function serialize(transaction, signature) {
         value = bytes_1.arrayify(bytes_1.hexlify(value));
         // Fixed-width field
         if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
-            errors.throwError("invalid length for " + fieldInfo.name, errors.INVALID_ARGUMENT, { arg: ("transaction" + fieldInfo.name), value: value });
+            logger.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value);
         }
         // Variable-width (with a maximum)
         if (fieldInfo.maxLength) {
             value = bytes_1.stripZeros(value);
             if (value.length > fieldInfo.maxLength) {
-                errors.throwError("invalid length for " + fieldInfo.name, errors.INVALID_ARGUMENT, { arg: ("transaction" + fieldInfo.name), value: value });
+                logger.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value);
             }
         }
         raw.push(bytes_1.hexlify(value));
@@ -19135,7 +19367,7 @@ exports.serialize = serialize;
 function parse(rawTransaction) {
     var transaction = RLP.decode(rawTransaction);
     if (transaction.length !== 9 && transaction.length !== 6) {
-        errors.throwError("invalid raw transaction", errors.INVALID_ARGUMENT, { arg: "rawTransactin", value: rawTransaction });
+        logger.throwArgumentError("invalid raw transaction", "rawTransactin", rawTransaction);
     }
     var tx = {
         nonce: handleNumber(transaction[0]).toNumber(),
@@ -19191,18 +19423,18 @@ function parse(rawTransaction) {
 }
 exports.parse = parse;
 
-},{"@ethersproject/address":58,"@ethersproject/bignumber":63,"@ethersproject/bytes":64,"@ethersproject/constants":65,"@ethersproject/errors":67,"@ethersproject/keccak256":80,"@ethersproject/properties":83,"@ethersproject/rlp":98,"@ethersproject/signing-key":100}],107:[function(require,module,exports){
+},{"./_version":125,"@ethersproject/address":62,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/constants":71,"@ethersproject/keccak256":90,"@ethersproject/logger":92,"@ethersproject/properties":97,"@ethersproject/rlp":114,"@ethersproject/signing-key":118}],127:[function(require,module,exports){
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.version = "5.0.0-beta.125";
+
+},{}],128:[function(require,module,exports){
+"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var fixednumber_1 = require("@ethersproject/bignumber/fixednumber");
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var names = [
     "wei",
     "kwei",
@@ -19217,7 +19449,7 @@ var names = [
 function commify(value) {
     var comps = String(value).split(".");
     if (comps.length > 2 || !comps[0].match(/^-?[0-9]*$/) || (comps[1] && !comps[1].match(/^[0-9]*$/)) || value === "." || value === "-.") {
-        errors.throwError("invalid value", errors.INVALID_ARGUMENT, { argument: "value", value: value });
+        logger.throwArgumentError("invalid value", "value", value);
     }
     // Make sure we have at least one whole digit (0 if none)
     var whole = comps[0];
@@ -19281,7 +19513,9 @@ function parseEther(ether) {
 }
 exports.parseEther = parseEther;
 
-},{"@ethersproject/bignumber/fixednumber":62,"@ethersproject/errors":67}],108:[function(require,module,exports){
+},{"./_version":127,"@ethersproject/bignumber/fixednumber":67,"@ethersproject/logger":92}],129:[function(require,module,exports){
+arguments[4][57][0].apply(exports,arguments)
+},{"dup":57}],130:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19296,19 +19530,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var address_1 = require("@ethersproject/address");
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 var abstract_signer_1 = require("@ethersproject/abstract-signer");
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var hash_1 = require("@ethersproject/hash");
 var hdnode_1 = require("@ethersproject/hdnode");
 var keccak256_1 = require("@ethersproject/keccak256");
@@ -19317,6 +19543,9 @@ var random_1 = require("@ethersproject/random");
 var signing_key_1 = require("@ethersproject/signing-key");
 var json_wallets_1 = require("@ethersproject/json-wallets");
 var transactions_1 = require("@ethersproject/transactions");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 function isAccount(value) {
     return (value != null && bytes_1.isHexString(value.privateKey, 32) && value.address != null);
 }
@@ -19325,14 +19554,14 @@ var Wallet = /** @class */ (function (_super) {
     function Wallet(privateKey, provider) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, Wallet);
+        logger.checkNew(_newTarget, Wallet);
         _this = _super.call(this) || this;
         if (isAccount(privateKey)) {
             var signingKey_1 = new signing_key_1.SigningKey(privateKey.privateKey);
             properties_1.defineReadOnly(_this, "_signingKey", function () { return signingKey_1; });
             properties_1.defineReadOnly(_this, "address", transactions_1.computeAddress(_this.publicKey));
             if (_this.address !== address_1.getAddress(privateKey.address)) {
-                errors.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDCACTED]");
+                logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDCACTED]");
             }
             if (privateKey.mnemonic != null) {
                 var mnemonic_1 = privateKey.mnemonic;
@@ -19341,7 +19570,7 @@ var Wallet = /** @class */ (function (_super) {
                 properties_1.defineReadOnly(_this, "path", privateKey.path);
                 var node = hdnode_1.HDNode.fromMnemonic(mnemonic_1).derivePath(path);
                 if (transactions_1.computeAddress(node.privateKey) !== _this.address) {
-                    errors.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDCACTED]");
+                    logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDCACTED]");
                 }
             }
             else {
@@ -19352,7 +19581,7 @@ var Wallet = /** @class */ (function (_super) {
         else {
             if (signing_key_1.SigningKey.isSigningKey(privateKey)) {
                 if (privateKey.curve !== "secp256k1") {
-                    errors.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
+                    logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
                 }
                 properties_1.defineReadOnly(_this, "_signingKey", function () { return privateKey; });
             }
@@ -19365,10 +19594,7 @@ var Wallet = /** @class */ (function (_super) {
             properties_1.defineReadOnly(_this, "address", transactions_1.computeAddress(_this.publicKey));
         }
         if (provider && !abstract_provider_1.Provider.isProvider(provider)) {
-            errors.throwError("invalid provider", errors.INVALID_ARGUMENT, {
-                argument: "provider",
-                value: provider
-            });
+            logger.throwArgumentError("invalid provider", "provider", provider);
         }
         properties_1.defineReadOnly(_this, "provider", provider || null);
         return _this;
@@ -19456,24 +19682,21 @@ function verifyMessage(message, signature) {
 }
 exports.verifyMessage = verifyMessage;
 
-},{"@ethersproject/abstract-provider":56,"@ethersproject/abstract-signer":57,"@ethersproject/address":58,"@ethersproject/bytes":64,"@ethersproject/errors":67,"@ethersproject/hash":73,"@ethersproject/hdnode":74,"@ethersproject/json-wallets":76,"@ethersproject/keccak256":80,"@ethersproject/properties":83,"@ethersproject/random":96,"@ethersproject/signing-key":100,"@ethersproject/transactions":106}],109:[function(require,module,exports){
+},{"./_version":129,"@ethersproject/abstract-provider":58,"@ethersproject/abstract-signer":60,"@ethersproject/address":62,"@ethersproject/bytes":70,"@ethersproject/hash":81,"@ethersproject/hdnode":83,"@ethersproject/json-wallets":86,"@ethersproject/keccak256":90,"@ethersproject/logger":92,"@ethersproject/properties":97,"@ethersproject/random":112,"@ethersproject/signing-key":118,"@ethersproject/transactions":126}],131:[function(require,module,exports){
+arguments[4][69][0].apply(exports,arguments)
+},{"dup":69}],132:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var cross_fetch_1 = __importDefault(require("cross-fetch"));
 var base64_1 = require("@ethersproject/base64");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
 var strings_1 = require("@ethersproject/strings");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 function fetchJson(connection, json, processFunc) {
     var headers = {};
     var url = null;
@@ -19492,7 +19715,7 @@ function fetchJson(connection, json, processFunc) {
     }
     else if (typeof (connection) === "object") {
         if (connection == null || connection.url == null) {
-            errors.throwArgumentError("missing URL", "connection.url", connection);
+            logger.throwArgumentError("missing URL", "connection.url", connection);
         }
         url = connection.url;
         if (typeof (connection.timeout) === "number" && connection.timeout > 0) {
@@ -19505,7 +19728,7 @@ function fetchJson(connection, json, processFunc) {
         }
         if (connection.user != null && connection.password != null) {
             if (url.substring(0, 6) !== "https:" && connection.allowInsecureAuthentication !== true) {
-                errors.throwError("basic authentication requires a secure https url", errors.INVALID_ARGUMENT, { arg: "url", url: url, user: connection.user, password: "[REDACTED]" });
+                logger.throwError("basic authentication requires a secure https url", logger_1.Logger.errors.INVALID_ARGUMENT, { argument: "url", url: url, user: connection.user, password: "[REDACTED]" });
             }
             var authorization = connection.user + ":" + connection.password;
             headers["authorization"] = {
@@ -19522,10 +19745,7 @@ function fetchJson(connection, json, processFunc) {
                     return;
                 }
                 timer = null;
-                reject(errors.makeError("timeout", errors.TIMEOUT, {}));
-                //setTimeout(() => {
-                //    request.abort();
-                //}, 0);
+                reject(logger.makeError("timeout", logger_1.Logger.errors.TIMEOUT, { timeout: timeout }));
             }, timeout);
         }
         var cancelTimeout = function () {
@@ -19549,7 +19769,7 @@ function fetchJson(connection, json, processFunc) {
         return cross_fetch_1.default(url, options).then(function (response) {
             return response.text().then(function (body) {
                 if (!response.ok) {
-                    errors.throwError("bad response", errors.SERVER_ERROR, {
+                    logger.throwError("bad response", logger_1.Logger.errors.SERVER_ERROR, {
                         status: response.status,
                         body: body,
                         type: response.type,
@@ -19564,7 +19784,7 @@ function fetchJson(connection, json, processFunc) {
                 json = JSON.parse(text);
             }
             catch (error) {
-                errors.throwError("invalid JSON", errors.SERVER_ERROR, {
+                logger.throwError("invalid JSON", logger_1.Logger.errors.SERVER_ERROR, {
                     body: text,
                     error: error,
                     url: url
@@ -19575,7 +19795,7 @@ function fetchJson(connection, json, processFunc) {
                     json = processFunc(json);
                 }
                 catch (error) {
-                    errors.throwError("processing response error", errors.SERVER_ERROR, {
+                    logger.throwError("processing response error", logger_1.Logger.errors.SERVER_ERROR, {
                         body: json,
                         error: error
                     });
@@ -19672,7 +19892,9 @@ function poll(func, options) {
 }
 exports.poll = poll;
 
-},{"@ethersproject/base64":59,"@ethersproject/errors":67,"@ethersproject/properties":83,"@ethersproject/strings":104,"cross-fetch":5}],110:[function(require,module,exports){
+},{"./_version":131,"@ethersproject/base64":63,"@ethersproject/logger":92,"@ethersproject/properties":97,"@ethersproject/strings":123,"cross-fetch":5}],133:[function(require,module,exports){
+arguments[4][61][0].apply(exports,arguments)
+},{"dup":61}],134:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // Wordlists
@@ -19683,7 +19905,7 @@ var lang_en_1 = require("./lang-en");
 var wordlists = { en: lang_en_1.langEn };
 exports.wordlists = wordlists;
 
-},{"./lang-en":111,"./wordlist":112}],111:[function(require,module,exports){
+},{"./lang-en":135,"./wordlist":136}],135:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19731,15 +19953,17 @@ var langEn = new LangEn();
 exports.langEn = langEn;
 wordlist_1.register(langEn);
 
-},{"./wordlist":112}],112:[function(require,module,exports){
+},{"./wordlist":136}],136:[function(require,module,exports){
 (function (global){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // This gets overriddenby gulp during bip39-XX
 var exportWordlist = false;
-var errors_1 = require("@ethersproject/errors");
 var hash_1 = require("@ethersproject/hash");
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 function check(wordlist) {
     var words = [];
     for (var i = 0; i < 2048; i++) {
@@ -19755,7 +19979,7 @@ exports.check = check;
 var Wordlist = /** @class */ (function () {
     function Wordlist(locale) {
         var _newTarget = this.constructor;
-        errors_1.checkAbstract(_newTarget, Wordlist);
+        logger.checkAbstract(_newTarget, Wordlist);
         properties_1.defineReadOnly(this, "locale", locale);
     }
     // Subclasses may override this
@@ -19791,5 +20015,5 @@ function register(lang, name) {
 exports.register = register;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"@ethersproject/errors":67,"@ethersproject/hash":73,"@ethersproject/properties":83}]},{},[70])(70)
+},{"./_version":133,"@ethersproject/hash":81,"@ethersproject/logger":92,"@ethersproject/properties":97}]},{},[77])(77)
 });

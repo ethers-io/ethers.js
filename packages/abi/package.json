@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/abi",
-  "version": "5.0.0-beta.134",
+  "version": "5.0.0-beta.135",
   "description": "Error utility functions for ethers.",
   "main": "index.js",
   "scripts": {
@@ -26,5 +26,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0xa9aab251418094b09c848883131f48807425fee7ac824c20b1e8df9a22f71165"
+  "tarballHash": "0xe2971001e2b8a5140871de1bcff0e78fc6bd526b6754522bf500c284ece17d9f"
 }

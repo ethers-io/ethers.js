@@ -9,13 +9,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 // We use this for base 36 maths
 var BN = __importStar(require("bn.js"));
-var errors = __importStar(require("@ethersproject/errors"));
 var bytes_1 = require("@ethersproject/bytes");
 var keccak256_1 = require("@ethersproject/keccak256");
 var rlp_1 = require("@ethersproject/rlp");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 function getChecksumAddress(address) {
     if (!bytes_1.isHexString(address, 20)) {
-        errors.throwError("invalid address", errors.INVALID_ARGUMENT, { arg: "address", value: address });
+        logger.throwArgumentError("invalid address", "address", address);
     }
     address = address.toLowerCase();
     var chars = address.substring(2).split("");
@@ -75,7 +77,7 @@ function ibanChecksum(address) {
 function getAddress(address) {
     var result = null;
     if (typeof (address) !== "string") {
-        errors.throwArgumentError("invalid address", "address", address);
+        logger.throwArgumentError("invalid address", "address", address);
     }
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
         // Missing the 0x prefix
@@ -85,14 +87,14 @@ function getAddress(address) {
         result = getChecksumAddress(address);
         // It is a checksummed address with a bad checksum
         if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
-            errors.throwArgumentError("bad address checksum", "address", address);
+            logger.throwArgumentError("bad address checksum", "address", address);
         }
         // Maybe ICAP? (we only support direct mode)
     }
     else if (address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
         // It is an ICAP address with a bad checksum
         if (address.substring(2, 4) !== ibanChecksum(address)) {
-            errors.throwArgumentError("bad icap checksum", "address", address);
+            logger.throwArgumentError("bad icap checksum", "address", address);
         }
         result = (new BN.BN(address.substring(4), 36)).toString(16);
         while (result.length < 40) {
@@ -101,7 +103,7 @@ function getAddress(address) {
         result = getChecksumAddress("0x" + result);
     }
     else {
-        errors.throwArgumentError("invalid address", "address", address);
+        logger.throwArgumentError("invalid address", "address", address);
     }
     return result;
 }
@@ -130,7 +132,7 @@ function getContractAddress(transaction) {
         from = getAddress(transaction.from);
     }
     catch (error) {
-        errors.throwArgumentError("missing from address", "transaction", transaction);
+        logger.throwArgumentError("missing from address", "transaction", transaction);
     }
     var nonce = bytes_1.stripZeros(bytes_1.arrayify(transaction.nonce));
     return getAddress(bytes_1.hexDataSlice(keccak256_1.keccak256(rlp_1.encode([from, nonce])), 12));

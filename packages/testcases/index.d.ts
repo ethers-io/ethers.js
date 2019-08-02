@@ -14,6 +14,13 @@ export declare module TestCase {
         mnemonic: string;
         hdnodes: Array<HDWalletNode>;
     };
+    type Nameprep = {
+        comment: string;
+        input: Array<number>;
+        output: Array<number>;
+        rc?: string;
+        flags?: string;
+    };
     type Wordlist = {
         locale: string;
         content: string;

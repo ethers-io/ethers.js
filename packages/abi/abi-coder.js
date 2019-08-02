@@ -1,16 +1,11 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var abstract_coder_1 = require("./coders/abstract-coder");
 var address_1 = require("./coders/address");
 var array_1 = require("./coders/array");
@@ -27,7 +22,7 @@ var paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 var AbiCoder = /** @class */ (function () {
     function AbiCoder(coerceFunc) {
         var _newTarget = this.constructor;
-        errors.checkNew(_newTarget, AbiCoder);
+        logger.checkNew(_newTarget, AbiCoder);
         properties_1.defineReadOnly(this, "coerceFunc", coerceFunc || null);
     }
     AbiCoder.prototype._getCoder = function (param) {
@@ -55,10 +50,7 @@ var AbiCoder = /** @class */ (function () {
         if (match) {
             var size = parseInt(match[2] || "256");
             if (size === 0 || size > 256 || (size % 8) !== 0) {
-                errors.throwError("invalid " + match[1] + " bit length", errors.INVALID_ARGUMENT, {
-                    arg: "param",
-                    value: param
-                });
+                logger.throwArgumentError("invalid " + match[1] + " bit length", "param", param);
             }
             return new number_1.NumberCoder(size / 8, (match[1] === "int"), param.name);
         }
@@ -67,17 +59,11 @@ var AbiCoder = /** @class */ (function () {
         if (match) {
             var size = parseInt(match[1]);
             if (size === 0 || size > 32) {
-                errors.throwError("invalid bytes length", errors.INVALID_ARGUMENT, {
-                    arg: "param",
-                    value: param
-                });
+                logger.throwArgumentError("invalid bytes length", "param", param);
             }
             return new fixed_bytes_1.FixedBytesCoder(size, param.name);
         }
-        return errors.throwError("invalid type", errors.INVALID_ARGUMENT, {
-            arg: "type",
-            value: param.type
-        });
+        return logger.throwError("invalid type", "type", param.type);
     };
     AbiCoder.prototype._getWordSize = function () { return 32; };
     AbiCoder.prototype._getReader = function (data) {
@@ -89,7 +75,7 @@ var AbiCoder = /** @class */ (function () {
     AbiCoder.prototype.encode = function (types, values) {
         var _this = this;
         if (types.length !== values.length) {
-            errors.throwError("types/values length mismatch", errors.INVALID_ARGUMENT, {
+            logger.throwError("types/values length mismatch", logger_1.Logger.errors.INVALID_ARGUMENT, {
                 count: { types: types.length, values: values.length },
                 value: { types: types, values: values }
             });

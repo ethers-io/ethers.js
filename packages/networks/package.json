@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/networks",
-  "version": "5.0.0-beta.125",
+  "version": "5.0.0-beta.126",
   "description": "Network definitions for ethers.",
   "main": "index.js",
   "scripts": {
@@ -18,5 +18,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x00ddc55c9d4a55e9bdb76344f8fed34b0733a4e132666e505f227c40a91748f3"
+  "tarballHash": "0x48b2dafc0ae52ee5960b9478575ca59e8d205f5e302f0730402cdd30e5e85d0b"
 }

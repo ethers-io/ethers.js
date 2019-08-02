@@ -12,15 +12,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("../_version");
+var logger = new logger_1.Logger(_version_1.version);
 var abstract_coder_1 = require("./abstract-coder");
 var anonymous_1 = require("./anonymous");
 function pack(writer, coders, values) {
@@ -35,16 +30,10 @@ function pack(writer, coders, values) {
         values = arrayValues_1;
     }
     else {
-        errors.throwError("invalid tuple value", errors.INVALID_ARGUMENT, {
-            coderType: "tuple",
-            value: values
-        });
+        logger.throwArgumentError("invalid tuple value", "tuple", values);
     }
     if (coders.length !== values.length) {
-        errors.throwError("types/value length mismatch", errors.INVALID_ARGUMENT, {
-            coderType: "tuple",
-            value: values
-        });
+        logger.throwArgumentError("types/value length mismatch", "tuple", values);
     }
     var staticWriter = new abstract_coder_1.Writer(writer.wordSize);
     var dynamicWriter = new abstract_coder_1.Writer(writer.wordSize);
@@ -135,7 +124,7 @@ var ArrayCoder = /** @class */ (function (_super) {
             count = value.length;
             writer.writeValue(value.length);
         }
-        errors.checkArgumentCount(count, value.length, " in coder array" + (this.localName ? (" " + this.localName) : ""));
+        logger.checkArgumentCount(count, value.length, "coder array" + (this.localName ? (" " + this.localName) : ""));
         var coders = [];
         for (var i = 0; i < value.length; i++) {
             coders.push(this.coder);

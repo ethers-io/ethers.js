@@ -12,16 +12,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var json_rpc_provider_1 = require("./json-rpc-provider");
 /*
 @TODO
@@ -35,7 +30,7 @@ var Web3Provider = /** @class */ (function (_super) {
     function Web3Provider(web3Provider, network) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, Web3Provider);
+        logger.checkNew(_newTarget, Web3Provider);
         // HTTP has a host; IPC has a path.
         _this = _super.call(this, web3Provider.host || web3Provider.path || "", network) || this;
         if (web3Provider) {
@@ -47,7 +42,7 @@ var Web3Provider = /** @class */ (function (_super) {
             }
         }
         if (!web3Provider || !_this._sendAsync) {
-            errors.throwError("invalid web3Provider", errors.INVALID_ARGUMENT, { arg: "web3Provider", value: web3Provider });
+            logger.throwArgumentError("invalid web3Provider", "web3Provider", web3Provider);
         }
         properties_1.defineReadOnly(_this, "_web3Provider", web3Provider);
         return _this;

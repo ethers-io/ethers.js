@@ -15,22 +15,17 @@ var __extends = (this && this.__extends) || (function () {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var aes_js_1 = __importDefault(require("aes-js"));
 var address_1 = require("@ethersproject/address");
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var keccak256_1 = require("@ethersproject/keccak256");
 var pbkdf2_1 = require("@ethersproject/pbkdf2");
 var strings_1 = require("@ethersproject/strings");
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var utils_1 = require("./utils");
 var CrowdsaleAccount = /** @class */ (function (_super) {
     __extends(CrowdsaleAccount, _super);
@@ -52,10 +47,7 @@ function decrypt(json, password) {
     // Encrypted Seed
     var encseed = utils_1.looseArrayify(utils_1.searchPath(data, "encseed"));
     if (!encseed || (encseed.length % 16) !== 0) {
-        errors.throwError("invalid encseed", errors.INVALID_ARGUMENT, {
-            argument: "json",
-            value: json
-        });
+        logger.throwArgumentError("invalid encseed", "json", json);
     }
     var key = bytes_1.arrayify(pbkdf2_1.pbkdf2(password, password, 2000, 32, "sha256")).slice(0, 16);
     var iv = encseed.slice(0, 16);

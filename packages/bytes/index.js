@@ -1,13 +1,8 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 ///////////////////////////////
 function isHexable(value) {
     return !!(value.toHexString);
@@ -53,7 +48,7 @@ function arrayify(value, options) {
         options = {};
     }
     if (typeof (value) === "number") {
-        errors.checkSafeUint53(value, "invalid arrayify value");
+        logger.checkSafeUint53(value, "invalid arrayify value");
         var result = [];
         while (value) {
             result.unshift(value & 0xff);
@@ -73,7 +68,7 @@ function arrayify(value, options) {
     if (isHexString(value)) {
         var hex = value.substring(2);
         if (!options.allowOddLength && hex.length % 2) {
-            errors.throwArgumentError("hex data is odd-length", "value", value);
+            logger.throwArgumentError("hex data is odd-length", "value", value);
         }
         var result = [];
         for (var i = 0; i < hex.length; i += 2) {
@@ -84,7 +79,7 @@ function arrayify(value, options) {
     if (isBytes(value)) {
         return addSlice(new Uint8Array(value));
     }
-    return errors.throwArgumentError("invalid arrayify value", "value", value);
+    return logger.throwArgumentError("invalid arrayify value", "value", value);
 }
 exports.arrayify = arrayify;
 function concat(items) {
@@ -118,7 +113,7 @@ exports.stripZeros = stripZeros;
 function zeroPad(value, length) {
     value = arrayify(value);
     if (value.length > length) {
-        errors.throwArgumentError("value out of range", "value", arguments[0]);
+        logger.throwArgumentError("value out of range", "value", arguments[0]);
     }
     var result = new Uint8Array(length);
     result.set(value, length - value.length);
@@ -141,7 +136,7 @@ function hexlify(value, options) {
         options = {};
     }
     if (typeof (value) === "number") {
-        errors.checkSafeUint53(value, "invalid hexlify value");
+        logger.checkSafeUint53(value, "invalid hexlify value");
         var hex = "";
         while (value) {
             hex = HexCharacters[value & 0x0f] + hex;
@@ -163,7 +158,7 @@ function hexlify(value, options) {
     }
     if (isHexString(value)) {
         if (!options.allowOddLength && value.length % 2) {
-            errors.throwArgumentError("hex data is odd-length", "value", value);
+            logger.throwArgumentError("hex data is odd-length", "value", value);
         }
         return value.toLowerCase();
     }
@@ -175,7 +170,7 @@ function hexlify(value, options) {
         }
         return result;
     }
-    return errors.throwArgumentError("invalid hexlify value", "value", value);
+    return logger.throwArgumentError("invalid hexlify value", "value", value);
 }
 exports.hexlify = hexlify;
 /*
@@ -201,7 +196,7 @@ function hexDataSlice(data, offset, endOffset) {
         data = hexlify(data);
     }
     else if (!isHexString(data) || (data.length % 2)) {
-        errors.throwArgumentError("invalid hexData", "value", data);
+        logger.throwArgumentError("invalid hexData", "value", data);
     }
     offset = 2 + 2 * offset;
     if (endOffset != null) {
@@ -231,7 +226,7 @@ function hexStripZeros(value) {
         value = hexlify(value);
     }
     if (!isHexString(value)) {
-        errors.throwArgumentError("invalid hex string", "value", value);
+        logger.throwArgumentError("invalid hex string", "value", value);
     }
     value = value.substring(2);
     var offset = 0;
@@ -246,10 +241,10 @@ function hexZeroPad(value, length) {
         value = hexlify(value);
     }
     else if (!isHexString(value)) {
-        errors.throwArgumentError("invalid hex string", "value", value);
+        logger.throwArgumentError("invalid hex string", "value", value);
     }
     if (value.length > 2 * length + 2) {
-        errors.throwArgumentError("value out of range", "value", arguments[1]);
+        logger.throwArgumentError("value out of range", "value", arguments[1]);
     }
     while (value.length < 2 * length + 2) {
         value = "0x0" + value.substring(2);
@@ -268,7 +263,7 @@ function splitSignature(signature) {
     if (isBytesLike(signature)) {
         var bytes = arrayify(signature);
         if (bytes.length !== 65) {
-            errors.throwArgumentError("invalid signature string; must be 65 bytes", "signature", signature);
+            logger.throwArgumentError("invalid signature string; must be 65 bytes", "signature", signature);
         }
         // Get the r and s
         result.r = hexlify(bytes.slice(0, 32));
@@ -305,7 +300,7 @@ function splitSignature(signature) {
         }
         else if (result.recoveryParam != null && result.v != null) {
             if (result.v !== 27 + result.recoveryParam) {
-                errors.throwArgumentError("signature v mismatch recoveryParam", "signature", signature);
+                logger.throwArgumentError("signature v mismatch recoveryParam", "signature", signature);
             }
         }
         // Make sure r and s are padded properly
@@ -320,7 +315,7 @@ function splitSignature(signature) {
         if (result._vs != null) {
             result._vs = hexZeroPad(result._vs, 32);
             if (result._vs.length > 66) {
-                errors.throwArgumentError("signature _vs overflow", "signature", signature);
+                logger.throwArgumentError("signature _vs overflow", "signature", signature);
             }
             var vs = arrayify(result._vs);
             var recoveryParam = ((vs[0] >= 128) ? 1 : 0);
@@ -333,37 +328,37 @@ function splitSignature(signature) {
                 result.s = s;
             }
             else if (result.s !== s) {
-                errors.throwArgumentError("signature v mismatch _vs", "signature", signature);
+                logger.throwArgumentError("signature v mismatch _vs", "signature", signature);
             }
             if (result.v == null) {
                 result.v = v;
             }
             else if (result.v !== v) {
-                errors.throwArgumentError("signature v mismatch _vs", "signature", signature);
+                logger.throwArgumentError("signature v mismatch _vs", "signature", signature);
             }
             if (recoveryParam == null) {
                 result.recoveryParam = recoveryParam;
             }
             else if (result.recoveryParam !== recoveryParam) {
-                errors.throwArgumentError("signature recoveryParam mismatch _vs", "signature", signature);
+                logger.throwArgumentError("signature recoveryParam mismatch _vs", "signature", signature);
             }
         }
         // After all populating, both v and recoveryParam are still missing...
         if (result.v == null && result.recoveryParam == null) {
-            errors.throwArgumentError("signature requires at least one of recoveryParam, v or _vs", "signature", signature);
+            logger.throwArgumentError("signature requires at least one of recoveryParam, v or _vs", "signature", signature);
         }
         // Check for canonical v
         if (result.v !== 27 && result.v !== 28) {
-            errors.throwArgumentError("signature v not canonical", "signature", signature);
+            logger.throwArgumentError("signature v not canonical", "signature", signature);
         }
         // Check that r and s are in range
         if (result.r.length > 66 || result.s.length > 66) {
-            errors.throwArgumentError("signature overflow r or s", "signature", signature);
+            logger.throwArgumentError("signature overflow r or s", "signature", signature);
         }
         if (result._vs == null) {
             var vs = arrayify(result.s);
             if (vs[0] >= 128) {
-                errors.throwArgumentError("signature s out of range", "signature", signature);
+                logger.throwArgumentError("signature s out of range", "signature", signature);
             }
             if (result.recoveryParam) {
                 vs[0] |= 0x80;

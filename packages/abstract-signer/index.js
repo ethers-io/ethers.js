@@ -12,16 +12,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var allowedTransactionKeys = [
     "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "value"
 ];
@@ -36,7 +31,7 @@ var Signer = /** @class */ (function () {
     // Sub-classes MUST call super
     function Signer() {
         var _newTarget = this.constructor;
-        errors.checkAbstract(_newTarget, Signer);
+        logger.checkAbstract(_newTarget, Signer);
         properties_1.defineReadOnly(this, "_isSigner", true);
     }
     ///////////////////
@@ -99,7 +94,7 @@ var Signer = /** @class */ (function () {
     Signer.prototype.checkTransaction = function (transaction) {
         for (var key in transaction) {
             if (allowedTransactionKeys.indexOf(key) === -1) {
-                errors.throwArgumentError("invalid transaction key: " + key, "transaction", transaction);
+                logger.throwArgumentError("invalid transaction key: " + key, "transaction", transaction);
             }
         }
         var tx = properties_1.shallowCopy(transaction);
@@ -134,7 +129,7 @@ var Signer = /** @class */ (function () {
                     _this.provider.resolveName(tx.from)
                 ]).then(function (results) {
                     if (results[0] !== results[1]) {
-                        errors.throwArgumentError("from address mismatch", "transaction", transaction);
+                        logger.throwArgumentError("from address mismatch", "transaction", transaction);
                     }
                     return results[0];
                 });
@@ -152,7 +147,7 @@ var Signer = /** @class */ (function () {
     // Sub-classes SHOULD leave these alone
     Signer.prototype._checkProvider = function (operation) {
         if (!this.provider) {
-            errors.throwError("missing provider", errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("missing provider", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: (operation || "_checkProvider")
             });
         }
@@ -168,7 +163,7 @@ var VoidSigner = /** @class */ (function (_super) {
     function VoidSigner(address, provider) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, VoidSigner);
+        logger.checkNew(_newTarget, VoidSigner);
         _this = _super.call(this) || this;
         properties_1.defineReadOnly(_this, "address", address);
         properties_1.defineReadOnly(_this, "provider", provider || null);
@@ -179,7 +174,7 @@ var VoidSigner = /** @class */ (function (_super) {
     };
     VoidSigner.prototype._fail = function (message, operation) {
         return Promise.resolve().then(function () {
-            errors.throwError(message, errors.UNSUPPORTED_OPERATION, { operation: operation });
+            logger.throwError(message, logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: operation });
         });
     };
     VoidSigner.prototype.signMessage = function (message) {

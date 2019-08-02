@@ -12,17 +12,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
 var random_1 = require("@ethersproject/random");
 var properties_1 = require("@ethersproject/properties");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var base_provider_1 = require("./base-provider");
 function now() { return (new Date()).getTime(); }
 // Returns:
@@ -50,7 +45,7 @@ function checkNetworks(networks) {
                 (check.ensAddress == null && network.ensAddress == null))) {
             return;
         }
-        errors.throwError("provider mismatch", errors.INVALID_ARGUMENT, { arg: "networks", value: networks });
+        logger.throwArgumentError("provider mismatch", "networks", networks);
     });
     return result;
 }
@@ -82,12 +77,12 @@ var FallbackProvider = /** @class */ (function (_super) {
     function FallbackProvider(providers, quorum, weights) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, FallbackProvider);
+        logger.checkNew(_newTarget, FallbackProvider);
         if (providers.length === 0) {
-            errors.throwArgumentError("missing providers", "providers", providers);
+            logger.throwArgumentError("missing providers", "providers", providers);
         }
         if (weights != null && weights.length !== providers.length) {
-            errors.throwArgumentError("too many weights", "weights", weights);
+            logger.throwArgumentError("too many weights", "weights", weights);
         }
         else if (!weights) {
             weights = providers.map(function (p) { return 1; });
@@ -95,7 +90,7 @@ var FallbackProvider = /** @class */ (function (_super) {
         else {
             weights.forEach(function (w) {
                 if (w % 1 || w > 512 || w < 1) {
-                    errors.throwArgumentError("invalid weight; must be integer in [1, 512]", "weights", weights);
+                    logger.throwArgumentError("invalid weight; must be integer in [1, 512]", "weights", weights);
                 }
             });
         }
@@ -105,7 +100,7 @@ var FallbackProvider = /** @class */ (function (_super) {
         }
         else {
             if (quorum > total) {
-                errors.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
+                logger.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
             }
         }
         // All networks are ready, we can know the network for certain
@@ -117,7 +112,7 @@ var FallbackProvider = /** @class */ (function (_super) {
             // The network won't be known until all child providers know
             var ready_1 = Promise.all(providers.map(function (p) { return p.getNetwork(); })).then(function (networks) {
                 if (!checkNetworks(networks)) {
-                    errors.throwError("getNetwork returned null", errors.UNKNOWN_ERROR, {});
+                    logger.throwError("getNetwork returned null", logger_1.Logger.errors.UNKNOWN_ERROR);
                 }
                 return networks[0];
             });
@@ -139,14 +134,32 @@ var FallbackProvider = /** @class */ (function (_super) {
                 run: function () {
                     var t0 = now();
                     var start = t0 - T0;
-                    _this.emit("debug", "perform", rid, { weight: weight, start: start, provider: provider, method: method, params: params });
+                    _this.emit("debug", {
+                        action: "request",
+                        rid: rid,
+                        backend: { weight: weight, start: start, provider: provider },
+                        request: { method: method, params: properties_1.deepCopy(params) },
+                        provider: _this
+                    });
                     return provider.perform(method, params).then(function (result) {
                         var duration = now() - t0;
-                        _this.emit("debug", "result", rid, { duration: duration, result: result });
+                        _this.emit("debug", {
+                            action: "response",
+                            rid: rid,
+                            backend: { weight: weight, start: start, duration: duration, provider: provider },
+                            request: { method: method, params: properties_1.deepCopy(params) },
+                            response: properties_1.deepCopy(result)
+                        });
                         return { weight: weight, result: result };
                     }, function (error) {
                         var duration = now() - t0;
-                        _this.emit("debug", "error", rid, { duration: duration, error: error });
+                        _this.emit("debug", {
+                            action: "response",
+                            rid: rid,
+                            backend: { weight: weight, start: start, duration: duration, provider: provider },
+                            request: { method: method, params: properties_1.deepCopy(params) },
+                            error: error
+                        });
                         return { weight: weight, error: error };
                     });
                 },

@@ -1,16 +1,11 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
 var bytes_1 = require("@ethersproject/bytes");
 var strings_1 = require("@ethersproject/strings");
 var keccak256_1 = require("@ethersproject/keccak256");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 ///////////////////////////////
 var Zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 var Partition = new RegExp("^((.*)\\.)?([^.]+)$");
@@ -30,10 +25,7 @@ function isValidName(name) {
 exports.isValidName = isValidName;
 function namehash(name) {
     if (typeof (name) !== "string") {
-        errors.throwError("invalid address - " + String(name), errors.INVALID_ARGUMENT, {
-            argument: "name",
-            value: name
-        });
+        logger.throwArgumentError("invalid address - " + String(name), "name", name);
     }
     var result = Zeros;
     while (name.length) {

@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/cli",
-  "version": "5.0.0-beta.135",
+  "version": "5.0.0-beta.136",
   "description": "Command-Line Interface scripts and releated utilities.",
   "main": "index.js",
   "scripts": {
@@ -29,5 +29,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x273492dacdf9a87887fa1d84c132525199dce4922f81235004dbac8628213e5f"
+  "tarballHash": "0x46224f464ccc9cc68cb0f1fca15dce7b9b8fa6fa55109b467497e44094643833"
 }

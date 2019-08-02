@@ -11,11 +11,13 @@ var address_1 = require("@ethersproject/address");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
 var constants_1 = require("@ethersproject/constants");
-var errors = __importStar(require("@ethersproject/errors"));
 var keccak256_1 = require("@ethersproject/keccak256");
 var properties_1 = require("@ethersproject/properties");
 var RLP = __importStar(require("@ethersproject/rlp"));
 var signing_key_1 = require("@ethersproject/signing-key");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 ///////////////////////////////
 function handleAddress(value) {
     if (value === "0x") {
@@ -57,13 +59,13 @@ function serialize(transaction, signature) {
         value = bytes_1.arrayify(bytes_1.hexlify(value));
         // Fixed-width field
         if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
-            errors.throwError("invalid length for " + fieldInfo.name, errors.INVALID_ARGUMENT, { arg: ("transaction" + fieldInfo.name), value: value });
+            logger.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value);
         }
         // Variable-width (with a maximum)
         if (fieldInfo.maxLength) {
             value = bytes_1.stripZeros(value);
             if (value.length > fieldInfo.maxLength) {
-                errors.throwError("invalid length for " + fieldInfo.name, errors.INVALID_ARGUMENT, { arg: ("transaction" + fieldInfo.name), value: value });
+                logger.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value);
             }
         }
         raw.push(bytes_1.hexlify(value));
@@ -98,7 +100,7 @@ exports.serialize = serialize;
 function parse(rawTransaction) {
     var transaction = RLP.decode(rawTransaction);
     if (transaction.length !== 9 && transaction.length !== 6) {
-        errors.throwError("invalid raw transaction", errors.INVALID_ARGUMENT, { arg: "rawTransactin", value: rawTransaction });
+        logger.throwArgumentError("invalid raw transaction", "rawTransactin", rawTransaction);
     }
     var tx = {
         nonce: handleNumber(transaction[0]).toNumber(),

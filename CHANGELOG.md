@@ -3,6 +3,13 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.149 (2019-08-02 2:07)
+----------------------------------------
+
+  - Full case-folding for IDNA in namehash. ([0af95f4](https://github.com/ethers-io/ethers.js/commit/0af95f4a655106e67c2ba8f445af88c9e9e24339))
+  - Deprecating errors for logger. ([0b224e8](https://github.com/ethers-io/ethers.js/commit/0b224e8fb5811cd06727063c909ca1e1e5cde57e))
+  - More consistent debug events for Providers. ([e8f28b5](https://github.com/ethers-io/ethers.js/commit/e8f28b55d7dd62e29f03628232ffe7c75dc811b5))
+
 ethers/v5.0.0-beta.148 (2019-07-27 18:56)
 -----------------------------------------
 

@@ -2,19 +2,14 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var cross_fetch_1 = __importDefault(require("cross-fetch"));
 var base64_1 = require("@ethersproject/base64");
-var errors = __importStar(require("@ethersproject/errors"));
 var properties_1 = require("@ethersproject/properties");
 var strings_1 = require("@ethersproject/strings");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 function fetchJson(connection, json, processFunc) {
     var headers = {};
     var url = null;
@@ -33,7 +28,7 @@ function fetchJson(connection, json, processFunc) {
     }
     else if (typeof (connection) === "object") {
         if (connection == null || connection.url == null) {
-            errors.throwArgumentError("missing URL", "connection.url", connection);
+            logger.throwArgumentError("missing URL", "connection.url", connection);
         }
         url = connection.url;
         if (typeof (connection.timeout) === "number" && connection.timeout > 0) {
@@ -46,7 +41,7 @@ function fetchJson(connection, json, processFunc) {
         }
         if (connection.user != null && connection.password != null) {
             if (url.substring(0, 6) !== "https:" && connection.allowInsecureAuthentication !== true) {
-                errors.throwError("basic authentication requires a secure https url", errors.INVALID_ARGUMENT, { arg: "url", url: url, user: connection.user, password: "[REDACTED]" });
+                logger.throwError("basic authentication requires a secure https url", logger_1.Logger.errors.INVALID_ARGUMENT, { argument: "url", url: url, user: connection.user, password: "[REDACTED]" });
             }
             var authorization = connection.user + ":" + connection.password;
             headers["authorization"] = {
@@ -63,10 +58,7 @@ function fetchJson(connection, json, processFunc) {
                     return;
                 }
                 timer = null;
-                reject(errors.makeError("timeout", errors.TIMEOUT, {}));
-                //setTimeout(() => {
-                //    request.abort();
-                //}, 0);
+                reject(logger.makeError("timeout", logger_1.Logger.errors.TIMEOUT, { timeout: timeout }));
             }, timeout);
         }
         var cancelTimeout = function () {
@@ -90,7 +82,7 @@ function fetchJson(connection, json, processFunc) {
         return cross_fetch_1.default(url, options).then(function (response) {
             return response.text().then(function (body) {
                 if (!response.ok) {
-                    errors.throwError("bad response", errors.SERVER_ERROR, {
+                    logger.throwError("bad response", logger_1.Logger.errors.SERVER_ERROR, {
                         status: response.status,
                         body: body,
                         type: response.type,
@@ -105,7 +97,7 @@ function fetchJson(connection, json, processFunc) {
                 json = JSON.parse(text);
             }
             catch (error) {
-                errors.throwError("invalid JSON", errors.SERVER_ERROR, {
+                logger.throwError("invalid JSON", logger_1.Logger.errors.SERVER_ERROR, {
                     body: text,
                     error: error,
                     url: url
@@ -116,7 +108,7 @@ function fetchJson(connection, json, processFunc) {
                     json = processFunc(json);
                 }
                 catch (error) {
-                    errors.throwError("processing response error", errors.SERVER_ERROR, {
+                    logger.throwError("processing response error", logger_1.Logger.errors.SERVER_ERROR, {
                         body: json,
                         error: error
                     });

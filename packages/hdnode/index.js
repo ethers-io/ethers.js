@@ -1,14 +1,6 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var basex_1 = require("@ethersproject/basex");
-var errors = __importStar(require("@ethersproject/errors"));
 var bytes_1 = require("@ethersproject/bytes");
 var bignumber_1 = require("@ethersproject/bignumber");
 var strings_1 = require("@ethersproject/strings");
@@ -18,6 +10,9 @@ var signing_key_1 = require("@ethersproject/signing-key");
 var sha2_1 = require("@ethersproject/sha2");
 var transactions_1 = require("@ethersproject/transactions");
 var wordlists_1 = require("@ethersproject/wordlists");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var N = bignumber_1.BigNumber.from("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 // "Bitcoin seed"
 var MasterSecret = strings_1.toUtf8Bytes("Bitcoin seed");
@@ -49,7 +44,7 @@ var HDNode = /** @class */ (function () {
      */
     function HDNode(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonic, path) {
         var _newTarget = this.constructor;
-        errors.checkNew(_newTarget, HDNode);
+        logger.checkNew(_newTarget, HDNode);
         if (constructorGuard !== _constructorGuard) {
             throw new Error("HDNode constructor cannot be called directly");
         }
@@ -191,10 +186,7 @@ var HDNode = /** @class */ (function () {
     HDNode.fromExtendedKey = function (extendedKey) {
         var bytes = basex_1.Base58.decode(extendedKey);
         if (bytes.length !== 82 || base58check(bytes.slice(0, 78)) !== extendedKey) {
-            errors.throwError("invalid extended key", errors.INVALID_ARGUMENT, {
-                argument: "extendedKey",
-                value: "[REDACTED]"
-            });
+            logger.throwArgumentError("invalid extended key", "extendedKey", "[REDACTED]");
         }
         var depth = bytes[4];
         var parentFingerprint = bytes_1.hexlify(bytes.slice(5, 9));
@@ -214,10 +206,7 @@ var HDNode = /** @class */ (function () {
                 }
                 return new HDNode(_constructorGuard, bytes_1.hexlify(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null, null);
         }
-        return errors.throwError("invalid extended key", errors.INVALID_ARGUMENT, {
-            argument: "extendedKey",
-            value: "[REDACTED]"
-        });
+        return logger.throwError("invalid extended key", "extendedKey", "[REDACTED]");
     };
     return HDNode;
 }());
@@ -234,7 +223,7 @@ function mnemonicToEntropy(mnemonic, wordlist) {
     if (!wordlist) {
         wordlist = wordlists_1.wordlists["en"];
     }
-    errors.checkNormalize();
+    logger.checkNormalize();
     var words = wordlist.split(mnemonic);
     if ((words.length % 3) !== 0) {
         throw new Error("invalid mnemonic");

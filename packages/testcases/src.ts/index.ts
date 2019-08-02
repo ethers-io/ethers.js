@@ -27,6 +27,14 @@ export module TestCase {
         hdnodes: Array<HDWalletNode>
     };
 
+    export type Nameprep = {
+        comment: string;
+        input: Array<number>;
+        output: Array<number>;
+        rc?: string;
+        flags?: string;
+    };
+
     export type Wordlist = {
         locale: string;
         content: string;

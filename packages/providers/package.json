@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/providers",
-  "version": "5.0.0-beta.136",
+  "version": "5.0.0-beta.137",
   "description": "Ethereum Providers for ethers.",
   "main": "index.js",
   "browser": {
@@ -39,5 +39,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x98a9a7dbc038ccc8e2f907c25f179cdb3fe4bddc75ad9258462ef80d0053ec7e"
+  "tarballHash": "0x8164e7f8bce73f0b1329a5c445823fa27c5c372f84d202d3986e459d8368334f"
 }

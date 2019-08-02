@@ -12,16 +12,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("@ethersproject/errors"));
 var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 // Special API key provided by Nodesmith for ethers.js
 var defaultApiKey = "ETHERS_JS_SHARED";
 var NodesmithProvider = /** @class */ (function (_super) {
@@ -51,7 +46,7 @@ var NodesmithProvider = /** @class */ (function (_super) {
                 host = "https://ethereum.api.nodesmith.io/v1/kovan/jsonrpc";
                 break;
             default:
-                errors.throwArgumentError("unsupported network", "network", arguments[0]);
+                logger.throwArgumentError("unsupported network", "network", arguments[0]);
         }
         return (host + "?apiKey=" + apiKey);
     };

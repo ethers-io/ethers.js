@@ -12,23 +12,18 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
 var hash_1 = require("@ethersproject/hash");
 var networks_1 = require("@ethersproject/networks");
 var properties_1 = require("@ethersproject/properties");
 var strings_1 = require("@ethersproject/strings");
 var web_1 = require("@ethersproject/web");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var formatter_1 = require("./formatter");
 //////////////////////////////
 // Event Serializeing
@@ -37,7 +32,7 @@ function checkTopic(topic) {
         return "null";
     }
     if (bytes_1.hexDataLength(topic) !== 32) {
-        errors.throwArgumentError("invalid topic", "topic", topic);
+        logger.throwArgumentError("invalid topic", "topic", topic);
     }
     return topic.toLowerCase();
 }
@@ -85,7 +80,7 @@ function getEventTag(eventName) {
         return "filter:*:" + serializeTopics(eventName);
     }
     else if (abstract_provider_1.ForkEvent.isForkEvent(eventName)) {
-        errors.warn("not implemented");
+        logger.warn("not implemented");
         throw new Error("not implemented");
     }
     else if (eventName && typeof (eventName) === "object") {
@@ -127,7 +122,7 @@ var BaseProvider = /** @class */ (function (_super) {
     function BaseProvider(network) {
         var _newTarget = this.constructor;
         var _this = this;
-        errors.checkNew(_newTarget, abstract_provider_1.Provider);
+        logger.checkNew(_newTarget, abstract_provider_1.Provider);
         _this = _super.call(this) || this;
         _this.formatter = _newTarget.getFormatter();
         if (network instanceof Promise) {
@@ -145,7 +140,7 @@ var BaseProvider = /** @class */ (function (_super) {
                 properties_1.defineReadOnly(_this, "ready", Promise.resolve(_this._network));
             }
             else {
-                errors.throwError("invalid network", errors.INVALID_ARGUMENT, { arg: "network", value: network });
+                logger.throwArgumentError("invalid network", "network", network);
             }
         }
         _this._lastBlockNumber = -2;
@@ -446,7 +441,7 @@ var BaseProvider = /** @class */ (function (_super) {
         var result = tx;
         // Check the hash we expect is the same as the hash the server reported
         if (hash != null && tx.hash !== hash) {
-            errors.throwError("Transaction hash mismatch from Provider.sendTransaction.", errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
+            logger.throwError("Transaction hash mismatch from Provider.sendTransaction.", logger_1.Logger.errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
         // @TODO: (confirmations? number, timeout? number)
         result.wait = function (confirmations) {
@@ -463,7 +458,7 @@ var BaseProvider = /** @class */ (function (_super) {
                 // No longer pending, allow the polling loop to garbage collect this
                 _this._emitted["t:" + tx.hash] = receipt.blockNumber;
                 if (receipt.status === 0) {
-                    errors.throwError("transaction failed", errors.CALL_EXCEPTION, {
+                    logger.throwError("transaction failed", logger_1.Logger.errors.CALL_EXCEPTION, {
                         transactionHash: tx.hash,
                         transaction: tx
                     });
@@ -548,7 +543,7 @@ var BaseProvider = /** @class */ (function (_super) {
     BaseProvider.prototype._getAddress = function (addressOrName) {
         return this.resolveName(addressOrName).then(function (address) {
             if (address == null) {
-                errors.throwError("ENS name not configured", errors.UNSUPPORTED_OPERATION, {
+                logger.throwError("ENS name not configured", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                     operation: "resolveName(" + JSON.stringify(addressOrName) + ")"
                 });
             }
@@ -578,7 +573,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         }
                     }
                     catch (error) {
-                        errors.throwError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
+                        logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
                     }
                 }
                 return web_1.poll(function () {
@@ -712,7 +707,7 @@ var BaseProvider = /** @class */ (function (_super) {
         }
         if (typeof (blockTag) === "number" && blockTag < 0) {
             if (blockTag % 1) {
-                errors.throwArgumentError("invalid BlockTag", "blockTag", blockTag);
+                logger.throwArgumentError("invalid BlockTag", "blockTag", blockTag);
             }
             return this._getFastBlockNumber().then(function (bn) {
                 bn += blockTag;
@@ -730,7 +725,7 @@ var BaseProvider = /** @class */ (function (_super) {
         return this.getNetwork().then(function (network) {
             // No ENS...
             if (!network.ensAddress) {
-                errors.throwError("network does support ENS", errors.UNSUPPORTED_OPERATION, { operation: "ENS", network: network.name });
+                logger.throwError("network does support ENS", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "ENS", network: network.name });
             }
             // keccak256("resolver(bytes32)")
             var data = "0x0178b8bf" + hash_1.namehash(name).substring(2);
@@ -804,7 +799,7 @@ var BaseProvider = /** @class */ (function (_super) {
         });
     };
     BaseProvider.prototype.perform = function (method, params) {
-        return errors.throwError(method + " not implemented", errors.NOT_IMPLEMENTED, { operation: method });
+        return logger.throwError(method + " not implemented", logger_1.Logger.errors.NOT_IMPLEMENTED, { operation: method });
     };
     BaseProvider.prototype._startPending = function () {
         console.log("WARNING: this provider does not support pending events");

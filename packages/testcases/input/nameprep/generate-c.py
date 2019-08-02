@@ -37,6 +37,8 @@ for p in prohibit:
     if p - 1 == last:
         if last_range_start is None:
             last_range_start = last
+            if len(prohibit_single) > 0 and prohibit_single[-1] == last:
+                prohibit_single.pop()
     else:
         if last_range_start is not None:
             print "Range", last_range_start, last - last_range_start, hex(last_range_start)
@@ -45,12 +47,23 @@ for p in prohibit:
                 length = ""
             else:
                 length = "-" + hex(length)[2:]
-            prohibit_range.append("%s%s" % (hex(last_range_start)[2:], length))
+            prohibit_range.append([ last_range_start, length ])
             last_range_start = None
         else:
             print "Single", p, hex(p)
             prohibit_single.append(p)
     last = p
 
+last = 0
+for i in xrange(0, len(prohibit_single)):
+    v = prohibit_single[i]
+    prohibit_single[i] -= last
+    last = v
 print 'const Table_C_lut = "' + ",".join(hex(x)[2:] for x in prohibit_single) + '";'
-print 'const Table_C_ranges = "' + ",".join(prohibit_range) + '";';
+
+last = 0
+for item in prohibit_range:
+    v = item[0]
+    item[0] -= last
+    last = v
+print 'const Table_C_ranges = "' + ",".join(("%s%s" % (hex(p[0])[2:], p[1])) for p in prohibit_range) + '";';
