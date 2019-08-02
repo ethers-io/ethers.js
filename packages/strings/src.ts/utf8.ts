@@ -1,8 +1,10 @@
 "use strict";
 
-import { checkNormalize } from "@ethersproject/errors";
-
 import { arrayify, BytesLike } from "@ethersproject/bytes";
+
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 ///////////////////////////////
 
@@ -121,7 +123,7 @@ function getUtf8CodePoints(bytes: BytesLike, ignoreErrors?: boolean): Array<numb
 export function toUtf8Bytes(str: string, form: UnicodeNormalizationForm = UnicodeNormalizationForm.current): Uint8Array {
 
     if (form != UnicodeNormalizationForm.current) {
-        checkNormalize();
+        logger.checkNormalize();
         str = str.normalize(form);
     }
 
@@ -192,8 +194,8 @@ export function _toEscapedUtf8String(bytes: BytesLike, ignoreErrors?: boolean): 
     }).join("") + '"';
 }
 
-export function toUtf8String(bytes: BytesLike, ignoreErrors?: boolean): string {
-    return getUtf8CodePoints(bytes, ignoreErrors).map((codePoint) => {
+export function _toUtf8String(codePoints: Array<number>): string {
+    return codePoints.map((codePoint) => {
         if (codePoint <= 0xffff) {
             return String.fromCharCode(codePoint);
         }
@@ -203,6 +205,10 @@ export function toUtf8String(bytes: BytesLike, ignoreErrors?: boolean): string {
             ((codePoint & 0x3ff) + 0xdc00)
         );
     }).join("");
+}
+
+export function toUtf8String(bytes: BytesLike, ignoreErrors?: boolean): string {
+    return _toUtf8String(getUtf8CodePoints(bytes, ignoreErrors));
 }
 
 export function toUtf8CodePoints(str: string, form: UnicodeNormalizationForm = UnicodeNormalizationForm.current): Array<number> {

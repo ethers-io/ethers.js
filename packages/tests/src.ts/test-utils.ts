@@ -380,3 +380,32 @@ describe('Test BigNumber', function() {
         ].forEach(testAbs);
     });
 });
+
+function getHex(value: string): string {
+    return "0x" + Buffer.from(value).toString("hex");
+}
+
+describe("Test nameprep", function() {
+    const Tests: Array<TestCase.Nameprep> = loadTests("nameprep");
+    Tests.forEach((test) => {
+        it(test.comment, function() {
+            let input = ethers.utils.toUtf8String(test.input);
+            if (test.output) {
+                let expected = ethers.utils.toUtf8String(test.output)
+                let actual = ethers.utils.nameprep(input);
+                assert.equal(actual, expected, `actual("${ getHex(actual) }") !== expected("${ getHex(expected) }")`);
+            } else {
+                let ok = true;
+                let reason = "";
+                try {
+                    let actual = ethers.utils.nameprep(input);
+                    console.log(actual);
+                    reason = `should has thrown ${ test.rc } - actual("${ getHex(actual) }")`;
+                    ok = false;
+                } catch (error) {
+                }
+                assert.ok(ok, reason);
+            }
+        });
+    });
+});
