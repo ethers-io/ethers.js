@@ -3,8 +3,10 @@
 import { createHash, createHmac } from 'crypto';
 
 import { arrayify, BytesLike } from '@ethersproject/bytes';
-import * as errors from '@ethersproject/errors';
 
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 
 export enum SupportedAlgorithms { sha256 = "sha256", sha512 = "sha512" };
 
@@ -24,7 +26,7 @@ export function sha512(data: BytesLike): string {
 
 export function computeHmac(algorithm: SupportedAlgorithms, key: BytesLike, data: BytesLike): string {
     if (!SupportedAlgorithms[algorithm]) {
-        errors.throwError("unsupported algorithm - " + algorithm, errors.UNSUPPORTED_OPERATION, {
+        logger.throwError("unsupported algorithm - " + algorithm, Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "computeHmac",
             algorithm: algorithm
         });

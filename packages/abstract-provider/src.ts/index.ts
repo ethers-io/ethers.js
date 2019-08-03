@@ -2,7 +2,6 @@
 
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike, isHexString } from "@ethersproject/bytes";
-import { checkAbstract } from "@ethersproject/errors";
 import { Network } from "@ethersproject/networks";
 import { Description, defineReadOnly } from "@ethersproject/properties";
 import { Transaction } from "@ethersproject/transactions";
@@ -261,7 +260,7 @@ export abstract class Provider implements OnceBlockable {
     readonly _isProvider: boolean;
 
     constructor() {
-        checkAbstract(new.target, Provider);
+        logger.checkAbstract(new.target, Provider);
         defineReadOnly(this, "_isProvider", true);
     }
 
