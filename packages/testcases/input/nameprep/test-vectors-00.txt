@@ -1,0 +1,269 @@
+
+#   struct stringprep
+#   {
+#     char *comment;
+#     char *in;
+#     char *out;
+#     char *profile;
+#     int flags;
+#     int rc;
+#   }
+     {
+       "Map to nothing",
+       "foo\xC2\xAD\xCD\x8F\xE1\xA0\x86\xE1\xA0\x8B"
+       "bar""\xE2\x80\x8B\xE2\x81\xA0""baz\xEF\xB8\x80\xEF\xB8\x88"
+       "\xEF\xB8\x8F\xEF\xBB\xBF", "foobarbaz"
+     },
+     {
+       "Case folding ASCII U+0043 U+0041 U+0046 U+0045",
+       "CAFE", "cafe"
+
+
+
+Josefsson                Expires August 2, 2003                [Page 31]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+     },
+     {
+       "Case folding 8bit U+00DF (german sharp s)",
+# There is a bug here: RicMoo
+#              VV
+#       "\xC3\xDF", "ss"
+       "\xC3\x9f", "ss"
+     },
+     {
+       "Case folding U+0130 (turkish capital I with dot)",
+       "\xC4\xB0", "i\xcc\x87"
+     },
+     {
+       "Case folding multibyte U+0143 U+037A",
+       "\xC5\x83\xCD\xBA", "\xC5\x84 \xCE\xB9"
+     },
+     {
+       "Case folding U+2121 U+33C6 U+1D7BB",
+       "\xE2\x84\xA1\xE3\x8F\x86\xF0\x9D\x9E\xBB",
+       "telc\xE2\x88\x95""kg\xCF\x83"
+     },
+     {
+       "Normalization of U+006a U+030c U+00A0 U+00AA",
+       "\x6A\xCC\x8C\xC2\xA0\xC2\xAA", "\xC7\xB0 a"
+     },
+     {
+       "Case folding U+1FB7 and normalization",
+       "\xE1\xBE\xB7", "\xE1\xBE\xB6\xCE\xB9"
+     },
+     {
+       "Self-reverting case folding U+01F0 and normalization",
+# There is a bug here: RicMoo
+#              VV
+#       "\xC7\xF0", "\xC7\xB0"
+       "\xC7\xb0", "\xC7\xB0"
+     },
+     {
+       "Self-reverting case folding U+0390 and normalization",
+       "\xCE\x90", "\xCE\x90"
+     },
+     {
+       "Self-reverting case folding U+03B0 and normalization",
+       "\xCE\xB0", "\xCE\xB0"
+     },
+     {
+       "Self-reverting case folding U+1E96 and normalization",
+       "\xE1\xBA\x96", "\xE1\xBA\x96"
+     },
+     {
+       "Self-reverting case folding U+1F56 and normalization",
+       "\xE1\xBD\x96", "\xE1\xBD\x96"
+     },
+     {
+       "ASCII space character U+0020",
+
+
+
+Josefsson                Expires August 2, 2003                [Page 32]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+       "\x20", "\x20"
+     },
+     {
+       "Non-ASCII 8bit space character U+00A0",
+       "\xC2\xA0", "\x20"
+     },
+     {
+       "Non-ASCII multibyte space character U+1680",
+       "\xE1\x9A\x80", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Non-ASCII multibyte space character U+2000",
+       "\xE2\x80\x80", "\x20"
+     },
+     {
+       "Zero Width Space U+200b",
+       "\xE2\x80\x8b", ""
+     },
+     {
+       "Non-ASCII multibyte space character U+3000",
+       "\xE3\x80\x80", "\x20"
+     },
+     {
+       "ASCII control characters U+0010 U+007F",
+       "\x10\x7F", "\x10\x7F"
+     },
+     {
+       "Non-ASCII 8bit control character U+0085",
+       "\xC2\x85", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Non-ASCII multibyte control character U+180E",
+       "\xE1\xA0\x8E", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Zero Width No-Break Space U+FEFF",
+       "\xEF\xBB\xBF", ""
+     },
+     {
+       "Non-ASCII control character U+1D175",
+       "\xF0\x9D\x85\xB5", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Plane 0 private use character U+F123",
+
+
+
+Josefsson                Expires August 2, 2003                [Page 33]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+       "\xEF\x84\xA3", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Plane 15 private use character U+F1234",
+       "\xF3\xB1\x88\xB4", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Plane 16 private use character U+10F234",
+       "\xF4\x8F\x88\xB4", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Non-character code point U+8FFFE",
+       "\xF2\x8F\xBF\xBE", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Non-character code point U+10FFFF",
+       "\xF4\x8F\xBF\xBF", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Surrogate code U+DF42",
+       "\xED\xBD\x82", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Non-plain text character U+FFFD",
+       "\xEF\xBF\xBD", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Ideographic description character U+2FF5",
+       "\xE2\xBF\xB5", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Display property character U+0341",
+       "\xCD\x81", "\xCC\x81"
+     },
+     {
+       "Left-to-right mark U+200E",
+       "\xE2\x80\x8E", "\xCC\x81", "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+
+
+
+Josefsson                Expires August 2, 2003                [Page 34]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+       "Deprecated U+202A",
+       "\xE2\x80\xAA", "\xCC\x81", "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Language tagging character U+E0001",
+       "\xF3\xA0\x80\x81", "\xCC\x81", "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Language tagging character U+E0042",
+       "\xF3\xA0\x81\x82", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Bidi: RandALCat character U+05BE and LCat characters",
+       "foo\xD6\xBE""bar", NULL, "Nameprep", 0,
+       STRINGPREP_BIDI_BOTH_L_AND_RAL
+     },
+     {
+       "Bidi: RandALCat character U+FD50 and LCat characters",
+       "foo\xEF\xB5\x90""bar", NULL, "Nameprep", 0,
+       STRINGPREP_BIDI_BOTH_L_AND_RAL
+     },
+     {
+       "Bidi: RandALCat character U+FB38 and LCat characters",
+       "foo\xEF\xB9\xB6""bar", "foo \xd9\x8e""bar"
+     },
+     { "Bidi: RandALCat without trailing RandALCat U+0627 U+0031",
+       "\xD8\xA7\x31", NULL, "Nameprep", 0,
+       STRINGPREP_BIDI_LEADTRAIL_NOT_RAL}
+     ,
+     {
+       "Bidi: RandALCat character U+0627 U+0031 U+0628",
+       "\xD8\xA7\x31\xD8\xA8", "\xD8\xA7\x31\xD8\xA8"
+     },
+     {
+       "Unassigned code point U+E0002",
+       "\xF3\xA0\x80\x82", NULL, "Nameprep", STRINGPREP_NO_UNASSIGNED,
+       STRINGPREP_CONTAINS_UNASSIGNED
+     },
+     {
+       "Larger test (shrinking)",
+# There is a bug here: RicMoo
+#                       VV
+#       "X\xC2\xAD\xC3\xDF\xC4\xB0\xE2\x84\xA1\x6a\xcc\x8c\xc2\xa0\xc2"
+       "X\xC2\xAD\xC3\x9F\xC4\xB0\xE2\x84\xA1\x6a\xcc\x8c\xc2\xa0\xc2"
+       "\xaa\xce\xb0\xe2\x80\x80", "xssi\xcc\x87""tel\xc7\xb0 a\xce\xb0 ",
+       "Nameprep"
+     },
+     {
+
+
+
+Josefsson                Expires August 2, 2003                [Page 35]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+       "Larger test (expanding)",
+# There is a bug here: RicMoo
+#               VV
+#       "X\xC3\xDF\xe3\x8c\x96\xC4\xB0\xE2\x84\xA1\xE2\x92\x9F\xE3\x8c\x80",
+       "X\xc3\x9F\xe3\x8c\x96\xC4\xB0\xE2\x84\xA1\xE2\x92\x9F\xE3\x8c\x80",
+       "xss\xe3\x82\xad\xe3\x83\xad\xe3\x83\xa1\xe3\x83\xbc\xe3\x83\x88"
+       "\xe3\x83\xab""i\xcc\x87""tel\x28""d\x29\xe3\x82\xa2\xe3\x83\x91"
+       "\xe3\x83\xbc\xe3\x83\x88"
+     },

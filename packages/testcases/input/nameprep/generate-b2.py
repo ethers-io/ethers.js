@@ -149,17 +149,28 @@ for delta in deltas:
         mappings.append(data)
         debug[data["l"]] = "MAP:" + str(data)
 
+# Create complex table (things that map to more than one byte)
 complex = { }
+complex_output = [ ];
 for (src, dst, reason) in weird:
     for word in dst.split(" "):
+        complex_output.append(int(word, 16))
         if len(word) != 4: raise Exception("hmmm")
     complex[int(src, 16)] = dst.replace(" ", "")
+
+# Experimenting: We can easily create a LUT for the individual
+# components, as there is substantial overlap.
+#complex_output = dict((x, True) for x in complex_output).keys()
+#complex_output.sort()
+#print "COM", complex_output, len(complex_output)
+
+# Sort mappings by lo
 mappings.sort(lambda a, b: cmp(a["l"], b["l"]))
 
-debug_keys = debug.keys()
-debug_keys.sort()
-for d in debug_keys:
-   print d, debug[d]
+#debug_keys = debug.keys()
+#debug_keys.sort()
+#for d in debug_keys:
+#   print d, debug[d]
 
 #print mappings
 

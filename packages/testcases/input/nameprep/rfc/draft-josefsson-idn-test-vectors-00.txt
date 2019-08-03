@@ -1,0 +1,2295 @@
+
+
+Network Working Group                                       S. Josefsson
+Internet-Draft                                             February 2003
+Expires: August 2, 2003
+
+
+                     Nameprep and IDNA Test Vectors
+                    draft-josefsson-idn-test-vectors
+
+Status of this Memo
+
+   This document is an Internet-Draft and is in full conformance with
+   all provisions of Section 10 of RFC2026.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF), its areas, and its working groups.  Note that
+   other groups may also distribute working documents as
+   Internet-Drafts.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   The list of current Internet-Drafts can be accessed at http://
+   www.ietf.org/ietf/1id-abstracts.txt.
+
+   The list of Internet-Draft Shadow Directories can be accessed at
+   http://www.ietf.org/shadow.html.
+
+   This Internet-Draft will expire on August 2, 2003.
+
+Abstract
+
+   This document contains test vectors for Nameprep and IDNA.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                 [Page 1]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+Table of Contents
+
+   1.   Introduction . . . . . . . . . . . . . . . . . . . . . . . .   4
+   2.   Format of Nameprep Test Vectors  . . . . . . . . . . . . . .   5
+   3.   Format of IDNA Test Vectors  . . . . . . . . . . . . . . . .   6
+   4.   Nameprep Test Vectors  . . . . . . . . . . . . . . . . . . .   7
+   4.1  Map to nothing . . . . . . . . . . . . . . . . . . . . . . .   7
+   4.2  Case folding ASCII U+0043 U+0041 U+0046 U+0045 . . . . . . .   8
+   4.3  Case folding 8bit U+00DF (german sharp s)  . . . . . . . . .   8
+   4.4  Case folding U+0130 (turkish capital I with dot) . . . . . .   9
+   4.5  Case folding multibyte U+0143 U+037A . . . . . . . . . . . .   9
+   4.6  Case folding U+2121 U+33C6 U+1D7BB . . . . . . . . . . . . .  10
+   4.7  Normalization of U+006a U+030c U+00A0 U+00AA . . . . . . . .  10
+   4.8  Case folding U+1FB7 and normalization  . . . . . . . . . . .  11
+   4.9  Self-reverting case folding U+01F0 and normalization . . . .  11
+   4.10 Self-reverting case folding U+0390 and normalization . . . .  12
+   4.11 Self-reverting case folding U+03B0 and normalization . . . .  12
+   4.12 Self-reverting case folding U+1E96 and normalization . . . .  13
+   4.13 Self-reverting case folding U+1F56 and normalization . . . .  13
+   4.14 ASCII space character U+0020 . . . . . . . . . . . . . . . .  13
+   4.15 Non-ASCII 8bit space character U+00A0  . . . . . . . . . . .  14
+   4.16 Non-ASCII multibyte space character U+1680 . . . . . . . . .  14
+   4.17 Non-ASCII multibyte space character U+2000 . . . . . . . . .  14
+   4.18 Zero Width Space U+200b  . . . . . . . . . . . . . . . . . .  15
+   4.19 Non-ASCII multibyte space character U+3000 . . . . . . . . .  15
+   4.20 ASCII control characters U+0010 U+007F . . . . . . . . . . .  15
+   4.21 Non-ASCII 8bit control character U+0085  . . . . . . . . . .  16
+   4.22 Non-ASCII multibyte control character U+180E . . . . . . . .  16
+   4.23 Zero Width No-Break Space U+FEFF . . . . . . . . . . . . . .  16
+   4.24 Non-ASCII control character U+1D175  . . . . . . . . . . . .  16
+   4.25 Plane 0 private use character U+F123 . . . . . . . . . . . .  17
+   4.26 Plane 15 private use character U+F1234 . . . . . . . . . . .  17
+   4.27 Plane 16 private use character U+10F234  . . . . . . . . . .  17
+   4.28 Non-character code point U+8FFFE . . . . . . . . . . . . . .  17
+   4.29 Non-character code point U+10FFFF  . . . . . . . . . . . . .  18
+   4.30 Surrogate code U+DF42  . . . . . . . . . . . . . . . . . . .  18
+   4.31 Non-plain text character U+FFFD  . . . . . . . . . . . . . .  18
+   4.32 Ideographic description character U+2FF5 . . . . . . . . . .  18
+   4.33 Display property character U+0341  . . . . . . . . . . . . .  19
+   4.34 Left-to-right mark U+200E  . . . . . . . . . . . . . . . . .  19
+   4.35 Deprecated U+202A  . . . . . . . . . . . . . . . . . . . . .  19
+   4.36 Language tagging character U+E0001 . . . . . . . . . . . . .  19
+   4.37 Language tagging character U+E0042 . . . . . . . . . . . . .  20
+   4.38 Bidi: RandALCat character U+05BE and LCat characters . . . .  20
+   4.39 Bidi: RandALCat character U+FD50 and LCat characters . . . .  20
+   4.40 Bidi: RandALCat character U+FB38 and LCat characters . . . .  21
+   4.41 Bidi: RandALCat without trailing RandALCat U+0627 U+0031 . .  21
+   4.42 Bidi: RandALCat character U+0627 U+0031 U+0628 . . . . . . .  21
+
+
+
+Josefsson                Expires August 2, 2003                 [Page 2]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+   4.43 Unassigned code point U+E0002  . . . . . . . . . . . . . . .  22
+   4.44 Larger test (shrinking)  . . . . . . . . . . . . . . . . . .  22
+   4.45 Larger test (expanding)  . . . . . . . . . . . . . . . . . .  23
+   5.   IDNA Test Vectors  . . . . . . . . . . . . . . . . . . . . .  23
+   5.1  Arabic (Egyptian)  . . . . . . . . . . . . . . . . . . . . .  23
+   5.2  Chinese (simplified) . . . . . . . . . . . . . . . . . . . .  24
+   5.3  Chinese (traditional)  . . . . . . . . . . . . . . . . . . .  24
+   5.4  Czech  . . . . . . . . . . . . . . . . . . . . . . . . . . .  24
+   5.5  Hebrew . . . . . . . . . . . . . . . . . . . . . . . . . . .  25
+   5.6  Hindi (Devanagari) . . . . . . . . . . . . . . . . . . . . .  25
+   5.7  Japanese (kanji and hiragana)  . . . . . . . . . . . . . . .  25
+   5.8  Russian (Cyrillic) . . . . . . . . . . . . . . . . . . . . .  26
+   5.9  Spanish  . . . . . . . . . . . . . . . . . . . . . . . . . .  26
+   5.10 Vietnamese . . . . . . . . . . . . . . . . . . . . . . . . .  27
+   5.11 Japanese . . . . . . . . . . . . . . . . . . . . . . . . . .  27
+   5.12 Japanese . . . . . . . . . . . . . . . . . . . . . . . . . .  27
+   5.13 Japanese . . . . . . . . . . . . . . . . . . . . . . . . . .  28
+   5.14 Japanese . . . . . . . . . . . . . . . . . . . . . . . . . .  28
+   5.15 Japanese . . . . . . . . . . . . . . . . . . . . . . . . . .  28
+   5.16 Japanese . . . . . . . . . . . . . . . . . . . . . . . . . .  29
+   5.17 Japanese . . . . . . . . . . . . . . . . . . . . . . . . . .  29
+   5.18 Greek  . . . . . . . . . . . . . . . . . . . . . . . . . . .  29
+   5.19 Maltese (Malti)  . . . . . . . . . . . . . . . . . . . . . .  29
+   5.20 Russian (Cyrillic) . . . . . . . . . . . . . . . . . . . . .  30
+   6.   Security Considerations  . . . . . . . . . . . . . . . . . .  30
+        Author's Address . . . . . . . . . . . . . . . . . . . . . .  31
+        Normative References . . . . . . . . . . . . . . . . . . . .  30
+        Informative References . . . . . . . . . . . . . . . . . . .  30
+   A.   Nameprep test vectors in C syntax  . . . . . . . . . . . . .  31
+   B.   IDNA test vectors in C syntax  . . . . . . . . . . . . . . .  36
+        Intellectual Property and Copyright Statements . . . . . . .  40
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                 [Page 3]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+1. Introduction
+
+   The Nameprep and IDNA specifications lack thorough examples that
+   would have aided in implementing them.  This document act as a
+   complement to those specifications providing such examples.
+
+   It should be pointed out that this document is not normative, and
+   thus any errors in this document should not be treated as gospel that
+   defines Nameprep nor IDNA.  When conforming to the specification and
+   generating output corresponding to values in this document is in
+   conflict, implementations should conform to the specification.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                 [Page 4]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+2. Format of Nameprep Test Vectors
+
+   The tests follow a certain syntax, described here by showing one
+   complete example with comments intermixed.  The comments are prefixed
+   with the '#' character.
+
+   # First the (UTF-8) string is printed as a C octet string, with
+   # characters [A-Za-z .0-9] shown inline and other characters shown
+   # escaped with \xAB where AB is the hex sequence of that octet.  The
+   # number of octets are also shown.
+
+      in (length 3 bytes):
+      	\xE1\xBE\xB7
+
+   # The input is also printed as Unicode codepoints.
+
+      input (length 1):
+      	U+1fb7
+
+   # After printing the input, the nameprep steps starts.  When the
+   # string is modified, the specific operation that caused it is printed
+   # along with the new string of Unicode code points.
+
+   # 1) Map -- For each character in the input, check if it has a mapping
+   #    and, if so, replace it with its mapping.  This is described in
+   #    section 3.
+
+      Table B.2 maps U+1fb7 to U+03b1 U+0342 U+03b9.
+      U+03b1 U+0342 U+03b9
+
+   # 2) Normalize -- Possibly normalize the result of step 1 using Unicode
+   #    normalization.  This is described in section 4.
+
+      Unicode normalization with form KC maps string into:
+      U+1fb6 U+03b9
+
+   # 3) Prohibit -- Check for any characters that are not allowed in the
+   #    output.  If any are found, return an error.  This is described in
+   #    section 5.
+
+   # 4) Check bidi -- Possibly check for right-to-left characters, and if
+   #    any are found, make sure that the whole string satisfies the
+   #    requirements for bidirectional strings.  If the string does not
+   #    satisfy the requirements for bidirectional strings, return an
+   #    error.  This is described in section 6.
+   #
+   #    1) The characters in section 5.8 MUST be prohibited.
+
+
+
+
+Josefsson                Expires August 2, 2003                 [Page 5]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+   #    2) If a string contains any RandALCat character, the string MUST NOT
+   #       contain any LCat character.
+
+   #    3) If a string contains any RandALCat character, a RandALCat
+   #       character MUST be the first character of the string, and a
+   #       RandALCat character MUST be the last character of the string.
+
+   # The output is printed as Unicode codepoints.
+
+      output (length 2):
+      	U+1fb6 U+03b9
+
+   # And finally the output is printed as UTF-8
+
+      out (length 5 bytes):
+      	\xE1\xBE\xB6\xCE\xB9
+
+
+3. Format of IDNA Test Vectors
+
+   The tests follow a certain syntax, described here by showing one
+   complete example with comments intermixed.  The comments are prefixed
+   with the '#' character.
+
+   # First the (UTF-8) string is printed as a C octet string, with
+   # characters [A-Za-z .0-9] shown inline and other characters shown
+   # escaped with \xAB where AB is the hex sequence of that octet.  The
+   # number of octets are also shown.
+
+      in (length 39 bytes):
+      	'Hello\x2DAnother\x2DWa'
+      	'y\x2D\xE3\x81\x9D\xE3\x82\x8C\xE3\x81\x9E\xE3\x82\x8C\xE3\x81'
+      	'\xAE\xE5\xA0\xB4\xE6\x89\x80
+
+   # The input is also printed as Unicode codepoints.
+
+      input (length 39):
+      	U+0048 U+0065 U+006c U+006c U+006f U+002d U+0041 U+006e
+      	U+006f U+0074 U+0068 U+0065 U+0072 U+002d U+0057 U+0061
+      	U+0079 U+002d U+305d U+308c U+305e U+308c U+306e U+5834
+      	U+6240
+
+   # After printing the input, the IDNA ToASCII step starts.  The output
+   # is printed as an ASCII string.
+
+      out: xn--hello-another-way--fc4qua05auwb3674vfr0b
+
+
+
+
+
+Josefsson                Expires August 2, 2003                 [Page 6]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4. Nameprep Test Vectors
+
+4.1 Map to nothing
+
+   in (length 37 bytes):
+   	foo\xC2\xAD\xCD\x8F\xE1\xA0\x86\xE1\xA0\x8Bbar'
+   	'\xE2\x80\x8B\xE2\x81\xA0baz\xEF\xB8\x80\xEF\xB8\x88\xEF'
+   	'\xB8\x8F\xEF\xBB\xBF
+   input (length 19):
+   	U+0066 U+006f U+006f U+00ad U+034f U+1806 U+180b U+0062
+   	U+0061 U+0072 U+200b U+2060 U+0062 U+0061 U+007a U+fe00
+   	U+fe08 U+fe0f U+feff
+
+   Table B.1 maps U+00ad to nothing.
+   Table B.1 maps U+034f to nothing.
+   Table B.1 maps U+1806 to nothing.
+   Table B.1 maps U+180b to nothing.
+   Table B.1 maps U+200b to nothing.
+   Table B.1 maps U+2060 to nothing.
+   Table B.1 maps U+fe00 to nothing.
+   Table B.1 maps U+fe08 to nothing.
+   Table B.1 maps U+fe0f to nothing.
+   Table B.1 maps U+feff to nothing.
+   U+0066 U+006f U+006f U+0062 U+0061 U+0072 U+0062 U+0061
+   	U+007a
+
+   output (length 9):
+   	U+0066 U+006f U+006f U+0062 U+0061 U+0072 U+0062 U+0061
+   	U+007a
+   out (length 9 bytes):
+   	foobarbaz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                 [Page 7]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.2 Case folding ASCII U+0043 U+0041 U+0046 U+0045
+
+   in (length 4 bytes):
+   	CAFE
+   input (length 4):
+   	U+0043 U+0041 U+0046 U+0045
+
+   Table B.2 maps U+0043 to U+0063.
+   Table B.2 maps U+0041 to U+0061.
+   Table B.2 maps U+0046 to U+0066.
+   Table B.2 maps U+0045 to U+0065.
+   U+0063 U+0061 U+0066 U+0065
+
+   output (length 4):
+   	U+0063 U+0061 U+0066 U+0065
+   out (length 4 bytes):
+   	cafe
+
+4.3 Case folding 8bit U+00DF (german sharp s)
+
+   in (length 2 bytes):
+   	\xC3\xDF
+   input (length 1):
+   	U+00df
+
+   Table B.2 maps U+00df to U+0073 U+0073.
+   U+0073 U+0073
+
+   output (length 2):
+   	U+0073 U+0073
+   out (length 2 bytes):
+   	ss
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                 [Page 8]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.4 Case folding U+0130 (turkish capital I with dot)
+
+   in (length 2 bytes):
+   	\xC4\xB0
+   input (length 1):
+   	U+0130
+
+   Table B.2 maps U+0130 to U+0069 U+0307.
+   U+0069 U+0307
+
+   output (length 2):
+   	U+0069 U+0307
+   out (length 3 bytes):
+   	i\xCC\x87
+
+4.5 Case folding multibyte U+0143 U+037A
+
+   in (length 4 bytes):
+   	\xC5\x83\xCD\xBA
+   input (length 2):
+   	U+0143 U+037a
+
+   Table B.2 maps U+0143 to U+0144.
+   Table B.2 maps U+037a to U+0020 U+03b9.
+   U+0144 U+0020 U+03b9
+
+   output (length 3):
+   	U+0144 U+0020 U+03b9
+   out (length 5 bytes):
+   	\xC5\x84 \xCE\xB9
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                 [Page 9]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.6 Case folding U+2121 U+33C6 U+1D7BB
+
+   in (length 10 bytes):
+   	\xE2\x84\xA1\xE3\x8F\x86\xF0\x9D\x9E\xBB
+   input (length 3):
+   	U+2121 U+33c6 U+1d7bb
+
+   Table B.2 maps U+2121 to U+0074 U+0065 U+006c.
+   Table B.2 maps U+33c6 to U+0063 U+2215 U+006b U+0067.
+   Table B.2 maps U+1d7bb to U+03c3.
+   U+0074 U+0065 U+006c U+0063 U+2215 U+006b U+0067 U+03c3
+
+
+   output (length 8):
+   	U+0074 U+0065 U+006c U+0063 U+2215 U+006b U+0067 U+03c3
+
+   out (length 11 bytes):
+   	telc\xE2\x88\x95kg\xCF\x83
+
+4.7 Normalization of U+006a U+030c U+00A0 U+00AA
+
+   in (length 7 bytes):
+   	j\xCC\x8C\xC2\xA0\xC2\xAA
+   input (length 4):
+   	U+006a U+030c U+00a0 U+00aa
+
+   Unicode normalization with form KC maps string into:
+   U+01f0 U+0020 U+0061
+
+   output (length 3):
+   	U+01f0 U+0020 U+0061
+   out (length 4 bytes):
+   	\xC7\xB0 a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 10]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.8 Case folding U+1FB7 and normalization
+
+   in (length 3 bytes):
+   	\xE1\xBE\xB7
+   input (length 1):
+   	U+1fb7
+
+   Table B.2 maps U+1fb7 to U+03b1 U+0342 U+03b9.
+   U+03b1 U+0342 U+03b9
+   Unicode normalization with form KC maps string into:
+   U+1fb6 U+03b9
+
+   output (length 2):
+   	U+1fb6 U+03b9
+   out (length 5 bytes):
+   	\xE1\xBE\xB6\xCE\xB9
+
+4.9 Self-reverting case folding U+01F0 and normalization
+
+   in (length 2 bytes):
+   	\xC7\xF0
+   input (length 1):
+   	U+01f0
+
+   Table B.2 maps U+01f0 to U+006a U+030c.
+   U+006a U+030c
+   Unicode normalization with form KC maps string into:
+   U+01f0
+
+   output (length 1):
+   	U+01f0
+   out (length 2 bytes):
+   	\xC7\xB0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 11]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.10 Self-reverting case folding U+0390 and normalization
+
+   in (length 2 bytes):
+   	\xCE\x90
+   input (length 1):
+   	U+0390
+
+   Table B.2 maps U+0390 to U+03b9 U+0308 U+0301.
+   U+03b9 U+0308 U+0301
+   Unicode normalization with form KC maps string into:
+   U+0390
+
+   output (length 1):
+   	U+0390
+   out (length 2 bytes):
+   	\xCE\x90
+
+4.11 Self-reverting case folding U+03B0 and normalization
+
+   in (length 2 bytes):
+   	\xCE\xB0
+   input (length 1):
+   	U+03b0
+
+   Table B.2 maps U+03b0 to U+03c5 U+0308 U+0301.
+   U+03c5 U+0308 U+0301
+   Unicode normalization with form KC maps string into:
+   U+03b0
+
+   output (length 1):
+   	U+03b0
+   out (length 2 bytes):
+   	\xCE\xB0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 12]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.12 Self-reverting case folding U+1E96 and normalization
+
+   in (length 3 bytes):
+   	\xE1\xBA\x96
+   input (length 1):
+   	U+1e96
+
+   Table B.2 maps U+1e96 to U+0068 U+0331.
+   U+0068 U+0331
+   Unicode normalization with form KC maps string into:
+   U+1e96
+
+   output (length 1):
+   	U+1e96
+   out (length 3 bytes):
+   	\xE1\xBA\x96
+
+4.13 Self-reverting case folding U+1F56 and normalization
+
+   in (length 3 bytes):
+   	\xE1\xBD\x96
+   input (length 1):
+   	U+1f56
+
+   Table B.2 maps U+1f56 to U+03c5 U+0313 U+0342.
+   U+03c5 U+0313 U+0342
+   Unicode normalization with form KC maps string into:
+   U+1f56
+
+   output (length 1):
+   	U+1f56
+   out (length 3 bytes):
+   	\xE1\xBD\x96
+
+4.14 ASCII space character U+0020
+
+   in (length 1 bytes):
+
+   input (length 1):
+   	U+0020
+
+
+   output (length 1):
+   	U+0020
+   out (length 1 bytes):
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 13]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.15 Non-ASCII 8bit space character U+00A0
+
+   in (length 2 bytes):
+   	\xC2\xA0
+   input (length 1):
+   	U+00a0
+
+   Unicode normalization with form KC maps string into:
+   U+0020
+
+   output (length 1):
+   	U+0020
+   out (length 1 bytes):
+
+
+4.16 Non-ASCII multibyte space character U+1680
+
+   in (length 3 bytes):
+   	\xE1\x9A\x80
+   input (length 1):
+   	U+1680
+
+   Table C.1.2 prohibits string (character U+1680).
+
+
+4.17 Non-ASCII multibyte space character U+2000
+
+   in (length 3 bytes):
+   	\xE2\x80\x80
+   input (length 1):
+   	U+2000
+
+   Unicode normalization with form KC maps string into:
+   U+0020
+
+   output (length 1):
+   	U+0020
+   out (length 1 bytes):
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 14]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.18 Zero Width Space U+200b
+
+   in (length 3 bytes):
+   	\xE2\x80\x8B
+   input (length 1):
+   	U+200b
+
+   Table B.1 maps U+200b to nothing.
+
+
+   output (length 0):
+
+   out (length 0 bytes):
+
+
+4.19 Non-ASCII multibyte space character U+3000
+
+   in (length 3 bytes):
+   	\xE3\x80\x80
+   input (length 1):
+   	U+3000
+
+   Unicode normalization with form KC maps string into:
+   U+0020
+
+   output (length 1):
+   	U+0020
+   out (length 1 bytes):
+
+
+4.20 ASCII control characters U+0010 U+007F
+
+   in (length 2 bytes):
+   	\x10\x7F
+   input (length 2):
+   	U+0010 U+007f
+
+
+   output (length 2):
+   	U+0010 U+007f
+   out (length 2 bytes):
+   	\x10\x7F
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 15]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.21 Non-ASCII 8bit control character U+0085
+
+   in (length 2 bytes):
+   	\xC2\x85
+   input (length 1):
+   	U+0085
+
+   Table C.2.2 prohibits string (character U+0085).
+
+
+4.22 Non-ASCII multibyte control character U+180E
+
+   in (length 3 bytes):
+   	\xE1\xA0\x8E
+   input (length 1):
+   	U+180e
+
+   Table C.2.2 prohibits string (character U+180e).
+
+
+4.23 Zero Width No-Break Space U+FEFF
+
+   in (length 3 bytes):
+   	\xEF\xBB\xBF
+   input (length 1):
+   	U+feff
+
+   Table B.1 maps U+feff to nothing.
+
+
+   output (length 0):
+
+   out (length 0 bytes):
+
+
+4.24 Non-ASCII control character U+1D175
+
+   in (length 4 bytes):
+   	\xF0\x9D\x85\xB5
+   input (length 1):
+   	U+1d175
+
+   Table C.2.2 prohibits string (character U+1d175).
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 16]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.25 Plane 0 private use character U+F123
+
+   in (length 3 bytes):
+   	\xEF\x84\xA3
+   input (length 1):
+   	U+f123
+
+   Table C.3 prohibits string (character U+f123).
+
+
+4.26 Plane 15 private use character U+F1234
+
+   in (length 4 bytes):
+   	\xF3\xB1\x88\xB4
+   input (length 1):
+   	U+f1234
+
+   Table C.3 prohibits string (character U+f1234).
+
+
+4.27 Plane 16 private use character U+10F234
+
+   in (length 4 bytes):
+   	\xF4\x8F\x88\xB4
+   input (length 1):
+   	U+10f234
+
+   Table C.3 prohibits string (character U+10f234).
+
+
+4.28 Non-character code point U+8FFFE
+
+   in (length 4 bytes):
+   	\xF2\x8F\xBF\xBE
+   input (length 1):
+   	U+8fffe
+
+   Table C.4 prohibits string (character U+8fffe).
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 17]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.29 Non-character code point U+10FFFF
+
+   in (length 4 bytes):
+   	\xF4\x8F\xBF\xBF
+   input (length 1):
+   	U+10ffff
+
+   Table C.4 prohibits string (character U+10ffff).
+
+
+4.30 Surrogate code U+DF42
+
+   in (length 3 bytes):
+   	\xED\xBD\x82
+   input (length 1):
+   	U+df42
+
+   Table C.5 prohibits string (character U+df42).
+
+
+4.31 Non-plain text character U+FFFD
+
+   in (length 3 bytes):
+   	\xEF\xBF\xBD
+   input (length 1):
+   	U+fffd
+
+   Table C.6 prohibits string (character U+fffd).
+
+
+4.32 Ideographic description character U+2FF5
+
+   in (length 3 bytes):
+   	\xE2\xBF\xB5
+   input (length 1):
+   	U+2ff5
+
+   Table C.7 prohibits string (character U+2ff5).
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 18]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.33 Display property character U+0341
+
+   in (length 2 bytes):
+   	\xCD\x81
+   input (length 1):
+   	U+0341
+
+   Unicode normalization with form KC maps string into:
+   U+0301
+
+   output (length 1):
+   	U+0301
+   out (length 2 bytes):
+   	\xCC\x81
+
+4.34 Left-to-right mark U+200E
+
+   in (length 3 bytes):
+   	\xE2\x80\x8E
+   input (length 1):
+   	U+200e
+
+   Table C.8 prohibits string (character U+200e).
+
+
+4.35 Deprecated U+202A
+
+   in (length 3 bytes):
+   	\xE2\x80\xAA
+   input (length 1):
+   	U+202a
+
+   Table C.8 prohibits string (character U+202a).
+
+
+4.36 Language tagging character U+E0001
+
+   in (length 4 bytes):
+   	\xF3\xA0\x80\x81
+   input (length 1):
+   	U+e0001
+
+   Table C.9 prohibits string (character U+e0001).
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 19]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.37 Language tagging character U+E0042
+
+   in (length 4 bytes):
+   	\xF3\xA0\x81\x82
+   input (length 1):
+   	U+e0042
+
+   Table C.9 prohibits string (character U+e0042).
+
+
+4.38 Bidi: RandALCat character U+05BE and LCat characters
+
+   in (length 8 bytes):
+   	foo\xD6\xBEbar
+   input (length 7):
+   	U+0066 U+006f U+006f U+05be U+0062 U+0061 U+0072
+
+   String contains both L and RAL characters.
+
+
+4.39 Bidi: RandALCat character U+FD50 and LCat characters
+
+   in (length 9 bytes):
+   	foo\xEF\xB5\x90bar
+   input (length 7):
+   	U+0066 U+006f U+006f U+fd50 U+0062 U+0061 U+0072
+
+   Unicode normalization with form KC maps string into:
+   U+0066 U+006f U+006f U+062a U+062c U+0645 U+0062 U+0061
+   	U+0072
+   String contains both L and RAL characters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 20]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.40 Bidi: RandALCat character U+FB38 and LCat characters
+
+   in (length 9 bytes):
+   	foo\xEF\xB9\xB6bar
+   input (length 7):
+   	U+0066 U+006f U+006f U+fe76 U+0062 U+0061 U+0072
+
+   Unicode normalization with form KC maps string into:
+   U+0066 U+006f U+006f U+0020 U+064e U+0062 U+0061 U+0072
+
+
+   output (length 8):
+   	U+0066 U+006f U+006f U+0020 U+064e U+0062 U+0061 U+0072
+
+   out (length 9 bytes):
+   	foo \xD9\x8Ebar
+
+4.41 Bidi: RandALCat without trailing RandALCat U+0627 U+0031
+
+   in (length 3 bytes):
+   	\xD8\xA71
+   input (length 2):
+   	U+0627 U+0031
+
+   Bidi string does not start/end with RAL characters.
+
+
+4.42 Bidi: RandALCat character U+0627 U+0031 U+0628
+
+   in (length 5 bytes):
+   	\xD8\xA71\xD8\xA8
+   input (length 3):
+   	U+0627 U+0031 U+0628
+
+
+   output (length 3):
+   	U+0627 U+0031 U+0628
+   out (length 5 bytes):
+   	\xD8\xA71\xD8\xA8
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 21]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.43 Unassigned code point U+E0002
+
+   in (length 4 bytes):
+   	\xF3\xA0\x80\x82
+   input (length 1):
+   	U+e0002
+
+   Table A.1 prohibits string (unassigned character U+e0002).
+
+
+4.44 Larger test (shrinking)
+
+   in (length 22 bytes):
+   	X\xC2\xAD\xC3\xDF\xC4\xB0\xE2\x84\xA1j\xCC\x8C\xC2\xA0\xC2'
+   	'\xAA\xCE\xB0\xE2\x80\x80
+   input (length 11):
+   	U+0058 U+00ad U+00df U+0130 U+2121 U+006a U+030c U+00a0
+   	U+00aa U+03b0 U+2000
+
+   Table B.1 maps U+00ad to nothing.
+   U+0058 U+00df U+0130 U+2121 U+006a U+030c U+00a0 U+00aa
+   	U+03b0 U+2000
+   Table B.2 maps U+0058 to U+0078.
+   Table B.2 maps U+00df to U+0073 U+0073.
+   Table B.2 maps U+0130 to U+0069 U+0307.
+   Table B.2 maps U+2121 to U+0074 U+0065 U+006c.
+   Table B.2 maps U+03b0 to U+03c5 U+0308 U+0301.
+   U+0078 U+0073 U+0073 U+0069 U+0307 U+0074 U+0065 U+006c
+   	U+006a U+030c U+00a0 U+00aa U+03c5 U+0308 U+0301 U+2000
+
+   Unicode normalization with form KC maps string into:
+   U+0078 U+0073 U+0073 U+0069 U+0307 U+0074 U+0065 U+006c
+   	U+01f0 U+0020 U+0061 U+03b0 U+0020
+
+   output (length 13):
+   	U+0078 U+0073 U+0073 U+0069 U+0307 U+0074 U+0065 U+006c
+   	U+01f0 U+0020 U+0061 U+03b0 U+0020
+   out (length 16 bytes):
+   	xssi\xCC\x87tel\xC7\xB0 a\xCE\xB0
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 22]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+4.45 Larger test (expanding)
+
+   in (length 17 bytes):
+   	X\xC3\xDF\xE3\x8C\x96\xC4\xB0\xE2\x84\xA1\xE2\x92\x9F\xE3\x8C'
+   	'\x80
+   input (length 7):
+   	U+0058 U+00df U+3316 U+0130 U+2121 U+249f U+3300
+
+   Table B.2 maps U+0058 to U+0078.
+   Table B.2 maps U+00df to U+0073 U+0073.
+   Table B.2 maps U+0130 to U+0069 U+0307.
+   Table B.2 maps U+2121 to U+0074 U+0065 U+006c.
+   U+0078 U+0073 U+0073 U+3316 U+0069 U+0307 U+0074 U+0065
+   	U+006c U+249f U+3300
+   Unicode normalization with form KC maps string into:
+   U+0078 U+0073 U+0073 U+30ad U+30ed U+30e1 U+30fc U+30c8
+   	U+30eb U+0069 U+0307 U+0074 U+0065 U+006c U+0028 U+0064
+   	U+0029 U+30a2 U+30d1 U+30fc U+30c8
+
+   output (length 21):
+   	U+0078 U+0073 U+0073 U+30ad U+30ed U+30e1 U+30fc U+30c8
+   	U+30eb U+0069 U+0307 U+0074 U+0065 U+006c U+0028 U+0064
+   	U+0029 U+30a2 U+30d1 U+30fc U+30c8
+   out (length 42 bytes):
+   	xss\xE3\x82\xAD\xE3\x83\xAD\xE3\x83\xA1\xE3\x83\xBC\xE3'
+   	'\x83\x88\xE3\x83\xABi\xCC\x87tel\x28d\x29\xE3\x82'
+   	'\xA2\xE3\x83\x91\xE3\x83\xBC\xE3\x83\x88
+
+5. IDNA Test Vectors
+
+5.1 Arabic (Egyptian)
+
+   in (length 34 bytes):
+   	'\xD9\x84\xD9\x8A\xD9\x87\xD9\x85\xD8\xA7\xD8\xA8\xD8\xAA\xD9\x83'
+   	'\xD9\x84\xD9\x85\xD9\x88\xD8\xB4\xD8\xB9\xD8\xB1\xD8\xA8\xD9\x8A'
+   	'\xD8\x9F
+   input (length 34):
+   	U+0644 U+064a U+0647 U+0645 U+0627 U+0628 U+062a U+0643
+   	U+0644 U+0645 U+0648 U+0634 U+0639 U+0631 U+0628 U+064a
+   	U+061f
+
+   out: xn--egbpdaj6bu4bxfgehfvwxn
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 23]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+5.2 Chinese (simplified)
+
+   in (length 27 bytes):
+   	'\xE4\xBB\x96\xE4\xBB\xAC\xE4\xB8\xBA\xE4\xBB\x80\xE4\xB9\x88\xE4'
+   	'\xB8\x8D\xE8\xAF\xB4\xE4\xB8\xAD\xE6\x96\x87
+   input (length 27):
+   	U+4ed6 U+4eec U+4e3a U+4ec0 U+4e48 U+4e0d U+8bf4 U+4e2d
+   	U+6587
+
+   out: xn--ihqwcrb4cv8a8dqg056pqjye
+
+
+5.3 Chinese (traditional)
+
+   in (length 27 bytes):
+   	'\xE4\xBB\x96\xE5\x80\x91\xE7\x88\xB2\xE4\xBB\x80\xE9\xBA\xBD\xE4'
+   	'\xB8\x8D\xE8\xAA\xAA\xE4\xB8\xAD\xE6\x96\x87
+   input (length 27):
+   	U+4ed6 U+5011 U+7232 U+4ec0 U+9ebd U+4e0d U+8aaa U+4e2d
+   	U+6587
+
+   out: xn--ihqwctvzc91f659drss3x8bo0yb
+
+
+5.4 Czech
+
+   in (length 26 bytes):
+   	'Pro\xC4\x8Dprost\xC4\x9Bneml'
+   	'uv\xC3\xAD\xC4\x8Desky
+   input (length 26):
+   	U+0050 U+0072 U+006f U+010d U+0070 U+0072 U+006f U+0073
+   	U+0074 U+011b U+006e U+0065 U+006d U+006c U+0075 U+0076
+   	U+00ed U+010d U+0065 U+0073 U+006b U+0079
+
+   out: xn--proprostnemluvesky-uyb24dma41a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 24]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+5.5 Hebrew
+
+   in (length 44 bytes):
+   	'\xD7\x9C\xD7\x9E\xD7\x94\xD7\x94\xD7\x9D\xD7\xA4\xD7\xA9\xD7\x95'
+   	'\xD7\x98\xD7\x9C\xD7\x90\xD7\x9E\xD7\x93\xD7\x91\xD7\xA8\xD7\x99'
+   	'\xD7\x9D\xD7\xA2\xD7\x91\xD7\xA8\xD7\x99\xD7\xAA
+   input (length 44):
+   	U+05dc U+05de U+05d4 U+05d4 U+05dd U+05e4 U+05e9 U+05d5
+   	U+05d8 U+05dc U+05d0 U+05de U+05d3 U+05d1 U+05e8 U+05d9
+   	U+05dd U+05e2 U+05d1 U+05e8 U+05d9 U+05ea
+
+   out: xn--4dbcagdahymbxekheh6e0a7fei0b
+
+
+5.6 Hindi (Devanagari)
+
+   in (length 90 bytes):
+   	'\xE0\xA4\xAF\xE0\xA4\xB9\xE0\xA4\xB2\xE0\xA5\x8B\xE0\xA4\x97\xE0'
+   	'\xA4\xB9\xE0\xA4\xBF\xE0\xA4\xA8\xE0\xA5\x8D\xE0\xA4\xA6\xE0\xA5'
+   	'\x80\xE0\xA4\x95\xE0\xA5\x8D\xE0\xA4\xAF\xE0\xA5\x8B\xE0\xA4\x82'
+   	'\xE0\xA4\xA8\xE0\xA4\xB9\xE0\xA5\x80\xE0\xA4\x82\xE0\xA4\xAC\xE0'
+   	'\xA5\x8B\xE0\xA4\xB2\xE0\xA4\xB8\xE0\xA4\x95\xE0\xA4\xA4\xE0\xA5'
+   	'\x87\xE0\xA4\xB9\xE0\xA5\x88\xE0\xA4\x82
+   input (length 90):
+   	U+092f U+0939 U+0932 U+094b U+0917 U+0939 U+093f U+0928
+   	U+094d U+0926 U+0940 U+0915 U+094d U+092f U+094b U+0902
+   	U+0928 U+0939 U+0940 U+0902 U+092c U+094b U+0932 U+0938
+   	U+0915 U+0924 U+0947 U+0939 U+0948 U+0902
+
+   out: xn--i1baa7eci9glrd9b2ae1bj0hfcgg6iyaf8o0a1dig0cd
+
+
+5.7 Japanese (kanji and hiragana)
+
+   in (length 54 bytes):
+   	'\xE3\x81\xAA\xE3\x81\x9C\xE3\x81\xBF\xE3\x82\x93\xE3\x81\xAA\xE6'
+   	'\x97\xA5\xE6\x9C\xAC\xE8\xAA\x9E\xE3\x82\x92\xE8\xA9\xB1\xE3\x81'
+   	'\x97\xE3\x81\xA6\xE3\x81\x8F\xE3\x82\x8C\xE3\x81\xAA\xE3\x81\x84'
+   	'\xE3\x81\xAE\xE3\x81\x8B
+   input (length 54):
+   	U+306a U+305c U+307f U+3093 U+306a U+65e5 U+672c U+8a9e
+   	U+3092 U+8a71 U+3057 U+3066 U+304f U+308c U+306a U+3044
+   	U+306e U+304b
+
+   out: xn--n8jok5ay5dzabd5bym9f0cm5685rrjetr6pdxa
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 25]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+5.8 Russian (Cyrillic)
+
+   in (length 56 bytes):
+   	'\xD0\xBF\xD0\xBE\xD1\x87\xD0\xB5\xD0\xBC\xD1\x83\xD0\xB6\xD0\xB5'
+   	'\xD0\xBE\xD0\xBD\xD0\xB8\xD0\xBD\xD0\xB5\xD0\xB3\xD0\xBE\xD0\xB2'
+   	'\xD0\xBE\xD1\x80\xD1\x8F\xD1\x82\xD0\xBF\xD0\xBE\xD1\x80\xD1\x83'
+   	'\xD1\x81\xD1\x81\xD0\xBA\xD0\xB8
+   input (length 56):
+   	U+043f U+043e U+0447 U+0435 U+043c U+0443 U+0436 U+0435
+   	U+043e U+043d U+0438 U+043d U+0435 U+0433 U+043e U+0432
+   	U+043e U+0440 U+044f U+0442 U+043f U+043e U+0440 U+0443
+   	U+0441 U+0441 U+043a U+0438
+
+   out: xn--b1abfaaepdrnnbgefbadotcwatmq2g4l
+
+
+5.9 Spanish
+
+   in (length 42 bytes):
+   	'Porqu\xC3\xA9nopuedens'
+   	'implementehablar'
+   	'enEspa\xC3\xB1ol
+   input (length 42):
+   	U+0050 U+006f U+0072 U+0071 U+0075 U+00e9 U+006e U+006f
+   	U+0070 U+0075 U+0065 U+0064 U+0065 U+006e U+0073 U+0069
+   	U+006d U+0070 U+006c U+0065 U+006d U+0065 U+006e U+0074
+   	U+0065 U+0068 U+0061 U+0062 U+006c U+0061 U+0072 U+0065
+   	U+006e U+0045 U+0073 U+0070 U+0061 U+00f1 U+006f U+006c
+
+
+   out: xn--porqunopuedensimplementehablarenespaol-fmd56a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 26]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+5.10 Vietnamese
+
+   in (length 45 bytes):
+   	'T\xE1\xBA\xA1isaoh\xE1\xBB\x8Dkh\xC3\xB4'
+   	'ngth\xE1\xBB\x83ch\xE1\xBB\x89n\xC3\xB3i'
+   	'ti\xE1\xBA\xBFngVi\xE1\xBB\x87t
+   input (length 45):
+   	U+0054 U+1ea1 U+0069 U+0073 U+0061 U+006f U+0068 U+1ecd
+   	U+006b U+0068 U+00f4 U+006e U+0067 U+0074 U+0068 U+1ec3
+   	U+0063 U+0068 U+1ec9 U+006e U+00f3 U+0069 U+0074 U+0069
+   	U+1ebf U+006e U+0067 U+0056 U+0069 U+1ec7 U+0074
+
+   out: xn--tisaohkhngthchnitingvit-kjcr8268qyxafd2f1b9g
+
+
+5.11 Japanese
+
+   in (length 20 bytes):
+   	'3\xE5\xB9\xB4B\xE7\xB5\x84\xE9\x87\x91\xE5\x85\xAB\xE5\x85'
+   	'\x88\xE7\x94\x9F
+   input (length 20):
+   	U+0033 U+5e74 U+0042 U+7d44 U+91d1 U+516b U+5148 U+751f
+
+
+   out: xn--3b-ww4c5e180e575a65lsy2b
+
+
+5.12 Japanese
+
+   in (length 34 bytes):
+   	'\xE5\xAE\x89\xE5\xAE\xA4\xE5\xA5\x88\xE7\xBE\x8E\xE6\x81\xB5\x2D'
+   	'with\x2DSUPER\x2DMONKE'
+   	'YS
+   input (length 34):
+   	U+5b89 U+5ba4 U+5948 U+7f8e U+6075 U+002d U+0077 U+0069
+   	U+0074 U+0068 U+002d U+0053 U+0055 U+0050 U+0045 U+0052
+   	U+002d U+004d U+004f U+004e U+004b U+0045 U+0059 U+0053
+
+
+   out: xn---with-super-monkeys-pc58ag80a8qai00g7n9n
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 27]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+5.13 Japanese
+
+   in (length 39 bytes):
+   	'Hello\x2DAnother\x2DWa'
+   	'y\x2D\xE3\x81\x9D\xE3\x82\x8C\xE3\x81\x9E\xE3\x82\x8C\xE3\x81'
+   	'\xAE\xE5\xA0\xB4\xE6\x89\x80
+   input (length 39):
+   	U+0048 U+0065 U+006c U+006c U+006f U+002d U+0041 U+006e
+   	U+006f U+0074 U+0068 U+0065 U+0072 U+002d U+0057 U+0061
+   	U+0079 U+002d U+305d U+308c U+305e U+308c U+306e U+5834
+   	U+6240
+
+   out: xn--hello-another-way--fc4qua05auwb3674vfr0b
+
+
+5.14 Japanese
+
+   in (length 22 bytes):
+   	'\xE3\x81\xB2\xE3\x81\xA8\xE3\x81\xA4\xE5\xB1\x8B\xE6\xA0\xB9\xE3'
+   	'\x81\xAE\xE4\xB8\x8B2
+   input (length 22):
+   	U+3072 U+3068 U+3064 U+5c4b U+6839 U+306e U+4e0b U+0032
+
+
+   out: xn--2-u9tlzr9756bt3uc0v
+
+
+5.15 Japanese
+
+   in (length 23 bytes):
+   	'Maji\xE3\x81\xA7Koi\xE3\x81\x99\xE3\x82\x8B'
+   	'5\xE7\xA7\x92\xE5\x89\x8D
+   input (length 23):
+   	U+004d U+0061 U+006a U+0069 U+3067 U+004b U+006f U+0069
+   	U+3059 U+308b U+0035 U+79d2 U+524d
+
+   out: xn--majikoi5-783gue6qz075azm5e
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 28]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+5.16 Japanese
+
+   in (length 23 bytes):
+   	'\xE3\x83\x91\xE3\x83\x95\xE3\x82\xA3\xE3\x83\xBCde\xE3\x83'
+   	'\xAB\xE3\x83\xB3\xE3\x83\x90
+   input (length 23):
+   	U+30d1 U+30d5 U+30a3 U+30fc U+0064 U+0065 U+30eb U+30f3
+   	U+30d0
+
+   out: xn--de-jg4avhby1noc0d
+
+
+5.17 Japanese
+
+   in (length 21 bytes):
+   	'\xE3\x81\x9D\xE3\x81\xAE\xE3\x82\xB9\xE3\x83\x94\xE3\x83\xBC\xE3'
+   	'\x83\x89\xE3\x81\xA7
+   input (length 21):
+   	U+305d U+306e U+30b9 U+30d4 U+30fc U+30c9 U+3067
+
+   out: xn--d9juau41awczczp
+
+
+5.18 Greek
+
+   in (length 16 bytes):
+   	'\xCE\xB5\xCE\xBB\xCE\xBB\xCE\xB7\xCE\xBD\xCE\xB9\xCE\xBA\xCE\xAC
+   input (length 16):
+   	U+03b5 U+03bb U+03bb U+03b7 U+03bd U+03b9 U+03ba U+03ac
+
+
+   out: xn--hxargifdar
+
+
+5.19 Maltese (Malti)
+
+   in (length 13 bytes):
+   	'bon\xC4\xA1usa\xC4\xA7\xC4\xA7a
+   input (length 13):
+   	U+0062 U+006f U+006e U+0121 U+0075 U+0073 U+0061 U+0127
+   	U+0127 U+0061
+
+   out: xn--bonusaa-5bb1da
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 29]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+5.20 Russian (Cyrillic)
+
+   in (length 56 bytes):
+   	'\xD0\xBF\xD0\xBE\xD1\x87\xD0\xB5\xD0\xBC\xD1\x83\xD0\xB6\xD0\xB5'
+   	'\xD0\xBE\xD0\xBD\xD0\xB8\xD0\xBD\xD0\xB5\xD0\xB3\xD0\xBE\xD0\xB2'
+   	'\xD0\xBE\xD1\x80\xD1\x8F\xD1\x82\xD0\xBF\xD0\xBE\xD1\x80\xD1\x83'
+   	'\xD1\x81\xD1\x81\xD0\xBA\xD0\xB8
+   input (length 56):
+   	U+043f U+043e U+0447 U+0435 U+043c U+0443 U+0436 U+0435
+   	U+043e U+043d U+0438 U+043d U+0435 U+0433 U+043e U+0432
+   	U+043e U+0440 U+044f U+0442 U+043f U+043e U+0440 U+0443
+   	U+0441 U+0441 U+043a U+0438
+
+   out: xn--b1abfaaepdrnnbgefbadotcwatmq2g4l
+
+
+6. Security Considerations
+
+   The security considerations from Nameprep and IDNA are inherited.
+
+   These test vectors are not believed to introduce new security
+   considerations nor disrupt the operation of the Internet, but may
+   expose security weaknesses in existing implementations.  Any such
+   incident should not be regarded as a problem with this document,
+   though, but rather taken as evidence that this document served its
+   purpose.
+
+Normative References
+
+   [1]  Hoffman, P. and M. Blanchet, "Nameprep: A Stringprep Profile for
+        Internationalized Domain Names (IDN)", RFC 3491, March 2003.
+
+   [2]  Faltstrom, P., Hoffman, P. and A. Costello, "Internationalizing
+        Domain Names in Applications (IDNA)", RFC 3490, March 2003.
+
+Informative References
+
+   [3]  Costello, A., "Punycode: A Bootstring encoding of Unicode for
+        Internationalized Domain Names in Applications (IDNA)", RFC
+        3492, March 2003.
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 30]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+Author's Address
+
+   Simon Josefsson
+   Drottningholmsv. 70
+   Stockholm  112 42
+   Sweden
+
+   EMail: simon@josefsson.org
+
+Acknowledgments
+
+   Some IDNA test vectors were borrowed from Punycode [3].
+
+Appendix A. Nameprep test vectors in C syntax
+
+   In order to avoid having implementors type in the test vectors above,
+   a C structure with the data is provided.
+
+   The comment field is the section titles used in this document.  The
+   in field contains UTF-8 encoded strings.  The out field contains
+   expected output, or NULL if the expected result is an error.  The
+   profile field can be ignored.  The only significant setting for the
+   flags field is STRINGPREP_NO_UNASSIGNED which signals to the Nameprep
+   implementation that it should perform unassigned code point checking,
+   aka the "AllowUnassigned" flag.  The rc field contains expected error
+   codes, where 0 indicates success and the other flags should be self
+   explanatory.
+
+   struct stringprep
+   {
+     char *comment;
+     char *in;
+     char *out;
+     char *profile;
+     int flags;
+     int rc;
+   }
+   strprep[] =
+   {
+     {
+       "Map to nothing",
+       "foo\xC2\xAD\xCD\x8F\xE1\xA0\x86\xE1\xA0\x8B"
+       "bar""\xE2\x80\x8B\xE2\x81\xA0""baz\xEF\xB8\x80\xEF\xB8\x88"
+       "\xEF\xB8\x8F\xEF\xBB\xBF", "foobarbaz"
+     },
+     {
+       "Case folding ASCII U+0043 U+0041 U+0046 U+0045",
+       "CAFE", "cafe"
+
+
+
+Josefsson                Expires August 2, 2003                [Page 31]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+     },
+     {
+       "Case folding 8bit U+00DF (german sharp s)",
+       "\xC3\xDF", "ss"
+     },
+     {
+       "Case folding U+0130 (turkish capital I with dot)",
+       "\xC4\xB0", "i\xcc\x87"
+     },
+     {
+       "Case folding multibyte U+0143 U+037A",
+       "\xC5\x83\xCD\xBA", "\xC5\x84 \xCE\xB9"
+     },
+     {
+       "Case folding U+2121 U+33C6 U+1D7BB",
+       "\xE2\x84\xA1\xE3\x8F\x86\xF0\x9D\x9E\xBB",
+       "telc\xE2\x88\x95""kg\xCF\x83"
+     },
+     {
+       "Normalization of U+006a U+030c U+00A0 U+00AA",
+       "\x6A\xCC\x8C\xC2\xA0\xC2\xAA", "\xC7\xB0 a"
+     },
+     {
+       "Case folding U+1FB7 and normalization",
+       "\xE1\xBE\xB7", "\xE1\xBE\xB6\xCE\xB9"
+     },
+     {
+       "Self-reverting case folding U+01F0 and normalization",
+       "\xC7\xF0", "\xC7\xB0"
+     },
+     {
+       "Self-reverting case folding U+0390 and normalization",
+       "\xCE\x90", "\xCE\x90"
+     },
+     {
+       "Self-reverting case folding U+03B0 and normalization",
+       "\xCE\xB0", "\xCE\xB0"
+     },
+     {
+       "Self-reverting case folding U+1E96 and normalization",
+       "\xE1\xBA\x96", "\xE1\xBA\x96"
+     },
+     {
+       "Self-reverting case folding U+1F56 and normalization",
+       "\xE1\xBD\x96", "\xE1\xBD\x96"
+     },
+     {
+       "ASCII space character U+0020",
+
+
+
+Josefsson                Expires August 2, 2003                [Page 32]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+       "\x20", "\x20"
+     },
+     {
+       "Non-ASCII 8bit space character U+00A0",
+       "\xC2\xA0", "\x20"
+     },
+     {
+       "Non-ASCII multibyte space character U+1680",
+       "\xE1\x9A\x80", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Non-ASCII multibyte space character U+2000",
+       "\xE2\x80\x80", "\x20"
+     },
+     {
+       "Zero Width Space U+200b",
+       "\xE2\x80\x8b", ""
+     },
+     {
+       "Non-ASCII multibyte space character U+3000",
+       "\xE3\x80\x80", "\x20"
+     },
+     {
+       "ASCII control characters U+0010 U+007F",
+       "\x10\x7F", "\x10\x7F"
+     },
+     {
+       "Non-ASCII 8bit control character U+0085",
+       "\xC2\x85", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Non-ASCII multibyte control character U+180E",
+       "\xE1\xA0\x8E", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Zero Width No-Break Space U+FEFF",
+       "\xEF\xBB\xBF", ""
+     },
+     {
+       "Non-ASCII control character U+1D175",
+       "\xF0\x9D\x85\xB5", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Plane 0 private use character U+F123",
+
+
+
+Josefsson                Expires August 2, 2003                [Page 33]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+       "\xEF\x84\xA3", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Plane 15 private use character U+F1234",
+       "\xF3\xB1\x88\xB4", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Plane 16 private use character U+10F234",
+       "\xF4\x8F\x88\xB4", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Non-character code point U+8FFFE",
+       "\xF2\x8F\xBF\xBE", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Non-character code point U+10FFFF",
+       "\xF4\x8F\xBF\xBF", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Surrogate code U+DF42",
+       "\xED\xBD\x82", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Non-plain text character U+FFFD",
+       "\xEF\xBF\xBD", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Ideographic description character U+2FF5",
+       "\xE2\xBF\xB5", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Display property character U+0341",
+       "\xCD\x81", "\xCC\x81"
+     },
+     {
+       "Left-to-right mark U+200E",
+       "\xE2\x80\x8E", "\xCC\x81", "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+
+
+
+Josefsson                Expires August 2, 2003                [Page 34]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+       "Deprecated U+202A",
+       "\xE2\x80\xAA", "\xCC\x81", "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Language tagging character U+E0001",
+       "\xF3\xA0\x80\x81", "\xCC\x81", "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Language tagging character U+E0042",
+       "\xF3\xA0\x81\x82", NULL, "Nameprep", 0,
+       STRINGPREP_CONTAINS_PROHIBITED
+     },
+     {
+       "Bidi: RandALCat character U+05BE and LCat characters",
+       "foo\xD6\xBE""bar", NULL, "Nameprep", 0,
+       STRINGPREP_BIDI_BOTH_L_AND_RAL
+     },
+     {
+       "Bidi: RandALCat character U+FD50 and LCat characters",
+       "foo\xEF\xB5\x90""bar", NULL, "Nameprep", 0,
+       STRINGPREP_BIDI_BOTH_L_AND_RAL
+     },
+     {
+       "Bidi: RandALCat character U+FB38 and LCat characters",
+       "foo\xEF\xB9\xB6""bar", "foo \xd9\x8e""bar"
+     },
+     { "Bidi: RandALCat without trailing RandALCat U+0627 U+0031",
+       "\xD8\xA7\x31", NULL, "Nameprep", 0,
+       STRINGPREP_BIDI_LEADTRAIL_NOT_RAL}
+     ,
+     {
+       "Bidi: RandALCat character U+0627 U+0031 U+0628",
+       "\xD8\xA7\x31\xD8\xA8", "\xD8\xA7\x31\xD8\xA8"
+     },
+     {
+       "Unassigned code point U+E0002",
+       "\xF3\xA0\x80\x82", NULL, "Nameprep", STRINGPREP_NO_UNASSIGNED,
+       STRINGPREP_CONTAINS_UNASSIGNED
+     },
+     {
+       "Larger test (shrinking)",
+       "X\xC2\xAD\xC3\xDF\xC4\xB0\xE2\x84\xA1\x6a\xcc\x8c\xc2\xa0\xc2"
+       "\xaa\xce\xb0\xe2\x80\x80", "xssi\xcc\x87""tel\xc7\xb0 a\xce\xb0 ",
+       "Nameprep"
+     },
+     {
+
+
+
+Josefsson                Expires August 2, 2003                [Page 35]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+       "Larger test (expanding)",
+       "X\xC3\xDF\xe3\x8c\x96\xC4\xB0\xE2\x84\xA1\xE2\x92\x9F\xE3\x8c\x80",
+       "xss\xe3\x82\xad\xe3\x83\xad\xe3\x83\xa1\xe3\x83\xbc\xe3\x83\x88"
+       "\xe3\x83\xab""i\xcc\x87""tel\x28""d\x29\xe3\x82\xa2\xe3\x83\x91"
+       "\xe3\x83\xbc\xe3\x83\x88"
+     },
+   };
+
+
+Appendix B. IDNA test vectors in C syntax
+
+   In order to avoid having implementors type in the IDNA test vectors
+   above, a C structure with the data is provided.
+
+   The name field is the section titles used in this document.  The
+   inlen and in field contains Unicode code points.  The out field
+   contains expected ToASCII output.  The allowunassigned, and
+   usestd3asciirules can be ignored.  The toasciirc and tounicoderc
+   field contains expected error codes, where 0 indicates success and
+   the other flags should be self explanatory.
+
+   struct idna
+   {
+     char *name;
+     size_t inlen;
+     unsigned long in[100];
+     char *out;
+     int allowunassigned;
+     int usestd3asciirules;
+     int toasciirc;
+     int tounicoderc;
+   } idna[] =
+   {
+     {
+       "Arabic (Egyptian)", 17,
+       {
+     0x0644, 0x064A, 0x0647, 0x0645, 0x0627, 0x0628, 0x062A, 0x0643,
+   	0x0644, 0x0645, 0x0648, 0x0634, 0x0639, 0x0631, 0x0628, 0x064A,
+   	0x061F},
+         IDNA_ACE_PREFIX "egbpdaj6bu4bxfgehfvwxn", 0, 0, IDNA_SUCCESS,
+         IDNA_SUCCESS},
+     {
+       "Chinese (simplified)", 9,
+       {
+     0x4ED6, 0x4EEC, 0x4E3A, 0x4EC0, 0x4E48, 0x4E0D, 0x8BF4, 0x4E2D, 0x6587},
+         IDNA_ACE_PREFIX "ihqwcrb4cv8a8dqg056pqjye", 0, 0, IDNA_SUCCESS,
+         IDNA_SUCCESS},
+     {
+
+
+
+Josefsson                Expires August 2, 2003                [Page 36]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+       "Chinese (traditional)", 9,
+       {
+     0x4ED6, 0x5011, 0x7232, 0x4EC0, 0x9EBD, 0x4E0D, 0x8AAA, 0x4E2D, 0x6587},
+         IDNA_ACE_PREFIX "ihqwctvzc91f659drss3x8bo0yb", 0, 0, IDNA_SUCCESS,
+         IDNA_SUCCESS},
+     {
+       "Czech", 22,
+       {
+     0x0050, 0x0072, 0x006F, 0x010D, 0x0070, 0x0072, 0x006F, 0x0073,
+   	0x0074, 0x011B, 0x006E, 0x0065, 0x006D, 0x006C, 0x0075, 0x0076,
+   	0x00ED, 0x010D, 0x0065, 0x0073, 0x006B, 0x0079},
+         IDNA_ACE_PREFIX "Proprostnemluvesky-uyb24dma41a", 0, 0, IDNA_SUCCESS,
+         IDNA_SUCCESS},
+     {
+       "Hebrew", 22,
+       {
+     0x05DC, 0x05DE, 0x05D4, 0x05D4, 0x05DD, 0x05E4, 0x05E9, 0x05D5,
+   	0x05D8, 0x05DC, 0x05D0, 0x05DE, 0x05D3, 0x05D1, 0x05E8, 0x05D9,
+   	0x05DD, 0x05E2, 0x05D1, 0x05E8, 0x05D9, 0x05EA},
+         IDNA_ACE_PREFIX "4dbcagdahymbxekheh6e0a7fei0b", 0, 0, IDNA_SUCCESS,
+         IDNA_SUCCESS},
+     {
+       "Hindi (Devanagari)", 30,
+       {
+     0x092F, 0x0939, 0x0932, 0x094B, 0x0917, 0x0939, 0x093F, 0x0928,
+   	0x094D, 0x0926, 0x0940, 0x0915, 0x094D, 0x092F, 0x094B, 0x0902,
+   	0x0928, 0x0939, 0x0940, 0x0902, 0x092C, 0x094B, 0x0932, 0x0938,
+   	0x0915, 0x0924, 0x0947, 0x0939, 0x0948, 0x0902},
+         IDNA_ACE_PREFIX "i1baa7eci9glrd9b2ae1bj0hfcgg6iyaf8o0a1dig0cd", 0, 0,
+         IDNA_SUCCESS},
+     {
+       "Japanese (kanji and hiragana)", 18,
+       {
+     0x306A, 0x305C, 0x307F, 0x3093, 0x306A, 0x65E5, 0x672C, 0x8A9E,
+   	0x3092, 0x8A71, 0x3057, 0x3066, 0x304F, 0x308C, 0x306A, 0x3044,
+   	0x306E, 0x304B},
+         IDNA_ACE_PREFIX "n8jok5ay5dzabd5bym9f0cm5685rrjetr6pdxa", 0, 0,
+         IDNA_SUCCESS},
+     {
+       "Russian (Cyrillic)", 28,
+       {
+     0x043F, 0x043E, 0x0447, 0x0435, 0x043C, 0x0443, 0x0436, 0x0435,
+   	0x043E, 0x043D, 0x0438, 0x043D, 0x0435, 0x0433, 0x043E, 0x0432,
+   	0x043E, 0x0440, 0x044F, 0x0442, 0x043F, 0x043E, 0x0440, 0x0443,
+   	0x0441, 0x0441, 0x043A, 0x0438},
+         IDNA_ACE_PREFIX "b1abfaaepdrnnbgefbadotcwatmq2g4l", 0, 0,
+         IDNA_SUCCESS, IDNA_SUCCESS},
+     {
+
+
+
+Josefsson                Expires August 2, 2003                [Page 37]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+       "Spanish", 40,
+       {
+     0x0050, 0x006F, 0x0072, 0x0071, 0x0075, 0x00E9, 0x006E, 0x006F,
+   	0x0070, 0x0075, 0x0065, 0x0064, 0x0065, 0x006E, 0x0073, 0x0069,
+   	0x006D, 0x0070, 0x006C, 0x0065, 0x006D, 0x0065, 0x006E, 0x0074,
+   	0x0065, 0x0068, 0x0061, 0x0062, 0x006C, 0x0061, 0x0072, 0x0065,
+   	0x006E, 0x0045, 0x0073, 0x0070, 0x0061, 0x00F1, 0x006F, 0x006C},
+         IDNA_ACE_PREFIX "PorqunopuedensimplementehablarenEspaol-fmd56a", 0, 0,
+         IDNA_SUCCESS},
+     {
+       "Vietnamese", 31,
+       {
+     0x0054, 0x1EA1, 0x0069, 0x0073, 0x0061, 0x006F, 0x0068, 0x1ECD,
+   	0x006B, 0x0068, 0x00F4, 0x006E, 0x0067, 0x0074, 0x0068, 0x1EC3,
+   	0x0063, 0x0068, 0x1EC9, 0x006E, 0x00F3, 0x0069, 0x0074, 0x0069,
+   	0x1EBF, 0x006E, 0x0067, 0x0056, 0x0069, 0x1EC7, 0x0074},
+         IDNA_ACE_PREFIX "TisaohkhngthchnitingVit-kjcr8268qyxafd2f1b9g", 0, 0,
+         IDNA_SUCCESS},
+     {
+       "Japanese", 8,
+       {
+     0x0033, 0x5E74, 0x0042, 0x7D44, 0x91D1, 0x516B, 0x5148, 0x751F},
+         IDNA_ACE_PREFIX "3B-ww4c5e180e575a65lsy2b", 0, 0, IDNA_SUCCESS,
+         IDNA_SUCCESS},
+     {
+       "Japanese", 24,
+       {
+     0x5B89, 0x5BA4, 0x5948, 0x7F8E, 0x6075, 0x002D, 0x0077, 0x0069,
+   	0x0074, 0x0068, 0x002D, 0x0053, 0x0055, 0x0050, 0x0045, 0x0052,
+   	0x002D, 0x004D, 0x004F, 0x004E, 0x004B, 0x0045, 0x0059, 0x0053},
+         IDNA_ACE_PREFIX "-with-SUPER-MONKEYS-pc58ag80a8qai00g7n9n", 0, 0,
+         IDNA_SUCCESS},
+     {
+       "Japanese", 25,
+       {
+     0x0048, 0x0065, 0x006C, 0x006C, 0x006F, 0x002D, 0x0041, 0x006E,
+   	0x006F, 0x0074, 0x0068, 0x0065, 0x0072, 0x002D, 0x0057, 0x0061,
+   	0x0079, 0x002D, 0x305D, 0x308C, 0x305E, 0x308C, 0x306E, 0x5834,
+   	0x6240},
+         IDNA_ACE_PREFIX "Hello-Another-Way--fc4qua05auwb3674vfr0b", 0, 0,
+         IDNA_SUCCESS},
+     {
+       "Japanese", 8,
+       {
+     0x3072, 0x3068, 0x3064, 0x5C4B, 0x6839, 0x306E, 0x4E0B, 0x0032},
+         IDNA_ACE_PREFIX "2-u9tlzr9756bt3uc0v", 0, 0, IDNA_SUCCESS,
+         IDNA_SUCCESS},
+     {
+
+
+
+Josefsson                Expires August 2, 2003                [Page 38]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+       "Japanese", 13,
+       {
+     0x004D, 0x0061, 0x006A, 0x0069, 0x3067, 0x004B, 0x006F, 0x0069,
+   	0x3059, 0x308B, 0x0035, 0x79D2, 0x524D},
+         IDNA_ACE_PREFIX "MajiKoi5-783gue6qz075azm5e", 0, 0, IDNA_SUCCESS,
+         IDNA_SUCCESS},
+     {
+       "Japanese", 9,
+       {
+     0x30D1, 0x30D5, 0x30A3, 0x30FC, 0x0064, 0x0065, 0x30EB, 0x30F3, 0x30D0},
+         IDNA_ACE_PREFIX "de-jg4avhby1noc0d", 0, 0, IDNA_SUCCESS, IDNA_SUCCESS},
+     {
+       "Japanese", 7,
+       {
+     0x305D, 0x306E, 0x30B9, 0x30D4, 0x30FC, 0x30C9, 0x3067},
+         IDNA_ACE_PREFIX "d9juau41awczczp", 0, 0, IDNA_SUCCESS, IDNA_SUCCESS},
+     {
+       "Greek", 8,
+       {0x03b5, 0x03bb, 0x03bb, 0x03b7, 0x03bd, 0x03b9, 0x03ba, 0x03ac},
+       IDNA_ACE_PREFIX "hxargifdar", 0, 0, IDNA_SUCCESS, IDNA_SUCCESS},
+     {
+       "Maltese (Malti)", 10,
+       {0x0062, 0x006f, 0x006e, 0x0121, 0x0075, 0x0073, 0x0061, 0x0127,
+        0x0127, 0x0061},
+       IDNA_ACE_PREFIX "bonusaa-5bb1da", 0, 0, IDNA_SUCCESS, IDNA_SUCCESS},
+     {
+       "Russian (Cyrillic)", 28,
+       {0x043f, 0x043e, 0x0447, 0x0435, 0x043c, 0x0443, 0x0436, 0x0435,
+        0x043e, 0x043d, 0x0438, 0x043d, 0x0435, 0x0433, 0x043e, 0x0432,
+        0x043e, 0x0440, 0x044f, 0x0442, 0x043f, 0x043e, 0x0440, 0x0443,
+        0x0441, 0x0441, 0x043a, 0x0438},
+       IDNA_ACE_PREFIX "b1abfaaepdrnnbgefbadotcwatmq2g4l", 0, 0,
+       IDNA_SUCCESS, IDNA_SUCCESS},
+   };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 39]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+Intellectual Property Statement
+
+   The IETF takes no position regarding the validity or scope of any
+   intellectual property or other rights that might be claimed to
+   pertain to the implementation or use of the technology described in
+   this document or the extent to which any license under such rights
+   might or might not be available; neither does it represent that it
+   has made any effort to identify any such rights.  Information on the
+   IETF's procedures with respect to rights in standards-track and
+   standards-related documentation can be found in BCP-11.  Copies of
+   claims of rights made available for publication and any assurances of
+   licenses to be made available, or the result of an attempt made to
+   obtain a general license or permission for the use of such
+   proprietary rights by implementors or users of this specification can
+   be obtained from the IETF Secretariat.
+
+   The IETF invites any interested party to bring to its attention any
+   copyrights, patents or patent applications, or other proprietary
+   rights which may cover technology that may be required to practice
+   this standard.  Please address the information to the IETF Executive
+   Director.
+
+
+Full Copyright Statement
+
+   Copyright (C) Simon Josefsson (2003).  All Rights Reserved.
+
+   Copyright (C) The Internet Society (2003).  All Rights Reserved.
+
+   This document and translations of it may be copied and furnished to
+   others, and derivative works that comment on or otherwise explain it
+   or assist in its implementation may be prepared, copied, published
+   and distributed, in whole or in part, without restriction of any
+   kind, provided that the above copyright notice and this paragraph are
+   included on all such copies and derivative works.  However, this
+   document itself may not be modified in any way, such as by removing
+   the copyright notice or references to the Internet Society or other
+   Internet organizations, except as needed for the purpose of
+   developing Internet standards in which case the procedures for
+   copyrights defined in the Internet Standards process must be
+   followed, or as required to translate it into languages other than
+   English.
+
+   The limited permissions granted above are perpetual and will not be
+   revoked by the Internet Society or its successors or assignees.
+
+   This document and the information contained herein is provided on an
+   "AS IS" basis and THE INTERNET SOCIETY AND THE INTERNET ENGINEERING
+
+
+
+Josefsson                Expires August 2, 2003                [Page 40]
+
+Internet-Draft       Nameprep and IDNA Test Vectors        February 2003
+
+
+   TASK FORCE DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+   BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE INFORMATION
+   HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED WARRANTIES OF
+   MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+
+Acknowledgement
+
+   Funding for the RFC Editor function is currently provided by the
+   Internet Society.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Josefsson                Expires August 2, 2003                [Page 41]
+
