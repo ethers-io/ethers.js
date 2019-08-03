@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/units",
-  "version": "5.0.0-beta.125",
+  "version": "5.0.0-beta.126",
   "description": "Unit conversion functions for Ethereum.",
   "main": "index.js",
   "scripts": {
@@ -22,5 +22,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x547434cd4cf71184ab7637318f627ec404d829092c587c1725ca4a3c1b24814b"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "tarballHash": "0xf932dff9c5ab4a46776070c0e16cfcb579365a2db9d79b9330cc6a530a5eb18c"
 }

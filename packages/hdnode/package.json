@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/hdnode",
-  "version": "5.0.0-beta.128",
+  "version": "5.0.0-beta.129",
   "description": "BIP32 Hierarchal Deterministic Node operations.",
   "main": "index.js",
   "scripts": {
@@ -29,5 +29,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0xa673c44201745fdb3d607e53ac3923dd3c1e94ee44dbda2c3058d1936433a076"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "tarballHash": "0xf55e5e184af14dbf060b53a66e6ba0de92af1882deebcb990c06df5aa8697d33"
 }

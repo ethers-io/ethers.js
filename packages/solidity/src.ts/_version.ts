@@ -1,1 +1,1 @@
-export const version = "5.0.0-beta.124";
+export const version = "solidity/5.0.0-beta.125";

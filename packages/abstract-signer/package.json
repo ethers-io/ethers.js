@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/abstract-signer",
-  "version": "5.0.0-beta.128",
+  "version": "5.0.0-beta.129",
   "description": "Error utility functions for ethers.",
   "main": "index.js",
   "scripts": {
@@ -22,5 +22,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x121a017b5f0ead6463583252996c1897074dac3f88d592c7a38271634aab5859"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "tarballHash": "0xca5aae60ad4709cb13eaad89f9633310761652995768c9505da0384d9f5927e3"
 }

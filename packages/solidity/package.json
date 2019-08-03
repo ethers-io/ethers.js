@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/solidity",
-  "version": "5.0.0-beta.124",
+  "version": "5.0.0-beta.125",
   "description": "Solidity coder for non-standard (tight) packing.",
   "main": "index.js",
   "scripts": {
@@ -22,5 +22,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0xb487ad2d0967bad47bd8829b1009dbf44109fa51734e393d767c537fa1cd95e6"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "tarballHash": "0x12b004482b8d515f0aeb7565ee5ac4b794ff39ba17da55e260098c9c87c8df57"
 }

@@ -1,3 +1,3 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "5.0.0-beta.127";
+exports.version = "sha2/5.0.0-beta.128";

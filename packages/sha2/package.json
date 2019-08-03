@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/sha2",
-  "version": "5.0.0-beta.127",
+  "version": "5.0.0-beta.128",
   "description": "Error utility functions for ethers.",
   "main": "index.js",
   "browser": "browser.js",
@@ -21,5 +21,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0xa9993356699afdb770f47a55a8dd278064671152428243b9dd8d9db87de8076c"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "tarballHash": "0x860983c9837fee7ae27066cfefcba0a306898f8bcd8f3b0b6b354edf08d90b63"
 }

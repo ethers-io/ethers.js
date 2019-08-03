@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/errors",
-  "version": "5.0.0-beta.127",
+  "version": "5.0.0-beta.128",
   "description": "Error utility functions for ethers.",
   "main": "index.js",
   "scripts": {
@@ -15,5 +15,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0xe8976154307d1c7b39246387063ce62549bb8a01364f9dd6ae53b7d79c187526"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "tarballHash": "0x53e437565080eff824d332689a72ee12b1794b71f15b783a2951378db03cb9ff"
 }

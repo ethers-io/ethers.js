@@ -52,6 +52,14 @@ if (process.argv.length > 2) {
 
         // Get local package.json (update the tarballHash)
         let info = await updatePackage(dirname);
+        /*
+        let info = await updatePackage(dirname, {
+            repository: {
+                type: "git",
+                url: "git://github.com/ethers-io/ethers.js.git"
+            }
+        });
+        */
 
         // Get the remote package.json (or sub in a placeholder for new pacakges)
         let npmInfo = await getPackageVersion(info.name);
@@ -65,7 +73,7 @@ if (process.argv.length > 2) {
 
             // Write out the _version.ts
             if (!info._ethers_nobuild) {
-                let code = "export const version = " + JSON.stringify(newVersion) + ";\n";
+                let code = "export const version = " + JSON.stringify(dirname + "/" + newVersion) + ";\n";
                 fs.writeFileSync(resolve(path, "src.ts/_version.ts"), code);
             }
 

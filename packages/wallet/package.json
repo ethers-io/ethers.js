@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/wallet",
-  "version": "5.0.0-beta.128",
+  "version": "5.0.0-beta.129",
   "description": "Error utility functions for ethers.",
   "main": "index.js",
   "scripts": {
@@ -32,5 +32,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x7340b95cf6d594be8d40ad5d0772a46473fc72f18b945ce93f4e032ead1c5d5c"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "tarballHash": "0x52e75ab9005c6955a41f09e411b01e1e7f7bdd5a6f17248f0e1e8ae9b65ec2d2"
 }

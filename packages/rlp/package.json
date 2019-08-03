@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/rlp",
-  "version": "5.0.0-beta.124",
+  "version": "5.0.0-beta.125",
   "description": "Recursive-Length Prefix (RLP) coder.",
   "main": "index.js",
   "scripts": {
@@ -19,5 +19,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0xd016b9a8cbeacb891eb40af683ace142e4618568cfa00234e2d5d82efbc26bc8"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "tarballHash": "0x223297e79fecc91c953f76fef12f72b20c50a8f146581cacfe86bce39e5c639e"
 }

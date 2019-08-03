@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/shims",
-  "version": "5.0.0-beta.130",
+  "version": "5.0.0-beta.131",
   "_ethers_nobuild": true,
   "description": "Shims required for ethers in constrained environments.",
   "main": "./src/index.js",
@@ -21,5 +21,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x6299bca2e9d3412b09fa525be3b771e3b87ed6c4dfee0448612b0fedd455fcf3"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "tarballHash": "0x5662e167af083471aa4f3c085b5e41abc50f3f8de297c28c5e5c59b2f34207a3"
 }

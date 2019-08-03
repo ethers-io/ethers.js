@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/constants",
-  "version": "5.0.0-beta.126",
+  "version": "5.0.0-beta.127",
   "description": "Error utility functions for ethers.",
   "main": "index.js",
   "scripts": {
@@ -18,5 +18,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0xf33835528c26572d9703ffa048dedf600435f5e4061867a22c5f0a80a8b2da7d"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "tarballHash": "0xf24dd45d26fff811147d6cff7199683bb090c6a182acc58e1007b82a14bf4ee1"
 }

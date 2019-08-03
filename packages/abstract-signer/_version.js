@@ -1,3 +1,3 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "5.0.0-beta.128";
+exports.version = "abstract-signer/5.0.0-beta.129";

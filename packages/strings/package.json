@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/strings",
-  "version": "5.0.0-beta.128",
+  "version": "5.0.0-beta.129",
   "description": "String utility functions.",
   "main": "index.js",
   "scripts": {
@@ -22,5 +22,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0xff22dfe1b56b31796ae48a63974fde63e2ae2b2d898f3182636417592df1f9dc"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "tarballHash": "0x35d6b6566f2aa9de4e2d7abe253e83f60fb08d157a331fcd27d3d3a9b9361e7e"
 }

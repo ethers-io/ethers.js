@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/bytes",
-  "version": "5.0.0-beta.127",
+  "version": "5.0.0-beta.128",
   "description": "Bytes utility functions for ethers.",
   "main": "index.js",
   "scripts": {
@@ -20,5 +20,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0x24aa796869c48face90486095d5d95c8d9da01c0b6f32ce1d4327c7d79b62e75"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "tarballHash": "0x793a4a0bb6c5a84b9dfc8e52a8627700bd85e00ede0a411db5ea25eae5b43cd1"
 }

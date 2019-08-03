@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/base64",
-  "version": "5.0.0-beta.124",
+  "version": "5.0.0-beta.125",
   "description": "Base64 coder.",
   "main": "index.js",
   "browser": "browser.js",
@@ -19,5 +19,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "tarballHash": "0xe5da4b9df9188216fed902efb45ee9af1cdb9a47c1212d9a674a93c5adb716bd"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "tarballHash": "0x8eaae303c42d86ca952abb6fd18217861e916141e565fd66f8024b4b7e870062"
 }
