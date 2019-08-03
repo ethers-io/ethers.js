@@ -3,9 +3,13 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.0-beta.149 (2019-08-02 2:07)
+ethers/v5.0.0-beta.149 (2019-08-03 0:45)
 ----------------------------------------
 
+  - Fixed some case-folding and added Table A.1 for IDNA. ([#42](https://github.com/ethers-io/ethers.js/issues/42); [f955dca](https://github.com/ethers-io/ethers.js/commit/f955dca417a6f86690cf33a81b08baa99e1b1a5c))
+  - Removed references to legacy errors pacakge and updated umbrella pacakge. ([c09de16](https://github.com/ethers-io/ethers.js/commit/c09de163473c361cac11ddef9ec852f4cbb7d8e3))
+  - Updated admin module to use new fetchJson. ([226c100](https://github.com/ethers-io/ethers.js/commit/226c100c72c3fcb0c0e3b62be5f579fd9cc4c904))
+  - Updated dist files. ([8354c3f](https://github.com/ethers-io/ethers.js/commit/8354c3f9fe5487f21acaaeccd4450d9a5d495bc1))
   - Full case-folding for IDNA in namehash. ([0af95f4](https://github.com/ethers-io/ethers.js/commit/0af95f4a655106e67c2ba8f445af88c9e9e24339))
   - Deprecating errors for logger. ([0b224e8](https://github.com/ethers-io/ethers.js/commit/0b224e8fb5811cd06727063c909ca1e1e5cde57e))
   - More consistent debug events for Providers. ([e8f28b5](https://github.com/ethers-io/ethers.js/commit/e8f28b55d7dd62e29f03628232ffe7c75dc811b5))
