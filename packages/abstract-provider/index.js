@@ -14,7 +14,6 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
-var errors_1 = require("@ethersproject/errors");
 var properties_1 = require("@ethersproject/properties");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
@@ -98,7 +97,7 @@ exports.TransactionOrderForkEvent = TransactionOrderForkEvent;
 var Provider = /** @class */ (function () {
     function Provider() {
         var _newTarget = this.constructor;
-        errors_1.checkAbstract(_newTarget, Provider);
+        logger.checkAbstract(_newTarget, Provider);
         properties_1.defineReadOnly(this, "_isProvider", true);
     }
     // Alias for "on"

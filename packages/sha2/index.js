@@ -1,15 +1,10 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var crypto_1 = require("crypto");
 var bytes_1 = require("@ethersproject/bytes");
-var errors = __importStar(require("@ethersproject/errors"));
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
 var SupportedAlgorithms;
 (function (SupportedAlgorithms) {
     SupportedAlgorithms["sha256"] = "sha256";
@@ -30,7 +25,7 @@ function sha512(data) {
 exports.sha512 = sha512;
 function computeHmac(algorithm, key, data) {
     if (!SupportedAlgorithms[algorithm]) {
-        errors.throwError("unsupported algorithm - " + algorithm, errors.UNSUPPORTED_OPERATION, {
+        logger.throwError("unsupported algorithm - " + algorithm, logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "computeHmac",
             algorithm: algorithm
         });

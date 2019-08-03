@@ -3,6 +3,12 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.150 (2019-08-03 1:07)
+----------------------------------------
+
+  - Fixed old references to errors package. ([1cabce7](https://github.com/ethers-io/ethers.js/commit/1cabce7e1c23b15cc2b630c0b403dd72d815a5ba))
+  - Added generation scripts for Table A.1 for stringprep. ([#42](https://github.com/ethers-io/ethers.js/issues/42); [b21681a](https://github.com/ethers-io/ethers.js/commit/b21681a7f4292b0e77315caad3a59fe814e9292b))
+
 ethers/v5.0.0-beta.149 (2019-08-03 0:45)
 ----------------------------------------
 
