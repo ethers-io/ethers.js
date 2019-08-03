@@ -3,6 +3,11 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.151 (2019-08-03 1:29)
+----------------------------------------
+
+  - Added package name prefix to all _version for Logger. ([692589d](https://github.com/ethers-io/ethers.js/commit/692589db54cbca10a2a453e9a1801a8612056559))
+
 ethers/v5.0.0-beta.150 (2019-08-03 1:07)
 ----------------------------------------
 
