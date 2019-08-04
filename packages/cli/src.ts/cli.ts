@@ -81,7 +81,7 @@ function repeat(chr: string, length: number): string {
     return result.substring(0, length);
 }
 
-// @TODO: Make dump recurable for objects
+// @TODO: Make dump recursable for objects
 
 // Dumps key/value pairs in a nice format
 export function dump(header: string, info: any): void {
@@ -250,6 +250,22 @@ class WrappedSigner extends ethers.Signer {
         dump("Response:", {
             "Hash": response.hash
         });
+
+        if (this.plugin.wait) {
+            try {
+                let receipt = await tx.wait();
+                dump("Success:", {
+                    "Block Number": receipt.blockNumber,
+                    "Block Hash": receipt.blockHash,
+                    "Gas Used": (ethers.utils.commify(receipt.gasUsed.toString()) + " ether"),
+                    "Fee": (ethers.utils.formatEther(receipt.gasUsed.mul(tx.gasPrice)) + " ether")
+                });
+            } catch (error) {
+                dump("Failed:", {
+                    Error: error.message
+                });
+            }
+        }
 
         return response;
     }
@@ -491,8 +507,8 @@ export abstract class Plugin {
     gasLimit: ethers.BigNumber;
     gasPrice: ethers.BigNumber;
     nonce: number;
-    data: string;
     yes: boolean;
+    wait: boolean;
 
     constructor() {
     }
@@ -508,6 +524,7 @@ export abstract class Plugin {
     async prepareOptions(argParser: ArgParser): Promise<void> {
         let runners: Array<Promise<void>> = [ ];
 
+        this.wait = argParser.consumeFlag("wait");
         this.yes = argParser.consumeFlag("yes");
 
         /////////////////////
@@ -695,6 +712,7 @@ export type Options = {
     account?: boolean;
     provider?: boolean;
     transaction?: boolean;
+    version?: string;
 };
 
 export class CLI {
@@ -707,13 +725,19 @@ export class CLI {
         ethers.utils.defineReadOnly(this, "options", {
             account: true,
             provider: true,
-            transaction: true
+            transaction: true,
+            version: version.split("/").pop(),
         });
 
         if (options) {
             ["account", "provider", "transaction"].forEach((key) => {
                 if ((<any>options)[key] == null) { return; }
                 (<any>(this.options))[key] = !!((<any>options)[key]);
+            });
+
+            ["version"].forEach((key) => {
+                if ((<any>options)[key] == null) { return; }
+                (<any>(this.options))[key] = (<any>options)[key];
             });
         }
         Object.freeze(this.options);
@@ -723,11 +747,10 @@ export class CLI {
     }
 
     static getAppName(): string {
-        let appName = "ethers";
         try {
-            appName = basename(process.mainModule.filename).split(".")[0];
+            return basename(process.mainModule.filename).split(".")[0];
         } catch (error) { }
-        return appName;
+        return "ethers";
     }
 
     // @TODO: Better way to specify default; i.e. may not have args
@@ -832,7 +855,7 @@ export class CLI {
             console.log("  --account RAW_KEY           Use a private key (insecure *)");
             console.log("  --account 'MNEMONIC'        Use a mnemonic (insecure *)");
             console.log("  --account -                 Use secure entry for a raw key or mnemonic");
-            console.log("  --account-void ADDRESS      Udd an address as a void signer");
+            console.log("  --account-void ADDRESS      Use an address as a void signer");
             console.log("  --account-void ENS_NAME     Add the resolved address as a void signer");
             console.log("  --account-rpc ADDRESS       Add the address from a JSON-RPC provider");
             console.log("  --account-rpc INDEX         Add the index from a JSON-RPC provider");
@@ -858,19 +881,19 @@ export class CLI {
             console.log("  --gasPrice GWEI             Default gas price for transactions(in wei)");
             console.log("  --gasLimit GAS              Default gas limit for transactions");
             console.log("  --nonce NONCE               Initial nonce for the first transaction");
-            console.log("  --value VALUE               Default value (in ether) for transactions");
             console.log("  --yes                       Always accept Siging and Sending");
             console.log("");
         }
 
         console.log("OTHER OPTIONS");
+        console.log("  --wait                      Wait until transactions are mined");
         console.log("  --debug                     Show stack traces for errors");
         console.log("  --help                      Show this usage and exit");
         console.log("  --version                   Show this version and exit");
         console.log("");
         console.log("(*) By including mnemonics or private keys on the command line they are");
         console.log("    possibly readable by other users on your system and may get stored in");
-        console.log("    your bash history file.");
+        console.log("    your bash history file. This is NOT recommended.");
         console.log("");
 
         if (message) {
@@ -898,22 +921,10 @@ export class CLI {
             let plugin = new CheckPlugin();
             await plugin.prepareOptions(argParser);
 
+            // These are not part of the plugin
             [ "debug", "help", "version"].forEach((key) => {
                 argParser.consumeFlag(key);
             });
-
-            /*
-            [ "mnemonic-password", "offline", "xxx-mnemonic-password", "yes"].forEach((key) => {
-                argParser.consumeFlag(key);
-            });
-
-            [ "alchemy", "etherscan", "infura", "nodesmith" ].forEach((flag) => {
-                argParser.consumeFlag(flag);
-            });
-            [ "network", "rpc", "account", "account-rpc", "account-void", "gas-price", "gas-limit", "nonce" ].forEach((option) => {
-                argParser.consumeOption(option);
-            });
-            */
 
             // Find the first unconsumed argument
             if (!this.standAlone) {
@@ -931,11 +942,7 @@ export class CLI {
         let argParser = new ArgParser(args);
 
         if (argParser.consumeFlag("version")) {
-            let app = "ethers";
-            try {
-                app = basename(process.mainModule.filename).split(".")[0];
-            } catch (error) { }
-            console.log(app + "/" + version);
+            console.log(CLI.getAppName() + "/" + this.options.version);
             return;
         }
 
