@@ -74,15 +74,13 @@ abstract class EnsPlugin extends Plugin {
         ethers.utils.defineReadOnly(this, "_ethAddressCache", { });
     }
 
-    async getEns(): Promise<ethers.Contract> {
-        let network = await this.provider.getNetwork();
-        return new ethers.Contract(network.ensAddress, ensAbi, this.accounts[0] || this.provider);
+    getEns(): ethers.Contract {
+        return new ethers.Contract(this.network.ensAddress, ensAbi, this.accounts[0] || this.provider);
     }
 
     async getResolver(nodehash: string): Promise<ethers.Contract> {
         if (!this._ethAddressCache[nodehash]) {
-            let ens = await this.getEns();
-            this._ethAddressCache[nodehash] = await ens.resolver(nodehash);
+            this._ethAddressCache[nodehash] = await this.getEns().resolver(nodehash);
         }
         return new ethers.Contract(this._ethAddressCache[nodehash], resolverAbi, this.accounts[0] || this.provider);
     }
@@ -132,7 +130,7 @@ class LookupPlugin extends EnsPlugin {
     async run(): Promise<void> {
         await super.run();
 
-        let ens = await this.getEns();
+        let ens = this.getEns();
 
         for (let i = 0; i < this.names.length; i++) {
             let name = this.names[i];
@@ -203,38 +201,11 @@ cli.addPlugin("lookup", LookupPlugin);
 abstract class AccountPlugin extends EnsPlugin {
     name: string;
     nodehash: string;
-    _wait: boolean;
 
     static getHelp(): Help {
         return logger.throwError("subclasses must implemetn this", ethers.errors.UNSUPPORTED_OPERATION, {
             operation: "getHelp"
         });
-    }
-
-    static getOptionHelp(): Array<Help> {
-        return [
-            {
-                name: "[ --wait ]",
-                help: "Wait for the transaction to be mined"
-            }
-        ];
-    }
-
-    async wait(tx: ethers.providers.TransactionResponse): Promise<void> {
-        if (!this._wait) { return; }
-        try {
-            let receipt = await tx.wait();
-            this.dump("Success:", {
-                BlockNumber: receipt.blockNumber,
-                BlockHash: receipt.blockHash,
-                GasUsed: ethers.utils.commify(receipt.gasUsed.toString()),
-                Fee: ethers.utils.formatEther(receipt.gasUsed.mul(tx.gasPrice))
-            });
-        } catch (error) {
-            this.dump("Failed:", {
-                Error: error.message
-            });
-        }
     }
 
     async _setValue(key: string, value: string): Promise<void> {
@@ -280,8 +251,7 @@ abstract class ControllerPlugin extends AccountPlugin {
     duration: number;
 
     static getOptionHelp(): Array<Help> {
-        let result = super.getOptionHelp();
-        [
+        return [
             {
                 name: "[ --duration DAYS ]",
                 help: "Register duration (default: 365 days)"
@@ -298,10 +268,7 @@ abstract class ControllerPlugin extends AccountPlugin {
                 name: "[ --owner OWNER ]",
                 help: "The target owner (default: current account)"
             }
-        ].forEach((help) => {
-            result.push(help);
-        });
-        return result;
+        ];
     }
 
     async _setValue(key: string, value: string): Promise<void> {
@@ -378,9 +345,7 @@ class CommitPlugin extends ControllerPlugin {
             Commitment: commitment
         });
 
-        let tx = await ethController.commit(commitment);
-
-        this.wait(tx);
+        await ethController.commit(commitment);
     }
 }
 cli.addPlugin("commit", CommitPlugin);
@@ -408,11 +373,9 @@ class RevealPlugin extends ControllerPlugin {
             Fee: ethers.utils.formatEther(fee),
         });
 
-        let tx = await ethController.register(this.label, this.owner, this.duration, this.salt, {
+        await ethController.register(this.label, this.owner, this.duration, this.salt, {
             value: fee.mul(11).div(10)
         });
-
-        this.wait(tx);
     }
 }
 cli.addPlugin("reveal", RevealPlugin);
@@ -462,12 +425,12 @@ abstract class AddressAccountPlugin extends AccountPlugin {
     address: string;
 
     static getOptionHelp(): Array<Help> {
-        let options = super.getOptionHelp();
-        options.push({
-            name: "[ --address ADDRESS ]",
-            help: "Override the address"
-        });
-        return options;
+        return [ 
+            {
+                name: "[ --address ADDRESS ]",
+                help: "Override the address"
+            }
+        ];
     }
 
     getDefaultAddress(): Promise<string> {
@@ -497,10 +460,8 @@ class SetOwnerPlugin extends AddressAccountPlugin {
 
     async run(): Promise<void> {
         await super.run();
-        const ens = await this.getEns();
 
-        let tx = ens.setOwner(this.nodehash, this.address);
-        this.wait(tx);
+        this.getEns().setOwner(this.nodehash, this.address);
     }
 }
 cli.addPlugin("set-owner", SetOwnerPlugin);
@@ -533,9 +494,7 @@ class SetSubnodePlugin extends AddressAccountPlugin {
             Node: this.node
         });
 
-        const ens = await this.getEns();
-        let tx = await ens.setSubnodeOwner(ethers.utils.namehash(this.node), ethers.utils.id(this.label), this.address);
-        this.wait(tx);
+        await this.getEns().setSubnodeOwner(ethers.utils.namehash(this.node), ethers.utils.id(this.label), this.address);
     }
 }
 cli.addPlugin("set-subnode", SetSubnodePlugin);
@@ -560,10 +519,7 @@ class SetResolverPlugin extends AddressAccountPlugin {
             Resolver: this.address
         });
 
-        const ens = await this.getEns();
-        let tx = await ens.setResolver(this.nodehash, this.address);
-
-        this.wait(tx);
+        await this.getEns().setResolver(this.nodehash, this.address);
     }
 }
 cli.addPlugin("set-resolver", SetResolverPlugin);
@@ -586,8 +542,7 @@ class SetAddrPlugin extends AddressAccountPlugin {
         });
 
         let resolver = await this.getResolver(this.nodehash);
-        let tx = await resolver.setAddr(this.nodehash, this.address);
-        this.wait(tx);
+        await resolver.setAddr(this.nodehash, this.address);
     }
 }
 cli.addPlugin("set-addr", SetAddrPlugin);
@@ -610,8 +565,7 @@ abstract class TextAccountPlugin extends AccountPlugin {
         });
 
         let resolver = await this.getResolver(this.nodehash);
-        let tx = await resolver.setText(this.nodehash, key, value);
-        this.wait(tx);
+        await resolver.setText(this.nodehash, key, value);
     }
 }
 
@@ -727,8 +681,7 @@ class MigrateRegistrarPlugin extends AccountPlugin {
         });
 
         let legacyRegistrar = await this.getEthLegacyRegistrar();
-        let tx = await legacyRegistrar.transferRegistrars(ethers.utils.id(this.label));
-        this.wait(tx);
+        await legacyRegistrar.transferRegistrars(ethers.utils.id(this.label));
     }
 }
 cli.addPlugin("migrate-registrar", MigrateRegistrarPlugin);
@@ -771,8 +724,7 @@ class TransferPlugin extends AccountPlugin {
         });
 
         let registrar = await this.getEthRegistrar();
-        let tx = await registrar.transferFrom(this.accounts[0].getAddress(), this.new_owner, ethers.utils.id(this.label));
-        this.wait(tx);
+        await registrar.transferFrom(this.accounts[0].getAddress(), this.new_owner, ethers.utils.id(this.label));
     }
 }
 cli.addPlugin("transfer", TransferPlugin);
