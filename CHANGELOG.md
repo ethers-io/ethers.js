@@ -3,9 +3,14 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.0-beta.151 (2019-08-03 1:29)
-----------------------------------------
+ethers/v5.0.0-beta.151 (2019-08-05 14:29)
+-----------------------------------------
 
+  - Using CLI --wait instead of custom Plugin flag for ethers-ens. ([19ee2b5](https://github.com/ethers-io/ethers.js/commit/19ee2b516005b2c35b846f19457ec9bbfa0c283b))
+  - Added --wait as a general flag to CLI. ([7640292](https://github.com/ethers-io/ethers.js/commit/7640292ac8b7b9e6de3ad6699d23e2debf26cc1b))
+  - Added migrate-registrar and transfer to ENS CLI. ([31e8e1b](https://github.com/ethers-io/ethers.js/commit/31e8e1b0520bc8be390fbf7e2b473c36a8649eb3))
+  - Include data in the CLI transaction dump. ([53bd96a](https://github.com/ethers-io/ethers.js/commit/53bd96a9f675233906033290f1e0c71ca4e9d389))
+  - Better errors on gas estimation failure. ([0e6b810](https://github.com/ethers-io/ethers.js/commit/0e6b810def390309240508a99b2cf0736848dedd))
   - Added package name prefix to all _version for Logger. ([692589d](https://github.com/ethers-io/ethers.js/commit/692589db54cbca10a2a453e9a1801a8612056559))
 
 ethers/v5.0.0-beta.150 (2019-08-03 1:07)

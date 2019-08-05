@@ -45,8 +45,8 @@ export declare abstract class Plugin {
     gasLimit: ethers.BigNumber;
     gasPrice: ethers.BigNumber;
     nonce: number;
-    data: string;
     yes: boolean;
+    wait: boolean;
     constructor();
     static getHelp(): Help;
     static getOptionHelp(): Array<Help>;
@@ -62,6 +62,7 @@ export declare type Options = {
     account?: boolean;
     provider?: boolean;
     transaction?: boolean;
+    version?: string;
 };
 export declare class CLI {
     readonly defaultCommand: string;

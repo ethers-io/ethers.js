@@ -149,7 +149,7 @@ function repeat(chr, length) {
     }
     return result.substring(0, length);
 }
-// @TODO: Make dump recurable for objects
+// @TODO: Make dump recursable for objects
 // Dumps key/value pairs in a nice format
 function dump(header, info) {
     console.log(header);
@@ -289,6 +289,7 @@ var WrappedSigner = /** @class */ (function (_super) {
                         if (tx.nonce != null) {
                             info["None"] = tx.nonce;
                         }
+                        info["Data"] = tx.data;
                         info["Gas Limit"] = ethers_1.ethers.BigNumber.from(tx.gasLimit || 0).toString();
                         info["Gas Price"] = (ethers_1.ethers.utils.formatUnits(tx.gasPrice || 0, "gwei") + " gwei"),
                             info["Chain ID"] = (tx.chainId || 0);
@@ -316,7 +317,7 @@ var WrappedSigner = /** @class */ (function (_super) {
     };
     WrappedSigner.prototype.sendTransaction = function (transactionRequest) {
         return __awaiter(this, void 0, void 0, function () {
-            var signer, network, tx, info, response;
+            var signer, network, tx, info, response, receipt, error_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, getSigner(this)];
@@ -342,6 +343,7 @@ var WrappedSigner = /** @class */ (function (_super) {
                         if (tx.nonce != null) {
                             info["None"] = tx.nonce;
                         }
+                        info["Data"] = tx.data;
                         info["Gas Limit"] = ethers_1.ethers.BigNumber.from(tx.gasLimit || 0).toString();
                         info["Gas Price"] = (ethers_1.ethers.utils.formatUnits(tx.gasPrice || 0, "gwei") + " gwei"),
                             info["Chain ID"] = (tx.chainId || 0);
@@ -356,7 +358,27 @@ var WrappedSigner = /** @class */ (function (_super) {
                         dump("Response:", {
                             "Hash": response.hash
                         });
-                        return [2 /*return*/, response];
+                        if (!this.plugin.wait) return [3 /*break*/, 10];
+                        _a.label = 7;
+                    case 7:
+                        _a.trys.push([7, 9, , 10]);
+                        return [4 /*yield*/, tx.wait()];
+                    case 8:
+                        receipt = _a.sent();
+                        dump("Success:", {
+                            "Block Number": receipt.blockNumber,
+                            "Block Hash": receipt.blockHash,
+                            "Gas Used": (ethers_1.ethers.utils.commify(receipt.gasUsed.toString()) + " ether"),
+                            "Fee": (ethers_1.ethers.utils.formatEther(receipt.gasUsed.mul(tx.gasPrice)) + " ether")
+                        });
+                        return [3 /*break*/, 10];
+                    case 9:
+                        error_2 = _a.sent();
+                        dump("Failed:", {
+                            Error: error_2.message
+                        });
+                        return [3 /*break*/, 10];
+                    case 10: return [2 /*return*/, response];
                 }
             });
         });
@@ -591,12 +613,13 @@ var Plugin = /** @class */ (function () {
     };
     Plugin.prototype.prepareOptions = function (argParser) {
         return __awaiter(this, void 0, void 0, function () {
-            var runners, network, providers, rpc, accounts, accountOptions, _loop_1, this_1, i, gasPrice, gasLimit, nonce, error_2;
+            var runners, network, providers, rpc, accounts, accountOptions, _loop_1, this_1, i, gasPrice, gasLimit, nonce, error_3;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         runners = [];
+                        this.wait = argParser.consumeFlag("wait");
                         this.yes = argParser.consumeFlag("yes");
                         network = (argParser.consumeOption("network") || "homestead");
                         providers = [];
@@ -735,8 +758,8 @@ var Plugin = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 8];
                     case 7:
-                        error_2 = _a.sent();
-                        this.throwError(error_2);
+                        error_3 = _a.sent();
+                        this.throwError(error_3);
                         return [3 /*break*/, 8];
                     case 8: return [2 /*return*/];
                 }
@@ -794,7 +817,8 @@ var CLI = /** @class */ (function () {
         ethers_1.ethers.utils.defineReadOnly(this, "options", {
             account: true,
             provider: true,
-            transaction: true
+            transaction: true,
+            version: _version_1.version.split("/").pop(),
         });
         if (options) {
             ["account", "provider", "transaction"].forEach(function (key) {
@@ -803,18 +827,23 @@ var CLI = /** @class */ (function () {
                 }
                 (_this.options)[key] = !!(options[key]);
             });
+            ["version"].forEach(function (key) {
+                if (options[key] == null) {
+                    return;
+                }
+                (_this.options)[key] = options[key];
+            });
         }
         Object.freeze(this.options);
         ethers_1.ethers.utils.defineReadOnly(this, "defaultCommand", defaultCommand || null);
         ethers_1.ethers.utils.defineReadOnly(this, "plugins", {});
     }
     CLI.getAppName = function () {
-        var appName = "ethers";
         try {
-            appName = path_1.basename(process.mainModule.filename).split(".")[0];
+            return path_1.basename(process.mainModule.filename).split(".")[0];
         }
         catch (error) { }
-        return appName;
+        return "ethers";
     };
     // @TODO: Better way to specify default; i.e. may not have args
     CLI.prototype.addPlugin = function (command, plugin) {
@@ -913,7 +942,7 @@ var CLI = /** @class */ (function () {
             console.log("  --account RAW_KEY           Use a private key (insecure *)");
             console.log("  --account 'MNEMONIC'        Use a mnemonic (insecure *)");
             console.log("  --account -                 Use secure entry for a raw key or mnemonic");
-            console.log("  --account-void ADDRESS      Udd an address as a void signer");
+            console.log("  --account-void ADDRESS      Use an address as a void signer");
             console.log("  --account-void ENS_NAME     Add the resolved address as a void signer");
             console.log("  --account-rpc ADDRESS       Add the address from a JSON-RPC provider");
             console.log("  --account-rpc INDEX         Add the index from a JSON-RPC provider");
@@ -937,18 +966,18 @@ var CLI = /** @class */ (function () {
             console.log("  --gasPrice GWEI             Default gas price for transactions(in wei)");
             console.log("  --gasLimit GAS              Default gas limit for transactions");
             console.log("  --nonce NONCE               Initial nonce for the first transaction");
-            console.log("  --value VALUE               Default value (in ether) for transactions");
             console.log("  --yes                       Always accept Siging and Sending");
             console.log("");
         }
         console.log("OTHER OPTIONS");
+        console.log("  --wait                      Wait until transactions are mined");
         console.log("  --debug                     Show stack traces for errors");
         console.log("  --help                      Show this usage and exit");
         console.log("  --version                   Show this version and exit");
         console.log("");
         console.log("(*) By including mnemonics or private keys on the command line they are");
         console.log("    possibly readable by other users on your system and may get stored in");
-        console.log("    your bash history file.");
+        console.log("    your bash history file. This is NOT recommended.");
         console.log("");
         if (message) {
             console.log(message);
@@ -959,7 +988,7 @@ var CLI = /** @class */ (function () {
     };
     CLI.prototype.run = function (args) {
         return __awaiter(this, void 0, void 0, function () {
-            var command, argParser_1, plugin_1, commandIndex, argParser, app, debug, plugin, error_3;
+            var command, argParser_1, plugin_1, commandIndex, argParser, debug, plugin, error_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -973,21 +1002,10 @@ var CLI = /** @class */ (function () {
                         return [4 /*yield*/, plugin_1.prepareOptions(argParser_1)];
                     case 1:
                         _a.sent();
+                        // These are not part of the plugin
                         ["debug", "help", "version"].forEach(function (key) {
                             argParser_1.consumeFlag(key);
                         });
-                        /*
-                        [ "mnemonic-password", "offline", "xxx-mnemonic-password", "yes"].forEach((key) => {
-                            argParser.consumeFlag(key);
-                        });
-            
-                        [ "alchemy", "etherscan", "infura", "nodesmith" ].forEach((flag) => {
-                            argParser.consumeFlag(flag);
-                        });
-                        [ "network", "rpc", "account", "account-rpc", "account-void", "gas-price", "gas-limit", "nonce" ].forEach((option) => {
-                            argParser.consumeOption(option);
-                        });
-                        */
                         // Find the first unconsumed argument
                         if (!this.standAlone) {
                             commandIndex = argParser_1._checkCommandIndex();
@@ -1001,12 +1019,7 @@ var CLI = /** @class */ (function () {
                         }
                         argParser = new ArgParser(args);
                         if (argParser.consumeFlag("version")) {
-                            app = "ethers";
-                            try {
-                                app = path_1.basename(process.mainModule.filename).split(".")[0];
-                            }
-                            catch (error) { }
-                            console.log(app + "/" + _version_1.version);
+                            console.log(CLI.getAppName() + "/" + this.options.version);
                             return [2 /*return*/];
                         }
                         if (argParser.consumeFlag("help")) {
@@ -1042,16 +1055,16 @@ var CLI = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 7];
                     case 6:
-                        error_3 = _a.sent();
-                        if (error_3 instanceof UsageError) {
-                            return [2 /*return*/, this.showUsage(error_3.message, 1)];
+                        error_4 = _a.sent();
+                        if (error_4 instanceof UsageError) {
+                            return [2 /*return*/, this.showUsage(error_4.message, 1)];
                         }
                         if (debug) {
                             console.log("----- <DEBUG> ------");
-                            console.log(error_3);
+                            console.log(error_4);
                             console.log("----- </DEBUG> -----");
                         }
-                        console.log("Error: " + error_3.message);
+                        console.log("Error: " + error_4.message);
                         process.exit(2);
                         return [3 /*break*/, 7];
                     case 7: return [2 /*return*/];

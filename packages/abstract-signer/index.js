@@ -135,7 +135,11 @@ var Signer = /** @class */ (function () {
                 });
             }
             if (tx.gasLimit == null) {
-                tx.gasLimit = _this.estimateGas(tx);
+                tx.gasLimit = _this.estimateGas(tx).catch(function (error) {
+                    logger.throwError("unable to estimate gas; specify manually", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+                        tx: tx
+                    });
+                });
             }
             if (tx.chainId == null) {
                 tx.chainId = _this.getChainId();

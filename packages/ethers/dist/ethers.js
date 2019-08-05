@@ -11477,7 +11477,7 @@ exports.Provider = Provider;
 },{"./_version":57,"@ethersproject/bytes":70,"@ethersproject/logger":91,"@ethersproject/properties":96}],59:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "abstract-signer/5.0.0-beta.129";
+exports.version = "abstract-signer/5.0.0-beta.130";
 
 },{}],60:[function(require,module,exports){
 "use strict";
@@ -11617,7 +11617,11 @@ var Signer = /** @class */ (function () {
                 });
             }
             if (tx.gasLimit == null) {
-                tx.gasLimit = _this.estimateGas(tx);
+                tx.gasLimit = _this.estimateGas(tx).catch(function (error) {
+                    logger.throwError("unable to estimate gas; specify manually", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+                        tx: tx
+                    });
+                });
             }
             if (tx.chainId == null) {
                 tx.chainId = _this.getChainId();

@@ -14,13 +14,13 @@ Installing
 **node.js**
 
 ```
-/home/ricmoo/some_project> npm install --save ethers
+/home/ricmoo/some_project> npm install --save ethers@next
 ```
 
 **browser**
 
 ```
-<script src="@TODO" type="text/javasctipt">
+<script src="https://cdn.ethers.io/lib/ethers-5.0.min.js" type="text/javasctipt">
 </script>
 ```
 
@@ -72,7 +72,7 @@ apps). To do this, run:
 
 
 ```
-/home/ethers> npm run update-version
+/home/ethers> npm run update-versions
 ```
 
 Which will also list all packages that have changed along with the specifc files.
