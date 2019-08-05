@@ -1,6 +1,6 @@
 {
   "name": "ethers",
-  "version": "5.0.0-beta.151",
+  "version": "5.0.0-beta.152",
   "description": "Umbrella package for most common Ethers libraries.",
   "main": "index.js",
   "scripts": {
@@ -60,5 +60,5 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0xdafcee4f4e94f95969cfcc889ca8093689ccd0233884347b0b19fc96bca5c227"
+  "tarballHash": "0xb6136ebb429d8b7246e07904ac1ff693f76ebf942da0bece84ce36ef00cc2583"
 }

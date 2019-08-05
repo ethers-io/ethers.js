@@ -13710,7 +13710,7 @@ exports.ContractFactory = ContractFactory;
 },{"./_version":72,"@ethersproject/abi":55,"@ethersproject/abstract-provider":58,"@ethersproject/abstract-signer":60,"@ethersproject/address":62,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/constants":71,"@ethersproject/logger":91,"@ethersproject/properties":96}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "ethers/5.0.0-beta.151";
+exports.version = "ethers/5.0.0-beta.152";
 
 },{}],75:[function(require,module,exports){
 "use strict";
