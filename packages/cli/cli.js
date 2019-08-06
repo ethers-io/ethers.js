@@ -362,7 +362,7 @@ var WrappedSigner = /** @class */ (function (_super) {
                         _a.label = 7;
                     case 7:
                         _a.trys.push([7, 9, , 10]);
-                        return [4 /*yield*/, tx.wait()];
+                        return [4 /*yield*/, response.wait()];
                     case 8:
                         receipt = _a.sent();
                         dump("Success:", {

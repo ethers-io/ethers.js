@@ -3,6 +3,14 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.153 (2019-08-06 19:15)
+-----------------------------------------
+
+  - Updated gas estimate failure messaging to include that the tx may simple be causing a revert. ([edb26b1](https://github.com/ethers-io/ethers.js/commit/edb26b16354afd707e5d03e174c4cc809b951c4f))
+  - Additional sanity checks in ethers-ens. ([de4b2a4](https://github.com/ethers-io/ethers.js/commit/de4b2a449ca3a49807c8bedb3e21e8e8d71e63fc))
+  - Fix bug in --wait for CLI. ([9977c9f](https://github.com/ethers-io/ethers.js/commit/9977c9f66a7007dcc1963128c88c584b6b6c064b))
+  - Added content-hash support to ENS CLI. ([7dfef46](https://github.com/ethers-io/ethers.js/commit/7dfef463f83a9190d1b89cf81e0fb692da3dd813))
+
 ethers/v5.0.0-beta.152 (2019-08-05 14:37)
 -----------------------------------------
 

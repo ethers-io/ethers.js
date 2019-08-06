@@ -136,7 +136,7 @@ var Signer = /** @class */ (function () {
             }
             if (tx.gasLimit == null) {
                 tx.gasLimit = _this.estimateGas(tx).catch(function (error) {
-                    logger.throwError("unable to estimate gas; specify manually", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+                    logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
                         tx: tx
                     });
                 });

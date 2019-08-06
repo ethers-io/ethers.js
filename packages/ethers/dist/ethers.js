@@ -11477,7 +11477,7 @@ exports.Provider = Provider;
 },{"./_version":57,"@ethersproject/bytes":70,"@ethersproject/logger":91,"@ethersproject/properties":96}],59:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "abstract-signer/5.0.0-beta.130";
+exports.version = "abstract-signer/5.0.0-beta.131";
 
 },{}],60:[function(require,module,exports){
 "use strict";
@@ -11618,7 +11618,7 @@ var Signer = /** @class */ (function () {
             }
             if (tx.gasLimit == null) {
                 tx.gasLimit = _this.estimateGas(tx).catch(function (error) {
-                    logger.throwError("unable to estimate gas; specify manually", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+                    logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
                         tx: tx
                     });
                 });
@@ -13710,7 +13710,7 @@ exports.ContractFactory = ContractFactory;
 },{"./_version":72,"@ethersproject/abi":55,"@ethersproject/abstract-provider":58,"@ethersproject/abstract-signer":60,"@ethersproject/address":62,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/constants":71,"@ethersproject/logger":91,"@ethersproject/properties":96}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "ethers/5.0.0-beta.152";
+exports.version = "ethers/5.0.0-beta.153";
 
 },{}],75:[function(require,module,exports){
 "use strict";
