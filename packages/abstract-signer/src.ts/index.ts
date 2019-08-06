@@ -171,7 +171,7 @@ export abstract class Signer {
 
             if (tx.gasLimit == null) {
                 tx.gasLimit = this.estimateGas(tx).catch((error) => {
-                    logger.throwError("unable to estimate gas; specify manually", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+                    logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
                         tx: tx
                     });
                 });
