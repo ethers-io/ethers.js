@@ -2,7 +2,8 @@
 
 'use strict';
 
-import { ethers } from 'ethers';
+import { ethers } from "ethers";
+import { Base58 } from "@ethersproject/basex";
 
 import { ArgParser, CLI, Help, Plugin } from '../cli';
 
@@ -45,6 +46,8 @@ const resolverAbi = [
     "function setAddr(bytes32 nodehash, address addr) @500000",
     "function text(bytes32 nodehash, string key) view returns (string)",
     "function setText(bytes32 nodehash, string key, string value) @500000",
+    "function contenthash(bytes32 nodehash) view returns (bytes)",
+    "function setContenthash(bytes32 nodehash, bytes contenthash) @500000",
 ];
 
 const InterfaceID_ERC721 = "0x6ccb2df4";
@@ -180,9 +183,16 @@ class LookupPlugin extends EnsPlugin {
 
             if (details.Resolver !== ethers.constants.AddressZero) {
                 let resolver = new ethers.Contract(details.Resolver, resolverAbi, this.provider);
-                details.address = resolver.addr(nodehash);
-                details.email = resolver.text(nodehash, "email").catch((error: any) => (""));
-                details.website = resolver.text(nodehash, "website").catch((error: any) => (""));
+                details["Address"] = resolver.addr(nodehash);
+                details["E-mail"] = resolver.text(nodehash, "email").catch((error: any) => (""));
+                details["Website"] = resolver.text(nodehash, "website").catch((error: any) => (""));
+                details["Content Hash"] = resolver.contenthash(nodehash).then((hash: string) => {
+                    if (hash === "0x") { return "0x"; }
+                    if (hash.substring(0, 10) === "0xe3010170" && ethers.utils.isHexString(hash, 38)) {
+                        return Base58.encode(ethers.utils.hexDataSlice(hash, 4)) + " (IPFS)";
+                    }
+                    return hash + " (unknown format)";
+                }, (error: any) => (""));
             }
 
             details = await ethers.utils.resolveProperties(details);
@@ -619,28 +629,43 @@ class SetWebsitePlugin extends TextAccountPlugin {
 
 cli.addPlugin("set-website", SetWebsitePlugin);
 
-/*
-// @TODO:
-class SetContentHashPlugin extends AccountPlugin {
-    hash: string;
+class SetContentPlugin extends AccountPlugin {
+    readonly hash: string;
+    readonly multihash: string;
 
     static getHelp(): Help {
         return {
            name: "set-content NAME HASH",
-           help: "Set the content hash record to HASH"
+           help: "Set the IPFS HASH for NAME"
         }
+    }
+
+    async _setValue(key: string, value: string): Promise<void> {
+        if (key === "hash") {
+            let bytes = Base58.decode(value);
+            if (bytes.length !== 34 || bytes[0] !== 18 || bytes[1] !== 32) {
+                this.throwError("Unsupported IPFS hash");
+            }
+
+            let multihash = ethers.utils.concat([ "0xe3010170", bytes ]);
+            await super._setValue("multihash", ethers.utils.hexlify(multihash));
+        }
+        await super._setValue(key, value);
     }
 
     async run(): Promise<void> {
         await super.run();
-        throw new Error("not implemented");
-        //let resolver = await this.getResolver();
-        //let tx = resolver.setContenthash(this.nodehash, this.key, this.value);
-        //this.wait(tx);
+
+        this.dump("Set Content Hash: " + this.name, {
+            Nodehash: this.nodehash,
+            "Content Hash": this.hash
+        });
+
+        let resolver = await this.getResolver(this.nodehash);
+        await resolver.setContenthash(this.nodehash, this.multihash);
     }
 }
-cli.addPlugin("set-content", SetContentHashPlugin);
-*/
+cli.addPlugin("set-content", SetContentPlugin);
 
 class MigrateRegistrarPlugin extends AccountPlugin {
     readonly label: string;
@@ -733,6 +758,8 @@ cli.addPlugin("transfer", TransferPlugin);
  *  To Do:
  *    register NAME --registrar
  *    set-reverse NAME
+ *    renew NAME --duration DAYS
+ *    reclaim NAME --address OWNER
  *
  *  Done:
  *    migrate-registrar NAME
