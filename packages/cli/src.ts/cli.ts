@@ -253,7 +253,7 @@ class WrappedSigner extends ethers.Signer {
 
         if (this.plugin.wait) {
             try {
-                let receipt = await tx.wait();
+                let receipt = await response.wait();
                 dump("Success:", {
                     "Block Number": receipt.blockNumber,
                     "Block Hash": receipt.blockHash,
