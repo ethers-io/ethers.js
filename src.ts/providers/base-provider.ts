@@ -1142,7 +1142,7 @@ export class BaseProvider extends Provider {
             // No ENS...
             if (!network.ensAddress) {
                 errors.throwError(
-                    'network does support ENS',
+                    'network does not support ENS',
                     errors.UNSUPPORTED_OPERATION,
                     { operation: 'ENS', network: network.name }
                 );
