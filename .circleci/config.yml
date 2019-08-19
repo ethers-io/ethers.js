@@ -1,0 +1,96 @@
+version: 2.1
+jobs:
+  run-test:
+    description: "build and run tests"
+
+    machine: true
+    working_directory: ~/repo
+
+    parameters:
+      node-version:
+        type: string
+        default: "10.16.3"
+      test-script:
+        type: string
+        default: "test-node"
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: npm install
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+      - run:
+          name: Prepare to run parity
+          command: |
+            mkdir -p /tmp/parity/keys
+            cp -r admin/test-parity/parity-keys /tmp/parity/keys/DevelopmentChain
+            cp admin/test-parity/parity-dev.* /tmp/parity
+            chmod -R 777 /tmp/parity
+            ls -la /tmp/parity
+
+      - run:
+          name: Starting Parity
+          command: |
+            docker run -d \
+            -p 8545:8545 \
+            -p 8546:8546 \
+            -p 30303:30303 \
+            -p 30303:30303/udp \
+            --name parity \
+            -v /tmp/parity:/home/parity/.local/share/io.parity.ethereum parity/parity:v2.4.8-stable \
+            --chain /home/parity/.local/share/io.parity.ethereum/parity-dev.json \
+            --unlock=0x7454a8F5a7c7555d79B172C89D20E1f4e4CC226C \
+            --password /home/parity/.local/share/io.parity.ethereum/parity-dev.pwds \
+            --min-gas-price 1000000000 \
+            --jsonrpc-interface all
+
+      - run:
+          name: Waiting for Parity to be ready
+          command: |
+            for i in `seq 1 20`;
+            do
+              nc -z localhost 8545 && echo Success && exit 0
+              echo -n .
+              sleep 2
+            done
+            docker ps -a
+            docker logs parity 
+            echo Failed waiting for Parity && exit 1
+
+      - run:
+          name: run << parameters.test-script >> with node version << parameters.node-version >>
+          command: |
+           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+           [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+           nvm install << parameters.node-version >>
+           node -v
+           npm run bootstrap
+           npm run << parameters.test-script >>
+
+workflows:
+  version: 2
+  all:
+    jobs:
+      - run-test:
+          node-version: "8.16.1"
+          test-script: "test-node"
+      - run-test:
+          node-version: "10.16.3"
+          test-script: "test-node"
+      - run-test:
+          node-version: "12.13.1"
+          test-script: "test-node"
+      - run-test:
+          node-version: "10.16.0"
+          test-script: "test-browser-esm"
