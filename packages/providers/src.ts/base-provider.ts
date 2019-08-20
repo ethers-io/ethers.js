@@ -524,7 +524,8 @@ export class BaseProvider extends Provider {
                 if (receipt.status === 0) {
                     logger.throwError("transaction failed", Logger.errors.CALL_EXCEPTION, {
                         transactionHash: tx.hash,
-                        transaction: tx
+                        transaction: tx,
+                        receipt: receipt
                     });
                 }
                 return receipt;
