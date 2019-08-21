@@ -1,0 +1,27 @@
+_title: Other Providers
+
+_section: Other Providers
+
+Others...
+
+_subsection: FallbackProvider @<provider-fallback>
+
+Explain...
+
+_heading: Properties
+
+_property: provider.providers => Array<[[provider]]>
+The list of Providers this is connected to.
+
+_property: provider.quorum => number
+The quorum the backend responses must agree upon before a result will be
+resolved. By default this is //half the sum of the weights//.
+
+_property: provider.weights => Array<number>
+The weight each of the Providers adds to a results acceptance.
+
+
+_subsection: IpcProvider @<provider-ipc>
+
+Explain...
+

@@ -1,0 +1,80 @@
+_title: Fixed Number
+
+_section: FixedNumber @<fixednumber>
+
+
+_subsection: Types
+
+
+_heading: FixedFormat @<fixedformat>
+TODO
+
+_definition: **//"fixed"//**
+A shorthand for ``fixed128x80``.
+
+_subsection: Creating Instances
+
+The FixedNumber constructor cannot be called directly. There are several
+static methods for creating a FixedNumber.
+
+_property: BigNumber.from(value [ , format = "fixed" ] ) => [[fixednumber]]
+Returns an instance of a **FixedNumber** for //value// as a //format//.
+
+_property: BigNumber.fromBytes(aBytesLike [ , format = "fixed" ] ) => [[fixednumber]]
+Returns an instance of a **FixedNumber** for //value// as a //format//.
+
+_property: BigNumber.fromString(value [ , format = "fixed" ] ) => [[fixednumber]]
+Returns an instance of a **FixedNumber** for //value// as a //format//. The //value// must
+not contain more decimals than the //format// permits.
+
+_property: BigNumber.fromValue(value [ , decimals = 0 [ , format = "fixed" ] ] ) => [[fixednumber]]
+Returns an instance of a **FixedNumber** for //value// with //decimals// as a //format//.
+
+
+_subsection: Properties
+
+_property: fixednumber.format
+The [FixedFormat](fixedformat) of //fixednumber//.
+
+
+_subsection: Methods
+
+_heading: Math Operations
+
+_property: fixednumber.addUnsafe(otherValue) => [[fixednumber]]
+Returns a new FixedNumber with the value of //fixedvalue// **+** //otherValue//.
+
+_property: fixednumber.subUnsafe(otherValue) => [[fixednumber]]
+Returns a new FixedNumber with the value of //fixedvalue// **&ndash;** //otherValue//.
+
+_property: fixednumber.mulUnsafe(otherValue) => [[fixednumber]]
+Returns a new FixedNumber with the value of //fixedvalue// **&times;** //otherValue//.
+
+_property: fixednumber.divUnsafe(otherValue) => [[fixednumber]]
+Returns a new FixedNumber with the value of //fixedvalue// **&#247;** //otherValue//.
+
+_property: fixednumber.round([ decimals = 0 ]) => [[fixednumber]]
+Returns a new FixedNumber with the value of //fixedvalue// rounded to //decimals//.
+
+
+_heading: Conversion
+
+_property: fixednumber.toFormat(format) => [[fixednumber]]
+Returns a new FixedNumber with the value of //fixedvalue// with //format//.
+
+_property: fixednumber.toHexString() => string
+Returns a [Hexstring](hexstring) representation of //fixednumber//.
+
+_property: fixednumber.toString() => string
+Returns a string representation of //fixednumber//.
+
+_property: fixednumber.toUnsafeFloat() => float
+Returns a floating-point JavaScript number value of //fixednumber//.
+Due to rounding in JavaScript numbers, the value is only approximate.
+
+
+_heading: Inspection
+
+_property: BigNumber.isFixedNumber(value) => boolean
+Returns true if and only if //value// is a **FixedNumber**.
+

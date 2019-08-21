@@ -1,0 +1,22 @@
+_title: JSON-RPC Provider
+
+_section: JSON-RPC Provider
+
+Explain here...
+
+_subsection: JsonRpcProvider  @<jsonrpc-provider>
+
+TODO...
+
+_property: provider.getSigner([ addressOrIndex ]) => [[jsonrpc-signer]]
+Returns a [[jsonrpc-signer]] which is managed by this Ethereum node, at
+//addressOrIndex//. If no //addressOrIndex// is provided, the first
+account (account #0) is used.
+
+_property: provider.getUncheckSigner([ addressOrIndex ]) => [[jsonrpc-uncheckedsigner]]
+
+_subsection: JsonRpcSigner @<jsonrpc-signer>
+TODO... Explain
+
+_subsection: JsonRpcUncheckedSigner @<jsonrpc-uncheckedsigner>
+TODO... Explain

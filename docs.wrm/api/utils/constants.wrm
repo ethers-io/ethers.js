@@ -1,0 +1,49 @@
+_title: Constants
+
+_section: Constants @<constants>
+
+The **ethers.contants** Object contains commonly used values.
+
+_heading: Importing
+
+_code: constants-import.js
+
+
+_subsection: Bytes
+
+_property: constants.AddressZero
+The Address Zero, which is 20 bytes (40 nibbles) of zero.
+
+_property: constants.HashZero
+The Hash Zero, which is 32 bytes (64 nibbles) of zero.
+
+
+_subsection: Strings
+
+_property: constants.EtherSymbol
+The Ether symbol, **&Xi;**.
+
+
+_subsection: BigNumber
+
+_property: constants.NegativeOne
+The BigNumber value representing ``"-1"``.
+
+_property: constants.Zero
+The BigNumber value representing ``"0"``.
+
+_property: constants.One
+The BigNumber value representing ``"1"``.
+
+_property: constants.Two
+The BigNumber value representing ``"2"``.
+
+_property: constants.WeiPerEther
+The BigNumber value representing ``"1000000000000000000"``, which is the
+number of Wei per Ether.
+
+_property: constants.MaxUint256
+The BigNumber value representing the maximum ``uint256`` value.
+
+
+

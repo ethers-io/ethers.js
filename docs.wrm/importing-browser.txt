@@ -1,0 +1,2 @@
+<script src="https://cdn.ethers.io/lib/ethers-5.0.min.js"
+        type="application/javascipt"></script>

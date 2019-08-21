@@ -1,0 +1,21 @@
+_title: Addresses
+
+_section: Addresses
+
+Explain addresses,formats and checksumming here.
+
+Also see: [Constants.AddressZero](constants)
+
+_heading: Functions
+
+_property: utils.getAddress(address) => string
+TODO
+
+_property: utils.isAddress(address) => boolean
+TODO
+
+_property: utils.getIcapAddress(address) => string
+TODO
+
+_property: utils.getContractAddress(transaction) => string
+TODO

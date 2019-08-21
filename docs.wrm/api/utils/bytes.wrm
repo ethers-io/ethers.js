@@ -1,0 +1,121 @@
+_title: Byte Manipulation
+
+_section: Byte Manipulation
+
+Tra la la...
+
+_subsection: Types
+
+_heading: Bytes @<bytes>
+
+A Bytes object is any object which is an
+[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) or
+[TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) with
+each value in the valid byte range (i.e. between 0 and 255 inclusive),
+or is an Object with a ``length`` property where each indexed property
+is in the valid byte range.
+
+_heading: BytesLike @<byteslike>
+
+A **BytesLike** can be either a [[bytes]] or a [[hexstring]].
+
+_heading: Hexstring @<hexstring>
+
+A **hexstring** is a string which has a ``0x`` prefix followed by 
+
+_heading: Signature @<signature>
+
+- **r** and **s** --- The x co-ordinate of **r** and the **s** value of the signature
+- **v** --- The parity of the y co-ordinate of **r**
+- **_vs** --- The [compact representation](https://link_here) of the **(r, s)** and **v**
+- **recoveryParam** --- The normalized (i.e. 0 or 1) value of **v**
+
+_heading: SignatureLike @<signaturelike>
+
+A **SignatureLike** is similar to a [[signature]], except redundant properties
+may be omitted.
+
+For example, if *_vs* is specified, **(r, s)** and **v** can be omitted. Likewise,
+if **recoverParam** is provided, **v** can be omitted (as it can be computed).
+
+
+_subsection: Inspection
+
+_property: utils.isBytes(object) => boolean
+Returns true if and only if //object// is a valid [[bytes]].
+
+_property: utils.isBytesLike(object) => boolean
+Returns true if and only if //object// is a [[bytes]] or an Array or TypedArray
+where each value is a valid byte (i.e. between 0 and 255 inclusive).
+
+_property: utils.isHexString(object, [ length ] ) => boolean
+Returns true if and only if //object// is a valid hex string;
+if //length// is specified the length (in bytes) is also verified.
+
+
+_subsection: Converting between Arrays and Hexstrings
+
+_property: utils.arrayify(hexstringOrArrayish [ , options ]) => Uint8Array
+Converts //hexstringOrArrayish// to a Uint8Array. If a [[hexstring]]
+is passed in, the length must be even.
+
+_property: utils.hexlify(hexstringOrArrayish) => string
+Converts //hexstringOrArrayish// to a [[hexstring]]. The result
+will always be zero-padded to even length.
+
+_property: utils.hexValue(aBigNumberish) => string
+Converts //aBigNumberish// to a [[hexstring]], with no unecessary leading
+zeros. The result of this function can be of odd-length.
+
+_heading: Examples
+
+_code: bytes-conversion.js
+
+
+_subsection: Array Manipulation
+
+_property: utils.concat(arrayOfBytesLike) => Uint8Array
+Concatenates all the [[byteslike]] in //arrayOfBytesLike//
+into a single Uint8Array.
+
+_property: utils.stripZeros(aBytesLike) => Uint8Array
+Concatenates all the [[byteslike]] in //arrayOfBytesLike//
+
+_property: utils.zeroPad(aBytesLike, length) => Uint8Array
+Concatenates all the [[byteslike]] in //arrayOfBytesLike//
+
+
+_subsection: Hexstring Manipulation
+
+_property: utils.hexConcat(arrayOfBytesLike) => string
+Concatenates all the [[byteslike]] in //arrayOfBytesLike//
+into a single [[hexstring]]
+
+_property: utils.hexDataLength(aBytesLike) => number
+Returns the length (in bytes) of //aBytesLike//.
+
+This will **throw and error** if //aBytesLike// is a [[hexstring]]
+but is of odd-length.
+
+_property: utils.hexDataSlice(aBytesLike, offset [ , endOffset ] ) => string
+Returns the length (in bytes) of //aBytesLike//.
+
+_property: utils.hexStripZeros(aBytesLike) => string
+@TODO
+
+_property: utils.hexZeroPad(aBytesLike, length) => string
+@TODO
+
+
+_subsection: Signature Conversion
+
+_property: utils.joinSignature(aSignatureLike) => string
+Return the flat-format of a [[signaturelike]], which is
+65 bytes (130 nibbles) long, concatenating the **r**, **s** and **v**
+of a Signature.
+
+_property: utils.splitSignature(aSignatureLikeOrBytesLike) => Signature
+Return the full expanded-format of a [[signaturelike]] or
+a flat-format [[hexstring]]. Any missing properties will be
+computed.
+

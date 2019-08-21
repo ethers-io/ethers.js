@@ -1,0 +1,175 @@
+_title: Big Number
+
+
+_section: BigNumber @<bignumber>
+
+Explain about BigNumber here...
+
+_heading: Importing
+
+_code: bignumber-import.source
+
+_subsection: Types
+
+_heading: BigNumberish @<bignumberish>
+
+Many functions and methods in this library take in values which
+can be non-ambiguously and safely converted to a BigNumber. These
+values can be sepcified as:
+
+_definition: **//string//**
+A [hexstring](hexstring) or a decimal string, either of which may
+be negative.
+
+_definition: **//BytesLike//**
+A [BytesLike](byteslike) Object, such as an Array or Uint8Array.
+
+_definition: **//BigNumber//**
+An existing BigNumber instance.
+
+_definition: **//number//**
+A number that is within the safe range for JavaScript numbers.
+
+_definition: **//BigInt//**
+A JavaScript [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)
+object, on environments that support BigInt.
+
+
+_subsection: Creating Instances
+
+The constructor of BigNumber cannot be called directly. Instead, Use the static ``BigNumber.from``.
+
+_property: BigNumber.from(aBigNumberish) => [[bignumber]]
+Returns an instance of a **BigNumber** for //aBigNumberish//.
+
+_heading: Examples:
+
+_code: bignumber-create.js
+
+
+_subsection: Methods
+
+The BigNumber class is immutable, so no operations can change the value
+it represents.
+
+
+_heading: Math Operations
+
+_property: bignumber.add(otherValue) => [[bignumber]]
+Returns a BigNumber with the value of //bignumber// **+** //otherValue//.
+
+_property: bignumber.sub(otherValue) => [[bignumber]]
+Returns a BigNumber with the value of //bignumber// **&ndash;** //otherValue//.
+
+_property: bignumber.mul(otherValue) => [[bignumber]]
+Returns a BigNumber with the value of //bignumber// **&times;** //otherValue//.
+
+_property: bignumber.div(divisor) => [[bignumber]]
+Returns a BigNumber with the value of //bignumber// **&#247;** //divisor//.
+
+_property: bignumber.mod(divisor) => [[bignumber]]
+Returns a BigNumber with the value of the **remainder** of //bignumber// &#247; //divisor//.
+
+_property: bignumber.pow(exponent) => [[bignumber]]
+Returns a BigNumber with the value of //bignumber// to the power of //exponent//.
+
+_property: bignumber.abs() => [[bignumber]]
+Returns a BigNumber with the absolute value of //bignumber//.
+
+_property: bignumber.maskn(bitcount) => [[bignumber]]
+Returns a BigNumber with the value of //bignumber// with bits beyond
+the //bitcount// least significant bits set to zero.
+
+
+_heading: Two's Compliment
+
+[Two's Complicment](https://en.wikipedia.org/wiki/Two%27s_complement)
+is a method used to encode and decode fixed-width values which can be
+positive or negative, without requiring a separate sign bit. Most users
+will not need to interact with these.
+
+_property: bignumber.fromTwos(bitwidth) => [[bignumber]]
+Returns a BigNumber with the value of //bignumber// converted from twos-compliment with //bitwidth//.
+
+_property: bignumber.toTwos(bitwidth) => [[bignumber]]
+Returns a BigNumber with the value of //bignumber// converted to twos-compliment with //bitwidth//.
+
+
+_heading: Comparison and Equivalence
+
+_property: bignumber.eq(otherValue) => boolean
+Returns true if and only if the value of //bignumber// is equal to //otherValue//.
+
+_property: bignumber.lt(otherValue) => boolean
+Returns true if and only if the value of //bignumber// **<** //otherValue//.
+
+_property: bignumber.lte(otherValue) => boolean
+Returns true if and only if the value of //bignumber// **&le;** //otherValue//.
+
+_property: bignumber.gt(otherValue) => boolean
+Returns true if and only if the value of //bignumber// **>** //otherValue//.
+
+_property: bignumber.gte(otherValue) => boolean
+Returns true if and only if the value of //bignumber// **&ge;** //otherValue//.
+
+_property: bignumber.isZero() => boolean
+Returns true if and only if the value of //bignumber// is zero.
+
+
+_heading: Conversion
+
+_property: bignumber.toNumber() => number
+Returns the value of //bignumber// as a JavaScript value.
+
+This will **throw an error**
+if the value is greater than or equal to //Number.MAX_SAFE_INTEGER// or less than or
+equal to //Number.MIN_SAFE_INTEGER//.
+
+_property: bignumber.toString() => string
+Returns the value of //bignumber// as a base-10 string.
+
+_property: bignumber.toHexString() => string
+Returns the value of //bignumber// as a base-16, `0x`-prefixed [hexstring](hexstring).
+
+
+_heading: Inspection
+
+_property: BigNumnber.isBigNumber(object) => boolean
+Returns true if and only if the //object// is a BigNumber object.
+
+
+_heading: Examples
+
+_code: bignumber-examples.js
+
+_subsection: Notes
+
+A few short notes on numbers...
+
+_heading: Why can't I just use numbers?
+
+The first problem many encounter when dealing with Ethereum is
+the concept of numbers. Most common currencies are broken down
+with very little granularity. For example, there are only 100
+cents in a single dollar. However, there are 10^^18^^ **wei** in a
+single **ether**.
+
+JavaScript uses [IEEE 754 double-precision binary floating point](https://en.wikipedia.org/wiki/Double-precision_floating-point_format)
+numbers to represent numeric values. As a result, there are //holes//
+in the integer set after 9,007,199,254,740,991; which is
+problematic for //Ethereum// because that is only around 0.009
+ether (in wei), which means any value over that will begin to
+experience rounding errors.
+
+To demonstrate how this may be an issue in your code, consider:
+
+_code: bignumber-ieee754.js
+
+To remedy this, all numbers (which can be large) are stored
+and manipulated as [Big Numbers](bignumber).
+
+The functions [parseEther( etherString )](http://linkto) and
+[formatEther( wei )](http://linkto) can be used to convert
+between string representations, which are displayed to or entered
+by the user and Big Number representations which can have
+mathematical operations handled safely.

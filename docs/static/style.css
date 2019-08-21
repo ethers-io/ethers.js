@@ -1,0 +1,454 @@
+@font-face {
+    font-family: 'LatoLight';
+    src: url('/static/lato/Lato-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'LatoLight';
+    src: url('/static/lato/Lato-Black.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'LatoLight';
+    src: url('/static/lato/Lato-Italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'LatoLight';
+    src: url('/static/lato/Lato-BlackItalic.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+}
+
+html {
+    margin: 0;
+}
+
+body {
+    background-color: #eee;
+    color: #333;
+    font-family: "LatoLight", sans-serif;
+    margin: 0;
+}
+
+/* Since we use the Black font, back off the color a bit (from #333) */
+b {
+    color: #484848;
+}
+
+h1 {
+   color: #444;
+   font-size: 175%;
+   margin: 0 0 0 15px;
+   padding: 30px 30px 0 15px;   
+   border-top: 1px solid #ddd;
+}
+
+h2 {
+   color: #444;
+   font-size: 150%;
+   border-top: 1px solid #ddd;
+   margin: 30px 0 0 15px;
+   padding: 30px 0 0 15px;
+}
+
+h3 {
+   color: #333;
+   font-size: 125%;
+   margin: 10px 0 0 15px;
+   padding: 10px 0 0 15px;
+}
+
+p {
+    font-size: 18px;
+    line-height: 28px;
+    padding-left: 30px;
+}
+
+ul {
+    line-height: 28px;
+    margin: 10px 0 0 30px;
+    width: 600px;
+}
+
+ul li {
+    font-size: 18px;
+    line-height: 30px;
+}
+
+div.code {
+    background: #f8f8ff;
+    border: 2px solid #88a;
+    color: #000;
+    margin: 20px 0 0 30px;
+    dddmargin-left: 30px;
+    padding: 15px 20px;
+    font-family: monospace;
+    font-size: 18px;
+    white-space: nowrap;
+    overflow: scroll;
+}
+
+div.code .comment {
+    color: #000;
+    opacity: 0.5;
+}
+
+div.code .result.ok {
+    color: #00a;
+    font-style: italic;
+    opacity: 0.7;
+}
+
+div.code .result.error {
+    color: #a00;
+    font-style: italic;
+    opacity: 0.7;
+}
+
+.content a {    
+    text-decoration: none;
+    color: #66e;
+}
+
+.content a:hover {
+    color: #22a;
+}
+
+div.breadcrumbs {
+    padding: 40px 30px 30px 30px;
+}
+
+div.breadcrumbs span.current {
+    font-style: italic;
+}
+
+.sidebar {
+    background: #334;
+    box-shadow: 5px 0px 10px 0px #aaa;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    padding-top: 160px;
+    overflow: auto;
+    width: 260px;
+}
+
+.sidebar .header {
+    background: #2535a0;
+    box-shadow: 0px 5px 15px 0px #115;
+    height: 160px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 260px;
+    height: 160px;
+}
+
+.sidebar .logo {
+    color: #fff;
+    opacity: 0.5;
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    text-align: center;
+    transform: translate(-50%, 0);
+    transition: opacity 0.4s linear;
+    width: 100;
+}
+
+.sidebar .logo .image {
+    background: url(/static/logo.svg) center no-repeat;
+    height: 40px;
+    margin-bottom: 5px;
+    width: 100%;
+}
+
+.sidebar .logo:hover {
+    opacity: 1;
+    transition: opacity 0.1s linear;
+}
+
+.sidebar a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.sidebar .toc .link.hide {
+    display: none;
+}
+
+.sidebar .toc .link a {
+    color: #222;
+}
+
+.sidebar .toc .link a:hover {
+    color: #668;
+}
+
+.sidebar .toc .link.base a {
+    color: #fff;
+}
+
+.sidebar .toc .link.base a:hover {
+    color: #aac;
+}
+
+
+.sidebar .logo .name {
+    font-size: 125%;
+    font-weight: bold;
+}
+
+.sidebar .logo .version {
+}
+
+.sidebar .hr {
+}
+
+.sidebar .toc {
+    padding: 20px 0 40px;
+}
+
+.sidebar .toc .link.title {
+    font-size: 115%;
+    font-weight: bold;
+    padding: 5px 10px 15px 20px;
+}
+
+.sidebar .toc .link.title a {
+    color: #666;
+}
+
+.sidebar .toc .link.title a:hover {
+    color: #779;
+}
+
+.sidebar .toc .link {
+    font-size: 90%;
+    line-height: 20px;
+    padding: 5px 10px 5px 20px;
+}
+
+.sidebar .toc .link {
+    font-size: 90%;
+    padding: 5px 10px 5px 20px;
+}
+
+.sidebar .toc .link.depth-2 {
+    background-color: #d8d8d8;
+    padding-left: 30px;
+}
+
+.sidebar .toc .link.ancestor.depth-2 {
+    background-color: #c0c0c0;
+    border-top: 2px solid #b0b0b0;
+}
+
+.sidebar .toc .link.depth-3 {
+    background-color: #c0c0c0;
+    padding-left: 40px;
+}
+
+.sidebar .toc .link.ancestor.depth-3 {
+    background-color: #a8a8a8;
+    border-top: 2px solid #989898;
+}
+
+.sidebar .toc .link.depth-4 {
+    background-color: #a8a8a8;
+    padding-left: 50px;
+}
+
+.sidebar .toc .link.ancestor.depth-4 {
+    background-color: #909090;
+    border-top: 2px solid #808080;
+}
+
+.sidebar .toc .link.depth-5 {
+    background-color: #909090;
+    padding-left: 60px;
+}
+
+.sidebar .toc .link.ancestor.base {
+    background: #fff;
+}
+
+.sidebar .toc .link.ancestor {
+    font-weight: bold;
+}
+
+.sidebar .toc .link.ancestor.base a {
+    color: #444;
+}
+
+.sidebar .toc .link.ancestor.base a:hover {
+    color: #779;
+}
+
+.sidebar .toc .link.ancestor.base {
+    background: #fff;
+    dddfont-weight: bold;
+}
+
+.sidebar .toc .link.ancestor.base a {
+    color: #444;
+}
+
+
+.content {
+    background: #fff;
+    box-shadow: 5px 0px 10px 0px #888;
+    margin: 0;
+    padding: 0px 90px 30px 210px;
+    padding-left: 270px;
+    width: 800px;
+}
+
+.definition {
+    margin: 10px 0 0 15px;
+    padding: 10px 0 0 15px;
+}
+
+.definition p {
+    margin-top: 4px;
+}
+
+.definition .term {
+    font-size: 110%;
+    dddfont-weight: bold;
+}
+
+code.inline {
+    background: #eef;
+    dddpadding-left: 5px;
+    dddpadding-right: 5px;
+}
+
+.property {
+   margin: 10px 0 0 15px;
+   padding: 10px 0 0 15px;
+}
+
+.property p {
+    margin-top: 4px;
+}
+
+.property .signature {
+    font-size: 115%;
+}
+
+.property .signature .modifier {
+    color: #555;
+    font-weight: bold;
+    font-style: italic;
+    padding-right: 8px;
+}
+
+.property .signature .path {
+    font-style: italic;
+}
+
+.property .signature .method {
+    color: #555;
+    font-weight: bold;
+}
+
+.property .signature .param {
+    font-style: italic;
+}
+
+.property .arrow {
+    color: #888;
+    padding-left: 15px;
+    padding-right: 5px;
+}
+
+.property .returns {
+    color: #888;
+    font-style: italic;
+}
+
+.content .toc {
+   margin: 20px 0 0 0px;
+   padding: 0px 0 0 48px;
+}
+
+.content .toc div {
+    font-size: 18px;
+    line-height: 28px;
+}
+
+.content .toc div span.bullet {
+  position: absolute;
+  transform: translate(-16px, 0);
+}
+
+.content .copyright {
+   font-size: 80%;
+   padding: 10px 0 20px 30px;
+   text-align: center;
+}
+
+.footer {
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    color: #333;
+    padding: 30px 30px 30px 15px;
+    position: relative;
+    margin: 50px 0 10px 15px;
+}
+
+.footer .nav {
+    line-height: 30px;
+    height: 30px;
+    padding: 0;
+    position: absolute;
+    top: 50%;
+    transform: translate(0, -50%);
+    width: 300px;
+}
+
+.footer .nav span {
+    background: #449;
+    border-radius: 15px;
+    color: #fff;
+    display: inline-block;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 30px;
+    opacity: 0.5;
+    text-align: center;
+    transition: opacity 0.4s linear;
+    height: 30px;
+    width: 30px;
+}
+
+.footer .nav:hover span {
+    opacity: 1;
+    transition: opacity 0.1s linear;
+}
+
+.footer .nav.previous {
+    left: 0;
+}
+
+.footer .nav.previous span {
+    margin-right: 20px;
+}
+
+.footer .nav.next {
+    right: 0;
+    text-align: right;
+}
+
+.footer .nav.next span {
+    margin-left: 20px;
+}

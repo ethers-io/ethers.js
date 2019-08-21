@@ -1,0 +1,32 @@
+_title: Signer
+
+_section: Signers
+
+Tra la la...
+
+_subsection: Signer
+
+_property: signer.connect(provider) => Signer
+TODO
+
+_heading: Blockchain Methods
+
+_property: signer.getBalance([ blockTag = "latest" ]) => Promise(BigNumber)
+TODO
+
+_property: signer.getTransactionCount([ blockTag = "latest" ]) => Promise(number)
+TODO
+
+
+_subsection: Wallet inherits Signer
+
+Wallet is...
+
+_heading: Creating an Instance
+
+_property: new ethers.Wallet(privateKey [ , provider ])
+TODO
+
+_property: Wallet.fromEncryptedJson(json, password)
+TODO
+
