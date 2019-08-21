@@ -26,9 +26,9 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
         var _this = this;
         logger.checkAbstract(_newTarget, UrlJsonRpcProvider);
         // Normalize the Network and API Key
-        network = _newTarget.getNetwork(network);
-        apiKey = _newTarget.getApiKey(apiKey);
-        var url = _newTarget.getUrl(network, apiKey);
+        network = properties_1.getStatic((_newTarget), "getNetwork")(network);
+        apiKey = properties_1.getStatic((_newTarget), "getApiKey")(apiKey);
+        var url = properties_1.getStatic((_newTarget), "getUrl")(network, apiKey);
         _this = _super.call(this, url, network) || this;
         properties_1.defineReadOnly(_this, "apiKey", apiKey);
         return _this;

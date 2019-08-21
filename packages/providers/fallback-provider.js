@@ -57,17 +57,18 @@ function serialize(result) {
         return "null";
     }
     else if (typeof (result) === "object") {
-        var bare_1 = {};
         var keys = Object.keys(result);
         keys.sort();
-        keys.forEach(function (key) {
+        return "{" + keys.map(function (key) {
             var value = result[key];
             if (typeof (value) === "function") {
-                return;
+                value = "function{}";
             }
-            bare_1[key] = serialize(value);
-        });
-        return JSON.stringify(bare_1);
+            else {
+                value = serialize(value);
+            }
+            return JSON.stringify(key) + "=" + serialize(value);
+        }).join(",") + "}";
     }
     return JSON.stringify(result);
 }
@@ -124,6 +125,36 @@ var FallbackProvider = /** @class */ (function (_super) {
         properties_1.defineReadOnly(_this, "weights", Object.freeze(weights.slice()));
         return _this;
     }
+    FallbackProvider.doPerform = function (provider, method, params) {
+        switch (method) {
+            case "getBlockNumber":
+            case "getGasPrice":
+            case "getEtherPrice":
+                return provider[method]();
+            case "getBalance":
+            case "getTransactionCount":
+            case "getCode":
+                return provider[method](params.address, params.blockTag || "latest");
+            case "getStorageAt":
+                return provider.getStorageAt(params.address, params.position, params.blockTag || "latest");
+            case "sendTransaction":
+                return provider.sendTransaction(params.signedTransaction);
+            case "getBlock":
+                return provider[(params.includeTransactions ? "getBlockWithTransactions" : "getBlock")](params.blockTag || params.blockHash);
+            case "call":
+            case "estimateGas":
+                return provider[method](params.transaction);
+            case "getTransaction":
+            case "getTransactionReceipt":
+                return provider[method](params.transactionHash);
+            case "getLogs":
+                return provider.getLogs(params.filter);
+        }
+        return logger.throwError("unknown method error", logger_1.Logger.errors.UNKNOWN_ERROR, {
+            method: method,
+            params: params
+        });
+    };
     FallbackProvider.prototype.perform = function (method, params) {
         var _this = this;
         var T0 = now();
@@ -141,7 +172,7 @@ var FallbackProvider = /** @class */ (function (_super) {
                         request: { method: method, params: properties_1.deepCopy(params) },
                         provider: _this
                     });
-                    return provider.perform(method, params).then(function (result) {
+                    return FallbackProvider.doPerform(provider, method, params).then(function (result) {
                         var duration = now() - t0;
                         _this.emit("debug", {
                             action: "response",
@@ -222,6 +253,13 @@ var FallbackProvider = /** @class */ (function (_super) {
                     }
                     // Out of options; give up
                     if (runners.length === 0 && inflightWeight === 0) {
+                        if (firstError === null) {
+                            firstError = logger.makeError("failed to meet quorum", logger_1.Logger.errors.SERVER_ERROR, {
+                                results: Object.keys(results).map(function (u) {
+                                    return { result: u, weight: results[u].reduce(function (accum, r) { return (accum + r.weight); }, 0) };
+                                })
+                            });
+                        }
                         reject(firstError);
                         return;
                     }

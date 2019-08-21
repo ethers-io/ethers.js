@@ -368,14 +368,14 @@ var WrappedSigner = /** @class */ (function (_super) {
                         dump("Success:", {
                             "Block Number": receipt.blockNumber,
                             "Block Hash": receipt.blockHash,
-                            "Gas Used": (ethers_1.ethers.utils.commify(receipt.gasUsed.toString()) + " ether"),
+                            "Gas Used": ethers_1.ethers.utils.commify(receipt.gasUsed.toString()),
                             "Fee": (ethers_1.ethers.utils.formatEther(receipt.gasUsed.mul(tx.gasPrice)) + " ether")
                         });
                         return [3 /*break*/, 10];
                     case 9:
                         error_2 = _a.sent();
                         dump("Failed:", {
-                            Error: error_2.message
+                            "Error": error_2.message
                         });
                         return [3 /*break*/, 10];
                     case 10: return [2 /*return*/, response];

@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/networks",
-  "version": "5.0.0-beta.127",
+  "version": "5.0.0-beta.128",
   "description": "Network definitions for ethers.",
   "main": "index.js",
   "scripts": {
@@ -22,5 +22,5 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x5eb4c39fd89a0c50dd981c91ddb95c9c1cdcc6586ffc29a5b3fa75dad9cf59d1"
+  "tarballHash": "0xe92e07d3a7c8206b3c5ff00ca361b20cec1606fd56e4be8224bd25855756fd0f"
 }

@@ -460,7 +460,8 @@ var BaseProvider = /** @class */ (function (_super) {
                 if (receipt.status === 0) {
                     logger.throwError("transaction failed", logger_1.Logger.errors.CALL_EXCEPTION, {
                         transactionHash: tx.hash,
-                        transaction: tx
+                        transaction: tx,
+                        receipt: receipt
                     });
                 }
                 return receipt;

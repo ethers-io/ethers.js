@@ -10114,7 +10114,7 @@ var StringCoder = /** @class */ (function (_super) {
 }(bytes_1.DynamicBytesCoder));
 exports.StringCoder = StringCoder;
 
-},{"./bytes":48,"@ethersproject/strings":122}],53:[function(require,module,exports){
+},{"./bytes":48,"@ethersproject/strings":123}],53:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -11823,7 +11823,7 @@ function getContractAddress(transaction) {
 }
 exports.getContractAddress = getContractAddress;
 
-},{"./_version":61,"@ethersproject/bytes":70,"@ethersproject/keccak256":89,"@ethersproject/logger":91,"@ethersproject/rlp":113,"bn.js":2}],63:[function(require,module,exports){
+},{"./_version":61,"@ethersproject/bytes":70,"@ethersproject/keccak256":89,"@ethersproject/logger":91,"@ethersproject/rlp":114,"bn.js":2}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
@@ -13710,7 +13710,7 @@ exports.ContractFactory = ContractFactory;
 },{"./_version":72,"@ethersproject/abi":55,"@ethersproject/abstract-provider":58,"@ethersproject/abstract-signer":60,"@ethersproject/address":62,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/constants":71,"@ethersproject/logger":91,"@ethersproject/properties":96}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "ethers/5.0.0-beta.153";
+exports.version = "ethers/5.0.0-beta.154";
 
 },{}],75:[function(require,module,exports){
 "use strict";
@@ -13772,7 +13772,7 @@ function getDefaultProvider(network, options) {
 }
 exports.getDefaultProvider = getDefaultProvider;
 
-},{"./_version":74,"./platform":77,"./utils":78,"@ethersproject/abstract-signer":60,"@ethersproject/bignumber":68,"@ethersproject/constants":71,"@ethersproject/contracts":73,"@ethersproject/logger":91,"@ethersproject/providers":104,"@ethersproject/wallet":129,"@ethersproject/wordlists":133}],76:[function(require,module,exports){
+},{"./_version":74,"./platform":77,"./utils":78,"@ethersproject/abstract-signer":60,"@ethersproject/bignumber":68,"@ethersproject/constants":71,"@ethersproject/contracts":73,"@ethersproject/logger":91,"@ethersproject/providers":105,"@ethersproject/wallet":130,"@ethersproject/wordlists":134}],76:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -13904,7 +13904,7 @@ exports.SupportedAlgorithms = sha2_2.SupportedAlgorithms;
 var strings_2 = require("@ethersproject/strings");
 exports.UnicodeNormalizationForm = strings_2.UnicodeNormalizationForm;
 
-},{"@ethersproject/abi":55,"@ethersproject/address":62,"@ethersproject/base64":63,"@ethersproject/bytes":70,"@ethersproject/hash":80,"@ethersproject/hdnode":82,"@ethersproject/json-wallets":85,"@ethersproject/keccak256":89,"@ethersproject/logger":91,"@ethersproject/properties":96,"@ethersproject/random":111,"@ethersproject/rlp":113,"@ethersproject/sha2":115,"@ethersproject/signing-key":117,"@ethersproject/solidity":118,"@ethersproject/strings":122,"@ethersproject/transactions":125,"@ethersproject/units":127,"@ethersproject/wallet":129,"@ethersproject/web":131}],79:[function(require,module,exports){
+},{"@ethersproject/abi":55,"@ethersproject/address":62,"@ethersproject/base64":63,"@ethersproject/bytes":70,"@ethersproject/hash":80,"@ethersproject/hdnode":82,"@ethersproject/json-wallets":85,"@ethersproject/keccak256":89,"@ethersproject/logger":91,"@ethersproject/properties":96,"@ethersproject/random":112,"@ethersproject/rlp":114,"@ethersproject/sha2":116,"@ethersproject/signing-key":118,"@ethersproject/solidity":119,"@ethersproject/strings":123,"@ethersproject/transactions":126,"@ethersproject/units":128,"@ethersproject/wallet":130,"@ethersproject/web":132}],79:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = "hash/5.0.0-beta.127";
@@ -13966,7 +13966,7 @@ function hashMessage(message) {
 }
 exports.hashMessage = hashMessage;
 
-},{"./_version":79,"@ethersproject/bytes":70,"@ethersproject/keccak256":89,"@ethersproject/logger":91,"@ethersproject/strings":122}],81:[function(require,module,exports){
+},{"./_version":79,"@ethersproject/bytes":70,"@ethersproject/keccak256":89,"@ethersproject/logger":91,"@ethersproject/strings":123}],81:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = "hdnode/5.0.0-beta.129";
@@ -14273,7 +14273,7 @@ function isValidMnemonic(mnemonic, wordlist) {
 }
 exports.isValidMnemonic = isValidMnemonic;
 
-},{"./_version":81,"@ethersproject/basex":64,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/logger":91,"@ethersproject/pbkdf2":94,"@ethersproject/properties":96,"@ethersproject/sha2":115,"@ethersproject/signing-key":117,"@ethersproject/strings":122,"@ethersproject/transactions":125,"@ethersproject/wordlists":133}],83:[function(require,module,exports){
+},{"./_version":81,"@ethersproject/basex":64,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/logger":91,"@ethersproject/pbkdf2":94,"@ethersproject/properties":96,"@ethersproject/sha2":116,"@ethersproject/signing-key":118,"@ethersproject/strings":123,"@ethersproject/transactions":126,"@ethersproject/wordlists":134}],83:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = "json-wallets/5.0.0-beta.127";
@@ -14352,7 +14352,7 @@ function decrypt(json, password) {
 }
 exports.decrypt = decrypt;
 
-},{"./_version":83,"./utils":88,"@ethersproject/address":62,"@ethersproject/bytes":70,"@ethersproject/keccak256":89,"@ethersproject/logger":91,"@ethersproject/pbkdf2":94,"@ethersproject/properties":96,"@ethersproject/strings":122,"aes-js":1}],85:[function(require,module,exports){
+},{"./_version":83,"./utils":88,"@ethersproject/address":62,"@ethersproject/bytes":70,"@ethersproject/keccak256":89,"@ethersproject/logger":91,"@ethersproject/pbkdf2":94,"@ethersproject/properties":96,"@ethersproject/strings":123,"aes-js":1}],85:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var crowdsale_1 = require("./crowdsale");
@@ -14792,7 +14792,7 @@ function encrypt(account, password, options, progressCallback) {
 }
 exports.encrypt = encrypt;
 
-},{"./utils":88,"@ethersproject/address":62,"@ethersproject/bytes":70,"@ethersproject/hdnode":82,"@ethersproject/keccak256":89,"@ethersproject/pbkdf2":94,"@ethersproject/properties":96,"@ethersproject/random":111,"@ethersproject/transactions":125,"aes-js":1,"scrypt-js":37,"uuid":40}],88:[function(require,module,exports){
+},{"./utils":88,"@ethersproject/address":62,"@ethersproject/bytes":70,"@ethersproject/hdnode":82,"@ethersproject/keccak256":89,"@ethersproject/pbkdf2":94,"@ethersproject/properties":96,"@ethersproject/random":112,"@ethersproject/transactions":126,"aes-js":1,"scrypt-js":37,"uuid":40}],88:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
@@ -14856,7 +14856,7 @@ function searchPath(object, path) {
 }
 exports.searchPath = searchPath;
 
-},{"@ethersproject/bytes":70,"@ethersproject/strings":122}],89:[function(require,module,exports){
+},{"@ethersproject/bytes":70,"@ethersproject/strings":123}],89:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -15158,7 +15158,7 @@ exports.Logger = Logger;
 },{"./_version":90}],92:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "networks/5.0.0-beta.127";
+exports.version = "networks/5.0.0-beta.128";
 
 },{}],93:[function(require,module,exports){
 "use strict";
@@ -15193,6 +15193,12 @@ function ethDefaultProvider(network) {
         if (providers.AlchemyProvider) {
             try {
                 providerList.push(new providers.AlchemyProvider(network, options.alchemy));
+            }
+            catch (error) { }
+        }
+        if (providers.CloudflareProvider) {
+            try {
+                providerList.push(new providers.CloudflareProvider(network));
             }
             catch (error) { }
         }
@@ -15376,7 +15382,7 @@ function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
 }
 exports.pbkdf2 = pbkdf2;
 
-},{"@ethersproject/bytes":70,"@ethersproject/sha2":115}],95:[function(require,module,exports){
+},{"@ethersproject/bytes":70,"@ethersproject/sha2":116}],95:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = "properties/5.0.0-beta.130";
@@ -15495,7 +15501,7 @@ exports.Description = Description;
 },{"./_version":95,"@ethersproject/logger":91}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.0-beta.138";
+exports.version = "providers/5.0.0-beta.139";
 
 },{}],98:[function(require,module,exports){
 "use strict";
@@ -15557,7 +15563,7 @@ var AlchemyProvider = /** @class */ (function (_super) {
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));
 exports.AlchemyProvider = AlchemyProvider;
 
-},{"./_version":97,"./url-json-rpc-provider":108,"@ethersproject/logger":91}],99:[function(require,module,exports){
+},{"./_version":97,"./url-json-rpc-provider":109,"@ethersproject/logger":91}],99:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -16020,7 +16026,8 @@ var BaseProvider = /** @class */ (function (_super) {
                 if (receipt.status === 0) {
                     logger.throwError("transaction failed", logger_1.Logger.errors.CALL_EXCEPTION, {
                         transactionHash: tx.hash,
-                        transaction: tx
+                        transaction: tx,
+                        receipt: receipt
                     });
                 }
                 return receipt;
@@ -16470,11 +16477,54 @@ var BaseProvider = /** @class */ (function (_super) {
 }(abstract_provider_1.Provider));
 exports.BaseProvider = BaseProvider;
 
-},{"./_version":97,"./formatter":103,"@ethersproject/abstract-provider":58,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/hash":80,"@ethersproject/logger":91,"@ethersproject/networks":93,"@ethersproject/properties":96,"@ethersproject/strings":122,"@ethersproject/web":131}],100:[function(require,module,exports){
+},{"./_version":97,"./formatter":104,"@ethersproject/abstract-provider":58,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/hash":80,"@ethersproject/logger":91,"@ethersproject/networks":93,"@ethersproject/properties":96,"@ethersproject/strings":123,"@ethersproject/web":132}],100:[function(require,module,exports){
 "use strict";
 module.exports.IpcProvider = null;
 
 },{}],101:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
+var CloudflareProvider = /** @class */ (function (_super) {
+    __extends(CloudflareProvider, _super);
+    function CloudflareProvider() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    CloudflareProvider.getUrl = function (network, apiKey) {
+        if (apiKey != null) {
+            logger.throwArgumentError("apiKey not supported for cloudflare", "apiKey", apiKey);
+        }
+        var host = null;
+        switch (network.name) {
+            case "homestead":
+                host = "https://cloudflare-eth.com/";
+                break;
+            default:
+                logger.throwArgumentError("unsupported network", "network", arguments[0]);
+        }
+        return host;
+    };
+    return CloudflareProvider;
+}(url_json_rpc_provider_1.UrlJsonRpcProvider));
+exports.CloudflareProvider = CloudflareProvider;
+
+},{"./_version":97,"./url-json-rpc-provider":109,"@ethersproject/logger":91}],102:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -16822,7 +16872,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
 }(base_provider_1.BaseProvider));
 exports.EtherscanProvider = EtherscanProvider;
 
-},{"./_version":97,"./base-provider":99,"@ethersproject/bytes":70,"@ethersproject/logger":91,"@ethersproject/properties":96,"@ethersproject/web":131}],102:[function(require,module,exports){
+},{"./_version":97,"./base-provider":99,"@ethersproject/bytes":70,"@ethersproject/logger":91,"@ethersproject/properties":96,"@ethersproject/web":132}],103:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -16882,17 +16932,18 @@ function serialize(result) {
         return "null";
     }
     else if (typeof (result) === "object") {
-        var bare_1 = {};
         var keys = Object.keys(result);
         keys.sort();
-        keys.forEach(function (key) {
+        return "{" + keys.map(function (key) {
             var value = result[key];
             if (typeof (value) === "function") {
-                return;
+                value = "function{}";
             }
-            bare_1[key] = serialize(value);
-        });
-        return JSON.stringify(bare_1);
+            else {
+                value = serialize(value);
+            }
+            return JSON.stringify(key) + "=" + serialize(value);
+        }).join(",") + "}";
     }
     return JSON.stringify(result);
 }
@@ -16949,6 +17000,36 @@ var FallbackProvider = /** @class */ (function (_super) {
         properties_1.defineReadOnly(_this, "weights", Object.freeze(weights.slice()));
         return _this;
     }
+    FallbackProvider.doPerform = function (provider, method, params) {
+        switch (method) {
+            case "getBlockNumber":
+            case "getGasPrice":
+            case "getEtherPrice":
+                return provider[method]();
+            case "getBalance":
+            case "getTransactionCount":
+            case "getCode":
+                return provider[method](params.address, params.blockTag || "latest");
+            case "getStorageAt":
+                return provider.getStorageAt(params.address, params.position, params.blockTag || "latest");
+            case "sendTransaction":
+                return provider.sendTransaction(params.signedTransaction);
+            case "getBlock":
+                return provider[(params.includeTransactions ? "getBlockWithTransactions" : "getBlock")](params.blockTag || params.blockHash);
+            case "call":
+            case "estimateGas":
+                return provider[method](params.transaction);
+            case "getTransaction":
+            case "getTransactionReceipt":
+                return provider[method](params.transactionHash);
+            case "getLogs":
+                return provider.getLogs(params.filter);
+        }
+        return logger.throwError("unknown method error", logger_1.Logger.errors.UNKNOWN_ERROR, {
+            method: method,
+            params: params
+        });
+    };
     FallbackProvider.prototype.perform = function (method, params) {
         var _this = this;
         var T0 = now();
@@ -16966,7 +17047,7 @@ var FallbackProvider = /** @class */ (function (_super) {
                         request: { method: method, params: properties_1.deepCopy(params) },
                         provider: _this
                     });
-                    return provider.perform(method, params).then(function (result) {
+                    return FallbackProvider.doPerform(provider, method, params).then(function (result) {
                         var duration = now() - t0;
                         _this.emit("debug", {
                             action: "response",
@@ -17047,6 +17128,13 @@ var FallbackProvider = /** @class */ (function (_super) {
                     }
                     // Out of options; give up
                     if (runners.length === 0 && inflightWeight === 0) {
+                        if (firstError === null) {
+                            firstError = logger.makeError("failed to meet quorum", logger_1.Logger.errors.SERVER_ERROR, {
+                                results: Object.keys(results).map(function (u) {
+                                    return { result: u, weight: results[u].reduce(function (accum, r) { return (accum + r.weight); }, 0) };
+                                })
+                            });
+                        }
                         reject(firstError);
                         return;
                     }
@@ -17067,7 +17155,7 @@ var FallbackProvider = /** @class */ (function (_super) {
 }(base_provider_1.BaseProvider));
 exports.FallbackProvider = FallbackProvider;
 
-},{"./_version":97,"./base-provider":99,"@ethersproject/logger":91,"@ethersproject/properties":96,"@ethersproject/random":111}],103:[function(require,module,exports){
+},{"./_version":97,"./base-provider":99,"@ethersproject/logger":91,"@ethersproject/properties":96,"@ethersproject/random":112}],104:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var address_1 = require("@ethersproject/address");
@@ -17453,7 +17541,7 @@ var Formatter = /** @class */ (function () {
 }());
 exports.Formatter = Formatter;
 
-},{"./_version":97,"@ethersproject/address":62,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/constants":71,"@ethersproject/logger":91,"@ethersproject/properties":96,"@ethersproject/transactions":125}],104:[function(require,module,exports){
+},{"./_version":97,"@ethersproject/address":62,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/constants":71,"@ethersproject/logger":91,"@ethersproject/properties":96,"@ethersproject/transactions":126}],105:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
@@ -17464,6 +17552,8 @@ var base_provider_1 = require("./base-provider");
 exports.BaseProvider = base_provider_1.BaseProvider;
 var alchemy_provider_1 = require("./alchemy-provider");
 exports.AlchemyProvider = alchemy_provider_1.AlchemyProvider;
+var cloudflare_provider_1 = require("./cloudflare-provider");
+exports.CloudflareProvider = cloudflare_provider_1.CloudflareProvider;
 var etherscan_provider_1 = require("./etherscan-provider");
 exports.EtherscanProvider = etherscan_provider_1.EtherscanProvider;
 var fallback_provider_1 = require("./fallback-provider");
@@ -17482,7 +17572,7 @@ exports.Web3Provider = web3_provider_1.Web3Provider;
 var formatter_1 = require("./formatter");
 exports.Formatter = formatter_1.Formatter;
 
-},{"./alchemy-provider":98,"./base-provider":99,"./etherscan-provider":101,"./fallback-provider":102,"./formatter":103,"./infura-provider":105,"./ipc-provider":100,"./json-rpc-provider":106,"./nodesmith-provider":107,"./web3-provider":109,"@ethersproject/abstract-provider":58,"@ethersproject/networks":93}],105:[function(require,module,exports){
+},{"./alchemy-provider":98,"./base-provider":99,"./cloudflare-provider":101,"./etherscan-provider":102,"./fallback-provider":103,"./formatter":104,"./infura-provider":106,"./ipc-provider":100,"./json-rpc-provider":107,"./nodesmith-provider":108,"./web3-provider":110,"@ethersproject/abstract-provider":58,"@ethersproject/networks":93}],106:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -17549,7 +17639,7 @@ var InfuraProvider = /** @class */ (function (_super) {
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));
 exports.InfuraProvider = InfuraProvider;
 
-},{"./_version":97,"./url-json-rpc-provider":108,"@ethersproject/logger":91}],106:[function(require,module,exports){
+},{"./_version":97,"./url-json-rpc-provider":109,"@ethersproject/logger":91}],107:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -17886,7 +17976,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                 else if (params.blockHash) {
                     return this.send("eth_getBlockByHash", [params.blockHash, !!params.includeTransactions]);
                 }
-                return Promise.reject(new Error("invalid block tag or block hash"));
+                return logger.throwArgumentError("invalid block tag or block hash", "params", params);
             case "getTransaction":
                 return this.send("eth_getTransactionByHash", [params.transactionHash]);
             case "getTransactionReceipt":
@@ -17989,7 +18079,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
 }(base_provider_1.BaseProvider));
 exports.JsonRpcProvider = JsonRpcProvider;
 
-},{"./_version":97,"./base-provider":99,"@ethersproject/abstract-signer":60,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/logger":91,"@ethersproject/networks":93,"@ethersproject/properties":96,"@ethersproject/strings":122,"@ethersproject/web":131}],107:[function(require,module,exports){
+},{"./_version":97,"./base-provider":99,"@ethersproject/abstract-signer":60,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/logger":91,"@ethersproject/networks":93,"@ethersproject/properties":96,"@ethersproject/strings":123,"@ethersproject/web":132}],108:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18046,7 +18136,7 @@ var NodesmithProvider = /** @class */ (function (_super) {
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));
 exports.NodesmithProvider = NodesmithProvider;
 
-},{"./_version":97,"./url-json-rpc-provider":108,"@ethersproject/logger":91}],108:[function(require,module,exports){
+},{"./_version":97,"./url-json-rpc-provider":109,"@ethersproject/logger":91}],109:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18075,9 +18165,9 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
         var _this = this;
         logger.checkAbstract(_newTarget, UrlJsonRpcProvider);
         // Normalize the Network and API Key
-        network = _newTarget.getNetwork(network);
-        apiKey = _newTarget.getApiKey(apiKey);
-        var url = _newTarget.getUrl(network, apiKey);
+        network = properties_1.getStatic((_newTarget), "getNetwork")(network);
+        apiKey = properties_1.getStatic((_newTarget), "getApiKey")(apiKey);
+        var url = properties_1.getStatic((_newTarget), "getUrl")(network, apiKey);
         _this = _super.call(this, url, network) || this;
         properties_1.defineReadOnly(_this, "apiKey", apiKey);
         return _this;
@@ -18109,7 +18199,7 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.UrlJsonRpcProvider = UrlJsonRpcProvider;
 
-},{"./_version":97,"./json-rpc-provider":106,"@ethersproject/logger":91,"@ethersproject/networks":93,"@ethersproject/properties":96}],109:[function(require,module,exports){
+},{"./_version":97,"./json-rpc-provider":107,"@ethersproject/logger":91,"@ethersproject/networks":93,"@ethersproject/properties":96}],110:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18195,12 +18285,12 @@ var Web3Provider = /** @class */ (function (_super) {
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.Web3Provider = Web3Provider;
 
-},{"./_version":97,"./json-rpc-provider":106,"@ethersproject/logger":91,"@ethersproject/properties":96}],110:[function(require,module,exports){
+},{"./_version":97,"./json-rpc-provider":107,"@ethersproject/logger":91,"@ethersproject/properties":96}],111:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = "random/5.0.0-beta.127";
 
-},{}],111:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 (function (global){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -18233,7 +18323,7 @@ exports.randomBytes = randomBytes;
 ;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./_version":110,"./shuffle":112,"@ethersproject/bytes":70,"@ethersproject/logger":91}],112:[function(require,module,exports){
+},{"./_version":111,"./shuffle":113,"@ethersproject/bytes":70,"@ethersproject/logger":91}],113:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function shuffled(array) {
@@ -18248,7 +18338,7 @@ function shuffled(array) {
 }
 exports.shuffled = shuffled;
 
-},{}],113:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 //See: https://github.com/ethereum/wiki/wiki/RLP
@@ -18366,12 +18456,12 @@ function decode(data) {
 }
 exports.decode = decode;
 
-},{"@ethersproject/bytes":70}],114:[function(require,module,exports){
+},{"@ethersproject/bytes":70}],115:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = "sha2/5.0.0-beta.128";
 
-},{}],115:[function(require,module,exports){
+},{}],116:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -18415,12 +18505,12 @@ function computeHmac(algorithm, key, data) {
 }
 exports.computeHmac = computeHmac;
 
-},{"./_version":114,"@ethersproject/bytes":70,"@ethersproject/logger":91,"hash.js":21}],116:[function(require,module,exports){
+},{"./_version":115,"@ethersproject/bytes":70,"@ethersproject/logger":91,"hash.js":21}],117:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = "signing-key/5.0.0-beta.128";
 
-},{}],117:[function(require,module,exports){
+},{}],118:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var elliptic_1 = require("elliptic");
@@ -18501,7 +18591,7 @@ function computePublicKey(key, compressed) {
 }
 exports.computePublicKey = computePublicKey;
 
-},{"./_version":116,"@ethersproject/bytes":70,"@ethersproject/logger":91,"@ethersproject/properties":96,"elliptic":6}],118:[function(require,module,exports){
+},{"./_version":117,"@ethersproject/bytes":70,"@ethersproject/logger":91,"@ethersproject/properties":96,"elliptic":6}],119:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_1 = require("@ethersproject/bignumber");
@@ -18594,12 +18684,12 @@ function sha256(types, values) {
 }
 exports.sha256 = sha256;
 
-},{"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/keccak256":89,"@ethersproject/sha2":115,"@ethersproject/strings":122}],119:[function(require,module,exports){
+},{"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/keccak256":89,"@ethersproject/sha2":116,"@ethersproject/strings":123}],120:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = "strings/5.0.0-beta.129";
 
-},{}],120:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var constants_1 = require("@ethersproject/constants");
@@ -18635,7 +18725,7 @@ function parseBytes32String(bytes) {
 }
 exports.parseBytes32String = parseBytes32String;
 
-},{"./utf8":123,"@ethersproject/bytes":70,"@ethersproject/constants":71}],121:[function(require,module,exports){
+},{"./utf8":124,"@ethersproject/bytes":70,"@ethersproject/constants":71}],122:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var utf8_1 = require("./utf8");
@@ -18829,7 +18919,7 @@ function nameprep(value) {
 }
 exports.nameprep = nameprep;
 
-},{"./utf8":123}],122:[function(require,module,exports){
+},{"./utf8":124}],123:[function(require,module,exports){
 "use strcit";
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -18845,7 +18935,7 @@ exports.toUtf8CodePoints = utf8_1.toUtf8CodePoints;
 exports.toUtf8String = utf8_1.toUtf8String;
 exports.UnicodeNormalizationForm = utf8_1.UnicodeNormalizationForm;
 
-},{"./bytes32":120,"./idna":121,"./utf8":123}],123:[function(require,module,exports){
+},{"./bytes32":121,"./idna":122,"./utf8":124}],124:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
@@ -19046,12 +19136,12 @@ function toUtf8CodePoints(str, form) {
 }
 exports.toUtf8CodePoints = toUtf8CodePoints;
 
-},{"./_version":119,"@ethersproject/bytes":70,"@ethersproject/logger":91}],124:[function(require,module,exports){
+},{"./_version":120,"@ethersproject/bytes":70,"@ethersproject/logger":91}],125:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = "transactions/5.0.0-beta.127";
 
-},{}],125:[function(require,module,exports){
+},{}],126:[function(require,module,exports){
 "use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -19210,12 +19300,12 @@ function parse(rawTransaction) {
 }
 exports.parse = parse;
 
-},{"./_version":124,"@ethersproject/address":62,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/constants":71,"@ethersproject/keccak256":89,"@ethersproject/logger":91,"@ethersproject/properties":96,"@ethersproject/rlp":113,"@ethersproject/signing-key":117}],126:[function(require,module,exports){
+},{"./_version":125,"@ethersproject/address":62,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/constants":71,"@ethersproject/keccak256":89,"@ethersproject/logger":91,"@ethersproject/properties":96,"@ethersproject/rlp":114,"@ethersproject/signing-key":118}],127:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = "units/5.0.0-beta.126";
 
-},{}],127:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var fixednumber_1 = require("@ethersproject/bignumber/fixednumber");
@@ -19300,12 +19390,12 @@ function parseEther(ether) {
 }
 exports.parseEther = parseEther;
 
-},{"./_version":126,"@ethersproject/bignumber/fixednumber":67,"@ethersproject/logger":91}],128:[function(require,module,exports){
+},{"./_version":127,"@ethersproject/bignumber/fixednumber":67,"@ethersproject/logger":91}],129:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = "wallet/5.0.0-beta.129";
 
-},{}],129:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19472,12 +19562,12 @@ function verifyMessage(message, signature) {
 }
 exports.verifyMessage = verifyMessage;
 
-},{"./_version":128,"@ethersproject/abstract-provider":58,"@ethersproject/abstract-signer":60,"@ethersproject/address":62,"@ethersproject/bytes":70,"@ethersproject/hash":80,"@ethersproject/hdnode":82,"@ethersproject/json-wallets":85,"@ethersproject/keccak256":89,"@ethersproject/logger":91,"@ethersproject/properties":96,"@ethersproject/random":111,"@ethersproject/signing-key":117,"@ethersproject/transactions":125}],130:[function(require,module,exports){
+},{"./_version":129,"@ethersproject/abstract-provider":58,"@ethersproject/abstract-signer":60,"@ethersproject/address":62,"@ethersproject/bytes":70,"@ethersproject/hash":80,"@ethersproject/hdnode":82,"@ethersproject/json-wallets":85,"@ethersproject/keccak256":89,"@ethersproject/logger":91,"@ethersproject/properties":96,"@ethersproject/random":112,"@ethersproject/signing-key":118,"@ethersproject/transactions":126}],131:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = "web/5.0.0-beta.128";
 
-},{}],131:[function(require,module,exports){
+},{}],132:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -19685,12 +19775,12 @@ function poll(func, options) {
 }
 exports.poll = poll;
 
-},{"./_version":130,"@ethersproject/base64":63,"@ethersproject/logger":91,"@ethersproject/properties":96,"@ethersproject/strings":122,"cross-fetch":5}],132:[function(require,module,exports){
+},{"./_version":131,"@ethersproject/base64":63,"@ethersproject/logger":91,"@ethersproject/properties":96,"@ethersproject/strings":123,"cross-fetch":5}],133:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = "wordlists/5.0.0-beta.127";
 
-},{}],133:[function(require,module,exports){
+},{}],134:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // Wordlists
@@ -19701,7 +19791,7 @@ var lang_en_1 = require("./lang-en");
 var wordlists = { en: lang_en_1.langEn };
 exports.wordlists = wordlists;
 
-},{"./lang-en":134,"./wordlist":135}],134:[function(require,module,exports){
+},{"./lang-en":135,"./wordlist":136}],135:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19749,7 +19839,7 @@ var langEn = new LangEn();
 exports.langEn = langEn;
 wordlist_1.register(langEn);
 
-},{"./wordlist":135}],135:[function(require,module,exports){
+},{"./wordlist":136}],136:[function(require,module,exports){
 (function (global){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -19811,5 +19901,5 @@ function register(lang, name) {
 exports.register = register;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./_version":132,"@ethersproject/hash":80,"@ethersproject/logger":91,"@ethersproject/properties":96}]},{},[76])(76)
+},{"./_version":133,"@ethersproject/hash":80,"@ethersproject/logger":91,"@ethersproject/properties":96}]},{},[76])(76)
 });

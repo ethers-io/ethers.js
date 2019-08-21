@@ -33,6 +33,12 @@ function ethDefaultProvider(network) {
             }
             catch (error) { }
         }
+        if (providers.CloudflareProvider) {
+            try {
+                providerList.push(new providers.CloudflareProvider(network));
+            }
+            catch (error) { }
+        }
         if (providerList.length === 0) {
             return null;
         }

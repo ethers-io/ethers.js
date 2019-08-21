@@ -257,12 +257,12 @@ class WrappedSigner extends ethers.Signer {
                 dump("Success:", {
                     "Block Number": receipt.blockNumber,
                     "Block Hash": receipt.blockHash,
-                    "Gas Used": (ethers.utils.commify(receipt.gasUsed.toString()) + " ether"),
+                    "Gas Used": ethers.utils.commify(receipt.gasUsed.toString()),
                     "Fee": (ethers.utils.formatEther(receipt.gasUsed.mul(tx.gasPrice)) + " ether")
                 });
             } catch (error) {
                 dump("Failed:", {
-                    Error: error.message
+                    "Error": error.message
                 });
             }
         }

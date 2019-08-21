@@ -80,7 +80,7 @@ var ethControllerAbi = [
 var ethRegistrarAbi = [
     "function ownerOf(uint256 tokenId) view returns (address)",
     "function reclaim(uint256 id, address owner) @500000",
-    "function transferFrom(address from, address to, uint256 tokenId) @500000"
+    "function safeTransferFrom(address from, address to, uint256 tokenId) @500000"
 ];
 var resolverAbi = [
     "function interfaceImplementer(bytes32 nodehash, bytes4 interfaceId) view returns (address)",
@@ -1180,7 +1180,7 @@ var TransferPlugin = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.getEthRegistrar()];
                     case 2:
                         registrar = _a.sent();
-                        return [4 /*yield*/, registrar.transferFrom(this.accounts[0].getAddress(), this.new_owner, ethers_1.ethers.utils.id(this.label))];
+                        return [4 /*yield*/, registrar.safeTransferFrom(this.accounts[0].getAddress(), this.new_owner, ethers_1.ethers.utils.id(this.label))];
                     case 3:
                         _a.sent();
                         return [2 /*return*/];

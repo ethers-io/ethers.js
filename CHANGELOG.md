@@ -3,6 +3,14 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.154 (2019-08-21 01:51)
+-----------------------------------------
+
+  - Use safe transfer for ENS in CLI. ([b7494d8](https://github.com/ethers-io/ethers.js/commit/b7494d8618001797a4e856f3d1886273897e6ba4))
+  - Fixed quorum-matching logic for FallbackProvider. ([b304ec1](https://github.com/ethers-io/ethers.js/commit/b304ec1f008ec5301c0dbd1a493d790fe3528512))
+  - Added CloudflareProvider. ([#587](https://github.com/ethers-io/ethers.js/issues/587); [621313d](https://github.com/ethers-io/ethers.js/commit/621313d2a697bc6e1dd25eb5b08d67e832a28d05))
+  - Added receipt to CALL_EXCEPTION errors. ([724c32e](https://github.com/ethers-io/ethers.js/commit/724c32e8c08b55404594f263e52babb0550a15b8))
+
 ethers/v5.0.0-beta.153 (2019-08-06 19:15)
 -----------------------------------------
 
@@ -25,14 +33,14 @@ ethers/v5.0.0-beta.151 (2019-08-05 14:29)
 
   - Added package name prefix to all _version for Logger. ([692589d](https://github.com/ethers-io/ethers.js/commit/692589db54cbca10a2a453e9a1801a8612056559))
 
-ethers/v5.0.0-beta.150 (2019-08-03 1:07)
-----------------------------------------
+ethers/v5.0.0-beta.150 (2019-08-03 01:07)
+-----------------------------------------
 
   - Fixed old references to errors package. ([1cabce7](https://github.com/ethers-io/ethers.js/commit/1cabce7e1c23b15cc2b630c0b403dd72d815a5ba))
   - Added generation scripts for Table A.1 for stringprep. ([#42](https://github.com/ethers-io/ethers.js/issues/42); [b21681a](https://github.com/ethers-io/ethers.js/commit/b21681a7f4292b0e77315caad3a59fe814e9292b))
 
-ethers/v5.0.0-beta.149 (2019-08-03 0:45)
-----------------------------------------
+ethers/v5.0.0-beta.149 (2019-08-03 00:45)
+-----------------------------------------
 
   - Fixed some case-folding and added Table A.1 for IDNA. ([#42](https://github.com/ethers-io/ethers.js/issues/42); [f955dca](https://github.com/ethers-io/ethers.js/commit/f955dca417a6f86690cf33a81b08baa99e1b1a5c))
   - Removed references to legacy errors pacakge and updated umbrella pacakge. ([c09de16](https://github.com/ethers-io/ethers.js/commit/c09de163473c361cac11ddef9ec852f4cbb7d8e3))
@@ -51,8 +59,8 @@ ethers/v5.0.0-beta.148 (2019-07-27 18:56)
   - Make utils.resolveProperties preserve object parameter order. ([74dbc28](https://github.com/ethers-io/ethers.js/commit/74dbc281ede042c5eeaa7b45150b215dea860a88))
   - Added initial IDNA support for full UTF-8 support in namehash. ([#42](https://github.com/ethers-io/ethers.js/issues/42); [28eb38e](https://github.com/ethers-io/ethers.js/commit/28eb38ee703288aaad9f730b2d93fe3aeea7ada6))
 
-ethers/v5.0.0-beta.147 (2019-07-23 1:04)
-----------------------------------------
+ethers/v5.0.0-beta.147 (2019-07-23 01:04)
+-----------------------------------------
 
   - Use the CLI solc instead of solc directly for ABI testcase generation. ([99c7b1c](https://github.com/ethers-io/ethers.js/commit/99c7b1ca94382490b9757fd51375a7ad4259b831))
   - Added experimental UTF-8 functions for escaping non-ascii strings. ([b132e32](https://github.com/ethers-io/ethers.js/commit/b132e32172c9d63e59209628dadd5796dd6291c8))

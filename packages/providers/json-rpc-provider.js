@@ -334,7 +334,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                 else if (params.blockHash) {
                     return this.send("eth_getBlockByHash", [params.blockHash, !!params.includeTransactions]);
                 }
-                return Promise.reject(new Error("invalid block tag or block hash"));
+                return logger.throwArgumentError("invalid block tag or block hash", "params", params);
             case "getTransaction":
                 return this.send("eth_getTransactionByHash", [params.transactionHash]);
             case "getTransactionReceipt":
