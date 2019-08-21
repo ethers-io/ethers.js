@@ -64,15 +64,17 @@ function serialize(result: any): string {
     } else if (result === null) {
         return "null";
     } else if (typeof(result) === "object") {
-        let bare: any = {};
         let keys = Object.keys(result);
         keys.sort();
-        keys.forEach((key) => {
+        return "{" + keys.map((key) => {
             let value = result[key];
-            if (typeof(value) === "function") { return; }
-            bare[key] = serialize(value);
-        });
-        return JSON.stringify(bare);
+            if (typeof(value) === "function") {
+                value = "function{}";
+            } else {
+                value = serialize(value);
+            }
+            return JSON.stringify(key) + "=" + serialize(value);
+        }).join(",") + "}";
     }
 
     return JSON.stringify(result);
@@ -138,6 +140,37 @@ export class FallbackProvider extends BaseProvider {
         defineReadOnly(this, "weights", Object.freeze(weights.slice()));
     }
 
+    static doPerform(provider: BaseProvider, method: string, params: { [ name: string ]: any }): Promise<any> {
+        switch (method) {
+            case "getBlockNumber":
+            case "getGasPrice":
+            case "getEtherPrice":
+                return provider[method]();
+            case "getBalance":
+            case "getTransactionCount":
+            case "getCode":
+                return provider[method](params.address, params.blockTag || "latest");
+            case "getStorageAt":
+                return provider.getStorageAt(params.address, params.position, params.blockTag || "latest");
+            case "sendTransaction":
+                return provider.sendTransaction(params.signedTransaction);
+            case "getBlock":
+                return provider[(params.includeTransactions ? "getBlockWithTransactions": "getBlock")](params.blockTag || params.blockHash);
+            case "call":
+            case "estimateGas":
+                return provider[method](params.transaction);
+            case "getTransaction":
+            case "getTransactionReceipt":
+                return provider[method](params.transactionHash);
+            case "getLogs":
+                return provider.getLogs(params.filter);
+        }
+        return logger.throwError("unknown method error", Logger.errors.UNKNOWN_ERROR, {
+            method: method,
+            params: params
+        });
+    }
+
     perform(method: string, params: { [name: string]: any }): any {
         let T0 = now();
         let runners: Array<Runner> = (<Array<BaseProvider>>(shuffled(this.providers))).map((provider, i) => {
@@ -154,7 +187,7 @@ export class FallbackProvider extends BaseProvider {
                         request: { method: method, params: deepCopy(params) },
                         provider: this
                     });
-                    return provider.perform(method, params).then((result) => {
+                    return FallbackProvider.doPerform(provider, method, params).then((result) => {
                         let duration = now() - t0;
                         this.emit("debug", {
                             action: "response",
@@ -235,6 +268,13 @@ export class FallbackProvider extends BaseProvider {
 
                     // Out of options; give up
                     if (runners.length === 0 && inflightWeight === 0) {
+                        if (firstError === null) {
+                            firstError = logger.makeError("failed to meet quorum", Logger.errors.SERVER_ERROR, {
+                                results: Object.keys(results).map((u) => {
+                                    return { result: u, weight: results[u].reduce((accum, r) => (accum + r.weight), 0) };
+                                })
+                            });
+                        }
                         reject(firstError);
                         return;
                     }
