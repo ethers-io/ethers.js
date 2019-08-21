@@ -42,7 +42,7 @@ const ethControllerAbi = [
 const ethRegistrarAbi = [
     "function ownerOf(uint256 tokenId) view returns (address)",
     "function reclaim(uint256 id, address owner) @500000",
-    "function transferFrom(address from, address to, uint256 tokenId) @500000"
+    "function safeTransferFrom(address from, address to, uint256 tokenId) @500000"
 ];
 
 const resolverAbi = [
@@ -785,7 +785,7 @@ class TransferPlugin extends AccountPlugin {
         });
 
         let registrar = await this.getEthRegistrar();
-        await registrar.transferFrom(this.accounts[0].getAddress(), this.new_owner, ethers.utils.id(this.label));
+        await registrar.safeTransferFrom(this.accounts[0].getAddress(), this.new_owner, ethers.utils.id(this.label));
     }
 }
 cli.addPlugin("transfer", TransferPlugin);
