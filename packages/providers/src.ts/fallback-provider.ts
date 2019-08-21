@@ -85,9 +85,10 @@ let nextRid = 1;
 export class FallbackProvider extends BaseProvider {
     readonly providers: Array<BaseProvider>;
     readonly weights: Array<number>;
+    readonly shuffle: boolean;
     readonly quorum: number;
 
-    constructor(providers: Array<BaseProvider>, quorum?: number, weights?: Array<number>) {
+    constructor(providers: Array<BaseProvider>, quorum?: number, weights?: Array<number>, shuffle?: boolean) {
         logger.checkNew(new.target, FallbackProvider);
 
         if (providers.length === 0) {
@@ -116,6 +117,7 @@ export class FallbackProvider extends BaseProvider {
             }
         }
 
+        shuffle = shuffle === false ? false : true
 
         // All networks are ready, we can know the network for certain
         let ready = checkNetworks(providers.map((p) => p.network));
@@ -138,6 +140,7 @@ export class FallbackProvider extends BaseProvider {
         defineReadOnly(this, "providers", Object.freeze(providers.slice()));
         defineReadOnly(this, "quorum", quorum);
         defineReadOnly(this, "weights", Object.freeze(weights.slice()));
+        defineReadOnly(this, "shuffle", shuffle);
     }
 
     static doPerform(provider: BaseProvider, method: string, params: { [ name: string ]: any }): Promise<any> {
@@ -173,7 +176,8 @@ export class FallbackProvider extends BaseProvider {
 
     perform(method: string, params: { [name: string]: any }): any {
         let T0 = now();
-        let runners: Array<Runner> = (<Array<BaseProvider>>(shuffled(this.providers))).map((provider, i) => {
+        let providers: Array<BaseProvider> = this.shuffle ? shuffled(this.providers) : this.providers
+        let runners: Array<Runner> = providers.map((provider, i) => {
             let weight = this.weights[i];
             let rid = nextRid++;
             return {
