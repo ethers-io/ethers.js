@@ -40,6 +40,12 @@ function ethDefaultProvider(network: string): (providers: any) => any {
             } catch(error) { }
         }
 
+        if (providers.CloudflareProvider) {
+            try {
+                providerList.push(new providers.CloudflareProvider(network));
+            } catch(error) { }
+        }
+
         if (providerList.length === 0) { return null; }
 
         if (providers.FallbackProvider) {

@@ -301,6 +301,7 @@ export class JsonRpcProvider extends BaseProvider {
                 response: result,
                 provider: this
             });
+
             return result;
         });
     }
@@ -350,7 +351,7 @@ export class JsonRpcProvider extends BaseProvider {
                 } else if (params.blockHash) {
                     return this.send("eth_getBlockByHash", [ params.blockHash, !!params.includeTransactions ]);
                 }
-                return Promise.reject(new Error("invalid block tag or block hash"));
+                return logger.throwArgumentError("invalid block tag or block hash", "params", params);
 
             case "getTransaction":
                 return this.send("eth_getTransactionByHash", [ params.transactionHash ]);

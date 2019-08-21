@@ -1,7 +1,7 @@
 "use strict";
 
 import { getNetwork, Network, Networkish } from "@ethersproject/networks";
-import { defineReadOnly } from "@ethersproject/properties";
+import { defineReadOnly, getStatic } from "@ethersproject/properties";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -16,10 +16,10 @@ export class UrlJsonRpcProvider extends JsonRpcProvider {
         logger.checkAbstract(new.target, UrlJsonRpcProvider);
 
         // Normalize the Network and API Key
-        network = new.target.getNetwork(network);
-        apiKey = new.target.getApiKey(apiKey);
+        network = getStatic<(network: Networkish) => Network>(new.target, "getNetwork")(network);
+        apiKey = getStatic<(apiKey: string) => string>(new.target, "getApiKey")(apiKey);
 
-        let url = new.target.getUrl(network, apiKey);
+        let url = getStatic<(network: Network, apiKey: string) => string>(new.target, "getUrl")(network, apiKey);
 
         super(url, network);
 

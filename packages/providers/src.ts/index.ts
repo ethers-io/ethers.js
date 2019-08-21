@@ -19,6 +19,7 @@ import { Network, Networkish } from "@ethersproject/networks";
 import { BaseProvider } from "./base-provider";
 
 import { AlchemyProvider } from "./alchemy-provider";
+import { CloudflareProvider } from "./cloudflare-provider";
 import { EtherscanProvider } from "./etherscan-provider";
 import { FallbackProvider } from "./fallback-provider";
 import { IpcProvider } from "./ipc-provider";
@@ -47,6 +48,7 @@ export {
     FallbackProvider,
 
     AlchemyProvider,
+    CloudflareProvider,
     EtherscanProvider,
     InfuraProvider,
     JsonRpcProvider,
