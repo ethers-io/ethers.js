@@ -1,7 +1,7 @@
 {
   "name": "@ethersproject/sha2",
   "version": "5.0.0-beta.128",
-  "description": "Error utility functions for ethers.",
+  "description": "The SHA2 family hash functions and HMAC functions for ethers.",
   "main": "index.js",
   "browser": "browser.js",
   "scripts": {

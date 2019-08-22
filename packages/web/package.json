@@ -1,7 +1,7 @@
 {
   "name": "@ethersproject/web",
   "version": "5.0.0-beta.128",
-  "description": "Error utility functions for ethers.",
+  "description": "Utility fucntions for managing web requests for ethers.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

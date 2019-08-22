@@ -1,7 +1,7 @@
 {
   "name": "@ethersproject/abstract-signer",
   "version": "5.0.0-beta.131",
-  "description": "Error utility functions for ethers.",
+  "description": "An Abstract Class for desribing an Ethereum Signer for ethers.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

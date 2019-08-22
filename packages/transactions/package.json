@@ -1,7 +1,7 @@
 {
   "name": "@ethersproject/transactions",
   "version": "5.0.0-beta.127",
-  "description": "Error utility functions for ethers.",
+  "description": "Utilities for decoding and encoding Ethereum transaction for ethers.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
