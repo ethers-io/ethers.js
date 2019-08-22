@@ -171,7 +171,7 @@ export function decrypt(json: string, password: Arrayish, progressCallback?: Pro
         }
 
         var signingKey = new SigningKey(privateKey);
-        if (signingKey.address !== getAddress(data.address)) {
+        if (data.address && signingKey.address !== getAddress(data.address)) {
             reject(new Error('address mismatch'));
             return null;
         }

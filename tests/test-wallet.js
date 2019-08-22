@@ -12,8 +12,10 @@ describe('Test JSON Wallets', function() {
         it(('decrypts wallet - ' + test.name), function() {
             this.timeout(1200000);
 
-            assert.ok((ethers.utils.getJsonWalletAddress(test.json) !== null),
-                'detect encrypted JSON wallet');
+            if (test.hasAddress) {
+                assert.ok((ethers.utils.getJsonWalletAddress(test.json) !== null),
+                    'detect encrypted JSON wallet');
+            }
 
             return Wallet.fromEncryptedJson(test.json, test.password).then(function(wallet) {
                 assert.equal(wallet.privateKey, test.privateKey,
