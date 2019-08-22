@@ -3,6 +3,7 @@
 import { Network } from "@ethersproject/networks";
 import { shuffled } from "@ethersproject/random";
 import { deepCopy, defineReadOnly } from "@ethersproject/properties";
+import { BigNumber } from "@ethersproject/bignumber";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -153,7 +154,9 @@ export class FallbackProvider extends BaseProvider {
             case "getStorageAt":
                 return provider.getStorageAt(params.address, params.position, params.blockTag || "latest");
             case "sendTransaction":
-                return provider.sendTransaction(params.signedTransaction);
+                return provider.sendTransaction(params.signedTransaction).then((result) => {
+                    return result.hash;
+                });
             case "getBlock":
                 return provider[(params.includeTransactions ? "getBlockWithTransactions": "getBlock")](params.blockTag || params.blockHash);
             case "call":
@@ -268,10 +271,40 @@ export class FallbackProvider extends BaseProvider {
 
                     // Out of options; give up
                     if (runners.length === 0 && inflightWeight === 0) {
+
+                       // @TODO: this might need some more thinking... Maybe only if half
+                       // of the results contain non-error?
+                       if (method === "getGasPrice") {
+                            const values: Array<BigNumber> = [ ];
+                            Object.keys(results).forEach((key) => {
+                                results[key].forEach((result) => {
+                                    if (!result.result) { return; }
+                                    values.push(result.result);
+                                });
+                            });
+                            values.sort((a, b) => {
+                               if (a.lt(b)) { return -1; }
+                               if (a.gt(b)) { return 1; }
+                               return 0;
+                            });
+                            let index = parseInt(String(values.length / 2));
+                            if (values.length % 2) {
+                                resolve(values[index]);
+                                return;
+                            }
+                            resolve(values[index - 1].add(values[index]).div(2));
+                            return;
+                        }
+
                         if (firstError === null) {
                             firstError = logger.makeError("failed to meet quorum", Logger.errors.SERVER_ERROR, {
                                 results: Object.keys(results).map((u) => {
-                                    return { result: u, weight: results[u].reduce((accum, r) => (accum + r.weight), 0) };
+                                    return {
+                                        method: method,
+                                        params: params,
+                                        result: u,
+                                        weight: results[u].reduce((accum, r) => (accum + r.weight), 0)
+                                    };
                                 })
                             });
                         }
