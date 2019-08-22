@@ -1221,6 +1221,8 @@ export class BaseProvider extends Provider {
             return self.call(transaction);
 
         }).then(function(data) {
+            if (data == null) { return null; }
+
             // Strip off the "0x"
             data = data.substring(2);
 
