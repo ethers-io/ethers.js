@@ -693,6 +693,7 @@ export class BaseProvider extends Provider {
 
     resetEventsBlock(blockNumber: number): void {
         this._lastBlockNumber = blockNumber - 1;
+        this._emitted.block = this._lastBlockNumber;
         if (this.polling) { this._doPoll(); }
     }
 
