@@ -13710,7 +13710,7 @@ exports.ContractFactory = ContractFactory;
 },{"./_version":72,"@ethersproject/abi":55,"@ethersproject/abstract-provider":58,"@ethersproject/abstract-signer":60,"@ethersproject/address":62,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/constants":71,"@ethersproject/logger":91,"@ethersproject/properties":96}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "ethers/5.0.0-beta.154";
+exports.version = "ethers/5.0.0-beta.155";
 
 },{}],75:[function(require,module,exports){
 "use strict";
@@ -14276,7 +14276,7 @@ exports.isValidMnemonic = isValidMnemonic;
 },{"./_version":81,"@ethersproject/basex":64,"@ethersproject/bignumber":68,"@ethersproject/bytes":70,"@ethersproject/logger":91,"@ethersproject/pbkdf2":94,"@ethersproject/properties":96,"@ethersproject/sha2":116,"@ethersproject/signing-key":118,"@ethersproject/strings":123,"@ethersproject/transactions":126,"@ethersproject/wordlists":134}],83:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "json-wallets/5.0.0-beta.127";
+exports.version = "json-wallets/5.0.0-beta.128";
 
 },{}],84:[function(require,module,exports){
 "use strict";
@@ -14508,17 +14508,20 @@ function decrypt(json, password, progressCallback) {
             reject(new Error("unsupported cipher"));
             return null;
         }
-        var address = data.address.toLowerCase();
-        if (address.substring(0, 2) !== "0x") {
-            address = "0x" + address;
-        }
-        try {
-            if (address_1.getAddress(address) !== transactions_1.computeAddress(privateKey)) {
-                reject(new Error("address mismatch"));
-                return null;
+        var address = transactions_1.computeAddress(privateKey);
+        if (data.address) {
+            var check = data.address.toLowerCase();
+            if (check.substring(0, 2) !== "0x") {
+                check = "0x" + check;
             }
+            try {
+                if (address_1.getAddress(check) !== address) {
+                    reject(new Error("address mismatch"));
+                    return null;
+                }
+            }
+            catch (e) { }
         }
-        catch (e) { }
         var account = {
             _isKeystoreAccount: true,
             address: address,
@@ -15501,7 +15504,7 @@ exports.Description = Description;
 },{"./_version":95,"@ethersproject/logger":91}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.0-beta.139";
+exports.version = "providers/5.0.0-beta.140";
 
 },{}],98:[function(require,module,exports){
 "use strict";
@@ -17013,7 +17016,9 @@ var FallbackProvider = /** @class */ (function (_super) {
             case "getStorageAt":
                 return provider.getStorageAt(params.address, params.position, params.blockTag || "latest");
             case "sendTransaction":
-                return provider.sendTransaction(params.signedTransaction);
+                return provider.sendTransaction(params.signedTransaction).then(function (result) {
+                    return result.hash;
+                });
             case "getBlock":
                 return provider[(params.includeTransactions ? "getBlockWithTransactions" : "getBlock")](params.blockTag || params.blockHash);
             case "call":
@@ -17128,10 +17133,44 @@ var FallbackProvider = /** @class */ (function (_super) {
                     }
                     // Out of options; give up
                     if (runners.length === 0 && inflightWeight === 0) {
+                        // @TODO: this might need some more thinking... Maybe only if half
+                        // of the results contain non-error?
+                        if (method === "getGasPrice") {
+                            var values_1 = [];
+                            Object.keys(results).forEach(function (key) {
+                                results[key].forEach(function (result) {
+                                    if (!result.result) {
+                                        return;
+                                    }
+                                    values_1.push(result.result);
+                                });
+                            });
+                            values_1.sort(function (a, b) {
+                                if (a.lt(b)) {
+                                    return -1;
+                                }
+                                if (a.gt(b)) {
+                                    return 1;
+                                }
+                                return 0;
+                            });
+                            var index = parseInt(String(values_1.length / 2));
+                            if (values_1.length % 2) {
+                                resolve(values_1[index]);
+                                return;
+                            }
+                            resolve(values_1[index - 1].add(values_1[index]).div(2));
+                            return;
+                        }
                         if (firstError === null) {
                             firstError = logger.makeError("failed to meet quorum", logger_1.Logger.errors.SERVER_ERROR, {
                                 results: Object.keys(results).map(function (u) {
-                                    return { result: u, weight: results[u].reduce(function (accum, r) { return (accum + r.weight); }, 0) };
+                                    return {
+                                        method: method,
+                                        params: params,
+                                        result: u,
+                                        weight: results[u].reduce(function (accum, r) { return (accum + r.weight); }, 0)
+                                    };
                                 })
                             });
                         }

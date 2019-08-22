@@ -19,7 +19,9 @@ describe('Test JSON Wallets', function () {
     tests.forEach(function (test) {
         it(('decrypts wallet - ' + test.name), function () {
             this.timeout(1200000);
-            assert_1.default.ok((ethers_1.ethers.utils.getJsonWalletAddress(test.json) !== null), 'detect encrypted JSON wallet');
+            if (test.hasAddress) {
+                assert_1.default.ok((ethers_1.ethers.utils.getJsonWalletAddress(test.json) !== null), 'detect encrypted JSON wallet');
+            }
             return ethers_1.ethers.Wallet.fromEncryptedJson(test.json, test.password).then(function (wallet) {
                 assert_1.default.equal(wallet.privateKey, test.privateKey, 'generated correct private key - ' + wallet.privateKey);
                 assert_1.default.equal(wallet.address.toLowerCase(), test.address, 'generate correct address - ' + wallet.address);

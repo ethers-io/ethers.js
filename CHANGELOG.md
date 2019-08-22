@@ -3,6 +3,15 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.155 (2019-08-22 17:11)
+-----------------------------------------
+
+  - Added Wrapped Ether and Token transfers to CLI. ([c031a13](https://github.com/ethers-io/ethers.js/commit/c031a1336815923bae85d9982dba0985a79cfaed))
+  - Fixed sendTransaction and use median gas price in FallbackProvider. ([07e1599](https://github.com/ethers-io/ethers.js/commit/07e15993ba181cfbff987778d158dbde6bb84de2))
+  - Port optional Secret Storage wallet address to v5. ([#582](https://github.com/ethers-io/ethers.js/issues/582); [a12d60d](https://github.com/ethers-io/ethers.js/commit/a12d60d722dfcf998a2e06eba5e46390d7d442e5))
+  - Updated flatworm docs output. ([8745a81](https://github.com/ethers-io/ethers.js/commit/8745a81b11b710036ddb546308c13958be1affb9))
+  - Added initial flatworm documentation stubs. ([0333a76](https://github.com/ethers-io/ethers.js/commit/0333a76f4ff382b5b59b24c672b702721e7a386a))
+
 ethers/v5.0.0-beta.154 (2019-08-21 01:51)
 -----------------------------------------
 

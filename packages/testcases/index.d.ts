@@ -21,6 +21,16 @@ export declare module TestCase {
         rc?: string;
         flags?: string;
     };
+    type Wallet = {
+        name: string;
+        type: "crowdsale" | "secret-storage";
+        hasAddress: boolean;
+        address: string;
+        privateKey: string;
+        mnemonic?: string;
+        password?: string;
+        json: string;
+    };
     type Wordlist = {
         locale: string;
         content: string;

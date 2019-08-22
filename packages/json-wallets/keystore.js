@@ -69,17 +69,20 @@ function decrypt(json, password, progressCallback) {
             reject(new Error("unsupported cipher"));
             return null;
         }
-        var address = data.address.toLowerCase();
-        if (address.substring(0, 2) !== "0x") {
-            address = "0x" + address;
-        }
-        try {
-            if (address_1.getAddress(address) !== transactions_1.computeAddress(privateKey)) {
-                reject(new Error("address mismatch"));
-                return null;
+        var address = transactions_1.computeAddress(privateKey);
+        if (data.address) {
+            var check = data.address.toLowerCase();
+            if (check.substring(0, 2) !== "0x") {
+                check = "0x" + check;
             }
+            try {
+                if (address_1.getAddress(check) !== address) {
+                    reject(new Error("address mismatch"));
+                    return null;
+                }
+            }
+            catch (e) { }
         }
-        catch (e) { }
         var account = {
             _isKeystoreAccount: true,
             address: address,

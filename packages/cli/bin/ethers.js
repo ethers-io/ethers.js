@@ -814,6 +814,242 @@ var WaitPlugin = /** @class */ (function (_super) {
     return WaitPlugin;
 }(cli_1.Plugin));
 cli.addPlugin("wait", WaitPlugin);
+var WethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+var WethAbi = [
+    "function deposit() payable",
+    "function withdraw(uint wad)"
+];
+var WrapEtherPlugin = /** @class */ (function (_super) {
+    __extends(WrapEtherPlugin, _super);
+    function WrapEtherPlugin() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    WrapEtherPlugin.getHelp = function () {
+        return {
+            name: "wrap-ether VALUE",
+            help: "Deposit VALUE into Wrapped Ether (WETH)"
+        };
+    };
+    WrapEtherPlugin.prototype.prepareArgs = function (args) {
+        return __awaiter(this, void 0, void 0, function () {
+            var address, balance;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, _super.prototype.prepareArgs.call(this, args)];
+                    case 1:
+                        _a.sent();
+                        if (this.accounts.length !== 1) {
+                            this.throwError("wrap-ether requires exactly one account");
+                        }
+                        if (args.length !== 1) {
+                            this.throwError("wrap-ether requires exactly VALUE");
+                        }
+                        this.value = ethers_1.ethers.utils.parseEther(args[0]);
+                        return [4 /*yield*/, this.accounts[0].getAddress()];
+                    case 2:
+                        address = _a.sent();
+                        return [4 /*yield*/, this.provider.getBalance(address)];
+                    case 3:
+                        balance = _a.sent();
+                        if (balance.lt(this.value)) {
+                            this.throwError("insufficient ether to wrap");
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    WrapEtherPlugin.prototype.run = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var address, contract;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.accounts[0].getAddress()];
+                    case 1:
+                        address = _a.sent();
+                        this.dump("Wrapping ether", {
+                            "From": address,
+                            "Value": ethers_1.ethers.utils.formatEther(this.value)
+                        });
+                        contract = new ethers_1.ethers.Contract(WethAddress, WethAbi, this.accounts[0]);
+                        return [4 /*yield*/, contract.deposit({ value: this.value })];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    return WrapEtherPlugin;
+}(cli_1.Plugin));
+cli.addPlugin("wrap-ether", WrapEtherPlugin);
+var UnwrapEtherPlugin = /** @class */ (function (_super) {
+    __extends(UnwrapEtherPlugin, _super);
+    function UnwrapEtherPlugin() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    UnwrapEtherPlugin.getHelp = function () {
+        return {
+            name: "unwrap-ether VALUE",
+            help: "Withdraw VALUE from Wrapped Ether (WETH)"
+        };
+    };
+    UnwrapEtherPlugin.prototype.prepareArgs = function (args) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, _super.prototype.prepareArgs.call(this, args)];
+                    case 1:
+                        _a.sent();
+                        if (this.accounts.length !== 1) {
+                            this.throwError("unwrap-ether requires exactly one account");
+                        }
+                        if (args.length !== 1) {
+                            this.throwError("unwrap-ether requires exactly VALUE");
+                        }
+                        this.value = ethers_1.ethers.utils.parseEther(args[0]);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    UnwrapEtherPlugin.prototype.run = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var address, contract;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, _super.prototype.run.call(this)];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, this.accounts[0].getAddress()];
+                    case 2:
+                        address = _a.sent();
+                        this.dump("Withdrawing Wrapped Ether", {
+                            "To": address,
+                            "Valiue": ethers_1.ethers.utils.formatEther(this.value)
+                        });
+                        contract = new ethers_1.ethers.Contract(WethAddress, WethAbi, this.accounts[0]);
+                        return [4 /*yield*/, contract.withdraw(this.value)];
+                    case 3:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    return UnwrapEtherPlugin;
+}(cli_1.Plugin));
+cli.addPlugin("unwrap-ether", UnwrapEtherPlugin);
+var Erc20Abi = [
+    "function decimals() view returns (uint8)",
+    "function symbol() view returns (string)",
+    "function name() view returns (string)",
+    "function balanceOf(address) view returns (uint)",
+    "function transfer(address to, uint256 value)"
+];
+var Erc20AltAbi = [
+    "function symbol() view returns (bytes32)",
+    "function name() view returns (bytes32)",
+];
+var SendTokenPlugin = /** @class */ (function (_super) {
+    __extends(SendTokenPlugin, _super);
+    function SendTokenPlugin() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    SendTokenPlugin.getHelp = function () {
+        return {
+            name: "send-token TOKEN ADDRESS VALUE",
+            help: "Send VALUE tokens (at TOKEN) to ADDRESS"
+        };
+    };
+    SendTokenPlugin.prototype.prepareArgs = function (args) {
+        return __awaiter(this, void 0, void 0, function () {
+            var tokenAddress, _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0: return [4 /*yield*/, _super.prototype.prepareArgs.call(this, args)];
+                    case 1:
+                        _c.sent();
+                        if (args.length !== 3) {
+                            this.throwError("send-token requires exactly TOKEN, ADDRESS and VALUE");
+                        }
+                        if (this.accounts.length !== 1) {
+                            this.throwError("send-token requires exactly one account");
+                        }
+                        return [4 /*yield*/, this.getAddress(args[0])];
+                    case 2:
+                        tokenAddress = _c.sent();
+                        this.contract = new ethers_1.ethers.Contract(tokenAddress, Erc20Abi, this.accounts[0]);
+                        _a = this;
+                        return [4 /*yield*/, this.contract.decimals()];
+                    case 3:
+                        _a.decimals = _c.sent();
+                        _b = this;
+                        return [4 /*yield*/, this.getAddress(args[1])];
+                    case 4:
+                        _b.toAddress = _c.sent();
+                        this.value = ethers_1.ethers.utils.parseUnits(args[2], this.decimals);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    SendTokenPlugin.prototype.run = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var info, namePromise, symbolPromise;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        info = {
+                            "To": this.toAddress,
+                            "Token Contract": this.contract.address,
+                            "Value": ethers_1.ethers.utils.formatUnits(this.value, this.decimals)
+                        };
+                        namePromise = this.contract.name().then(function (name) {
+                            if (name === "") {
+                                throw new Error("returned zero");
+                            }
+                            info["Token Name"] = name;
+                        }, function (error) {
+                            var contract = new ethers_1.ethers.Contract(_this.contract.address, Erc20AltAbi, _this.contract.signer);
+                            contract.name().then(function (name) {
+                                info["Token Name"] = ethers_1.ethers.utils.parseBytes32String(name);
+                            }, function (error) {
+                                throw error;
+                            });
+                        });
+                        symbolPromise = this.contract.symbol().then(function (symbol) {
+                            if (symbol === "") {
+                                throw new Error("returned zero");
+                            }
+                            info["Token Symbol"] = symbol;
+                        }, function (error) {
+                            var contract = new ethers_1.ethers.Contract(_this.contract.address, Erc20AltAbi, _this.contract.signer);
+                            contract.symbol().then(function (symbol) {
+                                info["Token Symbol"] = ethers_1.ethers.utils.parseBytes32String(symbol);
+                            }, function (error) {
+                                throw error;
+                            });
+                        });
+                        return [4 /*yield*/, namePromise];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, symbolPromise];
+                    case 2:
+                        _a.sent();
+                        this.dump("Sending Tokens:", info);
+                        return [4 /*yield*/, this.contract.transfer(this.toAddress, this.value)];
+                    case 3:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    return SendTokenPlugin;
+}(cli_1.Plugin));
+cli.addPlugin("send-token", SendTokenPlugin);
 var CompilePlugin = /** @class */ (function (_super) {
     __extends(CompilePlugin, _super);
     function CompilePlugin() {
