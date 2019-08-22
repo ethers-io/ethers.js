@@ -11147,6 +11147,9 @@ var BaseProvider = /** @class */ (function (_super) {
             var transaction = { to: resolverAddress, data: data };
             return self.call(transaction);
         }).then(function (data) {
+            if (data == null) {
+                return null;
+            }
             // Strip off the "0x"
             data = data.substring(2);
             // Strip off the dynamic string pointer (0x20)
