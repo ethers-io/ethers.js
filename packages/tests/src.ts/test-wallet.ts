@@ -3,28 +3,22 @@
 import assert from "assert";
 
 import { ethers } from "ethers";
-import { loadTests } from "@ethersproject/testcases";
+import { loadTests, TestCase } from "@ethersproject/testcases";
 
 import * as utils from "./utils";
 
 
 describe('Test JSON Wallets', function() {
-    type TestCase = {
-        name: string;
-        json: string;
-        password: string;
-        address: string;
-        privateKey: string;
-        mnemonic: string;
-    };
 
-    let tests: Array<TestCase> = loadTests('wallets');
+    let tests: Array<TestCase.Wallet> = loadTests('wallets');
     tests.forEach(function(test) {
         it(('decrypts wallet - ' + test.name), function() {
             this.timeout(1200000);
 
-            assert.ok((ethers.utils.getJsonWalletAddress(test.json) !== null),
-                'detect encrypted JSON wallet');
+            if (test.hasAddress) {
+                assert.ok((ethers.utils.getJsonWalletAddress(test.json) !== null),
+                    'detect encrypted JSON wallet');
+            }
 
             return ethers.Wallet.fromEncryptedJson(test.json, test.password).then((wallet) => {
                 assert.equal(wallet.privateKey, test.privateKey,

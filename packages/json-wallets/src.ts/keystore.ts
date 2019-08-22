@@ -86,15 +86,18 @@ export function decrypt(json: string, password: Bytes | string, progressCallback
             return null;
         }
 
-        let address = data.address.toLowerCase();
-        if (address.substring(0, 2) !== "0x") { address = "0x" + address; }
+        let address = computeAddress(privateKey);
+        if (data.address) {
+            let check = data.address.toLowerCase();
+            if (check.substring(0, 2) !== "0x") { check = "0x" + check; }
 
-        try {
-            if (getAddress(address) !== computeAddress(privateKey)) {
-                reject(new Error("address mismatch"));
-                return null;
-            }
-        } catch (e) { }
+            try {
+                if (getAddress(check) !== address) {
+                    reject(new Error("address mismatch"));
+                    return null;
+                }
+            } catch (e) { }
+        }
 
         let account: any = {
             _isKeystoreAccount: true,
