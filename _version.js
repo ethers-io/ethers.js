@@ -1,3 +1,3 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.34";
+exports.version = "4.0.36";

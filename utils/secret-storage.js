@@ -125,7 +125,7 @@ function decrypt(json, password, progressCallback) {
             return null;
         }
         var signingKey = new signing_key_1.SigningKey(privateKey);
-        if (signingKey.address !== address_1.getAddress(data.address)) {
+        if (data.address && signingKey.address !== address_1.getAddress(data.address)) {
             reject(new Error('address mismatch'));
             return null;
         }
