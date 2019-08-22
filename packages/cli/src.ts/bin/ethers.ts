@@ -579,6 +579,183 @@ class WaitPlugin extends Plugin {
 }
 cli.addPlugin("wait", WaitPlugin);
 
+const WethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+const WethAbi = [
+    "function deposit() payable",
+    "function withdraw(uint wad)"
+];
+
+class WrapEtherPlugin extends Plugin {
+    value: ethers.BigNumber;
+
+    static getHelp(): Help {
+        return {
+           name: "wrap-ether VALUE",
+           help: "Deposit VALUE into Wrapped Ether (WETH)"
+        }
+    }
+
+    async prepareArgs(args: Array<string>): Promise<void> {
+        await super.prepareArgs(args);
+
+        if (this.accounts.length !== 1) {
+            this.throwError("wrap-ether requires exactly one account");
+        }
+
+        if (args.length !== 1) {
+            this.throwError("wrap-ether requires exactly VALUE");
+        }
+
+        this.value = ethers.utils.parseEther(args[0]);
+
+        const address = await this.accounts[0].getAddress();
+        const balance = await this.provider.getBalance(address);
+
+        if (balance.lt(this.value)) {
+            this.throwError("insufficient ether to wrap");
+        }
+    }
+
+    async run(): Promise<void> {
+        let address = await this.accounts[0].getAddress();
+
+        this.dump("Wrapping ether", {
+            "From": address,
+            "Value": ethers.utils.formatEther(this.value)
+        });
+
+        let contract = new ethers.Contract(WethAddress, WethAbi, this.accounts[0]);
+        await contract.deposit({ value: this.value });
+    }
+}
+cli.addPlugin("wrap-ether", WrapEtherPlugin);
+
+class UnwrapEtherPlugin extends Plugin {
+    value: ethers.BigNumber;
+
+    static getHelp(): Help {
+        return {
+           name: "unwrap-ether VALUE",
+           help: "Withdraw VALUE from Wrapped Ether (WETH)"
+        }
+    }
+
+    async prepareArgs(args: Array<string>): Promise<void> {
+        await super.prepareArgs(args);
+
+        if (this.accounts.length !== 1) {
+            this.throwError("unwrap-ether requires exactly one account");
+        }
+
+        if (args.length !== 1) {
+            this.throwError("unwrap-ether requires exactly VALUE");
+        }
+
+        this.value = ethers.utils.parseEther(args[0]);
+    }
+
+    async run(): Promise<void> {
+        await super.run();
+
+        let address = await this.accounts[0].getAddress();
+        this.dump("Withdrawing Wrapped Ether", {
+            "To": address,
+            "Valiue": ethers.utils.formatEther(this.value)
+        });
+
+        let contract = new ethers.Contract(WethAddress, WethAbi, this.accounts[0]);
+        await contract.withdraw(this.value);
+    }
+}
+cli.addPlugin("unwrap-ether", UnwrapEtherPlugin);
+
+const Erc20Abi = [
+    "function decimals() view returns (uint8)",
+    "function symbol() view returns (string)",
+    "function name() view returns (string)",
+    "function balanceOf(address) view returns (uint)",
+    "function transfer(address to, uint256 value)"
+];
+
+const Erc20AltAbi = [
+    "function symbol() view returns (bytes32)",
+    "function name() view returns (bytes32)",
+];
+
+class SendTokenPlugin extends Plugin {
+    contract: ethers.Contract;
+    toAddress: string;
+    decimals: number;
+    value: ethers.BigNumber;
+
+    static getHelp(): Help {
+        return {
+           name: "send-token TOKEN ADDRESS VALUE",
+           help: "Send VALUE tokens (at TOKEN) to ADDRESS"
+        }
+    }
+
+    async prepareArgs(args: Array<string>): Promise<void> {
+        await super.prepareArgs(args);
+
+        if (args.length !== 3) {
+            this.throwError("send-token requires exactly TOKEN, ADDRESS and VALUE");
+        }
+
+        if (this.accounts.length !== 1) {
+            this.throwError("send-token requires exactly one account");
+        }
+
+        let tokenAddress = await this.getAddress(args[0]);
+        this.contract = new ethers.Contract(tokenAddress, Erc20Abi, this.accounts[0]);
+
+        this.decimals = await this.contract.decimals();
+
+        this.toAddress = await this.getAddress(args[1]);
+        this.value = ethers.utils.parseUnits(args[2], this.decimals);
+    }
+
+    async run(): Promise<void> {
+        const info: { [ name: string ]: any } = {
+            "To": this.toAddress,
+            "Token Contract": this.contract.address,
+            "Value": ethers.utils.formatUnits(this.value, this.decimals)
+        };
+
+        let namePromise = this.contract.name().then((name: string) => {
+            if (name === "") { throw new Error("returned zero"); }
+            info["Token Name"] = name;
+        }, (error: Error) => {
+            let contract = new ethers.Contract(this.contract.address, Erc20AltAbi, this.contract.signer);
+            contract.name().then((name: string) => {
+                info["Token Name"] = ethers.utils.parseBytes32String(name);
+            }, (error: Error) => {
+                throw error;
+            });
+        });
+
+        let symbolPromise = this.contract.symbol().then((symbol: string) => {
+            if (symbol === "") { throw new Error("returned zero"); }
+            info["Token Symbol"] = symbol;
+        }, (error: Error) => {
+            let contract = new ethers.Contract(this.contract.address, Erc20AltAbi, this.contract.signer);
+            contract.symbol().then((symbol: string) => {
+                info["Token Symbol"] = ethers.utils.parseBytes32String(symbol);
+            }, (error: Error) => {
+                throw error;
+            });
+        });
+
+        await namePromise;
+        await symbolPromise;
+
+        this.dump("Sending Tokens:", info);
+
+        await this.contract.transfer(this.toAddress, this.value);
+    }
+}
+cli.addPlugin("send-token", SendTokenPlugin);
+
 
 class CompilePlugin extends Plugin {
     filename: string;
