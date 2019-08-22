@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Utilities
 =========
@@ -43,4 +49,4 @@ are also quite useful for application developers.
 
 
 -----
-**Content Hash:** 2ad729e67eb1303dcd0749dafe8b681b0e71d5511e3921ffdb45b81b2561755a
+**Content Hash:** ae9deb0419f2da1644ae9588d27ecc475961b741fa9d7b27b2cf13ddf62d50b6

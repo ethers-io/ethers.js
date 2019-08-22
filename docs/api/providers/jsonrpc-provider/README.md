@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 JSON-RPC Provider
 =================
@@ -45,4 +51,4 @@ TODO... Explain
 
 
 -----
-**Content Hash:** 497729952599bd12a48198ea62e259c24bb3ec8de38d594f346695f34753a2c2
+**Content Hash:** 09091214806fa2270a7425521fd948901355db2ec3406597fb5e29141b40639b

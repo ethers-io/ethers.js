@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Concepts
 ========
@@ -15,4 +21,4 @@ which developers can make use of or should be aware of.
 
 
 -----
-**Content Hash:** 1a99161696ee94f8320ce5b63367cfc1245dadb9dc5f52819e5a547b3f44c509
+**Content Hash:** ad59f45600332d936821db1fa0d0eeabdab5b4f252e1e815de525b4d1b9a9a7b

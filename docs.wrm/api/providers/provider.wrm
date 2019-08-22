@@ -137,5 +137,5 @@ Returns the list of Listeners for //eventName//.
 _subsection: Inspection Methods
 
 _property: Provider.isProvider(object) => boolean
-Returns true if and only if object is a Provider.
+Returns true if and only if //object// is a Provider.
 

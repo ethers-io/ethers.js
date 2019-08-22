@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Types
 =====
@@ -122,4 +128,4 @@ TODO
 
 
 -----
-**Content Hash:** 9b08b2e4c2db679ae2fc80deb4ce59ec288da11c40730d7e1a045a2538436b17
+**Content Hash:** f6d5ea85b1ddef3a5b5bc0745984620507c001cf7d898c7842e006ddcd2b056b

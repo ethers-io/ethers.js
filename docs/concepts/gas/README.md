@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Gas
 ===
@@ -20,4 +26,4 @@ Gas Limit
 
 
 -----
-**Content Hash:** 0e5b9d2e12fbc359899548a8f3d7a0951ee96cc3dec2b4b64be0e4dbfa1371eb
+**Content Hash:** 4cc3001196d861faac19ebc393e002ce9e6f24702b66bac62ef8f9185625b3dc

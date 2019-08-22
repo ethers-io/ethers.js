@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Signers
 =======
@@ -63,4 +69,4 @@ TODO
 
 
 -----
-**Content Hash:** abb9583fce7bfb330648881c6855cebac07174afa724901ba883e2b33dcb0a07
+**Content Hash:** 08ec198fa4ab407a1bed0a705073d7f40a6c3969b8e922961939fd8e009ca1ed

@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Flatworm Docs
 =============
@@ -154,7 +160,7 @@ Markdown
 
 The markdown is simple and does not have the flexibility of
 other dialects, but allows for **bold**, *italic*,
-*underlined*, `monospaced`, *super-scripted* text,
+*underlined*, `monospaced`, ^super-scripted text,
 supporting [links](./) and lists.
 
 
@@ -188,4 +194,4 @@ This is a self-titled link [[https://ethereumorg]] and this
 
 
 -----
-**Content Hash:** 74aa879d77ec6a068c9233aefbf85188a6a18cacf24f5ba9c83cd3602c15e9ae
+**Content Hash:** 6cc55a98e7a50c76c8b27fbc7aae97bebaf9355a40b9c44a568f2f7fd927da57

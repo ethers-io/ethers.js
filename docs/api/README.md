@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Application Programming Interface (API)
 =======================================
@@ -74,4 +80,4 @@ Here...
 
 
 -----
-**Content Hash:** 3b51f44082b56d5b7fd9be77c92e6871df8642a3307b24d478ee625dbe1d8585
+**Content Hash:** cbd0b8ac4ada4bfee211c0553ac53e171a6900127d874743a0dedf7fa30618f3

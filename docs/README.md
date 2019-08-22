@@ -1,8 +1,9 @@
 -----
 
-test
+Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
+
 
 What is ethers?
 ===============
@@ -140,4 +141,4 @@ older versions of the library.
 
 
 -----
-**Content Hash:** 488687b8320fc7da1517bdf2b1ac582250593622aca6b0b3244f61fc14973e42
+**Content Hash:** 6abeb4fa3f15b3443d89a26a6b0320f602a12368bc5ebbfb14a6cce682836167

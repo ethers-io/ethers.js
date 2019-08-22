@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Constants
 =========
@@ -98,4 +104,4 @@ The BigNumber value representing the maximum `uint256` value.
 
 
 -----
-**Content Hash:** 36d1996cf9909e8654bc8eef0c760bf3022681482bc88ebc553c79f0b224c9af
+**Content Hash:** a781a8990aec282632e70ebc003a711adf5bc7773243aed727fc37a0934097f7

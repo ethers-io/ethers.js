@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Migration Guide
 ===============
@@ -22,4 +28,4 @@ test
 
 
 -----
-**Content Hash:** 9b0d95b05f5e8941f7984f2f5141af4c4b17eef142c924bea54c446f11a367f4
+**Content Hash:** dc44071344e2a1a26a1638594b7403e8ab4722d4964a8ae5b9b94411eaa36f3c

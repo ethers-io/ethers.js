@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 FixedNumber
 ===========
@@ -161,4 +167,4 @@ Returns true if and only if *value* is a **FixedNumber**.
 
 
 -----
-**Content Hash:** ddffbdca7bc7b54726596bd79a88e5df5dc947ff48bd2f93d516bb5b084aa4db
+**Content Hash:** e58731f51c5fe088aa89a78c7649ec914dce2d65dac9c1de3c4b3a89c911b46b

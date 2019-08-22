@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Hashing Algorithms
 ==================
@@ -131,4 +137,4 @@ according to their respective type in *arrayOfTypes*.
 
 
 -----
-**Content Hash:** d67fa58e91e9358b895d2c6dbb0ab2f6b1ce71b85c7c0d9bc1a93b4ae2eb4b23
+**Content Hash:** 65dd2158ef160da7be3291c8e7aac15df2de683869df9c31b8efdaa39551b3e4

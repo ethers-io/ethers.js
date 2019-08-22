@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Providers
 =========
@@ -78,4 +84,4 @@ Provider Documentation
 
 
 -----
-**Content Hash:** 7c81bceed28adc2b3e892a999c49c14f0d63d29be28d44587c6c2bc63ecd0204
+**Content Hash:** b15d8a2febb07abbbd784242c47575fbbb097f24643997ce30625c2e88adb095

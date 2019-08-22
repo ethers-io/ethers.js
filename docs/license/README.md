@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 License and Copyright
 =====================
@@ -34,4 +40,4 @@ SOFTWARE.
 
 
 -----
-**Content Hash:** 33d04a7c1199b1f7bee1b864f1610c01fde9a928993a6ffb5816b7268183e9d0
+**Content Hash:** 91addf1f9680c79e0db3ee454bc36cf3ba11b14221c075f21d8faf4d94146c65

@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Getting Started
 ===============
@@ -60,4 +66,4 @@ Web Applications from our CDN.
 
 
 -----
-**Content Hash:** 5550edc55238e573fa55ca0421c610304a1c12cfa1281db2ddba44f36b1a3409
+**Content Hash:** 01b739e7d4410ec57652b8058ae7a5902107ce0b170ecd3550cbc97f4d287fd8

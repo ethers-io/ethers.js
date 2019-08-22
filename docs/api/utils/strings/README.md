@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Strings
 =======
@@ -148,4 +154,4 @@ it should not be considered a method to acheive *any* level of security from
 
 
 -----
-**Content Hash:** f6a51816edca0ae4b74c16012629f26108f16204ff9d3aa3879fd44adb8d0d7f
+**Content Hash:** 74002cd3d9368872b5618f68967deac34a4d1aeafeeac6ddb5c1d06a450180c9

@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Cookbook
 ========
@@ -8,4 +14,4 @@ Cooking...
 
 
 -----
-**Content Hash:** 19de63e3df2d64c5982c1625034ee40032aee1bd349eacf1cd8cf00c336548aa
+**Content Hash:** e3e2d42077858c887af142ae8f1c49a1882ea80d98cf4b75e272d97a65a0e713

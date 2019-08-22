@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 
 Contracts
@@ -14,4 +20,4 @@ Buckets
 
 
 -----
-**Content Hash:** c703f8cc79e5372fb818572209c72eaa54c68385c2021e6fc412594379d834e0
+**Content Hash:** 190c93691014eae64ffcb66549f127aa73f4645fc7a4b3a2be9ae00216c79cf6

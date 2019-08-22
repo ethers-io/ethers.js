@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 BigNumber
 =========
@@ -104,42 +110,42 @@ Returns an instance of a **BigNumber** for *aBigNumberish*.
 ```javascript
 // From a decimal string...
 BigNumber.from("42")
-// { BigNumber: "42" }</span>
+// { BigNumber: "42" }
 
 // From a hexstring...
 BigNumber.from("0x2a")
-// { BigNumber: "42" }</span>
+// { BigNumber: "42" }
 
 // From a negative hexstring...
 BigNumber.from("-0x2a")
-// { BigNumber: "-42" }</span>
+// { BigNumber: "-42" }
 
 // From an Array (or Uint8Array)...
 BigNumber.from([ 42 ])
-// { BigNumber: "42" }</span>
+// { BigNumber: "42" }
 
 // From an existing BigNumber...
 let one1 = constants.One;
 let one2 = BigNumber.from(one1)
 
 one2
-// { BigNumber: "1" }</span>
+// { BigNumber: "1" }
 
 // ...which returns the same instance
 one1 === one2
-// true</span>
+// true
 
 // From a (safe) number...
 BigNumber.from(42)
-// { BigNumber: "42" }</span>
+// { BigNumber: "42" }
 
 // From a ES2015 BigInt... (only on platforms with BigInt support)
 BigNumber.from(42n)
-// { BigNumber: "42" }</span>
+// { BigNumber: "42" }
 
 // Numbers outside the safe range fail:
 BigNumber.from(Number.MAX_SAFE_INTEGER);
-// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, version=bignumber/5.0.0-beta.129)</span>
+// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, version=bignumber/5.0.0-beta.129)
 ```
 
 
@@ -331,7 +337,7 @@ let a = BigNumber.from(42);
 let b = BigNumber.from("91");
 
   a.mul(b);
-  // { BigNumber: "3822" }</span>
+  // { BigNumber: "3822" }
 ```
 
 
@@ -349,7 +355,7 @@ A few short notes on numbers...
 The first problem many encounter when dealing with Ethereum is
 the concept of numbers. Most common currencies are broken down
 with very little granularity. For example, there are only 100
-cents in a single dollar. However, there are 10*18* **wei** in a
+cents in a single dollar. However, there are 10^18 **wei** in a
 single **ether**.
 
 JavaScript uses [IEEE 754 double-precision binary floating point](https://en.wikipedia.org/wiki/Double-precision_floating-point_format)
@@ -364,7 +370,7 @@ To demonstrate how this may be an issue in your code, consider:
 
 ```javascript
 (Number.MAX_SAFE_INTEGER + 2 - 2) == (Number.MAX_SAFE_INTEGER)
-// false</span>
+// false
 ```
 
 
@@ -380,4 +386,4 @@ mathematical operations handled safely.
 
 
 -----
-**Content Hash:** 2bd4504f910c0e79b352ebb19083a36d6ee0ed263c279aa64a4921a28874c2e9
+**Content Hash:** 269c8464ff80c77316617cbfa4e9a195d742f829a23911fecf0bba16961f81ae

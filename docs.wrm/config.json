@@ -1,0 +1,9 @@
+{
+  "title": "ethers",
+  "subtitle": "v5.0-beta",
+  "logo": "logo.svg",
+  "link": "https://docs-beta.ethers.io",
+  "markdown": {
+      "banner": "-----\n\nDocumentation: [html](https://docs-beta.ethers.io/)\n\n-----\n\n"
+  }
+}

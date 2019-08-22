@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 API Providers
 =============
@@ -44,4 +50,4 @@ Tra la la...
 
 
 -----
-**Content Hash:** cc4a4f172bf2c52a4c2876b44408d293e57ff92b1607ece82192adada290b93a
+**Content Hash:** 9669eaaa1c2e9a31256fdd49e1b7f79550f064056b1bfd67a8cef6c7b5f8d473

@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Testing
 =======
@@ -8,4 +14,4 @@ Here goes info about testing
 
 
 -----
-**Content Hash:** 864815b384bd40e56f3a5aee328bde2186e7453d8a0e968d5e6a6c719096d725
+**Content Hash:** 8c2f2674db316066704a60c421caa69829c391dbf94998f98a603c75b237d42e

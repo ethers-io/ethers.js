@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Byte Manipulation
 =================
@@ -119,27 +125,27 @@ zeros. The result of this function can be of odd-length.
 ```javascript
 // Convert a hexstring to a Uint8Array
 arrayify("0x1234")
-// [ 18, 52 ]</span>
+// [ 18, 52 ]
 
 // Convert an Array to a hexstring
 hexlify([1, 2, 3, 4])
-// 0x01020304</span>
+// 0x01020304
 
 // Convert an Object to a hexstring
 hexlify({ length: 2, "0": 1, "1": 2 })
-// 0x0102</span>
+// 0x0102
 
 // Convert an Array to a hexstring
 hexlify([ 1 ])
-// 0x01</span>
+// 0x01
 
 // Convert a number to a stripped hex value
 hexValue(1)
-// 0x1</span>
+// 0x1
 
 // Convert an Array to a stripped hex value
 hexValue([ 1, 2 ])
-// 0x102</span>
+// 0x102
 ```
 
 
@@ -240,4 +246,4 @@ computed.
 
 
 -----
-**Content Hash:** 6c6608cb249ff3e352417e8c99e1965500c19a3ae9b33d0397d7f8b84e78e20b
+**Content Hash:** 1e52066c61f8794d858f02fb8164b146c9379968b0e0ab90efeb2fe16831599f

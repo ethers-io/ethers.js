@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Display Logic and Input
 =======================
@@ -104,4 +110,4 @@ The equivalent to calling `parseUnits(value, "ether")`.
 
 
 -----
-**Content Hash:** a0fd257cd92fcf3ae0659a22281fe10e7b68d632443cdf65556445a34365fcf1
+**Content Hash:** 172c3345092afd2abb6a47dc225ae54c13c3ee3ce87868dd87e19656f4e6078d

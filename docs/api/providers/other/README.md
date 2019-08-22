@@ -1,3 +1,9 @@
+-----
+
+Documentation: [html](https://docs-beta.ethers.io/)
+
+-----
+
 
 Other Providers
 ===============
@@ -48,4 +54,4 @@ Explain...
 
 
 -----
-**Content Hash:** 5718f5431014c04862ff69aa2ff77548301446272c4ad92724b443850c10a117
+**Content Hash:** c950a8710b679e9061aa834f8b0366614dcb031270627249acb412813bb5ca94
