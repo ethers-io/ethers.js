@@ -6,15 +6,12 @@
     "bootstrap": "node ./admin/cmds/reset-build.js && node ./admin/cmds/update-depgraph && lerna bootstrap --hoist",
     "build": "tsc --build ./tsconfig.project.json",
     "clean": "node ./admin/cmds/reset-build.js && tsc --build --clean ./tsconfig.project.json",
-
     "_dist_prepare": "npm run clean && npm run bootstrap && npm run build",
     "_dist_ethers": "rollup -c && rollup -c --configMinify && rollup -c --configModule && rollup -c --configModule --configMinify",
     "_dist_tests": "rollup -c --configTest && rollup -c --configTest --configMinify && rollup -c --configTest --configModule && rollup -c --configTest --configModule --configMinify",
-
     "_test_prepare": "npm run _dist_prepare && npm run _dist_tests",
     "_test_node": "cd packages/tests && mocha --no-colors --reporter ./tests/reporter ./tests/test-*.js",
     "test_node": "npm run _test_prepare && npm run _test_node",
-
     "_dist_old": "npm run clean && npm run bootstrap && npm run build && lerna run dist",
     "old-test": "npm run _dist_old && npm run test-check",
     "old-test-check": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
@@ -22,7 +19,6 @@
     "old-test-phantomjs": "cd packages/tests && npm run dist-phantomjs && phantomjs --web-security=false ../../node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./test.html ./tests/reporter.js",
     "old-test-aion": "npm run dist && npm run test-aion-node",
     "old-test-aion-node": "cd packages/aion-tests && mocha --no-colors --reporter ../tests/tests/reporter ./tests/test-*.js",
-
     "update-versions": "npm run _dist_prepare && node ./admin/cmds/update-versions",
     "publish-all": "node ./admin/cmds/publish",
     "build-docs": "flatworm docs.wrm docs"

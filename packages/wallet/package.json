@@ -37,5 +37,5 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "module": "./lib.esm/index.js",
-  "tarballHash": "0x460a045fc0b735ecdb14c5dd2c93c0dc45658ff46071f41dbf4a7cc6d3af1450"
+  "tarballHash": "0x089e1006fc830b53ddc8c3c4eb83774a600b56d16e7a86846ff5a82b209d22d6"
 }

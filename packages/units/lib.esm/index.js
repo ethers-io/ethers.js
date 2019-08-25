@@ -1,5 +1,5 @@
 "use strict";
-import { formatFixed, parseFixed } from "@ethersproject/bignumber/fixednumber";
+import { formatFixed, parseFixed } from "@ethersproject/bignumber";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);

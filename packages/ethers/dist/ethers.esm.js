@@ -3455,7 +3455,7 @@ var bn = createCommonjsModule(function (module) {
 });
 var bn_1 = bn.BN;
 
-const version = "logger/5.0.0-beta.129";
+const version = "logger/5.0.0-beta.128";
 
 "use strict";
 let _permanentCensorErrors = false;
@@ -3721,11 +3721,11 @@ Logger.levels = {
     OFF: "OFF"
 };
 
-var module = /*#__PURE__*/Object.freeze({
+var lib_esm = /*#__PURE__*/Object.freeze({
 	Logger: Logger
 });
 
-const version$1 = "bytes/5.0.0-beta.129";
+const version$1 = "bytes/5.0.0-beta.128";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -4089,7 +4089,7 @@ function joinSignature(signature) {
     ]));
 }
 
-var module$1 = /*#__PURE__*/Object.freeze({
+var lib_esm$1 = /*#__PURE__*/Object.freeze({
 	isBytesLike: isBytesLike,
 	isBytes: isBytes,
 	arrayify: arrayify,
@@ -4108,7 +4108,7 @@ var module$1 = /*#__PURE__*/Object.freeze({
 	joinSignature: joinSignature
 });
 
-const version$2 = "bignumber/5.0.0-beta.130";
+const version$2 = "bignumber/5.0.0-beta.129";
 
 "use strict";
 const logger$1 = new Logger(version$2);
@@ -4612,7 +4612,7 @@ class FixedNumber {
     }
 }
 
-const version$3 = "properties/5.0.0-beta.131";
+const version$3 = "properties/5.0.0-beta.130";
 
 "use strict";
 const logger$3 = new Logger(version$3);
@@ -4713,7 +4713,7 @@ class Description {
     }
 }
 
-var module$2 = /*#__PURE__*/Object.freeze({
+var lib_esm$2 = /*#__PURE__*/Object.freeze({
 	defineReadOnly: defineReadOnly,
 	getStatic: getStatic,
 	resolveProperties: resolveProperties,
@@ -4723,7 +4723,7 @@ var module$2 = /*#__PURE__*/Object.freeze({
 	Description: Description
 });
 
-const version$4 = "abi/5.0.0-beta.137";
+const version$4 = "abi/5.0.0-beta.136";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6179,7 +6179,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$5 = "address/5.0.0-beta.128";
+const version$5 = "address/5.0.0-beta.127";
 
 "use strict";
 const logger$6 = new Logger(version$5);
@@ -6596,7 +6596,7 @@ class NumberCoder extends Coder {
     }
 }
 
-const version$6 = "strings/5.0.0-beta.130";
+const version$6 = "strings/5.0.0-beta.129";
 
 "use strict";
 const logger$8 = new Logger(version$6);
@@ -7117,7 +7117,7 @@ class AbiCoder {
 }
 const defaultAbiCoder = new AbiCoder();
 
-const version$7 = "hash/5.0.0-beta.128";
+const version$7 = "hash/5.0.0-beta.127";
 
 "use strict";
 const logger$a = new Logger(version$7);
@@ -7165,7 +7165,7 @@ function hashMessage(message) {
     ]));
 }
 
-var module$3 = /*#__PURE__*/Object.freeze({
+var lib_esm$3 = /*#__PURE__*/Object.freeze({
 	isValidName: isValidName,
 	namehash: namehash,
 	id: id,
@@ -7508,7 +7508,7 @@ function getNameCount(fragments) {
 
 "use strict";
 
-const version$8 = "abstract-provider/5.0.0-beta.131";
+const version$8 = "abstract-provider/5.0.0-beta.130";
 
 "use strict";
 const logger$c = new Logger(version$8);
@@ -7585,7 +7585,7 @@ class Provider {
     }
 }
 
-const version$9 = "abstract-signer/5.0.0-beta.132";
+const version$9 = "abstract-signer/5.0.0-beta.131";
 
 "use strict";
 const logger$d = new Logger(version$9);
@@ -7753,7 +7753,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$a = "contracts/5.0.0-beta.137";
+const version$a = "contracts/5.0.0-beta.136";
 
 "use strict";
 const logger$e = new Logger(version$a);
@@ -9727,13 +9727,13 @@ hash.ripemd160 = hash.ripemd.ripemd160;
 var _version = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "sha2/5.0.0-beta.129";
+exports.version = "sha2/5.0.0-beta.128";
 });
 
 var _version$1 = unwrapExports(_version);
 var _version_1 = _version.version;
 
-var browser = createCommonjsModule(function (module$2, exports) {
+var browser = createCommonjsModule(function (module, exports) {
 "use strict";
 var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -9747,7 +9747,7 @@ var hash = __importStar(hash_1);
 
 
 
-var logger = new module.Logger(_version.version);
+var logger = new lib_esm.Logger(_version.version);
 var SupportedAlgorithms;
 (function (SupportedAlgorithms) {
     SupportedAlgorithms["sha256"] = "sha256";
@@ -9755,25 +9755,25 @@ var SupportedAlgorithms;
 })(SupportedAlgorithms = exports.SupportedAlgorithms || (exports.SupportedAlgorithms = {}));
 ;
 function ripemd160(data) {
-    return "0x" + (hash.ripemd160().update(module$1.arrayify(data)).digest("hex"));
+    return "0x" + (hash.ripemd160().update(lib_esm$1.arrayify(data)).digest("hex"));
 }
 exports.ripemd160 = ripemd160;
 function sha256(data) {
-    return "0x" + (hash.sha256().update(module$1.arrayify(data)).digest("hex"));
+    return "0x" + (hash.sha256().update(lib_esm$1.arrayify(data)).digest("hex"));
 }
 exports.sha256 = sha256;
 function sha512(data) {
-    return "0x" + (hash.sha512().update(module$1.arrayify(data)).digest("hex"));
+    return "0x" + (hash.sha512().update(lib_esm$1.arrayify(data)).digest("hex"));
 }
 exports.sha512 = sha512;
 function computeHmac(algorithm, key, data) {
     if (!SupportedAlgorithms[algorithm]) {
-        logger.throwError("unsupported algorithm " + algorithm, module.Logger.errors.UNSUPPORTED_OPERATION, {
+        logger.throwError("unsupported algorithm " + algorithm, lib_esm.Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "hmac",
             algorithm: algorithm
         });
     }
-    return "0x" + hash.hmac(hash[algorithm], module$1.arrayify(key)).update(module$1.arrayify(data)).digest("hex");
+    return "0x" + hash.hmac(hash[algorithm], lib_esm$1.arrayify(key)).update(lib_esm$1.arrayify(data)).digest("hex");
 }
 exports.computeHmac = computeHmac;
 });
@@ -9791,8 +9791,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 
 function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
-    password = module$1.arrayify(password);
-    salt = module$1.arrayify(salt);
+    password = lib_esm$1.arrayify(password);
+    salt = lib_esm$1.arrayify(salt);
     var hLen;
     var l = 1;
     var DK = new Uint8Array(keylen);
@@ -9808,7 +9808,7 @@ function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
         block1[salt.length + 2] = (i >> 8) & 0xff;
         block1[salt.length + 3] = i & 0xff;
         //let U = createHmac(password).update(block1).digest();
-        var U = module$1.arrayify(browser.computeHmac(hashAlgorithm, password, block1));
+        var U = lib_esm$1.arrayify(browser.computeHmac(hashAlgorithm, password, block1));
         if (!hLen) {
             hLen = U.length;
             T = new Uint8Array(hLen);
@@ -9819,16 +9819,16 @@ function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
         T.set(U);
         for (var j = 1; j < iterations; j++) {
             //U = createHmac(password).update(U).digest();
-            U = module$1.arrayify(browser.computeHmac(hashAlgorithm, password, U));
+            U = lib_esm$1.arrayify(browser.computeHmac(hashAlgorithm, password, U));
             for (var k = 0; k < hLen; k++)
                 T[k] ^= U[k];
         }
         var destPos = (i - 1) * hLen;
         var len = (i === l ? r : hLen);
         //T.copy(DK, destPos, 0, len)
-        DK.set(module$1.arrayify(T).slice(0, len), destPos);
+        DK.set(lib_esm$1.arrayify(T).slice(0, len), destPos);
     }
-    return module$1.hexlify(DK);
+    return lib_esm$1.hexlify(DK);
 }
 exports.pbkdf2 = pbkdf2;
 });
@@ -12200,7 +12200,7 @@ elliptic.eddsa = eddsa;
 });
 var elliptic_2 = elliptic_1.ec;
 
-const version$c = "signing-key/5.0.0-beta.129";
+const version$c = "signing-key/5.0.0-beta.128";
 
 "use strict";
 const logger$f = new Logger(version$c);
@@ -12272,7 +12272,7 @@ function computePublicKey(key, compressed) {
     return logger$f.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$d = "transactions/5.0.0-beta.128";
+const version$d = "transactions/5.0.0-beta.127";
 
 "use strict";
 const logger$g = new Logger(version$d);
@@ -12413,13 +12413,13 @@ function parse(rawTransaction) {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "wordlists/5.0.0-beta.128";
+exports.version = "wordlists/5.0.0-beta.127";
 });
 
 var _version$3 = unwrapExports(_version$2);
 var _version_1$1 = _version$2.version;
 
-var wordlist = createCommonjsModule(function (module$1, exports) {
+var wordlist = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // This gets overriddenby gulp during bip39-XX
@@ -12428,7 +12428,7 @@ var exportWordlist = false;
 
 
 
-var logger = new module.Logger(_version$2.version);
+var logger = new lib_esm.Logger(_version$2.version);
 function check(wordlist) {
     var words = [];
     for (var i = 0; i < 2048; i++) {
@@ -12438,14 +12438,14 @@ function check(wordlist) {
         }
         words.push(word);
     }
-    return module$3.id(words.join("\n") + "\n");
+    return lib_esm$3.id(words.join("\n") + "\n");
 }
 exports.check = check;
 var Wordlist = /** @class */ (function () {
     function Wordlist(locale) {
         var _newTarget = this.constructor;
         logger.checkAbstract(_newTarget, Wordlist);
-        module$2.defineReadOnly(this, "locale", locale);
+        lib_esm$2.defineReadOnly(this, "locale", locale);
     }
     // Subclasses may override this
     Wordlist.prototype.split = function (mnemonic) {
@@ -12465,14 +12465,14 @@ function register(lang, name) {
     if (exportWordlist) {
         var g = commonjsGlobal;
         if (!(g.wordlists)) {
-            module$2.defineReadOnly(g, "wordlists", {});
+            lib_esm$2.defineReadOnly(g, "wordlists", {});
         }
         if (!g.wordlists[name]) {
-            module$2.defineReadOnly(g.wordlists, name, lang);
+            lib_esm$2.defineReadOnly(g.wordlists, name, lang);
         }
         if (g.ethers && g.ethers.wordlists) {
             if (!g.ethers.wordlists[name]) {
-                module$2.defineReadOnly(g.ethers.wordlists, name, lang);
+                lib_esm$2.defineReadOnly(g.ethers.wordlists, name, lang);
             }
         }
     }
@@ -12553,7 +12553,7 @@ var browser$5 = unwrapExports(browser$4);
 var browser_1$2 = browser$4.Wordlist;
 var browser_2$1 = browser$4.wordlists;
 
-const version$e = "hdnode/5.0.0-beta.130";
+const version$e = "hdnode/5.0.0-beta.129";
 
 "use strict";
 const logger$h = new Logger(version$e);
@@ -12835,7 +12835,7 @@ function isValidMnemonic(mnemonic, wordlist) {
 var _version$4 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "random/5.0.0-beta.128";
+exports.version = "random/5.0.0-beta.127";
 });
 
 var _version$5 = unwrapExports(_version$4);
@@ -12860,13 +12860,13 @@ exports.shuffled = shuffled;
 var shuffle$1 = unwrapExports(shuffle);
 var shuffle_1 = shuffle.shuffled;
 
-var browser$6 = createCommonjsModule(function (module$2, exports) {
+var browser$6 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
 
 
-var logger = new module.Logger(_version$4.version);
+var logger = new lib_esm.Logger(_version$4.version);
 
 exports.shuffled = shuffle.shuffled;
 var crypto = commonjsGlobal.crypto || commonjsGlobal.msCrypto;
@@ -12874,7 +12874,7 @@ if (!crypto || !crypto.getRandomValues) {
     logger.warn("WARNING: Missing strong random number source");
     crypto = {
         getRandomValues: function (buffer) {
-            return logger.throwError("no secure random source avaialble", module.Logger.errors.UNSUPPORTED_OPERATION, {
+            return logger.throwError("no secure random source avaialble", lib_esm.Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "crypto.getRandomValues"
             });
         }
@@ -12886,7 +12886,7 @@ function randomBytes(length) {
     }
     var result = new Uint8Array(length);
     crypto.getRandomValues(result);
-    return module$1.arrayify(result);
+    return lib_esm$1.arrayify(result);
 }
 exports.randomBytes = randomBytes;
 ;
@@ -13697,7 +13697,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$f = "json-wallets/5.0.0-beta.129";
+const version$f = "json-wallets/5.0.0-beta.128";
 
 "use strict";
 /*
@@ -14851,7 +14851,7 @@ function decryptJsonWallet(json, password, progressCallback) {
     return Promise.reject(new Error("invalid JSON wallet"));
 }
 
-const version$g = "wallet/5.0.0-beta.130";
+const version$g = "wallet/5.0.0-beta.129";
 
 "use strict";
 const logger$j = new Logger(version$g);
@@ -14971,7 +14971,7 @@ function verifyMessage(message, signature) {
     return recoverAddress(hashMessage(message), signature);
 }
 
-const version$h = "networks/5.0.0-beta.129";
+const version$h = "networks/5.0.0-beta.128";
 
 "use strict";
 const logger$k = new Logger(version$h);
@@ -15705,11 +15705,11 @@ function decode(textData) {
     for (var i = 0; i < textData.length; i++) {
         data.push(textData.charCodeAt(i));
     }
-    return module$1.arrayify(data);
+    return lib_esm$1.arrayify(data);
 }
 exports.decode = decode;
 function encode(data) {
-    data = module$1.arrayify(data);
+    data = lib_esm$1.arrayify(data);
     var textData = "";
     for (var i = 0; i < data.length; i++) {
         textData += String.fromCharCode(data[i]);
@@ -15730,7 +15730,7 @@ var browser$a = /*#__PURE__*/Object.freeze({
 	encode: browser_2$3
 });
 
-const version$i = "web/5.0.0-beta.129";
+const version$i = "web/5.0.0-beta.128";
 
 "use strict";
 const logger$l = new Logger(version$i);
@@ -15927,7 +15927,7 @@ function poll(func, options) {
     });
 }
 
-const version$j = "providers/5.0.0-beta.141";
+const version$j = "providers/5.0.0-beta.140";
 
 "use strict";
 const logger$m = new Logger(version$j);
@@ -18514,567 +18514,7 @@ function sha256$1(types, values) {
     return browser_3(pack$1(types, values));
 }
 
-var _version$6 = createCommonjsModule(function (module, exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "bignumber/5.0.0-beta.130";
-});
-
-var _version$7 = unwrapExports(_version$6);
-var _version_1$3 = _version$6.version;
-
-var bignumber = createCommonjsModule(function (module$2, exports) {
-"use strict";
-var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- *  BigNumber
- *
- *  A wrapper around the BN.js object. We use the BN.js library
- *  because it is used by elliptic, so it is required regardles.
- *
- */
-var BN = __importStar(bn);
-
-
-
-var logger = new module.Logger(_version$6.version);
-var _constructorGuard = {};
-var MAX_SAFE = 0x1fffffffffffff;
-function isBigNumberish(value) {
-    return (value != null) && (BigNumber.isBigNumber(value) ||
-        (typeof (value) === "number" && (value % 1) === 0) ||
-        (typeof (value) === "string" && !!value.match(/^-?[0-9]+$/)) ||
-        module$1.isHexString(value) ||
-        (typeof (value) === "bigint") ||
-        module$1.isBytes(value));
-}
-exports.isBigNumberish = isBigNumberish;
-var BigNumber = /** @class */ (function () {
-    function BigNumber(constructorGuard, hex) {
-        var _newTarget = this.constructor;
-        logger.checkNew(_newTarget, BigNumber);
-        if (constructorGuard !== _constructorGuard) {
-            logger.throwError("cannot call consturtor directly; use BigNumber.from", module.Logger.errors.UNSUPPORTED_OPERATION, {
-                operation: "new (BigNumber)"
-            });
-        }
-        this._hex = hex;
-        this._isBigNumber = true;
-        Object.freeze(this);
-    }
-    BigNumber.prototype.fromTwos = function (value) {
-        return toBigNumber(toBN(this).fromTwos(value));
-    };
-    BigNumber.prototype.toTwos = function (value) {
-        return toBigNumber(toBN(this).toTwos(value));
-    };
-    BigNumber.prototype.abs = function () {
-        if (this._hex[0] === "-") {
-            return BigNumber.from(this._hex.substring(1));
-        }
-        return this;
-    };
-    BigNumber.prototype.add = function (other) {
-        return toBigNumber(toBN(this).add(toBN(other)));
-    };
-    BigNumber.prototype.sub = function (other) {
-        return toBigNumber(toBN(this).sub(toBN(other)));
-    };
-    BigNumber.prototype.div = function (other) {
-        var o = BigNumber.from(other);
-        if (o.isZero()) {
-            throwFault("division by zero", "div");
-        }
-        return toBigNumber(toBN(this).div(toBN(other)));
-    };
-    BigNumber.prototype.mul = function (other) {
-        return toBigNumber(toBN(this).mul(toBN(other)));
-    };
-    BigNumber.prototype.mod = function (other) {
-        return toBigNumber(toBN(this).mod(toBN(other)));
-    };
-    BigNumber.prototype.pow = function (other) {
-        return toBigNumber(toBN(this).pow(toBN(other)));
-    };
-    BigNumber.prototype.maskn = function (value) {
-        return toBigNumber(toBN(this).maskn(value));
-    };
-    BigNumber.prototype.eq = function (other) {
-        return toBN(this).eq(toBN(other));
-    };
-    BigNumber.prototype.lt = function (other) {
-        return toBN(this).lt(toBN(other));
-    };
-    BigNumber.prototype.lte = function (other) {
-        return toBN(this).lte(toBN(other));
-    };
-    BigNumber.prototype.gt = function (other) {
-        return toBN(this).gt(toBN(other));
-    };
-    BigNumber.prototype.gte = function (other) {
-        return toBN(this).gte(toBN(other));
-    };
-    BigNumber.prototype.isZero = function () {
-        return toBN(this).isZero();
-    };
-    BigNumber.prototype.toNumber = function () {
-        try {
-            return toBN(this).toNumber();
-        }
-        catch (error) {
-            throwFault("overflow", "toNumber", this.toString());
-        }
-        return null;
-    };
-    BigNumber.prototype.toString = function () {
-        // Lots of people expect this, which we do not support, so check
-        if (arguments.length !== 0) {
-            logger.throwError("bigNumber.toString does not accept parameters", module.Logger.errors.UNEXPECTED_ARGUMENT, {});
-        }
-        return toBN(this).toString(10);
-    };
-    BigNumber.prototype.toHexString = function () {
-        return this._hex;
-    };
-    BigNumber.from = function (value) {
-        if (value instanceof BigNumber) {
-            return value;
-        }
-        if (typeof (value) === "string") {
-            if (value.match(/-?0x[0-9a-f]+/i)) {
-                return new BigNumber(_constructorGuard, toHex(value));
-            }
-            if (value.match(/^-?[0-9]+$/)) {
-                return new BigNumber(_constructorGuard, toHex(new BN.BN(value)));
-            }
-            return logger.throwArgumentError("invalid BigNumber string", "value", value);
-        }
-        if (typeof (value) === "number") {
-            if (value % 1) {
-                throwFault("underflow", "BigNumber.from", value);
-            }
-            if (value >= MAX_SAFE || value <= -MAX_SAFE) {
-                throwFault("overflow", "BigNumber.from", value);
-            }
-            return BigNumber.from(String(value));
-        }
-        if (typeof (value) === "bigint") {
-            return BigNumber.from(value.toString());
-        }
-        if (module$1.isBytes(value)) {
-            return BigNumber.from(module$1.hexlify(value));
-        }
-        if (value._hex && module$1.isHexString(value._hex)) {
-            return BigNumber.from(value._hex);
-        }
-        if (value.toHexString) {
-            value = value.toHexString();
-            if (typeof (value) === "string") {
-                return BigNumber.from(value);
-            }
-        }
-        return logger.throwArgumentError("invalid BigNumber value", "value", value);
-    };
-    BigNumber.isBigNumber = function (value) {
-        return !!(value && value._isBigNumber);
-    };
-    return BigNumber;
-}());
-exports.BigNumber = BigNumber;
-// Normalize the hex string
-function toHex(value) {
-    // For BN, call on the hex string
-    if (typeof (value) !== "string") {
-        return toHex(value.toString(16));
-    }
-    // If negative, prepend the negative sign to the normalized positive value
-    if (value[0] === "-") {
-        // Strip off the negative sign
-        value = value.substring(1);
-        // Cannot have mulitple negative signs (e.g. "--0x04")
-        if (value[0] === "-") {
-            logger.throwArgumentError("invalid hex", "value", value);
-        }
-        // Call toHex on the positive component
-        value = toHex(value);
-        // Do not allow "-0x00"
-        if (value === "0x00") {
-            return value;
-        }
-        // Negate the value
-        return "-" + value;
-    }
-    // Add a "0x" prefix if missing
-    if (value.substring(0, 2) !== "0x") {
-        value = "0x" + value;
-    }
-    // Normalize zero
-    if (value === "0x") {
-        return "0x00";
-    }
-    // Make the string even length
-    if (value.length % 2) {
-        value = "0x0" + value.substring(2);
-    }
-    // Trim to smallest even-length string
-    while (value.length > 4 && value.substring(0, 4) === "0x00") {
-        value = "0x" + value.substring(4);
-    }
-    return value;
-}
-function toBigNumber(value) {
-    return BigNumber.from(toHex(value));
-}
-function toBN(value) {
-    var hex = BigNumber.from(value).toHexString();
-    if (hex[0] === "-") {
-        return (new BN.BN("-" + hex.substring(3), 16));
-    }
-    return new BN.BN(hex.substring(2), 16);
-}
-function throwFault(fault, operation, value) {
-    var params = { fault: fault, operation: operation };
-    if (value != null) {
-        params.value = value;
-    }
-    return logger.throwError(fault, module.Logger.errors.NUMERIC_FAULT, params);
-}
-});
-
-var bignumber$1 = unwrapExports(bignumber);
-var bignumber_1 = bignumber.isBigNumberish;
-var bignumber_2 = bignumber.BigNumber;
-
-var fixednumber = createCommonjsModule(function (module$2, exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-
-
-
-var logger = new module.Logger(_version$6.version);
-
-var _constructorGuard = {};
-var Zero = bignumber.BigNumber.from(0);
-var NegativeOne = bignumber.BigNumber.from(-1);
-function throwFault(message, fault, operation, value) {
-    var params = { fault: fault, operation: operation };
-    if (value !== undefined) {
-        params.value = value;
-    }
-    return logger.throwError(message, module.Logger.errors.NUMERIC_FAULT, params);
-}
-// Constant to pull zeros from for multipliers
-var zeros = "0";
-while (zeros.length < 256) {
-    zeros += zeros;
-}
-// Returns a string "1" followed by decimal "0"s
-function getMultiplier(decimals) {
-    if (typeof (decimals) !== "number") {
-        try {
-            decimals = bignumber.BigNumber.from(decimals).toNumber();
-        }
-        catch (e) { }
-    }
-    if (typeof (decimals) === "number" && decimals >= 0 && decimals <= 256 && !(decimals % 1)) {
-        return ("1" + zeros.substring(0, decimals));
-    }
-    return logger.throwArgumentError("invalid decimal size", "decimals", decimals);
-}
-function formatFixed(value, decimals) {
-    if (decimals == null) {
-        decimals = 0;
-    }
-    var multiplier = getMultiplier(decimals);
-    // Make sure wei is a big number (convert as necessary)
-    value = bignumber.BigNumber.from(value);
-    var negative = value.lt(Zero);
-    if (negative) {
-        value = value.mul(NegativeOne);
-    }
-    var fraction = value.mod(multiplier).toString();
-    while (fraction.length < multiplier.length - 1) {
-        fraction = "0" + fraction;
-    }
-    // Strip training 0
-    fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
-    var whole = value.div(multiplier).toString();
-    value = whole + "." + fraction;
-    if (negative) {
-        value = "-" + value;
-    }
-    return value;
-}
-exports.formatFixed = formatFixed;
-function parseFixed(value, decimals) {
-    if (decimals == null) {
-        decimals = 0;
-    }
-    var multiplier = getMultiplier(decimals);
-    if (typeof (value) !== "string" || !value.match(/^-?[0-9.,]+$/)) {
-        logger.throwArgumentError("invalid decimal value", "value", value);
-    }
-    if (multiplier.length - 1 === 0) {
-        return bignumber.BigNumber.from(value);
-    }
-    // Is it negative?
-    var negative = (value.substring(0, 1) === "-");
-    if (negative) {
-        value = value.substring(1);
-    }
-    if (value === ".") {
-        logger.throwArgumentError("missing value", "value", value);
-    }
-    // Split it into a whole and fractional part
-    var comps = value.split(".");
-    if (comps.length > 2) {
-        logger.throwArgumentError("too many decimal points", "value", value);
-    }
-    var whole = comps[0], fraction = comps[1];
-    if (!whole) {
-        whole = "0";
-    }
-    if (!fraction) {
-        fraction = "0";
-    }
-    // Prevent underflow
-    if (fraction.length > multiplier.length - 1) {
-        throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
-    }
-    // Fully pad the string with zeros to get to wei
-    while (fraction.length < multiplier.length - 1) {
-        fraction += "0";
-    }
-    var wholeValue = bignumber.BigNumber.from(whole);
-    var fractionValue = bignumber.BigNumber.from(fraction);
-    var wei = (wholeValue.mul(multiplier)).add(fractionValue);
-    if (negative) {
-        wei = wei.mul(NegativeOne);
-    }
-    return wei;
-}
-exports.parseFixed = parseFixed;
-var FixedFormat = /** @class */ (function () {
-    function FixedFormat(constructorGuard, signed, width, decimals) {
-        this.signed = signed;
-        this.width = width;
-        this.decimals = decimals;
-        this.name = (signed ? "" : "u") + "fixed" + String(width) + "x" + String(decimals);
-        this._multiplier = getMultiplier(decimals);
-        Object.freeze(this);
-    }
-    FixedFormat.from = function (value) {
-        if (value instanceof FixedFormat) {
-            return value;
-        }
-        var signed = true;
-        var width = 128;
-        var decimals = 18;
-        if (typeof (value) === "string") {
-            if (value === "fixed") {
-                // defaults...
-            }
-            else if (value === "ufixed") {
-                signed = false;
-            }
-            else if (value != null) {
-                var match = value.match(/^(u?)fixed([0-9]+)x([0-9]+)$/);
-                if (!match) {
-                    logger.throwArgumentError("invalid fixed format", "format", value);
-                }
-                signed = (match[1] !== "u");
-                width = parseInt(match[2]);
-                decimals = parseInt(match[3]);
-            }
-        }
-        else if (value) {
-            var check = function (key, type, defaultValue) {
-                if (value[key] == null) {
-                    return defaultValue;
-                }
-                if (typeof (value[key]) !== type) {
-                    logger.throwArgumentError("invalid fixed format (" + key + " not " + type + ")", "format." + key, value[key]);
-                }
-                return value[key];
-            };
-            signed = check("signed", "boolean", signed);
-            width = check("width", "number", width);
-            decimals = check("decimals", "number", decimals);
-        }
-        if (width % 8) {
-            logger.throwArgumentError("invalid fixed format width (not byte aligned)", "format.width", width);
-        }
-        if (decimals > 80) {
-            logger.throwArgumentError("invalid fixed format (decimals too large)", "format.decimals", decimals);
-        }
-        return new FixedFormat(_constructorGuard, signed, width, decimals);
-    };
-    return FixedFormat;
-}());
-exports.FixedFormat = FixedFormat;
-var FixedNumber = /** @class */ (function () {
-    function FixedNumber(constructorGuard, hex, value, format) {
-        var _newTarget = this.constructor;
-        logger.checkNew(_newTarget, FixedNumber);
-        this.format = format;
-        this._hex = hex;
-        this._value = value;
-        this._isFixedNumber = true;
-        Object.freeze(this);
-    }
-    FixedNumber.prototype._checkFormat = function (other) {
-        if (this.format.name !== other.format.name) {
-            logger.throwArgumentError("incompatible format; use fixedNumber.toFormat", "other", other);
-        }
-    };
-    FixedNumber.prototype.addUnsafe = function (other) {
-        this._checkFormat(other);
-        var a = parseFixed(this._value, this.format.decimals);
-        var b = parseFixed(other._value, other.format.decimals);
-        return FixedNumber.fromValue(a.add(b), this.format.decimals, this.format);
-    };
-    FixedNumber.prototype.subUnsafe = function (other) {
-        this._checkFormat(other);
-        var a = parseFixed(this._value, this.format.decimals);
-        var b = parseFixed(other._value, other.format.decimals);
-        return FixedNumber.fromValue(a.sub(b), this.format.decimals, this.format);
-    };
-    FixedNumber.prototype.mulUnsafe = function (other) {
-        this._checkFormat(other);
-        var a = parseFixed(this._value, this.format.decimals);
-        var b = parseFixed(other._value, other.format.decimals);
-        return FixedNumber.fromValue(a.mul(b).div(this.format._multiplier), this.format.decimals, this.format);
-    };
-    FixedNumber.prototype.divUnsafe = function (other) {
-        this._checkFormat(other);
-        var a = parseFixed(this._value, this.format.decimals);
-        var b = parseFixed(other._value, other.format.decimals);
-        return FixedNumber.fromValue(a.mul(this.format._multiplier).div(b), this.format.decimals, this.format);
-    };
-    // @TODO: Support other rounding algorithms
-    FixedNumber.prototype.round = function (decimals) {
-        if (decimals == null) {
-            decimals = 0;
-        }
-        if (decimals < 0 || decimals > 80 || (decimals % 1)) {
-            logger.throwArgumentError("invalid decimal cound", "decimals", decimals);
-        }
-        // If we are already in range, we're done
-        var comps = this.toString().split(".");
-        if (comps[1].length <= decimals) {
-            return this;
-        }
-        // Bump the value up by the 0.00...0005
-        var bump = "0." + zeros.substring(0, decimals) + "5";
-        comps = this.addUnsafe(FixedNumber.fromString(bump, this.format))._value.split(".");
-        // Now it is safe to truncate
-        return FixedNumber.fromString(comps[0] + "." + comps[1].substring(0, decimals));
-    };
-    FixedNumber.prototype.toString = function () { return this._value; };
-    FixedNumber.prototype.toHexString = function (width) {
-        if (width == null) {
-            return this._hex;
-        }
-        if (width % 8) {
-            logger.throwArgumentError("invalid byte width", "width", width);
-        }
-        var hex = bignumber.BigNumber.from(this._hex).fromTwos(this.format.width).toTwos(width).toHexString();
-        return module$1.hexZeroPad(hex, width / 8);
-    };
-    FixedNumber.prototype.toUnsafeFloat = function () { return parseFloat(this.toString()); };
-    FixedNumber.prototype.toFormat = function (format) {
-        return FixedNumber.fromString(this._value, format);
-    };
-    FixedNumber.fromValue = function (value, decimals, format) {
-        // If decimals looks more like a format, and there is no format, shift the parameters
-        if (format == null && decimals != null && !bignumber.isBigNumberish(decimals)) {
-            format = decimals;
-            decimals = null;
-        }
-        if (decimals == null) {
-            decimals = 0;
-        }
-        if (format == null) {
-            format = "fixed";
-        }
-        return FixedNumber.fromString(formatFixed(value, decimals), FixedFormat.from(format));
-    };
-    FixedNumber.fromString = function (value, format) {
-        if (format == null) {
-            format = "fixed";
-        }
-        var fixedFormat = FixedFormat.from(format);
-        var numeric = parseFixed(value, fixedFormat.decimals);
-        if (!fixedFormat.signed && numeric.lt(Zero)) {
-            throwFault("unsigned value cannot be negative", "overflow", "value", value);
-        }
-        var hex = null;
-        if (fixedFormat.signed) {
-            hex = numeric.toTwos(fixedFormat.width).toHexString();
-        }
-        else {
-            hex = numeric.toHexString();
-            hex = module$1.hexZeroPad(hex, fixedFormat.width / 8);
-        }
-        var decimal = formatFixed(numeric, fixedFormat.decimals);
-        return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
-    };
-    FixedNumber.fromBytes = function (value, format) {
-        if (format == null) {
-            format = "fixed";
-        }
-        var fixedFormat = FixedFormat.from(format);
-        if (module$1.arrayify(value).length > fixedFormat.width / 8) {
-            throw new Error("overflow");
-        }
-        var numeric = bignumber.BigNumber.from(value);
-        if (fixedFormat.signed) {
-            numeric = numeric.fromTwos(fixedFormat.width);
-        }
-        var hex = numeric.toTwos((fixedFormat.signed ? 0 : 1) + fixedFormat.width).toHexString();
-        var decimal = formatFixed(numeric, fixedFormat.decimals);
-        return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
-    };
-    FixedNumber.from = function (value, format) {
-        if (typeof (value) === "string") {
-            return FixedNumber.fromString(value, format);
-        }
-        if (module$1.isBytes(value)) {
-            return FixedNumber.fromBytes(value, format);
-        }
-        try {
-            return FixedNumber.fromValue(value, 0, format);
-        }
-        catch (error) {
-            // Allow NUMERIC_FAULT to bubble up
-            if (error.code !== module.Logger.errors.INVALID_ARGUMENT) {
-                throw error;
-            }
-        }
-        return logger.throwArgumentError("invalid FixedNumber value", "value", value);
-    };
-    FixedNumber.isFixedNumber = function (value) {
-        return !!(value && value._isFixedNumber);
-    };
-    return FixedNumber;
-}());
-exports.FixedNumber = FixedNumber;
-});
-
-var fixednumber$1 = unwrapExports(fixednumber);
-var fixednumber_1 = fixednumber.formatFixed;
-var fixednumber_2 = fixednumber.parseFixed;
-var fixednumber_3 = fixednumber.FixedFormat;
-var fixednumber_4 = fixednumber.FixedNumber;
-
-const version$k = "units/5.0.0-beta.127";
+const version$k = "units/5.0.0-beta.126";
 
 "use strict";
 const logger$y = new Logger(version$k);
@@ -19133,7 +18573,7 @@ function formatUnits(value, unitName) {
             unitName = 3 * index;
         }
     }
-    return fixednumber_1(value, (unitName != null) ? unitName : 18);
+    return formatFixed(value, (unitName != null) ? unitName : 18);
 }
 function parseUnits(value, unitName) {
     if (typeof (unitName) === "string") {
@@ -19142,7 +18582,7 @@ function parseUnits(value, unitName) {
             unitName = 3 * index;
         }
     }
-    return fixednumber_2(value, (unitName != null) ? unitName : 18);
+    return parseFixed(value, (unitName != null) ? unitName : 18);
 }
 function formatEther(wei) {
     return formatUnits(wei, 18);
@@ -19235,7 +18675,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 "use strict";
 const platform = "node";
 
-const version$l = "ethers/5.0.0-beta.156";
+const version$l = "ethers/5.0.0-beta.155";
 
 "use strict";
 const errors = Logger.errors;
@@ -19277,7 +18717,5 @@ var ethers = /*#__PURE__*/Object.freeze({
 });
 
 "use strict";
-
-window.ethers = ethers;
 
 export { BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, browser_1$2 as Wordlist, index$1 as constants, errors, ethers, getDefaultProvider, logger$z as logger, platform, providers, utils$1 as utils, version$l as version, browser_2$1 as wordlists };

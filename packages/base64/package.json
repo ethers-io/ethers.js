@@ -3,7 +3,7 @@
   "version": "5.0.0-beta.126",
   "description": "Base64 coder.",
   "main": "./lib/index.js",
-  "browser": "browser.js",
+  "browser": "./lib/browser.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -24,5 +24,5 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "module": "./lib.esm/index.js",
-  "tarballHash": "0xf6efb1c57508f4e699d90f6423068a95189bc5b750430f294661e2dcf75d919c"
+  "tarballHash": "0x390db88947a298518774fc7b8d5f9b36191df44152bca2370a890d44d44e731f"
 }

@@ -5,7 +5,7 @@ const resolve = require("path").resolve;
 const spawn = require("child_process").spawn;
 
 const { dirnames } = require("./local");
-const { loadPackage } = require("./depgraph");
+const { loadPackage, savePackage } = require("./local");
 const { loadJson, saveJson } = require("./utils");
 
 function run(progname, args, ignoreErrorStream) {
@@ -49,6 +49,14 @@ function run(progname, args, ignoreErrorStream) {
 }
 
 function setupConfig(outDir, moduleType, targetType) {
+    function update(value) {
+        let comps = value.split("/");
+        if (comps.length >= 3 && comps[0] === "." && comps[1].match(/^lib(\.esm)?$/)) {
+            return outDir + comps.slice(2).join("/");
+        }
+        return value;
+    }
+
     // Configure the tsconfit.package.json...
     const path = resolve(__dirname, "../tsconfig.package.json");
     const content = loadJson(path);
@@ -57,7 +65,20 @@ function setupConfig(outDir, moduleType, targetType) {
     saveJson(path, content);
 
     dirnames.forEach((dirname) => {
-        if (loadPackage(dirname)._ethers_nobuild) { return; }
+        let info = loadPackage(dirname);
+
+        if (info._ethers_nobuild) { return; }
+
+        if (info.browser) {
+            if (typeof(info.browser) === "string") {
+                info.browser = update(info.browser);
+            } else {
+                for (let key in info.browser) {
+                    info.browser[key] = update(info.browser[key]);
+                }
+            }
+        }
+        savePackage(dirname, info);
 
         let path = resolve(__dirname, "../packages", dirname, "tsconfig.json");
         let content = loadJson(path);
@@ -82,7 +103,7 @@ function runBuild(buildModule) {
 }
 
 function runDist() {
-    return run("npx", [ "lerna", "run", "dist" ], true);
+    return run("npm", [ "run", "_dist_ethers" ], true);
 }
 
 module.exports = {

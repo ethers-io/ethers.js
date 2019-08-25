@@ -44,13 +44,13 @@ export default commandLineArgs => {
     let buildModule = commandLineArgs.configModule;
     let testing = commandLineArgs.configTest;
 
-    let input = "packages/ethers/index.js"
+    let input = "packages/ethers/lib/index.js"
     let output = [ "umd" ];
     let format = "umd";
     let mainFields = [ "browser", "main" ];
 
     if (buildModule) {
-        input = "packages/ethers/module/index.js";
+        input = "packages/ethers/lib.esm/index.js";
         output = [ "esm" ];
         format = "esm";
         mainFields = [ "browser", "module", "main" ];

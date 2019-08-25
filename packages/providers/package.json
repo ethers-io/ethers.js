@@ -4,8 +4,8 @@
   "description": "Ethereum Providers for ethers.",
   "main": "./lib/index.js",
   "browser": {
-    "net": "./browser-net.js",
-    "./ipc-provider": "./browser-ipc-provider.js"
+    "net": "./lib/browser-net.js",
+    "./ipc-provider": "./lib/browser-ipc-provider.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -44,5 +44,5 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "module": "./lib.esm/index.js",
-  "tarballHash": "0x7d6d0ea53f6c97c8a247450d2ca7f3a6d85f9fc3911bbadb86c63f12e5295e63"
+  "tarballHash": "0xb65f2fd000fd23cfc0ae137cf9f039249380b6639e0019ee5d2b43abec7e6271"
 }

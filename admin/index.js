@@ -6,7 +6,7 @@ const resolve = require("path").resolve;
 const diff = require("diff");
 const semver = require("semver");
 
-const { getProgressBar, prompt } = require("../packages/cli/prompt");
+const { prompt } = require("../packages/cli");
 
 const build = require("./build");
 const changelog = require("./changelog");
@@ -158,7 +158,7 @@ async function runUpdate(dirnames) {
     // @TODO: Root
 
     // Update all the package.json and _version.ts
-    let progress = getProgressBar(colorify("Updating versions", "bold"));
+    let progress = prompt.getProgressBar(colorify("Updating versions", "bold"));
     for (let i = 0; i < dirnames.length; i++) {
         progress(i / dirnames.length);
 
@@ -205,7 +205,7 @@ async function runUpdate(dirnames) {
     // @TODO:
 
     // Update the tarball hash now that _version and package.json may have changed.
-    progress = getProgressBar(colorify("Updating tarballHash", "bold"));
+    progress = prompt.getProgressBar(colorify("Updating tarballHash", "bold"));
     for (let i = 0; i < dirnames.length; i++) {
         progress(i / dirnames.length);
         await local.updatePackage(dirnames[i]);

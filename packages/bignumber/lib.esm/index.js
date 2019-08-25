@@ -1,2 +1,2 @@
 export { BigNumber } from "./bignumber";
-export { FixedNumber } from "./fixednumber";
+export { formatFixed, FixedFormat, FixedNumber, parseFixed } from "./fixednumber";

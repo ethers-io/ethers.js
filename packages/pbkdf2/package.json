@@ -3,7 +3,7 @@
   "version": "5.0.0-beta.127",
   "description": "The PBKDF2 password-pbased key derivation function for ethers.",
   "main": "./lib/index.js",
-  "browser": "browser.js",
+  "browser": "./lib/browser.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -26,5 +26,5 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "module": "./lib.esm/index.js",
-  "tarballHash": "0x4830330866b12fb72d882f27189212d4edbda5ad2257d5d5903ea265f28786e9"
+  "tarballHash": "0x5f104b9b5186d943d4b4f6fd7bc7a7e866ea355e39291c3aff275d57dd8badbd"
 }

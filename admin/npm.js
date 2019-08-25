@@ -9,7 +9,7 @@ const local = require("./local");
 
 const keccak256 = require("../packages/keccak256").keccak256;
 const fetchJson = require("../packages/web").fetchJson;
-const prompt = require("../packages/cli/prompt");
+const { prompt } = require("../packages/cli");
 
 const colorify = require("./log").colorify;
 const git = require("./git");

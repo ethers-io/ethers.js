@@ -7,12 +7,12 @@ import { keccak256 } from "@ethersproject/keccak256";
 import { toUtf8Bytes } from "@ethersproject/strings";
 export function saveTests(tag, data) {
     //let filename = path.resolve(__dirname, 'testcases', tag + '.json.gz');
-    let filename = path.resolve('testcases', tag + '.json.gz');
+    let filename = path.resolve('../testcases', tag + '.json.gz');
     fs.writeFileSync(filename, zlib.gzipSync(JSON.stringify(data, undefined, ' ') + '\n'));
     console.log('Save testcase: ' + filename);
 }
 export function loadTests(tag) {
-    let filename = path.resolve(__dirname, 'testcases', tag + '.json.gz');
+    let filename = path.resolve(__dirname, '../testcases', tag + '.json.gz');
     return JSON.parse(zlib.gunzipSync(fs.readFileSync(filename)).toString());
 }
 export function loadData(filename) {
