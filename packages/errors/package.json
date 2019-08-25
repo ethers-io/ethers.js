@@ -1,8 +1,8 @@
 {
   "name": "@ethersproject/errors",
-  "version": "5.0.0-beta.128",
+  "version": "5.0.0-beta.129",
   "description": "Error utility functions for ethers.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,5 +19,6 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x53e437565080eff824d332689a72ee12b1794b71f15b783a2951378db03cb9ff"
+  "module": "./lib.esm/index.js",
+  "tarballHash": "0x38cdacb3663d11ec01cd55e8b13e4d77c8aa5b754dbaa9424bb4bb3de18071db"
 }

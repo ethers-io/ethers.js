@@ -2,12 +2,11 @@
   "extends": "../../tsconfig.package.json",
   "compilerOptions": {
     "rootDir": "./src.ts",
-    "outDir": "./"
+    "outDir": "./lib/"
   },
   "include": [
-      "./src.ts/*.ts",
-      "./src.ts/coders/*.ts"
+    "./src.ts/*.ts",
+    "./src.ts/coders/*.ts"
   ],
-  "exclude": [ ]
+  "exclude": []
 }
-

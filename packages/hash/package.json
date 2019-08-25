@@ -1,8 +1,8 @@
 {
   "name": "@ethersproject/hash",
-  "version": "5.0.0-beta.127",
+  "version": "5.0.0-beta.128",
   "description": "Hash utility functions for Ethereum.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -25,5 +25,6 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0xddf38c1b1871553459c36253a18b6e47ef5478b6f2da69b1a192a5e3f74d19bc"
+  "module": "./lib.esm/index.js",
+  "tarballHash": "0x94e31ec73b1932a42dd0ddd31c4684252d8306336f04ad6c20d6fe99e6723e05"
 }

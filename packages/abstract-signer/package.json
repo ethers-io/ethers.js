@@ -1,8 +1,8 @@
 {
   "name": "@ethersproject/abstract-signer",
-  "version": "5.0.0-beta.131",
+  "version": "5.0.0-beta.132",
   "description": "An Abstract Class for desribing an Ethereum Signer for ethers.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -26,5 +26,6 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x31639d3ac33e6e5a890cfa5dda469e77ea71ab285dcde95222d58b80d7aff82b"
+  "module": "./lib.esm/index.js",
+  "tarballHash": "0xaa4a4086f9fea3265ac7918227914cf63bf4dc082ea2bc4457dc009fafb51437"
 }

@@ -1,8 +1,8 @@
 {
   "name": "@ethersproject/web",
-  "version": "5.0.0-beta.128",
+  "version": "5.0.0-beta.129",
   "description": "Utility fucntions for managing web requests for ethers.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -26,5 +26,6 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x351b5fccecc688586a060a590bf09d204c84b587da0a9fc647916f82a158a488"
+  "module": "./lib.esm/index.js",
+  "tarballHash": "0x79ab00f43c26bd2e93155b849eabaaac737c689bcee3dd73f401b4b2f953f82e"
 }

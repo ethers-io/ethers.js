@@ -1,8 +1,8 @@
 {
   "name": "@ethersproject/logger",
-  "version": "5.0.0-beta.128",
+  "version": "5.0.0-beta.129",
   "description": "Logger utility functions for ethers.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,5 +19,6 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x990706768b6f7427838405daedfa9bde7f8b3a450612c5017b7bff8897c22857"
+  "module": "./lib.esm/index.js",
+  "tarballHash": "0xbed8c881ec0bb9bc2aed81dbac8c2bcf51889b7b8caed2053939a1344e402475"
 }

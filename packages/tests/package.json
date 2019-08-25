@@ -1,8 +1,8 @@
 {
   "name": "@ethersproject/tests",
-  "version": "5.0.0-beta.137",
+  "version": "5.0.0-beta.138",
   "description": "Testing package for ethers.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "browser": {
     "@ethersproject/ethers": "./tests/browser-ethers.js"
   },
@@ -36,5 +36,6 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0xe51761b9ebb32aed2fd59b2564e33e905b4e100b8a384ca0d4b85600362c8f49"
+  "module": "./lib.esm/index.js",
+  "tarballHash": "0x6cb1911af4d7c3550c1225b39891e54a8c67276f2d1f9b38ed0b6168711c7dd0"
 }

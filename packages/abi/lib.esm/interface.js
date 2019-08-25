@@ -1,0 +1,342 @@
+"use strict";
+import { getAddress } from "@ethersproject/address";
+import { BigNumber } from "@ethersproject/bignumber";
+import { arrayify, concat, hexDataSlice, hexlify, hexZeroPad, isHexString } from "@ethersproject/bytes";
+import { id } from "@ethersproject/hash";
+import { keccak256 } from "@ethersproject/keccak256";
+import { defineReadOnly, Description, getStatic } from "@ethersproject/properties";
+import { defaultAbiCoder } from "./abi-coder";
+import { ConstructorFragment, EventFragment, Fragment, FunctionFragment, ParamType } from "./fragments";
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
+export class LogDescription extends Description {
+}
+export class TransactionDescription extends Description {
+}
+export class Indexed extends Description {
+    static isIndexed(value) {
+        return !!(value && value._isIndexed);
+    }
+}
+export class Result {
+}
+export class Interface {
+    constructor(fragments) {
+        logger.checkNew(new.target, Interface);
+        let abi = [];
+        if (typeof (fragments) === "string") {
+            abi = JSON.parse(fragments);
+        }
+        else {
+            abi = fragments;
+        }
+        defineReadOnly(this, "fragments", abi.map((fragment) => {
+            return Fragment.from(fragment);
+        }).filter((fragment) => (fragment != null)));
+        defineReadOnly(this, "_abiCoder", getStatic((new.target), "getAbiCoder")());
+        defineReadOnly(this, "functions", {});
+        defineReadOnly(this, "errors", {});
+        defineReadOnly(this, "events", {});
+        defineReadOnly(this, "structs", {});
+        // Add all fragments by their signature
+        this.fragments.forEach((fragment) => {
+            let bucket = null;
+            switch (fragment.type) {
+                case "constructor":
+                    if (this.deploy) {
+                        logger.warn("duplicate definition - constructor");
+                        return;
+                    }
+                    defineReadOnly(this, "deploy", fragment);
+                    return;
+                case "function":
+                    bucket = this.functions;
+                    break;
+                case "event":
+                    bucket = this.events;
+                    break;
+                default:
+                    return;
+            }
+            let signature = fragment.format();
+            if (bucket[signature]) {
+                logger.warn("duplicate definition - " + signature);
+                return;
+            }
+            bucket[signature] = fragment;
+        });
+        // Add any fragments with a unique name by its name (sans signature parameters)
+        [this.events, this.functions].forEach((bucket) => {
+            let count = getNameCount(bucket);
+            Object.keys(bucket).forEach((signature) => {
+                let fragment = bucket[signature];
+                if (count[fragment.name] !== 1) {
+                    logger.warn("duplicate definition - " + fragment.name);
+                    return;
+                }
+                bucket[fragment.name] = fragment;
+            });
+        });
+        // If we do not have a constructor use the default "constructor() payable"
+        if (!this.deploy) {
+            defineReadOnly(this, "deploy", ConstructorFragment.from({ type: "constructor" }));
+        }
+        defineReadOnly(this, "_isInterface", true);
+    }
+    static getAbiCoder() {
+        return defaultAbiCoder;
+    }
+    static getAddress(address) {
+        return getAddress(address);
+    }
+    _sighashify(functionFragment) {
+        return hexDataSlice(id(functionFragment.format()), 0, 4);
+    }
+    _topicify(eventFragment) {
+        return id(eventFragment.format());
+    }
+    getFunction(nameOrSignatureOrSighash) {
+        if (isHexString(nameOrSignatureOrSighash)) {
+            return getFragment(nameOrSignatureOrSighash, this.getSighash.bind(this), this.functions);
+        }
+        // It is a bare name, look up the function (will return null if ambiguous)
+        if (nameOrSignatureOrSighash.indexOf("(") === -1) {
+            return (this.functions[nameOrSignatureOrSighash.trim()] || null);
+        }
+        // Normlize the signature and lookup the function
+        return this.functions[FunctionFragment.fromString(nameOrSignatureOrSighash).format()];
+    }
+    getEvent(nameOrSignatureOrTopic) {
+        if (isHexString(nameOrSignatureOrTopic)) {
+            return getFragment(nameOrSignatureOrTopic, this.getEventTopic.bind(this), this.events);
+        }
+        // It is a bare name, look up the function (will return null if ambiguous)
+        if (nameOrSignatureOrTopic.indexOf("(") === -1) {
+            return this.events[nameOrSignatureOrTopic];
+        }
+        return this.events[EventFragment.fromString(nameOrSignatureOrTopic).format()];
+    }
+    getSighash(functionFragment) {
+        if (typeof (functionFragment) === "string") {
+            functionFragment = this.getFunction(functionFragment);
+        }
+        return this._sighashify(functionFragment);
+    }
+    getEventTopic(eventFragment) {
+        if (typeof (eventFragment) === "string") {
+            eventFragment = this.getEvent(eventFragment);
+        }
+        return this._topicify(eventFragment);
+    }
+    _encodeParams(params, values) {
+        return this._abiCoder.encode(params, values);
+    }
+    encodeDeploy(values) {
+        return this._encodeParams(this.deploy.inputs, values || []);
+    }
+    encodeFunctionData(functionFragment, values) {
+        if (typeof (functionFragment) === "string") {
+            functionFragment = this.getFunction(functionFragment);
+        }
+        return hexlify(concat([
+            this.getSighash(functionFragment),
+            this._encodeParams(functionFragment.inputs, values || [])
+        ]));
+    }
+    decodeFunctionResult(functionFragment, data) {
+        if (typeof (functionFragment) === "string") {
+            functionFragment = this.getFunction(functionFragment);
+        }
+        let bytes = arrayify(data);
+        let reason = null;
+        let errorSignature = null;
+        switch (bytes.length % this._abiCoder._getWordSize()) {
+            case 0:
+                try {
+                    return this._abiCoder.decode(functionFragment.outputs, bytes);
+                }
+                catch (error) { }
+                break;
+            case 4:
+                if (hexlify(bytes.slice(0, 4)) === "0x08c379a0") {
+                    errorSignature = "Error(string)";
+                    reason = this._abiCoder.decode(["string"], bytes.slice(4));
+                }
+                break;
+        }
+        return logger.throwError("call revert exception", Logger.errors.CALL_EXCEPTION, {
+            method: functionFragment.format(),
+            errorSignature: errorSignature,
+            errorArgs: [reason],
+            reason: reason
+        });
+    }
+    encodeFilterTopics(eventFragment, values) {
+        if (typeof (eventFragment) === "string") {
+            eventFragment = this.getEvent(eventFragment);
+        }
+        if (values.length > eventFragment.inputs.length) {
+            logger.throwError("too many arguments for " + eventFragment.format(), Logger.errors.UNEXPECTED_ARGUMENT, {
+                argument: "values",
+                value: values
+            });
+        }
+        let topics = [];
+        if (!eventFragment.anonymous) {
+            topics.push(this.getEventTopic(eventFragment));
+        }
+        values.forEach((value, index) => {
+            let param = eventFragment.inputs[index];
+            if (!param.indexed) {
+                if (value != null) {
+                    logger.throwArgumentError("cannot filter non-indexed parameters; must be null", ("contract." + param.name), value);
+                }
+                return;
+            }
+            if (value == null) {
+                topics.push(null);
+            }
+            else if (param.type === "string") {
+                topics.push(id(value));
+            }
+            else if (param.type === "bytes") {
+                topics.push(keccak256(hexlify(value)));
+            }
+            else if (param.type.indexOf("[") !== -1 || param.type.substring(0, 5) === "tuple") {
+                logger.throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
+            }
+            else {
+                // Check addresses are valid
+                if (param.type === "address") {
+                    this._abiCoder.encode(["address"], [value]);
+                }
+                topics.push(hexZeroPad(hexlify(value), 32));
+            }
+        });
+        // Trim off trailing nulls
+        while (topics.length && topics[topics.length - 1] === null) {
+            topics.pop();
+        }
+        return topics;
+    }
+    decodeEventLog(eventFragment, data, topics) {
+        if (typeof (eventFragment) === "string") {
+            eventFragment = this.getEvent(eventFragment);
+        }
+        if (topics != null && !eventFragment.anonymous) {
+            let topicHash = this.getEventTopic(eventFragment);
+            if (!isHexString(topics[0], 32) || topics[0].toLowerCase() !== topicHash) {
+                logger.throwError("fragment/topic mismatch", Logger.errors.INVALID_ARGUMENT, { argument: "topics[0]", expected: topicHash, value: topics[0] });
+            }
+            topics = topics.slice(1);
+        }
+        let indexed = [];
+        let nonIndexed = [];
+        let dynamic = [];
+        eventFragment.inputs.forEach((param, index) => {
+            if (param.indexed) {
+                if (param.type === "string" || param.type === "bytes" || param.baseType === "tuple" || param.baseType === "array") {
+                    indexed.push(ParamType.fromObject({ type: "bytes32", name: param.name }));
+                    dynamic.push(true);
+                }
+                else {
+                    indexed.push(param);
+                    dynamic.push(false);
+                }
+            }
+            else {
+                nonIndexed.push(param);
+                dynamic.push(false);
+            }
+        });
+        let resultIndexed = (topics != null) ? this._abiCoder.decode(indexed, concat(topics)) : null;
+        let resultNonIndexed = this._abiCoder.decode(nonIndexed, data);
+        let result = [];
+        let nonIndexedIndex = 0, indexedIndex = 0;
+        eventFragment.inputs.forEach((param, index) => {
+            if (param.indexed) {
+                if (resultIndexed == null) {
+                    result[index] = new Indexed({ _isIndexed: true, hash: null });
+                }
+                else if (dynamic[index]) {
+                    result[index] = new Indexed({ _isIndexed: true, hash: resultIndexed[indexedIndex++] });
+                }
+                else {
+                    result[index] = resultIndexed[indexedIndex++];
+                }
+            }
+            else {
+                result[index] = resultNonIndexed[nonIndexedIndex++];
+            }
+            //if (param.name && result[param.name] == null) { result[param.name] = result[index]; }
+        });
+        return result;
+    }
+    parseTransaction(tx) {
+        let fragment = this.getFunction(tx.data.substring(0, 10).toLowerCase());
+        if (!fragment) {
+            return null;
+        }
+        return new TransactionDescription({
+            args: this._abiCoder.decode(fragment.inputs, "0x" + tx.data.substring(10)),
+            functionFragment: fragment,
+            name: fragment.name,
+            signature: fragment.format(),
+            sighash: this.getSighash(fragment),
+            value: BigNumber.from(tx.value || "0"),
+        });
+    }
+    parseLog(log) {
+        let fragment = this.getEvent(log.topics[0]);
+        if (!fragment || fragment.anonymous) {
+            return null;
+        }
+        // @TODO: If anonymous, and the only method, and the input count matches, should we parse?
+        return new LogDescription({
+            eventFragment: fragment,
+            name: fragment.name,
+            signature: fragment.format(),
+            topic: this.getEventTopic(fragment),
+            values: this.decodeEventLog(fragment, log.data, log.topics)
+        });
+    }
+    /*
+    static from(value: Array<Fragment | string | JsonAbi> | string | Interface) {
+        if (Interface.isInterface(value)) {
+            return value;
+        }
+        if (typeof(value) === "string") {
+            return new Interface(JSON.parse(value));
+        }
+        return new Interface(value);
+    }
+    */
+    static isInterface(value) {
+        return !!(value && value._isInterface);
+    }
+}
+function getFragment(hash, calcFunc, items) {
+    for (let signature in items) {
+        if (signature.indexOf("(") === -1) {
+            continue;
+        }
+        let fragment = items[signature];
+        if (calcFunc(fragment) === hash) {
+            return fragment;
+        }
+    }
+    return null;
+}
+function getNameCount(fragments) {
+    let unique = {};
+    // Count each name
+    for (let signature in fragments) {
+        let name = fragments[signature].name;
+        if (!unique[name]) {
+            unique[name] = 0;
+        }
+        unique[name]++;
+    }
+    return unique;
+}

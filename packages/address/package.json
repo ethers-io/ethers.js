@@ -1,8 +1,8 @@
 {
   "name": "@ethersproject/address",
-  "version": "5.0.0-beta.127",
+  "version": "5.0.0-beta.128",
   "description": "Utilities for handling Ethereum Addresses for ethers.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -27,5 +27,6 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x55cfa7f3239ac053ed675090677f4c64b9fae6e1d0a7cd5431742c7b7e6267f8"
+  "module": "./lib.esm/index.js",
+  "tarballHash": "0xf52fe7ac31abf75d751e23e06fad681acee39ae9d1153f9c24d5feae7018f22d"
 }

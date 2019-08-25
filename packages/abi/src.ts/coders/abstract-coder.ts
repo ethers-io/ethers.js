@@ -1,4 +1,4 @@
-"use trict";
+"use strict";
 
 import { arrayify, BytesLike, concat, hexlify } from "@ethersproject/bytes";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";

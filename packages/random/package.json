@@ -1,8 +1,8 @@
 {
   "name": "@ethersproject/random",
-  "version": "5.0.0-beta.127",
+  "version": "5.0.0-beta.128",
   "description": "Random utility functions for ethers.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "browser": "browser.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -28,5 +28,6 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x6bf0f2433d11c1eabbf98034baebfacc42ed5392911aafda103b33b4af06c864"
+  "module": "./lib.esm/index.js",
+  "tarballHash": "0x12bbfa545217fbf34da3e01d4e42d231a202b4b8a615d2f4e10b84c6fa354edb"
 }

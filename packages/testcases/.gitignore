@@ -1,1 +1,2 @@
-generation-scripts/*.d.ts
+lib/generation-scripts/*.d.ts
+lib.esm/generation-scripts/*.d.ts

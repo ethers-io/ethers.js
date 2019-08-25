@@ -1,8 +1,8 @@
 {
   "name": "@ethersproject/testcases",
-  "version": "5.0.0-beta.130",
+  "version": "5.0.0-beta.131",
   "description": "Testcases for Ethereum and scripts to generate testcases.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "browser": "browser.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -36,5 +36,6 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0xc236a9348ed50fa69f51250c552f0857af80c944e0edcb750e61a73132ce307f"
+  "module": "./lib.esm/index.js",
+  "tarballHash": "0xecb1966755ccacc53768d87bf4a91cf0ca5b46d1ce30268daf651f27bd2a07a9"
 }

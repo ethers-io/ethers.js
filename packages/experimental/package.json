@@ -1,8 +1,8 @@
 {
   "name": "@ethersproject/experimental",
-  "version": "5.0.0-beta.128",
+  "version": "5.0.0-beta.129",
   "description": "Experimental libraries for ethers. These should not be considered stable.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -24,5 +24,6 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x421b677f833795c78c1169e3f9c9ee1a5cd2759deae4b6481e0fd175648c85d1"
+  "module": "./lib.esm/index.js",
+  "tarballHash": "0xf5f098266abb3959cec1221ea114f9c9f4330440fd0ebe1e0993961c576675f8"
 }

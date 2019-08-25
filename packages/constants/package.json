@@ -1,8 +1,8 @@
 {
   "name": "@ethersproject/constants",
-  "version": "5.0.0-beta.127",
+  "version": "5.0.0-beta.128",
   "description": "Common Ethereum constants used for ethers.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,5 +22,6 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0xf24dd45d26fff811147d6cff7199683bb090c6a182acc58e1007b82a14bf4ee1"
+  "module": "./lib.esm/index.js",
+  "tarballHash": "0x3ece9df573db39c560dac46836c5bc16d4c46a504991a726262f5f0ca8b1b2f1"
 }

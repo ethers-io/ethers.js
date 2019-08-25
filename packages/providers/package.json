@@ -1,8 +1,8 @@
 {
   "name": "@ethersproject/providers",
-  "version": "5.0.0-beta.140",
+  "version": "5.0.0-beta.141",
   "description": "Ethereum Providers for ethers.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "browser": {
     "net": "./browser-net.js",
     "./ipc-provider": "./browser-ipc-provider.js"
@@ -43,5 +43,6 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0xfdbe8dcebf941a3a954d318ad58e56687d180acf02b77ed3b5d6d7da300cda7c"
+  "module": "./lib.esm/index.js",
+  "tarballHash": "0x7d6d0ea53f6c97c8a247450d2ca7f3a6d85f9fc3911bbadb86c63f12e5295e63"
 }

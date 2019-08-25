@@ -1,8 +1,8 @@
 {
   "name": "@ethersproject/contracts",
-  "version": "5.0.0-beta.136",
+  "version": "5.0.0-beta.137",
   "description": "Contract abstraction meta-class for ethers.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -31,5 +31,6 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x28d79f65ed2ec24904f9c7e7d5960e8df2d4e85130b445e08979ad3103334d4b"
+  "module": "./lib.esm/index.js",
+  "tarballHash": "0x2b3d95a50f2ca8c9bfc0537b3ba0709961462384296311ea188b3b96e3f58b83"
 }

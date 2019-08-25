@@ -41,7 +41,6 @@ if (process.argv.length > 2) {
 }
 
 (async function() {
-
     let progress = getProgressBar(colorify("Updating versions", "bold"));
 
     for (let i = 0; i < dirnames.length; i++) {
@@ -85,7 +84,9 @@ if (process.argv.length > 2) {
     progress(1);
 
     try {
-        log("<bold:Building TypeScript source...>");
+        log("<bold:Building TypeScript source (es6)...>");
+        await runBuild(true);
+        log("<bold:Building TypeScript source (commonjs)...>");
         await runBuild();
         log("<bold:Building distribution files...>");
         let content = await runDist();
