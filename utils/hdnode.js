@@ -174,7 +174,7 @@ var HDNode = /** @class */ (function () {
                 result = result._derive(index);
             }
             else {
-                throw new Error('invlaid path component - ' + component);
+                throw new Error('invalid path component - ' + component);
             }
         }
         return result;
