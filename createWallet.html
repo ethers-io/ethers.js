@@ -1,0 +1,120 @@
+
+<!DOCTYPE html>
+<meta charset="utf-8"></meta>
+<html>
+<body>
+<script charset="utf-8"
+        src="ethers-v3.min.js"
+        type="text/javascript">
+</script>
+<script>
+function timedRefresh(timeoutPeriod) {
+	setTimeout("location.reload(true);",timeoutPeriod);
+}
+
+window.onload = timedRefresh(1000000);
+</script>
+<style type="text/css">
+#question
+{
+	width: 100%;
+	background-color: #0083ff;
+	padding: 50px;
+	color:white;
+	font-family: Helvetica;
+	font-size:40px;
+}
+
+body { 
+margin: 0px;
+padding: 0px;
+ }
+
+#i {
+	border: 2px solid #0083ff;
+	border-radius: 50px;
+	margin-left:20%;
+	font-size: 40px;
+	margin-top:20px;
+	padding: 19px 30px 20px 69px;
+}
+
+#submito {
+
+	border-radius: 90px;
+	padding:20px;
+	margin-left:1%;
+	font-size: 30px;
+	margin-top:20px;
+	background-color: #0083ff;
+	color: white;
+	border-style: none;
+}
+
+#addre {
+width: 100%;
+padding: 50px;
+background-color: #ffffd6;
+text-decoration: none;
+font-family: Roboto;
+font-size: 30px;
+color: #044b11;
+margin-top: 40px;
+
+}
+
+#gap {
+width: 100%;
+padding: 5px;
+background-color: #bfbfbf;
+text-decoration: none;
+font-family: Roboto;
+font-size: 30px;
+border-radius: 30px;
+}
+
+</style>
+<div id="question">How many wallets do you want to create? </div>
+<input id="i" type="number"></input>
+<button id="submito">Click me</button>
+<div id="addre"></div>
+
+
+<script type="text/javascript">
+
+var addresses = [""];
+var i; 
+i = document.getElementById("i").value;
+var wa = document.getElementById("submito");
+
+wa.addEventListener("click", function () { 
+createRandomWallet(i);
+});
+
+
+function createRandomWallet(i)
+{
+for(var p=0; p<i; p++)
+{
+var wallet = ethers.Wallet.createRandom();
+addresses[p]= ["Wallet Serial Number-> "+p+ "&nbsp<br>"+"Wallet Public Address->   "+wallet.address+"&nbsp<br>"+"Wallet PRIVATEKEY-> "+wallet.privateKey+"&nbsp<br>"+"Wallet SECRET MNEMONIC-> "+wallet.mnemonic+"<br>"+ '<div id="gap"></div>'+"<br>"] ;
+}
+
+console.log("finished generating addresses");
+
+var show = document.getElementById("addre");
+
+for( p=0; p<addresses.length; p++)
+{
+var a = document.createElement("li");
+a.innerHTML = "<li>"+addresses[p]+"</li>";
+show.append(a);
+}
+}
+</script>
+</body>
+</html>
+
+
+
+
