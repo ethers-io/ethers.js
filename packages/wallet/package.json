@@ -7,21 +7,21 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/abstract-provider": ">5.0.0-beta.0",
-    "@ethersproject/abstract-signer": ">5.0.0-beta.0",
-    "@ethersproject/address": ">5.0.0-beta.0",
-    "@ethersproject/bignumber": ">5.0.0-beta.0",
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/hash": ">5.0.0-beta.0",
-    "@ethersproject/hdnode": ">5.0.0-beta.0",
-    "@ethersproject/json-wallets": ">5.0.0-beta.0",
-    "@ethersproject/keccak256": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/properties": ">5.0.0-beta.0",
-    "@ethersproject/random": ">5.0.0-beta.0",
-    "@ethersproject/signing-key": ">5.0.0-beta.0",
-    "@ethersproject/transactions": ">5.0.0-beta.0",
-    "@ethersproject/wordlists": ">5.0.0-beta.0"
+    "@ethersproject/abstract-provider": ">=5.0.0-beta.131",
+    "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
+    "@ethersproject/address": ">=5.0.0-beta.128",
+    "@ethersproject/bignumber": ">=5.0.0-beta.130",
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/hash": ">=5.0.0-beta.128",
+    "@ethersproject/hdnode": ">=5.0.0-beta.130",
+    "@ethersproject/json-wallets": ">=5.0.0-beta.129",
+    "@ethersproject/keccak256": ">=5.0.0-beta.127",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/properties": ">=5.0.0-beta.131",
+    "@ethersproject/random": ">=5.0.0-beta.128",
+    "@ethersproject/signing-key": ">=5.0.0-beta.129",
+    "@ethersproject/transactions": ">=5.0.0-beta.128",
+    "@ethersproject/wordlists": ">=5.0.0-beta.128"
   },
   "keywords": [
     "Ethereum",
@@ -37,5 +37,6 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "module": "./lib.esm/index.js",
-  "tarballHash": "0x089e1006fc830b53ddc8c3c4eb83774a600b56d16e7a86846ff5a82b209d22d6"
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0xfd9392a01600789cea9c66e20034bb90bf31d68eef45d855ef9d4e515c244e82"
 }

@@ -11,21 +11,21 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/abstract-provider": ">5.0.0-beta.0",
-    "@ethersproject/abstract-signer": ">5.0.0-beta.0",
-    "@ethersproject/address": ">5.0.0-beta.0",
-    "@ethersproject/bignumber": ">5.0.0-beta.0",
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/constants": ">5.0.0-beta.0",
-    "@ethersproject/hash": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/networks": ">5.0.0-beta.0",
-    "@ethersproject/properties": ">5.0.0-beta.0",
-    "@ethersproject/random": ">5.0.0-beta.0",
-    "@ethersproject/rlp": ">5.0.0-beta.0",
-    "@ethersproject/strings": ">5.0.0-beta.0",
-    "@ethersproject/transactions": ">5.0.0-beta.0",
-    "@ethersproject/web": ">5.0.0-beta.0"
+    "@ethersproject/abstract-provider": ">=5.0.0-beta.131",
+    "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
+    "@ethersproject/address": ">=5.0.0-beta.128",
+    "@ethersproject/bignumber": ">=5.0.0-beta.130",
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/constants": ">=5.0.0-beta.128",
+    "@ethersproject/hash": ">=5.0.0-beta.128",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/networks": ">=5.0.0-beta.129",
+    "@ethersproject/properties": ">=5.0.0-beta.131",
+    "@ethersproject/random": ">=5.0.0-beta.128",
+    "@ethersproject/rlp": ">=5.0.0-beta.126",
+    "@ethersproject/strings": ">=5.0.0-beta.130",
+    "@ethersproject/transactions": ">=5.0.0-beta.128",
+    "@ethersproject/web": ">=5.0.0-beta.129"
   },
   "devDependencies": {
     "@types/node": "10.3.2"
@@ -44,5 +44,6 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "module": "./lib.esm/index.js",
-  "tarballHash": "0xb65f2fd000fd23cfc0ae137cf9f039249380b6639e0019ee5d2b43abec7e6271"
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x655b117ac21836fcd5bed6025dbd53583596f141bc2b67b833342f60e37038d4"
 }

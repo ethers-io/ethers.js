@@ -482,6 +482,10 @@ class SetControllerPlugin extends AddressAccountPlugin {
         });
         return __awaiter(this, void 0, void 0, function* () {
             yield _super.run.call(this);
+            this.dump("Set Subnode: " + this.name, {
+                "Nodehash": this.nodehash,
+                "Owner": this.address
+            });
             this.getEns().setOwner(this.nodehash, this.address);
         });
     }
@@ -514,8 +518,9 @@ class SetSubnodePlugin extends AddressAccountPlugin {
         return __awaiter(this, void 0, void 0, function* () {
             yield _super.run.call(this);
             this.dump("Set Subnode: " + this.name, {
-                Label: this.label,
-                Node: this.node
+                "Label": this.label,
+                "Node": this.node,
+                "Owner": this.address
             });
             yield this.getEns().setSubnodeOwner(ethers.utils.namehash(this.node), ethers.utils.id(this.label), this.address);
         });
@@ -539,8 +544,8 @@ class SetResolverPlugin extends AddressAccountPlugin {
         return __awaiter(this, void 0, void 0, function* () {
             yield _super.run.call(this);
             this.dump("Set Resolver: " + this.name, {
-                Nodehash: this.nodehash,
-                Resolver: this.address
+                "Nodehash": this.nodehash,
+                "Resolver": this.address
             });
             yield this.getEns().setResolver(this.nodehash, this.address);
         });
@@ -561,8 +566,8 @@ class SetAddrPlugin extends AddressAccountPlugin {
         return __awaiter(this, void 0, void 0, function* () {
             yield _super.run.call(this);
             this.dump("Set Addr: " + this.name, {
-                Nodehash: this.nodehash,
-                Address: this.address
+                "Nodehash": this.nodehash,
+                "Address": this.address
             });
             let resolver = yield this.getResolver(this.nodehash);
             yield resolver.setAddr(this.nodehash, this.address);
@@ -804,7 +809,7 @@ class ReclaimPlugin extends AddressAccountPlugin {
         return __awaiter(this, void 0, void 0, function* () {
             yield _super.run.call(this);
             this.dump("Reclaim: " + this.name, {
-                Nodehash: this.nodehash,
+                "Nodehash": this.nodehash,
                 "Address": this.address,
             });
             let registrar = yield this.getEthRegistrar();

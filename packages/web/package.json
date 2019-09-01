@@ -7,10 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/base64": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/properties": ">5.0.0-beta.0",
-    "@ethersproject/strings": ">5.0.0-beta.0",
+    "@ethersproject/base64": ">=5.0.0-beta.126",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/properties": ">=5.0.0-beta.131",
+    "@ethersproject/strings": ">=5.0.0-beta.130",
     "cross-fetch": "3.0.4"
   },
   "keywords": [
@@ -27,5 +27,6 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "module": "./lib.esm/index.js",
-  "tarballHash": "0x10b30a94e8417a1835f4b0468b9cf5523959c856598bbdc914cb5902c0618e50"
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x2761dff44f2b31971630f4ce8f929365941dbcf7f4a6f050a940466ed9a185de"
 }

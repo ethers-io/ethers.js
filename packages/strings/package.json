@@ -7,9 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/constants": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0"
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/constants": ">=5.0.0-beta.128",
+    "@ethersproject/logger": ">=5.0.0-beta.129"
   },
   "keywords": [
     "Ethereum",
@@ -27,5 +27,6 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "module": "./lib.esm/index.js",
-  "tarballHash": "0xcbb038765fe741066b9e003c1e805d9a6e8c617aeb4a1d96ab40425122fc9dd3"
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x07bc7954dde6fb2e82297f1d68c9586f2587d3a1e3cf7b42f8689c697e6ddc15"
 }

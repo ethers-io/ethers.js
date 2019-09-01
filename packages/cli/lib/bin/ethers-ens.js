@@ -750,6 +750,10 @@ var SetControllerPlugin = /** @class */ (function (_super) {
                     case 0: return [4 /*yield*/, _super.prototype.run.call(this)];
                     case 1:
                         _a.sent();
+                        this.dump("Set Subnode: " + this.name, {
+                            "Nodehash": this.nodehash,
+                            "Owner": this.address
+                        });
                         this.getEns().setOwner(this.nodehash, this.address);
                         return [2 /*return*/];
                 }
@@ -801,8 +805,9 @@ var SetSubnodePlugin = /** @class */ (function (_super) {
                     case 1:
                         _a.sent();
                         this.dump("Set Subnode: " + this.name, {
-                            Label: this.label,
-                            Node: this.node
+                            "Label": this.label,
+                            "Node": this.node,
+                            "Owner": this.address
                         });
                         return [4 /*yield*/, this.getEns().setSubnodeOwner(ethers_1.ethers.utils.namehash(this.node), ethers_1.ethers.utils.id(this.label), this.address)];
                     case 2:
@@ -837,8 +842,8 @@ var SetResolverPlugin = /** @class */ (function (_super) {
                     case 1:
                         _a.sent();
                         this.dump("Set Resolver: " + this.name, {
-                            Nodehash: this.nodehash,
-                            Resolver: this.address
+                            "Nodehash": this.nodehash,
+                            "Resolver": this.address
                         });
                         return [4 /*yield*/, this.getEns().setResolver(this.nodehash, this.address)];
                     case 2:
@@ -871,8 +876,8 @@ var SetAddrPlugin = /** @class */ (function (_super) {
                     case 1:
                         _a.sent();
                         this.dump("Set Addr: " + this.name, {
-                            Nodehash: this.nodehash,
-                            Address: this.address
+                            "Nodehash": this.nodehash,
+                            "Address": this.address
                         });
                         return [4 /*yield*/, this.getResolver(this.nodehash)];
                     case 2:
@@ -1256,7 +1261,7 @@ var ReclaimPlugin = /** @class */ (function (_super) {
                     case 1:
                         _a.sent();
                         this.dump("Reclaim: " + this.name, {
-                            Nodehash: this.nodehash,
+                            "Nodehash": this.nodehash,
                             "Address": this.address,
                         });
                         return [4 /*yield*/, this.getEthRegistrar()];

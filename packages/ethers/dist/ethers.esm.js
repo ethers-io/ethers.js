@@ -12701,7 +12701,7 @@ class HDNode {
                 result = result._derive(index);
             }
             else {
-                throw new Error("invlaid path component - " + component);
+                throw new Error("invalid path component - " + component);
             }
         }
         return result;
@@ -18672,9 +18672,6 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-"use strict";
-const platform = "node";
-
 const version$l = "ethers/5.0.0-beta.155";
 
 "use strict";
@@ -18697,7 +18694,6 @@ function getDefaultProvider(network, options) {
 }
 
 var ethers = /*#__PURE__*/Object.freeze({
-	version: version$l,
 	Signer: Signer,
 	Wallet: Wallet,
 	VoidSigner: VoidSigner,
@@ -18712,10 +18708,10 @@ var ethers = /*#__PURE__*/Object.freeze({
 	logger: logger$z,
 	utils: utils$1,
 	wordlists: browser_2$1,
-	platform: platform,
+	version: version$l,
 	Wordlist: browser_1$2
 });
 
 "use strict";
 
-export { BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, browser_1$2 as Wordlist, index$1 as constants, errors, ethers, getDefaultProvider, logger$z as logger, platform, providers, utils$1 as utils, version$l as version, browser_2$1 as wordlists };
+export { BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, browser_1$2 as Wordlist, index$1 as constants, errors, ethers, getDefaultProvider, logger$z as logger, providers, utils$1 as utils, version$l as version, browser_2$1 as wordlists };

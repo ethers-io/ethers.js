@@ -7,8 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/web": ">5.0.0-beta.0",
-    "ethers": ">5.0.0-beta.0",
+    "@ethersproject/web": ">=5.0.0-beta.129",
+    "ethers": ">=5.0.0-beta.156",
     "scrypt-js": "2.0.4"
   },
   "keywords": [
@@ -25,5 +25,6 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "module": "./lib.esm/index.js",
-  "tarballHash": "0xaef8cc57062b7338b34d09bae80d7e320fd3f33d2623b76e30efb1a2b064bcc9"
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x2d128ae608d72a963cd452b60ef6e7de728616a5db5aa3d954563c1e5e5a61dd"
 }

@@ -187,7 +187,7 @@ class WrappedSigner extends ethers.Signer {
             }
             info["Value"] = (ethers.utils.formatEther(tx.value || 0) + " ether");
             if (tx.nonce != null) {
-                info["None"] = tx.nonce;
+                info["Nonce"] = tx.nonce;
             }
             info["Data"] = tx.data;
             info["Gas Limit"] = ethers.BigNumber.from(tx.gasLimit || 0).toString();
@@ -224,7 +224,7 @@ class WrappedSigner extends ethers.Signer {
             }
             info["Value"] = (ethers.utils.formatEther(tx.value || 0) + " ether");
             if (tx.nonce != null) {
-                info["None"] = tx.nonce;
+                info["Nonce"] = tx.nonce;
             }
             info["Data"] = tx.data;
             info["Gas Limit"] = ethers.BigNumber.from(tx.gasLimit || 0).toString();

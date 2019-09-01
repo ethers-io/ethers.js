@@ -7,17 +7,17 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/abstract-signer": ">5.0.0-beta.0",
-    "@ethersproject/address": ">5.0.0-beta.0",
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/hdnode": ">5.0.0-beta.0",
-    "@ethersproject/keccak256": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/pbkdf2": ">5.0.0-beta.0",
-    "@ethersproject/properties": ">5.0.0-beta.0",
-    "@ethersproject/random": ">5.0.0-beta.0",
-    "@ethersproject/strings": ">5.0.0-beta.0",
-    "@ethersproject/transactions": ">5.0.0-beta.0",
+    "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
+    "@ethersproject/address": ">=5.0.0-beta.128",
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/hdnode": ">=5.0.0-beta.130",
+    "@ethersproject/keccak256": ">=5.0.0-beta.127",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/pbkdf2": ">=5.0.0-beta.127",
+    "@ethersproject/properties": ">=5.0.0-beta.131",
+    "@ethersproject/random": ">=5.0.0-beta.128",
+    "@ethersproject/strings": ">=5.0.0-beta.130",
+    "@ethersproject/transactions": ">=5.0.0-beta.128",
     "aes-js": "3.0.0",
     "scrypt-js": "2.0.4",
     "uuid": "2.0.1"
@@ -36,5 +36,6 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "module": "./lib.esm/index.js",
-  "tarballHash": "0x7bdd9f912bcc5995dd1556175bf3b9b2569e7bf31fec95e4a6fee21fc9c91308"
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x02535f91fea9a0ded1739f635ab6385467386dabfdfd7340c35fdab99e43ce2b"
 }

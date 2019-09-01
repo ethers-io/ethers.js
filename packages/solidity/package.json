@@ -7,11 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/bignumber": ">5.0.0-beta.0",
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/keccak256": ">5.0.0-beta.0",
-    "@ethersproject/sha2": ">5.0.0-beta.0",
-    "@ethersproject/strings": ">5.0.0-beta.0"
+    "@ethersproject/bignumber": ">=5.0.0-beta.130",
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/keccak256": ">=5.0.0-beta.127",
+    "@ethersproject/sha2": ">=5.0.0-beta.129",
+    "@ethersproject/strings": ">=5.0.0-beta.130"
   },
   "keywords": [
     "Ethereum",
@@ -27,5 +27,6 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "module": "./lib.esm/index.js",
-  "tarballHash": "0x5a24d578f0111ef50d2380aa3f1958e6143d7edab3b1330647e3ac4b77f9115b"
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x70bf6fa88a443007d944e0054cfef78b0423225c96e341afa83ddb62a76faf61"
 }

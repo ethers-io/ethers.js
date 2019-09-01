@@ -8,8 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0"
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/logger": ">=5.0.0-beta.129"
   },
   "devDependencies": {
     "@types/node": "10.3.2"
@@ -29,5 +29,6 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "module": "./lib.esm/index.js",
-  "tarballHash": "0xc6450e8215ec6b6d0fccda331c5541d2a5a7ebf86b7d4d0fd83429c08437f826"
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x45c2e53529bd3cf7b1ba4bbbe448813aa2540b792fab4db7bdfbac9c204f1d7e"
 }

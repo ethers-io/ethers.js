@@ -7,18 +7,18 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/abstract-signer": ">5.0.0-beta.0",
-    "@ethersproject/basex": ">5.0.0-beta.0",
-    "@ethersproject/bignumber": ">5.0.0-beta.0",
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/pbkdf2": ">5.0.0-beta.0",
-    "@ethersproject/properties": ">5.0.0-beta.0",
-    "@ethersproject/sha2": ">5.0.0-beta.0",
-    "@ethersproject/signing-key": ">5.0.0-beta.0",
-    "@ethersproject/strings": ">5.0.0-beta.0",
-    "@ethersproject/transactions": ">5.0.0-beta.0",
-    "@ethersproject/wordlists": ">5.0.0-beta.0"
+    "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
+    "@ethersproject/basex": ">=5.0.0-beta.127",
+    "@ethersproject/bignumber": ">=5.0.0-beta.130",
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/pbkdf2": ">=5.0.0-beta.127",
+    "@ethersproject/properties": ">=5.0.0-beta.131",
+    "@ethersproject/sha2": ">=5.0.0-beta.129",
+    "@ethersproject/signing-key": ">=5.0.0-beta.129",
+    "@ethersproject/strings": ">=5.0.0-beta.130",
+    "@ethersproject/transactions": ">=5.0.0-beta.128",
+    "@ethersproject/wordlists": ">=5.0.0-beta.128"
   },
   "keywords": [
     "Ethereum",
@@ -34,5 +34,6 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "module": "./lib.esm/index.js",
-  "tarballHash": "0x1aa41472296a4ab9726dfaa3c12a9ec142120e45fa76441bd4001f23f7c6c71f"
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x9640d4f7336254f291b53454beee842a17fe3d364a333a7ca36d4c0a2f379c4b"
 }

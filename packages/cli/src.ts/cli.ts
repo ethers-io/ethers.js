@@ -196,7 +196,7 @@ class WrappedSigner extends ethers.Signer {
         if (tx.to != null) { info["To"] = tx.to; }
         if (tx.from != null) { info["From"] = tx.from; }
         info["Value"] = (ethers.utils.formatEther(tx.value || 0) + " ether");
-        if (tx.nonce != null) { info["None"] = tx.nonce; }
+        if (tx.nonce != null) { info["Nonce"] = tx.nonce; }
         info["Data"] = tx.data;
         info["Gas Limit"] = ethers.BigNumber.from(tx.gasLimit || 0).toString();
         info["Gas Price"] = (ethers.utils.formatUnits(tx.gasPrice || 0, "gwei") + " gwei"),
@@ -234,7 +234,7 @@ class WrappedSigner extends ethers.Signer {
         if (tx.to != null) { info["To"] = tx.to; }
         if (tx.from != null) { info["From"] = tx.from; }
         info["Value"] = (ethers.utils.formatEther(tx.value || 0) + " ether");
-        if (tx.nonce != null) { info["None"] = tx.nonce; }
+        if (tx.nonce != null) { info["Nonce"] = tx.nonce; }
         info["Data"] = tx.data;
         info["Gas Limit"] = ethers.BigNumber.from(tx.gasLimit || 0).toString();
         info["Gas Price"] = (ethers.utils.formatUnits(tx.gasPrice || 0, "gwei") + " gwei"),
