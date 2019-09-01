@@ -51,14 +51,6 @@ if (process.argv.length > 2) {
 
         // Get local package.json (update the tarballHash)
         let info = await updatePackage(dirname);
-        /*
-        let info = await updatePackage(dirname, {
-            repository: {
-                type: "git",
-                url: "git://github.com/ethers-io/ethers.js.git"
-            }
-        });
-        */
 
         // Get the remote package.json (or sub in a placeholder for new pacakges)
         let npmInfo = await getPackageVersion(info.name);
