@@ -252,7 +252,7 @@ function runMethod(contract, functionName, estimateOnly) {
                     tx.gasLimit = bignumber_1.bigNumberify(method.gas).add(21000);
                 }
                 if (!contract.signer) {
-                    errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' });
+                    errors.throwError('sending a transaction requires a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' });
                 }
                 // Make sure they aren't overriding something they shouldn't
                 if (tx.from != null) {
@@ -414,7 +414,7 @@ var Contract = /** @class */ (function () {
     Contract.prototype.fallback = function (overrides) {
         var _this = this;
         if (!this.signer) {
-            errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' });
+            errors.throwError('sending a transaction requires a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' });
         }
         var tx = properties_1.shallowCopy(overrides || {});
         ['from', 'to'].forEach(function (key) {
@@ -11073,7 +11073,7 @@ var BaseProvider = /** @class */ (function (_super) {
         return this.getNetwork().then(function (network) {
             // No ENS...
             if (!network.ensAddress) {
-                errors.throwError('network does support ENS', errors.UNSUPPORTED_OPERATION, { operation: 'ENS', network: network.name });
+                errors.throwError('network does not support ENS', errors.UNSUPPORTED_OPERATION, { operation: 'ENS', network: network.name });
             }
             // keccak256('resolver(bytes32)')
             var data = '0x0178b8bf' + hash_1.namehash(name).substring(2);
@@ -15510,7 +15510,7 @@ function _decode(data, offset) {
     else if (data[offset] >= 0x80) {
         var length = data[offset] - 0x80;
         if (offset + 1 + length > data.length) {
-            throw new Error('invlaid rlp data');
+            throw new Error('invalid rlp data');
         }
         var result = bytes_1.hexlify(data.slice(offset + 1, offset + 1 + length));
         return { consumed: (1 + length), result: result };
