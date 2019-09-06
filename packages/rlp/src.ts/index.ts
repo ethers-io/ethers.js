@@ -126,7 +126,7 @@ function _decode(data: Uint8Array, offset: number): { consumed: number, result: 
     } else if (data[offset] >= 0x80) {
         let length = data[offset] - 0x80;
         if (offset + 1 + length > data.length) {
-            throw new Error("invlaid rlp data");
+            throw new Error("invalid rlp data");
         }
 
         let result = hexlify(data.slice(offset + 1, offset + 1 + length));
