@@ -262,7 +262,7 @@ function runMethod(contract: Contract, functionName: string, estimateOnly: boole
                 }
 
                 if (!contract.signer) {
-                    errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' })
+                    errors.throwError('sending a transaction requires a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction' })
                 }
 
                 // Make sure they aren't overriding something they shouldn't
@@ -478,7 +478,7 @@ export class Contract {
 
     fallback(overrides?: TransactionRequest): Promise<TransactionResponse> {
         if (!this.signer) {
-            errors.throwError('sending a transaction require a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' })
+            errors.throwError('sending a transaction requires a signer', errors.UNSUPPORTED_OPERATION, { operation: 'sendTransaction(fallback)' })
         }
 
         var tx: TransactionRequest = shallowCopy(overrides || {});
