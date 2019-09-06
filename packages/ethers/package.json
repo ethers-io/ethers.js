@@ -53,5 +53,5 @@
   },
   "module": "./dist/ethers.esm.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x745f61434bc7e817efc9b7ab44f3816b24078b664c9c666ec91e0e0af4155908"
+  "tarballHash": "0xfe021d7af3eef8dfdcd597944ea3928f8e711e0f8d5c1d98cb3b7f55d6b7e51b"
 }

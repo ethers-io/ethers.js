@@ -6,7 +6,7 @@
  *  because it is used by elliptic, so it is required regardles.
  *
  */
-import * as BN from "bn.js";
+import { BN } from "bn.js";
 import { hexlify, isBytes, isHexString } from "@ethersproject/bytes";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -116,7 +116,7 @@ export class BigNumber {
                 return new BigNumber(_constructorGuard, toHex(value));
             }
             if (value.match(/^-?[0-9]+$/)) {
-                return new BigNumber(_constructorGuard, toHex(new BN.BN(value)));
+                return new BigNumber(_constructorGuard, toHex(new BN(value)));
             }
             return logger.throwArgumentError("invalid BigNumber string", "value", value);
         }
@@ -197,9 +197,9 @@ function toBigNumber(value) {
 function toBN(value) {
     let hex = BigNumber.from(value).toHexString();
     if (hex[0] === "-") {
-        return (new BN.BN("-" + hex.substring(3), 16));
+        return (new BN("-" + hex.substring(3), 16));
     }
-    return new BN.BN(hex.substring(2), 16);
+    return new BN(hex.substring(2), 16);
 }
 function throwFault(fault, operation, value) {
     let params = { fault: fault, operation: operation };

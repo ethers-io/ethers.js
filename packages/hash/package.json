@@ -27,5 +27,5 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0xc98b05c98e389f24c4a131d48e699fe8c71fdce6314e08c85771d8105c11a3a6"
+  "tarballHash": "0xdb811d4593df06454829d34f5b78b8b4c6c7ea9dd10a3b7106b364761cafa783"
 }

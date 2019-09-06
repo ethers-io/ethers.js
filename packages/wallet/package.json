@@ -38,5 +38,5 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0xfd9392a01600789cea9c66e20034bb90bf31d68eef45d855ef9d4e515c244e82"
+  "tarballHash": "0xcb9b02c1a2c4af4e774743092a88536d21b9f3d044b7003d4c5d022f13521131"
 }

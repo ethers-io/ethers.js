@@ -1,11 +1,4 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  *  BigNumber
@@ -14,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *  because it is used by elliptic, so it is required regardles.
  *
  */
-var BN = __importStar(require("bn.js"));
+var bn_js_1 = require("bn.js");
 var bytes_1 = require("@ethersproject/bytes");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
@@ -126,7 +119,7 @@ var BigNumber = /** @class */ (function () {
                 return new BigNumber(_constructorGuard, toHex(value));
             }
             if (value.match(/^-?[0-9]+$/)) {
-                return new BigNumber(_constructorGuard, toHex(new BN.BN(value)));
+                return new BigNumber(_constructorGuard, toHex(new bn_js_1.BN(value)));
             }
             return logger.throwArgumentError("invalid BigNumber string", "value", value);
         }
@@ -209,9 +202,9 @@ function toBigNumber(value) {
 function toBN(value) {
     var hex = BigNumber.from(value).toHexString();
     if (hex[0] === "-") {
-        return (new BN.BN("-" + hex.substring(3), 16));
+        return (new bn_js_1.BN("-" + hex.substring(3), 16));
     }
-    return new BN.BN(hex.substring(2), 16);
+    return new bn_js_1.BN(hex.substring(2), 16);
 }
 function throwFault(fault, operation, value) {
     var params = { fault: fault, operation: operation };

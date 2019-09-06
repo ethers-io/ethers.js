@@ -1,14 +1,7 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 // We use this for base 36 maths
-var BN = __importStar(require("bn.js"));
+var bn_js_1 = require("bn.js");
 var bytes_1 = require("@ethersproject/bytes");
 var keccak256_1 = require("@ethersproject/keccak256");
 var rlp_1 = require("@ethersproject/rlp");
@@ -96,7 +89,7 @@ function getAddress(address) {
         if (address.substring(2, 4) !== ibanChecksum(address)) {
             logger.throwArgumentError("bad icap checksum", "address", address);
         }
-        result = (new BN.BN(address.substring(4), 36)).toString(16);
+        result = (new bn_js_1.BN(address.substring(4), 36)).toString(16);
         while (result.length < 40) {
             result = "0" + result;
         }
@@ -118,7 +111,7 @@ function isAddress(address) {
 }
 exports.isAddress = isAddress;
 function getIcapAddress(address) {
-    var base36 = (new BN.BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
+    var base36 = (new bn_js_1.BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
     while (base36.length < 30) {
         base36 = "0" + base36;
     }

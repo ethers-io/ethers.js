@@ -1,4 +1,5 @@
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
 function getTime() {
     return (new Date()).getTime();
 }
@@ -108,4 +109,4 @@ function Reporter(runner) {
         currentSuite._countPass++;
     });
 }
-module.exports = Reporter;
+exports.Reporter = Reporter;

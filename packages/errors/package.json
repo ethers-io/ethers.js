@@ -21,5 +21,5 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0xa4090df9190530d90a5a187fe1a831fc1e7178285bdfc561791daa8a1095be43"
+  "tarballHash": "0x512b1e86235f7d9dc5d680f65820d53ab6ca1ac6be70f0d365e2bb25f509fbc5"
 }

@@ -4176,13 +4176,6 @@
 
 	var bignumber = createCommonjsModule(function (module, exports) {
 	"use strict";
-	var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
-	    if (mod && mod.__esModule) return mod;
-	    var result = {};
-	    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-	    result["default"] = mod;
-	    return result;
-	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	/**
 	 *  BigNumber
@@ -4191,7 +4184,7 @@
 	 *  because it is used by elliptic, so it is required regardles.
 	 *
 	 */
-	var BN = __importStar(bn);
+
 
 
 
@@ -4303,7 +4296,7 @@
 	                return new BigNumber(_constructorGuard, toHex(value));
 	            }
 	            if (value.match(/^-?[0-9]+$/)) {
-	                return new BigNumber(_constructorGuard, toHex(new BN.BN(value)));
+	                return new BigNumber(_constructorGuard, toHex(new bn.BN(value)));
 	            }
 	            return logger.throwArgumentError("invalid BigNumber string", "value", value);
 	        }
@@ -4386,9 +4379,9 @@
 	function toBN(value) {
 	    var hex = BigNumber.from(value).toHexString();
 	    if (hex[0] === "-") {
-	        return (new BN.BN("-" + hex.substring(3), 16));
+	        return (new bn.BN("-" + hex.substring(3), 16));
 	    }
-	    return new BN.BN(hex.substring(2), 16);
+	    return new bn.BN(hex.substring(2), 16);
 	}
 	function throwFault(fault, operation, value) {
 	    var params = { fault: fault, operation: operation };
@@ -6452,16 +6445,9 @@
 
 	var lib$6 = createCommonjsModule(function (module, exports) {
 	"use strict";
-	var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
-	    if (mod && mod.__esModule) return mod;
-	    var result = {};
-	    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-	    result["default"] = mod;
-	    return result;
-	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	// We use this for base 36 maths
-	var BN = __importStar(bn);
+
 
 
 
@@ -6549,7 +6535,7 @@
 	        if (address.substring(2, 4) !== ibanChecksum(address)) {
 	            logger.throwArgumentError("bad icap checksum", "address", address);
 	        }
-	        result = (new BN.BN(address.substring(4), 36)).toString(16);
+	        result = (new bn.BN(address.substring(4), 36)).toString(16);
 	        while (result.length < 40) {
 	            result = "0" + result;
 	        }
@@ -6571,7 +6557,7 @@
 	}
 	exports.isAddress = isAddress;
 	function getIcapAddress(address) {
-	    var base36 = (new BN.BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
+	    var base36 = (new bn.BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
 	    while (base36.length < 30) {
 	        base36 = "0" + base36;
 	    }
@@ -8657,6 +8643,13 @@
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
+	var __spreadArrays = (commonjsGlobal && commonjsGlobal.__spreadArrays) || function () {
+	    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+	    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+	        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+	            r[k] = a[j];
+	    return r;
+	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 
@@ -9186,7 +9179,7 @@
 	                var event = _this._wrapEvent(runningEvent, log, listener);
 	                var values = (event.values || []);
 	                values.push(event);
-	                _this.emit.apply(_this, [runningEvent.filter].concat(values));
+	                _this.emit.apply(_this, __spreadArrays([runningEvent.filter], values));
 	            };
 	            this._wrappedEmits[runningEvent.tag] = wrappedEmit;
 	            // Special events, like "error" do not have a filter
@@ -20694,9 +20687,6 @@
 
 	var lib$p = createCommonjsModule(function (module, exports) {
 	"use strict";
-	function __export(m) {
-	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-	}
 	var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
 	    if (mod && mod.__esModule) return mod;
 	    var result = {};
@@ -20707,14 +20697,64 @@
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var ethers$1 = __importStar(ethers);
 	exports.ethers = ethers$1;
-	__export(ethers);
+	var ethers_1 = ethers;
+	exports.Signer = ethers_1.Signer;
+	exports.Wallet = ethers_1.Wallet;
+	exports.VoidSigner = ethers_1.VoidSigner;
+	exports.getDefaultProvider = ethers_1.getDefaultProvider;
+	exports.providers = ethers_1.providers;
+	exports.Contract = ethers_1.Contract;
+	exports.ContractFactory = ethers_1.ContractFactory;
+	exports.BigNumber = ethers_1.BigNumber;
+	exports.FixedNumber = ethers_1.FixedNumber;
+	exports.constants = ethers_1.constants;
+	exports.errors = ethers_1.errors;
+	exports.logger = ethers_1.logger;
+	exports.utils = ethers_1.utils;
+	exports.wordlists = ethers_1.wordlists;
+	////////////////////////
+	// Compile-Time Constants
+	exports.version = ethers_1.version;
+	exports.Wordlist = ethers_1.Wordlist;
 	});
 
 	var index$p = unwrapExports(lib$p);
 	var lib_1$p = lib$p.ethers;
+	var lib_2$m = lib$p.Signer;
+	var lib_3$h = lib$p.Wallet;
+	var lib_4$e = lib$p.VoidSigner;
+	var lib_5$c = lib$p.getDefaultProvider;
+	var lib_6$8 = lib$p.providers;
+	var lib_7$7 = lib$p.Contract;
+	var lib_8$5 = lib$p.ContractFactory;
+	var lib_9$4 = lib$p.BigNumber;
+	var lib_10$3 = lib$p.FixedNumber;
+	var lib_11$2 = lib$p.constants;
+	var lib_12$2 = lib$p.errors;
+	var lib_13$2 = lib$p.logger;
+	var lib_14$2 = lib$p.utils;
+	var lib_15$1 = lib$p.wordlists;
+	var lib_16$1 = lib$p.version;
+	var lib_17 = lib$p.Wordlist;
 
+	exports.BigNumber = lib_9$4;
+	exports.Contract = lib_7$7;
+	exports.ContractFactory = lib_8$5;
+	exports.FixedNumber = lib_10$3;
+	exports.Signer = lib_2$m;
+	exports.VoidSigner = lib_4$e;
+	exports.Wallet = lib_3$h;
+	exports.Wordlist = lib_17;
+	exports.constants = lib_11$2;
 	exports.default = index$p;
+	exports.errors = lib_12$2;
 	exports.ethers = lib_1$p;
+	exports.getDefaultProvider = lib_5$c;
+	exports.logger = lib_13$2;
+	exports.providers = lib_6$8;
+	exports.utils = lib_14$2;
+	exports.version = lib_16$1;
+	exports.wordlists = lib_15$1;
 
 	Object.defineProperty(exports, '__esModule', { value: true });
 

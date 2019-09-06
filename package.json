@@ -10,7 +10,7 @@
     "_dist_ethers": "rollup -c && rollup -c --configMinify && rollup -c --configModule && rollup -c --configModule --configMinify",
     "_dist_tests": "rollup -c --configTest && rollup -c --configTest --configMinify && rollup -c --configTest --configModule && rollup -c --configTest --configModule --configMinify",
     "_test_prepare": "npm run _dist_prepare && npm run _dist_tests",
-    "_test_node": "cd packages/tests && mocha --no-colors --reporter ./lib/reporter ./lib/test-*.js",
+    "_test_node": "cd packages/tests && mocha --no-colors --reporter ./reporter ./lib/test-*.js",
     "test_node": "npm run _test_prepare && npm run _test_node",
     "_dist_old": "npm run clean && npm run bootstrap && npm run build && lerna run dist",
     "old-test": "npm run _dist_old && npm run test-check",

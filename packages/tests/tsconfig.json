@@ -8,5 +8,5 @@
     "./thirdparty.d.ts",
     "./src.ts/*"
   ],
-  "exclude": [ ]
+  "exclude": []
 }

@@ -7568,6 +7568,10 @@ class TransactionOrderForkEvent extends ForkEvent {
 ///////////////////////////////
 // Exported Abstracts
 class Provider {
+    constructor() {
+        logger$c.checkAbstract(new.target, Provider);
+        defineReadOnly(this, "_isProvider", true);
+    }
     // Alias for "on"
     addListener(eventName, listener) {
         return this.on(eventName, listener);
@@ -7575,10 +7579,6 @@ class Provider {
     // Alias for "off"
     removeListener(eventName, listener) {
         return this.off(eventName, listener);
-    }
-    constructor() {
-        logger$c.checkAbstract(new.target, Provider);
-        defineReadOnly(this, "_isProvider", true);
     }
     static isProvider(value) {
         return !!(value && value._isProvider);
