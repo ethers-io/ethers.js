@@ -12,13 +12,15 @@
     "ethers-ts": "./lib/bin/ethers-ts.js"
   },
   "dependencies": {
-    "@types/node": "10.3.2",
     "@ethersproject/basex": ">=5.0.0-beta.127",
     "ethers": ">=5.0.0-beta.156",
     "mime-types": "2.1.11",
     "scrypt-js": "2.0.4",
     "solc": "0.5.10",
     "solidity-parser-antlr": "^0.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^12.7.4"
   },
   "keywords": [
     "Ethereum",
@@ -36,5 +38,5 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x045c7d61113b060ecb79426c442a9bcc28c3ed5baebd6c324b8c5ccdd83aa39c"
+  "tarballHash": "0x7224b7a62cd2554bab3585709e8016fc4a7672c33c568dcbdfbf63d838c18283"
 }

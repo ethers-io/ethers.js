@@ -12,8 +12,15 @@ function Replacer(options = {}) {
     return {
         name: "file-replacer",
         transform(code, id) {
-            //console.log(id, code.length);
+            /*
+            console.log("------");
+            console.log("NAME", id, id.match("node-resolve:empty.js$"));
+            console.log(code);
+            console.log("------");
+            */
+
             if (!filter(id)) { return null; }
+
             for (let i = 0; i < suffixes.length; i++) {
                 const suffix = suffixes[i];
                 if (id.match(new RegExp(suffix))) {
@@ -21,7 +28,8 @@ function Replacer(options = {}) {
                     let newCode = options.replace[suffix];
                     console.log(`Replace: ${ id } (${ code.length } => ${ newCode.length })`);
                     return {
-                        code: newCode
+                        code: newCode,
+                        map: { mappings: '' }
                     };
                 }
             }
@@ -89,8 +97,8 @@ export default commandLineArgs => {
             namedExports: {
                 "bn.js": [ "BN" ],
                 "elliptic": [ "ec" ]
-            }
-        })
+            },
+        }),
     ];
 
     if (minify) {
