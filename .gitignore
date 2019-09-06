@@ -14,3 +14,7 @@ shims/*.d.ts
 **/*.tmp-browserify-*
 
 lerna-debug.log
+
+packages/*/tsconfig.tsbuildinfo
+
+packages/testcases/input/nameprep/**

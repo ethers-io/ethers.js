@@ -3,6 +3,20 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.156 (2019-09-06 17:56)
+-----------------------------------------
+
+  - Removed export star to fix UMD dist file. ([4c17c4d](https://github.com/ethers-io/ethers.js/commit/4c17c4db0455e1b89fd597c4c929cdc36aa3d90d))
+  - Updated TypeScript version. ([e8028d0](https://github.com/ethers-io/ethers.js/commit/e8028d0e73368257b76b394bb8e2bf63f8aecd71))
+  - Fixed test suites and reporter. ([1e0ed4e](https://github.com/ethers-io/ethers.js/commit/1e0ed4e99a22a27fe5057336f8cb320809768f3e))
+  - Added lock-versions admin tool. ([2187604](https://github.com/ethers-io/ethers.js/commit/21876049137644af2b3afa31120ee95d032843a8))
+  - Updated packages with version lock and moved types. ([85b4db7](https://github.com/ethers-io/ethers.js/commit/85b4db7d6db37b853f11a90cf4648c34404edcf9))
+  - Fixed typo in error message. ([#592](https://github.com/ethers-io/ethers.js/issues/592); [019c1fc](https://github.com/ethers-io/ethers.js/commit/019c1fc7089b3da2d7bd41c933b6c6bc35c8dade))
+  - Fixed build process to re-target browser field to ES version. ([3a91e91](https://github.com/ethers-io/ethers.js/commit/3a91e91df56c1ef6cf096c0322f74fd5060891e0))
+  - Major overhaul in compilation to enable ES6 module generation. ([73a0077](https://github.com/ethers-io/ethers.js/commit/73a0077fd38c6ae79f33a9d4d3cc128a904b4a6c))
+  - Updated some of the flatworm docs. ([81fd942](https://github.com/ethers-io/ethers.js/commit/81fd9428cab4be7eee7ddeb564bf91f282cae475))
+  - Fixed package descriptions. ([#561](https://github.com/ethers-io/ethers.js/issues/561); [ebfca98](https://github.com/ethers-io/ethers.js/commit/ebfca98dc276d6f6ca6961632635e8203bb17645))
+
 ethers/v5.0.0-beta.155 (2019-08-22 17:11)
 -----------------------------------------
 
