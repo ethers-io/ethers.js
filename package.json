@@ -1,6 +1,6 @@
 {
   "name": "ethers",
-  "version": "4.0.37",
+  "version": "4.0.38",
   "description": "Ethereum wallet library.",
   "main": "./index.js",
   "types": "./index.d.ts",
@@ -64,5 +64,6 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
+  "ethereum": "donations.ethers.eth",
   "license": "MIT"
 }
