@@ -1,1 +1,2 @@
-browser.d.ts
+lib/browser.d.ts
+lib.esm/browser.d.ts

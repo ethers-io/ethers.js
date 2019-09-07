@@ -1,21 +1,21 @@
 {
   "name": "@ethersproject/abi",
-  "version": "5.0.0-beta.136",
+  "version": "5.0.0-beta.137",
   "description": "Utilities and Classes for parsing, formatting and managing Ethereum ABIs.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/address": ">5.0.0-beta.0",
-    "@ethersproject/bignumber": ">5.0.0-beta.0",
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/constants": ">5.0.0-beta.0",
-    "@ethersproject/hash": ">5.0.0-beta.0",
-    "@ethersproject/keccak256": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/properties": ">5.0.0-beta.0",
-    "@ethersproject/strings": ">5.0.0-beta.0"
+    "@ethersproject/address": ">=5.0.0-beta.128",
+    "@ethersproject/bignumber": ">=5.0.0-beta.130",
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/constants": ">=5.0.0-beta.128",
+    "@ethersproject/hash": ">=5.0.0-beta.128",
+    "@ethersproject/keccak256": ">=5.0.0-beta.127",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/properties": ">=5.0.0-beta.131",
+    "@ethersproject/strings": ">=5.0.0-beta.130"
   },
   "keywords": [
     "Ethereum",
@@ -30,5 +30,7 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x9585dafdf431d8f83f4eb02869142a31ef6dfec6638c5706517d012eb363ad47"
+  "module": "./lib.esm/index.js",
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x2586b6ca7027e4b47caf53887eae7d3aca64570fb72bcb495838b883be6580f3"
 }

@@ -1,15 +1,15 @@
 {
   "name": "@ethersproject/properties",
-  "version": "5.0.0-beta.130",
+  "version": "5.0.0-beta.131",
   "description": "Properties utility functions for ethers.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "build": "tsc -p ./tsconfig.json",
     "auto-build": "npm run build -- -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/logger": ">5.0.0-beta.0"
+    "@ethersproject/logger": ">=5.0.0-beta.129"
   },
   "keywords": [
     "Ethereum",
@@ -24,5 +24,7 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x21a40461d34945d5d785224fb1be7b793511f6dd855f5fdbf0a05050b65359d0"
+  "module": "./lib.esm/index.js",
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x5dffc79ec051b799619fc5db1ccc6ad0daba266f0490ca9e5763f3dbc6c9c509"
 }

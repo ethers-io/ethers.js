@@ -807,7 +807,7 @@ export class BaseProvider extends Provider {
             // No ENS...
             if (!network.ensAddress) {
                 logger.throwError(
-                    "network does support ENS",
+                    "network does not support ENS",
                     Logger.errors.UNSUPPORTED_OPERATION,
                     { operation: "ENS", network: network.name }
                 );

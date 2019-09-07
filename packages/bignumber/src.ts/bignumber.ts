@@ -8,7 +8,7 @@
  *
  */
 
-import * as BN from "bn.js";
+import { BN } from "bn.js";
 
 import { Bytes, Hexable, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
 
@@ -154,7 +154,7 @@ export class BigNumber implements Hexable {
             }
 
             if (value.match(/^-?[0-9]+$/)) {
-                return new BigNumber(_constructorGuard, toHex(new BN.BN(value)));
+                return new BigNumber(_constructorGuard, toHex(new BN(value)));
             }
 
             return logger.throwArgumentError("invalid BigNumber string", "value", value);
@@ -200,7 +200,7 @@ export class BigNumber implements Hexable {
 }
 
 // Normalize the hex string
-function toHex(value: string | BN.BN): string {
+function toHex(value: string | BN): string {
 
     // For BN, call on the hex string
     if (typeof(value) !== "string") {
@@ -242,16 +242,16 @@ function toHex(value: string | BN.BN): string {
     return value;
 }
 
-function toBigNumber(value: BN.BN): BigNumber {
+function toBigNumber(value: BN): BigNumber {
     return BigNumber.from(toHex(value));
 }
 
-function toBN(value: BigNumberish): BN.BN {
+function toBN(value: BigNumberish): BN {
     let hex = BigNumber.from(value).toHexString();
     if (hex[0] === "-") {
-        return (new BN.BN("-" + hex.substring(3), 16));
+        return (new BN("-" + hex.substring(3), 16));
     }
-    return new BN.BN(hex.substring(2), 16);
+    return new BN(hex.substring(2), 16);
 }
 
 function throwFault(fault: string, operation: string, value?: any): never {

@@ -31,7 +31,7 @@ interface Runner {
   on(event: string, callback: (...args: Array<any>) => void): Runner;
 }
 
-function Reporter(runner: Runner) {
+export function Reporter(runner: Runner) {
     let suites: Array<Suite> = [];
 
     let lastOutput = getTime();
@@ -128,4 +128,3 @@ function Reporter(runner: Runner) {
     });
 }
 
-export = Reporter;

@@ -1,23 +1,19 @@
 {
   "name": "@ethersproject/abstract-provider",
-  "version": "5.0.0-beta.130",
+  "version": "5.0.0-beta.131",
   "description": "An Abstract Class for describing an Ethereum Provider for ethers.",
-  "main": "index.js",
-  "browser": {
-    "net": "./browser-net.js",
-    "./ipc-provider": "./browser-ipc-provider"
-  },
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/bignumber": ">5.0.0-beta.0",
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/networks": ">5.0.0-beta.0",
-    "@ethersproject/properties": ">5.0.0-beta.0",
-    "@ethersproject/transactions": ">5.0.0-beta.0",
-    "@ethersproject/web": ">5.0.0-beta.0"
+    "@ethersproject/bignumber": ">=5.0.0-beta.130",
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/networks": ">=5.0.0-beta.129",
+    "@ethersproject/properties": ">=5.0.0-beta.131",
+    "@ethersproject/transactions": ">=5.0.0-beta.128",
+    "@ethersproject/web": ">=5.0.0-beta.129"
   },
   "keywords": [
     "Ethereum",
@@ -32,5 +28,7 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x38d6dbab6c91fea9f20ed556d76842c9ac28e4542b997401d3e965156d1373e6"
+  "module": "./lib.esm/index.js",
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x2beb1736c2a9c8023e74c415353bff10587ae1dc49240ec5dc2620171899f2e6"
 }

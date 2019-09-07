@@ -1,27 +1,27 @@
 {
   "name": "@ethersproject/wallet",
-  "version": "5.0.0-beta.129",
+  "version": "5.0.0-beta.130",
   "description": "Classes for managing, encrypting and decrypting Ethereum private keys as a Signer for ethers.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/abstract-provider": ">5.0.0-beta.0",
-    "@ethersproject/abstract-signer": ">5.0.0-beta.0",
-    "@ethersproject/address": ">5.0.0-beta.0",
-    "@ethersproject/bignumber": ">5.0.0-beta.0",
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/hash": ">5.0.0-beta.0",
-    "@ethersproject/hdnode": ">5.0.0-beta.0",
-    "@ethersproject/json-wallets": ">5.0.0-beta.0",
-    "@ethersproject/keccak256": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/properties": ">5.0.0-beta.0",
-    "@ethersproject/random": ">5.0.0-beta.0",
-    "@ethersproject/signing-key": ">5.0.0-beta.0",
-    "@ethersproject/transactions": ">5.0.0-beta.0",
-    "@ethersproject/wordlists": ">5.0.0-beta.0"
+    "@ethersproject/abstract-provider": ">=5.0.0-beta.131",
+    "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
+    "@ethersproject/address": ">=5.0.0-beta.128",
+    "@ethersproject/bignumber": ">=5.0.0-beta.130",
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/hash": ">=5.0.0-beta.128",
+    "@ethersproject/hdnode": ">=5.0.0-beta.130",
+    "@ethersproject/json-wallets": ">=5.0.0-beta.129",
+    "@ethersproject/keccak256": ">=5.0.0-beta.127",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/properties": ">=5.0.0-beta.131",
+    "@ethersproject/random": ">=5.0.0-beta.128",
+    "@ethersproject/signing-key": ">=5.0.0-beta.129",
+    "@ethersproject/transactions": ">=5.0.0-beta.128",
+    "@ethersproject/wordlists": ">=5.0.0-beta.128"
   },
   "keywords": [
     "Ethereum",
@@ -36,5 +36,7 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x52e75ab9005c6955a41f09e411b01e1e7f7bdd5a6f17248f0e1e8ae9b65ec2d2"
+  "module": "./lib.esm/index.js",
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0xcb9b02c1a2c4af4e774743092a88536d21b9f3d044b7003d4c5d022f13521131"
 }

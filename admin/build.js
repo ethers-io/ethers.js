@@ -4,7 +4,9 @@ const fs = require("fs");
 const resolve = require("path").resolve;
 const spawn = require("child_process").spawn;
 
-const local = require("./local");
+const { dirnames } = require("./local");
+const { loadPackage, savePackage } = require("./local");
+const { loadJson, saveJson } = require("./utils");
 
 function run(progname, args, ignoreErrorStream) {
     return new Promise((resolve, reject) => {
@@ -46,16 +48,67 @@ function run(progname, args, ignoreErrorStream) {
     });
 }
 
-function runBuild() {
-    return run("npx", [ "tsc", "--build", resolve(__dirname, "../tsconfig.project.json") ]);
+function setupConfig(outDir, moduleType, targetType) {
+    function update(value) {
+        let comps = value.split("/");
+        if (comps.length >= 3 && comps[0] === "." && comps[1].match(/^lib(\.esm)?$/)) {
+            return outDir + comps.slice(2).join("/");
+        }
+        return value;
+    }
+
+    // Configure the tsconfit.package.json...
+    const path = resolve(__dirname, "../tsconfig.package.json");
+    const content = loadJson(path);
+    content.compilerOptions.module = moduleType;
+    content.compilerOptions.target = targetType;
+    saveJson(path, content);
+
+    dirnames.forEach((dirname) => {
+        let info = loadPackage(dirname);
+
+        if (info._ethers_nobuild) { return; }
+
+        if (info.browser) {
+            if (typeof(info.browser) === "string") {
+                info.browser = update(info.browser);
+            } else {
+                for (let key in info.browser) {
+                    info.browser[key] = update(info.browser[key]);
+                }
+            }
+        }
+        savePackage(dirname, info);
+
+        let path = resolve(__dirname, "../packages", dirname, "tsconfig.json");
+        let content = loadJson(path);
+        content.compilerOptions.outDir = outDir;
+        saveJson(path, content);
+    });
+}
+
+function setupBuild(buildModule) {
+    if (buildModule) {
+        setupConfig("./lib.esm/", "es2015", "es2015");
+    } else {
+        setupConfig("./lib/", "commonjs", "es5");
+    }
+}
+
+function runBuild(buildModule) {
+    setupBuild(buildModule);
+
+    // Compile
+    return run("npx", [ "tsc", "--build", resolve(__dirname, "../tsconfig.project.json"), "--force" ]);
 }
 
 function runDist() {
-    return run("npx", [ "lerna", "run", "dist" ], true);
+    return run("npm", [ "run", "_dist_ethers" ], true);
 }
 
 module.exports = {
     run: run,
     runDist: runDist,
-    runBuild: runBuild
+    runBuild: runBuild,
+    setupBuild: setupBuild
 };

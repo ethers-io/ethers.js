@@ -1,22 +1,22 @@
 {
   "name": "@ethersproject/contracts",
-  "version": "5.0.0-beta.136",
+  "version": "5.0.0-beta.137",
   "description": "Contract abstraction meta-class for ethers.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/abi": ">5.0.0-beta.0",
-    "@ethersproject/abstract-provider": ">5.0.0-beta.0",
-    "@ethersproject/abstract-signer": ">5.0.0-beta.0",
-    "@ethersproject/address": ">5.0.0-beta.0",
-    "@ethersproject/bignumber": ">5.0.0-beta.0",
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/constants": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/properties": ">5.0.0-beta.0",
-    "@ethersproject/transactions": ">5.0.0-beta.0"
+    "@ethersproject/abi": ">=5.0.0-beta.137",
+    "@ethersproject/abstract-provider": ">=5.0.0-beta.131",
+    "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
+    "@ethersproject/address": ">=5.0.0-beta.128",
+    "@ethersproject/bignumber": ">=5.0.0-beta.130",
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/constants": ">=5.0.0-beta.128",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/properties": ">=5.0.0-beta.131",
+    "@ethersproject/transactions": ">=5.0.0-beta.128"
   },
   "keywords": [
     "Ethereum",
@@ -31,5 +31,7 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x28d79f65ed2ec24904f9c7e7d5960e8df2d4e85130b445e08979ad3103334d4b"
+  "module": "./lib.esm/index.js",
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x96959b21d3ac6d5028c69fe586cad288e262ad168b8af3ff3c807bdea5456477"
 }

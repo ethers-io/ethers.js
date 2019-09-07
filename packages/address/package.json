@@ -1,17 +1,17 @@
 {
   "name": "@ethersproject/address",
-  "version": "5.0.0-beta.127",
+  "version": "5.0.0-beta.128",
   "description": "Utilities for handling Ethereum Addresses for ethers.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/bignumber": ">5.0.0-beta.0",
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/keccak256": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/rlp": ">5.0.0-beta.0",
+    "@ethersproject/bignumber": ">=5.0.0-beta.130",
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/keccak256": ">=5.0.0-beta.127",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/rlp": ">=5.0.0-beta.126",
     "bn.js": "^4.4.0"
   },
   "keywords": [
@@ -27,5 +27,7 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x55cfa7f3239ac053ed675090677f4c64b9fae6e1d0a7cd5431742c7b7e6267f8"
+  "module": "./lib.esm/index.js",
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x3ca47b90abf21da753646b5b888976f067af8e0afceec65a8523c7f708855c6a"
 }

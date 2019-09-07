@@ -1,2 +1,3 @@
 dist/
-tests/*.d.ts
+lib/test-*.d.ts
+lib.esm/test-*.d.ts

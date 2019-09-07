@@ -2,7 +2,16 @@
 
 const packlist = require("npm-packlist");
 const tar = require("tar");
-const keccak256 = require("../packages/keccak256").keccak256;
+
+const keccak256 = (function() {
+    try {
+        return require("../packages/keccak256").keccak256;
+    } catch (error) {
+        console.log("Cannot load Keccak256 (maybe not built yet? Not really a problem for most things)");
+        return null;
+    }
+})();
+
 const { dirnames, loadPackage, ROOT } = require("./depgraph");
 const { resolve, saveJson } = require("./utils");
 

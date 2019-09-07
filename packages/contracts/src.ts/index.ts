@@ -219,7 +219,7 @@ function runMethod(contract: Contract, functionName: string, options: RunOptions
             if (options.transaction) { return resolveProperties(tx); }
 
             if (!contract.signer) {
-                logger.throwError("sending a transaction require a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" })
+                logger.throwError("sending a transaction requires a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" })
             }
 
             return contract.signer.sendTransaction(tx).then((tx) => {
@@ -572,7 +572,7 @@ export class Contract {
 
     fallback(overrides?: TransactionRequest): Promise<TransactionResponse> {
         if (!this.signer) {
-            logger.throwError("sending a transaction require a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" })
+            logger.throwError("sending a transactions require a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" })
         }
 
         let tx: TransactionRequest = shallowCopy(overrides || {});

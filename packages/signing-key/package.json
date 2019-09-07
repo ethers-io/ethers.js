@@ -1,16 +1,16 @@
 {
   "name": "@ethersproject/signing-key",
-  "version": "5.0.0-beta.128",
+  "version": "5.0.0-beta.129",
   "description": "Elliptic curve library functions for the secp256k1 curve.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/properties": ">5.0.0-beta.0",
-    "elliptic": "6.3.3"
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/properties": ">=5.0.0-beta.131",
+    "elliptic": "6.5.0"
   },
   "keywords": [
     "Ethereum",
@@ -25,5 +25,7 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x52d8007c5e08be55f0a61256926afc9de9bbe2a02f07d3415e08da4e4cc78e3a"
+  "module": "./lib.esm/index.js",
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0xe447d9bce0f14f138250691b50f37389ea2988664bcf7773ea415c63448d4ed8"
 }

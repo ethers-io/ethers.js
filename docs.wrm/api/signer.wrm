@@ -4,23 +4,24 @@ _section: Signers
 
 Tra la la...
 
-_subsection: Signer
+_subsection: Signer @<signer>
 
-_property: signer.connect(provider) => Signer
+_property: signer.connect(provider) => [[signer]]
 TODO
 
 _heading: Blockchain Methods
 
-_property: signer.getBalance([ blockTag = "latest" ]) => Promise(BigNumber)
+_property: signer.getBalance([ blockTag = "latest" ]) => Promise<[[bignumber]]>
 TODO
 
-_property: signer.getTransactionCount([ blockTag = "latest" ]) => Promise(number)
+_property: signer.getTransactionCount([ blockTag = "latest" ]) => Promise<number>
 TODO
 
 
 _subsection: Wallet inherits Signer
 
-Wallet is...
+The Wallet class inherits [[signer]] and can sign transactions and messages
+using a private key as a standard Externally Owned Account (EOA).
 
 _heading: Creating an Instance
 

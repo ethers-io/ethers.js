@@ -1,14 +1,14 @@
 {
   "name": "@ethersproject/experimental",
-  "version": "5.0.0-beta.128",
+  "version": "5.0.0-beta.129",
   "description": "Experimental libraries for ethers. These should not be considered stable.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/web": ">5.0.0-beta.0",
-    "ethers": ">5.0.0-beta.0",
+    "@ethersproject/web": ">=5.0.0-beta.129",
+    "ethers": ">=5.0.0-beta.156",
     "scrypt-js": "2.0.4"
   },
   "keywords": [
@@ -24,5 +24,7 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x421b677f833795c78c1169e3f9c9ee1a5cd2759deae4b6481e0fd175648c85d1"
+  "module": "./lib.esm/index.js",
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x0fac26c70353824def8f9f61a4460d007a0b2302c2eb800430459bf46e7eec73"
 }

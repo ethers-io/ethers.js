@@ -1,24 +1,26 @@
 {
   "name": "@ethersproject/cli",
-  "version": "5.0.0-beta.141",
+  "version": "5.0.0-beta.142",
   "description": "Command-Line Interface scripts and releated utilities.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "exit 1"
   },
   "bin": {
-    "ethers": "./bin/ethers.js",
-    "ethers-ens": "./bin/ethers-ens.js",
-    "ethers-ts": "./bin/ethers-ts.js"
+    "ethers": "./lib/bin/ethers.js",
+    "ethers-ens": "./lib/bin/ethers-ens.js",
+    "ethers-ts": "./lib/bin/ethers-ts.js"
   },
   "dependencies": {
-    "@types/node": "10.3.2",
-    "@ethersproject/basex": ">=5.0.0-beta.126",
-    "ethers": ">5.0.0-beta.0",
+    "@ethersproject/basex": ">=5.0.0-beta.127",
+    "ethers": ">=5.0.0-beta.156",
     "mime-types": "2.1.11",
     "scrypt-js": "2.0.4",
     "solc": "0.5.10",
     "solidity-parser-antlr": "^0.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^12.7.4"
   },
   "keywords": [
     "Ethereum",
@@ -34,5 +36,7 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x9ca201d156724880ae19a0e253cc5521d32928d7629fd6d6e78c25064bdbca7b"
+  "module": "./lib.esm/index.js",
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x7224b7a62cd2554bab3585709e8016fc4a7672c33c568dcbdfbf63d838c18283"
 }

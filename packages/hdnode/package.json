@@ -1,24 +1,24 @@
 {
   "name": "@ethersproject/hdnode",
-  "version": "5.0.0-beta.129",
+  "version": "5.0.0-beta.130",
   "description": "BIP32 Hierarchal Deterministic Node operations.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/abstract-signer": ">5.0.0-beta.0",
-    "@ethersproject/basex": ">5.0.0-beta.0",
-    "@ethersproject/bignumber": ">5.0.0-beta.0",
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/pbkdf2": ">5.0.0-beta.0",
-    "@ethersproject/properties": ">5.0.0-beta.0",
-    "@ethersproject/sha2": ">5.0.0-beta.0",
-    "@ethersproject/signing-key": ">5.0.0-beta.0",
-    "@ethersproject/strings": ">5.0.0-beta.0",
-    "@ethersproject/transactions": ">5.0.0-beta.0",
-    "@ethersproject/wordlists": ">5.0.0-beta.0"
+    "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
+    "@ethersproject/basex": ">=5.0.0-beta.127",
+    "@ethersproject/bignumber": ">=5.0.0-beta.130",
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/pbkdf2": ">=5.0.0-beta.127",
+    "@ethersproject/properties": ">=5.0.0-beta.131",
+    "@ethersproject/sha2": ">=5.0.0-beta.129",
+    "@ethersproject/signing-key": ">=5.0.0-beta.129",
+    "@ethersproject/strings": ">=5.0.0-beta.130",
+    "@ethersproject/transactions": ">=5.0.0-beta.128",
+    "@ethersproject/wordlists": ">=5.0.0-beta.128"
   },
   "keywords": [
     "Ethereum",
@@ -33,5 +33,7 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0xf55e5e184af14dbf060b53a66e6ba0de92af1882deebcb990c06df5aa8697d33"
+  "module": "./lib.esm/index.js",
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x67a598ee36bc44fdce68567c594121e522f4987684c727bf763fb76e942dc226"
 }

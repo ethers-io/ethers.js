@@ -1,16 +1,16 @@
 {
   "name": "@ethersproject/hash",
-  "version": "5.0.0-beta.127",
+  "version": "5.0.0-beta.128",
   "description": "Hash utility functions for Ethereum.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/keccak256": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/strings": ">5.0.0-beta.0"
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/keccak256": ">=5.0.0-beta.127",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/strings": ">=5.0.0-beta.130"
   },
   "keywords": [
     "Ethereum",
@@ -25,5 +25,7 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0xddf38c1b1871553459c36253a18b6e47ef5478b6f2da69b1a192a5e3f74d19bc"
+  "module": "./lib.esm/index.js",
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0xdb811d4593df06454829d34f5b78b8b4c6c7ea9dd10a3b7106b364761cafa783"
 }

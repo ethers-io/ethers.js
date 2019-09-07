@@ -18,7 +18,7 @@ const { getPackageVersion } = require("../npm");
 const { resolve } = require("../utils");
 const { colorify, log } = require("../log");
 
-const { getProgressBar } = require("../../packages/cli/prompt");
+const { prompt } = require("../../packages/cli");
 
 let dirnames = getOrdered();
 
@@ -41,8 +41,7 @@ if (process.argv.length > 2) {
 }
 
 (async function() {
-
-    let progress = getProgressBar(colorify("Updating versions", "bold"));
+    let progress = prompt.getProgressBar(colorify("Updating versions", "bold"));
 
     for (let i = 0; i < dirnames.length; i++) {
         progress(i / dirnames.length);
@@ -52,14 +51,6 @@ if (process.argv.length > 2) {
 
         // Get local package.json (update the tarballHash)
         let info = await updatePackage(dirname);
-        /*
-        let info = await updatePackage(dirname, {
-            repository: {
-                type: "git",
-                url: "git://github.com/ethers-io/ethers.js.git"
-            }
-        });
-        */
 
         // Get the remote package.json (or sub in a placeholder for new pacakges)
         let npmInfo = await getPackageVersion(info.name);
@@ -85,8 +76,10 @@ if (process.argv.length > 2) {
     progress(1);
 
     try {
-        log("<bold:Building TypeScript source...>");
-        await runBuild();
+        log("<bold:Building TypeScript source (es6)...>");
+        await runBuild(true);
+        log("<bold:Building TypeScript source (commonjs)...>");
+        await runBuild(false);
         log("<bold:Building distribution files...>");
         let content = await runDist();
         console.log(content);
@@ -97,7 +90,7 @@ if (process.argv.length > 2) {
     }
 
     // Update the tarball hash now that _version and package.json may have changed.
-    progress = getProgressBar(colorify("Updating tarballHash", "bold"));
+    progress = prompt.getProgressBar(colorify("Updating tarballHash", "bold"));
     for (let i = 0; i < dirnames.length; i++) {
         progress(i / dirnames.length);
         await updatePackage(dirnames[i]);

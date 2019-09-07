@@ -493,6 +493,11 @@ class SetControllerPlugin extends AddressAccountPlugin {
     async run(): Promise<void> {
         await super.run();
 
+        this.dump("Set Subnode: " + this.name, {
+            "Nodehash": this.nodehash,
+            "Owner": this.address
+        });
+
         this.getEns().setOwner(this.nodehash, this.address);
     }
 }
@@ -522,8 +527,9 @@ class SetSubnodePlugin extends AddressAccountPlugin {
         await super.run();
 
         this.dump("Set Subnode: " + this.name, {
-            Label: this.label,
-            Node: this.node
+            "Label": this.label,
+            "Node": this.node,
+            "Owner": this.address
         });
 
         await this.getEns().setSubnodeOwner(ethers.utils.namehash(this.node), ethers.utils.id(this.label), this.address);
@@ -547,8 +553,8 @@ class SetResolverPlugin extends AddressAccountPlugin {
         await super.run();
 
         this.dump("Set Resolver: " + this.name, {
-            Nodehash: this.nodehash,
-            Resolver: this.address
+            "Nodehash": this.nodehash,
+            "Resolver": this.address
         });
 
         await this.getEns().setResolver(this.nodehash, this.address);
@@ -569,8 +575,8 @@ class SetAddrPlugin extends AddressAccountPlugin {
         await super.run();
 
         this.dump("Set Addr: " + this.name, {
-            Nodehash: this.nodehash,
-            Address: this.address
+            "Nodehash": this.nodehash,
+            "Address": this.address
         });
 
         let resolver = await this.getResolver(this.nodehash);
@@ -830,7 +836,7 @@ class ReclaimPlugin extends AddressAccountPlugin {
         await super.run();
 
         this.dump("Reclaim: " + this.name, {
-            Nodehash: this.nodehash,
+            "Nodehash": this.nodehash,
             "Address": this.address,
         });
 

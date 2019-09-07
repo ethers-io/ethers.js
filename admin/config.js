@@ -7,7 +7,7 @@ const resolve = require("path").resolve;
 const AES = require("aes-js");
 const scrypt = require("scrypt-js");
 
-const prompt = require("../packages/cli/prompt");
+const { prompt } = require("../packages/cli");
 const randomBytes = require("../packages/random").randomBytes;
 const computeHmac = require("../packages/sha2").computeHmac;
 

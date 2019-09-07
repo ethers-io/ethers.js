@@ -1,18 +1,18 @@
 {
   "name": "@ethersproject/random",
-  "version": "5.0.0-beta.127",
+  "version": "5.0.0-beta.128",
   "description": "Random utility functions for ethers.",
-  "main": "index.js",
-  "browser": "browser.js",
+  "main": "./lib/index.js",
+  "browser": "./lib/browser.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0"
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/logger": ">=5.0.0-beta.129"
   },
   "devDependencies": {
-    "@types/node": "10.3.2"
+    "@types/node": "^12.7.4"
   },
   "keywords": [
     "Ethereum",
@@ -28,5 +28,7 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x6bf0f2433d11c1eabbf98034baebfacc42ed5392911aafda103b33b4af06c864"
+  "module": "./lib.esm/index.js",
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0x884bc62b2feb8949cbbf59bb1fea3ca8c671ab16149e1688d74b9f1bd360e89c"
 }

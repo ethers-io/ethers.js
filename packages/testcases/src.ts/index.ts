@@ -77,7 +77,7 @@ export module TestCase {
 
 export function saveTests(tag: string, data: any) {
    //let filename = path.resolve(__dirname, 'testcases', tag + '.json.gz');
-   let filename = path.resolve('testcases', tag + '.json.gz');
+   let filename = path.resolve('../testcases', tag + '.json.gz');
 
    fs.writeFileSync(filename, zlib.gzipSync(JSON.stringify(data, undefined, ' ') + '\n'));
 
@@ -85,7 +85,7 @@ export function saveTests(tag: string, data: any) {
 }
 
 export function loadTests(tag: string): any {
-   let filename = path.resolve(__dirname, 'testcases', tag + '.json.gz');
+   let filename = path.resolve(__dirname, '../testcases', tag + '.json.gz');
    return JSON.parse(zlib.gunzipSync(fs.readFileSync(filename)).toString());
 }
 

@@ -1,15 +1,15 @@
 {
   "name": "@ethersproject/bignumber",
-  "version": "5.0.0-beta.129",
+  "version": "5.0.0-beta.130",
   "description": "BigNumber library used in ethers.js.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/properties": ">5.0.0-beta.0",
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/properties": ">=5.0.0-beta.131",
     "bn.js": "^4.4.0"
   },
   "keywords": [
@@ -26,5 +26,7 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x24cb6b119b3bd1798855c867c5ac09b14b9f7a219b2be49f2371eb9c6fc043e8"
+  "module": "./lib.esm/index.js",
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0xcc5966135a40d8007d2916aa352db202de42eeef24197ba94eeb01414232cf41"
 }

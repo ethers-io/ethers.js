@@ -1,23 +1,23 @@
 {
   "name": "@ethersproject/json-wallets",
-  "version": "5.0.0-beta.128",
+  "version": "5.0.0-beta.129",
   "description": "Wallet management utilities for KeyStore and Crowdsale JSON wallets.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ethersproject/abstract-signer": ">5.0.0-beta.0",
-    "@ethersproject/address": ">5.0.0-beta.0",
-    "@ethersproject/bytes": ">5.0.0-beta.0",
-    "@ethersproject/hdnode": ">5.0.0-beta.0",
-    "@ethersproject/keccak256": ">5.0.0-beta.0",
-    "@ethersproject/logger": ">5.0.0-beta.0",
-    "@ethersproject/pbkdf2": ">5.0.0-beta.0",
-    "@ethersproject/properties": ">5.0.0-beta.0",
-    "@ethersproject/random": ">5.0.0-beta.0",
-    "@ethersproject/strings": ">5.0.0-beta.0",
-    "@ethersproject/transactions": ">5.0.0-beta.0",
+    "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
+    "@ethersproject/address": ">=5.0.0-beta.128",
+    "@ethersproject/bytes": ">=5.0.0-beta.129",
+    "@ethersproject/hdnode": ">=5.0.0-beta.130",
+    "@ethersproject/keccak256": ">=5.0.0-beta.127",
+    "@ethersproject/logger": ">=5.0.0-beta.129",
+    "@ethersproject/pbkdf2": ">=5.0.0-beta.127",
+    "@ethersproject/properties": ">=5.0.0-beta.131",
+    "@ethersproject/random": ">=5.0.0-beta.128",
+    "@ethersproject/strings": ">=5.0.0-beta.130",
+    "@ethersproject/transactions": ">=5.0.0-beta.128",
     "aes-js": "3.0.0",
     "scrypt-js": "2.0.4",
     "uuid": "2.0.1"
@@ -35,5 +35,7 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "tarballHash": "0x0b0bb2c6908fb0e54819bb2c5b41a15e7bab4763b782a7e3812d07d7ae69876f"
+  "module": "./lib.esm/index.js",
+  "types": "./lib/index.d.ts",
+  "tarballHash": "0xe14e107dd9e91c9254e4af6f9b62b46d2d7edd4934dda09a330021002ac1ef3f"
 }

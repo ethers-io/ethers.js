@@ -2,8 +2,7 @@
   "extends": "../../tsconfig.package.json",
   "compilerOptions": {
     "rootDir": "./src.ts",
-    "outDir": "./",
-
+    "outDir": "./lib/",
     "resolveJsonModule": true
   },
   "include": [
@@ -12,6 +11,5 @@
     "./src.ts/*.json",
     "./src.ts/generation-scripts/*"
   ],
-  "exclude": [ ]
+  "exclude": []
 }
-

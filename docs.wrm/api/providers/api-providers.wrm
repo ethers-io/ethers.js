@@ -12,18 +12,43 @@ resiliance, security and increase the amount of required trust.
 To mitigate these issues, it is recommended you use a
 [Default Provider](get-default-provider).
 
+
 _subsection: EtherscanProvider
 
-Tra la la...
+The **EtherscanProvider** is backed by a combination of the various
+[Etherscan APIs](https://etherscan.io/apis).
+
+_property: provider.getHistory(address) => Array<History>
+
 
 _subsection: InfuraProvider
 
-Tra la la...
+The **InfuraProvider** is backed by the popular [INFURA](https://infura.io)
+Ethereum service.
+
+It supports Mainnet (homestead) and all common testnets (Ropsten, Rinkeby,
+G&ouml;rli and Kovan).
+
 
 _subsection: NodesmithProvider
 
-Tra la la...
+The **NodesmithProvider** is backed by [Nodesmith](https://nodesmith.io).
+
+It supports Mainnet (homestead) and all common testnets (Ropsten, Rinkeby,
+G&ouml;rli and Kovan), as well as the Ethereum-like network [Aion](https://aion.network).
+
 
 _subsection: AlchemyProvider
 
-Tra la la...
+The **AlchemtProvider** is backed by [Alchemy](https://alchemyapi.io).
+
+It supports Mainnet (homestead) and all common testnets (Ropsten, Rinkeby,
+G&ouml;rli and Kovan).
+
+
+_subsection: CloudfrontProvider
+
+The CloudfrontProvider is backed by the
+[Cloudflare Ethereum Gateway](https://developers.cloudflare.com/distributed-web/ethereum-gateway/).
+
+It only supports Mainnet (homestead).

@@ -84,9 +84,9 @@ the //bitcount// least significant bits set to zero.
 _heading: Two's Compliment
 
 [Two's Complicment](https://en.wikipedia.org/wiki/Two%27s_complement)
-is a method used to encode and decode fixed-width values which can be
-positive or negative, without requiring a separate sign bit. Most users
-will not need to interact with these.
+is an elegant method used to encode and decode fixed-width signed values
+while efficiently preserving mathematic operations.
+Most users will not need to interact with these.
 
 _property: bignumber.fromTwos(bitwidth) => [[bignumber]]
 Returns a BigNumber with the value of //bignumber// converted from twos-compliment with //bitwidth//.

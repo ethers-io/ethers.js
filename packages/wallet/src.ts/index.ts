@@ -12,7 +12,7 @@ import { randomBytes } from "@ethersproject/random";
 import { SigningKey } from "@ethersproject/signing-key";
 import { decryptJsonWallet, encryptKeystore, ProgressCallback } from "@ethersproject/json-wallets";
 import { computeAddress, recoverAddress, serialize } from "@ethersproject/transactions";
-import { Wordlist } from "@ethersproject/wordlists/wordlist";
+import { Wordlist } from "@ethersproject/wordlists";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";

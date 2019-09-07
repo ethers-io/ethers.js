@@ -1,0 +1,1 @@
+export declare const version = "hash/5.0.0-beta.127";
