@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/testcases",
-  "version": "5.0.0-beta.131",
+  "version": "5.0.0-beta.132",
   "description": "Testcases for Ethereum and scripts to generate testcases.",
   "main": "./lib/index.js",
   "browser": "browser.js",
@@ -38,5 +38,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x810ab7be1edde490752a9e4344216cf85a4871e96b260c0922875a81f7e1c6b6"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0x86ea390ca65e0315e311f00f552735662d8663e492622e8adf2a597ecfccc1c7"
 }

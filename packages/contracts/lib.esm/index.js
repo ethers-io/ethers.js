@@ -124,7 +124,7 @@ function runMethod(contract, functionName, options) {
                 return resolveProperties(tx);
             }
             if (!contract.signer) {
-                logger.throwError("sending a transaction require a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
+                logger.throwError("sending a transaction requires a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
             }
             return contract.signer.sendTransaction(tx).then((tx) => {
                 let wait = tx.wait.bind(tx);
@@ -382,7 +382,7 @@ export class Contract {
     // estimateDeploy(bytecode: string, ...args): Promise<BigNumber>
     fallback(overrides) {
         if (!this.signer) {
-            logger.throwError("sending a transaction require a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
+            logger.throwError("sending a transactions require a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
         }
         let tx = shallowCopy(overrides || {});
         ["from", "to"].forEach(function (key) {

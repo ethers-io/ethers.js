@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/constants",
-  "version": "5.0.0-beta.128",
+  "version": "5.0.0-beta.129",
   "description": "Common Ethereum constants used for ethers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -24,5 +24,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x1364f6b985d6422adb067281d59a9f69b3cf1a4f9d93877e61b81564d37b2102"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0x9f757839cf22c910f00ac215fef5a5210f4bdfaf0acc7e7dbe5e4a0f347fddc3"
 }

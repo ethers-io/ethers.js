@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/bytes",
-  "version": "5.0.0-beta.129",
+  "version": "5.0.0-beta.130",
   "description": "Bytes utility functions for ethers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -26,5 +26,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0xaedefd50f9571311250bc76aa8698765f69efd5ea43de1ca248ebbf8d34e640e"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0xc35d202732f6771f301b01edb0965455b88720138f1cf6e36bb1424900431766"
 }

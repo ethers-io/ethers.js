@@ -666,7 +666,7 @@ export class BaseProvider extends Provider {
         return this.getNetwork().then((network) => {
             // No ENS...
             if (!network.ensAddress) {
-                logger.throwError("network does support ENS", Logger.errors.UNSUPPORTED_OPERATION, { operation: "ENS", network: network.name });
+                logger.throwError("network does not support ENS", Logger.errors.UNSUPPORTED_OPERATION, { operation: "ENS", network: network.name });
             }
             // keccak256("resolver(bytes32)")
             let data = "0x0178b8bf" + namehash(name).substring(2);

@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/base64",
-  "version": "5.0.0-beta.126",
+  "version": "5.0.0-beta.127",
   "description": "Base64 coder.",
   "main": "./lib/index.js",
   "browser": "./lib/browser.js",
@@ -25,5 +25,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x1b03890d546a6603f6a326246aaa8a9fa0f25fc40c2f4ba5597f7d6196ea8c51"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0x55c369035100108a7dc8ada5ca350b7e1be240949680ec780ff1aab2afacc0e3"
 }

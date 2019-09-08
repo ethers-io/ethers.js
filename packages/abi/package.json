@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/abi",
-  "version": "5.0.0-beta.137",
+  "version": "5.0.0-beta.138",
   "description": "Utilities and Classes for parsing, formatting and managing Ethereum ABIs.",
   "main": "./lib/index.js",
   "scripts": {
@@ -32,5 +32,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x2586b6ca7027e4b47caf53887eae7d3aca64570fb72bcb495838b883be6580f3"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0x5e1963373faf7c7d4b96c86bdec37c60fd1f5d6eb5665e7c3840be2208b3a255"
 }

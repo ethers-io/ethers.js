@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/shims",
-  "version": "5.0.0-beta.132",
+  "version": "5.0.0-beta.133",
   "_ethers_nobuild": true,
   "description": "Shims required for ethers in constrained environments.",
   "main": "./lib/index.js",
@@ -27,5 +27,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x1f5f87ba0d49d519f731a60c62c1545b61b0b33e1de2f4282390b613431e1e5b"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0x3a9a4bf1f88322ce8f0609940c7d5388f1d0ebdca5c5de87496ebc3fef975012"
 }

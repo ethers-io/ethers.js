@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/solidity",
-  "version": "5.0.0-beta.126",
+  "version": "5.0.0-beta.127",
   "description": "Solidity coder for non-standard (tight) packing.",
   "main": "./lib/index.js",
   "scripts": {
@@ -28,5 +28,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x85cb1539ac02e0374553e57ec7fa08f773d907ff078d6b495071b4f98a64e516"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0xc2a19838a45f6751775a0e8a0f68c81ce5889081b747f6cf57afab37b1ea3dca"
 }

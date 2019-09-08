@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/address",
-  "version": "5.0.0-beta.128",
+  "version": "5.0.0-beta.129",
   "description": "Utilities for handling Ethereum Addresses for ethers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -29,5 +29,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x3ca47b90abf21da753646b5b888976f067af8e0afceec65a8523c7f708855c6a"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0xa42f8299953f98cc233003c35aa22239f6580eec1e8341bb64d32cae3c35b940"
 }

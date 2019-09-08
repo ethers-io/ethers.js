@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/properties",
-  "version": "5.0.0-beta.131",
+  "version": "5.0.0-beta.132",
   "description": "Properties utility functions for ethers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -26,5 +26,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x5dffc79ec051b799619fc5db1ccc6ad0daba266f0490ca9e5763f3dbc6c9c509"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0x7d9f0348037c255880c247898974b4d595e62c174b9e5697717c5eaa1902599e"
 }

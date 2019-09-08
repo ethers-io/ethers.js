@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/wallet",
-  "version": "5.0.0-beta.130",
+  "version": "5.0.0-beta.131",
   "description": "Classes for managing, encrypting and decrypting Ethereum private keys as a Signer for ethers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -38,5 +38,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0xcb9b02c1a2c4af4e774743092a88536d21b9f3d044b7003d4c5d022f13521131"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0x10026953b27050b927c27ce38a70842c579bab839da102b10102684a4d3d4ae5"
 }

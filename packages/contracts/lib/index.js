@@ -150,7 +150,7 @@ function runMethod(contract, functionName, options) {
                 return properties_1.resolveProperties(tx);
             }
             if (!contract.signer) {
-                logger.throwError("sending a transaction require a signer", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
+                logger.throwError("sending a transaction requires a signer", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
             }
             return contract.signer.sendTransaction(tx).then(function (tx) {
                 var wait = tx.wait.bind(tx);
@@ -429,7 +429,7 @@ var Contract = /** @class */ (function () {
     Contract.prototype.fallback = function (overrides) {
         var _this = this;
         if (!this.signer) {
-            logger.throwError("sending a transaction require a signer", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
+            logger.throwError("sending a transactions require a signer", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
         }
         var tx = properties_1.shallowCopy(overrides || {});
         ["from", "to"].forEach(function (key) {

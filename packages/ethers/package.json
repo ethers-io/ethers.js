@@ -1,6 +1,6 @@
 {
   "name": "ethers",
-  "version": "5.0.0-beta.156",
+  "version": "5.0.0-beta.157",
   "description": "Umbrella package for most common Ethers libraries.",
   "main": "./lib/index.js",
   "scripts": {
@@ -53,5 +53,6 @@
   },
   "module": "./dist/ethers.esm.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0xfe021d7af3eef8dfdcd597944ea3928f8e711e0f8d5c1d98cb3b7f55d6b7e51b"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0x2947d11aec9d35b49f9b403785161fc538b8280fb5928709c413bedecb0fc9d7"
 }

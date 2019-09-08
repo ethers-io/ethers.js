@@ -1,6 +1,10 @@
 {
   "name": "root",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
   "scripts": {
     "auto-build": "node ./admin/cmds/reset-build.js && npm run build -- -w",
     "bootstrap": "node ./admin/cmds/reset-build.js && node ./admin/cmds/update-depgraph && lerna bootstrap --hoist",

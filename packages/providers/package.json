@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/providers",
-  "version": "5.0.0-beta.141",
+  "version": "5.0.0-beta.142",
   "description": "Ethereum Providers for ethers.",
   "main": "./lib/index.js",
   "browser": {
@@ -45,5 +45,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0xc0b5e1a60b427d64d93f366727dc57777d24bfd92b8ddeb6408b367a7780f045"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0x82a133cc475c14daf4fa2a7aca29f07bda82415349a3a889458af83f2ca8d567"
 }
