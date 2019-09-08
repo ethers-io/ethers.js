@@ -4,7 +4,7 @@
 import { BN } from "bn.js";
 
 import { arrayify, hexDataSlice, isHexString, stripZeros } from "@ethersproject/bytes";
-import { BigNumberish } from "@ethersproject/bignumber";
+import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { keccak256 } from "@ethersproject/keccak256";
 import { encode } from "@ethersproject/rlp";
 
@@ -140,7 +140,7 @@ export function getContractAddress(transaction: { from: string, nonce: BigNumber
         logger.throwArgumentError("missing from address", "transaction", transaction);
     }
 
-    let nonce = stripZeros(arrayify(transaction.nonce));
+    let nonce = stripZeros(arrayify(BigNumber.from(transaction.nonce).toHexString()));
 
     return getAddress(hexDataSlice(keccak256(encode([ from, nonce ])), 12));
 }
