@@ -331,7 +331,8 @@ export class JsonRpcProvider extends BaseProvider {
 
             case 'getLogs':
                 if (params.filter && params.filter.address != null) {
-                    params.filter.address = getLowerCase(params.filter.address);
+                    params.filter.address = Array.isArray(params.filter.address) ? 
+                        params.filter.address.map(getLowerCase) : getLowerCase(params.filter.address);
                 }
                 return this.send('eth_getLogs', [ params.filter ]);
 

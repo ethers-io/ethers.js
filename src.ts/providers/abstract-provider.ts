@@ -37,7 +37,7 @@ export type BlockTag = string | number;
 export type Filter = {
     fromBlock?: BlockTag,
     toBlock?: BlockTag,
-    address?: string,
+    address?: string | string[],
     topics?: Array<string | Array<string>>,
 }
 
@@ -47,7 +47,7 @@ export type Filter = {
 //        for now.
 export type FilterByBlock = {
     blockHash?: string,
-    address?: string,
+    address?: string | string[],
     topics?: Array<string | Array<string>>,
 }
 

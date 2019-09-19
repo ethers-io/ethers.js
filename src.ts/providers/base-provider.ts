@@ -347,6 +347,19 @@ function checkTransactionReceipt(transactionReceipt: any): TransactionReceipt {
     return result;
 }
 
+function checkAddresses(addresses: any): any {
+    if (Array.isArray(addresses)) {
+        addresses.forEach(function(topic) {
+            checkAddresses(topic);
+        });
+
+    } else if (addresses != null) {
+        getAddress(addresses);
+    }
+
+    return addresses;
+}
+
 function checkTopics(topics: any): any {
     if (Array.isArray(topics)) {
         topics.forEach(function(topic) {
@@ -363,13 +376,13 @@ function checkTopics(topics: any): any {
 const formatFilter = {
     fromBlock: allowNull(checkBlockTag, undefined),
     toBlock: allowNull(checkBlockTag, undefined),
-    address: allowNull(getAddress, undefined),
+    address: allowNull(checkAddresses, undefined),
     topics: allowNull(checkTopics, undefined),
 };
 
 const formatFilterByBlock = {
     blockHash: allowNull(checkHash, undefined),
-    address: allowNull(getAddress, undefined),
+    address: allowNull(checkAddresses, undefined),
     topics: allowNull(checkTopics, undefined),
 };
 
@@ -1089,14 +1102,22 @@ export class BaseProvider extends Provider {
 
     getLogs(filter: Filter | FilterByBlock): Promise<Array<Log>> {
         return this.ready.then(() => {
-            return resolveProperties(filter).then((filter) => {
-                return this._resolveNames(filter, ['address']).then((filter) => {
-                    let params = { filter: checkFilter(filter) };
-                    return this.perform('getLogs', params).then((result) => {
-                        return arrayOf(checkLog)(result);
-                    });
-                });
-            });
+            return resolveProperties(filter)
+        }).then((filter) => {
+            let resolved = Promise.resolve(filter);
+            if (filter.address) {
+                if (Array.isArray(filter.address )) {
+                    resolved = this._resolveArrayName(filter, 'address')
+                } else {
+                    resolved = this._resolveNames(filter, ['address'])
+                }
+            }
+            return resolved;
+        }).then((filter) => {
+            let params = { filter: checkFilter(filter) };
+            return this.perform('getLogs', params);
+        }).then((result) => {
+            return arrayOf(checkLog)(result);
         });
     }
 
@@ -1133,6 +1154,20 @@ export class BaseProvider extends Provider {
         }, this);
 
         return Promise.all(promises).then(function() { return result; });
+    }
+
+    private _resolveArrayName(object: any, arrayKey: string): Promise<{ [key: string]: string }> {
+        let result: { [key: string ]: any } = shallowCopy(object);
+
+        const rawAddresses: string[] = result[arrayKey];
+        rawAddresses.map(function(rawAddress) {
+            return this._getAddress(rawAddress);
+        }, this);
+
+        return Promise.all(rawAddresses).then(function(resolvedAddresses) { 
+            result[arrayKey] = resolvedAddresses;
+            return result;
+         });
     }
 
     private _getResolver(name: string): Promise<string> {
