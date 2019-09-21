@@ -36,7 +36,7 @@ if (process.argv.length > 2) {
 
     // Load the token from the encrypted store
     try {
-        token = await config.get("token");
+        token = await config.get("npm-token");
     } catch (error) {
         switch (error.message) {
             case "wrong password":
