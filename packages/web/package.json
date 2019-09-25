@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/web",
-  "version": "5.0.0-beta.129",
+  "version": "5.0.0-beta.130",
   "description": "Utility fucntions for managing web requests for ethers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -28,5 +28,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x49506a10b060cd81879eee485e99e93cc56f12c407cc87985288c9a15f81317b"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0xd1200805479b22a4fa0a2fefee820b8492313340531751994bc4d6f080598166"
 }

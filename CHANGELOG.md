@@ -3,6 +3,14 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.157 (2019-09-08 02:43)
+-----------------------------------------
+
+  - Fixed getContractAddress for odd-length hex values. ([#572](https://github.com/ethers-io/ethers.js/issues/572); [751793e](https://github.com/ethers-io/ethers.js/commit/751793ea25183d54d7fc4c610a789608f91c062e))
+  - Fixed typo in error message. ([#592](https://github.com/ethers-io/ethers.js/issues/592); [6f4291f](https://github.com/ethers-io/ethers.js/commit/6f4291f65f0ea20c65fef7fd7b09b4d5bf5f0dcd))
+  - Fixed typo in error message. ([#580](https://github.com/ethers-io/ethers.js/issues/580); [9c63b4a](https://github.com/ethers-io/ethers.js/commit/9c63b4a7535f423a802bb1c17c325ce968987349))
+  - Fixed typo in error message. ([#574](https://github.com/ethers-io/ethers.js/issues/574); [22a2673](https://github.com/ethers-io/ethers.js/commit/22a26736cc332fe6e896c9d2707cc99ceee2fb10))
+
 ethers/v5.0.0-beta.156 (2019-09-06 17:56)
 -----------------------------------------
 

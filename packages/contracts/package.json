@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/contracts",
-  "version": "5.0.0-beta.137",
+  "version": "5.0.0-beta.138",
   "description": "Contract abstraction meta-class for ethers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -33,5 +33,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x96959b21d3ac6d5028c69fe586cad288e262ad168b8af3ff3c807bdea5456477"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0x62e5d6ab8ad79b40b5df30f37047db635fc6ef40f5b359d164d4df1cbfa9e490"
 }

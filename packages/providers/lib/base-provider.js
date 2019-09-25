@@ -726,7 +726,7 @@ var BaseProvider = /** @class */ (function (_super) {
         return this.getNetwork().then(function (network) {
             // No ENS...
             if (!network.ensAddress) {
-                logger.throwError("network does support ENS", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "ENS", network: network.name });
+                logger.throwError("network does not support ENS", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "ENS", network: network.name });
             }
             // keccak256("resolver(bytes32)")
             var data = "0x0178b8bf" + hash_1.namehash(name).substring(2);

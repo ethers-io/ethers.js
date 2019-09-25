@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/keccak256",
-  "version": "5.0.0-beta.127",
+  "version": "5.0.0-beta.128",
   "description": "The keccak256 hash function for ethers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -25,5 +25,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x4290caf3668c6796f8e9bf944a912302b98c703bb3a8b7015f76ecbe3117e5e6"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0x2becbd33fdc7944907cfc09a57788044a8bf1f0c315c873210f093886caf9807"
 }

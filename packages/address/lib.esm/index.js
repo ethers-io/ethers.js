@@ -2,6 +2,7 @@
 // We use this for base 36 maths
 import { BN } from "bn.js";
 import { arrayify, hexDataSlice, isHexString, stripZeros } from "@ethersproject/bytes";
+import { BigNumber } from "@ethersproject/bignumber";
 import { keccak256 } from "@ethersproject/keccak256";
 import { encode } from "@ethersproject/rlp";
 import { Logger } from "@ethersproject/logger";
@@ -123,6 +124,6 @@ export function getContractAddress(transaction) {
     catch (error) {
         logger.throwArgumentError("missing from address", "transaction", transaction);
     }
-    let nonce = stripZeros(arrayify(transaction.nonce));
+    let nonce = stripZeros(arrayify(BigNumber.from(transaction.nonce).toHexString()));
     return getAddress(hexDataSlice(keccak256(encode([from, nonce])), 12));
 }

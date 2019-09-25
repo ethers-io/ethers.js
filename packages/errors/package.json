@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/errors",
-  "version": "5.0.0-beta.129",
+  "version": "5.0.0-beta.130",
   "description": "Error utility functions for ethers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -21,5 +21,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x512b1e86235f7d9dc5d680f65820d53ab6ca1ac6be70f0d365e2bb25f509fbc5"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0x69e4d6949d73b6ebd7dd51f0fede9fbd5d720b3a957fc92241c9505eb2cdedcf"
 }

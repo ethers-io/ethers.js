@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/abstract-provider",
-  "version": "5.0.0-beta.131",
+  "version": "5.0.0-beta.132",
   "description": "An Abstract Class for describing an Ethereum Provider for ethers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -30,5 +30,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0x2beb1736c2a9c8023e74c415353bff10587ae1dc49240ec5dc2620171899f2e6"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0xfe1ea4243bd19b249c58f4c57671bc9d824cc69c0d012dd4fd884aa0947b23b8"
 }

@@ -3455,7 +3455,7 @@ var bn = createCommonjsModule(function (module) {
 });
 var bn_1 = bn.BN;
 
-const version = "logger/5.0.0-beta.128";
+const version = "logger/5.0.0-beta.130";
 
 "use strict";
 let _permanentCensorErrors = false;
@@ -3725,7 +3725,7 @@ var lib_esm = /*#__PURE__*/Object.freeze({
 	Logger: Logger
 });
 
-const version$1 = "bytes/5.0.0-beta.128";
+const version$1 = "bytes/5.0.0-beta.130";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -4108,7 +4108,7 @@ var lib_esm$1 = /*#__PURE__*/Object.freeze({
 	joinSignature: joinSignature
 });
 
-const version$2 = "bignumber/5.0.0-beta.129";
+const version$2 = "bignumber/5.0.0-beta.131";
 
 "use strict";
 const logger$1 = new Logger(version$2);
@@ -4612,7 +4612,7 @@ class FixedNumber {
     }
 }
 
-const version$3 = "properties/5.0.0-beta.130";
+const version$3 = "properties/5.0.0-beta.132";
 
 "use strict";
 const logger$3 = new Logger(version$3);
@@ -4723,7 +4723,7 @@ var lib_esm$2 = /*#__PURE__*/Object.freeze({
 	Description: Description
 });
 
-const version$4 = "abi/5.0.0-beta.136";
+const version$4 = "abi/5.0.0-beta.138";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6158,7 +6158,7 @@ function _decode(data, offset) {
     else if (data[offset] >= 0x80) {
         let length = data[offset] - 0x80;
         if (offset + 1 + length > data.length) {
-            throw new Error("invlaid rlp data");
+            throw new Error("invalid rlp data");
         }
         let result = hexlify(data.slice(offset + 1, offset + 1 + length));
         return { consumed: (1 + length), result: result };
@@ -6179,7 +6179,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$5 = "address/5.0.0-beta.127";
+const version$5 = "address/5.0.0-beta.129";
 
 "use strict";
 const logger$6 = new Logger(version$5);
@@ -6299,7 +6299,7 @@ function getContractAddress(transaction) {
     catch (error) {
         logger$6.throwArgumentError("missing from address", "transaction", transaction);
     }
-    let nonce = stripZeros(arrayify(transaction.nonce));
+    let nonce = stripZeros(arrayify(BigNumber.from(transaction.nonce).toHexString()));
     return getAddress(hexDataSlice(keccak256(encode([from, nonce])), 12));
 }
 
@@ -6596,7 +6596,7 @@ class NumberCoder extends Coder {
     }
 }
 
-const version$6 = "strings/5.0.0-beta.129";
+const version$6 = "strings/5.0.0-beta.131";
 
 "use strict";
 const logger$8 = new Logger(version$6);
@@ -7117,7 +7117,7 @@ class AbiCoder {
 }
 const defaultAbiCoder = new AbiCoder();
 
-const version$7 = "hash/5.0.0-beta.127";
+const version$7 = "hash/5.0.0-beta.129";
 
 "use strict";
 const logger$a = new Logger(version$7);
@@ -7508,7 +7508,7 @@ function getNameCount(fragments) {
 
 "use strict";
 
-const version$8 = "abstract-provider/5.0.0-beta.130";
+const version$8 = "abstract-provider/5.0.0-beta.132";
 
 "use strict";
 const logger$c = new Logger(version$8);
@@ -7585,7 +7585,7 @@ class Provider {
     }
 }
 
-const version$9 = "abstract-signer/5.0.0-beta.131";
+const version$9 = "abstract-signer/5.0.0-beta.133";
 
 "use strict";
 const logger$d = new Logger(version$9);
@@ -7753,7 +7753,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$a = "contracts/5.0.0-beta.136";
+const version$a = "contracts/5.0.0-beta.138";
 
 "use strict";
 const logger$e = new Logger(version$a);
@@ -7871,7 +7871,7 @@ function runMethod(contract, functionName, options) {
                 return resolveProperties(tx);
             }
             if (!contract.signer) {
-                logger$e.throwError("sending a transaction require a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
+                logger$e.throwError("sending a transaction requires a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
             }
             return contract.signer.sendTransaction(tx).then((tx) => {
                 let wait = tx.wait.bind(tx);
@@ -8129,7 +8129,7 @@ class Contract {
     // estimateDeploy(bytecode: string, ...args): Promise<BigNumber>
     fallback(overrides) {
         if (!this.signer) {
-            logger$e.throwError("sending a transaction require a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
+            logger$e.throwError("sending a transactions require a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
         }
         let tx = shallowCopy(overrides || {});
         ["from", "to"].forEach(function (key) {
@@ -9727,7 +9727,7 @@ hash.ripemd160 = hash.ripemd.ripemd160;
 var _version = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "sha2/5.0.0-beta.128";
+exports.version = "sha2/5.0.0-beta.130";
 });
 
 var _version$1 = unwrapExports(_version);
@@ -12200,7 +12200,7 @@ elliptic.eddsa = eddsa;
 });
 var elliptic_2 = elliptic_1.ec;
 
-const version$c = "signing-key/5.0.0-beta.128";
+const version$c = "signing-key/5.0.0-beta.130";
 
 "use strict";
 const logger$f = new Logger(version$c);
@@ -12272,7 +12272,7 @@ function computePublicKey(key, compressed) {
     return logger$f.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$d = "transactions/5.0.0-beta.127";
+const version$d = "transactions/5.0.0-beta.129";
 
 "use strict";
 const logger$g = new Logger(version$d);
@@ -12413,7 +12413,7 @@ function parse(rawTransaction) {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "wordlists/5.0.0-beta.127";
+exports.version = "wordlists/5.0.0-beta.129";
 });
 
 var _version$3 = unwrapExports(_version$2);
@@ -12553,7 +12553,7 @@ var browser$5 = unwrapExports(browser$4);
 var browser_1$2 = browser$4.Wordlist;
 var browser_2$1 = browser$4.wordlists;
 
-const version$e = "hdnode/5.0.0-beta.129";
+const version$e = "hdnode/5.0.0-beta.131";
 
 "use strict";
 const logger$h = new Logger(version$e);
@@ -12835,7 +12835,7 @@ function isValidMnemonic(mnemonic, wordlist) {
 var _version$4 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "random/5.0.0-beta.127";
+exports.version = "random/5.0.0-beta.129";
 });
 
 var _version$5 = unwrapExports(_version$4);
@@ -13697,7 +13697,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$f = "json-wallets/5.0.0-beta.128";
+const version$f = "json-wallets/5.0.0-beta.130";
 
 "use strict";
 /*
@@ -14851,7 +14851,7 @@ function decryptJsonWallet(json, password, progressCallback) {
     return Promise.reject(new Error("invalid JSON wallet"));
 }
 
-const version$g = "wallet/5.0.0-beta.129";
+const version$g = "wallet/5.0.0-beta.131";
 
 "use strict";
 const logger$j = new Logger(version$g);
@@ -14971,7 +14971,7 @@ function verifyMessage(message, signature) {
     return recoverAddress(hashMessage(message), signature);
 }
 
-const version$h = "networks/5.0.0-beta.128";
+const version$h = "networks/5.0.0-beta.130";
 
 "use strict";
 const logger$k = new Logger(version$h);
@@ -15730,7 +15730,7 @@ var browser$a = /*#__PURE__*/Object.freeze({
 	encode: browser_2$3
 });
 
-const version$i = "web/5.0.0-beta.128";
+const version$i = "web/5.0.0-beta.130";
 
 "use strict";
 const logger$l = new Logger(version$i);
@@ -15927,7 +15927,7 @@ function poll(func, options) {
     });
 }
 
-const version$j = "providers/5.0.0-beta.140";
+const version$j = "providers/5.0.0-beta.142";
 
 "use strict";
 const logger$m = new Logger(version$j);
@@ -16957,7 +16957,7 @@ class BaseProvider extends Provider {
         return this.getNetwork().then((network) => {
             // No ENS...
             if (!network.ensAddress) {
-                logger$n.throwError("network does support ENS", Logger.errors.UNSUPPORTED_OPERATION, { operation: "ENS", network: network.name });
+                logger$n.throwError("network does not support ENS", Logger.errors.UNSUPPORTED_OPERATION, { operation: "ENS", network: network.name });
             }
             // keccak256("resolver(bytes32)")
             let data = "0x0178b8bf" + namehash(name).substring(2);
@@ -18514,7 +18514,7 @@ function sha256$1(types, values) {
     return browser_3(pack$1(types, values));
 }
 
-const version$k = "units/5.0.0-beta.126";
+const version$k = "units/5.0.0-beta.128";
 
 "use strict";
 const logger$y = new Logger(version$k);
@@ -18672,7 +18672,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$l = "ethers/5.0.0-beta.155";
+const version$l = "ethers/5.0.0-beta.157";
 
 "use strict";
 const errors = Logger.errors;

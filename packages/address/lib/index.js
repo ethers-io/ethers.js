@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // We use this for base 36 maths
 var bn_js_1 = require("bn.js");
 var bytes_1 = require("@ethersproject/bytes");
+var bignumber_1 = require("@ethersproject/bignumber");
 var keccak256_1 = require("@ethersproject/keccak256");
 var rlp_1 = require("@ethersproject/rlp");
 var logger_1 = require("@ethersproject/logger");
@@ -127,7 +128,7 @@ function getContractAddress(transaction) {
     catch (error) {
         logger.throwArgumentError("missing from address", "transaction", transaction);
     }
-    var nonce = bytes_1.stripZeros(bytes_1.arrayify(transaction.nonce));
+    var nonce = bytes_1.stripZeros(bytes_1.arrayify(bignumber_1.BigNumber.from(transaction.nonce).toHexString()));
     return getAddress(bytes_1.hexDataSlice(keccak256_1.keccak256(rlp_1.encode([from, nonce])), 12));
 }
 exports.getContractAddress = getContractAddress;

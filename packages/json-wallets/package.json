@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/json-wallets",
-  "version": "5.0.0-beta.129",
+  "version": "5.0.0-beta.130",
   "description": "Wallet management utilities for KeyStore and Crowdsale JSON wallets.",
   "main": "./lib/index.js",
   "scripts": {
@@ -37,5 +37,6 @@
   },
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
-  "tarballHash": "0xe14e107dd9e91c9254e4af6f9b62b46d2d7edd4934dda09a330021002ac1ef3f"
+  "ethereum": "donations.ethers.eth",
+  "tarballHash": "0x8f0226e9d76d29d57b1f601cd82280ae32d5c08c07fab35100b0333b9ade526a"
 }
