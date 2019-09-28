@@ -33,11 +33,16 @@ export type PollOptions = {
     onceBlock?: OnceBlockable
 };
 
+export type FetchJsonResponse = {
+    statusCode: number;
+    status: string;
+    headers: { [ header: string ]: string };
+};
 
 
 type Header = { key: string, value: string };
 
-export function fetchJson(connection: string | ConnectionInfo, json?: string, processFunc?: (value: any) => any): Promise<any> {
+export function fetchJson(connection: string | ConnectionInfo, json?: string, processFunc?: (value: any, response: FetchJsonResponse) => any): Promise<any> {
     let headers: { [key: string]: Header } = { };
 
     let url: string = null;
@@ -51,6 +56,8 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
         redirect: "follow",         // manual, *follow, error
         referrer: "client",         // no-referrer, *client
     };
+
+    let allow304 = false;
 
     let timeout = 2 * 60 * 1000;
 
@@ -71,6 +78,9 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
         if (connection.headers) {
             for (let key in connection.headers) {
                 headers[key.toLowerCase()] = { key: key, value: String(connection.headers[key]) };
+                if (["if-none-match", "if-modified-since"].indexOf(key.toLowerCase()) >= 0) {
+                    allow304 = true;
+                }
             }
         }
 
@@ -124,42 +134,59 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
 
         return fetch(url, options).then((response) => {
             return response.text().then((body) => {
-                if (!response.ok) {
+
+                let json: any = null;
+
+                if (allow304 && response.status === 304) {
+                    // Leave json as null
+
+                } else if (!response.ok) {
                     logger.throwError("bad response", Logger.errors.SERVER_ERROR, {
                         status: response.status,
                         body: body,
                         type: response.type,
                         url: response.url
                     });
+
+                } else {
+                    try {
+                        json = JSON.parse(body);
+                    } catch (error) {
+                        logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
+                            body: body,
+                            error: error,
+                            url: url
+                        });
+                    }
                 }
 
-                return body;
-            });
-
-        }).then((text) => {
-            let json: any = null;
-            try {
-                json = JSON.parse(text);
-            } catch (error) {
-                logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
-                    body: text,
-                    error: error,
-                    url: url
-                });
-            }
-
-            if (processFunc) {
-                try {
-                    json = processFunc(json);
-                } catch (error) {
-                    logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
-                        body: json,
-                        error: error
-                    });
+                if (processFunc) {
+                    try {
+                        const headers: { [ header: string ]: string } = { };
+                        if (response.headers.forEach) {
+                            response.headers.forEach((value, key) => {
+                                headers[key.toLowerCase()] = value;
+                            });
+                        } else {
+                            (<() => Array<string>>((<any>(response.headers)).keys))().forEach((key) => {
+                                headers[key.toLowerCase()] = response.headers.get(key);
+                            });
+                        }
+                        json = processFunc(json, {
+                            statusCode: response.status,
+                            status: response.statusText,
+                            headers: headers
+                        });
+                    } catch (error) {
+                        logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
+                            body: json,
+                            error: error
+                        });
+                    }
                 }
-            }
 
-            return json;
+                return json;
+           });
 
         }, (error) => {
             throw error;

@@ -33,7 +33,7 @@ import { UnicodeNormalizationForm } from "@ethersproject/strings";
 
 import { CoerceFunc } from "@ethersproject/abi";
 import { Bytes, BytesLike, Hexable } from "@ethersproject/bytes"
-import { ConnectionInfo, OnceBlockable, PollOptions } from "@ethersproject/web";
+import { ConnectionInfo, FetchJsonResponse, OnceBlockable, PollOptions } from "@ethersproject/web";
 import { EncryptOptions, ProgressCallback } from "@ethersproject/json-wallets";
 
 ////////////////////////
@@ -164,6 +164,7 @@ export {
     ConnectionInfo,
     OnceBlockable,
     PollOptions,
+    FetchJsonResponse,
 
     EncryptOptions,
     ProgressCallback
