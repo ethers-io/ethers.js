@@ -167,11 +167,24 @@ var Interface = /** @class */ (function () {
         }
         return this._topicify(eventFragment);
     };
+    Interface.prototype._decodeParams = function (params, data) {
+        return this._abiCoder.decode(params, data);
+    };
     Interface.prototype._encodeParams = function (params, values) {
         return this._abiCoder.encode(params, values);
     };
     Interface.prototype.encodeDeploy = function (values) {
         return this._encodeParams(this.deploy.inputs, values || []);
+    };
+    Interface.prototype.decodeFunctionData = function (functionFragment, data) {
+        if (typeof (functionFragment) === "string") {
+            functionFragment = this.getFunction(functionFragment);
+        }
+        var bytes = bytes_1.arrayify(data);
+        if (bytes_1.hexlify(bytes.slice(0, 4)) !== this.getSighash(functionFragment)) {
+            logger.throwArgumentError("data signature does not match function " + functionFragment.name + ".", "data", bytes_1.hexlify(bytes));
+        }
+        return this._decodeParams(functionFragment.inputs, bytes.slice(4));
     };
     Interface.prototype.encodeFunctionData = function (functionFragment, values) {
         if (typeof (functionFragment) === "string") {
@@ -209,6 +222,12 @@ var Interface = /** @class */ (function () {
             errorArgs: [reason],
             reason: reason
         });
+    };
+    Interface.prototype.encodeFunctionResult = function (functionFragment, values) {
+        if (typeof (functionFragment) === "string") {
+            functionFragment = this.getFunction(functionFragment);
+        }
+        return bytes_1.hexlify(this._abiCoder.encode(functionFragment.outputs, values || []));
     };
     Interface.prototype.encodeFilterTopics = function (eventFragment, values) {
         var _this = this;

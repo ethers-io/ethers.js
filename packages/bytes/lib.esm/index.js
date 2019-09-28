@@ -64,8 +64,16 @@ export function arrayify(value, options) {
     }
     if (isHexString(value)) {
         let hex = value.substring(2);
-        if (!options.allowOddLength && hex.length % 2) {
-            logger.throwArgumentError("hex data is odd-length", "value", value);
+        if (hex.length % 2) {
+            if (options.hexPad === "left") {
+                hex = "0x0" + hex.substring(2);
+            }
+            else if (options.hexPad === "right") {
+                hex += "0";
+            }
+            else {
+                logger.throwArgumentError("hex data is odd-length", "value", value);
+            }
         }
         let result = [];
         for (let i = 0; i < hex.length; i += 2) {
@@ -149,8 +157,16 @@ export function hexlify(value, options) {
         return value.toHexString();
     }
     if (isHexString(value)) {
-        if (!options.allowOddLength && value.length % 2) {
-            logger.throwArgumentError("hex data is odd-length", "value", value);
+        if (value.length % 2) {
+            if (options.hexPad === "left") {
+                value = "0x0" + value.substring(2);
+            }
+            else if (options.hexPad === "right") {
+                value += "0";
+            }
+            else {
+                logger.throwArgumentError("hex data is odd-length", "value", value);
+            }
         }
         return value.toLowerCase();
     }
@@ -202,7 +218,7 @@ export function hexConcat(items) {
     return result;
 }
 export function hexValue(value) {
-    let trimmed = hexStripZeros(hexlify(value, { allowOddLength: true }));
+    let trimmed = hexStripZeros(hexlify(value, { hexPad: "left" }));
     if (trimmed === "0x") {
         return "0x0";
     }

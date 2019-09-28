@@ -24,11 +24,11 @@ function handleNumber(value) {
     return BigNumber.from(value);
 }
 const transactionFields = [
-    { name: "nonce", maxLength: 32 },
-    { name: "gasPrice", maxLength: 32 },
-    { name: "gasLimit", maxLength: 32 },
+    { name: "nonce", maxLength: 32, numeric: true },
+    { name: "gasPrice", maxLength: 32, numeric: true },
+    { name: "gasLimit", maxLength: 32, numeric: true },
     { name: "to", length: 20 },
-    { name: "value", maxLength: 32 },
+    { name: "value", maxLength: 32, numeric: true },
     { name: "data" },
 ];
 const allowedTransactionKeys = {
@@ -46,7 +46,11 @@ export function serialize(transaction, signature) {
     let raw = [];
     transactionFields.forEach(function (fieldInfo) {
         let value = transaction[fieldInfo.name] || ([]);
-        value = arrayify(hexlify(value));
+        const options = {};
+        if (fieldInfo.numeric) {
+            options.hexPad = "left";
+        }
+        value = arrayify(hexlify(value, options));
         // Fixed-width field
         if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
             logger.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value);

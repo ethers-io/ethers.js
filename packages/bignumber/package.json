@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/bignumber",
-  "version": "5.0.0-beta.131",
+  "version": "5.0.0-beta.132",
   "description": "BigNumber library used in ethers.js.",
   "main": "./lib/index.js",
   "scripts": {
@@ -29,5 +29,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xd0afb1583010f0a63ddfab4414bdb204f4c0c51748d3f6f955582e93e54472a3"
+  "tarballHash": "0xf582735da3f3b4f1e5e9176bc1ee08bea0abd32056074dc4e2c184b9fbd3061c"
 }

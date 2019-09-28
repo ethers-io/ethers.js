@@ -3758,7 +3758,7 @@
 	var _version$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bytes/5.0.0-beta.130";
+	exports.version = "bytes/5.0.0-beta.131";
 	});
 
 	var _version$3 = unwrapExports(_version$2);
@@ -3834,8 +3834,16 @@
 	    }
 	    if (isHexString(value)) {
 	        var hex = value.substring(2);
-	        if (!options.allowOddLength && hex.length % 2) {
-	            logger.throwArgumentError("hex data is odd-length", "value", value);
+	        if (hex.length % 2) {
+	            if (options.hexPad === "left") {
+	                hex = "0x0" + hex.substring(2);
+	            }
+	            else if (options.hexPad === "right") {
+	                hex += "0";
+	            }
+	            else {
+	                logger.throwArgumentError("hex data is odd-length", "value", value);
+	            }
 	        }
 	        var result = [];
 	        for (var i = 0; i < hex.length; i += 2) {
@@ -3924,8 +3932,16 @@
 	        return value.toHexString();
 	    }
 	    if (isHexString(value)) {
-	        if (!options.allowOddLength && value.length % 2) {
-	            logger.throwArgumentError("hex data is odd-length", "value", value);
+	        if (value.length % 2) {
+	            if (options.hexPad === "left") {
+	                value = "0x0" + value.substring(2);
+	            }
+	            else if (options.hexPad === "right") {
+	                value += "0";
+	            }
+	            else {
+	                logger.throwArgumentError("hex data is odd-length", "value", value);
+	            }
 	        }
 	        return value.toLowerCase();
 	    }
@@ -3981,7 +3997,7 @@
 	}
 	exports.hexConcat = hexConcat;
 	function hexValue(value) {
-	    var trimmed = hexStripZeros(hexlify(value, { allowOddLength: true }));
+	    var trimmed = hexStripZeros(hexlify(value, { hexPad: "left" }));
 	    if (trimmed === "0x") {
 	        return "0x0";
 	    }
@@ -4168,7 +4184,7 @@
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.0-beta.131";
+	exports.version = "bignumber/5.0.0-beta.132";
 	});
 
 	var _version$5 = unwrapExports(_version$4);
@@ -4870,7 +4886,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.138";
+	exports.version = "abi/5.0.0-beta.139";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -6437,7 +6453,7 @@
 	var _version$a = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "address/5.0.0-beta.129";
+	exports.version = "address/5.0.0-beta.130";
 	});
 
 	var _version$b = unwrapExports(_version$a);
@@ -7102,7 +7118,7 @@
 	var _version$c = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "strings/5.0.0-beta.131";
+	exports.version = "strings/5.0.0-beta.132";
 	});
 
 	var _version$d = unwrapExports(_version$c);
@@ -7780,7 +7796,7 @@
 	var _version$e = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hash/5.0.0-beta.129";
+	exports.version = "hash/5.0.0-beta.130";
 	});
 
 	var _version$f = unwrapExports(_version$e);
@@ -8021,11 +8037,24 @@
 	        }
 	        return this._topicify(eventFragment);
 	    };
+	    Interface.prototype._decodeParams = function (params, data) {
+	        return this._abiCoder.decode(params, data);
+	    };
 	    Interface.prototype._encodeParams = function (params, values) {
 	        return this._abiCoder.encode(params, values);
 	    };
 	    Interface.prototype.encodeDeploy = function (values) {
 	        return this._encodeParams(this.deploy.inputs, values || []);
+	    };
+	    Interface.prototype.decodeFunctionData = function (functionFragment, data) {
+	        if (typeof (functionFragment) === "string") {
+	            functionFragment = this.getFunction(functionFragment);
+	        }
+	        var bytes = lib$1.arrayify(data);
+	        if (lib$1.hexlify(bytes.slice(0, 4)) !== this.getSighash(functionFragment)) {
+	            logger.throwArgumentError("data signature does not match function " + functionFragment.name + ".", "data", lib$1.hexlify(bytes));
+	        }
+	        return this._decodeParams(functionFragment.inputs, bytes.slice(4));
 	    };
 	    Interface.prototype.encodeFunctionData = function (functionFragment, values) {
 	        if (typeof (functionFragment) === "string") {
@@ -8063,6 +8092,12 @@
 	            errorArgs: [reason],
 	            reason: reason
 	        });
+	    };
+	    Interface.prototype.encodeFunctionResult = function (functionFragment, values) {
+	        if (typeof (functionFragment) === "string") {
+	            functionFragment = this.getFunction(functionFragment);
+	        }
+	        return lib$1.hexlify(this._abiCoder.encode(functionFragment.outputs, values || []));
 	    };
 	    Interface.prototype.encodeFilterTopics = function (eventFragment, values) {
 	        var _this = this;
@@ -8277,7 +8312,7 @@
 	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-provider/5.0.0-beta.132";
+	exports.version = "abstract-provider/5.0.0-beta.133";
 	});
 
 	var _version$h = unwrapExports(_version$g);
@@ -8412,7 +8447,7 @@
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.0-beta.133";
+	exports.version = "abstract-signer/5.0.0-beta.134";
 	});
 
 	var _version$j = unwrapExports(_version$i);
@@ -8623,7 +8658,7 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.0-beta.138";
+	exports.version = "contracts/5.0.0-beta.139";
 	});
 
 	var _version$l = unwrapExports(_version$k);
@@ -10700,7 +10735,7 @@
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "sha2/5.0.0-beta.130";
+	exports.version = "sha2/5.0.0-beta.131";
 	});
 
 	var _version$n = unwrapExports(_version$m);
@@ -13176,7 +13211,7 @@
 	var _version$o = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "signing-key/5.0.0-beta.130";
+	exports.version = "signing-key/5.0.0-beta.131";
 	});
 
 	var _version$p = unwrapExports(_version$o);
@@ -13272,7 +13307,7 @@
 	var _version$q = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "transactions/5.0.0-beta.129";
+	exports.version = "transactions/5.0.0-beta.130";
 	});
 
 	var _version$r = unwrapExports(_version$q);
@@ -13313,11 +13348,11 @@
 	    return lib$2.BigNumber.from(value);
 	}
 	var transactionFields = [
-	    { name: "nonce", maxLength: 32 },
-	    { name: "gasPrice", maxLength: 32 },
-	    { name: "gasLimit", maxLength: 32 },
+	    { name: "nonce", maxLength: 32, numeric: true },
+	    { name: "gasPrice", maxLength: 32, numeric: true },
+	    { name: "gasLimit", maxLength: 32, numeric: true },
 	    { name: "to", length: 20 },
-	    { name: "value", maxLength: 32 },
+	    { name: "value", maxLength: 32, numeric: true },
 	    { name: "data" },
 	];
 	var allowedTransactionKeys = {
@@ -13337,7 +13372,11 @@
 	    var raw = [];
 	    transactionFields.forEach(function (fieldInfo) {
 	        var value = transaction[fieldInfo.name] || ([]);
-	        value = lib$1.arrayify(lib$1.hexlify(value));
+	        var options = {};
+	        if (fieldInfo.numeric) {
+	            options.hexPad = "left";
+	        }
+	        value = lib$1.arrayify(lib$1.hexlify(value, options));
 	        // Fixed-width field
 	        if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
 	            logger.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value);
@@ -13447,7 +13486,7 @@
 	var _version$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wordlists/5.0.0-beta.129";
+	exports.version = "wordlists/5.0.0-beta.130";
 	});
 
 	var _version$t = unwrapExports(_version$s);
@@ -13590,7 +13629,7 @@
 	var _version$u = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hdnode/5.0.0-beta.131";
+	exports.version = "hdnode/5.0.0-beta.132";
 	});
 
 	var _version$v = unwrapExports(_version$u);
@@ -13910,7 +13949,7 @@
 	var _version$w = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "random/5.0.0-beta.129";
+	exports.version = "random/5.0.0-beta.130";
 	});
 
 	var _version$x = unwrapExports(_version$w);
@@ -14775,7 +14814,7 @@
 	var _version$y = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "json-wallets/5.0.0-beta.130";
+	exports.version = "json-wallets/5.0.0-beta.131";
 	});
 
 	var _version$z = unwrapExports(_version$y);
@@ -16070,7 +16109,7 @@
 	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.0-beta.131";
+	exports.version = "wallet/5.0.0-beta.132";
 	});
 
 	var _version$B = unwrapExports(_version$A);
@@ -17019,7 +17058,7 @@
 	var _version$E = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.0-beta.130";
+	exports.version = "web/5.0.0-beta.131";
 	});
 
 	var _version$F = unwrapExports(_version$E);
@@ -17050,6 +17089,7 @@
 	        redirect: "follow",
 	        referrer: "client",
 	    };
+	    var allow304 = false;
 	    var timeout = 2 * 60 * 1000;
 	    if (typeof (connection) === "string") {
 	        url = connection;
@@ -17065,6 +17105,9 @@
 	        if (connection.headers) {
 	            for (var key in connection.headers) {
 	                headers[key.toLowerCase()] = { key: key, value: String(connection.headers[key]) };
+	                if (["if-none-match", "if-modified-since"].indexOf(key.toLowerCase()) >= 0) {
+	                    allow304 = true;
+	                }
 	            }
 	        }
 	        if (connection.user != null && connection.password != null) {
@@ -17109,7 +17152,11 @@
 	        options.headers = flatHeaders;
 	        return cross_fetch_1.default(url, options).then(function (response) {
 	            return response.text().then(function (body) {
-	                if (!response.ok) {
+	                var json = null;
+	                if (allow304 && response.status === 304) {
+	                    // Leave json as null
+	                }
+	                else if (!response.ok) {
 	                    logger.throwError("bad response", lib.Logger.errors.SERVER_ERROR, {
 	                        status: response.status,
 	                        body: body,
@@ -17117,32 +17164,46 @@
 	                        url: response.url
 	                    });
 	                }
-	                return body;
+	                else {
+	                    try {
+	                        json = JSON.parse(body);
+	                    }
+	                    catch (error) {
+	                        logger.throwError("invalid JSON", lib.Logger.errors.SERVER_ERROR, {
+	                            body: body,
+	                            error: error,
+	                            url: url
+	                        });
+	                    }
+	                }
+	                if (processFunc) {
+	                    try {
+	                        var headers_1 = {};
+	                        if (response.headers.forEach) {
+	                            response.headers.forEach(function (value, key) {
+	                                headers_1[key.toLowerCase()] = value;
+	                            });
+	                        }
+	                        else {
+	                            ((response.headers).keys)().forEach(function (key) {
+	                                headers_1[key.toLowerCase()] = response.headers.get(key);
+	                            });
+	                        }
+	                        json = processFunc(json, {
+	                            statusCode: response.status,
+	                            status: response.statusText,
+	                            headers: headers_1
+	                        });
+	                    }
+	                    catch (error) {
+	                        logger.throwError("processing response error", lib.Logger.errors.SERVER_ERROR, {
+	                            body: json,
+	                            error: error
+	                        });
+	                    }
+	                }
+	                return json;
 	            });
-	        }).then(function (text) {
-	            var json = null;
-	            try {
-	                json = JSON.parse(text);
-	            }
-	            catch (error) {
-	                logger.throwError("invalid JSON", lib.Logger.errors.SERVER_ERROR, {
-	                    body: text,
-	                    error: error,
-	                    url: url
-	                });
-	            }
-	            if (processFunc) {
-	                try {
-	                    json = processFunc(json);
-	                }
-	                catch (error) {
-	                    logger.throwError("processing response error", lib.Logger.errors.SERVER_ERROR, {
-	                        body: json,
-	                        error: error
-	                    });
-	                }
-	            }
-	            return json;
 	        }, function (error) {
 	            throw error;
 	        }).then(function (result) {
@@ -17241,7 +17302,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.142";
+	exports.version = "providers/5.0.0-beta.143";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -20312,7 +20373,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "units/5.0.0-beta.128";
+	exports.version = "units/5.0.0-beta.129";
 	});
 
 	var _version$J = unwrapExports(_version$I);
@@ -20604,7 +20665,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.157";
+	exports.version = "ethers/5.0.0-beta.158";
 	});
 
 	var _version$L = unwrapExports(_version$K);

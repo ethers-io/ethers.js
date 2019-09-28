@@ -2,7 +2,7 @@ export declare type Bytes = ArrayLike<number>;
 export declare type BytesLike = Bytes | string;
 export declare type DataOptions = {
     allowMissingPrefix?: boolean;
-    allowOddLength?: boolean;
+    hexPad?: "left" | "right" | null;
 };
 export interface Hexable {
     toHexString(): string;

@@ -22,6 +22,7 @@ function fetchJson(connection, json, processFunc) {
         redirect: "follow",
         referrer: "client",
     };
+    var allow304 = false;
     var timeout = 2 * 60 * 1000;
     if (typeof (connection) === "string") {
         url = connection;
@@ -37,6 +38,9 @@ function fetchJson(connection, json, processFunc) {
         if (connection.headers) {
             for (var key in connection.headers) {
                 headers[key.toLowerCase()] = { key: key, value: String(connection.headers[key]) };
+                if (["if-none-match", "if-modified-since"].indexOf(key.toLowerCase()) >= 0) {
+                    allow304 = true;
+                }
             }
         }
         if (connection.user != null && connection.password != null) {
@@ -81,7 +85,11 @@ function fetchJson(connection, json, processFunc) {
         options.headers = flatHeaders;
         return cross_fetch_1.default(url, options).then(function (response) {
             return response.text().then(function (body) {
-                if (!response.ok) {
+                var json = null;
+                if (allow304 && response.status === 304) {
+                    // Leave json as null
+                }
+                else if (!response.ok) {
                     logger.throwError("bad response", logger_1.Logger.errors.SERVER_ERROR, {
                         status: response.status,
                         body: body,
@@ -89,32 +97,46 @@ function fetchJson(connection, json, processFunc) {
                         url: response.url
                     });
                 }
-                return body;
+                else {
+                    try {
+                        json = JSON.parse(body);
+                    }
+                    catch (error) {
+                        logger.throwError("invalid JSON", logger_1.Logger.errors.SERVER_ERROR, {
+                            body: body,
+                            error: error,
+                            url: url
+                        });
+                    }
+                }
+                if (processFunc) {
+                    try {
+                        var headers_1 = {};
+                        if (response.headers.forEach) {
+                            response.headers.forEach(function (value, key) {
+                                headers_1[key.toLowerCase()] = value;
+                            });
+                        }
+                        else {
+                            ((response.headers).keys)().forEach(function (key) {
+                                headers_1[key.toLowerCase()] = response.headers.get(key);
+                            });
+                        }
+                        json = processFunc(json, {
+                            statusCode: response.status,
+                            status: response.statusText,
+                            headers: headers_1
+                        });
+                    }
+                    catch (error) {
+                        logger.throwError("processing response error", logger_1.Logger.errors.SERVER_ERROR, {
+                            body: json,
+                            error: error
+                        });
+                    }
+                }
+                return json;
             });
-        }).then(function (text) {
-            var json = null;
-            try {
-                json = JSON.parse(text);
-            }
-            catch (error) {
-                logger.throwError("invalid JSON", logger_1.Logger.errors.SERVER_ERROR, {
-                    body: text,
-                    error: error,
-                    url: url
-                });
-            }
-            if (processFunc) {
-                try {
-                    json = processFunc(json);
-                }
-                catch (error) {
-                    logger.throwError("processing response error", logger_1.Logger.errors.SERVER_ERROR, {
-                        body: json,
-                        error: error
-                    });
-                }
-            }
-            return json;
         }, function (error) {
             throw error;
         }).then(function (result) {

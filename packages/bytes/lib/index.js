@@ -67,8 +67,16 @@ function arrayify(value, options) {
     }
     if (isHexString(value)) {
         var hex = value.substring(2);
-        if (!options.allowOddLength && hex.length % 2) {
-            logger.throwArgumentError("hex data is odd-length", "value", value);
+        if (hex.length % 2) {
+            if (options.hexPad === "left") {
+                hex = "0x0" + hex.substring(2);
+            }
+            else if (options.hexPad === "right") {
+                hex += "0";
+            }
+            else {
+                logger.throwArgumentError("hex data is odd-length", "value", value);
+            }
         }
         var result = [];
         for (var i = 0; i < hex.length; i += 2) {
@@ -157,8 +165,16 @@ function hexlify(value, options) {
         return value.toHexString();
     }
     if (isHexString(value)) {
-        if (!options.allowOddLength && value.length % 2) {
-            logger.throwArgumentError("hex data is odd-length", "value", value);
+        if (value.length % 2) {
+            if (options.hexPad === "left") {
+                value = "0x0" + value.substring(2);
+            }
+            else if (options.hexPad === "right") {
+                value += "0";
+            }
+            else {
+                logger.throwArgumentError("hex data is odd-length", "value", value);
+            }
         }
         return value.toLowerCase();
     }
@@ -214,7 +230,7 @@ function hexConcat(items) {
 }
 exports.hexConcat = hexConcat;
 function hexValue(value) {
-    var trimmed = hexStripZeros(hexlify(value, { allowOddLength: true }));
+    var trimmed = hexStripZeros(hexlify(value, { hexPad: "left" }));
     if (trimmed === "0x") {
         return "0x0";
     }

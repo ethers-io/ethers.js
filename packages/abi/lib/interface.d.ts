@@ -52,10 +52,13 @@ export declare class Interface {
     getEvent(nameOrSignatureOrTopic: string): EventFragment;
     getSighash(functionFragment: FunctionFragment | string): string;
     getEventTopic(eventFragment: EventFragment | string): string;
+    _decodeParams(params: Array<ParamType>, data: BytesLike): Array<any>;
     _encodeParams(params: Array<ParamType>, values: Array<any>): string;
     encodeDeploy(values?: Array<any>): string;
+    decodeFunctionData(functionFragment: FunctionFragment | string, data: BytesLike): Array<any>;
     encodeFunctionData(functionFragment: FunctionFragment | string, values?: Array<any>): string;
     decodeFunctionResult(functionFragment: FunctionFragment | string, data: BytesLike): Array<any>;
+    encodeFunctionResult(functionFragment: FunctionFragment | string, values?: Array<any>): string;
     encodeFilterTopics(eventFragment: EventFragment, values: Array<any>): Array<string | Array<string>>;
     decodeEventLog(eventFragment: EventFragment | string, data: BytesLike, topics?: Array<string>): Array<any>;
     parseTransaction(tx: {

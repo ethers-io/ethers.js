@@ -3,6 +3,14 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.158 (2019-09-28 01:56)
+-----------------------------------------
+
+  - Added less-common, but useful, coding functions to Interface. ([778eb3b](https://github.com/ethers-io/ethers.js/commit/778eb3b425b5ab5b23d28e75be92feccd0fc56bc))
+  - Add response handling and 304 support to fetchJson. ([3d25882](https://github.com/ethers-io/ethers.js/commit/3d25882d6bf689740506b9c569f6e0d30da6f6a5))
+  - Allow numeric values in a transaction to be odd-lengthed hexstrings. ([#614](https://github.com/ethers-io/ethers.js/issues/614); [a12030a](https://github.com/ethers-io/ethers.js/commit/a12030ad29aa13c02aa75d9e0860f4986a0043b4))
+  - Simpler crypt for admin tools. ([828c8cf](https://github.com/ethers-io/ethers.js/commit/828c8cfd419ac4f8d11d978c2e2ff83eba5ae909))
+
 ethers/v5.0.0-beta.157 (2019-09-08 02:43)
 -----------------------------------------
 

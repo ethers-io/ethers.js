@@ -3725,7 +3725,7 @@ var lib_esm = /*#__PURE__*/Object.freeze({
 	Logger: Logger
 });
 
-const version$1 = "bytes/5.0.0-beta.130";
+const version$1 = "bytes/5.0.0-beta.131";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -3791,8 +3791,16 @@ function arrayify(value, options) {
     }
     if (isHexString(value)) {
         let hex = value.substring(2);
-        if (!options.allowOddLength && hex.length % 2) {
-            logger.throwArgumentError("hex data is odd-length", "value", value);
+        if (hex.length % 2) {
+            if (options.hexPad === "left") {
+                hex = "0x0" + hex.substring(2);
+            }
+            else if (options.hexPad === "right") {
+                hex += "0";
+            }
+            else {
+                logger.throwArgumentError("hex data is odd-length", "value", value);
+            }
         }
         let result = [];
         for (let i = 0; i < hex.length; i += 2) {
@@ -3876,8 +3884,16 @@ function hexlify(value, options) {
         return value.toHexString();
     }
     if (isHexString(value)) {
-        if (!options.allowOddLength && value.length % 2) {
-            logger.throwArgumentError("hex data is odd-length", "value", value);
+        if (value.length % 2) {
+            if (options.hexPad === "left") {
+                value = "0x0" + value.substring(2);
+            }
+            else if (options.hexPad === "right") {
+                value += "0";
+            }
+            else {
+                logger.throwArgumentError("hex data is odd-length", "value", value);
+            }
         }
         return value.toLowerCase();
     }
@@ -3929,7 +3945,7 @@ function hexConcat(items) {
     return result;
 }
 function hexValue(value) {
-    let trimmed = hexStripZeros(hexlify(value, { allowOddLength: true }));
+    let trimmed = hexStripZeros(hexlify(value, { hexPad: "left" }));
     if (trimmed === "0x") {
         return "0x0";
     }
@@ -4108,7 +4124,7 @@ var lib_esm$1 = /*#__PURE__*/Object.freeze({
 	joinSignature: joinSignature
 });
 
-const version$2 = "bignumber/5.0.0-beta.131";
+const version$2 = "bignumber/5.0.0-beta.132";
 
 "use strict";
 const logger$1 = new Logger(version$2);
@@ -4723,7 +4739,7 @@ var lib_esm$2 = /*#__PURE__*/Object.freeze({
 	Description: Description
 });
 
-const version$4 = "abi/5.0.0-beta.138";
+const version$4 = "abi/5.0.0-beta.139";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6179,7 +6195,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$5 = "address/5.0.0-beta.129";
+const version$5 = "address/5.0.0-beta.130";
 
 "use strict";
 const logger$6 = new Logger(version$5);
@@ -6596,7 +6612,7 @@ class NumberCoder extends Coder {
     }
 }
 
-const version$6 = "strings/5.0.0-beta.131";
+const version$6 = "strings/5.0.0-beta.132";
 
 "use strict";
 const logger$8 = new Logger(version$6);
@@ -7117,7 +7133,7 @@ class AbiCoder {
 }
 const defaultAbiCoder = new AbiCoder();
 
-const version$7 = "hash/5.0.0-beta.129";
+const version$7 = "hash/5.0.0-beta.130";
 
 "use strict";
 const logger$a = new Logger(version$7);
@@ -7294,11 +7310,24 @@ class Interface {
         }
         return this._topicify(eventFragment);
     }
+    _decodeParams(params, data) {
+        return this._abiCoder.decode(params, data);
+    }
     _encodeParams(params, values) {
         return this._abiCoder.encode(params, values);
     }
     encodeDeploy(values) {
         return this._encodeParams(this.deploy.inputs, values || []);
+    }
+    decodeFunctionData(functionFragment, data) {
+        if (typeof (functionFragment) === "string") {
+            functionFragment = this.getFunction(functionFragment);
+        }
+        const bytes = arrayify(data);
+        if (hexlify(bytes.slice(0, 4)) !== this.getSighash(functionFragment)) {
+            logger$b.throwArgumentError(`data signature does not match function ${functionFragment.name}.`, "data", hexlify(bytes));
+        }
+        return this._decodeParams(functionFragment.inputs, bytes.slice(4));
     }
     encodeFunctionData(functionFragment, values) {
         if (typeof (functionFragment) === "string") {
@@ -7336,6 +7365,12 @@ class Interface {
             errorArgs: [reason],
             reason: reason
         });
+    }
+    encodeFunctionResult(functionFragment, values) {
+        if (typeof (functionFragment) === "string") {
+            functionFragment = this.getFunction(functionFragment);
+        }
+        return hexlify(this._abiCoder.encode(functionFragment.outputs, values || []));
     }
     encodeFilterTopics(eventFragment, values) {
         if (typeof (eventFragment) === "string") {
@@ -7508,7 +7543,7 @@ function getNameCount(fragments) {
 
 "use strict";
 
-const version$8 = "abstract-provider/5.0.0-beta.132";
+const version$8 = "abstract-provider/5.0.0-beta.133";
 
 "use strict";
 const logger$c = new Logger(version$8);
@@ -7585,7 +7620,7 @@ class Provider {
     }
 }
 
-const version$9 = "abstract-signer/5.0.0-beta.133";
+const version$9 = "abstract-signer/5.0.0-beta.134";
 
 "use strict";
 const logger$d = new Logger(version$9);
@@ -7753,7 +7788,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$a = "contracts/5.0.0-beta.138";
+const version$a = "contracts/5.0.0-beta.139";
 
 "use strict";
 const logger$e = new Logger(version$a);
@@ -9727,7 +9762,7 @@ hash.ripemd160 = hash.ripemd.ripemd160;
 var _version = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "sha2/5.0.0-beta.130";
+exports.version = "sha2/5.0.0-beta.131";
 });
 
 var _version$1 = unwrapExports(_version);
@@ -12200,7 +12235,7 @@ elliptic.eddsa = eddsa;
 });
 var elliptic_2 = elliptic_1.ec;
 
-const version$c = "signing-key/5.0.0-beta.130";
+const version$c = "signing-key/5.0.0-beta.131";
 
 "use strict";
 const logger$f = new Logger(version$c);
@@ -12272,7 +12307,7 @@ function computePublicKey(key, compressed) {
     return logger$f.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$d = "transactions/5.0.0-beta.129";
+const version$d = "transactions/5.0.0-beta.130";
 
 "use strict";
 const logger$g = new Logger(version$d);
@@ -12290,11 +12325,11 @@ function handleNumber(value) {
     return BigNumber.from(value);
 }
 const transactionFields = [
-    { name: "nonce", maxLength: 32 },
-    { name: "gasPrice", maxLength: 32 },
-    { name: "gasLimit", maxLength: 32 },
+    { name: "nonce", maxLength: 32, numeric: true },
+    { name: "gasPrice", maxLength: 32, numeric: true },
+    { name: "gasLimit", maxLength: 32, numeric: true },
     { name: "to", length: 20 },
-    { name: "value", maxLength: 32 },
+    { name: "value", maxLength: 32, numeric: true },
     { name: "data" },
 ];
 const allowedTransactionKeys$2 = {
@@ -12312,7 +12347,11 @@ function serialize(transaction, signature) {
     let raw = [];
     transactionFields.forEach(function (fieldInfo) {
         let value = transaction[fieldInfo.name] || ([]);
-        value = arrayify(hexlify(value));
+        const options = {};
+        if (fieldInfo.numeric) {
+            options.hexPad = "left";
+        }
+        value = arrayify(hexlify(value, options));
         // Fixed-width field
         if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
             logger$g.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value);
@@ -12413,7 +12452,7 @@ function parse(rawTransaction) {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "wordlists/5.0.0-beta.129";
+exports.version = "wordlists/5.0.0-beta.130";
 });
 
 var _version$3 = unwrapExports(_version$2);
@@ -12553,7 +12592,7 @@ var browser$5 = unwrapExports(browser$4);
 var browser_1$2 = browser$4.Wordlist;
 var browser_2$1 = browser$4.wordlists;
 
-const version$e = "hdnode/5.0.0-beta.131";
+const version$e = "hdnode/5.0.0-beta.132";
 
 "use strict";
 const logger$h = new Logger(version$e);
@@ -12835,7 +12874,7 @@ function isValidMnemonic(mnemonic, wordlist) {
 var _version$4 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "random/5.0.0-beta.129";
+exports.version = "random/5.0.0-beta.130";
 });
 
 var _version$5 = unwrapExports(_version$4);
@@ -13697,7 +13736,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$f = "json-wallets/5.0.0-beta.130";
+const version$f = "json-wallets/5.0.0-beta.131";
 
 "use strict";
 /*
@@ -14851,7 +14890,7 @@ function decryptJsonWallet(json, password, progressCallback) {
     return Promise.reject(new Error("invalid JSON wallet"));
 }
 
-const version$g = "wallet/5.0.0-beta.131";
+const version$g = "wallet/5.0.0-beta.132";
 
 "use strict";
 const logger$j = new Logger(version$g);
@@ -15730,7 +15769,7 @@ var browser$a = /*#__PURE__*/Object.freeze({
 	encode: browser_2$3
 });
 
-const version$i = "web/5.0.0-beta.130";
+const version$i = "web/5.0.0-beta.131";
 
 "use strict";
 const logger$l = new Logger(version$i);
@@ -15746,6 +15785,7 @@ function fetchJson(connection, json, processFunc) {
         redirect: "follow",
         referrer: "client",
     };
+    let allow304 = false;
     let timeout = 2 * 60 * 1000;
     if (typeof (connection) === "string") {
         url = connection;
@@ -15761,6 +15801,9 @@ function fetchJson(connection, json, processFunc) {
         if (connection.headers) {
             for (let key in connection.headers) {
                 headers[key.toLowerCase()] = { key: key, value: String(connection.headers[key]) };
+                if (["if-none-match", "if-modified-since"].indexOf(key.toLowerCase()) >= 0) {
+                    allow304 = true;
+                }
             }
         }
         if (connection.user != null && connection.password != null) {
@@ -15805,7 +15848,11 @@ function fetchJson(connection, json, processFunc) {
         options.headers = flatHeaders;
         return browserPonyfill(url, options).then((response) => {
             return response.text().then((body) => {
-                if (!response.ok) {
+                let json = null;
+                if (allow304 && response.status === 304) {
+                    // Leave json as null
+                }
+                else if (!response.ok) {
                     logger$l.throwError("bad response", Logger.errors.SERVER_ERROR, {
                         status: response.status,
                         body: body,
@@ -15813,32 +15860,46 @@ function fetchJson(connection, json, processFunc) {
                         url: response.url
                     });
                 }
-                return body;
+                else {
+                    try {
+                        json = JSON.parse(body);
+                    }
+                    catch (error) {
+                        logger$l.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
+                            body: body,
+                            error: error,
+                            url: url
+                        });
+                    }
+                }
+                if (processFunc) {
+                    try {
+                        const headers = {};
+                        if (response.headers.forEach) {
+                            response.headers.forEach((value, key) => {
+                                headers[key.toLowerCase()] = value;
+                            });
+                        }
+                        else {
+                            ((response.headers).keys)().forEach((key) => {
+                                headers[key.toLowerCase()] = response.headers.get(key);
+                            });
+                        }
+                        json = processFunc(json, {
+                            statusCode: response.status,
+                            status: response.statusText,
+                            headers: headers
+                        });
+                    }
+                    catch (error) {
+                        logger$l.throwError("processing response error", Logger.errors.SERVER_ERROR, {
+                            body: json,
+                            error: error
+                        });
+                    }
+                }
+                return json;
             });
-        }).then((text) => {
-            let json = null;
-            try {
-                json = JSON.parse(text);
-            }
-            catch (error) {
-                logger$l.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
-                    body: text,
-                    error: error,
-                    url: url
-                });
-            }
-            if (processFunc) {
-                try {
-                    json = processFunc(json);
-                }
-                catch (error) {
-                    logger$l.throwError("processing response error", Logger.errors.SERVER_ERROR, {
-                        body: json,
-                        error: error
-                    });
-                }
-            }
-            return json;
         }, (error) => {
             throw error;
         }).then((result) => {
@@ -15927,7 +15988,7 @@ function poll(func, options) {
     });
 }
 
-const version$j = "providers/5.0.0-beta.142";
+const version$j = "providers/5.0.0-beta.143";
 
 "use strict";
 const logger$m = new Logger(version$j);
@@ -18514,7 +18575,7 @@ function sha256$1(types, values) {
     return browser_3(pack$1(types, values));
 }
 
-const version$k = "units/5.0.0-beta.128";
+const version$k = "units/5.0.0-beta.129";
 
 "use strict";
 const logger$y = new Logger(version$k);
@@ -18672,7 +18733,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$l = "ethers/5.0.0-beta.157";
+const version$l = "ethers/5.0.0-beta.158";
 
 "use strict";
 const errors = Logger.errors;

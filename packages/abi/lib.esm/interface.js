@@ -129,11 +129,24 @@ export class Interface {
         }
         return this._topicify(eventFragment);
     }
+    _decodeParams(params, data) {
+        return this._abiCoder.decode(params, data);
+    }
     _encodeParams(params, values) {
         return this._abiCoder.encode(params, values);
     }
     encodeDeploy(values) {
         return this._encodeParams(this.deploy.inputs, values || []);
+    }
+    decodeFunctionData(functionFragment, data) {
+        if (typeof (functionFragment) === "string") {
+            functionFragment = this.getFunction(functionFragment);
+        }
+        const bytes = arrayify(data);
+        if (hexlify(bytes.slice(0, 4)) !== this.getSighash(functionFragment)) {
+            logger.throwArgumentError(`data signature does not match function ${functionFragment.name}.`, "data", hexlify(bytes));
+        }
+        return this._decodeParams(functionFragment.inputs, bytes.slice(4));
     }
     encodeFunctionData(functionFragment, values) {
         if (typeof (functionFragment) === "string") {
@@ -171,6 +184,12 @@ export class Interface {
             errorArgs: [reason],
             reason: reason
         });
+    }
+    encodeFunctionResult(functionFragment, values) {
+        if (typeof (functionFragment) === "string") {
+            functionFragment = this.getFunction(functionFragment);
+        }
+        return hexlify(this._abiCoder.encode(functionFragment.outputs, values || []));
     }
     encodeFilterTopics(eventFragment, values) {
         if (typeof (eventFragment) === "string") {

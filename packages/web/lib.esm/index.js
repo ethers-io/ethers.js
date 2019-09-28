@@ -18,6 +18,7 @@ export function fetchJson(connection, json, processFunc) {
         redirect: "follow",
         referrer: "client",
     };
+    let allow304 = false;
     let timeout = 2 * 60 * 1000;
     if (typeof (connection) === "string") {
         url = connection;
@@ -33,6 +34,9 @@ export function fetchJson(connection, json, processFunc) {
         if (connection.headers) {
             for (let key in connection.headers) {
                 headers[key.toLowerCase()] = { key: key, value: String(connection.headers[key]) };
+                if (["if-none-match", "if-modified-since"].indexOf(key.toLowerCase()) >= 0) {
+                    allow304 = true;
+                }
             }
         }
         if (connection.user != null && connection.password != null) {
@@ -77,7 +81,11 @@ export function fetchJson(connection, json, processFunc) {
         options.headers = flatHeaders;
         return fetch(url, options).then((response) => {
             return response.text().then((body) => {
-                if (!response.ok) {
+                let json = null;
+                if (allow304 && response.status === 304) {
+                    // Leave json as null
+                }
+                else if (!response.ok) {
                     logger.throwError("bad response", Logger.errors.SERVER_ERROR, {
                         status: response.status,
                         body: body,
@@ -85,32 +93,46 @@ export function fetchJson(connection, json, processFunc) {
                         url: response.url
                     });
                 }
-                return body;
+                else {
+                    try {
+                        json = JSON.parse(body);
+                    }
+                    catch (error) {
+                        logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
+                            body: body,
+                            error: error,
+                            url: url
+                        });
+                    }
+                }
+                if (processFunc) {
+                    try {
+                        const headers = {};
+                        if (response.headers.forEach) {
+                            response.headers.forEach((value, key) => {
+                                headers[key.toLowerCase()] = value;
+                            });
+                        }
+                        else {
+                            ((response.headers).keys)().forEach((key) => {
+                                headers[key.toLowerCase()] = response.headers.get(key);
+                            });
+                        }
+                        json = processFunc(json, {
+                            statusCode: response.status,
+                            status: response.statusText,
+                            headers: headers
+                        });
+                    }
+                    catch (error) {
+                        logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
+                            body: json,
+                            error: error
+                        });
+                    }
+                }
+                return json;
             });
-        }).then((text) => {
-            let json = null;
-            try {
-                json = JSON.parse(text);
-            }
-            catch (error) {
-                logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
-                    body: text,
-                    error: error,
-                    url: url
-                });
-            }
-            if (processFunc) {
-                try {
-                    json = processFunc(json);
-                }
-                catch (error) {
-                    logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
-                        body: json,
-                        error: error
-                    });
-                }
-            }
-            return json;
         }, (error) => {
             throw error;
         }).then((result) => {

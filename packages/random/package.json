@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/random",
-  "version": "5.0.0-beta.129",
+  "version": "5.0.0-beta.130",
   "description": "Random utility functions for ethers.",
   "main": "./lib/index.js",
   "browser": "./lib/browser.js",
@@ -31,5 +31,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x1a76cb0f534348ffaa120a98daa41b12e72a7735b5517ce6830b79618cb47618"
+  "tarballHash": "0x98dcbdea2aac73c07c345786f2651b653f756e8e79b137db3135f8b5dfe6796f"
 }
