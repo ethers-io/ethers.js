@@ -13,7 +13,7 @@ export type BytesLike = Bytes | string;
 
 export type DataOptions = {
     allowMissingPrefix?: boolean;
-    allowOddLength?: boolean;
+    hexPad?: "left" | "right" | null;
 };
 
 export interface Hexable {
@@ -112,8 +112,14 @@ export function arrayify(value: BytesLike | Hexable | number, options?: DataOpti
 
     if (isHexString(value)) {
         let hex = (<string>value).substring(2);
-        if (!options.allowOddLength && hex.length % 2) {
-            logger.throwArgumentError("hex data is odd-length", "value", value);
+        if (hex.length % 2) {
+            if (options.hexPad === "left") {
+                hex = "0x0" + hex.substring(2);
+            } else if (options.hexPad === "right") {
+                hex += "0";
+            } else {
+                logger.throwArgumentError("hex data is odd-length", "value", value);
+            }
         }
 
         let result = [];
@@ -212,8 +218,14 @@ export function hexlify(value: BytesLike | Hexable | number, options?: DataOptio
     if (isHexable(value)) { return value.toHexString(); }
 
     if (isHexString(value)) {
-        if (!options.allowOddLength && (<string>value).length % 2) {
-            logger.throwArgumentError("hex data is odd-length", "value", value);
+        if ((<string>value).length % 2) {
+            if (options.hexPad === "left") {
+                value = "0x0" + (<string>value).substring(2);
+            } else if (options.hexPad === "right") {
+                value += "0";
+            } else {
+                logger.throwArgumentError("hex data is odd-length", "value", value);
+            }
         }
         return (<string>value).toLowerCase();
     }
@@ -273,7 +285,7 @@ export function hexConcat(items: Array<BytesLike>): string {
 }
 
 export function hexValue(value: BytesLike | Hexable | number): string {
-    let trimmed = hexStripZeros(hexlify(value, { allowOddLength: true }));
+    let trimmed = hexStripZeros(hexlify(value, { hexPad: "left" }));
     if (trimmed === "0x") { return "0x0"; }
     return trimmed;
 }

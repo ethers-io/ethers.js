@@ -2,7 +2,7 @@
 
 import { getAddress } from "@ethersproject/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
-import { arrayify, BytesLike, hexDataSlice, hexlify, hexZeroPad, SignatureLike, splitSignature, stripZeros, } from "@ethersproject/bytes";
+import { arrayify, BytesLike, DataOptions, hexDataSlice, hexlify, hexZeroPad, SignatureLike, splitSignature, stripZeros, } from "@ethersproject/bytes";
 import { Zero } from "@ethersproject/constants";
 import { keccak256 } from "@ethersproject/keccak256";
 import { checkProperties } from "@ethersproject/properties";
@@ -60,11 +60,11 @@ function handleNumber(value: string): BigNumber {
 }
 
 const transactionFields = [
-    { name: "nonce",    maxLength: 32 },
-    { name: "gasPrice", maxLength: 32 },
-    { name: "gasLimit", maxLength: 32 },
+    { name: "nonce",    maxLength: 32, numeric: true },
+    { name: "gasPrice", maxLength: 32, numeric: true },
+    { name: "gasLimit", maxLength: 32, numeric: true },
     { name: "to",          length: 20 },
-    { name: "value",    maxLength: 32 },
+    { name: "value",    maxLength: 32, numeric: true },
     { name: "data" },
 ];
 
@@ -89,7 +89,9 @@ export function serialize(transaction: UnsignedTransaction, signature?: Signatur
 
     transactionFields.forEach(function(fieldInfo) {
         let value = (<any>transaction)[fieldInfo.name] || ([]);
-        value = arrayify(hexlify(value));
+        const options: DataOptions = { };
+        if (fieldInfo.numeric) { options.hexPad = "left"; }
+        value = arrayify(hexlify(value, options));
 
         // Fixed-width field
         if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
