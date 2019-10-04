@@ -1,11 +1,7 @@
 The Ethers Project
 ==================
 
-**EXPERIMENTAL!!!**
-
-This is just a development version to experiment with lerna.
-
-**Do NOT use**
+This `v5` beta branch is what most people should be using now (as of Oct 2019). The only hold-ups before this makes it out of beta are documentation and migration guides; the beta docs are in progress [here](https://docs-beta.ethers.io), though.
 
 
 Installing
