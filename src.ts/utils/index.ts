@@ -1,10 +1,11 @@
 'use strict';
 
 import { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from './abi-coder';
-import { getAddress, getContractAddress, getIcapAddress } from './address';
+import { getAddress, getContractAddress, getIcapAddress, isAddress } from './address';
 import * as base64 from './base64';
 import { BigNumber, bigNumberify } from './bignumber';
 import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexZeroPad, isHexString, joinSignature, padZeros, splitSignature, stripZeros } from './bytes';
+import { isBloom, isHexInBloom, isUserEthereumAddressInBloom, isContractAddressInBloom } from './blooms';
 import { hashMessage, id, namehash } from './hash';
 import * as HDNode from './hdnode';
 import { Interface } from './interface';
@@ -73,6 +74,11 @@ export {
     padZeros,
     stripZeros,
 
+    isBloom,
+    isHexInBloom,
+    isUserEthereumAddressInBloom,
+    isContractAddressInBloom,
+
     HDNode,
     SigningKey,
 
@@ -103,6 +109,7 @@ export {
     getAddress,
     getIcapAddress,
     getContractAddress,
+    isAddress,
 
     formatEther,
     parseEther,
