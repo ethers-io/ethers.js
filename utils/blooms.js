@@ -124,6 +124,9 @@ exports.isTopicInBloom = isTopicInBloom;
  * @param topic encoded hex topic
  */
 function isTopic(topic) {
+    if (typeof topic !== 'string') {
+        return false;
+    }
     if (!/^(0x)?[0-9a-f]{64}$/i.test(topic)) {
         return false;
     }

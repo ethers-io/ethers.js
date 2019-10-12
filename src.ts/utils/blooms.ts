@@ -151,6 +151,10 @@ export function isTopicInBloom(bloom: string, topic: string): boolean {
  * @param topic encoded hex topic
  */
 function isTopic(topic: string): boolean {
+    if (typeof topic !== 'string') {
+        return false;
+    }
+
     if (!/^(0x)?[0-9a-f]{64}$/i.test(topic)) {
         return false;
     } else if (/^(0x)?[0-9a-f]{64}$/.test(topic) || /^(0x)?[0-9A-F]{64}$/.test(topic)) {
