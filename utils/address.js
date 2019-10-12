@@ -74,7 +74,7 @@ function getAddress(address) {
     if (typeof (address) !== 'string') {
         errors.throwError('invalid address', errors.INVALID_ARGUMENT, { arg: 'address', value: address });
     }
-    if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
+    if (_isAddress(address)) {
         // Missing the 0x prefix
         if (address.substring(0, 2) !== '0x') {
             address = '0x' + address;
@@ -86,7 +86,7 @@ function getAddress(address) {
         }
         // Maybe ICAP? (we only support direct mode)
     }
-    else if (address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
+    else if (_isAddress(address, true)) {
         // It is an ICAP address with a bad checksum
         if (address.substring(2, 4) !== ibanChecksum(address)) {
             errors.throwError('bad icap checksum', errors.INVALID_ARGUMENT, { arg: 'address', value: address });
@@ -103,6 +103,26 @@ function getAddress(address) {
     return result;
 }
 exports.getAddress = getAddress;
+function isAddress(address) {
+    if (_isAddress(address) || _isAddress(address, true)) {
+        return true;
+    }
+    return false;
+}
+exports.isAddress = isAddress;
+function _isAddress(address, ICAP) {
+    if (ICAP === void 0) { ICAP = false; }
+    if (typeof address !== 'string') {
+        return false;
+    }
+    if (!ICAP && address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
+        return true;
+    }
+    if (ICAP && address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
+        return true;
+    }
+    return false;
+}
 function getIcapAddress(address) {
     var base36 = (new bn_js_1.default.BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
     while (base36.length < 30) {
