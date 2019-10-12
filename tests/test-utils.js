@@ -387,15 +387,15 @@ describe('Test blooms', function() {
             assert.equal(ethers.utils.isBloom(bloomFilter), true);
         });
 
-        it('should return false if bloom if bloom is a number', function () {
+        it('should return false if bloom is a number', function () {
             assert.equal(ethers.utils.isBloom(1), false);
         });
 
-        it('should return false if bloom if bloom is a boolean', function () {
+        it('should return false if bloom is a boolean', function () {
             assert.equal(ethers.utils.isBloom(true), false);
         });
 
-        it('should return false if bloom if bloom is a object', function () {
+        it('should return false if bloom is a object', function () {
             assert.equal(ethers.utils.isBloom({}), false);
         });
 
@@ -405,25 +405,25 @@ describe('Test blooms', function() {
     });
 
     describe('isInBloom', function () {
-        it('should return true if hex is in bloom passing in hex string', function () {
+        it('should return true if value is in bloom passing in hex string', function () {
             assert.equal(ethers.utils.isInBloom(bloomFilter, '0x58a4884182d9e835597f405e5f258290e46ae7c2'), true);
         });
 
-        it('should return true if hex is in bloom passing in as bytes', function () {
+        it('should return true if value is in bloom passing in bytes', function () {
             assert.equal(ethers.utils.isInBloom(bloomFilter, ethers.utils.arrayify('0x58a4884182d9e835597f405e5f258290e46ae7c2')), true);
         });
 
-        it('should return false if hex is not in bloom', function () {
+        it('should return false if value is not in bloom', function () {
             assert.equal(ethers.utils.isInBloom(bloomFilter, '0x494bfa3a4576ba6cfe835b0deb78834f0c3e3996'), false);
         });
     });
 
     describe('isUserEthereumAddressInBloom', function () {
-        it('should throw error if bloom is not a valid bloom', function () {
+        it('should throw error if bloom is not valid', function () {
             assert.throws(function() { ethers.utils.isUserEthereumAddressInBloom('invalid', '0x494bfa3a4576ba6cfe835b0deb78834f0c3e3994') }, 'Error: Invalid bloom given');
         });
 
-        it('should throw error if ethereum address is not a valid bloom', function () {
+        it('should throw error if ethereum address is not valid', function () {
             assert.throws(function () { ethers.utils.isUserEthereumAddressInBloom(bloomFilter, '0x494b') }, 'Error: Invalid ethereum address given: "0x494b"');
         });
         
@@ -437,11 +437,11 @@ describe('Test blooms', function() {
     });
 
     describe('isContractAddressInBloom', function () {
-        it('should throw error if bloom is not a valid bloom', function () {
+        it('should throw error if bloom is not valid', function () {
             assert.throws(function () { ethers.utils.isContractAddressInBloom('invalid', '0x58a4884182d9e835597f405e5f258290e46ae7c2') }, 'Error: Invalid bloom given');
         });
 
-        it('should throw error if contract address is not a valid bloom', function () {
+        it('should throw error if contract address is not valid', function () {
             assert.throws(function () { ethers.utils.isUserEthereumAddressInBloom(bloomFilter, '0x58a4') }, 'Error: Invalid contract address given: "0x58a4"');
         });
 
