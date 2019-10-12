@@ -11,7 +11,7 @@ describe("Package Version", function() {
     it("is not already published", function() {
         this.timeout(20000);
         return ethers.utils.fetchJson(url).then(function(data) {
-            assert.ok(Object.keys(data.versions).indexOf(ethers.version) === -1);
+            return assert.ok(Object.keys(data.versions).indexOf(ethers.version) === -1);
         });
     });
 });
