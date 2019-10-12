@@ -26,7 +26,7 @@ exports.isBloom = isBloom;
  * @param bloom encoded bloom
  * @param value The value
  */
-function isHexInBloom(bloom, value) {
+function isInBloom(bloom, value) {
     if (typeof value === 'object' && value.constructor === Uint8Array) {
         value = bytes_1.hexlify(value);
     }
@@ -45,7 +45,7 @@ function isHexInBloom(bloom, value) {
     }
     return true;
 }
-exports.isHexInBloom = isHexInBloom;
+exports.isInBloom = isInBloom;
 /**
   * Code points to int
   * @param codePoint The code point
@@ -84,7 +84,7 @@ function isUserEthereumAddressInBloom(bloom, ethereumAddress) {
     // ethereum address. Contract address do not need this
     // hence why we have 2 methods
     var address = bytes_1.padZeros(ethereumAddress, 32);
-    return isHexInBloom(bloom, address);
+    return isInBloom(bloom, address);
 }
 exports.isUserEthereumAddressInBloom = isUserEthereumAddressInBloom;
 /**
@@ -100,6 +100,6 @@ function isContractAddressInBloom(bloom, contractAddress) {
     if (!address_1.isAddress(contractAddress)) {
         throw new Error("Invalid contract address given: \"" + contractAddress + "\"");
     }
-    return isHexInBloom(bloom, contractAddress);
+    return isInBloom(bloom, contractAddress);
 }
 exports.isContractAddressInBloom = isContractAddressInBloom;

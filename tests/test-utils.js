@@ -404,17 +404,17 @@ describe('Test blooms', function() {
         });
     });
 
-    describe('isHexInBloom', function () {
+    describe('isInBloom', function () {
         it('should return true if hex is in bloom passing in hex string', function () {
-            assert.equal(ethers.utils.isHexInBloom(bloomFilter, '0x58a4884182d9e835597f405e5f258290e46ae7c2'), true);
+            assert.equal(ethers.utils.isInBloom(bloomFilter, '0x58a4884182d9e835597f405e5f258290e46ae7c2'), true);
         });
 
         it('should return true if hex is in bloom passing in as bytes', function () {
-            assert.equal(ethers.utils.isHexInBloom(bloomFilter, ethers.utils.arrayify('0x58a4884182d9e835597f405e5f258290e46ae7c2')), true);
+            assert.equal(ethers.utils.isInBloom(bloomFilter, ethers.utils.arrayify('0x58a4884182d9e835597f405e5f258290e46ae7c2')), true);
         });
 
         it('should return false if hex is not in bloom', function () {
-            assert.equal(ethers.utils.isHexInBloom(bloomFilter, '0x494bfa3a4576ba6cfe835b0deb78834f0c3e3996'), false);
+            assert.equal(ethers.utils.isInBloom(bloomFilter, '0x494bfa3a4576ba6cfe835b0deb78834f0c3e3996'), false);
         });
     });
 

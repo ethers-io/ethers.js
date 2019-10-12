@@ -28,7 +28,7 @@ export function isBloom(bloom: string): boolean {
  * @param bloom encoded bloom
  * @param value The value
  */
-export function isHexInBloom(bloom: string, value: string | Uint8Array): boolean {
+export function isInBloom(bloom: string, value: string | Uint8Array): boolean {
     if (typeof value === 'object' && value.constructor === Uint8Array) {
         value = hexlify(value);
     }
@@ -104,7 +104,7 @@ export function isUserEthereumAddressInBloom(
     // hence why we have 2 methods
     const address = padZeros(ethereumAddress, 32);
 
-    return isHexInBloom(bloom, address);
+    return isInBloom(bloom, address);
 }
 
 /**
@@ -125,5 +125,5 @@ export function isContractAddressInBloom(
         throw new Error(`Invalid contract address given: "${contractAddress}"`);
     }
 
-    return isHexInBloom(bloom, contractAddress);
+    return isInBloom(bloom, contractAddress);
 }

@@ -9,7 +9,7 @@ export declare function isBloom(bloom: string): boolean;
  * @param bloom encoded bloom
  * @param value The value
  */
-export declare function isHexInBloom(bloom: string, value: string | Uint8Array): boolean;
+export declare function isInBloom(bloom: string, value: string | Uint8Array): boolean;
 /**
  * Returns true if ethereum users address is part of the given bloom.
  * note: false positives are possible.

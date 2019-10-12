@@ -5,7 +5,7 @@ import { getAddress, getContractAddress, getIcapAddress, isAddress } from './add
 import * as base64 from './base64';
 import { BigNumber, bigNumberify } from './bignumber';
 import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexZeroPad, isHexString, joinSignature, padZeros, splitSignature, stripZeros } from './bytes';
-import { isBloom, isHexInBloom, isUserEthereumAddressInBloom, isContractAddressInBloom } from './blooms';
+import { isBloom, isInBloom, isUserEthereumAddressInBloom, isContractAddressInBloom } from './blooms';
 import { hashMessage, id, namehash } from './hash';
 import * as HDNode from './hdnode';
 import { Interface } from './interface';
@@ -75,7 +75,7 @@ export {
     stripZeros,
 
     isBloom,
-    isHexInBloom,
+    isInBloom,
     isUserEthereumAddressInBloom,
     isContractAddressInBloom,
 
