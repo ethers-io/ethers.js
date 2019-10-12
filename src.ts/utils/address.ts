@@ -19,7 +19,7 @@ import { Arrayish } from './bytes';
 
 
 function getChecksumAddress(address: string): string {
-    if (typeof(address) !== 'string' || !address.match(/^0x[0-9A-Fa-f]{40}$/)) {
+    if (typeof (address) !== 'string' || !address.match(/^0x[0-9A-Fa-f]{40}$/)) {
         errors.throwError('invalid address', errors.INVALID_ARGUMENT, { arg: 'address', value: address });
     }
 
@@ -69,12 +69,12 @@ function ibanChecksum(address: string): string {
     address = address.substring(4) + address.substring(0, 2) + '00';
 
     var expanded = '';
-    address.split('').forEach(function(c) {
+    address.split('').forEach(function (c) {
         expanded += ibanLookup[c];
     });
 
     // Javascript can handle integers safely up to 15 (decimal) digits
-    while (expanded.length >= safeDigits){
+    while (expanded.length >= safeDigits) {
         var block = expanded.substring(0, safeDigits);
         expanded = parseInt(block, 10) % 97 + expanded.substring(block.length);
     }
@@ -88,11 +88,11 @@ function ibanChecksum(address: string): string {
 export function getAddress(address: string): string {
     var result = null;
 
-    if (typeof(address) !== 'string') {
+    if (typeof (address) !== 'string') {
         errors.throwError('invalid address', errors.INVALID_ARGUMENT, { arg: 'address', value: address });
     }
 
-    if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
+    if (_isAddress(address)) {
 
         // Missing the 0x prefix
         if (address.substring(0, 2) !== '0x') { address = '0x' + address; }
@@ -104,8 +104,8 @@ export function getAddress(address: string): string {
             errors.throwError('bad address checksum', errors.INVALID_ARGUMENT, { arg: 'address', value: address });
         }
 
-    // Maybe ICAP? (we only support direct mode)
-    } else if (address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
+        // Maybe ICAP? (we only support direct mode)
+    } else if (_isAddress(address, true)) {
 
         // It is an ICAP address with a bad checksum
         if (address.substring(2, 4) !== ibanChecksum(address)) {
@@ -121,6 +121,30 @@ export function getAddress(address: string): string {
     }
 
     return result;
+}
+
+export function isAddress(address: string): boolean {
+    if (_isAddress(address) || _isAddress(address, true)) {
+        return true;
+    }
+
+    return false;
+}
+
+function _isAddress(address: string, ICAP: boolean = false): boolean {
+    if (typeof address !== 'string') {
+        return false;
+    }
+
+    if (!ICAP && address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
+        return true;
+    }
+
+    if (ICAP && address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
+        return true;
+    }
+
+    return false;
 }
 
 export function getIcapAddress(address: string): string {
