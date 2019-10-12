@@ -42,6 +42,7 @@ exports.isBloom = blooms_1.isBloom;
 exports.isInBloom = blooms_1.isInBloom;
 exports.isUserEthereumAddressInBloom = blooms_1.isUserEthereumAddressInBloom;
 exports.isContractAddressInBloom = blooms_1.isContractAddressInBloom;
+exports.isTopicInBloom = blooms_1.isTopicInBloom;
 var hash_1 = require("./hash");
 exports.hashMessage = hash_1.hashMessage;
 exports.id = hash_1.id;

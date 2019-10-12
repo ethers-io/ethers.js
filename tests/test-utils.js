@@ -442,7 +442,7 @@ describe('Test blooms', function() {
         });
 
         it('should throw error if contract address is not valid', function () {
-            assert.throws(function () { ethers.utils.isUserEthereumAddressInBloom(bloomFilter, '0x58a4') }, 'Error: Invalid contract address given: "0x58a4"');
+            assert.throws(function () { ethers.utils.isContractAddressInBloom(bloomFilter, '0x58a4') }, 'Error: Invalid contract address given: "0x58a4"');
         });
 
         it('should return true if contract address is in bloom', function () {
@@ -451,6 +451,26 @@ describe('Test blooms', function() {
 
         it('should return false if contract address is not in bloom', function () {
             assert.equal(ethers.utils.isContractAddressInBloom(bloomFilter, '0x58a4884182d9e835597f405e5f258290e46ae7c1'), false);
+        });
+    });
+
+    describe('isTopicInBloom', function () {
+        var topicBloom = '0x0020008400000010000000000400000200000008000000000010000000002000000080000020000000080004000000010000000000000040000000000000000000000001000200008000000d000000000010000400000400000100000000000001400008220000000000004000040802004000200000000000000010000041000000020100008000000000000000000000000010000000080000000000800900000000000000000000000000100000800000000000000c28000000000000010000000002000040002000000080000000000000000000000020120020000020200000000040000000000000040000000400000000000000000000020000000000'
+        
+        it('should throw error if bloom is not valid', function () {
+            assert.throws(function () { ethers.utils.isTopicInBloom('invalid', '0x4d61726b65745061792e696f206973206465706c6f79696e6720536d61727420') }, 'Error: Invalid bloom given');
+        });
+
+        it('should throw error if topic is not valid', function () {
+            assert.throws(function () { ethers.utils.isTopicInBloom(topicBloom, '0x4d61') }, 'Error: Invalid contract address given: "0x4d61"');
+        });
+
+        it('should return true if topic is in bloom', function () {
+            assert.equal(ethers.utils.isTopicInBloom(topicBloom, '0x000000000000000000000000b3bb037d2f2341a1c2775d51909a3d944597987d'), true);
+        });
+
+        it('should return false if topic is not in bloom', function () {
+            assert.equal(ethers.utils.isTopicInBloom(topicBloom, '0x4d61726b65745061792e696f206973206465706c6f79696e6720536d61727420'), false);
         });
     });
 });

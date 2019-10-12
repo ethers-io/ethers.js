@@ -103,3 +103,32 @@ function isContractAddressInBloom(bloom, contractAddress) {
     return isInBloom(bloom, contractAddress);
 }
 exports.isContractAddressInBloom = isContractAddressInBloom;
+/**
+ * Returns true if topic is part of the given bloom.
+ * note: false positives are possible.
+ * @param bloom encoded bloom
+ * @param topic the topic encoded hex
+ */
+function isTopicInBloom(bloom, topic) {
+    if (!isBloom(bloom)) {
+        throw new Error('Invalid bloom given');
+    }
+    if (!isTopic(topic)) {
+        throw new Error('invalid topic');
+    }
+    return isInBloom(bloom, topic);
+}
+exports.isTopicInBloom = isTopicInBloom;
+/**
+ * Checks if its a valid topic
+ * @param topic encoded hex topic
+ */
+function isTopic(topic) {
+    if (!/^(0x)?[0-9a-f]{64}$/i.test(topic)) {
+        return false;
+    }
+    else if (/^(0x)?[0-9a-f]{64}$/.test(topic) || /^(0x)?[0-9A-F]{64}$/.test(topic)) {
+        return true;
+    }
+    return false;
+}

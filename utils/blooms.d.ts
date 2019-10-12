@@ -24,3 +24,10 @@ export declare function isUserEthereumAddressInBloom(bloom: string, ethereumAddr
  * @param contractAddress the contract address to test
  */
 export declare function isContractAddressInBloom(bloom: string, contractAddress: string): boolean;
+/**
+ * Returns true if topic is part of the given bloom.
+ * note: false positives are possible.
+ * @param bloom encoded bloom
+ * @param topic the topic encoded hex
+ */
+export declare function isTopicInBloom(bloom: string, topic: string): boolean;
