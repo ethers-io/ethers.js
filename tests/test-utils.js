@@ -19,7 +19,7 @@ function equals(a, b) {
     return a === b;
 }
 
-describe('Test Contract Address Generation', function() {
+describe('Test Contract Address Generation', function () {
 
     // @TODO: Mine a large collection of these from the blockchain
 
@@ -47,16 +47,16 @@ describe('Test Contract Address Generation', function() {
         },
     ]
 
-    Tests.forEach(function(test) {
-        it(('Computes the transaction address - ' + test.name), function() {
+    Tests.forEach(function (test) {
+        it(('Computes the transaction address - ' + test.name), function () {
             this.timeout(120000);
             assert.equal(getContractAddress(test.tx), test.address, 'computes the transaction address');
         });
     });
 });
 
-describe('Test isAddress', function() {
-    it ('should return true with a valid ethereum address', function() {
+describe('Test isAddress', function () {
+    it('should return true with a valid ethereum address', function () {
         assert.equal(ethers.utils.isAddress('0x494bfa3a4576ba6cfe835b0deb78834f0c3e3994'), true);
     });
 
@@ -74,15 +74,15 @@ describe('Test RLP Coder', function () {
 
     var tests = utils.loadTests('rlp-coder');
 
-    tests.forEach(function(test) {
-        it(('RLP coder encoded - ' + test.name), function() {
+    tests.forEach(function (test) {
+        it(('RLP coder encoded - ' + test.name), function () {
             this.timeout(120000);
             assert.equal(rlp.encode(test.decoded), test.encoded, 'RLP encoded - ' + test.name);
         });
     });
 
-    tests.forEach(function(test) {
-        it(('RLP coder decoded - ' + test.name), function() {
+    tests.forEach(function (test) {
+        it(('RLP coder decoded - ' + test.name), function () {
             this.timeout(120000);
             assert.ok(equals(rlp.decode(test.encoded), test.decoded),
                 'RLP decoded - ' + test.name);
@@ -94,37 +94,37 @@ describe('Test Unit Conversion', function () {
 
     var tests = utils.loadTests('units');
 
-    tests.forEach(function(test) {
+    tests.forEach(function (test) {
         var wei = ethers.utils.bigNumberify(test.wei);
         var formatting = test.format || {};
 
         // We no longer support padding
         if (formatting.pad) { return; }
 
-        it (('parses ' + test.ether + ' ether'), function() {
+        it(('parses ' + test.ether + ' ether'), function () {
             assert.ok(ethers.utils.parseEther(test.ether.replace(/,/g, '')).eq(wei),
                 'parsing ether failed - ' + test.name);
         });
 
-        it (('formats ' + wei.toString() + ' wei (options: ' + JSON.stringify(formatting) + ')'), function() {
+        it(('formats ' + wei.toString() + ' wei (options: ' + JSON.stringify(formatting) + ')'), function () {
             var v = ethers.utils.formatEther(wei);
             if (formatting.commify) { v = ethers.utils.commify(v); }
             assert.equal(v, test.etherFormat,
-                   'formatting wei failed - ' + test.name);
+                'formatting wei failed - ' + test.name);
         });
     });
 
-    tests.forEach(function(test) {
+    tests.forEach(function (test) {
         var wei = ethers.utils.bigNumberify(test.wei);
         var formatting = test.format || {};
 
-        ['kwei', 'mwei', 'gwei', 'szabo', 'finney', 'satoshi'].forEach(function(name) {
+        ['kwei', 'mwei', 'gwei', 'szabo', 'finney', 'satoshi'].forEach(function (name) {
 
             var unitName = name;
             if (name === 'satoshi') { unitName = 8; }
 
             if (test[name]) {
-                it(('parses ' + test[name] + ' ' + name), function() {
+                it(('parses ' + test[name] + ' ' + name), function () {
                     this.timeout(120000);
                     assert.ok(ethers.utils.parseUnits(test[name].replace(/,/g, ''), unitName).eq(wei),
                         ('parsing ' + name + ' failed - ' + test.name));
@@ -132,7 +132,7 @@ describe('Test Unit Conversion', function () {
             }
 
             if (test[name + '_format']) {
-                it (('formats ' + wei.toString() + ' ' + name + ' (options: ' + JSON.stringify(formatting) + ')'), function() {
+                it(('formats ' + wei.toString() + ' ' + name + ' (options: ' + JSON.stringify(formatting) + ')'), function () {
                     var v = ethers.utils.formatUnits(wei, unitName);
                     if (formatting.commify) { v = ethers.utils.commify(v); }
                     assert.equal(v, test[name + '_format'],
@@ -144,10 +144,10 @@ describe('Test Unit Conversion', function () {
 
 });
 
-describe('Test Namehash', function() {
+describe('Test Namehash', function () {
     var tests = utils.loadTests('namehash');
-    tests.forEach(function(test) {
-        it(('computes namehash - "' + test.name + '"'), function() {
+    tests.forEach(function (test) {
+        it(('computes namehash - "' + test.name + '"'), function () {
             this.timeout(120000);
             assert.equal(ethers.utils.namehash(test.name), test.expected,
                 'computes namehash(' + test.name + ')');
@@ -164,8 +164,8 @@ describe('Test ID Hash Function', function () {
         }
     ]
 
-    tests.forEach(function(test) {
-        it(('computes id - ' + test.name), function() {
+    tests.forEach(function (test) {
+        it(('computes id - ' + test.name), function () {
             this.timeout(120000);
             var value = ethers.utils.id(test.text);
             assert.equal(value, test.expected,
@@ -174,13 +174,13 @@ describe('Test ID Hash Function', function () {
     });
 });
 
-describe('Test Solidity Hash Functions', function() {
+describe('Test Solidity Hash Functions', function () {
     var tests = utils.loadTests('solidity-hashes');
-    ['Keccak256', 'Sha256'].forEach(function(funcName) {
-        it(('computes ' + funcName + ' correctly'), function() {
+    ['Keccak256', 'Sha256'].forEach(function (funcName) {
+        it(('computes ' + funcName + ' correctly'), function () {
             this.timeout(120000);
 
-            tests.forEach(function(test, index) {
+            tests.forEach(function (test, index) {
                 var result = ethers.utils['solidity' + funcName](test.types, test.values);
                 assert.equal(result, test[funcName.toLowerCase()],
                     ('computes solidity-' + funcName + '(' + JSON.stringify(test.values) + ') - ' + test.types));
@@ -189,33 +189,33 @@ describe('Test Solidity Hash Functions', function() {
     });
 });
 
-describe('Test Hash Functions', function() {
+describe('Test Hash Functions', function () {
 
     var tests = utils.loadTests('hashes');
 
-    it('computes keccak256 correctly', function() {
+    it('computes keccak256 correctly', function () {
         this.timeout(120000);
-        tests.forEach(function(test) {
+        tests.forEach(function (test) {
             assert.equal(ethers.utils.keccak256(test.data), test.keccak256, ('Keccak256 - ' + test.data));
         });
     });
 
-    it('computes sha2566 correctly', function() {
+    it('computes sha2566 correctly', function () {
         this.timeout(120000);
-        tests.forEach(function(test) {
+        tests.forEach(function (test) {
             assert.equal(ethers.utils.sha256(test.data), test.sha256, ('SHA256 - ' + test.data));
         });
     });
 });
 
-describe('Test Solidity splitSignature', function() {
+describe('Test Solidity splitSignature', function () {
 
-    it('splits a canonical signature', function() {
+    it('splits a canonical signature', function () {
         this.timeout(120000);
         var r = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
         var s = '0xcafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7e';
         for (var v = 27; v <= 28; v++) {
-            var signature = ethers.utils.concat([ r, s, [ v ] ]);
+            var signature = ethers.utils.concat([r, s, [v]]);
             var sig = ethers.utils.splitSignature(signature);
             assert.equal(sig.r, r, 'split r correctly');
             assert.equal(sig.s, s, 'split s correctly');
@@ -223,12 +223,12 @@ describe('Test Solidity splitSignature', function() {
         }
     });
 
-    it('splits a legacy signature', function() {
+    it('splits a legacy signature', function () {
         this.timeout(120000);
         var r = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
         var s = '0xcafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7ecafe1a7e';
         for (var v = 27; v <= 28; v++) {
-            var signature = ethers.utils.concat([ r, s, [ v - 27 ] ]);
+            var signature = ethers.utils.concat([r, s, [v - 27]]);
             var sig = ethers.utils.splitSignature(signature);
             assert.equal(sig.r, r, 'split r correctly');
             assert.equal(sig.s, s, 'split s correctly');
@@ -237,10 +237,10 @@ describe('Test Solidity splitSignature', function() {
     });
 });
 
-describe('Test Base64 coder', function() {
+describe('Test Base64 coder', function () {
 
     // https://en.wikipedia.org/wiki/Base64#Examples
-    it('encodes and decodes the example from wikipedia', function() {
+    it('encodes and decodes the example from wikipedia', function () {
         this.timeout(120000);
         var decodedText = 'Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure.';
         var decoded = ethers.utils.toUtf8Bytes(decodedText);
@@ -250,45 +250,45 @@ describe('Test Base64 coder', function() {
     });
 });
 
-describe('Test UTF-8 coder', function() {
+describe('Test UTF-8 coder', function () {
     var BadUTF = [
         // See: https://en.wikipedia.org/wiki/UTF-8#Overlong_encodings
-        { bytes: [ 0xF0,0x82, 0x82, 0xAC ], reason: 'overlong', name: 'wikipedia overlong encoded Euro sign' },
-        { bytes: [ 0xc0, 0x80 ], reason: 'overlong', name: '2-byte overlong - 0xc080' },
-        { bytes: [ 0xc0, 0xbf ], reason: 'overlong', name: '2-byte overlong - 0xc0bf' },
-        { bytes: [ 0xc1, 0x80 ], reason: 'overlong', name: '2-byte overlong - 0xc180' },
-        { bytes: [ 0xc1, 0xbf ], reason: 'overlong', name: '2-byte overlong - 0xc1bf' },
+        { bytes: [0xF0, 0x82, 0x82, 0xAC], reason: 'overlong', name: 'wikipedia overlong encoded Euro sign' },
+        { bytes: [0xc0, 0x80], reason: 'overlong', name: '2-byte overlong - 0xc080' },
+        { bytes: [0xc0, 0xbf], reason: 'overlong', name: '2-byte overlong - 0xc0bf' },
+        { bytes: [0xc1, 0x80], reason: 'overlong', name: '2-byte overlong - 0xc180' },
+        { bytes: [0xc1, 0xbf], reason: 'overlong', name: '2-byte overlong - 0xc1bf' },
 
         // Reserved UTF-16 Surrogate halves
-        { bytes: [ 0xed, 0xa0, 0x80 ], reason: 'utf-16 surrogate', name: 'utf-16 surrogate - U+d800' },
-        { bytes: [ 0xed, 0xbf, 0xbf ], reason: 'utf-16 surrogate', name: 'utf-16 surrogate - U+dfff' },
+        { bytes: [0xed, 0xa0, 0x80], reason: 'utf-16 surrogate', name: 'utf-16 surrogate - U+d800' },
+        { bytes: [0xed, 0xbf, 0xbf], reason: 'utf-16 surrogate', name: 'utf-16 surrogate - U+dfff' },
 
         // a leading byte not followed by enough continuation bytes
-        { bytes: [ 0xdf ], reason: 'too short', name: 'too short - 2-bytes - 0x00' },
-        { bytes: [ 0xe0 ], reason: 'too short', name: 'too short - 3-bytes' },
-        { bytes: [ 0xe0, 0x80 ], reason: 'too short', name: 'too short - 3-bytes with 1' },
+        { bytes: [0xdf], reason: 'too short', name: 'too short - 2-bytes - 0x00' },
+        { bytes: [0xe0], reason: 'too short', name: 'too short - 3-bytes' },
+        { bytes: [0xe0, 0x80], reason: 'too short', name: 'too short - 3-bytes with 1' },
 
-        { bytes: [ 0x80 ], reason: 'unexpected continuation byte', name: 'unexpected continuation byte' },
-        { bytes: [ 0xc2, 0x00 ], reason: 'invalid continuation byte', name: 'invalid continuation byte - 0xc200' },
-        { bytes: [ 0xc2, 0x40 ], reason: 'invalid continuation byte', name: 'invalid continuation byte - 0xc240' },
-        { bytes: [ 0xc2, 0xc0 ], reason: 'invalid continuation byte', name: 'invalid continuation byte - 0xc2c0' },
+        { bytes: [0x80], reason: 'unexpected continuation byte', name: 'unexpected continuation byte' },
+        { bytes: [0xc2, 0x00], reason: 'invalid continuation byte', name: 'invalid continuation byte - 0xc200' },
+        { bytes: [0xc2, 0x40], reason: 'invalid continuation byte', name: 'invalid continuation byte - 0xc240' },
+        { bytes: [0xc2, 0xc0], reason: 'invalid continuation byte', name: 'invalid continuation byte - 0xc2c0' },
 
         // Out of range
-        { bytes: [ 0xf4, 0x90, 0x80, 0x80 ], reason: 'out-of-range', name: 'out of range' },
+        { bytes: [0xf4, 0x90, 0x80, 0x80], reason: 'out-of-range', name: 'out of range' },
     ];
 
-    BadUTF.forEach(function(test) {
-        it('toUtf8String - ' + test.name, function() {
-            assert.throws(function() {
+    BadUTF.forEach(function (test) {
+        it('toUtf8String - ' + test.name, function () {
+            assert.throws(function () {
                 var result = ethers.utils.toUtf8String(test.bytes);
                 console.log('Result', result);
-            }, function(error) {
+            }, function (error) {
                 return (error.message.split(';').pop().trim() === test.reason)
             }, test.name);
         });
     });
 
-    it('toUtf8String - random conversions', function() {
+    it('toUtf8String - random conversions', function () {
         this.timeout(200000);
 
         function randomChar(seed) {
@@ -330,9 +330,9 @@ describe('Test UTF-8 coder', function() {
     });
 });
 
-describe('Test Bytes32String coder', function() {
+describe('Test Bytes32String coder', function () {
     // @TODO: a LOT more test cases; generated from Solidity
-    it("encodes an ens name", function() {
+    it("encodes an ens name", function () {
         var str = "ricmoo.firefly.eth";
         var bytes32 = ethers.utils.formatBytes32String(str);
         var str2 = ethers.utils.parseBytes32String(bytes32);
@@ -341,8 +341,8 @@ describe('Test Bytes32String coder', function() {
     });
 });
 
-describe('Test BigNumber', function() {
-    it("computes absoltue values", function() {
+describe('Test BigNumber', function () {
+    it("computes absoltue values", function () {
         function testAbs(test) {
             var value = ethers.utils.bigNumberify(test.value);
             var expected = ethers.utils.bigNumberify(test.expected);
@@ -362,114 +362,114 @@ describe('Test BigNumber', function() {
     });
 });
 
-describe("Hexlify", function() {
-    it("hexlify on string of unsafe number", function() {
+describe("Hexlify", function () {
+    it("hexlify on string of unsafe number", function () {
         assert(ethers.utils.hexlify(ethers.utils.bigNumberify("9985956830000000000")), "0x8a953ed43a892c00", "hexlify on large BigNumber");
     });
 
-    [9007199254740991, 9985956830000000000].forEach(function(value) {
-        it('hexlify fails on unsafe number - ' + value, function() {
-            assert.throws(function() {
+    [9007199254740991, 9985956830000000000].forEach(function (value) {
+        it('hexlify fails on unsafe number - ' + value, function () {
+            assert.throws(function () {
                 var result = ethers.utils.hexlify(value);
                 console.log('Result', result);
-            }, function(error) {
+            }, function (error) {
                 return (error.code === "NUMERIC_FAULT" && error.fault === "out-of-safe-range");
             }, "hexlify throws on out-of-range value - " + value);
         });
     });
 });
 
-describe('Test blooms', function() {
+describe('Test blooms', function () {
     var bloomFilter = '0x08200081a06415012858022200cc48143008908c0000824e5405b41520795989024800380a8d4b198910b422b231086c3a62cc402e2573070306f180446440ad401016c3e30781115844d028c89028008a12240c0a2c184c0425b90d7af0530002f981221aa565809132000818c82805023a132a25150400010530ba0080420a10a137054454021882505080a6b6841082d84151010400ba8100c8802d440d060388084052c1300105a0868410648a40540c0f0460e190400807008914361118000a5202e94445ccc088311050052c8002807205212a090d90ba428030266024a910644b1042011aaae05391cc2094c45226400000380880241282ce4e12518c';
 
-    describe('isBloom', function() {
-        it ('should return true if bloom is a valid bloom', function() {
+    describe('isBloom', function () {
+        it('should return true if the bloom is a valid bloom', function () {
             assert.equal(ethers.utils.isBloom(bloomFilter), true);
         });
 
-        it('should return false if bloom is a number', function () {
+        it('should return false if the bloom is a number', function () {
             assert.equal(ethers.utils.isBloom(1), false);
         });
 
-        it('should return false if bloom is a boolean', function () {
+        it('should return false if the bloom is a boolean', function () {
             assert.equal(ethers.utils.isBloom(true), false);
         });
 
-        it('should return false if bloom is a object', function () {
+        it('should return false if the bloom is a object', function () {
             assert.equal(ethers.utils.isBloom({}), false);
         });
 
-        it('should return false if bloom is invalid', function () {
+        it('should return false if the bloom is invalid', function () {
             assert.equal(ethers.utils.isBloom('invalid'), false);
         });
     });
 
     describe('isInBloom', function () {
-        it('should return true if value is in bloom passing in hex string', function () {
+        it('should return true if the value is in bloom passing in hex string', function () {
             assert.equal(ethers.utils.isInBloom(bloomFilter, '0x58a4884182d9e835597f405e5f258290e46ae7c2'), true);
         });
 
-        it('should return true if value is in bloom passing in bytes', function () {
+        it('should return true if the value is in bloom passing in bytes', function () {
             assert.equal(ethers.utils.isInBloom(bloomFilter, ethers.utils.arrayify('0x58a4884182d9e835597f405e5f258290e46ae7c2')), true);
         });
 
-        it('should return false if value is not in bloom', function () {
+        it('should return false if the value is not in bloom', function () {
             assert.equal(ethers.utils.isInBloom(bloomFilter, '0x494bfa3a4576ba6cfe835b0deb78834f0c3e3996'), false);
         });
     });
 
     describe('isUserEthereumAddressInBloom', function () {
-        it('should throw error if bloom is not valid', function () {
-            assert.throws(function() { ethers.utils.isUserEthereumAddressInBloom('invalid', '0x494bfa3a4576ba6cfe835b0deb78834f0c3e3994') }, 'Error: Invalid bloom given');
+        it('should throw error if the bloom is not valid', function () {
+            assert.throws(function () { ethers.utils.isUserEthereumAddressInBloom('invalid', '0x494bfa3a4576ba6cfe835b0deb78834f0c3e3994') }, 'Error: Invalid bloom given');
         });
 
-        it('should throw error if ethereum address is not valid', function () {
+        it('should throw error if the ethereum address is not valid', function () {
             assert.throws(function () { ethers.utils.isUserEthereumAddressInBloom(bloomFilter, '0x494b') }, 'Error: Invalid ethereum address given: "0x494b"');
         });
-        
-        it('should return true if ethereum address is in bloom', function () {
+
+        it('should return true if the ethereum address is in bloom', function () {
             assert.equal(ethers.utils.isUserEthereumAddressInBloom(bloomFilter, '0x494bfa3a4576ba6cfe835b0deb78834f0c3e3994'), true);
         });
 
-        it('should return false if ethereum address is not in bloom', function () {
+        it('should return false if the ethereum address is not in bloom', function () {
             assert.equal(ethers.utils.isUserEthereumAddressInBloom(bloomFilter, '0x494bfa3a4576ba6cfe835b0deb78834f0c3e3996'), false);
         });
     });
 
     describe('isContractAddressInBloom', function () {
-        it('should throw error if bloom is not valid', function () {
+        it('should throw error if the bloom is not valid', function () {
             assert.throws(function () { ethers.utils.isContractAddressInBloom('invalid', '0x58a4884182d9e835597f405e5f258290e46ae7c2') }, 'Error: Invalid bloom given');
         });
 
-        it('should throw error if contract address is not valid', function () {
+        it('should throw error if the contract address is not valid', function () {
             assert.throws(function () { ethers.utils.isContractAddressInBloom(bloomFilter, '0x58a4') }, 'Error: Invalid contract address given: "0x58a4"');
         });
 
-        it('should return true if contract address is in bloom', function () {
+        it('should return true if the contract address is in bloom', function () {
             assert.equal(ethers.utils.isContractAddressInBloom(bloomFilter, '0x58a4884182d9e835597f405e5f258290e46ae7c2'), true);
         });
 
-        it('should return false if contract address is not in bloom', function () {
+        it('should return false if the contract address is not in bloom', function () {
             assert.equal(ethers.utils.isContractAddressInBloom(bloomFilter, '0x58a4884182d9e835597f405e5f258290e46ae7c1'), false);
         });
     });
 
     describe('isTopicInBloom', function () {
         var topicBloom = '0x0020008400000010000000000400000200000008000000000010000000002000000080000020000000080004000000010000000000000040000000000000000000000001000200008000000d000000000010000400000400000100000000000001400008220000000000004000040802004000200000000000000010000041000000020100008000000000000000000000000010000000080000000000800900000000000000000000000000100000800000000000000c28000000000000010000000002000040002000000080000000000000000000000020120020000020200000000040000000000000040000000400000000000000000000020000000000'
-        
-        it('should throw error if bloom is not valid', function () {
+
+        it('should throw error if the bloom is not valid', function () {
             assert.throws(function () { ethers.utils.isTopicInBloom('invalid', '0x4d61726b65745061792e696f206973206465706c6f79696e6720536d61727420') }, 'Error: Invalid bloom given');
         });
 
-        it('should throw error if topic is not valid', function () {
-            assert.throws(function () { ethers.utils.isTopicInBloom(topicBloom, '0x4d61') }, 'Error: Invalid contract address given: "0x4d61"');
+        it('should throw error if the topic is not valid', function () {
+            assert.throws(function () { ethers.utils.isTopicInBloom(topicBloom, '0x4d61') }, 'Error: Invalid topic given: "0x4d61"');
         });
 
-        it('should return true if topic is in bloom', function () {
+        it('should return true if the topic is in bloom', function () {
             assert.equal(ethers.utils.isTopicInBloom(topicBloom, '0x000000000000000000000000b3bb037d2f2341a1c2775d51909a3d944597987d'), true);
         });
 
-        it('should return false if topic is not in bloom', function () {
+        it('should return false if the topic is not in bloom', function () {
             assert.equal(ethers.utils.isTopicInBloom(topicBloom, '0x4d61726b65745061792e696f206973206465706c6f79696e6720536d61727420'), false);
         });
     });

@@ -140,7 +140,7 @@ export function isTopicInBloom(bloom: string, topic: string): boolean {
     }
 
     if (!isTopic(topic)) {
-        throw new Error('invalid topic');
+        throw new Error(`Invalid topic given: "${topic}"`);
     }
 
     return isInBloom(bloom, topic);

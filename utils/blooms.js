@@ -114,7 +114,7 @@ function isTopicInBloom(bloom, topic) {
         throw new Error('Invalid bloom given');
     }
     if (!isTopic(topic)) {
-        throw new Error('invalid topic');
+        throw new Error("Invalid topic given: \"" + topic + "\"");
     }
     return isInBloom(bloom, topic);
 }
