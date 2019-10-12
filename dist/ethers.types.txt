@@ -894,6 +894,7 @@ declare module 'ethers/utils/address' {
     import { BigNumber } from 'ethers/utils/bignumber';
     import { Arrayish } from 'ethers/utils/bytes';
     export function getAddress(address: string): string;
+    export function isAddress(address: string): boolean;
     export function getIcapAddress(address: string): string;
     export function getContractAddress(transaction: {
         from: string;
