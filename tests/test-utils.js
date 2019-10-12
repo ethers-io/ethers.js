@@ -55,6 +55,20 @@ describe('Test Contract Address Generation', function() {
     });
 });
 
+describe('Test isAddress', function() {
+    it ('should return true with a valid ethereum address', function() {
+        assert.equal(ethers.utils.isAddress('0x494bfa3a4576ba6cfe835b0deb78834f0c3e3994'), true);
+    });
+
+    it('should return false with a invalid ethereum address', function () {
+        assert.equal(ethers.utils.isAddress('0x494bfa3a4576ba6cfe878834f0c3e3994'), false);
+    });
+
+    it('should return true with a valid ICAP address', function () {
+        assert.equal(ethers.utils.isAddress('XE472EVKU3CGMJF2YQ0J9RO1Y90BC0LDFZ'), true);
+    });
+});
+
 describe('Test RLP Coder', function () {
     var rlp = ethers.utils.RLP;
 
@@ -129,7 +143,6 @@ describe('Test Unit Conversion', function () {
     });
 
 });
-
 
 describe('Test Namehash', function() {
     var tests = utils.loadTests('namehash');
@@ -362,6 +375,82 @@ describe("Hexlify", function() {
             }, function(error) {
                 return (error.code === "NUMERIC_FAULT" && error.fault === "out-of-safe-range");
             }, "hexlify throws on out-of-range value - " + value);
+        });
+    });
+});
+
+describe('Test blooms', function() {
+    var bloomFilter = '0x08200081a06415012858022200cc48143008908c0000824e5405b41520795989024800380a8d4b198910b422b231086c3a62cc402e2573070306f180446440ad401016c3e30781115844d028c89028008a12240c0a2c184c0425b90d7af0530002f981221aa565809132000818c82805023a132a25150400010530ba0080420a10a137054454021882505080a6b6841082d84151010400ba8100c8802d440d060388084052c1300105a0868410648a40540c0f0460e190400807008914361118000a5202e94445ccc088311050052c8002807205212a090d90ba428030266024a910644b1042011aaae05391cc2094c45226400000380880241282ce4e12518c';
+
+    describe('isBloom', function() {
+        it ('should return true if bloom is a valid bloom', function() {
+            assert.equal(ethers.utils.isBloom(bloomFilter), true);
+        });
+
+        it('should return false if bloom if bloom is a number', function () {
+            assert.equal(ethers.utils.isBloom(1), false);
+        });
+
+        it('should return false if bloom if bloom is a boolean', function () {
+            assert.equal(ethers.utils.isBloom(true), false);
+        });
+
+        it('should return false if bloom if bloom is a object', function () {
+            assert.equal(ethers.utils.isBloom({}), false);
+        });
+
+        it('should return false if bloom is invalid', function () {
+            assert.equal(ethers.utils.isBloom('invalid'), false);
+        });
+    });
+
+    describe('isHexInBloom', function () {
+        it('should return true if hex is in bloom passing in hex string', function () {
+            assert.equal(ethers.utils.isHexInBloom(bloomFilter, '0x58a4884182d9e835597f405e5f258290e46ae7c2'), true);
+        });
+
+        it('should return true if hex is in bloom passing in as bytes', function () {
+            assert.equal(ethers.utils.isHexInBloom(bloomFilter, ethers.utils.arrayify('0x58a4884182d9e835597f405e5f258290e46ae7c2')), true);
+        });
+
+        it('should return false if hex is not in bloom', function () {
+            assert.equal(ethers.utils.isHexInBloom(bloomFilter, '0x494bfa3a4576ba6cfe835b0deb78834f0c3e3996'), false);
+        });
+    });
+
+    describe('isUserEthereumAddressInBloom', function () {
+        it('should throw error if bloom is not a valid bloom', function () {
+            assert.throws(function() { ethers.utils.isUserEthereumAddressInBloom('invalid', '0x494bfa3a4576ba6cfe835b0deb78834f0c3e3994') }, 'Error: Invalid bloom given');
+        });
+
+        it('should throw error if ethereum address is not a valid bloom', function () {
+            assert.throws(function () { ethers.utils.isUserEthereumAddressInBloom(bloomFilter, '0x494b') }, 'Error: Invalid ethereum address given: "0x494b"');
+        });
+        
+        it('should return true if ethereum address is in bloom', function () {
+            assert.equal(ethers.utils.isUserEthereumAddressInBloom(bloomFilter, '0x494bfa3a4576ba6cfe835b0deb78834f0c3e3994'), true);
+        });
+
+        it('should return false if ethereum address is not in bloom', function () {
+            assert.equal(ethers.utils.isUserEthereumAddressInBloom(bloomFilter, '0x494bfa3a4576ba6cfe835b0deb78834f0c3e3996'), false);
+        });
+    });
+
+    describe('isContractAddressInBloom', function () {
+        it('should throw error if bloom is not a valid bloom', function () {
+            assert.throws(function () { ethers.utils.isContractAddressInBloom('invalid', '0x58a4884182d9e835597f405e5f258290e46ae7c2') }, 'Error: Invalid bloom given');
+        });
+
+        it('should throw error if contract address is not a valid bloom', function () {
+            assert.throws(function () { ethers.utils.isUserEthereumAddressInBloom(bloomFilter, '0x58a4') }, 'Error: Invalid contract address given: "0x58a4"');
+        });
+
+        it('should return true if contract address is in bloom', function () {
+            assert.equal(ethers.utils.isContractAddressInBloom(bloomFilter, '0x58a4884182d9e835597f405e5f258290e46ae7c2'), true);
+        });
+
+        it('should return false if contract address is not in bloom', function () {
+            assert.equal(ethers.utils.isContractAddressInBloom(bloomFilter, '0x58a4884182d9e835597f405e5f258290e46ae7c1'), false);
         });
     });
 });
