@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/basex",
-  "version": "5.0.0-beta.129",
+  "version": "5.0.0-beta.130",
   "description": "Base-X without Buffer.",
   "main": "./lib/index.js",
   "scripts": {
@@ -26,5 +26,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x06b91176cd6668fc42aefe16cd0e63d9027a8fcc2410a1f5454134a5292f06cb"
+  "tarballHash": "0xe84815357f45e6134c535f478bc7c8f7fe72e47c8de1064756fd6aff0012f001"
 }

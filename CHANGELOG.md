@@ -3,6 +3,12 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.159 (2019-10-17 01:08)
+-----------------------------------------
+
+  - Removing TypeScript build files from npm to fix excessive package diffs.
+  - Fixed getBlock for blockhashes with a leading 0. ([#629](https://github.com/ethers-io/ethers.js/issues/629); [12cfc59](https://github.com/ethers-io/ethers.js/commit/12cfc599656d7e3a6d3d9aa4e468592865a711cc))
+
 ethers/v5.0.0-beta.158 (2019-09-28 01:56)
 -----------------------------------------
 

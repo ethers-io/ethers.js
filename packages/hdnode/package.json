@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/hdnode",
-  "version": "5.0.0-beta.132",
+  "version": "5.0.0-beta.133",
   "description": "BIP32 Hierarchal Deterministic Node operations.",
   "main": "./lib/index.js",
   "scripts": {
@@ -36,5 +36,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x15b4fe5e4157259b5b082739a58f609b31ab07a8b3f49ebfc6d487ff7da6bd0a"
+  "tarballHash": "0xfadcdada400b2f52104609366fcbf244364ba7894edb3f112f21defdb9e7cbcf"
 }

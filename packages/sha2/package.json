@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/sha2",
-  "version": "5.0.0-beta.131",
+  "version": "5.0.0-beta.132",
   "description": "The SHA2 family hash functions and HMAC functions for ethers.",
   "main": "./lib/index.js",
   "browser": "./lib/browser.js",
@@ -28,5 +28,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x3612816406bbf8c3389a7d483e86326ca975b69391a950b05c970316d9581bdc"
+  "tarballHash": "0xcc9c70f9d8c17618a384eb4777203881f093a41cfab6c7b9364585d2171f925e"
 }

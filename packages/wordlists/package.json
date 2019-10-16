@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/wordlists",
-  "version": "5.0.0-beta.130",
+  "version": "5.0.0-beta.131",
   "description": "Word lists for BIP39 wallets.",
   "main": "./lib/index.js",
   "browser": "./lib/browser.js",
@@ -30,5 +30,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xe06c5c044835ef1fe34be113d3aaac5dd7aaa9388f058951264d4e07710fb10f"
+  "tarballHash": "0x4f137dc4c62f0ed0a4106b46d54057d35368b22e8c38cb504e19f63b12ddaf94"
 }

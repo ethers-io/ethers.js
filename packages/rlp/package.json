@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/rlp",
-  "version": "5.0.0-beta.128",
+  "version": "5.0.0-beta.129",
   "description": "Recursive-Length Prefix (RLP) coder.",
   "main": "./lib/index.js",
   "scripts": {
@@ -26,5 +26,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x7fb63a287318c442613e3000502cb11e1d30dc7c1830f816b9ca9f1bb34b1f46"
+  "tarballHash": "0x93b88e06ca707441969f79d9be3a33068b2485c9436fe89d55c5bac53672ab8b"
 }

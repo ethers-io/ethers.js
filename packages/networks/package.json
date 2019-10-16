@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/networks",
-  "version": "5.0.0-beta.130",
+  "version": "5.0.0-beta.131",
   "description": "Network definitions for ethers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -25,5 +25,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xcc8ab3a10cbde0390838fa545ce0444207351939bbd08eb315e08d0ab2c89033"
+  "tarballHash": "0x2a881fb41334c456f5112f20154e0d17c0b08072f08958762a45147234b0aff1"
 }

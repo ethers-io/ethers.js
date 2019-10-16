@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/logger",
-  "version": "5.0.0-beta.130",
+  "version": "5.0.0-beta.131",
   "description": "Logger utility functions for ethers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -22,5 +22,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x866f5c2422f1e10b3f6c3085c558e20f7db3ca58dbfe088fc38f71525cacccf6"
+  "tarballHash": "0xb5a4fcb90420f6295628634b77535331f293ef5e83478e825f0fa5012ab33054"
 }

@@ -1,1 +1,1 @@
-export const version = "wordlists/5.0.0-beta.130";
+export const version = "wordlists/5.0.0-beta.131";

@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/transactions",
-  "version": "5.0.0-beta.130",
+  "version": "5.0.0-beta.131",
   "description": "Utilities for decoding and encoding Ethereum transaction for ethers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -33,5 +33,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xf36ee5a842381d97052254b0ad453155ae0007253a4605a3e1a0a8e63a47b549"
+  "tarballHash": "0x2e67e6b719387ddb81100c904f2c1529384e4300f7dfb33573b66eb165bbda81"
 }

@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/tests",
-  "version": "5.0.0-beta.140",
+  "version": "5.0.0-beta.141",
   "description": "Testing package for ethers.",
   "main": "./lib/index.js",
   "browser": {
@@ -39,5 +39,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x8758d11f1e3531f70ffa18876eb368440e250dbfd03462a891a6fb5d64b23efd"
+  "tarballHash": "0x9128df37a8564c4a98da846ebb55b85ef26308254550eb3efd5d1efcc86be031"
 }

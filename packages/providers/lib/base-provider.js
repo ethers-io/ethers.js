@@ -553,8 +553,18 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype._getBlock = function (blockHashOrBlockTag, includeTransactions) {
         var _this = this;
+        if (blockHashOrBlockTag instanceof Promise) {
+            return blockHashOrBlockTag.then(function (b) { return _this._getBlock(b, includeTransactions); });
+        }
         return this.ready.then(function () {
-            return _this._getBlockTag(blockHashOrBlockTag).then(function (blockHashOrBlockTag) {
+            var blockHashOrBlockTagPromise = null;
+            if (bytes_1.isHexString(blockHashOrBlockTag, 32)) {
+                blockHashOrBlockTagPromise = Promise.resolve(blockHashOrBlockTag);
+            }
+            else {
+                blockHashOrBlockTagPromise = _this._getBlockTag(blockHashOrBlockTag);
+            }
+            return blockHashOrBlockTagPromise.then(function (blockHashOrBlockTag) {
                 var params = {
                     includeTransactions: !!includeTransactions
                 };

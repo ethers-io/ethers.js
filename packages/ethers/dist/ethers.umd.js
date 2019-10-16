@@ -3464,7 +3464,7 @@
 	var _version = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "logger/5.0.0-beta.130";
+	exports.version = "logger/5.0.0-beta.131";
 	});
 
 	var _version$1 = unwrapExports(_version);
@@ -3758,7 +3758,7 @@
 	var _version$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bytes/5.0.0-beta.131";
+	exports.version = "bytes/5.0.0-beta.132";
 	});
 
 	var _version$3 = unwrapExports(_version$2);
@@ -4184,7 +4184,7 @@
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.0-beta.132";
+	exports.version = "bignumber/5.0.0-beta.133";
 	});
 
 	var _version$5 = unwrapExports(_version$4);
@@ -4756,7 +4756,7 @@
 	var _version$6 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "properties/5.0.0-beta.132";
+	exports.version = "properties/5.0.0-beta.133";
 	});
 
 	var _version$7 = unwrapExports(_version$6);
@@ -4886,7 +4886,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.139";
+	exports.version = "abi/5.0.0-beta.140";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -6453,7 +6453,7 @@
 	var _version$a = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "address/5.0.0-beta.130";
+	exports.version = "address/5.0.0-beta.131";
 	});
 
 	var _version$b = unwrapExports(_version$a);
@@ -7118,7 +7118,7 @@
 	var _version$c = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "strings/5.0.0-beta.132";
+	exports.version = "strings/5.0.0-beta.133";
 	});
 
 	var _version$d = unwrapExports(_version$c);
@@ -7796,7 +7796,7 @@
 	var _version$e = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hash/5.0.0-beta.130";
+	exports.version = "hash/5.0.0-beta.131";
 	});
 
 	var _version$f = unwrapExports(_version$e);
@@ -8312,7 +8312,7 @@
 	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-provider/5.0.0-beta.133";
+	exports.version = "abstract-provider/5.0.0-beta.134";
 	});
 
 	var _version$h = unwrapExports(_version$g);
@@ -8447,7 +8447,7 @@
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.0-beta.134";
+	exports.version = "abstract-signer/5.0.0-beta.135";
 	});
 
 	var _version$j = unwrapExports(_version$i);
@@ -8658,7 +8658,7 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.0-beta.139";
+	exports.version = "contracts/5.0.0-beta.140";
 	});
 
 	var _version$l = unwrapExports(_version$k);
@@ -10735,7 +10735,7 @@
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "sha2/5.0.0-beta.131";
+	exports.version = "sha2/5.0.0-beta.132";
 	});
 
 	var _version$n = unwrapExports(_version$m);
@@ -13211,7 +13211,7 @@
 	var _version$o = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "signing-key/5.0.0-beta.131";
+	exports.version = "signing-key/5.0.0-beta.132";
 	});
 
 	var _version$p = unwrapExports(_version$o);
@@ -13307,7 +13307,7 @@
 	var _version$q = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "transactions/5.0.0-beta.130";
+	exports.version = "transactions/5.0.0-beta.131";
 	});
 
 	var _version$r = unwrapExports(_version$q);
@@ -13486,7 +13486,7 @@
 	var _version$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wordlists/5.0.0-beta.130";
+	exports.version = "wordlists/5.0.0-beta.131";
 	});
 
 	var _version$t = unwrapExports(_version$s);
@@ -13629,7 +13629,7 @@
 	var _version$u = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hdnode/5.0.0-beta.132";
+	exports.version = "hdnode/5.0.0-beta.133";
 	});
 
 	var _version$v = unwrapExports(_version$u);
@@ -13949,7 +13949,7 @@
 	var _version$w = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "random/5.0.0-beta.130";
+	exports.version = "random/5.0.0-beta.131";
 	});
 
 	var _version$x = unwrapExports(_version$w);
@@ -14814,7 +14814,7 @@
 	var _version$y = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "json-wallets/5.0.0-beta.131";
+	exports.version = "json-wallets/5.0.0-beta.132";
 	});
 
 	var _version$z = unwrapExports(_version$y);
@@ -16109,7 +16109,7 @@
 	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.0-beta.132";
+	exports.version = "wallet/5.0.0-beta.133";
 	});
 
 	var _version$B = unwrapExports(_version$A);
@@ -16290,7 +16290,7 @@
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "networks/5.0.0-beta.130";
+	exports.version = "networks/5.0.0-beta.131";
 	});
 
 	var _version$D = unwrapExports(_version$C);
@@ -17058,7 +17058,7 @@
 	var _version$E = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.0-beta.131";
+	exports.version = "web/5.0.0-beta.132";
 	});
 
 	var _version$F = unwrapExports(_version$E);
@@ -17302,7 +17302,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.143";
+	exports.version = "providers/5.0.0-beta.144";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -18254,8 +18254,18 @@
 	    };
 	    BaseProvider.prototype._getBlock = function (blockHashOrBlockTag, includeTransactions) {
 	        var _this = this;
+	        if (blockHashOrBlockTag instanceof Promise) {
+	            return blockHashOrBlockTag.then(function (b) { return _this._getBlock(b, includeTransactions); });
+	        }
 	        return this.ready.then(function () {
-	            return _this._getBlockTag(blockHashOrBlockTag).then(function (blockHashOrBlockTag) {
+	            var blockHashOrBlockTagPromise = null;
+	            if (lib$1.isHexString(blockHashOrBlockTag, 32)) {
+	                blockHashOrBlockTagPromise = Promise.resolve(blockHashOrBlockTag);
+	            }
+	            else {
+	                blockHashOrBlockTagPromise = _this._getBlockTag(blockHashOrBlockTag);
+	            }
+	            return blockHashOrBlockTagPromise.then(function (blockHashOrBlockTag) {
 	                var params = {
 	                    includeTransactions: !!includeTransactions
 	                };
@@ -20373,7 +20383,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "units/5.0.0-beta.129";
+	exports.version = "units/5.0.0-beta.130";
 	});
 
 	var _version$J = unwrapExports(_version$I);
@@ -20665,7 +20675,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.158";
+	exports.version = "ethers/5.0.0-beta.159";
 	});
 
 	var _version$L = unwrapExports(_version$K);

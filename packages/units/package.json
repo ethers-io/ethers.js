@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/units",
-  "version": "5.0.0-beta.129",
+  "version": "5.0.0-beta.130",
   "description": "Unit conversion functions for Ethereum.",
   "main": "./lib/index.js",
   "scripts": {
@@ -29,5 +29,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x6813d0639bb3ac7a54ca921fcf7d4ef1b1bb2434c378de561bca0677422613b8"
+  "tarballHash": "0x610cf4a90cce266704c5eb97f48d656cf6cf3e09ef89df53e800e1a0e38106c2"
 }

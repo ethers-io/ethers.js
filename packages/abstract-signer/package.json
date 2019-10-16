@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/abstract-signer",
-  "version": "5.0.0-beta.134",
+  "version": "5.0.0-beta.135",
   "description": "An Abstract Class for desribing an Ethereum Signer for ethers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -29,5 +29,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x8571e7bad5de4f3cbb7582fcf4ad9d4a0adbb05cd1310dc194ca9f7e211ad1bd"
+  "tarballHash": "0x6b8c183c976fddaf1cea8a6044447d674b5a30a2fd8364e321affaa573139a89"
 }

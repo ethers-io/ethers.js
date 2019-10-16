@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/hash",
-  "version": "5.0.0-beta.130",
+  "version": "5.0.0-beta.131",
   "description": "Hash utility functions for Ethereum.",
   "main": "./lib/index.js",
   "scripts": {
@@ -28,5 +28,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x5d6b61a5dd4439aebcd52bed09767212c314e05a2ce762a35b1bfe99e13a883d"
+  "tarballHash": "0x66828494e4ea7ac5497b0b3c1eb2de69b21a250d593758a3152062b4cfd66b47"
 }

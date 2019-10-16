@@ -4,3 +4,4 @@ src.ts/
 
 # To run tests, checkout GitHub
 tests/
+tsconfig.tsbuildinfo
