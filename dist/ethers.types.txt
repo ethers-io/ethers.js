@@ -266,7 +266,7 @@ declare module 'ethers/utils/shims' {
 }
 
 declare module 'ethers/_version' {
-    export const version = "4.0.37";
+    export const version = "4.0.38";
 }
 
 declare module 'ethers/utils/bignumber' {
@@ -564,7 +564,6 @@ declare module 'ethers/utils/bytes' {
       *  Conversion Utilities
       *
       */
-    import { Arrayish } from 'ethers/utils/bytes';
     export type Arrayish = string | ArrayLike<number>;
     export interface Hexable {
         toHexString(): string;

@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+ethers/v4.0.38 (2019-10-17 01:28)
+---------------------------------
+
+  - Fixed TypeScript 3.7-beta import issue. ([#622](https://github.com/ethers-io/ethers.js/issues/622); [0609ea9](https://github.com/ethers-io/ethers.js/commit/0609ea96519bf4afe6badc5f43c0d03ca91b8363))
+
 ethers/v4.0.37 (2019-09-06 19:10)
 ---------------------------------
 

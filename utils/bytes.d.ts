@@ -2,7 +2,6 @@
  *  Conversion Utilities
  *
  */
-import { Arrayish } from './bytes';
 export declare type Arrayish = string | ArrayLike<number>;
 export interface Hexable {
     toHexString(): string;
