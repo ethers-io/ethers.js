@@ -6,11 +6,6 @@
 import * as errors from '../errors';
 
 ///////////////////////////////
-// Imported Types
-
-import { Arrayish } from './bytes';
-
-///////////////////////////////
 // Exported Types
 
 export type Arrayish = string | ArrayLike<number>;
