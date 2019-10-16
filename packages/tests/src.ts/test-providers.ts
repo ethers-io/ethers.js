@@ -507,3 +507,16 @@ describe("Test Basic Authentication", function() {
         }, "throws an exception for insecure connections");
     })
 });
+
+describe("Test #629", function() {
+    it("Fetches a blockhash beginning with a 0 nibble", function() {
+        const provider = new ethers.providers.InfuraProvider('goerli');
+        return provider.getBlock('0x0f305466552efa183a0de26b6fda26d55a872dbc02aca8b5852cc2a361ce9ee4').then((block) => {
+            assert.equal(block.parentHash, "0x6723e880e01c15c5ac894abcae0f5b55ea809a31eaf5618998928f7d9cbc5118");
+            assert.equal(block.number, 1479831);
+            assert.equal(block.transactions.length, 5);
+        }, (error) => {
+            assert.ok(false, "Failed to get block");
+        });
+    });
+});

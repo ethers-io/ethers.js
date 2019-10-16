@@ -619,8 +619,19 @@ export class BaseProvider extends Provider {
     }
 
     _getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block | BlockWithTransactions> {
+        if (blockHashOrBlockTag instanceof Promise) {
+            return blockHashOrBlockTag.then((b) => this._getBlock(b, includeTransactions));
+        }
+
         return this.ready.then(() => {
-            return this._getBlockTag(blockHashOrBlockTag).then((blockHashOrBlockTag) => {
+            let blockHashOrBlockTagPromise: Promise<string | BlockTag> = null;
+            if (isHexString(blockHashOrBlockTag, 32)) {
+                blockHashOrBlockTagPromise = Promise.resolve(blockHashOrBlockTag);
+            } else {
+                blockHashOrBlockTagPromise = this._getBlockTag(blockHashOrBlockTag);
+            }
+
+            return blockHashOrBlockTagPromise.then((blockHashOrBlockTag) => {
                 let params: { [key: string]: any } = {
                     includeTransactions: !!includeTransactions
                 };
