@@ -26,7 +26,8 @@
     "update-versions": "npm run _dist_prepare && node ./admin/cmds/update-versions",
     "publish-all": "node ./admin/cmds/publish",
     "lock-versions": "node ./admin/cmds/lock-versions",
-    "build-docs": "flatworm docs.wrm docs"
+    "build-docs": "flatworm docs.wrm docs",
+    "sync-github": "node ./admin/cmds/cache-github"
   },
   "devDependencies": {
     "@types/assert": "^1.4.1",
