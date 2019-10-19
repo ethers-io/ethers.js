@@ -154,7 +154,7 @@ export class Logger {
     setLogLevel(logLevel: LogLevel): void {
         let level = LogLevels[logLevel];
         if (level == null) {
-            this.warn("invliad log level - " + logLevel);
+            this.warn("invalid log level - " + logLevel);
             return;
         }
         LogLevel = level;
