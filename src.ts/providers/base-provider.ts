@@ -666,6 +666,7 @@ export class BaseProvider extends Provider {
                             toBlock: blockNumber,
                             topics: topics
                         }
+
                         if (!filter.address) { delete filter.address; }
                         this.getLogs(filter).then((logs) => {
                             if (logs.length === 0) { return; }
@@ -716,6 +717,7 @@ export class BaseProvider extends Provider {
         setTimeout(() => {
             if (value && !this._poller) {
                 this._poller = setInterval(this._doPoll.bind(this), this.pollingInterval);
+                this._doPoll();
 
             } else if (!value && this._poller) {
                 clearInterval(this._poller);
