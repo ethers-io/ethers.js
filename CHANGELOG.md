@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+ethers/v4.0.39 (2019-10-30 19:15)
+---------------------------------
+
+  - Fix filters by forcing a poll instantly when polling starts to capture the current block. ([#613](https://github.com/ethers-io/ethers.js/issues/613); [d0e0e30](https://github.com/ethers-io/ethers.js/commit/d0e0e30532baf387df6b4a8efe0805986cc265f2))
+
 ethers/v4.0.38 (2019-10-17 01:28)
 ---------------------------------
 

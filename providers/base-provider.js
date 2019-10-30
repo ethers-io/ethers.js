@@ -594,6 +594,7 @@ var BaseProvider = /** @class */ (function (_super) {
             setTimeout(function () {
                 if (value && !_this._poller) {
                     _this._poller = setInterval(_this._doPoll.bind(_this), _this.pollingInterval);
+                    _this._doPoll();
                 }
                 else if (!value && _this._poller) {
                     clearInterval(_this._poller);
