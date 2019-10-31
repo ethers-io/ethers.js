@@ -49,7 +49,7 @@ BrainWallet.generate(username, password, showProgess).then((wallet) => {
 **NonceManager**
 
 ```javascript
-import { NonceManager } from "@ethersproject/experimenatl/nonce-manager";
+import { NonceManager } from "@ethersproject/experimental/nonce-manager";
 
 let signer = "... any way you get a signer ...";
 
@@ -64,7 +64,7 @@ let managedSigner = new NonceManager(signer);
 **RetryProvider**
 
 ```javascript
-import { RetryProvider } from "@ethersproject/experimenatl/retry-provider";
+import { RetryProvider } from "@ethersproject/experimental/retry-provider";
 
 let provider = "... any way you get a signer...";
 
@@ -72,7 +72,7 @@ let provider = "... any way you get a signer...";
 let options = {
 }
 
-let retryProivder = new RetryProvider(provider, options);
+let retryProvider = new RetryProvider(provider, options);
 ```
 
 

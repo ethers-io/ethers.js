@@ -23,7 +23,7 @@ import { CloudflareProvider } from "./cloudflare-provider";
 import { EtherscanProvider } from "./etherscan-provider";
 import { FallbackProvider } from "./fallback-provider";
 import { IpcProvider } from "./ipc-provider";
-import { InfuraProvider } from "./infura-provider";
+import { InfuraProvider, InfuraRetryProvider } from "./infura-provider";
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 import { NodesmithProvider } from "./nodesmith-provider";
 import { Web3Provider } from "./web3-provider";
@@ -51,6 +51,7 @@ export {
     CloudflareProvider,
     EtherscanProvider,
     InfuraProvider,
+    InfuraRetryProvider,
     JsonRpcProvider,
     NodesmithProvider,
     Web3Provider,
