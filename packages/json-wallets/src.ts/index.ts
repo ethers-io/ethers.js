@@ -10,7 +10,7 @@ import { decrypt as decryptKeystore, encrypt as encryptKeystore, EncryptOptions,
 function decryptJsonWallet(json: string, password: Bytes | string, progressCallback?: ProgressCallback): Promise<ExternallyOwnedAccount> {
     if (isCrowdsaleWallet(json)) {
         if (progressCallback) { progressCallback(0); }
-        let account = decryptCrowdsale(json, password)
+        const account = decryptCrowdsale(json, password)
         if (progressCallback) { progressCallback(1); }
         return Promise.resolve(account);
     }

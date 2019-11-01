@@ -4,7 +4,7 @@ import { arrayify, BytesLike } from "@ethersproject/bytes";
 
 export function decode(textData: string): Uint8Array {
     textData = atob(textData);
-    let data = [];
+    const data = [];
     for (let i = 0; i < textData.length; i++) {
         data.push(textData.charCodeAt(i));
     }

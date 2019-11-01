@@ -11,9 +11,9 @@ import { version } from "./_version";
 const logger = new Logger(version);
 
 export function check(wordlist: Wordlist) {
-    let words = [];
+    const words = [];
     for (let i = 0; i < 2048; i++) {
-        let word = wordlist.getWord(i);
+        const word = wordlist.getWord(i);
         if (i !== wordlist.getWordIndex(word)) { return "0x"; }
         words.push(word);
     }
@@ -45,7 +45,7 @@ export abstract class Wordlist {
 export function register(lang: Wordlist, name?: string): void {
     if (!name) { name = lang.locale; }
     if (exportWordlist) {
-        let g: any = (<any>global)
+        const g: any = (<any>global)
         if (!(g.wordlists)) { defineReadOnly(g, "wordlists", { }); }
         if (!g.wordlists[name]) {
             defineReadOnly(g.wordlists, name, lang);

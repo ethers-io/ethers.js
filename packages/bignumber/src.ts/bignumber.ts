@@ -77,7 +77,7 @@ export class BigNumber implements Hexable {
     }
 
     div(other: BigNumberish): BigNumber {
-        let o = BigNumber.from(other);
+        const o = BigNumber.from(other);
         if (o.isZero()) {
             throwFault("division by zero", "div");
         }
@@ -247,7 +247,7 @@ function toBigNumber(value: BN): BigNumber {
 }
 
 function toBN(value: BigNumberish): BN {
-    let hex = BigNumber.from(value).toHexString();
+    const hex = BigNumber.from(value).toHexString();
     if (hex[0] === "-") {
         return (new BN("-" + hex.substring(3), 16));
     }
@@ -255,7 +255,7 @@ function toBN(value: BigNumberish): BN {
 }
 
 function throwFault(fault: string, operation: string, value?: any): never {
-    let params: any = { fault: fault, operation: operation };
+    const params: any = { fault: fault, operation: operation };
     if (value != null) { params.value = value; }
 
     return logger.throwError(fault, Logger.errors.NUMERIC_FAULT, params);

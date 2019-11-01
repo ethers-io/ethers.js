@@ -59,7 +59,7 @@ function addSlice(array: Uint8Array): Uint8Array {
     if (array.slice) { return array; }
 
     array.slice = function() {
-        let args = Array.prototype.slice.call(arguments);
+        const args = Array.prototype.slice.call(arguments);
         return addSlice(new Uint8Array(Array.prototype.slice.apply(array, args)));
     }
 
@@ -78,7 +78,7 @@ export function isBytes(value: any): value is Bytes {
     if (value.length == null) { return false; }
 
     for (let i = 0; i < value.length; i++) {
-        let v = value[i];
+        const v = value[i];
         if (v < 0 || v >= 256 || (v % 1)) {
             return false;
         }
@@ -94,7 +94,7 @@ export function arrayify(value: BytesLike | Hexable | number, options?: DataOpti
     if (typeof(value) === "number") {
         logger.checkSafeUint53(value, "invalid arrayify value");
 
-        let result = [];
+        const result = [];
         while (value) {
             result.unshift(value & 0xff);
             value /= 256;
@@ -122,7 +122,7 @@ export function arrayify(value: BytesLike | Hexable | number, options?: DataOpti
             }
         }
 
-        let result = [];
+        const result = [];
         for (let i = 0; i < hex.length; i += 2) {
             result.push(parseInt(hex.substring(i, i + 2), 16));
         }
@@ -138,10 +138,10 @@ export function arrayify(value: BytesLike | Hexable | number, options?: DataOpti
 }
 
 export function concat(items: Array<BytesLike>): Uint8Array {
-    let objects = items.map(item => arrayify(item));
-    let length = objects.reduce((accum, item) => (accum + item.length), 0);
+    const objects = items.map(item => arrayify(item));
+    const length = objects.reduce((accum, item) => (accum + item.length), 0);
 
-    let result = new Uint8Array(length);
+    const result = new Uint8Array(length);
 
     objects.reduce((offset, object) => {
         result.set(object, offset);
@@ -175,7 +175,7 @@ export function zeroPad(value: BytesLike, length: number): Uint8Array {
         logger.throwArgumentError("value out of range", "value", arguments[0]);
     }
 
-    let result = new Uint8Array(length);
+    const result = new Uint8Array(length);
     result.set(value, length - value.length);
     return addSlice(result);
 }
@@ -285,7 +285,7 @@ export function hexConcat(items: Array<BytesLike>): string {
 }
 
 export function hexValue(value: BytesLike | Hexable | number): string {
-    let trimmed = hexStripZeros(hexlify(value, { hexPad: "left" }));
+    const trimmed = hexStripZeros(hexlify(value, { hexPad: "left" }));
     if (trimmed === "0x") { return "0x0"; }
     return trimmed;
 }
@@ -321,7 +321,7 @@ export function hexZeroPad(value: BytesLike, length: number): string {
 }
 
 export function splitSignature(signature: SignatureLike): Signature {
-    let result = {
+    const result = {
         r: "0x",
         s: "0x",
         _vs: "0x",
@@ -330,7 +330,7 @@ export function splitSignature(signature: SignatureLike): Signature {
     };
 
     if (isBytesLike(signature)) {
-        let bytes: Uint8Array = arrayify(signature);
+        const bytes: Uint8Array = arrayify(signature);
         if (bytes.length !== 65) {
             logger.throwArgumentError("invalid signature string; must be 65 bytes", "signature", signature);
         }
@@ -387,14 +387,14 @@ export function splitSignature(signature: SignatureLike): Signature {
                 logger.throwArgumentError("signature _vs overflow", "signature", signature);
             }
 
-            let vs = arrayify(result._vs);
+            const vs = arrayify(result._vs);
 
-            let recoveryParam = ((vs[0] >= 128) ? 1: 0);
-            let v = 27 + result.recoveryParam;
+            const recoveryParam = ((vs[0] >= 128) ? 1: 0);
+            const v = 27 + result.recoveryParam;
 
             // Use _vs to compute s
             vs[0] &= 0x7f;
-            let s = hexlify(vs);
+            const s = hexlify(vs);
 
             // Check _vs aggress with other parameters
 
@@ -433,7 +433,7 @@ export function splitSignature(signature: SignatureLike): Signature {
         }
 
         if (result._vs == null) {
-            let vs = arrayify(result.s);
+            const vs = arrayify(result.s);
             if (vs[0] >= 128) {
                 logger.throwArgumentError("signature s out of range", "signature", signature);
             }

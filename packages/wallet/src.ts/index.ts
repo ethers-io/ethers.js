@@ -40,7 +40,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
         super();
 
         if (isAccount(privateKey)) {
-            let signingKey = new SigningKey(privateKey.privateKey);
+            const signingKey = new SigningKey(privateKey.privateKey);
             defineReadOnly(this, "_signingKey", () => signingKey);
             defineReadOnly(this, "address", computeAddress(this.publicKey));
 
@@ -49,11 +49,11 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
             }
 
             if (privateKey.mnemonic != null) {
-                let mnemonic = privateKey.mnemonic;
-                let path = privateKey.path || defaultPath;
+                const mnemonic = privateKey.mnemonic;
+                const path = privateKey.path || defaultPath;
                 defineReadOnly(this, "_mnemonic", () => mnemonic);
                 defineReadOnly(this, "path", privateKey.path);
-                let node = HDNode.fromMnemonic(mnemonic).derivePath(path);
+                const node = HDNode.fromMnemonic(mnemonic).derivePath(path);
                 if (computeAddress(node.privateKey) !== this.address) {
                     logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDCACTED]");
                 }
@@ -70,7 +70,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
                 }
                 defineReadOnly(this, "_signingKey", () => privateKey);
             } else {
-                let signingKey = new SigningKey(privateKey);
+                const signingKey = new SigningKey(privateKey);
                 defineReadOnly(this, "_signingKey", () => signingKey);
             }
             defineReadOnly(this, "_mnemonic", (): string => null);
@@ -106,7 +106,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
                 delete tx.from;
             }
 
-            let signature = this._signingKey().signDigest(keccak256(serialize(tx)));
+            const signature = this._signingKey().signDigest(keccak256(serialize(tx)));
             return serialize(tx, signature);
         });
     }
@@ -143,7 +143,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
             entropy = arrayify(hexDataSlice(keccak256(concat([ entropy, options.extraEntropy ])), 0, 16));
         }
 
-        let mnemonic = entropyToMnemonic(entropy, options.locale);
+        const mnemonic = entropyToMnemonic(entropy, options.locale);
         return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
     }
 

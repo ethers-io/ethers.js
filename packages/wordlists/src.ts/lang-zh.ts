@@ -30,15 +30,15 @@ function loadWords(lang: Wordlist) {
 
     let deltaOffset = 0;
     for (let i = 0; i < 2048; i++) {
-        let s = style.indexOf(data[i * 3]);
-        let bytes = [
+        const s = style.indexOf(data[i * 3]);
+        const bytes = [
             228 + (s >> 2),
             128 + codes.indexOf(data[i * 3 + 1]),
             128 + codes.indexOf(data[i * 3 + 2]),
         ];
 
         if (lang.locale === "zh_tw") {
-            let common = s % 4;
+            const common = s % 4;
             for (let i = common; i < 3; i++) {
                 bytes[i] = codes.indexOf(deltaData[deltaOffset++]) + ((i == 0) ? 228: 128);
             }

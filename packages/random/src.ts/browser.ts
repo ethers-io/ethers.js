@@ -27,7 +27,7 @@ export function randomBytes(length: number): Uint8Array {
         logger.throwArgumentError("invalid length", "length", length);
     }
 
-    let result = new Uint8Array(length);
+    const result = new Uint8Array(length);
     crypto.getRandomValues(result);
     return arrayify(result);
 };

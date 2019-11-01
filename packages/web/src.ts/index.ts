@@ -43,12 +43,12 @@ export type FetchJsonResponse = {
 type Header = { key: string, value: string };
 
 export function fetchJson(connection: string | ConnectionInfo, json?: string, processFunc?: (value: any, response: FetchJsonResponse) => any): Promise<any> {
-    let headers: { [key: string]: Header } = { };
+    const headers: { [key: string]: Header } = { };
 
     let url: string = null;
 
     // @TODO: Allow ConnectionInfo to override some of these values
-    let options: any = {
+    const options: any = {
         method: "GET",
         mode: "cors",               // no-cors, cors, *same-origin
         cache: "no-cache",          // *default, no-cache, reload, force-cache, only-if-cached
@@ -76,7 +76,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
         }
 
         if (connection.headers) {
-            for (let key in connection.headers) {
+            for (const key in connection.headers) {
                 headers[key.toLowerCase()] = { key: key, value: String(connection.headers[key]) };
                 if (["if-none-match", "if-modified-since"].indexOf(key.toLowerCase()) >= 0) {
                     allow304 = true;
@@ -93,7 +93,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
                 );
             }
 
-            let authorization = connection.user + ":" + connection.password;
+            const authorization = connection.user + ":" + connection.password;
             headers["authorization"] = {
                 key: "Authorization",
                 value: "Basic " + base64Encode(toUtf8Bytes(authorization))
@@ -113,7 +113,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
             }, timeout);
         }
 
-        let cancelTimeout = () => {
+        const cancelTimeout = () => {
             if (timer == null) { return; }
             clearTimeout(timer);
             timer = null;
@@ -125,9 +125,9 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
             headers["content-type"] = { key: "Content-Type", value: "application/json" };
         }
 
-        let flatHeaders: { [ key: string ]: string } = { };
+        const flatHeaders: { [ key: string ]: string } = { };
         Object.keys(headers).forEach((key) => {
-            let header = headers[key];
+            const header = headers[key];
             flatHeaders[header.key] = header.value;
         });
         options.headers = flatHeaders;
@@ -213,7 +213,7 @@ export function poll(func: () => Promise<any>, options?: PollOptions): Promise<a
         let done: boolean = false;
 
         // Returns true if cancel was successful. Unsuccessful cancel means we're already done.
-        let cancel = (): boolean => {
+        const cancel = (): boolean => {
             if (done) { return false; }
             done = true;
             if (timer) { clearTimeout(timer); }
@@ -226,7 +226,7 @@ export function poll(func: () => Promise<any>, options?: PollOptions): Promise<a
             }, options.timeout)
         }
 
-        let retryLimit = options.retryLimit;
+        const retryLimit = options.retryLimit;
 
         let attempt = 0;
         function check() {

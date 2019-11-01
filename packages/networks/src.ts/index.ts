@@ -14,7 +14,7 @@ export {
 function ethDefaultProvider(network: string): (providers: any) => any {
     return function(providers: any, options?: any): any {
         if (options == null) { options = { }; }
-        let providerList: Array<any> = [];
+        const providerList: Array<any> = [];
 
         if (providers.InfuraProvider) {
             try {
@@ -49,7 +49,13 @@ function ethDefaultProvider(network: string): (providers: any) => any {
         if (providerList.length === 0) { return null; }
 
         if (providers.FallbackProvider) {
-            return new providers.FallbackProvider(providerList);;
+            let quorum = providerList.length / 2;
+            if (options.quorum != null) {
+                quorum = options.quorum;
+            } else if (quorum > 2) {
+                quorum = 2;
+            }
+            return new providers.FallbackProvider(providerList, quorum);
         }
 
         return providerList[0];
@@ -141,8 +147,8 @@ export function getNetwork(network: Networkish): Network {
     if (network == null) { return null; }
 
     if (typeof(network) === "number") {
-        for (let name in networks) {
-            let standard = networks[name];
+        for (const name in networks) {
+            const standard = networks[name];
             if (standard.chainId === network) {
                 return {
                     name: standard.name,
@@ -160,7 +166,7 @@ export function getNetwork(network: Networkish): Network {
     }
 
     if (typeof(network) === "string") {
-        let standard = networks[network];
+        const standard = networks[network];
         if (standard == null) { return null; }
         return {
             name: standard.name,
@@ -170,7 +176,7 @@ export function getNetwork(network: Networkish): Network {
         };
     }
 
-    let standard  = networks[network.name];
+    const standard  = networks[network.name];
 
     // Not a standard network; check that it is a valid network in general
     if (!standard) {

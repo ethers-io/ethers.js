@@ -132,13 +132,13 @@ export abstract class Signer {
     //   - estimateGas
     //   - populateTransaction (and therefor sendTransaction)
     checkTransaction(transaction: TransactionRequest): TransactionRequest {
-        for (let key in transaction) {
+        for (const key in transaction) {
             if (allowedTransactionKeys.indexOf(key) === -1) {
                 logger.throwArgumentError("invalid transaction key: " + key, "transaction", transaction);
             }
         }
 
-        let tx = shallowCopy(transaction);
+        const tx = shallowCopy(transaction);
         if (tx.from == null) { tx.from = this.getAddress(); }
         return tx;
     }
@@ -147,39 +147,38 @@ export abstract class Signer {
     // this Signer. Should be used by sendTransaction but NOT by signTransaction.
     // By default called from: (overriding these prevents it)
     //   - sendTransaction
-    populateTransaction(transaction: TransactionRequest): Promise<TransactionRequest> {
-        return resolveProperties(this.checkTransaction(transaction)).then((tx) => {
+    async populateTransaction(transaction: TransactionRequest): Promise<TransactionRequest> {
+        const tx = await resolveProperties(this.checkTransaction(transaction))
 
-            if (tx.to != null) { tx.to = Promise.resolve(tx.to).then((to) => this.resolveName(to)); }
-            if (tx.gasPrice == null) { tx.gasPrice = this.getGasPrice(); }
-            if (tx.nonce == null) { tx.nonce = this.getTransactionCount("pending"); }
+        if (tx.to != null) { tx.to = Promise.resolve(tx.to).then((to) => this.resolveName(to)); }
+        if (tx.gasPrice == null) { tx.gasPrice = this.getGasPrice(); }
+        if (tx.nonce == null) { tx.nonce = this.getTransactionCount("pending"); }
 
-            // Make sure any provided address matches this signer
-            if (tx.from == null) {
-                tx.from = this.getAddress();
-            } else {
-                tx.from = Promise.all([
-                    this.getAddress(),
-                    this.provider.resolveName(tx.from)
-                ]).then((results) => {
-                    if (results[0] !== results[1]) {
-                        logger.throwArgumentError("from address mismatch", "transaction", transaction);
-                    }
-                    return results[0];
+        // Make sure any provided address matches this signer
+        if (tx.from == null) {
+            tx.from = this.getAddress();
+        } else {
+            tx.from = Promise.all([
+                this.getAddress(),
+                this.provider.resolveName(tx.from)
+            ]).then((results) => {
+                if (results[0] !== results[1]) {
+                    logger.throwArgumentError("from address mismatch", "transaction", transaction);
+                }
+                return results[0];
+            });
+        }
+
+        if (tx.gasLimit == null) {
+            tx.gasLimit = this.estimateGas(tx).catch((error) => {
+                logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+                    tx: tx
                 });
-            }
+            });
+        }
+        if (tx.chainId == null) { tx.chainId = this.getChainId(); }
 
-            if (tx.gasLimit == null) {
-                tx.gasLimit = this.estimateGas(tx).catch((error) => {
-                    logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
-                        tx: tx
-                    });
-                });
-            }
-            if (tx.chainId == null) { tx.chainId = this.getChainId(); }
-
-            return resolveProperties(tx);
-        });
+        return await resolveProperties(tx);
     }
 
 

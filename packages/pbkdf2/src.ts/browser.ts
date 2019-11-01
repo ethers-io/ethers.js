@@ -6,10 +6,10 @@ import { computeHmac, SupportedAlgorithms } from "@ethersproject/sha2";
 export function pbkdf2(password: BytesLike, salt: BytesLike, iterations: number, keylen: number, hashAlgorithm: SupportedAlgorithms): string {
     password = arrayify(password);
     salt = arrayify(salt);
-    let hLen
-    let l = 1
-    let DK = new Uint8Array(keylen)
-    let block1 = new Uint8Array(salt.length + 4)
+    let hLen;
+    let l = 1;
+    const DK = new Uint8Array(keylen)
+    const block1 = new Uint8Array(salt.length + 4)
     block1.set(salt);
     //salt.copy(block1, 0, 0, salt.length)
 
@@ -44,8 +44,8 @@ export function pbkdf2(password: BytesLike, salt: BytesLike, iterations: number,
         }
 
 
-        let destPos = (i - 1) * hLen
-        let len = (i === l ? r : hLen)
+        const destPos = (i - 1) * hLen
+        const len = (i === l ? r : hLen)
         //T.copy(DK, destPos, 0, len)
         DK.set(arrayify(T).slice(0, len), destPos);
     }
