@@ -41,13 +41,13 @@ function serializeTopics(topics: Array<string | Array<string>>): string {
         if (Array.isArray(topic)) {
 
             // Only track unique OR-topics
-            let unique: { [ topic: string ]: boolean } = { }
+            const unique: { [ topic: string ]: boolean } = { }
             topic.forEach((topic) => {
                 unique[checkTopic(topic)] = true;
             });
 
             // The order of OR-topics does not matter
-            let sorted = Object.keys(unique);
+            const sorted = Object.keys(unique);
             sorted.sort();
 
             return sorted.join("|");
@@ -133,6 +133,7 @@ let defaultFormatter: Formatter = null;
 
 let nextPollId = 1;
 
+
 export class BaseProvider extends Provider {
     _network: Network;
 
@@ -140,7 +141,7 @@ export class BaseProvider extends Provider {
 
     formatter: Formatter;
 
-    // To help mitigate the eventually conssitent nature of the blockchain
+    // To help mitigate the eventually consistent nature of the blockchain
     // we keep a mapping of events we emit. If we emit an event X, we expect
     // that a user should be able to query for that event in the callback,
     // if the node returns null, we stall the response until we get back a
@@ -160,6 +161,9 @@ export class BaseProvider extends Provider {
     _fastBlockNumber: number;
     _fastBlockNumberPromise: Promise<number>;
     _fastQueryDate: number;
+
+    _maxInternalBlockNumber: number;
+    _internalBlockNumber: Promise<{ blockNumber: number, reqTime: number, respTime: number }>;
 
 
     /**
@@ -190,7 +194,7 @@ export class BaseProvider extends Provider {
             this.ready.catch((error) => { });
 
         } else {
-            let knownNetwork = getStatic<(network: Networkish) => Network>(new.target, "getNetwork")(network);
+            const knownNetwork = getStatic<(network: Networkish) => Network>(new.target, "getNetwork")(network);
             if (knownNetwork) {
                 defineReadOnly(this, "_network", knownNetwork);
                 defineReadOnly(this, "ready", Promise.resolve(this._network));
@@ -199,6 +203,8 @@ export class BaseProvider extends Provider {
                 logger.throwArgumentError("invalid network", "network", network);
             }
         }
+
+        this._maxInternalBlockNumber = -1024;
 
         this._lastBlockNumber = -2;
 
@@ -223,110 +229,134 @@ export class BaseProvider extends Provider {
         return getNetwork((network == null) ? "homestead": network);
     }
 
-    poll(): void {
-        let pollId = nextPollId++;
+    async _getInternalBlockNumber(maxAge: number): Promise<number> {
+        await this.ready;
+
+        const internalBlockNumber = this._internalBlockNumber;
+
+        if (maxAge > 0 && this._internalBlockNumber) {
+            const result = await internalBlockNumber;
+            if ((getTime() - result.respTime) <= maxAge) {
+                return result.blockNumber;
+            }
+        }
+
+        const reqTime = getTime();
+        this._internalBlockNumber = this.perform("getBlockNumber", { }).then((blockNumber) => {
+            const respTime = getTime();
+            blockNumber = BigNumber.from(blockNumber).toNumber();
+            if (blockNumber < this._maxInternalBlockNumber) { blockNumber = this._maxInternalBlockNumber; }
+            this._maxInternalBlockNumber = blockNumber;
+            this._setFastBlockNumber(blockNumber); // @TODO: Still need this?
+            return { blockNumber, reqTime, respTime };
+        });
+
+        return (await this._internalBlockNumber).blockNumber;
+    }
+
+    async poll(): Promise<void> {
+        const pollId = nextPollId++;
         this.emit("willPoll", pollId);
 
         // Track all running promises, so we can trigger a post-poll once they are complete
-        let runners: Array<Promise<void>> = [];
+        const runners: Array<Promise<void>> = [];
 
-        this.getBlockNumber().then((blockNumber) => {
-            this._setFastBlockNumber(blockNumber);
+        const blockNumber = await this._getInternalBlockNumber(100 + this.pollingInterval / 2);
 
-            // If the block has not changed, meh.
-            if (blockNumber === this._lastBlockNumber) { return; }
+        this._setFastBlockNumber(blockNumber);
 
-            // First polling cycle, trigger a "block" events
-            if (this._emitted.block === -2) {
-                this._emitted.block = blockNumber - 1;
-            }
+        // If the block has not changed, meh.
+        if (blockNumber === this._lastBlockNumber) { return; }
 
-            // Notify all listener for each block that has passed
-            for (let i = (<number>this._emitted.block) + 1; i <= blockNumber; i++) {
-                this.emit("block", i);
-            }
+        // First polling cycle, trigger a "block" events
+        if (this._emitted.block === -2) {
+            this._emitted.block = blockNumber - 1;
+        }
 
-            // The emitted block was updated, check for obsolete events
-            if ((<number>this._emitted.block) !== blockNumber) {
-                this._emitted.block = blockNumber;
+        // Notify all listener for each block that has passed
+        for (let i = (<number>this._emitted.block) + 1; i <= blockNumber; i++) {
+            this.emit("block", i);
+        }
 
-                Object.keys(this._emitted).forEach((key) => {
-                    // The block event does not expire
-                    if (key === "block") { return; }
+        // The emitted block was updated, check for obsolete events
+        if ((<number>this._emitted.block) !== blockNumber) {
+            this._emitted.block = blockNumber;
 
-                    // The block we were at when we emitted this event
-                    let eventBlockNumber = this._emitted[key];
+            Object.keys(this._emitted).forEach((key) => {
+                // The block event does not expire
+                if (key === "block") { return; }
 
-                    // We cannot garbage collect pending transactions or blocks here
-                    // They should be garbage collected by the Provider when setting
-                    // "pending" events
-                    if (eventBlockNumber === "pending") { return; }
+                // The block we were at when we emitted this event
+                const eventBlockNumber = this._emitted[key];
 
-                    // Evict any transaction hashes or block hashes over 12 blocks
-                    // old, since they should not return null anyways
-                    if (blockNumber - eventBlockNumber > 12) {
-                        delete this._emitted[key];
-                    }
-                });
-            }
+                // We cannot garbage collect pending transactions or blocks here
+                // They should be garbage collected by the Provider when setting
+                // "pending" events
+                if (eventBlockNumber === "pending") { return; }
 
-            // First polling cycle
-            if (this._lastBlockNumber === -2) {
-                this._lastBlockNumber = blockNumber - 1;
-            }
-
-            // Find all transaction hashes we are waiting on
-            this._events.forEach((event) => {
-                let comps = event.tag.split(":");
-                switch (comps[0]) {
-                    case "tx": {
-                        let hash = comps[1];
-                        let runner = this.getTransactionReceipt(hash).then((receipt) => {
-                            if (!receipt || receipt.blockNumber == null) { return null; }
-                            this._emitted["t:" + hash] = receipt.blockNumber;
-                            this.emit(hash, receipt);
-                            return null;
-                        }).catch((error: Error) => { this.emit("error", error); });
-
-                        runners.push(runner);
-
-                        break;
-                    }
-
-                    case "filter": {
-                        let topics = deserializeTopics(comps[2]);
-                        let filter = {
-                            address: comps[1],
-                            fromBlock: this._lastBlockNumber + 1,
-                            toBlock: blockNumber,
-                            topics: topics
-                        }
-                        if (!filter.address) { delete filter.address; }
-                        let runner = this.getLogs(filter).then((logs) => {
-                            if (logs.length === 0) { return; }
-                            logs.forEach((log: Log) => {
-                                this._emitted["b:" + log.blockHash] = log.blockNumber;
-                                this._emitted["t:" + log.transactionHash] = log.blockNumber;
-                                this.emit(filter, log);
-                            });
-                            return null;
-                        }).catch((error: Error) => { this.emit("error", error); });
-
-                        runners.push(runner);
-
-                        break;
-                    }
+                // Evict any transaction hashes or block hashes over 12 blocks
+                // old, since they should not return null anyways
+                if (blockNumber - eventBlockNumber > 12) {
+                    delete this._emitted[key];
                 }
             });
+        }
 
-            this._lastBlockNumber = blockNumber;
+        // First polling cycle
+        if (this._lastBlockNumber === -2) {
+            this._lastBlockNumber = blockNumber - 1;
+        }
 
-            return null;
-        }).catch((error: Error) => { });
+        // Find all transaction hashes we are waiting on
+        this._events.forEach((event) => {
+            const comps = event.tag.split(":");
+            switch (comps[0]) {
+                case "tx": {
+                    const hash = comps[1];
+                    let runner = this.getTransactionReceipt(hash).then((receipt) => {
+                        if (!receipt || receipt.blockNumber == null) { return null; }
+                        this._emitted["t:" + hash] = receipt.blockNumber;
+                        this.emit(hash, receipt);
+                        return null;
+                    }).catch((error: Error) => { this.emit("error", error); });
+
+                    runners.push(runner);
+
+                    break;
+                }
+
+                case "filter": {
+                    const topics = deserializeTopics(comps[2]);
+                    const filter = {
+                        address: comps[1],
+                        fromBlock: this._lastBlockNumber + 1,
+                        toBlock: blockNumber,
+                        topics: topics
+                    }
+                    if (!filter.address) { delete filter.address; }
+                    const runner = this.getLogs(filter).then((logs) => {
+                        if (logs.length === 0) { return; }
+                        logs.forEach((log: Log) => {
+                            this._emitted["b:" + log.blockHash] = log.blockNumber;
+                            this._emitted["t:" + log.transactionHash] = log.blockNumber;
+                            this.emit(filter, log);
+                        });
+                        return null;
+                    }).catch((error: Error) => { this.emit("error", error); });
+                    runners.push(runner);
+
+                    break;
+                }
+            }
+        });
+
+        this._lastBlockNumber = blockNumber;
 
         Promise.all(runners).then(() => {
             this.emit("didPoll", pollId);
         });
+
+        return null;
     }
 
     resetEventsBlock(blockNumber: number): void {
@@ -354,6 +384,7 @@ export class BaseProvider extends Provider {
         setTimeout(() => {
             if (value && !this._poller) {
                 this._poller = setInterval(this.poll.bind(this), this.pollingInterval);
+                this.poll();
 
             } else if (!value && this._poller) {
                 clearInterval(this._poller);
@@ -380,7 +411,7 @@ export class BaseProvider extends Provider {
     }
 
     _getFastBlockNumber(): Promise<number> {
-        let now = getTime();
+        const now = getTime();
 
         // Stale block number, request a newer value
         if ((now - this._fastQueryDate) > 2 * this._pollingInterval) {
@@ -413,15 +444,17 @@ export class BaseProvider extends Provider {
     // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
     //        this will be used once we move to the WebSocket or other alternatives to polling
 
-    waitForTransaction(transactionHash: string, confirmations?: number): Promise<TransactionReceipt> {
+    async waitForTransaction(transactionHash: string, confirmations?: number): Promise<TransactionReceipt> {
         if (confirmations == null) { confirmations = 1; }
 
-        if (confirmations === 0) {
-            return this.getTransactionReceipt(transactionHash);
-        }
+        const receipt = await this.getTransactionReceipt(transactionHash);
 
+        // Receipt is already good
+        if (receipt.confirmations >= confirmations) { return receipt; }
+
+        // Poll until the receipt is good...
         return new Promise((resolve) => {
-            let handler = (receipt: TransactionReceipt) => {
+            const handler = (receipt: TransactionReceipt) => {
                 if (receipt.confirmations < confirmations) { return; }
                 this.removeListener(transactionHash, handler);
                 resolve(receipt);
@@ -430,75 +463,57 @@ export class BaseProvider extends Provider {
         });
     }
 
-    _runPerform(method: string, params: { [ key: string ]: () => any }): Promise<any> {
-        return this.ready.then(() => {
-            // Execute all the functions now that we are "ready"
-            Object.keys(params).forEach((key) => {
-                params[key] = params[key]();
-            });
-            return resolveProperties(params).then((params) => {
-                return this.perform(method, params);
-            });
-        });
-    }
-
     getBlockNumber(): Promise<number> {
-        return this._runPerform("getBlockNumber", { }).then((result) => {
-            let value = parseInt(result);
-            if (value != result) { throw new Error("invalid response - getBlockNumber"); }
-            this._setFastBlockNumber(value);
-            return value;
-        });
+        return this._getInternalBlockNumber(0);
     }
 
-    getGasPrice(): Promise<BigNumber> {
-        return this._runPerform("getGasPrice", { }).then((result) => {
-            return BigNumber.from(result);
-        });
+    async getGasPrice(): Promise<BigNumber> {
+        await this.ready;
+        return BigNumber.from(await this.perform("getGasPrice", { }));
     }
 
-    getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber> {
-        return this._runPerform("getBalance", {
-            address: () => this._getAddress(addressOrName),
-            blockTag: () => this._getBlockTag(blockTag)
-        }).then((result) => {
-            return BigNumber.from(result);
+    async getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber> {
+        await this.ready;
+        const params = await resolveProperties({
+            address: this._getAddress(addressOrName),
+            blockTag: this._getBlockTag(blockTag)
         });
+        return BigNumber.from(await this.perform("getBalance", params));
     }
 
-    getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number> {
-        return this._runPerform("getTransactionCount", {
-            address: () => this._getAddress(addressOrName),
-            blockTag: () => this._getBlockTag(blockTag)
-        }).then((result) => {
-            return BigNumber.from(result).toNumber();
+    async getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number> {
+        await this.ready;
+        const params = await resolveProperties({
+            address: this._getAddress(addressOrName),
+            blockTag: this._getBlockTag(blockTag)
         });
+        return BigNumber.from(await this.perform("getTransactionCount", params)).toNumber();
     }
 
-    getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
-        return this._runPerform("getCode", {
-            address: () => this._getAddress(addressOrName),
-            blockTag: () => this._getBlockTag(blockTag)
-        }).then((result) => {
-            return hexlify(result);
+    async getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
+        await this.ready;
+        const params = await resolveProperties({
+            address: this._getAddress(addressOrName),
+            blockTag: this._getBlockTag(blockTag)
         });
+        return hexlify(await this.perform("getCode", params));
     }
 
-    getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
-        return this._runPerform("getStorageAt", {
-            address: () => this._getAddress(addressOrName),
-            blockTag: () => this._getBlockTag(blockTag),
-            position: () => Promise.resolve(position).then((p) => hexValue(p))
-        }).then((result) => {
-            return hexlify(result);
+    async getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
+        await this.ready;
+        const params = await resolveProperties({
+            address: this._getAddress(addressOrName),
+            blockTag: this._getBlockTag(blockTag),
+            position: Promise.resolve(position).then((p) => hexValue(p))
         });
+        return hexlify(await this.perform("getStorageAt", params));
     }
 
     // This should be called by any subclass wrapping a TransactionResponse
     _wrapTransaction(tx: Transaction, hash?: string): TransactionResponse {
         if (hash != null && hexDataLength(hash) !== 32) { throw new Error("invalid response - sendTransaction"); }
 
-        let result = <TransactionResponse>tx;
+        const result = <TransactionResponse>tx;
 
         // Check the hash we expect is the same as the hash the server reported
         if (hash != null && tx.hash !== hash) {
@@ -506,7 +521,7 @@ export class BaseProvider extends Provider {
         }
 
         // @TODO: (confirmations? number, timeout? number)
-        result.wait = (confirmations?: number) => {
+        result.wait = async (confirmations?: number) => {
 
             // We know this transaction *must* exist (whether it gets mined is
             // another story), so setting an emitted value forces us to
@@ -515,179 +530,168 @@ export class BaseProvider extends Provider {
                 this._emitted["t:" + tx.hash] = "pending";
             }
 
-            return this.waitForTransaction(tx.hash, confirmations).then((receipt) => {
-                if (receipt == null && confirmations === 0) { return null; }
+            const receipt = await this.waitForTransaction(tx.hash, confirmations)
+            if (receipt == null && confirmations === 0) { return null; }
 
-                // No longer pending, allow the polling loop to garbage collect this
-                this._emitted["t:" + tx.hash] = receipt.blockNumber;
+            // No longer pending, allow the polling loop to garbage collect this
+            this._emitted["t:" + tx.hash] = receipt.blockNumber;
 
-                if (receipt.status === 0) {
-                    logger.throwError("transaction failed", Logger.errors.CALL_EXCEPTION, {
-                        transactionHash: tx.hash,
-                        transaction: tx,
-                        receipt: receipt
-                    });
-                }
-                return receipt;
-            });
+            if (receipt.status === 0) {
+                logger.throwError("transaction failed", Logger.errors.CALL_EXCEPTION, {
+                    transactionHash: tx.hash,
+                    transaction: tx,
+                    receipt: receipt
+                });
+            }
+            return receipt;
         };
 
         return result;
     }
 
-    sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse> {
-        return this._runPerform("sendTransaction", {
-            signedTransaction: () => Promise.resolve(signedTransaction).then(t => hexlify(t))
-        }).then((result) => {
-            return this._wrapTransaction(this.formatter.transaction(signedTransaction), result);
-        }, (error) => {
-            error.transaction = this.formatter.transaction(signedTransaction);
-            if (error.transaction.hash) {
-                (<any>error).transactionHash = error.transaction.hash;
-            }
+    async sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse> {
+        await this.ready;
+        const hexTx = await Promise.resolve(signedTransaction).then(t => hexlify(t));
+        const tx = this.formatter.transaction(signedTransaction);
+        try {
+            const hash = await this.perform("sendTransaction", { signedTransaction: hexTx });
+            return this._wrapTransaction(tx, hash);
+        } catch (error) {
+            (<any>error).transaction = tx;
+            (<any>error).transactionHash = tx.hash;
             throw error;
-        });
+        }
     }
 
-    _getTransactionRequest(transaction: TransactionRequest | Promise<TransactionRequest>): Promise<Transaction> {
-        return Promise.resolve(transaction).then((t: any) => {
-            let tx: any = { };
-            ["from", "to"].forEach((key) => {
-                if (t[key] == null) { return; }
-                tx[key] = Promise.resolve(t[key]).then(a => (a ? this._getAddress(a): null))
-            });
-            ["data", "gasLimit", "gasPrice", "value"].forEach((key) => {
-                if (t[key] == null) { return; }
-                tx[key] = t[key];
-            });
-            return resolveProperties(tx).then((t) => this.formatter.transactionRequest(t));
+    async _getTransactionRequest(transaction: TransactionRequest | Promise<TransactionRequest>): Promise<Transaction> {
+        const values: any = await transaction;
+
+        const tx: any = { };
+
+        ["from", "to"].forEach((key) => {
+            if (values[key] == null) { return; }
+            tx[key] = Promise.resolve(values[key]).then((v) => (v ? this._getAddress(v): null))
         });
+
+        ["gasLimit", "gasPrice", "value"].forEach((key) => {
+            if (values[key] == null) { return; }
+            tx[key] = Promise.resolve(values[key]).then((v) => (v ? BigNumber.from(v): null));
+        });
+
+        ["data"].forEach((key) => {
+            if (values[key] == null) { return; }
+            tx[key] = Promise.resolve(values[key]).then((v) => (v ? hexlify(v): null));
+        });
+
+        return this.formatter.transactionRequest(await resolveProperties(tx));
     }
 
-    _getFilter(filter: Filter | FilterByBlockHash | Promise<Filter | FilterByBlockHash>): Promise<Filter | FilterByBlockHash> {
-        return Promise.resolve(filter).then((f: any) => {
-            let filter: any = { };
+    async _getFilter(filter: Filter | FilterByBlockHash | Promise<Filter | FilterByBlockHash>): Promise<Filter | FilterByBlockHash> {
+        if (filter instanceof Promise) { filter = await filter; }
 
-            if (f.address != null) {
-               filter.address = this._getAddress(f.address);
-            }
+        const result: any = { };
 
-            if (f.topics) {
-               filter.topics = f.topics;
-            }
-
-            if (f.blockHash != null) {
-                filter.blockHash = f.blockHash;
-            }
-
-            ["fromBlock", "toBlock"].forEach((key) => {
-                if (f[key] == null) { return; }
-                filter[key] = this._getBlockTag(f[key]);
-            });
-
-            return resolveProperties(filter).then((f) => this.formatter.filter(f));
-        });
-    }
-
-
-    call(transaction: TransactionRequest | Promise<TransactionRequest>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
-        return this._runPerform("call", {
-            transaction: () => this._getTransactionRequest(transaction),
-            blockTag: () => this._getBlockTag(blockTag)
-        }).then((result) => {
-            return hexlify(result);
-        });
-    }
-
-    estimateGas(transaction: TransactionRequest | Promise<TransactionRequest>) {
-        return this._runPerform("estimateGas", {
-            transaction: () => this._getTransactionRequest(transaction)
-        }).then((result) => {
-            return BigNumber.from(result);
-        });
-    }
-
-    _getAddress(addressOrName: string | Promise<string>): Promise<string> {
-        return this.resolveName(addressOrName).then((address) => {
-            if (address == null) {
-                logger.throwError("ENS name not configured", Logger.errors.UNSUPPORTED_OPERATION, {
-                    operation: `resolveName(${ JSON.stringify(addressOrName) })`
-                });
-            }
-            return address;
-        });
-    }
-
-    _getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block | BlockWithTransactions> {
-        if (blockHashOrBlockTag instanceof Promise) {
-            return blockHashOrBlockTag.then((b) => this._getBlock(b, includeTransactions));
+        if (filter.address != null) {
+            result.address = this._getAddress(filter.address);
         }
 
-        return this.ready.then(() => {
-            let blockHashOrBlockTagPromise: Promise<string | BlockTag> = null;
-            if (isHexString(blockHashOrBlockTag, 32)) {
-                blockHashOrBlockTagPromise = Promise.resolve(blockHashOrBlockTag);
-            } else {
-                blockHashOrBlockTagPromise = this._getBlockTag(blockHashOrBlockTag);
+        ["blockHash", "topics"].forEach((key) => {
+            if ((<any>filter)[key] == null) { return; }
+            result[key] = (<any>filter)[key];
+        });
+
+        ["fromBlock", "toBlock"].forEach((key) => {
+            if ((<any>filter)[key] == null) { return; }
+            result[key] = this._getBlockTag((<any>filter)[key]);
+        });
+
+        return this.formatter.filter(await resolveProperties(filter));
+    }
+
+
+    async call(transaction: TransactionRequest | Promise<TransactionRequest>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
+        await this.ready;
+        const params = await resolveProperties({
+            transaction: this._getTransactionRequest(transaction),
+            blockTag: this._getBlockTag(blockTag)
+        });
+        return hexlify(await this.perform("call", params));
+    }
+
+    async estimateGas(transaction: TransactionRequest | Promise<TransactionRequest>): Promise<BigNumber> {
+        await this.ready;
+        const params = await resolveProperties({
+            transaction: this._getTransactionRequest(transaction)
+        });
+        return BigNumber.from(await this.perform("estimateGas", params));
+    }
+
+    async _getAddress(addressOrName: string | Promise<string>): Promise<string> {
+        const address = await this.resolveName(addressOrName);
+        if (address == null) {
+            logger.throwError("ENS name not configured", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: `resolveName(${ JSON.stringify(addressOrName) })`
+            });
+        }
+        return address;
+    }
+
+    async _getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block | BlockWithTransactions> {
+        await this.ready;
+
+        if (blockHashOrBlockTag instanceof Promise) {
+            blockHashOrBlockTag = await blockHashOrBlockTag;
+        }
+
+        // If blockTag is a number (not "latest", etc), this is the block number
+        let blockNumber = -128;
+
+        const params: { [key: string]: any } = {
+            includeTransactions: !!includeTransactions
+        };
+
+        if (isHexString(blockHashOrBlockTag, 32)) {
+            params.blockHash = blockHashOrBlockTag;
+        } else {
+            try {
+                params.blockTag = this.formatter.blockTag(await this._getBlockTag(blockHashOrBlockTag));
+                if (isHexString(params.blockTag)) {
+                    blockNumber = parseInt(params.blockTag.substring(2), 16);
+                }
+            } catch (error) {
+                logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
             }
+        }
 
-            return blockHashOrBlockTagPromise.then((blockHashOrBlockTag) => {
-                let params: { [key: string]: any } = {
-                    includeTransactions: !!includeTransactions
-                };
+        return poll(async () => {
+            const block = await this.perform("getBlock", params);
 
-                // Exactly one of blockHash or blockTag will be set
-                let blockHash: string = null;
-                let blockTag: string = null;
+            // Block was not found
+            if (block == null) {
 
-                // If blockTag is a number (not "latest", etc), this is the block number
-                let blockNumber = -128;
-
-                if (isHexString(blockHashOrBlockTag, 32)) {
-                    params.blockHash = blockHashOrBlockTag;
-                } else {
-                    try {
-                        params.blockTag = this.formatter.blockTag(blockHashOrBlockTag);
-                        if (isHexString(params.blockTag)) {
-                            blockNumber = parseInt(params.blockTag.substring(2), 16);
-                        }
-                    } catch (error) {
-                        logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
-                    }
+                // For blockhashes, if we didn't say it existed, that blockhash may
+                // not exist. If we did see it though, perhaps from a log, we know
+                // it exists, and this node is just not caught up yet.
+                if (params.blockHash != null) {
+                    if (this._emitted["b:" + params.blockHash] == null) { return null; }
                 }
 
-                return poll(() => {
-                    return this.perform("getBlock", params).then((block) => {
+                // For block tags, if we are asking for a future block, we return null
+                if (params.blockTag != null) {
+                    if (blockNumber > this._emitted.block) { return null; }
+                }
 
-                        // Block was not found
-                        if (block == null) {
+                // Retry on the next block
+                return undefined;
+            }
 
-                            // For blockhashes, if we didn't say it existed, that blockhash may
-                            // not exist. If we did see it though, perhaps from a log, we know
-                            // it exists, and this node is just not caught up yet.
-                            if (blockHash) {
-                                if (this._emitted["b:" + blockHash] == null) { return null; }
-                            }
+            // Add transactions
+            if (includeTransactions) {
+                return this.formatter.blockWithTransactions(block);
+            }
 
-                            // For block tags, if we are asking for a future block, we return null
-                            if (blockTag) {
-                                if (blockNumber > this._emitted.block) { return null; }
-                            }
-
-                            // Retry on the next block
-                            return undefined;
-                        }
-
-                        // Add transactions
-                        if (includeTransactions) {
-                            return this.formatter.blockWithTransactions(block);
-                        }
-
-                        return this.formatter.block(block);
-                    });
-                }, { onceBlock: this });
-            });
-        });
+            return this.formatter.block(block);
+        }, { onceBlock: this });
     }
 
     getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> {
@@ -698,101 +702,93 @@ export class BaseProvider extends Provider {
         return <Promise<BlockWithTransactions>>(this._getBlock(blockHashOrBlockTag, true));
     }
 
-    getTransaction(transactionHash: string): Promise<TransactionResponse> {
-        return this.ready.then(() => {
-            return resolveProperties({ transactionHash: transactionHash }).then(({ transactionHash }) => {
-                let params = { transactionHash: this.formatter.hash(transactionHash, true) };
-                return poll(() => {
-                    return this.perform("getTransaction", params).then((result) => {
-                        if (result == null) {
-                            if (this._emitted["t:" + transactionHash] == null) {
-                                return null;
-                            }
-                            return undefined;
-                        }
+    async getTransaction(transactionHash: string | Promise<string>): Promise<TransactionResponse> {
+        await this.ready;
+        if (transactionHash instanceof Promise) { transactionHash = await transactionHash; }
 
-                        let tx = this.formatter.transactionResponse(result);
+        const params = { transactionHash: this.formatter.hash(transactionHash, true) };
 
-                        if (tx.blockNumber == null) {
-                            tx.confirmations = 0;
+        return poll(async () => {
+            const result = await this.perform("getTransaction", params);
 
-                        } else if (tx.confirmations == null) {
-                            return this._getFastBlockNumber().then((blockNumber) => {
+            if (result == null) {
+                if (this._emitted["t:" + transactionHash] == null) {
+                    return null;
+                }
+                return undefined;
+            }
 
-                                // Add the confirmations using the fast block number (pessimistic)
-                                let confirmations = (blockNumber - tx.blockNumber) + 1;
-                                if (confirmations <= 0) { confirmations = 1; }
-                                tx.confirmations = confirmations;
+            const tx = this.formatter.transactionResponse(result);
 
-                                return this._wrapTransaction(tx);
-                            });
-                        }
+            if (tx.blockNumber == null) {
+                tx.confirmations = 0;
 
-                        return this._wrapTransaction(tx);
-                    });
-                }, { onceBlock: this });
-            });
-        });
+            } else if (tx.confirmations == null) {
+                const blockNumber = await this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
+
+                // Add the confirmations using the fast block number (pessimistic)
+                let confirmations = (blockNumber - tx.blockNumber) + 1;
+                if (confirmations <= 0) { confirmations = 1; }
+                tx.confirmations = confirmations;
+            }
+
+            return this._wrapTransaction(tx);
+        }, { onceBlock: this });
     }
 
-    getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt> {
-        return this.ready.then(() => {
-            return resolveProperties({ transactionHash: transactionHash }).then(({ transactionHash }) => {
-                let params = { transactionHash: this.formatter.hash(transactionHash, true) };
-                return poll(() => {
-                    return this.perform("getTransactionReceipt", params).then((result) => {
-                        if (result == null) {
-                            if (this._emitted["t:" + transactionHash] == null) {
-                                return null;
-                            }
-                            return undefined;
-                        }
+    async getTransactionReceipt(transactionHash: string | Promise<string>): Promise<TransactionReceipt> {
+        await this.ready;
 
-                        // "geth-etc" returns receipts before they are ready
-                        if (result.blockHash == null) { return undefined; }
+        if (transactionHash instanceof Promise) { transactionHash = await transactionHash; }
 
-                        let receipt = this.formatter.receipt(result);
+        const params = { transactionHash: this.formatter.hash(transactionHash, true) };
 
-                        if (receipt.blockNumber == null) {
-                            receipt.confirmations = 0;
+        return poll(async () => {
+            const result = await this.perform("getTransactionReceipt", params);
 
-                        } else if (receipt.confirmations == null) {
-                            return this._getFastBlockNumber().then((blockNumber) => {
+            if (result == null) {
+                if (this._emitted["t:" + transactionHash] == null) {
+                    return null;
+                }
+                return undefined;
+            }
 
-                                // Add the confirmations using the fast block number (pessimistic)
-                                let confirmations = (blockNumber - receipt.blockNumber) + 1;
-                                if (confirmations <= 0) { confirmations = 1; }
-                                receipt.confirmations = confirmations;
+            // "geth-etc" returns receipts before they are ready
+            if (result.blockHash == null) { return undefined; }
 
-                                return receipt;
-                            });
-                        }
+            const receipt = this.formatter.receipt(result);
 
-                        return receipt;
-                    });
-                }, { onceBlock: this });
-            });
-        });
+            if (receipt.blockNumber == null) {
+                receipt.confirmations = 0;
+
+            } else if (receipt.confirmations == null) {
+                const blockNumber = await this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
+
+                // Add the confirmations using the fast block number (pessimistic)
+                let confirmations = (blockNumber - receipt.blockNumber) + 1;
+                if (confirmations <= 0) { confirmations = 1; }
+                receipt.confirmations = confirmations;
+            }
+
+            return receipt;
+        }, { onceBlock: this });
     }
 
-
-    getLogs(filter: Filter | FilterByBlockHash | Promise<Filter | FilterByBlockHash>): Promise<Array<Log>> {
-        return this._runPerform("getLogs", {
-            filter: () => this._getFilter(filter)
-        }).then((result) => {
-            return Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(result);
-        });
+    async getLogs(filter: Filter | FilterByBlockHash | Promise<Filter | FilterByBlockHash>): Promise<Array<Log>> {
+        await this.ready;
+        const params = await resolveProperties({ filter: this._getFilter(filter) });
+        const logs = await this.perform("getLogs", params);
+        return Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(logs);
     }
 
-    getEtherPrice(): Promise<number> {
-        return this._runPerform("getEtherPrice", { }).then((result) => {
-            return result;
-        });
+    async getEtherPrice(): Promise<number> {
+        await this.ready;
+        return this.perform("getEtherPrice", { });
     }
 
-    _getBlockTag(blockTag: BlockTag | Promise<BlockTag>): Promise<BlockTag> {
+    async _getBlockTag(blockTag: BlockTag | Promise<BlockTag>): Promise<BlockTag> {
         if (blockTag instanceof Promise) {
-            return blockTag.then((b) => this._getBlockTag(b));
+            blockTag = await blockTag;
         }
 
         if (typeof(blockTag) === "number" && blockTag < 0) {
@@ -800,46 +796,41 @@ export class BaseProvider extends Provider {
                 logger.throwArgumentError("invalid BlockTag", "blockTag", blockTag);
             }
 
-            return this._getFastBlockNumber().then((bn) => {
-                bn += blockTag;
-                if (bn < 0) { bn = 0; }
-                return this.formatter.blockTag(bn)
-            });
+            let blockNumber = await this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
+            blockNumber += blockTag;
+            if (blockNumber < 0) { blockNumber = 0; }
+            return this.formatter.blockTag(blockNumber)
         }
 
-        return Promise.resolve(this.formatter.blockTag(blockTag));
+        return this.formatter.blockTag(blockTag);
     }
 
 
-    _getResolver(name: string): Promise<string> {
+    async _getResolver(name: string): Promise<string> {
         // Get the resolver from the blockchain
-        return this.getNetwork().then((network) => {
+        const network = await this.getNetwork();
 
-            // No ENS...
-            if (!network.ensAddress) {
-                logger.throwError(
-                    "network does not support ENS",
-                    Logger.errors.UNSUPPORTED_OPERATION,
-                    { operation: "ENS", network: network.name }
-                );
-            }
+        // No ENS...
+        if (!network.ensAddress) {
+            logger.throwError(
+                "network does not support ENS",
+                Logger.errors.UNSUPPORTED_OPERATION,
+                { operation: "ENS", network: network.name }
+            );
+        }
 
-            // keccak256("resolver(bytes32)")
-            let data = "0x0178b8bf" + namehash(name).substring(2);
-            let transaction = { to: network.ensAddress, data: data };
+        // keccak256("resolver(bytes32)")
+        const transaction = {
+            to: network.ensAddress,
+            data: ("0x0178b8bf" + namehash(name).substring(2))
+        };
 
-            return this.call(transaction).then((data) => {
-                return this.formatter.callAddress(data);
-            });
-        });
+        return this.formatter.callAddress(await this.call(transaction));
     }
 
-    resolveName(name: string | Promise<string>): Promise<string> {
+    async resolveName(name: string | Promise<string>): Promise<string> {
 
-        // If it is a promise, resolve it then recurse
-        if (name instanceof Promise) {
-            return name.then((addressOrName) => this.resolveName(addressOrName));
-        }
+        if (name instanceof Promise) { name = await name; }
 
         // If it is already an address, nothing to resolve
         try {
@@ -847,54 +838,55 @@ export class BaseProvider extends Provider {
         } catch (error) { }
 
         // Get the addr from the resovler
-        return this._getResolver(name).then((resolverAddress) => {
-            if (!resolverAddress) { return null; }
+        const resolverAddress = await this._getResolver(name);
+        if (!resolverAddress) { return null; }
 
-            // keccak256("addr(bytes32)")
-            let data = "0x3b3b57de" + namehash(name).substring(2);
-            let transaction = { to: resolverAddress, data: data };
-            return this.call(transaction).then((data) => {
-                return this.formatter.callAddress(data);
-            });
-        });
+        // keccak256("addr(bytes32)")
+        const transaction = {
+            to: resolverAddress,
+            data: ("0x3b3b57de" + namehash(name).substring(2))
+        };
+
+        return this.formatter.callAddress(await this.call(transaction));
     }
 
-    lookupAddress(address: string | Promise<string>): Promise<string> {
-        if (address instanceof Promise) {
-            return address.then((address) => this.lookupAddress(address));
-        }
+    async lookupAddress(address: string | Promise<string>): Promise<string> {
+        if (address instanceof Promise) { address = await address; }
 
         address = this.formatter.address(address);
 
-        let name = address.substring(2) + ".addr.reverse"
+        const reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
 
-        return this._getResolver(name).then((resolverAddress) => {
-            if (!resolverAddress) { return null; }
+        const resolverAddress = await this._getResolver(reverseName);
+        if (!resolverAddress) { return null; }
 
-            // keccak("name(bytes32)")
-            let data = "0x691f3431" + namehash(name).substring(2);
-            return this.call({ to: resolverAddress, data: data }).then((data) => {
-                let bytes = arrayify(data);
+        // keccak("name(bytes32)")
+        let bytes = arrayify(await this.call({
+            to: resolverAddress,
+            data: ("0x691f3431" + namehash(reverseName).substring(2))
+        }));
 
-                // Strip off the dynamic string pointer (0x20)
-                if (bytes.length < 32 || !BigNumber.from(bytes.slice(0, 32)).eq(32)) { return null; }
-                bytes = bytes.slice(32);
+        // Strip off the dynamic string pointer (0x20)
+        if (bytes.length < 32 || !BigNumber.from(bytes.slice(0, 32)).eq(32)) { return null; }
+        bytes = bytes.slice(32);
 
-                if (bytes.length < 32) { return null; }
-                let length = BigNumber.from(bytes.slice(0, 32)).toNumber();
-                bytes = bytes.slice(32);
+        // Not a length-prefixed string
+        if (bytes.length < 32) { return null; }
 
-                if (length > bytes.length) { return null; }
+        // Get the length of the string (from the length-prefix)
+        const length = BigNumber.from(bytes.slice(0, 32)).toNumber();
+        bytes = bytes.slice(32);
 
-                let name = toUtf8String(bytes.slice(0, length));
+        // Length longer than available data
+        if (length > bytes.length) { return null; }
 
-                // Make sure the reverse record matches the foward record
-                return this.resolveName(name).then((addr) => {
-                    if (addr != address) { return null; }
-                    return name;
-                });
-            });
-        });
+        const name = toUtf8String(bytes.slice(0, length));
+
+        // Make sure the reverse record matches the foward record
+        const addr = await this.resolveName(name);
+        if (addr != address) { return null; }
+
+        return name;
     }
 
     perform(method: string, params: any): Promise<any> {
@@ -1012,5 +1004,4 @@ export class BaseProvider extends Provider {
 
         return this;
     }
-
 }

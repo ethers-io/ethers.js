@@ -6,8 +6,8 @@ import { Provider, TransactionRequest, TransactionResponse } from "@ethersprojec
 import { Signer } from "@ethersproject/abstract-signer";
 import { BigNumber } from "@ethersproject/bignumber";
 import { Bytes, hexlify, hexValue } from "@ethersproject/bytes";
-import { getNetwork, Network, Networkish } from "@ethersproject/networks";
-import { checkProperties, deepCopy, defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
+import { Network, Networkish } from "@ethersproject/networks";
+import { checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes } from "@ethersproject/strings";
 import { ConnectionInfo, fetchJson, poll } from "@ethersproject/web";
 
@@ -221,10 +221,13 @@ export class JsonRpcProvider extends BaseProvider {
     constructor(url?: ConnectionInfo | string, network?: Networkish) {
         logger.checkNew(new.target, JsonRpcProvider);
 
+        const getNetwork = getStatic<(network: Networkish) => Network>(new.target, "getNetwork");
+
         // One parameter, but it is a network name, so swap it with the URL
         if (typeof(url) === "string") {
-            if (network === null && getNetwork(url)) {
-                network = url;
+            if (network === null) {
+                const checkNetwork = getNetwork(url);
+                network = checkNetwork;
                 url = null;
             }
         }
@@ -236,18 +239,25 @@ export class JsonRpcProvider extends BaseProvider {
         } else {
 
             // The network is unknown, query the JSON-RPC for it
-            let ready: Promise<Network> = new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    this.send("eth_chainId", [ ]).then((result) => {
-                        resolve(getNetwork(BigNumber.from(result).toNumber()));
-                    }).catch((error) => {
-                        this.send("net_version", [ ]).then((result) => {
-                            resolve(getNetwork(BigNumber.from(result).toNumber()));
-                        }).catch((error) => {
-                            reject(logger.makeError("could not detect network", Logger.errors.NETWORK_ERROR));
-                        });
-                    });
-                });
+            const ready: Promise<Network> = new Promise((resolve, reject) => {
+                setTimeout(async () => {
+                    let chainId = null;
+                    try {
+                        chainId = await this.send("eth_chainId", [ ]);
+                    } catch (error) {
+                        try {
+                            chainId = await this.send("net_version", [ ]);
+                        } catch (error) { }
+                    }
+
+                    if (chainId != null) {
+                        try {
+                            return resolve(getNetwork(BigNumber.from(chainId).toNumber()));
+                        } catch (error) { console.log("e3", error); }
+                    }
+
+                    reject(logger.makeError("could not detect network", Logger.errors.NETWORK_ERROR));
+                }, 0);
             });
             super(ready);
         }
@@ -359,11 +369,15 @@ export class JsonRpcProvider extends BaseProvider {
             case "getTransactionReceipt":
                 return this.send("eth_getTransactionReceipt", [ params.transactionHash ]);
 
-            case "call":
-                return this.send("eth_call", [ (<any>this.constructor).hexlifyTransaction(params.transaction, { from: true }), params.blockTag ]);
+            case "call": {
+                const hexlifyTransaction = getStatic<(t: TransactionRequest, a?: { [key: string]: boolean }) => { [key: string]: string }>(this.constructor, "hexlifyTransaction");
+                return this.send("eth_call", [ hexlifyTransaction(params.transaction, { from: true }), params.blockTag ]);
+            }
 
-            case "estimateGas":
-                return this.send("eth_estimateGas", [ (<any>this.constructor).hexlifyTransaction(params.transaction, { from: true }) ]);
+            case "estimateGas": {
+                const hexlifyTransaction = getStatic<(t: TransactionRequest, a?: { [key: string]: boolean }) => { [key: string]: string }>(this.constructor, "hexlifyTransaction");
+                return this.send("eth_estimateGas", [ hexlifyTransaction(params.transaction, { from: true }) ]);
+            }
 
             case "getLogs":
                 if (params.filter && params.filter.address != null) {
@@ -433,7 +447,7 @@ export class JsonRpcProvider extends BaseProvider {
     //       before this is called
     static hexlifyTransaction(transaction: TransactionRequest, allowExtra?: { [key: string]: boolean }): { [key: string]: string } {
         // Check only allowed properties are given
-        let allowed = shallowCopy(allowedTransactionKeys);
+        const allowed = shallowCopy(allowedTransactionKeys);
         if (allowExtra) {
             for (let key in allowExtra) {
                 if (allowExtra[key]) { allowed[key] = true; }
@@ -441,12 +455,12 @@ export class JsonRpcProvider extends BaseProvider {
         }
         checkProperties(transaction, allowed);
 
-        let result: { [key: string]: string } = {};
+        const result: { [key: string]: string } = {};
 
         // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
         ["gasLimit", "gasPrice", "nonce", "value"].forEach(function(key) {
             if ((<any>transaction)[key] == null) { return; }
-            let value = hexValue((<any>transaction)[key]);
+            const value = hexValue((<any>transaction)[key]);
             if (key === "gasLimit") { key = "gas"; }
             result[key] = value;
         });

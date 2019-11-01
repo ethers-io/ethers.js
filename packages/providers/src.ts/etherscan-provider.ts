@@ -15,7 +15,7 @@ import { BaseProvider } from "./base-provider";
 
 // The transaction has already been sanitized by the calls in Provider
 function getTransactionString(transaction: TransactionRequest): string {
-    let result = [];
+    const result = [];
     for (let key in transaction) {
         if ((<any>transaction)[key] == null) { continue; }
         let value = hexlify((<any>transaction)[key]);
@@ -35,7 +35,7 @@ function getResult(result: { status?: number, message?: string, result?: any }):
 
     if (result.status != 1 || result.message != "OK") {
         // @TODO: not any
-        let error: any = new Error("invalid response");
+        const error: any = new Error("invalid response");
         error.result = JSON.stringify(result);
         throw error;
     }
@@ -46,14 +46,14 @@ function getResult(result: { status?: number, message?: string, result?: any }):
 function getJsonResult(result: { jsonrpc: string, result?: any, error?: { code?: number, data?: any, message?: string} } ): any {
     if (result.jsonrpc != "2.0") {
         // @TODO: not any
-        let error: any = new Error("invalid response");
+        const error: any = new Error("invalid response");
         error.result = JSON.stringify(result);
         throw error;
     }
 
     if (result.error) {
         // @TODO: not any
-        let error: any = new Error(result.error.message || "unknown error");
+        const error: any = new Error(result.error.message || "unknown error");
         if (result.error.code) { error.code = result.error.code; }
         if (result.error.data) { error.data = result.error.data; }
         throw error;
@@ -108,28 +108,29 @@ export class EtherscanProvider extends BaseProvider{
     }
 
 
-    perform(method: string, params: any) {
+    async perform(method: string, params: any): Promise<any> {
         let url = this.baseUrl;
 
         let apiKey = "";
         if (this.apiKey) { apiKey += "&apikey=" + this.apiKey; }
 
-        let get = (url: string, procFunc?: (value: any) => any) => {
+        const get = async (url: string, procFunc?: (value: any) => any): Promise<any> => {
             this.emit("debug", {
                 action: "request",
                 request: url,
                 provider: this
             });
 
-            return fetchJson(url, null, procFunc || getJsonResult).then((result) => {
-                this.emit("debug", {
-                    action: "response",
-                    request: url,
-                    response: deepCopy(result),
-                    provider: this
-                });
-                return result;
+            const result = await fetchJson(url, null, procFunc || getJsonResult);
+
+            this.emit("debug", {
+                action: "response",
+                request: url,
+                response: deepCopy(result),
+                provider: this
             });
+
+            return result;
         };
 
         switch (method) {
@@ -230,70 +231,64 @@ export class EtherscanProvider extends BaseProvider{
                 return get(url);
             }
 
-            case "getLogs":
+            case "getLogs": {
                 url += "/api?module=logs&action=getLogs";
-                try {
-                    if (params.filter.fromBlock) {
-                        url += "&fromBlock=" + checkLogTag(params.filter.fromBlock);
+
+                if (params.filter.fromBlock) {
+                    url += "&fromBlock=" + checkLogTag(params.filter.fromBlock);
+                }
+
+                if (params.filter.toBlock) {
+                    url += "&toBlock=" + checkLogTag(params.filter.toBlock);
+                }
+
+                if (params.filter.address) {
+                    url += "&address=" + params.filter.address;
+                }
+
+                // @TODO: We can handle slightly more complicated logs using the logs API
+                if (params.filter.topics && params.filter.topics.length > 0) {
+                    if (params.filter.topics.length > 1) {
+                        logger.throwError("unsupported topic count", Logger.errors.UNSUPPORTED_OPERATION, { topics: params.filter.topics });
                     }
 
-                    if (params.filter.toBlock) {
-                        url += "&toBlock=" + checkLogTag(params.filter.toBlock);
-                    }
-
-                    if (params.filter.address) {
-                        url += "&address=" + params.filter.address;
-                    }
-
-                    // @TODO: We can handle slightly more complicated logs using the logs API
-                    if (params.filter.topics && params.filter.topics.length > 0) {
-                        if (params.filter.topics.length > 1) {
-                            throw new Error("unsupported topic format");
-                        }
-                        let topic0 = params.filter.topics[0];
+                    if (params.filter.topics.length === 1) {
+                        const topic0 = params.filter.topics[0];
                         if (typeof(topic0) !== "string" || topic0.length !== 66) {
-                            throw new Error("unsupported topic0 format");
+                            logger.throwError("unsupported topic format", Logger.errors.UNSUPPORTED_OPERATION, { topic0: topic0 });
                         }
                         url += "&topic0=" + topic0;
                     }
-                } catch (error) {
-                    return Promise.reject(error);
                 }
 
                 url += apiKey;
 
-                let self = this;
-                return get(url, getResult).then(function(logs: Array<any>) {
-                    let txs: { [hash: string]: string } = {};
+                const logs: Array<any> = await get(url, getResult);
 
-                    let seq = Promise.resolve();
-                    logs.forEach(function(log) {
-                        seq = seq.then(function() {
-                            if (log.blockHash != null) { return null; }
-                            log.blockHash = txs[log.transactionHash];
-                            if (log.blockHash == null) {
-                                return self.getTransaction(log.transactionHash).then(function(tx) {
-                                    txs[log.transactionHash] = tx.blockHash;
-                                    log.blockHash = tx.blockHash;
-                                    return null;
-                                });
-                            }
-                            return null;
-                        });
-                    });
+                // Cache txHash => blockHash
+                let txs: { [hash: string]: string } = {};
 
-                    return seq.then(function() {
-                        return logs;
-                    });
-                });
+                // Add any missing blockHash to the logs
+                for (let i = 0; i < logs.length; i++) {
+                    const log = logs[i];
+                    if (log.blockHash != null) { continue; }
+                    if (txs[log.transactionHash] == null) {
+                        const tx = await this.getTransaction(log.transactionHash);
+                        if (tx) {
+                            txs[log.transactionHash] = tx.blockHash
+                        }
+                    }
+                    log.blockHash = txs[log.transactionHash];
+                }
+
+                return logs;
+            }
 
             case "getEtherPrice":
-                if (this.network.name !== "homestead") { return Promise.resolve(0.0); }
+                if (this.network.name !== "homestead") { return 0.0; }
                 url += "/api?module=stats&action=ethprice";
                 url += apiKey;
-                return get(url, getResult).then(function(result) {
-                    return parseFloat(result.ethusd);
-                });
+                return parseFloat(await get(url, getResult));
 
             default:
                 break;

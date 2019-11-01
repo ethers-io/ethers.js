@@ -1,6 +1,6 @@
 "use strict";
 
-import { getNetwork, Network, Networkish } from "@ethersproject/networks";
+import { Network, Networkish } from "@ethersproject/networks";
 import { defineReadOnly, getStatic } from "@ethersproject/properties";
 
 import { Logger } from "@ethersproject/logger";
@@ -9,7 +9,7 @@ const logger = new Logger(version);
 
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 
-export class UrlJsonRpcProvider extends JsonRpcProvider {
+export abstract class UrlJsonRpcProvider extends JsonRpcProvider {
     readonly apiKey: string;
 
     constructor(network?: Networkish, apiKey?: string) {
@@ -19,7 +19,7 @@ export class UrlJsonRpcProvider extends JsonRpcProvider {
         network = getStatic<(network: Networkish) => Network>(new.target, "getNetwork")(network);
         apiKey = getStatic<(apiKey: string) => string>(new.target, "getApiKey")(apiKey);
 
-        let url = getStatic<(network: Network, apiKey: string) => string>(new.target, "getUrl")(network, apiKey);
+        const url = getStatic<(network: Network, apiKey: string) => string>(new.target, "getUrl")(network, apiKey);
 
         super(url, network);
 
@@ -42,11 +42,11 @@ export class UrlJsonRpcProvider extends JsonRpcProvider {
     listAccounts(): Promise<Array<string>> {
         return Promise.resolve([]);
     }
-
+/*
     static getNetwork(network?: Networkish): Network {
         return getNetwork((network == null) ? "homestead": network);
     }
-
+*/
     // Return a defaultApiKey if null, otherwise validate the API key
     static getApiKey(apiKey: string): string {
         return apiKey;
