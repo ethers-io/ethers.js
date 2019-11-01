@@ -10,6 +10,8 @@ import { Wallet } from "@ethersproject/wallet";
 import * as constants from "@ethersproject/constants";
 
 import * as providers from "@ethersproject/providers";
+import { getDefaultProvider } from "@ethersproject/providers";
+
 import { Wordlist, wordlists} from "@ethersproject/wordlists";
 
 import * as utils from "./utils";
@@ -52,21 +54,6 @@ import {
     ContractInterface
 } from "@ethersproject/contracts";
 
-
-////////////////////////
-// Helper Functions
-
-function getDefaultProvider(network?: providers.Network | string, options?: any): providers.BaseProvider {
-    if (network == null) { network = "homestead"; }
-    let n = providers.getNetwork(network);
-    if (!n || !n._defaultProvider) {
-        logger.throwError("unsupported getDefaultProvider network", Logger.errors.NETWORK_ERROR, {
-            operation: "getDefaultProvider",
-            network: network
-        });
-    }
-    return n._defaultProvider(providers, options);
-}
 
 ////////////////////////
 // Exports
