@@ -59,6 +59,15 @@ export class InfuraProvider extends UrlJsonRpcProvider {
     }
 }
 
+/**
+ * This provider is assuming that the JsonRPC provider
+ * up the inheritance hierarchy is http based. This will
+ * not work for wss based connections.
+ * InfuraRateLimitError.code = -32005 may also work.
+ * This code may also be ambiguous with data limits as well, so
+ * care should be taken when relying on the status code.
+ * @See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1474.md
+ */
 export class InfuraRetryProvider extends InfuraProvider {
     pause(ms:number): Promise<any> {
         return new Promise((res) => setTimeout(res, ms));
