@@ -11,6 +11,17 @@ import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 
 const defaultProjectId = "84842078b09946638c03157f83405213"
 
+declare type InfuraRateLimitError = {
+    code: number,
+    message: string,
+    data: {
+        see: string,
+        current_rps: number,
+        allowed_rps: number,
+        backoff_seconds: number
+    }
+};
+
 export class InfuraProvider extends UrlJsonRpcProvider {
     get projectId(): string { return this.apiKey; }
 
@@ -67,7 +78,8 @@ export class InfuraRetryProvider extends InfuraProvider {
                     rateLimited = false;
                     resolve(result);
                 } catch(e) {
-                    const errors = JSON.parse(e.body);
+                    const errPayload:any = JSON.parse(e.body);
+                    const infuraErr:InfuraRateLimitError = errPayload.error;
 
                     if (e.status === 429) {
                         if(retries++ === MAX_RETRY) {
@@ -76,7 +88,7 @@ export class InfuraRetryProvider extends InfuraProvider {
                             return;
                         };
                         rateLimited = true;
-                        rate = errors.error.data.rate.backoff_seconds * 1000;
+                        rate = infuraErr.data.backoff_seconds * 1000;
                     } else {
                         throw e;
                     }
