@@ -15,7 +15,7 @@
     "@ethersproject/basex": ">=5.0.0-beta.127",
     "ethers": ">=5.0.0-beta.156",
     "mime-types": "2.1.11",
-    "scrypt-js": "2.0.4",
+    "scrypt-js": "3.0.0",
     "solc": "0.5.10",
     "solidity-parser-antlr": "^0.3.2"
   },

@@ -19,7 +19,7 @@
     "@ethersproject/strings": ">=5.0.0-beta.130",
     "@ethersproject/transactions": ">=5.0.0-beta.128",
     "aes-js": "3.0.0",
-    "scrypt-js": "2.0.4",
+    "scrypt-js": "3.0.0",
     "uuid": "2.0.1"
   },
   "keywords": [

@@ -8,8 +8,9 @@
   },
   "dependencies": {
     "@ethersproject/web": ">=5.0.0-beta.129",
+    "@ensdomains/address-encoder": "^0.1.2",
     "ethers": ">=5.0.0-beta.156",
-    "scrypt-js": "2.0.4"
+    "scrypt-js": "3.0.0"
   },
   "keywords": [
     "Ethereum",
