@@ -18,8 +18,11 @@ const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC"
 export class AlchemyProvider extends UrlJsonRpcProvider {
     readonly apiKey: string;
 
-    static getApiKey(apiKey: string): string {
+    static getApiKey(apiKey: any): any {
         if (apiKey == null) { return defaultApiKey; }
+        if (apiKey && typeof(apiKey) !== "string") {
+            logger.throwArgumentError("invalid apiKey", "apiKey", apiKey);
+        }
         return apiKey;
     }
 

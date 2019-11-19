@@ -266,11 +266,11 @@ export class JsonRpcProvider extends BaseProvider {
         if (!url) { url = "http:/" + "/localhost:8545"; }
 
         if (typeof(url) === "string") {
-            this.connection = {
+            this.connection = Object.freeze({
                 url: url
-            };
+            });
         } else {
-            this.connection = url;
+            this.connection = Object.freeze(shallowCopy(url));
         }
 
         this._nextId = 42;

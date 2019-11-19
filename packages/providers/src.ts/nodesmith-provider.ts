@@ -12,11 +12,14 @@ const defaultApiKey = "ETHERS_JS_SHARED";
 
 export class NodesmithProvider extends UrlJsonRpcProvider {
 
-    static getApiKey(apiKey: string): string {
+    static getApiKey(apiKey: any): any {
+        if (apiKey && typeof(apiKey) !== "string") {
+            logger.throwArgumentError("invalid apiKey", "apiKey", apiKey);
+        }
         return apiKey || defaultApiKey;
     }
 
-    static getUrl(network: Network, apiKey?: string): string {
+    static getUrl(network: Network, apiKey?: any): string {
         let host = null;
         switch (network.name) {
             case "homestead":

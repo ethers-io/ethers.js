@@ -2,6 +2,7 @@
 
 import { Network, Networkish } from "@ethersproject/networks";
 import { defineReadOnly, getStatic } from "@ethersproject/properties";
+import { ConnectionInfo } from "@ethersproject/web";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -9,21 +10,29 @@ const logger = new Logger(version);
 
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 
+type getUrlFunc = (network: Network, apiKey: string) => string | ConnectionInfo;
+
 export abstract class UrlJsonRpcProvider extends JsonRpcProvider {
     readonly apiKey: string;
 
-    constructor(network?: Networkish, apiKey?: string) {
+    constructor(network?: Networkish, apiKey?: any) {
         logger.checkAbstract(new.target, UrlJsonRpcProvider);
 
         // Normalize the Network and API Key
         network = getStatic<(network: Networkish) => Network>(new.target, "getNetwork")(network);
         apiKey = getStatic<(apiKey: string) => string>(new.target, "getApiKey")(apiKey);
 
-        const url = getStatic<(network: Network, apiKey: string) => string>(new.target, "getUrl")(network, apiKey);
+        const connection = getStatic<getUrlFunc>(new.target, "getUrl")(network, apiKey);
 
-        super(url, network);
+        super(connection, network);
 
-        defineReadOnly(this, "apiKey", apiKey);
+        if (typeof(apiKey) === "string") {
+            defineReadOnly(this, "apiKey", apiKey);
+        } else if (apiKey != null) {
+            Object.keys(apiKey).forEach((key) => {
+                defineReadOnly(this, key, apiKey[key]);
+            });
+        }
     }
 
     _startPending(): void {
@@ -31,29 +40,26 @@ export abstract class UrlJsonRpcProvider extends JsonRpcProvider {
     }
 
     getSigner(address?: string): JsonRpcSigner {
-        logger.throwError(
+        return logger.throwError(
             "API provider does not support signing",
             Logger.errors.UNSUPPORTED_OPERATION,
             { operation: "getSigner" }
         );
-        return null;
     }
 
     listAccounts(): Promise<Array<string>> {
         return Promise.resolve([]);
     }
-/*
-    static getNetwork(network?: Networkish): Network {
-        return getNetwork((network == null) ? "homestead": network);
-    }
-*/
+
     // Return a defaultApiKey if null, otherwise validate the API key
-    static getApiKey(apiKey: string): string {
+    static getApiKey(apiKey: any): any {
         return apiKey;
     }
 
-    // Returns the url for the given network and API key
-    static getUrl(network: Network, apiKey: string): string {
+    // Returns the url or connection for the given network and API key. The
+    // API key will have been sanitized by the getApiKey first, so any validation
+    // or transformations can be done there.
+    static getUrl(network: Network, apiKey: any): string | ConnectionInfo {
         return logger.throwError("not implemented; sub-classes must override getUrl", Logger.errors.NOT_IMPLEMENTED, {
             operation: "getUrl"
         });

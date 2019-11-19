@@ -1,6 +1,7 @@
 "use strict";
 
 import { Network } from "@ethersproject/networks";
+import { ConnectionInfo } from "@ethersproject/web";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -12,15 +13,40 @@ import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 const defaultProjectId = "84842078b09946638c03157f83405213"
 
 export class InfuraProvider extends UrlJsonRpcProvider {
-    get projectId(): string { return this.apiKey; }
+    readonly projectId: string;
+    readonly projectSecret: string;
 
-    static getApiKey(apiKey: string): string {
-        if (apiKey == null) { return defaultProjectId; }
-        return apiKey;
+    static getApiKey(apiKey: any): any {
+        const apiKeyObj: { apiKey: string, projectId: string, projectSecret: string } = {
+            apiKey: null,
+            projectId: defaultProjectId,
+            projectSecret: null
+        };
+
+        if (typeof(apiKey) === "string") {
+            apiKeyObj.projectId = apiKey;
+
+        } else if (apiKey.projectSecret != null) {
+            if (typeof(apiKey.projectId) !== "string") {
+                logger.throwArgumentError("projectSecret requires a projectId", "projectId", apiKey.projectId);
+            }
+            if (typeof(apiKey.projectSecret) !== "string") {
+                logger.throwArgumentError("invalid projectSecret", "projectSecret", "[REDACTED]");
+            }
+            apiKeyObj.projectId = apiKey.projectId;
+            apiKeyObj.projectSecret = apiKey.projectSecret;
+
+        } else if (apiKey.projectId) {
+            apiKeyObj.projectId = apiKey.projectId;
+        }
+
+        apiKeyObj.apiKey = apiKeyObj.projectId;
+
+        return apiKeyObj;
     }
 
-    static getUrl(network: Network, apiKey: string): string {
-        let host = null;
+    static getUrl(network: Network, apiKey: any): string | ConnectionInfo {
+        let host: string = null;
         switch(network.name) {
             case "homestead":
                 host = "mainnet.infura.io";
@@ -44,6 +70,15 @@ export class InfuraProvider extends UrlJsonRpcProvider {
                 });
         }
 
-        return "https:/" + "/" + host + "/v3/" + apiKey;
+        const connection: ConnectionInfo = {
+             url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId)
+        };
+
+        if (apiKey.projectSecret != null) {
+            connection.user = "";
+            connection.password = apiKey.projectSecret
+        }
+
+        return connection;
     }
 }
