@@ -61,7 +61,7 @@ export function compile(source: string, options?: CompilerOptions): Array<Contra
     let findImport = (filename: string): { contents?: string, error?: string } => {
         try {
             return {
-                contents: fs.readFileSync(resolve(options.basedir, options.filename)).toString()
+                contents: fs.readFileSync(resolve(options.basedir, filename)).toString()
             };
         } catch (error) {
             return { error: error.message }
