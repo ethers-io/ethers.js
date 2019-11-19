@@ -1,6 +1,6 @@
 "use strict";
 
-import { Network } from "@ethersproject/networks";
+import { Network, Networkish } from "@ethersproject/networks";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -8,10 +8,19 @@ const logger = new Logger(version);
 
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 
-
 const defaultProjectId = "84842078b09946638c03157f83405213"
 
 export class InfuraProvider extends UrlJsonRpcProvider {
+
+    constructor(network?: Networkish, apiKey?: string, secret?: string) {
+        super(network, apiKey);
+
+        if (secret) {
+            this.connection.user = '';
+            this.connection.password = secret;
+        }
+    }
+
     get projectId(): string { return this.apiKey; }
 
     static getApiKey(apiKey: string): string {
