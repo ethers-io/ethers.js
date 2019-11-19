@@ -85,6 +85,9 @@ export class BigNumber implements Hexable {
         } else if (value instanceof BigNumber) {
             defineReadOnly(this, '_hex', value._hex);
 
+        } else if (BN.BN.isBN(value)) {
+            defineReadOnly(this, '_hex', toHex(value));
+            
         } else if ((<any>value).toHexString) {
             defineReadOnly(this, '_hex', toHex(toBN((<any>value).toHexString())));
 
