@@ -23,6 +23,8 @@ declare module "aes-js" {
 
 declare module "bn.js" {
     export class BN {
+        static isBN(value: any): value is BN;
+        
         constructor(value: string | number, radix?: number);
 
         add(other: BN): BN;
