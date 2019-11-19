@@ -113,6 +113,16 @@ type RunOptions = {
     transaction?: boolean;
 };
 
+/*
+export function _populateTransaction(func: FunctionFragment, args: Array<any>, overrides?: any): Promise<Transaction> {
+    return null;
+}
+
+export function _sendTransaction(func: FunctionFragment, args: Array<any>, overrides?: any): Promise<Transaction> {
+    return null;
+}
+*/
+
 function runMethod(contract: Contract, functionName: string, options: RunOptions): RunFunction {
     let method = contract.interface.functions[functionName];
     return function(...params): Promise<any> {
@@ -463,15 +473,29 @@ export class Contract {
 
         defineReadOnly(this, "filters", { });
 
-        Object.keys(this.interface.events).forEach((eventName) => {
-            let event = this.interface.events[eventName];
-            defineReadOnly(this.filters, eventName, (...args: Array<any>) => {
-                return {
-                    address: this.address,
-                    topics: this.interface.encodeFilterTopics(event, args)
+        {
+            const uniqueFilters: { [ name: string ]: Array<string> } = { };
+            Object.keys(this.interface.events).forEach((eventSignature) => {
+                let event = this.interface.events[eventSignature];
+                defineReadOnly(this.filters, eventSignature, (...args: Array<any>) => {
+                    return {
+                        address: this.address,
+                        topics: this.interface.encodeFilterTopics(event, args)
+                   }
+                });
+                if (!uniqueFilters[event.name]) { uniqueFilters[event.name] = [ ]; }
+                uniqueFilters[event.name].push(eventSignature);
+            });
+
+            Object.keys(uniqueFilters).forEach((name) => {
+                const filters = uniqueFilters[name];
+                if (filters.length === 1) {
+                    defineReadOnly(this.filters, name, this.filters[filters[0]]);
+                } else {
+                    logger.warn(`Duplicate definition of ${ name } (${ filters.join(", ")})`);
                 }
             });
-        });
+        }
 
         defineReadOnly(this, "_runningEvents", { });
         defineReadOnly(this, "_wrappedEmits", { });
@@ -494,7 +518,11 @@ export class Contract {
             }
         }
 
+        const uniqueFunctions: { [ name: string ]: Array<string> } = { };
         Object.keys(this.interface.functions).forEach((name) => {
+            const fragment = this.interface.functions[name];
+            // @TODO: This should take in fragment
+
             let run = runMethod(this, name, { });
 
             if (this[name] == null) {
@@ -516,6 +544,26 @@ export class Contract {
             if (this.estimate[name] == null) {
                 defineReadOnly(this.estimate, name, runMethod(this, name, { estimate: true }));
             }
+
+            if (!uniqueFunctions[fragment.name]) { uniqueFunctions[fragment.name] = [ ]; }
+            uniqueFunctions[fragment.name].push(name);
+        });
+
+        Object.keys(uniqueFunctions).forEach((name) => {
+            const signatures = uniqueFunctions[name];
+            if (signatures.length > 1) {
+                logger.warn(`Duplicate definition of ${ name } (${ signatures.join(", ")})`);
+                return;
+            }
+
+            if (this[name] == null) {
+                defineReadOnly(this, name, this[signatures[0]]);
+            }
+
+            defineReadOnly(this.functions, name, this.functions[signatures[0]]);
+            defineReadOnly(this.callStatic, name, this.callStatic[signatures[0]]);
+            defineReadOnly(this.populateTransaction, name, this.populateTransaction[signatures[0]]);
+            defineReadOnly(this.estimate, name, this.estimate[signatures[0]]);
         });
     }
 
