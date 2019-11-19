@@ -20,6 +20,8 @@ export class NodesmithProvider extends UrlJsonRpcProvider {
     }
 
     static getUrl(network: Network, apiKey?: any): string {
+        logger.warn("NodeSmith will be discontinued on 2019-12-20; please migrate to another platform.");
+
         let host = null;
         switch (network.name) {
             case "homestead":

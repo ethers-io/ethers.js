@@ -28,11 +28,13 @@ function ethDefaultProvider(network: string): (providers: any) => any {
             } catch(error) { }
         }
 
+        /* NodeSmith is being discontinued on 2019-12-20
         if (providers.NodesmithProvider) {
             try {
                 providerList.push(new providers.NodesmithProvider(network, options.nodesmith));
             } catch(error) { }
         }
+        */
 
         if (providers.AlchemyProvider) {
             try {
