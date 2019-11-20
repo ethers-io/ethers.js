@@ -6,9 +6,6 @@ const contract = (function () {
     let data = require('../contracts/test-contract.json');
     return new ethers.Contract(data.contractAddress, data.interface, provider);
 })();
-//let event = contract.foo("TestP0");
-//console.log(event);
-//process.exit();
 function equals(name, actual, expected) {
     if (Array.isArray(expected)) {
         assert.equal(actual.length, expected.length, 'array length mismatch - ' + name);

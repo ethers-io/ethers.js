@@ -66,8 +66,8 @@ var Formatter = /** @class */ (function () {
             blockHash: hash,
         };
         formats.receipt = {
-            to: Formatter.allowNull(this.address),
-            from: Formatter.allowNull(this.address),
+            to: Formatter.allowNull(this.address, null),
+            from: Formatter.allowNull(this.address, null),
             contractAddress: Formatter.allowNull(address, null),
             transactionIndex: number,
             root: Formatter.allowNull(hash),

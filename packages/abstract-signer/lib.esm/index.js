@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -74,12 +83,12 @@ export class Signer {
     //   - estimateGas
     //   - populateTransaction (and therefor sendTransaction)
     checkTransaction(transaction) {
-        for (let key in transaction) {
+        for (const key in transaction) {
             if (allowedTransactionKeys.indexOf(key) === -1) {
                 logger.throwArgumentError("invalid transaction key: " + key, "transaction", transaction);
             }
         }
-        let tx = shallowCopy(transaction);
+        const tx = shallowCopy(transaction);
         if (tx.from == null) {
             tx.from = this.getAddress();
         }
@@ -90,7 +99,8 @@ export class Signer {
     // By default called from: (overriding these prevents it)
     //   - sendTransaction
     populateTransaction(transaction) {
-        return resolveProperties(this.checkTransaction(transaction)).then((tx) => {
+        return __awaiter(this, void 0, void 0, function* () {
+            const tx = yield resolveProperties(this.checkTransaction(transaction));
             if (tx.to != null) {
                 tx.to = Promise.resolve(tx.to).then((to) => this.resolveName(to));
             }
@@ -125,7 +135,7 @@ export class Signer {
             if (tx.chainId == null) {
                 tx.chainId = this.getChainId();
             }
-            return resolveProperties(tx);
+            return yield resolveProperties(tx);
         });
     }
     ///////////////////

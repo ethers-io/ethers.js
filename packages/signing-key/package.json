@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/signing-key",
-  "version": "5.0.0-beta.132",
+  "version": "5.0.0-beta.133",
   "description": "Elliptic curve library functions for the secp256k1 curve.",
   "main": "./lib/index.js",
   "scripts": {
@@ -28,5 +28,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x652960fe036839cd35468f3ec124ee34a4b0d01e237c5eefa0da7952eada2259"
+  "tarballHash": "0x7f2fa6ce3884272efaad79c79cb9d8d46a857dbefa5ddeca93af69c5497f4481"
 }

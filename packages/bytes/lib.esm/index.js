@@ -11,7 +11,7 @@ function addSlice(array) {
         return array;
     }
     array.slice = function () {
-        let args = Array.prototype.slice.call(arguments);
+        const args = Array.prototype.slice.call(arguments);
         return addSlice(new Uint8Array(Array.prototype.slice.apply(array, args)));
     };
     return array;
@@ -33,7 +33,7 @@ export function isBytes(value) {
         return false;
     }
     for (let i = 0; i < value.length; i++) {
-        let v = value[i];
+        const v = value[i];
         if (v < 0 || v >= 256 || (v % 1)) {
             return false;
         }
@@ -46,7 +46,7 @@ export function arrayify(value, options) {
     }
     if (typeof (value) === "number") {
         logger.checkSafeUint53(value, "invalid arrayify value");
-        let result = [];
+        const result = [];
         while (value) {
             result.unshift(value & 0xff);
             value /= 256;
@@ -75,7 +75,7 @@ export function arrayify(value, options) {
                 logger.throwArgumentError("hex data is odd-length", "value", value);
             }
         }
-        let result = [];
+        const result = [];
         for (let i = 0; i < hex.length; i += 2) {
             result.push(parseInt(hex.substring(i, i + 2), 16));
         }
@@ -87,9 +87,9 @@ export function arrayify(value, options) {
     return logger.throwArgumentError("invalid arrayify value", "value", value);
 }
 export function concat(items) {
-    let objects = items.map(item => arrayify(item));
-    let length = objects.reduce((accum, item) => (accum + item.length), 0);
-    let result = new Uint8Array(length);
+    const objects = items.map(item => arrayify(item));
+    const length = objects.reduce((accum, item) => (accum + item.length), 0);
+    const result = new Uint8Array(length);
     objects.reduce((offset, object) => {
         result.set(object, offset);
         return offset + object.length;
@@ -117,7 +117,7 @@ export function zeroPad(value, length) {
     if (value.length > length) {
         logger.throwArgumentError("value out of range", "value", arguments[0]);
     }
-    let result = new Uint8Array(length);
+    const result = new Uint8Array(length);
     result.set(value, length - value.length);
     return addSlice(result);
 }
@@ -218,7 +218,7 @@ export function hexConcat(items) {
     return result;
 }
 export function hexValue(value) {
-    let trimmed = hexStripZeros(hexlify(value, { hexPad: "left" }));
+    const trimmed = hexStripZeros(hexlify(value, { hexPad: "left" }));
     if (trimmed === "0x") {
         return "0x0";
     }
@@ -254,7 +254,7 @@ export function hexZeroPad(value, length) {
     return value;
 }
 export function splitSignature(signature) {
-    let result = {
+    const result = {
         r: "0x",
         s: "0x",
         _vs: "0x",
@@ -262,7 +262,7 @@ export function splitSignature(signature) {
         v: 0
     };
     if (isBytesLike(signature)) {
-        let bytes = arrayify(signature);
+        const bytes = arrayify(signature);
         if (bytes.length !== 65) {
             logger.throwArgumentError("invalid signature string; must be 65 bytes", "signature", signature);
         }
@@ -318,12 +318,12 @@ export function splitSignature(signature) {
             if (result._vs.length > 66) {
                 logger.throwArgumentError("signature _vs overflow", "signature", signature);
             }
-            let vs = arrayify(result._vs);
-            let recoveryParam = ((vs[0] >= 128) ? 1 : 0);
-            let v = 27 + result.recoveryParam;
+            const vs = arrayify(result._vs);
+            const recoveryParam = ((vs[0] >= 128) ? 1 : 0);
+            const v = 27 + result.recoveryParam;
             // Use _vs to compute s
             vs[0] &= 0x7f;
-            let s = hexlify(vs);
+            const s = hexlify(vs);
             // Check _vs aggress with other parameters
             if (result.s == null) {
                 result.s = s;
@@ -357,7 +357,7 @@ export function splitSignature(signature) {
             logger.throwArgumentError("signature overflow r or s", "signature", signature);
         }
         if (result._vs == null) {
-            let vs = arrayify(result.s);
+            const vs = arrayify(result.s);
             if (vs[0] >= 128) {
                 logger.throwArgumentError("signature s out of range", "signature", signature);
             }

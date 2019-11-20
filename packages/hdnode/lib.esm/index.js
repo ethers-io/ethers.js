@@ -28,8 +28,7 @@ function bytes32(value) {
     return hexZeroPad(hexlify(value), 32);
 }
 function base58check(data) {
-    let checksum = hexDataSlice(sha256(sha256(data)), 0, 4);
-    return Base58.encode(concat([data, checksum]));
+    return Base58.encode(concat([data, hexDataSlice(sha256(sha256(data)), 0, 4)]));
 }
 const _constructorGuard = {};
 export const defaultPath = "m/44'/60'/0'/0/0";
@@ -47,7 +46,7 @@ export class HDNode {
             throw new Error("HDNode constructor cannot be called directly");
         }
         if (privateKey) {
-            let signingKey = new SigningKey(privateKey);
+            const signingKey = new SigningKey(privateKey);
             defineReadOnly(this, "privateKey", signingKey.privateKey);
             defineReadOnly(this, "publicKey", signingKey.compressedPublicKey);
         }
@@ -94,7 +93,7 @@ export class HDNode {
         if (path) {
             path += "/" + (index & ~HardenedBit);
         }
-        let data = new Uint8Array(37);
+        const data = new Uint8Array(37);
         if (index & HardenedBit) {
             if (!this.privateKey) {
                 throw new Error("cannot derive child of neutered node");
@@ -114,9 +113,9 @@ export class HDNode {
         for (let i = 24; i >= 0; i -= 8) {
             data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff);
         }
-        let I = arrayify(computeHmac(SupportedAlgorithms.sha512, this.chainCode, data));
-        let IL = I.slice(0, 32);
-        let IR = I.slice(32);
+        const I = arrayify(computeHmac(SupportedAlgorithms.sha512, this.chainCode, data));
+        const IL = I.slice(0, 32);
+        const IR = I.slice(32);
         // The private key
         let ki = null;
         // The public key
@@ -125,13 +124,13 @@ export class HDNode {
             ki = bytes32(BigNumber.from(IL).add(this.privateKey).mod(N));
         }
         else {
-            let ek = new SigningKey(hexlify(IL));
+            const ek = new SigningKey(hexlify(IL));
             Ki = ek._addPoint(this.publicKey);
         }
         return new HDNode(_constructorGuard, ki, Ki, this.fingerprint, bytes32(IR), index, this.depth + 1, this.mnemonic, path);
     }
     derivePath(path) {
-        let components = path.split("/");
+        const components = path.split("/");
         if (components.length === 0 || (components[0] === "m" && this.depth !== 0)) {
             throw new Error("invalid path - " + path);
         }
@@ -140,16 +139,16 @@ export class HDNode {
         }
         let result = this;
         for (let i = 0; i < components.length; i++) {
-            let component = components[i];
+            const component = components[i];
             if (component.match(/^[0-9]+'$/)) {
-                let index = parseInt(component.substring(0, component.length - 1));
+                const index = parseInt(component.substring(0, component.length - 1));
                 if (index >= HardenedBit) {
                     throw new Error("invalid path index - " + component);
                 }
                 result = result._derive(HardenedBit + index);
             }
             else if (component.match(/^[0-9]+$/)) {
-                let index = parseInt(component);
+                const index = parseInt(component);
                 if (index >= HardenedBit) {
                     throw new Error("invalid path index - " + component);
                 }
@@ -162,11 +161,11 @@ export class HDNode {
         return result;
     }
     static _fromSeed(seed, mnemonic) {
-        let seedArray = arrayify(seed);
+        const seedArray = arrayify(seed);
         if (seedArray.length < 16 || seedArray.length > 64) {
             throw new Error("invalid seed");
         }
-        let I = arrayify(computeHmac(SupportedAlgorithms.sha512, MasterSecret, seedArray));
+        const I = arrayify(computeHmac(SupportedAlgorithms.sha512, MasterSecret, seedArray));
         return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic, "m");
     }
     static fromMnemonic(mnemonic, password, wordlist) {
@@ -178,15 +177,15 @@ export class HDNode {
         return HDNode._fromSeed(seed, null);
     }
     static fromExtendedKey(extendedKey) {
-        let bytes = Base58.decode(extendedKey);
+        const bytes = Base58.decode(extendedKey);
         if (bytes.length !== 82 || base58check(bytes.slice(0, 78)) !== extendedKey) {
             logger.throwArgumentError("invalid extended key", "extendedKey", "[REDACTED]");
         }
-        let depth = bytes[4];
-        let parentFingerprint = hexlify(bytes.slice(5, 9));
-        let index = parseInt(hexlify(bytes.slice(9, 13)).substring(2), 16);
-        let chainCode = hexlify(bytes.slice(13, 45));
-        let key = bytes.slice(45, 78);
+        const depth = bytes[4];
+        const parentFingerprint = hexlify(bytes.slice(5, 9));
+        const index = parseInt(hexlify(bytes.slice(9, 13)).substring(2), 16);
+        const chainCode = hexlify(bytes.slice(13, 45));
+        const key = bytes.slice(45, 78);
         switch (hexlify(bytes.slice(0, 4))) {
             // Public Key
             case "0x0488b21e":
@@ -207,7 +206,7 @@ export function mnemonicToSeed(mnemonic, password) {
     if (!password) {
         password = "";
     }
-    let salt = toUtf8Bytes("mnemonic" + password, UnicodeNormalizationForm.NFKD);
+    const salt = toUtf8Bytes("mnemonic" + password, UnicodeNormalizationForm.NFKD);
     return pbkdf2(toUtf8Bytes(mnemonic, UnicodeNormalizationForm.NFKD), salt, 2048, 64, "sha512");
 }
 export function mnemonicToEntropy(mnemonic, wordlist) {
@@ -215,11 +214,11 @@ export function mnemonicToEntropy(mnemonic, wordlist) {
         wordlist = wordlists["en"];
     }
     logger.checkNormalize();
-    let words = wordlist.split(mnemonic);
+    const words = wordlist.split(mnemonic);
     if ((words.length % 3) !== 0) {
         throw new Error("invalid mnemonic");
     }
-    let entropy = arrayify(new Uint8Array(Math.ceil(11 * words.length / 8)));
+    const entropy = arrayify(new Uint8Array(Math.ceil(11 * words.length / 8)));
     let offset = 0;
     for (let i = 0; i < words.length; i++) {
         let index = wordlist.getWordIndex(words[i].normalize("NFKD"));
@@ -233,11 +232,10 @@ export function mnemonicToEntropy(mnemonic, wordlist) {
             offset++;
         }
     }
-    let entropyBits = 32 * words.length / 3;
-    let checksumBits = words.length / 3;
-    let checksumMask = getUpperMask(checksumBits);
-    let checksum = arrayify(sha256(entropy.slice(0, entropyBits / 8)))[0];
-    checksum &= checksumMask;
+    const entropyBits = 32 * words.length / 3;
+    const checksumBits = words.length / 3;
+    const checksumMask = getUpperMask(checksumBits);
+    const checksum = arrayify(sha256(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
     if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
         throw new Error("invalid checksum");
     }
@@ -248,7 +246,7 @@ export function entropyToMnemonic(entropy, wordlist) {
     if ((entropy.length % 4) !== 0 || entropy.length < 16 || entropy.length > 32) {
         throw new Error("invalid entropy");
     }
-    let indices = [0];
+    const indices = [0];
     let remainingBits = 11;
     for (let i = 0; i < entropy.length; i++) {
         // Consume the whole byte (with still more to go)
@@ -267,9 +265,8 @@ export function entropyToMnemonic(entropy, wordlist) {
         }
     }
     // Compute the checksum bits
-    let checksum = arrayify(sha256(entropy))[0];
-    let checksumBits = entropy.length / 4;
-    checksum &= getUpperMask(checksumBits);
+    const checksumBits = entropy.length / 4;
+    const checksum = arrayify(sha256(entropy))[0] & getUpperMask(checksumBits);
     // Shift the checksum into the word indices
     indices[indices.length - 1] <<= checksumBits;
     indices[indices.length - 1] |= (checksum >> (8 - checksumBits));

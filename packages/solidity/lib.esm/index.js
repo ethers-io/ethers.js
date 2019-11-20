@@ -41,7 +41,7 @@ function _pack(type, value, isArray) {
     }
     match = type.match(regexBytes);
     if (match) {
-        let size = parseInt(match[1]);
+        const size = parseInt(match[1]);
         if (String(size) != match[1] || size === 0 || size > 32) {
             throw new Error("invalid number type - " + type);
         }
@@ -55,12 +55,12 @@ function _pack(type, value, isArray) {
     }
     match = type.match(regexArray);
     if (match && Array.isArray(value)) {
-        let baseType = match[1];
-        let count = parseInt(match[2] || String(value.length));
+        const baseType = match[1];
+        const count = parseInt(match[2] || String(value.length));
         if (count != value.length) {
             throw new Error("invalid value for " + type);
         }
-        let result = [];
+        const result = [];
         value.forEach(function (value) {
             result.push(_pack(baseType, value, true));
         });
@@ -73,7 +73,7 @@ export function pack(types, values) {
     if (types.length != values.length) {
         throw new Error("type/value count mismatch");
     }
-    let tight = [];
+    const tight = [];
     types.forEach(function (type, index) {
         tight.push(_pack(type, values[index]));
     });

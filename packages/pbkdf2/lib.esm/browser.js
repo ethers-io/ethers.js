@@ -6,8 +6,8 @@ export function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
     salt = arrayify(salt);
     let hLen;
     let l = 1;
-    let DK = new Uint8Array(keylen);
-    let block1 = new Uint8Array(salt.length + 4);
+    const DK = new Uint8Array(keylen);
+    const block1 = new Uint8Array(salt.length + 4);
     block1.set(salt);
     //salt.copy(block1, 0, 0, salt.length)
     let r;
@@ -34,8 +34,8 @@ export function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
             for (let k = 0; k < hLen; k++)
                 T[k] ^= U[k];
         }
-        let destPos = (i - 1) * hLen;
-        let len = (i === l ? r : hLen);
+        const destPos = (i - 1) * hLen;
+        const len = (i === l ? r : hLen);
         //T.copy(DK, destPos, 0, len)
         DK.set(arrayify(T).slice(0, len), destPos);
     }

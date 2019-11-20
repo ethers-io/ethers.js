@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import fs from "fs";
 import { basename } from "path";
 import { ethers } from "ethers";
-import scrypt from "scrypt-js";
+import * as scrypt from "scrypt-js";
 import { getChoice, getPassword, getProgressBar } from "./prompt";
 import { version } from "./_version";
 const logger = new ethers.utils.Logger(version);
@@ -396,21 +396,11 @@ function loadAccount(arg, plugin, preventFile) {
                     let passwordBytes = ethers.utils.toUtf8Bytes(password, ethers.utils.UnicodeNormalizationForm.NFKC);
                     let saltBytes = ethers.utils.arrayify(ethers.utils.HDNode.fromMnemonic(mnemonic).privateKey);
                     let progressBar = getProgressBar("Decrypting");
-                    return (new Promise((resolve, reject) => {
-                        scrypt(passwordBytes, saltBytes, (1 << 20), 8, 1, 32, (error, progress, key) => {
-                            if (error) {
-                                reject(error);
-                            }
-                            else {
-                                progressBar(progress);
-                                if (key) {
-                                    let derivedPassword = ethers.utils.hexlify(key).substring(2);
-                                    let node = ethers.utils.HDNode.fromMnemonic(mnemonic, derivedPassword).derivePath(ethers.utils.defaultPath);
-                                    resolve(new ethers.Wallet(node.privateKey, plugin.provider));
-                                }
-                            }
-                        });
-                    }));
+                    return scrypt.scrypt(passwordBytes, saltBytes, (1 << 20), 8, 1, 32, progressBar).then((key) => {
+                        const derivedPassword = ethers.utils.hexlify(key).substring(2);
+                        const node = ethers.utils.HDNode.fromMnemonic(mnemonic, derivedPassword).derivePath(ethers.utils.defaultPath);
+                        return new ethers.Wallet(node.privateKey, plugin.provider);
+                    });
                 });
             }
             else {

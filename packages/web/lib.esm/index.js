@@ -7,10 +7,10 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 export function fetchJson(connection, json, processFunc) {
-    let headers = {};
+    const headers = {};
     let url = null;
     // @TODO: Allow ConnectionInfo to override some of these values
-    let options = {
+    const options = {
         method: "GET",
         mode: "cors",
         cache: "no-cache",
@@ -32,7 +32,7 @@ export function fetchJson(connection, json, processFunc) {
             timeout = connection.timeout;
         }
         if (connection.headers) {
-            for (let key in connection.headers) {
+            for (const key in connection.headers) {
                 headers[key.toLowerCase()] = { key: key, value: String(connection.headers[key]) };
                 if (["if-none-match", "if-modified-since"].indexOf(key.toLowerCase()) >= 0) {
                     allow304 = true;
@@ -43,7 +43,7 @@ export function fetchJson(connection, json, processFunc) {
             if (url.substring(0, 6) !== "https:" && connection.allowInsecureAuthentication !== true) {
                 logger.throwError("basic authentication requires a secure https url", Logger.errors.INVALID_ARGUMENT, { argument: "url", url: url, user: connection.user, password: "[REDACTED]" });
             }
-            let authorization = connection.user + ":" + connection.password;
+            const authorization = connection.user + ":" + connection.password;
             headers["authorization"] = {
                 key: "Authorization",
                 value: "Basic " + base64Encode(toUtf8Bytes(authorization))
@@ -61,7 +61,7 @@ export function fetchJson(connection, json, processFunc) {
                 reject(logger.makeError("timeout", Logger.errors.TIMEOUT, { timeout: timeout }));
             }, timeout);
         }
-        let cancelTimeout = () => {
+        const cancelTimeout = () => {
             if (timer == null) {
                 return;
             }
@@ -73,9 +73,9 @@ export function fetchJson(connection, json, processFunc) {
             options.body = json;
             headers["content-type"] = { key: "Content-Type", value: "application/json" };
         }
-        let flatHeaders = {};
+        const flatHeaders = {};
         Object.keys(headers).forEach((key) => {
-            let header = headers[key];
+            const header = headers[key];
             flatHeaders[header.key] = header.value;
         });
         options.headers = flatHeaders;
@@ -162,7 +162,7 @@ export function poll(func, options) {
         let timer = null;
         let done = false;
         // Returns true if cancel was successful. Unsuccessful cancel means we're already done.
-        let cancel = () => {
+        const cancel = () => {
             if (done) {
                 return false;
             }
@@ -179,7 +179,7 @@ export function poll(func, options) {
                 }
             }, options.timeout);
         }
-        let retryLimit = options.retryLimit;
+        const retryLimit = options.retryLimit;
         let attempt = 0;
         function check() {
             return func().then(function (result) {

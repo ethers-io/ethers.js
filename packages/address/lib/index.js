@@ -15,11 +15,11 @@ function getChecksumAddress(address) {
     }
     address = address.toLowerCase();
     var chars = address.substring(2).split("");
-    var hashed = new Uint8Array(40);
+    var expanded = new Uint8Array(40);
     for (var i = 0; i < 40; i++) {
-        hashed[i] = chars[i].charCodeAt(0);
+        expanded[i] = chars[i].charCodeAt(0);
     }
-    hashed = bytes_1.arrayify(keccak256_1.keccak256(hashed));
+    var hashed = bytes_1.arrayify(keccak256_1.keccak256(expanded));
     for (var i = 0; i < 40; i += 2) {
         if ((hashed[i >> 1] >> 4) >= 8) {
             chars[i] = chars[i].toUpperCase();
@@ -52,10 +52,7 @@ var safeDigits = Math.floor(log10(MAX_SAFE_INTEGER));
 function ibanChecksum(address) {
     address = address.toUpperCase();
     address = address.substring(4) + address.substring(0, 2) + "00";
-    var expanded = "";
-    address.split("").forEach(function (c) {
-        expanded += ibanLookup[c];
-    });
+    var expanded = address.split("").map(function (c) { return ibanLookup[c]; }).join("");
     // Javascript can handle integers safely up to 15 (decimal) digits
     while (expanded.length >= safeDigits) {
         var block = expanded.substring(0, safeDigits);

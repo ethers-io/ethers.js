@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/experimental",
-  "version": "5.0.0-beta.132",
+  "version": "5.0.0-beta.133",
   "description": "Experimental libraries for ethers. These should not be considered stable.",
   "main": "./lib/index.js",
   "scripts": {
@@ -28,5 +28,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x9058d5bd70241b5cdd7e616bba4837f7a49ebd82895070ccc47f4de63d63324c"
+  "tarballHash": "0x004416cb35c4bb09fe835b6837fb08c1807c4a98f6191bd2e7007bb8c0316267"
 }

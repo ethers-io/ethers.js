@@ -12,6 +12,34 @@ import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 import { NodesmithProvider } from "./nodesmith-provider";
 import { Web3Provider } from "./web3-provider";
 import { Formatter } from "./formatter";
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
+////////////////////////
+// Helper Functions
+function getDefaultProvider(network, options) {
+    if (network == null) {
+        network = "homestead";
+    }
+    const n = getNetwork(network);
+    if (!n || !n._defaultProvider) {
+        logger.throwError("unsupported getDefaultProvider network", Logger.errors.NETWORK_ERROR, {
+            operation: "getDefaultProvider",
+            network: network
+        });
+    }
+    return n._defaultProvider({
+        FallbackProvider,
+        AlchemyProvider,
+        CloudflareProvider,
+        EtherscanProvider,
+        InfuraProvider,
+        JsonRpcProvider,
+        NodesmithProvider,
+        Web3Provider,
+        IpcProvider,
+    }, options);
+}
 ////////////////////////
 // Exports
 export { 
@@ -25,7 +53,7 @@ FallbackProvider, AlchemyProvider, CloudflareProvider, EtherscanProvider, Infura
 JsonRpcSigner, 
 ///////////////////////
 // Functions
-getNetwork, 
+getDefaultProvider, getNetwork, 
 ///////////////////////
 // Objects
 Formatter };

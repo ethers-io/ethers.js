@@ -3464,7 +3464,7 @@
 	var _version = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "logger/5.0.0-beta.131";
+	exports.version = "logger/5.0.0-beta.132";
 	});
 
 	var _version$1 = unwrapExports(_version);
@@ -3518,7 +3518,7 @@
 	    Logger.prototype.setLogLevel = function (logLevel) {
 	        var level = LogLevels[logLevel];
 	        if (level == null) {
-	            this.warn("invliad log level - " + logLevel);
+	            this.warn("invalid log level - " + logLevel);
 	            return;
 	        }
 	        LogLevel = level;
@@ -3758,7 +3758,7 @@
 	var _version$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bytes/5.0.0-beta.132";
+	exports.version = "bytes/5.0.0-beta.133";
 	});
 
 	var _version$3 = unwrapExports(_version$2);
@@ -4184,7 +4184,7 @@
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.0-beta.133";
+	exports.version = "bignumber/5.0.0-beta.134";
 	});
 
 	var _version$5 = unwrapExports(_version$4);
@@ -4756,7 +4756,7 @@
 	var _version$6 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "properties/5.0.0-beta.133";
+	exports.version = "properties/5.0.0-beta.134";
 	});
 
 	var _version$7 = unwrapExports(_version$6);
@@ -4886,7 +4886,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.140";
+	exports.version = "abi/5.0.0-beta.141";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -4952,7 +4952,10 @@
 	        var c = param[i];
 	        switch (c) {
 	            case "(":
-	                if (!node.state.allowParams) {
+	                if (node.state.allowType && node.type === "") {
+	                    node.type = "tuple";
+	                }
+	                else if (!node.state.allowParams) {
 	                    throwError(i);
 	                }
 	                node.state.allowType = false;
@@ -6453,7 +6456,7 @@
 	var _version$a = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "address/5.0.0-beta.131";
+	exports.version = "address/5.0.0-beta.132";
 	});
 
 	var _version$b = unwrapExports(_version$a);
@@ -6477,11 +6480,11 @@
 	    }
 	    address = address.toLowerCase();
 	    var chars = address.substring(2).split("");
-	    var hashed = new Uint8Array(40);
+	    var expanded = new Uint8Array(40);
 	    for (var i = 0; i < 40; i++) {
-	        hashed[i] = chars[i].charCodeAt(0);
+	        expanded[i] = chars[i].charCodeAt(0);
 	    }
-	    hashed = lib$1.arrayify(lib$4.keccak256(hashed));
+	    var hashed = lib$1.arrayify(lib$4.keccak256(expanded));
 	    for (var i = 0; i < 40; i += 2) {
 	        if ((hashed[i >> 1] >> 4) >= 8) {
 	            chars[i] = chars[i].toUpperCase();
@@ -6514,10 +6517,7 @@
 	function ibanChecksum(address) {
 	    address = address.toUpperCase();
 	    address = address.substring(4) + address.substring(0, 2) + "00";
-	    var expanded = "";
-	    address.split("").forEach(function (c) {
-	        expanded += ibanLookup[c];
-	    });
+	    var expanded = address.split("").map(function (c) { return ibanLookup[c]; }).join("");
 	    // Javascript can handle integers safely up to 15 (decimal) digits
 	    while (expanded.length >= safeDigits) {
 	        var block = expanded.substring(0, safeDigits);
@@ -7118,7 +7118,7 @@
 	var _version$c = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "strings/5.0.0-beta.133";
+	exports.version = "strings/5.0.0-beta.134";
 	});
 
 	var _version$d = unwrapExports(_version$c);
@@ -7262,11 +7262,11 @@
 	                throw new Error("invalid utf-8 string");
 	            }
 	            // Surrogate Pair
-	            c = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
-	            result.push((c >> 18) | 0xf0);
-	            result.push(((c >> 12) & 0x3f) | 0x80);
-	            result.push(((c >> 6) & 0x3f) | 0x80);
-	            result.push((c & 0x3f) | 0x80);
+	            var pair = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
+	            result.push((pair >> 18) | 0xf0);
+	            result.push(((pair >> 12) & 0x3f) | 0x80);
+	            result.push(((pair >> 6) & 0x3f) | 0x80);
+	            result.push((pair & 0x3f) | 0x80);
 	        }
 	        else {
 	            result.push((c >> 12) | 0xe0);
@@ -7796,7 +7796,7 @@
 	var _version$e = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hash/5.0.0-beta.131";
+	exports.version = "hash/5.0.0-beta.132";
 	});
 
 	var _version$f = unwrapExports(_version$e);
@@ -7975,17 +7975,19 @@
 	            bucket[signature] = fragment;
 	        });
 	        // Add any fragments with a unique name by its name (sans signature parameters)
-	        [this.events, this.functions].forEach(function (bucket) {
-	            var count = getNameCount(bucket);
-	            Object.keys(bucket).forEach(function (signature) {
-	                var fragment = bucket[signature];
+	        /*
+	        [this.events, this.functions].forEach((bucket) => {
+	            let count = getNameCount(bucket);
+	            Object.keys(bucket).forEach((signature) => {
+	                let fragment = bucket[signature];
 	                if (count[fragment.name] !== 1) {
-	                    logger.warn("duplicate definition - " + fragment.name);
-	                    return;
+	                   logger.warn("duplicate definition - " + fragment.name);
+	                   return;
 	                }
 	                bucket[fragment.name] = fragment;
 	            });
 	        });
+	        */
 	        // If we do not have a constructor use the default "constructor() payable"
 	        if (!this.deploy) {
 	            lib$3.defineReadOnly(this, "deploy", fragments.ConstructorFragment.from({ type: "constructor" }));
@@ -8006,24 +8008,60 @@
 	    };
 	    Interface.prototype.getFunction = function (nameOrSignatureOrSighash) {
 	        if (lib$1.isHexString(nameOrSignatureOrSighash)) {
-	            return getFragment(nameOrSignatureOrSighash, this.getSighash.bind(this), this.functions);
+	            for (var name_1 in this.functions) {
+	                if (nameOrSignatureOrSighash === this.getSighash(name_1)) {
+	                    return this.functions[name_1];
+	                }
+	            }
+	            logger.throwArgumentError("no matching function", "sighash", nameOrSignatureOrSighash);
 	        }
 	        // It is a bare name, look up the function (will return null if ambiguous)
 	        if (nameOrSignatureOrSighash.indexOf("(") === -1) {
-	            return (this.functions[nameOrSignatureOrSighash.trim()] || null);
+	            var name_2 = nameOrSignatureOrSighash.trim();
+	            var matching = Object.keys(this.functions).filter(function (f) { return (f.split("(" /* fix:) */)[0] === name_2); });
+	            if (matching.length === 0) {
+	                logger.throwArgumentError("no matching function", "name", name_2);
+	            }
+	            else if (matching.length > 1) {
+	                logger.throwArgumentError("multiple matching functions", "name", name_2);
+	            }
+	            return this.functions[matching[0]];
 	        }
 	        // Normlize the signature and lookup the function
-	        return this.functions[fragments.FunctionFragment.fromString(nameOrSignatureOrSighash).format()];
+	        var result = this.functions[fragments.FunctionFragment.fromString(nameOrSignatureOrSighash).format()];
+	        if (!result) {
+	            logger.throwArgumentError("no matching function", "signature", nameOrSignatureOrSighash);
+	        }
+	        return result;
 	    };
 	    Interface.prototype.getEvent = function (nameOrSignatureOrTopic) {
 	        if (lib$1.isHexString(nameOrSignatureOrTopic)) {
-	            return getFragment(nameOrSignatureOrTopic, this.getEventTopic.bind(this), this.events);
+	            var topichash = nameOrSignatureOrTopic.toLowerCase();
+	            for (var name_3 in this.events) {
+	                if (topichash === this.getEventTopic(name_3)) {
+	                    return this.events[name_3];
+	                }
+	            }
+	            logger.throwArgumentError("no matching event", "topichash", topichash);
 	        }
 	        // It is a bare name, look up the function (will return null if ambiguous)
 	        if (nameOrSignatureOrTopic.indexOf("(") === -1) {
-	            return this.events[nameOrSignatureOrTopic];
+	            var name_4 = nameOrSignatureOrTopic.trim();
+	            var matching = Object.keys(this.events).filter(function (f) { return (f.split("(" /* fix:) */)[0] === name_4); });
+	            if (matching.length === 0) {
+	                logger.throwArgumentError("no matching event", "name", name_4);
+	            }
+	            else if (matching.length > 1) {
+	                logger.throwArgumentError("multiple matching events", "name", name_4);
+	            }
+	            return this.events[matching[0]];
 	        }
-	        return this.events[fragments.EventFragment.fromString(nameOrSignatureOrTopic).format()];
+	        // Normlize the signature and lookup the function
+	        var result = this.events[fragments.EventFragment.fromString(nameOrSignatureOrTopic).format()];
+	        if (!result) {
+	            logger.throwArgumentError("no matching event", "signature", nameOrSignatureOrTopic);
+	        }
+	        return result;
 	    };
 	    Interface.prototype.getSighash = function (functionFragment) {
 	        if (typeof (functionFragment) === "string") {
@@ -8246,30 +8284,6 @@
 	    return Interface;
 	}());
 	exports.Interface = Interface;
-	function getFragment(hash, calcFunc, items) {
-	    for (var signature in items) {
-	        if (signature.indexOf("(") === -1) {
-	            continue;
-	        }
-	        var fragment = items[signature];
-	        if (calcFunc(fragment) === hash) {
-	            return fragment;
-	        }
-	    }
-	    return null;
-	}
-	function getNameCount(fragments) {
-	    var unique = {};
-	    // Count each name
-	    for (var signature in fragments) {
-	        var name_1 = fragments[signature].name;
-	        if (!unique[name_1]) {
-	            unique[name_1] = 0;
-	        }
-	        unique[name_1]++;
-	    }
-	    return unique;
-	}
 	});
 
 	var _interface$1 = unwrapExports(_interface);
@@ -8447,7 +8461,7 @@
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.0-beta.135";
+	exports.version = "abstract-signer/5.0.0-beta.136";
 	});
 
 	var _version$j = unwrapExports(_version$i);
@@ -8468,6 +8482,42 @@
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
+	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	    });
+	};
+	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
+	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+	    function verb(n) { return function (v) { return step([n, v]); }; }
+	    function step(op) {
+	        if (f) throw new TypeError("Generator is already executing.");
+	        while (_) try {
+	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+	            if (y = 0, t) op = [op[0] & 2, t.value];
+	            switch (op[0]) {
+	                case 0: case 1: t = op; break;
+	                case 4: _.label++; return { value: op[1], done: false };
+	                case 5: _.label++; y = op[1]; op = [0]; continue;
+	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+	                default:
+	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+	                    if (t[2]) _.ops.pop();
+	                    _.trys.pop(); continue;
+	            }
+	            op = body.call(thisArg, _);
+	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+	    }
+	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 
@@ -8564,43 +8614,52 @@
 	    // By default called from: (overriding these prevents it)
 	    //   - sendTransaction
 	    Signer.prototype.populateTransaction = function (transaction) {
-	        var _this = this;
-	        return lib$3.resolveProperties(this.checkTransaction(transaction)).then(function (tx) {
-	            if (tx.to != null) {
-	                tx.to = Promise.resolve(tx.to).then(function (to) { return _this.resolveName(to); });
-	            }
-	            if (tx.gasPrice == null) {
-	                tx.gasPrice = _this.getGasPrice();
-	            }
-	            if (tx.nonce == null) {
-	                tx.nonce = _this.getTransactionCount("pending");
-	            }
-	            // Make sure any provided address matches this signer
-	            if (tx.from == null) {
-	                tx.from = _this.getAddress();
-	            }
-	            else {
-	                tx.from = Promise.all([
-	                    _this.getAddress(),
-	                    _this.provider.resolveName(tx.from)
-	                ]).then(function (results) {
-	                    if (results[0] !== results[1]) {
-	                        logger.throwArgumentError("from address mismatch", "transaction", transaction);
-	                    }
-	                    return results[0];
-	                });
-	            }
-	            if (tx.gasLimit == null) {
-	                tx.gasLimit = _this.estimateGas(tx).catch(function (error) {
-	                    logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", lib.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
-	                        tx: tx
-	                    });
-	                });
-	            }
-	            if (tx.chainId == null) {
-	                tx.chainId = _this.getChainId();
-	            }
-	            return lib$3.resolveProperties(tx);
+	        return __awaiter(this, void 0, void 0, function () {
+	            var tx;
+	            var _this = this;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, lib$3.resolveProperties(this.checkTransaction(transaction))];
+	                    case 1:
+	                        tx = _a.sent();
+	                        if (tx.to != null) {
+	                            tx.to = Promise.resolve(tx.to).then(function (to) { return _this.resolveName(to); });
+	                        }
+	                        if (tx.gasPrice == null) {
+	                            tx.gasPrice = this.getGasPrice();
+	                        }
+	                        if (tx.nonce == null) {
+	                            tx.nonce = this.getTransactionCount("pending");
+	                        }
+	                        // Make sure any provided address matches this signer
+	                        if (tx.from == null) {
+	                            tx.from = this.getAddress();
+	                        }
+	                        else {
+	                            tx.from = Promise.all([
+	                                this.getAddress(),
+	                                this.provider.resolveName(tx.from)
+	                            ]).then(function (results) {
+	                                if (results[0] !== results[1]) {
+	                                    logger.throwArgumentError("from address mismatch", "transaction", transaction);
+	                                }
+	                                return results[0];
+	                            });
+	                        }
+	                        if (tx.gasLimit == null) {
+	                            tx.gasLimit = this.estimateGas(tx).catch(function (error) {
+	                                logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", lib.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+	                                    tx: tx
+	                                });
+	                            });
+	                        }
+	                        if (tx.chainId == null) {
+	                            tx.chainId = this.getChainId();
+	                        }
+	                        return [4 /*yield*/, lib$3.resolveProperties(tx)];
+	                    case 2: return [2 /*return*/, _a.sent()];
+	                }
+	            });
 	        });
 	    };
 	    ///////////////////
@@ -8658,7 +8717,7 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.0-beta.140";
+	exports.version = "contracts/5.0.0-beta.141";
 	});
 
 	var _version$l = unwrapExports(_version$k);
@@ -8723,6 +8782,15 @@
 	    }
 	    return Promise.resolve(value);
 	}
+	/*
+	export function _populateTransaction(func: FunctionFragment, args: Array<any>, overrides?: any): Promise<Transaction> {
+	    return null;
+	}
+
+	export function _sendTransaction(func: FunctionFragment, args: Array<any>, overrides?: any): Promise<Transaction> {
+	    return null;
+	}
+	*/
 	function runMethod(contract, functionName, options) {
 	    var method = contract.interface.functions[functionName];
 	    return function () {
@@ -8995,19 +9063,35 @@
 	        lib$3.defineReadOnly(this, "functions", {});
 	        lib$3.defineReadOnly(this, "populateTransaction", {});
 	        lib$3.defineReadOnly(this, "filters", {});
-	        Object.keys(this.interface.events).forEach(function (eventName) {
-	            var event = _this.interface.events[eventName];
-	            lib$3.defineReadOnly(_this.filters, eventName, function () {
-	                var args = [];
-	                for (var _i = 0; _i < arguments.length; _i++) {
-	                    args[_i] = arguments[_i];
+	        {
+	            var uniqueFilters_1 = {};
+	            Object.keys(this.interface.events).forEach(function (eventSignature) {
+	                var event = _this.interface.events[eventSignature];
+	                lib$3.defineReadOnly(_this.filters, eventSignature, function () {
+	                    var args = [];
+	                    for (var _i = 0; _i < arguments.length; _i++) {
+	                        args[_i] = arguments[_i];
+	                    }
+	                    return {
+	                        address: _this.address,
+	                        topics: _this.interface.encodeFilterTopics(event, args)
+	                    };
+	                });
+	                if (!uniqueFilters_1[event.name]) {
+	                    uniqueFilters_1[event.name] = [];
 	                }
-	                return {
-	                    address: _this.address,
-	                    topics: _this.interface.encodeFilterTopics(event, args)
-	                };
+	                uniqueFilters_1[event.name].push(eventSignature);
 	            });
-	        });
+	            Object.keys(uniqueFilters_1).forEach(function (name) {
+	                var filters = uniqueFilters_1[name];
+	                if (filters.length === 1) {
+	                    lib$3.defineReadOnly(_this.filters, name, _this.filters[filters[0]]);
+	                }
+	                else {
+	                    logger.warn("Duplicate definition of " + name + " (" + filters.join(", ") + ")");
+	                }
+	            });
+	        }
 	        lib$3.defineReadOnly(this, "_runningEvents", {});
 	        lib$3.defineReadOnly(this, "_wrappedEmits", {});
 	        lib$3.defineReadOnly(this, "address", addressOrName);
@@ -9031,7 +9115,10 @@
 	                logger.throwArgumentError("provider is required to use non-address contract address", "addressOrName", addressOrName);
 	            }
 	        }
+	        var uniqueFunctions = {};
 	        Object.keys(this.interface.functions).forEach(function (name) {
+	            var fragment = _this.interface.functions[name];
+	            // @TODO: This should take in fragment
 	            var run = runMethod(_this, name, {});
 	            if (_this[name] == null) {
 	                lib$3.defineReadOnly(_this, name, run);
@@ -9048,6 +9135,24 @@
 	            if (_this.estimate[name] == null) {
 	                lib$3.defineReadOnly(_this.estimate, name, runMethod(_this, name, { estimate: true }));
 	            }
+	            if (!uniqueFunctions[fragment.name]) {
+	                uniqueFunctions[fragment.name] = [];
+	            }
+	            uniqueFunctions[fragment.name].push(name);
+	        });
+	        Object.keys(uniqueFunctions).forEach(function (name) {
+	            var signatures = uniqueFunctions[name];
+	            if (signatures.length > 1) {
+	                logger.warn("Duplicate definition of " + name + " (" + signatures.join(", ") + ")");
+	                return;
+	            }
+	            if (_this[name] == null) {
+	                lib$3.defineReadOnly(_this, name, _this[signatures[0]]);
+	            }
+	            lib$3.defineReadOnly(_this.functions, name, _this.functions[signatures[0]]);
+	            lib$3.defineReadOnly(_this.callStatic, name, _this.callStatic[signatures[0]]);
+	            lib$3.defineReadOnly(_this.populateTransaction, name, _this.populateTransaction[signatures[0]]);
+	            lib$3.defineReadOnly(_this.estimate, name, _this.estimate[signatures[0]]);
 	        });
 	    }
 	    Contract.getContractAddress = function (transaction) {
@@ -13211,7 +13316,7 @@
 	var _version$o = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "signing-key/5.0.0-beta.132";
+	exports.version = "signing-key/5.0.0-beta.133";
 	});
 
 	var _version$p = unwrapExports(_version$o);
@@ -13307,7 +13412,7 @@
 	var _version$q = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "transactions/5.0.0-beta.131";
+	exports.version = "transactions/5.0.0-beta.132";
 	});
 
 	var _version$r = unwrapExports(_version$q);
@@ -13486,7 +13591,7 @@
 	var _version$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wordlists/5.0.0-beta.131";
+	exports.version = "wordlists/5.0.0-beta.132";
 	});
 
 	var _version$t = unwrapExports(_version$s);
@@ -13629,7 +13734,7 @@
 	var _version$u = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hdnode/5.0.0-beta.133";
+	exports.version = "hdnode/5.0.0-beta.134";
 	});
 
 	var _version$v = unwrapExports(_version$u);
@@ -13667,8 +13772,7 @@
 	    return lib$1.hexZeroPad(lib$1.hexlify(value), 32);
 	}
 	function base58check(data) {
-	    var checksum = lib$1.hexDataSlice(browser.sha256(browser.sha256(data)), 0, 4);
-	    return lib$e.Base58.encode(lib$1.concat([data, checksum]));
+	    return lib$e.Base58.encode(lib$1.concat([data, lib$1.hexDataSlice(browser.sha256(browser.sha256(data)), 0, 4)]));
 	}
 	var _constructorGuard = {};
 	exports.defaultPath = "m/44'/60'/0'/0/0";
@@ -13883,8 +13987,7 @@
 	    var entropyBits = 32 * words.length / 3;
 	    var checksumBits = words.length / 3;
 	    var checksumMask = getUpperMask(checksumBits);
-	    var checksum = lib$1.arrayify(browser.sha256(entropy.slice(0, entropyBits / 8)))[0];
-	    checksum &= checksumMask;
+	    var checksum = lib$1.arrayify(browser.sha256(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
 	    if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
 	        throw new Error("invalid checksum");
 	    }
@@ -13915,9 +14018,8 @@
 	        }
 	    }
 	    // Compute the checksum bits
-	    var checksum = lib$1.arrayify(browser.sha256(entropy))[0];
 	    var checksumBits = entropy.length / 4;
-	    checksum &= getUpperMask(checksumBits);
+	    var checksum = lib$1.arrayify(browser.sha256(entropy))[0] & getUpperMask(checksumBits);
 	    // Shift the checksum into the word indices
 	    indices[indices.length - 1] <<= checksumBits;
 	    indices[indices.length - 1] |= (checksum >> (8 - checksumBits));
@@ -13949,7 +14051,7 @@
 	var _version$w = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "random/5.0.0-beta.131";
+	exports.version = "random/5.0.0-beta.132";
 	});
 
 	var _version$x = unwrapExports(_version$w);
@@ -14814,7 +14916,7 @@
 	var _version$y = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "json-wallets/5.0.0-beta.132";
+	exports.version = "json-wallets/5.0.0-beta.133";
 	});
 
 	var _version$z = unwrapExports(_version$y);
@@ -14824,21 +14926,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 
-	//import { Description } from "@ethersproject/properties";
 
-	/*
-	export class Account extends Description implements ExternallyOwnedAccount {
-	    readonly address: string;
-	    readonly privateKey: string;
-	    readonly mnemonic?: string;
-	    readonly path?: string;
-
-	//    static isAccount(value: any): value is Account {
-	//        return Description._isType(value);
-	//    }
-	}
-	//defineReadOnly(Account, "name", "Account");
-	*/
 	function looseArrayify(hexString) {
 	    if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
 	        hexString = '0x' + hexString;
@@ -14948,8 +15036,7 @@
 	    var encryptedSeed = encseed.slice(16);
 	    // Decrypt the seed
 	    var aesCbc = new aes_js_1.default.ModeOfOperation.cbc(key, iv);
-	    var seed = lib$1.arrayify(aesCbc.decrypt(encryptedSeed));
-	    seed = aes_js_1.default.padding.pkcs7.strip(seed);
+	    var seed = aes_js_1.default.padding.pkcs7.strip(lib$1.arrayify(aesCbc.decrypt(encryptedSeed)));
 	    // This wallet format is weird... Convert the binary encoded hex to a string.
 	    var seedHex = "";
 	    for (var i = 0; i < seed.length; i++) {
@@ -15034,12 +15121,12 @@
 	"use strict";
 
 	(function(root) {
-	    var MAX_VALUE = 0x7fffffff;
+	    const MAX_VALUE = 0x7fffffff;
 
 	    // The SHA256 and PBKDF2 implementation are from scrypt-async-js:
 	    // See: https://github.com/dchest/scrypt-async-js
 	    function SHA256(m) {
-	        var K = [
+	        const K = new Uint32Array([
 	           0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b,
 	           0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01,
 	           0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7,
@@ -15053,16 +15140,16 @@
 	           0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f,
 	           0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
 	           0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-	       ];
+	       ]);
 
-	        var h0 = 0x6a09e667, h1 = 0xbb67ae85, h2 = 0x3c6ef372, h3 = 0xa54ff53a;
-	        var h4 = 0x510e527f, h5 = 0x9b05688c, h6 = 0x1f83d9ab, h7 = 0x5be0cd19;
-	        var w = new Array(64);
+	        let h0 = 0x6a09e667, h1 = 0xbb67ae85, h2 = 0x3c6ef372, h3 = 0xa54ff53a;
+	        let h4 = 0x510e527f, h5 = 0x9b05688c, h6 = 0x1f83d9ab, h7 = 0x5be0cd19;
+	        const w = new Uint32Array(64);
 
 	        function blocks(p) {
-	            var off = 0, len = p.length;
+	            let off = 0, len = p.length;
 	            while (len >= 64) {
-	                var a = h0, b = h1, c = h2, d = h3, e = h4, f = h5, g = h6, h = h7, u, i, j, t1, t2;
+	                let a = h0, b = h1, c = h2, d = h3, e = h4, f = h5, g = h6, h = h7, u, i, j, t1, t2;
 
 	                for (i = 0; i < 16; i++) {
 	                    j = off + i*4;
@@ -15114,7 +15201,7 @@
 
 	        blocks(m);
 
-	        var i, bytesLeft = m.length % 64,
+	        let i, bytesLeft = m.length % 64,
 	        bitLenHi = (m.length / 0x20000000) | 0,
 	        bitLenLo = m.length << 3,
 	        numZeros = (bytesLeft < 56) ? 56 : 120,
@@ -15122,44 +15209,45 @@
 
 	        p.push(0x80);
 	        for (i = bytesLeft + 1; i < numZeros; i++) { p.push(0); }
-	        p.push((bitLenHi>>>24) & 0xff);
-	        p.push((bitLenHi>>>16) & 0xff);
-	        p.push((bitLenHi>>>8)  & 0xff);
-	        p.push((bitLenHi>>>0)  & 0xff);
-	        p.push((bitLenLo>>>24) & 0xff);
-	        p.push((bitLenLo>>>16) & 0xff);
-	        p.push((bitLenLo>>>8)  & 0xff);
-	        p.push((bitLenLo>>>0)  & 0xff);
+	        p.push((bitLenHi >>> 24) & 0xff);
+	        p.push((bitLenHi >>> 16) & 0xff);
+	        p.push((bitLenHi >>> 8)  & 0xff);
+	        p.push((bitLenHi >>> 0)  & 0xff);
+	        p.push((bitLenLo >>> 24) & 0xff);
+	        p.push((bitLenLo >>> 16) & 0xff);
+	        p.push((bitLenLo >>> 8)  & 0xff);
+	        p.push((bitLenLo >>> 0)  & 0xff);
 
 	        blocks(p);
 
 	        return [
-	            (h0>>>24) & 0xff, (h0>>>16) & 0xff, (h0>>>8) & 0xff, (h0>>>0) & 0xff,
-	            (h1>>>24) & 0xff, (h1>>>16) & 0xff, (h1>>>8) & 0xff, (h1>>>0) & 0xff,
-	            (h2>>>24) & 0xff, (h2>>>16) & 0xff, (h2>>>8) & 0xff, (h2>>>0) & 0xff,
-	            (h3>>>24) & 0xff, (h3>>>16) & 0xff, (h3>>>8) & 0xff, (h3>>>0) & 0xff,
-	            (h4>>>24) & 0xff, (h4>>>16) & 0xff, (h4>>>8) & 0xff, (h4>>>0) & 0xff,
-	            (h5>>>24) & 0xff, (h5>>>16) & 0xff, (h5>>>8) & 0xff, (h5>>>0) & 0xff,
-	            (h6>>>24) & 0xff, (h6>>>16) & 0xff, (h6>>>8) & 0xff, (h6>>>0) & 0xff,
-	            (h7>>>24) & 0xff, (h7>>>16) & 0xff, (h7>>>8) & 0xff, (h7>>>0) & 0xff
+	            (h0 >>> 24) & 0xff, (h0 >>> 16) & 0xff, (h0 >>> 8) & 0xff, (h0 >>> 0) & 0xff,
+	            (h1 >>> 24) & 0xff, (h1 >>> 16) & 0xff, (h1 >>> 8) & 0xff, (h1 >>> 0) & 0xff,
+	            (h2 >>> 24) & 0xff, (h2 >>> 16) & 0xff, (h2 >>> 8) & 0xff, (h2 >>> 0) & 0xff,
+	            (h3 >>> 24) & 0xff, (h3 >>> 16) & 0xff, (h3 >>> 8) & 0xff, (h3 >>> 0) & 0xff,
+	            (h4 >>> 24) & 0xff, (h4 >>> 16) & 0xff, (h4 >>> 8) & 0xff, (h4 >>> 0) & 0xff,
+	            (h5 >>> 24) & 0xff, (h5 >>> 16) & 0xff, (h5 >>> 8) & 0xff, (h5 >>> 0) & 0xff,
+	            (h6 >>> 24) & 0xff, (h6 >>> 16) & 0xff, (h6 >>> 8) & 0xff, (h6 >>> 0) & 0xff,
+	            (h7 >>> 24) & 0xff, (h7 >>> 16) & 0xff, (h7 >>> 8) & 0xff, (h7 >>> 0) & 0xff
 	        ];
 	    }
 
 	    function PBKDF2_HMAC_SHA256_OneIter(password, salt, dkLen) {
 	        // compress password if it's longer than hash block length
-	        password = password.length <= 64 ? password : SHA256(password);
+	        password = (password.length <= 64) ? password : SHA256(password);
 
-	        var i;
-	        var innerLen = 64 + salt.length + 4;
-	        var inner = new Array(innerLen);
-	        var outerKey = new Array(64);
-	        var dk = [];
+	        const innerLen = 64 + salt.length + 4;
+	        const inner = new Array(innerLen);
+	        const outerKey = new Array(64);
+
+	        let i;
+	        let dk = [];
 
 	        // inner = (password ^ ipad) || salt || counter
-	        for (i = 0; i < 64; i++) inner[i] = 0x36;
-	        for (i = 0; i < password.length; i++) inner[i] ^= password[i];
-	        for (i = 0; i < salt.length; i++) inner[64+i] = salt[i];
-	        for (i = innerLen - 4; i < innerLen; i++) inner[i] = 0;
+	        for (i = 0; i < 64; i++) { inner[i] = 0x36; }
+	        for (i = 0; i < password.length; i++) { inner[i] ^= password[i]; }
+	        for (i = 0; i < salt.length; i++) { inner[64 + i] = salt[i]; }
+	        for (i = innerLen - 4; i < innerLen; i++) { inner[i] = 0; }
 
 	        // outerKey = password ^ opad
 	        for (i = 0; i < 64; i++) outerKey[i] = 0x5c;
@@ -15167,7 +15255,7 @@
 
 	        // increments counter inside inner
 	        function incrementCounter() {
-	            for (var i = innerLen-1; i >= innerLen-4; i--) {
+	            for (let i = innerLen - 1; i >= innerLen - 4; i--) {
 	                inner[i]++;
 	                if (inner[i] <= 0xff) return;
 	                inner[i] = 0;
@@ -15191,7 +15279,7 @@
 	    // The following is an adaptation of scryptsy
 	    // See: https://www.npmjs.com/package/scryptsy
 	    function blockmix_salsa8(BY, Yi, r, x, _X) {
-	        var i;
+	        let i;
 
 	        arraycopy(BY, (2 * r - 1) * 16, _X, 0, 16);
 	        for (i = 0; i < 2 * r; i++) {
@@ -15216,7 +15304,7 @@
 	    function salsa20_8(B, x) {
 	        arraycopy(B, 0, x, 0, 16);
 
-	        for (var i = 8; i > 0; i -= 2) {
+	        for (let i = 8; i > 0; i -= 2) {
 	            x[ 4] ^= R(x[ 0] + x[12], 7);
 	            x[ 8] ^= R(x[ 4] + x[ 0], 9);
 	            x[12] ^= R(x[ 8] + x[ 4], 13);
@@ -15251,14 +15339,14 @@
 	            x[15] ^= R(x[14] + x[13], 18);
 	        }
 
-	        for (i = 0; i < 16; ++i) {
+	        for (let i = 0; i < 16; ++i) {
 	            B[i] += x[i];
 	        }
 	    }
 
 	    // naive approach... going back to loop unrolling may yield additional performance
 	    function blockxor(S, Si, D, len) {
-	        for (var i = 0; i < len; i++) {
+	        for (let i = 0; i < len; i++) {
 	            D[i] ^= S[Si + i];
 	        }
 	    }
@@ -15270,31 +15358,26 @@
 	    }
 
 	    function checkBufferish(o) {
-	        if (!o || typeof(o.length) !== 'number') {
-	            return false;
-	        }
-	        for (var i = 0; i < o.length; i++) {
-	            if (typeof(o[i]) !== 'number') { return false; }
+	        if (!o || typeof(o.length) !== 'number') { return false; }
 
-	            var v = parseInt(o[i]);
-	            if (v != o[i] || v < 0 || v >= 256) {
+	        for (let i = 0; i < o.length; i++) {
+	            const v = o[i];
+	            if (typeof(v) !== 'number' || v % 1 || v < 0 || v >= 256) {
 	                return false;
 	            }
 	        }
+
 	        return true;
 	    }
 
 	    function ensureInteger(value, name) {
-	        var intValue = parseInt(value);
-	        if (value != intValue) { throw new Error('invalid ' + name); }
-	        return intValue;
+	        if (typeof(value) !== "number" || (value % 1)) { throw new Error('invalid ' + name); }
+	        return value;
 	    }
 
 	    // N = Cpu cost, r = Memory cost, p = parallelization cost
 	    // callback(error, progress, key)
-	    function scrypt(password, salt, N, r, p, dkLen, callback) {
-
-	        if (!callback) { throw new Error('missing callback'); }
+	    function _scrypt(password, salt, N, r, p, dkLen, callback) {
 
 	        N = ensureInteger(N, 'N');
 	        r = ensureInteger(r, 'r');
@@ -15317,49 +15400,51 @@
 	        }
 	        salt = Array.prototype.slice.call(salt);
 
-	        var b = PBKDF2_HMAC_SHA256_OneIter(password, salt, p * 128 * r);
-	        var B = new Uint32Array(p * 32 * r);
-	        for (var i = 0; i < B.length; i++) {
-	            var j = i * 4;
+	        let b = PBKDF2_HMAC_SHA256_OneIter(password, salt, p * 128 * r);
+	        const B = new Uint32Array(p * 32 * r);
+	        for (let i = 0; i < B.length; i++) {
+	            const j = i * 4;
 	            B[i] = ((b[j + 3] & 0xff) << 24) |
 	                   ((b[j + 2] & 0xff) << 16) |
 	                   ((b[j + 1] & 0xff) << 8) |
 	                   ((b[j + 0] & 0xff) << 0);
 	        }
 
-	        var XY = new Uint32Array(64 * r);
-	        var V = new Uint32Array(32 * r * N);
+	        const XY = new Uint32Array(64 * r);
+	        const V = new Uint32Array(32 * r * N);
 
-	        var Yi = 32 * r;
+	        const Yi = 32 * r;
 
 	        // scratch space
-	        var x = new Uint32Array(16);       // salsa20_8
-	        var _X = new Uint32Array(16);      // blockmix_salsa8
+	        const x = new Uint32Array(16);       // salsa20_8
+	        const _X = new Uint32Array(16);      // blockmix_salsa8
 
-	        var totalOps = p * N * 2;
-	        var currentOp = 0;
-	        var lastPercent10 = null;
+	        const totalOps = p * N * 2;
+	        let currentOp = 0;
+	        let lastPercent10 = null;
 
 	        // Set this to true to abandon the scrypt on the next step
-	        var stop = false;
+	        let stop = false;
 
 	        // State information
-	        var state = 0;
-	        var i0 = 0, i1;
-	        var Bi;
+	        let state = 0;
+	        let i0 = 0, i1;
+	        let Bi;
 
 	        // How many blockmix_salsa8 can we do per step?
-	        var limit = parseInt(1000 / r);
+	        const limit = callback ? parseInt(1000 / r): 0xffffffff;
 
 	        // Trick from scrypt-async; if there is a setImmediate shim in place, use it
-	        var nextTick = (typeof(setImmediate) !== 'undefined') ? setImmediate : setTimeout;
+	        const nextTick = (typeof(setImmediate) !== 'undefined') ? setImmediate : setTimeout;
 
 	        // This is really all I changed; making scryptsy a state machine so we occasionally
 	        // stop and give other evnts on the evnt loop a chance to run. ~RicMoo
-	        var incrementalSMix = function() {
+	        const incrementalSMix = function() {
 	            if (stop) {
 	                return callback(new Error('cancelled'), currentOp / totalOps);
 	            }
+
+	            let steps;
 
 	            switch (state) {
 	                case 0:
@@ -15376,9 +15461,9 @@
 	                case 1:
 
 	                    // Run up to 1000 steps of the first inner smix loop
-	                    var steps = N - i1;
+	                    steps = N - i1;
 	                    if (steps > limit) { steps = limit; }
-	                    for (var i = 0; i < steps; i++) {                  // ROMix - 2
+	                    for (let i = 0; i < steps; i++) {                  // ROMix - 2
 	                        arraycopy(XY, 0, V, (i1 + i) * Yi, Yi);         // ROMix - 3
 	                        blockmix_salsa8(XY, Yi, r, x, _X);             // ROMix - 4
 	                    }
@@ -15387,17 +15472,17 @@
 	                    i1 += steps;
 	                    currentOp += steps;
 
-	                    // Call the callback with the progress (optionally stopping us)
-	                    var percent10 = parseInt(1000 * currentOp / totalOps);
-	                    if (percent10 !== lastPercent10) {
-	                        stop = callback(null, currentOp / totalOps);
-	                        if (stop) { break; }
-	                        lastPercent10 = percent10;
+	                    if (callback) {
+	                        // Call the callback with the progress (optionally stopping us)
+	                        const percent10 = parseInt(1000 * currentOp / totalOps);
+	                        if (percent10 !== lastPercent10) {
+	                            stop = callback(null, currentOp / totalOps);
+	                            if (stop) { break; }
+	                            lastPercent10 = percent10;
+	                        }
 	                    }
 
-	                    if (i1 < N) {
-	                        break;
-	                    }
+	                    if (i1 < N) { break; }
 
 	                    i1 = 0;                                          // Move to ROMix 6
 	                    state = 2;
@@ -15407,11 +15492,11 @@
 	                case 2:
 
 	                    // Run up to 1000 steps of the second inner smix loop
-	                    var steps = N - i1;
+	                    steps = N - i1;
 	                    if (steps > limit) { steps = limit; }
-	                    for (var i = 0; i < steps; i++) {                // ROMix - 6
-	                        var offset = (2 * r - 1) * 16;               // ROMix - 7
-	                        var j = XY[offset] & (N - 1);
+	                    for (let i = 0; i < steps; i++) {                // ROMix - 6
+	                        const offset = (2 * r - 1) * 16;             // ROMix - 7
+	                        const j = XY[offset] & (N - 1);
 	                        blockxor(V, j * Yi, XY, Yi);                 // ROMix - 8 (inner)
 	                        blockmix_salsa8(XY, Yi, r, x, _X);           // ROMix - 9 (outer)
 	                    }
@@ -15421,16 +15506,16 @@
 	                    currentOp += steps;
 
 	                    // Call the callback with the progress (optionally stopping us)
-	                    var percent10 = parseInt(1000 * currentOp / totalOps);
-	                    if (percent10 !== lastPercent10) {
-	                        stop = callback(null, currentOp / totalOps);
-	                        if (stop) { break; }
-	                        lastPercent10 = percent10;
+	                    if (callback) {
+	                        const percent10 = parseInt(1000 * currentOp / totalOps);
+	                        if (percent10 !== lastPercent10) {
+	                            stop = callback(null, currentOp / totalOps);
+	                            if (stop) { break; }
+	                            lastPercent10 = percent10;
+	                        }
 	                    }
 
-	                    if (i1 < N) {
-	                        break;
-	                    }
+	                    if (i1 < N) { break; }
 
 	                    arraycopy(XY, 0, B, Bi, Yi);                     // ROMix - 10
 
@@ -15442,36 +15527,72 @@
 	                    }
 
 	                    b = [];
-	                    for (var i = 0; i < B.length; i++) {
+	                    for (let i = 0; i < B.length; i++) {
 	                        b.push((B[i] >>  0) & 0xff);
 	                        b.push((B[i] >>  8) & 0xff);
 	                        b.push((B[i] >> 16) & 0xff);
 	                        b.push((B[i] >> 24) & 0xff);
 	                    }
 
-	                    var derivedKey = PBKDF2_HMAC_SHA256_OneIter(password, b, dkLen);
+	                    const derivedKey = PBKDF2_HMAC_SHA256_OneIter(password, b, dkLen);
+
+	                    // Send the result to the callback
+	                    if (callback) { callback(null, 1.0, derivedKey); }
 
 	                    // Done; don't break (which would reschedule)
-	                    return callback(null, 1.0, derivedKey);
-	                }
+	                    return derivedKey;
+	            }
 
-	                // Schedule the next steps
-	                nextTick(incrementalSMix);
-	            };
+	            // Schedule the next steps
+	            if (callback) { nextTick(incrementalSMix); }
+	        };
 
-	            // Bootstrap the incremental smix
-	            incrementalSMix();
+	        // Run the smix state machine until completion
+	        if (!callback) {
+	            while (true) {
+	                const derivedKey = incrementalSMix();
+	                if (derivedKey != undefined) { return derivedKey; }
+	            }
+	        }
+
+	        // Bootstrap the async incremental smix
+	        incrementalSMix();
 	    }
+
+	    const lib = {
+	        scrypt: function(password, salt, N, r, p, dkLen, progressCallback) {
+	            return new Promise(function(resolve, reject) {
+	                let lastProgress = 0;
+	                if (progressCallback) { progressCallback(0); }
+	                _scrypt(password, salt, N, r, p, dkLen, function(error, progress, key) {
+	                    if (error) {
+	                        reject(error);
+	                    } else if (key) {
+	                        if (progressCallback && lastProgress !== 1) {
+	                            progressCallback(1);
+	                        }
+	                        resolve(new Uint8Array(key));
+	                    } else if (progressCallback && progress !== lastProgress) {
+	                        lastProgress = progress;
+	                        return progressCallback(progress);
+	                    }
+	                });
+	            });
+	        },
+	        syncScrypt: function(password, salt, N, r, p, dkLen) {
+	            return new Uint8Array(_scrypt(password, salt, N, r, p, dkLen));
+	        }
+	    };
 
 	    // node.js
 	    if ('object' !== 'undefined') {
-	       module.exports = scrypt;
+	       module.exports = lib;
 
 	    // RequireJS/AMD
 	    // http://www.requirejs.org/docs/api.html
 	    // https://github.com/amdjs/amdjs-api/wiki/AMD
 	    } else if (typeof(undefined) === 'function' && undefined.amd) {
-	        undefined(scrypt);
+	        undefined(lib);
 
 	    // Web Browsers
 	    } else if (root) {
@@ -15481,7 +15602,7 @@
 	            root._scrypt = root.scrypt;
 	        }
 
-	        root.scrypt = scrypt;
+	        root.scrypt = lib;
 	    }
 
 	})(commonjsGlobal);
@@ -15716,12 +15837,55 @@
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
+	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	    });
+	};
+	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
+	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+	    function verb(n) { return function (v) { return step([n, v]); }; }
+	    function step(op) {
+	        if (f) throw new TypeError("Generator is already executing.");
+	        while (_) try {
+	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+	            if (y = 0, t) op = [op[0] & 2, t.value];
+	            switch (op[0]) {
+	                case 0: case 1: t = op; break;
+	                case 4: _.label++; return { value: op[1], done: false };
+	                case 5: _.label++; y = op[1]; op = [0]; continue;
+	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+	                default:
+	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+	                    if (t[2]) _.ops.pop();
+	                    _.trys.pop(); continue;
+	            }
+	            op = body.call(thisArg, _);
+	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+	    }
+	};
 	var __importDefault = (commonjsGlobal && commonjsGlobal.__importDefault) || function (mod) {
 	    return (mod && mod.__esModule) ? mod : { "default": mod };
 	};
+	var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
+	    if (mod && mod.__esModule) return mod;
+	    var result = {};
+	    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+	    result["default"] = mod;
+	    return result;
+	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var aes_js_1 = __importDefault(aesJs);
-	var scrypt_js_1 = __importDefault(scrypt);
+	var scrypt$1 = __importStar(scrypt);
 	var uuid_1$1 = __importDefault(uuid_1);
 
 
@@ -15745,152 +15909,124 @@
 	}(lib$3.Description));
 	exports.KeystoreAccount = KeystoreAccount;
 	function decrypt(json, password, progressCallback) {
-	    var data = JSON.parse(json);
-	    var passwordBytes = utils$1.getPassword(password);
-	    var decrypt = function (key, ciphertext) {
-	        var cipher = utils$1.searchPath(data, "crypto/cipher");
-	        if (cipher === "aes-128-ctr") {
-	            var iv = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/cipherparams/iv"));
-	            var counter = new aes_js_1.default.Counter(iv);
-	            var aesCtr = new aes_js_1.default.ModeOfOperation.ctr(key, counter);
-	            return lib$1.arrayify(aesCtr.decrypt(ciphertext));
-	        }
-	        return null;
-	    };
-	    var computeMAC = function (derivedHalf, ciphertext) {
-	        return lib$4.keccak256(lib$1.concat([derivedHalf, ciphertext]));
-	    };
-	    var getAccount = function (key, reject) {
-	        var ciphertext = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/ciphertext"));
-	        var computedMAC = lib$1.hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
-	        if (computedMAC !== utils$1.searchPath(data, "crypto/mac").toLowerCase()) {
-	            reject(new Error("invalid password"));
-	            return null;
-	        }
-	        var privateKey = decrypt(key.slice(0, 16), ciphertext);
-	        var mnemonicKey = key.slice(32, 64);
-	        if (!privateKey) {
-	            reject(new Error("unsupported cipher"));
-	            return null;
-	        }
-	        var address = lib$g.computeAddress(privateKey);
-	        if (data.address) {
-	            var check = data.address.toLowerCase();
-	            if (check.substring(0, 2) !== "0x") {
-	                check = "0x" + check;
-	            }
-	            try {
-	                if (lib$6.getAddress(check) !== address) {
-	                    reject(new Error("address mismatch"));
-	                    return null;
-	                }
-	            }
-	            catch (e) { }
-	        }
-	        var account = {
-	            _isKeystoreAccount: true,
-	            address: address,
-	            privateKey: lib$1.hexlify(privateKey)
-	        };
-	        // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
-	        if (utils$1.searchPath(data, "x-ethers/version") === "0.1") {
-	            var mnemonicCiphertext = utils$1.looseArrayify(utils$1.searchPath(data, "x-ethers/mnemonicCiphertext"));
-	            var mnemonicIv = utils$1.looseArrayify(utils$1.searchPath(data, "x-ethers/mnemonicCounter"));
-	            var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
-	            var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-	            var path = utils$1.searchPath(data, "x-ethers/path") || lib$h.defaultPath;
-	            var entropy = lib$1.arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
-	            var mnemonic = lib$h.entropyToMnemonic(entropy);
-	            var node = lib$h.HDNode.fromMnemonic(mnemonic).derivePath(path);
-	            if (node.privateKey != account.privateKey) {
-	                reject(new Error("mnemonic mismatch"));
-	                return null;
-	            }
-	            account.mnemonic = node.mnemonic;
-	            account.path = node.path;
-	        }
-	        return new KeystoreAccount(account);
-	    };
-	    return new Promise(function (resolve, reject) {
-	        var kdf = utils$1.searchPath(data, "crypto/kdf");
-	        if (kdf && typeof (kdf) === "string") {
-	            if (kdf.toLowerCase() === "scrypt") {
-	                var salt = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/kdfparams/salt"));
-	                var N = parseInt(utils$1.searchPath(data, "crypto/kdfparams/n"));
-	                var r = parseInt(utils$1.searchPath(data, "crypto/kdfparams/r"));
-	                var p = parseInt(utils$1.searchPath(data, "crypto/kdfparams/p"));
-	                if (!N || !r || !p) {
-	                    reject(new Error("unsupported key-derivation function parameters"));
-	                    return;
-	                }
-	                // Make sure N is a power of 2
-	                if ((N & (N - 1)) !== 0) {
-	                    reject(new Error("unsupported key-derivation function parameter value for N"));
-	                    return;
-	                }
-	                var dkLen = parseInt(utils$1.searchPath(data, "crypto/kdfparams/dklen"));
-	                if (dkLen !== 32) {
-	                    reject(new Error("unsupported key-derivation derived-key length"));
-	                    return;
-	                }
-	                if (progressCallback) {
-	                    progressCallback(0);
-	                }
-	                scrypt_js_1.default(passwordBytes, salt, N, r, p, 64, function (error, progress, key) {
-	                    if (error) {
-	                        error.progress = progress;
-	                        reject(error);
-	                    }
-	                    else if (key) {
-	                        key = lib$1.arrayify(key);
-	                        var account = getAccount(key, reject);
-	                        if (!account) {
-	                            return;
+	    return __awaiter(this, void 0, void 0, function () {
+	        var data, passwordBytes, decrypt, computeMAC, getAccount, kdf, salt, N, r, p, dkLen, key, salt, prfFunc, prf, c, dkLen, key;
+	        return __generator(this, function (_a) {
+	            switch (_a.label) {
+	                case 0:
+	                    data = JSON.parse(json);
+	                    passwordBytes = utils$1.getPassword(password);
+	                    decrypt = function (key, ciphertext) {
+	                        var cipher = utils$1.searchPath(data, "crypto/cipher");
+	                        if (cipher === "aes-128-ctr") {
+	                            var iv = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/cipherparams/iv"));
+	                            var counter = new aes_js_1.default.Counter(iv);
+	                            var aesCtr = new aes_js_1.default.ModeOfOperation.ctr(key, counter);
+	                            return lib$1.arrayify(aesCtr.decrypt(ciphertext));
 	                        }
-	                        if (progressCallback) {
-	                            progressCallback(1);
+	                        return null;
+	                    };
+	                    computeMAC = function (derivedHalf, ciphertext) {
+	                        return lib$4.keccak256(lib$1.concat([derivedHalf, ciphertext]));
+	                    };
+	                    getAccount = function (key) {
+	                        return __awaiter(this, void 0, void 0, function () {
+	                            var ciphertext, computedMAC, privateKey, mnemonicKey, address, check, account, mnemonicCiphertext, mnemonicIv, mnemonicCounter, mnemonicAesCtr, path, entropy, mnemonic, node;
+	                            return __generator(this, function (_a) {
+	                                ciphertext = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/ciphertext"));
+	                                computedMAC = lib$1.hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
+	                                if (computedMAC !== utils$1.searchPath(data, "crypto/mac").toLowerCase()) {
+	                                    throw new Error("invalid password");
+	                                }
+	                                privateKey = decrypt(key.slice(0, 16), ciphertext);
+	                                mnemonicKey = key.slice(32, 64);
+	                                if (!privateKey) {
+	                                    throw new Error("unsupported cipher");
+	                                }
+	                                address = lib$g.computeAddress(privateKey);
+	                                if (data.address) {
+	                                    check = data.address.toLowerCase();
+	                                    if (check.substring(0, 2) !== "0x") {
+	                                        check = "0x" + check;
+	                                    }
+	                                    if (lib$6.getAddress(check) !== address) {
+	                                        throw new Error("address mismatch");
+	                                    }
+	                                }
+	                                account = {
+	                                    _isKeystoreAccount: true,
+	                                    address: address,
+	                                    privateKey: lib$1.hexlify(privateKey)
+	                                };
+	                                // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
+	                                if (utils$1.searchPath(data, "x-ethers/version") === "0.1") {
+	                                    mnemonicCiphertext = utils$1.looseArrayify(utils$1.searchPath(data, "x-ethers/mnemonicCiphertext"));
+	                                    mnemonicIv = utils$1.looseArrayify(utils$1.searchPath(data, "x-ethers/mnemonicCounter"));
+	                                    mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
+	                                    mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
+	                                    path = utils$1.searchPath(data, "x-ethers/path") || lib$h.defaultPath;
+	                                    entropy = lib$1.arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
+	                                    mnemonic = lib$h.entropyToMnemonic(entropy);
+	                                    node = lib$h.HDNode.fromMnemonic(mnemonic).derivePath(path);
+	                                    if (node.privateKey != account.privateKey) {
+	                                        throw new Error("mnemonic mismatch");
+	                                    }
+	                                    account.mnemonic = node.mnemonic;
+	                                    account.path = node.path;
+	                                }
+	                                return [2 /*return*/, new KeystoreAccount(account)];
+	                            });
+	                        });
+	                    };
+	                    kdf = utils$1.searchPath(data, "crypto/kdf");
+	                    if (!(kdf && typeof (kdf) === "string")) return [3 /*break*/, 3];
+	                    if (!(kdf.toLowerCase() === "scrypt")) return [3 /*break*/, 2];
+	                    salt = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/kdfparams/salt"));
+	                    N = parseInt(utils$1.searchPath(data, "crypto/kdfparams/n"));
+	                    r = parseInt(utils$1.searchPath(data, "crypto/kdfparams/r"));
+	                    p = parseInt(utils$1.searchPath(data, "crypto/kdfparams/p"));
+	                    if (!N || !r || !p) {
+	                        throw new Error("unsupported key-derivation function parameters");
+	                    }
+	                    // Make sure N is a power of 2
+	                    if ((N & (N - 1)) !== 0) {
+	                        throw new Error("unsupported key-derivation function parameter value for N");
+	                    }
+	                    dkLen = parseInt(utils$1.searchPath(data, "crypto/kdfparams/dklen"));
+	                    if (dkLen !== 32) {
+	                        throw new Error("unsupported key-derivation derived-key length");
+	                    }
+	                    return [4 /*yield*/, scrypt$1.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback)];
+	                case 1:
+	                    key = _a.sent();
+	                    //key = arrayify(key);
+	                    return [2 /*return*/, getAccount(key)];
+	                case 2:
+	                    if (kdf.toLowerCase() === "pbkdf2") {
+	                        salt = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/kdfparams/salt"));
+	                        prfFunc = null;
+	                        prf = utils$1.searchPath(data, "crypto/kdfparams/prf");
+	                        if (prf === "hmac-sha256") {
+	                            prfFunc = "sha256";
 	                        }
-	                        resolve(account);
+	                        else if (prf === "hmac-sha512") {
+	                            prfFunc = "sha512";
+	                        }
+	                        else {
+	                            throw new Error("unsupported prf");
+	                        }
+	                        c = parseInt(utils$1.searchPath(data, "crypto/kdfparams/c"));
+	                        dkLen = parseInt(utils$1.searchPath(data, "crypto/kdfparams/dklen"));
+	                        if (dkLen !== 32) {
+	                            throw new Error("unsupported key-derivation derived-key length");
+	                        }
+	                        key = lib$1.arrayify(browser$2.pbkdf2(passwordBytes, salt, c, dkLen, prfFunc));
+	                        return [2 /*return*/, getAccount(key)];
 	                    }
-	                    else if (progressCallback) {
-	                        return progressCallback(progress);
-	                    }
-	                });
+	                    _a.label = 3;
+	                case 3: throw new Error("unsupported key-derivation function");
 	            }
-	            else if (kdf.toLowerCase() === "pbkdf2") {
-	                var salt = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/kdfparams/salt"));
-	                var prfFunc = null;
-	                var prf = utils$1.searchPath(data, "crypto/kdfparams/prf");
-	                if (prf === "hmac-sha256") {
-	                    prfFunc = "sha256";
-	                }
-	                else if (prf === "hmac-sha512") {
-	                    prfFunc = "sha512";
-	                }
-	                else {
-	                    reject(new Error("unsupported prf"));
-	                    return;
-	                }
-	                var c = parseInt(utils$1.searchPath(data, "crypto/kdfparams/c"));
-	                var dkLen = parseInt(utils$1.searchPath(data, "crypto/kdfparams/dklen"));
-	                if (dkLen !== 32) {
-	                    reject(new Error("unsupported key-derivation derived-key length"));
-	                    return;
-	                }
-	                var key = lib$1.arrayify(browser$2.pbkdf2(passwordBytes, salt, c, dkLen, prfFunc));
-	                var account = getAccount(key, reject);
-	                if (!account) {
-	                    return;
-	                }
-	                resolve(account);
-	            }
-	            else {
-	                reject(new Error("unsupported key-derivation function"));
-	            }
-	        }
-	        else {
-	            reject(new Error("unsupported key-derivation function"));
-	        }
+	        });
 	    });
 	}
 	exports.decrypt = decrypt;
@@ -15978,84 +16114,67 @@
 	            p = options.scrypt.p;
 	        }
 	    }
-	    return new Promise(function (resolve, reject) {
-	        if (progressCallback) {
-	            progressCallback(0);
+	    // We take 64 bytes:
+	    //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
+	    //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
+	    return scrypt$1.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback).then(function (key) {
+	        key = lib$1.arrayify(key);
+	        // This will be used to encrypt the wallet (as per Web3 secret storage)
+	        var derivedKey = key.slice(0, 16);
+	        var macPrefix = key.slice(16, 32);
+	        // This will be used to encrypt the mnemonic phrase (if any)
+	        var mnemonicKey = key.slice(32, 64);
+	        // Encrypt the private key
+	        var counter = new aes_js_1.default.Counter(iv);
+	        var aesCtr = new aes_js_1.default.ModeOfOperation.ctr(derivedKey, counter);
+	        var ciphertext = lib$1.arrayify(aesCtr.encrypt(privateKey));
+	        // Compute the message authentication code, used to check the password
+	        var mac = lib$4.keccak256(lib$1.concat([macPrefix, ciphertext]));
+	        // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
+	        var data = {
+	            address: account.address.substring(2).toLowerCase(),
+	            id: uuid_1$1.default.v4({ random: uuidRandom }),
+	            version: 3,
+	            Crypto: {
+	                cipher: "aes-128-ctr",
+	                cipherparams: {
+	                    iv: lib$1.hexlify(iv).substring(2),
+	                },
+	                ciphertext: lib$1.hexlify(ciphertext).substring(2),
+	                kdf: "scrypt",
+	                kdfparams: {
+	                    salt: lib$1.hexlify(salt).substring(2),
+	                    n: N,
+	                    dklen: 32,
+	                    p: p,
+	                    r: r
+	                },
+	                mac: mac.substring(2)
+	            }
+	        };
+	        // If we have a mnemonic, encrypt it into the JSON wallet
+	        if (entropy) {
+	            var mnemonicIv = browser$6.randomBytes(16);
+	            var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
+	            var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
+	            var mnemonicCiphertext = lib$1.arrayify(mnemonicAesCtr.encrypt(entropy));
+	            var now = new Date();
+	            var timestamp = (now.getUTCFullYear() + "-" +
+	                utils$1.zpad(now.getUTCMonth() + 1, 2) + "-" +
+	                utils$1.zpad(now.getUTCDate(), 2) + "T" +
+	                utils$1.zpad(now.getUTCHours(), 2) + "-" +
+	                utils$1.zpad(now.getUTCMinutes(), 2) + "-" +
+	                utils$1.zpad(now.getUTCSeconds(), 2) + ".0Z");
+	            data["x-ethers"] = {
+	                client: client,
+	                gethFilename: ("UTC--" + timestamp + "--" + data.address),
+	                mnemonicCounter: lib$1.hexlify(mnemonicIv).substring(2),
+	                mnemonicCiphertext: lib$1.hexlify(mnemonicCiphertext).substring(2),
+	                path: path,
+	                version: "0.1"
+	            };
 	        }
-	        // We take 64 bytes:
-	        //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
-	        //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
-	        scrypt_js_1.default(passwordBytes, salt, N, r, p, 64, function (error, progress, key) {
-	            if (error) {
-	                error.progress = progress;
-	                reject(error);
-	            }
-	            else if (key) {
-	                key = lib$1.arrayify(key);
-	                // This will be used to encrypt the wallet (as per Web3 secret storage)
-	                var derivedKey = key.slice(0, 16);
-	                var macPrefix = key.slice(16, 32);
-	                // This will be used to encrypt the mnemonic phrase (if any)
-	                var mnemonicKey = key.slice(32, 64);
-	                // Encrypt the private key
-	                var counter = new aes_js_1.default.Counter(iv);
-	                var aesCtr = new aes_js_1.default.ModeOfOperation.ctr(derivedKey, counter);
-	                var ciphertext = lib$1.arrayify(aesCtr.encrypt(privateKey));
-	                // Compute the message authentication code, used to check the password
-	                var mac = lib$4.keccak256(lib$1.concat([macPrefix, ciphertext]));
-	                // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
-	                var data = {
-	                    address: account.address.substring(2).toLowerCase(),
-	                    id: uuid_1$1.default.v4({ random: uuidRandom }),
-	                    version: 3,
-	                    Crypto: {
-	                        cipher: "aes-128-ctr",
-	                        cipherparams: {
-	                            iv: lib$1.hexlify(iv).substring(2),
-	                        },
-	                        ciphertext: lib$1.hexlify(ciphertext).substring(2),
-	                        kdf: "scrypt",
-	                        kdfparams: {
-	                            salt: lib$1.hexlify(salt).substring(2),
-	                            n: N,
-	                            dklen: 32,
-	                            p: p,
-	                            r: r
-	                        },
-	                        mac: mac.substring(2)
-	                    }
-	                };
-	                // If we have a mnemonic, encrypt it into the JSON wallet
-	                if (entropy) {
-	                    var mnemonicIv = browser$6.randomBytes(16);
-	                    var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
-	                    var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-	                    var mnemonicCiphertext = lib$1.arrayify(mnemonicAesCtr.encrypt(entropy));
-	                    var now = new Date();
-	                    var timestamp = (now.getUTCFullYear() + "-" +
-	                        utils$1.zpad(now.getUTCMonth() + 1, 2) + "-" +
-	                        utils$1.zpad(now.getUTCDate(), 2) + "T" +
-	                        utils$1.zpad(now.getUTCHours(), 2) + "-" +
-	                        utils$1.zpad(now.getUTCMinutes(), 2) + "-" +
-	                        utils$1.zpad(now.getUTCSeconds(), 2) + ".0Z");
-	                    data["x-ethers"] = {
-	                        client: client,
-	                        gethFilename: ("UTC--" + timestamp + "--" + data.address),
-	                        mnemonicCounter: lib$1.hexlify(mnemonicIv).substring(2),
-	                        mnemonicCiphertext: lib$1.hexlify(mnemonicCiphertext).substring(2),
-	                        path: path,
-	                        version: "0.1"
-	                    };
-	                }
-	                if (progressCallback) {
-	                    progressCallback(1);
-	                }
-	                resolve(JSON.stringify(data));
-	            }
-	            else if (progressCallback) {
-	                return progressCallback(progress);
-	            }
-	        });
+	        return JSON.stringify(data);
 	    });
 	}
 	exports.encrypt = encrypt;
@@ -16109,7 +16228,7 @@
 	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.0-beta.133";
+	exports.version = "wallet/5.0.0-beta.134";
 	});
 
 	var _version$B = unwrapExports(_version$A);
@@ -16290,7 +16409,7 @@
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "networks/5.0.0-beta.131";
+	exports.version = "networks/5.0.0-beta.132";
 	});
 
 	var _version$D = unwrapExports(_version$C);
@@ -16320,12 +16439,13 @@
 	            }
 	            catch (error) { }
 	        }
+	        /* NodeSmith is being discontinued on 2019-12-20
 	        if (providers.NodesmithProvider) {
 	            try {
 	                providerList.push(new providers.NodesmithProvider(network, options.nodesmith));
-	            }
-	            catch (error) { }
+	            } catch(error) { }
 	        }
+	        */
 	        if (providers.AlchemyProvider) {
 	            try {
 	                providerList.push(new providers.AlchemyProvider(network, options.alchemy));
@@ -16342,8 +16462,14 @@
 	            return null;
 	        }
 	        if (providers.FallbackProvider) {
-	            return new providers.FallbackProvider(providerList);
-	            ;
+	            var quorum = providerList.length / 2;
+	            if (options.quorum != null) {
+	                quorum = options.quorum;
+	            }
+	            else if (quorum > 2) {
+	                quorum = 2;
+	            }
+	            return new providers.FallbackProvider(providerList, quorum);
 	        }
 	        return providerList[0];
 	    };
@@ -17058,7 +17184,7 @@
 	var _version$E = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.0-beta.132";
+	exports.version = "web/5.0.0-beta.133";
 	});
 
 	var _version$F = unwrapExports(_version$E);
@@ -17302,7 +17428,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.144";
+	exports.version = "providers/5.0.0-beta.145";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -17377,8 +17503,8 @@
 	            blockHash: hash,
 	        };
 	        formats.receipt = {
-	            to: Formatter.allowNull(this.address),
-	            from: Formatter.allowNull(this.address),
+	            to: Formatter.allowNull(this.address, null),
+	            from: Formatter.allowNull(this.address, null),
 	            contractAddress: Formatter.allowNull(address, null),
 	            transactionIndex: number,
 	            root: Formatter.allowNull(hash),
@@ -17713,6 +17839,42 @@
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
+	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	    });
+	};
+	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
+	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+	    function verb(n) { return function (v) { return step([n, v]); }; }
+	    function step(op) {
+	        if (f) throw new TypeError("Generator is already executing.");
+	        while (_) try {
+	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+	            if (y = 0, t) op = [op[0] & 2, t.value];
+	            switch (op[0]) {
+	                case 0: case 1: t = op; break;
+	                case 4: _.label++; return { value: op[1], done: false };
+	                case 5: _.label++; y = op[1]; op = [0]; continue;
+	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+	                default:
+	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+	                    if (t[2]) _.ops.pop();
+	                    _.trys.pop(); continue;
+	            }
+	            op = body.call(thisArg, _);
+	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+	    }
+	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 
@@ -17844,6 +18006,7 @@
 	                logger.throwArgumentError("invalid network", "network", network);
 	            }
 	        }
+	        _this._maxInternalBlockNumber = -1024;
 	        _this._lastBlockNumber = -2;
 	        // Events being listened to
 	        _this._events = [];
@@ -17861,102 +18024,146 @@
 	    BaseProvider.getNetwork = function (network) {
 	        return lib$k.getNetwork((network == null) ? "homestead" : network);
 	    };
-	    BaseProvider.prototype.poll = function () {
-	        var _this = this;
-	        var pollId = nextPollId++;
-	        this.emit("willPoll", pollId);
-	        // Track all running promises, so we can trigger a post-poll once they are complete
-	        var runners = [];
-	        this.getBlockNumber().then(function (blockNumber) {
-	            _this._setFastBlockNumber(blockNumber);
-	            // If the block has not changed, meh.
-	            if (blockNumber === _this._lastBlockNumber) {
-	                return;
-	            }
-	            // First polling cycle, trigger a "block" events
-	            if (_this._emitted.block === -2) {
-	                _this._emitted.block = blockNumber - 1;
-	            }
-	            // Notify all listener for each block that has passed
-	            for (var i = _this._emitted.block + 1; i <= blockNumber; i++) {
-	                _this.emit("block", i);
-	            }
-	            // The emitted block was updated, check for obsolete events
-	            if (_this._emitted.block !== blockNumber) {
-	                _this._emitted.block = blockNumber;
-	                Object.keys(_this._emitted).forEach(function (key) {
-	                    // The block event does not expire
-	                    if (key === "block") {
-	                        return;
-	                    }
-	                    // The block we were at when we emitted this event
-	                    var eventBlockNumber = _this._emitted[key];
-	                    // We cannot garbage collect pending transactions or blocks here
-	                    // They should be garbage collected by the Provider when setting
-	                    // "pending" events
-	                    if (eventBlockNumber === "pending") {
-	                        return;
-	                    }
-	                    // Evict any transaction hashes or block hashes over 12 blocks
-	                    // old, since they should not return null anyways
-	                    if (blockNumber - eventBlockNumber > 12) {
-	                        delete _this._emitted[key];
-	                    }
-	                });
-	            }
-	            // First polling cycle
-	            if (_this._lastBlockNumber === -2) {
-	                _this._lastBlockNumber = blockNumber - 1;
-	            }
-	            // Find all transaction hashes we are waiting on
-	            _this._events.forEach(function (event) {
-	                var comps = event.tag.split(":");
-	                switch (comps[0]) {
-	                    case "tx": {
-	                        var hash_2 = comps[1];
-	                        var runner = _this.getTransactionReceipt(hash_2).then(function (receipt) {
-	                            if (!receipt || receipt.blockNumber == null) {
-	                                return null;
-	                            }
-	                            _this._emitted["t:" + hash_2] = receipt.blockNumber;
-	                            _this.emit(hash_2, receipt);
-	                            return null;
-	                        }).catch(function (error) { _this.emit("error", error); });
-	                        runners.push(runner);
-	                        break;
-	                    }
-	                    case "filter": {
-	                        var topics = deserializeTopics(comps[2]);
-	                        var filter_1 = {
-	                            address: comps[1],
-	                            fromBlock: _this._lastBlockNumber + 1,
-	                            toBlock: blockNumber,
-	                            topics: topics
-	                        };
-	                        if (!filter_1.address) {
-	                            delete filter_1.address;
+	    BaseProvider.prototype._getInternalBlockNumber = function (maxAge) {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var internalBlockNumber, result, reqTime;
+	            var _this = this;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        _a.sent();
+	                        internalBlockNumber = this._internalBlockNumber;
+	                        if (!(maxAge > 0 && this._internalBlockNumber)) return [3 /*break*/, 3];
+	                        return [4 /*yield*/, internalBlockNumber];
+	                    case 2:
+	                        result = _a.sent();
+	                        if ((getTime() - result.respTime) <= maxAge) {
+	                            return [2 /*return*/, result.blockNumber];
 	                        }
-	                        var runner = _this.getLogs(filter_1).then(function (logs) {
-	                            if (logs.length === 0) {
-	                                return;
+	                        _a.label = 3;
+	                    case 3:
+	                        reqTime = getTime();
+	                        this._internalBlockNumber = this.perform("getBlockNumber", {}).then(function (blockNumber) {
+	                            var respTime = getTime();
+	                            blockNumber = lib$2.BigNumber.from(blockNumber).toNumber();
+	                            if (blockNumber < _this._maxInternalBlockNumber) {
+	                                blockNumber = _this._maxInternalBlockNumber;
 	                            }
-	                            logs.forEach(function (log) {
-	                                _this._emitted["b:" + log.blockHash] = log.blockNumber;
-	                                _this._emitted["t:" + log.transactionHash] = log.blockNumber;
-	                                _this.emit(filter_1, log);
-	                            });
-	                            return null;
-	                        }).catch(function (error) { _this.emit("error", error); });
-	                        runners.push(runner);
-	                        break;
-	                    }
+	                            _this._maxInternalBlockNumber = blockNumber;
+	                            _this._setFastBlockNumber(blockNumber); // @TODO: Still need this?
+	                            return { blockNumber: blockNumber, reqTime: reqTime, respTime: respTime };
+	                        });
+	                        return [4 /*yield*/, this._internalBlockNumber];
+	                    case 4: return [2 /*return*/, (_a.sent()).blockNumber];
 	                }
 	            });
-	            _this._lastBlockNumber = blockNumber;
-	            return null;
-	        }).catch(function (error) { });
-	        Promise.all(runners).then(function () {
-	            _this.emit("didPoll", pollId);
+	        });
+	    };
+	    BaseProvider.prototype.poll = function () {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var pollId, runners, blockNumber, i;
+	            var _this = this;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        pollId = nextPollId++;
+	                        this.emit("willPoll", pollId);
+	                        runners = [];
+	                        return [4 /*yield*/, this._getInternalBlockNumber(100 + this.pollingInterval / 2)];
+	                    case 1:
+	                        blockNumber = _a.sent();
+	                        this._setFastBlockNumber(blockNumber);
+	                        // If the block has not changed, meh.
+	                        if (blockNumber === this._lastBlockNumber) {
+	                            return [2 /*return*/];
+	                        }
+	                        // First polling cycle, trigger a "block" events
+	                        if (this._emitted.block === -2) {
+	                            this._emitted.block = blockNumber - 1;
+	                        }
+	                        // Notify all listener for each block that has passed
+	                        for (i = this._emitted.block + 1; i <= blockNumber; i++) {
+	                            this.emit("block", i);
+	                        }
+	                        // The emitted block was updated, check for obsolete events
+	                        if (this._emitted.block !== blockNumber) {
+	                            this._emitted.block = blockNumber;
+	                            Object.keys(this._emitted).forEach(function (key) {
+	                                // The block event does not expire
+	                                if (key === "block") {
+	                                    return;
+	                                }
+	                                // The block we were at when we emitted this event
+	                                var eventBlockNumber = _this._emitted[key];
+	                                // We cannot garbage collect pending transactions or blocks here
+	                                // They should be garbage collected by the Provider when setting
+	                                // "pending" events
+	                                if (eventBlockNumber === "pending") {
+	                                    return;
+	                                }
+	                                // Evict any transaction hashes or block hashes over 12 blocks
+	                                // old, since they should not return null anyways
+	                                if (blockNumber - eventBlockNumber > 12) {
+	                                    delete _this._emitted[key];
+	                                }
+	                            });
+	                        }
+	                        // First polling cycle
+	                        if (this._lastBlockNumber === -2) {
+	                            this._lastBlockNumber = blockNumber - 1;
+	                        }
+	                        // Find all transaction hashes we are waiting on
+	                        this._events.forEach(function (event) {
+	                            var comps = event.tag.split(":");
+	                            switch (comps[0]) {
+	                                case "tx": {
+	                                    var hash_2 = comps[1];
+	                                    var runner = _this.getTransactionReceipt(hash_2).then(function (receipt) {
+	                                        if (!receipt || receipt.blockNumber == null) {
+	                                            return null;
+	                                        }
+	                                        _this._emitted["t:" + hash_2] = receipt.blockNumber;
+	                                        _this.emit(hash_2, receipt);
+	                                        return null;
+	                                    }).catch(function (error) { _this.emit("error", error); });
+	                                    runners.push(runner);
+	                                    break;
+	                                }
+	                                case "filter": {
+	                                    var topics = deserializeTopics(comps[2]);
+	                                    var filter_1 = {
+	                                        address: comps[1],
+	                                        fromBlock: _this._lastBlockNumber + 1,
+	                                        toBlock: blockNumber,
+	                                        topics: topics
+	                                    };
+	                                    if (!filter_1.address) {
+	                                        delete filter_1.address;
+	                                    }
+	                                    var runner = _this.getLogs(filter_1).then(function (logs) {
+	                                        if (logs.length === 0) {
+	                                            return;
+	                                        }
+	                                        logs.forEach(function (log) {
+	                                            _this._emitted["b:" + log.blockHash] = log.blockNumber;
+	                                            _this._emitted["t:" + log.transactionHash] = log.blockNumber;
+	                                            _this.emit(filter_1, log);
+	                                        });
+	                                        return null;
+	                                    }).catch(function (error) { _this.emit("error", error); });
+	                                    runners.push(runner);
+	                                    break;
+	                                }
+	                            }
+	                        });
+	                        this._lastBlockNumber = blockNumber;
+	                        Promise.all(runners).then(function () {
+	                            _this.emit("didPoll", pollId);
+	                        });
+	                        return [2 /*return*/, null];
+	                }
+	            });
 	        });
 	    };
 	    BaseProvider.prototype.resetEventsBlock = function (blockNumber) {
@@ -17991,6 +18198,7 @@
 	            setTimeout(function () {
 	                if (value && !_this._poller) {
 	                    _this._poller = setInterval(_this.poll.bind(_this), _this.pollingInterval);
+	                    _this.poll();
 	                }
 	                else if (!value && _this._poller) {
 	                    clearInterval(_this._poller);
@@ -18050,87 +18258,138 @@
 	    // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
 	    //        this will be used once we move to the WebSocket or other alternatives to polling
 	    BaseProvider.prototype.waitForTransaction = function (transactionHash, confirmations) {
-	        var _this = this;
-	        if (confirmations == null) {
-	            confirmations = 1;
-	        }
-	        if (confirmations === 0) {
-	            return this.getTransactionReceipt(transactionHash);
-	        }
-	        return new Promise(function (resolve) {
-	            var handler = function (receipt) {
-	                if (receipt.confirmations < confirmations) {
-	                    return;
+	        return __awaiter(this, void 0, void 0, function () {
+	            var receipt;
+	            var _this = this;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        if (confirmations == null) {
+	                            confirmations = 1;
+	                        }
+	                        return [4 /*yield*/, this.getTransactionReceipt(transactionHash)];
+	                    case 1:
+	                        receipt = _a.sent();
+	                        // Receipt is already good
+	                        if (receipt.confirmations >= confirmations) {
+	                            return [2 /*return*/, receipt];
+	                        }
+	                        // Poll until the receipt is good...
+	                        return [2 /*return*/, new Promise(function (resolve) {
+	                                var handler = function (receipt) {
+	                                    if (receipt.confirmations < confirmations) {
+	                                        return;
+	                                    }
+	                                    _this.removeListener(transactionHash, handler);
+	                                    resolve(receipt);
+	                                };
+	                                _this.on(transactionHash, handler);
+	                            })];
 	                }
-	                _this.removeListener(transactionHash, handler);
-	                resolve(receipt);
-	            };
-	            _this.on(transactionHash, handler);
-	        });
-	    };
-	    BaseProvider.prototype._runPerform = function (method, params) {
-	        var _this = this;
-	        return this.ready.then(function () {
-	            // Execute all the functions now that we are "ready"
-	            Object.keys(params).forEach(function (key) {
-	                params[key] = params[key]();
-	            });
-	            return lib$3.resolveProperties(params).then(function (params) {
-	                return _this.perform(method, params);
 	            });
 	        });
 	    };
 	    BaseProvider.prototype.getBlockNumber = function () {
-	        var _this = this;
-	        return this._runPerform("getBlockNumber", {}).then(function (result) {
-	            var value = parseInt(result);
-	            if (value != result) {
-	                throw new Error("invalid response - getBlockNumber");
-	            }
-	            _this._setFastBlockNumber(value);
-	            return value;
-	        });
+	        return this._getInternalBlockNumber(0);
 	    };
 	    BaseProvider.prototype.getGasPrice = function () {
-	        return this._runPerform("getGasPrice", {}).then(function (result) {
-	            return lib$2.BigNumber.from(result);
+	        return __awaiter(this, void 0, void 0, function () {
+	            var _a, _b;
+	            return __generator(this, function (_c) {
+	                switch (_c.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        _c.sent();
+	                        _b = (_a = lib$2.BigNumber).from;
+	                        return [4 /*yield*/, this.perform("getGasPrice", {})];
+	                    case 2: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+	                }
+	            });
 	        });
 	    };
 	    BaseProvider.prototype.getBalance = function (addressOrName, blockTag) {
-	        var _this = this;
-	        return this._runPerform("getBalance", {
-	            address: function () { return _this._getAddress(addressOrName); },
-	            blockTag: function () { return _this._getBlockTag(blockTag); }
-	        }).then(function (result) {
-	            return lib$2.BigNumber.from(result);
+	        return __awaiter(this, void 0, void 0, function () {
+	            var params, _a, _b;
+	            return __generator(this, function (_c) {
+	                switch (_c.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        _c.sent();
+	                        return [4 /*yield*/, lib$3.resolveProperties({
+	                                address: this._getAddress(addressOrName),
+	                                blockTag: this._getBlockTag(blockTag)
+	                            })];
+	                    case 2:
+	                        params = _c.sent();
+	                        _b = (_a = lib$2.BigNumber).from;
+	                        return [4 /*yield*/, this.perform("getBalance", params)];
+	                    case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+	                }
+	            });
 	        });
 	    };
 	    BaseProvider.prototype.getTransactionCount = function (addressOrName, blockTag) {
-	        var _this = this;
-	        return this._runPerform("getTransactionCount", {
-	            address: function () { return _this._getAddress(addressOrName); },
-	            blockTag: function () { return _this._getBlockTag(blockTag); }
-	        }).then(function (result) {
-	            return lib$2.BigNumber.from(result).toNumber();
+	        return __awaiter(this, void 0, void 0, function () {
+	            var params, _a, _b;
+	            return __generator(this, function (_c) {
+	                switch (_c.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        _c.sent();
+	                        return [4 /*yield*/, lib$3.resolveProperties({
+	                                address: this._getAddress(addressOrName),
+	                                blockTag: this._getBlockTag(blockTag)
+	                            })];
+	                    case 2:
+	                        params = _c.sent();
+	                        _b = (_a = lib$2.BigNumber).from;
+	                        return [4 /*yield*/, this.perform("getTransactionCount", params)];
+	                    case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()]).toNumber()];
+	                }
+	            });
 	        });
 	    };
 	    BaseProvider.prototype.getCode = function (addressOrName, blockTag) {
-	        var _this = this;
-	        return this._runPerform("getCode", {
-	            address: function () { return _this._getAddress(addressOrName); },
-	            blockTag: function () { return _this._getBlockTag(blockTag); }
-	        }).then(function (result) {
-	            return lib$1.hexlify(result);
+	        return __awaiter(this, void 0, void 0, function () {
+	            var params, _a;
+	            return __generator(this, function (_b) {
+	                switch (_b.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        _b.sent();
+	                        return [4 /*yield*/, lib$3.resolveProperties({
+	                                address: this._getAddress(addressOrName),
+	                                blockTag: this._getBlockTag(blockTag)
+	                            })];
+	                    case 2:
+	                        params = _b.sent();
+	                        _a = lib$1.hexlify;
+	                        return [4 /*yield*/, this.perform("getCode", params)];
+	                    case 3: return [2 /*return*/, _a.apply(void 0, [_b.sent()])];
+	                }
+	            });
 	        });
 	    };
 	    BaseProvider.prototype.getStorageAt = function (addressOrName, position, blockTag) {
-	        var _this = this;
-	        return this._runPerform("getStorageAt", {
-	            address: function () { return _this._getAddress(addressOrName); },
-	            blockTag: function () { return _this._getBlockTag(blockTag); },
-	            position: function () { return Promise.resolve(position).then(function (p) { return lib$1.hexValue(p); }); }
-	        }).then(function (result) {
-	            return lib$1.hexlify(result);
+	        return __awaiter(this, void 0, void 0, function () {
+	            var params, _a;
+	            return __generator(this, function (_b) {
+	                switch (_b.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        _b.sent();
+	                        return [4 /*yield*/, lib$3.resolveProperties({
+	                                address: this._getAddress(addressOrName),
+	                                blockTag: this._getBlockTag(blockTag),
+	                                position: Promise.resolve(position).then(function (p) { return lib$1.hexValue(p); })
+	                            })];
+	                    case 2:
+	                        params = _b.sent();
+	                        _a = lib$1.hexlify;
+	                        return [4 /*yield*/, this.perform("getStorageAt", params)];
+	                    case 3: return [2 /*return*/, _a.apply(void 0, [_b.sent()])];
+	                }
+	            });
 	        });
 	    };
 	    // This should be called by any subclass wrapping a TransactionResponse
@@ -18145,177 +18404,269 @@
 	            logger.throwError("Transaction hash mismatch from Provider.sendTransaction.", lib.Logger.errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
 	        }
 	        // @TODO: (confirmations? number, timeout? number)
-	        result.wait = function (confirmations) {
-	            // We know this transaction *must* exist (whether it gets mined is
-	            // another story), so setting an emitted value forces us to
-	            // wait even if the node returns null for the receipt
-	            if (confirmations !== 0) {
-	                _this._emitted["t:" + tx.hash] = "pending";
-	            }
-	            return _this.waitForTransaction(tx.hash, confirmations).then(function (receipt) {
-	                if (receipt == null && confirmations === 0) {
-	                    return null;
+	        result.wait = function (confirmations) { return __awaiter(_this, void 0, void 0, function () {
+	            var receipt;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        // We know this transaction *must* exist (whether it gets mined is
+	                        // another story), so setting an emitted value forces us to
+	                        // wait even if the node returns null for the receipt
+	                        if (confirmations !== 0) {
+	                            this._emitted["t:" + tx.hash] = "pending";
+	                        }
+	                        return [4 /*yield*/, this.waitForTransaction(tx.hash, confirmations)];
+	                    case 1:
+	                        receipt = _a.sent();
+	                        if (receipt == null && confirmations === 0) {
+	                            return [2 /*return*/, null];
+	                        }
+	                        // No longer pending, allow the polling loop to garbage collect this
+	                        this._emitted["t:" + tx.hash] = receipt.blockNumber;
+	                        if (receipt.status === 0) {
+	                            logger.throwError("transaction failed", lib.Logger.errors.CALL_EXCEPTION, {
+	                                transactionHash: tx.hash,
+	                                transaction: tx,
+	                                receipt: receipt
+	                            });
+	                        }
+	                        return [2 /*return*/, receipt];
 	                }
-	                // No longer pending, allow the polling loop to garbage collect this
-	                _this._emitted["t:" + tx.hash] = receipt.blockNumber;
-	                if (receipt.status === 0) {
-	                    logger.throwError("transaction failed", lib.Logger.errors.CALL_EXCEPTION, {
-	                        transactionHash: tx.hash,
-	                        transaction: tx,
-	                        receipt: receipt
-	                    });
-	                }
-	                return receipt;
 	            });
-	        };
+	        }); };
 	        return result;
 	    };
 	    BaseProvider.prototype.sendTransaction = function (signedTransaction) {
-	        var _this = this;
-	        return this._runPerform("sendTransaction", {
-	            signedTransaction: function () { return Promise.resolve(signedTransaction).then(function (t) { return lib$1.hexlify(t); }); }
-	        }).then(function (result) {
-	            return _this._wrapTransaction(_this.formatter.transaction(signedTransaction), result);
-	        }, function (error) {
-	            error.transaction = _this.formatter.transaction(signedTransaction);
-	            if (error.transaction.hash) {
-	                error.transactionHash = error.transaction.hash;
-	            }
-	            throw error;
+	        return __awaiter(this, void 0, void 0, function () {
+	            var hexTx, tx, hash, error_1;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        _a.sent();
+	                        return [4 /*yield*/, Promise.resolve(signedTransaction).then(function (t) { return lib$1.hexlify(t); })];
+	                    case 2:
+	                        hexTx = _a.sent();
+	                        tx = this.formatter.transaction(signedTransaction);
+	                        _a.label = 3;
+	                    case 3:
+	                        _a.trys.push([3, 5, , 6]);
+	                        return [4 /*yield*/, this.perform("sendTransaction", { signedTransaction: hexTx })];
+	                    case 4:
+	                        hash = _a.sent();
+	                        return [2 /*return*/, this._wrapTransaction(tx, hash)];
+	                    case 5:
+	                        error_1 = _a.sent();
+	                        error_1.transaction = tx;
+	                        error_1.transactionHash = tx.hash;
+	                        throw error_1;
+	                    case 6: return [2 /*return*/];
+	                }
+	            });
 	        });
 	    };
 	    BaseProvider.prototype._getTransactionRequest = function (transaction) {
-	        var _this = this;
-	        return Promise.resolve(transaction).then(function (t) {
-	            var tx = {};
-	            ["from", "to"].forEach(function (key) {
-	                if (t[key] == null) {
-	                    return;
+	        return __awaiter(this, void 0, void 0, function () {
+	            var values, tx, _a, _b;
+	            var _this = this;
+	            return __generator(this, function (_c) {
+	                switch (_c.label) {
+	                    case 0: return [4 /*yield*/, transaction];
+	                    case 1:
+	                        values = _c.sent();
+	                        tx = {};
+	                        ["from", "to"].forEach(function (key) {
+	                            if (values[key] == null) {
+	                                return;
+	                            }
+	                            tx[key] = Promise.resolve(values[key]).then(function (v) { return (v ? _this._getAddress(v) : null); });
+	                        });
+	                        ["gasLimit", "gasPrice", "value"].forEach(function (key) {
+	                            if (values[key] == null) {
+	                                return;
+	                            }
+	                            tx[key] = Promise.resolve(values[key]).then(function (v) { return (v ? lib$2.BigNumber.from(v) : null); });
+	                        });
+	                        ["data"].forEach(function (key) {
+	                            if (values[key] == null) {
+	                                return;
+	                            }
+	                            tx[key] = Promise.resolve(values[key]).then(function (v) { return (v ? lib$1.hexlify(v) : null); });
+	                        });
+	                        _b = (_a = this.formatter).transactionRequest;
+	                        return [4 /*yield*/, lib$3.resolveProperties(tx)];
+	                    case 2: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
 	                }
-	                tx[key] = Promise.resolve(t[key]).then(function (a) { return (a ? _this._getAddress(a) : null); });
 	            });
-	            ["data", "gasLimit", "gasPrice", "value"].forEach(function (key) {
-	                if (t[key] == null) {
-	                    return;
-	                }
-	                tx[key] = t[key];
-	            });
-	            return lib$3.resolveProperties(tx).then(function (t) { return _this.formatter.transactionRequest(t); });
 	        });
 	    };
 	    BaseProvider.prototype._getFilter = function (filter) {
-	        var _this = this;
-	        return Promise.resolve(filter).then(function (f) {
-	            var filter = {};
-	            if (f.address != null) {
-	                filter.address = _this._getAddress(f.address);
-	            }
-	            if (f.topics) {
-	                filter.topics = f.topics;
-	            }
-	            if (f.blockHash != null) {
-	                filter.blockHash = f.blockHash;
-	            }
-	            ["fromBlock", "toBlock"].forEach(function (key) {
-	                if (f[key] == null) {
-	                    return;
+	        return __awaiter(this, void 0, void 0, function () {
+	            var result, _a, _b;
+	            var _this = this;
+	            return __generator(this, function (_c) {
+	                switch (_c.label) {
+	                    case 0:
+	                        if (!(filter instanceof Promise)) return [3 /*break*/, 2];
+	                        return [4 /*yield*/, filter];
+	                    case 1:
+	                        filter = _c.sent();
+	                        _c.label = 2;
+	                    case 2:
+	                        result = {};
+	                        if (filter.address != null) {
+	                            result.address = this._getAddress(filter.address);
+	                        }
+	                        ["blockHash", "topics"].forEach(function (key) {
+	                            if (filter[key] == null) {
+	                                return;
+	                            }
+	                            result[key] = filter[key];
+	                        });
+	                        ["fromBlock", "toBlock"].forEach(function (key) {
+	                            if (filter[key] == null) {
+	                                return;
+	                            }
+	                            result[key] = _this._getBlockTag(filter[key]);
+	                        });
+	                        _b = (_a = this.formatter).filter;
+	                        return [4 /*yield*/, lib$3.resolveProperties(filter)];
+	                    case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
 	                }
-	                filter[key] = _this._getBlockTag(f[key]);
 	            });
-	            return lib$3.resolveProperties(filter).then(function (f) { return _this.formatter.filter(f); });
 	        });
 	    };
 	    BaseProvider.prototype.call = function (transaction, blockTag) {
-	        var _this = this;
-	        return this._runPerform("call", {
-	            transaction: function () { return _this._getTransactionRequest(transaction); },
-	            blockTag: function () { return _this._getBlockTag(blockTag); }
-	        }).then(function (result) {
-	            return lib$1.hexlify(result);
+	        return __awaiter(this, void 0, void 0, function () {
+	            var params, _a;
+	            return __generator(this, function (_b) {
+	                switch (_b.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        _b.sent();
+	                        return [4 /*yield*/, lib$3.resolveProperties({
+	                                transaction: this._getTransactionRequest(transaction),
+	                                blockTag: this._getBlockTag(blockTag)
+	                            })];
+	                    case 2:
+	                        params = _b.sent();
+	                        _a = lib$1.hexlify;
+	                        return [4 /*yield*/, this.perform("call", params)];
+	                    case 3: return [2 /*return*/, _a.apply(void 0, [_b.sent()])];
+	                }
+	            });
 	        });
 	    };
 	    BaseProvider.prototype.estimateGas = function (transaction) {
-	        var _this = this;
-	        return this._runPerform("estimateGas", {
-	            transaction: function () { return _this._getTransactionRequest(transaction); }
-	        }).then(function (result) {
-	            return lib$2.BigNumber.from(result);
+	        return __awaiter(this, void 0, void 0, function () {
+	            var params, _a, _b;
+	            return __generator(this, function (_c) {
+	                switch (_c.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        _c.sent();
+	                        return [4 /*yield*/, lib$3.resolveProperties({
+	                                transaction: this._getTransactionRequest(transaction)
+	                            })];
+	                    case 2:
+	                        params = _c.sent();
+	                        _b = (_a = lib$2.BigNumber).from;
+	                        return [4 /*yield*/, this.perform("estimateGas", params)];
+	                    case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+	                }
+	            });
 	        });
 	    };
 	    BaseProvider.prototype._getAddress = function (addressOrName) {
-	        return this.resolveName(addressOrName).then(function (address) {
-	            if (address == null) {
-	                logger.throwError("ENS name not configured", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                    operation: "resolveName(" + JSON.stringify(addressOrName) + ")"
-	                });
-	            }
-	            return address;
+	        return __awaiter(this, void 0, void 0, function () {
+	            var address;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, this.resolveName(addressOrName)];
+	                    case 1:
+	                        address = _a.sent();
+	                        if (address == null) {
+	                            logger.throwError("ENS name not configured", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                                operation: "resolveName(" + JSON.stringify(addressOrName) + ")"
+	                            });
+	                        }
+	                        return [2 /*return*/, address];
+	                }
+	            });
 	        });
 	    };
 	    BaseProvider.prototype._getBlock = function (blockHashOrBlockTag, includeTransactions) {
-	        var _this = this;
-	        if (blockHashOrBlockTag instanceof Promise) {
-	            return blockHashOrBlockTag.then(function (b) { return _this._getBlock(b, includeTransactions); });
-	        }
-	        return this.ready.then(function () {
-	            var blockHashOrBlockTagPromise = null;
-	            if (lib$1.isHexString(blockHashOrBlockTag, 32)) {
-	                blockHashOrBlockTagPromise = Promise.resolve(blockHashOrBlockTag);
-	            }
-	            else {
-	                blockHashOrBlockTagPromise = _this._getBlockTag(blockHashOrBlockTag);
-	            }
-	            return blockHashOrBlockTagPromise.then(function (blockHashOrBlockTag) {
-	                var params = {
-	                    includeTransactions: !!includeTransactions
-	                };
-	                // Exactly one of blockHash or blockTag will be set
-	                var blockHash = null;
-	                var blockTag = null;
-	                // If blockTag is a number (not "latest", etc), this is the block number
-	                var blockNumber = -128;
-	                if (lib$1.isHexString(blockHashOrBlockTag, 32)) {
-	                    params.blockHash = blockHashOrBlockTag;
-	                }
-	                else {
-	                    try {
-	                        params.blockTag = _this.formatter.blockTag(blockHashOrBlockTag);
+	        return __awaiter(this, void 0, void 0, function () {
+	            var blockNumber, params, _a, _b, _c, error_2;
+	            var _this = this;
+	            return __generator(this, function (_d) {
+	                switch (_d.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        _d.sent();
+	                        if (!(blockHashOrBlockTag instanceof Promise)) return [3 /*break*/, 3];
+	                        return [4 /*yield*/, blockHashOrBlockTag];
+	                    case 2:
+	                        blockHashOrBlockTag = _d.sent();
+	                        _d.label = 3;
+	                    case 3:
+	                        blockNumber = -128;
+	                        params = {
+	                            includeTransactions: !!includeTransactions
+	                        };
+	                        if (!lib$1.isHexString(blockHashOrBlockTag, 32)) return [3 /*break*/, 4];
+	                        params.blockHash = blockHashOrBlockTag;
+	                        return [3 /*break*/, 7];
+	                    case 4:
+	                        _d.trys.push([4, 6, , 7]);
+	                        _a = params;
+	                        _c = (_b = this.formatter).blockTag;
+	                        return [4 /*yield*/, this._getBlockTag(blockHashOrBlockTag)];
+	                    case 5:
+	                        _a.blockTag = _c.apply(_b, [_d.sent()]);
 	                        if (lib$1.isHexString(params.blockTag)) {
 	                            blockNumber = parseInt(params.blockTag.substring(2), 16);
 	                        }
-	                    }
-	                    catch (error) {
+	                        return [3 /*break*/, 7];
+	                    case 6:
+	                        error_2 = _d.sent();
 	                        logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
-	                    }
+	                        return [3 /*break*/, 7];
+	                    case 7: return [2 /*return*/, lib$l.poll(function () { return __awaiter(_this, void 0, void 0, function () {
+	                            var block;
+	                            return __generator(this, function (_a) {
+	                                switch (_a.label) {
+	                                    case 0: return [4 /*yield*/, this.perform("getBlock", params)];
+	                                    case 1:
+	                                        block = _a.sent();
+	                                        // Block was not found
+	                                        if (block == null) {
+	                                            // For blockhashes, if we didn't say it existed, that blockhash may
+	                                            // not exist. If we did see it though, perhaps from a log, we know
+	                                            // it exists, and this node is just not caught up yet.
+	                                            if (params.blockHash != null) {
+	                                                if (this._emitted["b:" + params.blockHash] == null) {
+	                                                    return [2 /*return*/, null];
+	                                                }
+	                                            }
+	                                            // For block tags, if we are asking for a future block, we return null
+	                                            if (params.blockTag != null) {
+	                                                if (blockNumber > this._emitted.block) {
+	                                                    return [2 /*return*/, null];
+	                                                }
+	                                            }
+	                                            // Retry on the next block
+	                                            return [2 /*return*/, undefined];
+	                                        }
+	                                        // Add transactions
+	                                        if (includeTransactions) {
+	                                            return [2 /*return*/, this.formatter.blockWithTransactions(block)];
+	                                        }
+	                                        return [2 /*return*/, this.formatter.block(block)];
+	                                }
+	                            });
+	                        }); }, { onceBlock: this })];
 	                }
-	                return lib$l.poll(function () {
-	                    return _this.perform("getBlock", params).then(function (block) {
-	                        // Block was not found
-	                        if (block == null) {
-	                            // For blockhashes, if we didn't say it existed, that blockhash may
-	                            // not exist. If we did see it though, perhaps from a log, we know
-	                            // it exists, and this node is just not caught up yet.
-	                            if (blockHash) {
-	                                if (_this._emitted["b:" + blockHash] == null) {
-	                                    return null;
-	                                }
-	                            }
-	                            // For block tags, if we are asking for a future block, we return null
-	                            if (blockTag) {
-	                                if (blockNumber > _this._emitted.block) {
-	                                    return null;
-	                                }
-	                            }
-	                            // Retry on the next block
-	                            return undefined;
-	                        }
-	                        // Add transactions
-	                        if (includeTransactions) {
-	                            return _this.formatter.blockWithTransactions(block);
-	                        }
-	                        return _this.formatter.block(block);
-	                    });
-	                }, { onceBlock: _this });
 	            });
 	        });
 	    };
@@ -18326,187 +18677,281 @@
 	        return (this._getBlock(blockHashOrBlockTag, true));
 	    };
 	    BaseProvider.prototype.getTransaction = function (transactionHash) {
-	        var _this = this;
-	        return this.ready.then(function () {
-	            return lib$3.resolveProperties({ transactionHash: transactionHash }).then(function (_a) {
-	                var transactionHash = _a.transactionHash;
-	                var params = { transactionHash: _this.formatter.hash(transactionHash, true) };
-	                return lib$l.poll(function () {
-	                    return _this.perform("getTransaction", params).then(function (result) {
-	                        if (result == null) {
-	                            if (_this._emitted["t:" + transactionHash] == null) {
-	                                return null;
-	                            }
-	                            return undefined;
-	                        }
-	                        var tx = _this.formatter.transactionResponse(result);
-	                        if (tx.blockNumber == null) {
-	                            tx.confirmations = 0;
-	                        }
-	                        else if (tx.confirmations == null) {
-	                            return _this._getFastBlockNumber().then(function (blockNumber) {
-	                                // Add the confirmations using the fast block number (pessimistic)
-	                                var confirmations = (blockNumber - tx.blockNumber) + 1;
-	                                if (confirmations <= 0) {
-	                                    confirmations = 1;
-	                                }
-	                                tx.confirmations = confirmations;
-	                                return _this._wrapTransaction(tx);
-	                            });
-	                        }
-	                        return _this._wrapTransaction(tx);
-	                    });
-	                }, { onceBlock: _this });
+	        return __awaiter(this, void 0, void 0, function () {
+	            var params;
+	            var _this = this;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        _a.sent();
+	                        if (!(transactionHash instanceof Promise)) return [3 /*break*/, 3];
+	                        return [4 /*yield*/, transactionHash];
+	                    case 2:
+	                        transactionHash = _a.sent();
+	                        _a.label = 3;
+	                    case 3:
+	                        params = { transactionHash: this.formatter.hash(transactionHash, true) };
+	                        return [2 /*return*/, lib$l.poll(function () { return __awaiter(_this, void 0, void 0, function () {
+	                                var result, tx, blockNumber, confirmations;
+	                                return __generator(this, function (_a) {
+	                                    switch (_a.label) {
+	                                        case 0: return [4 /*yield*/, this.perform("getTransaction", params)];
+	                                        case 1:
+	                                            result = _a.sent();
+	                                            if (result == null) {
+	                                                if (this._emitted["t:" + transactionHash] == null) {
+	                                                    return [2 /*return*/, null];
+	                                                }
+	                                                return [2 /*return*/, undefined];
+	                                            }
+	                                            tx = this.formatter.transactionResponse(result);
+	                                            if (!(tx.blockNumber == null)) return [3 /*break*/, 2];
+	                                            tx.confirmations = 0;
+	                                            return [3 /*break*/, 4];
+	                                        case 2:
+	                                            if (!(tx.confirmations == null)) return [3 /*break*/, 4];
+	                                            return [4 /*yield*/, this._getInternalBlockNumber(100 + 2 * this.pollingInterval)];
+	                                        case 3:
+	                                            blockNumber = _a.sent();
+	                                            confirmations = (blockNumber - tx.blockNumber) + 1;
+	                                            if (confirmations <= 0) {
+	                                                confirmations = 1;
+	                                            }
+	                                            tx.confirmations = confirmations;
+	                                            _a.label = 4;
+	                                        case 4: return [2 /*return*/, this._wrapTransaction(tx)];
+	                                    }
+	                                });
+	                            }); }, { onceBlock: this })];
+	                }
 	            });
 	        });
 	    };
 	    BaseProvider.prototype.getTransactionReceipt = function (transactionHash) {
-	        var _this = this;
-	        return this.ready.then(function () {
-	            return lib$3.resolveProperties({ transactionHash: transactionHash }).then(function (_a) {
-	                var transactionHash = _a.transactionHash;
-	                var params = { transactionHash: _this.formatter.hash(transactionHash, true) };
-	                return lib$l.poll(function () {
-	                    return _this.perform("getTransactionReceipt", params).then(function (result) {
-	                        if (result == null) {
-	                            if (_this._emitted["t:" + transactionHash] == null) {
-	                                return null;
-	                            }
-	                            return undefined;
-	                        }
-	                        // "geth-etc" returns receipts before they are ready
-	                        if (result.blockHash == null) {
-	                            return undefined;
-	                        }
-	                        var receipt = _this.formatter.receipt(result);
-	                        if (receipt.blockNumber == null) {
-	                            receipt.confirmations = 0;
-	                        }
-	                        else if (receipt.confirmations == null) {
-	                            return _this._getFastBlockNumber().then(function (blockNumber) {
-	                                // Add the confirmations using the fast block number (pessimistic)
-	                                var confirmations = (blockNumber - receipt.blockNumber) + 1;
-	                                if (confirmations <= 0) {
-	                                    confirmations = 1;
-	                                }
-	                                receipt.confirmations = confirmations;
-	                                return receipt;
-	                            });
-	                        }
-	                        return receipt;
-	                    });
-	                }, { onceBlock: _this });
+	        return __awaiter(this, void 0, void 0, function () {
+	            var params;
+	            var _this = this;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        _a.sent();
+	                        if (!(transactionHash instanceof Promise)) return [3 /*break*/, 3];
+	                        return [4 /*yield*/, transactionHash];
+	                    case 2:
+	                        transactionHash = _a.sent();
+	                        _a.label = 3;
+	                    case 3:
+	                        params = { transactionHash: this.formatter.hash(transactionHash, true) };
+	                        return [2 /*return*/, lib$l.poll(function () { return __awaiter(_this, void 0, void 0, function () {
+	                                var result, receipt, blockNumber, confirmations;
+	                                return __generator(this, function (_a) {
+	                                    switch (_a.label) {
+	                                        case 0: return [4 /*yield*/, this.perform("getTransactionReceipt", params)];
+	                                        case 1:
+	                                            result = _a.sent();
+	                                            if (result == null) {
+	                                                if (this._emitted["t:" + transactionHash] == null) {
+	                                                    return [2 /*return*/, null];
+	                                                }
+	                                                return [2 /*return*/, undefined];
+	                                            }
+	                                            // "geth-etc" returns receipts before they are ready
+	                                            if (result.blockHash == null) {
+	                                                return [2 /*return*/, undefined];
+	                                            }
+	                                            receipt = this.formatter.receipt(result);
+	                                            if (!(receipt.blockNumber == null)) return [3 /*break*/, 2];
+	                                            receipt.confirmations = 0;
+	                                            return [3 /*break*/, 4];
+	                                        case 2:
+	                                            if (!(receipt.confirmations == null)) return [3 /*break*/, 4];
+	                                            return [4 /*yield*/, this._getInternalBlockNumber(100 + 2 * this.pollingInterval)];
+	                                        case 3:
+	                                            blockNumber = _a.sent();
+	                                            confirmations = (blockNumber - receipt.blockNumber) + 1;
+	                                            if (confirmations <= 0) {
+	                                                confirmations = 1;
+	                                            }
+	                                            receipt.confirmations = confirmations;
+	                                            _a.label = 4;
+	                                        case 4: return [2 /*return*/, receipt];
+	                                    }
+	                                });
+	                            }); }, { onceBlock: this })];
+	                }
 	            });
 	        });
 	    };
 	    BaseProvider.prototype.getLogs = function (filter) {
-	        var _this = this;
-	        return this._runPerform("getLogs", {
-	            filter: function () { return _this._getFilter(filter); }
-	        }).then(function (result) {
-	            return formatter.Formatter.arrayOf(_this.formatter.filterLog.bind(_this.formatter))(result);
+	        return __awaiter(this, void 0, void 0, function () {
+	            var params, logs;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        _a.sent();
+	                        return [4 /*yield*/, lib$3.resolveProperties({ filter: this._getFilter(filter) })];
+	                    case 2:
+	                        params = _a.sent();
+	                        return [4 /*yield*/, this.perform("getLogs", params)];
+	                    case 3:
+	                        logs = _a.sent();
+	                        return [2 /*return*/, formatter.Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(logs)];
+	                }
+	            });
 	        });
 	    };
 	    BaseProvider.prototype.getEtherPrice = function () {
-	        return this._runPerform("getEtherPrice", {}).then(function (result) {
-	            return result;
+	        return __awaiter(this, void 0, void 0, function () {
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        _a.sent();
+	                        return [2 /*return*/, this.perform("getEtherPrice", {})];
+	                }
+	            });
 	        });
 	    };
 	    BaseProvider.prototype._getBlockTag = function (blockTag) {
-	        var _this = this;
-	        if (blockTag instanceof Promise) {
-	            return blockTag.then(function (b) { return _this._getBlockTag(b); });
-	        }
-	        if (typeof (blockTag) === "number" && blockTag < 0) {
-	            if (blockTag % 1) {
-	                logger.throwArgumentError("invalid BlockTag", "blockTag", blockTag);
-	            }
-	            return this._getFastBlockNumber().then(function (bn) {
-	                bn += blockTag;
-	                if (bn < 0) {
-	                    bn = 0;
+	        return __awaiter(this, void 0, void 0, function () {
+	            var blockNumber;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        if (!(blockTag instanceof Promise)) return [3 /*break*/, 2];
+	                        return [4 /*yield*/, blockTag];
+	                    case 1:
+	                        blockTag = _a.sent();
+	                        _a.label = 2;
+	                    case 2:
+	                        if (!(typeof (blockTag) === "number" && blockTag < 0)) return [3 /*break*/, 4];
+	                        if (blockTag % 1) {
+	                            logger.throwArgumentError("invalid BlockTag", "blockTag", blockTag);
+	                        }
+	                        return [4 /*yield*/, this._getInternalBlockNumber(100 + 2 * this.pollingInterval)];
+	                    case 3:
+	                        blockNumber = _a.sent();
+	                        blockNumber += blockTag;
+	                        if (blockNumber < 0) {
+	                            blockNumber = 0;
+	                        }
+	                        return [2 /*return*/, this.formatter.blockTag(blockNumber)];
+	                    case 4: return [2 /*return*/, this.formatter.blockTag(blockTag)];
 	                }
-	                return _this.formatter.blockTag(bn);
 	            });
-	        }
-	        return Promise.resolve(this.formatter.blockTag(blockTag));
+	        });
 	    };
 	    BaseProvider.prototype._getResolver = function (name) {
-	        var _this = this;
-	        // Get the resolver from the blockchain
-	        return this.getNetwork().then(function (network) {
-	            // No ENS...
-	            if (!network.ensAddress) {
-	                logger.throwError("network does not support ENS", lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: "ENS", network: network.name });
-	            }
-	            // keccak256("resolver(bytes32)")
-	            var data = "0x0178b8bf" + lib$9.namehash(name).substring(2);
-	            var transaction = { to: network.ensAddress, data: data };
-	            return _this.call(transaction).then(function (data) {
-	                return _this.formatter.callAddress(data);
+	        return __awaiter(this, void 0, void 0, function () {
+	            var network, transaction, _a, _b;
+	            return __generator(this, function (_c) {
+	                switch (_c.label) {
+	                    case 0: return [4 /*yield*/, this.getNetwork()];
+	                    case 1:
+	                        network = _c.sent();
+	                        // No ENS...
+	                        if (!network.ensAddress) {
+	                            logger.throwError("network does not support ENS", lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: "ENS", network: network.name });
+	                        }
+	                        transaction = {
+	                            to: network.ensAddress,
+	                            data: ("0x0178b8bf" + lib$9.namehash(name).substring(2))
+	                        };
+	                        _b = (_a = this.formatter).callAddress;
+	                        return [4 /*yield*/, this.call(transaction)];
+	                    case 2: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+	                }
 	            });
 	        });
 	    };
 	    BaseProvider.prototype.resolveName = function (name) {
-	        var _this = this;
-	        // If it is a promise, resolve it then recurse
-	        if (name instanceof Promise) {
-	            return name.then(function (addressOrName) { return _this.resolveName(addressOrName); });
-	        }
-	        // If it is already an address, nothing to resolve
-	        try {
-	            return Promise.resolve(this.formatter.address(name));
-	        }
-	        catch (error) { }
-	        // Get the addr from the resovler
-	        return this._getResolver(name).then(function (resolverAddress) {
-	            if (!resolverAddress) {
-	                return null;
-	            }
-	            // keccak256("addr(bytes32)")
-	            var data = "0x3b3b57de" + lib$9.namehash(name).substring(2);
-	            var transaction = { to: resolverAddress, data: data };
-	            return _this.call(transaction).then(function (data) {
-	                return _this.formatter.callAddress(data);
+	        return __awaiter(this, void 0, void 0, function () {
+	            var resolverAddress, transaction, _a, _b;
+	            return __generator(this, function (_c) {
+	                switch (_c.label) {
+	                    case 0:
+	                        if (!(name instanceof Promise)) return [3 /*break*/, 2];
+	                        return [4 /*yield*/, name];
+	                    case 1:
+	                        name = _c.sent();
+	                        _c.label = 2;
+	                    case 2:
+	                        // If it is already an address, nothing to resolve
+	                        try {
+	                            return [2 /*return*/, Promise.resolve(this.formatter.address(name))];
+	                        }
+	                        catch (error) { }
+	                        return [4 /*yield*/, this._getResolver(name)];
+	                    case 3:
+	                        resolverAddress = _c.sent();
+	                        if (!resolverAddress) {
+	                            return [2 /*return*/, null];
+	                        }
+	                        transaction = {
+	                            to: resolverAddress,
+	                            data: ("0x3b3b57de" + lib$9.namehash(name).substring(2))
+	                        };
+	                        _b = (_a = this.formatter).callAddress;
+	                        return [4 /*yield*/, this.call(transaction)];
+	                    case 4: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+	                }
 	            });
 	        });
 	    };
 	    BaseProvider.prototype.lookupAddress = function (address) {
-	        var _this = this;
-	        if (address instanceof Promise) {
-	            return address.then(function (address) { return _this.lookupAddress(address); });
-	        }
-	        address = this.formatter.address(address);
-	        var name = address.substring(2) + ".addr.reverse";
-	        return this._getResolver(name).then(function (resolverAddress) {
-	            if (!resolverAddress) {
-	                return null;
-	            }
-	            // keccak("name(bytes32)")
-	            var data = "0x691f3431" + lib$9.namehash(name).substring(2);
-	            return _this.call({ to: resolverAddress, data: data }).then(function (data) {
-	                var bytes = lib$1.arrayify(data);
-	                // Strip off the dynamic string pointer (0x20)
-	                if (bytes.length < 32 || !lib$2.BigNumber.from(bytes.slice(0, 32)).eq(32)) {
-	                    return null;
+	        return __awaiter(this, void 0, void 0, function () {
+	            var reverseName, resolverAddress, bytes, _a, length, name, addr;
+	            return __generator(this, function (_b) {
+	                switch (_b.label) {
+	                    case 0:
+	                        if (!(address instanceof Promise)) return [3 /*break*/, 2];
+	                        return [4 /*yield*/, address];
+	                    case 1:
+	                        address = _b.sent();
+	                        _b.label = 2;
+	                    case 2:
+	                        address = this.formatter.address(address);
+	                        reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
+	                        return [4 /*yield*/, this._getResolver(reverseName)];
+	                    case 3:
+	                        resolverAddress = _b.sent();
+	                        if (!resolverAddress) {
+	                            return [2 /*return*/, null];
+	                        }
+	                        _a = lib$1.arrayify;
+	                        return [4 /*yield*/, this.call({
+	                                to: resolverAddress,
+	                                data: ("0x691f3431" + lib$9.namehash(reverseName).substring(2))
+	                            })];
+	                    case 4:
+	                        bytes = _a.apply(void 0, [_b.sent()]);
+	                        // Strip off the dynamic string pointer (0x20)
+	                        if (bytes.length < 32 || !lib$2.BigNumber.from(bytes.slice(0, 32)).eq(32)) {
+	                            return [2 /*return*/, null];
+	                        }
+	                        bytes = bytes.slice(32);
+	                        // Not a length-prefixed string
+	                        if (bytes.length < 32) {
+	                            return [2 /*return*/, null];
+	                        }
+	                        length = lib$2.BigNumber.from(bytes.slice(0, 32)).toNumber();
+	                        bytes = bytes.slice(32);
+	                        // Length longer than available data
+	                        if (length > bytes.length) {
+	                            return [2 /*return*/, null];
+	                        }
+	                        name = lib$8.toUtf8String(bytes.slice(0, length));
+	                        return [4 /*yield*/, this.resolveName(name)];
+	                    case 5:
+	                        addr = _b.sent();
+	                        if (addr != address) {
+	                            return [2 /*return*/, null];
+	                        }
+	                        return [2 /*return*/, name];
 	                }
-	                bytes = bytes.slice(32);
-	                if (bytes.length < 32) {
-	                    return null;
-	                }
-	                var length = lib$2.BigNumber.from(bytes.slice(0, 32)).toNumber();
-	                bytes = bytes.slice(32);
-	                if (length > bytes.length) {
-	                    return null;
-	                }
-	                var name = lib$8.toUtf8String(bytes.slice(0, length));
-	                // Make sure the reverse record matches the foward record
-	                return _this.resolveName(name).then(function (addr) {
-	                    if (addr != address) {
-	                        return null;
-	                    }
-	                    return name;
-	                });
 	            });
 	        });
 	    };
@@ -18641,8 +19086,43 @@
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
+	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	    });
+	};
+	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
+	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+	    function verb(n) { return function (v) { return step([n, v]); }; }
+	    function step(op) {
+	        if (f) throw new TypeError("Generator is already executing.");
+	        while (_) try {
+	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+	            if (y = 0, t) op = [op[0] & 2, t.value];
+	            switch (op[0]) {
+	                case 0: case 1: t = op; break;
+	                case 4: _.label++; return { value: op[1], done: false };
+	                case 5: _.label++; y = op[1]; op = [0]; continue;
+	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+	                default:
+	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+	                    if (t[2]) _.ops.pop();
+	                    _.trys.pop(); continue;
+	            }
+	            op = body.call(thisArg, _);
+	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+	    }
+	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-
 
 
 
@@ -18846,10 +19326,12 @@
 	        var _newTarget = this.constructor;
 	        var _this = this;
 	        logger.checkNew(_newTarget, JsonRpcProvider);
+	        var getNetwork = lib$3.getStatic((_newTarget), "getNetwork");
 	        // One parameter, but it is a network name, so swap it with the URL
 	        if (typeof (url) === "string") {
-	            if (network === null && lib$k.getNetwork(url)) {
-	                network = url;
+	            if (network === null) {
+	                var checkNetwork = getNetwork(url);
+	                network = checkNetwork;
 	                url = null;
 	            }
 	        }
@@ -18860,17 +19342,46 @@
 	        else {
 	            // The network is unknown, query the JSON-RPC for it
 	            var ready = new Promise(function (resolve, reject) {
-	                setTimeout(function () {
-	                    _this.send("eth_chainId", []).then(function (result) {
-	                        resolve(lib$k.getNetwork(lib$2.BigNumber.from(result).toNumber()));
-	                    }).catch(function (error) {
-	                        _this.send("net_version", []).then(function (result) {
-	                            resolve(lib$k.getNetwork(lib$2.BigNumber.from(result).toNumber()));
-	                        }).catch(function (error) {
-	                            reject(logger.makeError("could not detect network", lib.Logger.errors.NETWORK_ERROR));
-	                        });
+	                setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
+	                    var chainId, error_1, error_2;
+	                    return __generator(this, function (_a) {
+	                        switch (_a.label) {
+	                            case 0:
+	                                chainId = null;
+	                                _a.label = 1;
+	                            case 1:
+	                                _a.trys.push([1, 3, , 8]);
+	                                return [4 /*yield*/, this.send("eth_chainId", [])];
+	                            case 2:
+	                                chainId = _a.sent();
+	                                return [3 /*break*/, 8];
+	                            case 3:
+	                                error_1 = _a.sent();
+	                                _a.label = 4;
+	                            case 4:
+	                                _a.trys.push([4, 6, , 7]);
+	                                return [4 /*yield*/, this.send("net_version", [])];
+	                            case 5:
+	                                chainId = _a.sent();
+	                                return [3 /*break*/, 7];
+	                            case 6:
+	                                error_2 = _a.sent();
+	                                return [3 /*break*/, 7];
+	                            case 7: return [3 /*break*/, 8];
+	                            case 8:
+	                                if (chainId != null) {
+	                                    try {
+	                                        return [2 /*return*/, resolve(getNetwork(lib$2.BigNumber.from(chainId).toNumber()))];
+	                                    }
+	                                    catch (error) {
+	                                        console.log("e3", error);
+	                                    }
+	                                }
+	                                reject(logger.makeError("could not detect network", lib.Logger.errors.NETWORK_ERROR));
+	                                return [2 /*return*/];
+	                        }
 	                    });
-	                });
+	                }); }, 0);
 	            });
 	            _this = _super.call(this, ready) || this;
 	        }
@@ -18879,12 +19390,12 @@
 	            url = "http:/" + "/localhost:8545";
 	        }
 	        if (typeof (url) === "string") {
-	            _this.connection = {
+	            _this.connection = Object.freeze({
 	                url: url
-	            };
+	            });
 	        }
 	        else {
-	            _this.connection = url;
+	            _this.connection = Object.freeze(lib$3.shallowCopy(url));
 	        }
 	        _this._nextId = 42;
 	        return _this;
@@ -18968,10 +19479,14 @@
 	                return this.send("eth_getTransactionByHash", [params.transactionHash]);
 	            case "getTransactionReceipt":
 	                return this.send("eth_getTransactionReceipt", [params.transactionHash]);
-	            case "call":
-	                return this.send("eth_call", [this.constructor.hexlifyTransaction(params.transaction, { from: true }), params.blockTag]);
-	            case "estimateGas":
-	                return this.send("eth_estimateGas", [this.constructor.hexlifyTransaction(params.transaction, { from: true })]);
+	            case "call": {
+	                var hexlifyTransaction = lib$3.getStatic(this.constructor, "hexlifyTransaction");
+	                return this.send("eth_call", [hexlifyTransaction(params.transaction, { from: true }), params.blockTag]);
+	            }
+	            case "estimateGas": {
+	                var hexlifyTransaction = lib$3.getStatic(this.constructor, "hexlifyTransaction");
+	                return this.send("eth_estimateGas", [hexlifyTransaction(params.transaction, { from: true })]);
+	            }
 	            case "getLogs":
 	                if (params.filter && params.filter.address != null) {
 	                    params.filter.address = getLowerCase(params.filter.address);
@@ -19090,7 +19605,6 @@
 
 
 
-
 	var logger = new lib.Logger(_version$G.version);
 
 	var UrlJsonRpcProvider = /** @class */ (function (_super) {
@@ -19102,29 +19616,34 @@
 	        // Normalize the Network and API Key
 	        network = lib$3.getStatic((_newTarget), "getNetwork")(network);
 	        apiKey = lib$3.getStatic((_newTarget), "getApiKey")(apiKey);
-	        var url = lib$3.getStatic((_newTarget), "getUrl")(network, apiKey);
-	        _this = _super.call(this, url, network) || this;
-	        lib$3.defineReadOnly(_this, "apiKey", apiKey);
+	        var connection = lib$3.getStatic((_newTarget), "getUrl")(network, apiKey);
+	        _this = _super.call(this, connection, network) || this;
+	        if (typeof (apiKey) === "string") {
+	            lib$3.defineReadOnly(_this, "apiKey", apiKey);
+	        }
+	        else if (apiKey != null) {
+	            Object.keys(apiKey).forEach(function (key) {
+	                lib$3.defineReadOnly(_this, key, apiKey[key]);
+	            });
+	        }
 	        return _this;
 	    }
 	    UrlJsonRpcProvider.prototype._startPending = function () {
 	        logger.warn("WARNING: API provider does not support pending filters");
 	    };
 	    UrlJsonRpcProvider.prototype.getSigner = function (address) {
-	        logger.throwError("API provider does not support signing", lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: "getSigner" });
-	        return null;
+	        return logger.throwError("API provider does not support signing", lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: "getSigner" });
 	    };
 	    UrlJsonRpcProvider.prototype.listAccounts = function () {
 	        return Promise.resolve([]);
-	    };
-	    UrlJsonRpcProvider.getNetwork = function (network) {
-	        return lib$k.getNetwork((network == null) ? "homestead" : network);
 	    };
 	    // Return a defaultApiKey if null, otherwise validate the API key
 	    UrlJsonRpcProvider.getApiKey = function (apiKey) {
 	        return apiKey;
 	    };
-	    // Returns the url for the given network and API key
+	    // Returns the url or connection for the given network and API key. The
+	    // API key will have been sanitized by the getApiKey first, so any validation
+	    // or transformations can be done there.
 	    UrlJsonRpcProvider.getUrl = function (network, apiKey) {
 	        return logger.throwError("not implemented; sub-classes must override getUrl", lib.Logger.errors.NOT_IMPLEMENTED, {
 	            operation: "getUrl"
@@ -19171,6 +19690,9 @@
 	    AlchemyProvider.getApiKey = function (apiKey) {
 	        if (apiKey == null) {
 	            return defaultApiKey;
+	        }
+	        if (apiKey && typeof (apiKey) !== "string") {
+	            logger.throwArgumentError("invalid apiKey", "apiKey", apiKey);
 	        }
 	        return apiKey;
 	    };
@@ -19227,10 +19749,13 @@
 	    function CloudflareProvider() {
 	        return _super !== null && _super.apply(this, arguments) || this;
 	    }
-	    CloudflareProvider.getUrl = function (network, apiKey) {
+	    CloudflareProvider.getApiKey = function (apiKey) {
 	        if (apiKey != null) {
 	            logger.throwArgumentError("apiKey not supported for cloudflare", "apiKey", apiKey);
 	        }
+	        return null;
+	    };
+	    CloudflareProvider.getUrl = function (network, apiKey) {
 	        var host = null;
 	        switch (network.name) {
 	            case "homestead":
@@ -19264,6 +19789,42 @@
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
+	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	    });
+	};
+	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
+	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+	    function verb(n) { return function (v) { return step([n, v]); }; }
+	    function step(op) {
+	        if (f) throw new TypeError("Generator is already executing.");
+	        while (_) try {
+	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+	            if (y = 0, t) op = [op[0] & 2, t.value];
+	            switch (op[0]) {
+	                case 0: case 1: t = op; break;
+	                case 4: _.label++; return { value: op[1], done: false };
+	                case 5: _.label++; y = op[1]; op = [0]; continue;
+	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+	                default:
+	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+	                    if (t[2]) _.ops.pop();
+	                    _.trys.pop(); continue;
+	            }
+	            op = body.call(thisArg, _);
+	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+	    }
+	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 
@@ -19366,181 +19927,215 @@
 	        return _this;
 	    }
 	    EtherscanProvider.prototype.perform = function (method, params) {
-	        var _this = this;
-	        var url = this.baseUrl;
-	        var apiKey = "";
-	        if (this.apiKey) {
-	            apiKey += "&apikey=" + this.apiKey;
-	        }
-	        var get = function (url, procFunc) {
-	            _this.emit("debug", {
-	                action: "request",
-	                request: url,
-	                provider: _this
-	            });
-	            return lib$l.fetchJson(url, null, procFunc || getJsonResult).then(function (result) {
-	                _this.emit("debug", {
-	                    action: "response",
-	                    request: url,
-	                    response: lib$3.deepCopy(result),
-	                    provider: _this
-	                });
-	                return result;
-	            });
-	        };
-	        switch (method) {
-	            case "getBlockNumber":
-	                url += "/api?module=proxy&action=eth_blockNumber" + apiKey;
-	                return get(url);
-	            case "getGasPrice":
-	                url += "/api?module=proxy&action=eth_gasPrice" + apiKey;
-	                return get(url);
-	            case "getBalance":
-	                // Returns base-10 result
-	                url += "/api?module=account&action=balance&address=" + params.address;
-	                url += "&tag=" + params.blockTag + apiKey;
-	                return get(url, getResult);
-	            case "getTransactionCount":
-	                url += "/api?module=proxy&action=eth_getTransactionCount&address=" + params.address;
-	                url += "&tag=" + params.blockTag + apiKey;
-	                return get(url);
-	            case "getCode":
-	                url += "/api?module=proxy&action=eth_getCode&address=" + params.address;
-	                url += "&tag=" + params.blockTag + apiKey;
-	                return get(url, getJsonResult);
-	            case "getStorageAt":
-	                url += "/api?module=proxy&action=eth_getStorageAt&address=" + params.address;
-	                url += "&position=" + params.position;
-	                url += "&tag=" + params.blockTag + apiKey;
-	                return get(url, getJsonResult);
-	            case "sendTransaction":
-	                url += "/api?module=proxy&action=eth_sendRawTransaction&hex=" + params.signedTransaction;
-	                url += apiKey;
-	                return get(url).catch(function (error) {
-	                    if (error.responseText) {
-	                        // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
-	                        if (error.responseText.toLowerCase().indexOf("insufficient funds") >= 0) {
-	                            logger.throwError("insufficient funds", lib.Logger.errors.INSUFFICIENT_FUNDS, {});
+	        return __awaiter(this, void 0, void 0, function () {
+	            var url, apiKey, get, _a, transaction, transaction, topic0, logs, txs, i, log, tx, _b;
+	            var _this = this;
+	            return __generator(this, function (_c) {
+	                switch (_c.label) {
+	                    case 0:
+	                        url = this.baseUrl;
+	                        apiKey = "";
+	                        if (this.apiKey) {
+	                            apiKey += "&apikey=" + this.apiKey;
 	                        }
-	                        // "Transaction with the same hash was already imported."
-	                        if (error.responseText.indexOf("same hash was already imported") >= 0) {
-	                            logger.throwError("nonce has already been used", lib.Logger.errors.NONCE_EXPIRED, {});
+	                        get = function (url, procFunc) { return __awaiter(_this, void 0, void 0, function () {
+	                            var result;
+	                            return __generator(this, function (_a) {
+	                                switch (_a.label) {
+	                                    case 0:
+	                                        this.emit("debug", {
+	                                            action: "request",
+	                                            request: url,
+	                                            provider: this
+	                                        });
+	                                        return [4 /*yield*/, lib$l.fetchJson(url, null, procFunc || getJsonResult)];
+	                                    case 1:
+	                                        result = _a.sent();
+	                                        this.emit("debug", {
+	                                            action: "response",
+	                                            request: url,
+	                                            response: lib$3.deepCopy(result),
+	                                            provider: this
+	                                        });
+	                                        return [2 /*return*/, result];
+	                                }
+	                            });
+	                        }); };
+	                        _a = method;
+	                        switch (_a) {
+	                            case "getBlockNumber": return [3 /*break*/, 1];
+	                            case "getGasPrice": return [3 /*break*/, 2];
+	                            case "getBalance": return [3 /*break*/, 3];
+	                            case "getTransactionCount": return [3 /*break*/, 4];
+	                            case "getCode": return [3 /*break*/, 5];
+	                            case "getStorageAt": return [3 /*break*/, 6];
+	                            case "sendTransaction": return [3 /*break*/, 7];
+	                            case "getBlock": return [3 /*break*/, 8];
+	                            case "getTransaction": return [3 /*break*/, 9];
+	                            case "getTransactionReceipt": return [3 /*break*/, 10];
+	                            case "call": return [3 /*break*/, 11];
+	                            case "estimateGas": return [3 /*break*/, 12];
+	                            case "getLogs": return [3 /*break*/, 13];
+	                            case "getEtherPrice": return [3 /*break*/, 20];
 	                        }
-	                        // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
-	                        if (error.responseText.indexOf("another transaction with same nonce") >= 0) {
-	                            logger.throwError("replacement fee too low", lib.Logger.errors.REPLACEMENT_UNDERPRICED, {});
-	                        }
-	                    }
-	                    throw error;
-	                });
-	            case "getBlock":
-	                if (params.blockTag) {
-	                    url += "/api?module=proxy&action=eth_getBlockByNumber&tag=" + params.blockTag;
-	                    if (params.includeTransactions) {
-	                        url += "&boolean=true";
-	                    }
-	                    else {
-	                        url += "&boolean=false";
-	                    }
-	                    url += apiKey;
-	                    return get(url);
-	                }
-	                throw new Error("getBlock by blockHash not implmeneted");
-	            case "getTransaction":
-	                url += "/api?module=proxy&action=eth_getTransactionByHash&txhash=" + params.transactionHash;
-	                url += apiKey;
-	                return get(url);
-	            case "getTransactionReceipt":
-	                url += "/api?module=proxy&action=eth_getTransactionReceipt&txhash=" + params.transactionHash;
-	                url += apiKey;
-	                return get(url);
-	            case "call": {
-	                var transaction = getTransactionString(params.transaction);
-	                if (transaction) {
-	                    transaction = "&" + transaction;
-	                }
-	                url += "/api?module=proxy&action=eth_call" + transaction;
-	                //url += "&tag=" + params.blockTag + apiKey;
-	                if (params.blockTag !== "latest") {
-	                    throw new Error("EtherscanProvider does not support blockTag for call");
-	                }
-	                url += apiKey;
-	                return get(url);
-	            }
-	            case "estimateGas": {
-	                var transaction = getTransactionString(params.transaction);
-	                if (transaction) {
-	                    transaction = "&" + transaction;
-	                }
-	                url += "/api?module=proxy&action=eth_estimateGas&" + transaction;
-	                url += apiKey;
-	                return get(url);
-	            }
-	            case "getLogs":
-	                url += "/api?module=logs&action=getLogs";
-	                try {
-	                    if (params.filter.fromBlock) {
-	                        url += "&fromBlock=" + checkLogTag(params.filter.fromBlock);
-	                    }
-	                    if (params.filter.toBlock) {
-	                        url += "&toBlock=" + checkLogTag(params.filter.toBlock);
-	                    }
-	                    if (params.filter.address) {
-	                        url += "&address=" + params.filter.address;
-	                    }
-	                    // @TODO: We can handle slightly more complicated logs using the logs API
-	                    if (params.filter.topics && params.filter.topics.length > 0) {
-	                        if (params.filter.topics.length > 1) {
-	                            throw new Error("unsupported topic format");
-	                        }
-	                        var topic0 = params.filter.topics[0];
-	                        if (typeof (topic0) !== "string" || topic0.length !== 66) {
-	                            throw new Error("unsupported topic0 format");
-	                        }
-	                        url += "&topic0=" + topic0;
-	                    }
-	                }
-	                catch (error) {
-	                    return Promise.reject(error);
-	                }
-	                url += apiKey;
-	                var self_1 = this;
-	                return get(url, getResult).then(function (logs) {
-	                    var txs = {};
-	                    var seq = Promise.resolve();
-	                    logs.forEach(function (log) {
-	                        seq = seq.then(function () {
-	                            if (log.blockHash != null) {
-	                                return null;
+	                        return [3 /*break*/, 22];
+	                    case 1:
+	                        url += "/api?module=proxy&action=eth_blockNumber" + apiKey;
+	                        return [2 /*return*/, get(url)];
+	                    case 2:
+	                        url += "/api?module=proxy&action=eth_gasPrice" + apiKey;
+	                        return [2 /*return*/, get(url)];
+	                    case 3:
+	                        // Returns base-10 result
+	                        url += "/api?module=account&action=balance&address=" + params.address;
+	                        url += "&tag=" + params.blockTag + apiKey;
+	                        return [2 /*return*/, get(url, getResult)];
+	                    case 4:
+	                        url += "/api?module=proxy&action=eth_getTransactionCount&address=" + params.address;
+	                        url += "&tag=" + params.blockTag + apiKey;
+	                        return [2 /*return*/, get(url)];
+	                    case 5:
+	                        url += "/api?module=proxy&action=eth_getCode&address=" + params.address;
+	                        url += "&tag=" + params.blockTag + apiKey;
+	                        return [2 /*return*/, get(url, getJsonResult)];
+	                    case 6:
+	                        url += "/api?module=proxy&action=eth_getStorageAt&address=" + params.address;
+	                        url += "&position=" + params.position;
+	                        url += "&tag=" + params.blockTag + apiKey;
+	                        return [2 /*return*/, get(url, getJsonResult)];
+	                    case 7:
+	                        url += "/api?module=proxy&action=eth_sendRawTransaction&hex=" + params.signedTransaction;
+	                        url += apiKey;
+	                        return [2 /*return*/, get(url).catch(function (error) {
+	                                if (error.responseText) {
+	                                    // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
+	                                    if (error.responseText.toLowerCase().indexOf("insufficient funds") >= 0) {
+	                                        logger.throwError("insufficient funds", lib.Logger.errors.INSUFFICIENT_FUNDS, {});
+	                                    }
+	                                    // "Transaction with the same hash was already imported."
+	                                    if (error.responseText.indexOf("same hash was already imported") >= 0) {
+	                                        logger.throwError("nonce has already been used", lib.Logger.errors.NONCE_EXPIRED, {});
+	                                    }
+	                                    // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
+	                                    if (error.responseText.indexOf("another transaction with same nonce") >= 0) {
+	                                        logger.throwError("replacement fee too low", lib.Logger.errors.REPLACEMENT_UNDERPRICED, {});
+	                                    }
+	                                }
+	                                throw error;
+	                            })];
+	                    case 8:
+	                        if (params.blockTag) {
+	                            url += "/api?module=proxy&action=eth_getBlockByNumber&tag=" + params.blockTag;
+	                            if (params.includeTransactions) {
+	                                url += "&boolean=true";
 	                            }
-	                            log.blockHash = txs[log.transactionHash];
-	                            if (log.blockHash == null) {
-	                                return self_1.getTransaction(log.transactionHash).then(function (tx) {
-	                                    txs[log.transactionHash] = tx.blockHash;
-	                                    log.blockHash = tx.blockHash;
-	                                    return null;
-	                                });
+	                            else {
+	                                url += "&boolean=false";
 	                            }
-	                            return null;
-	                        });
-	                    });
-	                    return seq.then(function () {
-	                        return logs;
-	                    });
-	                });
-	            case "getEtherPrice":
-	                if (this.network.name !== "homestead") {
-	                    return Promise.resolve(0.0);
+	                            url += apiKey;
+	                            return [2 /*return*/, get(url)];
+	                        }
+	                        throw new Error("getBlock by blockHash not implmeneted");
+	                    case 9:
+	                        url += "/api?module=proxy&action=eth_getTransactionByHash&txhash=" + params.transactionHash;
+	                        url += apiKey;
+	                        return [2 /*return*/, get(url)];
+	                    case 10:
+	                        url += "/api?module=proxy&action=eth_getTransactionReceipt&txhash=" + params.transactionHash;
+	                        url += apiKey;
+	                        return [2 /*return*/, get(url)];
+	                    case 11:
+	                        {
+	                            transaction = getTransactionString(params.transaction);
+	                            if (transaction) {
+	                                transaction = "&" + transaction;
+	                            }
+	                            url += "/api?module=proxy&action=eth_call" + transaction;
+	                            //url += "&tag=" + params.blockTag + apiKey;
+	                            if (params.blockTag !== "latest") {
+	                                throw new Error("EtherscanProvider does not support blockTag for call");
+	                            }
+	                            url += apiKey;
+	                            return [2 /*return*/, get(url)];
+	                        }
+	                        _c.label = 12;
+	                    case 12:
+	                        {
+	                            transaction = getTransactionString(params.transaction);
+	                            if (transaction) {
+	                                transaction = "&" + transaction;
+	                            }
+	                            url += "/api?module=proxy&action=eth_estimateGas&" + transaction;
+	                            url += apiKey;
+	                            return [2 /*return*/, get(url)];
+	                        }
+	                        _c.label = 13;
+	                    case 13:
+	                        url += "/api?module=logs&action=getLogs";
+	                        if (params.filter.fromBlock) {
+	                            url += "&fromBlock=" + checkLogTag(params.filter.fromBlock);
+	                        }
+	                        if (params.filter.toBlock) {
+	                            url += "&toBlock=" + checkLogTag(params.filter.toBlock);
+	                        }
+	                        if (params.filter.address) {
+	                            url += "&address=" + params.filter.address;
+	                        }
+	                        // @TODO: We can handle slightly more complicated logs using the logs API
+	                        if (params.filter.topics && params.filter.topics.length > 0) {
+	                            if (params.filter.topics.length > 1) {
+	                                logger.throwError("unsupported topic count", lib.Logger.errors.UNSUPPORTED_OPERATION, { topics: params.filter.topics });
+	                            }
+	                            if (params.filter.topics.length === 1) {
+	                                topic0 = params.filter.topics[0];
+	                                if (typeof (topic0) !== "string" || topic0.length !== 66) {
+	                                    logger.throwError("unsupported topic format", lib.Logger.errors.UNSUPPORTED_OPERATION, { topic0: topic0 });
+	                                }
+	                                url += "&topic0=" + topic0;
+	                            }
+	                        }
+	                        url += apiKey;
+	                        return [4 /*yield*/, get(url, getResult)];
+	                    case 14:
+	                        logs = _c.sent();
+	                        txs = {};
+	                        i = 0;
+	                        _c.label = 15;
+	                    case 15:
+	                        if (!(i < logs.length)) return [3 /*break*/, 19];
+	                        log = logs[i];
+	                        if (log.blockHash != null) {
+	                            return [3 /*break*/, 18];
+	                        }
+	                        if (!(txs[log.transactionHash] == null)) return [3 /*break*/, 17];
+	                        return [4 /*yield*/, this.getTransaction(log.transactionHash)];
+	                    case 16:
+	                        tx = _c.sent();
+	                        if (tx) {
+	                            txs[log.transactionHash] = tx.blockHash;
+	                        }
+	                        _c.label = 17;
+	                    case 17:
+	                        log.blockHash = txs[log.transactionHash];
+	                        _c.label = 18;
+	                    case 18:
+	                        i++;
+	                        return [3 /*break*/, 15];
+	                    case 19: return [2 /*return*/, logs];
+	                    case 20:
+	                        if (this.network.name !== "homestead") {
+	                            return [2 /*return*/, 0.0];
+	                        }
+	                        url += "/api?module=stats&action=ethprice";
+	                        url += apiKey;
+	                        _b = parseFloat;
+	                        return [4 /*yield*/, get(url, getResult)];
+	                    case 21: return [2 /*return*/, _b.apply(void 0, [_c.sent()])];
+	                    case 22: return [3 /*break*/, 23];
+	                    case 23: return [2 /*return*/, _super.prototype.perform.call(this, method, params)];
 	                }
-	                url += "/api?module=stats&action=ethprice";
-	                url += apiKey;
-	                return get(url, getResult).then(function (result) {
-	                    return parseFloat(result.ethusd);
-	                });
-	            default:
-	                break;
-	        }
-	        return _super.prototype.perform.call(this, method, params);
+	            });
+	        });
 	    };
 	    // @TODO: Allow startBlock and endBlock to be Promises
 	    EtherscanProvider.prototype.getHistory = function (addressOrName, startBlock, endBlock) {
@@ -20037,16 +20632,33 @@
 	    function InfuraProvider() {
 	        return _super !== null && _super.apply(this, arguments) || this;
 	    }
-	    Object.defineProperty(InfuraProvider.prototype, "projectId", {
-	        get: function () { return this.apiKey; },
-	        enumerable: true,
-	        configurable: true
-	    });
 	    InfuraProvider.getApiKey = function (apiKey) {
+	        var apiKeyObj = {
+	            apiKey: defaultProjectId,
+	            projectId: defaultProjectId,
+	            projectSecret: null
+	        };
 	        if (apiKey == null) {
-	            return defaultProjectId;
+	            return apiKeyObj;
 	        }
-	        return apiKey;
+	        if (typeof (apiKey) === "string") {
+	            apiKeyObj.projectId = apiKey;
+	        }
+	        else if (apiKey.projectSecret != null) {
+	            if (typeof (apiKey.projectId) !== "string") {
+	                logger.throwArgumentError("projectSecret requires a projectId", "projectId", apiKey.projectId);
+	            }
+	            if (typeof (apiKey.projectSecret) !== "string") {
+	                logger.throwArgumentError("invalid projectSecret", "projectSecret", "[REDACTED]");
+	            }
+	            apiKeyObj.projectId = apiKey.projectId;
+	            apiKeyObj.projectSecret = apiKey.projectSecret;
+	        }
+	        else if (apiKey.projectId) {
+	            apiKeyObj.projectId = apiKey.projectId;
+	        }
+	        apiKeyObj.apiKey = apiKeyObj.projectId;
+	        return apiKeyObj;
 	    };
 	    InfuraProvider.getUrl = function (network, apiKey) {
 	        var host = null;
@@ -20072,7 +20684,14 @@
 	                    value: network
 	                });
 	        }
-	        return "https:/" + "/" + host + "/v3/" + apiKey;
+	        var connection = {
+	            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId)
+	        };
+	        if (apiKey.projectSecret != null) {
+	            connection.user = "";
+	            connection.password = apiKey.projectSecret;
+	        }
+	        return connection;
 	    };
 	    return InfuraProvider;
 	}(urlJsonRpcProvider.UrlJsonRpcProvider));
@@ -20110,9 +20729,13 @@
 	        return _super !== null && _super.apply(this, arguments) || this;
 	    }
 	    NodesmithProvider.getApiKey = function (apiKey) {
+	        if (apiKey && typeof (apiKey) !== "string") {
+	            logger.throwArgumentError("invalid apiKey", "apiKey", apiKey);
+	        }
 	        return apiKey || defaultApiKey;
 	    };
 	    NodesmithProvider.getUrl = function (network, apiKey) {
+	        logger.warn("NodeSmith will be discontinued on 2019-12-20; please migrate to another platform.");
 	        var host = null;
 	        switch (network.name) {
 	            case "homestead":
@@ -20190,13 +20813,13 @@
 	        if (!web3Provider || !_this._sendAsync) {
 	            logger.throwArgumentError("invalid web3Provider", "web3Provider", web3Provider);
 	        }
-	        lib$3.defineReadOnly(_this, "_web3Provider", web3Provider);
+	        lib$3.defineReadOnly(_this, "provider", web3Provider);
 	        return _this;
 	    }
 	    Web3Provider.prototype.send = function (method, params) {
 	        var _this = this;
 	        // Metamask complains about eth_sign (and on some versions hangs)
-	        if (method == "eth_sign" && this._web3Provider.isMetaMask) {
+	        if (method == "eth_sign" && this.provider.isMetaMask) {
 	            // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
 	            method = "personal_sign";
 	            params = [params[1], params[0]];
@@ -20263,6 +20886,35 @@
 	exports.Web3Provider = web3Provider.Web3Provider;
 
 	exports.Formatter = formatter.Formatter;
+
+
+	var logger = new lib.Logger(_version$G.version);
+	////////////////////////
+	// Helper Functions
+	function getDefaultProvider(network, options) {
+	    if (network == null) {
+	        network = "homestead";
+	    }
+	    var n = lib$k.getNetwork(network);
+	    if (!n || !n._defaultProvider) {
+	        logger.throwError("unsupported getDefaultProvider network", lib.Logger.errors.NETWORK_ERROR, {
+	            operation: "getDefaultProvider",
+	            network: network
+	        });
+	    }
+	    return n._defaultProvider({
+	        FallbackProvider: fallbackProvider.FallbackProvider,
+	        AlchemyProvider: alchemyProvider.AlchemyProvider,
+	        CloudflareProvider: cloudflareProvider.CloudflareProvider,
+	        EtherscanProvider: etherscanProvider.EtherscanProvider,
+	        InfuraProvider: infuraProvider.InfuraProvider,
+	        JsonRpcProvider: jsonRpcProvider.JsonRpcProvider,
+	        NodesmithProvider: nodesmithProvider.NodesmithProvider,
+	        Web3Provider: web3Provider.Web3Provider,
+	        IpcProvider: ipcProvider.IpcProvider,
+	    }, options);
+	}
+	exports.getDefaultProvider = getDefaultProvider;
 	});
 
 	var index$m = unwrapExports(lib$m);
@@ -20280,6 +20932,7 @@
 	var lib_12$1 = lib$m.NodesmithProvider;
 	var lib_13$1 = lib$m.Web3Provider;
 	var lib_14$1 = lib$m.Formatter;
+	var lib_15$1 = lib$m.getDefaultProvider;
 
 	var lib$n = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -20383,7 +21036,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "units/5.0.0-beta.130";
+	exports.version = "units/5.0.0-beta.131";
 	});
 
 	var _version$J = unwrapExports(_version$I);
@@ -20675,7 +21328,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.159";
+	exports.version = "ethers/5.0.0-beta.160";
 	});
 
 	var _version$L = unwrapExports(_version$K);
@@ -20706,6 +21359,8 @@
 	exports.constants = constants;
 	var providers = __importStar(lib$m);
 	exports.providers = providers;
+	var providers_1 = lib$m;
+	exports.getDefaultProvider = providers_1.getDefaultProvider;
 
 	exports.Wordlist = browser$4.Wordlist;
 	exports.wordlists = browser$4.wordlists;
@@ -20721,22 +21376,6 @@
 	exports.version = _version$K.version;
 	var logger = new lib.Logger(_version$K.version);
 	exports.logger = logger;
-	////////////////////////
-	// Helper Functions
-	function getDefaultProvider(network, options) {
-	    if (network == null) {
-	        network = "homestead";
-	    }
-	    var n = providers.getNetwork(network);
-	    if (!n || !n._defaultProvider) {
-	        logger.throwError("unsupported getDefaultProvider network", lib.Logger.errors.NETWORK_ERROR, {
-	            operation: "getDefaultProvider",
-	            network: network
-	        });
-	    }
-	    return n._defaultProvider(providers, options);
-	}
-	exports.getDefaultProvider = getDefaultProvider;
 	});
 
 	var ethers$1 = unwrapExports(ethers);
@@ -20749,13 +21388,13 @@
 	var ethers_7 = ethers.Wallet;
 	var ethers_8 = ethers.constants;
 	var ethers_9 = ethers.providers;
-	var ethers_10 = ethers.Wordlist;
-	var ethers_11 = ethers.wordlists;
-	var ethers_12 = ethers.utils;
-	var ethers_13 = ethers.errors;
-	var ethers_14 = ethers.version;
-	var ethers_15 = ethers.logger;
-	var ethers_16 = ethers.getDefaultProvider;
+	var ethers_10 = ethers.getDefaultProvider;
+	var ethers_11 = ethers.Wordlist;
+	var ethers_12 = ethers.wordlists;
+	var ethers_13 = ethers.utils;
+	var ethers_14 = ethers.errors;
+	var ethers_15 = ethers.version;
+	var ethers_16 = ethers.logger;
 
 	var lib$p = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -20805,7 +21444,7 @@
 	var lib_12$2 = lib$p.errors;
 	var lib_13$2 = lib$p.logger;
 	var lib_14$2 = lib$p.utils;
-	var lib_15$1 = lib$p.wordlists;
+	var lib_15$2 = lib$p.wordlists;
 	var lib_16$1 = lib$p.version;
 	var lib_17 = lib$p.Wordlist;
 
@@ -20826,7 +21465,7 @@
 	exports.providers = lib_6$8;
 	exports.utils = lib_14$2;
 	exports.version = lib_16$1;
-	exports.wordlists = lib_15$1;
+	exports.wordlists = lib_15$2;
 
 	Object.defineProperty(exports, '__esModule', { value: true });
 

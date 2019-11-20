@@ -31,6 +31,9 @@ var AlchemyProvider = /** @class */ (function (_super) {
         if (apiKey == null) {
             return defaultApiKey;
         }
+        if (apiKey && typeof (apiKey) !== "string") {
+            logger.throwArgumentError("invalid apiKey", "apiKey", apiKey);
+        }
         return apiKey;
     };
     AlchemyProvider.getUrl = function (network, apiKey) {

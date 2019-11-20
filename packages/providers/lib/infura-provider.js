@@ -23,16 +23,33 @@ var InfuraProvider = /** @class */ (function (_super) {
     function InfuraProvider() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    Object.defineProperty(InfuraProvider.prototype, "projectId", {
-        get: function () { return this.apiKey; },
-        enumerable: true,
-        configurable: true
-    });
     InfuraProvider.getApiKey = function (apiKey) {
+        var apiKeyObj = {
+            apiKey: defaultProjectId,
+            projectId: defaultProjectId,
+            projectSecret: null
+        };
         if (apiKey == null) {
-            return defaultProjectId;
+            return apiKeyObj;
         }
-        return apiKey;
+        if (typeof (apiKey) === "string") {
+            apiKeyObj.projectId = apiKey;
+        }
+        else if (apiKey.projectSecret != null) {
+            if (typeof (apiKey.projectId) !== "string") {
+                logger.throwArgumentError("projectSecret requires a projectId", "projectId", apiKey.projectId);
+            }
+            if (typeof (apiKey.projectSecret) !== "string") {
+                logger.throwArgumentError("invalid projectSecret", "projectSecret", "[REDACTED]");
+            }
+            apiKeyObj.projectId = apiKey.projectId;
+            apiKeyObj.projectSecret = apiKey.projectSecret;
+        }
+        else if (apiKey.projectId) {
+            apiKeyObj.projectId = apiKey.projectId;
+        }
+        apiKeyObj.apiKey = apiKeyObj.projectId;
+        return apiKeyObj;
     };
     InfuraProvider.getUrl = function (network, apiKey) {
         var host = null;
@@ -58,7 +75,14 @@ var InfuraProvider = /** @class */ (function (_super) {
                     value: network
                 });
         }
-        return "https:/" + "/" + host + "/v3/" + apiKey;
+        var connection = {
+            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId)
+        };
+        if (apiKey.projectSecret != null) {
+            connection.user = "";
+            connection.password = apiKey.projectSecret;
+        }
+        return connection;
     };
     return InfuraProvider;
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));

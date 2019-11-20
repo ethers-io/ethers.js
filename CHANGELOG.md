@@ -3,6 +3,29 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.160 (2019-11-20 18:36)
+-----------------------------------------
+
+  - Updated API in testcases. ([3ab3733](https://github.com/ethers-io/ethers.js/commit/3ab373334c75800f2b20b6639ed8eb1b11e453ef))
+  - Fixed scrypt import in ESM build. ([b72ef27](https://github.com/ethers-io/ethers.js/commit/b72ef27b2a8f9941fb9d79122ec449fed9d2464d))
+  - Fixed null apiKey problem for InfuraProvider. ([e518151](https://github.com/ethers-io/ethers.js/commit/e51815150912d10e2734707986b10b37c87d6d12))
+  - Added support for sighash-style tuple parsing. ([19aaade](https://github.com/ethers-io/ethers.js/commit/19aaade9c62510012cfd50ae487ebd1705a28678))
+  - Fixed solc imports for cli. ([c35ddaf](https://github.com/ethers-io/ethers.js/commit/c35ddaf646efa25e738fee604585a0a7af45b206))
+  - Added nonce manager to experimental index. ([8316406](https://github.com/ethers-io/ethers.js/commit/8316406977ea26ca2044d16f7b3bb6ba21ef5b43))
+  - Removing NodesmithProvider from default provider as it is being discontinued. ([01ca350](https://github.com/ethers-io/ethers.js/commit/01ca35036ca11a47f60890e5cae62e46a00f3da8))
+  - Moved bare ABI named functions and events from Interface into Contracts to simplify other consumers of Interface. ([da8ca2e](https://github.com/ethers-io/ethers.js/commit/da8ca2e8bc982fc3ea0343bb3c593a485ca1fef0))
+  - Added support for complex API keys including support for INFURA project secrets. ([#464](https://github.com/ethers-io/ethers.js/issues/464), [#651](https://github.com/ethers-io/ethers.js/issues/651), [#652](https://github.com/ethers-io/ethers.js/issues/652); [1ec5804](https://github.com/ethers-io/ethers.js/commit/1ec5804bd460f6948d4813469fdc7bf739baa6a6))
+  - Migrated to scrypt-js v3. ([75895fa](https://github.com/ethers-io/ethers.js/commit/75895fa1491e7542c755a102f4e4c190685fd2b6))
+  - Moved getDefaultProvider to providers package. ([51e4ef2](https://github.com/ethers-io/ethers.js/commit/51e4ef2b45b83a8d82923600a2fac544d70b0807))
+  - Migrating providers to modern syntax and scoping. ([#634](https://github.com/ethers-io/ethers.js/issues/634); [e1509a6](https://github.com/ethers-io/ethers.js/commit/e1509a6326dd2cb8bf7ed64b82dd3947b768a314))
+  - Migrating to modern syntax and scoping. ([#634](https://github.com/ethers-io/ethers.js/issues/634); [394c36c](https://github.com/ethers-io/ethers.js/commit/394c36cad43f229a94c72d21f94d1c7982a887a1))
+  - Added provider property to Web3Provider. ([#641](https://github.com/ethers-io/ethers.js/issues/641); [1d4f90a](https://github.com/ethers-io/ethers.js/commit/1d4f90a958da6364117353850d62535c9702abd2))
+  - Updated GitHub issue cache. ([494381a](https://github.com/ethers-io/ethers.js/commit/494381a6284cc8ed90bd8002d42a6b6d94dc1200))
+  - Force deploy receipt to address to be null. ([#573](https://github.com/ethers-io/ethers.js/issues/573); [d9d438a](https://github.com/ethers-io/ethers.js/commit/d9d438a119bb11f8516fc9cf02c534ab3816fcb3))
+  - Updated experimental NonceManager. ([3d514c8](https://github.com/ethers-io/ethers.js/commit/3d514c8dbb94e1c4ce5754463e683dd9dbe7c0aa))
+  - Fixed typo in error message. ([28339a9](https://github.com/ethers-io/ethers.js/commit/28339a9c8585392086da159a46df4afb8958915c))
+  - Added GitHub issue caching. ([fea867a](https://github.com/ethers-io/ethers.js/commit/fea867a206f007a17718396e486883a5e718aa29))
+
 ethers/v5.0.0-beta.159 (2019-10-17 01:08)
 -----------------------------------------
 

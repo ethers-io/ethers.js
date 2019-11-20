@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/strings",
-  "version": "5.0.0-beta.133",
+  "version": "5.0.0-beta.134",
   "description": "String utility functions.",
   "main": "./lib/index.js",
   "scripts": {
@@ -29,5 +29,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xc28697c8f04d75e7a563ef5dcceb08044c8143dc938b8b75e4dc90f5a4c92b8d"
+  "tarballHash": "0x3e86239eb4e439bcbc0006decb0cf701c8430f2d993462b6c8b2a25afa7c88f1"
 }

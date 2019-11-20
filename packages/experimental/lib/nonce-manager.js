@@ -16,6 +16,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var ethers_1 = require("ethers");
 var _version_1 = require("./_version");
 var logger = new ethers_1.ethers.utils.Logger(_version_1.version);
+// @TODO: Keep a per-NonceManager pool of sent but unmined transactions for
+//        rebroadcasting, in case we overrun the transaction pool
 var NonceManager = /** @class */ (function (_super) {
     __extends(NonceManager, _super);
     function NonceManager(signer) {
@@ -23,6 +25,7 @@ var NonceManager = /** @class */ (function (_super) {
         var _this = this;
         logger.checkNew(_newTarget, NonceManager);
         _this = _super.call(this) || this;
+        _this._deltaCount = 0;
         ethers_1.ethers.utils.defineReadOnly(_this, "signer", signer);
         return _this;
     }
@@ -34,25 +37,22 @@ var NonceManager = /** @class */ (function (_super) {
     };
     NonceManager.prototype.getTransactionCount = function (blockTag) {
         if (blockTag === "pending") {
-            if (!this._transactionCount) {
-                this._transactionCount = this.signer.getTransactionCount("pending");
+            if (!this._initialPromise) {
+                this._initialPromise = this.signer.getTransactionCount("pending");
             }
-            return this._transactionCount;
+            var deltaCount_1 = this._deltaCount;
+            return this._initialPromise.then(function (initial) { return (initial + deltaCount_1); });
         }
         return this.signer.getTransactionCount(blockTag);
     };
     NonceManager.prototype.setTransactionCount = function (transactionCount) {
-        this._transactionCount = Promise.resolve(transactionCount).then(function (nonce) {
+        this._initialPromise = Promise.resolve(transactionCount).then(function (nonce) {
             return ethers_1.ethers.BigNumber.from(nonce).toNumber();
         });
+        this._deltaCount = 0;
     };
     NonceManager.prototype.incrementTransactionCount = function (count) {
-        if (!count) {
-            count = 1;
-        }
-        this._transactionCount = this.getTransactionCount("pending").then(function (nonce) {
-            return nonce + count;
-        });
+        this._deltaCount += (count ? count : 1);
     };
     NonceManager.prototype.signMessage = function (message) {
         return this.signer.signMessage(message);
@@ -64,10 +64,15 @@ var NonceManager = /** @class */ (function (_super) {
     NonceManager.prototype.sendTransaction = function (transaction) {
         if (transaction.nonce == null) {
             transaction = ethers_1.ethers.utils.shallowCopy(transaction);
-            transaction.nonce = this.getTransactionCount();
+            transaction.nonce = this.getTransactionCount("pending");
+            this.incrementTransactionCount();
         }
-        this.setTransactionCount(transaction.nonce);
-        return this.signer.sendTransaction(transaction);
+        else {
+            this.setTransactionCount(transaction.nonce);
+        }
+        return this.signer.sendTransaction(transaction).then(function (tx) {
+            return tx;
+        });
     };
     return NonceManager;
 }(ethers_1.ethers.Signer));

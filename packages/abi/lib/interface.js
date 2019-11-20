@@ -105,17 +105,19 @@ var Interface = /** @class */ (function () {
             bucket[signature] = fragment;
         });
         // Add any fragments with a unique name by its name (sans signature parameters)
-        [this.events, this.functions].forEach(function (bucket) {
-            var count = getNameCount(bucket);
-            Object.keys(bucket).forEach(function (signature) {
-                var fragment = bucket[signature];
+        /*
+        [this.events, this.functions].forEach((bucket) => {
+            let count = getNameCount(bucket);
+            Object.keys(bucket).forEach((signature) => {
+                let fragment = bucket[signature];
                 if (count[fragment.name] !== 1) {
-                    logger.warn("duplicate definition - " + fragment.name);
-                    return;
+                   logger.warn("duplicate definition - " + fragment.name);
+                   return;
                 }
                 bucket[fragment.name] = fragment;
             });
         });
+        */
         // If we do not have a constructor use the default "constructor() payable"
         if (!this.deploy) {
             properties_1.defineReadOnly(this, "deploy", fragments_1.ConstructorFragment.from({ type: "constructor" }));
@@ -136,24 +138,60 @@ var Interface = /** @class */ (function () {
     };
     Interface.prototype.getFunction = function (nameOrSignatureOrSighash) {
         if (bytes_1.isHexString(nameOrSignatureOrSighash)) {
-            return getFragment(nameOrSignatureOrSighash, this.getSighash.bind(this), this.functions);
+            for (var name_1 in this.functions) {
+                if (nameOrSignatureOrSighash === this.getSighash(name_1)) {
+                    return this.functions[name_1];
+                }
+            }
+            logger.throwArgumentError("no matching function", "sighash", nameOrSignatureOrSighash);
         }
         // It is a bare name, look up the function (will return null if ambiguous)
         if (nameOrSignatureOrSighash.indexOf("(") === -1) {
-            return (this.functions[nameOrSignatureOrSighash.trim()] || null);
+            var name_2 = nameOrSignatureOrSighash.trim();
+            var matching = Object.keys(this.functions).filter(function (f) { return (f.split("(" /* fix:) */)[0] === name_2); });
+            if (matching.length === 0) {
+                logger.throwArgumentError("no matching function", "name", name_2);
+            }
+            else if (matching.length > 1) {
+                logger.throwArgumentError("multiple matching functions", "name", name_2);
+            }
+            return this.functions[matching[0]];
         }
         // Normlize the signature and lookup the function
-        return this.functions[fragments_1.FunctionFragment.fromString(nameOrSignatureOrSighash).format()];
+        var result = this.functions[fragments_1.FunctionFragment.fromString(nameOrSignatureOrSighash).format()];
+        if (!result) {
+            logger.throwArgumentError("no matching function", "signature", nameOrSignatureOrSighash);
+        }
+        return result;
     };
     Interface.prototype.getEvent = function (nameOrSignatureOrTopic) {
         if (bytes_1.isHexString(nameOrSignatureOrTopic)) {
-            return getFragment(nameOrSignatureOrTopic, this.getEventTopic.bind(this), this.events);
+            var topichash = nameOrSignatureOrTopic.toLowerCase();
+            for (var name_3 in this.events) {
+                if (topichash === this.getEventTopic(name_3)) {
+                    return this.events[name_3];
+                }
+            }
+            logger.throwArgumentError("no matching event", "topichash", topichash);
         }
         // It is a bare name, look up the function (will return null if ambiguous)
         if (nameOrSignatureOrTopic.indexOf("(") === -1) {
-            return this.events[nameOrSignatureOrTopic];
+            var name_4 = nameOrSignatureOrTopic.trim();
+            var matching = Object.keys(this.events).filter(function (f) { return (f.split("(" /* fix:) */)[0] === name_4); });
+            if (matching.length === 0) {
+                logger.throwArgumentError("no matching event", "name", name_4);
+            }
+            else if (matching.length > 1) {
+                logger.throwArgumentError("multiple matching events", "name", name_4);
+            }
+            return this.events[matching[0]];
         }
-        return this.events[fragments_1.EventFragment.fromString(nameOrSignatureOrTopic).format()];
+        // Normlize the signature and lookup the function
+        var result = this.events[fragments_1.EventFragment.fromString(nameOrSignatureOrTopic).format()];
+        if (!result) {
+            logger.throwArgumentError("no matching event", "signature", nameOrSignatureOrTopic);
+        }
+        return result;
     };
     Interface.prototype.getSighash = function (functionFragment) {
         if (typeof (functionFragment) === "string") {
@@ -376,27 +414,3 @@ var Interface = /** @class */ (function () {
     return Interface;
 }());
 exports.Interface = Interface;
-function getFragment(hash, calcFunc, items) {
-    for (var signature in items) {
-        if (signature.indexOf("(") === -1) {
-            continue;
-        }
-        var fragment = items[signature];
-        if (calcFunc(fragment) === hash) {
-            return fragment;
-        }
-    }
-    return null;
-}
-function getNameCount(fragments) {
-    var unique = {};
-    // Count each name
-    for (var signature in fragments) {
-        var name_1 = fragments[signature].name;
-        if (!unique[name_1]) {
-            unique[name_1] = 0;
-        }
-        unique[name_1]++;
-    }
-    return unique;
-}

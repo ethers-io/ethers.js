@@ -27,17 +27,17 @@ export class Web3Provider extends JsonRpcProvider {
         if (!web3Provider || !this._sendAsync) {
             logger.throwArgumentError("invalid web3Provider", "web3Provider", web3Provider);
         }
-        defineReadOnly(this, "_web3Provider", web3Provider);
+        defineReadOnly(this, "provider", web3Provider);
     }
     send(method, params) {
         // Metamask complains about eth_sign (and on some versions hangs)
-        if (method == "eth_sign" && this._web3Provider.isMetaMask) {
+        if (method == "eth_sign" && this.provider.isMetaMask) {
             // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
             method = "personal_sign";
             params = [params[1], params[0]];
         }
         return new Promise((resolve, reject) => {
-            let request = {
+            const request = {
                 method: method,
                 params: params,
                 id: 42,
@@ -50,7 +50,7 @@ export class Web3Provider extends JsonRpcProvider {
                 }
                 if (result.error) {
                     // @TODO: not any
-                    let error = new Error(result.error.message);
+                    const error = new Error(result.error.message);
                     error.code = result.error.code;
                     error.data = result.error.data;
                     reject(error);

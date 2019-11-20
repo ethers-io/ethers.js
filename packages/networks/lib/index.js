@@ -21,12 +21,13 @@ function ethDefaultProvider(network) {
             }
             catch (error) { }
         }
+        /* NodeSmith is being discontinued on 2019-12-20
         if (providers.NodesmithProvider) {
             try {
                 providerList.push(new providers.NodesmithProvider(network, options.nodesmith));
-            }
-            catch (error) { }
+            } catch(error) { }
         }
+        */
         if (providers.AlchemyProvider) {
             try {
                 providerList.push(new providers.AlchemyProvider(network, options.alchemy));
@@ -43,8 +44,14 @@ function ethDefaultProvider(network) {
             return null;
         }
         if (providers.FallbackProvider) {
-            return new providers.FallbackProvider(providerList);
-            ;
+            var quorum = providerList.length / 2;
+            if (options.quorum != null) {
+                quorum = options.quorum;
+            }
+            else if (quorum > 2) {
+                quorum = 2;
+            }
+            return new providers.FallbackProvider(providerList, quorum);
         }
         return providerList[0];
     };

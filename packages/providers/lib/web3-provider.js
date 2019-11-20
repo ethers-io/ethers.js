@@ -44,13 +44,13 @@ var Web3Provider = /** @class */ (function (_super) {
         if (!web3Provider || !_this._sendAsync) {
             logger.throwArgumentError("invalid web3Provider", "web3Provider", web3Provider);
         }
-        properties_1.defineReadOnly(_this, "_web3Provider", web3Provider);
+        properties_1.defineReadOnly(_this, "provider", web3Provider);
         return _this;
     }
     Web3Provider.prototype.send = function (method, params) {
         var _this = this;
         // Metamask complains about eth_sign (and on some versions hangs)
-        if (method == "eth_sign" && this._web3Provider.isMetaMask) {
+        if (method == "eth_sign" && this.provider.isMetaMask) {
             // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
             method = "personal_sign";
             params = [params[1], params[0]];

@@ -1,6 +1,6 @@
 {
   "name": "@ethersproject/cli",
-  "version": "5.0.0-beta.145",
+  "version": "5.0.0-beta.146",
   "description": "Command-Line Interface scripts and releated utilities.",
   "main": "./lib/index.js",
   "scripts": {
@@ -39,5 +39,5 @@
   "module": "./lib.esm/index.js",
   "types": "./lib/index.d.ts",
   "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x57a2be298c5b9a6e4a800c9e5412cb2c3afd8ef6268c6f92423499a0d58611cf"
+  "tarballHash": "0x664e42117580037f716878bd130f188bc75c443c1d1994bb9fe7f512e6164c8e"
 }

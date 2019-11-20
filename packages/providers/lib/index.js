@@ -27,3 +27,32 @@ var web3_provider_1 = require("./web3-provider");
 exports.Web3Provider = web3_provider_1.Web3Provider;
 var formatter_1 = require("./formatter");
 exports.Formatter = formatter_1.Formatter;
+var logger_1 = require("@ethersproject/logger");
+var _version_1 = require("./_version");
+var logger = new logger_1.Logger(_version_1.version);
+////////////////////////
+// Helper Functions
+function getDefaultProvider(network, options) {
+    if (network == null) {
+        network = "homestead";
+    }
+    var n = networks_1.getNetwork(network);
+    if (!n || !n._defaultProvider) {
+        logger.throwError("unsupported getDefaultProvider network", logger_1.Logger.errors.NETWORK_ERROR, {
+            operation: "getDefaultProvider",
+            network: network
+        });
+    }
+    return n._defaultProvider({
+        FallbackProvider: fallback_provider_1.FallbackProvider,
+        AlchemyProvider: alchemy_provider_1.AlchemyProvider,
+        CloudflareProvider: cloudflare_provider_1.CloudflareProvider,
+        EtherscanProvider: etherscan_provider_1.EtherscanProvider,
+        InfuraProvider: infura_provider_1.InfuraProvider,
+        JsonRpcProvider: json_rpc_provider_1.JsonRpcProvider,
+        NodesmithProvider: nodesmith_provider_1.NodesmithProvider,
+        Web3Provider: web3_provider_1.Web3Provider,
+        IpcProvider: ipc_provider_1.IpcProvider,
+    }, options);
+}
+exports.getDefaultProvider = getDefaultProvider;

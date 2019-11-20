@@ -7,7 +7,7 @@ import { version } from "./_version";
 let _globalLogger = null;
 function _checkNormalize() {
     try {
-        let missing = [];
+        const missing = [];
         // Make sure all forms of normalization are supported
         ["NFD", "NFC", "NFKD", "NFKC"].forEach((form) => {
             try {
@@ -32,7 +32,7 @@ function _checkNormalize() {
     }
     return null;
 }
-let _normalizeError = _checkNormalize();
+const _normalizeError = _checkNormalize();
 export class Logger {
     constructor(version) {
         Object.defineProperty(this, "version", {
@@ -42,9 +42,9 @@ export class Logger {
         });
     }
     setLogLevel(logLevel) {
-        let level = LogLevels[logLevel];
+        const level = LogLevels[logLevel];
         if (level == null) {
-            this.warn("invliad log level - " + logLevel);
+            this.warn("invalid log level - " + logLevel);
             return;
         }
         LogLevel = level;
@@ -74,7 +74,7 @@ export class Logger {
         if (!params) {
             params = {};
         }
-        let messageDetails = [];
+        const messageDetails = [];
         Object.keys(params).forEach((key) => {
             try {
                 messageDetails.push(key + "=" + JSON.stringify(params[key]));
@@ -84,12 +84,12 @@ export class Logger {
             }
         });
         messageDetails.push("version=" + this.version);
-        let reason = message;
+        const reason = message;
         if (messageDetails.length) {
             message += " (" + messageDetails.join(", ") + ")";
         }
         // @TODO: Any??
-        let error = new Error(message);
+        const error = new Error(message);
         error.reason = reason;
         error.code = code;
         Object.keys(params).forEach(function (key) {

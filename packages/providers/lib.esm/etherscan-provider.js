@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { hexlify, hexValue } from "@ethersproject/bytes";
 import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 import { fetchJson } from "@ethersproject/web";
@@ -8,7 +17,7 @@ const logger = new Logger(version);
 import { BaseProvider } from "./base-provider";
 // The transaction has already been sanitized by the calls in Provider
 function getTransactionString(transaction) {
-    let result = [];
+    const result = [];
     for (let key in transaction) {
         if (transaction[key] == null) {
             continue;
@@ -28,7 +37,7 @@ function getResult(result) {
     }
     if (result.status != 1 || result.message != "OK") {
         // @TODO: not any
-        let error = new Error("invalid response");
+        const error = new Error("invalid response");
         error.result = JSON.stringify(result);
         throw error;
     }
@@ -37,13 +46,13 @@ function getResult(result) {
 function getJsonResult(result) {
     if (result.jsonrpc != "2.0") {
         // @TODO: not any
-        let error = new Error("invalid response");
+        const error = new Error("invalid response");
         error.result = JSON.stringify(result);
         throw error;
     }
     if (result.error) {
         // @TODO: not any
-        let error = new Error(result.error.message || "unknown error");
+        const error = new Error(result.error.message || "unknown error");
         if (result.error.code) {
             error.code = result.error.code;
         }
@@ -96,18 +105,22 @@ export class EtherscanProvider extends BaseProvider {
         defineReadOnly(this, "apiKey", apiKey);
     }
     perform(method, params) {
-        let url = this.baseUrl;
-        let apiKey = "";
-        if (this.apiKey) {
-            apiKey += "&apikey=" + this.apiKey;
-        }
-        let get = (url, procFunc) => {
-            this.emit("debug", {
-                action: "request",
-                request: url,
-                provider: this
-            });
-            return fetchJson(url, null, procFunc || getJsonResult).then((result) => {
+        const _super = Object.create(null, {
+            perform: { get: () => super.perform }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            let url = this.baseUrl;
+            let apiKey = "";
+            if (this.apiKey) {
+                apiKey += "&apikey=" + this.apiKey;
+            }
+            const get = (url, procFunc) => __awaiter(this, void 0, void 0, function* () {
+                this.emit("debug", {
+                    action: "request",
+                    request: url,
+                    provider: this
+                });
+                const result = yield fetchJson(url, null, procFunc || getJsonResult);
                 this.emit("debug", {
                     action: "response",
                     request: url,
@@ -116,98 +129,96 @@ export class EtherscanProvider extends BaseProvider {
                 });
                 return result;
             });
-        };
-        switch (method) {
-            case "getBlockNumber":
-                url += "/api?module=proxy&action=eth_blockNumber" + apiKey;
-                return get(url);
-            case "getGasPrice":
-                url += "/api?module=proxy&action=eth_gasPrice" + apiKey;
-                return get(url);
-            case "getBalance":
-                // Returns base-10 result
-                url += "/api?module=account&action=balance&address=" + params.address;
-                url += "&tag=" + params.blockTag + apiKey;
-                return get(url, getResult);
-            case "getTransactionCount":
-                url += "/api?module=proxy&action=eth_getTransactionCount&address=" + params.address;
-                url += "&tag=" + params.blockTag + apiKey;
-                return get(url);
-            case "getCode":
-                url += "/api?module=proxy&action=eth_getCode&address=" + params.address;
-                url += "&tag=" + params.blockTag + apiKey;
-                return get(url, getJsonResult);
-            case "getStorageAt":
-                url += "/api?module=proxy&action=eth_getStorageAt&address=" + params.address;
-                url += "&position=" + params.position;
-                url += "&tag=" + params.blockTag + apiKey;
-                return get(url, getJsonResult);
-            case "sendTransaction":
-                url += "/api?module=proxy&action=eth_sendRawTransaction&hex=" + params.signedTransaction;
-                url += apiKey;
-                return get(url).catch((error) => {
-                    if (error.responseText) {
-                        // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
-                        if (error.responseText.toLowerCase().indexOf("insufficient funds") >= 0) {
-                            logger.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, {});
+            switch (method) {
+                case "getBlockNumber":
+                    url += "/api?module=proxy&action=eth_blockNumber" + apiKey;
+                    return get(url);
+                case "getGasPrice":
+                    url += "/api?module=proxy&action=eth_gasPrice" + apiKey;
+                    return get(url);
+                case "getBalance":
+                    // Returns base-10 result
+                    url += "/api?module=account&action=balance&address=" + params.address;
+                    url += "&tag=" + params.blockTag + apiKey;
+                    return get(url, getResult);
+                case "getTransactionCount":
+                    url += "/api?module=proxy&action=eth_getTransactionCount&address=" + params.address;
+                    url += "&tag=" + params.blockTag + apiKey;
+                    return get(url);
+                case "getCode":
+                    url += "/api?module=proxy&action=eth_getCode&address=" + params.address;
+                    url += "&tag=" + params.blockTag + apiKey;
+                    return get(url, getJsonResult);
+                case "getStorageAt":
+                    url += "/api?module=proxy&action=eth_getStorageAt&address=" + params.address;
+                    url += "&position=" + params.position;
+                    url += "&tag=" + params.blockTag + apiKey;
+                    return get(url, getJsonResult);
+                case "sendTransaction":
+                    url += "/api?module=proxy&action=eth_sendRawTransaction&hex=" + params.signedTransaction;
+                    url += apiKey;
+                    return get(url).catch((error) => {
+                        if (error.responseText) {
+                            // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
+                            if (error.responseText.toLowerCase().indexOf("insufficient funds") >= 0) {
+                                logger.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, {});
+                            }
+                            // "Transaction with the same hash was already imported."
+                            if (error.responseText.indexOf("same hash was already imported") >= 0) {
+                                logger.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {});
+                            }
+                            // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
+                            if (error.responseText.indexOf("another transaction with same nonce") >= 0) {
+                                logger.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {});
+                            }
                         }
-                        // "Transaction with the same hash was already imported."
-                        if (error.responseText.indexOf("same hash was already imported") >= 0) {
-                            logger.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {});
+                        throw error;
+                    });
+                case "getBlock":
+                    if (params.blockTag) {
+                        url += "/api?module=proxy&action=eth_getBlockByNumber&tag=" + params.blockTag;
+                        if (params.includeTransactions) {
+                            url += "&boolean=true";
                         }
-                        // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
-                        if (error.responseText.indexOf("another transaction with same nonce") >= 0) {
-                            logger.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {});
+                        else {
+                            url += "&boolean=false";
                         }
+                        url += apiKey;
+                        return get(url);
                     }
-                    throw error;
-                });
-            case "getBlock":
-                if (params.blockTag) {
-                    url += "/api?module=proxy&action=eth_getBlockByNumber&tag=" + params.blockTag;
-                    if (params.includeTransactions) {
-                        url += "&boolean=true";
+                    throw new Error("getBlock by blockHash not implmeneted");
+                case "getTransaction":
+                    url += "/api?module=proxy&action=eth_getTransactionByHash&txhash=" + params.transactionHash;
+                    url += apiKey;
+                    return get(url);
+                case "getTransactionReceipt":
+                    url += "/api?module=proxy&action=eth_getTransactionReceipt&txhash=" + params.transactionHash;
+                    url += apiKey;
+                    return get(url);
+                case "call": {
+                    let transaction = getTransactionString(params.transaction);
+                    if (transaction) {
+                        transaction = "&" + transaction;
                     }
-                    else {
-                        url += "&boolean=false";
+                    url += "/api?module=proxy&action=eth_call" + transaction;
+                    //url += "&tag=" + params.blockTag + apiKey;
+                    if (params.blockTag !== "latest") {
+                        throw new Error("EtherscanProvider does not support blockTag for call");
                     }
                     url += apiKey;
                     return get(url);
                 }
-                throw new Error("getBlock by blockHash not implmeneted");
-            case "getTransaction":
-                url += "/api?module=proxy&action=eth_getTransactionByHash&txhash=" + params.transactionHash;
-                url += apiKey;
-                return get(url);
-            case "getTransactionReceipt":
-                url += "/api?module=proxy&action=eth_getTransactionReceipt&txhash=" + params.transactionHash;
-                url += apiKey;
-                return get(url);
-            case "call": {
-                let transaction = getTransactionString(params.transaction);
-                if (transaction) {
-                    transaction = "&" + transaction;
+                case "estimateGas": {
+                    let transaction = getTransactionString(params.transaction);
+                    if (transaction) {
+                        transaction = "&" + transaction;
+                    }
+                    url += "/api?module=proxy&action=eth_estimateGas&" + transaction;
+                    url += apiKey;
+                    return get(url);
                 }
-                url += "/api?module=proxy&action=eth_call" + transaction;
-                //url += "&tag=" + params.blockTag + apiKey;
-                if (params.blockTag !== "latest") {
-                    throw new Error("EtherscanProvider does not support blockTag for call");
-                }
-                url += apiKey;
-                return get(url);
-            }
-            case "estimateGas": {
-                let transaction = getTransactionString(params.transaction);
-                if (transaction) {
-                    transaction = "&" + transaction;
-                }
-                url += "/api?module=proxy&action=eth_estimateGas&" + transaction;
-                url += apiKey;
-                return get(url);
-            }
-            case "getLogs":
-                url += "/api?module=logs&action=getLogs";
-                try {
+                case "getLogs": {
+                    url += "/api?module=logs&action=getLogs";
                     if (params.filter.fromBlock) {
                         url += "&fromBlock=" + checkLogTag(params.filter.fromBlock);
                     }
@@ -220,56 +231,48 @@ export class EtherscanProvider extends BaseProvider {
                     // @TODO: We can handle slightly more complicated logs using the logs API
                     if (params.filter.topics && params.filter.topics.length > 0) {
                         if (params.filter.topics.length > 1) {
-                            throw new Error("unsupported topic format");
+                            logger.throwError("unsupported topic count", Logger.errors.UNSUPPORTED_OPERATION, { topics: params.filter.topics });
                         }
-                        let topic0 = params.filter.topics[0];
-                        if (typeof (topic0) !== "string" || topic0.length !== 66) {
-                            throw new Error("unsupported topic0 format");
+                        if (params.filter.topics.length === 1) {
+                            const topic0 = params.filter.topics[0];
+                            if (typeof (topic0) !== "string" || topic0.length !== 66) {
+                                logger.throwError("unsupported topic format", Logger.errors.UNSUPPORTED_OPERATION, { topic0: topic0 });
+                            }
+                            url += "&topic0=" + topic0;
                         }
-                        url += "&topic0=" + topic0;
                     }
-                }
-                catch (error) {
-                    return Promise.reject(error);
-                }
-                url += apiKey;
-                let self = this;
-                return get(url, getResult).then(function (logs) {
+                    url += apiKey;
+                    const logs = yield get(url, getResult);
+                    // Cache txHash => blockHash
                     let txs = {};
-                    let seq = Promise.resolve();
-                    logs.forEach(function (log) {
-                        seq = seq.then(function () {
-                            if (log.blockHash != null) {
-                                return null;
+                    // Add any missing blockHash to the logs
+                    for (let i = 0; i < logs.length; i++) {
+                        const log = logs[i];
+                        if (log.blockHash != null) {
+                            continue;
+                        }
+                        if (txs[log.transactionHash] == null) {
+                            const tx = yield this.getTransaction(log.transactionHash);
+                            if (tx) {
+                                txs[log.transactionHash] = tx.blockHash;
                             }
-                            log.blockHash = txs[log.transactionHash];
-                            if (log.blockHash == null) {
-                                return self.getTransaction(log.transactionHash).then(function (tx) {
-                                    txs[log.transactionHash] = tx.blockHash;
-                                    log.blockHash = tx.blockHash;
-                                    return null;
-                                });
-                            }
-                            return null;
-                        });
-                    });
-                    return seq.then(function () {
-                        return logs;
-                    });
-                });
-            case "getEtherPrice":
-                if (this.network.name !== "homestead") {
-                    return Promise.resolve(0.0);
+                        }
+                        log.blockHash = txs[log.transactionHash];
+                    }
+                    return logs;
                 }
-                url += "/api?module=stats&action=ethprice";
-                url += apiKey;
-                return get(url, getResult).then(function (result) {
-                    return parseFloat(result.ethusd);
-                });
-            default:
-                break;
-        }
-        return super.perform(method, params);
+                case "getEtherPrice":
+                    if (this.network.name !== "homestead") {
+                        return 0.0;
+                    }
+                    url += "/api?module=stats&action=ethprice";
+                    url += apiKey;
+                    return parseFloat(yield get(url, getResult));
+                default:
+                    break;
+            }
+            return _super.perform.call(this, method, params);
+        });
     }
     // @TODO: Allow startBlock and endBlock to be Promises
     getHistory(addressOrName, startBlock, endBlock) {

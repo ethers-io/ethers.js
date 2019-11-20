@@ -7,9 +7,9 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 export function check(wordlist) {
-    let words = [];
+    const words = [];
     for (let i = 0; i < 2048; i++) {
-        let word = wordlist.getWord(i);
+        const word = wordlist.getWord(i);
         if (i !== wordlist.getWordIndex(word)) {
             return "0x";
         }
@@ -36,7 +36,7 @@ export function register(lang, name) {
         name = lang.locale;
     }
     if (exportWordlist) {
-        let g = global;
+        const g = global;
         if (!(g.wordlists)) {
             defineReadOnly(g, "wordlists", {});
         }

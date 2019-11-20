@@ -52,7 +52,7 @@ export class BigNumber {
         return toBigNumber(toBN(this).sub(toBN(other)));
     }
     div(other) {
-        let o = BigNumber.from(other);
+        const o = BigNumber.from(other);
         if (o.isZero()) {
             throwFault("division by zero", "div");
         }
@@ -195,14 +195,14 @@ function toBigNumber(value) {
     return BigNumber.from(toHex(value));
 }
 function toBN(value) {
-    let hex = BigNumber.from(value).toHexString();
+    const hex = BigNumber.from(value).toHexString();
     if (hex[0] === "-") {
         return (new BN("-" + hex.substring(3), 16));
     }
     return new BN(hex.substring(2), 16);
 }
 function throwFault(fault, operation, value) {
-    let params = { fault: fault, operation: operation };
+    const params = { fault: fault, operation: operation };
     if (value != null) {
         params.value = value;
     }

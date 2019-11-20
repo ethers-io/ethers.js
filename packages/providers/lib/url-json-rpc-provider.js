@@ -13,7 +13,6 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var networks_1 = require("@ethersproject/networks");
 var properties_1 = require("@ethersproject/properties");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
@@ -28,29 +27,34 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
         // Normalize the Network and API Key
         network = properties_1.getStatic((_newTarget), "getNetwork")(network);
         apiKey = properties_1.getStatic((_newTarget), "getApiKey")(apiKey);
-        var url = properties_1.getStatic((_newTarget), "getUrl")(network, apiKey);
-        _this = _super.call(this, url, network) || this;
-        properties_1.defineReadOnly(_this, "apiKey", apiKey);
+        var connection = properties_1.getStatic((_newTarget), "getUrl")(network, apiKey);
+        _this = _super.call(this, connection, network) || this;
+        if (typeof (apiKey) === "string") {
+            properties_1.defineReadOnly(_this, "apiKey", apiKey);
+        }
+        else if (apiKey != null) {
+            Object.keys(apiKey).forEach(function (key) {
+                properties_1.defineReadOnly(_this, key, apiKey[key]);
+            });
+        }
         return _this;
     }
     UrlJsonRpcProvider.prototype._startPending = function () {
         logger.warn("WARNING: API provider does not support pending filters");
     };
     UrlJsonRpcProvider.prototype.getSigner = function (address) {
-        logger.throwError("API provider does not support signing", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "getSigner" });
-        return null;
+        return logger.throwError("API provider does not support signing", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "getSigner" });
     };
     UrlJsonRpcProvider.prototype.listAccounts = function () {
         return Promise.resolve([]);
-    };
-    UrlJsonRpcProvider.getNetwork = function (network) {
-        return networks_1.getNetwork((network == null) ? "homestead" : network);
     };
     // Return a defaultApiKey if null, otherwise validate the API key
     UrlJsonRpcProvider.getApiKey = function (apiKey) {
         return apiKey;
     };
-    // Returns the url for the given network and API key
+    // Returns the url or connection for the given network and API key. The
+    // API key will have been sanitized by the getApiKey first, so any validation
+    // or transformations can be done there.
     UrlJsonRpcProvider.getUrl = function (network, apiKey) {
         return logger.throwError("not implemented; sub-classes must override getUrl", logger_1.Logger.errors.NOT_IMPLEMENTED, {
             operation: "getUrl"

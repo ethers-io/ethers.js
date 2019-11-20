@@ -57,7 +57,10 @@ function parseParamType(param, allowIndexed) {
         var c = param[i];
         switch (c) {
             case "(":
-                if (!node.state.allowParams) {
+                if (node.state.allowType && node.type === "") {
+                    node.type = "tuple";
+                }
+                else if (!node.state.allowParams) {
                     throwError(i);
                 }
                 node.state.allowType = false;

@@ -168,7 +168,7 @@ describe('Test Contract Events', function () {
         it(('decodes event parameters - ' + test.name + ' - ' + test.types), function () {
             this.timeout(120000);
             var iface = new ethers_1.ethers.utils.Interface(test.interface);
-            var parsed = iface.decodeEventLog(iface.events.testEvent, test.data, test.topics);
+            var parsed = iface.decodeEventLog(iface.getEvent("testEvent"), test.data, test.topics);
             test.normalizedValues.forEach(function (expected, index) {
                 if (test.hashed[index]) {
                     assert_1.default.ok(equals(parsed[index].hash, expected), 'parsed event indexed parameter matches - ' + index);
@@ -183,7 +183,7 @@ describe('Test Contract Events', function () {
         it(('decodes event data - ' + test.name + ' - ' + test.types), function () {
             this.timeout(120000);
             var iface = new ethers_1.ethers.utils.Interface(test.interface);
-            var parsed = iface.decodeEventLog(iface.events.testEvent, test.data);
+            var parsed = iface.decodeEventLog(iface.getEvent("testEvent"), test.data);
             test.normalizedValues.forEach(function (expected, index) {
                 if (test.indexed[index]) {
                     assert_1.default.ok((ethers_1.ethers.Contract.isIndexed(parsed[index]) && parsed[index].hash == null), 'parsed event data has empty Indexed - ' + index);
@@ -201,8 +201,8 @@ describe('Test Interface Signatures', function () {
         it('derives the correct signature - ' + test.name, function () {
             var iface = new ethers_1.ethers.utils.Interface(test.abi);
             this.timeout(120000);
-            assert_1.default.equal(iface.functions.testSig.format(), test.signature, 'derived the correct signature');
-            assert_1.default.equal(iface.getSighash(iface.functions.testSig), test.sigHash, 'derived the correct signature hash');
+            assert_1.default.equal(iface.getFunction("testSig").format(), test.signature, 'derived the correct signature');
+            assert_1.default.equal(iface.getSighash(iface.getFunction("testSig")), test.sigHash, 'derived the correct signature hash');
         });
     });
     it('derives correct description for human-readable ABI', function () {
@@ -211,7 +211,7 @@ describe('Test Interface Signatures', function () {
             "transfer",
             "transfer(address,uint256)"
         ].forEach(function (key) {
-            var descr = iface.functions[key];
+            var descr = iface.getFunction(key);
             assert_1.default.equal(descr.name, "transfer", "incorrect name key - " + key);
             assert_1.default.equal(descr.format(), "transfer(address,uint256)", "incorrect signature key - " + key);
             assert_1.default.equal(iface.getSighash(descr), "0xa9059cbb", "incorrect sighash key - " + key);
@@ -426,7 +426,7 @@ describe('Test Filters', function () {
     function doTest(test) {
         it(test.name, function () {
             var iface = new ethers_1.ethers.utils.Interface([test.signature]);
-            var eventDescription = iface.events[test.event];
+            var eventDescription = iface.getEvent(test.event);
             var filter = iface.encodeFilterTopics(eventDescription, test.args);
             assert_1.default.equal(filter.length, test.expected.length, 'filter length matches - ' + test.name);
             filter.forEach(function (expected, index) {

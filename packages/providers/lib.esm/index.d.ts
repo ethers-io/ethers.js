@@ -13,4 +13,5 @@ import { NodesmithProvider } from "./nodesmith-provider";
 import { Web3Provider } from "./web3-provider";
 import { AsyncSendable } from "./web3-provider";
 import { Formatter } from "./formatter";
-export { Provider, BaseProvider, FallbackProvider, AlchemyProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, NodesmithProvider, Web3Provider, IpcProvider, JsonRpcSigner, getNetwork, Formatter, Block, BlockTag, EventType, Filter, Log, Listener, TransactionReceipt, TransactionRequest, TransactionResponse, AsyncSendable, Network, Networkish };
+declare function getDefaultProvider(network?: Network | string, options?: any): BaseProvider;
+export { Provider, BaseProvider, FallbackProvider, AlchemyProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, NodesmithProvider, Web3Provider, IpcProvider, JsonRpcSigner, getDefaultProvider, getNetwork, Formatter, Block, BlockTag, EventType, Filter, Log, Listener, TransactionReceipt, TransactionRequest, TransactionResponse, AsyncSendable, Network, Networkish };

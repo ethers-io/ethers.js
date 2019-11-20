@@ -7,7 +7,7 @@ function decryptJsonWallet(json, password, progressCallback) {
         if (progressCallback) {
             progressCallback(0);
         }
-        let account = decryptCrowdsale(json, password);
+        const account = decryptCrowdsale(json, password);
         if (progressCallback) {
             progressCallback(1);
         }

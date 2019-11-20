@@ -22,10 +22,13 @@ var CloudflareProvider = /** @class */ (function (_super) {
     function CloudflareProvider() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    CloudflareProvider.getUrl = function (network, apiKey) {
+    CloudflareProvider.getApiKey = function (apiKey) {
         if (apiKey != null) {
             logger.throwArgumentError("apiKey not supported for cloudflare", "apiKey", apiKey);
         }
+        return null;
+    };
+    CloudflareProvider.getUrl = function (network, apiKey) {
         var host = null;
         switch (network.name) {
             case "homestead":

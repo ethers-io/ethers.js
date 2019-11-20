@@ -1,1 +1,1 @@
-export declare const version = "ethers/5.0.0-beta.159";
+export declare const version = "ethers/5.0.0-beta.160";

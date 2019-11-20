@@ -35,7 +35,7 @@ const allowedTransactionKeys = {
     chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
 };
 export function computeAddress(key) {
-    let publicKey = computePublicKey(key);
+    const publicKey = computePublicKey(key);
     return getAddress(hexDataSlice(keccak256(hexDataSlice(publicKey, 1)), 12));
 }
 export function recoverAddress(digest, signature) {
@@ -43,7 +43,7 @@ export function recoverAddress(digest, signature) {
 }
 export function serialize(transaction, signature) {
     checkProperties(transaction, allowedTransactionKeys);
-    let raw = [];
+    const raw = [];
     transactionFields.forEach(function (fieldInfo) {
         let value = transaction[fieldInfo.name] || ([]);
         const options = {};
@@ -69,14 +69,14 @@ export function serialize(transaction, signature) {
         raw.push("0x");
         raw.push("0x");
     }
-    let unsignedTransaction = RLP.encode(raw);
+    const unsignedTransaction = RLP.encode(raw);
     // Requesting an unsigned transation
     if (!signature) {
         return unsignedTransaction;
     }
     // The splitSignature will ensure the transaction has a recoveryParam in the
     // case that the signTransaction function only adds a v.
-    let sig = splitSignature(signature);
+    const sig = splitSignature(signature);
     // We pushed a chainId and null r, s on for hashing only; remove those
     let v = 27 + sig.recoveryParam;
     if (raw.length === 9) {
@@ -91,11 +91,11 @@ export function serialize(transaction, signature) {
     return RLP.encode(raw);
 }
 export function parse(rawTransaction) {
-    let transaction = RLP.decode(rawTransaction);
+    const transaction = RLP.decode(rawTransaction);
     if (transaction.length !== 9 && transaction.length !== 6) {
         logger.throwArgumentError("invalid raw transaction", "rawTransactin", rawTransaction);
     }
-    let tx = {
+    const tx = {
         nonce: handleNumber(transaction[0]).toNumber(),
         gasPrice: handleNumber(transaction[1]),
         gasLimit: handleNumber(transaction[2]),
@@ -129,14 +129,14 @@ export function parse(rawTransaction) {
             tx.chainId = 0;
         }
         let recoveryParam = tx.v - 27;
-        let raw = transaction.slice(0, 6);
+        const raw = transaction.slice(0, 6);
         if (tx.chainId !== 0) {
             raw.push(hexlify(tx.chainId));
             raw.push("0x");
             raw.push("0x");
             recoveryParam -= tx.chainId * 2 + 8;
         }
-        let digest = keccak256(RLP.encode(raw));
+        const digest = keccak256(RLP.encode(raw));
         try {
             tx.from = recoverAddress(digest, { r: hexlify(tx.r), s: hexlify(tx.s), recoveryParam: recoveryParam });
         }

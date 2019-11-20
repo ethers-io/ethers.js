@@ -1,21 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
-//import { Description } from "@ethersproject/properties";
 var strings_1 = require("@ethersproject/strings");
-/*
-export class Account extends Description implements ExternallyOwnedAccount {
-    readonly address: string;
-    readonly privateKey: string;
-    readonly mnemonic?: string;
-    readonly path?: string;
-
-//    static isAccount(value: any): value is Account {
-//        return Description._isType(value);
-//    }
-}
-//defineReadOnly(Account, "name", "Account");
-*/
 function looseArrayify(hexString) {
     if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
         hexString = '0x' + hexString;

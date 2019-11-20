@@ -47,7 +47,7 @@ function compile(source, options) {
     var findImport = function (filename) {
         try {
             return {
-                contents: fs_1.default.readFileSync(path_1.resolve(options.basedir, options.filename)).toString()
+                contents: fs_1.default.readFileSync(path_1.resolve(options.basedir, filename)).toString()
             };
         }
         catch (error) {

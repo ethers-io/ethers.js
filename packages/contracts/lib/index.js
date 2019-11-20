@@ -56,6 +56,15 @@ function resolveAddresses(signerOrProvider, value, paramType) {
     }
     return Promise.resolve(value);
 }
+/*
+export function _populateTransaction(func: FunctionFragment, args: Array<any>, overrides?: any): Promise<Transaction> {
+    return null;
+}
+
+export function _sendTransaction(func: FunctionFragment, args: Array<any>, overrides?: any): Promise<Transaction> {
+    return null;
+}
+*/
 function runMethod(contract, functionName, options) {
     var method = contract.interface.functions[functionName];
     return function () {
@@ -328,19 +337,35 @@ var Contract = /** @class */ (function () {
         properties_1.defineReadOnly(this, "functions", {});
         properties_1.defineReadOnly(this, "populateTransaction", {});
         properties_1.defineReadOnly(this, "filters", {});
-        Object.keys(this.interface.events).forEach(function (eventName) {
-            var event = _this.interface.events[eventName];
-            properties_1.defineReadOnly(_this.filters, eventName, function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
+        {
+            var uniqueFilters_1 = {};
+            Object.keys(this.interface.events).forEach(function (eventSignature) {
+                var event = _this.interface.events[eventSignature];
+                properties_1.defineReadOnly(_this.filters, eventSignature, function () {
+                    var args = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        args[_i] = arguments[_i];
+                    }
+                    return {
+                        address: _this.address,
+                        topics: _this.interface.encodeFilterTopics(event, args)
+                    };
+                });
+                if (!uniqueFilters_1[event.name]) {
+                    uniqueFilters_1[event.name] = [];
                 }
-                return {
-                    address: _this.address,
-                    topics: _this.interface.encodeFilterTopics(event, args)
-                };
+                uniqueFilters_1[event.name].push(eventSignature);
             });
-        });
+            Object.keys(uniqueFilters_1).forEach(function (name) {
+                var filters = uniqueFilters_1[name];
+                if (filters.length === 1) {
+                    properties_1.defineReadOnly(_this.filters, name, _this.filters[filters[0]]);
+                }
+                else {
+                    logger.warn("Duplicate definition of " + name + " (" + filters.join(", ") + ")");
+                }
+            });
+        }
         properties_1.defineReadOnly(this, "_runningEvents", {});
         properties_1.defineReadOnly(this, "_wrappedEmits", {});
         properties_1.defineReadOnly(this, "address", addressOrName);
@@ -364,7 +389,10 @@ var Contract = /** @class */ (function () {
                 logger.throwArgumentError("provider is required to use non-address contract address", "addressOrName", addressOrName);
             }
         }
+        var uniqueFunctions = {};
         Object.keys(this.interface.functions).forEach(function (name) {
+            var fragment = _this.interface.functions[name];
+            // @TODO: This should take in fragment
             var run = runMethod(_this, name, {});
             if (_this[name] == null) {
                 properties_1.defineReadOnly(_this, name, run);
@@ -381,6 +409,24 @@ var Contract = /** @class */ (function () {
             if (_this.estimate[name] == null) {
                 properties_1.defineReadOnly(_this.estimate, name, runMethod(_this, name, { estimate: true }));
             }
+            if (!uniqueFunctions[fragment.name]) {
+                uniqueFunctions[fragment.name] = [];
+            }
+            uniqueFunctions[fragment.name].push(name);
+        });
+        Object.keys(uniqueFunctions).forEach(function (name) {
+            var signatures = uniqueFunctions[name];
+            if (signatures.length > 1) {
+                logger.warn("Duplicate definition of " + name + " (" + signatures.join(", ") + ")");
+                return;
+            }
+            if (_this[name] == null) {
+                properties_1.defineReadOnly(_this, name, _this[signatures[0]]);
+            }
+            properties_1.defineReadOnly(_this.functions, name, _this.functions[signatures[0]]);
+            properties_1.defineReadOnly(_this.callStatic, name, _this.callStatic[signatures[0]]);
+            properties_1.defineReadOnly(_this.populateTransaction, name, _this.populateTransaction[signatures[0]]);
+            properties_1.defineReadOnly(_this.estimate, name, _this.estimate[signatures[0]]);
         });
     }
     Contract.getContractAddress = function (transaction) {

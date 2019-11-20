@@ -51,11 +51,18 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = __importDefault(require("fs"));
 var path_1 = require("path");
 var ethers_1 = require("ethers");
-var scrypt_js_1 = __importDefault(require("scrypt-js"));
+var scrypt = __importStar(require("scrypt-js"));
 var prompt_1 = require("./prompt");
 var _version_1 = require("./_version");
 var logger = new ethers_1.ethers.utils.Logger(_version_1.version);
@@ -544,21 +551,11 @@ function loadAccount(arg, plugin, preventFile) {
                                 var passwordBytes = ethers_1.ethers.utils.toUtf8Bytes(password, ethers_1.ethers.utils.UnicodeNormalizationForm.NFKC);
                                 var saltBytes = ethers_1.ethers.utils.arrayify(ethers_1.ethers.utils.HDNode.fromMnemonic(mnemonic_1).privateKey);
                                 var progressBar = prompt_1.getProgressBar("Decrypting");
-                                return (new Promise(function (resolve, reject) {
-                                    scrypt_js_1.default(passwordBytes, saltBytes, (1 << 20), 8, 1, 32, function (error, progress, key) {
-                                        if (error) {
-                                            reject(error);
-                                        }
-                                        else {
-                                            progressBar(progress);
-                                            if (key) {
-                                                var derivedPassword = ethers_1.ethers.utils.hexlify(key).substring(2);
-                                                var node = ethers_1.ethers.utils.HDNode.fromMnemonic(mnemonic_1, derivedPassword).derivePath(ethers_1.ethers.utils.defaultPath);
-                                                resolve(new ethers_1.ethers.Wallet(node.privateKey, plugin.provider));
-                                            }
-                                        }
-                                    });
-                                }));
+                                return scrypt.scrypt(passwordBytes, saltBytes, (1 << 20), 8, 1, 32, progressBar).then(function (key) {
+                                    var derivedPassword = ethers_1.ethers.utils.hexlify(key).substring(2);
+                                    var node = ethers_1.ethers.utils.HDNode.fromMnemonic(mnemonic_1, derivedPassword).derivePath(ethers_1.ethers.utils.defaultPath);
+                                    return new ethers_1.ethers.Wallet(node.privateKey, plugin.provider);
+                                });
                             });
                         }
                         else {

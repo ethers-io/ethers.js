@@ -1,1 +1,1 @@
-export const version = "properties/5.0.0-beta.133";
+export const version = "properties/5.0.0-beta.134";

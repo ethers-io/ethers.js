@@ -7,7 +7,7 @@ function ethDefaultProvider(network) {
         if (options == null) {
             options = {};
         }
-        let providerList = [];
+        const providerList = [];
         if (providers.InfuraProvider) {
             try {
                 providerList.push(new providers.InfuraProvider(network, options.infura));
@@ -20,12 +20,13 @@ function ethDefaultProvider(network) {
             }
             catch (error) { }
         }
+        /* NodeSmith is being discontinued on 2019-12-20
         if (providers.NodesmithProvider) {
             try {
                 providerList.push(new providers.NodesmithProvider(network, options.nodesmith));
-            }
-            catch (error) { }
+            } catch(error) { }
         }
+        */
         if (providers.AlchemyProvider) {
             try {
                 providerList.push(new providers.AlchemyProvider(network, options.alchemy));
@@ -42,8 +43,14 @@ function ethDefaultProvider(network) {
             return null;
         }
         if (providers.FallbackProvider) {
-            return new providers.FallbackProvider(providerList);
-            ;
+            let quorum = providerList.length / 2;
+            if (options.quorum != null) {
+                quorum = options.quorum;
+            }
+            else if (quorum > 2) {
+                quorum = 2;
+            }
+            return new providers.FallbackProvider(providerList, quorum);
         }
         return providerList[0];
     };
@@ -121,8 +128,8 @@ export function getNetwork(network) {
         return null;
     }
     if (typeof (network) === "number") {
-        for (let name in networks) {
-            let standard = networks[name];
+        for (const name in networks) {
+            const standard = networks[name];
             if (standard.chainId === network) {
                 return {
                     name: standard.name,
@@ -138,7 +145,7 @@ export function getNetwork(network) {
         };
     }
     if (typeof (network) === "string") {
-        let standard = networks[network];
+        const standard = networks[network];
         if (standard == null) {
             return null;
         }
@@ -149,7 +156,7 @@ export function getNetwork(network) {
             _defaultProvider: (standard._defaultProvider || null)
         };
     }
-    let standard = networks[network.name];
+    const standard = networks[network.name];
     // Not a standard network; check that it is a valid network in general
     if (!standard) {
         if (typeof (network.chainId) !== "number") {

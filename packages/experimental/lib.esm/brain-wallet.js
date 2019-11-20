@@ -1,6 +1,6 @@
 "use strict";
 import { ethers } from "ethers";
-import scrypt from "scrypt-js";
+import { scrypt } from "scrypt-js";
 import { version } from "./_version";
 const logger = new ethers.utils.Logger(version);
 let warned = false;
@@ -26,24 +26,12 @@ export class BrainWallet extends ethers.Wallet {
         else {
             passwordBytes = ethers.utils.arrayify(password);
         }
-        return new Promise((resolve, reject) => {
-            scrypt(passwordBytes, usernameBytes, (1 << 18), 8, 1, 32, (error, progress, key) => {
-                if (error) {
-                    reject(error);
-                }
-                else if (key) {
-                    if (legacy) {
-                        resolve(new BrainWallet(key));
-                    }
-                    else {
-                        let mnemonic = ethers.utils.entropyToMnemonic(ethers.utils.arrayify(key).slice(0, 16));
-                        resolve(new BrainWallet(ethers.Wallet.fromMnemonic(mnemonic)));
-                    }
-                }
-                else if (progressCallback) {
-                    return progressCallback(progress);
-                }
-            });
+        return scrypt(passwordBytes, usernameBytes, (1 << 18), 8, 1, 32, progressCallback).then((key) => {
+            if (legacy) {
+                return new BrainWallet(key);
+            }
+            const mnemonic = ethers.utils.entropyToMnemonic(ethers.utils.arrayify(key).slice(0, 16));
+            return new BrainWallet(ethers.Wallet.fromMnemonic(mnemonic));
         });
     }
     static generate(username, password, progressCallback) {
