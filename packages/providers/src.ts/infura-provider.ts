@@ -18,10 +18,12 @@ export class InfuraProvider extends UrlJsonRpcProvider {
 
     static getApiKey(apiKey: any): any {
         const apiKeyObj: { apiKey: string, projectId: string, projectSecret: string } = {
-            apiKey: null,
+            apiKey: defaultProjectId,
             projectId: defaultProjectId,
             projectSecret: null
         };
+
+        if (apiKey == null) { return apiKeyObj; }
 
         if (typeof(apiKey) === "string") {
             apiKeyObj.projectId = apiKey;
