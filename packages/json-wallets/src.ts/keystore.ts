@@ -1,7 +1,7 @@
 "use strict";
 
 import aes from "aes-js";
-import { scrypt } from "scrypt-js";
+import * as scrypt from "scrypt-js";
 import uuid from "uuid";
 
 import { ExternallyOwnedAccount } from "@ethersproject/abstract-signer";
@@ -148,7 +148,7 @@ export async function decrypt(json: string, password: Bytes | string, progressCa
                 throw new Error("unsupported key-derivation derived-key length");
             }
 
-            const key = await scrypt(passwordBytes, salt, N, r, p, 64, progressCallback);
+            const key = await scrypt.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback);
             //key = arrayify(key);
 
             return getAccount(key);
@@ -260,7 +260,7 @@ export function encrypt(account: ExternallyOwnedAccount, password: Bytes | strin
     // We take 64 bytes:
     //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
     //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
-    return scrypt(passwordBytes, salt, N, r, p, 64, progressCallback).then((key) => {
+    return scrypt.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback).then((key) => {
         key = arrayify(key);
 
         // This will be used to encrypt the wallet (as per Web3 secret storage)

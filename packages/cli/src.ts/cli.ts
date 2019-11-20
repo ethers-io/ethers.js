@@ -4,7 +4,7 @@ import fs from "fs";
 import { basename } from "path";
 
 import { ethers } from "ethers";
-import { scrypt } from "scrypt-js";
+import * as scrypt from "scrypt-js";
 
 import { getChoice, getPassword, getProgressBar } from "./prompt";
 
@@ -421,7 +421,7 @@ async function loadAccount(arg: string, plugin: Plugin, preventFile?: boolean): 
                 let saltBytes = ethers.utils.arrayify(ethers.utils.HDNode.fromMnemonic(mnemonic).privateKey);
 
                 let progressBar = getProgressBar("Decrypting");
-                return scrypt(passwordBytes, saltBytes, (1 << 20), 8, 1, 32, progressBar).then((key) => {
+                return scrypt.scrypt(passwordBytes, saltBytes, (1 << 20), 8, 1, 32, progressBar).then((key) => {
                     const derivedPassword = ethers.utils.hexlify(key).substring(2);
                     const node = ethers.utils.HDNode.fromMnemonic(mnemonic, derivedPassword).derivePath(ethers.utils.defaultPath);
                     return new ethers.Wallet(node.privateKey, plugin.provider);
