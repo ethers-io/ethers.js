@@ -87,7 +87,11 @@ function parseParamType(param: string, allowIndexed: boolean): ParseNode {
         let c = param[i];
         switch (c) {
             case "(":
-                if (!node.state.allowParams) { throwError(i); }
+                if (node.state.allowType && node.type === "") {
+                    node.type = "tuple";
+                } else if (!node.state.allowParams) {
+                    throwError(i);
+                }
                 node.state.allowType = false;
                 node.type = verifyType(node.type);
                 node.components = [ newNode(node) ];
