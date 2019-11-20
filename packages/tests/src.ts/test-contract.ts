@@ -11,9 +11,6 @@ const contract = (function() {
     let data = require('../contracts/test-contract.json');
     return new ethers.Contract(data.contractAddress, data.interface, provider);
 })();
-//let event = contract.foo("TestP0");
-//console.log(event);
-//process.exit();
 
 function equals(name: string, actual: any, expected: any): void {
     if (Array.isArray(expected)) {
