@@ -1,7 +1,7 @@
 "use strict";
 
-// This gets overriddenby gulp during bip39-XX
-let exportWordlist = false;
+// This gets overridden by rollup
+const exportWordlist = false;
 
 import { id } from "@ethersproject/hash";
 import { defineReadOnly } from "@ethersproject/properties";
@@ -10,7 +10,7 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
-export function check(wordlist: Wordlist) {
+export function check(wordlist: Wordlist): string {
     const words = [];
     for (let i = 0; i < 2048; i++) {
         const word = wordlist.getWord(i);
@@ -46,14 +46,17 @@ export function register(lang: Wordlist, name?: string): void {
     if (!name) { name = lang.locale; }
     if (exportWordlist) {
         const g: any = (<any>global)
-        if (!(g.wordlists)) { defineReadOnly(g, "wordlists", { }); }
-        if (!g.wordlists[name]) {
-            defineReadOnly(g.wordlists, name, lang);
-        }
-        if (g.ethers && g.ethers.wordlists) {
-            if (!g.ethers.wordlists[name]) {
-                defineReadOnly(g.ethers.wordlists, name, lang);
+        if (g._ethers && g._ethers.wordlists) {
+            if (!g._ethers.wordlists[name]) {
+                defineReadOnly(g._ethers.wordlists, name, lang);
             }
+            /*
+            if (g.wordlists == null) {
+                g.wordlists = g._ethers.wordlists;
+            } else if (g.wordlists[name] == null) {
+                g.wordlists[name] = lang;
+            }
+            */
         }
     }
 }
