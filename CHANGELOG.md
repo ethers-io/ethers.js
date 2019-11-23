@@ -3,6 +3,16 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.161 (2019-11-23 21:43)
+-----------------------------------------
+
+  - Updated dist files (sorted package.json to reduce package version change chatter). ([f308ba3](https://github.com/ethers-io/ethers.js/commit/f308ba3540ed0d282d099456d0369873ad9596b0))
+  - Stubs for adding throttle support. ([2f0e679](https://github.com/ethers-io/ethers.js/commit/2f0e679f0bc81bf901cf60a79e50f9715cddec5a))
+  - Refactor wordlists. ([abab9f6](https://github.com/ethers-io/ethers.js/commit/abab9f6aa27d1870d1053e7caa951408b86c454d))
+  - Browser testcases work again. ([c11c2e2](https://github.com/ethers-io/ethers.js/commit/c11c2e2e3376a6764f07ed443245823f2792b8cc))
+  - Added dist files for non-English wordlists. ([3d75c52](https://github.com/ethers-io/ethers.js/commit/3d75c52dac668af5eeede3e7764dadd3055a0707))
+  - Sync GitHub issue cache. ([29f0e9d](https://github.com/ethers-io/ethers.js/commit/29f0e9dd627a7b4b7f772300497f27718c9ecc7b))
+
 ethers/v5.0.0-beta.160 (2019-11-20 18:36)
 -----------------------------------------
 
