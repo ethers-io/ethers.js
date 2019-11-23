@@ -1,16 +1,7 @@
 {
-  "name": "@ethersproject/tests",
-  "version": "5.0.0-beta.142",
-  "description": "Testing package for ethers.",
-  "main": "./lib/index.js",
+  "author": "Richard Moore <me@ricmoo.com>",
   "browser": {
-    "@ethersproject/ethers": "./tests/browser-ethers.js"
-  },
-  "scripts": {
-    "dist-phantomjs": "browserify -g @ethersproject/testcases/scripts/browser-fs.js -s tests ./tests/browser.js -o ./dist/tests.js",
-    "test": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
-    "test-node": "mocha --no-colors --reporter tests/reporter tests/test-*.js",
-    "test-phantomjs": "npm run dist-phantomjs && phantomjs --web-security=false ../../node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./test.html ./tests/reporter.js"
+    "ethers": "./lib/browser-ethers.js"
   },
   "dependencies": {
     "@ethersproject/testcases": ">=5.0.0-beta.131",
@@ -18,17 +9,21 @@
     "ethers": ">=5.0.0-beta.156",
     "mocha-phantomjs-core": "2.1.2"
   },
+  "description": "Testing package for ethers.",
   "devDependencies": {
     "browserify": "16.2.3",
     "mocha": "^5.2.0",
     "web3-providers-http": "1.0.0-beta.35"
   },
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/tests",
   "publishConfig": {
     "access": "public"
   },
@@ -36,8 +31,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "exit 1"
+  },
+  "tarballHash": "0xe35d27339acf100689bdafbc29234a5e2469164ae6badd271dab620931d2c2d0",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x016eddde4135966b3c9a3343aa29579816661d677a01dbc3933db9ee392de4e5"
+  "version": "5.0.0-beta.143"
 }

@@ -2,5 +2,8 @@
 
 console.log("Using global.ethers");
 
-module.exports = (<any>global).ethers;
-console.log("FOO");
+const anyGlobal = (window as any);
+
+const ethers = anyGlobal.ethers;
+
+export { ethers }

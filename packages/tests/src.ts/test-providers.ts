@@ -2,7 +2,7 @@
 
 import assert from "assert";
 
-const Web3HttpProvider = require("web3-providers-http");
+import Web3HttpProvider from "web3-providers-http";
 
 import { ethers } from "ethers";
 

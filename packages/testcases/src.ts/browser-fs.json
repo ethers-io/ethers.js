@@ -1,1 +1,1 @@
-{ "dirs": [ "./easyseed-bip39", "./testcases", "./wordlists" ] }
+{ "dirs": [ "./input/easyseed-bip39", "./testcases", "./input/wordlists" ] }
