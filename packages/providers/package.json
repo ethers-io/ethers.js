@@ -1,14 +1,8 @@
 {
-  "name": "@ethersproject/providers",
-  "version": "5.0.0-beta.145",
-  "description": "Ethereum Providers for ethers.",
-  "main": "./lib/index.js",
+  "author": "Richard Moore <me@ricmoo.com>",
   "browser": {
-    "net": "./lib/browser-net.js",
-    "./ipc-provider": "./lib/browser-ipc-provider.js"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "./ipc-provider": "./lib/browser-ipc-provider.js",
+    "net": "./lib/browser-net.js"
   },
   "dependencies": {
     "@ethersproject/abstract-provider": ">=5.0.0-beta.131",
@@ -27,15 +21,19 @@
     "@ethersproject/transactions": ">=5.0.0-beta.128",
     "@ethersproject/web": ">=5.0.0-beta.129"
   },
+  "description": "Ethereum Providers for ethers.",
   "devDependencies": {
     "@types/node": "^12.7.4"
   },
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/providers",
   "publishConfig": {
     "access": "public"
   },
@@ -43,8 +41,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x240eb6ec5eeb4984ca649d9ca1561ac6db28191ecd1bfd3bad9c1db3aba8bce4",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x74e72e266e946a14e0c4d3be768755ed64993ded9223f120f313b58e80acc189"
+  "version": "5.0.0-beta.146"
 }

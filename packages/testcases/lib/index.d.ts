@@ -1,4 +1,6 @@
 /// <reference types="node" />
+import { randomBytes, randomHexString, randomNumber } from "./random";
+export { randomBytes, randomHexString, randomNumber };
 export declare module TestCase {
     type HDWalletNode = {
         path: string;
@@ -57,6 +59,3 @@ export declare module TestCase {
 export declare function saveTests(tag: string, data: any): void;
 export declare function loadTests(tag: string): any;
 export declare function loadData(filename: string): Buffer;
-export declare function randomBytes(seed: string, lower: number, upper?: number): Uint8Array;
-export declare function randomHexString(seed: string, lower: number, upper?: number): string;
-export declare function randomNumber(seed: string, lower: number, upper: number): number;

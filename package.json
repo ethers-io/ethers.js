@@ -14,7 +14,7 @@
     "build-all": "npm run build-esm && npm run build-cjs",
     "clean": "node ./admin/cmds/reset-build.js && tsc --build --clean ./tsconfig.project.json",
     "_dist_prepare": "npm run clean && npm run bootstrap && npm run build && node ./admin/cmds/update-exports.js",
-    "_dist_ethers": "rollup -c && rollup -c --configMinify && rollup -c --configModule && rollup -c --configModule --configMinify && rollup -c rollup-wordlists.config.js",
+    "_dist_ethers": "npm run _distMinLangAll && npm run _distMinLangEn && rollup -c && rollup -c --configModule",
     "_dist_tests": "rollup -c --configTest && rollup -c --configTest --configMinify && rollup -c --configTest --configModule && rollup -c --configTest --configModule --configMinify",
     "_test_prepare": "npm run _dist_prepare && npm run _dist_tests",
     "_test_node": "cd packages/tests && mocha --no-colors --reporter ./reporter ./lib/test-*.js",

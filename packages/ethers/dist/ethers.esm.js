@@ -3455,7 +3455,7 @@ var bn = createCommonjsModule(function (module) {
 });
 var bn_1 = bn.BN;
 
-const version = "logger/5.0.0-beta.132";
+const version = "logger/5.0.0-beta.133";
 
 "use strict";
 let _permanentCensorErrors = false;
@@ -3725,7 +3725,7 @@ var lib_esm = /*#__PURE__*/Object.freeze({
 	Logger: Logger
 });
 
-const version$1 = "bytes/5.0.0-beta.133";
+const version$1 = "bytes/5.0.0-beta.134";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -4124,7 +4124,7 @@ var lib_esm$1 = /*#__PURE__*/Object.freeze({
 	joinSignature: joinSignature
 });
 
-const version$2 = "bignumber/5.0.0-beta.134";
+const version$2 = "bignumber/5.0.0-beta.135";
 
 "use strict";
 const logger$1 = new Logger(version$2);
@@ -4628,7 +4628,7 @@ class FixedNumber {
     }
 }
 
-const version$3 = "properties/5.0.0-beta.134";
+const version$3 = "properties/5.0.0-beta.135";
 
 "use strict";
 const logger$3 = new Logger(version$3);
@@ -4739,7 +4739,7 @@ var lib_esm$2 = /*#__PURE__*/Object.freeze({
 	Description: Description
 });
 
-const version$4 = "abi/5.0.0-beta.141";
+const version$4 = "abi/5.0.0-beta.142";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6198,7 +6198,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$5 = "address/5.0.0-beta.132";
+const version$5 = "address/5.0.0-beta.133";
 
 "use strict";
 const logger$6 = new Logger(version$5);
@@ -6612,7 +6612,7 @@ class NumberCoder extends Coder {
     }
 }
 
-const version$6 = "strings/5.0.0-beta.134";
+const version$6 = "strings/5.0.0-beta.135";
 
 "use strict";
 const logger$8 = new Logger(version$6);
@@ -7133,7 +7133,7 @@ class AbiCoder {
 }
 const defaultAbiCoder = new AbiCoder();
 
-const version$7 = "hash/5.0.0-beta.132";
+const version$7 = "hash/5.0.0-beta.133";
 
 "use strict";
 const logger$a = new Logger(version$7);
@@ -7557,7 +7557,7 @@ class Interface {
 
 "use strict";
 
-const version$8 = "abstract-provider/5.0.0-beta.134";
+const version$8 = "abstract-provider/5.0.0-beta.135";
 
 "use strict";
 const logger$c = new Logger(version$8);
@@ -7634,10 +7634,10 @@ class Provider {
     }
 }
 
-const version$9 = "abstract-signer/5.0.0-beta.136";
+const version$9 = "abstract-signer/5.0.0-beta.137";
 
 "use strict";
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -7812,7 +7812,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$a = "contracts/5.0.0-beta.141";
+const version$a = "contracts/5.0.0-beta.142";
 
 "use strict";
 const logger$e = new Logger(version$a);
@@ -9832,7 +9832,7 @@ hash.ripemd160 = hash.ripemd.ripemd160;
 var _version = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "sha2/5.0.0-beta.132";
+exports.version = "sha2/5.0.0-beta.133";
 });
 
 var _version$1 = unwrapExports(_version);
@@ -12305,7 +12305,7 @@ elliptic.eddsa = eddsa;
 });
 var elliptic_2 = elliptic_1.ec;
 
-const version$c = "signing-key/5.0.0-beta.133";
+const version$c = "signing-key/5.0.0-beta.134";
 
 "use strict";
 const logger$f = new Logger(version$c);
@@ -12377,7 +12377,7 @@ function computePublicKey(key, compressed) {
     return logger$f.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$d = "transactions/5.0.0-beta.132";
+const version$d = "transactions/5.0.0-beta.133";
 
 "use strict";
 const logger$g = new Logger(version$d);
@@ -12522,7 +12522,7 @@ function parse(rawTransaction) {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "wordlists/5.0.0-beta.132";
+exports.version = "wordlists/5.0.0-beta.133";
 });
 
 var _version$3 = unwrapExports(_version$2);
@@ -12531,29 +12531,17 @@ var _version_1$1 = _version$2.version;
 var wordlist = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// This gets overriddenby gulp during bip39-XX
+// This gets overridden by rollup
 var exportWordlist = false;
 
 
 
 
-var logger = new lib_esm.Logger(_version$2.version);
-function check(wordlist) {
-    var words = [];
-    for (var i = 0; i < 2048; i++) {
-        var word = wordlist.getWord(i);
-        if (i !== wordlist.getWordIndex(word)) {
-            return "0x";
-        }
-        words.push(word);
-    }
-    return lib_esm$3.id(words.join("\n") + "\n");
-}
-exports.check = check;
+exports.logger = new lib_esm.Logger(_version$2.version);
 var Wordlist = /** @class */ (function () {
     function Wordlist(locale) {
         var _newTarget = this.constructor;
-        logger.checkAbstract(_newTarget, Wordlist);
+        exports.logger.checkAbstract(_newTarget, Wordlist);
         lib_esm$2.defineReadOnly(this, "locale", locale);
     }
     // Subclasses may override this
@@ -12564,35 +12552,38 @@ var Wordlist = /** @class */ (function () {
     Wordlist.prototype.join = function (words) {
         return words.join(" ");
     };
+    Wordlist.check = function (wordlist) {
+        var words = [];
+        for (var i = 0; i < 2048; i++) {
+            var word = wordlist.getWord(i);
+            if (i !== wordlist.getWordIndex(word)) {
+                return "0x";
+            }
+            words.push(word);
+        }
+        return lib_esm$3.id(words.join("\n") + "\n");
+    };
+    Wordlist.register = function (lang, name) {
+        if (!name) {
+            name = lang.locale;
+        }
+        if (exportWordlist) {
+            var g = commonjsGlobal;
+            if (g._ethers && g._ethers.wordlists) {
+                if (!g._ethers.wordlists[name]) {
+                    lib_esm$2.defineReadOnly(g._ethers.wordlists, name, lang);
+                }
+            }
+        }
+    };
     return Wordlist;
 }());
 exports.Wordlist = Wordlist;
-function register(lang, name) {
-    if (!name) {
-        name = lang.locale;
-    }
-    if (exportWordlist) {
-        var g = commonjsGlobal;
-        if (!(g.wordlists)) {
-            lib_esm$2.defineReadOnly(g, "wordlists", {});
-        }
-        if (!g.wordlists[name]) {
-            lib_esm$2.defineReadOnly(g.wordlists, name, lang);
-        }
-        if (g.ethers && g.ethers.wordlists) {
-            if (!g.ethers.wordlists[name]) {
-                lib_esm$2.defineReadOnly(g.ethers.wordlists, name, lang);
-            }
-        }
-    }
-}
-exports.register = register;
 });
 
 var wordlist$1 = unwrapExports(wordlist);
-var wordlist_1 = wordlist.check;
+var wordlist_1 = wordlist.logger;
 var wordlist_2 = wordlist.Wordlist;
-var wordlist_3 = wordlist.register;
 
 var langEn_1 = createCommonjsModule(function (module, exports) {
 "use strict";
@@ -12618,7 +12609,7 @@ function loadWords(lang) {
         return;
     }
     wordlist$1 = words.replace(/([A-Z])/g, " $1").toLowerCase().substring(1).split(" ");
-    if (wordlist.check(lang) !== "0x3c8acc1e7b08d8e76f9fda015ef48dc8c710a73cb7e0f77b2c18a9b5a7adde60") {
+    if (wordlist.Wordlist.check(lang) !== "0x3c8acc1e7b08d8e76f9fda015ef48dc8c710a73cb7e0f77b2c18a9b5a7adde60") {
         wordlist$1 = null;
         throw new Error("BIP39 Wordlist for en (English) FAILED");
     }
@@ -12640,7 +12631,7 @@ var LangEn = /** @class */ (function (_super) {
 }(wordlist.Wordlist));
 var langEn = new LangEn();
 exports.langEn = langEn;
-wordlist.register(langEn);
+wordlist.Wordlist.register(langEn);
 });
 
 var langEn = unwrapExports(langEn_1);
@@ -12662,7 +12653,7 @@ var browser$5 = unwrapExports(browser$4);
 var browser_1$2 = browser$4.Wordlist;
 var browser_2$1 = browser$4.wordlists;
 
-const version$e = "hdnode/5.0.0-beta.134";
+const version$e = "hdnode/5.0.0-beta.135";
 
 "use strict";
 const logger$h = new Logger(version$e);
@@ -12941,7 +12932,7 @@ function isValidMnemonic(mnemonic, wordlist) {
 var _version$4 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "random/5.0.0-beta.132";
+exports.version = "random/5.0.0-beta.133";
 });
 
 var _version$5 = unwrapExports(_version$4);
@@ -13803,7 +13794,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$f = "json-wallets/5.0.0-beta.133";
+const version$f = "json-wallets/5.0.0-beta.134";
 
 "use strict";
 function looseArrayify(hexString) {
@@ -14423,11 +14414,7 @@ var scrypt = createCommonjsModule(function (module, exports) {
 
 })(commonjsGlobal);
 });
-
-var scrypt$1 = /*#__PURE__*/Object.freeze({
-	'default': scrypt,
-	__moduleExports: scrypt
-});
+var scrypt_1 = scrypt.scrypt;
 
 var rng;
 
@@ -14644,7 +14631,7 @@ uuid.unparse = unparse;
 var uuid_1 = uuid;
 
 "use strict";
-var __awaiter$1 = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$1 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -14740,7 +14727,7 @@ function decrypt$1(json, password, progressCallback) {
                 if (dkLen !== 32) {
                     throw new Error("unsupported key-derivation derived-key length");
                 }
-                const key = yield undefined(passwordBytes, salt, N, r, p, 64, progressCallback);
+                const key = yield scrypt_1(passwordBytes, salt, N, r, p, 64, progressCallback);
                 //key = arrayify(key);
                 return getAccount(key);
             }
@@ -14856,7 +14843,7 @@ function encrypt(account, password, options, progressCallback) {
     // We take 64 bytes:
     //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
     //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
-    return undefined(passwordBytes, salt, N, r, p, 64, progressCallback).then((key) => {
+    return scrypt_1(passwordBytes, salt, N, r, p, 64, progressCallback).then((key) => {
         key = arrayify(key);
         // This will be used to encrypt the wallet (as per Web3 secret storage)
         const derivedKey = key.slice(0, 16);
@@ -14935,7 +14922,7 @@ function decryptJsonWallet(json, password, progressCallback) {
     return Promise.reject(new Error("invalid JSON wallet"));
 }
 
-const version$g = "wallet/5.0.0-beta.134";
+const version$g = "wallet/5.0.0-beta.135";
 
 "use strict";
 const logger$j = new Logger(version$g);
@@ -15055,7 +15042,7 @@ function verifyMessage(message, signature) {
     return recoverAddress(hashMessage(message), signature);
 }
 
-const version$h = "networks/5.0.0-beta.132";
+const version$h = "networks/5.0.0-beta.133";
 
 "use strict";
 const logger$k = new Logger(version$h);
@@ -15821,10 +15808,37 @@ var browser$a = /*#__PURE__*/Object.freeze({
 	encode: browser_2$3
 });
 
-const version$i = "web/5.0.0-beta.133";
+const version$i = "web/5.0.0-beta.134";
 
 "use strict";
+var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 const logger$l = new Logger(version$i);
+function getResponse(response) {
+    const headers = {};
+    if (response.headers.forEach) {
+        response.headers.forEach((value, key) => {
+            headers[key.toLowerCase()] = value;
+        });
+    }
+    else {
+        ((response.headers).keys)().forEach((key) => {
+            headers[key.toLowerCase()] = response.headers.get(key);
+        });
+    }
+    return {
+        statusCode: response.status,
+        status: response.statusText,
+        headers: headers
+    };
+}
 function fetchJson(connection, json, processFunc) {
     const headers = {};
     let url = null;
@@ -15839,6 +15853,10 @@ function fetchJson(connection, json, processFunc) {
     };
     let allow304 = false;
     let timeout = 2 * 60 * 1000;
+    let throttle = 25;
+    if (options.throttleLimit) {
+        throttle = options.throttleLimit;
+    }
     if (typeof (connection) === "string") {
         url = connection;
     }
@@ -15869,42 +15887,60 @@ function fetchJson(connection, json, processFunc) {
             };
         }
     }
-    return new Promise(function (resolve, reject) {
+    if (json) {
+        options.method = "POST";
+        options.body = json;
+        headers["content-type"] = { key: "Content-Type", value: "application/json" };
+    }
+    const flatHeaders = {};
+    Object.keys(headers).forEach((key) => {
+        const header = headers[key];
+        flatHeaders[header.key] = header.value;
+    });
+    options.headers = flatHeaders;
+    const runningTimeout = (function () {
         let timer = null;
-        if (timeout) {
-            timer = setTimeout(() => {
-                if (timer == null) {
-                    return;
-                }
-                timer = null;
-                reject(logger$l.makeError("timeout", Logger.errors.TIMEOUT, { timeout: timeout }));
-            }, timeout);
-        }
-        const cancelTimeout = () => {
+        const promise = new Promise(function (resolve, reject) {
+            if (timeout) {
+                timer = setTimeout(() => {
+                    if (timer == null) {
+                        return;
+                    }
+                    timer = null;
+                    reject(logger$l.makeError("timeout", Logger.errors.TIMEOUT, { timeout: timeout }));
+                }, timeout);
+            }
+        });
+        const cancel = function () {
             if (timer == null) {
                 return;
             }
             clearTimeout(timer);
             timer = null;
         };
-        if (json) {
-            options.method = "POST";
-            options.body = json;
-            headers["content-type"] = { key: "Content-Type", value: "application/json" };
-        }
-        const flatHeaders = {};
-        Object.keys(headers).forEach((key) => {
-            const header = headers[key];
-            flatHeaders[header.key] = header.value;
-        });
-        options.headers = flatHeaders;
-        return browserPonyfill(url, options).then((response) => {
-            return response.text().then((body) => {
-                let json = null;
+        return { promise, cancel };
+    })();
+    if (throttle == 100) {
+        console.log(throttle);
+    }
+    const runningFetch = (function () {
+        return __awaiter$2(this, void 0, void 0, function* () {
+            let response = null;
+            let body = null;
+            while (true) {
+                try {
+                    response = yield browserPonyfill(url, options);
+                }
+                catch (error) {
+                    console.log(error);
+                }
+                body = yield response.text();
                 if (allow304 && response.status === 304) {
-                    // Leave json as null
+                    // Leave body as null
+                    break;
                 }
                 else if (!response.ok) {
+                    runningTimeout.cancel();
                     logger$l.throwError("bad response", Logger.errors.SERVER_ERROR, {
                         status: response.status,
                         body: body,
@@ -15913,55 +15949,38 @@ function fetchJson(connection, json, processFunc) {
                     });
                 }
                 else {
-                    try {
-                        json = JSON.parse(body);
-                    }
-                    catch (error) {
-                        logger$l.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
-                            body: body,
-                            error: error,
-                            url: url
-                        });
-                    }
+                    break;
                 }
-                if (processFunc) {
-                    try {
-                        const headers = {};
-                        if (response.headers.forEach) {
-                            response.headers.forEach((value, key) => {
-                                headers[key.toLowerCase()] = value;
-                            });
-                        }
-                        else {
-                            ((response.headers).keys)().forEach((key) => {
-                                headers[key.toLowerCase()] = response.headers.get(key);
-                            });
-                        }
-                        json = processFunc(json, {
-                            statusCode: response.status,
-                            status: response.statusText,
-                            headers: headers
-                        });
-                    }
-                    catch (error) {
-                        logger$l.throwError("processing response error", Logger.errors.SERVER_ERROR, {
-                            body: json,
-                            error: error
-                        });
-                    }
+            }
+            runningTimeout.cancel();
+            let json = null;
+            if (body != null) {
+                try {
+                    json = JSON.parse(body);
                 }
-                return json;
-            });
-        }, (error) => {
-            throw error;
-        }).then((result) => {
-            cancelTimeout();
-            resolve(result);
-        }, (error) => {
-            cancelTimeout();
-            reject(error);
+                catch (error) {
+                    logger$l.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
+                        body: body,
+                        error: error,
+                        url: url
+                    });
+                }
+            }
+            if (processFunc) {
+                try {
+                    json = yield processFunc(json, getResponse(response));
+                }
+                catch (error) {
+                    logger$l.throwError("processing response error", Logger.errors.SERVER_ERROR, {
+                        body: json,
+                        error: error
+                    });
+                }
+            }
+            return json;
         });
-    });
+    })();
+    return Promise.race([runningTimeout.promise, runningFetch]);
 }
 function poll(func, options) {
     if (!options) {
@@ -16040,7 +16059,7 @@ function poll(func, options) {
     });
 }
 
-const version$j = "providers/5.0.0-beta.145";
+const version$j = "providers/5.0.0-beta.146";
 
 "use strict";
 const logger$m = new Logger(version$j);
@@ -16414,7 +16433,7 @@ class Formatter {
 }
 
 "use strict";
-var __awaiter$2 = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -16556,7 +16575,7 @@ class BaseProvider extends Provider {
         return getNetwork((network == null) ? "homestead" : network);
     }
     _getInternalBlockNumber(maxAge) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             yield this.ready;
             const internalBlockNumber = this._internalBlockNumber;
             if (maxAge > 0 && this._internalBlockNumber) {
@@ -16580,7 +16599,7 @@ class BaseProvider extends Provider {
         });
     }
     poll() {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             const pollId = nextPollId++;
             this.emit("willPoll", pollId);
             // Track all running promises, so we can trigger a post-poll once they are complete
@@ -16750,7 +16769,7 @@ class BaseProvider extends Provider {
     // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
     //        this will be used once we move to the WebSocket or other alternatives to polling
     waitForTransaction(transactionHash, confirmations) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             if (confirmations == null) {
                 confirmations = 1;
             }
@@ -16776,13 +16795,13 @@ class BaseProvider extends Provider {
         return this._getInternalBlockNumber(0);
     }
     getGasPrice() {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             yield this.ready;
             return BigNumber.from(yield this.perform("getGasPrice", {}));
         });
     }
     getBalance(addressOrName, blockTag) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             yield this.ready;
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
@@ -16792,7 +16811,7 @@ class BaseProvider extends Provider {
         });
     }
     getTransactionCount(addressOrName, blockTag) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             yield this.ready;
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
@@ -16802,7 +16821,7 @@ class BaseProvider extends Provider {
         });
     }
     getCode(addressOrName, blockTag) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             yield this.ready;
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
@@ -16812,7 +16831,7 @@ class BaseProvider extends Provider {
         });
     }
     getStorageAt(addressOrName, position, blockTag) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             yield this.ready;
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
@@ -16833,7 +16852,7 @@ class BaseProvider extends Provider {
             logger$n.throwError("Transaction hash mismatch from Provider.sendTransaction.", Logger.errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
         // @TODO: (confirmations? number, timeout? number)
-        result.wait = (confirmations) => __awaiter$2(this, void 0, void 0, function* () {
+        result.wait = (confirmations) => __awaiter$3(this, void 0, void 0, function* () {
             // We know this transaction *must* exist (whether it gets mined is
             // another story), so setting an emitted value forces us to
             // wait even if the node returns null for the receipt
@@ -16858,7 +16877,7 @@ class BaseProvider extends Provider {
         return result;
     }
     sendTransaction(signedTransaction) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             yield this.ready;
             const hexTx = yield Promise.resolve(signedTransaction).then(t => hexlify(t));
             const tx = this.formatter.transaction(signedTransaction);
@@ -16874,7 +16893,7 @@ class BaseProvider extends Provider {
         });
     }
     _getTransactionRequest(transaction) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             const values = yield transaction;
             const tx = {};
             ["from", "to"].forEach((key) => {
@@ -16899,7 +16918,7 @@ class BaseProvider extends Provider {
         });
     }
     _getFilter(filter) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             if (filter instanceof Promise) {
                 filter = yield filter;
             }
@@ -16923,7 +16942,7 @@ class BaseProvider extends Provider {
         });
     }
     call(transaction, blockTag) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             yield this.ready;
             const params = yield resolveProperties({
                 transaction: this._getTransactionRequest(transaction),
@@ -16933,7 +16952,7 @@ class BaseProvider extends Provider {
         });
     }
     estimateGas(transaction) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             yield this.ready;
             const params = yield resolveProperties({
                 transaction: this._getTransactionRequest(transaction)
@@ -16942,7 +16961,7 @@ class BaseProvider extends Provider {
         });
     }
     _getAddress(addressOrName) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             const address = yield this.resolveName(addressOrName);
             if (address == null) {
                 logger$n.throwError("ENS name not configured", Logger.errors.UNSUPPORTED_OPERATION, {
@@ -16953,7 +16972,7 @@ class BaseProvider extends Provider {
         });
     }
     _getBlock(blockHashOrBlockTag, includeTransactions) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             yield this.ready;
             if (blockHashOrBlockTag instanceof Promise) {
                 blockHashOrBlockTag = yield blockHashOrBlockTag;
@@ -16977,7 +16996,7 @@ class BaseProvider extends Provider {
                     logger$n.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
                 }
             }
-            return poll(() => __awaiter$2(this, void 0, void 0, function* () {
+            return poll(() => __awaiter$3(this, void 0, void 0, function* () {
                 const block = yield this.perform("getBlock", params);
                 // Block was not found
                 if (block == null) {
@@ -17013,13 +17032,13 @@ class BaseProvider extends Provider {
         return (this._getBlock(blockHashOrBlockTag, true));
     }
     getTransaction(transactionHash) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             yield this.ready;
             if (transactionHash instanceof Promise) {
                 transactionHash = yield transactionHash;
             }
             const params = { transactionHash: this.formatter.hash(transactionHash, true) };
-            return poll(() => __awaiter$2(this, void 0, void 0, function* () {
+            return poll(() => __awaiter$3(this, void 0, void 0, function* () {
                 const result = yield this.perform("getTransaction", params);
                 if (result == null) {
                     if (this._emitted["t:" + transactionHash] == null) {
@@ -17045,13 +17064,13 @@ class BaseProvider extends Provider {
         });
     }
     getTransactionReceipt(transactionHash) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             yield this.ready;
             if (transactionHash instanceof Promise) {
                 transactionHash = yield transactionHash;
             }
             const params = { transactionHash: this.formatter.hash(transactionHash, true) };
-            return poll(() => __awaiter$2(this, void 0, void 0, function* () {
+            return poll(() => __awaiter$3(this, void 0, void 0, function* () {
                 const result = yield this.perform("getTransactionReceipt", params);
                 if (result == null) {
                     if (this._emitted["t:" + transactionHash] == null) {
@@ -17081,7 +17100,7 @@ class BaseProvider extends Provider {
         });
     }
     getLogs(filter) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             yield this.ready;
             const params = yield resolveProperties({ filter: this._getFilter(filter) });
             const logs = yield this.perform("getLogs", params);
@@ -17089,13 +17108,13 @@ class BaseProvider extends Provider {
         });
     }
     getEtherPrice() {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             yield this.ready;
             return this.perform("getEtherPrice", {});
         });
     }
     _getBlockTag(blockTag) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             if (blockTag instanceof Promise) {
                 blockTag = yield blockTag;
             }
@@ -17114,7 +17133,7 @@ class BaseProvider extends Provider {
         });
     }
     _getResolver(name) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             // Get the resolver from the blockchain
             const network = yield this.getNetwork();
             // No ENS...
@@ -17130,7 +17149,7 @@ class BaseProvider extends Provider {
         });
     }
     resolveName(name) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             if (name instanceof Promise) {
                 name = yield name;
             }
@@ -17153,7 +17172,7 @@ class BaseProvider extends Provider {
         });
     }
     lookupAddress(address) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             if (address instanceof Promise) {
                 address = yield address;
             }
@@ -17299,7 +17318,7 @@ class BaseProvider extends Provider {
 }
 
 "use strict";
-var __awaiter$3 = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17499,7 +17518,7 @@ class JsonRpcProvider extends BaseProvider {
         else {
             // The network is unknown, query the JSON-RPC for it
             const ready = new Promise((resolve, reject) => {
-                setTimeout(() => __awaiter$3(this, void 0, void 0, function* () {
+                setTimeout(() => __awaiter$4(this, void 0, void 0, function* () {
                     let chainId = null;
                     try {
                         chainId = yield this.send("eth_chainId", []);
@@ -17818,7 +17837,7 @@ class CloudflareProvider extends UrlJsonRpcProvider {
 }
 
 "use strict";
-var __awaiter$4 = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$5 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17921,13 +17940,13 @@ class EtherscanProvider extends BaseProvider {
         const _super = Object.create(null, {
             perform: { get: () => super.perform }
         });
-        return __awaiter$4(this, void 0, void 0, function* () {
+        return __awaiter$5(this, void 0, void 0, function* () {
             let url = this.baseUrl;
             let apiKey = "";
             if (this.apiKey) {
                 apiKey += "&apikey=" + this.apiKey;
             }
-            const get = (url, procFunc) => __awaiter$4(this, void 0, void 0, function* () {
+            const get = (url, procFunc) => __awaiter$5(this, void 0, void 0, function* () {
                 this.emit("debug", {
                     action: "request",
                     request: url,
@@ -18777,7 +18796,7 @@ function sha256$1(types, values) {
     return browser_3(pack$1(types, values));
 }
 
-const version$k = "units/5.0.0-beta.131";
+const version$k = "units/5.0.0-beta.132";
 
 "use strict";
 const logger$z = new Logger(version$k);
@@ -18935,7 +18954,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$l = "ethers/5.0.0-beta.160";
+const version$l = "ethers/5.0.0-beta.161";
 
 "use strict";
 const errors = Logger.errors;
@@ -18961,5 +18980,8 @@ var ethers = /*#__PURE__*/Object.freeze({
 });
 
 "use strict";
+if (global._ethers == null) {
+    global._ethers = ethers;
+}
 
 export { BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, browser_1$2 as Wordlist, index$1 as constants, errors, ethers, getDefaultProvider, logger$A as logger, index$2 as providers, utils$1 as utils, version$l as version, browser_2$1 as wordlists };

@@ -1,10 +1,10 @@
 'use strict';
 import assert from "assert";
 import { ethers } from "ethers";
+import contractData from "./test-contract.json";
 const provider = new ethers.providers.InfuraProvider('rinkeby');
 const contract = (function () {
-    let data = require('../contracts/test-contract.json');
-    return new ethers.Contract(data.contractAddress, data.interface, provider);
+    return new ethers.Contract(contractData.contractAddress, contractData.interface, provider);
 })();
 function equals(name, actual, expected) {
     if (Array.isArray(expected)) {

@@ -1,11 +1,5 @@
 {
-  "name": "@ethersproject/abi",
-  "version": "5.0.0-beta.141",
-  "description": "Utilities and Classes for parsing, formatting and managing Ethereum ABIs.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/address": ">=5.0.0-beta.128",
     "@ethersproject/bignumber": ">=5.0.0-beta.130",
@@ -17,12 +11,16 @@
     "@ethersproject/properties": ">=5.0.0-beta.131",
     "@ethersproject/strings": ">=5.0.0-beta.130"
   },
+  "description": "Utilities and Classes for parsing, formatting and managing Ethereum ABIs.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/abi",
   "publishConfig": {
     "access": "public"
   },
@@ -30,8 +28,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0xadfbb4cb8f2b47899564234f2856265474ba5f2530b2658e43ae931b929b4a93",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x8ab039f54add63e60520103856dcec83107f301a5d712a92cc6207a0ddbf3ffc"
+  "version": "5.0.0-beta.142"
 }

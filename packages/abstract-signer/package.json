@@ -1,11 +1,5 @@
 {
-  "name": "@ethersproject/abstract-signer",
-  "version": "5.0.0-beta.136",
-  "description": "An Abstract Class for desribing an Ethereum Signer for ethers.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/abstract-provider": ">=5.0.0-beta.131",
     "@ethersproject/bignumber": ">=5.0.0-beta.130",
@@ -13,12 +7,16 @@
     "@ethersproject/logger": ">=5.0.0-beta.129",
     "@ethersproject/properties": ">=5.0.0-beta.131"
   },
+  "description": "An Abstract Class for desribing an Ethereum Signer for ethers.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/abstract-signer",
   "publishConfig": {
     "access": "public"
   },
@@ -26,8 +24,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x715e7c449f450ad4bf5db8da4e27d7b86a9eebeb911eab63a913791dcbe4f6e9",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xb15621c33c076e145b49f77d1fb608f584ae52db026ba52673102eed4bdff2e9"
+  "version": "5.0.0-beta.137"
 }

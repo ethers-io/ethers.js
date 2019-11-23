@@ -1,11 +1,5 @@
 {
-  "name": "@ethersproject/contracts",
-  "version": "5.0.0-beta.141",
-  "description": "Contract abstraction meta-class for ethers.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/abi": ">=5.0.0-beta.137",
     "@ethersproject/abstract-provider": ">=5.0.0-beta.131",
@@ -18,12 +12,16 @@
     "@ethersproject/properties": ">=5.0.0-beta.131",
     "@ethersproject/transactions": ">=5.0.0-beta.128"
   },
+  "description": "Contract abstraction meta-class for ethers.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/contracts",
   "publishConfig": {
     "access": "public"
   },
@@ -31,8 +29,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x0253325f52e33a166dd5df2cbc51da741c8810e1e96dccd867248a340596394d",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x17b50f94b2c4aa5d24fe5b3621bbcf0a5043003c133bd288908c88cb32d5f5a9"
+  "version": "5.0.0-beta.142"
 }

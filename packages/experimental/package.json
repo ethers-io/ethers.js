@@ -1,23 +1,21 @@
 {
-  "name": "@ethersproject/experimental",
-  "version": "5.0.0-beta.133",
-  "description": "Experimental libraries for ethers. These should not be considered stable.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/web": ">=5.0.0-beta.129",
     "@ensdomains/address-encoder": "^0.1.2",
+    "@ethersproject/web": ">=5.0.0-beta.129",
     "ethers": ">=5.0.0-beta.156",
     "scrypt-js": "3.0.0"
   },
+  "description": "Experimental libraries for ethers. These should not be considered stable.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/experimental",
   "publishConfig": {
     "access": "public"
   },
@@ -25,8 +23,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0xc24c20f47238e0a9a9ec4da458302879732307bbbfce80a91ad818de5ae69a1c",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x004416cb35c4bb09fe835b6837fb08c1807c4a98f6191bd2e7007bb8c0316267"
+  "version": "5.0.0-beta.134"
 }

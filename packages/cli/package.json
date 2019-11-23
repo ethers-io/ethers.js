@@ -1,11 +1,5 @@
 {
-  "name": "@ethersproject/cli",
-  "version": "5.0.0-beta.146",
-  "description": "Command-Line Interface scripts and releated utilities.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "bin": {
     "ethers": "./lib/bin/ethers.js",
     "ethers-ens": "./lib/bin/ethers-ens.js",
@@ -19,16 +13,20 @@
     "solc": "0.5.10",
     "solidity-parser-antlr": "^0.3.2"
   },
+  "description": "Command-Line Interface scripts and releated utilities.",
   "devDependencies": {
     "@types/node": "^12.7.4"
   },
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers",
     "cli"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/cli",
   "publishConfig": {
     "access": "public"
   },
@@ -36,8 +34,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "exit 1"
+  },
+  "tarballHash": "0xd589ee9af478394c353a3630154dd2d561c557ef2539adfd1abe0d0f3b63869a",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x664e42117580037f716878bd130f188bc75c443c1d1994bb9fe7f512e6164c8e"
+  "version": "5.0.0-beta.147"
 }

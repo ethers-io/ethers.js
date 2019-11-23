@@ -1,21 +1,19 @@
 {
-  "name": "@ethersproject/basex",
-  "version": "5.0.0-beta.130",
-  "description": "Base-X without Buffer.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/bytes": ">=5.0.0-beta.129",
     "@ethersproject/properties": ">=5.0.0-beta.131"
   },
+  "description": "Base-X without Buffer.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/basex",
   "publishConfig": {
     "access": "public"
   },
@@ -23,8 +21,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0xb05390e395a38be994749f03651ccc3c7d744517c9437e0fe1d1a7679266a33f",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xe84815357f45e6134c535f478bc7c8f7fe72e47c8de1064756fd6aff0012f001"
+  "version": "5.0.0-beta.131"
 }

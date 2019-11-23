@@ -1,17 +1,15 @@
 {
-  "name": "@ethersproject/errors",
-  "version": "5.0.0-beta.131",
+  "author": "Richard Moore <me@ricmoo.com>",
   "description": "Error utility functions for ethers.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/errors",
   "publishConfig": {
     "access": "public"
   },
@@ -19,8 +17,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x28c97ff0e0dc05d3b94a1d22bf6c64f9c44eec9120e325307ee09f183fe9e18f",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x2a7a244a6cad216c7f2da4d69f8014f1eda1655287149889e13315cad45e44e4"
+  "version": "5.0.0-beta.132"
 }

@@ -1,19 +1,15 @@
 {
-  "name": "@ethersproject/testcases",
-  "version": "5.0.0-beta.134",
-  "description": "Testcases for Ethereum and scripts to generate testcases.",
-  "main": "./lib/index.js",
-  "browser": "browser.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
+  "browser": "./lib/browser.js",
   "dependencies": {
     "@ethersproject/bignumber": ">=5.0.0-beta.130",
     "@ethersproject/bytes": ">=5.0.0-beta.129",
     "@ethersproject/keccak256": ">=5.0.0-beta.127",
     "@ethersproject/strings": ">=5.0.0-beta.130",
-    "browserify-zlib": "^0.2.0"
+    "browserify-zlib": "^0.2.0",
+    "ethers": ">=5.0.0-beta.161"
   },
+  "description": "Testcases for Ethereum and scripts to generate testcases.",
   "devDependencies": {
     "@ethersproject/cli": ">=5.0.0-beta.142",
     "@types/bip39": "2.4.1",
@@ -23,12 +19,15 @@
     "ethereumjs-tx": "^1.3.5",
     "ethereumjs-util": "^5.2.0"
   },
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/testcases",
   "publishConfig": {
     "access": "public"
   },
@@ -36,8 +35,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0xca982fbef69e487dfb86edc202411eca47628c6ebb1fe369dd3fa37b5fd9c45e",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xd130ec88b0380066030310b4c4198d3f72d9f36ed1f0e985d14fb96ed71d8326"
+  "version": "5.0.0-beta.135"
 }

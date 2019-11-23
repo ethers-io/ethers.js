@@ -1,23 +1,21 @@
 {
-  "name": "@ethersproject/sha2",
-  "version": "5.0.0-beta.132",
-  "description": "The SHA2 family hash functions and HMAC functions for ethers.",
-  "main": "./lib/index.js",
+  "author": "Richard Moore <me@ricmoo.com>",
   "browser": "./lib/browser.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "dependencies": {
     "@ethersproject/bytes": ">=5.0.0-beta.129",
     "@ethersproject/logger": ">=5.0.0-beta.129",
     "hash.js": "1.1.3"
   },
+  "description": "The SHA2 family hash functions and HMAC functions for ethers.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/sha2",
   "publishConfig": {
     "access": "public"
   },
@@ -25,8 +23,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0xe451c587c6d3c247b8a1b3e0f10be6eb689c345ed60bcc33ce0ac263c5bce041",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xcc9c70f9d8c17618a384eb4777203881f093a41cfab6c7b9364585d2171f925e"
+  "version": "5.0.0-beta.133"
 }

@@ -15,9 +15,6 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
 var strings_1 = require("@ethersproject/strings");
-var logger_1 = require("@ethersproject/logger");
-var _version_1 = require("./_version");
-var logger = new logger_1.Logger(_version_1.version);
 var wordlist_1 = require("./wordlist");
 var data = [
     // 4-kana words
@@ -110,7 +107,7 @@ function loadWords(lang) {
         wordlist[442] = wordlist[443];
         wordlist[443] = tmp;
     }
-    if (wordlist_1.check(lang) !== "0xcb36b09e6baa935787fd762ce65e80b0c6a8dabdfbc3a7f86ac0e2c4fd111600") {
+    if (wordlist_1.Wordlist.check(lang) !== "0xcb36b09e6baa935787fd762ce65e80b0c6a8dabdfbc3a7f86ac0e2c4fd111600") {
         wordlist = null;
         throw new Error("BIP39 Wordlist for ja (Japanese) FAILED");
     }
@@ -129,7 +126,7 @@ var LangJa = /** @class */ (function (_super) {
         return wordlist.indexOf(word);
     };
     LangJa.prototype.split = function (mnemonic) {
-        logger.checkNormalize();
+        wordlist_1.logger.checkNormalize();
         return mnemonic.split(/(?:\u3000| )+/g);
     };
     LangJa.prototype.join = function (words) {
@@ -139,4 +136,4 @@ var LangJa = /** @class */ (function (_super) {
 }(wordlist_1.Wordlist));
 var langJa = new LangJa();
 exports.langJa = langJa;
-wordlist_1.register(langJa);
+wordlist_1.Wordlist.register(langJa);

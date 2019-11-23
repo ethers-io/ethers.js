@@ -24,7 +24,6 @@ function Replacer(options = {}) {
             for (let i = 0; i < suffixes.length; i++) {
                 const suffix = suffixes[i];
                 if (id.match(new RegExp(suffix))) {
-                //if (id.substring(id.length - suffix.length) === suffix) {
                     let newCode = options.replace[suffix];
                     console.log(`Replace: ${ id } (${ code.length } => ${ newCode.length })`);
                     return {
@@ -96,7 +95,8 @@ export default commandLineArgs => {
         commonjs({
             namedExports: {
                 "bn.js": [ "BN" ],
-                "elliptic": [ "ec" ]
+                "elliptic": [ "ec" ],
+                "scrypt-js": [ "scrypt" ],
             },
         }),
     ];
@@ -115,8 +115,10 @@ export default commandLineArgs => {
       output: {
         file: outputFile,
         format: format,
-        name: "ethers"
+        name: "ethers",
+        exports: "named"
       },
+      context: "window",
       treeshake: false,
       plugins: plugins
   };

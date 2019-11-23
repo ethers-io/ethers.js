@@ -15,13 +15,7 @@ const colorify = require("./log").colorify;
 
 function getScrypt(message, password, salt) {
     let progressBar = prompt.getProgressBar(message);
-    return new Promise((resolve, reject) => {
-        scrypt(Buffer.from(password), Buffer.from(salt), (1 << 17), 8, 1, 64, (error, progress, key) => {
-            if (error) { return reject(error); }
-            progressBar(progress);
-            if (key) { resolve(key); }
-        });
-    });
+    return scrypt.scrypt(Buffer.from(password), Buffer.from(salt), (1 << 17), 8, 1, 64, progressBar);
 }
 
 function Config(filename) {

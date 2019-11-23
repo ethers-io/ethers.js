@@ -8,7 +8,13 @@ const targets = sourceEthers.match(/export\s*{\s*((.|\s)*)}/)[1].trim();
 
 const output = `"use strict";
 
+// To modify this file, you must update ./admin/cmds/update-exports.js
+
 import * as ethers from "./ethers";
+
+if ((<any>global)._ethers == null) {
+    (<any>global)._ethers = ethers;
+}
 
 export { ethers };
 

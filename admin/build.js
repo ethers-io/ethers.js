@@ -69,15 +69,17 @@ function setupConfig(outDir, moduleType, targetType) {
 
         if (info._ethers_nobuild) { return; }
 
-        if (info.browser) {
-            if (typeof(info.browser) === "string") {
-                info.browser = update(info.browser);
-            } else {
-                for (let key in info.browser) {
-                    info.browser[key] = update(info.browser[key]);
+        [ "browser", "_browser" ].forEach((key) => {
+            if (info[key]) {
+                if (typeof(info[key]) === "string") {
+                    info[key] = update(info[key]);
+                } else {
+                    for (let k in info[key]) {
+                        info[key][k] = update(info[key][k]);
+                    }
                 }
             }
-        }
+        });
         savePackage(dirname, info);
 
         let path = resolve(__dirname, "../packages", dirname, "tsconfig.json");

@@ -1,11 +1,5 @@
 {
-  "name": "@ethersproject/json-wallets",
-  "version": "5.0.0-beta.133",
-  "description": "Wallet management utilities for KeyStore and Crowdsale JSON wallets.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
     "@ethersproject/address": ">=5.0.0-beta.128",
@@ -22,12 +16,16 @@
     "scrypt-js": "3.0.0",
     "uuid": "2.0.1"
   },
+  "description": "Wallet management utilities for KeyStore and Crowdsale JSON wallets.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/json-wallets",
   "publishConfig": {
     "access": "public"
   },
@@ -35,8 +33,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x246b46bbe9ad5ee8d5dacc1aa1b1aa78d86f6f79e6bc1719b85fcffac1486ec8",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xee2f333ff6799cb86c0539957b746c57098d9050bd0760bed576d42ceb150825"
+  "version": "5.0.0-beta.134"
 }

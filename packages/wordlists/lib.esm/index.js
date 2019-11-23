@@ -1,7 +1,7 @@
 "use strict";
 // Wordlists
 // See: https://github.com/bitcoin/bips/blob/master/bip-0039/bip-0039-wordlists.md
-import { Wordlist } from "./wordlist";
+import { logger, Wordlist } from "./wordlist";
 import { langEn as en } from "./lang-en";
 import { langEs as es } from "./lang-es";
 import { langFr as fr } from "./lang-fr";
@@ -20,4 +20,4 @@ const wordlists = {
     zh_cn: zh_cn,
     zh_tw: zh_tw
 };
-export { Wordlist, wordlists };
+export { logger, Wordlist, wordlists };

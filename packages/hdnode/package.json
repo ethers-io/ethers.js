@@ -1,11 +1,5 @@
 {
-  "name": "@ethersproject/hdnode",
-  "version": "5.0.0-beta.134",
-  "description": "BIP32 Hierarchal Deterministic Node operations.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
     "@ethersproject/basex": ">=5.0.0-beta.127",
@@ -20,12 +14,16 @@
     "@ethersproject/transactions": ">=5.0.0-beta.128",
     "@ethersproject/wordlists": ">=5.0.0-beta.128"
   },
+  "description": "BIP32 Hierarchal Deterministic Node operations.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/hdnode",
   "publishConfig": {
     "access": "public"
   },
@@ -33,8 +31,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x8fa8828e2078cbcc607677c36de1ebc4e573f823e6b369e2557e33406b5182c1",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x21c4113048b70dabfe83d8b164ae5f57d902585dc1f37fba3bf3620a36f3de3e"
+  "version": "5.0.0-beta.135"
 }

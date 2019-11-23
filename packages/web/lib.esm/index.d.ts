@@ -3,6 +3,7 @@ export declare type ConnectionInfo = {
     user?: string;
     password?: string;
     allowInsecureAuthentication?: boolean;
+    throttleLimit?: number;
     timeout?: number;
     headers?: {
         [key: string]: string | number;

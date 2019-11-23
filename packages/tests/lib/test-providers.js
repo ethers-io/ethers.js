@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var assert_1 = __importDefault(require("assert"));
-var Web3HttpProvider = require("web3-providers-http");
+var web3_providers_http_1 = __importDefault(require("web3-providers-http"));
 var ethers_1 = require("ethers");
 var bnify = ethers_1.ethers.BigNumber.from;
 var blockchainData = {
@@ -301,7 +301,7 @@ function testProvider(providerName, networkName) {
             }
             else if (providerName === "Web3Provider") {
                 var infuraUrl = (new ethers_1.ethers.providers.InfuraProvider()).connection.url;
-                provider = new ethers_1.ethers.providers.Web3Provider(new Web3HttpProvider(infuraUrl));
+                provider = new ethers_1.ethers.providers.Web3Provider(new web3_providers_http_1.default(infuraUrl));
             }
             else {
                 provider = new (ethers_1.ethers.providers)[providerName]();
@@ -313,7 +313,7 @@ function testProvider(providerName, networkName) {
             }
             else if (providerName === "Web3Provider") {
                 var infuraUrl = (new ethers_1.ethers.providers.InfuraProvider(networkName)).connection.url;
-                provider = new ethers_1.ethers.providers.Web3Provider(new Web3HttpProvider(infuraUrl), networkName);
+                provider = new ethers_1.ethers.providers.Web3Provider(new web3_providers_http_1.default(infuraUrl), networkName);
             }
             else {
                 provider = new (ethers_1.ethers.providers)[providerName](networkName);

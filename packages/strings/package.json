@@ -1,24 +1,22 @@
 {
-  "name": "@ethersproject/strings",
-  "version": "5.0.0-beta.134",
-  "description": "String utility functions.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/bytes": ">=5.0.0-beta.129",
     "@ethersproject/constants": ">=5.0.0-beta.128",
     "@ethersproject/logger": ">=5.0.0-beta.129"
   },
+  "description": "String utility functions.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers",
     "strings",
     "utf8"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/strings",
   "publishConfig": {
     "access": "public"
   },
@@ -26,8 +24,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0xe3b6ca6f029aaab94bbde1ad0be3203bfd6ea9be004cb8809d8c43c54086c787",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x3e86239eb4e439bcbc0006decb0cf701c8430f2d993462b6c8b2a25afa7c88f1"
+  "version": "5.0.0-beta.135"
 }

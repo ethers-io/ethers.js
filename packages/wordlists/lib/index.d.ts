@@ -1,5 +1,5 @@
-import { Wordlist } from "./wordlist";
+import { logger, Wordlist } from "./wordlist";
 declare const wordlists: {
     [locale: string]: Wordlist;
 };
-export { Wordlist, wordlists };
+export { logger, Wordlist, wordlists };

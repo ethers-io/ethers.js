@@ -1,20 +1,18 @@
 {
-  "name": "@ethersproject/networks",
-  "version": "5.0.0-beta.132",
-  "description": "Network definitions for ethers.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/logger": ">=5.0.0-beta.129"
   },
+  "description": "Network definitions for ethers.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/networks",
   "publishConfig": {
     "access": "public"
   },
@@ -22,8 +20,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x85bce5a8bc76d1c487c6ffe937f83a4b237e2ca0bb0bf550813b2d6f3f67bbbd",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x3396601e68ecfb886ccd21834b12a5bbfe9499e7680562321e4f5f13b3250dcb"
+  "version": "5.0.0-beta.133"
 }

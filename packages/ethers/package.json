@@ -1,11 +1,6 @@
 {
-  "name": "ethers",
-  "version": "5.0.0-beta.160",
-  "description": "Umbrella package for most common Ethers libraries.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
+  "browser": "./dist/ethers.umd.js",
   "dependencies": {
     "@ethersproject/abi": ">=5.0.0-beta.137",
     "@ethersproject/abstract-provider": ">=5.0.0-beta.131",
@@ -37,13 +32,16 @@
     "@ethersproject/web": ">=5.0.0-beta.129",
     "@ethersproject/wordlists": ">=5.0.0-beta.128"
   },
-  "browser": "./dist/ethers.umd.js",
+  "description": "Umbrella package for most common Ethers libraries.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./dist/ethers.esm.js",
+  "name": "ethers",
   "publishConfig": {
     "tag": "next"
   },
@@ -51,8 +49,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./dist/ethers.esm.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x1110356f9dc54b881250ee44580f3b71e0e9bfb0e5707708eeedc2f66cb0db4a",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xc5beab5b0414d554e5cdc0e316af832c83055debae95c860e6a85abdb85f4396"
+  "version": "5.0.0-beta.161"
 }
