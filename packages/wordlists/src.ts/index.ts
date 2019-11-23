@@ -3,7 +3,7 @@
 // Wordlists
 // See: https://github.com/bitcoin/bips/blob/master/bip-0039/bip-0039-wordlists.md
 
-import { Wordlist } from "./wordlist";
+import { logger, Wordlist } from "./wordlist";
 
 import { langEn as en } from "./lang-en";
 import { langEs as es } from "./lang-es";
@@ -26,6 +26,7 @@ const wordlists: { [ locale: string ]: Wordlist } = {
 };
 
 export {
+    logger,
     Wordlist,
     wordlists
 }

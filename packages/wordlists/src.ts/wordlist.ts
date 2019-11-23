@@ -8,17 +8,7 @@ import { defineReadOnly } from "@ethersproject/properties";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
-const logger = new Logger(version);
-
-export function check(wordlist: Wordlist): string {
-    const words = [];
-    for (let i = 0; i < 2048; i++) {
-        const word = wordlist.getWord(i);
-        if (i !== wordlist.getWordIndex(word)) { return "0x"; }
-        words.push(word);
-    }
-    return id(words.join("\n") + "\n");
-}
+export const logger = new Logger(version);
 
 export abstract class Wordlist {
     readonly locale: string;
@@ -40,23 +30,28 @@ export abstract class Wordlist {
     join(words: Array<string>): string {
         return words.join(" ");
     }
-}
 
-export function register(lang: Wordlist, name?: string): void {
-    if (!name) { name = lang.locale; }
-    if (exportWordlist) {
-        const g: any = (<any>global)
-        if (g._ethers && g._ethers.wordlists) {
-            if (!g._ethers.wordlists[name]) {
-                defineReadOnly(g._ethers.wordlists, name, lang);
+    static check(wordlist: Wordlist): string {
+        const words = [];
+        for (let i = 0; i < 2048; i++) {
+            const word = wordlist.getWord(i);
+            if (i !== wordlist.getWordIndex(word)) { return "0x"; }
+            words.push(word);
+        }
+        return id(words.join("\n") + "\n");
+    }
+
+    static register(lang: Wordlist, name?: string): void {
+        if (!name) { name = lang.locale; }
+        if (exportWordlist) {
+            const g: any = (<any>global)
+            if (g._ethers && g._ethers.wordlists) {
+                if (!g._ethers.wordlists[name]) {
+                     defineReadOnly(g._ethers.wordlists, name, lang);
+                }
             }
-            /*
-            if (g.wordlists == null) {
-                g.wordlists = g._ethers.wordlists;
-            } else if (g.wordlists[name] == null) {
-                g.wordlists[name] = lang;
-            }
-            */
         }
     }
+
 }
+

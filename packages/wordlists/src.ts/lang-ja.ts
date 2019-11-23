@@ -3,11 +3,7 @@
 import { hexlify } from "@ethersproject/bytes";
 import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
 
-import { Logger } from "@ethersproject/logger";
-import { version } from "./_version";
-const logger = new Logger(version);
-
-import { check, register, Wordlist } from "./wordlist";
+import { logger, Wordlist } from "./wordlist";
 
 
 const data = [
@@ -114,7 +110,7 @@ function loadWords(lang: Wordlist) {
         wordlist[443] = tmp;
     }
 
-    if (check(lang) !== "0xcb36b09e6baa935787fd762ce65e80b0c6a8dabdfbc3a7f86ac0e2c4fd111600") {
+    if (Wordlist.check(lang) !== "0xcb36b09e6baa935787fd762ce65e80b0c6a8dabdfbc3a7f86ac0e2c4fd111600") {
         wordlist = null;
         throw new Error("BIP39 Wordlist for ja (Japanese) FAILED");
     }
@@ -146,7 +142,7 @@ class LangJa extends Wordlist {
 }
 
 const langJa = new LangJa();
-register(langJa);
+Wordlist.register(langJa);
 
 export { langJa };
 
