@@ -12568,11 +12568,16 @@ var Wordlist = /** @class */ (function () {
             name = lang.locale;
         }
         if (exportWordlist) {
-            var g = commonjsGlobal;
-            if (g._ethers && g._ethers.wordlists) {
-                if (!g._ethers.wordlists[name]) {
-                    lib_esm$2.defineReadOnly(g._ethers.wordlists, name, lang);
+            try {
+                var anyGlobal = window;
+                if (anyGlobal._ethers && anyGlobal._ethers.wordlists) {
+                    if (!anyGlobal._ethers.wordlists[name]) {
+                        lib_esm$2.defineReadOnly(anyGlobal._ethers.wordlists, name, lang);
+                    }
                 }
+            }
+            catch (error) {
+                console.log("FOOBAR2", error);
             }
         }
     };
@@ -18980,8 +18985,14 @@ var ethers = /*#__PURE__*/Object.freeze({
 });
 
 "use strict";
-if (global._ethers == null) {
-    global._ethers = ethers;
+try {
+    const anyGlobal = window;
+    if (anyGlobal._ethers == null) {
+        anyGlobal._ethers = ethers;
+    }
+}
+catch (error) {
+    console.log("FOOBAR", error);
 }
 
 export { BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, browser_1$2 as Wordlist, index$1 as constants, errors, ethers, getDefaultProvider, logger$A as logger, index$2 as providers, utils$1 as utils, version$l as version, browser_2$1 as wordlists };

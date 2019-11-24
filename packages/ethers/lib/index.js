@@ -10,8 +10,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // To modify this file, you must update ./admin/cmds/update-exports.js
 var ethers = __importStar(require("./ethers"));
 exports.ethers = ethers;
-if (global._ethers == null) {
-    global._ethers = ethers;
+try {
+    var anyGlobal = window;
+    if (anyGlobal._ethers == null) {
+        anyGlobal._ethers = ethers;
+    }
+}
+catch (error) {
+    console.log("FOOBAR", error);
 }
 var ethers_1 = require("./ethers");
 exports.Signer = ethers_1.Signer;

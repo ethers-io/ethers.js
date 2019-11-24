@@ -35,11 +35,16 @@ export class Wordlist {
             name = lang.locale;
         }
         if (exportWordlist) {
-            const g = global;
-            if (g._ethers && g._ethers.wordlists) {
-                if (!g._ethers.wordlists[name]) {
-                    defineReadOnly(g._ethers.wordlists, name, lang);
+            try {
+                const anyGlobal = window;
+                if (anyGlobal._ethers && anyGlobal._ethers.wordlists) {
+                    if (!anyGlobal._ethers.wordlists[name]) {
+                        defineReadOnly(anyGlobal._ethers.wordlists, name, lang);
+                    }
                 }
+            }
+            catch (error) {
+                console.log("FOOBAR2", error);
             }
         }
     }

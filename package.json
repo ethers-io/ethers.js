@@ -9,12 +9,19 @@
     "auto-build": "node ./admin/cmds/reset-build.js && npm run build -- -w",
     "bootstrap": "node ./admin/cmds/reset-build.js && node ./admin/cmds/update-depgraph && lerna bootstrap --hoist",
     "build": "tsc --build ./tsconfig.project.json",
-    "build-cjs": "node ./admin/cmds/set-option cjs && npm run build",
-    "build-esm": "node ./admin/cmds/set-option esm && npm run build",
-    "build-all": "npm run build-esm && npm run build-cjs",
+
+    "_build-cjs": "node ./admin/cmds/set-option cjs && npm run build",
+    "_build-esm": "node ./admin/cmds/set-option esm && npm run build",
+    "_dist-min-all": "node ./admin/cmds/set-option.js browser-lang-all && rollup -c --configMinify && rollup -c --configMinify --configModule && mv ./packages/ethers/dist/ethers.umd.min.js ./packages/ethers/dist/ethers-all.umd.min.js && mv ./packages/ethers/dist/ethers.esm.min.js ./packages/ethers/dist/ethers-all.esm.min.js",
+    "_dist-min-en": "node ./admin/cmds/set-option.js browser-lang-en && rollup -c --configMinify && rollup -c --configMinify --configModule",
+    "_dist": "npm run _dist-min-all && npm run _dist-min-en && rollup -c && rollup -c --configModule",
+    "build-all": "node ./admin/cmds/update-exports.js && npm run _build-esm && npm run _build-cjs && npm run _dist",
+
     "clean": "node ./admin/cmds/reset-build.js && tsc --build --clean ./tsconfig.project.json",
-    "_dist_prepare": "npm run clean && npm run bootstrap && npm run build && node ./admin/cmds/update-exports.js",
+
     "_dist_ethers": "npm run _distMinLangAll && npm run _distMinLangEn && rollup -c && rollup -c --configModule",
+
+    "_dist_prepare": "npm run clean && npm run bootstrap && npm run build && node ./admin/cmds/update-exports.js",
     "_dist_tests": "rollup -c --configTest && rollup -c --configTest --configMinify && rollup -c --configTest --configModule && rollup -c --configTest --configModule --configMinify",
     "_test_prepare": "npm run _dist_prepare && npm run _dist_tests",
     "_test_node": "cd packages/tests && mocha --no-colors --reporter ./reporter ./lib/test-*.js",
@@ -26,16 +33,22 @@
     "old-test-phantomjs": "cd packages/tests && npm run dist-phantomjs && phantomjs --web-security=false ../../node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./test.html ./tests/reporter.js",
     "old-test-aion": "npm run dist && npm run test-aion-node",
     "old-test-aion-node": "cd packages/aion-tests && mocha --no-colors --reporter ../tests/tests/reporter ./tests/test-*.js",
-    "update-versions": "npm run _dist_prepare && node ./admin/cmds/update-versions",
-    "publish-all": "node ./admin/cmds/publish",
-    "_distMinLangAll": "node ./admin/cmds/set-option.js browser-lang-all && rollup -c --configMinify && rollup -c --configMinify --configModule && mv ./packages/ethers/dist/ethers.umd.min.js ./packages/ethers/dist/ethers-all.umd.min.js && mv ./packages/ethers/dist/ethers.esm.min.js ./packages/ethers/dist/ethers-all.esm.min.js",
-    "_distMinLangEn": "node ./admin/cmds/set-option.js browser-lang-en && rollup -c --configMinify && rollup -c --configMinify --configModule",
-    "_dist": "npm run build-all && npm run _distMinLangAll && npm run _distMinLangEn && rollup -c && rollup -c --configModule",
-    "_distTestBrowserEsm": "rollup -c rollup-tests.config.js --configModule",
-    "_distTestBrowserUmd": "rollup -c rollup-tests.config.js",
-    "_distTestBrowser": "npm run _distTestBrowserEsm && npm run _distTestBrowserUmd",
+
+    "_dist-tests-esm": "rollup -c rollup-tests.config.js --configModule",
+    "_dist-test-umd": "rollup -c rollup-tests.config.js",
+    "_test-browser-umd": "karma start --single-run --browsers ChromeHeadless karma-umd.conf.js",
+    "_test-browser-esm": "karma start --single-run --browsers ChromeHeadless karma-esm.conf.js",
+    "_test-node": "mocha --no-colors --reporter ./packages/tests/reporter ./packages/tests/lib/test-*.js",
+    "test-browser-umd": "npm run build-all && npm run _dist-test-umd && npm run _test-browser-umd",
+    "test-browser-esm": "npm run build-all && npm run _dist-test-esm && npm run _test-browser-esm",
+    "test-node": "npm run build-all && npm run _test-node",
+    "test": "if [ \"$TEST\" == \"\" ]; then npm run test-node; else npm run \"test-$TEST\"; fi",
+
     "lock-versions": "node ./admin/cmds/lock-versions",
     "build-docs": "flatworm docs.wrm docs",
+
+    "update-versions": "npm run _dist_prepare && node ./admin/cmds/update-versions",
+    "publish-all": "node ./admin/cmds/publish",
     "sync-github": "node ./admin/cmds/cache-github"
   },
   "devDependencies": {
@@ -45,15 +58,14 @@
     "aes-js": "3.0.0",
     "browserify": "16.2.3",
     "diff": "4.0.1",
-    "npm-packlist": "1.4.1",
+    "karma": "4.4.1",
+    "karma-chrome-launcher": "3.1.0",
+    "karma-mocha": "1.3.0",
     "lerna": "^3.13.0",
     "libnpm": "2.0.1",
     "mocha": "^5.2.0",
     "mocha-phantomjs-core": "2.1.2",
-    "scrypt-js": "3.0.0",
-    "semver": "^5.6.0",
-    "tar": "4.4.8",
-    "typescript": "3.6.2",
+    "npm-packlist": "1.4.1",
     "rollup": "1.20.1",
     "rollup-plugin-node-builtins": "2.1.2",
     "rollup-plugin-commonjs": "10.0.2",
@@ -62,6 +74,10 @@
     "rollup-plugin-node-resolve": "5.2.0",
     "rollup-plugin-terser": "5.1.1",
     "rollup-plugin-uglify": "6.0.2",
-    "rollup-pluginutils": "2.8.1"
+    "rollup-pluginutils": "2.8.1",
+    "scrypt-js": "3.0.0",
+    "semver": "^5.6.0",
+    "tar": "4.4.8",
+    "typescript": "3.6.2"
   }
 }

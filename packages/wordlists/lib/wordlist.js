@@ -37,11 +37,16 @@ var Wordlist = /** @class */ (function () {
             name = lang.locale;
         }
         if (exportWordlist) {
-            var g = global;
-            if (g._ethers && g._ethers.wordlists) {
-                if (!g._ethers.wordlists[name]) {
-                    properties_1.defineReadOnly(g._ethers.wordlists, name, lang);
+            try {
+                var anyGlobal = window;
+                if (anyGlobal._ethers && anyGlobal._ethers.wordlists) {
+                    if (!anyGlobal._ethers.wordlists[name]) {
+                        properties_1.defineReadOnly(anyGlobal._ethers.wordlists, name, lang);
+                    }
                 }
+            }
+            catch (error) {
+                console.log("FOOBAR2", error);
             }
         }
     };

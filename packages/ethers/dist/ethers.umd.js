@@ -13637,11 +13637,16 @@
 	            name = lang.locale;
 	        }
 	        if (exportWordlist) {
-	            var g = commonjsGlobal;
-	            if (g._ethers && g._ethers.wordlists) {
-	                if (!g._ethers.wordlists[name]) {
-	                    lib$3.defineReadOnly(g._ethers.wordlists, name, lang);
+	            try {
+	                var anyGlobal = window;
+	                if (anyGlobal._ethers && anyGlobal._ethers.wordlists) {
+	                    if (!anyGlobal._ethers.wordlists[name]) {
+	                        lib$3.defineReadOnly(anyGlobal._ethers.wordlists, name, lang);
+	                    }
 	                }
+	            }
+	            catch (error) {
+	                console.log("FOOBAR2", error);
 	            }
 	        }
 	    };
@@ -21480,8 +21485,14 @@
 	// To modify this file, you must update ./admin/cmds/update-exports.js
 	var ethers$1 = __importStar(ethers);
 	exports.ethers = ethers$1;
-	if (commonjsGlobal._ethers == null) {
-	    commonjsGlobal._ethers = ethers$1;
+	try {
+	    var anyGlobal = window;
+	    if (anyGlobal._ethers == null) {
+	        anyGlobal._ethers = ethers$1;
+	    }
+	}
+	catch (error) {
+	    console.log("FOOBAR", error);
 	}
 	var ethers_1 = ethers;
 	exports.Signer = ethers_1.Signer;

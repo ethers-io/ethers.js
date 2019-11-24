@@ -1,5 +1,5 @@
 'use strict';
 console.log("Using global.ethers");
 const anyGlobal = window;
-const ethers = anyGlobal.ethers;
+const ethers = anyGlobal._ethers;
 export { ethers };

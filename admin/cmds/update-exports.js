@@ -12,9 +12,13 @@ const output = `"use strict";
 
 import * as ethers from "./ethers";
 
-if ((<any>global)._ethers == null) {
-    (<any>global)._ethers = ethers;
-}
+try {
+    const anyGlobal = (window as any);
+
+    if (anyGlobal._ethers == null) {
+        anyGlobal._ethers = ethers;
+    }
+} catch (error) { }
 
 export { ethers };
 
