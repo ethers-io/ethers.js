@@ -4,7 +4,7 @@
     "@ethersproject/bytes": ">=5.0.0-beta.129",
     "@ethersproject/logger": ">=5.0.0-beta.129",
     "@ethersproject/properties": ">=5.0.0-beta.131",
-    "elliptic": "6.5.0"
+    "elliptic": "6.5.2"
   },
   "description": "Elliptic curve library functions for the secp256k1 curve.",
   "ethereum": "donations.ethers.eth",
@@ -26,7 +26,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x15e0a1cdc7f39f0c2a05638babfc2ff86ca11bdc92b01549fbabe10cb594aa58",
+  "tarballHash": "0x362ba6d101842859c8aa83120e4cec9d3970d345e681cba20c9fcf84838410fb",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.134"
+  "version": "5.0.0-beta.135"
 }
