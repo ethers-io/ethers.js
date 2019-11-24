@@ -55,6 +55,9 @@ export class Web3Provider extends JsonRpcProvider {
         }
 
         defineReadOnly(this, '_web3Provider', web3Provider);
+
+        // @TODO: In v5 remove the above definition; only this one is needed
+        defineReadOnly(this, 'provider', web3Provider);
     }
 
     send(method: string, params: any): Promise<any> {
