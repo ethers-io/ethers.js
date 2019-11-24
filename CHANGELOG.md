@@ -1,6 +1,14 @@
 CHANGELOG
 =========
 
+ethers/v4.0.40 (2019-11-24 19:58)
+---------------------------------
+
+  - Update elliptic package to protect from Minerva timing attack ([#666](https://github.com/ethers-io/ethers.js/issues/666); [20409c0](https://github.com/ethers-io/ethers.js/commit/20409c083cd428c46cba09488ee609cc14ff1d2b)).
+  - Do not poll if disabled during the previous event loop. ([7a90f18](https://github.com/ethers-io/ethers.js/commit/7a90f18145931e7ff790cd9e1fd549929fbb9023)).
+  - Moved node types to devDependencies ([#663](https://github.com/ethers-io/ethers.js/issues/663); [df1ae61](https://github.com/ethers-io/ethers.js/commit/df1ae611bab0955005b0da6604191b60b34f198f)).
+  - Added provider property to Web3Provider ([#641](https://github.com/ethers-io/ethers.js/issues/641); [6009a26](https://github.com/ethers-io/ethers.js/commit/6009a26c89c359ae44ef4b6e8a664ed57db24f67)).
+
 ethers/v4.0.39 (2019-10-30 19:15)
 ---------------------------------
 

@@ -47,6 +47,8 @@ var Web3Provider = /** @class */ (function (_super) {
             errors.throwError('invalid web3Provider', errors.INVALID_ARGUMENT, { arg: 'web3Provider', value: web3Provider });
         }
         properties_1.defineReadOnly(_this, '_web3Provider', web3Provider);
+        // @TODO: In v5 remove the above definition; only this one is needed
+        properties_1.defineReadOnly(_this, 'provider', web3Provider);
         return _this;
     }
     Web3Provider.prototype.send = function (method, params) {

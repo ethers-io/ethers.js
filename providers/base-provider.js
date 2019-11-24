@@ -452,6 +452,9 @@ var BaseProvider = /** @class */ (function (_super) {
     BaseProvider.prototype._doPoll = function () {
         var _this = this;
         this.getBlockNumber().then(function (blockNumber) {
+            if (!_this.polling) {
+                return;
+            }
             _this._setFastBlockNumber(blockNumber);
             // If the block hasn't changed, meh.
             if (blockNumber === _this._lastBlockNumber) {
