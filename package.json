@@ -1,6 +1,6 @@
 {
   "name": "ethers",
-  "version": "4.0.39",
+  "version": "4.0.40",
   "description": "Ethereum wallet library.",
   "main": "./index.js",
   "types": "./index.d.ts",
@@ -19,7 +19,6 @@
     "version": "npm dist"
   },
   "dependencies": {
-    "@types/node": "^10.3.2",
     "aes-js": "3.0.0",
     "bn.js": "^4.4.0",
     "elliptic": "6.3.3",
@@ -31,6 +30,7 @@
     "xmlhttprequest": "1.8.0"
   },
   "devDependencies": {
+    "@types/node": "^10.3.2",
     "browserify": "^16.2.3",
     "browserify-zlib": "^0.2.0",
     "dts-bundle": "^0.7.3",
