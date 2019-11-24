@@ -10949,7 +10949,7 @@
 	var browser$3 = unwrapExports(browser$2);
 	var browser_1$1 = browser$2.pbkdf2;
 
-	var version = "6.5.0";
+	var version = "6.5.2";
 	var _package = {
 		version: version
 	};
@@ -11035,14 +11035,17 @@
 	utils.encode = utils_1.encode;
 
 	// Represent num in a w-NAF form
-	function getNAF(num, w) {
-	  var naf = [];
+	function getNAF(num, w, bits) {
+	  var naf = new Array(Math.max(num.bitLength(), bits) + 1);
+	  naf.fill(0);
+
 	  var ws = 1 << (w + 1);
 	  var k = num.clone();
-	  while (k.cmpn(1) >= 0) {
+
+	  for (var i = 0; i < naf.length; i++) {
 	    var z;
+	    var mod = k.andln(ws - 1);
 	    if (k.isOdd()) {
-	      var mod = k.andln(ws - 1);
 	      if (mod > (ws >> 1) - 1)
 	        z = (ws >> 1) - mod;
 	      else
@@ -11051,13 +11054,9 @@
 	    } else {
 	      z = 0;
 	    }
-	    naf.push(z);
 
-	    // Optimization, shift by word if possible
-	    var shift = (k.cmpn(0) !== 0 && k.andln(ws - 1) === 0) ? (w + 1) : 1;
-	    for (var i = 1; i < shift; i++)
-	      naf.push(0);
-	    k.iushrn(shift);
+	    naf[i] = z;
+	    k.iushrn(1);
 	  }
 
 	  return naf;
@@ -11174,6 +11173,8 @@
 	  this._wnafT3 = new Array(4);
 	  this._wnafT4 = new Array(4);
 
+	  this._bitLength = this.n ? this.n.bitLength() : 0;
+
 	  // Generalized Greg Maxwell's trick
 	  var adjustCount = this.n && this.p.div(this.n);
 	  if (!adjustCount || adjustCount.cmpn(100) > 0) {
@@ -11197,7 +11198,7 @@
 	  assert$1(p.precomputed);
 	  var doubles = p._getDoubles();
 
-	  var naf = getNAF(k, 1);
+	  var naf = getNAF(k, 1, this._bitLength);
 	  var I = (1 << (doubles.step + 1)) - (doubles.step % 2 === 0 ? 2 : 1);
 	  I /= 3;
 
@@ -11234,7 +11235,7 @@
 	  var wnd = nafPoints.points;
 
 	  // Get NAF form
-	  var naf = getNAF(k, w);
+	  var naf = getNAF(k, w, this._bitLength);
 
 	  // Add `this`*(N+1) for every w-NAF index
 	  var acc = this.jpoint(null, null, null);
@@ -11290,8 +11291,8 @@
 	    var a = i - 1;
 	    var b = i;
 	    if (wndWidth[a] !== 1 || wndWidth[b] !== 1) {
-	      naf[a] = getNAF(coeffs[a], wndWidth[a]);
-	      naf[b] = getNAF(coeffs[b], wndWidth[b]);
+	      naf[a] = getNAF(coeffs[a], wndWidth[a], this._bitLength);
+	      naf[b] = getNAF(coeffs[b], wndWidth[b], this._bitLength);
 	      max = Math.max(naf[a].length, max);
 	      max = Math.max(naf[b].length, max);
 	      continue;
@@ -11942,8 +11943,9 @@
 
 	Point.prototype.mul = function mul(k) {
 	  k = new bn(k, 16);
-
-	  if (this._hasDoubles(k))
+	  if (this.isInfinity())
+	    return this;
+	  else if (this._hasDoubles(k))
 	    return this.curve._fixedNafMul(this, k);
 	  else if (this.curve.endo)
 	    return this.curve._endoWnafMulAdd([ this ], [ k ]);
@@ -13316,7 +13318,7 @@
 	var _version$o = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "signing-key/5.0.0-beta.134";
+	exports.version = "signing-key/5.0.0-beta.135";
 	});
 
 	var _version$p = unwrapExports(_version$o);
@@ -13591,7 +13593,7 @@
 	var _version$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wordlists/5.0.0-beta.133";
+	exports.version = "wordlists/5.0.0-beta.134";
 	});
 
 	var _version$t = unwrapExports(_version$s);
@@ -13645,9 +13647,7 @@
 	                    }
 	                }
 	            }
-	            catch (error) {
-	                console.log("FOOBAR2", error);
-	            }
+	            catch (error) { }
 	        }
 	    };
 	    return Wordlist;
@@ -21404,7 +21404,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.161";
+	exports.version = "ethers/5.0.0-beta.162";
 	});
 
 	var _version$L = unwrapExports(_version$K);
@@ -21491,9 +21491,7 @@
 	        anyGlobal._ethers = ethers$1;
 	    }
 	}
-	catch (error) {
-	    console.log("FOOBAR", error);
-	}
+	catch (error) { }
 	var ethers_1 = ethers;
 	exports.Signer = ethers_1.Signer;
 	exports.Wallet = ethers_1.Wallet;

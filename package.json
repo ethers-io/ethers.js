@@ -14,25 +14,26 @@
     "_build-esm": "node ./admin/cmds/set-option esm && npm run build",
     "_dist-min-all": "node ./admin/cmds/set-option.js browser-lang-all && rollup -c --configMinify && rollup -c --configMinify --configModule && mv ./packages/ethers/dist/ethers.umd.min.js ./packages/ethers/dist/ethers-all.umd.min.js && mv ./packages/ethers/dist/ethers.esm.min.js ./packages/ethers/dist/ethers-all.esm.min.js",
     "_dist-min-en": "node ./admin/cmds/set-option.js browser-lang-en && rollup -c --configMinify && rollup -c --configMinify --configModule",
-    "_dist": "npm run _dist-min-all && npm run _dist-min-en && rollup -c && rollup -c --configModule",
+    "_dist-full": "rollup -c && rollup -c --configModule",
+    "_dist": "npm run _dist-min-all && npm run _dist-min-en && npm run _dist-full",
     "build-all": "node ./admin/cmds/update-exports.js && npm run _build-esm && npm run _build-cjs && npm run _dist",
 
     "clean": "node ./admin/cmds/reset-build.js && tsc --build --clean ./tsconfig.project.json",
 
-    "_dist_ethers": "npm run _distMinLangAll && npm run _distMinLangEn && rollup -c && rollup -c --configModule",
+    "__dist_ethers": "npm run _dist-min-all && npm run _dist-min-en && npm run _dist-full",
 
-    "_dist_prepare": "npm run clean && npm run bootstrap && npm run build && node ./admin/cmds/update-exports.js",
-    "_dist_tests": "rollup -c --configTest && rollup -c --configTest --configMinify && rollup -c --configTest --configModule && rollup -c --configTest --configModule --configMinify",
-    "_test_prepare": "npm run _dist_prepare && npm run _dist_tests",
-    "_test_node": "cd packages/tests && mocha --no-colors --reporter ./reporter ./lib/test-*.js",
-    "test_node": "npm run _test_prepare && npm run _test_node",
-    "_dist_old": "npm run clean && npm run bootstrap && npm run build && lerna run dist",
-    "old-test": "npm run _dist_old && npm run test-check",
-    "old-test-check": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
-    "old-test-node": "cd packages/tests && mocha --no-colors --reporter ./tests/reporter ./tests/test-*.js",
-    "old-test-phantomjs": "cd packages/tests && npm run dist-phantomjs && phantomjs --web-security=false ../../node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./test.html ./tests/reporter.js",
-    "old-test-aion": "npm run dist && npm run test-aion-node",
-    "old-test-aion-node": "cd packages/aion-tests && mocha --no-colors --reporter ../tests/tests/reporter ./tests/test-*.js",
+    "__dist_prepare": "npm run clean && npm run bootstrap && npm run build && node ./admin/cmds/update-exports.js",
+    "__dist_tests": "rollup -c --configTest && rollup -c --configTest --configMinify && rollup -c --configTest --configModule && rollup -c --configTest --configModule --configMinify",
+    "__test_prepare": "npm run _dist_prepare && npm run _dist_tests",
+    "__test_node": "cd packages/tests && mocha --no-colors --reporter ./reporter ./lib/test-*.js",
+    "__test_node": "npm run _test_prepare && npm run _test_node",
+    "__dist_old": "npm run clean && npm run bootstrap && npm run build && lerna run dist",
+    "__old-test": "npm run _dist_old && npm run test-check",
+    "__old-test-check": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",
+    "__old-test-node": "cd packages/tests && mocha --no-colors --reporter ./tests/reporter ./tests/test-*.js",
+    "__old-test-phantomjs": "cd packages/tests && npm run dist-phantomjs && phantomjs --web-security=false ../../node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./test.html ./tests/reporter.js",
+    "__old-test-aion": "npm run dist && npm run test-aion-node",
+    "__old-test-aion-node": "cd packages/aion-tests && mocha --no-colors --reporter ../tests/tests/reporter ./tests/test-*.js",
 
     "_dist-tests-esm": "rollup -c rollup-tests.config.js --configModule",
     "_dist-test-umd": "rollup -c rollup-tests.config.js",
@@ -45,10 +46,14 @@
     "test": "if [ \"$TEST\" == \"\" ]; then npm run test-node; else npm run \"test-$TEST\"; fi",
 
     "lock-versions": "node ./admin/cmds/lock-versions",
+
     "build-docs": "flatworm docs.wrm docs",
 
-    "update-versions": "npm run _dist_prepare && node ./admin/cmds/update-versions",
+    "_admin_prepare": "npm run clean && npm run bootstrap && npm run build && node ./admin/cmds/update-exports.js",
+    "update-versions": "npm run _admin_prepare && node ./admin/cmds/update-versions",
+
     "publish-all": "node ./admin/cmds/publish",
+
     "sync-github": "node ./admin/cmds/cache-github"
   },
   "devDependencies": {

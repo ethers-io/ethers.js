@@ -3,6 +3,12 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.162 (2019-11-25 0:02)
+----------------------------------------
+
+  - Update elliptic package to protect from Minerva timing attack. ([#666](https://github.com/ethers-io/ethers.js/issues/666); [cf036e1](https://github.com/ethers-io/ethers.js/commit/cf036e1ffad3340fcf1c7559d0032493ccc08e6e))
+  - Browser and node testing works again. ([4470477](https://github.com/ethers-io/ethers.js/commit/4470477d7fd3031f2f3a1fbd9c538468c33c7350))
+
 ethers/v5.0.0-beta.161 (2019-11-23 21:43)
 -----------------------------------------
 

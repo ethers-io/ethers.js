@@ -9941,7 +9941,7 @@ exports.pbkdf2 = pbkdf2;
 var browser$3 = unwrapExports(browser$2);
 var browser_1$1 = browser$2.pbkdf2;
 
-var version$b = "6.5.0";
+var version$b = "6.5.2";
 var _package = {
 	version: version$b
 };
@@ -10027,14 +10027,17 @@ utils.toHex = utils_1.toHex;
 utils.encode = utils_1.encode;
 
 // Represent num in a w-NAF form
-function getNAF(num, w) {
-  var naf = [];
+function getNAF(num, w, bits) {
+  var naf = new Array(Math.max(num.bitLength(), bits) + 1);
+  naf.fill(0);
+
   var ws = 1 << (w + 1);
   var k = num.clone();
-  while (k.cmpn(1) >= 0) {
+
+  for (var i = 0; i < naf.length; i++) {
     var z;
+    var mod = k.andln(ws - 1);
     if (k.isOdd()) {
-      var mod = k.andln(ws - 1);
       if (mod > (ws >> 1) - 1)
         z = (ws >> 1) - mod;
       else
@@ -10043,13 +10046,9 @@ function getNAF(num, w) {
     } else {
       z = 0;
     }
-    naf.push(z);
 
-    // Optimization, shift by word if possible
-    var shift = (k.cmpn(0) !== 0 && k.andln(ws - 1) === 0) ? (w + 1) : 1;
-    for (var i = 1; i < shift; i++)
-      naf.push(0);
-    k.iushrn(shift);
+    naf[i] = z;
+    k.iushrn(1);
   }
 
   return naf;
@@ -10166,6 +10165,8 @@ function BaseCurve(type, conf) {
   this._wnafT3 = new Array(4);
   this._wnafT4 = new Array(4);
 
+  this._bitLength = this.n ? this.n.bitLength() : 0;
+
   // Generalized Greg Maxwell's trick
   var adjustCount = this.n && this.p.div(this.n);
   if (!adjustCount || adjustCount.cmpn(100) > 0) {
@@ -10189,7 +10190,7 @@ BaseCurve.prototype._fixedNafMul = function _fixedNafMul(p, k) {
   assert$1(p.precomputed);
   var doubles = p._getDoubles();
 
-  var naf = getNAF(k, 1);
+  var naf = getNAF(k, 1, this._bitLength);
   var I = (1 << (doubles.step + 1)) - (doubles.step % 2 === 0 ? 2 : 1);
   I /= 3;
 
@@ -10226,7 +10227,7 @@ BaseCurve.prototype._wnafMul = function _wnafMul(p, k) {
   var wnd = nafPoints.points;
 
   // Get NAF form
-  var naf = getNAF(k, w);
+  var naf = getNAF(k, w, this._bitLength);
 
   // Add `this`*(N+1) for every w-NAF index
   var acc = this.jpoint(null, null, null);
@@ -10282,8 +10283,8 @@ BaseCurve.prototype._wnafMulAdd = function _wnafMulAdd(defW,
     var a = i - 1;
     var b = i;
     if (wndWidth[a] !== 1 || wndWidth[b] !== 1) {
-      naf[a] = getNAF(coeffs[a], wndWidth[a]);
-      naf[b] = getNAF(coeffs[b], wndWidth[b]);
+      naf[a] = getNAF(coeffs[a], wndWidth[a], this._bitLength);
+      naf[b] = getNAF(coeffs[b], wndWidth[b], this._bitLength);
       max = Math.max(naf[a].length, max);
       max = Math.max(naf[b].length, max);
       continue;
@@ -10934,8 +10935,9 @@ Point.prototype.getY = function getY() {
 
 Point.prototype.mul = function mul(k) {
   k = new bn(k, 16);
-
-  if (this._hasDoubles(k))
+  if (this.isInfinity())
+    return this;
+  else if (this._hasDoubles(k))
     return this.curve._fixedNafMul(this, k);
   else if (this.curve.endo)
     return this.curve._endoWnafMulAdd([ this ], [ k ]);
@@ -12305,7 +12307,7 @@ elliptic.eddsa = eddsa;
 });
 var elliptic_2 = elliptic_1.ec;
 
-const version$c = "signing-key/5.0.0-beta.134";
+const version$c = "signing-key/5.0.0-beta.135";
 
 "use strict";
 const logger$f = new Logger(version$c);
@@ -12522,7 +12524,7 @@ function parse(rawTransaction) {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "wordlists/5.0.0-beta.133";
+exports.version = "wordlists/5.0.0-beta.134";
 });
 
 var _version$3 = unwrapExports(_version$2);
@@ -12576,9 +12578,7 @@ var Wordlist = /** @class */ (function () {
                     }
                 }
             }
-            catch (error) {
-                console.log("FOOBAR2", error);
-            }
+            catch (error) { }
         }
     };
     return Wordlist;
@@ -18959,7 +18959,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$l = "ethers/5.0.0-beta.161";
+const version$l = "ethers/5.0.0-beta.162";
 
 "use strict";
 const errors = Logger.errors;
@@ -18991,8 +18991,6 @@ try {
         anyGlobal._ethers = ethers;
     }
 }
-catch (error) {
-    console.log("FOOBAR", error);
-}
+catch (error) { }
 
 export { BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, browser_1$2 as Wordlist, index$1 as constants, errors, ethers, getDefaultProvider, logger$A as logger, index$2 as providers, utils$1 as utils, version$l as version, browser_2$1 as wordlists };

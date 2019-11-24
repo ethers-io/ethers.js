@@ -10,9 +10,7 @@ try {
     if (anyGlobal._ethers == null) {
         anyGlobal._ethers = ethers;
     }
-} catch (error) {
-    console.log("FOOBAR", error);
-}
+} catch (error) { }
 
 export { ethers };
 

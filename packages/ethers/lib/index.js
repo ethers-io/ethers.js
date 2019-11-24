@@ -16,9 +16,7 @@ try {
         anyGlobal._ethers = ethers;
     }
 }
-catch (error) {
-    console.log("FOOBAR", error);
-}
+catch (error) { }
 var ethers_1 = require("./ethers");
 exports.Signer = ethers_1.Signer;
 exports.Wallet = ethers_1.Wallet;

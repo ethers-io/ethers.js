@@ -45,9 +45,7 @@ var Wordlist = /** @class */ (function () {
                     }
                 }
             }
-            catch (error) {
-                console.log("FOOBAR2", error);
-            }
+            catch (error) { }
         }
     };
     return Wordlist;

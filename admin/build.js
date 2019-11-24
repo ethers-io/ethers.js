@@ -36,7 +36,7 @@ function run(progname, args, ignoreErrorStream) {
                 console.log("ERROR");
                 console.log(stderr.toString());
 
-                let error = new Error("stderr not empty");
+                let error = new Error(`stderr not empty: ${ progname } ${ JSON.stringify(args) }`);
                 error.stderr = stderr.toString();
                 error.stdout = stdout.toString();
                 error.statusCode = code;
@@ -105,7 +105,7 @@ function runBuild(buildModule) {
 }
 
 function runDist() {
-    return run("npm", [ "run", "_dist_ethers" ], true);
+    return run("npm", [ "run", "_dist" ], true);
 }
 
 module.exports = {

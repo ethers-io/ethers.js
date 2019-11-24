@@ -43,9 +43,7 @@ export class Wordlist {
                     }
                 }
             }
-            catch (error) {
-                console.log("FOOBAR2", error);
-            }
+            catch (error) { }
         }
     }
 }

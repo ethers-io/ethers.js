@@ -7,9 +7,7 @@ try {
         anyGlobal._ethers = ethers;
     }
 }
-catch (error) {
-    console.log("FOOBAR", error);
-}
+catch (error) { }
 export { ethers };
 export { Signer, Wallet, VoidSigner, getDefaultProvider, providers, Contract, ContractFactory, BigNumber, FixedNumber, constants, errors, logger, utils, wordlists, 
 ////////////////////////
