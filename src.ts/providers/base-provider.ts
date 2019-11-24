@@ -573,6 +573,8 @@ export class BaseProvider extends Provider {
 
     private _doPoll(): void {
         this.getBlockNumber().then((blockNumber) => {
+            if (!this.polling) { return; }
+
             this._setFastBlockNumber(blockNumber);
 
             // If the block hasn't changed, meh.
