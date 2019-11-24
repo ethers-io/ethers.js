@@ -110,4 +110,8 @@ function Reporter(runner) {
     });
 }
 
+try {
+    window.ethersReporter = Reporter;
+} catch (error) { }
+
 module.exports = Reporter;

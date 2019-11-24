@@ -59,6 +59,13 @@ if (!ArrayBuffer.isView) {
     }
 }
 
+if (Array.prototype.fill == null) {
+    shims.push("Array.fill");
+    Array.prototype.fill = function(value) {
+        for (var i = 0; i < this.length; i++) { this[i] = value; }
+    }
+}
+
 // Shim nextTick
 if (!global.nextTick) {
     shims.push("nextTick");
