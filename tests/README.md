@@ -63,7 +63,7 @@ Building Testcases
 ------------------
 
 Each suite of testcases is produced from a variety of sources. Many include a
-specific set of test vecotrs as well as procedurally generated tests using known
+specific set of test vectors as well as procedurally generated tests using known
 correct implementations.
 
 The `contract-interface` test cases are created by selecting a (deterministically) random
