@@ -35,7 +35,7 @@
     "__old-test-aion": "npm run dist && npm run test-aion-node",
     "__old-test-aion-node": "cd packages/aion-tests && mocha --no-colors --reporter ../tests/tests/reporter ./tests/test-*.js",
 
-    "_dist-tests-esm": "rollup -c rollup-tests.config.js --configModule",
+    "_dist-test-esm": "rollup -c rollup-tests.config.js --configModule",
     "_dist-test-umd": "rollup -c rollup-tests.config.js",
     "_test-browser-umd": "karma start --single-run --browsers ChromeHeadless karma-umd.conf.js",
     "_test-browser-esm": "karma start --single-run --browsers ChromeHeadless karma-esm.conf.js",
