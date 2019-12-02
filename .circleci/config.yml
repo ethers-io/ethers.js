@@ -17,7 +17,18 @@ jobs:
     steps:
       - checkout
 
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
       - run: npm install
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
 
       - run:
           name: Prepare to run parity
@@ -64,7 +75,9 @@ jobs:
            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
            nvm install << parameters.node-version >>
            node -v
-           npm install
+           find . -name node-gyp
+           npm install -g node-gyp
+           node-gyp -v
            npm run bootstrap
            npm run << parameters.test-script >>
 
