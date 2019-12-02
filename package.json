@@ -26,6 +26,7 @@
     "__dist_tests": "rollup -c --configTest && rollup -c --configTest --configMinify && rollup -c --configTest --configModule && rollup -c --configTest --configModule --configMinify",
     "__test_prepare": "npm run _dist_prepare && npm run _dist_tests",
     "__test_node": "cd packages/tests && mocha --no-colors --reporter ./reporter ./lib/test-*.js",
+    "__test_node": "npm run _test_prepare && npm run _test_node",
     "__dist_old": "npm run clean && npm run bootstrap && npm run build && lerna run dist",
     "__old-test": "npm run _dist_old && npm run test-check",
     "__old-test-check": "if [ \"$RUN_PHANTOMJS\" = \"1\" ]; then npm run-script test-phantomjs; else npm run-script test-node; fi",

@@ -75,6 +75,7 @@ jobs:
            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
            nvm install << parameters.node-version >>
            node -v
+           npm install
            npm run bootstrap
            npm run << parameters.test-script >>
 
