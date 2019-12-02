@@ -75,7 +75,7 @@ jobs:
            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
            nvm install << parameters.node-version >>
            node -v
-           rm -rf /opt/circleci/.nvm/versions/node/v<<parameters.node-version>>/lib/node_modules/npm/node_modules/node-gyp
+           nvm --version
            npm run bootstrap
            npm run << parameters.test-script >>
 
