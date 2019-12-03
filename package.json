@@ -7,7 +7,7 @@
   },
   "scripts": {
     "auto-build": "node ./admin/cmds/reset-build.js && npm run build -- -w",
-    "bootstrap": "node ./admin/cmds/reset-build.js && node ./admin/cmds/update-depgraph && lerna bootstrap --hoist",
+    "bootstrap": "node ./admin/cmds/reset-build.js && node ./admin/cmds/update-depgraph && lerna bootstrap",
     "build": "tsc --build ./tsconfig.project.json",
 
     "_build-cjs": "node ./admin/cmds/set-option cjs && npm run build",
