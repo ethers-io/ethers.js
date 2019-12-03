@@ -17,10 +17,6 @@ jobs:
     steps:
       - checkout
 
-      - run: npm install -g npm
-
-      - run: npm ci
-
       - run:
           name: Prepare to run parity
           command: |
@@ -66,7 +62,9 @@ jobs:
            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
            nvm install << parameters.node-version >>
            node -v
+           npm install -g npm
            npm -v
+           npm ci
            npm run bootstrap
            npm run << parameters.test-script >>
 
