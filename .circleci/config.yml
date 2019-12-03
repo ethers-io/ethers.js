@@ -17,7 +17,21 @@ jobs:
     steps:
       - checkout
 
+      - run: npm install -g npm
+
+      - run: npm -v
+
+      - restore_cache:
+           keys:
+              - v1-dependencies-{{ checksum "package-lock.json" }}
+              - v1-dependencies-
+
       - run: npm ci
+
+      - save_cache:
+           paths:
+              - node_modules
+           keys: v1-dependencies-{{ checksum "package-lock.json" }}
 
       - run:
           name: Prepare to run parity
