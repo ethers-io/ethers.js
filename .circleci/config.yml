@@ -65,6 +65,7 @@ jobs:
            npm install -g npm
            npm -v
            npm ci
+           rm -rf /home/circleci/.cache/node-gyp
            npm run bootstrap
            npm run << parameters.test-script >>
 
