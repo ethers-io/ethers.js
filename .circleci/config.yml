@@ -18,6 +18,15 @@ jobs:
       - checkout
 
       - run:
+          name: Update gcc version
+          command: |
+            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+            sudo apt update
+            sudo apt install gcc-6
+            sudo apt install g++-6
+            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6
+
+      - run:
           name: Prepare to run parity
           command: |
             mkdir -p /tmp/parity/keys
@@ -66,7 +75,6 @@ jobs:
            npm -v
            npm ci
            rm -rf /home/circleci/.cache/node-gyp
-           apt install gcc-9
            gcc --version
            npm run bootstrap
            npm run << parameters.test-script >>
