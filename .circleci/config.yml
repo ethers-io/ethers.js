@@ -66,8 +66,8 @@ jobs:
            npm -v
            npm ci
            rm -rf /home/circleci/.cache/node-gyp
-           which g++
-           g++ --version
+           apt install gcc-9
+           gcc --version
            npm run bootstrap
            npm run << parameters.test-script >>
 
