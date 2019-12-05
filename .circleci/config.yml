@@ -79,8 +79,9 @@ jobs:
            npm run bootstrap
            npm run build-esm
            ls -la ./packages/tests/dist
-           cat ./packages/tests/dist/tests.esm.js
-           npm run test-esm
+
+      - store_artifacts:
+           path: ./packages/tests/dist
 
 workflows:
   version: 2
