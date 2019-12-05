@@ -77,7 +77,11 @@ jobs:
            rm -rf /home/circleci/.cache/node-gyp
            gcc --version
            npm run bootstrap
+           ls -la ./packages/tests/dist/
            npm run << parameters.test-script >>
+
+      - store_artifacts:
+           path: ./packages/tests/dist
 
 workflows:
   version: 2
@@ -93,5 +97,5 @@ workflows:
           node-version: "12.13.1"
           test-script: "test-node"
       - run-test:
-          node-version: "10.16.0"
+          node-version: "12.13.1"
           test-script: "test-browser-esm"
