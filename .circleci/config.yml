@@ -77,29 +77,15 @@ jobs:
            rm -rf /home/circleci/.cache/node-gyp
            gcc --version
            npm run bootstrap
-           npm run << parameters.test-script >>
-
-      - run:
-          name: debug list content of test dist folder
-          command: |
-           ls -la ./packages/tests/dist/
-
-      - store_artifacts:
-           path: ./packages/tests/dist
+           npm run build-esm
+           ls -la ./packages/tests/dist
+           cat ./packages/tests/dist/tests.esm.js
+           npm run test-esm
 
 workflows:
   version: 2
   all:
     jobs:
-      - run-test:
-          node-version: "8.16.1"
-          test-script: "test-node"
-      - run-test:
-          node-version: "10.16.3"
-          test-script: "test-node"
-      - run-test:
-          node-version: "12.13.1"
-          test-script: "test-node"
       - run-test:
           node-version: "12.13.1"
           test-script: "test-browser-esm"

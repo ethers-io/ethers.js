@@ -42,6 +42,8 @@
     "_test-node": "mocha --no-colors --reporter ./packages/tests/reporter ./packages/tests/lib/test-*.js",
     "test-browser-umd": "npm run build-all && npm run _dist-test-umd && npm run _test-browser-umd",
     "test-browser-esm": "npm run build-all && npm run _dist-test-esm && npm run _test-browser-esm",
+    "build-esm": "npm run build-all && npm run _dist-test-esm",
+    "test-esm": "npm run _test-browser-esm",
     "test-node": "npm run build-all && npm run _test-node",
     "test": "if [ \"$TEST\" == \"\" ]; then npm run test-node; else npm run \"test-$TEST\"; fi",
 
