@@ -77,7 +77,7 @@ jobs:
            rm -rf /home/circleci/.cache/node-gyp
            gcc --version
            npm run bootstrap
-           npm run build-esm
+           npm run test-esm
            ls -la ./packages/tests/dist
 
       - store_artifacts:
