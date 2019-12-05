@@ -4,7 +4,6 @@ module.exports = function(config) {
   config.set({
     frameworks: [ 'mocha' ],
     files: [
-        { pattern: "./packages/ethers/dist/ethers-all.esm.min.js", type: "module" },
         { pattern: "./packages/tests/dist/tests.esm.js", type: "module" }
     ],
     reporters: [ 'progress' ],
