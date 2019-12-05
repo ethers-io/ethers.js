@@ -77,8 +77,12 @@ jobs:
            rm -rf /home/circleci/.cache/node-gyp
            gcc --version
            npm run bootstrap
-           ls -la ./packages/tests/dist/
            npm run << parameters.test-script >>
+
+      - run:
+          name: debug list content of test dist folder
+          command: |
+           ls -la ./packages/tests/dist/
 
       - store_artifacts:
            path: ./packages/tests/dist
