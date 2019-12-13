@@ -9,7 +9,6 @@
     "auto-build": "node ./admin/cmds/reset-build.js && npm run build -- -w",
     "bootstrap": "node ./admin/cmds/reset-build.js && node ./admin/cmds/update-depgraph && lerna bootstrap --hoist",
     "build": "tsc --build ./tsconfig.project.json",
-
     "_build-cjs": "node ./admin/cmds/set-option cjs && npm run build",
     "_build-esm": "node ./admin/cmds/set-option esm && npm run build",
     "_dist-min-all": "node ./admin/cmds/set-option.js browser-lang-all && rollup -c --configMinify && rollup -c --configMinify --configModule && mv ./packages/ethers/dist/ethers.umd.min.js ./packages/ethers/dist/ethers-all.umd.min.js && mv ./packages/ethers/dist/ethers.esm.min.js ./packages/ethers/dist/ethers-all.esm.min.js",
@@ -17,15 +16,11 @@
     "_dist-full": "rollup -c && rollup -c --configModule",
     "_dist": "npm run _dist-min-all && npm run _dist-min-en && npm run _dist-full",
     "build-all": "node ./admin/cmds/update-exports.js && npm run _build-esm && npm run _build-cjs && npm run _dist",
-
     "clean": "node ./admin/cmds/reset-build.js && tsc --build --clean ./tsconfig.project.json",
-
     "__dist_ethers": "npm run _dist-min-all && npm run _dist-min-en && npm run _dist-full",
-
     "__dist_prepare": "npm run clean && npm run bootstrap && npm run build && node ./admin/cmds/update-exports.js",
     "__dist_tests": "rollup -c --configTest && rollup -c --configTest --configMinify && rollup -c --configTest --configModule && rollup -c --configTest --configModule --configMinify",
     "__test_prepare": "npm run _dist_prepare && npm run _dist_tests",
-    "__test_node": "cd packages/tests && mocha --no-colors --reporter ./reporter ./lib/test-*.js",
     "__test_node": "npm run _test_prepare && npm run _test_node",
     "__dist_old": "npm run clean && npm run bootstrap && npm run build && lerna run dist",
     "__old-test": "npm run _dist_old && npm run test-check",
@@ -34,7 +29,6 @@
     "__old-test-phantomjs": "cd packages/tests && npm run dist-phantomjs && phantomjs --web-security=false ../../node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js ./test.html ./tests/reporter.js",
     "__old-test-aion": "npm run dist && npm run test-aion-node",
     "__old-test-aion-node": "cd packages/aion-tests && mocha --no-colors --reporter ../tests/tests/reporter ./tests/test-*.js",
-
     "_dist-test-esm": "rollup -c rollup-tests.config.js --configModule",
     "_dist-test-umd": "rollup -c rollup-tests.config.js",
     "_test-browser-umd": "karma start --single-run --browsers ChromeHeadless karma-umd.conf.js",
@@ -44,16 +38,11 @@
     "test-browser-esm": "npm run build-all && npm run _dist-test-esm && npm run _test-browser-esm",
     "test-node": "npm run build-all && npm run _test-node",
     "test": "if [ \"$TEST\" == \"\" ]; then npm run test-node; else npm run \"test-$TEST\"; fi",
-
     "lock-versions": "node ./admin/cmds/lock-versions",
-
     "build-docs": "flatworm docs.wrm docs",
-
     "_admin_prepare": "npm run clean && npm run bootstrap && npm run build && node ./admin/cmds/update-exports.js",
     "update-versions": "npm run _admin_prepare && node ./admin/cmds/update-versions",
-
     "publish-all": "node ./admin/cmds/publish",
-
     "sync-github": "node ./admin/cmds/cache-github"
   },
   "devDependencies": {
