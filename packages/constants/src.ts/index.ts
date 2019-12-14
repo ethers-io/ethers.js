@@ -5,11 +5,8 @@ import { BigNumber } from "@ethersproject/bignumber";
 const AddressZero = "0x0000000000000000000000000000000000000000";
 const HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
-// NFKD (decomposed)
-//const EtherSymbol = "\uD835\uDF63";
-
-// NFKC (composed)
-const EtherSymbol = "\u039e";
+// NFKC (composed)             // (decomposed)
+const EtherSymbol = "\u039e";  // "\uD835\uDF63";
 
 const NegativeOne: BigNumber = BigNumber.from(-1);
 const Zero: BigNumber = BigNumber.from(0);

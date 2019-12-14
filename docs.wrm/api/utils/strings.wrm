@@ -17,25 +17,25 @@ single word (32 bytes). Since we need only a single byte for the
 null termination, we can store strings up to 31 bytes long in a
 word.
 
-_definition: **Note:**
+_note: Note
 Strings that are 31 __//bytes//__ long may contain fewer than 31 __//characters//__,
 since UTF-8 requires multiple bytes to encode international characters.
 
-_property: utils.parseBytes32String(aBytesLike) => string
+_property: utils.parseBytes32String(aBytesLike) => string  @<utils-parsebytes32> @TS<strings:>
 Returns the decoded string represented by the ``Bytes32`` encoded data.
 
-_property: utils.formatBytes32String(text) => string
+_property: utils.formatBytes32String(text) => string  @<utils-formatbytes32> @TS<strings:>
 Returns a ``bytes32`` string representation of //text//. If the
 length of //text// exceeds 31 bytes, it will throw an error.
 
 
 _subsection: UTF-8 Strings @<utf8-string>
 
-_property: utils.toUtf8Bytes(text [ , form = current ] ) => Uint8Array
+_property: utils.toUtf8Bytes(text [ , form = current ] ) => Uint8Array  @<utils-toutf8bytes> @TS<strings:>
 Returns the UTF-8 bytes of //text//, optionally normalizing it using the
 [[unicode-normalization-form]] //form//.
 
-_property: utils.toUtf8CodePoints(aBytesLike [ , form = current ] ) => Array<number>
+_property: utils.toUtf8CodePoints(aBytesLike [ , form = current ] ) => Array<number>  @<utils-toutf8codepoints> @TS<strings:>
 Returns the Array of codepoints of //aBytesLike//, optionally normalizing it using the
 [[unicode-normalization-form]] //form//.
 
@@ -44,7 +44,7 @@ its codepoint, accounting for surrogate pairs. This should not be confused with
 ``string.split("")``, which destroys surrogate pairs, spliting between each UTF-16
 codeunit instead.
 
-_property: utils.toUtf8String(aBytesLike [ , ignoreErrors = false ] ) => string
+_property: utils.toUtf8String(aBytesLike [ , ignoreErrors = false ] ) => string  @<utils-toutf8string> @TS<strings:>
 Returns the string represented by the UTF-8 bytes of //aBytesLike//. This will
 throw an error for invalid surrogates, overlong sequences or other UTF-8 issues,
 unless //ignoreErrors// is specified.
@@ -86,7 +86,7 @@ _property: utils.UnicodeNormalizationForm.NFKD
 The Decomposed Normalization Form with Canonical Equivalence.
 See NFKC for more an example.
 
-_definition: **Note:**
+_note: Note
 Only certain specified characters are folded in Canonical Equivalence, and thus
-it should not be considered a method to acheive //any// level of security from
+it should **not** be considered a method to acheive //any// level of security from
 [homoglyph attacks](https://en.wikipedia.org/wiki/IDN_homograph_attack).

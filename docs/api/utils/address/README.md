@@ -11,7 +11,7 @@ Addresses
 
 Explain addresses,formats and checksumming here.
 
-Also see: [Constants.AddressZero](../constants)
+Also see: [constants.AddressZero](../constants)
 
 
 ### Functions
@@ -20,32 +20,39 @@ Also see: [Constants.AddressZero](../constants)
 
 #### *utils* . **getAddress** ( address )  **=>** *string*
 
-TODO
+Returns *address* as a Checksum Address.
+
+If *address* is an invalid 40-nibble [Hexstring](../bytes) or if it contains mixed case and
+the checksum is invalid, an InvalidArgument Error is throw.
+
+The value of *address* may be any supported address format.
 
 
 
 
 #### *utils* . **isAddress** ( address )  **=>** *boolean*
 
-TODO
+Returns true if *address* is valid (in any supported format).
 
 
 
 
 #### *utils* . **getIcapAddress** ( address )  **=>** *string*
 
-TODO
+Returns *address* as an ICAP address. Supports the same restrictions as
+[utils.getAddress](./).
 
 
 
 
 #### *utils* . **getContractAddress** ( transaction )  **=>** *string*
 
-TODO
+Returns the contract address that would result if *transaction* was
+used to deploy a contract.
 
 
 
 
 
 -----
-**Content Hash:** 0e138a3fe39efa87749ebc8290d153f705d26e547a38b7dce5f4d85603264d24
+**Content Hash:** 2dd561245955594d7080796077503064181258304572112d320139ae2594f383

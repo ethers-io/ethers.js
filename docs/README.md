@@ -45,6 +45,7 @@ Developer Documentation
   * [Importing](getting-started)
 * [Concepts](concepts)
   * [Events](concepts/events)
+    * [Solidity Topics](concepts/events)
   * [Gas](concepts/gas)
     * [Gas Price](concepts/gas)
     * [Gas Limit](concepts/gas)
@@ -73,6 +74,7 @@ Developer Documentation
       * [InfuraProvider](api/providers/api-providers)
       * [NodesmithProvider](api/providers/api-providers)
       * [AlchemyProvider](api/providers/api-providers)
+      * [CloudfrontProvider](api/providers/api-providers)
     * [Other Providers](api/providers/other)
       * [FallbackProvider](api/providers/other)
       * [IpcProvider](api/providers/other)
@@ -141,4 +143,4 @@ older versions of the library.
 
 
 -----
-**Content Hash:** 6abeb4fa3f15b3443d89a26a6b0320f602a12368bc5ebbfb14a6cce682836167
+**Content Hash:** f1da4df3feeb06a567657ae41d8498ea3315f68d05dc2f9e86c2858b5d2b2f89

@@ -50,7 +50,7 @@ const { ethers } = require("ethers");
 
 
 It is generally better practice (for security reasons) to copy the
-[ethers library](https://cdn.ethers.io/lib/ethers-5.0.min.js) to
+[ethers library](https://cdn.ethers.io/lib/ethers-5.0.esm.min.js) to
 your own webserver and serve it yourself.
 
 For quick demos or prototyping though, it can be loaded in your
@@ -58,7 +58,7 @@ Web Applications from our CDN.
 
 
 ```
-<script src="https://cdn.ethers.io/lib/ethers-5.0.min.js"
+<script src="https://cdn.ethers.io/lib/ethers-5.0.esm.min.js"
         type="application/javascipt"></script>
 ```
 
@@ -66,4 +66,4 @@ Web Applications from our CDN.
 
 
 -----
-**Content Hash:** 01b739e7d4410ec57652b8058ae7a5902107ce0b170ecd3550cbc97f4d287fd8
+**Content Hash:** a78889cf0b1215b8268f76e5cef5869b2b592e56a5ce062d58dfcc4f5b93159d

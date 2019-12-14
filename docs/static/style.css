@@ -312,6 +312,60 @@ div.breadcrumbs span.current {
     width: 800px;
 }
 
+.show-anchors > div {
+    position: relative;
+}
+
+.show-anchors > div > .anchors {
+    display: block;
+    height: 100%;
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    width: 100%;
+}
+
+.anchors a {
+    height: 50px;
+    position: absolute;
+    line-height: 50px;
+    pointer-events: auto;
+    transition: opacity 0.3s linear;
+    top: 50%;
+}
+
+.anchors a.self {
+    background: url(./link.svg) center no-repeat;
+    left: -8px;
+    opacity: 0;
+    transform: translate(-100%, -50%);
+    width: 20px;
+}
+
+.show-anchors:hover > div > .anchors a.self {
+    opacity: 0.3;
+}
+
+.show-anchors > div > .anchors a.self:hover {
+    opacity: 1;
+}
+
+.anchors a.source {
+    right: 0;
+    opacity: 0.3;
+    transform: translate(100%, -50%);
+}
+
+.show-anchors:hover > div > .anchors a.source {
+    opacity: 1;
+}
+
+.anchors a.source:hover {
+    opacity: 1;
+}
+
+
+
 .definition {
     margin: 10px 0 0 15px;
     padding: 10px 0 0 15px;
@@ -323,13 +377,53 @@ div.breadcrumbs span.current {
 
 .definition .term {
     font-size: 110%;
-    dddfont-weight: bold;
 }
+
+.definition.container-box {
+    border-radius: 5px;
+    left: 15px;
+    margin-bottom: 30px;
+    margin-top: 30px;
+    padding: 0;
+    position: relative;
+    width: 90%;
+}
+
+.definition.container-box .term {
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 5px 15px;
+}
+
+.definition.container-box p {
+    font-size: 16px;
+    padding: 10px 30px;
+}
+
+.definition.container-box.note {
+    border: 2px solid #184e80;
+}
+
+.definition.container-box.note .term {
+    background-color: #65a9e9;
+    ddd-border: 2px solid #184e80;
+}
+
+
+.definition.container-box.warning {
+    border: 2px solid #804e18;
+}
+
+.definition.container-box.warning .term {
+    background-color: #cf7a00;
+}
+
 
 code.inline {
     background: #eef;
-    dddpadding-left: 5px;
-    dddpadding-right: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 .property {

@@ -73,6 +73,7 @@ Provider Documentation
   * [InfuraProvider](api-providers)
   * [NodesmithProvider](api-providers)
   * [AlchemyProvider](api-providers)
+  * [CloudfrontProvider](api-providers)
 * [Other Providers](other)
   * [FallbackProvider](other)
   * [IpcProvider](other)
@@ -84,4 +85,4 @@ Provider Documentation
 
 
 -----
-**Content Hash:** b15d8a2febb07abbbd784242c47575fbbb097f24643997ce30625c2e88adb095
+**Content Hash:** 4bae65aa1521a7ecf045f950c9a702ad597d83095d079e66a5abbd327373877c

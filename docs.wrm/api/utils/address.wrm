@@ -4,18 +4,27 @@ _section: Addresses
 
 Explain addresses,formats and checksumming here.
 
-Also see: [Constants.AddressZero](constants)
+Also see: [constants.AddressZero](constants)
 
 _heading: Functions
 
-_property: utils.getAddress(address) => string
-TODO
 
-_property: utils.isAddress(address) => boolean
-TODO
+_property: utils.getAddress(address) => string  @<utils-getAddress> @TS<address:>
+Returns //address// as a Checksum Address.
 
-_property: utils.getIcapAddress(address) => string
-TODO
+If //address// is an invalid 40-nibble [[hexstring]] or if it contains mixed case and
+the checksum is invalid, an InvalidArgument Error is throw.
 
-_property: utils.getContractAddress(transaction) => string
-TODO
+The value of //address// may be any supported address format.
+
+
+_property: utils.isAddress(address) => boolean  @<utils-isAddress> @TS<address:>
+Returns true if //address// is valid (in any supported format).
+
+_property: utils.getIcapAddress(address) => string  @<utils-getIcapAddress> @TS<address:>
+Returns //address// as an ICAP address. Supports the same restrictions as
+[utils.getAddress](utils-getAddress).
+
+_property: utils.getContractAddress(transaction) => string  @<utils-getContractAddress> @TS<address:>
+Returns the contract address that would result if //transaction// was
+used to deploy a contract.
