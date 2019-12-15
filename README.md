@@ -1,11 +1,17 @@
 The Ethers Project
 ==================
 
-**EXPERIMENTAL!!!**
+**EXPERIMENTAL**
 
-This is just a development version to experiment with lerna.
+This branch is the next release of ethers.js, which should
+be promoted to the official release shortly.
 
-**Do NOT use**
+I would recommend it for most new projects and personally use
+it for my own projects.
+
+The [new documentation](https://docs-beta.ethers.io) is still a
+bit sparse, but is coming along as well and will be complete
+before the promotion to master.
 
 
 Installing
@@ -17,10 +23,18 @@ Installing
 /home/ricmoo/some_project> npm install --save ethers@next
 ```
 
-**browser**
+**browser (UMD)**
 
 ```
-<script src="https://cdn.ethers.io/lib/ethers-5.0.min.js" type="text/javasctipt">
+<script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js" type="text/javasctipt">
+</script>
+```
+
+**browser (ESM)**
+
+```
+<script type="module">
+    import { ethers } from "https://cdn.ethers.io/lib/ethers-5.0.umd.min.js";
 </script>
 ```
 
