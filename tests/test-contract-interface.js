@@ -540,3 +540,46 @@ describe('Test Filters', function() {
         doTest(test);
     });
 });
+
+describe('Test Solidity v0.6 ABI', function() {
+
+    var tests = [
+        {
+            inputs: [ ],
+            outputs: [ ],
+            stateMutability: "view",
+            type: "function",
+            name: "testView_call"
+        },
+        {
+            inputs: [ ],
+            outputs: [ ],
+            stateMutability: "pure",
+            type: "function",
+            name: "testPure_call"
+        },
+        {
+            inputs: [ ],
+            outputs: [ ],
+            stateMutability: "payable",
+            type: "function",
+            name: "testPayable_transaction"
+        },
+        {
+            inputs: [ ],
+            outputs: [ ],
+            stateMutability: "nonpayable",
+            type: "function",
+            name: "testNonpayable_transaction"
+        },
+    ];
+
+    tests.forEach(function(test, index) {
+        var type = test.name.split("_")[1];
+        it(('generates fragment from ABI - ' + test.name.split("_")[0]), function() {
+            var iface = new ethers.utils.Interface(JSON.stringify([ test ]));
+            var func = iface.functions[test.name];
+            assert.equal(func.type, type, "matches type");
+        });
+    });
+});
