@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+ethers/v4.0.41 (2019-12-21 01:05)
+---------------------------------
+
+  - Added proper support for v0.6 Solidity JSON type ([#688](https://github.com/ethers-io/ethers.js/issues/688); [20f34f1](https://github.com/ethers-io/ethers.js/commit/20f34f1ba9c698d1731cb12c5de1822ad462fd7f)).
+
 ethers/v4.0.40 (2019-11-24 19:58)
 ---------------------------------
 

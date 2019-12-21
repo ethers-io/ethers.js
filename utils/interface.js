@@ -243,12 +243,19 @@ function addMethod(method) {
         case 'function': {
             var signature = abi_coder_1.formatSignature(method).replace(/tuple/g, '');
             var sighash = hash_1.id(signature).substring(0, 10);
+            var isConst = false;
+            if (method.constant != null) {
+                isConst = method.constant;
+            }
+            else if (method.stateMutability != null) {
+                isConst = (method.stateMutability == "view" || method.stateMutability == "pure");
+            }
             var description = new _FunctionDescription({
                 inputs: method.inputs,
                 outputs: method.outputs,
                 gas: method.gas,
                 payable: (method.payable == null || !!method.payable),
-                type: ((method.constant) ? 'call' : 'transaction'),
+                type: (isConst ? 'call' : 'transaction'),
                 name: method.name,
                 signature: signature,
                 sighash: sighash,
