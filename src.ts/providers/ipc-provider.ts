@@ -54,8 +54,15 @@ export class IpcProvider extends JsonRpcProvider {
 
             stream.on("end", () => {
                 try {
-                    resolve(JSON.parse(response.toString('utf8')).result);
-                    // @TODO: Better pull apart the error
+                    const payload = JSON.parse(response.toString('utf8'));
+                    if (payload.error) {
+                        const error: any = new Error(payload.error.message);
+                        error.code = payload.error.code;
+                        error.data = payload.error.data;
+                        reject(error);
+                    } else {
+                        resolve(payload.result);
+                    }
                     stream.destroy();
                 } catch (error) {
                     reject(error);
