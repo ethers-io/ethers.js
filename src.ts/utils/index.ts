@@ -1,7 +1,7 @@
 'use strict';
 
 import { AbiCoder, defaultAbiCoder, formatSignature, formatParamType, parseSignature, parseParamType } from './abi-coder';
-import { getAddress, getContractAddress, getIcapAddress } from './address';
+import { getAddress, getContractAddress, getCreate2Address, getIcapAddress } from './address';
 import * as base64 from './base64';
 import { BigNumber, bigNumberify } from './bignumber';
 import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexZeroPad, isHexString, joinSignature, padZeros, splitSignature, stripZeros } from './bytes';
@@ -103,6 +103,7 @@ export {
     getAddress,
     getIcapAddress,
     getContractAddress,
+    getCreate2Address,
 
     formatEther,
     parseEther,

@@ -3,7 +3,7 @@
 // We use this for base 36 maths
 import BN from 'bn.js';
 
-import { arrayify, stripZeros, hexlify } from './bytes';
+import { arrayify, concat, stripZeros, hexlify } from './bytes';
 import { BigNumber } from './bignumber';
 import { keccak256 } from './keccak256';
 import { encode } from './rlp';
@@ -140,3 +140,47 @@ export function getContractAddress(transaction: { from: string, nonce: Arrayish 
     ])).substring(26));
 }
 
+export type Create2Options = {
+    from: string,
+    salt: Arrayish,
+    initCode?: Arrayish,
+    initCodeHash?: Arrayish,
+};
+
+// See: https://eips.ethereum.org/EIPS/eip-1014
+export function getCreate2Address(options: Create2Options): string {
+    let initCodeHash = options.initCodeHash;
+    if (options.initCode) {
+        if (initCodeHash) {
+            if (keccak256(options.initCode) !== initCodeHash) {
+                errors.throwError("initCode/initCodeHash mismatch", errors.INVALID_ARGUMENT, {
+                    arg: "options", value: options
+                });
+            }
+        } else {
+            initCodeHash = keccak256(options.initCode);
+        }
+    }
+
+    if (!initCodeHash) {
+        errors.throwError("missing initCode or initCodeHash", errors.INVALID_ARGUMENT, {
+            arg: "options", value: options
+        });
+    }
+
+    const from = getAddress(options.from);
+
+    const salt = arrayify(options.salt);
+    if (salt.length !== 32) {
+        errors.throwError("invalid salt", errors.INVALID_ARGUMENT, {
+            arg: "options", value: options
+        });
+    }
+
+    return getAddress("0x" + keccak256(concat([
+        "0xff",
+        from,
+        salt,
+        initCodeHash
+    ])).substring(26));
+}
