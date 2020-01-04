@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.41";
+exports.version = "4.0.42";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -13460,6 +13460,41 @@ function getContractAddress(transaction) {
     ])).substring(26));
 }
 exports.getContractAddress = getContractAddress;
+// See: https://eips.ethereum.org/EIPS/eip-1014
+function getCreate2Address(options) {
+    var initCodeHash = options.initCodeHash;
+    if (options.initCode) {
+        if (initCodeHash) {
+            if (keccak256_1.keccak256(options.initCode) !== initCodeHash) {
+                errors.throwError("initCode/initCodeHash mismatch", errors.INVALID_ARGUMENT, {
+                    arg: "options", value: options
+                });
+            }
+        }
+        else {
+            initCodeHash = keccak256_1.keccak256(options.initCode);
+        }
+    }
+    if (!initCodeHash) {
+        errors.throwError("missing initCode or initCodeHash", errors.INVALID_ARGUMENT, {
+            arg: "options", value: options
+        });
+    }
+    var from = getAddress(options.from);
+    var salt = bytes_1.arrayify(options.salt);
+    if (salt.length !== 32) {
+        errors.throwError("invalid salt", errors.INVALID_ARGUMENT, {
+            arg: "options", value: options
+        });
+    }
+    return getAddress("0x" + keccak256_1.keccak256(bytes_1.concat([
+        "0xff",
+        from,
+        salt,
+        initCodeHash
+    ])).substring(26));
+}
+exports.getCreate2Address = getCreate2Address;
 
 },{"../errors":5,"./bytes":64,"./keccak256":71,"./rlp":76,"bn.js":9}],61:[function(require,module,exports){
 'use strict';
@@ -14505,6 +14540,7 @@ exports.parseParamType = abi_coder_1.parseParamType;
 var address_1 = require("./address");
 exports.getAddress = address_1.getAddress;
 exports.getContractAddress = address_1.getContractAddress;
+exports.getCreate2Address = address_1.getCreate2Address;
 exports.getIcapAddress = address_1.getIcapAddress;
 var base64 = __importStar(require("./base64"));
 exports.base64 = base64;

@@ -17,6 +17,7 @@ exports.parseParamType = abi_coder_1.parseParamType;
 var address_1 = require("./address");
 exports.getAddress = address_1.getAddress;
 exports.getContractAddress = address_1.getContractAddress;
+exports.getCreate2Address = address_1.getCreate2Address;
 exports.getIcapAddress = address_1.getIcapAddress;
 var base64 = __importStar(require("./base64"));
 exports.base64 = base64;

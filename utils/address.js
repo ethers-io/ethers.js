@@ -123,3 +123,38 @@ function getContractAddress(transaction) {
     ])).substring(26));
 }
 exports.getContractAddress = getContractAddress;
+// See: https://eips.ethereum.org/EIPS/eip-1014
+function getCreate2Address(options) {
+    var initCodeHash = options.initCodeHash;
+    if (options.initCode) {
+        if (initCodeHash) {
+            if (keccak256_1.keccak256(options.initCode) !== initCodeHash) {
+                errors.throwError("initCode/initCodeHash mismatch", errors.INVALID_ARGUMENT, {
+                    arg: "options", value: options
+                });
+            }
+        }
+        else {
+            initCodeHash = keccak256_1.keccak256(options.initCode);
+        }
+    }
+    if (!initCodeHash) {
+        errors.throwError("missing initCode or initCodeHash", errors.INVALID_ARGUMENT, {
+            arg: "options", value: options
+        });
+    }
+    var from = getAddress(options.from);
+    var salt = bytes_1.arrayify(options.salt);
+    if (salt.length !== 32) {
+        errors.throwError("invalid salt", errors.INVALID_ARGUMENT, {
+            arg: "options", value: options
+        });
+    }
+    return getAddress("0x" + keccak256_1.keccak256(bytes_1.concat([
+        "0xff",
+        from,
+        salt,
+        initCodeHash
+    ])).substring(26));
+}
+exports.getCreate2Address = getCreate2Address;

@@ -59,8 +59,16 @@ var IpcProvider = /** @class */ (function (_super) {
             });
             stream.on("end", function () {
                 try {
-                    resolve(JSON.parse(response.toString('utf8')).result);
-                    // @TODO: Better pull apart the error
+                    var payload_1 = JSON.parse(response.toString('utf8'));
+                    if (payload_1.error) {
+                        var error = new Error(payload_1.error.message);
+                        error.code = payload_1.error.code;
+                        error.data = payload_1.error.data;
+                        reject(error);
+                    }
+                    else {
+                        resolve(payload_1.result);
+                    }
                     stream.destroy();
                 }
                 catch (error) {

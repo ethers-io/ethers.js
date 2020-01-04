@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+ethers/v4.0.42 (2020-01-03 18:35)
+---------------------------------
+
+  - Properly handle errors in the IpcProvider ([#695](https://github.com/ethers-io/ethers.js/issues/695); [c76e01e](https://github.com/ethers-io/ethers.js/commit/c76e01e61fd52692f58c516842f7ed3b252b0f83))
+  - Added utility function to compute CREATE2 addresses ([#697](https://github.com/ethers-io/ethers.js/issues/697); [f8087ae](https://github.com/ethers-io/ethers.js/commit/f8087ae39ce7631425b6b4763347a4f9618f9730))
+
 ethers/v4.0.41 (2019-12-21 01:05)
 ---------------------------------
 
