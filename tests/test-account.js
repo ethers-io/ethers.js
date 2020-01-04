@@ -92,7 +92,7 @@ describe("Create2 Address Generation", function() {
 
     tests.forEach(function(test) {
         it("correctly computes the Create2 address - " + test.name, function() {
-            const address = ethers.utils.getCreate2Address(test);
+            var address = ethers.utils.getCreate2Address(test);
             assert.equal(address, test.expected, "correctly computes Create2 address");
         });
     });
