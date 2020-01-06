@@ -692,6 +692,7 @@ export class ConstructorFragment extends Fragment {
         }
 
         return new ConstructorFragment(_constructorGuard, {
+            name: null,
             type: value.type,
             inputs: (value.inputs ? value.inputs.map(ParamType.fromObject): []),
             payable: state.payable,
