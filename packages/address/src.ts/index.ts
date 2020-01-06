@@ -3,7 +3,7 @@
 // We use this for base 36 maths
 import { BN } from "bn.js";
 
-import { arrayify, hexDataSlice, isHexString, stripZeros } from "@ethersproject/bytes";
+import { arrayify, BytesLike, concat, hexDataLength, hexDataSlice, isHexString, stripZeros } from "@ethersproject/bytes";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { keccak256 } from "@ethersproject/keccak256";
 import { encode } from "@ethersproject/rlp";
@@ -143,3 +143,12 @@ export function getContractAddress(transaction: { from: string, nonce: BigNumber
     return getAddress(hexDataSlice(keccak256(encode([ from, nonce ])), 12));
 }
 
+export function getCreate2Address(from: string, salt: BytesLike, initCodeHash: BytesLike): string {
+    if (hexDataLength(salt) !== 32) {
+        logger.throwArgumentError("salt must be 32 bytes", "salt", salt);
+    }
+    if (hexDataLength(initCodeHash) !== 32) {
+        logger.throwArgumentError("initCodeHash must be 32 bytes", "initCodeHash", initCodeHash);
+    }
+    return getAddress(hexDataSlice(keccak256(concat([ "0xff", getAddress(from), salt, initCodeHash ])), 12))
+}
