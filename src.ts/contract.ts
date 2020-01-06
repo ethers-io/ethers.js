@@ -39,9 +39,20 @@ export type EventFilter = {
     //topics?: Array<string | Array<string>>
 };
 
+/**
+ * We add a index signature to Array<any> here
+ * since we dynamically add argument properties in the array
+ * that can be accessed via either the dot notation (e.args.foo)
+ * or
+ * that can be accessed via the array index notation (e.args['foo'])
+ */
+interface EventArgs extends Array<any> {
+    [argKey: string]: any
+}
+
 // The (n + 1)th parameter passed to contract event callbacks
 export interface Event extends Log {
-    args?: Array<any>;
+    args?: EventArgs;
     decode?: (data: string, topics?: Array<string>) => any;
     event?: string;
     eventSignature?: string;
