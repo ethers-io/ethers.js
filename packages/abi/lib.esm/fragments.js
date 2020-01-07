@@ -575,6 +575,7 @@ export class ConstructorFragment extends Fragment {
             throw new Error("constructor cannot be constant");
         }
         return new ConstructorFragment(_constructorGuard, {
+            name: null,
             type: value.type,
             inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : []),
             payable: state.payable,

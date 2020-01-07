@@ -4886,7 +4886,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.142";
+	exports.version = "abi/5.0.0-beta.143";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -5498,6 +5498,7 @@
 	            throw new Error("constructor cannot be constant");
 	        }
 	        return new ConstructorFragment(_constructorGuard, {
+	            name: null,
 	            type: value.type,
 	            inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : []),
 	            payable: state.payable,
@@ -6456,7 +6457,7 @@
 	var _version$a = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "address/5.0.0-beta.133";
+	exports.version = "address/5.0.0-beta.134";
 	});
 
 	var _version$b = unwrapExports(_version$a);
@@ -6594,6 +6595,16 @@
 	    return getAddress(lib$1.hexDataSlice(lib$4.keccak256(lib$5.encode([from, nonce])), 12));
 	}
 	exports.getContractAddress = getContractAddress;
+	function getCreate2Address(from, salt, initCodeHash) {
+	    if (lib$1.hexDataLength(salt) !== 32) {
+	        logger.throwArgumentError("salt must be 32 bytes", "salt", salt);
+	    }
+	    if (lib$1.hexDataLength(initCodeHash) !== 32) {
+	        logger.throwArgumentError("initCodeHash must be 32 bytes", "initCodeHash", initCodeHash);
+	    }
+	    return getAddress(lib$1.hexDataSlice(lib$4.keccak256(lib$1.concat(["0xff", getAddress(from), salt, initCodeHash])), 12));
+	}
+	exports.getCreate2Address = getCreate2Address;
 	});
 
 	var index$6 = unwrapExports(lib$6);
@@ -6601,6 +6612,7 @@
 	var lib_2$4 = lib$6.isAddress;
 	var lib_3$3 = lib$6.getIcapAddress;
 	var lib_4$3 = lib$6.getContractAddress;
+	var lib_5$3 = lib$6.getCreate2Address;
 
 	var address = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -7022,10 +7034,8 @@
 	exports.AddressZero = AddressZero;
 	var HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
 	exports.HashZero = HashZero;
-	// NFKD (decomposed)
-	//const EtherSymbol = "\uD835\uDF63";
-	// NFKC (composed)
-	var EtherSymbol = "\u039e";
+	// NFKC (composed)             // (decomposed)
+	var EtherSymbol = "\u039e"; // "\uD835\uDF63";
 	exports.EtherSymbol = EtherSymbol;
 	var NegativeOne = lib$2.BigNumber.from(-1);
 	exports.NegativeOne = NegativeOne;
@@ -7046,7 +7056,7 @@
 	var lib_2$5 = lib$7.HashZero;
 	var lib_3$4 = lib$7.EtherSymbol;
 	var lib_4$4 = lib$7.NegativeOne;
-	var lib_5$3 = lib$7.Zero;
+	var lib_5$4 = lib$7.Zero;
 	var lib_6$2 = lib$7.One;
 	var lib_7$2 = lib$7.Two;
 	var lib_8$1 = lib$7.WeiPerEther;
@@ -7597,7 +7607,7 @@
 	var lib_2$6 = lib$8.parseBytes32String;
 	var lib_3$5 = lib$8.nameprep;
 	var lib_4$5 = lib$8._toEscapedUtf8String;
-	var lib_5$4 = lib$8.toUtf8Bytes;
+	var lib_5$5 = lib$8.toUtf8Bytes;
 	var lib_6$3 = lib$8.toUtf8CodePoints;
 	var lib_7$3 = lib$8.toUtf8String;
 	var lib_8$2 = lib$8.UnicodeNormalizationForm;
@@ -7865,7 +7875,7 @@
 	var lib_2$7 = lib$9.namehash;
 	var lib_3$6 = lib$9.id;
 	var lib_4$6 = lib$9.messagePrefix;
-	var lib_5$5 = lib$9.hashMessage;
+	var lib_5$6 = lib$9.hashMessage;
 
 	var _interface = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -8316,7 +8326,7 @@
 	var lib_2$8 = lib$a.EventFragment;
 	var lib_3$7 = lib$a.FormatTypes;
 	var lib_4$7 = lib$a.Fragment;
-	var lib_5$6 = lib$a.FunctionFragment;
+	var lib_5$7 = lib$a.FunctionFragment;
 	var lib_6$4 = lib$a.ParamType;
 	var lib_7$4 = lib$a.AbiCoder;
 	var lib_8$3 = lib$a.defaultAbiCoder;
@@ -8456,7 +8466,7 @@
 	var lib_2$9 = lib$b.BlockForkEvent;
 	var lib_3$8 = lib$b.TransactionForkEvent;
 	var lib_4$8 = lib$b.TransactionOrderForkEvent;
-	var lib_5$7 = lib$b.Provider;
+	var lib_5$8 = lib$b.Provider;
 
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -13593,7 +13603,7 @@
 	var _version$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wordlists/5.0.0-beta.134";
+	exports.version = "wordlists/5.0.0-beta.135";
 	});
 
 	var _version$t = unwrapExports(_version$s);
@@ -14041,7 +14051,7 @@
 	var lib_2$f = lib$h.HDNode;
 	var lib_3$c = lib$h.mnemonicToSeed;
 	var lib_4$a = lib$h.mnemonicToEntropy;
-	var lib_5$8 = lib$h.entropyToMnemonic;
+	var lib_5$9 = lib$h.entropyToMnemonic;
 	var lib_6$5 = lib$h.isValidMnemonic;
 
 	var _version$w = createCommonjsModule(function (module, exports) {
@@ -16218,7 +16228,7 @@
 	var lib_2$g = lib$i.getJsonWalletAddress;
 	var lib_3$d = lib$i.isCrowdsaleWallet;
 	var lib_4$b = lib$i.isKeystoreWallet;
-	var lib_5$9 = lib$i.decryptKeystore;
+	var lib_5$a = lib$i.decryptKeystore;
 	var lib_6$6 = lib$i.encryptKeystore;
 	var lib_7$5 = lib$i.decryptJsonWallet;
 
@@ -20998,7 +21008,7 @@
 	var lib_2$j = lib$m.getNetwork;
 	var lib_3$e = lib$m.BaseProvider;
 	var lib_4$c = lib$m.AlchemyProvider;
-	var lib_5$a = lib$m.CloudflareProvider;
+	var lib_5$b = lib$m.CloudflareProvider;
 	var lib_6$7 = lib$m.EtherscanProvider;
 	var lib_7$6 = lib$m.FallbackProvider;
 	var lib_8$4 = lib$m.IpcProvider;
@@ -21209,7 +21219,7 @@
 	var lib_2$l = lib$o.formatUnits;
 	var lib_3$g = lib$o.parseUnits;
 	var lib_4$d = lib$o.formatEther;
-	var lib_5$b = lib$o.parseEther;
+	var lib_5$c = lib$o.parseEther;
 
 	var utils$3 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -21233,6 +21243,7 @@
 	exports.ParamType = lib$a.ParamType;
 
 	exports.getAddress = lib$6.getAddress;
+	exports.getCreate2Address = lib$6.getCreate2Address;
 	exports.getContractAddress = lib$6.getContractAddress;
 	exports.getIcapAddress = lib$6.getIcapAddress;
 	exports.isAddress = lib$6.isAddress;
@@ -21334,77 +21345,78 @@
 	var utils_8 = utils$3.Interface;
 	var utils_9 = utils$3.ParamType;
 	var utils_10 = utils$3.getAddress;
-	var utils_11 = utils$3.getContractAddress;
-	var utils_12 = utils$3.getIcapAddress;
-	var utils_13 = utils$3.isAddress;
-	var utils_14 = utils$3.base64;
-	var utils_15 = utils$3.arrayify;
-	var utils_16 = utils$3.concat;
-	var utils_17 = utils$3.hexDataSlice;
-	var utils_18 = utils$3.hexDataLength;
-	var utils_19 = utils$3.hexlify;
-	var utils_20 = utils$3.hexStripZeros;
-	var utils_21 = utils$3.hexValue;
-	var utils_22 = utils$3.hexZeroPad;
-	var utils_23 = utils$3.isHexString;
-	var utils_24 = utils$3.joinSignature;
-	var utils_25 = utils$3.zeroPad;
-	var utils_26 = utils$3.splitSignature;
-	var utils_27 = utils$3.stripZeros;
-	var utils_28 = utils$3.hashMessage;
-	var utils_29 = utils$3.id;
-	var utils_30 = utils$3.isValidName;
-	var utils_31 = utils$3.namehash;
-	var utils_32 = utils$3.defaultPath;
-	var utils_33 = utils$3.entropyToMnemonic;
-	var utils_34 = utils$3.HDNode;
-	var utils_35 = utils$3.isValidMnemonic;
-	var utils_36 = utils$3.mnemonicToEntropy;
-	var utils_37 = utils$3.mnemonicToSeed;
-	var utils_38 = utils$3.getJsonWalletAddress;
-	var utils_39 = utils$3.keccak256;
-	var utils_40 = utils$3.Logger;
-	var utils_41 = utils$3.sha256;
-	var utils_42 = utils$3.solidityKeccak256;
-	var utils_43 = utils$3.solidityPack;
-	var utils_44 = utils$3.soliditySha256;
-	var utils_45 = utils$3.randomBytes;
-	var utils_46 = utils$3.checkProperties;
-	var utils_47 = utils$3.deepCopy;
-	var utils_48 = utils$3.defineReadOnly;
-	var utils_49 = utils$3.getStatic;
-	var utils_50 = utils$3.resolveProperties;
-	var utils_51 = utils$3.shallowCopy;
-	var utils_52 = utils$3.RLP;
-	var utils_53 = utils$3.computePublicKey;
-	var utils_54 = utils$3.recoverPublicKey;
-	var utils_55 = utils$3.SigningKey;
-	var utils_56 = utils$3.formatBytes32String;
-	var utils_57 = utils$3.nameprep;
-	var utils_58 = utils$3.parseBytes32String;
-	var utils_59 = utils$3._toEscapedUtf8String;
-	var utils_60 = utils$3.toUtf8Bytes;
-	var utils_61 = utils$3.toUtf8CodePoints;
-	var utils_62 = utils$3.toUtf8String;
-	var utils_63 = utils$3.computeAddress;
-	var utils_64 = utils$3.parseTransaction;
-	var utils_65 = utils$3.recoverAddress;
-	var utils_66 = utils$3.serializeTransaction;
-	var utils_67 = utils$3.commify;
-	var utils_68 = utils$3.formatEther;
-	var utils_69 = utils$3.parseEther;
-	var utils_70 = utils$3.formatUnits;
-	var utils_71 = utils$3.parseUnits;
-	var utils_72 = utils$3.verifyMessage;
-	var utils_73 = utils$3.fetchJson;
-	var utils_74 = utils$3.poll;
-	var utils_75 = utils$3.SupportedAlgorithms;
-	var utils_76 = utils$3.UnicodeNormalizationForm;
+	var utils_11 = utils$3.getCreate2Address;
+	var utils_12 = utils$3.getContractAddress;
+	var utils_13 = utils$3.getIcapAddress;
+	var utils_14 = utils$3.isAddress;
+	var utils_15 = utils$3.base64;
+	var utils_16 = utils$3.arrayify;
+	var utils_17 = utils$3.concat;
+	var utils_18 = utils$3.hexDataSlice;
+	var utils_19 = utils$3.hexDataLength;
+	var utils_20 = utils$3.hexlify;
+	var utils_21 = utils$3.hexStripZeros;
+	var utils_22 = utils$3.hexValue;
+	var utils_23 = utils$3.hexZeroPad;
+	var utils_24 = utils$3.isHexString;
+	var utils_25 = utils$3.joinSignature;
+	var utils_26 = utils$3.zeroPad;
+	var utils_27 = utils$3.splitSignature;
+	var utils_28 = utils$3.stripZeros;
+	var utils_29 = utils$3.hashMessage;
+	var utils_30 = utils$3.id;
+	var utils_31 = utils$3.isValidName;
+	var utils_32 = utils$3.namehash;
+	var utils_33 = utils$3.defaultPath;
+	var utils_34 = utils$3.entropyToMnemonic;
+	var utils_35 = utils$3.HDNode;
+	var utils_36 = utils$3.isValidMnemonic;
+	var utils_37 = utils$3.mnemonicToEntropy;
+	var utils_38 = utils$3.mnemonicToSeed;
+	var utils_39 = utils$3.getJsonWalletAddress;
+	var utils_40 = utils$3.keccak256;
+	var utils_41 = utils$3.Logger;
+	var utils_42 = utils$3.sha256;
+	var utils_43 = utils$3.solidityKeccak256;
+	var utils_44 = utils$3.solidityPack;
+	var utils_45 = utils$3.soliditySha256;
+	var utils_46 = utils$3.randomBytes;
+	var utils_47 = utils$3.checkProperties;
+	var utils_48 = utils$3.deepCopy;
+	var utils_49 = utils$3.defineReadOnly;
+	var utils_50 = utils$3.getStatic;
+	var utils_51 = utils$3.resolveProperties;
+	var utils_52 = utils$3.shallowCopy;
+	var utils_53 = utils$3.RLP;
+	var utils_54 = utils$3.computePublicKey;
+	var utils_55 = utils$3.recoverPublicKey;
+	var utils_56 = utils$3.SigningKey;
+	var utils_57 = utils$3.formatBytes32String;
+	var utils_58 = utils$3.nameprep;
+	var utils_59 = utils$3.parseBytes32String;
+	var utils_60 = utils$3._toEscapedUtf8String;
+	var utils_61 = utils$3.toUtf8Bytes;
+	var utils_62 = utils$3.toUtf8CodePoints;
+	var utils_63 = utils$3.toUtf8String;
+	var utils_64 = utils$3.computeAddress;
+	var utils_65 = utils$3.parseTransaction;
+	var utils_66 = utils$3.recoverAddress;
+	var utils_67 = utils$3.serializeTransaction;
+	var utils_68 = utils$3.commify;
+	var utils_69 = utils$3.formatEther;
+	var utils_70 = utils$3.parseEther;
+	var utils_71 = utils$3.formatUnits;
+	var utils_72 = utils$3.parseUnits;
+	var utils_73 = utils$3.verifyMessage;
+	var utils_74 = utils$3.fetchJson;
+	var utils_75 = utils$3.poll;
+	var utils_76 = utils$3.SupportedAlgorithms;
+	var utils_77 = utils$3.UnicodeNormalizationForm;
 
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.162";
+	exports.version = "ethers/5.0.0-beta.163";
 	});
 
 	var _version$L = unwrapExports(_version$K);
@@ -21518,7 +21530,7 @@
 	var lib_2$m = lib$p.Signer;
 	var lib_3$h = lib$p.Wallet;
 	var lib_4$e = lib$p.VoidSigner;
-	var lib_5$c = lib$p.getDefaultProvider;
+	var lib_5$d = lib$p.getDefaultProvider;
 	var lib_6$8 = lib$p.providers;
 	var lib_7$7 = lib$p.Contract;
 	var lib_8$5 = lib$p.ContractFactory;
@@ -21544,7 +21556,7 @@
 	exports.default = index$p;
 	exports.errors = lib_12$2;
 	exports.ethers = lib_1$p;
-	exports.getDefaultProvider = lib_5$c;
+	exports.getDefaultProvider = lib_5$d;
 	exports.logger = lib_13$2;
 	exports.providers = lib_6$8;
 	exports.utils = lib_14$2;

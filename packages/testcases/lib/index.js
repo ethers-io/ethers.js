@@ -12,7 +12,7 @@ exports.randomHexString = random_1.randomHexString;
 exports.randomNumber = random_1.randomNumber;
 function saveTests(tag, data) {
     //let filename = path.resolve(__dirname, 'testcases', tag + '.json.gz');
-    var filename = path_1.default.resolve('../testcases', tag + '.json.gz');
+    var filename = path_1.default.resolve(__dirname, '../testcases', tag + '.json.gz');
     fs_1.default.writeFileSync(filename, browserify_zlib_1.default.gzipSync(JSON.stringify(data, undefined, ' ') + '\n'));
     console.log('Save testcase: ' + filename);
 }

@@ -6,7 +6,7 @@ import { randomBytes, randomHexString, randomNumber } from "./random";
 export { randomBytes, randomHexString, randomNumber };
 export function saveTests(tag, data) {
     //let filename = path.resolve(__dirname, 'testcases', tag + '.json.gz');
-    let filename = path.resolve('../testcases', tag + '.json.gz');
+    let filename = path.resolve(__dirname, '../testcases', tag + '.json.gz');
     fs.writeFileSync(filename, zlib.gzipSync(JSON.stringify(data, undefined, ' ') + '\n'));
     console.log('Save testcase: ' + filename);
 }

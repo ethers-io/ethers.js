@@ -7,8 +7,8 @@ var fs_1 = __importDefault(require("fs"));
 var path_1 = require("path");
 var __1 = require("..");
 var testcases = [];
-["en", "es", "fr", "it", "ja", "ko", "zh_cn", "zh_tw"].forEach(function (locale) {
-    var content = fs_1.default.readFileSync(path_1.resolve(__dirname, "../input/wordlists", "lang-" + locale + ".txt")).toString();
+["cz", "en", "es", "fr", "it", "ja", "ko", "zh_cn", "zh_tw"].forEach(function (locale) {
+    var content = fs_1.default.readFileSync(path_1.resolve(__dirname, "../../input/wordlists", "lang-" + locale + ".txt")).toString();
     testcases.push({
         content: content,
         locale: locale

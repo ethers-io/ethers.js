@@ -5,10 +5,8 @@ var AddressZero = "0x0000000000000000000000000000000000000000";
 exports.AddressZero = AddressZero;
 var HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
 exports.HashZero = HashZero;
-// NFKD (decomposed)
-//const EtherSymbol = "\uD835\uDF63";
-// NFKC (composed)
-var EtherSymbol = "\u039e";
+// NFKC (composed)             // (decomposed)
+var EtherSymbol = "\u039e"; // "\uD835\uDF63";
 exports.EtherSymbol = EtherSymbol;
 var NegativeOne = bignumber_1.BigNumber.from(-1);
 exports.NegativeOne = NegativeOne;

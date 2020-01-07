@@ -129,3 +129,13 @@ function getContractAddress(transaction) {
     return getAddress(bytes_1.hexDataSlice(keccak256_1.keccak256(rlp_1.encode([from, nonce])), 12));
 }
 exports.getContractAddress = getContractAddress;
+function getCreate2Address(from, salt, initCodeHash) {
+    if (bytes_1.hexDataLength(salt) !== 32) {
+        logger.throwArgumentError("salt must be 32 bytes", "salt", salt);
+    }
+    if (bytes_1.hexDataLength(initCodeHash) !== 32) {
+        logger.throwArgumentError("initCodeHash must be 32 bytes", "initCodeHash", initCodeHash);
+    }
+    return getAddress(bytes_1.hexDataSlice(keccak256_1.keccak256(bytes_1.concat(["0xff", getAddress(from), salt, initCodeHash])), 12));
+}
+exports.getCreate2Address = getCreate2Address;

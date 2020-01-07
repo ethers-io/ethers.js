@@ -3,6 +3,20 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.163 (2020-01-06 18:57)
+-----------------------------------------
+
+  - Added function to generate CREATE2 addresses. ([#697](https://github.com/ethers-io/ethers.js/issues/697); [eb26a6d](https://github.com/ethers-io/ethers.js/commit/eb26a6d95022a241c44f859e7b2f29646afb4914))
+  - Force constructor name to be null (instead of undefined). ([a648f2b](https://github.com/ethers-io/ethers.js/commit/a648f2bd1e5e52a3662896f04fe7025884866972))
+  - Added documentation uploading script. ([e593aba](https://github.com/ethers-io/ethers.js/commit/e593aba2946c98820b0c2edf9c5dab6cb30c7402))
+  - Added Czech wordlist to default wordlists export. ([#691](https://github.com/ethers-io/ethers.js/issues/691); [5724fa5](https://github.com/ethers-io/ethers.js/commit/5724fa5d9c6fe73f14ec8bdea1f7226a222537ef))
+  - Added Czech BIP-39 wordlist. ([#691](https://github.com/ethers-io/ethers.js/issues/691); [f54f06b](https://github.com/ethers-io/ethers.js/commit/f54f06b5c8092997fd3c9055d69a3e0796ce44f3))
+  - Updated README. ([e809ead](https://github.com/ethers-io/ethers.js/commit/e809eadf8d608cd8c8a78c08a2e3547dd09156cf))
+  - Updating docs. ([184c459](https://github.com/ethers-io/ethers.js/commit/184c459fab0d089a8a879584b72e5eb3560b33ce))
+  - Merge branch 'yuetloo-ethers-v5-beta' into ethers-v5-beta ([06cafe3](https://github.com/ethers-io/ethers.js/commit/06cafe3437ef129b47f5f9c02f4759f2c4854d3c))
+  - Add circleci and parity test files ([fdf0980](https://github.com/ethers-io/ethers.js/commit/fdf0980663ffead0faf3e9b7b233b22ca1574e21))
+  - Fixed typo in package test dist scripts. ([9c78c7f](https://github.com/ethers-io/ethers.js/commit/9c78c7fee69d07733048d898d58205ae7f5c82d7))
+
 ethers/v5.0.0-beta.162 (2019-11-25 0:02)
 ----------------------------------------
 

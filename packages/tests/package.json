@@ -4,8 +4,8 @@
     "ethers": "./lib/browser-ethers.js"
   },
   "dependencies": {
-    "@ethersproject/testcases": ">=5.0.0-beta.131",
     "@ethersproject/cli": ">=5.0.0-beta.145",
+    "@ethersproject/testcases": ">=5.0.0-beta.131",
     "@types/mocha": "^5.2.0",
     "ethers": ">=5.0.0-beta.156",
     "mocha-phantomjs-core": "2.1.2"
@@ -35,7 +35,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0x5d5efc5d4607c61d3b5ed6b7af4830c06e2164b8578cf34f83410ecf27754a80",
+  "tarballHash": "0xb952be2aa3827db142206825efd73b9b1d3071631d1ae6cf7c848659aa4fdccc",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.144"
+  "version": "5.0.0-beta.145"
 }

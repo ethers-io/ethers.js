@@ -4739,7 +4739,7 @@ var lib_esm$2 = /*#__PURE__*/Object.freeze({
 	Description: Description
 });
 
-const version$4 = "abi/5.0.0-beta.142";
+const version$4 = "abi/5.0.0-beta.143";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -5314,6 +5314,7 @@ class ConstructorFragment extends Fragment {
             throw new Error("constructor cannot be constant");
         }
         return new ConstructorFragment(_constructorGuard$2, {
+            name: null,
             type: value.type,
             inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : []),
             payable: state.payable,
@@ -6198,7 +6199,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$5 = "address/5.0.0-beta.133";
+const version$5 = "address/5.0.0-beta.134";
 
 "use strict";
 const logger$6 = new Logger(version$5);
@@ -6317,6 +6318,15 @@ function getContractAddress(transaction) {
     }
     const nonce = stripZeros(arrayify(BigNumber.from(transaction.nonce).toHexString()));
     return getAddress(hexDataSlice(keccak256(encode([from, nonce])), 12));
+}
+function getCreate2Address(from, salt, initCodeHash) {
+    if (hexDataLength(salt) !== 32) {
+        logger$6.throwArgumentError("salt must be 32 bytes", "salt", salt);
+    }
+    if (hexDataLength(initCodeHash) !== 32) {
+        logger$6.throwArgumentError("initCodeHash must be 32 bytes", "initCodeHash", initCodeHash);
+    }
+    return getAddress(hexDataSlice(keccak256(concat(["0xff", getAddress(from), salt, initCodeHash])), 12));
 }
 
 "use strict";
@@ -6553,10 +6563,8 @@ class NullCoder extends Coder {
 "use strict";
 const AddressZero = "0x0000000000000000000000000000000000000000";
 const HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
-// NFKD (decomposed)
-//const EtherSymbol = "\uD835\uDF63";
-// NFKC (composed)
-const EtherSymbol = "\u039e";
+// NFKC (composed)             // (decomposed)
+const EtherSymbol = "\u039e"; // "\uD835\uDF63";
 const NegativeOne$1 = BigNumber.from(-1);
 const Zero$1 = BigNumber.from(0);
 const One = BigNumber.from(1);
@@ -12524,7 +12532,7 @@ function parse(rawTransaction) {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "wordlists/5.0.0-beta.134";
+exports.version = "wordlists/5.0.0-beta.135";
 });
 
 var _version$3 = unwrapExports(_version$2);
@@ -18928,6 +18936,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	getAddress: getAddress,
 	getIcapAddress: getIcapAddress,
 	getContractAddress: getContractAddress,
+	getCreate2Address: getCreate2Address,
 	isAddress: isAddress,
 	formatEther: formatEther,
 	parseEther: parseEther,
@@ -18959,7 +18968,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$l = "ethers/5.0.0-beta.162";
+const version$l = "ethers/5.0.0-beta.163";
 
 "use strict";
 const errors = Logger.errors;
