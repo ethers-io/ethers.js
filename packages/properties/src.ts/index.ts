@@ -101,11 +101,10 @@ export function deepCopy(object: any): any {
     throw new Error("Cannot deepCopy " + typeof(object));
 }
 
-export class Description {
-    constructor(info: any) {
+export class Description<T = any> {
+    constructor(info: T) {
         for (const key in info) {
             (<any>this)[key] = deepCopy(info[key]);
         }
-        Object.freeze(this);
     }
 }
