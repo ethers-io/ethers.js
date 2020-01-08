@@ -8,6 +8,10 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "../_version";
 const logger = new Logger(version);
 
+export interface Result extends Array<any> {
+    [key: string]: any;
+}
+
 export type CoerceFunc = (type: string, value: any) => any;
 
 export abstract class Coder {

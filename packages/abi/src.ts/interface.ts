@@ -8,42 +8,40 @@ import { keccak256 } from "@ethersproject/keccak256"
 import { defineReadOnly, Description, getStatic } from "@ethersproject/properties";
 
 import { AbiCoder, defaultAbiCoder } from "./abi-coder";
-import { ConstructorFragment, EventFragment, Fragment, FunctionFragment, JsonFragment, ParamType } from "./fragments";
+import { Result } from "./coders/abstract-coder";
+import { ConstructorFragment, EventFragment, FormatTypes, Fragment, FunctionFragment, JsonFragment, ParamType } from "./fragments";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
-export class LogDescription extends Description {
+export { Result };
+
+export class LogDescription extends Description<LogDescription> {
     readonly eventFragment: EventFragment;
     readonly name: string;
     readonly signature: string;
     readonly topic: string;
-    readonly values: any
+    readonly args: Result
 }
 
-export class TransactionDescription extends Description {
+export class TransactionDescription extends Description<TransactionDescription> {
     readonly functionFragment: FunctionFragment;
     readonly name: string;
-    readonly args: Array<any>;
+    readonly args: Result;
     readonly signature: string;
     readonly sighash: string;
     readonly value: BigNumber;
 }
 
-export class Indexed extends Description {
+export class Indexed extends Description<Indexed> {
     readonly hash: string;
+    readonly _isIndexed: boolean;
 
     static isIndexed(value: any): value is Indexed {
         return !!(value && value._isIndexed);
     }
 }
-
-export class Result {
-    [key: string]: any;
-    [key: number]: any;
-}
-
 
 export class Interface {
     readonly fragments: Array<Fragment>;
@@ -110,29 +108,31 @@ export class Interface {
             bucket[signature] = fragment;
         });
 
-        // Add any fragments with a unique name by its name (sans signature parameters)
-        /*
-        [this.events, this.functions].forEach((bucket) => {
-            let count = getNameCount(bucket);
-            Object.keys(bucket).forEach((signature) => {
-                let fragment = bucket[signature];
-                if (count[fragment.name] !== 1) {
-                   logger.warn("duplicate definition - " + fragment.name);
-                   return;
-                }
-                bucket[fragment.name] = fragment;
-            });
-        });
-        */
-
         // If we do not have a constructor use the default "constructor() payable"
         if (!this.deploy) {
-            defineReadOnly(this, "deploy", ConstructorFragment.from( { type: "constructor" } ));
+            defineReadOnly(this, "deploy", ConstructorFragment.from({ type: "constructor" }));
         }
 
         defineReadOnly(this, "_isInterface", true);
     }
 
+    format(format?: string): string | Array<string> {
+        if (!format) { format = FormatTypes.full; }
+        if (format === FormatTypes.sighash) {
+            logger.throwArgumentError("interface does not support formating sighash", "format", format);
+        }
+
+        const abi = this.fragments.map((fragment) => fragment.format(format));
+
+        // We need to re-bundle the JSON fragments a bit
+        if (format === FormatTypes.json) {
+             return JSON.stringify(abi.map((j) => JSON.parse(j)));
+        }
+
+        return abi;
+    }
+
+    // Sub-classes can override these to handle other blockchains
     static getAbiCoder(): AbiCoder {
         return defaultAbiCoder;
     }
@@ -141,14 +141,15 @@ export class Interface {
         return getAddress(address);
     }
 
-    _sighashify(functionFragment: FunctionFragment): string {
+    static getSighash(functionFragment: FunctionFragment): string {
         return hexDataSlice(id(functionFragment.format()), 0, 4);
     }
 
-    _topicify(eventFragment: EventFragment): string {
+    static getTopic(eventFragment: EventFragment): string {
         return id(eventFragment.format());
     }
 
+    // Find a function definition by any means necessary (unless it is ambiguous)
     getFunction(nameOrSignatureOrSighash: string): FunctionFragment {
         if (isHexString(nameOrSignatureOrSighash)) {
             for (const name in this.functions) {
@@ -180,6 +181,7 @@ export class Interface {
         return result;
     }
 
+    // Find an event definition by any means necessary (unless it is ambiguous)
     getEvent(nameOrSignatureOrTopic: string): EventFragment {
         if (isHexString(nameOrSignatureOrTopic)) {
             const topichash = nameOrSignatureOrTopic.toLowerCase();
@@ -212,24 +214,26 @@ export class Interface {
         return result;
     }
 
+    // Get the sighash (the bytes4 selector) used by Solidity to identify a function
     getSighash(functionFragment: FunctionFragment | string): string {
         if (typeof(functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
         }
 
-        return this._sighashify(functionFragment);
+        return getStatic<(f: FunctionFragment) => string>(this.constructor, "getSighash")(functionFragment);
     }
 
+    // Get the topic (the bytes32 hash) used by Solidity to identify an event
     getEventTopic(eventFragment: EventFragment | string): string {
         if (typeof(eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
         }
 
-        return this._topicify(eventFragment);
+        return getStatic<(e: EventFragment) => string>(this.constructor, "getTopic")(eventFragment);
     }
 
 
-    _decodeParams(params: Array<ParamType>, data: BytesLike): Array<any> {
+    _decodeParams(params: Array<ParamType>, data: BytesLike): Result {
         return this._abiCoder.decode(params, data)
     }
 
@@ -241,7 +245,8 @@ export class Interface {
         return this._encodeParams(this.deploy.inputs, values || [ ]);
     }
 
-    decodeFunctionData(functionFragment: FunctionFragment | string, data: BytesLike): Array<any> {
+    // Decode the data for a function call (e.g. tx.data)
+    decodeFunctionData(functionFragment: FunctionFragment | string, data: BytesLike): Result {
         if (typeof(functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
         }
@@ -255,6 +260,7 @@ export class Interface {
         return this._decodeParams(functionFragment.inputs, bytes.slice(4));
     }
 
+    // Encode the data for a function call (e.g. tx.data)
     encodeFunctionData(functionFragment: FunctionFragment | string, values?: Array<any>): string {
         if (typeof(functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
@@ -266,7 +272,8 @@ export class Interface {
         ]));
     }
 
-    decodeFunctionResult(functionFragment: FunctionFragment | string, data: BytesLike): Array<any> {
+    // Decode the result from a function call (e.g. from eth_call)
+    decodeFunctionResult(functionFragment: FunctionFragment | string, data: BytesLike): Result {
         if (typeof(functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
         }
@@ -285,7 +292,7 @@ export class Interface {
             case 4:
                 if (hexlify(bytes.slice(0, 4)) === "0x08c379a0") {
                     errorSignature = "Error(string)";
-                    reason = this._abiCoder.decode([ "string" ], bytes.slice(4));
+                    reason = this._abiCoder.decode([ "string" ], bytes.slice(4))[0];
                 }
                 break;
         }
@@ -298,6 +305,7 @@ export class Interface {
         });
     }
 
+    // Encode the result for a function call (e.g. for eth_call)
     encodeFunctionResult(functionFragment: FunctionFragment | string, values?: Array<any>): string {
         if (typeof(functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
@@ -306,6 +314,7 @@ export class Interface {
         return hexlify(this._abiCoder.encode(functionFragment.outputs, values || [ ]));
     }
 
+    // Create the filter for the event with search criteria (e.g. for eth_filterLog)
     encodeFilterTopics(eventFragment: EventFragment, values: Array<any>): Array<string | Array<string>> {
         if (typeof(eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
@@ -355,7 +364,8 @@ export class Interface {
         return topics;
     }
 
-    decodeEventLog(eventFragment: EventFragment | string, data: BytesLike, topics?: Array<string>): Array<any> {
+    // Decode a filter for the event and the search criteria
+    decodeEventLog(eventFragment: EventFragment | string, data: BytesLike, topics?: Array<string>): Result {
         if (typeof(eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
         }
@@ -390,7 +400,7 @@ export class Interface {
         let resultIndexed = (topics != null) ? this._abiCoder.decode(indexed, concat(topics)): null;
         let resultNonIndexed = this._abiCoder.decode(nonIndexed, data);
 
-        let result: Array<any> = [ ];
+        let result: Result = [ ];
         let nonIndexedIndex = 0, indexedIndex = 0;
         eventFragment.inputs.forEach((param, index) => {
             if (param.indexed) {
@@ -406,13 +416,14 @@ export class Interface {
             } else {
                 result[index] = resultNonIndexed[nonIndexedIndex++];
             }
-            //if (param.name && result[param.name] == null) { result[param.name] = result[index]; }
+            if (param.name && result[param.name] == null) { result[param.name] = result[index]; }
         });
 
         return result;
     }
 
-
+    // Given a transaction, find the matching function fragment (if any) and
+    // determine all its properties and call parameters
     parseTransaction(tx: { data: string, value?: BigNumberish }): TransactionDescription {
         let fragment = this.getFunction(tx.data.substring(0, 10).toLowerCase())
 
@@ -428,12 +439,16 @@ export class Interface {
         });
     }
 
+    // Given an event log, find the matching event fragment (if any) and
+    // determine all its properties and values
     parseLog(log: { topics: Array<string>, data: string}): LogDescription {
         let fragment = this.getEvent(log.topics[0]);
 
         if (!fragment || fragment.anonymous) { return null; }
 
         // @TODO: If anonymous, and the only method, and the input count matches, should we parse?
+        //        Probably not, because just because it is the only event in the ABI does
+        //        not mean we have the full ABI; maybe jsut a fragment?
 
 
        return new LogDescription({
@@ -441,7 +456,7 @@ export class Interface {
             name: fragment.name,
             signature: fragment.format(),
             topic: this.getEventTopic(fragment),
-            values: this.decodeEventLog(fragment, log.data, log.topics)
+            args: this.decodeEventLog(fragment, log.data, log.topics)
         });
     }
 
@@ -462,27 +477,4 @@ export class Interface {
         return !!(value && value._isInterface);
     }
 }
-/*
-function getFragment(hash: string, calcFunc: (f: Fragment) => string, items: { [ sig: string ]: Fragment } ) {
-    for (let signature in items) {
-        if (signature.indexOf("(") === -1) { continue; }
-        let fragment = items[signature];
-        if (calcFunc(fragment) === hash) { return fragment; }
-    }
-    return null;
-}
-*/
-/*
-function getNameCount(fragments: { [ signature: string ]: Fragment }): { [ name: string ]: number } {
-    let unique: { [ name: string ]: number } = { };
 
-    // Count each name
-    for (let signature in fragments) {
-        let name = fragments[signature].name;
-        if (!unique[name]) { unique[name] = 0; }
-        unique[name]++;
-    }
-
-    return unique;
-}
-*/

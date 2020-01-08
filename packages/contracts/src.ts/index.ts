@@ -1,6 +1,6 @@
 "use strict";
 
-import { EventFragment, Fragment, Indexed, Interface, JsonFragment, ParamType } from "@ethersproject/abi";
+import { EventFragment, Fragment, Indexed, Interface, JsonFragment, ParamType, Result } from "@ethersproject/abi";
 import { Block, BlockTag, Listener, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { Signer, VoidSigner } from "@ethersproject/abstract-signer";
 import { getContractAddress } from "@ethersproject/address";
@@ -48,7 +48,7 @@ export interface Event extends Log {
     eventSignature?: string;
 
     // The parsed arguments to the event
-    values?: Array<any>;
+    args?: Result;
 
     // A function that can be used to decode event data and topics
     decode?: (data: string, topics?: Array<string>) => any;
@@ -124,7 +124,7 @@ export function _sendTransaction(func: FunctionFragment, args: Array<any>, overr
 */
 
 function runMethod(contract: Contract, functionName: string, options: RunOptions): RunFunction {
-    let method = contract.interface.functions[functionName];
+    const method = contract.interface.functions[functionName];
     return function(...params): Promise<any> {
         let tx: any = {}
 
@@ -233,7 +233,7 @@ function runMethod(contract: Contract, functionName: string, options: RunOptions
             }
 
             return contract.signer.sendTransaction(tx).then((tx) => {
-                let wait = tx.wait.bind(tx);
+                const wait = tx.wait.bind(tx);
 
                 tx.wait = (confirmations?: number) => {
                     return wait(confirmations).then((receipt: ContractReceipt) => {
@@ -242,7 +242,7 @@ function runMethod(contract: Contract, functionName: string, options: RunOptions
 
                              let parsed = contract.interface.parseLog(log);
                              if (parsed) {
-                                 event.values = parsed.values;
+                                 event.args = parsed.args;
                                  event.decode = (data: BytesLike, topics?: Array<any>) => {
                                      return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
                                  };
@@ -322,10 +322,10 @@ class RunningEvent {
     }
 
     run(args: Array<any>): number {
-        let listenerCount = this.listenerCount();
+        const listenerCount = this.listenerCount();
         this._listeners = this._listeners.filter((item) => {
 
-            let argsCopy = args.slice();
+            const argsCopy = args.slice();
 
             // Call the callback in the next event loop
             setTimeout(() => {
@@ -355,7 +355,7 @@ class FragmentRunningEvent extends RunningEvent {
     readonly fragment: EventFragment;
 
     constructor(address: string, contractInterface: Interface, fragment: EventFragment, topics?: Array<string>) {
-        let filter: EventFilter = {
+        const filter: EventFilter = {
             address: address
         }
 
@@ -384,7 +384,7 @@ class FragmentRunningEvent extends RunningEvent {
             return this.interface.decodeEventLog(this.fragment, data, topics);
         };
 
-        event.values = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+        event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
     }
 }
 
@@ -401,7 +401,7 @@ class WildcardRunningEvent extends RunningEvent {
     prepareEvent(event: Event): void {
         super.prepareEvent(event);
 
-        let parsed = this.interface.parseLog(event);
+        const parsed = this.interface.parseLog(event);
         if (parsed) {
             event.event = parsed.name;
             event.eventSignature = parsed.signature;
@@ -410,7 +410,7 @@ class WildcardRunningEvent extends RunningEvent {
                 return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
             };
 
-            event.values = parsed.values;
+            event.args = parsed.args;
         }
     }
 }
@@ -476,7 +476,7 @@ export class Contract {
         {
             const uniqueFilters: { [ name: string ]: Array<string> } = { };
             Object.keys(this.interface.events).forEach((eventSignature) => {
-                let event = this.interface.events[eventSignature];
+                const event = this.interface.events[eventSignature];
                 defineReadOnly(this.filters, eventSignature, (...args: Array<any>) => {
                     return {
                         address: this.address,
@@ -523,7 +523,7 @@ export class Contract {
             const fragment = this.interface.functions[name];
             // @TODO: This should take in fragment
 
-            let run = runMethod(this, name, { });
+            const run = runMethod(this, name, { });
 
             if (this[name] == null) {
                 defineReadOnly(this, name, run);
@@ -623,7 +623,7 @@ export class Contract {
             logger.throwError("sending a transactions require a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" })
         }
 
-        let tx: TransactionRequest = shallowCopy(overrides || {});
+        const tx: TransactionRequest = shallowCopy(overrides || {});
 
         ["from", "to"].forEach(function(key) {
             if ((<any>tx)[key] == null) { return; }
@@ -642,7 +642,7 @@ export class Contract {
             signerOrProvider = new VoidSigner(signerOrProvider, this.provider);
         }
 
-        let contract = new (<{ new(...args: any[]): Contract }>(this.constructor))(this.address, this.interface, signerOrProvider);
+        const contract = new (<{ new(...args: any[]): Contract }>(this.constructor))(this.address, this.interface, signerOrProvider);
         if (this.deployTransaction) {
             defineReadOnly(contract, "deployTransaction", this.deployTransaction);
         }
@@ -681,7 +681,7 @@ export class Contract {
                 return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
             }
 
-            let fragment = this.interface.getEvent(eventName)
+            const fragment = this.interface.getEvent(eventName)
             if (!fragment) {
                 logger.throwArgumentError("unknown event - " + eventName, "eventName", eventName);
             }
@@ -689,7 +689,7 @@ export class Contract {
             return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
         }
 
-        let filter: EventFilter = {
+        const filter: EventFilter = {
             address: this.address
         }
 
@@ -697,7 +697,7 @@ export class Contract {
         // since it may be a filter for an otherwise unknown event
         if (eventName.topics) {
             if (eventName.topics[0]) {
-                let fragment = this.interface.getEvent(eventName.topics[0]);
+                const fragment = this.interface.getEvent(eventName.topics[0]);
                 if (fragment) {
                     return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
                 }
@@ -715,7 +715,7 @@ export class Contract {
         }
 
         // If we have a poller for this, remove it
-        let emit = this._wrappedEmits[runningEvent.tag];
+        const emit = this._wrappedEmits[runningEvent.tag];
         if (emit) {
             this.provider.off(runningEvent.filter, emit);
             delete this._wrappedEmits[runningEvent.tag];
@@ -723,7 +723,7 @@ export class Contract {
     }
 
     private _wrapEvent(runningEvent: RunningEvent, log: Log, listener: Listener): Event {
-        let event = <Event>deepCopy(log);
+        const event = <Event>deepCopy(log);
 
         try {
             runningEvent.prepareEvent(event);
@@ -757,11 +757,11 @@ export class Contract {
 
         // If we are not polling the provider, start
         if (!this._wrappedEmits[runningEvent.tag]) {
-            let wrappedEmit = (log: Log) => {
-                let event = this._wrapEvent(runningEvent, log, listener);
-                let values = (event.values || []);
-                values.push(event);
-                this.emit(runningEvent.filter, ...values);
+            const wrappedEmit = (log: Log) => {
+                const event = this._wrapEvent(runningEvent, log, listener);
+                const args = (event.args || []);
+                args.push(event);
+                this.emit(runningEvent.filter, ...args);
             };
             this._wrappedEmits[runningEvent.tag] = wrappedEmit;
 
@@ -773,8 +773,8 @@ export class Contract {
     }
 
     queryFilter(event: EventFilter, fromBlockOrBlockhash?: BlockTag | string, toBlock?: BlockTag): Promise<Array<Event>> {
-        let runningEvent = this._getRunningEvent(event);
-        let filter = shallowCopy(runningEvent.filter);
+        const runningEvent = this._getRunningEvent(event);
+        const filter = shallowCopy(runningEvent.filter);
 
         if (typeof(fromBlockOrBlockhash) === "string" && isHexString(fromBlockOrBlockhash, 32)) {
             if (toBlock != null) {
@@ -804,8 +804,8 @@ export class Contract {
     emit(eventName: EventFilter | string, ...args: Array<any>): boolean {
         if (!this.provider) { return false; }
 
-        let runningEvent = this._getRunningEvent(eventName);
-        let result = (runningEvent.run(args) > 0);
+        const runningEvent = this._getRunningEvent(eventName);
+        const result = (runningEvent.run(args) > 0);
 
         // May have drained all the "once" events; check for living events
         this._checkRunningEvents(runningEvent);
@@ -822,7 +822,7 @@ export class Contract {
         if (!this.provider) { return []; }
 
         if (eventName == null) {
-            let result: Array<Listener> = [ ];
+            const result: Array<Listener> = [ ];
             for (let tag in this._runningEvents) {
                 this._runningEvents[tag].listeners().forEach((listener) => {
                     result.push(listener)
@@ -838,8 +838,8 @@ export class Contract {
         if (!this.provider) { return this; }
 
         if (eventName == null) {
-            for (let tag in this._runningEvents) {
-                let runningEvent = this._runningEvents[tag];
+            for (const tag in this._runningEvents) {
+                const runningEvent = this._runningEvents[tag];
                 runningEvent.removeAllListeners();
                 this._checkRunningEvents(runningEvent);
             }
@@ -847,7 +847,7 @@ export class Contract {
         }
 
         // Delete any listeners
-        let runningEvent = this._getRunningEvent(eventName);
+        const runningEvent = this._getRunningEvent(eventName);
         runningEvent.removeAllListeners();
         this._checkRunningEvents(runningEvent);
 
@@ -856,7 +856,7 @@ export class Contract {
 
     off(eventName: EventFilter | string, listener: Listener): this {
         if (!this.provider) { return this; }
-        let runningEvent = this._getRunningEvent(eventName);
+        const runningEvent = this._getRunningEvent(eventName);
         runningEvent.removeListener(listener);
         this._checkRunningEvents(runningEvent);
         return this;
@@ -915,7 +915,7 @@ export class ContractFactory {
         // If we have 1 additional argument, we allow transaction overrides
         if (args.length === this.interface.deploy.inputs.length + 1) {
             tx = shallowCopy(args.pop());
-            for (let key in tx) {
+            for (const key in tx) {
                 if (!allowedTransactionKeys[key]) {
                     throw new Error("unknown transaction override " + key);
                 }
@@ -944,12 +944,12 @@ export class ContractFactory {
         return resolveAddresses(this.signer, args, this.interface.deploy.inputs).then((args) => {
 
             // Get the deployment transaction (with optional overrides)
-            let tx = this.getDeployTransaction(...args);
+            const tx = this.getDeployTransaction(...args);
 
             // Send the deployment transaction
             return this.signer.sendTransaction(tx).then((tx) => {
-                let address = (<any>(this.constructor)).getContractAddress(tx);
-                let contract = (<any>(this.constructor)).getContract(address, this.interface, this.signer);
+                const address = (<any>(this.constructor)).getContractAddress(tx);
+                const contract = (<any>(this.constructor)).getContract(address, this.interface, this.signer);
                 defineReadOnly(contract, "deployTransaction", tx);
                 return contract;
             });
@@ -973,7 +973,7 @@ export class ContractFactory {
             compilerOutput = JSON.parse(compilerOutput);
         }
 
-        let abi = compilerOutput.abi;
+        const abi = compilerOutput.abi;
 
         let bytecode: any = null;
         if (compilerOutput.bytecode) {

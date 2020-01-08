@@ -9,7 +9,7 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
-import { Coder, Reader, Writer } from "./coders/abstract-coder";
+import { Coder, Reader, Result, Writer } from "./coders/abstract-coder";
 import { AddressCoder } from "./coders/address";
 import { ArrayCoder } from "./coders/array";
 import { BooleanCoder } from "./coders/boolean";
@@ -99,17 +99,17 @@ export class AbiCoder {
             });
         }
 
-        let coders = types.map((type) => this._getCoder(ParamType.from(type)));
-        let coder = (new TupleCoder(coders, "_"));
+        const coders = types.map((type) => this._getCoder(ParamType.from(type)));
+        const coder = (new TupleCoder(coders, "_"));
 
-        let writer = this._getWriter();
+        const writer = this._getWriter();
         coder.encode(writer, values);
         return writer.data;
     }
 
-    decode(types: Array<string | ParamType>, data: BytesLike): any {
-        let coders: Array<Coder> = types.map((type) => this._getCoder(ParamType.from(type)));
-        let coder = new TupleCoder(coders, "_");
+    decode(types: Array<string | ParamType>, data: BytesLike): Result {
+        const coders: Array<Coder> = types.map((type) => this._getCoder(ParamType.from(type)));
+        const coder = new TupleCoder(coders, "_");
         return coder.decode(this._getReader(arrayify(data)));
     }
 }
