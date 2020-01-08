@@ -1178,7 +1178,10 @@ export class BaseProvider extends Provider {
         // If it is already an address, nothing to resolve
         try {
             return Promise.resolve(getAddress(name));
-        } catch (error) { }
+        } catch (error) {
+            // See #694
+            if (isHexString(name)) { throw error; }
+        }
 
         let self = this;
 
