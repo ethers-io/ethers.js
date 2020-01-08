@@ -18,7 +18,16 @@ import { getPassword, looseArrayify, searchPath, zpad } from "./utils";
 
 // Exported Types
 
-export class KeystoreAccount extends Description implements ExternallyOwnedAccount {
+interface _KeystoreAccount {
+    address: string;
+    privateKey: string;
+    mnemonic?: string;
+    path?: string;
+
+    _isKeystoreAccount: boolean;
+}
+
+export class KeystoreAccount extends Description<_KeystoreAccount> implements ExternallyOwnedAccount {
     readonly address: string;
     readonly privateKey: string;
     readonly mnemonic?: string;
@@ -94,7 +103,7 @@ export async function decrypt(json: string, password: Bytes | string, progressCa
             }
         }
 
-        const account: any = {
+        const account: _KeystoreAccount = {
             _isKeystoreAccount: true,
             address: address,
             privateKey: hexlify(privateKey)

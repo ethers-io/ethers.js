@@ -16,7 +16,14 @@ const logger = new Logger(version);
 
 import { getPassword, looseArrayify, searchPath } from "./utils";
 
-export class CrowdsaleAccount extends Description implements ExternallyOwnedAccount {
+interface _CrowdsaleAccount {
+    address: string;
+    privateKey: string;
+
+    _isCrowdsaleAccount: boolean;
+}
+
+export class CrowdsaleAccount extends Description<_CrowdsaleAccount> implements ExternallyOwnedAccount {
     readonly address: string;
     readonly privateKey: string;
     readonly mnemonic?: string;
