@@ -1,5 +1,8 @@
 import { BytesLike } from "@ethersproject/bytes";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
+export interface Result extends Array<any> {
+    [key: string]: any;
+}
 export declare type CoerceFunc = (type: string, value: any) => any;
 export declare abstract class Coder {
     readonly name: string;

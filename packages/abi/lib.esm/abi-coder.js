@@ -76,15 +76,15 @@ export class AbiCoder {
                 value: { types: types, values: values }
             });
         }
-        let coders = types.map((type) => this._getCoder(ParamType.from(type)));
-        let coder = (new TupleCoder(coders, "_"));
-        let writer = this._getWriter();
+        const coders = types.map((type) => this._getCoder(ParamType.from(type)));
+        const coder = (new TupleCoder(coders, "_"));
+        const writer = this._getWriter();
         coder.encode(writer, values);
         return writer.data;
     }
     decode(types, data) {
-        let coders = types.map((type) => this._getCoder(ParamType.from(type)));
-        let coder = new TupleCoder(coders, "_");
+        const coders = types.map((type) => this._getCoder(ParamType.from(type)));
+        const coder = new TupleCoder(coders, "_");
         return coder.decode(this._getReader(arrayify(data)));
     }
 }

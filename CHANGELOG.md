@@ -3,6 +3,14 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.164 (2020-01-07 19:57)
+-----------------------------------------
+
+  - Use better Description typing. ([2d5492c](https://github.com/ethers-io/ethers.js/commit/2d5492cd2ee722c818c249244af7b5bea05d67b0))
+  - Better property access on ABI decoded results. ([#698](https://github.com/ethers-io/ethers.js/issues/698); [13f50ab](https://github.com/ethers-io/ethers.js/commit/13f50abd847f7ddcc7e54c102da54e2d23b86fae))
+  - Better typing support for Description. ([d0f4642](https://github.com/ethers-io/ethers.js/commit/d0f4642f6d2c9f5119f1910a0082894c60e81191))
+  - Fixed resolveName when name is an address with an invalid checksum. ([#694](https://github.com/ethers-io/ethers.js/issues/694); [1e72fc7](https://github.com/ethers-io/ethers.js/commit/1e72fc7d6f7c3be4410dbdcfbab9a0463ceb52bd))
+
 ethers/v5.0.0-beta.163 (2020-01-06 18:57)
 -----------------------------------------
 

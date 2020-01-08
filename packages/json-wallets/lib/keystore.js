@@ -71,7 +71,6 @@ var random_1 = require("@ethersproject/random");
 var properties_1 = require("@ethersproject/properties");
 var transactions_1 = require("@ethersproject/transactions");
 var utils_1 = require("./utils");
-// Exported Types
 var KeystoreAccount = /** @class */ (function (_super) {
     __extends(KeystoreAccount, _super);
     function KeystoreAccount() {

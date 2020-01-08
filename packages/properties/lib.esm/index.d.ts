@@ -6,6 +6,6 @@ export declare function checkProperties(object: any, properties: {
 }): void;
 export declare function shallowCopy(object: any): any;
 export declare function deepCopy(object: any): any;
-export declare class Description {
-    constructor(info: any);
+export declare class Description<T = any> {
+    constructor(info: T);
 }

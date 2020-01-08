@@ -4628,7 +4628,7 @@ class FixedNumber {
     }
 }
 
-const version$3 = "properties/5.0.0-beta.135";
+const version$3 = "properties/5.0.0-beta.136";
 
 "use strict";
 const logger$3 = new Logger(version$3);
@@ -4725,7 +4725,6 @@ class Description {
         for (const key in info) {
             this[key] = deepCopy(info[key]);
         }
-        Object.freeze(this);
     }
 }
 
@@ -4739,7 +4738,7 @@ var lib_esm$2 = /*#__PURE__*/Object.freeze({
 	Description: Description
 });
 
-const version$4 = "abi/5.0.0-beta.143";
+const version$4 = "abi/5.0.0-beta.144";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -7127,15 +7126,15 @@ class AbiCoder {
                 value: { types: types, values: values }
             });
         }
-        let coders = types.map((type) => this._getCoder(ParamType.from(type)));
-        let coder = (new TupleCoder(coders, "_"));
-        let writer = this._getWriter();
+        const coders = types.map((type) => this._getCoder(ParamType.from(type)));
+        const coder = (new TupleCoder(coders, "_"));
+        const writer = this._getWriter();
         coder.encode(writer, values);
         return writer.data;
     }
     decode(types, data) {
-        let coders = types.map((type) => this._getCoder(ParamType.from(type)));
-        let coder = new TupleCoder(coders, "_");
+        const coders = types.map((type) => this._getCoder(ParamType.from(type)));
+        const coder = new TupleCoder(coders, "_");
         return coder.decode(this._getReader(arrayify(data)));
     }
 }
@@ -7208,8 +7207,6 @@ class Indexed extends Description {
         return !!(value && value._isIndexed);
     }
 }
-class Result {
-}
 class Interface {
     constructor(fragments) {
         logger$b.checkNew(new.target, Interface);
@@ -7255,38 +7252,40 @@ class Interface {
             }
             bucket[signature] = fragment;
         });
-        // Add any fragments with a unique name by its name (sans signature parameters)
-        /*
-        [this.events, this.functions].forEach((bucket) => {
-            let count = getNameCount(bucket);
-            Object.keys(bucket).forEach((signature) => {
-                let fragment = bucket[signature];
-                if (count[fragment.name] !== 1) {
-                   logger.warn("duplicate definition - " + fragment.name);
-                   return;
-                }
-                bucket[fragment.name] = fragment;
-            });
-        });
-        */
         // If we do not have a constructor use the default "constructor() payable"
         if (!this.deploy) {
             defineReadOnly(this, "deploy", ConstructorFragment.from({ type: "constructor" }));
         }
         defineReadOnly(this, "_isInterface", true);
     }
+    format(format) {
+        if (!format) {
+            format = FormatTypes.full;
+        }
+        if (format === FormatTypes.sighash) {
+            logger$b.throwArgumentError("interface does not support formating sighash", "format", format);
+        }
+        const abi = this.fragments.map((fragment) => fragment.format(format));
+        // We need to re-bundle the JSON fragments a bit
+        if (format === FormatTypes.json) {
+            return JSON.stringify(abi.map((j) => JSON.parse(j)));
+        }
+        return abi;
+    }
+    // Sub-classes can override these to handle other blockchains
     static getAbiCoder() {
         return defaultAbiCoder;
     }
     static getAddress(address) {
         return getAddress(address);
     }
-    _sighashify(functionFragment) {
+    static getSighash(functionFragment) {
         return hexDataSlice(id(functionFragment.format()), 0, 4);
     }
-    _topicify(eventFragment) {
+    static getTopic(eventFragment) {
         return id(eventFragment.format());
     }
+    // Find a function definition by any means necessary (unless it is ambiguous)
     getFunction(nameOrSignatureOrSighash) {
         if (isHexString(nameOrSignatureOrSighash)) {
             for (const name in this.functions) {
@@ -7315,6 +7314,7 @@ class Interface {
         }
         return result;
     }
+    // Find an event definition by any means necessary (unless it is ambiguous)
     getEvent(nameOrSignatureOrTopic) {
         if (isHexString(nameOrSignatureOrTopic)) {
             const topichash = nameOrSignatureOrTopic.toLowerCase();
@@ -7344,17 +7344,19 @@ class Interface {
         }
         return result;
     }
+    // Get the sighash (the bytes4 selector) used by Solidity to identify a function
     getSighash(functionFragment) {
         if (typeof (functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
         }
-        return this._sighashify(functionFragment);
+        return getStatic(this.constructor, "getSighash")(functionFragment);
     }
+    // Get the topic (the bytes32 hash) used by Solidity to identify an event
     getEventTopic(eventFragment) {
         if (typeof (eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
         }
-        return this._topicify(eventFragment);
+        return getStatic(this.constructor, "getTopic")(eventFragment);
     }
     _decodeParams(params, data) {
         return this._abiCoder.decode(params, data);
@@ -7365,6 +7367,7 @@ class Interface {
     encodeDeploy(values) {
         return this._encodeParams(this.deploy.inputs, values || []);
     }
+    // Decode the data for a function call (e.g. tx.data)
     decodeFunctionData(functionFragment, data) {
         if (typeof (functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
@@ -7375,6 +7378,7 @@ class Interface {
         }
         return this._decodeParams(functionFragment.inputs, bytes.slice(4));
     }
+    // Encode the data for a function call (e.g. tx.data)
     encodeFunctionData(functionFragment, values) {
         if (typeof (functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
@@ -7384,6 +7388,7 @@ class Interface {
             this._encodeParams(functionFragment.inputs, values || [])
         ]));
     }
+    // Decode the result from a function call (e.g. from eth_call)
     decodeFunctionResult(functionFragment, data) {
         if (typeof (functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
@@ -7401,7 +7406,7 @@ class Interface {
             case 4:
                 if (hexlify(bytes.slice(0, 4)) === "0x08c379a0") {
                     errorSignature = "Error(string)";
-                    reason = this._abiCoder.decode(["string"], bytes.slice(4));
+                    reason = this._abiCoder.decode(["string"], bytes.slice(4))[0];
                 }
                 break;
         }
@@ -7412,12 +7417,14 @@ class Interface {
             reason: reason
         });
     }
+    // Encode the result for a function call (e.g. for eth_call)
     encodeFunctionResult(functionFragment, values) {
         if (typeof (functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
         }
         return hexlify(this._abiCoder.encode(functionFragment.outputs, values || []));
     }
+    // Create the filter for the event with search criteria (e.g. for eth_filterLog)
     encodeFilterTopics(eventFragment, values) {
         if (typeof (eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
@@ -7466,6 +7473,7 @@ class Interface {
         }
         return topics;
     }
+    // Decode a filter for the event and the search criteria
     decodeEventLog(eventFragment, data, topics) {
         if (typeof (eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
@@ -7515,10 +7523,14 @@ class Interface {
             else {
                 result[index] = resultNonIndexed[nonIndexedIndex++];
             }
-            //if (param.name && result[param.name] == null) { result[param.name] = result[index]; }
+            if (param.name && result[param.name] == null) {
+                result[param.name] = result[index];
+            }
         });
         return result;
     }
+    // Given a transaction, find the matching function fragment (if any) and
+    // determine all its properties and call parameters
     parseTransaction(tx) {
         let fragment = this.getFunction(tx.data.substring(0, 10).toLowerCase());
         if (!fragment) {
@@ -7533,18 +7545,22 @@ class Interface {
             value: BigNumber.from(tx.value || "0"),
         });
     }
+    // Given an event log, find the matching event fragment (if any) and
+    // determine all its properties and values
     parseLog(log) {
         let fragment = this.getEvent(log.topics[0]);
         if (!fragment || fragment.anonymous) {
             return null;
         }
         // @TODO: If anonymous, and the only method, and the input count matches, should we parse?
+        //        Probably not, because just because it is the only event in the ABI does
+        //        not mean we have the full ABI; maybe jsut a fragment?
         return new LogDescription({
             eventFragment: fragment,
             name: fragment.name,
             signature: fragment.format(),
             topic: this.getEventTopic(fragment),
-            values: this.decodeEventLog(fragment, log.data, log.topics)
+            args: this.decodeEventLog(fragment, log.data, log.topics)
         });
     }
     /*
@@ -7565,7 +7581,7 @@ class Interface {
 
 "use strict";
 
-const version$8 = "abstract-provider/5.0.0-beta.135";
+const version$8 = "abstract-provider/5.0.0-beta.136";
 
 "use strict";
 const logger$c = new Logger(version$8);
@@ -7820,7 +7836,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$a = "contracts/5.0.0-beta.142";
+const version$a = "contracts/5.0.0-beta.143";
 
 "use strict";
 const logger$e = new Logger(version$a);
@@ -7859,7 +7875,7 @@ export function _sendTransaction(func: FunctionFragment, args: Array<any>, overr
 }
 */
 function runMethod(contract, functionName, options) {
-    let method = contract.interface.functions[functionName];
+    const method = contract.interface.functions[functionName];
     return function (...params) {
         let tx = {};
         let blockTag = null;
@@ -7950,14 +7966,14 @@ function runMethod(contract, functionName, options) {
                 logger$e.throwError("sending a transaction requires a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
             }
             return contract.signer.sendTransaction(tx).then((tx) => {
-                let wait = tx.wait.bind(tx);
+                const wait = tx.wait.bind(tx);
                 tx.wait = (confirmations) => {
                     return wait(confirmations).then((receipt) => {
                         receipt.events = receipt.logs.map((log) => {
                             let event = deepCopy(log);
                             let parsed = contract.interface.parseLog(log);
                             if (parsed) {
-                                event.values = parsed.values;
+                                event.args = parsed.args;
                                 event.decode = (data, topics) => {
                                     return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
                                 };
@@ -8019,9 +8035,9 @@ class RunningEvent {
         return this._listeners.length;
     }
     run(args) {
-        let listenerCount = this.listenerCount();
+        const listenerCount = this.listenerCount();
         this._listeners = this._listeners.filter((item) => {
-            let argsCopy = args.slice();
+            const argsCopy = args.slice();
             // Call the callback in the next event loop
             setTimeout(() => {
                 item.listener.apply(this, argsCopy);
@@ -8041,7 +8057,7 @@ class ErrorRunningEvent extends RunningEvent {
 }
 class FragmentRunningEvent extends RunningEvent {
     constructor(address, contractInterface, fragment, topics) {
-        let filter = {
+        const filter = {
             address: address
         };
         let topic = contractInterface.getEventTopic(fragment);
@@ -8066,7 +8082,7 @@ class FragmentRunningEvent extends RunningEvent {
         event.decode = (data, topics) => {
             return this.interface.decodeEventLog(this.fragment, data, topics);
         };
-        event.values = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+        event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
     }
 }
 class WildcardRunningEvent extends RunningEvent {
@@ -8077,14 +8093,14 @@ class WildcardRunningEvent extends RunningEvent {
     }
     prepareEvent(event) {
         super.prepareEvent(event);
-        let parsed = this.interface.parseLog(event);
+        const parsed = this.interface.parseLog(event);
         if (parsed) {
             event.event = parsed.name;
             event.eventSignature = parsed.signature;
             event.decode = (data, topics) => {
                 return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
             };
-            event.values = parsed.values;
+            event.args = parsed.args;
         }
     }
 }
@@ -8113,7 +8129,7 @@ class Contract {
         {
             const uniqueFilters = {};
             Object.keys(this.interface.events).forEach((eventSignature) => {
-                let event = this.interface.events[eventSignature];
+                const event = this.interface.events[eventSignature];
                 defineReadOnly(this.filters, eventSignature, (...args) => {
                     return {
                         address: this.address,
@@ -8162,7 +8178,7 @@ class Contract {
         Object.keys(this.interface.functions).forEach((name) => {
             const fragment = this.interface.functions[name];
             // @TODO: This should take in fragment
-            let run = runMethod(this, name, {});
+            const run = runMethod(this, name, {});
             if (this[name] == null) {
                 defineReadOnly(this, name, run);
             }
@@ -8244,7 +8260,7 @@ class Contract {
         if (!this.signer) {
             logger$e.throwError("sending a transactions require a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
         }
-        let tx = shallowCopy(overrides || {});
+        const tx = shallowCopy(overrides || {});
         ["from", "to"].forEach(function (key) {
             if (tx[key] == null) {
                 return;
@@ -8261,7 +8277,7 @@ class Contract {
         if (typeof (signerOrProvider) === "string") {
             signerOrProvider = new VoidSigner(signerOrProvider, this.provider);
         }
-        let contract = new (this.constructor)(this.address, this.interface, signerOrProvider);
+        const contract = new (this.constructor)(this.address, this.interface, signerOrProvider);
         if (this.deployTransaction) {
             defineReadOnly(contract, "deployTransaction", this.deployTransaction);
         }
@@ -8292,20 +8308,20 @@ class Contract {
             if (eventName === "*") {
                 return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
             }
-            let fragment = this.interface.getEvent(eventName);
+            const fragment = this.interface.getEvent(eventName);
             if (!fragment) {
                 logger$e.throwArgumentError("unknown event - " + eventName, "eventName", eventName);
             }
             return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
         }
-        let filter = {
+        const filter = {
             address: this.address
         };
         // Find the matching event in the ABI; if none, we still allow filtering
         // since it may be a filter for an otherwise unknown event
         if (eventName.topics) {
             if (eventName.topics[0]) {
-                let fragment = this.interface.getEvent(eventName.topics[0]);
+                const fragment = this.interface.getEvent(eventName.topics[0]);
                 if (fragment) {
                     return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
                 }
@@ -8319,14 +8335,14 @@ class Contract {
             delete this._runningEvents[runningEvent.tag];
         }
         // If we have a poller for this, remove it
-        let emit = this._wrappedEmits[runningEvent.tag];
+        const emit = this._wrappedEmits[runningEvent.tag];
         if (emit) {
             this.provider.off(runningEvent.filter, emit);
             delete this._wrappedEmits[runningEvent.tag];
         }
     }
     _wrapEvent(runningEvent, log, listener) {
-        let event = deepCopy(log);
+        const event = deepCopy(log);
         try {
             runningEvent.prepareEvent(event);
         }
@@ -8355,11 +8371,11 @@ class Contract {
         this._runningEvents[runningEvent.tag] = runningEvent;
         // If we are not polling the provider, start
         if (!this._wrappedEmits[runningEvent.tag]) {
-            let wrappedEmit = (log) => {
-                let event = this._wrapEvent(runningEvent, log, listener);
-                let values = (event.values || []);
-                values.push(event);
-                this.emit(runningEvent.filter, ...values);
+            const wrappedEmit = (log) => {
+                const event = this._wrapEvent(runningEvent, log, listener);
+                const args = (event.args || []);
+                args.push(event);
+                this.emit(runningEvent.filter, ...args);
             };
             this._wrappedEmits[runningEvent.tag] = wrappedEmit;
             // Special events, like "error" do not have a filter
@@ -8369,8 +8385,8 @@ class Contract {
         }
     }
     queryFilter(event, fromBlockOrBlockhash, toBlock) {
-        let runningEvent = this._getRunningEvent(event);
-        let filter = shallowCopy(runningEvent.filter);
+        const runningEvent = this._getRunningEvent(event);
+        const filter = shallowCopy(runningEvent.filter);
         if (typeof (fromBlockOrBlockhash) === "string" && isHexString(fromBlockOrBlockhash, 32)) {
             if (toBlock != null) {
                 logger$e.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
@@ -8397,8 +8413,8 @@ class Contract {
         if (!this.provider) {
             return false;
         }
-        let runningEvent = this._getRunningEvent(eventName);
-        let result = (runningEvent.run(args) > 0);
+        const runningEvent = this._getRunningEvent(eventName);
+        const result = (runningEvent.run(args) > 0);
         // May have drained all the "once" events; check for living events
         this._checkRunningEvents(runningEvent);
         return result;
@@ -8414,7 +8430,7 @@ class Contract {
             return [];
         }
         if (eventName == null) {
-            let result = [];
+            const result = [];
             for (let tag in this._runningEvents) {
                 this._runningEvents[tag].listeners().forEach((listener) => {
                     result.push(listener);
@@ -8429,15 +8445,15 @@ class Contract {
             return this;
         }
         if (eventName == null) {
-            for (let tag in this._runningEvents) {
-                let runningEvent = this._runningEvents[tag];
+            for (const tag in this._runningEvents) {
+                const runningEvent = this._runningEvents[tag];
                 runningEvent.removeAllListeners();
                 this._checkRunningEvents(runningEvent);
             }
             return this;
         }
         // Delete any listeners
-        let runningEvent = this._getRunningEvent(eventName);
+        const runningEvent = this._getRunningEvent(eventName);
         runningEvent.removeAllListeners();
         this._checkRunningEvents(runningEvent);
         return this;
@@ -8446,7 +8462,7 @@ class Contract {
         if (!this.provider) {
             return this;
         }
-        let runningEvent = this._getRunningEvent(eventName);
+        const runningEvent = this._getRunningEvent(eventName);
         runningEvent.removeListener(listener);
         this._checkRunningEvents(runningEvent);
         return this;
@@ -8493,7 +8509,7 @@ class ContractFactory {
         // If we have 1 additional argument, we allow transaction overrides
         if (args.length === this.interface.deploy.inputs.length + 1) {
             tx = shallowCopy(args.pop());
-            for (let key in tx) {
+            for (const key in tx) {
                 if (!allowedTransactionKeys$1[key]) {
                     throw new Error("unknown transaction override " + key);
                 }
@@ -8518,11 +8534,11 @@ class ContractFactory {
     deploy(...args) {
         return resolveAddresses(this.signer, args, this.interface.deploy.inputs).then((args) => {
             // Get the deployment transaction (with optional overrides)
-            let tx = this.getDeployTransaction(...args);
+            const tx = this.getDeployTransaction(...args);
             // Send the deployment transaction
             return this.signer.sendTransaction(tx).then((tx) => {
-                let address = (this.constructor).getContractAddress(tx);
-                let contract = (this.constructor).getContract(address, this.interface, this.signer);
+                const address = (this.constructor).getContractAddress(tx);
+                const contract = (this.constructor).getContract(address, this.interface, this.signer);
                 defineReadOnly(contract, "deployTransaction", tx);
                 return contract;
             });
@@ -8541,7 +8557,7 @@ class ContractFactory {
         if (typeof (compilerOutput) === "string") {
             compilerOutput = JSON.parse(compilerOutput);
         }
-        let abi = compilerOutput.abi;
+        const abi = compilerOutput.abi;
         let bytecode = null;
         if (compilerOutput.bytecode) {
             bytecode = compilerOutput.bytecode;
@@ -13807,7 +13823,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$f = "json-wallets/5.0.0-beta.134";
+const version$f = "json-wallets/5.0.0-beta.135";
 
 "use strict";
 function looseArrayify(hexString) {
@@ -14653,7 +14669,6 @@ var __awaiter$1 = (window && window.__awaiter) || function (thisArg, _arguments,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// Exported Types
 class KeystoreAccount extends Description {
     isKeystoreAccount(value) {
         return !!(value && value._isKeystoreAccount);
@@ -16072,7 +16087,7 @@ function poll(func, options) {
     });
 }
 
-const version$j = "providers/5.0.0-beta.146";
+const version$j = "providers/5.0.0-beta.147";
 
 "use strict";
 const logger$m = new Logger(version$j);
@@ -17170,7 +17185,12 @@ class BaseProvider extends Provider {
             try {
                 return Promise.resolve(this.formatter.address(name));
             }
-            catch (error) { }
+            catch (error) {
+                // If is is a hexstring, the address is bad (See #694)
+                if (isHexString(name)) {
+                    throw error;
+                }
+            }
             // Get the addr from the resovler
             const resolverAddress = yield this._getResolver(name);
             if (!resolverAddress) {
@@ -18968,7 +18988,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$l = "ethers/5.0.0-beta.163";
+const version$l = "ethers/5.0.0-beta.164";
 
 "use strict";
 const errors = Logger.errors;

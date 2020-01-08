@@ -4756,7 +4756,7 @@
 	var _version$6 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "properties/5.0.0-beta.135";
+	exports.version = "properties/5.0.0-beta.136";
 	});
 
 	var _version$7 = unwrapExports(_version$6);
@@ -4867,7 +4867,6 @@
 	        for (var key in info) {
 	            this[key] = deepCopy(info[key]);
 	        }
-	        Object.freeze(this);
 	    }
 	    return Description;
 	}());
@@ -4886,7 +4885,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.143";
+	exports.version = "abi/5.0.0-beta.144";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -7931,12 +7930,6 @@
 	    return Indexed;
 	}(lib$3.Description));
 	exports.Indexed = Indexed;
-	var Result = /** @class */ (function () {
-	    function Result() {
-	    }
-	    return Result;
-	}());
-	exports.Result = Result;
 	var Interface = /** @class */ (function () {
 	    function Interface(fragments$1) {
 	        var _newTarget = this.constructor;
@@ -7984,38 +7977,40 @@
 	            }
 	            bucket[signature] = fragment;
 	        });
-	        // Add any fragments with a unique name by its name (sans signature parameters)
-	        /*
-	        [this.events, this.functions].forEach((bucket) => {
-	            let count = getNameCount(bucket);
-	            Object.keys(bucket).forEach((signature) => {
-	                let fragment = bucket[signature];
-	                if (count[fragment.name] !== 1) {
-	                   logger.warn("duplicate definition - " + fragment.name);
-	                   return;
-	                }
-	                bucket[fragment.name] = fragment;
-	            });
-	        });
-	        */
 	        // If we do not have a constructor use the default "constructor() payable"
 	        if (!this.deploy) {
 	            lib$3.defineReadOnly(this, "deploy", fragments.ConstructorFragment.from({ type: "constructor" }));
 	        }
 	        lib$3.defineReadOnly(this, "_isInterface", true);
 	    }
+	    Interface.prototype.format = function (format) {
+	        if (!format) {
+	            format = fragments.FormatTypes.full;
+	        }
+	        if (format === fragments.FormatTypes.sighash) {
+	            logger.throwArgumentError("interface does not support formating sighash", "format", format);
+	        }
+	        var abi = this.fragments.map(function (fragment) { return fragment.format(format); });
+	        // We need to re-bundle the JSON fragments a bit
+	        if (format === fragments.FormatTypes.json) {
+	            return JSON.stringify(abi.map(function (j) { return JSON.parse(j); }));
+	        }
+	        return abi;
+	    };
+	    // Sub-classes can override these to handle other blockchains
 	    Interface.getAbiCoder = function () {
 	        return abiCoder.defaultAbiCoder;
 	    };
 	    Interface.getAddress = function (address) {
 	        return lib$6.getAddress(address);
 	    };
-	    Interface.prototype._sighashify = function (functionFragment) {
+	    Interface.getSighash = function (functionFragment) {
 	        return lib$1.hexDataSlice(lib$9.id(functionFragment.format()), 0, 4);
 	    };
-	    Interface.prototype._topicify = function (eventFragment) {
+	    Interface.getTopic = function (eventFragment) {
 	        return lib$9.id(eventFragment.format());
 	    };
+	    // Find a function definition by any means necessary (unless it is ambiguous)
 	    Interface.prototype.getFunction = function (nameOrSignatureOrSighash) {
 	        if (lib$1.isHexString(nameOrSignatureOrSighash)) {
 	            for (var name_1 in this.functions) {
@@ -8044,6 +8039,7 @@
 	        }
 	        return result;
 	    };
+	    // Find an event definition by any means necessary (unless it is ambiguous)
 	    Interface.prototype.getEvent = function (nameOrSignatureOrTopic) {
 	        if (lib$1.isHexString(nameOrSignatureOrTopic)) {
 	            var topichash = nameOrSignatureOrTopic.toLowerCase();
@@ -8073,17 +8069,19 @@
 	        }
 	        return result;
 	    };
+	    // Get the sighash (the bytes4 selector) used by Solidity to identify a function
 	    Interface.prototype.getSighash = function (functionFragment) {
 	        if (typeof (functionFragment) === "string") {
 	            functionFragment = this.getFunction(functionFragment);
 	        }
-	        return this._sighashify(functionFragment);
+	        return lib$3.getStatic(this.constructor, "getSighash")(functionFragment);
 	    };
+	    // Get the topic (the bytes32 hash) used by Solidity to identify an event
 	    Interface.prototype.getEventTopic = function (eventFragment) {
 	        if (typeof (eventFragment) === "string") {
 	            eventFragment = this.getEvent(eventFragment);
 	        }
-	        return this._topicify(eventFragment);
+	        return lib$3.getStatic(this.constructor, "getTopic")(eventFragment);
 	    };
 	    Interface.prototype._decodeParams = function (params, data) {
 	        return this._abiCoder.decode(params, data);
@@ -8094,6 +8092,7 @@
 	    Interface.prototype.encodeDeploy = function (values) {
 	        return this._encodeParams(this.deploy.inputs, values || []);
 	    };
+	    // Decode the data for a function call (e.g. tx.data)
 	    Interface.prototype.decodeFunctionData = function (functionFragment, data) {
 	        if (typeof (functionFragment) === "string") {
 	            functionFragment = this.getFunction(functionFragment);
@@ -8104,6 +8103,7 @@
 	        }
 	        return this._decodeParams(functionFragment.inputs, bytes.slice(4));
 	    };
+	    // Encode the data for a function call (e.g. tx.data)
 	    Interface.prototype.encodeFunctionData = function (functionFragment, values) {
 	        if (typeof (functionFragment) === "string") {
 	            functionFragment = this.getFunction(functionFragment);
@@ -8113,6 +8113,7 @@
 	            this._encodeParams(functionFragment.inputs, values || [])
 	        ]));
 	    };
+	    // Decode the result from a function call (e.g. from eth_call)
 	    Interface.prototype.decodeFunctionResult = function (functionFragment, data) {
 	        if (typeof (functionFragment) === "string") {
 	            functionFragment = this.getFunction(functionFragment);
@@ -8130,7 +8131,7 @@
 	            case 4:
 	                if (lib$1.hexlify(bytes.slice(0, 4)) === "0x08c379a0") {
 	                    errorSignature = "Error(string)";
-	                    reason = this._abiCoder.decode(["string"], bytes.slice(4));
+	                    reason = this._abiCoder.decode(["string"], bytes.slice(4))[0];
 	                }
 	                break;
 	        }
@@ -8141,12 +8142,14 @@
 	            reason: reason
 	        });
 	    };
+	    // Encode the result for a function call (e.g. for eth_call)
 	    Interface.prototype.encodeFunctionResult = function (functionFragment, values) {
 	        if (typeof (functionFragment) === "string") {
 	            functionFragment = this.getFunction(functionFragment);
 	        }
 	        return lib$1.hexlify(this._abiCoder.encode(functionFragment.outputs, values || []));
 	    };
+	    // Create the filter for the event with search criteria (e.g. for eth_filterLog)
 	    Interface.prototype.encodeFilterTopics = function (eventFragment, values) {
 	        var _this = this;
 	        if (typeof (eventFragment) === "string") {
@@ -8196,6 +8199,7 @@
 	        }
 	        return topics;
 	    };
+	    // Decode a filter for the event and the search criteria
 	    Interface.prototype.decodeEventLog = function (eventFragment, data, topics) {
 	        if (typeof (eventFragment) === "string") {
 	            eventFragment = this.getEvent(eventFragment);
@@ -8245,10 +8249,14 @@
 	            else {
 	                result[index] = resultNonIndexed[nonIndexedIndex++];
 	            }
-	            //if (param.name && result[param.name] == null) { result[param.name] = result[index]; }
+	            if (param.name && result[param.name] == null) {
+	                result[param.name] = result[index];
+	            }
 	        });
 	        return result;
 	    };
+	    // Given a transaction, find the matching function fragment (if any) and
+	    // determine all its properties and call parameters
 	    Interface.prototype.parseTransaction = function (tx) {
 	        var fragment = this.getFunction(tx.data.substring(0, 10).toLowerCase());
 	        if (!fragment) {
@@ -8263,18 +8271,22 @@
 	            value: lib$2.BigNumber.from(tx.value || "0"),
 	        });
 	    };
+	    // Given an event log, find the matching event fragment (if any) and
+	    // determine all its properties and values
 	    Interface.prototype.parseLog = function (log) {
 	        var fragment = this.getEvent(log.topics[0]);
 	        if (!fragment || fragment.anonymous) {
 	            return null;
 	        }
 	        // @TODO: If anonymous, and the only method, and the input count matches, should we parse?
+	        //        Probably not, because just because it is the only event in the ABI does
+	        //        not mean we have the full ABI; maybe jsut a fragment?
 	        return new LogDescription({
 	            eventFragment: fragment,
 	            name: fragment.name,
 	            signature: fragment.format(),
 	            topic: this.getEventTopic(fragment),
-	            values: this.decodeEventLog(fragment, log.data, log.topics)
+	            args: this.decodeEventLog(fragment, log.data, log.topics)
 	        });
 	    };
 	    /*
@@ -8300,8 +8312,7 @@
 	var _interface_1 = _interface.LogDescription;
 	var _interface_2 = _interface.TransactionDescription;
 	var _interface_3 = _interface.Indexed;
-	var _interface_4 = _interface.Result;
-	var _interface_5 = _interface.Interface;
+	var _interface_4 = _interface.Interface;
 
 	var lib$a = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -8336,7 +8347,7 @@
 	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-provider/5.0.0-beta.135";
+	exports.version = "abstract-provider/5.0.0-beta.136";
 	});
 
 	var _version$h = unwrapExports(_version$g);
@@ -8727,7 +8738,7 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.0-beta.142";
+	exports.version = "contracts/5.0.0-beta.143";
 	});
 
 	var _version$l = unwrapExports(_version$k);
@@ -8905,7 +8916,7 @@
 	                            var event = lib$3.deepCopy(log);
 	                            var parsed = contract.interface.parseLog(log);
 	                            if (parsed) {
-	                                event.values = parsed.values;
+	                                event.args = parsed.args;
 	                                event.decode = function (data, topics) {
 	                                    return _this.interface.decodeEventLog(parsed.eventFragment, data, topics);
 	                                };
@@ -9022,7 +9033,7 @@
 	        event.decode = function (data, topics) {
 	            return _this.interface.decodeEventLog(_this.fragment, data, topics);
 	        };
-	        event.values = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+	        event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
 	    };
 	    return FragmentRunningEvent;
 	}(RunningEvent));
@@ -9044,7 +9055,7 @@
 	            event.decode = function (data, topics) {
 	                return _this.interface.decodeEventLog(parsed.eventFragment, data, topics);
 	            };
-	            event.values = parsed.values;
+	            event.args = parsed.args;
 	        }
 	    };
 	    return WildcardRunningEvent;
@@ -9328,9 +9339,9 @@
 	        if (!this._wrappedEmits[runningEvent.tag]) {
 	            var wrappedEmit = function (log) {
 	                var event = _this._wrapEvent(runningEvent, log, listener);
-	                var values = (event.values || []);
-	                values.push(event);
-	                _this.emit.apply(_this, __spreadArrays([runningEvent.filter], values));
+	                var args = (event.args || []);
+	                args.push(event);
+	                _this.emit.apply(_this, __spreadArrays([runningEvent.filter], args));
 	            };
 	            this._wrappedEmits[runningEvent.tag] = wrappedEmit;
 	            // Special events, like "error" do not have a filter
@@ -14922,7 +14933,7 @@
 	var _version$y = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "json-wallets/5.0.0-beta.134";
+	exports.version = "json-wallets/5.0.0-beta.135";
 	});
 
 	var _version$z = unwrapExports(_version$y);
@@ -15903,7 +15914,6 @@
 
 
 
-	// Exported Types
 	var KeystoreAccount = /** @class */ (function (_super) {
 	    __extends(KeystoreAccount, _super);
 	    function KeystoreAccount() {
@@ -17514,7 +17524,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.146";
+	exports.version = "providers/5.0.0-beta.147";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -18969,7 +18979,12 @@
 	                        try {
 	                            return [2 /*return*/, Promise.resolve(this.formatter.address(name))];
 	                        }
-	                        catch (error) { }
+	                        catch (error) {
+	                            // If is is a hexstring, the address is bad (See #694)
+	                            if (lib$1.isHexString(name)) {
+	                                throw error;
+	                            }
+	                        }
 	                        return [4 /*yield*/, this._getResolver(name)];
 	                    case 3:
 	                        resolverAddress = _c.sent();
@@ -21416,7 +21431,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.163";
+	exports.version = "ethers/5.0.0-beta.164";
 	});
 
 	var _version$L = unwrapExports(_version$K);

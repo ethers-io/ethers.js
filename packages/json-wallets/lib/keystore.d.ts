@@ -1,7 +1,14 @@
 import { ExternallyOwnedAccount } from "@ethersproject/abstract-signer";
 import { Bytes, BytesLike } from "@ethersproject/bytes";
 import { Description } from "@ethersproject/properties";
-export declare class KeystoreAccount extends Description implements ExternallyOwnedAccount {
+interface _KeystoreAccount {
+    address: string;
+    privateKey: string;
+    mnemonic?: string;
+    path?: string;
+    _isKeystoreAccount: boolean;
+}
+export declare class KeystoreAccount extends Description<_KeystoreAccount> implements ExternallyOwnedAccount {
     readonly address: string;
     readonly privateKey: string;
     readonly mnemonic?: string;
@@ -24,3 +31,4 @@ export declare type EncryptOptions = {
 };
 export declare function decrypt(json: string, password: Bytes | string, progressCallback?: ProgressCallback): Promise<KeystoreAccount>;
 export declare function encrypt(account: ExternallyOwnedAccount, password: Bytes | string, options?: EncryptOptions, progressCallback?: ProgressCallback): Promise<string>;
+export {};

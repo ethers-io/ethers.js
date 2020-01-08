@@ -6,7 +6,7 @@ import { id } from "@ethersproject/hash";
 import { keccak256 } from "@ethersproject/keccak256";
 import { defineReadOnly, Description, getStatic } from "@ethersproject/properties";
 import { defaultAbiCoder } from "./abi-coder";
-import { ConstructorFragment, EventFragment, Fragment, FunctionFragment, ParamType } from "./fragments";
+import { ConstructorFragment, EventFragment, FormatTypes, Fragment, FunctionFragment, ParamType } from "./fragments";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -18,8 +18,6 @@ export class Indexed extends Description {
     static isIndexed(value) {
         return !!(value && value._isIndexed);
     }
-}
-export class Result {
 }
 export class Interface {
     constructor(fragments) {
@@ -66,38 +64,40 @@ export class Interface {
             }
             bucket[signature] = fragment;
         });
-        // Add any fragments with a unique name by its name (sans signature parameters)
-        /*
-        [this.events, this.functions].forEach((bucket) => {
-            let count = getNameCount(bucket);
-            Object.keys(bucket).forEach((signature) => {
-                let fragment = bucket[signature];
-                if (count[fragment.name] !== 1) {
-                   logger.warn("duplicate definition - " + fragment.name);
-                   return;
-                }
-                bucket[fragment.name] = fragment;
-            });
-        });
-        */
         // If we do not have a constructor use the default "constructor() payable"
         if (!this.deploy) {
             defineReadOnly(this, "deploy", ConstructorFragment.from({ type: "constructor" }));
         }
         defineReadOnly(this, "_isInterface", true);
     }
+    format(format) {
+        if (!format) {
+            format = FormatTypes.full;
+        }
+        if (format === FormatTypes.sighash) {
+            logger.throwArgumentError("interface does not support formating sighash", "format", format);
+        }
+        const abi = this.fragments.map((fragment) => fragment.format(format));
+        // We need to re-bundle the JSON fragments a bit
+        if (format === FormatTypes.json) {
+            return JSON.stringify(abi.map((j) => JSON.parse(j)));
+        }
+        return abi;
+    }
+    // Sub-classes can override these to handle other blockchains
     static getAbiCoder() {
         return defaultAbiCoder;
     }
     static getAddress(address) {
         return getAddress(address);
     }
-    _sighashify(functionFragment) {
+    static getSighash(functionFragment) {
         return hexDataSlice(id(functionFragment.format()), 0, 4);
     }
-    _topicify(eventFragment) {
+    static getTopic(eventFragment) {
         return id(eventFragment.format());
     }
+    // Find a function definition by any means necessary (unless it is ambiguous)
     getFunction(nameOrSignatureOrSighash) {
         if (isHexString(nameOrSignatureOrSighash)) {
             for (const name in this.functions) {
@@ -126,6 +126,7 @@ export class Interface {
         }
         return result;
     }
+    // Find an event definition by any means necessary (unless it is ambiguous)
     getEvent(nameOrSignatureOrTopic) {
         if (isHexString(nameOrSignatureOrTopic)) {
             const topichash = nameOrSignatureOrTopic.toLowerCase();
@@ -155,17 +156,19 @@ export class Interface {
         }
         return result;
     }
+    // Get the sighash (the bytes4 selector) used by Solidity to identify a function
     getSighash(functionFragment) {
         if (typeof (functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
         }
-        return this._sighashify(functionFragment);
+        return getStatic(this.constructor, "getSighash")(functionFragment);
     }
+    // Get the topic (the bytes32 hash) used by Solidity to identify an event
     getEventTopic(eventFragment) {
         if (typeof (eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
         }
-        return this._topicify(eventFragment);
+        return getStatic(this.constructor, "getTopic")(eventFragment);
     }
     _decodeParams(params, data) {
         return this._abiCoder.decode(params, data);
@@ -176,6 +179,7 @@ export class Interface {
     encodeDeploy(values) {
         return this._encodeParams(this.deploy.inputs, values || []);
     }
+    // Decode the data for a function call (e.g. tx.data)
     decodeFunctionData(functionFragment, data) {
         if (typeof (functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
@@ -186,6 +190,7 @@ export class Interface {
         }
         return this._decodeParams(functionFragment.inputs, bytes.slice(4));
     }
+    // Encode the data for a function call (e.g. tx.data)
     encodeFunctionData(functionFragment, values) {
         if (typeof (functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
@@ -195,6 +200,7 @@ export class Interface {
             this._encodeParams(functionFragment.inputs, values || [])
         ]));
     }
+    // Decode the result from a function call (e.g. from eth_call)
     decodeFunctionResult(functionFragment, data) {
         if (typeof (functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
@@ -212,7 +218,7 @@ export class Interface {
             case 4:
                 if (hexlify(bytes.slice(0, 4)) === "0x08c379a0") {
                     errorSignature = "Error(string)";
-                    reason = this._abiCoder.decode(["string"], bytes.slice(4));
+                    reason = this._abiCoder.decode(["string"], bytes.slice(4))[0];
                 }
                 break;
         }
@@ -223,12 +229,14 @@ export class Interface {
             reason: reason
         });
     }
+    // Encode the result for a function call (e.g. for eth_call)
     encodeFunctionResult(functionFragment, values) {
         if (typeof (functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
         }
         return hexlify(this._abiCoder.encode(functionFragment.outputs, values || []));
     }
+    // Create the filter for the event with search criteria (e.g. for eth_filterLog)
     encodeFilterTopics(eventFragment, values) {
         if (typeof (eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
@@ -277,6 +285,7 @@ export class Interface {
         }
         return topics;
     }
+    // Decode a filter for the event and the search criteria
     decodeEventLog(eventFragment, data, topics) {
         if (typeof (eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
@@ -326,10 +335,14 @@ export class Interface {
             else {
                 result[index] = resultNonIndexed[nonIndexedIndex++];
             }
-            //if (param.name && result[param.name] == null) { result[param.name] = result[index]; }
+            if (param.name && result[param.name] == null) {
+                result[param.name] = result[index];
+            }
         });
         return result;
     }
+    // Given a transaction, find the matching function fragment (if any) and
+    // determine all its properties and call parameters
     parseTransaction(tx) {
         let fragment = this.getFunction(tx.data.substring(0, 10).toLowerCase());
         if (!fragment) {
@@ -344,18 +357,22 @@ export class Interface {
             value: BigNumber.from(tx.value || "0"),
         });
     }
+    // Given an event log, find the matching event fragment (if any) and
+    // determine all its properties and values
     parseLog(log) {
         let fragment = this.getEvent(log.topics[0]);
         if (!fragment || fragment.anonymous) {
             return null;
         }
         // @TODO: If anonymous, and the only method, and the input count matches, should we parse?
+        //        Probably not, because just because it is the only event in the ABI does
+        //        not mean we have the full ABI; maybe jsut a fragment?
         return new LogDescription({
             eventFragment: fragment,
             name: fragment.name,
             signature: fragment.format(),
             topic: this.getEventTopic(fragment),
-            values: this.decodeEventLog(fragment, log.data, log.topics)
+            args: this.decodeEventLog(fragment, log.data, log.topics)
         });
     }
     /*

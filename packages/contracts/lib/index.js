@@ -169,7 +169,7 @@ function runMethod(contract, functionName, options) {
                             var event = properties_1.deepCopy(log);
                             var parsed = contract.interface.parseLog(log);
                             if (parsed) {
-                                event.values = parsed.values;
+                                event.args = parsed.args;
                                 event.decode = function (data, topics) {
                                     return _this.interface.decodeEventLog(parsed.eventFragment, data, topics);
                                 };
@@ -286,7 +286,7 @@ var FragmentRunningEvent = /** @class */ (function (_super) {
         event.decode = function (data, topics) {
             return _this.interface.decodeEventLog(_this.fragment, data, topics);
         };
-        event.values = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+        event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
     };
     return FragmentRunningEvent;
 }(RunningEvent));
@@ -308,7 +308,7 @@ var WildcardRunningEvent = /** @class */ (function (_super) {
             event.decode = function (data, topics) {
                 return _this.interface.decodeEventLog(parsed.eventFragment, data, topics);
             };
-            event.values = parsed.values;
+            event.args = parsed.args;
         }
     };
     return WildcardRunningEvent;
@@ -592,9 +592,9 @@ var Contract = /** @class */ (function () {
         if (!this._wrappedEmits[runningEvent.tag]) {
             var wrappedEmit = function (log) {
                 var event = _this._wrapEvent(runningEvent, log, listener);
-                var values = (event.values || []);
-                values.push(event);
-                _this.emit.apply(_this, __spreadArrays([runningEvent.filter], values));
+                var args = (event.args || []);
+                args.push(event);
+                _this.emit.apply(_this, __spreadArrays([runningEvent.filter], args));
             };
             this._wrappedEmits[runningEvent.tag] = wrappedEmit;
             // Special events, like "error" do not have a filter

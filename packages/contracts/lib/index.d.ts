@@ -1,4 +1,4 @@
-import { Fragment, Indexed, Interface, JsonFragment } from "@ethersproject/abi";
+import { Fragment, Indexed, Interface, JsonFragment, Result } from "@ethersproject/abi";
 import { Block, BlockTag, Listener, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { Signer } from "@ethersproject/abstract-signer";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
@@ -24,7 +24,7 @@ export declare type EventFilter = {
 export interface Event extends Log {
     event?: string;
     eventSignature?: string;
-    values?: Array<any>;
+    args?: Result;
     decode?: (data: string, topics?: Array<string>) => any;
     removeListener: () => void;
     getBlock: () => Promise<Block>;

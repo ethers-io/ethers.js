@@ -734,7 +734,12 @@ export class BaseProvider extends Provider {
             try {
                 return Promise.resolve(this.formatter.address(name));
             }
-            catch (error) { }
+            catch (error) {
+                // If is is a hexstring, the address is bad (See #694)
+                if (isHexString(name)) {
+                    throw error;
+                }
+            }
             // Get the addr from the resovler
             const resolverAddress = yield this._getResolver(name);
             if (!resolverAddress) {

@@ -95,6 +95,5 @@ export class Description {
         for (const key in info) {
             this[key] = deepCopy(info[key]);
         }
-        Object.freeze(this);
     }
 }

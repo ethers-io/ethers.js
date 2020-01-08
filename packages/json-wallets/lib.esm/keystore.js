@@ -20,7 +20,6 @@ import { randomBytes } from "@ethersproject/random";
 import { Description } from "@ethersproject/properties";
 import { computeAddress } from "@ethersproject/transactions";
 import { getPassword, looseArrayify, searchPath, zpad } from "./utils";
-// Exported Types
 export class KeystoreAccount extends Description {
     isKeystoreAccount(value) {
         return !!(value && value._isKeystoreAccount);
