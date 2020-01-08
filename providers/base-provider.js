@@ -1047,7 +1047,12 @@ var BaseProvider = /** @class */ (function (_super) {
         try {
             return Promise.resolve(address_1.getAddress(name));
         }
-        catch (error) { }
+        catch (error) {
+            // See #694
+            if (bytes_1.isHexString(name)) {
+                throw error;
+            }
+        }
         var self = this;
         var nodeHash = hash_1.namehash(name);
         // Get the addr from the resovler
