@@ -16426,7 +16426,7 @@
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "networks/5.0.0-beta.133";
+	exports.version = "networks/5.0.0-beta.134";
 	});
 
 	var _version$D = unwrapExports(_version$C);
@@ -16456,13 +16456,6 @@
 	            }
 	            catch (error) { }
 	        }
-	        /* NodeSmith is being discontinued on 2019-12-20
-	        if (providers.NodesmithProvider) {
-	            try {
-	                providerList.push(new providers.NodesmithProvider(network, options.nodesmith));
-	            } catch(error) { }
-	        }
-	        */
 	        if (providers.AlchemyProvider) {
 	            try {
 	                providerList.push(new providers.AlchemyProvider(network, options.alchemy));
@@ -16511,6 +16504,11 @@
 	    name: "ropsten",
 	    _defaultProvider: ethDefaultProvider("ropsten")
 	};
+	var classicMordor = {
+	    chainId: 63,
+	    name: "classicMordor",
+	    _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/mordor", "classicMordor")
+	};
 	var networks = {
 	    unspecified: {
 	        chainId: 0,
@@ -16541,16 +16539,23 @@
 	        name: "goerli",
 	        _defaultProvider: ethDefaultProvider("goerli")
 	    },
+	    // ETC (See: #351)
 	    classic: {
 	        chainId: 61,
 	        name: "classic",
-	        _defaultProvider: etcDefaultProvider("https://web3.gastracker.io", "classic")
+	        _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/etc", "classic")
 	    },
-	    classicTestnet: {
+	    classicMorden: {
 	        chainId: 62,
-	        name: "classicTestnet",
-	        _defaultProvider: etcDefaultProvider("https://web3.gastracker.io/morden", "classicTestnet")
-	    }
+	        name: "classicMorden",
+	    },
+	    classicMordor: classicMordor,
+	    classicTestnet: classicMordor,
+	    classicKotti: {
+	        chainId: 6,
+	        name: "classicKotti",
+	        _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/kotti", "classicKotti")
+	    },
 	};
 	/**
 	 *  getNetwork
@@ -21431,7 +21436,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.164";
+	exports.version = "ethers/5.0.0-beta.165";
 	});
 
 	var _version$L = unwrapExports(_version$K);

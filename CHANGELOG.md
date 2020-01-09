@@ -3,6 +3,12 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.165 (2020-01-09 03:31)
+-----------------------------------------
+
+  - Fixed require resolution for CLI scripts. ([c04f9a7](https://github.com/ethers-io/ethers.js/commit/c04f9a7fff727bb04a4aa3a0fa05fd5cd8e795a6))
+  - Added new URLs for default ETC (and ETC testnets) providers. ([#351](https://github.com/ethers-io/ethers.js/issues/351); [3c184ac](https://github.com/ethers-io/ethers.js/commit/3c184ace21aafbb27f4d44cce1bb738af899d59f))
+
 ethers/v5.0.0-beta.164 (2020-01-07 19:57)
 -----------------------------------------
 

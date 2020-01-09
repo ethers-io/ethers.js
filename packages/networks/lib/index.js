@@ -21,13 +21,6 @@ function ethDefaultProvider(network) {
             }
             catch (error) { }
         }
-        /* NodeSmith is being discontinued on 2019-12-20
-        if (providers.NodesmithProvider) {
-            try {
-                providerList.push(new providers.NodesmithProvider(network, options.nodesmith));
-            } catch(error) { }
-        }
-        */
         if (providers.AlchemyProvider) {
             try {
                 providerList.push(new providers.AlchemyProvider(network, options.alchemy));
@@ -76,6 +69,11 @@ var ropsten = {
     name: "ropsten",
     _defaultProvider: ethDefaultProvider("ropsten")
 };
+var classicMordor = {
+    chainId: 63,
+    name: "classicMordor",
+    _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/mordor", "classicMordor")
+};
 var networks = {
     unspecified: {
         chainId: 0,
@@ -106,16 +104,23 @@ var networks = {
         name: "goerli",
         _defaultProvider: ethDefaultProvider("goerli")
     },
+    // ETC (See: #351)
     classic: {
         chainId: 61,
         name: "classic",
-        _defaultProvider: etcDefaultProvider("https://web3.gastracker.io", "classic")
+        _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/etc", "classic")
     },
-    classicTestnet: {
+    classicMorden: {
         chainId: 62,
-        name: "classicTestnet",
-        _defaultProvider: etcDefaultProvider("https://web3.gastracker.io/morden", "classicTestnet")
-    }
+        name: "classicMorden",
+    },
+    classicMordor: classicMordor,
+    classicTestnet: classicMordor,
+    classicKotti: {
+        chainId: 6,
+        name: "classicKotti",
+        _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/kotti", "classicKotti")
+    },
 };
 /**
  *  getNetwork

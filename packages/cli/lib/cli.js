@@ -609,7 +609,7 @@ var Plugin = /** @class */ (function () {
     Plugin.getOptionHelp = function () {
         return [];
     };
-    Plugin.prototype.prepareOptions = function (argParser) {
+    Plugin.prototype.prepareOptions = function (argParser, verifyOnly) {
         return __awaiter(this, void 0, void 0, function () {
             var runners, network, providers, rpc, accounts, accountOptions, _loop_1, this_1, i, gasPrice, gasLimit, nonce, error_3;
             var _this = this;
@@ -670,7 +670,12 @@ var Plugin = /** @class */ (function () {
                                             case "account-void": return [3 /*break*/, 4];
                                         }
                                         return [3 /*break*/, 5];
-                                    case 1: return [4 /*yield*/, loadAccount(account.value, this_1)];
+                                    case 1:
+                                        // Verifying does not need to ask for passwords, etc.
+                                        if (verifyOnly) {
+                                            return [3 /*break*/, 5];
+                                        }
+                                        return [4 /*yield*/, loadAccount(account.value, this_1)];
                                     case 2:
                                         wrappedSigner = _b.sent();
                                         accounts.push(wrappedSigner);
@@ -807,6 +812,9 @@ var CheckPlugin = /** @class */ (function (_super) {
     function CheckPlugin() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    CheckPlugin.prototype.prepareOptions = function (argParser, verifyOnly) {
+        return _super.prototype.prepareOptions.call(this, argParser, true);
+    };
     return CheckPlugin;
 }(Plugin));
 var CLI = /** @class */ (function () {

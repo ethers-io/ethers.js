@@ -10,6 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import fs from "fs";
+import _module from "module";
+import { dirname, resolve } from "path";
 import REPL from "repl";
 import util from "util";
 import vm from "vm";
@@ -17,14 +19,20 @@ import { ethers } from "ethers";
 import { CLI, dump, Plugin } from "../cli";
 import { getPassword, getProgressBar } from "../prompt";
 import { compile } from "../solc";
-function setupContext(context, plugin) {
+function setupContext(path, context, plugin) {
     context.provider = plugin.provider;
     context.accounts = plugin.accounts;
+    if (!context.__filename) {
+        context.__filename = path;
+    }
+    if (!context.__dirname) {
+        context.__dirname = dirname(path);
+    }
     if (!context.console) {
         context.console = console;
     }
     if (!context.require) {
-        context.require = require;
+        context.require = _module.createRequireFromPath(path);
     }
     if (!context.process) {
         context.process = process;
@@ -119,7 +127,7 @@ class SandboxPlugin extends Plugin {
             prompt: (this.provider ? this.network.name : "no-network") + "> ",
             writer: promiseWriter
         });
-        setupContext(repl.context, this);
+        setupContext(resolve(process.cwd(), "./sandbox.js"), repl.context, this);
         return new Promise((resolve) => {
             repl.on("exit", function () {
                 console.log("");
@@ -471,7 +479,7 @@ class EvalPlugin extends Plugin {
     run() {
         return __awaiter(this, void 0, void 0, function* () {
             let contextObject = {};
-            setupContext(contextObject, this);
+            setupContext(resolve(process.cwd(), "./sandbox.js"), contextObject, this);
             let context = vm.createContext(contextObject);
             let script = new vm.Script(this.code, { filename: "-" });
             let result = script.runInContext(context);
@@ -505,7 +513,7 @@ class RunPlugin extends Plugin {
     run() {
         return __awaiter(this, void 0, void 0, function* () {
             let contextObject = {};
-            setupContext(contextObject, this);
+            setupContext(resolve(this.filename), contextObject, this);
             let context = vm.createContext(contextObject);
             let script = new vm.Script(fs.readFileSync(this.filename).toString(), { filename: this.filename });
             let result = script.runInContext(context);

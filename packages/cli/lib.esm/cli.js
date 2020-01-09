@@ -373,12 +373,12 @@ function loadAccount(arg, plugin, preventFile) {
     return __awaiter(this, void 0, void 0, function* () {
         // Secure entry; use prompt with mask
         if (arg === "-") {
-            let content = yield getPassword("Private Key / Mnemonic:");
+            const content = yield getPassword("Private Key / Mnemonic:");
             return loadAccount(content, plugin, true);
         }
         // Raw private key
         if (ethers.utils.isHexString(arg, 32)) {
-            let signer = new ethers.Wallet(arg, plugin.provider);
+            const signer = new ethers.Wallet(arg, plugin.provider);
             return Promise.resolve(new WrappedSigner(signer.getAddress(), () => Promise.resolve(signer), plugin));
         }
         // Mnemonic
@@ -446,7 +446,7 @@ export class Plugin {
     static getOptionHelp() {
         return [];
     }
-    prepareOptions(argParser) {
+    prepareOptions(argParser, verifyOnly) {
         return __awaiter(this, void 0, void 0, function* () {
             let runners = [];
             this.wait = argParser.consumeFlag("wait");
@@ -495,6 +495,10 @@ export class Plugin {
                 let account = accountOptions[i];
                 switch (account.name) {
                     case "account":
+                        // Verifying does not need to ask for passwords, etc.
+                        if (verifyOnly) {
+                            break;
+                        }
                         let wrappedSigner = yield loadAccount(account.value, this);
                         accounts.push(wrappedSigner);
                         break;
@@ -529,21 +533,21 @@ export class Plugin {
             ethers.utils.defineReadOnly(this, "accounts", Object.freeze(accounts));
             /////////////////////
             // Transaction Options
-            let gasPrice = argParser.consumeOption("gas-price");
+            const gasPrice = argParser.consumeOption("gas-price");
             if (gasPrice) {
                 ethers.utils.defineReadOnly(this, "gasPrice", ethers.utils.parseUnits(gasPrice, "gwei"));
             }
             else {
                 ethers.utils.defineReadOnly(this, "gasPrice", null);
             }
-            let gasLimit = argParser.consumeOption("gas-limit");
+            const gasLimit = argParser.consumeOption("gas-limit");
             if (gasLimit) {
                 ethers.utils.defineReadOnly(this, "gasLimit", ethers.BigNumber.from(gasLimit));
             }
             else {
                 ethers.utils.defineReadOnly(this, "gasLimit", null);
             }
-            let nonce = argParser.consumeOption("nonce");
+            const nonce = argParser.consumeOption("nonce");
             if (nonce) {
                 this.nonce = ethers.BigNumber.from(nonce).toNumber();
             }
@@ -600,6 +604,9 @@ export class Plugin {
     }
 }
 class CheckPlugin extends Plugin {
+    prepareOptions(argParser, verifyOnly) {
+        return super.prepareOptions(argParser, true);
+    }
 }
 export class CLI {
     constructor(defaultCommand, options) {
@@ -812,7 +819,7 @@ export class CLI {
             if (argParser.consumeFlag("help")) {
                 return this.showUsage();
             }
-            let debug = argParser.consumeFlag("debug");
+            const debug = argParser.consumeFlag("debug");
             // Create Plug-in instance
             let plugin = null;
             if (this.standAlone) {

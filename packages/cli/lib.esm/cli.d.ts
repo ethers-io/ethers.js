@@ -50,7 +50,7 @@ export declare abstract class Plugin {
     constructor();
     static getHelp(): Help;
     static getOptionHelp(): Array<Help>;
-    prepareOptions(argParser: ArgParser): Promise<void>;
+    prepareOptions(argParser: ArgParser, verifyOnly?: boolean): Promise<void>;
     prepareArgs(args: Array<string>): Promise<void>;
     run(): Promise<void>;
     getAddress(addressOrName: string, message?: string, allowZero?: boolean): Promise<string>;
