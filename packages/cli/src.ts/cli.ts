@@ -395,13 +395,13 @@ async function loadAccount(arg: string, plugin: Plugin, preventFile?: boolean): 
 
     // Secure entry; use prompt with mask
     if (arg === "-") {
-        let content = await getPassword("Private Key / Mnemonic:");
+        const content = await getPassword("Private Key / Mnemonic:");
         return loadAccount(content, plugin, true);
     }
 
     // Raw private key
     if (ethers.utils.isHexString(arg, 32)) {
-         let signer = new ethers.Wallet(arg, plugin.provider)
+         const signer = new ethers.Wallet(arg, plugin.provider);
          return Promise.resolve(new WrappedSigner(signer.getAddress(), () => Promise.resolve(signer), plugin));
     }
 
@@ -512,7 +512,7 @@ export abstract class Plugin {
         return [ ];
     }
 
-    async prepareOptions(argParser: ArgParser): Promise<void> {
+    async prepareOptions(argParser: ArgParser, verifyOnly?: boolean): Promise<void> {
         let runners: Array<Promise<void>> = [ ];
 
         this.wait = argParser.consumeFlag("wait");
@@ -573,6 +573,8 @@ export abstract class Plugin {
             let account = accountOptions[i];
             switch (account.name) {
                 case "account":
+                    // Verifying does not need to ask for passwords, etc.
+                    if (verifyOnly) { break; }
                     let wrappedSigner = await loadAccount(account.value, this);
                     accounts.push(wrappedSigner);
                     break;
@@ -612,21 +614,21 @@ export abstract class Plugin {
         /////////////////////
         // Transaction Options
 
-        let gasPrice = argParser.consumeOption("gas-price");
+        const gasPrice = argParser.consumeOption("gas-price");
         if (gasPrice) {
             ethers.utils.defineReadOnly(this, "gasPrice", ethers.utils.parseUnits(gasPrice, "gwei"));
         } else {
             ethers.utils.defineReadOnly(this, "gasPrice", null);
         }
 
-        let gasLimit = argParser.consumeOption("gas-limit");
+        const gasLimit = argParser.consumeOption("gas-limit");
         if (gasLimit) {
             ethers.utils.defineReadOnly(this, "gasLimit", ethers.BigNumber.from(gasLimit));
         } else {
             ethers.utils.defineReadOnly(this, "gasLimit", null);
         }
 
-        let nonce = argParser.consumeOption("nonce");
+        const nonce = argParser.consumeOption("nonce");
         if (nonce) {
             this.nonce = ethers.BigNumber.from(nonce).toNumber();
         }
@@ -693,7 +695,11 @@ export abstract class Plugin {
     }
 }
 
-class CheckPlugin extends Plugin { }
+class CheckPlugin extends Plugin {
+    prepareOptions(argParser: ArgParser, verifyOnly?: boolean): Promise<void> {
+        return super.prepareOptions(argParser, true);
+    }
+}
 
 
 /////////////////////////////
@@ -941,7 +947,7 @@ export class CLI {
             return this.showUsage();
         }
 
-        let debug = argParser.consumeFlag("debug");
+        const debug = argParser.consumeFlag("debug");
 
         // Create Plug-in instance
         let plugin: Plugin = null;

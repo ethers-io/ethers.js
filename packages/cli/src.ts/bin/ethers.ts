@@ -3,6 +3,8 @@
 "use strict";
 
 import fs from "fs";
+import _module from "module";
+import { dirname, resolve } from "path";
 import REPL from "repl";
 import util from "util";
 import vm from "vm";
@@ -13,13 +15,17 @@ import { ArgParser, CLI, dump, Help, Plugin } from "../cli";
 import { getPassword, getProgressBar } from "../prompt";
 import { compile } from "../solc";
 
-function setupContext(context: any, plugin: Plugin) {
+function setupContext(path: string, context: any, plugin: Plugin) {
 
     context.provider = plugin.provider;
     context.accounts = plugin.accounts;
 
+    if (!context.__filename) { context.__filename = path; }
+    if (!context.__dirname) { context.__dirname = dirname(path); }
     if (!context.console) { context.console = console; }
-    if (!context.require) { context.require = require; }
+    if (!context.require) {
+        context.require = _module.createRequireFromPath(path);
+    }
     if (!context.process) { context.process = process; }
 
     context.ethers = ethers;
@@ -124,7 +130,7 @@ class SandboxPlugin extends Plugin {
             prompt: (this.provider ? this.network.name: "no-network") + "> ",
             writer: promiseWriter
         });
-        setupContext(repl.context, this);
+        setupContext(resolve(process.cwd(), "./sandbox.js"), repl.context, this);
 
         return new Promise((resolve) => {
             repl.on("exit", function() {
@@ -492,7 +498,7 @@ class EvalPlugin extends Plugin {
 
     async run(): Promise<void> {
         let contextObject = { };
-        setupContext(contextObject, this);
+        setupContext(resolve(process.cwd(), "./sandbox.js"), contextObject, this);
 
         let context = vm.createContext(contextObject);
         let script = new vm.Script(this.code, { filename: "-" });
@@ -530,7 +536,7 @@ class RunPlugin extends Plugin {
 
     async run(): Promise<void> {
         let contextObject = { };
-        setupContext(contextObject, this);
+        setupContext(resolve(this.filename), contextObject, this);
 
         let context = vm.createContext(contextObject);
         let script = new vm.Script(fs.readFileSync(this.filename).toString(), { filename: this.filename });
