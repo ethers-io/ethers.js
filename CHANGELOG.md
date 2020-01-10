@@ -3,6 +3,13 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.166 (2020-01-10 03:09)
+-----------------------------------------
+
+  - Relaxed joinSignature API to allow SignauteLike. ([602e6a8](https://github.com/ethers-io/ethers.js/commit/602e6a8973480299843a0158f75451a2c6aac749))
+  - Initial code drop of new hardware wallet package. ([2e8f5ca](https://github.com/ethers-io/ethers.js/commit/2e8f5ca7ed498261079da75713b18f3370dfd236))
+  - Added more docs. ([381a72d](https://github.com/ethers-io/ethers.js/commit/381a72ddaa7fb59ef2ded84d228296d693df05c3))
+
 ethers/v5.0.0-beta.165 (2020-01-09 03:31)
 -----------------------------------------
 

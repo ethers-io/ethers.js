@@ -3725,7 +3725,7 @@ var lib_esm = /*#__PURE__*/Object.freeze({
 	Logger: Logger
 });
 
-const version$1 = "bytes/5.0.0-beta.134";
+const version$1 = "bytes/5.0.0-beta.135";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -18993,7 +18993,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$l = "ethers/5.0.0-beta.165";
+const version$l = "ethers/5.0.0-beta.166";
 
 "use strict";
 const errors = Logger.errors;

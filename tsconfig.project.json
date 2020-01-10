@@ -88,6 +88,9 @@
       "path": "./packages/contracts"
     },
     {
+      "path": "./packages/hardware-wallets"
+    },
+    {
       "path": "./packages/providers"
     },
     {

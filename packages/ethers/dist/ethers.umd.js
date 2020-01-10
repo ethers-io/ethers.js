@@ -3758,7 +3758,7 @@
 	var _version$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bytes/5.0.0-beta.134";
+	exports.version = "bytes/5.0.0-beta.135";
 	});
 
 	var _version$3 = unwrapExports(_version$2);
@@ -21436,7 +21436,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.165";
+	exports.version = "ethers/5.0.0-beta.166";
 	});
 
 	var _version$L = unwrapExports(_version$K);

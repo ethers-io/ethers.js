@@ -36,4 +36,4 @@ export declare function hexValue(value: BytesLike | Hexable | number): string;
 export declare function hexStripZeros(value: BytesLike): string;
 export declare function hexZeroPad(value: BytesLike, length: number): string;
 export declare function splitSignature(signature: SignatureLike): Signature;
-export declare function joinSignature(signature: Signature): string;
+export declare function joinSignature(signature: SignatureLike): string;
