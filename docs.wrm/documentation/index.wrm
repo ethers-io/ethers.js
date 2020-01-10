@@ -10,7 +10,7 @@ A lot of its inspiration came from [Read the Docs](https://github.com/readthedoc
 the [Sphinx](https://www.sphinx-doc.org/) project.
 
 
-_subsection: Fragments
+_subsection: Fragments @<flatworm-fragments>
 
 Flatworm Docs are made up of fragments. A fragment is either a lone
 body of [markdown](flatworm-markdown) text, or a
@@ -49,6 +49,12 @@ _definition: **_property:** //SIGNATURE//
 A //property// has its JavaScript **SIGNATURE** formatted and the
 markdown body is indented.
 
+_definition: **_note:** //TITLE//
+A //note// is placed in a blue bordered-box to draw attention to it.
+
+_definition: **_warning:** //TITLE//
+A //warning// is placed in an orange bordered-box to draw attention to it.
+
 _definition: **_code:** //FILENAME//
 A //code// reads the **FILENAME** and depending on the extension
 adjusts it.
@@ -73,7 +79,6 @@ _heading: Examples
 
 _code: examples.txt
 
-
 _subsection: Markdown @<flatworm-markdown>
 
 The markdown is simple and does not have the flexibility of
@@ -83,3 +88,39 @@ supporting [links](flatworm-markdown) and lists.
 
 _code: markdown.txt
 
+
+_subsection: Configuration @<flatworm-config>
+
+Configuration is optional (but highly recommended) and may be either
+a simple JSON file (config.json) or a JS file (config.js) placed in
+the top  of the source folder.
+
+TODO:  example JSON and example JS
+
+
+_subsection: Extended Directive Functions @<flatworm-extended-directive-functions>
+
+_heading: @INHERIT\<markdown>
+
+Adds an inherits description to a directive. The //markdown// may contain links.
+
+This extended directive function is available for:
+
+- _section
+- _subsetion
+- _heading
+
+_heading: @SRC\<text>
+
+Calls the configuration ``getSourceUrl(text, VALUE)`` to get a URL which
+will be linked to by a link next to the //directive//.
+
+This extended directive function requires an advanced ``config.js`` [[flatworm-config]]
+file since it requires a JavaScript function.
+
+This extended directive function is available for:
+
+- _section
+- _subsetion
+- _heading
+- _property

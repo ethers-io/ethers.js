@@ -21,36 +21,37 @@ _note: Note
 Strings that are 31 __//bytes//__ long may contain fewer than 31 __//characters//__,
 since UTF-8 requires multiple bytes to encode international characters.
 
-_property: utils.parseBytes32String(aBytesLike) => string  @<utils-parsebytes32> @TS<strings:>
+_property: utils.parseBytes32String(aBytesLike) => string  @<utils-parsebytes32> @SRC<strings>
 Returns the decoded string represented by the ``Bytes32`` encoded data.
 
-_property: utils.formatBytes32String(text) => string  @<utils-formatbytes32> @TS<strings:>
+_property: utils.formatBytes32String(text) => string<[[datahexstring]]<32>>  @<utils-formatbytes32> @SRC<strings>
 Returns a ``bytes32`` string representation of //text//. If the
 length of //text// exceeds 31 bytes, it will throw an error.
 
 
 _subsection: UTF-8 Strings @<utf8-string>
 
-_property: utils.toUtf8Bytes(text [ , form = current ] ) => Uint8Array  @<utils-toutf8bytes> @TS<strings:>
+_property: utils.toUtf8Bytes(text [ , form = current ] ) => Uint8Array  @<utils-toutf8bytes> @SRC<strings>
 Returns the UTF-8 bytes of //text//, optionally normalizing it using the
 [[unicode-normalization-form]] //form//.
 
-_property: utils.toUtf8CodePoints(aBytesLike [ , form = current ] ) => Array<number>  @<utils-toutf8codepoints> @TS<strings:>
+_property: utils.toUtf8CodePoints(aBytesLike [ , form = current ] ) => Array<number>  @<utils-toutf8codepoints> @SRC<strings>
 Returns the Array of codepoints of //aBytesLike//, optionally normalizing it using the
 [[unicode-normalization-form]] //form//.
 
-**Note:** This function correctly splits each user-perceived character into
+_note: Note
+This function correctly splits each **user-perceived character** into
 its codepoint, accounting for surrogate pairs. This should not be confused with
 ``string.split("")``, which destroys surrogate pairs, spliting between each UTF-16
 codeunit instead.
 
-_property: utils.toUtf8String(aBytesLike [ , ignoreErrors = false ] ) => string  @<utils-toutf8string> @TS<strings:>
+_property: utils.toUtf8String(aBytesLike [ , ignoreErrors = false ] ) => string  @<utils-toutf8string> @SRC<strings>
 Returns the string represented by the UTF-8 bytes of //aBytesLike//. This will
 throw an error for invalid surrogates, overlong sequences or other UTF-8 issues,
 unless //ignoreErrors// is specified.
 
 
-_heading: UnicodeNormalizationForm @<unicode-normalization-form>
+_heading: UnicodeNormalizationForm @<unicode-normalization-form> @SRC<strings/utf8:enum.UnicodeNormalizationForm>
 
 There are several [commonly used forms](https://en.wikipedia.org/wiki/Unicode_equivalence)
 when normalizing UTF-8 data, which allow strings to be compared or hashed in a stable

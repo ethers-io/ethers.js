@@ -1,0 +1,59 @@
+_title: Sandbox Utility
+
+_section: Sandbox Utility
+
+The sandbox utility provides a simple way to use the most common
+ethers utilities required during learning, debuging and managing
+interactions with the Ethereum network.
+
+If no command is given, it will enter a REPL interface with many
+of the ethers utilities already exposed.
+
+_subsection: Help
+
+_code: ethers-help.txt
+
+_subsection: Examples
+
+_heading: Creating Wallets  @<cliex-init>
+
+_code: ethers-init.txt
+
+_heading: Sending Ether and Tokens  @<cliex-send>
+
+_code: ethers-send.txt
+
+_heading: Signing Messages  @<cliex-signing>
+
+_code: ethers-sign.txt
+
+_heading: Scripting  @<cliex-scripting>
+
+The ``eval`` command can be used to execute simple one-line scripts from
+the command line to be passed into other commands or stored in script
+environment variables.
+
+_code: ethers-script.txt
+
+_heading: Using Mnemonics (with a password)  @<cliex-mnemonicpassword>
+
+All mnemonic phrases have a password, but the default is to use the empty
+string (i.e. ``""``) as the password. If you have a password on your
+mnemonic, the ``-\-mnemonic-password`` will prompt for the password to
+use to decrypt the account.
+
+_code: ethers-mnemonic.txt
+
+_heading: Using Mnemonics (with experimental memory-hard passwords)  @<cliex-mnemonicpassword-xxx>
+
+The ``-\-xxx-mnemonic-password`` is similar to the ``-\-mnemonic-password`` options,
+which uses a password to decrypt the account for a mnemonic, however it passes
+the password through the [scrypt](https:/\/en.wikipedia.org/wiki/Scrypt)
+//password-based key derivation function// first, which is intentionally slow and makes
+a brute-force attack far more difficult.
+
+_code: ethers-mnemonic-hard.txt
+
+_warning: Note
+This is still an experimental feature (hence the ``xxx``).
+

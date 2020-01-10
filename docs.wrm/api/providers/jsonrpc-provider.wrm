@@ -4,19 +4,24 @@ _section: JSON-RPC Provider
 
 Explain here...
 
-_subsection: JsonRpcProvider  @<jsonrpc-provider>
+_subsection: JsonRpcProvider  @<jsonrpc-provider> @INHERIT<[[provider]]>
 
 TODO...
 
-_property: provider.getSigner([ addressOrIndex ]) => [[jsonrpc-signer]]
+_property: jsonRpcProvider.getSigner([ addressOrIndex ]) => [[jsonrpc-signer]]  @<provider-getsigner> @SRC<providers/json-rpc-provider>
 Returns a [[jsonrpc-signer]] which is managed by this Ethereum node, at
 //addressOrIndex//. If no //addressOrIndex// is provided, the first
 account (account #0) is used.
 
-_property: provider.getUncheckSigner([ addressOrIndex ]) => [[jsonrpc-uncheckedsigner]]
+_property: jsonRpcProvider.getUncheckedSigner([ addressOrIndex ]) => [[jsonrpc-uncheckedsigner]]  @<provider-getuncheckedsigner> @SRC<providers/json-rpc-provider>
 
-_subsection: JsonRpcSigner @<jsonrpc-signer>
+_property: jsonRpcProvider.listAccounts() => Array<string>  @<provider-listaccounts> @SRC<providers/json-rpc-provider>
+
+_property: jsonRpcProvider.send(method, params) => Promise<any>  @<provider-send> @SRC<providers/json-rpc-provider>
+
+
+_subsection: JsonRpcSigner @<jsonrpc-signer> @INHERIT<[[signer]]>
 TODO... Explain
 
-_subsection: JsonRpcUncheckedSigner @<jsonrpc-uncheckedsigner>
+_subsection: JsonRpcUncheckedSigner @<jsonrpc-uncheckedsigner> @INHERIT<[[signer]]>
 TODO... Explain

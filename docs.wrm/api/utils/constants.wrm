@@ -11,38 +11,38 @@ _code: constants-import.js
 
 _subsection: Bytes
 
-_property: constants.AddressZero => [[datahexstring]]  @<constants-addresszero> @TS<constants:>
+_property: constants.AddressZero => string<[Address](address)>  @<constants-addresszero> @SRC<constants>
 The Address Zero, which is 20 bytes (40 nibbles) of zero.
 
-_property: constants.HashZero => [[datahexstring]]  @<constants-hashzero> @TS<constants:>
+_property: constants.HashZero => string<[[datahexstring]]<32>>  @<constants-hashzero> @SRC<constants>
 The Hash Zero, which is 32 bytes (64 nibbles) of zero.
 
 
 _subsection: Strings
 
-_property: constants.EtherSymbol => string  @<constants-ethersymbol> @TS<constants:>
+_property: constants.EtherSymbol => string  @<constants-ethersymbol> @SRC<constants>
 The Ether symbol, **&Xi;**.
 
 
 _subsection: BigNumber
 
-_property: constants.NegativeOne => [[bignumber]]  @<constants-negativeone> @TS<constants:>
+_property: constants.NegativeOne => [[bignumber]]  @<constants-negativeone> @SRC<constants>
 The BigNumber value representing ``"-1"``.
 
-_property: constants.Zero => [[bignumber]]  @<constants-zero> @TS<constants:>
+_property: constants.Zero => [[bignumber]]  @<constants-zero> @SRC<constants>
 The BigNumber value representing ``"0"``.
 
-_property: constants.One => [[bignumber]]  @<constants-one> @TS<constants:>
+_property: constants.One => [[bignumber]]  @<constants-one> @SRC<constants>
 The BigNumber value representing ``"1"``.
 
-_property: constants.Two => [[bignumber]]  @<constants-two> @TS<constants:>
+_property: constants.Two => [[bignumber]]  @<constants-two> @SRC<constants>
 The BigNumber value representing ``"2"``.
 
-_property: constants.WeiPerEther => [[bignumber]]  @<constants-weiperether> @TS<constants:>
+_property: constants.WeiPerEther => [[bignumber]]  @<constants-weiperether> @SRC<constants>
 The BigNumber value representing ``"1000000000000000000"``, which is the
 number of Wei per Ether.
 
-_property: constants.MaxUint256 => [[bignumber]]  @<constants-maxuint256> @TS<constants:>
+_property: constants.MaxUint256 => [[bignumber]]  @<constants-maxuint256> @SRC<constants>
 The BigNumber value representing the maximum ``uint256`` value.
 
 

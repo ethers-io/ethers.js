@@ -13,7 +13,7 @@ To mitigate these issues, it is recommended you use a
 [Default Provider](get-default-provider).
 
 
-_subsection: EtherscanProvider
+_subsection: EtherscanProvider @INHERIT<[[provider]]>
 
 The **EtherscanProvider** is backed by a combination of the various
 [Etherscan APIs](https://etherscan.io/apis).
@@ -21,7 +21,7 @@ The **EtherscanProvider** is backed by a combination of the various
 _property: provider.getHistory(address) => Array<History>
 
 
-_subsection: InfuraProvider
+_subsection: InfuraProvider @INHERIT<[[urljsonrpc-provider]]>
 
 The **InfuraProvider** is backed by the popular [INFURA](https://infura.io)
 Ethereum service.
@@ -30,7 +30,7 @@ It supports Mainnet (homestead) and all common testnets (Ropsten, Rinkeby,
 G&ouml;rli and Kovan).
 
 
-_subsection: NodesmithProvider
+_subsection: NodesmithProvider @INHERIT<[[urljsonrpc-provider]]>
 
 The **NodesmithProvider** is backed by [Nodesmith](https://nodesmith.io).
 
@@ -38,7 +38,7 @@ It supports Mainnet (homestead) and all common testnets (Ropsten, Rinkeby,
 G&ouml;rli and Kovan), as well as the Ethereum-like network [Aion](https://aion.network).
 
 
-_subsection: AlchemyProvider
+_subsection: AlchemyProvider @INHERIT<[[urljsonrpc-provider]]>
 
 The **AlchemtProvider** is backed by [Alchemy](https://alchemyapi.io).
 
@@ -46,7 +46,7 @@ It supports Mainnet (homestead) and all common testnets (Ropsten, Rinkeby,
 G&ouml;rli and Kovan).
 
 
-_subsection: CloudfrontProvider
+_subsection: CloudfrontProvider @INHERIT<[[urljsonrpc-provider]]>
 
 The CloudfrontProvider is backed by the
 [Cloudflare Ethereum Gateway](https://developers.cloudflare.com/distributed-web/ethereum-gateway/).

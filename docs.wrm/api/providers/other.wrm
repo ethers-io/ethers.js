@@ -4,7 +4,7 @@ _section: Other Providers
 
 Others...
 
-_subsection: FallbackProvider @<provider-fallback>
+_subsection: FallbackProvider @<provider-fallback> @INHERIT<[[provider]]>
 
 Explain...
 
@@ -21,7 +21,17 @@ _property: provider.weights => Array<number>
 The weight each of the Providers adds to a results acceptance.
 
 
-_subsection: IpcProvider @<provider-ipc>
+_subsection: IpcProvider @<provider-ipc> @INHERIT<[[jsonrpc-provider]]>
 
 Explain...
+
+_subsection: UrlJsonRpcProvider @<urljsonrpc-provider> @INHERIT<[[jsonrpc-provider]]>
+
+Tra la la
+
+_subsection: Web3Provider @<web3provider> @INHERIT<[[jsonrpc-provider]]>
+
+Tra la la
+
+
 
