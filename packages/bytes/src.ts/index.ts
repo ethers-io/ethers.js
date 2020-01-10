@@ -445,7 +445,7 @@ export function splitSignature(signature: SignatureLike): Signature {
     return result;
 }
 
-export function joinSignature(signature: Signature): string {
+export function joinSignature(signature: SignatureLike): string {
     signature = splitSignature(signature);
 
     return hexlify(concat([
