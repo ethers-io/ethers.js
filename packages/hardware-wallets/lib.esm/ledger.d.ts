@@ -1,14 +1,13 @@
-import { Bytes } from "@ethersproject/bytes";
-import { Signer } from "@ethersproject/abstract-signer";
-import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
+import { ethers } from "ethers";
 import Eth from "@ledgerhq/hw-app-eth";
-export declare class LedgerSigner extends Signer {
+export declare class LedgerSigner extends ethers.Signer {
     readonly type: string;
     readonly path: string;
     readonly _eth: Promise<Eth>;
-    constructor(provider?: Provider, type?: string, path?: string);
+    constructor(provider?: ethers.providers.Provider, type?: string, path?: string);
+    _retry<T = any>(callback: (eth: Eth) => Promise<T>, timeout?: number): Promise<T>;
     getAddress(): Promise<string>;
-    signMessage(message: Bytes | string): Promise<string>;
-    signTransaction(transaction: TransactionRequest): Promise<string>;
-    connect(provider: Provider): Signer;
+    signMessage(message: ethers.utils.Bytes | string): Promise<string>;
+    signTransaction(transaction: ethers.providers.TransactionRequest): Promise<string>;
+    connect(provider: ethers.providers.Provider): ethers.Signer;
 }

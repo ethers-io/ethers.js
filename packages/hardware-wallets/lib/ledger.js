@@ -52,18 +52,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var address_1 = require("@ethersproject/address");
-var bytes_1 = require("@ethersproject/bytes");
-var abstract_signer_1 = require("@ethersproject/abstract-signer");
-var properties_1 = require("@ethersproject/properties");
-var strings_1 = require("@ethersproject/strings");
-var transactions_1 = require("@ethersproject/transactions");
+var ethers_1 = require("ethers");
+var _version_1 = require("./_version");
+var logger = new ethers_1.ethers.utils.Logger(_version_1.version);
 var hw_app_eth_1 = __importDefault(require("@ledgerhq/hw-app-eth"));
 // We store these in a separated import so it is easier to swap them out
 // at bundle time; browsers do not get HID, for example. This maps a string
 // "type" to a Transport with create.
 var ledger_transport_1 = require("./ledger-transport");
 var defaultPath = "m/44'/60'/0'/0/0";
+function waiter(duration) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, duration);
+    });
+}
 var LedgerSigner = /** @class */ (function (_super) {
     __extends(LedgerSigner, _super);
     function LedgerSigner(provider, type, path) {
@@ -74,14 +76,14 @@ var LedgerSigner = /** @class */ (function (_super) {
         if (type == null) {
             type = "default";
         }
-        properties_1.defineReadOnly(_this, "path", path);
-        properties_1.defineReadOnly(_this, "type", type);
-        properties_1.defineReadOnly(_this, "provider", provider || null);
+        ethers_1.ethers.utils.defineReadOnly(_this, "path", path);
+        ethers_1.ethers.utils.defineReadOnly(_this, "type", type);
+        ethers_1.ethers.utils.defineReadOnly(_this, "provider", provider || null);
         var transport = ledger_transport_1.transports[type];
         if (!transport) {
-            throw new Error("unknown or unsupport type");
+            logger.throwArgumentError("unknown or unsupport type", "type", type);
         }
-        properties_1.defineReadOnly(_this, "_eth", transport.create().then(function (transport) {
+        ethers_1.ethers.utils.defineReadOnly(_this, "_eth", transport.create().then(function (transport) {
             var eth = new hw_app_eth_1.default(transport);
             return eth.getAppConfiguration().then(function (config) {
                 return eth;
@@ -93,66 +95,100 @@ var LedgerSigner = /** @class */ (function (_super) {
         }));
         return _this;
     }
-    LedgerSigner.prototype.getAddress = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var eth, o;
+    LedgerSigner.prototype._retry = function (callback, timeout) {
+        var _this = this;
+        return new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+            var eth, i, result, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this._eth];
+                    case 0:
+                        if (timeout && timeout > 0) {
+                            setTimeout(function () { reject(new Error("timeout")); }, timeout);
+                        }
+                        return [4 /*yield*/, this._eth];
                     case 1:
                         eth = _a.sent();
-                        if (eth == null) {
-                            throw new Error("failed to connect");
-                        }
-                        return [4 /*yield*/, eth.getAddress(this.path)];
+                        i = 0;
+                        _a.label = 2;
                     case 2:
-                        o = _a.sent();
-                        return [2 /*return*/, address_1.getAddress(o.address)];
+                        if (!(i < 50)) return [3 /*break*/, 9];
+                        _a.label = 3;
+                    case 3:
+                        _a.trys.push([3, 5, , 6]);
+                        return [4 /*yield*/, callback(eth)];
+                    case 4:
+                        result = _a.sent();
+                        return [2 /*return*/, resolve(result)];
+                    case 5:
+                        error_1 = _a.sent();
+                        if (error_1.id !== "TransportLocked") {
+                            return [2 /*return*/, reject(error_1)];
+                        }
+                        return [3 /*break*/, 6];
+                    case 6: return [4 /*yield*/, waiter(100)];
+                    case 7:
+                        _a.sent();
+                        _a.label = 8;
+                    case 8:
+                        i++;
+                        return [3 /*break*/, 2];
+                    case 9: return [2 /*return*/, reject(new Error("timeout"))];
+                }
+            });
+        }); });
+    };
+    LedgerSigner.prototype.getAddress = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var account;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this._retry(function (eth) { return eth.getAddress(_this.path); })];
+                    case 1:
+                        account = _a.sent();
+                        return [2 /*return*/, ethers_1.ethers.utils.getAddress(account.address)];
                 }
             });
         });
     };
     LedgerSigner.prototype.signMessage = function (message) {
         return __awaiter(this, void 0, void 0, function () {
-            var messageHex, eth, sig;
+            var messageHex, sig;
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (typeof (message) === 'string') {
-                            message = strings_1.toUtf8Bytes(message);
+                            message = ethers_1.ethers.utils.toUtf8Bytes(message);
                         }
-                        messageHex = bytes_1.hexlify(message).substring(2);
-                        return [4 /*yield*/, this._eth];
+                        messageHex = ethers_1.ethers.utils.hexlify(message).substring(2);
+                        return [4 /*yield*/, this._retry(function (eth) { return eth.signPersonalMessage(_this.path, messageHex); })];
                     case 1:
-                        eth = _a.sent();
-                        return [4 /*yield*/, eth.signPersonalMessage(this.path, messageHex)];
-                    case 2:
                         sig = _a.sent();
                         sig.r = '0x' + sig.r;
                         sig.s = '0x' + sig.s;
-                        return [2 /*return*/, bytes_1.joinSignature(sig)];
+                        return [2 /*return*/, ethers_1.ethers.utils.joinSignature(sig)];
                 }
             });
         });
     };
     LedgerSigner.prototype.signTransaction = function (transaction) {
         return __awaiter(this, void 0, void 0, function () {
-            var eth;
+            var tx, unsignedTx, sig;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this._eth];
+                    case 0: return [4 /*yield*/, ethers_1.ethers.utils.resolveProperties(transaction)];
                     case 1:
-                        eth = _a.sent();
-                        return [2 /*return*/, properties_1.resolveProperties(transaction).then(function (tx) {
-                                var unsignedTx = transactions_1.serialize(tx).substring(2);
-                                return eth.signTransaction(_this.path, unsignedTx).then(function (sig) {
-                                    return transactions_1.serialize(tx, {
-                                        v: sig.v,
-                                        r: ("0x" + sig.r),
-                                        s: ("0x" + sig.s),
-                                    });
-                                });
+                        tx = transaction = _a.sent();
+                        unsignedTx = ethers_1.ethers.utils.serializeTransaction(tx).substring(2);
+                        return [4 /*yield*/, this._retry(function (eth) { return eth.signTransaction(_this.path, unsignedTx); })];
+                    case 2:
+                        sig = _a.sent();
+                        return [2 /*return*/, ethers_1.ethers.utils.serializeTransaction(tx, {
+                                v: sig.v,
+                                r: ("0x" + sig.r),
+                                s: ("0x" + sig.s),
                             })];
                 }
             });
@@ -162,30 +198,5 @@ var LedgerSigner = /** @class */ (function (_super) {
         return new LedgerSigner(provider, this.type, this.path);
     };
     return LedgerSigner;
-}(abstract_signer_1.Signer));
+}(ethers_1.ethers.Signer));
 exports.LedgerSigner = LedgerSigner;
-(function () {
-    return __awaiter(this, void 0, void 0, function () {
-        var signer, sig, error_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    signer = new LedgerSigner();
-                    console.log(signer);
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, signer.signMessage("Hello World")];
-                case 2:
-                    sig = _a.sent();
-                    console.log(sig);
-                    return [3 /*break*/, 4];
-                case 3:
-                    error_1 = _a.sent();
-                    console.log("ERR", error_1);
-                    return [3 /*break*/, 4];
-                case 4: return [2 /*return*/];
-            }
-        });
-    });
-})();
