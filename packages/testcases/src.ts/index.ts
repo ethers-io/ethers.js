@@ -72,6 +72,25 @@ export module TestCase {
          finney_format?: string,
          satoshi_format?: string
     }
+
+    export type SignedTransaction = {
+        name: string;
+        accountAddress: string;
+        privateKey: string;
+
+        signedTransaction: string
+        unsignedTransaction: string;
+
+        signedTransactionChainId5: string
+        unsignedTransactionChainId5: string;
+
+        nonce: number;
+        gasLimit: string;
+        gasPrice: string;
+        to: string;
+        value: string;
+        data: string;
+    };
 }
 
 export function saveTests(tag: string, data: any) {
