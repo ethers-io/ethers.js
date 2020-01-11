@@ -25,7 +25,7 @@ function getDate(date) {
 
 function getDateTime(date) {
     return getDate(date) + " " + [
-        date.getHours(),
+        zpad(date.getHours()) ,
         zpad(date.getMinutes() + 1)
     ].join(":");
 }
