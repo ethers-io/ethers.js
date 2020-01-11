@@ -227,6 +227,9 @@ function checkTransactionResponse(transaction) {
         networkId = 0;
     }
     result.networkId = networkId;
+    if (result.chainId == null && networkId != null) {
+        result.chainId = networkId;
+    }
     // 0x0000... should actually be null
     if (result.blockHash && result.blockHash.replace(/0/g, '') === 'x') {
         result.blockHash = null;

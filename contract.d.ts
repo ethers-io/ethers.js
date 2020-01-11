@@ -4,7 +4,7 @@ import { UnsignedTransaction } from './utils/transaction';
 import { BlockTag, Provider } from './providers/abstract-provider';
 import { Signer } from './abstract-signer';
 import { Arrayish } from './utils/bytes';
-import { ParamType } from './utils/abi-coder';
+import { EventFragment, FunctionFragment } from './utils/abi-coder';
 import { Block, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from './providers/abstract-provider';
 export declare type ContractFunction = (...params: Array<any>) => Promise<any>;
 export declare type EventFilter = {
@@ -51,7 +51,7 @@ export declare class Contract {
     readonly addressPromise: Promise<string>;
     readonly deployTransaction: TransactionResponse;
     private _deployedPromise;
-    constructor(addressOrName: string, contractInterface: Array<string | ParamType> | string | Interface, signerOrProvider: Signer | Provider);
+    constructor(addressOrName: string, contractInterface: Array<string | FunctionFragment | EventFragment> | string | Interface, signerOrProvider: Signer | Provider);
     deployed(): Promise<Contract>;
     _deployed(blockTag?: BlockTag): Promise<Contract>;
     fallback(overrides?: TransactionRequest): Promise<TransactionResponse>;
@@ -74,7 +74,7 @@ export declare class ContractFactory {
     readonly interface: Interface;
     readonly bytecode: string;
     readonly signer: Signer;
-    constructor(contractInterface: Array<string | ParamType> | string | Interface, bytecode: Arrayish | string | {
+    constructor(contractInterface: Array<string | FunctionFragment | EventFragment> | string | Interface, bytecode: Arrayish | string | {
         object: string;
     }, signer?: Signer);
     getDeployTransaction(...args: Array<any>): UnsignedTransaction;
