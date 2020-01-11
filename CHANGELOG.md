@@ -3,6 +3,16 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.167 (2020-01-11 04:16)
+-----------------------------------------
+
+  - Fixed testcases for provider changes. ([90ed07c](https://github.com/ethers-io/ethers.js/commit/90ed07c74e7230ea0f02288b140d497d8b9779e0))
+  - Add support for legacy flat signatures with recid instead of normalized v. ([245cd0e](https://github.com/ethers-io/ethers.js/commit/245cd0e48e07eef35f5bf45ee7fe5ed5ef31338a))
+  - Fix TransactionResponse to have chainId instead of legacy networkId. ([#700](https://github.com/ethers-io/ethers.js/issues/700); [72b3bc9](https://github.com/ethers-io/ethers.js/commit/72b3bc9909074893038c768f3da1564ed96a6a20))
+  - Fixed splitSignature computing wrong v for BytesLike. ([#700](https://github.com/ethers-io/ethers.js/issues/700); [4151c0e](https://github.com/ethers-io/ethers.js/commit/4151c0eacd22287e2369a8656ffa00359db6f84b))
+  - Added dist files for hardware-wallets. ([c846649](https://github.com/ethers-io/ethers.js/commit/c84664953d2f50ee0d704a8aa18fe6c08668dabb))
+  - Browser support (with dist files) for Ledger. ([6f7fbf3](https://github.com/ethers-io/ethers.js/commit/6f7fbf3858c82417933a5e5595a919c0ec0487c7))
+
 ethers/v5.0.0-beta.166 (2020-01-10 03:09)
 -----------------------------------------
 

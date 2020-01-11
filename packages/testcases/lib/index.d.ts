@@ -55,6 +55,21 @@ export declare module TestCase {
         finney_format?: string;
         satoshi_format?: string;
     };
+    type SignedTransaction = {
+        name: string;
+        accountAddress: string;
+        privateKey: string;
+        signedTransaction: string;
+        unsignedTransaction: string;
+        signedTransactionChainId5: string;
+        unsignedTransactionChainId5: string;
+        nonce: number;
+        gasLimit: string;
+        gasPrice: string;
+        to: string;
+        value: string;
+        data: string;
+    };
 }
 export declare function saveTests(tag: string, data: any): void;
 export declare function loadTests(tag: string): any;

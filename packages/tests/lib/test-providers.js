@@ -43,7 +43,7 @@ var blockchainData = {
             v: 38,
             creates: null,
             raw: "0xf8d2808504a817c8008303d090946fc21092da55b392b045ed78f4732bff3c580e2c880186cc6acd4b0000b864f2c298be000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000067269636d6f6f000000000000000000000000000000000000000000000000000026a01e5605197a03e3f0a168f14749168dfeefc44c9228312dacbffdcbbb13263265a0269c3e5b3558267ad91b0a887d51f9f10098771c67b82ea6cb74f29638754f54",
-            networkId: 1
+            chainId: 1
         },
         transactionReceipt: {
             blockHash: "0x36b4af7f0538559e581c8588f16477df0f676439ea67fe8d7a2ae4abb20e2566",
@@ -409,6 +409,9 @@ function testProvider(providerName, networkName) {
 }
 ["default", "homestead", "ropsten", "rinkeby", "kovan", "goerli"].forEach(function (networkName) {
     ["getDefaultProvider", "AlchemyProvider", "CloudflareProvider", "InfuraProvider", "EtherscanProvider", "NodesmithProvider", "Web3Provider"].forEach(function (providerName) {
+        if (providerName === "NodesmithProvider") {
+            return;
+        }
         if (networkName === "goerli" && providerName === "AlchemyProvider") {
             return;
         }

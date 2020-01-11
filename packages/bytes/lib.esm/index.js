@@ -266,16 +266,21 @@ export function splitSignature(signature) {
         if (bytes.length !== 65) {
             logger.throwArgumentError("invalid signature string; must be 65 bytes", "signature", signature);
         }
-        // Get the r and s
+        // Get the r, s and v
         result.r = hexlify(bytes.slice(0, 32));
         result.s = hexlify(bytes.slice(32, 64));
-        // Reduce v to the canonical 27 or 28
         result.v = bytes[64];
-        if (result.v !== 27 && result.v !== 28) {
-            result.v = 27 + (result.v % 2);
-        }
         // Compute recoveryParam from v
-        result.recoveryParam = (result.v - 27);
+        result.recoveryParam = 1 - (result.v % 2);
+        // Allow a recid to be used as the v
+        if (result.v < 27) {
+            if (result.v === 0 || result.v === 1) {
+                result.v += 27;
+            }
+            else {
+                logger.throwArgumentError("signature invalid v byte", "signature", signature);
+            }
+        }
         // Compute _vs from recoveryParam and s
         if (result.recoveryParam) {
             bytes[32] |= 0x80;
@@ -288,83 +293,78 @@ export function splitSignature(signature) {
         result.v = signature.v;
         result.recoveryParam = signature.recoveryParam;
         result._vs = signature._vs;
-        // Normalize v into a canonical 27 or 28
-        if (result.v != null && !(result.v == 27 || result.v == 28)) {
-            result.v = 27 + (result.v % 2);
-        }
-        // Populate a missing v or recoveryParam if possible
-        if (result.recoveryParam == null && result.v != null) {
-            result.recoveryParam = 1 - (result.v % 2);
-        }
-        else if (result.recoveryParam != null && result.v == null) {
-            result.v = 27 + result.recoveryParam;
-        }
-        else if (result.recoveryParam != null && result.v != null) {
-            if (result.v !== 27 + result.recoveryParam) {
-                logger.throwArgumentError("signature v mismatch recoveryParam", "signature", signature);
-            }
-        }
-        // Make sure r and s are padded properly
-        if (result.r != null) {
-            result.r = hexZeroPad(result.r, 32);
-        }
-        if (result.s != null) {
-            result.s = hexZeroPad(result.s, 32);
-        }
         // If the _vs is available, use it to populate missing s, v and recoveryParam
         // and verify non-missing s, v and recoveryParam
         if (result._vs != null) {
-            result._vs = hexZeroPad(result._vs, 32);
-            if (result._vs.length > 66) {
-                logger.throwArgumentError("signature _vs overflow", "signature", signature);
-            }
-            const vs = arrayify(result._vs);
+            const vs = zeroPad(arrayify(result._vs), 32);
+            result._vs = hexlify(vs);
+            // Set or check the recid
             const recoveryParam = ((vs[0] >= 128) ? 1 : 0);
-            const v = 27 + result.recoveryParam;
-            // Use _vs to compute s
+            if (result.recoveryParam == null) {
+                result.recoveryParam = recoveryParam;
+            }
+            else if (result.recoveryParam !== recoveryParam) {
+                logger.throwArgumentError("signature recoveryParam mismatch _vs", "signature", signature);
+            }
+            // Set or check the s
             vs[0] &= 0x7f;
             const s = hexlify(vs);
-            // Check _vs aggress with other parameters
             if (result.s == null) {
                 result.s = s;
             }
             else if (result.s !== s) {
                 logger.throwArgumentError("signature v mismatch _vs", "signature", signature);
             }
+        }
+        // Use recid and v to populate each other
+        if (result.recoveryParam == null) {
             if (result.v == null) {
-                result.v = v;
+                logger.throwArgumentError("signature missing v and recoveryParam", "signature", signature);
             }
-            else if (result.v !== v) {
-                logger.throwArgumentError("signature v mismatch _vs", "signature", signature);
-            }
-            if (recoveryParam == null) {
-                result.recoveryParam = recoveryParam;
-            }
-            else if (result.recoveryParam !== recoveryParam) {
-                logger.throwArgumentError("signature recoveryParam mismatch _vs", "signature", signature);
+            else {
+                result.recoveryParam = 1 - (result.v % 2);
             }
         }
-        // After all populating, both v and recoveryParam are still missing...
-        if (result.v == null && result.recoveryParam == null) {
-            logger.throwArgumentError("signature requires at least one of recoveryParam, v or _vs", "signature", signature);
+        else {
+            if (result.v == null) {
+                result.v = 27 + result.recoveryParam;
+            }
+            else if (result.recoveryParam !== (1 - (result.v % 2))) {
+                logger.throwArgumentError("signature recoveryParam mismatch v", "signature", signature);
+            }
         }
-        // Check for canonical v
-        if (result.v !== 27 && result.v !== 28) {
-            logger.throwArgumentError("signature v not canonical", "signature", signature);
+        if (result.r == null || !isHexString(result.r)) {
+            logger.throwArgumentError("signature missing or invalid r", "signature", signature);
         }
-        // Check that r and s are in range
-        if (result.r.length > 66 || result.s.length > 66) {
-            logger.throwArgumentError("signature overflow r or s", "signature", signature);
+        else {
+            result.r = hexZeroPad(result.r, 32);
         }
+        if (result.s == null || !isHexString(result.s)) {
+            logger.throwArgumentError("signature missing or invalid s", "signature", signature);
+        }
+        else {
+            result.s = hexZeroPad(result.s, 32);
+        }
+        const vs = arrayify(result.s);
+        if (vs[0] >= 128) {
+            logger.throwArgumentError("signature s out of range", "signature", signature);
+        }
+        if (result.recoveryParam) {
+            vs[0] |= 0x80;
+        }
+        const _vs = hexlify(vs);
+        if (result._vs) {
+            if (!isHexString(result._vs)) {
+                logger.throwArgumentError("signature invalid _vs", "signature", signature);
+            }
+            result._vs = hexZeroPad(result._vs, 32);
+        }
+        // Set or check the _vs
         if (result._vs == null) {
-            const vs = arrayify(result.s);
-            if (vs[0] >= 128) {
-                logger.throwArgumentError("signature s out of range", "signature", signature);
-            }
-            if (result.recoveryParam) {
-                vs[0] |= 0x80;
-            }
-            result._vs = hexlify(vs);
+            result._vs = _vs;
+        }
+        else if (result._vs !== _vs) {
+            logger.throwArgumentError("signature _vs mismatch v and s", "signature", signature);
         }
     }
     return result;

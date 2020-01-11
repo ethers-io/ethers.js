@@ -3758,7 +3758,7 @@
 	var _version$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bytes/5.0.0-beta.135";
+	exports.version = "bytes/5.0.0-beta.136";
 	});
 
 	var _version$3 = unwrapExports(_version$2);
@@ -4048,16 +4048,21 @@
 	        if (bytes.length !== 65) {
 	            logger.throwArgumentError("invalid signature string; must be 65 bytes", "signature", signature);
 	        }
-	        // Get the r and s
+	        // Get the r, s and v
 	        result.r = hexlify(bytes.slice(0, 32));
 	        result.s = hexlify(bytes.slice(32, 64));
-	        // Reduce v to the canonical 27 or 28
 	        result.v = bytes[64];
-	        if (result.v !== 27 && result.v !== 28) {
-	            result.v = 27 + (result.v % 2);
-	        }
 	        // Compute recoveryParam from v
-	        result.recoveryParam = (result.v - 27);
+	        result.recoveryParam = 1 - (result.v % 2);
+	        // Allow a recid to be used as the v
+	        if (result.v < 27) {
+	            if (result.v === 0 || result.v === 1) {
+	                result.v += 27;
+	            }
+	            else {
+	                logger.throwArgumentError("signature invalid v byte", "signature", signature);
+	            }
+	        }
 	        // Compute _vs from recoveryParam and s
 	        if (result.recoveryParam) {
 	            bytes[32] |= 0x80;
@@ -4070,83 +4075,78 @@
 	        result.v = signature.v;
 	        result.recoveryParam = signature.recoveryParam;
 	        result._vs = signature._vs;
-	        // Normalize v into a canonical 27 or 28
-	        if (result.v != null && !(result.v == 27 || result.v == 28)) {
-	            result.v = 27 + (result.v % 2);
-	        }
-	        // Populate a missing v or recoveryParam if possible
-	        if (result.recoveryParam == null && result.v != null) {
-	            result.recoveryParam = 1 - (result.v % 2);
-	        }
-	        else if (result.recoveryParam != null && result.v == null) {
-	            result.v = 27 + result.recoveryParam;
-	        }
-	        else if (result.recoveryParam != null && result.v != null) {
-	            if (result.v !== 27 + result.recoveryParam) {
-	                logger.throwArgumentError("signature v mismatch recoveryParam", "signature", signature);
-	            }
-	        }
-	        // Make sure r and s are padded properly
-	        if (result.r != null) {
-	            result.r = hexZeroPad(result.r, 32);
-	        }
-	        if (result.s != null) {
-	            result.s = hexZeroPad(result.s, 32);
-	        }
 	        // If the _vs is available, use it to populate missing s, v and recoveryParam
 	        // and verify non-missing s, v and recoveryParam
 	        if (result._vs != null) {
-	            result._vs = hexZeroPad(result._vs, 32);
-	            if (result._vs.length > 66) {
-	                logger.throwArgumentError("signature _vs overflow", "signature", signature);
+	            var vs_1 = zeroPad(arrayify(result._vs), 32);
+	            result._vs = hexlify(vs_1);
+	            // Set or check the recid
+	            var recoveryParam = ((vs_1[0] >= 128) ? 1 : 0);
+	            if (result.recoveryParam == null) {
+	                result.recoveryParam = recoveryParam;
 	            }
-	            var vs = arrayify(result._vs);
-	            var recoveryParam = ((vs[0] >= 128) ? 1 : 0);
-	            var v = 27 + result.recoveryParam;
-	            // Use _vs to compute s
-	            vs[0] &= 0x7f;
-	            var s = hexlify(vs);
-	            // Check _vs aggress with other parameters
+	            else if (result.recoveryParam !== recoveryParam) {
+	                logger.throwArgumentError("signature recoveryParam mismatch _vs", "signature", signature);
+	            }
+	            // Set or check the s
+	            vs_1[0] &= 0x7f;
+	            var s = hexlify(vs_1);
 	            if (result.s == null) {
 	                result.s = s;
 	            }
 	            else if (result.s !== s) {
 	                logger.throwArgumentError("signature v mismatch _vs", "signature", signature);
 	            }
+	        }
+	        // Use recid and v to populate each other
+	        if (result.recoveryParam == null) {
 	            if (result.v == null) {
-	                result.v = v;
+	                logger.throwArgumentError("signature missing v and recoveryParam", "signature", signature);
 	            }
-	            else if (result.v !== v) {
-	                logger.throwArgumentError("signature v mismatch _vs", "signature", signature);
-	            }
-	            if (recoveryParam == null) {
-	                result.recoveryParam = recoveryParam;
-	            }
-	            else if (result.recoveryParam !== recoveryParam) {
-	                logger.throwArgumentError("signature recoveryParam mismatch _vs", "signature", signature);
+	            else {
+	                result.recoveryParam = 1 - (result.v % 2);
 	            }
 	        }
-	        // After all populating, both v and recoveryParam are still missing...
-	        if (result.v == null && result.recoveryParam == null) {
-	            logger.throwArgumentError("signature requires at least one of recoveryParam, v or _vs", "signature", signature);
+	        else {
+	            if (result.v == null) {
+	                result.v = 27 + result.recoveryParam;
+	            }
+	            else if (result.recoveryParam !== (1 - (result.v % 2))) {
+	                logger.throwArgumentError("signature recoveryParam mismatch v", "signature", signature);
+	            }
 	        }
-	        // Check for canonical v
-	        if (result.v !== 27 && result.v !== 28) {
-	            logger.throwArgumentError("signature v not canonical", "signature", signature);
+	        if (result.r == null || !isHexString(result.r)) {
+	            logger.throwArgumentError("signature missing or invalid r", "signature", signature);
 	        }
-	        // Check that r and s are in range
-	        if (result.r.length > 66 || result.s.length > 66) {
-	            logger.throwArgumentError("signature overflow r or s", "signature", signature);
+	        else {
+	            result.r = hexZeroPad(result.r, 32);
 	        }
+	        if (result.s == null || !isHexString(result.s)) {
+	            logger.throwArgumentError("signature missing or invalid s", "signature", signature);
+	        }
+	        else {
+	            result.s = hexZeroPad(result.s, 32);
+	        }
+	        var vs = arrayify(result.s);
+	        if (vs[0] >= 128) {
+	            logger.throwArgumentError("signature s out of range", "signature", signature);
+	        }
+	        if (result.recoveryParam) {
+	            vs[0] |= 0x80;
+	        }
+	        var _vs = hexlify(vs);
+	        if (result._vs) {
+	            if (!isHexString(result._vs)) {
+	                logger.throwArgumentError("signature invalid _vs", "signature", signature);
+	            }
+	            result._vs = hexZeroPad(result._vs, 32);
+	        }
+	        // Set or check the _vs
 	        if (result._vs == null) {
-	            var vs = arrayify(result.s);
-	            if (vs[0] >= 128) {
-	                logger.throwArgumentError("signature s out of range", "signature", signature);
-	            }
-	            if (result.recoveryParam) {
-	                vs[0] |= 0x80;
-	            }
-	            result._vs = hexlify(vs);
+	            result._vs = _vs;
+	        }
+	        else if (result._vs !== _vs) {
+	            logger.throwArgumentError("signature _vs mismatch v and s", "signature", signature);
 	        }
 	    }
 	    return result;
@@ -17529,7 +17529,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.147";
+	exports.version = "providers/5.0.0-beta.148";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -17808,25 +17808,34 @@
 	         }
 	         */
 	        var result = Formatter.check(this.formats.transaction, transaction);
-	        var networkId = transaction.networkId;
-	        // geth-etc returns chainId
-	        if (transaction.chainId != null && networkId == null && result.v == null) {
-	            networkId = transaction.chainId;
-	        }
-	        if (lib$1.isHexString(networkId)) {
-	            networkId = lib$2.BigNumber.from(networkId).toNumber();
-	        }
-	        if (typeof (networkId) !== "number" && result.v != null) {
-	            networkId = (result.v - 35) / 2;
-	            if (networkId < 0) {
-	                networkId = 0;
+	        if (transaction.chainId != null) {
+	            var chainId = transaction.chainId;
+	            if (lib$1.isHexString(chainId)) {
+	                chainId = lib$2.BigNumber.from(chainId).toNumber();
 	            }
-	            networkId = parseInt(networkId);
+	            result.chainId = chainId;
 	        }
-	        if (typeof (networkId) !== "number") {
-	            networkId = 0;
+	        else {
+	            var chainId = transaction.networkId;
+	            // geth-etc returns chainId
+	            if (chainId == null && result.v == null) {
+	                chainId = transaction.chainId;
+	            }
+	            if (lib$1.isHexString(chainId)) {
+	                chainId = lib$2.BigNumber.from(chainId).toNumber();
+	            }
+	            if (typeof (chainId) !== "number" && result.v != null) {
+	                chainId = (result.v - 35) / 2;
+	                if (chainId < 0) {
+	                    chainId = 0;
+	                }
+	                chainId = parseInt(chainId);
+	            }
+	            if (typeof (chainId) !== "number") {
+	                chainId = 0;
+	            }
+	            result.chainId = chainId;
 	        }
-	        result.networkId = networkId;
 	        // 0x0000... should actually be null
 	        if (result.blockHash && result.blockHash.replace(/0/g, "") === "x") {
 	            result.blockHash = null;
@@ -21436,7 +21445,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.166";
+	exports.version = "ethers/5.0.0-beta.167";
 	});
 
 	var _version$L = unwrapExports(_version$K);

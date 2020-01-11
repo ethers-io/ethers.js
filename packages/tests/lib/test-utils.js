@@ -398,3 +398,33 @@ describe("Test nameprep", function () {
         });
     });
 });
+describe("Test Signature Manipulation", function () {
+    var tests = testcases_1.loadTests("transactions");
+    tests.forEach(function (test) {
+        it("autofills partial signatures - " + test.name, function () {
+            var address = ethers_1.ethers.utils.getAddress(test.accountAddress);
+            var hash = ethers_1.ethers.utils.keccak256(test.unsignedTransaction);
+            var data = ethers_1.ethers.utils.RLP.decode(test.signedTransaction);
+            var s = data.pop(), r = data.pop(), v = parseInt(data.pop().substring(2), 16);
+            var sig = ethers_1.ethers.utils.splitSignature({ r: r, s: s, v: v });
+            {
+                var addr = ethers_1.ethers.utils.recoverAddress(hash, {
+                    r: r, s: s, v: v
+                });
+                assert_1.default.equal(addr, address, "Using r, s and v");
+            }
+            {
+                var addr = ethers_1.ethers.utils.recoverAddress(hash, {
+                    r: sig.r, _vs: sig._vs
+                });
+                assert_1.default.equal(addr, address, "Using r, _vs");
+            }
+            {
+                var addr = ethers_1.ethers.utils.recoverAddress(hash, {
+                    r: sig.r, s: sig.s, recoveryParam: sig.recoveryParam
+                });
+                assert_1.default.equal(addr, address, "Using r, s and recoveryParam");
+            }
+        });
+    });
+});
