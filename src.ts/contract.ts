@@ -24,7 +24,7 @@ import { Signer } from './abstract-signer';
 
 import { Arrayish } from './utils/bytes';
 import { EventDescription } from './utils/interface';
-import { ParamType } from './utils/abi-coder';
+import { EventFragment, FunctionFragment, ParamType } from './utils/abi-coder';
 import { Block, Listener, Log, TransactionReceipt, TransactionRequest, TransactionResponse } from './providers/abstract-provider';
 
 ///////////////////////////////
@@ -364,7 +364,7 @@ export class Contract {
     // Once this issue is resolved (there are open PR) we can do this nicer
     // by making addressOrName default to null for 2 operand calls. :)
 
-    constructor(addressOrName: string, contractInterface: Array<string | ParamType> | string | Interface, signerOrProvider: Signer | Provider) {
+    constructor(addressOrName: string, contractInterface: Array<string | FunctionFragment | EventFragment> | string | Interface, signerOrProvider: Signer | Provider) {
         errors.checkNew(this, Contract);
 
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
@@ -744,7 +744,7 @@ export class ContractFactory {
     readonly bytecode: string;
     readonly signer: Signer;
 
-    constructor(contractInterface: Array<string | ParamType> | string | Interface, bytecode: Arrayish | string | { object: string }, signer?: Signer) {
+    constructor(contractInterface: Array<string | FunctionFragment | EventFragment> | string | Interface, bytecode: Arrayish | string | { object: string }, signer?: Signer) {
 
         let bytecodeHex: string = null;
 

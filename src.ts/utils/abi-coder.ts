@@ -54,7 +54,7 @@ export type FunctionFragment = {
     payable: boolean,
     stateMutability: string,
 
-    gas: BigNumber
+    gas?: BigNumber
 };
 
 ///////////////////////////////

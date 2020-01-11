@@ -390,7 +390,7 @@ export class Interface {
     readonly events: { [ name: string ]: _EventDescription };
     readonly deployFunction: _DeployDescription;
 
-    constructor(abi: Array<string | ParamType> | string) {
+    constructor(abi: Array<string | FunctionFragment | EventFragment> | string) {
         errors.checkNew(this, Interface);
 
         if (typeof(abi) === 'string') {
