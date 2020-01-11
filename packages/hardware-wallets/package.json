@@ -1,17 +1,15 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
+  "browser": {
+    "./lib.esm/ledger-transport.js": "./lib.esm/browser-ledger-transport.js",
+    "ethers": "./lib.esm/browser-ethers.js"
+  },
   "dependencies": {
-    "@ethersproject/abstract-provider": ">=5.0.0-beta.136",
-    "@ethersproject/abstract-signer": ">=5.0.0-beta.137",
-    "@ethersproject/address": ">=5.0.0-beta.134",
-    "@ethersproject/bytes": ">=5.0.0-beta.134",
-    "@ethersproject/properties": ">=5.0.0-beta.136",
-    "@ethersproject/strings": ">=5.0.0-beta.135",
-    "@ethersproject/transactions": ">=5.0.0-beta.133",
     "@ledgerhq/hw-app-eth": "5.3.0",
     "@ledgerhq/hw-transport": "5.3.0",
     "@ledgerhq/hw-transport-node-hid": "5.3.0",
-    "@ledgerhq/hw-transport-u2f": "5.3.0"
+    "@ledgerhq/hw-transport-u2f": "5.3.0",
+    "ethers": "5.0.0-beta.166"
   },
   "description": "Hardware Wallet support for ethers.",
   "devDependencies": {
