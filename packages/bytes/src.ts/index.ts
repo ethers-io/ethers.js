@@ -343,6 +343,15 @@ export function splitSignature(signature: SignatureLike): Signature {
         // Compute recoveryParam from v
         result.recoveryParam = 1 - (result.v % 2);
 
+        // Allow a recid to be used as the v
+        if (result.v < 27) {
+            if (result.v === 0 || result.v === 1) {
+                result.v += 27;
+            } else {
+                logger.throwArgumentError("signature invalid v byte", "signature", signature);
+            }
+        }
+
         // Compute _vs from recoveryParam and s
         if (result.recoveryParam) { bytes[32] |= 0x80; }
         result._vs = hexlify(bytes.slice(32, 64))
