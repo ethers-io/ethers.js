@@ -253,11 +253,11 @@ describe('Test Signing Messages', function() {
 
 describe("Serialize Transactions", function() {
     it("allows odd-length numeric values", function() {
-        const result = ethers.utils.serializeTransaction({
+        ethers.utils.serializeTransaction({
             gasLimit: "0x1",
             gasPrice: "0x1",
             value: "0x1"
         });
-        console.log(result);
+        //console.log(result);
     });
 });
