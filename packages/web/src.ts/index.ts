@@ -167,14 +167,14 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
 
         while (true) {
             try {
-            response = await fetch(url, options);
+                response = await fetch(url, options);
             } catch (error) {
                 console.log(error);
             }
             body = await response.text();
 
             if (allow304 && response.status === 304) {
-                // Leave body as null
+                body = null;
                 break;
 
             } else if (!response.ok) {
