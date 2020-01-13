@@ -37,7 +37,7 @@ export function Reporter(runner) {
     }
     runner.on('suite', function (suite) {
         if (!suite.title) {
-            log('Testing: Found ' + suite.suites.length + ' test suites');
+            log('Testing: ' + (suite.suites ? 'Found ' + suite.suites.length + ' test suites' : ''));
         }
         else {
             let filename = (suite.file || '').split('/').pop();

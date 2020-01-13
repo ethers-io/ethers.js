@@ -57,7 +57,10 @@ function parseParamType(param, allowIndexed) {
         var c = param[i];
         switch (c) {
             case "(":
-                if (!node.state.allowParams) {
+                if (node.state.allowType && node.type === "") {
+                    node.type = "tuple";
+                }
+                else if (!node.state.allowParams) {
                     throwError(i);
                 }
                 node.state.allowType = false;
@@ -600,6 +603,7 @@ var ConstructorFragment = /** @class */ (function (_super) {
             throw new Error("constructor cannot be constant");
         }
         return new ConstructorFragment(_constructorGuard, {
+            name: null,
             type: value.type,
             inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : []),
             payable: state.payable,

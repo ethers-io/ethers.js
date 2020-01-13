@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var assert_1 = __importDefault(require("assert"));
-var Web3HttpProvider = require("web3-providers-http");
+var web3_providers_http_1 = __importDefault(require("web3-providers-http"));
 var ethers_1 = require("ethers");
 var bnify = ethers_1.ethers.BigNumber.from;
 var blockchainData = {
@@ -43,7 +43,7 @@ var blockchainData = {
             v: 38,
             creates: null,
             raw: "0xf8d2808504a817c8008303d090946fc21092da55b392b045ed78f4732bff3c580e2c880186cc6acd4b0000b864f2c298be000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000067269636d6f6f000000000000000000000000000000000000000000000000000026a01e5605197a03e3f0a168f14749168dfeefc44c9228312dacbffdcbbb13263265a0269c3e5b3558267ad91b0a887d51f9f10098771c67b82ea6cb74f29638754f54",
-            networkId: 1
+            chainId: 1
         },
         transactionReceipt: {
             blockHash: "0x36b4af7f0538559e581c8588f16477df0f676439ea67fe8d7a2ae4abb20e2566",
@@ -301,7 +301,7 @@ function testProvider(providerName, networkName) {
             }
             else if (providerName === "Web3Provider") {
                 var infuraUrl = (new ethers_1.ethers.providers.InfuraProvider()).connection.url;
-                provider = new ethers_1.ethers.providers.Web3Provider(new Web3HttpProvider(infuraUrl));
+                provider = new ethers_1.ethers.providers.Web3Provider(new web3_providers_http_1.default(infuraUrl));
             }
             else {
                 provider = new (ethers_1.ethers.providers)[providerName]();
@@ -313,7 +313,7 @@ function testProvider(providerName, networkName) {
             }
             else if (providerName === "Web3Provider") {
                 var infuraUrl = (new ethers_1.ethers.providers.InfuraProvider(networkName)).connection.url;
-                provider = new ethers_1.ethers.providers.Web3Provider(new Web3HttpProvider(infuraUrl), networkName);
+                provider = new ethers_1.ethers.providers.Web3Provider(new web3_providers_http_1.default(infuraUrl), networkName);
             }
             else {
                 provider = new (ethers_1.ethers.providers)[providerName](networkName);
@@ -409,6 +409,9 @@ function testProvider(providerName, networkName) {
 }
 ["default", "homestead", "ropsten", "rinkeby", "kovan", "goerli"].forEach(function (networkName) {
     ["getDefaultProvider", "AlchemyProvider", "CloudflareProvider", "InfuraProvider", "EtherscanProvider", "NodesmithProvider", "Web3Provider"].forEach(function (providerName) {
+        if (providerName === "NodesmithProvider") {
+            return;
+        }
         if (networkName === "goerli" && providerName === "AlchemyProvider") {
             return;
         }
@@ -487,5 +490,17 @@ describe("Test Basic Authentication", function () {
         }, function (error) {
             return (error.reason === "basic authentication requires a secure https url");
         }, "throws an exception for insecure connections");
+    });
+});
+describe("Test #629", function () {
+    it("Fetches a blockhash beginning with a 0 nibble", function () {
+        var provider = new ethers_1.ethers.providers.InfuraProvider('goerli');
+        return provider.getBlock('0x0f305466552efa183a0de26b6fda26d55a872dbc02aca8b5852cc2a361ce9ee4').then(function (block) {
+            assert_1.default.equal(block.parentHash, "0x6723e880e01c15c5ac894abcae0f5b55ea809a31eaf5618998928f7d9cbc5118");
+            assert_1.default.equal(block.number, 1479831);
+            assert_1.default.equal(block.transactions.length, 5);
+        }, function (error) {
+            assert_1.default.ok(false, "Failed to get block");
+        });
     });
 });

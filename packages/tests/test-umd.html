@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Ethers Test Suite</title>
+        <meta charset="UTF-8">
+        <link href="../../node_modules/mocha/mocha.css" rel="stylesheet" />
+        <style type="text/css">
+        </style>
+    </head>
+
+    <body>
+        <div id="mocha"></div>
+        <script src="../../node_modules/mocha/mocha.js"></script>
+        <script src="../shims/dist/index.min.js"></script>
+
+        <!-- Inject the mocha describe and it functions -->
+        <script type="text/javascript">
+            // Inject the mocha describe and it functions
+            mocha.setup({ ui: 'bdd' });
+        </script>
+
+        <!-- Load the browser dist ethers package -->
+        <script type="text/javascript" src="../ethers/dist/ethers-all.umd.min.js"></script>
+
+        <!-- Our test cases; compiled by browserify -->
+        <script src="./dist/tests.umd.js" type="text/javascript"></script>
+
+        <!-- Run the test cases! -->
+        <script type="text/javascript">
+            mocha.reporter(testing.Reporter);
+
+            // Use this to focus on specific test cases
+            //mocha.grep(new RegExp('easyseed-es')).run();
+
+            mocha.run();
+        </script>
+    </body>
+</html>

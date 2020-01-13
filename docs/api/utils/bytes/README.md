@@ -20,7 +20,7 @@ Types
 ### Bytes
 
 
-A Bytes object is any object which is an
+A **Bytes** is any object which is an
 [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) or
 [TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) with
 each value in the valid byte range (i.e. between 0 and 255 inclusive),
@@ -31,13 +31,22 @@ is in the valid byte range.
 ### BytesLike
 
 
-A **BytesLike** can be either a [Bytes](./) or a [Hexstring](./).
+A **BytesLike** can be either a [Bytes](./) or a [DataHexstring](./).
+
+
+### DataHexstring
+
+
+A **DataHexstring** is identical to a [Hexstring](./) except that it has
+an even number of nibbles, and therefore is a valid representation of
+binary data as a string.
 
 
 ### Hexstring
 
 
-A **hexstring** is a string which has a `0x` prefix followed by
+A **hexstring** is a string which has a `0x` prefix followed by any
+number of nibbles (i.e. case-insensitive hexidecumal characters, `0-9` and `a-f`).
 
 
 ### Signature
@@ -57,8 +66,9 @@ A **hexstring** is a string which has a `0x` prefix followed by
 A **SignatureLike** is similar to a [Signature](./), except redundant properties
 may be omitted.
 
-For example, if *_vs* is specified, **(r, s)** and **v** can be omitted. Likewise,
-if **recoverParam** is provided, **v** can be omitted (as it can be computed).
+For example, if **_vs** is specified, **s** and **v** may be omitted. Likewise,
+if **recoveryParam** is provided, **v** may be omitted (as in these cases the
+missing values can be computed).
 
 
 Inspection
@@ -75,16 +85,16 @@ Returns true if and only if *object* is a valid [Bytes](./).
 
 #### *utils* . **isBytesLike** ( object )  **=>** *boolean*
 
-Returns true if and only if *object* is a [Bytes](./) or an Array or TypedArray
-where each value is a valid byte (i.e. between 0 and 255 inclusive).
+Returns true if and only if *object* is a [Bytes](./) or [DataHexstring](./).
 
 
 
 
 #### *utils* . **isHexString** ( object ,  [ length ]  )  **=>** *boolean*
 
-Returns true if and only if *object* is a valid hex string;
-if *length* is specified the length (in bytes) is also verified.
+Returns true if and only if *object* is a valid hex string.
+If *length* is specified and *object* is not a valid [DataHexstring](./) of
+*length* bytes, an InvalidArgument error is thrown.
 
 
 
@@ -94,26 +104,24 @@ Converting between Arrays and Hexstrings
 
 
 
-#### *utils* . **arrayify** ( hexstringOrArrayish [  , options ]  )  **=>** *Uint8Array*
+#### *utils* . **arrayify** ( datahexstringOrArrayish [  , options ]  )  **=>** *Uint8Array*
 
-Converts *hexstringOrArrayish* to a Uint8Array. If a [Hexstring](./)
-is passed in, the length must be even.
+Converts *datahexstringOrArrayish* to a Uint8Array.
 
 
 
 
 #### *utils* . **hexlify** ( hexstringOrArrayish )  **=>** *string*
 
-Converts *hexstringOrArrayish* to a [Hexstring](./). The result
-will always be zero-padded to even length.
+Converts *hexstringOrArrayish* to a [DataHexstring](./).
 
 
 
 
 #### *utils* . **hexValue** ( aBigNumberish )  **=>** *string*
 
-Converts *aBigNumberish* to a [Hexstring](./), with no unecessary leading
-zeros. The result of this function can be of odd-length.
+Converts *aBigNumberish* to a [Hexstring](./), with no *unnecessary* leading
+zeros.
 
 
 
@@ -123,29 +131,7 @@ zeros. The result of this function can be of odd-length.
 
 
 ```javascript
-// Convert a hexstring to a Uint8Array
-arrayify("0x1234")
-// [ 18, 52 ]
-
-// Convert an Array to a hexstring
-hexlify([1, 2, 3, 4])
-// 0x01020304
-
-// Convert an Object to a hexstring
-hexlify({ length: 2, "0": 1, "1": 2 })
-// 0x0102
-
-// Convert an Array to a hexstring
-hexlify([ 1 ])
-// 0x01
-
-// Convert a number to a stripped hex value
-hexValue(1)
-// 0x1
-
-// Convert an Array to a stripped hex value
-hexValue([ 1, 2 ])
-// 0x102
+Skipping JavaScript Evaluation.
 ```
 
 
@@ -157,22 +143,25 @@ Array Manipulation
 
 #### *utils* . **concat** ( arrayOfBytesLike )  **=>** *Uint8Array*
 
-Concatenates all the [BytesLike](./) in *arrayOfBytesLike*
-into a single Uint8Array.
+Concatenates all the [BytesLike](./) in *arrayOfBytesLike* into a single Uint8Array.
 
 
 
 
 #### *utils* . **stripZeros** ( aBytesLike )  **=>** *Uint8Array*
 
-Concatenates all the [BytesLike](./) in *arrayOfBytesLike*
+Returns a Uint8Array with all leading `0` bytes of *aBtyesLike* removed.
 
 
 
 
 #### *utils* . **zeroPad** ( aBytesLike , length )  **=>** *Uint8Array*
 
-Concatenates all the [BytesLike](./) in *arrayOfBytesLike*
+Retutns a Uint8Array of the data in *aBytesLike* with `0` bytes prepended to
+*length* bytes long.
+
+If *aBytesLike* is already longer than *length* bytes long, an InvalidArgument
+error will be thrown.
 
 
 
@@ -182,41 +171,43 @@ Hexstring Manipulation
 
 
 
-#### *utils* . **hexConcat** ( arrayOfBytesLike )  **=>** *string*
+#### *utils* . **hexConcat** ( arrayOfBytesLike )  **=>** *[DataHexstring](./)*
 
-Concatenates all the [BytesLike](./) in *arrayOfBytesLike*
-into a single [Hexstring](./)
-
-
-
-
-#### *utils* . **hexDataLength** ( aBytesLike )  **=>** *number*
-
-Returns the length (in bytes) of *aBytesLike*.
-
-This will **throw and error** if *aBytesLike* is a [Hexstring](./)
-but is of odd-length.
+Concatenates all the [BytesLike](./) in *arrayOfBytesLike* into a single [DataHexstring](./)
 
 
 
 
-#### *utils* . **hexDataSlice** ( aBytesLike , offset [  , endOffset ]  )  **=>** *string*
+#### *utils* . **hexDataLength** ( aBytesLike )  **=>** *[DataHexstring](./)*
 
 Returns the length (in bytes) of *aBytesLike*.
 
 
 
 
-#### *utils* . **hexStripZeros** ( aBytesLike )  **=>** *string*
+#### *utils* . **hexDataSlice** ( aBytesLike , offset [  , endOffset ]  )  **=>** *[DataHexstring](./)*
 
-@TODO
+Returns a [DataHexstring](./) representation of a slice of *aBytesLike*, from
+*offset* (in bytes) to *endOffset* (in bytes). If *endOffset* is
+omitted, the length of *aBytesLike* is used.
 
 
 
 
-#### *utils* . **hexZeroPad** ( aBytesLike , length )  **=>** *string*
+#### *utils* . **hexStripZeros** ( aBytesLike )  **=>** *[Hexstring](./)*
 
-@TODO
+Returns a [Hexstring](./) representation of *aBytesLike* with all
+leading zeros removed.
+
+
+
+
+#### *utils* . **hexZeroPad** ( aBytesLike , length )  **=>** *[DataHexstring](./)*
+
+Returns a [DataHexstring](./) representation of *aBytesLike* padded to *length* bytes.
+
+If *aBytesLike* is already longer than *length* bytes long, an InvalidArgument
+error will be thrown.
 
 
 
@@ -226,24 +217,22 @@ Signature Conversion
 
 
 
-#### *utils* . **joinSignature** ( aSignatureLike )  **=>** *string*
+#### *utils* . **joinSignature** ( aSignatureLike )  **=>** *[DataHexstring](./)*
 
-Return the flat-format of a [SignatureLike](./), which is
-65 bytes (130 nibbles) long, concatenating the **r**, **s** and **v**
-of a Signature.
-
+Return the flat-format of *aSignaturelike*, which is 65 bytes (130 nibbles)
+long, concatenating the **r**, **s** and (normalized) **v** of a Signature.
 
 
 
-#### *utils* . **splitSignature** ( aSignatureLikeOrBytesLike )  **=>** *Signature*
 
-Return the full expanded-format of a [SignatureLike](./) or
-a flat-format [Hexstring](./). Any missing properties will be
-computed.
+#### *utils* . **splitSignature** ( aSignatureLikeOrBytesLike )  **=>** *[Signature](./)*
+
+Return the full expanded-format of *aSignaturelike* or a flat-format [DataHexstring](./).
+Any missing properties will be computed.
 
 
 
 
 
 -----
-**Content Hash:** 1e52066c61f8794d858f02fb8164b146c9379968b0e0ab90efeb2fe16831599f
+**Content Hash:** fce7a8c85402ef3d94ffe261157fa3e0644c5c5d0641d9de7820a9a798bcb6c7

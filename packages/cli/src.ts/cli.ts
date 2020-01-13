@@ -4,7 +4,7 @@ import fs from "fs";
 import { basename } from "path";
 
 import { ethers } from "ethers";
-import scrypt from "scrypt-js";
+import * as scrypt from "scrypt-js";
 
 import { getChoice, getPassword, getProgressBar } from "./prompt";
 
@@ -395,13 +395,13 @@ async function loadAccount(arg: string, plugin: Plugin, preventFile?: boolean): 
 
     // Secure entry; use prompt with mask
     if (arg === "-") {
-        let content = await getPassword("Private Key / Mnemonic:");
+        const content = await getPassword("Private Key / Mnemonic:");
         return loadAccount(content, plugin, true);
     }
 
     // Raw private key
     if (ethers.utils.isHexString(arg, 32)) {
-         let signer = new ethers.Wallet(arg, plugin.provider)
+         const signer = new ethers.Wallet(arg, plugin.provider);
          return Promise.resolve(new WrappedSigner(signer.getAddress(), () => Promise.resolve(signer), plugin));
     }
 
@@ -421,20 +421,11 @@ async function loadAccount(arg: string, plugin: Plugin, preventFile?: boolean): 
                 let saltBytes = ethers.utils.arrayify(ethers.utils.HDNode.fromMnemonic(mnemonic).privateKey);
 
                 let progressBar = getProgressBar("Decrypting");
-                return (<Promise<ethers.Wallet>>(new Promise((resolve, reject) => {
-                    scrypt(passwordBytes, saltBytes, (1 << 20), 8, 1, 32, (error, progress, key) => {
-                        if (error) {
-                            reject(error);
-                        } else {
-                            progressBar(progress);
-                            if (key) {
-                                let derivedPassword = ethers.utils.hexlify(key).substring(2);
-                                let node = ethers.utils.HDNode.fromMnemonic(mnemonic, derivedPassword).derivePath(ethers.utils.defaultPath);
-                                resolve(new ethers.Wallet(node.privateKey, plugin.provider));
-                            }
-                        }
-                    });
-                })));
+                return scrypt.scrypt(passwordBytes, saltBytes, (1 << 20), 8, 1, 32, progressBar).then((key) => {
+                    const derivedPassword = ethers.utils.hexlify(key).substring(2);
+                    const node = ethers.utils.HDNode.fromMnemonic(mnemonic, derivedPassword).derivePath(ethers.utils.defaultPath);
+                    return new ethers.Wallet(node.privateKey, plugin.provider);
+                });
             });
 
         } else {
@@ -521,7 +512,7 @@ export abstract class Plugin {
         return [ ];
     }
 
-    async prepareOptions(argParser: ArgParser): Promise<void> {
+    async prepareOptions(argParser: ArgParser, verifyOnly?: boolean): Promise<void> {
         let runners: Array<Promise<void>> = [ ];
 
         this.wait = argParser.consumeFlag("wait");
@@ -582,6 +573,8 @@ export abstract class Plugin {
             let account = accountOptions[i];
             switch (account.name) {
                 case "account":
+                    // Verifying does not need to ask for passwords, etc.
+                    if (verifyOnly) { break; }
                     let wrappedSigner = await loadAccount(account.value, this);
                     accounts.push(wrappedSigner);
                     break;
@@ -621,21 +614,21 @@ export abstract class Plugin {
         /////////////////////
         // Transaction Options
 
-        let gasPrice = argParser.consumeOption("gas-price");
+        const gasPrice = argParser.consumeOption("gas-price");
         if (gasPrice) {
             ethers.utils.defineReadOnly(this, "gasPrice", ethers.utils.parseUnits(gasPrice, "gwei"));
         } else {
             ethers.utils.defineReadOnly(this, "gasPrice", null);
         }
 
-        let gasLimit = argParser.consumeOption("gas-limit");
+        const gasLimit = argParser.consumeOption("gas-limit");
         if (gasLimit) {
             ethers.utils.defineReadOnly(this, "gasLimit", ethers.BigNumber.from(gasLimit));
         } else {
             ethers.utils.defineReadOnly(this, "gasLimit", null);
         }
 
-        let nonce = argParser.consumeOption("nonce");
+        const nonce = argParser.consumeOption("nonce");
         if (nonce) {
             this.nonce = ethers.BigNumber.from(nonce).toNumber();
         }
@@ -702,7 +695,11 @@ export abstract class Plugin {
     }
 }
 
-class CheckPlugin extends Plugin { }
+class CheckPlugin extends Plugin {
+    prepareOptions(argParser: ArgParser, verifyOnly?: boolean): Promise<void> {
+        return super.prepareOptions(argParser, true);
+    }
+}
 
 
 /////////////////////////////
@@ -950,7 +947,7 @@ export class CLI {
             return this.showUsage();
         }
 
-        let debug = argParser.consumeFlag("debug");
+        const debug = argParser.consumeFlag("debug");
 
         // Create Plug-in instance
         let plugin: Plugin = null;

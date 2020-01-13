@@ -1,1 +1,1 @@
-export declare const version = "networks/5.0.0-beta.130";
+export declare const version = "networks/5.0.0-beta.134";

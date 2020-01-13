@@ -2,3 +2,4 @@
 tsconfig.json
 src.ts/
 
+tsconfig.tsbuildinfo

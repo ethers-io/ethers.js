@@ -3,6 +3,104 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.167 (2020-01-11 04:16)
+-----------------------------------------
+
+  - Fixed testcases for provider changes. ([90ed07c](https://github.com/ethers-io/ethers.js/commit/90ed07c74e7230ea0f02288b140d497d8b9779e0))
+  - Add support for legacy flat signatures with recid instead of normalized v. ([245cd0e](https://github.com/ethers-io/ethers.js/commit/245cd0e48e07eef35f5bf45ee7fe5ed5ef31338a))
+  - Fix TransactionResponse to have chainId instead of legacy networkId. ([#700](https://github.com/ethers-io/ethers.js/issues/700); [72b3bc9](https://github.com/ethers-io/ethers.js/commit/72b3bc9909074893038c768f3da1564ed96a6a20))
+  - Fixed splitSignature computing wrong v for BytesLike. ([#700](https://github.com/ethers-io/ethers.js/issues/700); [4151c0e](https://github.com/ethers-io/ethers.js/commit/4151c0eacd22287e2369a8656ffa00359db6f84b))
+  - Added dist files for hardware-wallets. ([c846649](https://github.com/ethers-io/ethers.js/commit/c84664953d2f50ee0d704a8aa18fe6c08668dabb))
+  - Browser support (with dist files) for Ledger. ([6f7fbf3](https://github.com/ethers-io/ethers.js/commit/6f7fbf3858c82417933a5e5595a919c0ec0487c7))
+
+ethers/v5.0.0-beta.166 (2020-01-10 03:09)
+-----------------------------------------
+
+  - Relaxed joinSignature API to allow SignauteLike. ([602e6a8](https://github.com/ethers-io/ethers.js/commit/602e6a8973480299843a0158f75451a2c6aac749))
+  - Initial code drop of new hardware wallet package. ([2e8f5ca](https://github.com/ethers-io/ethers.js/commit/2e8f5ca7ed498261079da75713b18f3370dfd236))
+  - Added more docs. ([381a72d](https://github.com/ethers-io/ethers.js/commit/381a72ddaa7fb59ef2ded84d228296d693df05c3))
+
+ethers/v5.0.0-beta.165 (2020-01-09 03:31)
+-----------------------------------------
+
+  - Fixed require resolution for CLI scripts. ([c04f9a7](https://github.com/ethers-io/ethers.js/commit/c04f9a7fff727bb04a4aa3a0fa05fd5cd8e795a6))
+  - Added new URLs for default ETC (and ETC testnets) providers. ([#351](https://github.com/ethers-io/ethers.js/issues/351); [3c184ac](https://github.com/ethers-io/ethers.js/commit/3c184ace21aafbb27f4d44cce1bb738af899d59f))
+
+ethers/v5.0.0-beta.164 (2020-01-07 19:57)
+-----------------------------------------
+
+  - Use better Description typing. ([2d5492c](https://github.com/ethers-io/ethers.js/commit/2d5492cd2ee722c818c249244af7b5bea05d67b0))
+  - Better property access on ABI decoded results. ([#698](https://github.com/ethers-io/ethers.js/issues/698); [13f50ab](https://github.com/ethers-io/ethers.js/commit/13f50abd847f7ddcc7e54c102da54e2d23b86fae))
+  - Better typing support for Description. ([d0f4642](https://github.com/ethers-io/ethers.js/commit/d0f4642f6d2c9f5119f1910a0082894c60e81191))
+  - Fixed resolveName when name is an address with an invalid checksum. ([#694](https://github.com/ethers-io/ethers.js/issues/694); [1e72fc7](https://github.com/ethers-io/ethers.js/commit/1e72fc7d6f7c3be4410dbdcfbab9a0463ceb52bd))
+
+ethers/v5.0.0-beta.163 (2020-01-06 18:57)
+-----------------------------------------
+
+  - Added function to generate CREATE2 addresses. ([#697](https://github.com/ethers-io/ethers.js/issues/697); [eb26a6d](https://github.com/ethers-io/ethers.js/commit/eb26a6d95022a241c44f859e7b2f29646afb4914))
+  - Force constructor name to be null (instead of undefined). ([a648f2b](https://github.com/ethers-io/ethers.js/commit/a648f2bd1e5e52a3662896f04fe7025884866972))
+  - Added documentation uploading script. ([e593aba](https://github.com/ethers-io/ethers.js/commit/e593aba2946c98820b0c2edf9c5dab6cb30c7402))
+  - Added Czech wordlist to default wordlists export. ([#691](https://github.com/ethers-io/ethers.js/issues/691); [5724fa5](https://github.com/ethers-io/ethers.js/commit/5724fa5d9c6fe73f14ec8bdea1f7226a222537ef))
+  - Added Czech BIP-39 wordlist. ([#691](https://github.com/ethers-io/ethers.js/issues/691); [f54f06b](https://github.com/ethers-io/ethers.js/commit/f54f06b5c8092997fd3c9055d69a3e0796ce44f3))
+  - Updated README. ([e809ead](https://github.com/ethers-io/ethers.js/commit/e809eadf8d608cd8c8a78c08a2e3547dd09156cf))
+  - Updating docs. ([184c459](https://github.com/ethers-io/ethers.js/commit/184c459fab0d089a8a879584b72e5eb3560b33ce))
+  - Merge branch 'yuetloo-ethers-v5-beta' into ethers-v5-beta ([06cafe3](https://github.com/ethers-io/ethers.js/commit/06cafe3437ef129b47f5f9c02f4759f2c4854d3c))
+  - Add circleci and parity test files ([fdf0980](https://github.com/ethers-io/ethers.js/commit/fdf0980663ffead0faf3e9b7b233b22ca1574e21))
+  - Fixed typo in package test dist scripts. ([9c78c7f](https://github.com/ethers-io/ethers.js/commit/9c78c7fee69d07733048d898d58205ae7f5c82d7))
+
+ethers/v5.0.0-beta.162 (2019-11-25 0:02)
+----------------------------------------
+
+  - Update elliptic package to protect from Minerva timing attack. ([#666](https://github.com/ethers-io/ethers.js/issues/666); [cf036e1](https://github.com/ethers-io/ethers.js/commit/cf036e1ffad3340fcf1c7559d0032493ccc08e6e))
+  - Browser and node testing works again. ([4470477](https://github.com/ethers-io/ethers.js/commit/4470477d7fd3031f2f3a1fbd9c538468c33c7350))
+
+ethers/v5.0.0-beta.161 (2019-11-23 21:43)
+-----------------------------------------
+
+  - Updated dist files (sorted package.json to reduce package version change chatter). ([f308ba3](https://github.com/ethers-io/ethers.js/commit/f308ba3540ed0d282d099456d0369873ad9596b0))
+  - Stubs for adding throttle support. ([2f0e679](https://github.com/ethers-io/ethers.js/commit/2f0e679f0bc81bf901cf60a79e50f9715cddec5a))
+  - Refactor wordlists. ([abab9f6](https://github.com/ethers-io/ethers.js/commit/abab9f6aa27d1870d1053e7caa951408b86c454d))
+  - Browser testcases work again. ([c11c2e2](https://github.com/ethers-io/ethers.js/commit/c11c2e2e3376a6764f07ed443245823f2792b8cc))
+  - Added dist files for non-English wordlists. ([3d75c52](https://github.com/ethers-io/ethers.js/commit/3d75c52dac668af5eeede3e7764dadd3055a0707))
+  - Sync GitHub issue cache. ([29f0e9d](https://github.com/ethers-io/ethers.js/commit/29f0e9dd627a7b4b7f772300497f27718c9ecc7b))
+
+ethers/v5.0.0-beta.160 (2019-11-20 18:36)
+-----------------------------------------
+
+  - Updated API in testcases. ([3ab3733](https://github.com/ethers-io/ethers.js/commit/3ab373334c75800f2b20b6639ed8eb1b11e453ef))
+  - Fixed scrypt import in ESM build. ([b72ef27](https://github.com/ethers-io/ethers.js/commit/b72ef27b2a8f9941fb9d79122ec449fed9d2464d))
+  - Fixed null apiKey problem for InfuraProvider. ([e518151](https://github.com/ethers-io/ethers.js/commit/e51815150912d10e2734707986b10b37c87d6d12))
+  - Added support for sighash-style tuple parsing. ([19aaade](https://github.com/ethers-io/ethers.js/commit/19aaade9c62510012cfd50ae487ebd1705a28678))
+  - Fixed solc imports for cli. ([c35ddaf](https://github.com/ethers-io/ethers.js/commit/c35ddaf646efa25e738fee604585a0a7af45b206))
+  - Added nonce manager to experimental index. ([8316406](https://github.com/ethers-io/ethers.js/commit/8316406977ea26ca2044d16f7b3bb6ba21ef5b43))
+  - Removing NodesmithProvider from default provider as it is being discontinued. ([01ca350](https://github.com/ethers-io/ethers.js/commit/01ca35036ca11a47f60890e5cae62e46a00f3da8))
+  - Moved bare ABI named functions and events from Interface into Contracts to simplify other consumers of Interface. ([da8ca2e](https://github.com/ethers-io/ethers.js/commit/da8ca2e8bc982fc3ea0343bb3c593a485ca1fef0))
+  - Added support for complex API keys including support for INFURA project secrets. ([#464](https://github.com/ethers-io/ethers.js/issues/464), [#651](https://github.com/ethers-io/ethers.js/issues/651), [#652](https://github.com/ethers-io/ethers.js/issues/652); [1ec5804](https://github.com/ethers-io/ethers.js/commit/1ec5804bd460f6948d4813469fdc7bf739baa6a6))
+  - Migrated to scrypt-js v3. ([75895fa](https://github.com/ethers-io/ethers.js/commit/75895fa1491e7542c755a102f4e4c190685fd2b6))
+  - Moved getDefaultProvider to providers package. ([51e4ef2](https://github.com/ethers-io/ethers.js/commit/51e4ef2b45b83a8d82923600a2fac544d70b0807))
+  - Migrating providers to modern syntax and scoping. ([#634](https://github.com/ethers-io/ethers.js/issues/634); [e1509a6](https://github.com/ethers-io/ethers.js/commit/e1509a6326dd2cb8bf7ed64b82dd3947b768a314))
+  - Migrating to modern syntax and scoping. ([#634](https://github.com/ethers-io/ethers.js/issues/634); [394c36c](https://github.com/ethers-io/ethers.js/commit/394c36cad43f229a94c72d21f94d1c7982a887a1))
+  - Added provider property to Web3Provider. ([#641](https://github.com/ethers-io/ethers.js/issues/641); [1d4f90a](https://github.com/ethers-io/ethers.js/commit/1d4f90a958da6364117353850d62535c9702abd2))
+  - Updated GitHub issue cache. ([494381a](https://github.com/ethers-io/ethers.js/commit/494381a6284cc8ed90bd8002d42a6b6d94dc1200))
+  - Force deploy receipt to address to be null. ([#573](https://github.com/ethers-io/ethers.js/issues/573); [d9d438a](https://github.com/ethers-io/ethers.js/commit/d9d438a119bb11f8516fc9cf02c534ab3816fcb3))
+  - Updated experimental NonceManager. ([3d514c8](https://github.com/ethers-io/ethers.js/commit/3d514c8dbb94e1c4ce5754463e683dd9dbe7c0aa))
+  - Fixed typo in error message. ([28339a9](https://github.com/ethers-io/ethers.js/commit/28339a9c8585392086da159a46df4afb8958915c))
+  - Added GitHub issue caching. ([fea867a](https://github.com/ethers-io/ethers.js/commit/fea867a206f007a17718396e486883a5e718aa29))
+
+ethers/v5.0.0-beta.159 (2019-10-17 01:08)
+-----------------------------------------
+
+  - Removing TypeScript build files from npm to fix excessive package diffs.
+  - Fixed getBlock for blockhashes with a leading 0. ([#629](https://github.com/ethers-io/ethers.js/issues/629); [12cfc59](https://github.com/ethers-io/ethers.js/commit/12cfc599656d7e3a6d3d9aa4e468592865a711cc))
+
+ethers/v5.0.0-beta.158 (2019-09-28 01:56)
+-----------------------------------------
+
+  - Added less-common, but useful, coding functions to Interface. ([778eb3b](https://github.com/ethers-io/ethers.js/commit/778eb3b425b5ab5b23d28e75be92feccd0fc56bc))
+  - Add response handling and 304 support to fetchJson. ([3d25882](https://github.com/ethers-io/ethers.js/commit/3d25882d6bf689740506b9c569f6e0d30da6f6a5))
+  - Allow numeric values in a transaction to be odd-lengthed hexstrings. ([#614](https://github.com/ethers-io/ethers.js/issues/614); [a12030a](https://github.com/ethers-io/ethers.js/commit/a12030ad29aa13c02aa75d9e0860f4986a0043b4))
+  - Simpler crypt for admin tools. ([828c8cf](https://github.com/ethers-io/ethers.js/commit/828c8cfd419ac4f8d11d978c2e2ff83eba5ae909))
+
 ethers/v5.0.0-beta.157 (2019-09-08 02:43)
 -----------------------------------------
 

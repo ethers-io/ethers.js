@@ -6,7 +6,7 @@
 import { arrayify, BytesLike, hexlify } from "@ethersproject/bytes";
 
 function arrayifyInteger(value: number): Array<number> {
-    let result = [];
+    const result = [];
     while (value) {
         result.unshift(value & 0xff);
         value >>= 8;
@@ -34,14 +34,14 @@ function _encode(object: Array<any> | string): Array<number> {
             return payload;
         }
 
-        let length = arrayifyInteger(payload.length);
+        const length = arrayifyInteger(payload.length);
         length.unshift(0xf7 + length.length);
 
         return length.concat(payload);
 
     }
 
-    let data: Array<number> = Array.prototype.slice.call(arrayify(object));
+    const data: Array<number> = Array.prototype.slice.call(arrayify(object));
 
     if (data.length === 1 && data[0] <= 0x7f) {
         return data;
@@ -51,7 +51,7 @@ function _encode(object: Array<any> | string): Array<number> {
         return data;
     }
 
-    let length = arrayifyInteger(data.length);
+    const length = arrayifyInteger(data.length);
     length.unshift(0xb7 + length.length);
 
     return length.concat(data);
@@ -67,10 +67,10 @@ type Decoded = {
 };
 
 function _decodeChildren(data: Uint8Array, offset: number, childOffset: number, length: number): Decoded {
-    let result = [];
+    const result = [];
 
     while (childOffset < offset + 1 + length) {
-        let decoded = _decode(data, childOffset);
+        const decoded = _decode(data, childOffset);
 
         result.push(decoded.result);
 
@@ -89,12 +89,12 @@ function _decode(data: Uint8Array, offset: number): { consumed: number, result: 
 
     // Array with extra length prefix
     if (data[offset] >= 0xf8) {
-        let lengthLength = data[offset] - 0xf7;
+        const lengthLength = data[offset] - 0xf7;
         if (offset + 1 + lengthLength > data.length) {
             throw new Error("too short");
         }
 
-        let length = unarrayifyInteger(data, offset + 1, lengthLength);
+        const length = unarrayifyInteger(data, offset + 1, lengthLength);
         if (offset + 1 + lengthLength + length > data.length) {
             throw new Error("to short");
         }
@@ -102,7 +102,7 @@ function _decode(data: Uint8Array, offset: number): { consumed: number, result: 
         return _decodeChildren(data, offset, offset + 1 + lengthLength, lengthLength + length);
 
     } else if (data[offset] >= 0xc0) {
-        let length = data[offset] - 0xc0;
+        const length = data[offset] - 0xc0;
         if (offset + 1 + length > data.length) {
             throw new Error("invalid rlp data");
         }
@@ -110,34 +110,34 @@ function _decode(data: Uint8Array, offset: number): { consumed: number, result: 
         return _decodeChildren(data, offset, offset + 1, length);
 
     } else if (data[offset] >= 0xb8) {
-        let lengthLength = data[offset] - 0xb7;
+        const lengthLength = data[offset] - 0xb7;
         if (offset + 1 + lengthLength > data.length) {
             throw new Error("invalid rlp data");
         }
 
-        let length = unarrayifyInteger(data, offset + 1, lengthLength);
+        const length = unarrayifyInteger(data, offset + 1, lengthLength);
         if (offset + 1 + lengthLength + length > data.length) {
             throw new Error("invalid rlp data");
         }
 
-        let result = hexlify(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length));
+        const result = hexlify(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length));
         return { consumed: (1 + lengthLength + length), result: result }
 
     } else if (data[offset] >= 0x80) {
-        let length = data[offset] - 0x80;
+        const length = data[offset] - 0x80;
         if (offset + 1 + length > data.length) {
             throw new Error("invalid rlp data");
         }
 
-        let result = hexlify(data.slice(offset + 1, offset + 1 + length));
+        const result = hexlify(data.slice(offset + 1, offset + 1 + length));
         return { consumed: (1 + length), result: result }
     }
     return { consumed: 1, result: hexlify(data[offset]) };
 }
 
 export function decode(data: BytesLike): any {
-    let bytes = arrayify(data);
-    let decoded = _decode(bytes, 0);
+    const bytes = arrayify(data);
+    const decoded = _decode(bytes, 0);
     if (decoded.consumed !== bytes.length) {
         throw new Error("invalid rlp data");
     }

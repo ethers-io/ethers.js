@@ -21,7 +21,7 @@ function loadWords(lang) {
         return;
     }
     wordlist = words.replace(/([A-Z])/g, " $1").toLowerCase().substring(1).split(" ");
-    if (wordlist_1.check(lang) !== "0x3c8acc1e7b08d8e76f9fda015ef48dc8c710a73cb7e0f77b2c18a9b5a7adde60") {
+    if (wordlist_1.Wordlist.check(lang) !== "0x3c8acc1e7b08d8e76f9fda015ef48dc8c710a73cb7e0f77b2c18a9b5a7adde60") {
         wordlist = null;
         throw new Error("BIP39 Wordlist for en (English) FAILED");
     }
@@ -43,4 +43,4 @@ var LangEn = /** @class */ (function (_super) {
 }(wordlist_1.Wordlist));
 var langEn = new LangEn();
 exports.langEn = langEn;
-wordlist_1.register(langEn);
+wordlist_1.Wordlist.register(langEn);

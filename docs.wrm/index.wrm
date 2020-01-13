@@ -42,6 +42,7 @@ _toc:
     getting-started
     concepts
     api
+    cli
     cookbook
     migration
     testing

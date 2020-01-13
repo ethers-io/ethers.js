@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import fetch from "cross-fetch";
 import { encode as base64Encode } from "@ethersproject/base64";
 import { shallowCopy } from "@ethersproject/properties";
@@ -6,11 +15,29 @@ import { toUtf8Bytes } from "@ethersproject/strings";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
+function getResponse(response) {
+    const headers = {};
+    if (response.headers.forEach) {
+        response.headers.forEach((value, key) => {
+            headers[key.toLowerCase()] = value;
+        });
+    }
+    else {
+        ((response.headers).keys)().forEach((key) => {
+            headers[key.toLowerCase()] = response.headers.get(key);
+        });
+    }
+    return {
+        statusCode: response.status,
+        status: response.statusText,
+        headers: headers
+    };
+}
 export function fetchJson(connection, json, processFunc) {
-    let headers = {};
+    const headers = {};
     let url = null;
     // @TODO: Allow ConnectionInfo to override some of these values
-    let options = {
+    const options = {
         method: "GET",
         mode: "cors",
         cache: "no-cache",
@@ -18,7 +45,12 @@ export function fetchJson(connection, json, processFunc) {
         redirect: "follow",
         referrer: "client",
     };
+    let allow304 = false;
     let timeout = 2 * 60 * 1000;
+    let throttle = 25;
+    if (options.throttleLimit) {
+        throttle = options.throttleLimit;
+    }
     if (typeof (connection) === "string") {
         url = connection;
     }
@@ -31,53 +63,78 @@ export function fetchJson(connection, json, processFunc) {
             timeout = connection.timeout;
         }
         if (connection.headers) {
-            for (let key in connection.headers) {
+            for (const key in connection.headers) {
                 headers[key.toLowerCase()] = { key: key, value: String(connection.headers[key]) };
+                if (["if-none-match", "if-modified-since"].indexOf(key.toLowerCase()) >= 0) {
+                    allow304 = true;
+                }
             }
         }
         if (connection.user != null && connection.password != null) {
             if (url.substring(0, 6) !== "https:" && connection.allowInsecureAuthentication !== true) {
                 logger.throwError("basic authentication requires a secure https url", Logger.errors.INVALID_ARGUMENT, { argument: "url", url: url, user: connection.user, password: "[REDACTED]" });
             }
-            let authorization = connection.user + ":" + connection.password;
+            const authorization = connection.user + ":" + connection.password;
             headers["authorization"] = {
                 key: "Authorization",
                 value: "Basic " + base64Encode(toUtf8Bytes(authorization))
             };
         }
     }
-    return new Promise(function (resolve, reject) {
+    if (json) {
+        options.method = "POST";
+        options.body = json;
+        headers["content-type"] = { key: "Content-Type", value: "application/json" };
+    }
+    const flatHeaders = {};
+    Object.keys(headers).forEach((key) => {
+        const header = headers[key];
+        flatHeaders[header.key] = header.value;
+    });
+    options.headers = flatHeaders;
+    const runningTimeout = (function () {
         let timer = null;
-        if (timeout) {
-            timer = setTimeout(() => {
-                if (timer == null) {
-                    return;
-                }
-                timer = null;
-                reject(logger.makeError("timeout", Logger.errors.TIMEOUT, { timeout: timeout }));
-            }, timeout);
-        }
-        let cancelTimeout = () => {
+        const promise = new Promise(function (resolve, reject) {
+            if (timeout) {
+                timer = setTimeout(() => {
+                    if (timer == null) {
+                        return;
+                    }
+                    timer = null;
+                    reject(logger.makeError("timeout", Logger.errors.TIMEOUT, { timeout: timeout }));
+                }, timeout);
+            }
+        });
+        const cancel = function () {
             if (timer == null) {
                 return;
             }
             clearTimeout(timer);
             timer = null;
         };
-        if (json) {
-            options.method = "POST";
-            options.body = json;
-            headers["content-type"] = { key: "Content-Type", value: "application/json" };
-        }
-        let flatHeaders = {};
-        Object.keys(headers).forEach((key) => {
-            let header = headers[key];
-            flatHeaders[header.key] = header.value;
-        });
-        options.headers = flatHeaders;
-        return fetch(url, options).then((response) => {
-            return response.text().then((body) => {
-                if (!response.ok) {
+        return { promise, cancel };
+    })();
+    if (throttle == 100) {
+        console.log(throttle);
+    }
+    const runningFetch = (function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            let response = null;
+            let body = null;
+            while (true) {
+                try {
+                    response = yield fetch(url, options);
+                }
+                catch (error) {
+                    console.log(error);
+                }
+                body = yield response.text();
+                if (allow304 && response.status === 304) {
+                    // Leave body as null
+                    break;
+                }
+                else if (!response.ok) {
+                    runningTimeout.cancel();
                     logger.throwError("bad response", Logger.errors.SERVER_ERROR, {
                         status: response.status,
                         body: body,
@@ -85,23 +142,27 @@ export function fetchJson(connection, json, processFunc) {
                         url: response.url
                     });
                 }
-                return body;
-            });
-        }).then((text) => {
-            let json = null;
-            try {
-                json = JSON.parse(text);
+                else {
+                    break;
+                }
             }
-            catch (error) {
-                logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
-                    body: text,
-                    error: error,
-                    url: url
-                });
+            runningTimeout.cancel();
+            let json = null;
+            if (body != null) {
+                try {
+                    json = JSON.parse(body);
+                }
+                catch (error) {
+                    logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
+                        body: body,
+                        error: error,
+                        url: url
+                    });
+                }
             }
             if (processFunc) {
                 try {
-                    json = processFunc(json);
+                    json = yield processFunc(json, getResponse(response));
                 }
                 catch (error) {
                     logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
@@ -111,16 +172,9 @@ export function fetchJson(connection, json, processFunc) {
                 }
             }
             return json;
-        }, (error) => {
-            throw error;
-        }).then((result) => {
-            cancelTimeout();
-            resolve(result);
-        }, (error) => {
-            cancelTimeout();
-            reject(error);
         });
-    });
+    })();
+    return Promise.race([runningTimeout.promise, runningFetch]);
 }
 export function poll(func, options) {
     if (!options) {
@@ -140,7 +194,7 @@ export function poll(func, options) {
         let timer = null;
         let done = false;
         // Returns true if cancel was successful. Unsuccessful cancel means we're already done.
-        let cancel = () => {
+        const cancel = () => {
             if (done) {
                 return false;
             }
@@ -157,7 +211,7 @@ export function poll(func, options) {
                 }
             }, options.timeout);
         }
-        let retryLimit = options.retryLimit;
+        const retryLimit = options.retryLimit;
         let attempt = 0;
         function check() {
             return func().then(function (result) {

@@ -61,30 +61,10 @@ describe('Test JSON Wallets', function() {
 });
 
 describe('Test Transaction Signing and Parsing', function() {
-    type TestCase = {
-        name: string;
-        accountAddress: string;
-        privateKey: string;
-
-        signedTransaction: string
-        unsignedTransaction: string;
-
-        signedTransactionChainId5: string
-        unsignedTransactionChainId5: string;
-
-        nonce: number;
-        gasLimit: string;
-        gasPrice: string;
-        to: string;
-        value: string;
-        data: string;
-    };
-    type TestCaseKey = 'nonce' | 'gasLimit' | 'gasPrice' | 'to' | 'value' | 'data';
-
-    function checkTransaction(parsedTransaction: any, test: TestCase): any {
+    function checkTransaction(parsedTransaction: any, test: TestCase.SignedTransaction): any {
         let transaction: any = { };
 
-        ['nonce', 'gasLimit', 'gasPrice', 'to', 'value', 'data'].forEach((key: TestCaseKey) => {
+        ['nonce', 'gasLimit', 'gasPrice', 'to', 'value', 'data'].forEach((key: (keyof TestCase.SignedTransaction)) => {
             let expected = test[key];
 
             let value = parsedTransaction[key];
@@ -124,7 +104,7 @@ describe('Test Transaction Signing and Parsing', function() {
     }
 
 
-    let tests: Array<TestCase> = loadTests('transactions');
+    let tests: Array<TestCase.SignedTransaction> = loadTests('transactions');
     tests.forEach((test) => {
         it(('parses and signs transaction - ' + test.name), function() {
             this.timeout(120000);
@@ -269,4 +249,15 @@ describe('Test Signing Messages', function() {
           assert.equal(hash, test.messageHash, 'calculates message hash');
       });
   });
+});
+
+describe("Serialize Transactions", function() {
+    it("allows odd-length numeric values", function() {
+        ethers.utils.serializeTransaction({
+            gasLimit: "0x1",
+            gasPrice: "0x1",
+            value: "0x1"
+        });
+        //console.log(result);
+    });
 });

@@ -5,12 +5,33 @@ const logger = new Logger(version);
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 const defaultProjectId = "84842078b09946638c03157f83405213";
 export class InfuraProvider extends UrlJsonRpcProvider {
-    get projectId() { return this.apiKey; }
     static getApiKey(apiKey) {
+        const apiKeyObj = {
+            apiKey: defaultProjectId,
+            projectId: defaultProjectId,
+            projectSecret: null
+        };
         if (apiKey == null) {
-            return defaultProjectId;
+            return apiKeyObj;
         }
-        return apiKey;
+        if (typeof (apiKey) === "string") {
+            apiKeyObj.projectId = apiKey;
+        }
+        else if (apiKey.projectSecret != null) {
+            if (typeof (apiKey.projectId) !== "string") {
+                logger.throwArgumentError("projectSecret requires a projectId", "projectId", apiKey.projectId);
+            }
+            if (typeof (apiKey.projectSecret) !== "string") {
+                logger.throwArgumentError("invalid projectSecret", "projectSecret", "[REDACTED]");
+            }
+            apiKeyObj.projectId = apiKey.projectId;
+            apiKeyObj.projectSecret = apiKey.projectSecret;
+        }
+        else if (apiKey.projectId) {
+            apiKeyObj.projectId = apiKey.projectId;
+        }
+        apiKeyObj.apiKey = apiKeyObj.projectId;
+        return apiKeyObj;
     }
     static getUrl(network, apiKey) {
         let host = null;
@@ -36,6 +57,13 @@ export class InfuraProvider extends UrlJsonRpcProvider {
                     value: network
                 });
         }
-        return "https:/" + "/" + host + "/v3/" + apiKey;
+        const connection = {
+            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId)
+        };
+        if (apiKey.projectSecret != null) {
+            connection.user = "";
+            connection.password = apiKey.projectSecret;
+        }
+        return connection;
     }
 }

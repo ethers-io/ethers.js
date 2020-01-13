@@ -1,11 +1,5 @@
 {
-  "name": "@ethersproject/solidity",
-  "version": "5.0.0-beta.127",
-  "description": "Solidity coder for non-standard (tight) packing.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/bignumber": ">=5.0.0-beta.130",
     "@ethersproject/bytes": ">=5.0.0-beta.129",
@@ -13,12 +7,16 @@
     "@ethersproject/sha2": ">=5.0.0-beta.129",
     "@ethersproject/strings": ">=5.0.0-beta.130"
   },
+  "description": "Solidity coder for non-standard (tight) packing.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/solidity",
   "publishConfig": {
     "access": "public"
   },
@@ -26,8 +24,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x6520b93c70b036f27ac090af36eae4f7a71eba44163898de731b9476938af718",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xc2a19838a45f6751775a0e8a0f68c81ce5889081b747f6cf57afab37b1ea3dca"
+  "version": "5.0.0-beta.131"
 }

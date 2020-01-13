@@ -1,11 +1,5 @@
 {
-  "name": "@ethersproject/transactions",
-  "version": "5.0.0-beta.129",
-  "description": "Utilities for decoding and encoding Ethereum transaction for ethers.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/address": ">=5.0.0-beta.128",
     "@ethersproject/bignumber": ">=5.0.0-beta.130",
@@ -17,12 +11,16 @@
     "@ethersproject/rlp": ">=5.0.0-beta.126",
     "@ethersproject/signing-key": ">=5.0.0-beta.129"
   },
+  "description": "Utilities for decoding and encoding Ethereum transaction for ethers.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/transactions",
   "publishConfig": {
     "access": "public"
   },
@@ -30,8 +28,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0xdb72999fa8554641b74dd9b519933cb7d04a827c2d39f26943b9fe9b9672041a",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x3f7a71b90c61d3a7c2c3d4203f3dd13a3f0cfd0dfad36d1c1fe58258bb929617"
+  "version": "5.0.0-beta.133"
 }

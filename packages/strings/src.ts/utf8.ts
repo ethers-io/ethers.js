@@ -20,13 +20,13 @@ export enum UnicodeNormalizationForm {
 function getUtf8CodePoints(bytes: BytesLike, ignoreErrors?: boolean): Array<number> {
     bytes = arrayify(bytes);
 
-    let result: Array<number> = [];
+    const result: Array<number> = [];
     let i = 0;
 
     // Invalid bytes are ignored
     while(i < bytes.length) {
 
-        let c = bytes[i++];
+        const c = bytes[i++];
         // 0xxx xxxx
         if (c >> 7 === 0) {
             result.push(c);
@@ -129,7 +129,7 @@ export function toUtf8Bytes(str: string, form: UnicodeNormalizationForm = Unicod
 
     let result = [];
     for (let i = 0; i < str.length; i++) {
-        let c = str.charCodeAt(i);
+        const c = str.charCodeAt(i);
 
         if (c < 0x80) {
             result.push(c);
@@ -140,18 +140,18 @@ export function toUtf8Bytes(str: string, form: UnicodeNormalizationForm = Unicod
 
         } else if ((c & 0xfc00) == 0xd800) {
             i++;
-            let c2 = str.charCodeAt(i);
+            const c2 = str.charCodeAt(i);
 
             if (i >= str.length || (c2 & 0xfc00) !== 0xdc00) {
                 throw new Error("invalid utf-8 string");
             }
 
             // Surrogate Pair
-            c = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
-            result.push((c >> 18) | 0xf0);
-            result.push(((c >> 12) & 0x3f) | 0x80);
-            result.push(((c >> 6) & 0x3f) | 0x80);
-            result.push((c & 0x3f) | 0x80);
+            const pair = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
+            result.push((pair >> 18) | 0xf0);
+            result.push(((pair >> 12) & 0x3f) | 0x80);
+            result.push(((pair >> 6) & 0x3f) | 0x80);
+            result.push((pair & 0x3f) | 0x80);
 
         } else {
             result.push((c >> 12) | 0xe0);
@@ -164,7 +164,7 @@ export function toUtf8Bytes(str: string, form: UnicodeNormalizationForm = Unicod
 };
 
 function escapeChar(value: number) {
-    let hex = ("0000" + value.toString(16));
+    const hex = ("0000" + value.toString(16));
     return "\\u" + hex.substring(hex.length - 4);
 }
 

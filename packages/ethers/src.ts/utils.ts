@@ -1,7 +1,7 @@
 "use strict";
 
 import { AbiCoder, defaultAbiCoder, EventFragment, FormatTypes, Fragment, FunctionFragment, Indexed, Interface, ParamType } from "@ethersproject/abi";
-import { getAddress, getContractAddress, getIcapAddress, isAddress } from "@ethersproject/address";
+import { getAddress, getCreate2Address, getContractAddress, getIcapAddress, isAddress } from "@ethersproject/address";
 import * as base64 from "@ethersproject/base64";
 import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexValue, hexZeroPad, isHexString, joinSignature, zeroPad, splitSignature, stripZeros } from "@ethersproject/bytes";
 import { hashMessage, id, isValidName, namehash } from "@ethersproject/hash";
@@ -33,7 +33,7 @@ import { UnicodeNormalizationForm } from "@ethersproject/strings";
 
 import { CoerceFunc } from "@ethersproject/abi";
 import { Bytes, BytesLike, Hexable } from "@ethersproject/bytes"
-import { ConnectionInfo, OnceBlockable, PollOptions } from "@ethersproject/web";
+import { ConnectionInfo, FetchJsonResponse, OnceBlockable, PollOptions } from "@ethersproject/web";
 import { EncryptOptions, ProgressCallback } from "@ethersproject/json-wallets";
 
 ////////////////////////
@@ -102,6 +102,7 @@ export {
     getAddress,
     getIcapAddress,
     getContractAddress,
+    getCreate2Address,
     isAddress,
 
     formatEther,
@@ -164,6 +165,7 @@ export {
     ConnectionInfo,
     OnceBlockable,
     PollOptions,
+    FetchJsonResponse,
 
     EncryptOptions,
     ProgressCallback

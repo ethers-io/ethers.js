@@ -14,6 +14,7 @@ which developers can make use of or should be aware of.
 
 
 * [Events](events)
+  * [Solidity Topics](events)
 * [Gas](gas)
   * [Gas Price](gas)
   * [Gas Limit](gas)
@@ -21,4 +22,4 @@ which developers can make use of or should be aware of.
 
 
 -----
-**Content Hash:** ad59f45600332d936821db1fa0d0eeabdab5b4f252e1e815de525b4d1b9a9a7b
+**Content Hash:** 1846ad5571101be31cf9617167b5cc53338c83c0fc9389da19c8dd9d4153558b

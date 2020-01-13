@@ -1,28 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// This gets overriddenby gulp during bip39-XX
+// This gets overridden by rollup
 var exportWordlist = false;
 var hash_1 = require("@ethersproject/hash");
 var properties_1 = require("@ethersproject/properties");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
-var logger = new logger_1.Logger(_version_1.version);
-function check(wordlist) {
-    var words = [];
-    for (var i = 0; i < 2048; i++) {
-        var word = wordlist.getWord(i);
-        if (i !== wordlist.getWordIndex(word)) {
-            return "0x";
-        }
-        words.push(word);
-    }
-    return hash_1.id(words.join("\n") + "\n");
-}
-exports.check = check;
+exports.logger = new logger_1.Logger(_version_1.version);
 var Wordlist = /** @class */ (function () {
     function Wordlist(locale) {
         var _newTarget = this.constructor;
-        logger.checkAbstract(_newTarget, Wordlist);
+        exports.logger.checkAbstract(_newTarget, Wordlist);
         properties_1.defineReadOnly(this, "locale", locale);
     }
     // Subclasses may override this
@@ -33,26 +21,33 @@ var Wordlist = /** @class */ (function () {
     Wordlist.prototype.join = function (words) {
         return words.join(" ");
     };
+    Wordlist.check = function (wordlist) {
+        var words = [];
+        for (var i = 0; i < 2048; i++) {
+            var word = wordlist.getWord(i);
+            if (i !== wordlist.getWordIndex(word)) {
+                return "0x";
+            }
+            words.push(word);
+        }
+        return hash_1.id(words.join("\n") + "\n");
+    };
+    Wordlist.register = function (lang, name) {
+        if (!name) {
+            name = lang.locale;
+        }
+        if (exportWordlist) {
+            try {
+                var anyGlobal = window;
+                if (anyGlobal._ethers && anyGlobal._ethers.wordlists) {
+                    if (!anyGlobal._ethers.wordlists[name]) {
+                        properties_1.defineReadOnly(anyGlobal._ethers.wordlists, name, lang);
+                    }
+                }
+            }
+            catch (error) { }
+        }
+    };
     return Wordlist;
 }());
 exports.Wordlist = Wordlist;
-function register(lang, name) {
-    if (!name) {
-        name = lang.locale;
-    }
-    if (exportWordlist) {
-        var g = global;
-        if (!(g.wordlists)) {
-            properties_1.defineReadOnly(g, "wordlists", {});
-        }
-        if (!g.wordlists[name]) {
-            properties_1.defineReadOnly(g.wordlists, name, lang);
-        }
-        if (g.ethers && g.ethers.wordlists) {
-            if (!g.ethers.wordlists[name]) {
-                properties_1.defineReadOnly(g.ethers.wordlists, name, lang);
-            }
-        }
-    }
-}
-exports.register = register;

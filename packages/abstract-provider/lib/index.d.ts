@@ -85,15 +85,17 @@ export interface FilterByBlockHash extends EventFilter {
 }
 export declare abstract class ForkEvent extends Description {
     readonly expiry: number;
-    readonly _isForkEvent: boolean;
+    readonly _isForkEvent?: boolean;
     static isForkEvent(value: any): value is ForkEvent;
 }
 export declare class BlockForkEvent extends ForkEvent {
     readonly blockhash: string;
+    readonly _isBlockForkEvent?: boolean;
     constructor(blockhash: string, expiry?: number);
 }
 export declare class TransactionForkEvent extends ForkEvent {
     readonly hash: string;
+    readonly _isTransactionOrderForkEvent?: boolean;
     constructor(hash: string, expiry?: number);
 }
 export declare class TransactionOrderForkEvent extends ForkEvent {

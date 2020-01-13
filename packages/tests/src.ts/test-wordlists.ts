@@ -23,14 +23,4 @@ describe('Check Wordlists', function() {
         let wordlist = (<{ [ locale: string ]: ethers.Wordlist }>(ethers.wordlists))[test.locale];
         checkWordlist(test.content, wordlist);
     });
-/*
-    checkWordlist('./wordlists/lang-es.txt', ethers.wordlists.es);
-    checkWordlist('./wordlists/lang-fr.txt', ethers.wordlists.fr);
-    checkWordlist('./wordlists/lang-it.txt', ethers.wordlists.it);
-    checkWordlist('./wordlists/lang-ja.txt', ethers.wordlists.ja);
-    checkWordlist('./wordlists/lang-ko.txt', ethers.wordlists.ko);
-    checkWordlist('./wordlists/lang-zh_cn.txt', ethers.wordlists.zh);
-    checkWordlist('./wordlists/lang-zh_cn.txt', ethers.wordlists.zh_cn);
-    checkWordlist('./wordlists/lang-zh_tw.txt', ethers.wordlists.zh_tw);
-*/
 });

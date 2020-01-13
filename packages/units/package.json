@@ -1,24 +1,22 @@
 {
-  "name": "@ethersproject/units",
-  "version": "5.0.0-beta.128",
-  "description": "Unit conversion functions for Ethereum.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/bignumber": ">=5.0.0-beta.130",
     "@ethersproject/constants": ">=5.0.0-beta.128",
     "@ethersproject/logger": ">=5.0.0-beta.129"
   },
+  "description": "Unit conversion functions for Ethereum.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers",
     "units",
     "conversion"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/units",
   "publishConfig": {
     "access": "public"
   },
@@ -26,8 +24,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x791cb2810bc9512f2fe6248a7914fa6b77ebdef3cc2850b3af4aedf908157bb4",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xd1be8db2b0a3eea153dd1d3dfcb3befc824cd8460b36258e6cfbdd799f0dccb4"
+  "version": "5.0.0-beta.132"
 }

@@ -3,6 +3,7 @@ export declare type ConnectionInfo = {
     user?: string;
     password?: string;
     allowInsecureAuthentication?: boolean;
+    throttleLimit?: number;
     timeout?: number;
     headers?: {
         [key: string]: string | number;
@@ -19,5 +20,12 @@ export declare type PollOptions = {
     retryLimit?: number;
     onceBlock?: OnceBlockable;
 };
-export declare function fetchJson(connection: string | ConnectionInfo, json?: string, processFunc?: (value: any) => any): Promise<any>;
+export declare type FetchJsonResponse = {
+    statusCode: number;
+    status: string;
+    headers: {
+        [header: string]: string;
+    };
+};
+export declare function fetchJson(connection: string | ConnectionInfo, json?: string, processFunc?: (value: any, response: FetchJsonResponse) => any): Promise<any>;
 export declare function poll(func: () => Promise<any>, options?: PollOptions): Promise<any>;

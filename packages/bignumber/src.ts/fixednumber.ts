@@ -14,7 +14,7 @@ const Zero = BigNumber.from(0);
 const NegativeOne = BigNumber.from(-1);
 
 function throwFault(message: string, fault: string, operation: string, value?: any): never {
-    let params: any = { fault: fault, operation: operation };
+    const params: any = { fault: fault, operation: operation };
     if (value !== undefined) { params.value = value; }
     return logger.throwError(message, Logger.errors.NUMERIC_FAULT, params);
 }
@@ -41,12 +41,12 @@ function getMultiplier(decimals: BigNumberish): string {
 
 export function formatFixed(value: BigNumberish, decimals?: string | BigNumberish): string {
     if (decimals == null) { decimals = 0; }
-    let multiplier = getMultiplier(decimals);
+    const multiplier = getMultiplier(decimals);
 
     // Make sure wei is a big number (convert as necessary)
     value = BigNumber.from(value);
 
-    let negative = value.lt(Zero);
+    const negative = value.lt(Zero);
     if (negative) { value = value.mul(NegativeOne); }
 
     let fraction = value.mod(multiplier).toString();
@@ -55,7 +55,7 @@ export function formatFixed(value: BigNumberish, decimals?: string | BigNumberis
     // Strip training 0
     fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
 
-    let whole = value.div(multiplier).toString();
+    const whole = value.div(multiplier).toString();
 
     value = whole + "." + fraction;
 
@@ -66,7 +66,7 @@ export function formatFixed(value: BigNumberish, decimals?: string | BigNumberis
 
 export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
     if (decimals == null) { decimals = 0; }
-    let multiplier = getMultiplier(decimals);
+    const multiplier = getMultiplier(decimals);
 
     if (typeof(value) !== "string" || !value.match(/^-?[0-9.,]+$/)) {
         logger.throwArgumentError("invalid decimal value", "value", value);
@@ -77,7 +77,7 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
     }
 
     // Is it negative?
-    let negative = (value.substring(0, 1) === "-");
+    const negative = (value.substring(0, 1) === "-");
     if (negative) { value = value.substring(1); }
 
     if (value === ".") {
@@ -85,7 +85,7 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
     }
 
     // Split it into a whole and fractional part
-    let comps = value.split(".");
+    const comps = value.split(".");
     if (comps.length > 2) {
         logger.throwArgumentError("too many decimal points", "value", value);
     }
@@ -102,8 +102,8 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
     // Fully pad the string with zeros to get to wei
     while (fraction.length < multiplier.length - 1) { fraction += "0"; }
 
-    let wholeValue = BigNumber.from(whole);
-    let fractionValue = BigNumber.from(fraction);
+    const wholeValue = BigNumber.from(whole);
+    const fractionValue = BigNumber.from(fraction);
 
     let wei = (wholeValue.mul(multiplier)).add(fractionValue);
 
@@ -144,14 +144,14 @@ export class FixedFormat {
             } else if (value === "ufixed") {
                 signed = false;
             } else if (value != null) {
-                let match = value.match(/^(u?)fixed([0-9]+)x([0-9]+)$/);
+                const match = value.match(/^(u?)fixed([0-9]+)x([0-9]+)$/);
                 if (!match) { logger.throwArgumentError("invalid fixed format", "format", value); }
                 signed = (match[1] !== "u");
                 width = parseInt(match[2]);
                 decimals = parseInt(match[3]);
             }
         } else if (value) {
-            let check = (key: string, type: string, defaultValue: any): any => {
+            const check = (key: string, type: string, defaultValue: any): any => {
                 if (value[key] == null) { return defaultValue; }
                 if (typeof(value[key]) !== type) {
                     logger.throwArgumentError("invalid fixed format (" + key + " not " + type +")", "format." + key, value[key]);
@@ -202,29 +202,29 @@ export class FixedNumber {
 
     addUnsafe(other: FixedNumber): FixedNumber {
         this._checkFormat(other);
-        let a = parseFixed(this._value, this.format.decimals);
-        let b = parseFixed(other._value, other.format.decimals);
+        const a = parseFixed(this._value, this.format.decimals);
+        const b = parseFixed(other._value, other.format.decimals);
         return FixedNumber.fromValue(a.add(b), this.format.decimals, this.format);
     }
 
     subUnsafe(other: FixedNumber): FixedNumber {
         this._checkFormat(other);
-        let a = parseFixed(this._value, this.format.decimals);
-        let b = parseFixed(other._value, other.format.decimals);
+        const a = parseFixed(this._value, this.format.decimals);
+        const b = parseFixed(other._value, other.format.decimals);
         return FixedNumber.fromValue(a.sub(b), this.format.decimals, this.format);
     }
 
     mulUnsafe(other: FixedNumber): FixedNumber {
         this._checkFormat(other);
-        let a = parseFixed(this._value, this.format.decimals);
-        let b = parseFixed(other._value, other.format.decimals);
+        const a = parseFixed(this._value, this.format.decimals);
+        const b = parseFixed(other._value, other.format.decimals);
         return FixedNumber.fromValue(a.mul(b).div(this.format._multiplier), this.format.decimals, this.format);
     }
 
     divUnsafe(other: FixedNumber): FixedNumber {
         this._checkFormat(other);
-        let a = parseFixed(this._value, this.format.decimals);
-        let b = parseFixed(other._value, other.format.decimals);
+        const a = parseFixed(this._value, this.format.decimals);
+        const b = parseFixed(other._value, other.format.decimals);
         return FixedNumber.fromValue(a.mul(this.format._multiplier).div(b), this.format.decimals, this.format);
     }
 
@@ -240,7 +240,7 @@ export class FixedNumber {
         if (comps[1].length <= decimals) { return this; }
 
         // Bump the value up by the 0.00...0005
-        let bump = "0." + zeros.substring(0, decimals) + "5";
+        const bump = "0." + zeros.substring(0, decimals) + "5";
         comps = this.addUnsafe(FixedNumber.fromString(bump, this.format))._value.split(".");
 
         // Now it is safe to truncate
@@ -253,7 +253,7 @@ export class FixedNumber {
     toHexString(width?: number): string {
         if (width == null) { return this._hex; }
         if (width % 8) { logger.throwArgumentError("invalid byte width", "width", width); }
-        let hex = BigNumber.from(this._hex).fromTwos(this.format.width).toTwos(width).toHexString();
+        const hex = BigNumber.from(this._hex).fromTwos(this.format.width).toTwos(width).toHexString();
         return hexZeroPad(hex, width / 8);
     }
 
@@ -281,9 +281,9 @@ export class FixedNumber {
     static fromString(value: string, format?: FixedFormat | string): FixedNumber {
         if (format == null) { format = "fixed"; }
 
-        let fixedFormat = FixedFormat.from(format);
+        const fixedFormat = FixedFormat.from(format);
 
-        let numeric = parseFixed(value, fixedFormat.decimals);
+        const numeric = parseFixed(value, fixedFormat.decimals);
 
         if (!fixedFormat.signed && numeric.lt(Zero)) {
             throwFault("unsigned value cannot be negative", "overflow", "value", value);
@@ -297,7 +297,7 @@ export class FixedNumber {
             hex = hexZeroPad(hex, fixedFormat.width / 8);
         }
 
-        let decimal = formatFixed(numeric, fixedFormat.decimals);
+        const decimal = formatFixed(numeric, fixedFormat.decimals);
 
         return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
     }
@@ -305,7 +305,7 @@ export class FixedNumber {
     static fromBytes(value: BytesLike, format?: FixedFormat | string): FixedNumber {
         if (format == null) { format = "fixed"; }
 
-        let fixedFormat = FixedFormat.from(format);
+        const fixedFormat = FixedFormat.from(format);
 
         if (arrayify(value).length > fixedFormat.width / 8) {
             throw new Error("overflow");
@@ -314,8 +314,8 @@ export class FixedNumber {
         let numeric = BigNumber.from(value);
         if (fixedFormat.signed) { numeric = numeric.fromTwos(fixedFormat.width); }
 
-        let hex = numeric.toTwos((fixedFormat.signed ? 0: 1) + fixedFormat.width).toHexString();
-        let decimal = formatFixed(numeric, fixedFormat.decimals);
+        const hex = numeric.toTwos((fixedFormat.signed ? 0: 1) + fixedFormat.width).toHexString();
+        const decimal = formatFixed(numeric, fixedFormat.decimals);
 
         return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
     }

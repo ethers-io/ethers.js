@@ -32,6 +32,12 @@ export declare class BaseProvider extends Provider {
     _fastBlockNumber: number;
     _fastBlockNumberPromise: Promise<number>;
     _fastQueryDate: number;
+    _maxInternalBlockNumber: number;
+    _internalBlockNumber: Promise<{
+        blockNumber: number;
+        reqTime: number;
+        respTime: number;
+    }>;
     /**
      *  ready
      *
@@ -45,7 +51,8 @@ export declare class BaseProvider extends Provider {
     constructor(network: Networkish | Promise<Network>);
     static getFormatter(): Formatter;
     static getNetwork(network: Networkish): Network;
-    poll(): void;
+    _getInternalBlockNumber(maxAge: number): Promise<number>;
+    poll(): Promise<void>;
     resetEventsBlock(blockNumber: number): void;
     readonly network: Network;
     getNetwork(): Promise<Network>;
@@ -55,9 +62,6 @@ export declare class BaseProvider extends Provider {
     _getFastBlockNumber(): Promise<number>;
     _setFastBlockNumber(blockNumber: number): void;
     waitForTransaction(transactionHash: string, confirmations?: number): Promise<TransactionReceipt>;
-    _runPerform(method: string, params: {
-        [key: string]: () => any;
-    }): Promise<any>;
     getBlockNumber(): Promise<number>;
     getGasPrice(): Promise<BigNumber>;
     getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber>;
@@ -74,8 +78,8 @@ export declare class BaseProvider extends Provider {
     _getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block | BlockWithTransactions>;
     getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block>;
     getBlockWithTransactions(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<BlockWithTransactions>;
-    getTransaction(transactionHash: string): Promise<TransactionResponse>;
-    getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
+    getTransaction(transactionHash: string | Promise<string>): Promise<TransactionResponse>;
+    getTransactionReceipt(transactionHash: string | Promise<string>): Promise<TransactionReceipt>;
     getLogs(filter: Filter | FilterByBlockHash | Promise<Filter | FilterByBlockHash>): Promise<Array<Log>>;
     getEtherPrice(): Promise<number>;
     _getBlockTag(blockTag: BlockTag | Promise<BlockTag>): Promise<BlockTag>;

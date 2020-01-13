@@ -1,6 +1,8 @@
 _title: Gas
 
-_section: Gas
+_section: Gas @<gas>
+
+Explain attack vectors
 
 _subsection: Gas Price @<gas-price>
 
@@ -9,5 +11,4 @@ you are willing to pay (per unit of execution) to have your transaction
 processed.
 
 _subsection: Gas Limit @<gas-limit>
-
 

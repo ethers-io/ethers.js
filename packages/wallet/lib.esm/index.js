@@ -22,18 +22,18 @@ export class Wallet extends Signer {
         logger.checkNew(new.target, Wallet);
         super();
         if (isAccount(privateKey)) {
-            let signingKey = new SigningKey(privateKey.privateKey);
+            const signingKey = new SigningKey(privateKey.privateKey);
             defineReadOnly(this, "_signingKey", () => signingKey);
             defineReadOnly(this, "address", computeAddress(this.publicKey));
             if (this.address !== getAddress(privateKey.address)) {
                 logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDCACTED]");
             }
             if (privateKey.mnemonic != null) {
-                let mnemonic = privateKey.mnemonic;
-                let path = privateKey.path || defaultPath;
+                const mnemonic = privateKey.mnemonic;
+                const path = privateKey.path || defaultPath;
                 defineReadOnly(this, "_mnemonic", () => mnemonic);
                 defineReadOnly(this, "path", privateKey.path);
-                let node = HDNode.fromMnemonic(mnemonic).derivePath(path);
+                const node = HDNode.fromMnemonic(mnemonic).derivePath(path);
                 if (computeAddress(node.privateKey) !== this.address) {
                     logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDCACTED]");
                 }
@@ -51,7 +51,7 @@ export class Wallet extends Signer {
                 defineReadOnly(this, "_signingKey", () => privateKey);
             }
             else {
-                let signingKey = new SigningKey(privateKey);
+                const signingKey = new SigningKey(privateKey);
                 defineReadOnly(this, "_signingKey", () => signingKey);
             }
             defineReadOnly(this, "_mnemonic", () => null);
@@ -80,7 +80,7 @@ export class Wallet extends Signer {
                 }
                 delete tx.from;
             }
-            let signature = this._signingKey().signDigest(keccak256(serialize(tx)));
+            const signature = this._signingKey().signDigest(keccak256(serialize(tx)));
             return serialize(tx, signature);
         });
     }
@@ -111,7 +111,7 @@ export class Wallet extends Signer {
         if (options.extraEntropy) {
             entropy = arrayify(hexDataSlice(keccak256(concat([entropy, options.extraEntropy])), 0, 16));
         }
-        let mnemonic = entropyToMnemonic(entropy, options.locale);
+        const mnemonic = entropyToMnemonic(entropy, options.locale);
         return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
     }
     static fromEncryptedJson(json, password, progressCallback) {

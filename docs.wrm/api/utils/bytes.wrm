@@ -8,64 +8,77 @@ _subsection: Types
 
 _heading: Bytes @<bytes>
 
-A Bytes object is any object which is an
-[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) or
-[TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) with
+A **Bytes** is any object which is an
+[Array](https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) or
+[TypedArray](https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) with
 each value in the valid byte range (i.e. between 0 and 255 inclusive),
 or is an Object with a ``length`` property where each indexed property
 is in the valid byte range.
 
 _heading: BytesLike @<byteslike>
 
-A **BytesLike** can be either a [[bytes]] or a [[hexstring]].
+A **BytesLike** can be either a [[bytes]] or a [[datahexstring]].
+
+_heading: DataHexstring @<datahexstring>
+
+A **DataHexstring** is identical to a [[hexstring]] except that it has
+an even number of nibbles, and therefore is a valid representation of
+binary data as a string.
 
 _heading: Hexstring @<hexstring>
 
-A **hexstring** is a string which has a ``0x`` prefix followed by 
+A **Hexstring** is a string which has a ``0x`` prefix followed by any
+number of nibbles (i.e. case-insensitive hexidecumal characters, ``0-9`` and ``a-f``).
 
 _heading: Signature @<signature>
 
 - **r** and **s** --- The x co-ordinate of **r** and the **s** value of the signature
 - **v** --- The parity of the y co-ordinate of **r**
-- **_vs** --- The [compact representation](https://link_here) of the **(r, s)** and **v**
+- **_vs** --- The [compact representation](https://eips.ethereum.org/EIPS/eip-2098) of the **s** and **v**
 - **recoveryParam** --- The normalized (i.e. 0 or 1) value of **v**
+
+_heading: Flat-Format Signature @<signature-flat>
+
+A **Flat-Format Signature** is a common Signature format where
+the r, s and v are concanenated into a 65 byte (130 nibble)
+[[datahexstring]].
+
 
 _heading: SignatureLike @<signaturelike>
 
 A **SignatureLike** is similar to a [[signature]], except redundant properties
-may be omitted.
+may be omitted or it may be a [[signature-flat]].
 
-For example, if *_vs* is specified, **(r, s)** and **v** can be omitted. Likewise,
-if **recoverParam** is provided, **v** can be omitted (as it can be computed).
+For example, if **_vs** is specified, **s** and **v** may be omitted. Likewise,
+if **recoveryParam** is provided, **v** may be omitted (as in these cases the
+missing values can be computed).
 
 
 _subsection: Inspection
 
-_property: utils.isBytes(object) => boolean
+_property: utils.isBytes(object) => boolean  @<utils-isbytes> @SRC<bytes>
 Returns true if and only if //object// is a valid [[bytes]].
 
-_property: utils.isBytesLike(object) => boolean
-Returns true if and only if //object// is a [[bytes]] or an Array or TypedArray
-where each value is a valid byte (i.e. between 0 and 255 inclusive).
+_property: utils.isBytesLike(object) => boolean  @<utils-isbyteslike> @SRC<bytes>
+Returns true if and only if //object// is a [[bytes]] or [[datahexstring]].
 
-_property: utils.isHexString(object, [ length ] ) => boolean
-Returns true if and only if //object// is a valid hex string;
-if //length// is specified the length (in bytes) is also verified.
+_property: utils.isHexString(object, [ length ] ) => boolean  @<utils-ishexstring> @SRC<bytes>
+Returns true if and only if //object// is a valid hex string.
+If //length// is specified and //object// is not a valid [[datahexstring]] of
+//length// bytes, an InvalidArgument error is thrown.
 
 
 _subsection: Converting between Arrays and Hexstrings
 
-_property: utils.arrayify(hexstringOrArrayish [ , options ]) => Uint8Array
-Converts //hexstringOrArrayish// to a Uint8Array. If a [[hexstring]]
-is passed in, the length must be even.
+_property: utils.arrayify(datahexstringOrArrayish [ , options ]) => Uint8Array  @<utils-arrayify> @SRC<bytes>
+Converts //datahexstringOrArrayish// to a Uint8Array.
 
-_property: utils.hexlify(hexstringOrArrayish) => string
-Converts //hexstringOrArrayish// to a [[hexstring]]. The result
-will always be zero-padded to even length.
+_property: utils.hexlify(hexstringOrArrayish) => string<[[datahexstring]]>  @<utils-hexlify> @SRC<bytes>
+Converts //hexstringOrArrayish// to a [[datahexstring]].
 
-_property: utils.hexValue(aBigNumberish) => string
-Converts //aBigNumberish// to a [[hexstring]], with no unecessary leading
-zeros. The result of this function can be of odd-length.
+_property: utils.hexValue(aBigNumberish) => string<[[hexstring]]>  @<utils-hexvalue> @SRC<bytes>
+Converts //aBigNumberish// to a [[hexstring]], with no __unnecessary__ leading
+zeros.
 
 _heading: Examples
 
@@ -74,48 +87,51 @@ _code: bytes-conversion.js
 
 _subsection: Array Manipulation
 
-_property: utils.concat(arrayOfBytesLike) => Uint8Array
-Concatenates all the [[byteslike]] in //arrayOfBytesLike//
-into a single Uint8Array.
+_property: utils.concat(arrayOfBytesLike) => Uint8Array  @<utils-concat> @SRC<bytes>
+Concatenates all the [[byteslike]] in //arrayOfBytesLike// into a single Uint8Array.
 
-_property: utils.stripZeros(aBytesLike) => Uint8Array
-Concatenates all the [[byteslike]] in //arrayOfBytesLike//
+_property: utils.stripZeros(aBytesLike) => Uint8Array  @<utils-stripzeros> @SRC<bytes>
+Returns a Uint8Array with all leading ``0`` bytes of //aBtyesLike// removed.
 
-_property: utils.zeroPad(aBytesLike, length) => Uint8Array
-Concatenates all the [[byteslike]] in //arrayOfBytesLike//
+_property: utils.zeroPad(aBytesLike, length) => Uint8Array  @<utils-zeropad> @SRC<bytes>
+Retutns a Uint8Array of the data in //aBytesLike// with ``0`` bytes prepended to
+//length// bytes long.
+
+If //aBytesLike// is already longer than //length// bytes long, an InvalidArgument
+error will be thrown.
 
 
 _subsection: Hexstring Manipulation
 
-_property: utils.hexConcat(arrayOfBytesLike) => string
-Concatenates all the [[byteslike]] in //arrayOfBytesLike//
-into a single [[hexstring]]
+_property: utils.hexConcat(arrayOfBytesLike) => string<[[datahexstring]]>  @<utils-hexconcat> @SRC<bytes>
+Concatenates all the [[byteslike]] in //arrayOfBytesLike// into a single [[datahexstring]]
 
-_property: utils.hexDataLength(aBytesLike) => number
+_property: utils.hexDataLength(aBytesLike) => string<[[datahexstring]]>  @<utils-hexdatalength> @SRC<bytes>
 Returns the length (in bytes) of //aBytesLike//.
 
-This will **throw and error** if //aBytesLike// is a [[hexstring]]
-but is of odd-length.
+_property: utils.hexDataSlice(aBytesLike, offset [ , endOffset ] ) => string<[[datahexstring]]>  @<utils-hexdataslice> @SRC<bytes>
+Returns a [[datahexstring]] representation of a slice of //aBytesLike//, from
+//offset// (in bytes) to //endOffset// (in bytes). If //endOffset// is
+omitted, the length of //aBytesLike// is used.
 
-_property: utils.hexDataSlice(aBytesLike, offset [ , endOffset ] ) => string
-Returns the length (in bytes) of //aBytesLike//.
+_property: utils.hexStripZeros(aBytesLike) => string<[[hexstring]]>  @<utils-hexstripzeros> @SRC<bytes>
+Returns a [[hexstring]] representation of //aBytesLike// with all
+leading zeros removed.
 
-_property: utils.hexStripZeros(aBytesLike) => string
-@TODO
+_property: utils.hexZeroPad(aBytesLike, length) => string<[[datahexstring]]>  @<utils-hexzeropad> @SRC<bytes>
+Returns a [[datahexstring]] representation of //aBytesLike// padded to //length// bytes.
 
-_property: utils.hexZeroPad(aBytesLike, length) => string
-@TODO
+If //aBytesLike// is already longer than //length// bytes long, an InvalidArgument
+error will be thrown.
 
 
 _subsection: Signature Conversion
 
-_property: utils.joinSignature(aSignatureLike) => string
-Return the flat-format of a [[signaturelike]], which is
-65 bytes (130 nibbles) long, concatenating the **r**, **s** and **v**
-of a Signature.
+_property: utils.joinSignature(aSignatureLike) => string<[FlatSignature](signature-flat)>  @<utils-joinsignature> @SRC<bytes>
+Return the flat-format of //aSignaturelike//, which is 65 bytes (130 nibbles)
+long, concatenating the **r**, **s** and (normalized) **v** of a Signature.
 
-_property: utils.splitSignature(aSignatureLikeOrBytesLike) => Signature
-Return the full expanded-format of a [[signaturelike]] or
-a flat-format [[hexstring]]. Any missing properties will be
-computed.
+_property: utils.splitSignature(aSignatureLikeOrBytesLike) => [[signature]]  @<utils-splitsignature> @SRC<bytes>
+Return the full expanded-format of //aSignaturelike// or a flat-format [[datahexstring]].
+Any missing properties will be computed.
 

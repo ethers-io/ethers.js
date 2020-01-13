@@ -45,7 +45,7 @@ var Logger = /** @class */ (function () {
     Logger.prototype.setLogLevel = function (logLevel) {
         var level = LogLevels[logLevel];
         if (level == null) {
-            this.warn("invliad log level - " + logLevel);
+            this.warn("invalid log level - " + logLevel);
             return;
         }
         LogLevel = level;

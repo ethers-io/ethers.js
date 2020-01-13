@@ -1,22 +1,18 @@
 {
-  "name": "@ethersproject/properties",
-  "version": "5.0.0-beta.132",
-  "description": "Properties utility functions for ethers.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "build": "tsc -p ./tsconfig.json",
-    "auto-build": "npm run build -- -w",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/logger": ">=5.0.0-beta.129"
   },
+  "description": "Properties utility functions for ethers.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/properties",
   "publishConfig": {
     "access": "public"
   },
@@ -24,8 +20,12 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "auto-build": "npm run build -- -w",
+    "build": "tsc -p ./tsconfig.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x6a1817252456f7b6cbd2edd780d3b2585fcb477da55f7e7282869c0a5a7f5184",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x7d9f0348037c255880c247898974b4d595e62c174b9e5697717c5eaa1902599e"
+  "version": "5.0.0-beta.136"
 }

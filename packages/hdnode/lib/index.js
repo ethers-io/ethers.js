@@ -29,8 +29,7 @@ function bytes32(value) {
     return bytes_1.hexZeroPad(bytes_1.hexlify(value), 32);
 }
 function base58check(data) {
-    var checksum = bytes_1.hexDataSlice(sha2_1.sha256(sha2_1.sha256(data)), 0, 4);
-    return basex_1.Base58.encode(bytes_1.concat([data, checksum]));
+    return basex_1.Base58.encode(bytes_1.concat([data, bytes_1.hexDataSlice(sha2_1.sha256(sha2_1.sha256(data)), 0, 4)]));
 }
 var _constructorGuard = {};
 exports.defaultPath = "m/44'/60'/0'/0/0";
@@ -245,8 +244,7 @@ function mnemonicToEntropy(mnemonic, wordlist) {
     var entropyBits = 32 * words.length / 3;
     var checksumBits = words.length / 3;
     var checksumMask = getUpperMask(checksumBits);
-    var checksum = bytes_1.arrayify(sha2_1.sha256(entropy.slice(0, entropyBits / 8)))[0];
-    checksum &= checksumMask;
+    var checksum = bytes_1.arrayify(sha2_1.sha256(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
     if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
         throw new Error("invalid checksum");
     }
@@ -277,9 +275,8 @@ function entropyToMnemonic(entropy, wordlist) {
         }
     }
     // Compute the checksum bits
-    var checksum = bytes_1.arrayify(sha2_1.sha256(entropy))[0];
     var checksumBits = entropy.length / 4;
-    checksum &= getUpperMask(checksumBits);
+    var checksum = bytes_1.arrayify(sha2_1.sha256(entropy))[0] & getUpperMask(checksumBits);
     // Shift the checksum into the word indices
     indices[indices.length - 1] <<= checksumBits;
     indices[indices.length - 1] |= (checksum >> (8 - checksumBits));

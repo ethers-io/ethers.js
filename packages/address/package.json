@@ -1,11 +1,5 @@
 {
-  "name": "@ethersproject/address",
-  "version": "5.0.0-beta.129",
-  "description": "Utilities for handling Ethereum Addresses for ethers.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/bignumber": ">=5.0.0-beta.130",
     "@ethersproject/bytes": ">=5.0.0-beta.129",
@@ -14,12 +8,16 @@
     "@ethersproject/rlp": ">=5.0.0-beta.126",
     "bn.js": "^4.4.0"
   },
+  "description": "Utilities for handling Ethereum Addresses for ethers.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/address",
   "publishConfig": {
     "access": "public"
   },
@@ -27,8 +25,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x092997b196f1fc978c9ded04160b0ae1ea83694580b8d5a3489ba3af921b4eba",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xa42f8299953f98cc233003c35aa22239f6580eec1e8341bb64d32cae3c35b940"
+  "version": "5.0.0-beta.134"
 }

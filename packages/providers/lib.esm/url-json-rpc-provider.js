@@ -1,5 +1,4 @@
 "use strict";
-import { getNetwork } from "@ethersproject/networks";
 import { defineReadOnly, getStatic } from "@ethersproject/properties";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -11,28 +10,33 @@ export class UrlJsonRpcProvider extends JsonRpcProvider {
         // Normalize the Network and API Key
         network = getStatic((new.target), "getNetwork")(network);
         apiKey = getStatic((new.target), "getApiKey")(apiKey);
-        let url = getStatic((new.target), "getUrl")(network, apiKey);
-        super(url, network);
-        defineReadOnly(this, "apiKey", apiKey);
+        const connection = getStatic((new.target), "getUrl")(network, apiKey);
+        super(connection, network);
+        if (typeof (apiKey) === "string") {
+            defineReadOnly(this, "apiKey", apiKey);
+        }
+        else if (apiKey != null) {
+            Object.keys(apiKey).forEach((key) => {
+                defineReadOnly(this, key, apiKey[key]);
+            });
+        }
     }
     _startPending() {
         logger.warn("WARNING: API provider does not support pending filters");
     }
     getSigner(address) {
-        logger.throwError("API provider does not support signing", Logger.errors.UNSUPPORTED_OPERATION, { operation: "getSigner" });
-        return null;
+        return logger.throwError("API provider does not support signing", Logger.errors.UNSUPPORTED_OPERATION, { operation: "getSigner" });
     }
     listAccounts() {
         return Promise.resolve([]);
-    }
-    static getNetwork(network) {
-        return getNetwork((network == null) ? "homestead" : network);
     }
     // Return a defaultApiKey if null, otherwise validate the API key
     static getApiKey(apiKey) {
         return apiKey;
     }
-    // Returns the url for the given network and API key
+    // Returns the url or connection for the given network and API key. The
+    // API key will have been sanitized by the getApiKey first, so any validation
+    // or transformations can be done there.
     static getUrl(network, apiKey) {
         return logger.throwError("not implemented; sub-classes must override getUrl", Logger.errors.NOT_IMPLEMENTED, {
             operation: "getUrl"

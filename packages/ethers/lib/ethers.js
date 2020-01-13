@@ -22,6 +22,8 @@ var constants = __importStar(require("@ethersproject/constants"));
 exports.constants = constants;
 var providers = __importStar(require("@ethersproject/providers"));
 exports.providers = providers;
+var providers_1 = require("@ethersproject/providers");
+exports.getDefaultProvider = providers_1.getDefaultProvider;
 var wordlists_1 = require("@ethersproject/wordlists");
 exports.Wordlist = wordlists_1.Wordlist;
 exports.wordlists = wordlists_1.wordlists;
@@ -37,19 +39,3 @@ var _version_1 = require("./_version");
 exports.version = _version_1.version;
 var logger = new logger_1.Logger(_version_1.version);
 exports.logger = logger;
-////////////////////////
-// Helper Functions
-function getDefaultProvider(network, options) {
-    if (network == null) {
-        network = "homestead";
-    }
-    var n = providers.getNetwork(network);
-    if (!n || !n._defaultProvider) {
-        logger.throwError("unsupported getDefaultProvider network", logger_1.Logger.errors.NETWORK_ERROR, {
-            operation: "getDefaultProvider",
-            network: network
-        });
-    }
-    return n._defaultProvider(providers, options);
-}
-exports.getDefaultProvider = getDefaultProvider;

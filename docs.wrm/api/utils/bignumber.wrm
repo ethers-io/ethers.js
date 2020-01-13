@@ -55,28 +55,28 @@ it represents.
 
 _heading: Math Operations
 
-_property: bignumber.add(otherValue) => [[bignumber]]
+_property: bignumber.add(otherValue) => [[bignumber]]  @SRC<bignumber>
 Returns a BigNumber with the value of //bignumber// **+** //otherValue//.
 
-_property: bignumber.sub(otherValue) => [[bignumber]]
+_property: bignumber.sub(otherValue) => [[bignumber]]  @SRC<bignumber>
 Returns a BigNumber with the value of //bignumber// **&ndash;** //otherValue//.
 
-_property: bignumber.mul(otherValue) => [[bignumber]]
+_property: bignumber.mul(otherValue) => [[bignumber]]  @SRC<bignumber>
 Returns a BigNumber with the value of //bignumber// **&times;** //otherValue//.
 
-_property: bignumber.div(divisor) => [[bignumber]]
+_property: bignumber.div(divisor) => [[bignumber]]  @SRC<bignumber>
 Returns a BigNumber with the value of //bignumber// **&#247;** //divisor//.
 
-_property: bignumber.mod(divisor) => [[bignumber]]
+_property: bignumber.mod(divisor) => [[bignumber]]  @SRC<bignumber>
 Returns a BigNumber with the value of the **remainder** of //bignumber// &#247; //divisor//.
 
-_property: bignumber.pow(exponent) => [[bignumber]]
+_property: bignumber.pow(exponent) => [[bignumber]]  @SRC<bignumber>
 Returns a BigNumber with the value of //bignumber// to the power of //exponent//.
 
-_property: bignumber.abs() => [[bignumber]]
+_property: bignumber.abs() => [[bignumber]]  @SRC<bignumber>
 Returns a BigNumber with the absolute value of //bignumber//.
 
-_property: bignumber.maskn(bitcount) => [[bignumber]]
+_property: bignumber.maskn(bitcount) => [[bignumber]]  @SRC<bignumber>
 Returns a BigNumber with the value of //bignumber// with bits beyond
 the //bitcount// least significant bits set to zero.
 
@@ -88,53 +88,53 @@ is an elegant method used to encode and decode fixed-width signed values
 while efficiently preserving mathematic operations.
 Most users will not need to interact with these.
 
-_property: bignumber.fromTwos(bitwidth) => [[bignumber]]
+_property: bignumber.fromTwos(bitwidth) => [[bignumber]]  @SRC<bignumber>
 Returns a BigNumber with the value of //bignumber// converted from twos-compliment with //bitwidth//.
 
-_property: bignumber.toTwos(bitwidth) => [[bignumber]]
+_property: bignumber.toTwos(bitwidth) => [[bignumber]]  @SRC<bignumber>
 Returns a BigNumber with the value of //bignumber// converted to twos-compliment with //bitwidth//.
 
 
 _heading: Comparison and Equivalence
 
-_property: bignumber.eq(otherValue) => boolean
+_property: bignumber.eq(otherValue) => boolean  @SRC<bignumber>
 Returns true if and only if the value of //bignumber// is equal to //otherValue//.
 
-_property: bignumber.lt(otherValue) => boolean
+_property: bignumber.lt(otherValue) => boolean  @SRC<bignumber>
 Returns true if and only if the value of //bignumber// **<** //otherValue//.
 
-_property: bignumber.lte(otherValue) => boolean
+_property: bignumber.lte(otherValue) => boolean  @SRC<bignumber>
 Returns true if and only if the value of //bignumber// **&le;** //otherValue//.
 
-_property: bignumber.gt(otherValue) => boolean
+_property: bignumber.gt(otherValue) => boolean  @SRC<bignumber>
 Returns true if and only if the value of //bignumber// **>** //otherValue//.
 
-_property: bignumber.gte(otherValue) => boolean
+_property: bignumber.gte(otherValue) => boolean  @SRC<bignumber>
 Returns true if and only if the value of //bignumber// **&ge;** //otherValue//.
 
-_property: bignumber.isZero() => boolean
+_property: bignumber.isZero() => boolean  @SRC<bignumber>
 Returns true if and only if the value of //bignumber// is zero.
 
 
 _heading: Conversion
 
-_property: bignumber.toNumber() => number
+_property: bignumber.toNumber() => number  @SRC<bignumber>
 Returns the value of //bignumber// as a JavaScript value.
 
 This will **throw an error**
 if the value is greater than or equal to //Number.MAX_SAFE_INTEGER// or less than or
 equal to //Number.MIN_SAFE_INTEGER//.
 
-_property: bignumber.toString() => string
+_property: bignumber.toString() => string  @SRC<bignumber:BigNumber.toString>
 Returns the value of //bignumber// as a base-10 string.
 
-_property: bignumber.toHexString() => string
+_property: bignumber.toHexString() => string<[[datahexstring]]>  @SRC<bignumber:BigNumber.toHexString>
 Returns the value of //bignumber// as a base-16, `0x`-prefixed [hexstring](hexstring).
 
 
 _heading: Inspection
 
-_property: BigNumnber.isBigNumber(object) => boolean
+_property: BigNumnber.isBigNumber(object) => boolean  @SRC<bignumber>
 Returns true if and only if the //object// is a BigNumber object.
 
 

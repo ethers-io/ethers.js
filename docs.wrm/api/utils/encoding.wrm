@@ -1,0 +1,21 @@
+_title: Encoding Utilies
+
+_section: Encoding Utilities
+
+_property: utils.base58.decode(textData) => Uin8Array
+
+Return a typed Uint8Array representation of //textData// decoded using
+base-58 encoding.
+
+_property: utils.base58.encode(aBytesLike) => string
+
+Return //aBytesLike// encoded as a string using the base-58 encoding.
+
+_property: utils.base64.decode(textData) => Uin8Array
+
+Return a typed Uint8Array representation of //textData// decoded using
+base-64 encoding.
+
+_property: utils.base64.encode(aBytesLike) => string
+
+Return //aBytesLike// encoded as a string using the base-64 encoding.

@@ -102,7 +102,6 @@ var Description = /** @class */ (function () {
         for (var key in info) {
             this[key] = deepCopy(info[key]);
         }
-        Object.freeze(this);
     }
     return Description;
 }());

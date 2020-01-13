@@ -1,7 +1,7 @@
 "use strict";
 // We use this for base 36 maths
 import { BN } from "bn.js";
-import { arrayify, hexDataSlice, isHexString, stripZeros } from "@ethersproject/bytes";
+import { arrayify, concat, hexDataLength, hexDataSlice, isHexString, stripZeros } from "@ethersproject/bytes";
 import { BigNumber } from "@ethersproject/bignumber";
 import { keccak256 } from "@ethersproject/keccak256";
 import { encode } from "@ethersproject/rlp";
@@ -13,12 +13,12 @@ function getChecksumAddress(address) {
         logger.throwArgumentError("invalid address", "address", address);
     }
     address = address.toLowerCase();
-    let chars = address.substring(2).split("");
-    let hashed = new Uint8Array(40);
+    const chars = address.substring(2).split("");
+    const expanded = new Uint8Array(40);
     for (let i = 0; i < 40; i++) {
-        hashed[i] = chars[i].charCodeAt(0);
+        expanded[i] = chars[i].charCodeAt(0);
     }
-    hashed = arrayify(keccak256(hashed));
+    const hashed = arrayify(keccak256(expanded));
     for (let i = 0; i < 40; i += 2) {
         if ((hashed[i >> 1] >> 4) >= 8) {
             chars[i] = chars[i].toUpperCase();
@@ -39,7 +39,7 @@ function log10(x) {
 }
 // See: https://en.wikipedia.org/wiki/International_Bank_Account_Number
 // Create lookup table
-let ibanLookup = {};
+const ibanLookup = {};
 for (let i = 0; i < 10; i++) {
     ibanLookup[String(i)] = String(i);
 }
@@ -47,14 +47,11 @@ for (let i = 0; i < 26; i++) {
     ibanLookup[String.fromCharCode(65 + i)] = String(10 + i);
 }
 // How many decimal digits can we process? (for 64-bit float, this is 15)
-let safeDigits = Math.floor(log10(MAX_SAFE_INTEGER));
+const safeDigits = Math.floor(log10(MAX_SAFE_INTEGER));
 function ibanChecksum(address) {
     address = address.toUpperCase();
     address = address.substring(4) + address.substring(0, 2) + "00";
-    let expanded = "";
-    address.split("").forEach(function (c) {
-        expanded += ibanLookup[c];
-    });
+    let expanded = address.split("").map((c) => { return ibanLookup[c]; }).join("");
     // Javascript can handle integers safely up to 15 (decimal) digits
     while (expanded.length >= safeDigits) {
         let block = expanded.substring(0, safeDigits);
@@ -124,6 +121,15 @@ export function getContractAddress(transaction) {
     catch (error) {
         logger.throwArgumentError("missing from address", "transaction", transaction);
     }
-    let nonce = stripZeros(arrayify(BigNumber.from(transaction.nonce).toHexString()));
+    const nonce = stripZeros(arrayify(BigNumber.from(transaction.nonce).toHexString()));
     return getAddress(hexDataSlice(keccak256(encode([from, nonce])), 12));
+}
+export function getCreate2Address(from, salt, initCodeHash) {
+    if (hexDataLength(salt) !== 32) {
+        logger.throwArgumentError("salt must be 32 bytes", "salt", salt);
+    }
+    if (hexDataLength(initCodeHash) !== 32) {
+        logger.throwArgumentError("initCodeHash must be 32 bytes", "initCodeHash", initCodeHash);
+    }
+    return getAddress(hexDataSlice(keccak256(concat(["0xff", getAddress(from), salt, initCodeHash])), 12));
 }

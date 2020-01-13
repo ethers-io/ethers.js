@@ -13,6 +13,9 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
         if (apiKey == null) {
             return defaultApiKey;
         }
+        if (apiKey && typeof (apiKey) !== "string") {
+            logger.throwArgumentError("invalid apiKey", "apiKey", apiKey);
+        }
         return apiKey;
     }
     static getUrl(network, apiKey) {

@@ -1,24 +1,14 @@
 "use strict";
 
-// This gets overriddenby gulp during bip39-XX
-let exportWordlist = false;
+// This gets overridden by rollup
+const exportWordlist = false;
 
 import { id } from "@ethersproject/hash";
 import { defineReadOnly } from "@ethersproject/properties";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
-const logger = new Logger(version);
-
-export function check(wordlist: Wordlist) {
-    let words = [];
-    for (let i = 0; i < 2048; i++) {
-        let word = wordlist.getWord(i);
-        if (i !== wordlist.getWordIndex(word)) { return "0x"; }
-        words.push(word);
-    }
-    return id(words.join("\n") + "\n");
-}
+export const logger = new Logger(version);
 
 export abstract class Wordlist {
     readonly locale: string;
@@ -40,20 +30,30 @@ export abstract class Wordlist {
     join(words: Array<string>): string {
         return words.join(" ");
     }
-}
 
-export function register(lang: Wordlist, name?: string): void {
-    if (!name) { name = lang.locale; }
-    if (exportWordlist) {
-        let g: any = (<any>global)
-        if (!(g.wordlists)) { defineReadOnly(g, "wordlists", { }); }
-        if (!g.wordlists[name]) {
-            defineReadOnly(g.wordlists, name, lang);
+    static check(wordlist: Wordlist): string {
+        const words = [];
+        for (let i = 0; i < 2048; i++) {
+            const word = wordlist.getWord(i);
+            if (i !== wordlist.getWordIndex(word)) { return "0x"; }
+            words.push(word);
         }
-        if (g.ethers && g.ethers.wordlists) {
-            if (!g.ethers.wordlists[name]) {
-                defineReadOnly(g.ethers.wordlists, name, lang);
-            }
+        return id(words.join("\n") + "\n");
+    }
+
+    static register(lang: Wordlist, name?: string): void {
+        if (!name) { name = lang.locale; }
+        if (exportWordlist) {
+            try {
+                const anyGlobal = (window as any)
+                if (anyGlobal._ethers && anyGlobal._ethers.wordlists) {
+                    if (!anyGlobal._ethers.wordlists[name]) {
+                         defineReadOnly(anyGlobal._ethers.wordlists, name, lang);
+                    }
+                }
+            } catch (error) { }
         }
     }
+
 }
+

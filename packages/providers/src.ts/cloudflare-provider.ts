@@ -9,11 +9,14 @@ const logger = new Logger(version);
 
 export class CloudflareProvider extends UrlJsonRpcProvider {
 
-    static getUrl(network: Network, apiKey?: string): string {
+    static getApiKey(apiKey: any): any {
         if (apiKey != null) {
             logger.throwArgumentError("apiKey not supported for cloudflare", "apiKey", apiKey);
         }
+        return null;
+    }
 
+    static getUrl(network: Network, apiKey?: any): string {
         let host = null;
         switch (network.name) {
             case "homestead":

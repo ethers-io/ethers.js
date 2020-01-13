@@ -19,6 +19,7 @@ exports.Interface = abi_1.Interface;
 exports.ParamType = abi_1.ParamType;
 var address_1 = require("@ethersproject/address");
 exports.getAddress = address_1.getAddress;
+exports.getCreate2Address = address_1.getCreate2Address;
 exports.getContractAddress = address_1.getContractAddress;
 exports.getIcapAddress = address_1.getIcapAddress;
 exports.isAddress = address_1.isAddress;

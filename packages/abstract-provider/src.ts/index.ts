@@ -132,7 +132,7 @@ export interface FilterByBlockHash extends EventFilter {
 export abstract class ForkEvent extends Description {
     readonly expiry: number;
 
-    readonly _isForkEvent: boolean;
+    readonly _isForkEvent?: boolean;
 
     static isForkEvent(value: any): value is ForkEvent {
         return !!(value && value._isForkEvent);
@@ -141,6 +141,8 @@ export abstract class ForkEvent extends Description {
 
 export class BlockForkEvent extends ForkEvent {
     readonly blockhash: string;
+
+    readonly _isBlockForkEvent?: boolean;
 
     constructor(blockhash: string, expiry?: number) {
         if (!isHexString(blockhash, 32)) {
@@ -158,6 +160,8 @@ export class BlockForkEvent extends ForkEvent {
 
 export class TransactionForkEvent extends ForkEvent {
     readonly hash: string;
+
+    readonly _isTransactionOrderForkEvent?: boolean;
 
     constructor(hash: string, expiry?: number) {
         if (!isHexString(hash, 32)) {

@@ -18,6 +18,13 @@ _toc:
     some-file
     some-directory
 
+_definition and reset the indentation.
+
+_note: Title
+This is placed in a blue box.
+
+_warning: Title
+This is placed in an orange box.
+
 _null:
 This breaks out of a directive. For example, to end a
-_definition and reset the indentation.

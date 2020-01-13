@@ -49,7 +49,7 @@ function loadWords(lang) {
         }
         wordlist[lang.locale].push(strings_1.toUtf8String(bytes));
     }
-    if (wordlist_1.check(lang) !== Checks[lang.locale]) {
+    if (wordlist_1.Wordlist.check(lang) !== Checks[lang.locale]) {
         wordlist[lang.locale] = null;
         throw new Error("BIP39 Wordlist for " + lang.locale + " (Chinese) FAILED");
     }
@@ -75,8 +75,8 @@ var LangZh = /** @class */ (function (_super) {
 }(wordlist_1.Wordlist));
 var langZhCn = new LangZh("cn");
 exports.langZhCn = langZhCn;
-wordlist_1.register(langZhCn);
-wordlist_1.register(langZhCn, "zh");
+wordlist_1.Wordlist.register(langZhCn);
+wordlist_1.Wordlist.register(langZhCn, "zh");
 var langZhTw = new LangZh("tw");
 exports.langZhTw = langZhTw;
-wordlist_1.register(langZhTw);
+wordlist_1.Wordlist.register(langZhTw);

@@ -1,0 +1,242 @@
+_title: Application Binary Interface
+
+_section: Application Binary Interface
+
+Explain an ABI.
+
+_subsection: Formats
+
+_heading: JSON String ABI (Solidity Output JSON)
+
+The **JSON ABI Format** is the format that is
+[output from the Solidity compiler](https://solidity.readthedocs.io/en/v0.6.0/using-the-compiler.html#output-description).
+
+A JSON serialized object is always a string, which represents an Array
+of Objects, where each Object has various properties describing the [[abi-fragment]] of the ABI.
+
+The deserialied JSON string (which is a normal JavaScript Object) may
+also be passed into any function which accepts a JSON String ABI.
+
+_heading: Humanb-Readable ABI
+
+The Human-Readable ABI was 
+
+[article](https://blog.ricmoo.com/human-readable-contract-abis-in-ethers-js-141902f4d917)
+
+_heading: Output Formats @<abi-outputformats> @src<abi/fragments:FormatTypes>
+
+Each [[abi-fragment]] and [[abi-paramtype]] may be output using its ``format``
+method.
+
+_property: utils.FragmentTypes.full => string
+
+This is a full human-readable string, including all parameter names, any
+optional modifiers (e.g. ``indexed``, ``public``, etc) and white-space
+to aid in human readabiliy.
+
+_property: utils.FragmentTypes.minimal => string
+
+This is similar to ``full``, except with no unnecessary whitespace or parameter
+names. This is useful for storing a minimal string which can still fully
+reconstruct the original Fragment using [Fragment&thinsp;.&thinsp;from](abi-fragment-from).
+
+_property: utils.FragmentTypes.json => string
+
+This returns a JavaScript Object which is safe to call ``JSON.stringify``
+on to create a JSON string.
+
+_property: utils.FragmentTypes.sighash => string
+
+This is a minimal output format, which is used by Solidity when computing a
+signature hash or an event topic hash.
+
+_warning: Note
+
+The ``sighash`` format is **insufficient** to re-create the original [[abi-fragment]],
+since it discards modifiers such as indexed, anonymous, stateMutability, etc.
+
+
+_subsection: Fragment @<abi-fragment> @SRC<abi/fragments:class.Fragment>
+
+An ABI is a collection of **Fragments**, where each fragment specifies:
+
+- An Event
+- A Function
+- A Constructor
+
+_heading: Properties
+
+_property: fragment.name => string
+
+This is the name of the Event or Function. This will be null for
+a [[abi-constructorfragment]].
+
+_property: fragment.type => string
+
+This is a string which indicates the type of the [[abi-fragment]]. This
+will be one of:
+
+- ``constructor``
+- ``event``
+- ``function``
+
+_property: fragment.inputs => Array<[[abi-paramtype]]>
+
+This is an array of of each [[abi-paramtype]] for the input parameters to
+the Constructor, Event of Function.
+
+_heading: Methods
+
+_property: utils.Fragment.from(objectOrString) => [[abi-fragment]] @<abi-fragment-from> @SRC<abi/fragments:Fragment.from>
+
+Returns a 
+
+_property: utils.Fragment.isFragment(object) => boolean @<abi-isfragment> @SRC<abi/fragments:Fragment.isFragment>
+
+Tra lal al
+
+
+_subsection: ConstructorFragment @<abi-constructorfragment> @INHERIT<[[abi-fragment]]> @SRC<abi/fragments:class.ConstructorFragment>
+
+_heading: Properties
+
+_property: fragment.gas => [[bignumber]]
+
+This is the gas limit that should be used during deployment. It may be
+null.
+
+_property: fragment.payable => boolean
+
+This is whether the constructor may receive ether during deployment as
+an endowment (i.e. msg.value != 0).
+
+_property: fragment.stateMutability => string
+
+This is the state mutability of the constructor. It can be any of:
+
+- ``nonpayable``
+- ``payable``
+
+_heading: Methods
+
+_property: utils.ConstructorFragment.from(objectOrString) => [[abi-constructorfragment]] @<abi-constructorfragment-from> @SRC<abi/fragments:ConstructorFragment.from>
+
+Tra la la...
+
+_property: utils.ConstructorFragment.isConstructorFragment(object) => boolean @<abi-isconstructorfragment> @SRC<abi/fragments:ConstructorFragment.isConstructorFragment>
+
+Tra lal al
+
+
+_subsection: EventFragment @<abi-eventfragment> @INHERIT<[[abi-fragment]]> @SRC<abi/fragments:class.EventFragment>
+
+_heading: Properties
+
+_property: fragment.anonymous => boolean
+
+This is whether the event is anonymous. An anonymous Event does not inject its
+topic hash as topic0 when creating a log.
+
+_heading: Methods
+
+_property: utils.EventFragment.from(objectOrString) => [[abi-eventfragment]] @<abi-eventfragment-from> @SRC<abi/fragments:EventFragment.from>
+
+Tra la la...
+
+_property: utils.EventFragment.isEventFragment(object) => boolean @<abi-iseventfragment> @SRC<abi/fragments:EventFragment.isEventFragment>
+
+Tra lal al
+
+
+_subsection: FunctionFragment @<abi-functionfragment> @INHERIT<[[abi-constructorfragment]]> @SRC<abi/fragments:class.FunctionFragment>
+
+_heading: Properties
+
+_property: fragment.constant => boolean
+
+This is whether the function is constant (i.e. does not change state). This
+is true if the state mutability is ``pure`` or ``view``.
+
+_property: fragment.stateMutability => string
+
+This is the state mutability of the constructor. It can be any of:
+
+- ``nonpayable``
+- ``payable``
+- ``pure``
+- ``view``
+
+_property: fragment.outputs => Array<[[abi-paramtype]]>
+
+A list of the Function output parameters.
+
+_heading: Method
+
+_property: utils.FunctionFragment.from(objectOrString) => [[abi-functionfragment]] @<abi-functionfragment-from> @SRC<abi/fragments:ConstructorFragment.from>
+
+Tra la la...
+
+_property: utils.FunctionFragment.isFunctionFragment(object) => boolean @<abi-isfunctionfragment> @SRC<abi/fragments:FunctionFragment.isFunctionFragment>
+
+Tra lal al
+
+
+_subsection: ParamType @<abi-paramtype> @SRC<abi/fragments:class.ParamType>
+
+The following examples will represent the Solidity parameter:
+
+``string foobar``
+
+_heading: Properties
+
+_property: paramType.name => string @<abi-paramtype-name>
+
+The local parameter name. This may be null for unnamed parameters. For example,
+the parameter definition ``string foobar`` would be ``foobar``.
+
+_property: paramType.type => string @<abi-paramtype-type>
+
+The full type of the parameter, including tuple and array symbols. This may be null
+for unnamed parameters. For the above example, this would be ``foobar``.
+
+_property: paramType.basetype => string @<abi-paramtype-basetype>
+
+The base type of the parameter. For primitive types (e.g. ``address``, ``uint256``, etc)
+this is equal to [type](abi-paramtype-type). For arrays, it will be the string ``array`` and for
+a tuple, it will be the string ``tuple``.
+
+_property: paramType.indexed => boolean @<abi-paramtype-indexed>
+
+Whether the parameter has been marked as indexed. This **only** applies
+to parameters which are part of an [[abi-eventfragment]].
+
+_property: paramType.arrayChildren => [[abi-paramtype]] @<abi-paramtype-arraychildren>
+
+The type of children of the array. This is null for for any parameter
+wjhich is not an array.
+
+_property: paramType.arrayLength => number @<abi-paramtype-arraylength>
+
+The length of the array, or ``-1`` for dynamic-length arrays. This is
+null for parameters which is not arrays.
+
+_property: paramType.components => Array<[[abi-paramtype]]> @<abi-paramtype-components>
+
+The components of a tuple. This is null for non-tuple parameters.
+
+
+_heading: Methods
+
+Tra la la...
+
+_property: paramType.format([ outputType = "sighash" ])
+
+Tra la la...
+
+_property: utils.ParamType.from(objectOrString) => [[abi-paramtype]] @<abi-paramtype-from> @SRC<abi/fragments:ParamType.from>
+
+Tra la la...
+
+_property: utils.ParamType.isParamType(object) => boolean @<abi-paramtype-isparamtype> @SRC<abi/fragments:ParamType.isParamType>
+
+Tra la la...

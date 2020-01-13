@@ -108,44 +108,7 @@ Returns an instance of a **BigNumber** for *aBigNumberish*.
 
 
 ```javascript
-// From a decimal string...
-BigNumber.from("42")
-// { BigNumber: "42" }
-
-// From a hexstring...
-BigNumber.from("0x2a")
-// { BigNumber: "42" }
-
-// From a negative hexstring...
-BigNumber.from("-0x2a")
-// { BigNumber: "-42" }
-
-// From an Array (or Uint8Array)...
-BigNumber.from([ 42 ])
-// { BigNumber: "42" }
-
-// From an existing BigNumber...
-let one1 = constants.One;
-let one2 = BigNumber.from(one1)
-
-one2
-// { BigNumber: "1" }
-
-// ...which returns the same instance
-one1 === one2
-// true
-
-// From a (safe) number...
-BigNumber.from(42)
-// { BigNumber: "42" }
-
-// From a ES2015 BigInt... (only on platforms with BigInt support)
-BigNumber.from(42n)
-// { BigNumber: "42" }
-
-// Numbers outside the safe range fail:
-BigNumber.from(Number.MAX_SAFE_INTEGER);
-// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, version=bignumber/5.0.0-beta.129)
+Skipping JavaScript Evaluation.
 ```
 
 
@@ -223,9 +186,9 @@ the *bitcount* least significant bits set to zero.
 
 
 [Two's Complicment](https://en.wikipedia.org/wiki/Two%27s_complement)
-is a method used to encode and decode fixed-width values which can be
-positive or negative, without requiring a separate sign bit. Most users
-will not need to interact with these.
+is an elegant method used to encode and decode fixed-width signed values
+while efficiently preserving mathematic operations.
+Most users will not need to interact with these.
 
 
 #### *bignumber* . **fromTwos** ( bitwidth )  **=>** *[BigNumber](./)*
@@ -333,11 +296,7 @@ Returns true if and only if the *object* is a BigNumber object.
 
 
 ```javascript
-let a = BigNumber.from(42);
-let b = BigNumber.from("91");
-
-  a.mul(b);
-  // { BigNumber: "3822" }
+Skipping JavaScript Evaluation.
 ```
 
 
@@ -369,8 +328,7 @@ To demonstrate how this may be an issue in your code, consider:
 
 
 ```javascript
-(Number.MAX_SAFE_INTEGER + 2 - 2) == (Number.MAX_SAFE_INTEGER)
-// false
+Skipping JavaScript Evaluation.
 ```
 
 
@@ -386,4 +344,4 @@ mathematical operations handled safely.
 
 
 -----
-**Content Hash:** 269c8464ff80c77316617cbfa4e9a195d742f829a23911fecf0bba16961f81ae
+**Content Hash:** 76be4f72801f0d772c1ebe1acff4c41f6d52ed96f603de4b168f12d099470273

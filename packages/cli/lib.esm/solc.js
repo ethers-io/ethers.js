@@ -43,7 +43,7 @@ export function compile(source, options) {
     let findImport = (filename) => {
         try {
             return {
-                contents: fs.readFileSync(resolve(options.basedir, options.filename)).toString()
+                contents: fs.readFileSync(resolve(options.basedir, filename)).toString()
             };
         }
         catch (error) {

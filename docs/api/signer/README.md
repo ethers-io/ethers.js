@@ -17,7 +17,7 @@ Signer
 
 
 
-#### *signer* . **connect** ( provider )  **=>** *Signer*
+#### *signer* . **connect** ( provider )  **=>** *[Signer](./)*
 
 TODO
 
@@ -28,14 +28,14 @@ TODO
 
 
 
-#### *signer* . **getBalance** (  [ blockTag="latest" ]  )  **=>** *Promise(BigNumber)*
+#### *signer* . **getBalance** (  [ blockTag="latest" ]  )  **=>** *Promise< [BigNumber](../utils/bignumber) >*
 
 TODO
 
 
 
 
-#### *signer* . **getTransactionCount** (  [ blockTag="latest" ]  )  **=>** *Promise(number)*
+#### *signer* . **getTransactionCount** (  [ blockTag="latest" ]  )  **=>** *Promise< number >*
 
 TODO
 
@@ -46,7 +46,8 @@ Wallet inherits Signer
 ----------------------
 
 
-Wallet is...
+The Wallet class inherits [Signer](./) and can sign transactions and messages
+using a private key as a standard Externally Owned Account (EOA).
 
 
 ### Creating an Instance
@@ -69,4 +70,4 @@ TODO
 
 
 -----
-**Content Hash:** 08ec198fa4ab407a1bed0a705073d7f40a6c3969b8e922961939fd8e009ca1ed
+**Content Hash:** 62c0d9640e683e41970dc1c779bd3b59ed08c27d99e15f6b51e7bae31ac1975e

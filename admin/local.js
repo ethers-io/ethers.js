@@ -15,8 +15,20 @@ const keccak256 = (function() {
 const { dirnames, loadPackage, ROOT } = require("./depgraph");
 const { resolve, saveJson } = require("./utils");
 
+function sorted(obj) {
+    if (Array.isArray(obj)) { return obj.map(sorted); }
+    if (obj == null || typeof(obj) !== "object") { return obj; }
+
+    const keys = Object.keys(obj);
+    keys.sort();
+
+    const result = { };
+    keys.forEach((key) => { result[key] = sorted(obj[key]); });
+    return result;
+}
+
 function savePackage(dirname, info) {
-    return saveJson(resolve(ROOT, dirname, "package.json"), info);
+    return saveJson(resolve(ROOT, dirname, "package.json"), sorted(info));
 }
 
 async function createTarball(dirname) {

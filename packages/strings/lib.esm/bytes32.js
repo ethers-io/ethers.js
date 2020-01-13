@@ -4,7 +4,7 @@ import { arrayify, concat, hexlify } from "@ethersproject/bytes";
 import { toUtf8Bytes, toUtf8String } from "./utf8";
 export function formatBytes32String(text) {
     // Get the bytes
-    let bytes = toUtf8Bytes(text);
+    const bytes = toUtf8Bytes(text);
     // Check we have room for null-termination
     if (bytes.length > 31) {
         throw new Error("bytes32 string must be less than 32 bytes");
@@ -13,7 +13,7 @@ export function formatBytes32String(text) {
     return hexlify(concat([bytes, HashZero]).slice(0, 32));
 }
 export function parseBytes32String(bytes) {
-    let data = arrayify(bytes);
+    const data = arrayify(bytes);
     // Must be 32 bytes with a null-termination
     if (data.length !== 32) {
         throw new Error("invalid bytes32 - not 32 bytes long");

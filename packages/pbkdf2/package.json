@@ -1,23 +1,21 @@
 {
-  "name": "@ethersproject/pbkdf2",
-  "version": "5.0.0-beta.128",
-  "description": "The PBKDF2 password-pbased key derivation function for ethers.",
-  "main": "./lib/index.js",
+  "author": "Richard Moore <me@ricmoo.com>",
   "browser": "./lib/browser.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "dependencies": {
     "@ethersproject/bytes": ">=5.0.0-beta.129",
     "@ethersproject/sha2": ">=5.0.0-beta.129"
   },
+  "description": "The PBKDF2 password-pbased key derivation function for ethers.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers",
     "pbkdf2"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/pbkdf2",
   "publishConfig": {
     "access": "public"
   },
@@ -25,8 +23,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x8d025cc9c546a29ecf25b038a88a7e4f7700f370e312469cad1c4b054b4e9197",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0xf955ecf3e3adce430693c78c6555e1baa6debfa7f33d24158057a9b6b7419f2b"
+  "version": "5.0.0-beta.132"
 }

@@ -2,10 +2,13 @@
 import { ethers } from "ethers";
 import { version } from "./_version";
 const logger = new ethers.utils.Logger(version);
+// @TODO: Keep a per-NonceManager pool of sent but unmined transactions for
+//        rebroadcasting, in case we overrun the transaction pool
 export class NonceManager extends ethers.Signer {
     constructor(signer) {
         logger.checkNew(new.target, NonceManager);
         super();
+        this._deltaCount = 0;
         ethers.utils.defineReadOnly(this, "signer", signer);
     }
     connect(provider) {
@@ -16,25 +19,22 @@ export class NonceManager extends ethers.Signer {
     }
     getTransactionCount(blockTag) {
         if (blockTag === "pending") {
-            if (!this._transactionCount) {
-                this._transactionCount = this.signer.getTransactionCount("pending");
+            if (!this._initialPromise) {
+                this._initialPromise = this.signer.getTransactionCount("pending");
             }
-            return this._transactionCount;
+            const deltaCount = this._deltaCount;
+            return this._initialPromise.then((initial) => (initial + deltaCount));
         }
         return this.signer.getTransactionCount(blockTag);
     }
     setTransactionCount(transactionCount) {
-        this._transactionCount = Promise.resolve(transactionCount).then((nonce) => {
+        this._initialPromise = Promise.resolve(transactionCount).then((nonce) => {
             return ethers.BigNumber.from(nonce).toNumber();
         });
+        this._deltaCount = 0;
     }
     incrementTransactionCount(count) {
-        if (!count) {
-            count = 1;
-        }
-        this._transactionCount = this.getTransactionCount("pending").then((nonce) => {
-            return nonce + count;
-        });
+        this._deltaCount += (count ? count : 1);
     }
     signMessage(message) {
         return this.signer.signMessage(message);
@@ -46,9 +46,14 @@ export class NonceManager extends ethers.Signer {
     sendTransaction(transaction) {
         if (transaction.nonce == null) {
             transaction = ethers.utils.shallowCopy(transaction);
-            transaction.nonce = this.getTransactionCount();
+            transaction.nonce = this.getTransactionCount("pending");
+            this.incrementTransactionCount();
         }
-        this.setTransactionCount(transaction.nonce);
-        return this.signer.sendTransaction(transaction);
+        else {
+            this.setTransactionCount(transaction.nonce);
+        }
+        return this.signer.sendTransaction(transaction).then((tx) => {
+            return tx;
+        });
     }
 }

@@ -21,12 +21,6 @@ function ethDefaultProvider(network) {
             }
             catch (error) { }
         }
-        if (providers.NodesmithProvider) {
-            try {
-                providerList.push(new providers.NodesmithProvider(network, options.nodesmith));
-            }
-            catch (error) { }
-        }
         if (providers.AlchemyProvider) {
             try {
                 providerList.push(new providers.AlchemyProvider(network, options.alchemy));
@@ -43,8 +37,14 @@ function ethDefaultProvider(network) {
             return null;
         }
         if (providers.FallbackProvider) {
-            return new providers.FallbackProvider(providerList);
-            ;
+            var quorum = providerList.length / 2;
+            if (options.quorum != null) {
+                quorum = options.quorum;
+            }
+            else if (quorum > 2) {
+                quorum = 2;
+            }
+            return new providers.FallbackProvider(providerList, quorum);
         }
         return providerList[0];
     };
@@ -68,6 +68,11 @@ var ropsten = {
     ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
     name: "ropsten",
     _defaultProvider: ethDefaultProvider("ropsten")
+};
+var classicMordor = {
+    chainId: 63,
+    name: "classicMordor",
+    _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/mordor", "classicMordor")
 };
 var networks = {
     unspecified: {
@@ -99,16 +104,23 @@ var networks = {
         name: "goerli",
         _defaultProvider: ethDefaultProvider("goerli")
     },
+    // ETC (See: #351)
     classic: {
         chainId: 61,
         name: "classic",
-        _defaultProvider: etcDefaultProvider("https://web3.gastracker.io", "classic")
+        _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/etc", "classic")
     },
-    classicTestnet: {
+    classicMorden: {
         chainId: 62,
-        name: "classicTestnet",
-        _defaultProvider: etcDefaultProvider("https://web3.gastracker.io/morden", "classicTestnet")
-    }
+        name: "classicMorden",
+    },
+    classicMordor: classicMordor,
+    classicTestnet: classicMordor,
+    classicKotti: {
+        chainId: 6,
+        name: "classicKotti",
+        _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/kotti", "classicKotti")
+    },
 };
 /**
  *  getNetwork

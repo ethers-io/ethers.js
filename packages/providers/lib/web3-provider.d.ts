@@ -8,7 +8,7 @@ export declare type AsyncSendable = {
     send?: (request: any, callback: (error: any, response: any) => void) => void;
 };
 export declare class Web3Provider extends JsonRpcProvider {
-    readonly _web3Provider: AsyncSendable;
+    readonly provider: AsyncSendable;
     private _sendAsync;
     constructor(web3Provider: AsyncSendable, network?: Networkish);
     send(method: string, params: any): Promise<any>;

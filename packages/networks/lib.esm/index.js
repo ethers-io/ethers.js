@@ -7,7 +7,7 @@ function ethDefaultProvider(network) {
         if (options == null) {
             options = {};
         }
-        let providerList = [];
+        const providerList = [];
         if (providers.InfuraProvider) {
             try {
                 providerList.push(new providers.InfuraProvider(network, options.infura));
@@ -17,12 +17,6 @@ function ethDefaultProvider(network) {
         if (providers.EtherscanProvider) {
             try {
                 providerList.push(new providers.EtherscanProvider(network, options.etherscan));
-            }
-            catch (error) { }
-        }
-        if (providers.NodesmithProvider) {
-            try {
-                providerList.push(new providers.NodesmithProvider(network, options.nodesmith));
             }
             catch (error) { }
         }
@@ -42,8 +36,14 @@ function ethDefaultProvider(network) {
             return null;
         }
         if (providers.FallbackProvider) {
-            return new providers.FallbackProvider(providerList);
-            ;
+            let quorum = providerList.length / 2;
+            if (options.quorum != null) {
+                quorum = options.quorum;
+            }
+            else if (quorum > 2) {
+                quorum = 2;
+            }
+            return new providers.FallbackProvider(providerList, quorum);
         }
         return providerList[0];
     };
@@ -67,6 +67,11 @@ const ropsten = {
     ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
     name: "ropsten",
     _defaultProvider: ethDefaultProvider("ropsten")
+};
+const classicMordor = {
+    chainId: 63,
+    name: "classicMordor",
+    _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/mordor", "classicMordor")
 };
 const networks = {
     unspecified: {
@@ -98,16 +103,23 @@ const networks = {
         name: "goerli",
         _defaultProvider: ethDefaultProvider("goerli")
     },
+    // ETC (See: #351)
     classic: {
         chainId: 61,
         name: "classic",
-        _defaultProvider: etcDefaultProvider("https://web3.gastracker.io", "classic")
+        _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/etc", "classic")
     },
-    classicTestnet: {
+    classicMorden: {
         chainId: 62,
-        name: "classicTestnet",
-        _defaultProvider: etcDefaultProvider("https://web3.gastracker.io/morden", "classicTestnet")
-    }
+        name: "classicMorden",
+    },
+    classicMordor: classicMordor,
+    classicTestnet: classicMordor,
+    classicKotti: {
+        chainId: 6,
+        name: "classicKotti",
+        _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/kotti", "classicKotti")
+    },
 };
 /**
  *  getNetwork
@@ -121,8 +133,8 @@ export function getNetwork(network) {
         return null;
     }
     if (typeof (network) === "number") {
-        for (let name in networks) {
-            let standard = networks[name];
+        for (const name in networks) {
+            const standard = networks[name];
             if (standard.chainId === network) {
                 return {
                     name: standard.name,
@@ -138,7 +150,7 @@ export function getNetwork(network) {
         };
     }
     if (typeof (network) === "string") {
-        let standard = networks[network];
+        const standard = networks[network];
         if (standard == null) {
             return null;
         }
@@ -149,7 +161,7 @@ export function getNetwork(network) {
             _defaultProvider: (standard._defaultProvider || null)
         };
     }
-    let standard = networks[network.name];
+    const standard = networks[network.name];
     // Not a standard network; check that it is a valid network in general
     if (!standard) {
         if (typeof (network.chainId) !== "number") {

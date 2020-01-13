@@ -21,7 +21,7 @@ const names = [
 // Some environments have issues with RegEx that contain back-tracking, so we cannot
 // use them.
 export function commify(value: string | number): string {
-    let comps = String(value).split(".");
+    const comps = String(value).split(".");
 
     if (comps.length > 2 || !comps[0].match(/^-?[0-9]*$/) || (comps[1] && !comps[1].match(/^[0-9]*$/)) || value === "." || value === "-.") {
         logger.throwArgumentError("invalid value", "value", value);
@@ -43,13 +43,13 @@ export function commify(value: string | number): string {
     let suffix = "";
     if (comps.length === 2) { suffix = "." + (comps[1] || "0"); }
 
-    let formatted = [];
+    const formatted = [];
     while (whole.length) {
         if (whole.length <= 3) {
             formatted.unshift(whole);
             break;
         } else {
-            let index = whole.length - 3;
+            const index = whole.length - 3;
             formatted.unshift(whole.substring(index));
             whole = whole.substring(0, index);
         }
@@ -60,7 +60,7 @@ export function commify(value: string | number): string {
 
 export function formatUnits(value: BigNumberish, unitName?: string | BigNumberish): string {
     if (typeof(unitName) === "string") {
-        let index = names.indexOf(unitName);
+        const index = names.indexOf(unitName);
         if (index !== -1) { unitName = 3 * index; }
     }
     return formatFixed(value, (unitName != null) ? unitName: 18);
@@ -68,7 +68,7 @@ export function formatUnits(value: BigNumberish, unitName?: string | BigNumberis
 
 export function parseUnits(value: string, unitName?: BigNumberish): BigNumber {
     if (typeof(unitName) === "string") {
-        let index = names.indexOf(unitName);
+        const index = names.indexOf(unitName);
         if (index !== -1) { unitName = 3 * index; }
     }
     return parseFixed(value, (unitName != null) ? unitName: 18);

@@ -12,11 +12,19 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var path_1 = __importDefault(require("path"));
 var browserify_zlib_1 = __importDefault(require("browserify-zlib"));
+var random_1 = require("./random");
+exports.randomBytes = random_1.randomBytes;
+exports.randomHexString = random_1.randomHexString;
+exports.randomNumber = random_1.randomNumber;
 var data = __importStar(require("./browser-fs.json"));
+var Cache = {};
 function loadTests(tag) {
     var filename = 'testcases/' + tag + ".json.gz";
-    console.log("loading:", filename);
-    return JSON.parse(browserify_zlib_1.default.gunzipSync(new Buffer(data[filename], "base64")).toString());
+    if (Cache[filename] == null) {
+        console.log("loading:", filename);
+        Cache[filename] = JSON.parse(browserify_zlib_1.default.gunzipSync(new Buffer(data[filename], "base64")).toString());
+    }
+    return Cache[filename];
 }
 exports.loadTests = loadTests;
 function loadData(filename) {

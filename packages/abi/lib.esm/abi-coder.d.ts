@@ -1,5 +1,5 @@
 import { BytesLike } from "@ethersproject/bytes";
-import { Coder, Reader, Writer } from "./coders/abstract-coder";
+import { Coder, Reader, Result, Writer } from "./coders/abstract-coder";
 import { ParamType } from "./fragments";
 export declare type CoerceFunc = (type: string, value: any) => any;
 export declare class AbiCoder {
@@ -10,6 +10,6 @@ export declare class AbiCoder {
     _getReader(data: Uint8Array): Reader;
     _getWriter(): Writer;
     encode(types: Array<string | ParamType>, values: Array<any>): string;
-    decode(types: Array<string | ParamType>, data: BytesLike): any;
+    decode(types: Array<string | ParamType>, data: BytesLike): Result;
 }
 export declare const defaultAbiCoder: AbiCoder;

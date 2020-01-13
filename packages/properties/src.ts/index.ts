@@ -25,8 +25,8 @@ export function getStatic<T>(ctor: any, key: string): T {
 type Result = { key: string, value: any};
 export function resolveProperties(object: any): Promise<any> {
 
-    let promises: Array<Promise<Result>> = Object.keys(object).map((key) => {
-        let value = object[key];
+    const promises: Array<Promise<Result>> = Object.keys(object).map((key) => {
+        const value = object[key];
 
         if (!(value instanceof Promise)) {
             return Promise.resolve({ key: key, value: value });
@@ -38,7 +38,7 @@ export function resolveProperties(object: any): Promise<any> {
     });
 
     return Promise.all(promises).then((results) => {
-        let result: any = { };
+        const result: any = { };
         return results.reduce((accum, result) => {
             accum[result.key] = result.value;
             return accum;
@@ -59,12 +59,12 @@ export function checkProperties(object: any, properties: { [ name: string ]: boo
 }
 
 export function shallowCopy(object: any): any {
-    let result: any = {};
-    for (let key in object) { result[key] = object[key]; }
+    const result: any = {};
+    for (const key in object) { result[key] = object[key]; }
     return result;
 }
 
-let opaque: { [key: string]: boolean } = { bigint: true, boolean: true, number: true, string: true };
+const opaque: { [key: string]: boolean } = { bigint: true, boolean: true, number: true, string: true };
 
 // Returns a new copy of object, such that no properties may be replaced.
 // New properties may be added only to objects.
@@ -83,9 +83,9 @@ export function deepCopy(object: any): any {
         // Immutable objects are safe to just use
         if (Object.isFrozen(object)) { return object; }
 
-        let result: { [ key: string ]: any } = {};
-        for (let key in object) {
-            let value = object[key];
+        const result: { [ key: string ]: any } = {};
+        for (const key in object) {
+            const value = object[key];
             if (value === undefined) { continue; }
             defineReadOnly(result, key, deepCopy(value));
         }
@@ -101,11 +101,10 @@ export function deepCopy(object: any): any {
     throw new Error("Cannot deepCopy " + typeof(object));
 }
 
-export class Description {
-    constructor(info: any) {
-        for (let key in info) {
+export class Description<T = any> {
+    constructor(info: T) {
+        for (const key in info) {
             (<any>this)[key] = deepCopy(info[key]);
         }
-        Object.freeze(this);
     }
 }

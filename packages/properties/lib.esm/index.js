@@ -23,8 +23,8 @@ export function getStatic(ctor, key) {
     return null;
 }
 export function resolveProperties(object) {
-    let promises = Object.keys(object).map((key) => {
-        let value = object[key];
+    const promises = Object.keys(object).map((key) => {
+        const value = object[key];
         if (!(value instanceof Promise)) {
             return Promise.resolve({ key: key, value: value });
         }
@@ -33,7 +33,7 @@ export function resolveProperties(object) {
         });
     });
     return Promise.all(promises).then((results) => {
-        let result = {};
+        const result = {};
         return results.reduce((accum, result) => {
             accum[result.key] = result.value;
             return accum;
@@ -51,13 +51,13 @@ export function checkProperties(object, properties) {
     });
 }
 export function shallowCopy(object) {
-    let result = {};
-    for (let key in object) {
+    const result = {};
+    for (const key in object) {
         result[key] = object[key];
     }
     return result;
 }
-let opaque = { bigint: true, boolean: true, number: true, string: true };
+const opaque = { bigint: true, boolean: true, number: true, string: true };
 // Returns a new copy of object, such that no properties may be replaced.
 // New properties may be added only to objects.
 export function deepCopy(object) {
@@ -74,9 +74,9 @@ export function deepCopy(object) {
         if (Object.isFrozen(object)) {
             return object;
         }
-        let result = {};
-        for (let key in object) {
-            let value = object[key];
+        const result = {};
+        for (const key in object) {
+            const value = object[key];
             if (value === undefined) {
                 continue;
             }
@@ -92,9 +92,8 @@ export function deepCopy(object) {
 }
 export class Description {
     constructor(info) {
-        for (let key in info) {
+        for (const key in info) {
             this[key] = deepCopy(info[key]);
         }
-        Object.freeze(this);
     }
 }

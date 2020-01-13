@@ -1,9 +1,17 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { Signer } from "@ethersproject/abstract-signer";
 import { BigNumber } from "@ethersproject/bignumber";
 import { hexlify, hexValue } from "@ethersproject/bytes";
-import { getNetwork } from "@ethersproject/networks";
-import { checkProperties, deepCopy, defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
+import { checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes } from "@ethersproject/strings";
 import { fetchJson, poll } from "@ethersproject/web";
 import { Logger } from "@ethersproject/logger";
@@ -184,10 +192,12 @@ const allowedTransactionKeys = {
 export class JsonRpcProvider extends BaseProvider {
     constructor(url, network) {
         logger.checkNew(new.target, JsonRpcProvider);
+        const getNetwork = getStatic((new.target), "getNetwork");
         // One parameter, but it is a network name, so swap it with the URL
         if (typeof (url) === "string") {
-            if (network === null && getNetwork(url)) {
-                network = url;
+            if (network === null) {
+                const checkNetwork = getNetwork(url);
+                network = checkNetwork;
                 url = null;
             }
         }
@@ -197,18 +207,28 @@ export class JsonRpcProvider extends BaseProvider {
         }
         else {
             // The network is unknown, query the JSON-RPC for it
-            let ready = new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    this.send("eth_chainId", []).then((result) => {
-                        resolve(getNetwork(BigNumber.from(result).toNumber()));
-                    }).catch((error) => {
-                        this.send("net_version", []).then((result) => {
-                            resolve(getNetwork(BigNumber.from(result).toNumber()));
-                        }).catch((error) => {
-                            reject(logger.makeError("could not detect network", Logger.errors.NETWORK_ERROR));
-                        });
-                    });
-                });
+            const ready = new Promise((resolve, reject) => {
+                setTimeout(() => __awaiter(this, void 0, void 0, function* () {
+                    let chainId = null;
+                    try {
+                        chainId = yield this.send("eth_chainId", []);
+                    }
+                    catch (error) {
+                        try {
+                            chainId = yield this.send("net_version", []);
+                        }
+                        catch (error) { }
+                    }
+                    if (chainId != null) {
+                        try {
+                            return resolve(getNetwork(BigNumber.from(chainId).toNumber()));
+                        }
+                        catch (error) {
+                            console.log("e3", error);
+                        }
+                    }
+                    reject(logger.makeError("could not detect network", Logger.errors.NETWORK_ERROR));
+                }), 0);
             });
             super(ready);
         }
@@ -217,12 +237,12 @@ export class JsonRpcProvider extends BaseProvider {
             url = "http:/" + "/localhost:8545";
         }
         if (typeof (url) === "string") {
-            this.connection = {
+            this.connection = Object.freeze({
                 url: url
-            };
+            });
         }
         else {
-            this.connection = url;
+            this.connection = Object.freeze(shallowCopy(url));
         }
         this._nextId = 42;
     }
@@ -303,10 +323,14 @@ export class JsonRpcProvider extends BaseProvider {
                 return this.send("eth_getTransactionByHash", [params.transactionHash]);
             case "getTransactionReceipt":
                 return this.send("eth_getTransactionReceipt", [params.transactionHash]);
-            case "call":
-                return this.send("eth_call", [this.constructor.hexlifyTransaction(params.transaction, { from: true }), params.blockTag]);
-            case "estimateGas":
-                return this.send("eth_estimateGas", [this.constructor.hexlifyTransaction(params.transaction, { from: true })]);
+            case "call": {
+                const hexlifyTransaction = getStatic(this.constructor, "hexlifyTransaction");
+                return this.send("eth_call", [hexlifyTransaction(params.transaction, { from: true }), params.blockTag]);
+            }
+            case "estimateGas": {
+                const hexlifyTransaction = getStatic(this.constructor, "hexlifyTransaction");
+                return this.send("eth_estimateGas", [hexlifyTransaction(params.transaction, { from: true })]);
+            }
             case "getLogs":
                 if (params.filter && params.filter.address != null) {
                     params.filter.address = getLowerCase(params.filter.address);
@@ -368,7 +392,7 @@ export class JsonRpcProvider extends BaseProvider {
     //       before this is called
     static hexlifyTransaction(transaction, allowExtra) {
         // Check only allowed properties are given
-        let allowed = shallowCopy(allowedTransactionKeys);
+        const allowed = shallowCopy(allowedTransactionKeys);
         if (allowExtra) {
             for (let key in allowExtra) {
                 if (allowExtra[key]) {
@@ -377,13 +401,13 @@ export class JsonRpcProvider extends BaseProvider {
             }
         }
         checkProperties(transaction, allowed);
-        let result = {};
+        const result = {};
         // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
         ["gasLimit", "gasPrice", "nonce", "value"].forEach(function (key) {
             if (transaction[key] == null) {
                 return;
             }
-            let value = hexValue(transaction[key]);
+            const value = hexValue(transaction[key]);
             if (key === "gasLimit") {
                 key = "gas";
             }

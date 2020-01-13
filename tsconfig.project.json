@@ -112,6 +112,9 @@
       "path": "./packages/experimental"
     },
     {
+      "path": "./packages/hardware-wallets"
+    },
+    {
       "path": "./packages/testcases"
     },
     {

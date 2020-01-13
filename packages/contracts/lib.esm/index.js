@@ -35,8 +35,17 @@ function resolveAddresses(signerOrProvider, value, paramType) {
     }
     return Promise.resolve(value);
 }
+/*
+export function _populateTransaction(func: FunctionFragment, args: Array<any>, overrides?: any): Promise<Transaction> {
+    return null;
+}
+
+export function _sendTransaction(func: FunctionFragment, args: Array<any>, overrides?: any): Promise<Transaction> {
+    return null;
+}
+*/
 function runMethod(contract, functionName, options) {
-    let method = contract.interface.functions[functionName];
+    const method = contract.interface.functions[functionName];
     return function (...params) {
         let tx = {};
         let blockTag = null;
@@ -127,14 +136,14 @@ function runMethod(contract, functionName, options) {
                 logger.throwError("sending a transaction requires a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
             }
             return contract.signer.sendTransaction(tx).then((tx) => {
-                let wait = tx.wait.bind(tx);
+                const wait = tx.wait.bind(tx);
                 tx.wait = (confirmations) => {
                     return wait(confirmations).then((receipt) => {
                         receipt.events = receipt.logs.map((log) => {
                             let event = deepCopy(log);
                             let parsed = contract.interface.parseLog(log);
                             if (parsed) {
-                                event.values = parsed.values;
+                                event.args = parsed.args;
                                 event.decode = (data, topics) => {
                                     return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
                                 };
@@ -196,9 +205,9 @@ class RunningEvent {
         return this._listeners.length;
     }
     run(args) {
-        let listenerCount = this.listenerCount();
+        const listenerCount = this.listenerCount();
         this._listeners = this._listeners.filter((item) => {
-            let argsCopy = args.slice();
+            const argsCopy = args.slice();
             // Call the callback in the next event loop
             setTimeout(() => {
                 item.listener.apply(this, argsCopy);
@@ -218,7 +227,7 @@ class ErrorRunningEvent extends RunningEvent {
 }
 class FragmentRunningEvent extends RunningEvent {
     constructor(address, contractInterface, fragment, topics) {
-        let filter = {
+        const filter = {
             address: address
         };
         let topic = contractInterface.getEventTopic(fragment);
@@ -243,7 +252,7 @@ class FragmentRunningEvent extends RunningEvent {
         event.decode = (data, topics) => {
             return this.interface.decodeEventLog(this.fragment, data, topics);
         };
-        event.values = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+        event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
     }
 }
 class WildcardRunningEvent extends RunningEvent {
@@ -254,14 +263,14 @@ class WildcardRunningEvent extends RunningEvent {
     }
     prepareEvent(event) {
         super.prepareEvent(event);
-        let parsed = this.interface.parseLog(event);
+        const parsed = this.interface.parseLog(event);
         if (parsed) {
             event.event = parsed.name;
             event.eventSignature = parsed.signature;
             event.decode = (data, topics) => {
                 return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
             };
-            event.values = parsed.values;
+            event.args = parsed.args;
         }
     }
 }
@@ -287,15 +296,31 @@ export class Contract {
         defineReadOnly(this, "functions", {});
         defineReadOnly(this, "populateTransaction", {});
         defineReadOnly(this, "filters", {});
-        Object.keys(this.interface.events).forEach((eventName) => {
-            let event = this.interface.events[eventName];
-            defineReadOnly(this.filters, eventName, (...args) => {
-                return {
-                    address: this.address,
-                    topics: this.interface.encodeFilterTopics(event, args)
-                };
+        {
+            const uniqueFilters = {};
+            Object.keys(this.interface.events).forEach((eventSignature) => {
+                const event = this.interface.events[eventSignature];
+                defineReadOnly(this.filters, eventSignature, (...args) => {
+                    return {
+                        address: this.address,
+                        topics: this.interface.encodeFilterTopics(event, args)
+                    };
+                });
+                if (!uniqueFilters[event.name]) {
+                    uniqueFilters[event.name] = [];
+                }
+                uniqueFilters[event.name].push(eventSignature);
             });
-        });
+            Object.keys(uniqueFilters).forEach((name) => {
+                const filters = uniqueFilters[name];
+                if (filters.length === 1) {
+                    defineReadOnly(this.filters, name, this.filters[filters[0]]);
+                }
+                else {
+                    logger.warn(`Duplicate definition of ${name} (${filters.join(", ")})`);
+                }
+            });
+        }
         defineReadOnly(this, "_runningEvents", {});
         defineReadOnly(this, "_wrappedEmits", {});
         defineReadOnly(this, "address", addressOrName);
@@ -319,8 +344,11 @@ export class Contract {
                 logger.throwArgumentError("provider is required to use non-address contract address", "addressOrName", addressOrName);
             }
         }
+        const uniqueFunctions = {};
         Object.keys(this.interface.functions).forEach((name) => {
-            let run = runMethod(this, name, {});
+            const fragment = this.interface.functions[name];
+            // @TODO: This should take in fragment
+            const run = runMethod(this, name, {});
             if (this[name] == null) {
                 defineReadOnly(this, name, run);
             }
@@ -336,6 +364,24 @@ export class Contract {
             if (this.estimate[name] == null) {
                 defineReadOnly(this.estimate, name, runMethod(this, name, { estimate: true }));
             }
+            if (!uniqueFunctions[fragment.name]) {
+                uniqueFunctions[fragment.name] = [];
+            }
+            uniqueFunctions[fragment.name].push(name);
+        });
+        Object.keys(uniqueFunctions).forEach((name) => {
+            const signatures = uniqueFunctions[name];
+            if (signatures.length > 1) {
+                logger.warn(`Duplicate definition of ${name} (${signatures.join(", ")})`);
+                return;
+            }
+            if (this[name] == null) {
+                defineReadOnly(this, name, this[signatures[0]]);
+            }
+            defineReadOnly(this.functions, name, this.functions[signatures[0]]);
+            defineReadOnly(this.callStatic, name, this.callStatic[signatures[0]]);
+            defineReadOnly(this.populateTransaction, name, this.populateTransaction[signatures[0]]);
+            defineReadOnly(this.estimate, name, this.estimate[signatures[0]]);
         });
     }
     static getContractAddress(transaction) {
@@ -384,7 +430,7 @@ export class Contract {
         if (!this.signer) {
             logger.throwError("sending a transactions require a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
         }
-        let tx = shallowCopy(overrides || {});
+        const tx = shallowCopy(overrides || {});
         ["from", "to"].forEach(function (key) {
             if (tx[key] == null) {
                 return;
@@ -401,7 +447,7 @@ export class Contract {
         if (typeof (signerOrProvider) === "string") {
             signerOrProvider = new VoidSigner(signerOrProvider, this.provider);
         }
-        let contract = new (this.constructor)(this.address, this.interface, signerOrProvider);
+        const contract = new (this.constructor)(this.address, this.interface, signerOrProvider);
         if (this.deployTransaction) {
             defineReadOnly(contract, "deployTransaction", this.deployTransaction);
         }
@@ -432,20 +478,20 @@ export class Contract {
             if (eventName === "*") {
                 return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
             }
-            let fragment = this.interface.getEvent(eventName);
+            const fragment = this.interface.getEvent(eventName);
             if (!fragment) {
                 logger.throwArgumentError("unknown event - " + eventName, "eventName", eventName);
             }
             return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
         }
-        let filter = {
+        const filter = {
             address: this.address
         };
         // Find the matching event in the ABI; if none, we still allow filtering
         // since it may be a filter for an otherwise unknown event
         if (eventName.topics) {
             if (eventName.topics[0]) {
-                let fragment = this.interface.getEvent(eventName.topics[0]);
+                const fragment = this.interface.getEvent(eventName.topics[0]);
                 if (fragment) {
                     return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
                 }
@@ -459,14 +505,14 @@ export class Contract {
             delete this._runningEvents[runningEvent.tag];
         }
         // If we have a poller for this, remove it
-        let emit = this._wrappedEmits[runningEvent.tag];
+        const emit = this._wrappedEmits[runningEvent.tag];
         if (emit) {
             this.provider.off(runningEvent.filter, emit);
             delete this._wrappedEmits[runningEvent.tag];
         }
     }
     _wrapEvent(runningEvent, log, listener) {
-        let event = deepCopy(log);
+        const event = deepCopy(log);
         try {
             runningEvent.prepareEvent(event);
         }
@@ -495,11 +541,11 @@ export class Contract {
         this._runningEvents[runningEvent.tag] = runningEvent;
         // If we are not polling the provider, start
         if (!this._wrappedEmits[runningEvent.tag]) {
-            let wrappedEmit = (log) => {
-                let event = this._wrapEvent(runningEvent, log, listener);
-                let values = (event.values || []);
-                values.push(event);
-                this.emit(runningEvent.filter, ...values);
+            const wrappedEmit = (log) => {
+                const event = this._wrapEvent(runningEvent, log, listener);
+                const args = (event.args || []);
+                args.push(event);
+                this.emit(runningEvent.filter, ...args);
             };
             this._wrappedEmits[runningEvent.tag] = wrappedEmit;
             // Special events, like "error" do not have a filter
@@ -509,8 +555,8 @@ export class Contract {
         }
     }
     queryFilter(event, fromBlockOrBlockhash, toBlock) {
-        let runningEvent = this._getRunningEvent(event);
-        let filter = shallowCopy(runningEvent.filter);
+        const runningEvent = this._getRunningEvent(event);
+        const filter = shallowCopy(runningEvent.filter);
         if (typeof (fromBlockOrBlockhash) === "string" && isHexString(fromBlockOrBlockhash, 32)) {
             if (toBlock != null) {
                 logger.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
@@ -537,8 +583,8 @@ export class Contract {
         if (!this.provider) {
             return false;
         }
-        let runningEvent = this._getRunningEvent(eventName);
-        let result = (runningEvent.run(args) > 0);
+        const runningEvent = this._getRunningEvent(eventName);
+        const result = (runningEvent.run(args) > 0);
         // May have drained all the "once" events; check for living events
         this._checkRunningEvents(runningEvent);
         return result;
@@ -554,7 +600,7 @@ export class Contract {
             return [];
         }
         if (eventName == null) {
-            let result = [];
+            const result = [];
             for (let tag in this._runningEvents) {
                 this._runningEvents[tag].listeners().forEach((listener) => {
                     result.push(listener);
@@ -569,15 +615,15 @@ export class Contract {
             return this;
         }
         if (eventName == null) {
-            for (let tag in this._runningEvents) {
-                let runningEvent = this._runningEvents[tag];
+            for (const tag in this._runningEvents) {
+                const runningEvent = this._runningEvents[tag];
                 runningEvent.removeAllListeners();
                 this._checkRunningEvents(runningEvent);
             }
             return this;
         }
         // Delete any listeners
-        let runningEvent = this._getRunningEvent(eventName);
+        const runningEvent = this._getRunningEvent(eventName);
         runningEvent.removeAllListeners();
         this._checkRunningEvents(runningEvent);
         return this;
@@ -586,7 +632,7 @@ export class Contract {
         if (!this.provider) {
             return this;
         }
-        let runningEvent = this._getRunningEvent(eventName);
+        const runningEvent = this._getRunningEvent(eventName);
         runningEvent.removeListener(listener);
         this._checkRunningEvents(runningEvent);
         return this;
@@ -633,7 +679,7 @@ export class ContractFactory {
         // If we have 1 additional argument, we allow transaction overrides
         if (args.length === this.interface.deploy.inputs.length + 1) {
             tx = shallowCopy(args.pop());
-            for (let key in tx) {
+            for (const key in tx) {
                 if (!allowedTransactionKeys[key]) {
                     throw new Error("unknown transaction override " + key);
                 }
@@ -658,11 +704,11 @@ export class ContractFactory {
     deploy(...args) {
         return resolveAddresses(this.signer, args, this.interface.deploy.inputs).then((args) => {
             // Get the deployment transaction (with optional overrides)
-            let tx = this.getDeployTransaction(...args);
+            const tx = this.getDeployTransaction(...args);
             // Send the deployment transaction
             return this.signer.sendTransaction(tx).then((tx) => {
-                let address = (this.constructor).getContractAddress(tx);
-                let contract = (this.constructor).getContract(address, this.interface, this.signer);
+                const address = (this.constructor).getContractAddress(tx);
+                const contract = (this.constructor).getContract(address, this.interface, this.signer);
                 defineReadOnly(contract, "deployTransaction", tx);
                 return contract;
             });
@@ -681,7 +727,7 @@ export class ContractFactory {
         if (typeof (compilerOutput) === "string") {
             compilerOutput = JSON.parse(compilerOutput);
         }
-        let abi = compilerOutput.abi;
+        const abi = compilerOutput.abi;
         let bytecode = null;
         if (compilerOutput.bytecode) {
             bytecode = compilerOutput.bytecode;

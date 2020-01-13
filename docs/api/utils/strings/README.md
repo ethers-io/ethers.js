@@ -27,7 +27,7 @@ null termination, we can store strings up to 31 bytes long in a
 word.
 
 
-#### **Note:**
+#### Note
 
 Strings that are 31 **bytes** long may contain fewer than 31 **characters**,
 since UTF-8 requires multiple bytes to encode international characters.
@@ -143,10 +143,10 @@ See NFKC for more an example.
 
 
 
-#### **Note:**
+#### Note
 
 Only certain specified characters are folded in Canonical Equivalence, and thus
-it should not be considered a method to acheive *any* level of security from
+it should **not** be considered a method to acheive *any* level of security from
 [homoglyph attacks](https://en.wikipedia.org/wiki/IDN_homograph_attack).
 
 
@@ -154,4 +154,4 @@ it should not be considered a method to acheive *any* level of security from
 
 
 -----
-**Content Hash:** 74002cd3d9368872b5618f68967deac34a4d1aeafeeac6ddb5c1d06a450180c9
+**Content Hash:** e38fe18f76e58587f7ed1c4558a5b3ec177eee1a5e71b4c88fa6d496154fdd8a

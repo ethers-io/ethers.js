@@ -54,6 +54,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = __importDefault(require("fs"));
+var module_1 = __importDefault(require("module"));
+var path_1 = require("path");
 var repl_1 = __importDefault(require("repl"));
 var util_1 = __importDefault(require("util"));
 var vm_1 = __importDefault(require("vm"));
@@ -61,14 +63,20 @@ var ethers_1 = require("ethers");
 var cli_1 = require("../cli");
 var prompt_1 = require("../prompt");
 var solc_1 = require("../solc");
-function setupContext(context, plugin) {
+function setupContext(path, context, plugin) {
     context.provider = plugin.provider;
     context.accounts = plugin.accounts;
+    if (!context.__filename) {
+        context.__filename = path;
+    }
+    if (!context.__dirname) {
+        context.__dirname = path_1.dirname(path);
+    }
     if (!context.console) {
         context.console = console;
     }
     if (!context.require) {
-        context.require = require;
+        context.require = module_1.default.createRequireFromPath(path);
     }
     if (!context.process) {
         context.process = process;
@@ -184,7 +192,7 @@ var SandboxPlugin = /** @class */ (function (_super) {
             prompt: (this.provider ? this.network.name : "no-network") + "> ",
             writer: promiseWriter
         });
-        setupContext(repl.context, this);
+        setupContext(path_1.resolve(process.cwd(), "./sandbox.js"), repl.context, this);
         return new Promise(function (resolve) {
             repl.on("exit", function () {
                 console.log("");
@@ -693,7 +701,7 @@ var EvalPlugin = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         contextObject = {};
-                        setupContext(contextObject, this);
+                        setupContext(path_1.resolve(process.cwd(), "./sandbox.js"), contextObject, this);
                         context = vm_1.default.createContext(contextObject);
                         script = new vm_1.default.Script(this.code, { filename: "-" });
                         result = script.runInContext(context);
@@ -746,7 +754,7 @@ var RunPlugin = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         contextObject = {};
-                        setupContext(contextObject, this);
+                        setupContext(path_1.resolve(this.filename), contextObject, this);
                         context = vm_1.default.createContext(contextObject);
                         script = new vm_1.default.Script(fs_1.default.readFileSync(this.filename).toString(), { filename: this.filename });
                         result = script.runInContext(context);

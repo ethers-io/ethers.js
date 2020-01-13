@@ -1,12 +1,6 @@
 {
-  "name": "@ethersproject/wordlists",
-  "version": "5.0.0-beta.129",
-  "description": "Word lists for BIP39 wallets.",
-  "main": "./lib/index.js",
+  "author": "Richard Moore <me@ricmoo.com>",
   "browser": "./lib/browser.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "dependencies": {
     "@ethersproject/bytes": ">=5.0.0-beta.129",
     "@ethersproject/hash": ">=5.0.0-beta.128",
@@ -14,12 +8,16 @@
     "@ethersproject/properties": ">=5.0.0-beta.131",
     "@ethersproject/strings": ">=5.0.0-beta.130"
   },
+  "description": "Word lists for BIP39 wallets.",
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/wordlists",
   "publishConfig": {
     "access": "public"
   },
@@ -27,8 +25,10 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0xe32bd1fd981edfe799027c0748ce31c33478b5af30df8768b972b175448f0c42",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x7880505d7f146ef3fd8b41a2db024180f1642ac9f49417ae4b537b0cb9cc8fb1"
+  "version": "5.0.0-beta.135"
 }

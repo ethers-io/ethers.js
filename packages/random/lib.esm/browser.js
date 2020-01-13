@@ -19,7 +19,7 @@ export function randomBytes(length) {
     if (length <= 0 || length > 1024 || parseInt(String(length)) != length) {
         logger.throwArgumentError("invalid length", "length", length);
     }
-    let result = new Uint8Array(length);
+    const result = new Uint8Array(length);
     crypto.getRandomValues(result);
     return arrayify(result);
 }

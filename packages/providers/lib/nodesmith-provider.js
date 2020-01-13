@@ -25,9 +25,13 @@ var NodesmithProvider = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     NodesmithProvider.getApiKey = function (apiKey) {
+        if (apiKey && typeof (apiKey) !== "string") {
+            logger.throwArgumentError("invalid apiKey", "apiKey", apiKey);
+        }
         return apiKey || defaultApiKey;
     };
     NodesmithProvider.getUrl = function (network, apiKey) {
+        logger.warn("NodeSmith will be discontinued on 2019-12-20; please migrate to another platform.");
         var host = null;
         switch (network.name) {
             case "homestead":

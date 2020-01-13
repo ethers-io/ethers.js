@@ -7,9 +7,13 @@ const logger = new Logger(version);
 const defaultApiKey = "ETHERS_JS_SHARED";
 export class NodesmithProvider extends UrlJsonRpcProvider {
     static getApiKey(apiKey) {
+        if (apiKey && typeof (apiKey) !== "string") {
+            logger.throwArgumentError("invalid apiKey", "apiKey", apiKey);
+        }
         return apiKey || defaultApiKey;
     }
     static getUrl(network, apiKey) {
+        logger.warn("NodeSmith will be discontinued on 2019-12-20; please migrate to another platform.");
         let host = null;
         switch (network.name) {
             case "homestead":

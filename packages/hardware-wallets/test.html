@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <title>Browser Test - Ledger</title>
+    </head>
+    <body>
+        <script type="module">
+            import { ethers } from "../ethers/dist/ethers.esm.js";
+            import { LedgerSigner } from "./dist/hardware-wallets.esm.js";
+            console.log(ethers, LedgerSigner);
+            (async function() {
+                const provider = ethers.getDefaultProvider();
+
+                const signer = new LedgerSigner(provider);
+                console.log("Signer", signer);
+
+                const address = await signer.getAddress();
+                console.log(address);
+
+                const tx = await signer.populateTransaction({ to: "ricmoo.eth", value: ethers.utils.parseEther("1.0") });
+                console.log(tx);
+                delete tx.from;
+                const signedTx = await signer.signTransaction(tx);
+                console.log("TX", signedTx);
+
+                const signature = await signer.signMessage("Hello World");
+                console.log("Signature", signature);
+
+            })();
+        </script>
+    </body>
+</html>

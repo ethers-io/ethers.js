@@ -1,14 +1,11 @@
 'use strict';
 import assert from "assert";
 import { ethers } from "ethers";
+import contractData from "./test-contract.json";
 const provider = new ethers.providers.InfuraProvider('rinkeby');
 const contract = (function () {
-    let data = require('../contracts/test-contract.json');
-    return new ethers.Contract(data.contractAddress, data.interface, provider);
+    return new ethers.Contract(contractData.contractAddress, contractData.interface, provider);
 })();
-//let event = contract.foo("TestP0");
-//console.log(event);
-//process.exit();
 function equals(name, actual, expected) {
     if (Array.isArray(expected)) {
         assert.equal(actual.length, expected.length, 'array length mismatch - ' + name);

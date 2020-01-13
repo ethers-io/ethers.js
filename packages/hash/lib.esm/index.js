@@ -10,7 +10,7 @@ const Zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 const Partition = new RegExp("^((.*)\\.)?([^.]+)$");
 export function isValidName(name) {
     try {
-        let comps = name.split(".");
+        const comps = name.split(".");
         for (let i = 0; i < comps.length; i++) {
             if (nameprep(comps[i]).length === 0) {
                 throw new Error("empty");
@@ -27,8 +27,8 @@ export function namehash(name) {
     }
     let result = Zeros;
     while (name.length) {
-        let partition = name.match(Partition);
-        let label = toUtf8Bytes(nameprep(partition[3]));
+        const partition = name.match(Partition);
+        const label = toUtf8Bytes(nameprep(partition[3]));
         result = keccak256(concat([result, keccak256(label)]));
         name = partition[2] || "";
     }

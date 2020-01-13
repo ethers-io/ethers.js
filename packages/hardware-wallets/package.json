@@ -1,0 +1,41 @@
+{
+  "author": "Richard Moore <me@ricmoo.com>",
+  "browser": {
+    "./lib.esm/ledger-transport.js": "./lib/browser-ledger-transport.js",
+    "ethers": "./lib/browser-ethers.js"
+  },
+  "dependencies": {
+    "@ledgerhq/hw-app-eth": "5.3.0",
+    "@ledgerhq/hw-transport": "5.3.0",
+    "@ledgerhq/hw-transport-node-hid": "5.3.0",
+    "@ledgerhq/hw-transport-u2f": "5.3.0",
+    "ethers": "5.0.0-beta.166"
+  },
+  "description": "Hardware Wallet support for ethers.",
+  "devDependencies": {
+    "@types/node": "^12.7.4"
+  },
+  "ethereum": "donations.ethers.eth",
+  "keywords": [
+    "Ethereum",
+    "ethers",
+    "cli"
+  ],
+  "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/hardware-wallets",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "scripts": {
+    "test": "exit 1"
+  },
+  "tarballHash": "0xa37070ed42f6da545b3a6d5bb1678a9a4c0fb0e9f76726b36c8b197d685b6a01",
+  "types": "./lib/index.d.ts",
+  "version": "5.0.0-beta.2"
+}

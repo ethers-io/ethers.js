@@ -32,6 +32,38 @@ import { AsyncSendable } from "./web3-provider";
 
 import { Formatter } from "./formatter";
 
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
+
+////////////////////////
+// Helper Functions
+
+function getDefaultProvider(network?: Network | string, options?: any): BaseProvider {
+    if (network == null) { network = "homestead"; }
+    const n = getNetwork(network);
+    if (!n || !n._defaultProvider) {
+        logger.throwError("unsupported getDefaultProvider network", Logger.errors.NETWORK_ERROR, {
+            operation: "getDefaultProvider",
+            network: network
+        });
+    }
+
+    return n._defaultProvider({
+        FallbackProvider,
+
+        AlchemyProvider,
+        CloudflareProvider,
+        EtherscanProvider,
+        InfuraProvider,
+        JsonRpcProvider,
+        NodesmithProvider,
+        Web3Provider,
+
+        IpcProvider,
+    }, options);
+}
+
 ////////////////////////
 // Exports
 
@@ -67,6 +99,7 @@ export {
     ///////////////////////
     // Functions
 
+    getDefaultProvider,
     getNetwork,
 
 

@@ -13,7 +13,7 @@ export type BytesLike = Bytes | string;
 
 export type DataOptions = {
     allowMissingPrefix?: boolean;
-    allowOddLength?: boolean;
+    hexPad?: "left" | "right" | null;
 };
 
 export interface Hexable {
@@ -59,7 +59,7 @@ function addSlice(array: Uint8Array): Uint8Array {
     if (array.slice) { return array; }
 
     array.slice = function() {
-        let args = Array.prototype.slice.call(arguments);
+        const args = Array.prototype.slice.call(arguments);
         return addSlice(new Uint8Array(Array.prototype.slice.apply(array, args)));
     }
 
@@ -78,7 +78,7 @@ export function isBytes(value: any): value is Bytes {
     if (value.length == null) { return false; }
 
     for (let i = 0; i < value.length; i++) {
-        let v = value[i];
+        const v = value[i];
         if (v < 0 || v >= 256 || (v % 1)) {
             return false;
         }
@@ -94,7 +94,7 @@ export function arrayify(value: BytesLike | Hexable | number, options?: DataOpti
     if (typeof(value) === "number") {
         logger.checkSafeUint53(value, "invalid arrayify value");
 
-        let result = [];
+        const result = [];
         while (value) {
             result.unshift(value & 0xff);
             value /= 256;
@@ -112,11 +112,17 @@ export function arrayify(value: BytesLike | Hexable | number, options?: DataOpti
 
     if (isHexString(value)) {
         let hex = (<string>value).substring(2);
-        if (!options.allowOddLength && hex.length % 2) {
-            logger.throwArgumentError("hex data is odd-length", "value", value);
+        if (hex.length % 2) {
+            if (options.hexPad === "left") {
+                hex = "0x0" + hex.substring(2);
+            } else if (options.hexPad === "right") {
+                hex += "0";
+            } else {
+                logger.throwArgumentError("hex data is odd-length", "value", value);
+            }
         }
 
-        let result = [];
+        const result = [];
         for (let i = 0; i < hex.length; i += 2) {
             result.push(parseInt(hex.substring(i, i + 2), 16));
         }
@@ -132,10 +138,10 @@ export function arrayify(value: BytesLike | Hexable | number, options?: DataOpti
 }
 
 export function concat(items: Array<BytesLike>): Uint8Array {
-    let objects = items.map(item => arrayify(item));
-    let length = objects.reduce((accum, item) => (accum + item.length), 0);
+    const objects = items.map(item => arrayify(item));
+    const length = objects.reduce((accum, item) => (accum + item.length), 0);
 
-    let result = new Uint8Array(length);
+    const result = new Uint8Array(length);
 
     objects.reduce((offset, object) => {
         result.set(object, offset);
@@ -169,7 +175,7 @@ export function zeroPad(value: BytesLike, length: number): Uint8Array {
         logger.throwArgumentError("value out of range", "value", arguments[0]);
     }
 
-    let result = new Uint8Array(length);
+    const result = new Uint8Array(length);
     result.set(value, length - value.length);
     return addSlice(result);
 }
@@ -212,8 +218,14 @@ export function hexlify(value: BytesLike | Hexable | number, options?: DataOptio
     if (isHexable(value)) { return value.toHexString(); }
 
     if (isHexString(value)) {
-        if (!options.allowOddLength && (<string>value).length % 2) {
-            logger.throwArgumentError("hex data is odd-length", "value", value);
+        if ((<string>value).length % 2) {
+            if (options.hexPad === "left") {
+                value = "0x0" + (<string>value).substring(2);
+            } else if (options.hexPad === "right") {
+                value += "0";
+            } else {
+                logger.throwArgumentError("hex data is odd-length", "value", value);
+            }
         }
         return (<string>value).toLowerCase();
     }
@@ -273,7 +285,7 @@ export function hexConcat(items: Array<BytesLike>): string {
 }
 
 export function hexValue(value: BytesLike | Hexable | number): string {
-    let trimmed = hexStripZeros(hexlify(value, { allowOddLength: true }));
+    const trimmed = hexStripZeros(hexlify(value, { hexPad: "left" }));
     if (trimmed === "0x") { return "0x0"; }
     return trimmed;
 }
@@ -309,7 +321,7 @@ export function hexZeroPad(value: BytesLike, length: number): string {
 }
 
 export function splitSignature(signature: SignatureLike): Signature {
-    let result = {
+    const result = {
         r: "0x",
         s: "0x",
         _vs: "0x",
@@ -318,23 +330,27 @@ export function splitSignature(signature: SignatureLike): Signature {
     };
 
     if (isBytesLike(signature)) {
-        let bytes: Uint8Array = arrayify(signature);
+        const bytes: Uint8Array = arrayify(signature);
         if (bytes.length !== 65) {
             logger.throwArgumentError("invalid signature string; must be 65 bytes", "signature", signature);
         }
 
-        // Get the r and s
+        // Get the r, s and v
         result.r = hexlify(bytes.slice(0, 32));
         result.s = hexlify(bytes.slice(32, 64));
-
-        // Reduce v to the canonical 27 or 28
         result.v = bytes[64];
-        if (result.v !== 27 && result.v !== 28) {
-            result.v = 27 + (result.v % 2);
-        }
 
         // Compute recoveryParam from v
-        result.recoveryParam = (result.v - 27);
+        result.recoveryParam = 1 - (result.v % 2);
+
+        // Allow a recid to be used as the v
+        if (result.v < 27) {
+            if (result.v === 0 || result.v === 1) {
+                result.v += 27;
+            } else {
+                logger.throwArgumentError("signature invalid v byte", "signature", signature);
+            }
+        }
 
         // Compute _vs from recoveryParam and s
         if (result.recoveryParam) { bytes[32] |= 0x80; }
@@ -347,93 +363,83 @@ export function splitSignature(signature: SignatureLike): Signature {
         result.recoveryParam = signature.recoveryParam;
         result._vs = signature._vs;
 
-        // Normalize v into a canonical 27 or 28
-        if (result.v != null && !(result.v == 27 || result.v == 28)) {
-            result.v = 27 + (result.v % 2);
-        }
-
-        // Populate a missing v or recoveryParam if possible
-        if (result.recoveryParam == null && result.v != null) {
-            result.recoveryParam = 1 - (result.v % 2);
-        } else if (result.recoveryParam != null && result.v == null) {
-            result.v = 27 + result.recoveryParam;
-        } else if (result.recoveryParam != null && result.v != null) {
-            if (result.v !== 27 + result.recoveryParam) {
-                logger.throwArgumentError("signature v mismatch recoveryParam", "signature", signature);
-            }
-        }
-
-        // Make sure r and s are padded properly
-        if (result.r != null) { result.r = hexZeroPad(result.r, 32); }
-        if (result.s != null) { result.s = hexZeroPad(result.s, 32); }
-
         // If the _vs is available, use it to populate missing s, v and recoveryParam
         // and verify non-missing s, v and recoveryParam
         if (result._vs != null) {
-            result._vs = hexZeroPad(result._vs, 32);
-            if (result._vs.length > 66) {
-                logger.throwArgumentError("signature _vs overflow", "signature", signature);
+            const vs = zeroPad(arrayify(result._vs), 32);
+            result._vs = hexlify(vs);
+
+            // Set or check the recid
+            const recoveryParam = ((vs[0] >= 128) ? 1: 0);
+            if (result.recoveryParam == null) {
+                result.recoveryParam = recoveryParam;
+            } else if (result.recoveryParam !== recoveryParam) {
+                logger.throwArgumentError("signature recoveryParam mismatch _vs", "signature", signature);
             }
 
-            let vs = arrayify(result._vs);
-
-            let recoveryParam = ((vs[0] >= 128) ? 1: 0);
-            let v = 27 + result.recoveryParam;
-
-            // Use _vs to compute s
+            // Set or check the s
             vs[0] &= 0x7f;
-            let s = hexlify(vs);
-
-            // Check _vs aggress with other parameters
-
+            const s = hexlify(vs);
             if (result.s == null) {
                 result.s = s;
             } else if (result.s !== s) {
                 logger.throwArgumentError("signature v mismatch _vs", "signature", signature);
             }
+        }
 
+        // Use recid and v to populate each other
+        if (result.recoveryParam == null) {
             if (result.v == null) {
-                result.v = v;
-            } else if (result.v !== v) {
-                logger.throwArgumentError("signature v mismatch _vs", "signature", signature);
+                logger.throwArgumentError("signature missing v and recoveryParam", "signature", signature);
+            } else {
+                result.recoveryParam = 1 - (result.v % 2);
             }
-
-            if (recoveryParam == null) {
-                result.recoveryParam = recoveryParam;
-            } else if (result.recoveryParam !== recoveryParam) {
-                logger.throwArgumentError("signature recoveryParam mismatch _vs", "signature", signature);
+        } else {
+            if (result.v == null) {
+                result.v = 27 + result.recoveryParam;
+            } else if (result.recoveryParam !== (1 - (result.v % 2))) {
+                logger.throwArgumentError("signature recoveryParam mismatch v", "signature", signature);
             }
         }
 
-        // After all populating, both v and recoveryParam are still missing...
-        if (result.v == null && result.recoveryParam == null) {
-            logger.throwArgumentError("signature requires at least one of recoveryParam, v or _vs", "signature", signature);
+        if (result.r == null || !isHexString(result.r)) {
+            logger.throwArgumentError("signature missing or invalid r", "signature", signature);
+        } else {
+            result.r = hexZeroPad(result.r, 32);
         }
 
-        // Check for canonical v
-        if (result.v !== 27 && result.v !== 28) {
-            logger.throwArgumentError("signature v not canonical", "signature", signature);
+        if (result.s == null || !isHexString(result.s)) {
+            logger.throwArgumentError("signature missing or invalid s", "signature", signature);
+        } else {
+            result.s = hexZeroPad(result.s, 32);
         }
 
-        // Check that r and s are in range
-        if (result.r.length > 66 || result.s.length > 66) {
-            logger.throwArgumentError("signature overflow r or s", "signature", signature);
+        const vs = arrayify(result.s);
+        if (vs[0] >= 128) {
+            logger.throwArgumentError("signature s out of range", "signature", signature);
+        }
+        if (result.recoveryParam) { vs[0] |= 0x80; }
+        const _vs = hexlify(vs);
+
+        if (result._vs) {
+            if (!isHexString(result._vs)) {
+                logger.throwArgumentError("signature invalid _vs", "signature", signature);
+            }
+            result._vs = hexZeroPad(result._vs, 32);
         }
 
+        // Set or check the _vs
         if (result._vs == null) {
-            let vs = arrayify(result.s);
-            if (vs[0] >= 128) {
-                logger.throwArgumentError("signature s out of range", "signature", signature);
-            }
-            if (result.recoveryParam) { vs[0] |= 0x80; }
-            result._vs = hexlify(vs);
+            result._vs = _vs;
+        } else if (result._vs !== _vs) {
+            logger.throwArgumentError("signature _vs mismatch v and s", "signature", signature);
         }
     }
 
     return result;
 }
 
-export function joinSignature(signature: Signature): string {
+export function joinSignature(signature: SignatureLike): string {
     signature = splitSignature(signature);
 
     return hexlify(concat([

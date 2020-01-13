@@ -216,7 +216,7 @@ describe('Test Contract Events', function() {
             this.timeout(120000);
 
             let iface = new ethers.utils.Interface(test.interface);
-            let parsed = iface.decodeEventLog(iface.events.testEvent, test.data, test.topics);
+            let parsed = iface.decodeEventLog(iface.getEvent("testEvent"), test.data, test.topics);
 
             test.normalizedValues.forEach((expected, index) => {
                 if (test.hashed[index]) {
@@ -233,7 +233,7 @@ describe('Test Contract Events', function() {
             this.timeout(120000);
 
             let iface = new ethers.utils.Interface(test.interface);
-            let parsed = iface.decodeEventLog(iface.events.testEvent, test.data);
+            let parsed = iface.decodeEventLog(iface.getEvent("testEvent"), test.data);
 
             test.normalizedValues.forEach((expected, index) => {
                 if (test.indexed[index]) {
@@ -263,9 +263,9 @@ describe('Test Interface Signatures', function() {
             let iface = new ethers.utils.Interface(test.abi);
             this.timeout(120000);
 
-            assert.equal(iface.functions.testSig.format(), test.signature,
+            assert.equal(iface.getFunction("testSig").format(), test.signature,
                 'derived the correct signature');
-            assert.equal(iface.getSighash(iface.functions.testSig), test.sigHash,
+            assert.equal(iface.getSighash(iface.getFunction("testSig")), test.sigHash,
                 'derived the correct signature hash');
         })
     });
@@ -276,7 +276,7 @@ describe('Test Interface Signatures', function() {
             "transfer",
             "transfer(address,uint256)"
         ].forEach(function(key) {
-            let descr = iface.functions[key];
+            let descr = iface.getFunction(key);
             assert.equal(descr.name, "transfer", "incorrect name key - " + key);
             assert.equal(descr.format(), "transfer(address,uint256)", "incorrect signature key - " + key);
             assert.equal(iface.getSighash(descr), "0xa9059cbb", "incorrect sighash key - " + key);
@@ -532,7 +532,7 @@ describe('Test Filters', function() {
     function doTest(test: TestCase) {
         it(test.name, function() {
             let iface = new ethers.utils.Interface([ test.signature ]);
-            let eventDescription = iface.events[test.event];
+            let eventDescription = iface.getEvent(test.event);
             let filter = iface.encodeFilterTopics(eventDescription, test.args);
             assert.equal(filter.length, test.expected.length, 'filter length matches - ' + test.name);
             filter.forEach((expected, index) => {

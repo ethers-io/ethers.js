@@ -14,7 +14,7 @@ export type LogLevel = "DEBUG" | "INFO" | "WARNING" | "ERROR" | "OFF";
 
 function _checkNormalize(): string {
     try {
-        let missing: Array<string> = [ ];
+        const missing: Array<string> = [ ];
 
         // Make sure all forms of normalization are supported
         ["NFD", "NFC", "NFKD", "NFKC"].forEach((form) => {
@@ -41,7 +41,7 @@ function _checkNormalize(): string {
     return null;
 }
 
-let _normalizeError = _checkNormalize();
+const _normalizeError = _checkNormalize();
 
 export class Logger {
     readonly version: string;
@@ -152,9 +152,9 @@ export class Logger {
     }
 
     setLogLevel(logLevel: LogLevel): void {
-        let level = LogLevels[logLevel];
+        const level = LogLevels[logLevel];
         if (level == null) {
-            this.warn("invliad log level - " + logLevel);
+            this.warn("invalid log level - " + logLevel);
             return;
         }
         LogLevel = level;
@@ -185,7 +185,7 @@ export class Logger {
         if (!code) { code = Logger.errors.UNKNOWN_ERROR; }
         if (!params) { params = {}; }
 
-        let messageDetails: Array<string> = [];
+        const messageDetails: Array<string> = [];
         Object.keys(params).forEach((key) => {
             try {
                 messageDetails.push(key + "=" + JSON.stringify(params[key]));
@@ -195,13 +195,13 @@ export class Logger {
         });
         messageDetails.push("version=" + this.version);
 
-        let reason = message;
+        const reason = message;
         if (messageDetails.length) {
             message += " (" + messageDetails.join(", ") + ")";
         }
 
         // @TODO: Any??
-        let error: any = new Error(message);
+        const error: any = new Error(message);
         error.reason = reason;
         error.code = code
 

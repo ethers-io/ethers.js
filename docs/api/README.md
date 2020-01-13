@@ -36,6 +36,7 @@ Here...
     * [InfuraProvider](providers/api-providers)
     * [NodesmithProvider](providers/api-providers)
     * [AlchemyProvider](providers/api-providers)
+    * [CloudfrontProvider](providers/api-providers)
   * [Other Providers](providers/other)
     * [FallbackProvider](providers/other)
     * [IpcProvider](providers/other)
@@ -80,4 +81,4 @@ Here...
 
 
 -----
-**Content Hash:** cbd0b8ac4ada4bfee211c0553ac53e171a6900127d874743a0dedf7fa30618f3
+**Content Hash:** 82f760f38f47d32016d3fca512c5dc75539d885d13138f1faa15f4be82edf8aa

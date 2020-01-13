@@ -4,10 +4,13 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 export class CloudflareProvider extends UrlJsonRpcProvider {
-    static getUrl(network, apiKey) {
+    static getApiKey(apiKey) {
         if (apiKey != null) {
             logger.throwArgumentError("apiKey not supported for cloudflare", "apiKey", apiKey);
         }
+        return null;
+    }
+    static getUrl(network, apiKey) {
         let host = null;
         switch (network.name) {
             case "homestead":

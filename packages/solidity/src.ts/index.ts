@@ -44,7 +44,7 @@ function _pack(type: string, value: any, isArray?: boolean): Uint8Array {
 
     match = type.match(regexBytes);
     if (match) {
-        let size = parseInt(match[1]);
+        const size = parseInt(match[1]);
         if (String(size) != match[1] || size === 0 || size > 32) {
             throw new Error("invalid number type - " + type);
         }
@@ -55,10 +55,10 @@ function _pack(type: string, value: any, isArray?: boolean): Uint8Array {
 
     match = type.match(regexArray);
     if (match && Array.isArray(value)) {
-        let baseType = match[1];
-        let count = parseInt(match[2] || String(value.length));
+        const baseType = match[1];
+        const count = parseInt(match[2] || String(value.length));
         if (count != value.length) { throw new Error("invalid value for " + type); }
-        let result: Array<Uint8Array> = [];
+        const result: Array<Uint8Array> = [];
         value.forEach(function(value) {
             result.push(_pack(baseType, value, true));
         });
@@ -72,7 +72,7 @@ function _pack(type: string, value: any, isArray?: boolean): Uint8Array {
 
 export function pack(types: Array<string>, values: Array<any>) {
     if (types.length != values.length) { throw new Error("type/value count mismatch"); }
-    let tight: Array<Uint8Array> = [];
+    const tight: Array<Uint8Array> = [];
     types.forEach(function(type, index) {
         tight.push(_pack(type, values[index]));
     });

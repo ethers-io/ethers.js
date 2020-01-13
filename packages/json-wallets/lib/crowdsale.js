@@ -54,8 +54,7 @@ function decrypt(json, password) {
     var encryptedSeed = encseed.slice(16);
     // Decrypt the seed
     var aesCbc = new aes_js_1.default.ModeOfOperation.cbc(key, iv);
-    var seed = bytes_1.arrayify(aesCbc.decrypt(encryptedSeed));
-    seed = aes_js_1.default.padding.pkcs7.strip(seed);
+    var seed = aes_js_1.default.padding.pkcs7.strip(bytes_1.arrayify(aesCbc.decrypt(encryptedSeed)));
     // This wallet format is weird... Convert the binary encoded hex to a string.
     var seedHex = "";
     for (var i = 0; i < seed.length; i++) {

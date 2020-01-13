@@ -23,7 +23,7 @@ _code: importing-node.source
 _heading: Web Browser
 
 It is generally better practice (for security reasons) to copy the
-[ethers library](https://cdn.ethers.io/lib/ethers-5.0.min.js) to
+[ethers library](https://cdn.ethers.io/lib/ethers-5.0.esm.min.js) to
 your own webserver and serve it yourself.
 
 For quick demos or prototyping though, it can be loaded in your

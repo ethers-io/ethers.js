@@ -3,11 +3,7 @@
 import { hexlify } from "@ethersproject/bytes";
 import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
 
-import { Logger } from "@ethersproject/logger";
-import { version } from "./_version";
-const logger = new Logger(version);
-
-import { check, register, Wordlist } from "./wordlist";
+import { logger, Wordlist } from "./wordlist";
 
 
 const data = [
@@ -52,7 +48,7 @@ function loadWords(lang: Wordlist) {
     wordlist = [];
 
     // Transforms for normalizing (sort is a not quite UTF-8)
-    let transform: { [key: string]: string | boolean } = {};
+    const transform: { [key: string]: string | boolean } = {};
 
     // Delete the diacritic marks
     transform[toUtf8String([227, 130, 154])] = false;
@@ -70,7 +66,7 @@ function loadWords(lang: Wordlist) {
         let result = "";
         for (let i = 0; i < word.length; i++) {
             let kana = word[i];
-            let target = transform[kana];
+            const target = transform[kana];
             if (target === false) { continue; }
             if (target) { kana = <string>target; }
             result += kana;
@@ -89,11 +85,11 @@ function loadWords(lang: Wordlist) {
 
     // Load all the words
     for (let length = 3; length <= 9; length++) {
-        let d = data[length - 3];
+        const d = data[length - 3];
         for (let offset = 0; offset < d.length; offset += length) {
-            let word = [];
+            const word = [];
             for (let i = 0; i < length; i++) {
-                 let k = mapping.indexOf(d[offset + i]);
+                 const k = mapping.indexOf(d[offset + i]);
                  word.push(227);
                  word.push((k & 0x40) ? 130: 129);
                  word.push((k & 0x3f) + 128);
@@ -109,12 +105,12 @@ function loadWords(lang: Wordlist) {
     //   - kiyoku
 
     if (hex(wordlist[442]) === KiYoKu && hex(wordlist[443]) === KyoKu) {
-        let tmp = wordlist[442];
+        const tmp = wordlist[442];
         wordlist[442] = wordlist[443];
         wordlist[443] = tmp;
     }
 
-    if (check(lang) !== "0xcb36b09e6baa935787fd762ce65e80b0c6a8dabdfbc3a7f86ac0e2c4fd111600") {
+    if (Wordlist.check(lang) !== "0xcb36b09e6baa935787fd762ce65e80b0c6a8dabdfbc3a7f86ac0e2c4fd111600") {
         wordlist = null;
         throw new Error("BIP39 Wordlist for ja (Japanese) FAILED");
     }
@@ -146,7 +142,7 @@ class LangJa extends Wordlist {
 }
 
 const langJa = new LangJa();
-register(langJa);
+Wordlist.register(langJa);
 
 export { langJa };
 

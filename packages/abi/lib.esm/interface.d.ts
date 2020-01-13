@@ -2,29 +2,28 @@ import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike } from "@ethersproject/bytes";
 import { Description } from "@ethersproject/properties";
 import { AbiCoder } from "./abi-coder";
+import { Result } from "./coders/abstract-coder";
 import { ConstructorFragment, EventFragment, Fragment, FunctionFragment, JsonFragment, ParamType } from "./fragments";
-export declare class LogDescription extends Description {
+export { Result };
+export declare class LogDescription extends Description<LogDescription> {
     readonly eventFragment: EventFragment;
     readonly name: string;
     readonly signature: string;
     readonly topic: string;
-    readonly values: any;
+    readonly args: Result;
 }
-export declare class TransactionDescription extends Description {
+export declare class TransactionDescription extends Description<TransactionDescription> {
     readonly functionFragment: FunctionFragment;
     readonly name: string;
-    readonly args: Array<any>;
+    readonly args: Result;
     readonly signature: string;
     readonly sighash: string;
     readonly value: BigNumber;
 }
-export declare class Indexed extends Description {
+export declare class Indexed extends Description<Indexed> {
     readonly hash: string;
+    readonly _isIndexed: boolean;
     static isIndexed(value: any): value is Indexed;
-}
-export declare class Result {
-    [key: string]: any;
-    [key: number]: any;
 }
 export declare class Interface {
     readonly fragments: Array<Fragment>;
@@ -44,20 +43,24 @@ export declare class Interface {
     readonly _abiCoder: AbiCoder;
     static _isInterface: boolean;
     constructor(fragments: string | Array<Fragment | JsonFragment | string>);
+    format(format?: string): string | Array<string>;
     static getAbiCoder(): AbiCoder;
     static getAddress(address: string): string;
-    _sighashify(functionFragment: FunctionFragment): string;
-    _topicify(eventFragment: EventFragment): string;
+    static getSighash(functionFragment: FunctionFragment): string;
+    static getTopic(eventFragment: EventFragment): string;
     getFunction(nameOrSignatureOrSighash: string): FunctionFragment;
     getEvent(nameOrSignatureOrTopic: string): EventFragment;
     getSighash(functionFragment: FunctionFragment | string): string;
     getEventTopic(eventFragment: EventFragment | string): string;
+    _decodeParams(params: Array<ParamType>, data: BytesLike): Result;
     _encodeParams(params: Array<ParamType>, values: Array<any>): string;
     encodeDeploy(values?: Array<any>): string;
+    decodeFunctionData(functionFragment: FunctionFragment | string, data: BytesLike): Result;
     encodeFunctionData(functionFragment: FunctionFragment | string, values?: Array<any>): string;
-    decodeFunctionResult(functionFragment: FunctionFragment | string, data: BytesLike): Array<any>;
+    decodeFunctionResult(functionFragment: FunctionFragment | string, data: BytesLike): Result;
+    encodeFunctionResult(functionFragment: FunctionFragment | string, values?: Array<any>): string;
     encodeFilterTopics(eventFragment: EventFragment, values: Array<any>): Array<string | Array<string>>;
-    decodeEventLog(eventFragment: EventFragment | string, data: BytesLike, topics?: Array<string>): Array<any>;
+    decodeEventLog(eventFragment: EventFragment | string, data: BytesLike, topics?: Array<string>): Result;
     parseTransaction(tx: {
         data: string;
         value?: BigNumberish;

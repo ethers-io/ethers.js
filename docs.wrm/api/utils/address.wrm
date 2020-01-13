@@ -1,21 +1,41 @@
 _title: Addresses
 
-_section: Addresses
+_section: Addresses @<addresses>
 
 Explain addresses,formats and checksumming here.
 
-Also see: [Constants.AddressZero](constants)
+Also see: [constants.AddressZero](constants)
 
-_heading: Functions
+_subsection: Address Formats  @<address-formats>
 
-_property: utils.getAddress(address) => string
+_heading: Checksum Address  @<address>
 TODO
 
-_property: utils.isAddress(address) => boolean
+_heading: ICAP Address  @<address-icap>
 TODO
 
-_property: utils.getIcapAddress(address) => string
-TODO
+_subsection: Functions
 
-_property: utils.getContractAddress(transaction) => string
-TODO
+_property: utils.getAddress(address) => string<[Address](address)>  @<utils-getAddress> @SRC<address>
+Returns //address// as a Checksum Address.
+
+If //address// is an invalid 40-nibble [[hexstring]] or if it contains mixed case and
+the checksum is invalid, an InvalidArgument Error is throw.
+
+The value of //address// may be any supported address format.
+
+
+_property: utils.isAddress(address) => boolean  @<utils-isAddress> @SRC<address>
+Returns true if //address// is valid (in any supported format).
+
+_property: utils.getIcapAddress(address) => string<[IcapAddress](address-icap)>  @<utils-getIcapAddress> @SRC<address>
+Returns //address// as an [ICAP address](https://github.com/ethereum/wiki/wiki/Inter-exchange-Client-Address-Protocol-%28ICAP%29).
+Supports the same restrictions as [utils.getAddress](utils-getAddress).
+
+_property: utils.getContractAddress(transaction) => string<[Address](address)>  @<utils-getContractAddress> @SRC<address>
+Returns the contract address that would result if //transaction// was
+used to deploy a contract.
+
+_property: utils.getCreate2Address(from, salt, initCodeHash) => string<[Address](address)> @<utils.getCreate2Address> @SRC<address>
+Returns the contract address that would result from the given
+[CREATE2](https://eips.ethereum.org/EIPS/eip-1014) call.

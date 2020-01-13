@@ -21,7 +21,7 @@ function loadWords(lang) {
         return;
     }
     wordlist = words.replace(/([A-Z])/g, " $1").toLowerCase().substring(1).split(" ");
-    if (wordlist_1.check(lang) !== "0x5c1362d88fd4cf614a96f3234941d29f7d37c08c5292fde03bf62c2db6ff7620") {
+    if (wordlist_1.Wordlist.check(lang) !== "0x5c1362d88fd4cf614a96f3234941d29f7d37c08c5292fde03bf62c2db6ff7620") {
         wordlist = null;
         throw new Error("BIP39 Wordlist for it (Italian) FAILED");
     }
@@ -43,4 +43,4 @@ var LangIt = /** @class */ (function (_super) {
 }(wordlist_1.Wordlist));
 var langIt = new LangIt();
 exports.langIt = langIt;
-wordlist_1.register(langIt);
+wordlist_1.Wordlist.register(langIt);

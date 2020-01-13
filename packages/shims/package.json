@@ -1,23 +1,20 @@
 {
-  "name": "@ethersproject/shims",
-  "version": "5.0.0-beta.133",
   "_ethers_nobuild": true,
+  "author": "Richard Moore <me@ricmoo.com>",
   "description": "Shims required for ethers in constrained environments.",
-  "main": "./lib/index.js",
-  "scripts": {
-    "dist": "browserify ./src/index.js -o ./dist/index.js && uglifyjs --compress --mangle --output ./dist/index.min.js -- ./dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "devDependencies": {
     "browserify": "16.2.3",
     "uglify-es": "3.3.9"
   },
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
   ],
-  "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/shims",
   "publishConfig": {
     "access": "public"
   },
@@ -25,8 +22,11 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "module": "./lib.esm/index.js",
+  "scripts": {
+    "dist": "browserify ./src/index.js -o ./dist/index.js && uglifyjs --compress --mangle --output ./dist/index.min.js -- ./dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x7850f44d2c98114e92ba597c4aa2844083b024719a5e21a3d79cb011842f7f66",
   "types": "./lib/index.d.ts",
-  "ethereum": "donations.ethers.eth",
-  "tarballHash": "0x3a9a4bf1f88322ce8f0609940c7d5388f1d0ebdca5c5de87496ebc3fef975012"
+  "version": "5.0.0-beta.134"
 }
