@@ -77,10 +77,12 @@ describe('Test HD Node Derivation from Mnemonic', function() {
 
                 assert.equal(node.privateKey, nodeTest.privateKey,
                     'Matches privateKey - ' + nodeTest.privateKey);
-                assert.equal(node.mnemonic, test.mnemonic,
-                    'Matches mnemonic - ' + nodeTest.privateKey);
                 assert.equal(node.path, nodeTest.path,
                     'Matches path - ' + nodeTest.privateKey);
+                assert.equal(node.mnemonic.phrase, test.mnemonic,
+                    'Matches mnemonic.phrase - ' + nodeTest.privateKey);
+                assert.equal(node.mnemonic.path, nodeTest.path,
+                    'Matches mnemonic.path - ' + nodeTest.privateKey);
 
                 let wallet = new ethers.Wallet(node.privateKey);
                 assert.equal(wallet.address.toLowerCase(), nodeTest.address,

@@ -18,8 +18,6 @@ const allowedTransactionKeys: Array<string> = [
 export interface ExternallyOwnedAccount {
     readonly address: string;
     readonly privateKey: string;
-    readonly mnemonic?: string;
-    readonly path?: string;
 }
 
 // Sub-Class Notes:

@@ -7,7 +7,7 @@ import uuid from "uuid";
 import { ExternallyOwnedAccount } from "@ethersproject/abstract-signer";
 import { getAddress } from "@ethersproject/address";
 import { arrayify, Bytes, BytesLike, concat, hexlify } from "@ethersproject/bytes";
-import { defaultPath, entropyToMnemonic, HDNode, mnemonicToEntropy } from "@ethersproject/hdnode";
+import { defaultPath, entropyToMnemonic, HDNode, Mnemonic, mnemonicToEntropy } from "@ethersproject/hdnode";
 import { keccak256 } from "@ethersproject/keccak256";
 import { pbkdf2 } from "@ethersproject/pbkdf2";
 import { randomBytes } from "@ethersproject/random";
@@ -16,13 +16,20 @@ import { computeAddress } from "@ethersproject/transactions";
 
 import { getPassword, looseArrayify, searchPath, zpad } from "./utils";
 
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
+
 // Exported Types
+
+function hasMnemonic(value: any): value is { mnemonic: Mnemonic } {
+    return (value != null && value.mnemonic && value.mnemonic.phrase);
+}
 
 interface _KeystoreAccount {
     address: string;
     privateKey: string;
-    mnemonic?: string;
-    path?: string;
+    mnemonic?: Mnemonic;
 
     _isKeystoreAccount: boolean;
 }
@@ -30,8 +37,7 @@ interface _KeystoreAccount {
 export class KeystoreAccount extends Description<_KeystoreAccount> implements ExternallyOwnedAccount {
     readonly address: string;
     readonly privateKey: string;
-    readonly mnemonic?: string;
-    readonly path?: string;
+    readonly mnemonic?: Mnemonic;
 
     readonly _isKeystoreAccount: boolean;
 
@@ -90,7 +96,9 @@ export async function decrypt(json: string, password: Bytes | string, progressCa
         const mnemonicKey = key.slice(32, 64);
 
         if (!privateKey) {
-            throw new Error("unsupported cipher");
+            logger.throwError("unsupported cipher", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "decrypt"
+            });
         }
 
         const address = computeAddress(privateKey);
@@ -118,18 +126,28 @@ export async function decrypt(json: string, password: Bytes | string, progressCa
             const mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
 
             const path = searchPath(data, "x-ethers/path") || defaultPath;
+            const locale = searchPath(data, "x-ethers/locale") || "en";
 
             const entropy = arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
-            const mnemonic = entropyToMnemonic(entropy);
 
-            const node = HDNode.fromMnemonic(mnemonic).derivePath(path);
+            try {
+                const mnemonic = entropyToMnemonic(entropy, locale);
+                const node = HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
 
-            if (node.privateKey != account.privateKey) {
-                throw new Error("mnemonic mismatch");
+                if (node.privateKey != account.privateKey) {
+                    throw new Error("mnemonic mismatch");
+                }
+
+                account.mnemonic = node.mnemonic;
+
+            } catch (error) {
+                // If we don't have the locale wordlist installed to
+                // read this mnemonic, just bail and don't set the
+                // mnemonic
+                if (error.code !== Logger.errors.INVALID_ARGUMENT || error.argument !== "wordlist") {
+                    throw error;
+                }
             }
-
-            account.mnemonic = node.mnemonic;
-            account.path = node.path;
         }
 
         return new KeystoreAccount(account);
@@ -138,24 +156,24 @@ export async function decrypt(json: string, password: Bytes | string, progressCa
 
     const kdf = searchPath(data, "crypto/kdf");
     if (kdf && typeof(kdf) === "string") {
+        const throwError = function(name: string, value: any): never {
+            return logger.throwArgumentError("invalid key-derivation function parameters", name, value);
+        }
+
         if (kdf.toLowerCase() === "scrypt") {
             const salt = looseArrayify(searchPath(data, "crypto/kdfparams/salt"));
             const N = parseInt(searchPath(data, "crypto/kdfparams/n"));
             const r = parseInt(searchPath(data, "crypto/kdfparams/r"));
             const p = parseInt(searchPath(data, "crypto/kdfparams/p"));
-            if (!N || !r || !p) {
-                throw new Error("unsupported key-derivation function parameters");
-            }
+
+            // Check for all required parameters
+            if (!N || !r || !p) { throwError("kdf", kdf); }
 
             // Make sure N is a power of 2
-            if ((N & (N - 1)) !== 0) {
-                throw new Error("unsupported key-derivation function parameter value for N");
-            }
+            if ((N & (N - 1)) !== 0) { throwError("N", N); }
 
             const dkLen = parseInt(searchPath(data, "crypto/kdfparams/dklen"));
-            if (dkLen !== 32) {
-                throw new Error("unsupported key-derivation derived-key length");
-            }
+            if (dkLen !== 32) { throwError("dklen", dkLen); }
 
             const key = await scrypt.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback);
             //key = arrayify(key);
@@ -173,46 +191,46 @@ export async function decrypt(json: string, password: Bytes | string, progressCa
             } else if (prf === "hmac-sha512") {
                 prfFunc = "sha512";
             } else {
-                throw new Error("unsupported prf");
+                throwError("prf", prf);
             }
 
             const c = parseInt(searchPath(data, "crypto/kdfparams/c"));
 
             const dkLen = parseInt(searchPath(data, "crypto/kdfparams/dklen"));
-            if (dkLen !== 32) {
-                throw new Error("unsupported key-derivation derived-key length");
-            }
+            if (dkLen !== 32) { throwError("dklen", dkLen); }
 
             const key = arrayify(pbkdf2(passwordBytes, salt, c, dkLen, prfFunc));
 
             return getAccount(key);
         }
     }
-    throw new Error("unsupported key-derivation function");
+
+    return logger.throwArgumentError("unsupported key-derivation function", "kdf", kdf);
 }
 
 export function encrypt(account: ExternallyOwnedAccount, password: Bytes | string, options?: EncryptOptions, progressCallback?: ProgressCallback): Promise<string> {
 
     try {
+        // Check the address matches the private key
         if (getAddress(account.address) !== computeAddress(account.privateKey)) {
             throw new Error("address/privateKey mismatch");
         }
 
-        if (account.mnemonic != null){
-            const node = HDNode.fromMnemonic(account.mnemonic).derivePath(account.path || defaultPath);
+        // Check the mnemonic (if any) matches the private key
+        if (hasMnemonic(account)) {
+            const mnemonic = account.mnemonic;
+            const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path || defaultPath);
 
             if (node.privateKey != account.privateKey) {
                 throw new Error("mnemonic mismatch");
             }
-        } else if (account.path != null) {
-            throw new Error("cannot specify path without mnemonic");
         }
 
     } catch (e) {
         return Promise.reject(e);
     }
 
-    // the options are optional, so adjust the call as needed
+    // The options are optional, so adjust the call as needed
     if (typeof(options) === "function" && !progressCallback) {
         progressCallback = options;
         options = {};
@@ -223,10 +241,13 @@ export function encrypt(account: ExternallyOwnedAccount, password: Bytes | strin
     const passwordBytes = getPassword(password);
 
     let entropy: Uint8Array = null
-    let path: string = account.path;
-    if (account.mnemonic) {
-        entropy = arrayify(mnemonicToEntropy(account.mnemonic));
-        if (!path) { path = defaultPath; }
+    let path: string = null;
+    let locale: string = null;
+    if (hasMnemonic(account)) {
+        const srcMnemonic = account.mnemonic;
+        entropy = arrayify(mnemonicToEntropy(srcMnemonic.phrase, srcMnemonic.locale || "en"));
+        path = srcMnemonic.path || defaultPath;
+        locale = srcMnemonic.locale || "en";
     }
 
     let client = options.client;
@@ -330,6 +351,7 @@ export function encrypt(account: ExternallyOwnedAccount, password: Bytes | strin
                 mnemonicCounter: hexlify(mnemonicIv).substring(2),
                 mnemonicCiphertext: hexlify(mnemonicCiphertext).substring(2),
                 path: path,
+                locale: locale,
                 version: "0.1"
             };
         }
