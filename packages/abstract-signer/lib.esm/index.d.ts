@@ -4,8 +4,6 @@ import { Bytes } from "@ethersproject/bytes";
 export interface ExternallyOwnedAccount {
     readonly address: string;
     readonly privateKey: string;
-    readonly mnemonic?: string;
-    readonly path?: string;
 }
 export declare abstract class Signer {
     readonly provider?: Provider;

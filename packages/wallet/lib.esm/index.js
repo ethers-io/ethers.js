@@ -17,6 +17,10 @@ const logger = new Logger(version);
 function isAccount(value) {
     return (value != null && isHexString(value.privateKey, 32) && value.address != null);
 }
+function hasMnemonic(value) {
+    const mnemonic = value.mnemonic;
+    return (mnemonic && mnemonic.phrase);
+}
 export class Wallet extends Signer {
     constructor(privateKey, provider) {
         logger.checkNew(new.target, Wallet);
@@ -28,12 +32,15 @@ export class Wallet extends Signer {
             if (this.address !== getAddress(privateKey.address)) {
                 logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDCACTED]");
             }
-            if (privateKey.mnemonic != null) {
-                const mnemonic = privateKey.mnemonic;
-                const path = privateKey.path || defaultPath;
-                defineReadOnly(this, "_mnemonic", () => mnemonic);
-                defineReadOnly(this, "path", privateKey.path);
-                const node = HDNode.fromMnemonic(mnemonic).derivePath(path);
+            if (hasMnemonic(privateKey)) {
+                const srcMnemonic = privateKey.mnemonic;
+                defineReadOnly(this, "_mnemonic", () => ({
+                    phrase: srcMnemonic.phrase,
+                    path: srcMnemonic.path || defaultPath,
+                    locale: srcMnemonic.locale || "en"
+                }));
+                const mnemonic = this.mnemonic;
+                const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
                 if (computeAddress(node.privateKey) !== this.address) {
                     logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDCACTED]");
                 }

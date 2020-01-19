@@ -9,7 +9,7 @@
     "@ledgerhq/hw-transport": "5.3.0",
     "@ledgerhq/hw-transport-node-hid": "5.3.0",
     "@ledgerhq/hw-transport-u2f": "5.3.0",
-    "ethers": "5.0.0-beta.166"
+    "ethers": ">=5.0.0-beta.166"
   },
   "description": "Hardware Wallet support for ethers.",
   "devDependencies": {
@@ -35,7 +35,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0xa37070ed42f6da545b3a6d5bb1678a9a4c0fb0e9f76726b36c8b197d685b6a01",
+  "tarballHash": "0xb95d21112d091d4883f83111c9f6efd338e7a1569f96307f8efb2f1e14d7352d",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.2"
+  "version": "5.0.0-beta.3"
 }

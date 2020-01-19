@@ -806,7 +806,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
                         return [3 /*break*/, 7];
                     case 7: return [2 /*return*/, web_1.poll(function () { return __awaiter(_this, void 0, void 0, function () {
-                            var block;
+                            var block, blockNumber_1, i, tx, confirmations;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0: return [4 /*yield*/, this.perform("getBlock", params)];
@@ -831,11 +831,35 @@ var BaseProvider = /** @class */ (function (_super) {
                                             // Retry on the next block
                                             return [2 /*return*/, undefined];
                                         }
-                                        // Add transactions
-                                        if (includeTransactions) {
-                                            return [2 /*return*/, this.formatter.blockWithTransactions(block)];
+                                        if (!includeTransactions) return [3 /*break*/, 8];
+                                        blockNumber_1 = null;
+                                        i = 0;
+                                        _a.label = 2;
+                                    case 2:
+                                        if (!(i < block.transactions.length)) return [3 /*break*/, 7];
+                                        tx = block.transactions[i];
+                                        if (!(tx.blockNumber == null)) return [3 /*break*/, 3];
+                                        tx.confirmations = 0;
+                                        return [3 /*break*/, 6];
+                                    case 3:
+                                        if (!(tx.confirmations == null)) return [3 /*break*/, 6];
+                                        if (!(blockNumber_1 == null)) return [3 /*break*/, 5];
+                                        return [4 /*yield*/, this._getInternalBlockNumber(100 + 2 * this.pollingInterval)];
+                                    case 4:
+                                        blockNumber_1 = _a.sent();
+                                        _a.label = 5;
+                                    case 5:
+                                        confirmations = (blockNumber_1 - tx.blockNumber) + 1;
+                                        if (confirmations <= 0) {
+                                            confirmations = 1;
                                         }
-                                        return [2 /*return*/, this.formatter.block(block)];
+                                        tx.confirmations = confirmations;
+                                        _a.label = 6;
+                                    case 6:
+                                        i++;
+                                        return [3 /*break*/, 2];
+                                    case 7: return [2 /*return*/, this.formatter.blockWithTransactions(block)];
+                                    case 8: return [2 /*return*/, this.formatter.block(block)];
                                 }
                             });
                         }); }, { onceBlock: this })];
@@ -971,6 +995,11 @@ var BaseProvider = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.perform("getLogs", params)];
                     case 3:
                         logs = _a.sent();
+                        logs.forEach(function (log) {
+                            if (log.removed == null) {
+                                log.removed = false;
+                            }
+                        });
                         return [2 /*return*/, formatter_1.Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(logs)];
                 }
             });

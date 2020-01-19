@@ -1,18 +1,17 @@
 import { ExternallyOwnedAccount } from "@ethersproject/abstract-signer";
 import { Bytes, BytesLike } from "@ethersproject/bytes";
+import { Mnemonic } from "@ethersproject/hdnode";
 import { Description } from "@ethersproject/properties";
 interface _KeystoreAccount {
     address: string;
     privateKey: string;
-    mnemonic?: string;
-    path?: string;
+    mnemonic?: Mnemonic;
     _isKeystoreAccount: boolean;
 }
 export declare class KeystoreAccount extends Description<_KeystoreAccount> implements ExternallyOwnedAccount {
     readonly address: string;
     readonly privateKey: string;
-    readonly mnemonic?: string;
-    readonly path?: string;
+    readonly mnemonic?: Mnemonic;
     readonly _isKeystoreAccount: boolean;
     isKeystoreAccount(value: any): value is KeystoreAccount;
 }

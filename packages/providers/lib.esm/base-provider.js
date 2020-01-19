@@ -596,6 +596,24 @@ export class BaseProvider extends Provider {
                 }
                 // Add transactions
                 if (includeTransactions) {
+                    let blockNumber = null;
+                    for (let i = 0; i < block.transactions.length; i++) {
+                        const tx = block.transactions[i];
+                        if (tx.blockNumber == null) {
+                            tx.confirmations = 0;
+                        }
+                        else if (tx.confirmations == null) {
+                            if (blockNumber == null) {
+                                blockNumber = yield this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
+                            }
+                            // Add the confirmations using the fast block number (pessimistic)
+                            let confirmations = (blockNumber - tx.blockNumber) + 1;
+                            if (confirmations <= 0) {
+                                confirmations = 1;
+                            }
+                            tx.confirmations = confirmations;
+                        }
+                    }
                     return this.formatter.blockWithTransactions(block);
                 }
                 return this.formatter.block(block);
@@ -681,6 +699,11 @@ export class BaseProvider extends Provider {
             yield this.ready;
             const params = yield resolveProperties({ filter: this._getFilter(filter) });
             const logs = yield this.perform("getLogs", params);
+            logs.forEach((log) => {
+                if (log.removed == null) {
+                    log.removed = false;
+                }
+            });
             return Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(logs);
         });
     }

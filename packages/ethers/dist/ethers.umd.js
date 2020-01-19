@@ -8347,7 +8347,7 @@
 	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-provider/5.0.0-beta.136";
+	exports.version = "abstract-provider/5.0.0-beta.137";
 	});
 
 	var _version$h = unwrapExports(_version$g);
@@ -8482,7 +8482,7 @@
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.0-beta.137";
+	exports.version = "abstract-signer/5.0.0-beta.138";
 	});
 
 	var _version$j = unwrapExports(_version$i);
@@ -13751,7 +13751,7 @@
 	var _version$u = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hdnode/5.0.0-beta.135";
+	exports.version = "hdnode/5.0.0-beta.136";
 	});
 
 	var _version$v = unwrapExports(_version$u);
@@ -13791,8 +13791,22 @@
 	function base58check(data) {
 	    return lib$e.Base58.encode(lib$1.concat([data, lib$1.hexDataSlice(browser.sha256(browser.sha256(data)), 0, 4)]));
 	}
+	function getWordlist(wordlist) {
+	    if (wordlist == null) {
+	        return browser$4.wordlists["en"];
+	    }
+	    if (typeof (wordlist) === "string") {
+	        var words = browser$4.wordlists[wordlist];
+	        if (words == null) {
+	            logger.throwArgumentError("unknown locale", "wordlist", wordlist);
+	        }
+	        return words;
+	    }
+	    return wordlist;
+	}
 	var _constructorGuard = {};
 	exports.defaultPath = "m/44'/60'/0'/0/0";
+	;
 	var HDNode = /** @class */ (function () {
 	    /**
 	     *  This constructor should not be called directly.
@@ -13801,7 +13815,7 @@
 	     *   - fromMnemonic
 	     *   - fromSeed
 	     */
-	    function HDNode(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonic, path) {
+	    function HDNode(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonicOrPath) {
 	        var _newTarget = this.constructor;
 	        logger.checkNew(_newTarget, HDNode);
 	        if (constructorGuard !== _constructorGuard) {
@@ -13822,8 +13836,21 @@
 	        lib$3.defineReadOnly(this, "chainCode", chainCode);
 	        lib$3.defineReadOnly(this, "index", index);
 	        lib$3.defineReadOnly(this, "depth", depth);
-	        lib$3.defineReadOnly(this, "mnemonic", mnemonic);
-	        lib$3.defineReadOnly(this, "path", path);
+	        if (mnemonicOrPath == null) {
+	            // From a source that does not preserve the path (e.g. extended keys)
+	            lib$3.defineReadOnly(this, "mnemonic", null);
+	            lib$3.defineReadOnly(this, "path", null);
+	        }
+	        else if (typeof (mnemonicOrPath) === "string") {
+	            // From a source that does not preserve the mnemonic (e.g. neutered)
+	            lib$3.defineReadOnly(this, "mnemonic", null);
+	            lib$3.defineReadOnly(this, "path", mnemonicOrPath);
+	        }
+	        else {
+	            // From a fully qualified source
+	            lib$3.defineReadOnly(this, "mnemonic", mnemonicOrPath);
+	            lib$3.defineReadOnly(this, "path", mnemonicOrPath.path);
+	        }
 	    }
 	    Object.defineProperty(HDNode.prototype, "extendedKey", {
 	        get: function () {
@@ -13848,7 +13875,7 @@
 	        configurable: true
 	    });
 	    HDNode.prototype.neuter = function () {
-	        return new HDNode(_constructorGuard, null, this.publicKey, this.parentFingerprint, this.chainCode, this.index, this.depth, null, this.path);
+	        return new HDNode(_constructorGuard, null, this.publicKey, this.parentFingerprint, this.chainCode, this.index, this.depth, this.path);
 	    };
 	    HDNode.prototype._derive = function (index) {
 	        if (index > 0xffffffff) {
@@ -13893,7 +13920,16 @@
 	            var ek = new lib$f.SigningKey(lib$1.hexlify(IL));
 	            Ki = ek._addPoint(this.publicKey);
 	        }
-	        return new HDNode(_constructorGuard, ki, Ki, this.fingerprint, bytes32(IR), index, this.depth + 1, this.mnemonic, path);
+	        var mnemonicOrPath = path;
+	        var srcMnemonic = this.mnemonic;
+	        if (srcMnemonic) {
+	            mnemonicOrPath = Object.freeze({
+	                phrase: srcMnemonic.phrase,
+	                path: path,
+	                locale: (srcMnemonic.locale || "en")
+	            });
+	        }
+	        return new HDNode(_constructorGuard, ki, Ki, this.fingerprint, bytes32(IR), index, this.depth + 1, mnemonicOrPath);
 	    };
 	    HDNode.prototype.derivePath = function (path) {
 	        var components = path.split("/");
@@ -13932,12 +13968,18 @@
 	            throw new Error("invalid seed");
 	        }
 	        var I = lib$1.arrayify(browser.computeHmac(browser.SupportedAlgorithms.sha512, MasterSecret, seedArray));
-	        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic, "m");
+	        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic);
 	    };
 	    HDNode.fromMnemonic = function (mnemonic, password, wordlist) {
+	        // If a locale name was passed in, find the associated wordlist
+	        wordlist = getWordlist(wordlist);
 	        // Normalize the case and spacing in the mnemonic (throws if the mnemonic is invalid)
 	        mnemonic = entropyToMnemonic(mnemonicToEntropy(mnemonic, wordlist), wordlist);
-	        return HDNode._fromSeed(mnemonicToSeed(mnemonic, password), mnemonic);
+	        return HDNode._fromSeed(mnemonicToSeed(mnemonic, password), {
+	            phrase: mnemonic,
+	            path: "m",
+	            locale: wordlist.locale
+	        });
 	    };
 	    HDNode.fromSeed = function (seed) {
 	        return HDNode._fromSeed(seed, null);
@@ -13956,14 +13998,14 @@
 	            // Public Key
 	            case "0x0488b21e":
 	            case "0x043587cf":
-	                return new HDNode(_constructorGuard, null, lib$1.hexlify(key), parentFingerprint, chainCode, index, depth, null, null);
+	                return new HDNode(_constructorGuard, null, lib$1.hexlify(key), parentFingerprint, chainCode, index, depth, null);
 	            // Private Key
 	            case "0x0488ade4":
 	            case "0x04358394 ":
 	                if (key[0] !== 0) {
 	                    break;
 	                }
-	                return new HDNode(_constructorGuard, lib$1.hexlify(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null, null);
+	                return new HDNode(_constructorGuard, lib$1.hexlify(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null);
 	        }
 	        return logger.throwError("invalid extended key", "extendedKey", "[REDACTED]");
 	    };
@@ -13979,9 +14021,7 @@
 	}
 	exports.mnemonicToSeed = mnemonicToSeed;
 	function mnemonicToEntropy(mnemonic, wordlist) {
-	    if (!wordlist) {
-	        wordlist = browser$4.wordlists["en"];
-	    }
+	    wordlist = getWordlist(wordlist);
 	    logger.checkNormalize();
 	    var words = wordlist.split(mnemonic);
 	    if ((words.length % 3) !== 0) {
@@ -14012,6 +14052,7 @@
 	}
 	exports.mnemonicToEntropy = mnemonicToEntropy;
 	function entropyToMnemonic(entropy, wordlist) {
+	    wordlist = getWordlist(wordlist);
 	    entropy = lib$1.arrayify(entropy);
 	    if ((entropy.length % 4) !== 0 || entropy.length < 16 || entropy.length > 32) {
 	        throw new Error("invalid entropy");
@@ -14040,9 +14081,6 @@
 	    // Shift the checksum into the word indices
 	    indices[indices.length - 1] <<= checksumBits;
 	    indices[indices.length - 1] |= (checksum >> (8 - checksumBits));
-	    if (!wordlist) {
-	        wordlist = browser$4.wordlists["en"];
-	    }
 	    return wordlist.join(indices.map(function (index) { return wordlist.getWord(index); }));
 	}
 	exports.entropyToMnemonic = entropyToMnemonic;
@@ -14933,7 +14971,7 @@
 	var _version$y = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "json-wallets/5.0.0-beta.135";
+	exports.version = "json-wallets/5.0.0-beta.136";
 	});
 
 	var _version$z = unwrapExports(_version$y);
@@ -15914,6 +15952,13 @@
 
 
 
+
+
+	var logger = new lib.Logger(_version$y.version);
+	// Exported Types
+	function hasMnemonic(value) {
+	    return (value != null && value.mnemonic && value.mnemonic.phrase);
+	}
 	var KeystoreAccount = /** @class */ (function (_super) {
 	    __extends(KeystoreAccount, _super);
 	    function KeystoreAccount() {
@@ -15927,7 +15972,7 @@
 	exports.KeystoreAccount = KeystoreAccount;
 	function decrypt(json, password, progressCallback) {
 	    return __awaiter(this, void 0, void 0, function () {
-	        var data, passwordBytes, decrypt, computeMAC, getAccount, kdf, salt, N, r, p, dkLen, key, salt, prfFunc, prf, c, dkLen, key;
+	        var data, passwordBytes, decrypt, computeMAC, getAccount, kdf, throwError, salt, N, r, p, dkLen, key, salt, prfFunc, prf, c, dkLen, key;
 	        return __generator(this, function (_a) {
 	            switch (_a.label) {
 	                case 0:
@@ -15948,7 +15993,7 @@
 	                    };
 	                    getAccount = function (key) {
 	                        return __awaiter(this, void 0, void 0, function () {
-	                            var ciphertext, computedMAC, privateKey, mnemonicKey, address, check, account, mnemonicCiphertext, mnemonicIv, mnemonicCounter, mnemonicAesCtr, path, entropy, mnemonic, node;
+	                            var ciphertext, computedMAC, privateKey, mnemonicKey, address, check, account, mnemonicCiphertext, mnemonicIv, mnemonicCounter, mnemonicAesCtr, path, locale, entropy, mnemonic, node;
 	                            return __generator(this, function (_a) {
 	                                ciphertext = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/ciphertext"));
 	                                computedMAC = lib$1.hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
@@ -15958,7 +16003,9 @@
 	                                privateKey = decrypt(key.slice(0, 16), ciphertext);
 	                                mnemonicKey = key.slice(32, 64);
 	                                if (!privateKey) {
-	                                    throw new Error("unsupported cipher");
+	                                    logger.throwError("unsupported cipher", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                                        operation: "decrypt"
+	                                    });
 	                                }
 	                                address = lib$g.computeAddress(privateKey);
 	                                if (data.address) {
@@ -15982,14 +16029,24 @@
 	                                    mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
 	                                    mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
 	                                    path = utils$1.searchPath(data, "x-ethers/path") || lib$h.defaultPath;
+	                                    locale = utils$1.searchPath(data, "x-ethers/locale") || "en";
 	                                    entropy = lib$1.arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
-	                                    mnemonic = lib$h.entropyToMnemonic(entropy);
-	                                    node = lib$h.HDNode.fromMnemonic(mnemonic).derivePath(path);
-	                                    if (node.privateKey != account.privateKey) {
-	                                        throw new Error("mnemonic mismatch");
+	                                    try {
+	                                        mnemonic = lib$h.entropyToMnemonic(entropy, locale);
+	                                        node = lib$h.HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
+	                                        if (node.privateKey != account.privateKey) {
+	                                            throw new Error("mnemonic mismatch");
+	                                        }
+	                                        account.mnemonic = node.mnemonic;
 	                                    }
-	                                    account.mnemonic = node.mnemonic;
-	                                    account.path = node.path;
+	                                    catch (error) {
+	                                        // If we don't have the locale wordlist installed to
+	                                        // read this mnemonic, just bail and don't set the
+	                                        // mnemonic
+	                                        if (error.code !== lib.Logger.errors.INVALID_ARGUMENT || error.argument !== "wordlist") {
+	                                            throw error;
+	                                        }
+	                                    }
 	                                }
 	                                return [2 /*return*/, new KeystoreAccount(account)];
 	                            });
@@ -15997,21 +16054,25 @@
 	                    };
 	                    kdf = utils$1.searchPath(data, "crypto/kdf");
 	                    if (!(kdf && typeof (kdf) === "string")) return [3 /*break*/, 3];
+	                    throwError = function (name, value) {
+	                        return logger.throwArgumentError("invalid key-derivation function parameters", name, value);
+	                    };
 	                    if (!(kdf.toLowerCase() === "scrypt")) return [3 /*break*/, 2];
 	                    salt = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/kdfparams/salt"));
 	                    N = parseInt(utils$1.searchPath(data, "crypto/kdfparams/n"));
 	                    r = parseInt(utils$1.searchPath(data, "crypto/kdfparams/r"));
 	                    p = parseInt(utils$1.searchPath(data, "crypto/kdfparams/p"));
+	                    // Check for all required parameters
 	                    if (!N || !r || !p) {
-	                        throw new Error("unsupported key-derivation function parameters");
+	                        throwError("kdf", kdf);
 	                    }
 	                    // Make sure N is a power of 2
 	                    if ((N & (N - 1)) !== 0) {
-	                        throw new Error("unsupported key-derivation function parameter value for N");
+	                        throwError("N", N);
 	                    }
 	                    dkLen = parseInt(utils$1.searchPath(data, "crypto/kdfparams/dklen"));
 	                    if (dkLen !== 32) {
-	                        throw new Error("unsupported key-derivation derived-key length");
+	                        throwError("dklen", dkLen);
 	                    }
 	                    return [4 /*yield*/, scrypt$1.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback)];
 	                case 1:
@@ -16030,18 +16091,18 @@
 	                            prfFunc = "sha512";
 	                        }
 	                        else {
-	                            throw new Error("unsupported prf");
+	                            throwError("prf", prf);
 	                        }
 	                        c = parseInt(utils$1.searchPath(data, "crypto/kdfparams/c"));
 	                        dkLen = parseInt(utils$1.searchPath(data, "crypto/kdfparams/dklen"));
 	                        if (dkLen !== 32) {
-	                            throw new Error("unsupported key-derivation derived-key length");
+	                            throwError("dklen", dkLen);
 	                        }
 	                        key = lib$1.arrayify(browser$2.pbkdf2(passwordBytes, salt, c, dkLen, prfFunc));
 	                        return [2 /*return*/, getAccount(key)];
 	                    }
 	                    _a.label = 3;
-	                case 3: throw new Error("unsupported key-derivation function");
+	                case 3: return [2 /*return*/, logger.throwArgumentError("unsupported key-derivation function", "kdf", kdf)];
 	            }
 	        });
 	    });
@@ -16049,23 +16110,23 @@
 	exports.decrypt = decrypt;
 	function encrypt(account, password, options, progressCallback) {
 	    try {
+	        // Check the address matches the private key
 	        if (lib$6.getAddress(account.address) !== lib$g.computeAddress(account.privateKey)) {
 	            throw new Error("address/privateKey mismatch");
 	        }
-	        if (account.mnemonic != null) {
-	            var node = lib$h.HDNode.fromMnemonic(account.mnemonic).derivePath(account.path || lib$h.defaultPath);
+	        // Check the mnemonic (if any) matches the private key
+	        if (hasMnemonic(account)) {
+	            var mnemonic = account.mnemonic;
+	            var node = lib$h.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path || lib$h.defaultPath);
 	            if (node.privateKey != account.privateKey) {
 	                throw new Error("mnemonic mismatch");
 	            }
-	        }
-	        else if (account.path != null) {
-	            throw new Error("cannot specify path without mnemonic");
 	        }
 	    }
 	    catch (e) {
 	        return Promise.reject(e);
 	    }
-	    // the options are optional, so adjust the call as needed
+	    // The options are optional, so adjust the call as needed
 	    if (typeof (options) === "function" && !progressCallback) {
 	        progressCallback = options;
 	        options = {};
@@ -16076,12 +16137,13 @@
 	    var privateKey = lib$1.arrayify(account.privateKey);
 	    var passwordBytes = utils$1.getPassword(password);
 	    var entropy = null;
-	    var path = account.path;
-	    if (account.mnemonic) {
-	        entropy = lib$1.arrayify(lib$h.mnemonicToEntropy(account.mnemonic));
-	        if (!path) {
-	            path = lib$h.defaultPath;
-	        }
+	    var path = null;
+	    var locale = null;
+	    if (hasMnemonic(account)) {
+	        var srcMnemonic = account.mnemonic;
+	        entropy = lib$1.arrayify(lib$h.mnemonicToEntropy(srcMnemonic.phrase, srcMnemonic.locale || "en"));
+	        path = srcMnemonic.path || lib$h.defaultPath;
+	        locale = srcMnemonic.locale || "en";
 	    }
 	    var client = options.client;
 	    if (!client) {
@@ -16188,6 +16250,7 @@
 	                mnemonicCounter: lib$1.hexlify(mnemonicIv).substring(2),
 	                mnemonicCiphertext: lib$1.hexlify(mnemonicCiphertext).substring(2),
 	                path: path,
+	                locale: locale,
 	                version: "0.1"
 	            };
 	        }
@@ -16245,7 +16308,7 @@
 	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.0-beta.135";
+	exports.version = "wallet/5.0.0-beta.136";
 	});
 
 	var _version$B = unwrapExports(_version$A);
@@ -16285,6 +16348,10 @@
 	function isAccount(value) {
 	    return (value != null && lib$1.isHexString(value.privateKey, 32) && value.address != null);
 	}
+	function hasMnemonic(value) {
+	    var mnemonic = value.mnemonic;
+	    return (mnemonic && mnemonic.phrase);
+	}
 	var Wallet = /** @class */ (function (_super) {
 	    __extends(Wallet, _super);
 	    function Wallet(privateKey, provider) {
@@ -16299,12 +16366,15 @@
 	            if (_this.address !== lib$6.getAddress(privateKey.address)) {
 	                logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDCACTED]");
 	            }
-	            if (privateKey.mnemonic != null) {
-	                var mnemonic_1 = privateKey.mnemonic;
-	                var path = privateKey.path || lib$h.defaultPath;
-	                lib$3.defineReadOnly(_this, "_mnemonic", function () { return mnemonic_1; });
-	                lib$3.defineReadOnly(_this, "path", privateKey.path);
-	                var node = lib$h.HDNode.fromMnemonic(mnemonic_1).derivePath(path);
+	            if (hasMnemonic(privateKey)) {
+	                var srcMnemonic_1 = privateKey.mnemonic;
+	                lib$3.defineReadOnly(_this, "_mnemonic", function () { return ({
+	                    phrase: srcMnemonic_1.phrase,
+	                    path: srcMnemonic_1.path || lib$h.defaultPath,
+	                    locale: srcMnemonic_1.locale || "en"
+	                }); });
+	                var mnemonic = _this.mnemonic;
+	                var node = lib$h.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
 	                if (lib$g.computeAddress(node.privateKey) !== _this.address) {
 	                    logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDCACTED]");
 	                }
@@ -17206,7 +17276,7 @@
 	var _version$E = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.0-beta.134";
+	exports.version = "web/5.0.0-beta.135";
 	});
 
 	var _version$F = unwrapExports(_version$E);
@@ -17389,7 +17459,7 @@
 	                    case 6:
 	                        body = _a.sent();
 	                        if (allow304 && response.status === 304) {
-	                            // Leave body as null
+	                            body = null;
 	                            return [3 /*break*/, 7];
 	                        }
 	                        else if (!response.ok) {
@@ -17529,7 +17599,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.148";
+	exports.version = "providers/5.0.0-beta.149";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -18743,7 +18813,7 @@
 	                        logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
 	                        return [3 /*break*/, 7];
 	                    case 7: return [2 /*return*/, lib$l.poll(function () { return __awaiter(_this, void 0, void 0, function () {
-	                            var block;
+	                            var block, blockNumber_1, i, tx, confirmations;
 	                            return __generator(this, function (_a) {
 	                                switch (_a.label) {
 	                                    case 0: return [4 /*yield*/, this.perform("getBlock", params)];
@@ -18768,11 +18838,35 @@
 	                                            // Retry on the next block
 	                                            return [2 /*return*/, undefined];
 	                                        }
-	                                        // Add transactions
-	                                        if (includeTransactions) {
-	                                            return [2 /*return*/, this.formatter.blockWithTransactions(block)];
+	                                        if (!includeTransactions) return [3 /*break*/, 8];
+	                                        blockNumber_1 = null;
+	                                        i = 0;
+	                                        _a.label = 2;
+	                                    case 2:
+	                                        if (!(i < block.transactions.length)) return [3 /*break*/, 7];
+	                                        tx = block.transactions[i];
+	                                        if (!(tx.blockNumber == null)) return [3 /*break*/, 3];
+	                                        tx.confirmations = 0;
+	                                        return [3 /*break*/, 6];
+	                                    case 3:
+	                                        if (!(tx.confirmations == null)) return [3 /*break*/, 6];
+	                                        if (!(blockNumber_1 == null)) return [3 /*break*/, 5];
+	                                        return [4 /*yield*/, this._getInternalBlockNumber(100 + 2 * this.pollingInterval)];
+	                                    case 4:
+	                                        blockNumber_1 = _a.sent();
+	                                        _a.label = 5;
+	                                    case 5:
+	                                        confirmations = (blockNumber_1 - tx.blockNumber) + 1;
+	                                        if (confirmations <= 0) {
+	                                            confirmations = 1;
 	                                        }
-	                                        return [2 /*return*/, this.formatter.block(block)];
+	                                        tx.confirmations = confirmations;
+	                                        _a.label = 6;
+	                                    case 6:
+	                                        i++;
+	                                        return [3 /*break*/, 2];
+	                                    case 7: return [2 /*return*/, this.formatter.blockWithTransactions(block)];
+	                                    case 8: return [2 /*return*/, this.formatter.block(block)];
 	                                }
 	                            });
 	                        }); }, { onceBlock: this })];
@@ -18908,6 +19002,11 @@
 	                        return [4 /*yield*/, this.perform("getLogs", params)];
 	                    case 3:
 	                        logs = _a.sent();
+	                        logs.forEach(function (log) {
+	                            if (log.removed == null) {
+	                                log.removed = false;
+	                            }
+	                        });
 	                        return [2 /*return*/, formatter.Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(logs)];
 	                }
 	            });
@@ -20326,7 +20425,45 @@
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
+	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	    });
+	};
+	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
+	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+	    function verb(n) { return function (v) { return step([n, v]); }; }
+	    function step(op) {
+	        if (f) throw new TypeError("Generator is already executing.");
+	        while (_) try {
+	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+	            if (y = 0, t) op = [op[0] & 2, t.value];
+	            switch (op[0]) {
+	                case 0: case 1: t = op; break;
+	                case 4: _.label++; return { value: op[1], done: false };
+	                case 5: _.label++; y = op[1]; op = [0]; continue;
+	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+	                default:
+	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+	                    if (t[2]) _.ops.pop();
+	                    _.trys.pop(); continue;
+	            }
+	            op = body.call(thisArg, _);
+	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+	    }
+	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+
+
 
 
 
@@ -20334,296 +20471,429 @@
 	var logger = new lib.Logger(_version$G.version);
 
 	function now() { return (new Date()).getTime(); }
-	// Returns:
-	//  - true is all networks match
-	//  - false if any network is null
-	//  - throws if any 2 networks do not match
+	// Returns to network as long as all agree, or null if any is null.
+	// Throws an error if any two networks do not match.
 	function checkNetworks(networks) {
-	    var result = true;
-	    var check = null;
-	    networks.forEach(function (network) {
-	        // Null
+	    var result = null;
+	    for (var i = 0; i < networks.length; i++) {
+	        var network = networks[i];
+	        // Null! We do not know our network; bail.
 	        if (network == null) {
-	            result = false;
-	            return;
+	            return null;
 	        }
-	        // Have nothing to compre to yet
-	        if (check == null) {
-	            check = network;
-	            return;
+	        if (result) {
+	            // Make sure the network matches the previous networks
+	            if (!(result.name === network.name && result.chainId === network.chainId &&
+	                ((result.ensAddress === network.ensAddress) || (result.ensAddress == null && network.ensAddress == null)))) {
+	                logger.throwArgumentError("provider mismatch", "networks", networks);
+	            }
 	        }
-	        // Matches!
-	        if (check.name === network.name &&
-	            check.chainId === network.chainId &&
-	            ((check.ensAddress === network.ensAddress) ||
-	                (check.ensAddress == null && network.ensAddress == null))) {
-	            return;
+	        else {
+	            result = network;
 	        }
-	        logger.throwArgumentError("provider mismatch", "networks", networks);
-	    });
+	    }
 	    return result;
 	}
-	function serialize(result) {
-	    if (Array.isArray(result)) {
-	        return JSON.stringify(result.map(function (r) { return serialize(r); }));
+	function median(values) {
+	    values = values.slice().sort();
+	    var middle = Math.floor(values.length / 2);
+	    // Odd length; take the middle
+	    if (values.length % 2) {
+	        return values[middle];
 	    }
-	    else if (result === null) {
-	        return "null";
+	    // Even length; take the average of the two middle
+	    var a = values[middle - 1], b = values[middle];
+	    return (a + b) / 2;
+	}
+	function serialize(value) {
+	    if (value === null) {
+	        return null;
 	    }
-	    else if (typeof (result) === "object") {
-	        var keys = Object.keys(result);
+	    else if (typeof (value) === "number" || typeof (value) === "boolean") {
+	        return JSON.stringify(value);
+	    }
+	    else if (typeof (value) === "string") {
+	        return value;
+	    }
+	    else if (lib$2.BigNumber.isBigNumber(value)) {
+	        return value.toString();
+	    }
+	    else if (Array.isArray(value)) {
+	        return JSON.stringify(value.map(function (i) { return serialize(i); }));
+	    }
+	    else if (typeof (value) === "object") {
+	        var keys = Object.keys(value);
 	        keys.sort();
 	        return "{" + keys.map(function (key) {
-	            var value = result[key];
-	            if (typeof (value) === "function") {
-	                value = "function{}";
+	            var v = value[key];
+	            if (typeof (v) === "function") {
+	                v = "[function]";
 	            }
 	            else {
-	                value = serialize(value);
+	                v = serialize(v);
 	            }
-	            return JSON.stringify(key) + "=" + serialize(value);
+	            return JSON.stringify(key) + ":" + v;
 	        }).join(",") + "}";
 	    }
-	    return JSON.stringify(result);
+	    throw new Error("unknown value type: " + typeof (value));
 	}
+	// Next request ID to use for emitting debug info
 	var nextRid = 1;
+	;
+	// Returns a promise that delays for duration
+	function stall(duration) {
+	    return new Promise(function (resolve) {
+	        var timer = setTimeout(resolve, duration);
+	        if (timer.unref) {
+	            timer.unref();
+	        }
+	    });
+	}
+	;
+	function exposeDebugConfig(config, now) {
+	    var result = {
+	        provider: config.provider,
+	        weight: config.weight
+	    };
+	    if (config.start) {
+	        result.start = config.start;
+	    }
+	    if (now) {
+	        result.duration = (now - config.start);
+	    }
+	    if (config.done) {
+	        if (config.error) {
+	            result.error = config.error;
+	        }
+	        else {
+	            result.result = config.result || null;
+	        }
+	    }
+	    return result;
+	}
+	function normalizedTally(normalize, quorum) {
+	    return function (configs) {
+	        // Count the votes for each result
+	        var tally = {};
+	        configs.forEach(function (c) {
+	            var value = normalize(c.result);
+	            if (!tally[value]) {
+	                tally[value] = { count: 0, result: c.result };
+	            }
+	            tally[value].count++;
+	        });
+	        // Check for a quorum on any given result
+	        var keys = Object.keys(tally);
+	        for (var i = 0; i < keys.length; i++) {
+	            var check = tally[keys[i]];
+	            if (check.count >= quorum) {
+	                return check.result;
+	            }
+	        }
+	        // No quroum
+	        return undefined;
+	    };
+	}
+	function getProcessFunc(provider, method, params) {
+	    var normalize = serialize;
+	    switch (method) {
+	        case "getBlockNumber":
+	            // Return the median value, unless there is (median + 1) is also
+	            // present, in which case that is probably true and the median
+	            // is going to be stale soon. In the event of a malicious node,
+	            // the lie will be true soon enough.
+	            return function (configs) {
+	                var values = configs.map(function (c) { return c.result; });
+	                // Get the median block number
+	                var blockNumber = Math.ceil(median(configs.map(function (c) { return c.result; })));
+	                // If the next block height is present, its prolly safe to use
+	                if (values.indexOf(blockNumber + 1) >= 0) {
+	                    blockNumber++;
+	                }
+	                // Don't ever roll back the blockNumber
+	                if (blockNumber >= provider._highestBlockNumber) {
+	                    provider._highestBlockNumber = blockNumber;
+	                }
+	                return provider._highestBlockNumber;
+	            };
+	        case "getGasPrice":
+	            // Return the middle (round index up) value, similar to median
+	            // but do not average even entries and choose the higher.
+	            // Malicious actors must compromise 50% of the nodes to lie.
+	            return function (configs) {
+	                var values = configs.map(function (c) { return c.result; });
+	                values.sort();
+	                return values[Math.floor(values.length / 2)];
+	            };
+	        case "getEtherPrice":
+	            // Returns the median price. Malicious actors must compromise at
+	            // least 50% of the nodes to lie (in a meaningful way).
+	            return function (configs) {
+	                return median(configs.map(function (c) { return c.result; }));
+	            };
+	        // No additional normalizing required; serialize is enough
+	        case "getBalance":
+	        case "getTransactionCount":
+	        case "getCode":
+	        case "getStorageAt":
+	        case "call":
+	        case "estimateGas":
+	        case "getLogs":
+	            break;
+	        // We drop the confirmations from transactions as it is approximate
+	        case "getTransaction":
+	        case "getTransactionReceipt":
+	            normalize = function (tx) {
+	                tx = lib$3.shallowCopy(tx);
+	                tx.confirmations = -1;
+	                return serialize(tx);
+	            };
+	            break;
+	        // We drop the confirmations from transactions as it is approximate
+	        case "getBlock":
+	            // We drop the confirmations from transactions as it is approximate
+	            if (params.includeTransactions) {
+	                normalize = function (block) {
+	                    block = lib$3.shallowCopy(block);
+	                    block.transactions = block.transactions.map(function (tx) {
+	                        tx = lib$3.shallowCopy(tx);
+	                        tx.confirmations = -1;
+	                        return tx;
+	                    });
+	                    return serialize(block);
+	                };
+	            }
+	            break;
+	        default:
+	            throw new Error("unknown method: " + method);
+	    }
+	    // Return the result if and only if the expected quorum is
+	    // satisfied and agreed upon for the final result.
+	    return normalizedTally(normalize, provider.quorum);
+	}
+	function getRunner(provider, method, params) {
+	    switch (method) {
+	        case "getBlockNumber":
+	        case "getGasPrice":
+	            return provider[method]();
+	        case "getEtherPrice":
+	            if (provider.getEtherPrice) {
+	                return provider.getEtherPrice();
+	            }
+	            break;
+	        case "getBalance":
+	        case "getTransactionCount":
+	        case "getCode":
+	            return provider[method](params.address, params.blockTag || "latest");
+	        case "getStorageAt":
+	            return provider.getStorageAt(params.address, params.position, params.blockTag || "latest");
+	        case "getBlock":
+	            return provider[(params.includeTransactions ? "getBlockWithTransactions" : "getBlock")](params.blockTag || params.blockHash);
+	        case "call":
+	        case "estimateGas":
+	            return provider[method](params.transaction);
+	        case "getTransaction":
+	        case "getTransactionReceipt":
+	            return provider[method](params.transactionHash);
+	        case "getLogs":
+	            return provider.getLogs(params.filter);
+	    }
+	    return logger.throwError("unknown method error", lib.Logger.errors.UNKNOWN_ERROR, {
+	        method: method,
+	        params: params
+	    });
+	}
 	var FallbackProvider = /** @class */ (function (_super) {
 	    __extends(FallbackProvider, _super);
-	    function FallbackProvider(providers, quorum, weights) {
+	    function FallbackProvider(providers, quorum) {
 	        var _newTarget = this.constructor;
 	        var _this = this;
 	        logger.checkNew(_newTarget, FallbackProvider);
 	        if (providers.length === 0) {
 	            logger.throwArgumentError("missing providers", "providers", providers);
 	        }
-	        if (weights != null && weights.length !== providers.length) {
-	            logger.throwArgumentError("too many weights", "weights", weights);
-	        }
-	        else if (!weights) {
-	            weights = providers.map(function (p) { return 1; });
-	        }
-	        else {
-	            weights.forEach(function (w) {
-	                if (w % 1 || w > 512 || w < 1) {
-	                    logger.throwArgumentError("invalid weight; must be integer in [1, 512]", "weights", weights);
-	                }
-	            });
-	        }
-	        var total = weights.reduce(function (accum, w) { return (accum + w); });
+	        var providerConfigs = providers.map(function (configOrProvider, index) {
+	            if (lib$b.Provider.isProvider(configOrProvider)) {
+	                return Object.freeze({ provider: configOrProvider, weight: 1, stallTimeout: 750, priority: 1 });
+	            }
+	            var config = lib$3.shallowCopy(configOrProvider);
+	            if (config.priority == null) {
+	                config.priority = 1;
+	            }
+	            if (config.stallTimeout == null) {
+	                config.stallTimeout = 750;
+	            }
+	            if (config.weight == null) {
+	                config.weight = 1;
+	            }
+	            var weight = config.weight;
+	            if (weight % 1 || weight > 512 || weight < 1) {
+	                logger.throwArgumentError("invalid weight; must be integer in [1, 512]", "providers[" + index + "].weight", weight);
+	            }
+	            return Object.freeze(config);
+	        });
+	        var total = providerConfigs.reduce(function (accum, c) { return (accum + c.weight); }, 0);
 	        if (quorum == null) {
 	            quorum = total / 2;
 	        }
-	        else {
-	            if (quorum > total) {
-	                logger.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
-	            }
+	        else if (quorum > total) {
+	            logger.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
 	        }
 	        // All networks are ready, we can know the network for certain
-	        var ready = checkNetworks(providers.map(function (p) { return p.network; }));
-	        if (ready) {
-	            _this = _super.call(this, providers[0].network) || this;
+	        var network = checkNetworks(providerConfigs.map(function (c) { return (c.provider).network; }));
+	        if (network) {
+	            _this = _super.call(this, network) || this;
 	        }
 	        else {
 	            // The network won't be known until all child providers know
-	            var ready_1 = Promise.all(providers.map(function (p) { return p.getNetwork(); })).then(function (networks) {
-	                if (!checkNetworks(networks)) {
-	                    logger.throwError("getNetwork returned null", lib.Logger.errors.UNKNOWN_ERROR);
-	                }
-	                return networks[0];
+	            var ready = Promise.all(providerConfigs.map(function (c) { return c.provider.getNetwork(); })).then(function (networks) {
+	                return checkNetworks(networks);
 	            });
-	            _this = _super.call(this, ready_1) || this;
+	            _this = _super.call(this, ready) || this;
 	        }
 	        // Preserve a copy, so we do not get mutated
-	        lib$3.defineReadOnly(_this, "providers", Object.freeze(providers.slice()));
+	        lib$3.defineReadOnly(_this, "providerConfigs", Object.freeze(providerConfigs));
 	        lib$3.defineReadOnly(_this, "quorum", quorum);
-	        lib$3.defineReadOnly(_this, "weights", Object.freeze(weights.slice()));
+	        _this._highestBlockNumber = -1;
 	        return _this;
 	    }
-	    FallbackProvider.doPerform = function (provider, method, params) {
-	        switch (method) {
-	            case "getBlockNumber":
-	            case "getGasPrice":
-	            case "getEtherPrice":
-	                return provider[method]();
-	            case "getBalance":
-	            case "getTransactionCount":
-	            case "getCode":
-	                return provider[method](params.address, params.blockTag || "latest");
-	            case "getStorageAt":
-	                return provider.getStorageAt(params.address, params.position, params.blockTag || "latest");
-	            case "sendTransaction":
-	                return provider.sendTransaction(params.signedTransaction).then(function (result) {
-	                    return result.hash;
-	                });
-	            case "getBlock":
-	                return provider[(params.includeTransactions ? "getBlockWithTransactions" : "getBlock")](params.blockTag || params.blockHash);
-	            case "call":
-	            case "estimateGas":
-	                return provider[method](params.transaction);
-	            case "getTransaction":
-	            case "getTransactionReceipt":
-	                return provider[method](params.transactionHash);
-	            case "getLogs":
-	                return provider.getLogs(params.filter);
-	        }
-	        return logger.throwError("unknown method error", lib.Logger.errors.UNKNOWN_ERROR, {
-	            method: method,
-	            params: params
-	        });
-	    };
 	    FallbackProvider.prototype.perform = function (method, params) {
-	        var _this = this;
-	        var T0 = now();
-	        var runners = (browser$6.shuffled(this.providers)).map(function (provider, i) {
-	            var weight = _this.weights[i];
-	            var rid = nextRid++;
-	            return {
-	                run: function () {
-	                    var t0 = now();
-	                    var start = t0 - T0;
-	                    _this.emit("debug", {
-	                        action: "request",
-	                        rid: rid,
-	                        backend: { weight: weight, start: start, provider: provider },
-	                        request: { method: method, params: lib$3.deepCopy(params) },
-	                        provider: _this
-	                    });
-	                    return FallbackProvider.doPerform(provider, method, params).then(function (result) {
-	                        var duration = now() - t0;
-	                        _this.emit("debug", {
-	                            action: "response",
-	                            rid: rid,
-	                            backend: { weight: weight, start: start, duration: duration, provider: provider },
-	                            request: { method: method, params: lib$3.deepCopy(params) },
-	                            response: lib$3.deepCopy(result)
-	                        });
-	                        return { weight: weight, result: result };
-	                    }, function (error) {
-	                        var duration = now() - t0;
-	                        _this.emit("debug", {
-	                            action: "response",
-	                            rid: rid,
-	                            backend: { weight: weight, start: start, duration: duration, provider: provider },
-	                            request: { method: method, params: lib$3.deepCopy(params) },
-	                            error: error
-	                        });
-	                        return { weight: weight, error: error };
-	                    });
-	                },
-	                weight: weight
-	            };
-	        });
-	        // Broadcast transactions to all backends, any that succeed is good enough
-	        if (method === "sendTransaction") {
-	            return Promise.all(runners.map(function (r) { return r.run(); })).then(function (results) {
-	                for (var i = 0; i < results.length; i++) {
-	                    var result = results[i];
-	                    if (result.result) {
-	                        return result.result;
-	                    }
-	                }
-	                return Promise.reject(results[0].error);
-	            });
-	        }
-	        // Otherwise query backends (randomly) until we have a quorum agreement
-	        // on the correct result
-	        return new Promise(function (resolve, reject) {
-	            var firstError = null;
-	            // How much weight is inflight
-	            var inflightWeight = 0;
-	            // All results, indexed by the serialized response.
-	            var results = {};
-	            var next = function () {
-	                if (runners.length === 0) {
-	                    return;
-	                }
-	                var runner = runners.shift();
-	                inflightWeight += runner.weight;
-	                runner.run().then(function (result) {
-	                    if (results === null) {
-	                        return;
-	                    }
-	                    inflightWeight -= runner.weight;
-	                    if (result.error) {
-	                        if (firstError == null) {
-	                            firstError = result.error;
-	                        }
-	                    }
-	                    else {
-	                        var unique = serialize(result.result);
-	                        if (results[unique] == null) {
-	                            results[unique] = [];
-	                        }
-	                        results[unique].push(result);
-	                        // Do any results meet our quroum?
-	                        for (var u in results) {
-	                            var weight = results[u].reduce(function (accum, r) { return (accum + r.weight); }, 0);
-	                            if (weight >= _this.quorum) {
-	                                var result_1 = results[u][0].result;
-	                                _this.emit("debug", "quorum", -1, { weight: weight, result: result_1 });
-	                                resolve(result_1);
-	                                results = null;
-	                                return;
-	                            }
-	                        }
-	                    }
-	                    // Out of options; give up
-	                    if (runners.length === 0 && inflightWeight === 0) {
-	                        // @TODO: this might need some more thinking... Maybe only if half
-	                        // of the results contain non-error?
-	                        if (method === "getGasPrice") {
-	                            var values_1 = [];
-	                            Object.keys(results).forEach(function (key) {
-	                                results[key].forEach(function (result) {
-	                                    if (!result.result) {
-	                                        return;
+	        return __awaiter(this, void 0, void 0, function () {
+	            var processFunc, configs, i, _loop_1, this_1, state_1;
+	            var _this = this;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        // Sending transactions is special; always broadcast it to all backends
+	                        if (method === "sendTransaction") {
+	                            return [2 /*return*/, Promise.all(this.providerConfigs.map(function (c) {
+	                                    return c.provider.sendTransaction(params.signedTransaction).then(function (result) {
+	                                        return result.hash;
+	                                    }, function (error) {
+	                                        return error;
+	                                    });
+	                                })).then(function (results) {
+	                                    // Any success is good enough (other errors are likely "already seen" errors
+	                                    for (var i_1 = 0; i_1 < results.length; i_1++) {
+	                                        var result = results[i_1];
+	                                        if (typeof (result) === "string") {
+	                                            return result;
+	                                        }
 	                                    }
-	                                    values_1.push(result.result);
-	                                });
-	                            });
-	                            values_1.sort(function (a, b) {
-	                                if (a.lt(b)) {
-	                                    return -1;
-	                                }
-	                                if (a.gt(b)) {
-	                                    return 1;
-	                                }
-	                                return 0;
-	                            });
-	                            var index = parseInt(String(values_1.length / 2));
-	                            if (values_1.length % 2) {
-	                                resolve(values_1[index]);
-	                                return;
-	                            }
-	                            resolve(values_1[index - 1].add(values_1[index]).div(2));
-	                            return;
+	                                    // They were all an error; pick the first error
+	                                    return Promise.reject(results[0].error);
+	                                })];
 	                        }
-	                        if (firstError === null) {
-	                            firstError = logger.makeError("failed to meet quorum", lib.Logger.errors.SERVER_ERROR, {
-	                                results: Object.keys(results).map(function (u) {
-	                                    return {
-	                                        method: method,
-	                                        params: params,
-	                                        result: u,
-	                                        weight: results[u].reduce(function (accum, r) { return (accum + r.weight); }, 0)
-	                                    };
-	                                })
+	                        processFunc = getProcessFunc(this, method, params);
+	                        configs = browser$6.shuffled(this.providerConfigs.map(function (c) { return lib$3.shallowCopy(c); }));
+	                        configs.sort(function (a, b) { return (a.priority - b.priority); });
+	                        i = 0;
+	                        _loop_1 = function () {
+	                            var t0, inflightWeight, _loop_2, waiting, results, result;
+	                            return __generator(this, function (_a) {
+	                                switch (_a.label) {
+	                                    case 0:
+	                                        t0 = now();
+	                                        inflightWeight = configs.filter(function (c) { return (c.runner && ((t0 - c.start) < c.stallTimeout)); })
+	                                            .reduce(function (accum, c) { return (accum + c.weight); }, 0);
+	                                        _loop_2 = function () {
+	                                            var config = configs[i++];
+	                                            var rid = nextRid++;
+	                                            config.start = now();
+	                                            config.staller = stall(config.stallTimeout).then(function () { config.staller = null; });
+	                                            config.runner = getRunner(config.provider, method, params).then(function (result) {
+	                                                config.done = true;
+	                                                config.result = result;
+	                                                if (_this.listenerCount("debug")) {
+	                                                    _this.emit("debug", {
+	                                                        action: "request",
+	                                                        rid: rid,
+	                                                        backend: exposeDebugConfig(config, now()),
+	                                                        request: { method: method, params: lib$3.deepCopy(params) },
+	                                                        provider: _this
+	                                                    });
+	                                                }
+	                                            }, function (error) {
+	                                                config.done = true;
+	                                                config.error = error;
+	                                                if (_this.listenerCount("debug")) {
+	                                                    _this.emit("debug", {
+	                                                        action: "request",
+	                                                        rid: rid,
+	                                                        backend: exposeDebugConfig(config, now()),
+	                                                        request: { method: method, params: lib$3.deepCopy(params) },
+	                                                        provider: _this
+	                                                    });
+	                                                }
+	                                            });
+	                                            //running.push(config);
+	                                            if (this_1.listenerCount("debug")) {
+	                                                this_1.emit("debug", {
+	                                                    action: "request",
+	                                                    rid: rid,
+	                                                    backend: exposeDebugConfig(config, null),
+	                                                    request: { method: method, params: lib$3.deepCopy(params) },
+	                                                    provider: this_1
+	                                                });
+	                                            }
+	                                            inflightWeight += config.weight;
+	                                        };
+	                                        // Start running enough to meet quorum
+	                                        while (inflightWeight < this_1.quorum && i < configs.length) {
+	                                            _loop_2();
+	                                        }
+	                                        waiting = [];
+	                                        configs.forEach(function (c) {
+	                                            if (c.done || !c.runner) {
+	                                                return;
+	                                            }
+	                                            waiting.push(c.runner);
+	                                            if (c.staller) {
+	                                                waiting.push(c.staller);
+	                                            }
+	                                        });
+	                                        if (!waiting.length) return [3 /*break*/, 2];
+	                                        return [4 /*yield*/, Promise.race(waiting)];
+	                                    case 1:
+	                                        _a.sent();
+	                                        _a.label = 2;
+	                                    case 2:
+	                                        results = configs.filter(function (c) { return (c.done && c.error == null); });
+	                                        if (results.length >= this_1.quorum) {
+	                                            result = processFunc(results);
+	                                            if (result != undefined) {
+	                                                return [2 /*return*/, { value: result }];
+	                                            }
+	                                        }
+	                                        // All configs have run to completion; we will never get more data
+	                                        if (configs.filter(function (c) { return !c.done; }).length === 0) {
+	                                            return [2 /*return*/, "break"];
+	                                        }
+	                                        return [2 /*return*/];
+	                                }
 	                            });
-	                        }
-	                        reject(firstError);
-	                        return;
-	                    }
-	                    // Queue up the next round
-	                    setTimeout(next, 0);
-	                });
-	                // Fire off requests until we could possibly meet quorum
-	                if (inflightWeight < _this.quorum) {
-	                    setTimeout(next, 0);
-	                    return;
+	                        };
+	                        this_1 = this;
+	                        _a.label = 1;
+	                    case 1:
+	                        if (!true) return [3 /*break*/, 3];
+	                        return [5 /*yield**/, _loop_1()];
+	                    case 2:
+	                        state_1 = _a.sent();
+	                        if (typeof state_1 === "object")
+	                            return [2 /*return*/, state_1.value];
+	                        if (state_1 === "break")
+	                            return [3 /*break*/, 3];
+	                        return [3 /*break*/, 1];
+	                    case 3: return [2 /*return*/, logger.throwError("failed to meet quorum", lib.Logger.errors.SERVER_ERROR, {
+	                            method: method,
+	                            params: params,
+	                            results: configs.map(function (c) { return exposeDebugConfig(c); }),
+	                            //errors: configs.map((c) => c.error),
+	                            provider: this
+	                        })];
 	                }
-	            };
-	            // bootstrap firing requests
-	            next();
+	            });
 	        });
 	    };
 	    return FallbackProvider;
@@ -21445,7 +21715,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.167";
+	exports.version = "ethers/5.0.0-beta.168";
 	});
 
 	var _version$L = unwrapExports(_version$K);

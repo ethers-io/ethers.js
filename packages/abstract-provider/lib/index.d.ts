@@ -47,7 +47,7 @@ export interface Log {
     blockNumber?: number;
     blockHash?: string;
     transactionIndex?: number;
-    removed?: boolean;
+    removed: boolean;
     transactionLogIndex?: number;
     address: string;
     data: string;
@@ -56,19 +56,19 @@ export interface Log {
     logIndex?: number;
 }
 export interface TransactionReceipt {
-    to?: string;
-    from?: string;
-    contractAddress?: string;
-    transactionIndex?: number;
+    to: string;
+    from: string;
+    contractAddress: string;
+    transactionIndex: number;
     root?: string;
-    gasUsed?: BigNumber;
-    logsBloom?: string;
-    blockHash?: string;
-    transactionHash?: string;
-    logs?: Array<Log>;
-    blockNumber?: number;
-    confirmations?: number;
-    cumulativeGasUsed?: BigNumber;
+    gasUsed: BigNumber;
+    logsBloom: string;
+    blockHash: string;
+    transactionHash: string;
+    logs: Array<Log>;
+    blockNumber: number;
+    confirmations: number;
+    cumulativeGasUsed: BigNumber;
     byzantium: boolean;
     status?: number;
 }

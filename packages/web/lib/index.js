@@ -174,7 +174,7 @@ function fetchJson(connection, json, processFunc) {
                     case 6:
                         body = _a.sent();
                         if (allow304 && response.status === 304) {
-                            // Leave body as null
+                            body = null;
                             return [3 /*break*/, 7];
                         }
                         else if (!response.ok) {

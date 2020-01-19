@@ -130,7 +130,7 @@ export function fetchJson(connection, json, processFunc) {
                 }
                 body = yield response.text();
                 if (allow304 && response.status === 304) {
-                    // Leave body as null
+                    body = null;
                     break;
                 }
                 else if (!response.ok) {

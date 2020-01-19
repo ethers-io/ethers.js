@@ -3,6 +3,15 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.168 (2020-01-18 21:46)
+-----------------------------------------
+
+  - Much more resiliant FallbackProvider which can ignore properties that are only approximate and supports per-provider priorities. ([#635](https://github.com/ethers-io/ethers.js/issues/635), [#588](https://github.com/ethers-io/ethers.js/issues/588); [f4bcf24](https://github.com/ethers-io/ethers.js/commit/f4bcf24a257a17ec9beb98f3d0b3682de543534c))
+  - Fixed some typing for receipts and logs. ([#497](https://github.com/ethers-io/ethers.js/issues/497); [ea102ef](https://github.com/ethers-io/ethers.js/commit/ea102ef7c4fa5df7b9389fbc8a2947bbbd4c471e))
+  - Abstracting mnemonic phrases. ([#685](https://github.com/ethers-io/ethers.js/issues/685); [92a383f](https://github.com/ethers-io/ethers.js/commit/92a383ff0dad4587e44953efca3c6ab795a1b1bd))
+  - Sync GitHub issues. ([75e1a37](https://github.com/ethers-io/ethers.js/commit/75e1a37bb5935d5d538ffcfce5b0073e1334d457))
+  - Fixed 304 status for fetchJson. ([c66d81e](https://github.com/ethers-io/ethers.js/commit/c66d81e96f7c9b0808f181085ffe1c92f6219d46))
+
 ethers/v5.0.0-beta.167 (2020-01-11 04:16)
 -----------------------------------------
 
