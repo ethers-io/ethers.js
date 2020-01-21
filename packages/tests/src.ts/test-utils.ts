@@ -333,39 +333,55 @@ describe('Test Base64 coder', function() {
 });
 
 describe('Test UTF-8 coder', function() {
+    const overlong = ethers.utils.Utf8ErrorReason.OVERLONG;
+    const utf16Surrogate = ethers.utils.Utf8ErrorReason.UTF16_SURROGATE;
+    const overrun = ethers.utils.Utf8ErrorReason.OVERRUN;
+    const missingContinue = ethers.utils.Utf8ErrorReason.MISSING_CONTINUE;
+    const unexpectedContinue = ethers.utils.Utf8ErrorReason.UNEXPECTED_CONTINUE;
+    const outOfRange = ethers.utils.Utf8ErrorReason.OUT_OF_RANGE;
+
     let BadUTF = [
         // See: https://en.wikipedia.org/wiki/UTF-8#Overlong_encodings
-        { bytes: [ 0xF0,0x82, 0x82, 0xAC ], reason: 'overlong', name: 'wikipedia overlong encoded Euro sign' },
-        { bytes: [ 0xc0, 0x80 ], reason: 'overlong', name: '2-byte overlong - 0xc080' },
-        { bytes: [ 0xc0, 0xbf ], reason: 'overlong', name: '2-byte overlong - 0xc0bf' },
-        { bytes: [ 0xc1, 0x80 ], reason: 'overlong', name: '2-byte overlong - 0xc180' },
-        { bytes: [ 0xc1, 0xbf ], reason: 'overlong', name: '2-byte overlong - 0xc1bf' },
+        { bytes: [ 0xF0,0x82, 0x82, 0xAC ], reason: overlong, ignored: "", replaced: "\u20ac", name: 'wikipedia overlong encoded Euro sign' },
+        { bytes: [ 0xc0, 0x80 ], reason: overlong, ignored: "", replaced: "\u0000", name: '2-byte overlong - 0xc080' },
+        { bytes: [ 0xc0, 0xbf ], reason: overlong, ignored: "", replaced: "?", name: '2-byte overlong - 0xc0bf' },
+        { bytes: [ 0xc1, 0x80 ], reason: overlong, ignored: "", replaced: "@", name: '2-byte overlong - 0xc180' },
+        { bytes: [ 0xc1, 0xbf ], reason: overlong, ignored: "", replaced: "\u007f", name: '2-byte overlong - 0xc1bf' },
 
         // Reserved UTF-16 Surrogate halves
-        { bytes: [ 0xed, 0xa0, 0x80 ], reason: 'utf-16 surrogate', name: 'utf-16 surrogate - U+d800' },
-        { bytes: [ 0xed, 0xbf, 0xbf ], reason: 'utf-16 surrogate', name: 'utf-16 surrogate - U+dfff' },
+        { bytes: [ 0xed, 0xa0, 0x80 ], reason: utf16Surrogate, ignored: "", replaced: "\ufffd", name: 'utf-16 surrogate - U+d800' },
+        { bytes: [ 0xed, 0xbf, 0xbf ], reason: utf16Surrogate, ignored: "", replaced: "\ufffd", name: 'utf-16 surrogate - U+dfff' },
 
         // a leading byte not followed by enough continuation bytes
-        { bytes: [ 0xdf ], reason: 'too short', name: 'too short - 2-bytes - 0x00' },
-        { bytes: [ 0xe0 ], reason: 'too short', name: 'too short - 3-bytes' },
-        { bytes: [ 0xe0, 0x80 ], reason: 'too short', name: 'too short - 3-bytes with 1' },
+        { bytes: [ 0xdf ], reason: overrun, ignored: "", replaced: "\ufffd", name: 'too short - 2-bytes - 0x00' },
+        { bytes: [ 0xe0 ], reason: overrun, ignored: "", replaced: "\ufffd", name: 'too short - 3-bytes' },
+        { bytes: [ 0xe0, 0x80 ], reason: overrun, ignored: "", replaced: "\ufffd", name: 'too short - 3-bytes with 1' },
 
-        { bytes: [ 0x80 ], reason: 'unexpected continuation byte', name: 'unexpected continuation byte' },
-        { bytes: [ 0xc2, 0x00 ], reason: 'invalid continuation byte', name: 'invalid continuation byte - 0xc200' },
-        { bytes: [ 0xc2, 0x40 ], reason: 'invalid continuation byte', name: 'invalid continuation byte - 0xc240' },
-        { bytes: [ 0xc2, 0xc0 ], reason: 'invalid continuation byte', name: 'invalid continuation byte - 0xc2c0' },
+        { bytes: [ 0x80 ], reason: unexpectedContinue, ignored: "", replaced: "\ufffd", name: 'unexpected continuation byte' },
+        { bytes: [ 0xc2, 0x00 ], reason: missingContinue, ignored: "\u0000", replaced: "\ufffd\u0000", name: 'invalid continuation byte - 0xc200' },
+        { bytes: [ 0xc2, 0x40 ], reason: missingContinue, ignored: "@", replaced: "\ufffd@", name: 'invalid continuation byte - 0xc240' },
+        { bytes: [ 0xc2, 0xc0 ], reason: missingContinue, ignored: "", replaced: "\ufffd\ufffd", name: 'invalid continuation byte - 0xc2c0' },
 
         // Out of range
-        { bytes: [ 0xf4, 0x90, 0x80, 0x80 ], reason: 'out-of-range', name: 'out of range' },
+        { bytes: [ 0xf4, 0x90, 0x80, 0x80 ], reason: outOfRange, ignored: "", replaced: "\ufffd", name: 'out of range' },
     ];
 
     BadUTF.forEach(function(test) {
         it('toUtf8String - ' + test.name, function() {
+            // Check the string using the ignoreErrors conversion
+            const ignored = ethers.utils.toUtf8String(test.bytes, ethers.utils.Utf8ErrorFuncs.ignore);
+            assert.equal(ignored, test.ignored, "ignoring errors matches");
+
+            // Check the string using the replaceErrors conversion
+            const replaced = ethers.utils.toUtf8String(test.bytes, ethers.utils.Utf8ErrorFuncs.replace);
+            assert.equal(replaced, test.replaced, "replaced errors matches");
+
+            // Check the string throws the correct error during conversion
             assert.throws(function() {
                 let result = ethers.utils.toUtf8String(test.bytes);
                 console.log('Result', result);
             }, function(error: Error) {
-                return (error.message.split(';').pop().trim() === test.reason)
+                return (error.message.split(";").pop().split("(")[0].trim() === test.reason)
             }, test.name);
         });
     });
