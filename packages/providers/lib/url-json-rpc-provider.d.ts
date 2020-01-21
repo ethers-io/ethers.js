@@ -2,7 +2,7 @@ import { Network, Networkish } from "@ethersproject/networks";
 import { ConnectionInfo } from "@ethersproject/web";
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 export declare abstract class UrlJsonRpcProvider extends JsonRpcProvider {
-    readonly apiKey: string;
+    readonly apiKey: any;
     constructor(network?: Networkish, apiKey?: any);
     _startPending(): void;
     getSigner(address?: string): JsonRpcSigner;

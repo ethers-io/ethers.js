@@ -3,6 +3,14 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.169 (2020-01-20 19:42)
+-----------------------------------------
+
+  - Fixed imports after refactor. ([adf5622](https://github.com/ethers-io/ethers.js/commit/adf56229c6cc83003d319ea9a004677e2555d478))
+  - Refactor some enum names and add UTF-8 error support to the umbrella package. ([931da2f](https://github.com/ethers-io/ethers.js/commit/931da2f77446fc9266cf07f0d7d78d4376625005))
+  - Allow arbitrary apiKey for UrlJsonRpcProvider. ([5878b54](https://github.com/ethers-io/ethers.js/commit/5878b54d6eded1329a6dc3b4023f876a87f72b6e))
+  - Added more general error handling (e.g. error, ignore, replace) for calling toUtf8String. ([a055edb](https://github.com/ethers-io/ethers.js/commit/a055edb5855b96fdf179403458c1694b96fd906c))
+
 ethers/v5.0.0-beta.168 (2020-01-18 21:46)
 -----------------------------------------
 

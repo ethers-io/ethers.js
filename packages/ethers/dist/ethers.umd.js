@@ -7127,7 +7127,7 @@
 	var _version$c = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "strings/5.0.0-beta.135";
+	exports.version = "strings/5.0.0-beta.136";
 	});
 
 	var _version$d = unwrapExports(_version$c);
@@ -7150,8 +7150,79 @@
 	    UnicodeNormalizationForm["NFKD"] = "NFKD";
 	})(UnicodeNormalizationForm = exports.UnicodeNormalizationForm || (exports.UnicodeNormalizationForm = {}));
 	;
+	var Utf8ErrorReason;
+	(function (Utf8ErrorReason) {
+	    // A continuation byte was present where there was nothing to continue
+	    // - offset = the index the codepoint began in
+	    Utf8ErrorReason["UNEXPECTED_CONTINUE"] = "unexpected continuation byte";
+	    // An invalid (non-continuation) byte to start a UTF-8 codepoint was found
+	    // - offset = the index the codepoint began in
+	    Utf8ErrorReason["BAD_PREFIX"] = "bad codepoint prefix";
+	    // The string is too short to process the expected codepoint
+	    // - offset = the index the codepoint began in
+	    Utf8ErrorReason["OVERRUN"] = "string overrun";
+	    // A missing continuation byte was expected but not found
+	    // - offset = the index the continuation byte was expected at
+	    Utf8ErrorReason["MISSING_CONTINUE"] = "missing continuation byte";
+	    // The computed code point is outside the range for UTF-8
+	    // - offset       = start of this codepoint
+	    // - badCodepoint = the computed codepoint; outside the UTF-8 range
+	    Utf8ErrorReason["OUT_OF_RANGE"] = "out of UTF-8 range";
+	    // UTF-8 strings may not contain UTF-16 surrogate pairs
+	    // - offset       = start of this codepoint
+	    // - badCodepoint = the computed codepoint; inside the UTF-16 surrogate range
+	    Utf8ErrorReason["UTF16_SURROGATE"] = "UTF-16 surrogate";
+	    // The string is an overlong reperesentation
+	    // - offset       = start of this codepoint
+	    // - badCodepoint = the computed codepoint; already bounds checked
+	    Utf8ErrorReason["OVERLONG"] = "overlong representation";
+	})(Utf8ErrorReason = exports.Utf8ErrorReason || (exports.Utf8ErrorReason = {}));
+	;
+	function errorFunc(reason, offset, bytes, output, badCodepoint) {
+	    return logger.throwArgumentError("invalid codepoint at offset " + offset + "; " + reason, "bytes", bytes);
+	}
+	function ignoreFunc(reason, offset, bytes, output, badCodepoint) {
+	    // If there is an invalid prefix (including stray continuation), skip any additional continuation bytes
+	    if (reason === Utf8ErrorReason.BAD_PREFIX || reason === Utf8ErrorReason.UNEXPECTED_CONTINUE) {
+	        var i = 0;
+	        for (var o = offset + 1; o < bytes.length; o++) {
+	            if (bytes[o] >> 6 !== 0x02) {
+	                break;
+	            }
+	            i++;
+	        }
+	        return i;
+	    }
+	    // This byte runs us past the end of the string, so just jump to the end
+	    // (but the first byte was read already read and therefore skipped)
+	    if (reason === Utf8ErrorReason.OVERRUN) {
+	        return bytes.length - offset - 1;
+	    }
+	    // Nothing to skip
+	    return 0;
+	}
+	function replaceFunc(reason, offset, bytes, output, badCodepoint) {
+	    // Overlong representations are otherwise "valid" code points; just non-deistingtished
+	    if (reason === Utf8ErrorReason.OVERLONG) {
+	        output.push(badCodepoint);
+	        return 0;
+	    }
+	    // Put the replacement character into the output
+	    output.push(0xfffd);
+	    // Otherwise, process as if ignoring errors
+	    return ignoreFunc(reason, offset, bytes, output, badCodepoint);
+	}
+	// Common error handing strategies
+	exports.Utf8ErrorFuncs = Object.freeze({
+	    error: errorFunc,
+	    ignore: ignoreFunc,
+	    replace: replaceFunc
+	});
 	// http://stackoverflow.com/questions/13356493/decode-utf-8-with-javascript#13691499
-	function getUtf8CodePoints(bytes, ignoreErrors) {
+	function getUtf8CodePoints(bytes, onError) {
+	    if (onError == null) {
+	        onError = exports.Utf8ErrorFuncs.error;
+	    }
 	    bytes = lib$1.arrayify(bytes);
 	    var result = [];
 	    var i = 0;
@@ -7182,25 +7253,17 @@
 	            overlongMask = 0xffff;
 	        }
 	        else {
-	            if (!ignoreErrors) {
-	                if ((c & 0xc0) === 0x80) {
-	                    throw new Error("invalid utf8 byte sequence; unexpected continuation byte");
-	                }
-	                throw new Error("invalid utf8 byte sequence; invalid prefix");
+	            if ((c & 0xc0) === 0x80) {
+	                i += onError(Utf8ErrorReason.UNEXPECTED_CONTINUE, i - 1, bytes, result);
+	            }
+	            else {
+	                i += onError(Utf8ErrorReason.BAD_PREFIX, i - 1, bytes, result);
 	            }
 	            continue;
 	        }
 	        // Do we have enough bytes in our data?
-	        if (i + extraLength > bytes.length) {
-	            if (!ignoreErrors) {
-	                throw new Error("invalid utf8 byte sequence; too short");
-	            }
-	            // If there is an invalid unprocessed byte, skip continuation bytes
-	            for (; i < bytes.length; i++) {
-	                if (bytes[i] >> 6 !== 0x02) {
-	                    break;
-	                }
-	            }
+	        if (i - 1 + extraLength >= bytes.length) {
+	            i += onError(Utf8ErrorReason.OVERRUN, i - 1, bytes, result);
 	            continue;
 	        }
 	        // Remove the length prefix from the char
@@ -7209,6 +7272,7 @@
 	            var nextChar = bytes[i];
 	            // Invalid continuation byte
 	            if ((nextChar & 0xc0) != 0x80) {
+	                i += onError(Utf8ErrorReason.MISSING_CONTINUE, i, bytes, result);
 	                res = null;
 	                break;
 	            }
@@ -7216,31 +7280,23 @@
 	            res = (res << 6) | (nextChar & 0x3f);
 	            i++;
 	        }
+	        // See above loop for invalid contimuation byte
 	        if (res === null) {
-	            if (!ignoreErrors) {
-	                throw new Error("invalid utf8 byte sequence; invalid continuation byte");
-	            }
-	            continue;
-	        }
-	        // Check for overlong seuences (more bytes than needed)
-	        if (res <= overlongMask) {
-	            if (!ignoreErrors) {
-	                throw new Error("invalid utf8 byte sequence; overlong");
-	            }
 	            continue;
 	        }
 	        // Maximum code point
 	        if (res > 0x10ffff) {
-	            if (!ignoreErrors) {
-	                throw new Error("invalid utf8 byte sequence; out-of-range");
-	            }
+	            i += onError(Utf8ErrorReason.OUT_OF_RANGE, i - 1 - extraLength, bytes, result, res);
 	            continue;
 	        }
 	        // Reserved for UTF-16 surrogate halves
 	        if (res >= 0xd800 && res <= 0xdfff) {
-	            if (!ignoreErrors) {
-	                throw new Error("invalid utf8 byte sequence; utf-16 surrogate");
-	            }
+	            i += onError(Utf8ErrorReason.UTF16_SURROGATE, i - 1 - extraLength, bytes, result, res);
+	            continue;
+	        }
+	        // Check for overlong sequences (more bytes than needed)
+	        if (res <= overlongMask) {
+	            i += onError(Utf8ErrorReason.OVERLONG, i - 1 - extraLength, bytes, result, res);
 	            continue;
 	        }
 	        result.push(res);
@@ -7291,8 +7347,8 @@
 	    var hex = ("0000" + value.toString(16));
 	    return "\\u" + hex.substring(hex.length - 4);
 	}
-	function _toEscapedUtf8String(bytes, ignoreErrors) {
-	    return '"' + getUtf8CodePoints(bytes, ignoreErrors).map(function (codePoint) {
+	function _toEscapedUtf8String(bytes, onError) {
+	    return '"' + getUtf8CodePoints(bytes, onError).map(function (codePoint) {
 	        if (codePoint < 256) {
 	            switch (codePoint) {
 	                case 8: return "\\b";
@@ -7324,8 +7380,8 @@
 	    }).join("");
 	}
 	exports._toUtf8String = _toUtf8String;
-	function toUtf8String(bytes, ignoreErrors) {
-	    return _toUtf8String(getUtf8CodePoints(bytes, ignoreErrors));
+	function toUtf8String(bytes, onError) {
+	    return _toUtf8String(getUtf8CodePoints(bytes, onError));
 	}
 	exports.toUtf8String = toUtf8String;
 	function toUtf8CodePoints(str, form) {
@@ -7337,11 +7393,13 @@
 
 	var utf8$1 = unwrapExports(utf8);
 	var utf8_1 = utf8.UnicodeNormalizationForm;
-	var utf8_2 = utf8.toUtf8Bytes;
-	var utf8_3 = utf8._toEscapedUtf8String;
-	var utf8_4 = utf8._toUtf8String;
-	var utf8_5 = utf8.toUtf8String;
-	var utf8_6 = utf8.toUtf8CodePoints;
+	var utf8_2 = utf8.Utf8ErrorReason;
+	var utf8_3 = utf8.Utf8ErrorFuncs;
+	var utf8_4 = utf8.toUtf8Bytes;
+	var utf8_5 = utf8._toEscapedUtf8String;
+	var utf8_6 = utf8._toUtf8String;
+	var utf8_7 = utf8.toUtf8String;
+	var utf8_8 = utf8.toUtf8CodePoints;
 
 	var bytes32 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -7599,6 +7657,8 @@
 	exports.toUtf8CodePoints = utf8.toUtf8CodePoints;
 	exports.toUtf8String = utf8.toUtf8String;
 	exports.UnicodeNormalizationForm = utf8.UnicodeNormalizationForm;
+	exports.Utf8ErrorFuncs = utf8.Utf8ErrorFuncs;
+	exports.Utf8ErrorReason = utf8.Utf8ErrorReason;
 	});
 
 	var index$8 = unwrapExports(lib$8);
@@ -7610,6 +7670,8 @@
 	var lib_6$3 = lib$8.toUtf8CodePoints;
 	var lib_7$3 = lib$8.toUtf8String;
 	var lib_8$2 = lib$8.UnicodeNormalizationForm;
+	var lib_9$2 = lib$8.Utf8ErrorFuncs;
+	var lib_10$1 = lib$8.Utf8ErrorReason;
 
 	var string = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -8341,8 +8403,8 @@
 	var lib_6$4 = lib$a.ParamType;
 	var lib_7$4 = lib$a.AbiCoder;
 	var lib_8$3 = lib$a.defaultAbiCoder;
-	var lib_9$2 = lib$a.Indexed;
-	var lib_10$1 = lib$a.Interface;
+	var lib_9$3 = lib$a.Indexed;
+	var lib_10$2 = lib$a.Interface;
 
 	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -10861,7 +10923,7 @@
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "sha2/5.0.0-beta.133";
+	exports.version = "sha2/5.0.0-beta.134";
 	});
 
 	var _version$n = unwrapExports(_version$m);
@@ -10882,11 +10944,11 @@
 
 
 	var logger = new lib.Logger(_version$m.version);
-	var SupportedAlgorithms;
-	(function (SupportedAlgorithms) {
-	    SupportedAlgorithms["sha256"] = "sha256";
-	    SupportedAlgorithms["sha512"] = "sha512";
-	})(SupportedAlgorithms = exports.SupportedAlgorithms || (exports.SupportedAlgorithms = {}));
+	var SupportedAlgorithm;
+	(function (SupportedAlgorithm) {
+	    SupportedAlgorithm["sha256"] = "sha256";
+	    SupportedAlgorithm["sha512"] = "sha512";
+	})(SupportedAlgorithm = exports.SupportedAlgorithm || (exports.SupportedAlgorithm = {}));
 	;
 	function ripemd160(data) {
 	    return "0x" + (hash.ripemd160().update(lib$1.arrayify(data)).digest("hex"));
@@ -10901,7 +10963,7 @@
 	}
 	exports.sha512 = sha512;
 	function computeHmac(algorithm, key, data) {
-	    if (!SupportedAlgorithms[algorithm]) {
+	    if (!SupportedAlgorithm[algorithm]) {
 	        logger.throwError("unsupported algorithm " + algorithm, lib.Logger.errors.UNSUPPORTED_OPERATION, {
 	            operation: "hmac",
 	            algorithm: algorithm
@@ -10913,7 +10975,7 @@
 	});
 
 	var browser$1 = unwrapExports(browser);
-	var browser_1 = browser.SupportedAlgorithms;
+	var browser_1 = browser.SupportedAlgorithm;
 	var browser_2 = browser.ripemd160;
 	var browser_3 = browser.sha256;
 	var browser_4 = browser.sha512;
@@ -13751,7 +13813,7 @@
 	var _version$u = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hdnode/5.0.0-beta.136";
+	exports.version = "hdnode/5.0.0-beta.137";
 	});
 
 	var _version$v = unwrapExports(_version$u);
@@ -13906,7 +13968,7 @@
 	        for (var i = 24; i >= 0; i -= 8) {
 	            data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff);
 	        }
-	        var I = lib$1.arrayify(browser.computeHmac(browser.SupportedAlgorithms.sha512, this.chainCode, data));
+	        var I = lib$1.arrayify(browser.computeHmac(browser.SupportedAlgorithm.sha512, this.chainCode, data));
 	        var IL = I.slice(0, 32);
 	        var IR = I.slice(32);
 	        // The private key
@@ -13967,7 +14029,7 @@
 	        if (seedArray.length < 16 || seedArray.length > 64) {
 	            throw new Error("invalid seed");
 	        }
-	        var I = lib$1.arrayify(browser.computeHmac(browser.SupportedAlgorithms.sha512, MasterSecret, seedArray));
+	        var I = lib$1.arrayify(browser.computeHmac(browser.SupportedAlgorithm.sha512, MasterSecret, seedArray));
 	        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic);
 	    };
 	    HDNode.fromMnemonic = function (mnemonic, password, wordlist) {
@@ -17599,7 +17661,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.149";
+	exports.version = "providers/5.0.0-beta.150";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -21311,8 +21373,8 @@
 	var lib_6$7 = lib$m.EtherscanProvider;
 	var lib_7$6 = lib$m.FallbackProvider;
 	var lib_8$4 = lib$m.IpcProvider;
-	var lib_9$3 = lib$m.InfuraProvider;
-	var lib_10$2 = lib$m.JsonRpcProvider;
+	var lib_9$4 = lib$m.InfuraProvider;
+	var lib_10$3 = lib$m.JsonRpcProvider;
 	var lib_11$1 = lib$m.JsonRpcSigner;
 	var lib_12$1 = lib$m.NodesmithProvider;
 	var lib_13$1 = lib$m.Web3Provider;
@@ -21609,6 +21671,7 @@
 	exports.toUtf8Bytes = lib$8.toUtf8Bytes;
 	exports.toUtf8CodePoints = lib$8.toUtf8CodePoints;
 	exports.toUtf8String = lib$8.toUtf8String;
+	exports.Utf8ErrorFuncs = lib$8.Utf8ErrorFuncs;
 
 	exports.computeAddress = lib$g.computeAddress;
 	exports.parseTransaction = lib$g.parse;
@@ -21628,9 +21691,10 @@
 	////////////////////////
 	// Enums
 	var sha2_2 = browser;
-	exports.SupportedAlgorithms = sha2_2.SupportedAlgorithms;
+	exports.SupportedAlgorithm = sha2_2.SupportedAlgorithm;
 	var strings_2 = lib$8;
 	exports.UnicodeNormalizationForm = strings_2.UnicodeNormalizationForm;
+	exports.Utf8ErrorReason = strings_2.Utf8ErrorReason;
 	});
 
 	var utils$4 = unwrapExports(utils$3);
@@ -21697,25 +21761,27 @@
 	var utils_61 = utils$3.toUtf8Bytes;
 	var utils_62 = utils$3.toUtf8CodePoints;
 	var utils_63 = utils$3.toUtf8String;
-	var utils_64 = utils$3.computeAddress;
-	var utils_65 = utils$3.parseTransaction;
-	var utils_66 = utils$3.recoverAddress;
-	var utils_67 = utils$3.serializeTransaction;
-	var utils_68 = utils$3.commify;
-	var utils_69 = utils$3.formatEther;
-	var utils_70 = utils$3.parseEther;
-	var utils_71 = utils$3.formatUnits;
-	var utils_72 = utils$3.parseUnits;
-	var utils_73 = utils$3.verifyMessage;
-	var utils_74 = utils$3.fetchJson;
-	var utils_75 = utils$3.poll;
-	var utils_76 = utils$3.SupportedAlgorithms;
-	var utils_77 = utils$3.UnicodeNormalizationForm;
+	var utils_64 = utils$3.Utf8ErrorFuncs;
+	var utils_65 = utils$3.computeAddress;
+	var utils_66 = utils$3.parseTransaction;
+	var utils_67 = utils$3.recoverAddress;
+	var utils_68 = utils$3.serializeTransaction;
+	var utils_69 = utils$3.commify;
+	var utils_70 = utils$3.formatEther;
+	var utils_71 = utils$3.parseEther;
+	var utils_72 = utils$3.formatUnits;
+	var utils_73 = utils$3.parseUnits;
+	var utils_74 = utils$3.verifyMessage;
+	var utils_75 = utils$3.fetchJson;
+	var utils_76 = utils$3.poll;
+	var utils_77 = utils$3.SupportedAlgorithm;
+	var utils_78 = utils$3.UnicodeNormalizationForm;
+	var utils_79 = utils$3.Utf8ErrorReason;
 
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.168";
+	exports.version = "ethers/5.0.0-beta.169";
 	});
 
 	var _version$L = unwrapExports(_version$K);
@@ -21833,8 +21899,8 @@
 	var lib_6$8 = lib$p.providers;
 	var lib_7$7 = lib$p.Contract;
 	var lib_8$5 = lib$p.ContractFactory;
-	var lib_9$4 = lib$p.BigNumber;
-	var lib_10$3 = lib$p.FixedNumber;
+	var lib_9$5 = lib$p.BigNumber;
+	var lib_10$4 = lib$p.FixedNumber;
 	var lib_11$2 = lib$p.constants;
 	var lib_12$2 = lib$p.errors;
 	var lib_13$2 = lib$p.logger;
@@ -21843,10 +21909,10 @@
 	var lib_16$1 = lib$p.version;
 	var lib_17 = lib$p.Wordlist;
 
-	exports.BigNumber = lib_9$4;
+	exports.BigNumber = lib_9$5;
 	exports.Contract = lib_7$7;
 	exports.ContractFactory = lib_8$5;
-	exports.FixedNumber = lib_10$3;
+	exports.FixedNumber = lib_10$4;
 	exports.Signer = lib_2$m;
 	exports.VoidSigner = lib_4$e;
 	exports.Wallet = lib_3$h;

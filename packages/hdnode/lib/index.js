@@ -146,7 +146,7 @@ var HDNode = /** @class */ (function () {
         for (var i = 24; i >= 0; i -= 8) {
             data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff);
         }
-        var I = bytes_1.arrayify(sha2_1.computeHmac(sha2_1.SupportedAlgorithms.sha512, this.chainCode, data));
+        var I = bytes_1.arrayify(sha2_1.computeHmac(sha2_1.SupportedAlgorithm.sha512, this.chainCode, data));
         var IL = I.slice(0, 32);
         var IR = I.slice(32);
         // The private key
@@ -207,7 +207,7 @@ var HDNode = /** @class */ (function () {
         if (seedArray.length < 16 || seedArray.length > 64) {
             throw new Error("invalid seed");
         }
-        var I = bytes_1.arrayify(sha2_1.computeHmac(sha2_1.SupportedAlgorithms.sha512, MasterSecret, seedArray));
+        var I = bytes_1.arrayify(sha2_1.computeHmac(sha2_1.SupportedAlgorithm.sha512, MasterSecret, seedArray));
         return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic);
     };
     HDNode.fromMnemonic = function (mnemonic, password, wordlist) {

@@ -86,6 +86,7 @@ exports._toEscapedUtf8String = strings_1._toEscapedUtf8String;
 exports.toUtf8Bytes = strings_1.toUtf8Bytes;
 exports.toUtf8CodePoints = strings_1.toUtf8CodePoints;
 exports.toUtf8String = strings_1.toUtf8String;
+exports.Utf8ErrorFuncs = strings_1.Utf8ErrorFuncs;
 var transactions_1 = require("@ethersproject/transactions");
 exports.computeAddress = transactions_1.computeAddress;
 exports.parseTransaction = transactions_1.parse;
@@ -105,6 +106,7 @@ exports.poll = web_1.poll;
 ////////////////////////
 // Enums
 var sha2_2 = require("@ethersproject/sha2");
-exports.SupportedAlgorithms = sha2_2.SupportedAlgorithms;
+exports.SupportedAlgorithm = sha2_2.SupportedAlgorithm;
 var strings_2 = require("@ethersproject/strings");
 exports.UnicodeNormalizationForm = strings_2.UnicodeNormalizationForm;
+exports.Utf8ErrorReason = strings_2.Utf8ErrorReason;
