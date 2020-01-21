@@ -13,7 +13,7 @@ import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 type getUrlFunc = (network: Network, apiKey: string) => string | ConnectionInfo;
 
 export abstract class UrlJsonRpcProvider extends JsonRpcProvider {
-    readonly apiKey: string;
+    readonly apiKey: any;
 
     constructor(network?: Networkish, apiKey?: any) {
         logger.checkAbstract(new.target, UrlJsonRpcProvider);
