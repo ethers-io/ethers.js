@@ -36,17 +36,17 @@ export class Formatter {
     }
 
     getDefaultFormats(): Formats {
-        let formats: Formats = <Formats>({ });
+        const formats: Formats = <Formats>({ });
 
-        let address = this.address.bind(this);
-        let bigNumber = this.bigNumber.bind(this);
-        let blockTag = this.blockTag.bind(this);
-        let data = this.data.bind(this);
-        let hash = this.hash.bind(this);
-        let hex = this.hex.bind(this);
-        let number = this.number.bind(this);
+        const address = this.address.bind(this);
+        const bigNumber = this.bigNumber.bind(this);
+        const blockTag = this.blockTag.bind(this);
+        const data = this.data.bind(this);
+        const hash = this.hash.bind(this);
+        const hex = this.hex.bind(this);
+        const number = this.number.bind(this);
 
-        let strictData = (v: any) => { return this.data(v, true); };
+        const strictData = (v: any) => { return this.data(v, true); };
 
         formats.transaction = {
             hash: hash,
@@ -195,7 +195,7 @@ export class Formatter {
     }
 
     data(value: any, strict?: boolean): string {
-        let result = this.hex(value, strict);
+        const result = this.hex(value, strict);
         if ((result.length % 2) !== 0) {
             throw new Error("invalid data; odd-length - " + value);
         }
@@ -210,7 +210,7 @@ export class Formatter {
 
     callAddress(value: any): string {
         if (!isHexString(value, 32)) { return null; }
-        let address = getAddress(hexDataSlice(value, 12));
+        const address = getAddress(hexDataSlice(value, 12));
         return (address === AddressZero) ? null: address;
     }
 
@@ -237,7 +237,7 @@ export class Formatter {
 
     // Requires a hash, optionally requires 0x prefix; returns prefixed lowercase hash.
     hash(value: any, strict?: boolean): string {
-        let result = this.hex(value, strict);
+        const result = this.hex(value, strict);
         if (hexDataLength(result) !== 32) {
             return logger.throwArgumentError("invalid hash", "value", value);
         }
@@ -246,7 +246,9 @@ export class Formatter {
 
     // Returns the difficulty as a number, or if too large (i.e. PoA network) null
     difficulty(value: any): number {
-        let v = BigNumber.from(value);
+        if (value == null) { return null; }
+
+        const v = BigNumber.from(value);
 
         try {
             return v.toNumber();
@@ -328,7 +330,7 @@ export class Formatter {
         }
         */
 
-        let result: TransactionResponse = Formatter.check(this.formats.transaction, transaction);
+        const result: TransactionResponse = Formatter.check(this.formats.transaction, transaction);
 
         if (transaction.chainId != null) {
             let chainId = transaction.chainId;
@@ -382,7 +384,7 @@ export class Formatter {
         //let status = transactionReceipt.status;
         //let root = transactionReceipt.root;
 
-        let result: TransactionReceipt = Formatter.check(this.formats.receipt, value);
+        const result: TransactionReceipt = Formatter.check(this.formats.receipt, value);
         result.logs.forEach((entry, index) => {
             if (entry.transactionLogIndex == null) {
                 entry.transactionLogIndex = index;
@@ -414,10 +416,10 @@ export class Formatter {
     }
 
     static check(format: { [ name: string ]: FormatFunc }, object: any): any {
-        let result: any = {};
-        for (let key in format) {
+        const result: any = {};
+        for (const key in format) {
             try {
-                let value = format[key](object[key]);
+                const value = format[key](object[key]);
                 if (value !== undefined) { result[key] = value; }
             } catch (error) {
                 error.checkKey = key;
@@ -449,7 +451,7 @@ export class Formatter {
         return (function(array: any): Array<any> {
             if (!Array.isArray(array)) { throw new Error("not an array"); }
 
-            let result: any = [];
+            const result: any = [];
 
             array.forEach(function(value) {
                 result.push(format(value));

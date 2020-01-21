@@ -120,7 +120,7 @@ const blockchainData: any = {
             balance: bnify("997787946734641021")
         },
         block3: {
-             hash: "0xf0ec9bf41b99a6bd1f6cd29f91302f71a1a82d14634d2e207edea4b7962f3676",
+            hash: "0xf0ec9bf41b99a6bd1f6cd29f91302f71a1a82d14634d2e207edea4b7962f3676",
             parentHash: "0xf110ecd84454f116e2222378e7bca81ac3e59be0dac96d7ec56d5ef1c3bc1d64",
             number: 3,
             timestamp: 1488459452,
@@ -130,6 +130,25 @@ const blockchainData: any = {
             miner: "0x00A0A24b9f0E5EC7Aa4c7389b8302fd0123194dE",
             extraData: "0xd5830105048650617269747986312e31352e31826c69",
             transactions: []
+        },
+        // See: #711
+        block16265864: {
+            hash: "0xd92891a6eeaed4892289edf9bd5ebff261da5c6a51f7131cc1a481c6f4d1aa75",
+            parentHash: "0xcc769a02513be1df80eee7d3a5cb87f14f37baee03c13f3e3ad1e7bdcaf7dac3",
+            number: 16265864,
+            timestamp: 1579621004,
+            difficulty: null,
+            gasLimit: bnify("0x989680"),
+            gasUsed: bnify("0x0705bf"),
+            miner: "0x596e8221A30bFe6e7eFF67Fee664A01C73BA3C56",
+            extraData: "0xde830206088f5061726974792d457468657265756d86312e34302e30826c69",
+            transactions: [
+                "0x20e6760fa1297fb06c8c20e6ed99581e0ba964d51167ea3c8ff580bfcb10bfc3",
+                "0x0ce7eba48b1bbdee05823b79ae24e741f3f290d0abfef8ae9adf32db108b7dd6",
+                "0x1fa2baafa844bf4853e4abbbf49532bf570210d589dc626dbf7ebc4832bdfa5d",
+                "0xdb5d1fa54d30a4b6aee0b242a2c68ea52d3dd28703f69e6e30871827850aa2fa",
+                "0xcc898db85d7d2493d4778faf640be32a4a3b7f5f987257bdc0009ce75a18eeaa"
+            ]
         },
     },
     rinkeby: {
@@ -326,6 +345,22 @@ function testProvider(providerName: string, networkName: string) {
                 assert.ok(false);
             });
         });
+
+        // Kovan Test Case: See #711
+        if (blockchainData[networkName].block16265864) {
+            it("fetches block #16265864", function() {
+                this.timeout(20000);
+                let test = blockchainData[networkName].block16265864;
+                return provider.getBlock(16265864).then((block) => {
+                    for (let key in test) {
+                        equals("Block " + key, (<any>block)[key], test[key]);
+                    }
+                }, (error) => {
+                    console.log("Error", error);
+                    assert.ok(false);
+                });
+            });
+        }
 
         it("fetches address balance", function() {
             // @TODO: These tests could be fiddled with if someone sends ether to our address
