@@ -15,7 +15,7 @@ import { randomBytes } from "@ethersproject/random";
 import { checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import * as RLP from "@ethersproject/rlp";
 import { computePublicKey, recoverPublicKey, SigningKey } from "@ethersproject/signing-key";
-import { formatBytes32String, nameprep, parseBytes32String, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String } from "@ethersproject/strings";
+import { formatBytes32String, nameprep, parseBytes32String, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, Utf8ErrorFuncs } from "@ethersproject/strings";
 import { computeAddress, parse as parseTransaction, recoverAddress, serialize as serializeTransaction } from "@ethersproject/transactions";
 import { commify, formatEther, parseEther, formatUnits, parseUnits } from "@ethersproject/units";
 import { verifyMessage } from "@ethersproject/wallet";
@@ -24,8 +24,8 @@ import { fetchJson, poll } from "@ethersproject/web";
 ////////////////////////
 // Enums
 
-import { SupportedAlgorithms } from "@ethersproject/sha2";
-import { UnicodeNormalizationForm } from "@ethersproject/strings";
+import { SupportedAlgorithm } from "@ethersproject/sha2";
+import { UnicodeNormalizationForm, Utf8ErrorReason } from "@ethersproject/strings";
 
 
 ////////////////////////
@@ -35,6 +35,7 @@ import { CoerceFunc } from "@ethersproject/abi";
 import { Bytes, BytesLike, Hexable } from "@ethersproject/bytes"
 import { Mnemonic } from "@ethersproject/hdnode";
 import { EncryptOptions, ProgressCallback } from "@ethersproject/json-wallets";
+import { Utf8ErrorFunc } from "@ethersproject/strings";
 import { ConnectionInfo, FetchJsonResponse, OnceBlockable, PollOptions } from "@ethersproject/web";
 
 ////////////////////////
@@ -91,6 +92,7 @@ export {
     toUtf8Bytes,
     toUtf8CodePoints,
     toUtf8String,
+    Utf8ErrorFuncs,
 
     formatBytes32String,
     parseBytes32String,
@@ -148,9 +150,10 @@ export {
     ////////////////////////
     // Enums
 
-    SupportedAlgorithms,
-    UnicodeNormalizationForm,
+    SupportedAlgorithm,
 
+    UnicodeNormalizationForm,
+    Utf8ErrorReason,
 
     ////////////////////////
     // Types
@@ -164,6 +167,8 @@ export {
     Indexed,
 
     Mnemonic,
+
+    Utf8ErrorFunc,
 
     ConnectionInfo,
     OnceBlockable,
