@@ -3,9 +3,11 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.0-beta.170 (2020-01-21 19:07)
+ethers/v5.0.0-beta.170 (2020-01-21 20:37)
 -----------------------------------------
 
+  - Better, easier and more provider testing. ([e0d1d38](https://github.com/ethers-io/ethers.js/commit/e0d1d3866d2559f39627254873a0a1d4c0fcaf3d))
+  - Updated dist files. ([f92d156](https://github.com/ethers-io/ethers.js/commit/f92d156f1784bbb299d99fe6a0ddb53c0e2d0d09))
   - Fixed out-of-bounds difficulty in getBlock, which can affect PoA networks. ([#711](https://github.com/ethers-io/ethers.js/issues/711); [251882c](https://github.com/ethers-io/ethers.js/commit/251882ced4379931ec82ba28a4db10bc7dbf3580))
 
 ethers/v5.0.0-beta.169 (2020-01-20 19:42)

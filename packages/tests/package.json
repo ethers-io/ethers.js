@@ -7,14 +7,12 @@
     "@ethersproject/cli": ">=5.0.0-beta.145",
     "@ethersproject/testcases": ">=5.0.0-beta.131",
     "@types/mocha": "^5.2.0",
-    "ethers": ">=5.0.0-beta.156",
-    "mocha-phantomjs-core": "2.1.2"
+    "ethers": ">=5.0.0-beta.156"
   },
   "description": "Testing package for ethers.",
   "devDependencies": {
     "browserify": "16.2.3",
-    "mocha": "^5.2.0",
-    "web3-providers-http": "1.0.0-beta.35"
+    "mocha": "^5.2.0"
   },
   "ethereum": "donations.ethers.eth",
   "keywords": [
@@ -35,7 +33,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0x229bcb73523facf8020de6af653f4d12de9f838f6ca47ef554afb7ccf42feff5",
+  "tarballHash": "0xecdd7eb420e52aa96c3cb6ab178604594112f3506952a6a5d2a848542753eb3b",
   "types": "./lib/index.d.ts",
   "version": "5.0.0-beta.149"
 }
