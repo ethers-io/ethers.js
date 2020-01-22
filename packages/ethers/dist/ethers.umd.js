@@ -17661,7 +17661,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.150";
+	exports.version = "providers/5.0.0-beta.151";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -17870,6 +17870,9 @@
 	    };
 	    // Returns the difficulty as a number, or if too large (i.e. PoA network) null
 	    Formatter.prototype.difficulty = function (value) {
+	        if (value == null) {
+	            return null;
+	        }
 	        var v = lib$2.BigNumber.from(value);
 	        try {
 	            return v.toNumber();
@@ -21781,7 +21784,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.169";
+	exports.version = "ethers/5.0.0-beta.170";
 	});
 
 	var _version$L = unwrapExports(_version$K);

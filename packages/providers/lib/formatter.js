@@ -200,6 +200,9 @@ var Formatter = /** @class */ (function () {
     };
     // Returns the difficulty as a number, or if too large (i.e. PoA network) null
     Formatter.prototype.difficulty = function (value) {
+        if (value == null) {
+            return null;
+        }
         var v = bignumber_1.BigNumber.from(value);
         try {
             return v.toNumber();
