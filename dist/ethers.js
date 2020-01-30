@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.43";
+exports.version = "4.0.44";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -304,6 +304,8 @@ var Contract = /** @class */ (function () {
     // https://github.com/Microsoft/TypeScript/issues/5453
     // Once this issue is resolved (there are open PR) we can do this nicer
     // by making addressOrName default to null for 2 operand calls. :)
+    // ParamType is not actually correct here, but for legacy reasons,
+    // we need it. See #721.
     function Contract(addressOrName, contractInterface, signerOrProvider) {
         var _this = this;
         errors.checkNew(this, Contract);
@@ -650,6 +652,8 @@ var Contract = /** @class */ (function () {
 }());
 exports.Contract = Contract;
 var ContractFactory = /** @class */ (function () {
+    // ParamType is not actually correct here, but for legacy reasons,
+    // we need it. See #721.
     function ContractFactory(contractInterface, bytecode, signer) {
         var bytecodeHex = null;
         // Allow the bytecode object from the Solidity compiler
@@ -14940,6 +14944,8 @@ function addMethod(method) {
     }
 }
 var Interface = /** @class */ (function () {
+    // ParamType is not actually correct here, but for legacy reasons,
+    // we need it. See #721.
     function Interface(abi) {
         errors.checkNew(this, Interface);
         if (typeof (abi) === 'string') {
@@ -15133,13 +15139,13 @@ function etcDefaultProvider(url, network) {
 }
 var homestead = {
     chainId: 1,
-    ensAddress: "0x314159265dd8dbb310642f98f50c066173c1259b",
+    ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
     name: "homestead",
     _defaultProvider: ethDefaultProvider('homestead')
 };
 var ropsten = {
     chainId: 3,
-    ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
+    ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
     name: "ropsten",
     _defaultProvider: ethDefaultProvider('ropsten')
 };
@@ -15158,13 +15164,13 @@ var networks = {
     testnet: ropsten,
     rinkeby: {
         chainId: 4,
-        ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A",
+        ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
         name: 'rinkeby',
         _defaultProvider: ethDefaultProvider('rinkeby')
     },
     goerli: {
         chainId: 5,
-        ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
+        ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
         name: "goerli",
         _defaultProvider: ethDefaultProvider('goerli')
     },

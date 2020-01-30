@@ -303,6 +303,8 @@ function addMethod(method) {
     }
 }
 var Interface = /** @class */ (function () {
+    // ParamType is not actually correct here, but for legacy reasons,
+    // we need it. See #721.
     function Interface(abi) {
         errors.checkNew(this, Interface);
         if (typeof (abi) === 'string') {

@@ -1,6 +1,21 @@
 CHANGELOG
 =========
 
+ethers/v4.0.44 (2020-01-29 22:01)
+---------------------------------
+
+  - Fix backwards compatibility with certain parsed JSON objects passed into Interface and Contracts ([#721](https://github.com/ethers-io/ethers.js/issues/721); [0589b31](https://github.com/ethers-io/ethers.js/commit/0589b3102e2da702f4ac19a32c8b083faa6bbeea)).
+  - Updated ENS registry address for all networks ([df51b26](https://github.com/ethers-io/ethers.js/commit/df51b26fe71c33fb8aa610d95c4955647345ce0a)).
+
+ethers/v4.0.43 (2020-01-10 21:14)
+---------------------------------
+
+  - Fixed Contract and Interface constructor abi paramter type; should be a Fragment not a ParamType ([#602](https://github.com/ethers-io/ethers.js/issues/602); [6da5c53](https://github.com/ethers-io/ethers.js/commit/6da5c531206777ceef98d111a12b050a04bdf49c)).
+  - Add missing chainId to transaction responses ([#700](https://github.com/ethers-io/ethers.js/issues/700); [26d3271](https://github.com/ethers-io/ethers.js/commit/26d32716436cd8925a5278173ba72ad54e00eef8)).
+  - Fix resolveName when name is an address with an invalid checksum ([#694](https://github.com/ethers-io/ethers.js/issues/694); [bd066b8](https://github.com/ethers-io/ethers.js/commit/bd066b85421b1d0e575180e0626fcfb70135caf0)).
+  - Fixed testcases for PhantomJS syntax. ([447889](https://github.com/ethers-io/ethers.js/commit/4478896ca5e77be0e20d6d491a092da981ed5343))
+
+
 ethers/v4.0.42 (2020-01-03 18:35)
 ---------------------------------
 

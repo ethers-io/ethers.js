@@ -98,7 +98,7 @@ export declare class Interface {
         [name: string]: _EventDescription;
     };
     readonly deployFunction: _DeployDescription;
-    constructor(abi: Array<string | FunctionFragment | EventFragment> | string);
+    constructor(abi: Array<string | FunctionFragment | EventFragment | ParamType> | string);
     parseTransaction(tx: {
         data: string;
         value?: BigNumberish;
