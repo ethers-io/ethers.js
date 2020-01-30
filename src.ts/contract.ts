@@ -364,7 +364,9 @@ export class Contract {
     // Once this issue is resolved (there are open PR) we can do this nicer
     // by making addressOrName default to null for 2 operand calls. :)
 
-    constructor(addressOrName: string, contractInterface: Array<string | FunctionFragment | EventFragment> | string | Interface, signerOrProvider: Signer | Provider) {
+    // ParamType is not actually correct here, but for legacy reasons,
+    // we need it. See #721.
+    constructor(addressOrName: string, contractInterface: Array<string | FunctionFragment | EventFragment | ParamType> | string | Interface, signerOrProvider: Signer | Provider) {
         errors.checkNew(this, Contract);
 
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
@@ -744,7 +746,9 @@ export class ContractFactory {
     readonly bytecode: string;
     readonly signer: Signer;
 
-    constructor(contractInterface: Array<string | FunctionFragment | EventFragment> | string | Interface, bytecode: Arrayish | string | { object: string }, signer?: Signer) {
+    // ParamType is not actually correct here, but for legacy reasons,
+    // we need it. See #721.
+    constructor(contractInterface: Array<string | FunctionFragment | EventFragment | ParamType> | string | Interface, bytecode: Arrayish | string | { object: string }, signer?: Signer) {
 
         let bytecodeHex: string = null;
 

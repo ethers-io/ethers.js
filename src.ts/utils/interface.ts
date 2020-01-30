@@ -390,7 +390,9 @@ export class Interface {
     readonly events: { [ name: string ]: _EventDescription };
     readonly deployFunction: _DeployDescription;
 
-    constructor(abi: Array<string | FunctionFragment | EventFragment> | string) {
+    // ParamType is not actually correct here, but for legacy reasons,
+    // we need it. See #721.
+    constructor(abi: Array<string | FunctionFragment | EventFragment | ParamType> | string) {
         errors.checkNew(this, Interface);
 
         if (typeof(abi) === 'string') {
