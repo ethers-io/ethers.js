@@ -1,16 +1,10 @@
 'use strict';
 import fs from "fs";
+import _module from "module";
 import { dirname, resolve } from "path";
 import { ethers } from "ethers";
-let _solc = null;
-function getSolc() {
-    if (!_solc) {
-        _solc = require("solc");
-    }
-    return _solc;
-}
 ;
-export function compile(source, options) {
+function populateOptions(options) {
     options = ethers.utils.shallowCopy(options || {});
     if (options.filename && !options.basedir) {
         options.basedir = dirname(options.filename);
@@ -21,9 +15,12 @@ export function compile(source, options) {
     if (!options.basedir) {
         options.basedir = ".";
     }
-    let sources = {};
+    return options;
+}
+function getInput(source, options) {
+    const sources = {};
     sources[options.filename] = { content: source };
-    let input = {
+    const input = {
         language: "Solidity",
         sources: sources,
         settings: {
@@ -40,6 +37,21 @@ export function compile(source, options) {
             runs: 200
         };
     }
+    return input;
+}
+function _compile(_solc, source, options) {
+    const compilerVersion = _solc.version();
+    const ver = compilerVersion.match(/(\d+)\.(\d+)\.(\d+)/);
+    if (!ver || ver[1] !== "0") {
+        throw new Error("unknown version");
+    }
+    const version = parseFloat(ver[2] + "." + ver[3]);
+    //if (version < 4.11 || version >= 7) {
+    if (version < 5.0 || version >= 7.0) {
+        throw new Error(`unsupported version: ${ver[1]}.${ver[2]}.${ver[3]}`);
+    }
+    options = populateOptions(options);
+    const input = getInput(source, options);
     let findImport = (filename) => {
         try {
             return {
@@ -50,24 +62,59 @@ export function compile(source, options) {
             return { error: error.message };
         }
     };
-    let output = JSON.parse(getSolc().compile(JSON.stringify(input), findImport));
-    let errors = (output.errors || []).filter((x) => (x.severity === "error" || options.throwWarnings)).map((x) => x.formattedMessage);
+    if (version >= 6) {
+        findImport = { import: findImport };
+    }
+    const outputJson = _solc.compile(JSON.stringify(input), findImport);
+    const output = JSON.parse(outputJson);
+    const errors = (output.errors || []).filter((x) => (x.severity === "error" || options.throwWarnings)).map((x) => x.formattedMessage);
     if (errors.length) {
-        let error = new Error("compilation error");
+        const error = new Error("compilation error");
         error.errors = errors;
         throw error;
     }
-    let result = [];
+    const result = [];
     for (let filename in output.contracts) {
         for (let name in output.contracts[filename]) {
             let contract = output.contracts[filename][name];
+            // Skip empty contracts
+            if (!contract.evm.bytecode.object) {
+                continue;
+            }
             result.push({
                 name: name,
                 interface: new ethers.utils.Interface(contract.abi),
                 bytecode: "0x" + contract.evm.bytecode.object,
-                runtime: "0x" + contract.evm.deployedBytecode.object
+                runtime: "0x" + contract.evm.deployedBytecode.object,
+                compiler: compilerVersion
             });
         }
     }
     return result;
 }
+// Creates a require which will first search from the current location,
+// and for solc will fallback onto the version included in @ethersproject/cli
+export function customRequire(path) {
+    const pathRequire = _module.createRequireFromPath(resolve(path, "./sandbox.js"));
+    const libRequire = _module.createRequireFromPath(resolve(__filename));
+    return function (name) {
+        try {
+            return pathRequire(name);
+        }
+        catch (error) {
+            if (name === "solc") {
+                try {
+                    return libRequire(name);
+                }
+                catch (error) { }
+            }
+            throw error;
+        }
+    };
+}
+export function wrapSolc(_solc) {
+    return function (source, options) {
+        return _compile(_solc, source, options || {});
+    };
+}
+export const compile = wrapSolc(customRequire(".")("solc"));

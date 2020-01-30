@@ -54,7 +54,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = __importDefault(require("fs"));
-var module_1 = __importDefault(require("module"));
 var path_1 = require("path");
 var repl_1 = __importDefault(require("repl"));
 var util_1 = __importDefault(require("util"));
@@ -76,7 +75,8 @@ function setupContext(path, context, plugin) {
         context.console = console;
     }
     if (!context.require) {
-        context.require = module_1.default.createRequireFromPath(path);
+        //context.require = _module.createRequireFromPath(path);
+        context.require = solc_1.customRequire(path);
     }
     if (!context.process) {
         context.process = process;
@@ -316,23 +316,32 @@ var FundPlugin = /** @class */ (function (_super) {
     };
     FundPlugin.prototype.prepareArgs = function (args) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0: return [4 /*yield*/, _super.prototype.prepareArgs.call(this, args)];
                     case 1:
-                        _b.sent();
+                        _c.sent();
                         if (this.network.name !== "ropsten") {
                             this.throwError("Funding requires --network ropsten");
                         }
-                        if (args.length !== 1) {
-                            this.throwUsageError("fund requires ADDRESS");
-                        }
+                        if (!(args.length === 1)) return [3 /*break*/, 3];
                         _a = this;
                         return [4 /*yield*/, this.getAddress(args[0], "Cannot fund ZERO address", false)];
                     case 2:
-                        _a.toAddress = _b.sent();
-                        return [2 /*return*/];
+                        _a.toAddress = _c.sent();
+                        return [3 /*break*/, 6];
+                    case 3:
+                        if (!(args.length === 0 && this.accounts.length === 1)) return [3 /*break*/, 5];
+                        _b = this;
+                        return [4 /*yield*/, this.accounts[0].getAddress()];
+                    case 4:
+                        _b.toAddress = _c.sent();
+                        return [3 /*break*/, 6];
+                    case 5:
+                        this.throwUsageError("fund requires ADDRESS");
+                        _c.label = 6;
+                    case 6: return [2 /*return*/];
                 }
             });
         });
@@ -1106,7 +1115,7 @@ var CompilePlugin = /** @class */ (function (_super) {
                         if (args.length !== 1) {
                             this.throwError("compile requires exactly FILENAME");
                         }
-                        this.filename = args[0];
+                        this.filename = path_1.resolve(args[0]);
                         return [2 /*return*/];
                 }
             });
@@ -1117,16 +1126,31 @@ var CompilePlugin = /** @class */ (function (_super) {
             var source, result, output;
             return __generator(this, function (_a) {
                 source = fs_1.default.readFileSync(this.filename).toString();
-                result = solc_1.compile(source, {
-                    filename: this.filename,
-                    optimize: (!this.noOptimize)
-                });
+                result = null;
+                try {
+                    result = solc_1.compile(source, {
+                        filename: this.filename,
+                        optimize: (!this.noOptimize)
+                    });
+                }
+                catch (error) {
+                    if (error.errors) {
+                        error.errors.forEach(function (error) {
+                            console.log(error);
+                        });
+                    }
+                    else {
+                        throw error;
+                    }
+                    throw new Error("Failed to compile contract.");
+                }
                 output = {};
                 result.forEach(function (contract, index) {
                     output[contract.name] = {
                         bytecode: contract.bytecode,
                         runtime: contract.runtime,
-                        interface: contract.interface.fragments.map(function (f) { return f.format(ethers_1.ethers.utils.FormatTypes.full); })
+                        interface: contract.interface.fragments.map(function (f) { return f.format(ethers_1.ethers.utils.FormatTypes.full); }),
+                        compiler: contract.compiler
                     };
                 });
                 console.log(JSON.stringify(output, null, 4));
@@ -1187,7 +1211,7 @@ var DeployPlugin = /** @class */ (function (_super) {
                         if (args.length !== 1) {
                             this.throwError("deploy requires exactly FILENAME");
                         }
-                        this.filename = args[0];
+                        this.filename = path_1.resolve(args[0]);
                         return [2 /*return*/];
                 }
             });
@@ -1201,26 +1225,45 @@ var DeployPlugin = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         source = fs_1.default.readFileSync(this.filename).toString();
-                        result = solc_1.compile(source, {
-                            filename: this.filename,
-                            optimize: (!this.noOptimize)
-                        });
-                        codes = result.filter(function (c) { return (c.bytecode !== "0x" && (_this.contractName == null || _this.contractName == c.name)); });
+                        result = null;
+                        try {
+                            result = solc_1.compile(source, {
+                                filename: this.filename,
+                                optimize: (!this.noOptimize)
+                            });
+                        }
+                        catch (error) {
+                            if (error.errors) {
+                                error.errors.forEach(function (error) {
+                                    console.log(error);
+                                });
+                            }
+                            else {
+                                throw error;
+                            }
+                            throw new Error("Failed to compile contract.");
+                        }
+                        codes = result.filter(function (c) { return (_this.contractName == null || _this.contractName == c.name); });
                         if (codes.length > 1) {
-                            this.throwError("Please specify a contract with --contract NAME");
+                            this.throwError("Multiple contracts found; please specify a contract with --contract NAME");
                         }
                         if (codes.length === 0) {
                             this.throwError("No contract found");
                         }
                         factory = new ethers_1.ethers.ContractFactory(codes[0].interface, codes[0].bytecode, this.accounts[0]);
+                        cli_1.dump("Deploying:", {
+                            Contract: codes[0].name,
+                            Bytecode: codes[0].bytecode,
+                            Interface: codes[0].interface.fragments.map(function (f) { return f.format(ethers_1.ethers.utils.FormatTypes.full); }),
+                            Compiler: codes[0].compiler,
+                            Optimizer: (this.noOptimize ? "No" : "Yes")
+                        });
                         return [4 /*yield*/, factory.deploy()];
                     case 1:
                         contract = _a.sent();
                         cli_1.dump("Deployed:", {
                             Contract: codes[0].name,
                             Address: contract.address,
-                            Bytecode: codes[0].bytecode,
-                            Interface: codes[0].interface.fragments.map(function (f) { return f.format(ethers_1.ethers.utils.FormatTypes.full); })
                         });
                         return [2 /*return*/];
                 }

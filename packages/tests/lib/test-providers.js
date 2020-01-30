@@ -22,7 +22,11 @@ var blockchainData = {
                 storage: {
                     "0": "0x0000000000000000000000b2682160c482eb985ec9f3e364eec0a904c44c2300"
                 }
-            }
+            },
+            {
+                address: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+                name: "ricmoo.firefly.eth"
+            },
         ],
         blocks: [
             {
@@ -450,6 +454,14 @@ function testProvider(providerName, networkName) {
                         return provider.getStorageAt(test.address, bnify(position)).then(function (value) {
                             equals("Storage", test.storage[position], value);
                         });
+                    });
+                });
+            }
+            if (test.name) {
+                it("fetches the ENS name: " + test.name, function () {
+                    this.timeout(20000);
+                    return provider.resolveName(test.name).then(function (address) {
+                        equals("ENS Name", test.address, address);
                     });
                 });
             }

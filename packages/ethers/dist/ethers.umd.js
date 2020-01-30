@@ -16558,7 +16558,7 @@
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "networks/5.0.0-beta.134";
+	exports.version = "networks/5.0.0-beta.135";
 	});
 
 	var _version$D = unwrapExports(_version$C);
@@ -16609,7 +16609,12 @@
 	                quorum = options.quorum;
 	            }
 	            else if (quorum > 2) {
-	                quorum = 2;
+	                if (network === "homestead") {
+	                    quorum = 2;
+	                }
+	                else {
+	                    quorum = 1;
+	                }
 	            }
 	            return new providers.FallbackProvider(providerList, quorum);
 	        }
@@ -16626,13 +16631,13 @@
 	}
 	var homestead = {
 	    chainId: 1,
-	    ensAddress: "0x314159265dd8dbb310642f98f50c066173c1259b",
+	    ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
 	    name: "homestead",
 	    _defaultProvider: ethDefaultProvider("homestead")
 	};
 	var ropsten = {
 	    chainId: 3,
-	    ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
+	    ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
 	    name: "ropsten",
 	    _defaultProvider: ethDefaultProvider("ropsten")
 	};
@@ -16656,7 +16661,7 @@
 	    testnet: ropsten,
 	    rinkeby: {
 	        chainId: 4,
-	        ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A",
+	        ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
 	        name: "rinkeby",
 	        _defaultProvider: ethDefaultProvider("rinkeby")
 	    },
@@ -16667,7 +16672,7 @@
 	    },
 	    goerli: {
 	        chainId: 5,
-	        ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
+	        ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
 	        name: "goerli",
 	        _defaultProvider: ethDefaultProvider("goerli")
 	    },
@@ -21622,6 +21627,8 @@
 	exports.hexStripZeros = lib$1.hexStripZeros;
 	exports.hexValue = lib$1.hexValue;
 	exports.hexZeroPad = lib$1.hexZeroPad;
+	exports.isBytes = lib$1.isBytes;
+	exports.isBytesLike = lib$1.isBytesLike;
 	exports.isHexString = lib$1.isHexString;
 	exports.joinSignature = lib$1.joinSignature;
 	exports.zeroPad = lib$1.zeroPad;
@@ -21724,67 +21731,69 @@
 	var utils_21 = utils$3.hexStripZeros;
 	var utils_22 = utils$3.hexValue;
 	var utils_23 = utils$3.hexZeroPad;
-	var utils_24 = utils$3.isHexString;
-	var utils_25 = utils$3.joinSignature;
-	var utils_26 = utils$3.zeroPad;
-	var utils_27 = utils$3.splitSignature;
-	var utils_28 = utils$3.stripZeros;
-	var utils_29 = utils$3.hashMessage;
-	var utils_30 = utils$3.id;
-	var utils_31 = utils$3.isValidName;
-	var utils_32 = utils$3.namehash;
-	var utils_33 = utils$3.defaultPath;
-	var utils_34 = utils$3.entropyToMnemonic;
-	var utils_35 = utils$3.HDNode;
-	var utils_36 = utils$3.isValidMnemonic;
-	var utils_37 = utils$3.mnemonicToEntropy;
-	var utils_38 = utils$3.mnemonicToSeed;
-	var utils_39 = utils$3.getJsonWalletAddress;
-	var utils_40 = utils$3.keccak256;
-	var utils_41 = utils$3.Logger;
-	var utils_42 = utils$3.sha256;
-	var utils_43 = utils$3.solidityKeccak256;
-	var utils_44 = utils$3.solidityPack;
-	var utils_45 = utils$3.soliditySha256;
-	var utils_46 = utils$3.randomBytes;
-	var utils_47 = utils$3.checkProperties;
-	var utils_48 = utils$3.deepCopy;
-	var utils_49 = utils$3.defineReadOnly;
-	var utils_50 = utils$3.getStatic;
-	var utils_51 = utils$3.resolveProperties;
-	var utils_52 = utils$3.shallowCopy;
-	var utils_53 = utils$3.RLP;
-	var utils_54 = utils$3.computePublicKey;
-	var utils_55 = utils$3.recoverPublicKey;
-	var utils_56 = utils$3.SigningKey;
-	var utils_57 = utils$3.formatBytes32String;
-	var utils_58 = utils$3.nameprep;
-	var utils_59 = utils$3.parseBytes32String;
-	var utils_60 = utils$3._toEscapedUtf8String;
-	var utils_61 = utils$3.toUtf8Bytes;
-	var utils_62 = utils$3.toUtf8CodePoints;
-	var utils_63 = utils$3.toUtf8String;
-	var utils_64 = utils$3.Utf8ErrorFuncs;
-	var utils_65 = utils$3.computeAddress;
-	var utils_66 = utils$3.parseTransaction;
-	var utils_67 = utils$3.recoverAddress;
-	var utils_68 = utils$3.serializeTransaction;
-	var utils_69 = utils$3.commify;
-	var utils_70 = utils$3.formatEther;
-	var utils_71 = utils$3.parseEther;
-	var utils_72 = utils$3.formatUnits;
-	var utils_73 = utils$3.parseUnits;
-	var utils_74 = utils$3.verifyMessage;
-	var utils_75 = utils$3.fetchJson;
-	var utils_76 = utils$3.poll;
-	var utils_77 = utils$3.SupportedAlgorithm;
-	var utils_78 = utils$3.UnicodeNormalizationForm;
-	var utils_79 = utils$3.Utf8ErrorReason;
+	var utils_24 = utils$3.isBytes;
+	var utils_25 = utils$3.isBytesLike;
+	var utils_26 = utils$3.isHexString;
+	var utils_27 = utils$3.joinSignature;
+	var utils_28 = utils$3.zeroPad;
+	var utils_29 = utils$3.splitSignature;
+	var utils_30 = utils$3.stripZeros;
+	var utils_31 = utils$3.hashMessage;
+	var utils_32 = utils$3.id;
+	var utils_33 = utils$3.isValidName;
+	var utils_34 = utils$3.namehash;
+	var utils_35 = utils$3.defaultPath;
+	var utils_36 = utils$3.entropyToMnemonic;
+	var utils_37 = utils$3.HDNode;
+	var utils_38 = utils$3.isValidMnemonic;
+	var utils_39 = utils$3.mnemonicToEntropy;
+	var utils_40 = utils$3.mnemonicToSeed;
+	var utils_41 = utils$3.getJsonWalletAddress;
+	var utils_42 = utils$3.keccak256;
+	var utils_43 = utils$3.Logger;
+	var utils_44 = utils$3.sha256;
+	var utils_45 = utils$3.solidityKeccak256;
+	var utils_46 = utils$3.solidityPack;
+	var utils_47 = utils$3.soliditySha256;
+	var utils_48 = utils$3.randomBytes;
+	var utils_49 = utils$3.checkProperties;
+	var utils_50 = utils$3.deepCopy;
+	var utils_51 = utils$3.defineReadOnly;
+	var utils_52 = utils$3.getStatic;
+	var utils_53 = utils$3.resolveProperties;
+	var utils_54 = utils$3.shallowCopy;
+	var utils_55 = utils$3.RLP;
+	var utils_56 = utils$3.computePublicKey;
+	var utils_57 = utils$3.recoverPublicKey;
+	var utils_58 = utils$3.SigningKey;
+	var utils_59 = utils$3.formatBytes32String;
+	var utils_60 = utils$3.nameprep;
+	var utils_61 = utils$3.parseBytes32String;
+	var utils_62 = utils$3._toEscapedUtf8String;
+	var utils_63 = utils$3.toUtf8Bytes;
+	var utils_64 = utils$3.toUtf8CodePoints;
+	var utils_65 = utils$3.toUtf8String;
+	var utils_66 = utils$3.Utf8ErrorFuncs;
+	var utils_67 = utils$3.computeAddress;
+	var utils_68 = utils$3.parseTransaction;
+	var utils_69 = utils$3.recoverAddress;
+	var utils_70 = utils$3.serializeTransaction;
+	var utils_71 = utils$3.commify;
+	var utils_72 = utils$3.formatEther;
+	var utils_73 = utils$3.parseEther;
+	var utils_74 = utils$3.formatUnits;
+	var utils_75 = utils$3.parseUnits;
+	var utils_76 = utils$3.verifyMessage;
+	var utils_77 = utils$3.fetchJson;
+	var utils_78 = utils$3.poll;
+	var utils_79 = utils$3.SupportedAlgorithm;
+	var utils_80 = utils$3.UnicodeNormalizationForm;
+	var utils_81 = utils$3.Utf8ErrorReason;
 
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.170";
+	exports.version = "ethers/5.0.0-beta.171";
 	});
 
 	var _version$L = unwrapExports(_version$K);

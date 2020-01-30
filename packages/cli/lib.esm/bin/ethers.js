@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import fs from "fs";
-import _module from "module";
 import { dirname, resolve } from "path";
 import REPL from "repl";
 import util from "util";
@@ -18,7 +17,7 @@ import vm from "vm";
 import { ethers } from "ethers";
 import { CLI, dump, Plugin } from "../cli";
 import { getPassword, getProgressBar } from "../prompt";
-import { compile } from "../solc";
+import { compile, customRequire } from "../solc";
 function setupContext(path, context, plugin) {
     context.provider = plugin.provider;
     context.accounts = plugin.accounts;
@@ -32,7 +31,8 @@ function setupContext(path, context, plugin) {
         context.console = console;
     }
     if (!context.require) {
-        context.require = _module.createRequireFromPath(path);
+        //context.require = _module.createRequireFromPath(path);
+        context.require = customRequire(path);
     }
     if (!context.process) {
         context.process = process;
@@ -225,10 +225,15 @@ class FundPlugin extends Plugin {
             if (this.network.name !== "ropsten") {
                 this.throwError("Funding requires --network ropsten");
             }
-            if (args.length !== 1) {
+            if (args.length === 1) {
+                this.toAddress = yield this.getAddress(args[0], "Cannot fund ZERO address", false);
+            }
+            else if (args.length === 0 && this.accounts.length === 1) {
+                this.toAddress = yield this.accounts[0].getAddress();
+            }
+            else {
                 this.throwUsageError("fund requires ADDRESS");
             }
-            this.toAddress = yield this.getAddress(args[0], "Cannot fund ZERO address", false);
         });
     }
     run() {
@@ -757,22 +762,37 @@ class CompilePlugin extends Plugin {
             if (args.length !== 1) {
                 this.throwError("compile requires exactly FILENAME");
             }
-            this.filename = args[0];
+            this.filename = resolve(args[0]);
         });
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            let source = fs.readFileSync(this.filename).toString();
-            let result = compile(source, {
-                filename: this.filename,
-                optimize: (!this.noOptimize)
-            });
+            const source = fs.readFileSync(this.filename).toString();
+            let result = null;
+            try {
+                result = compile(source, {
+                    filename: this.filename,
+                    optimize: (!this.noOptimize)
+                });
+            }
+            catch (error) {
+                if (error.errors) {
+                    error.errors.forEach((error) => {
+                        console.log(error);
+                    });
+                }
+                else {
+                    throw error;
+                }
+                throw new Error("Failed to compile contract.");
+            }
             let output = {};
             result.forEach((contract, index) => {
                 output[contract.name] = {
                     bytecode: contract.bytecode,
                     runtime: contract.runtime,
-                    interface: contract.interface.fragments.map((f) => f.format(ethers.utils.FormatTypes.full))
+                    interface: contract.interface.fragments.map((f) => f.format(ethers.utils.FormatTypes.full)),
+                    compiler: contract.compiler
                 };
             });
             console.log(JSON.stringify(output, null, 4));
@@ -821,30 +841,49 @@ class DeployPlugin extends Plugin {
             if (args.length !== 1) {
                 this.throwError("deploy requires exactly FILENAME");
             }
-            this.filename = args[0];
+            this.filename = resolve(args[0]);
         });
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
             let source = fs.readFileSync(this.filename).toString();
-            let result = compile(source, {
-                filename: this.filename,
-                optimize: (!this.noOptimize)
-            });
-            let codes = result.filter((c) => (c.bytecode !== "0x" && (this.contractName == null || this.contractName == c.name)));
+            let result = null;
+            try {
+                result = compile(source, {
+                    filename: this.filename,
+                    optimize: (!this.noOptimize)
+                });
+            }
+            catch (error) {
+                if (error.errors) {
+                    error.errors.forEach((error) => {
+                        console.log(error);
+                    });
+                }
+                else {
+                    throw error;
+                }
+                throw new Error("Failed to compile contract.");
+            }
+            const codes = result.filter((c) => (this.contractName == null || this.contractName == c.name));
             if (codes.length > 1) {
-                this.throwError("Please specify a contract with --contract NAME");
+                this.throwError("Multiple contracts found; please specify a contract with --contract NAME");
             }
             if (codes.length === 0) {
                 this.throwError("No contract found");
             }
-            let factory = new ethers.ContractFactory(codes[0].interface, codes[0].bytecode, this.accounts[0]);
-            let contract = yield factory.deploy();
+            const factory = new ethers.ContractFactory(codes[0].interface, codes[0].bytecode, this.accounts[0]);
+            dump("Deploying:", {
+                Contract: codes[0].name,
+                Bytecode: codes[0].bytecode,
+                Interface: codes[0].interface.fragments.map((f) => f.format(ethers.utils.FormatTypes.full)),
+                Compiler: codes[0].compiler,
+                Optimizer: (this.noOptimize ? "No" : "Yes")
+            });
+            const contract = yield factory.deploy();
             dump("Deployed:", {
                 Contract: codes[0].name,
                 Address: contract.address,
-                Bytecode: codes[0].bytecode,
-                Interface: codes[0].interface.fragments.map((f) => f.format(ethers.utils.FormatTypes.full))
             });
         });
     }

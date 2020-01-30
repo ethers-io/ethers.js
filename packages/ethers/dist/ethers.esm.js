@@ -15194,7 +15194,7 @@ function verifyMessage(message, signature) {
     return recoverAddress(hashMessage(message), signature);
 }
 
-const version$h = "networks/5.0.0-beta.134";
+const version$h = "networks/5.0.0-beta.135";
 
 "use strict";
 const logger$l = new Logger(version$h);
@@ -15237,7 +15237,12 @@ function ethDefaultProvider(network) {
                 quorum = options.quorum;
             }
             else if (quorum > 2) {
-                quorum = 2;
+                if (network === "homestead") {
+                    quorum = 2;
+                }
+                else {
+                    quorum = 1;
+                }
             }
             return new providers.FallbackProvider(providerList, quorum);
         }
@@ -15254,13 +15259,13 @@ function etcDefaultProvider(url, network) {
 }
 const homestead = {
     chainId: 1,
-    ensAddress: "0x314159265dd8dbb310642f98f50c066173c1259b",
+    ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
     name: "homestead",
     _defaultProvider: ethDefaultProvider("homestead")
 };
 const ropsten = {
     chainId: 3,
-    ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
+    ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
     name: "ropsten",
     _defaultProvider: ethDefaultProvider("ropsten")
 };
@@ -15284,7 +15289,7 @@ const networks = {
     testnet: ropsten,
     rinkeby: {
         chainId: 4,
-        ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A",
+        ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
         name: "rinkeby",
         _defaultProvider: ethDefaultProvider("rinkeby")
     },
@@ -15295,7 +15300,7 @@ const networks = {
     },
     goerli: {
         chainId: 5,
-        ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
+        ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
         name: "goerli",
         _defaultProvider: ethDefaultProvider("goerli")
     },
@@ -19213,6 +19218,8 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	concat: concat,
 	stripZeros: stripZeros,
 	zeroPad: zeroPad,
+	isBytes: isBytes,
+	isBytesLike: isBytesLike,
 	defaultPath: defaultPath,
 	HDNode: HDNode,
 	SigningKey: SigningKey,
@@ -19273,7 +19280,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$l = "ethers/5.0.0-beta.170";
+const version$l = "ethers/5.0.0-beta.171";
 
 "use strict";
 const errors = Logger.errors;
