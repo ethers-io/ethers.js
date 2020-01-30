@@ -14,7 +14,7 @@ var blockchainData = {
     homestead: {
         balance: {
             address: '0xAC1639CF97a3A46D431e6d1216f576622894cBB5',
-            balance: bigNumberify('4918774100000000')
+            balance: bigNumberify('0x1119c64d965d00')
         },
         block3: {
             hash: '0x3d6122660cc824376f11ee842f83addc3525e2dd6756b9bcf0affa6aa88cf741',
