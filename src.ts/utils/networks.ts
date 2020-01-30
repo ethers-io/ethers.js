@@ -46,14 +46,14 @@ function etcDefaultProvider(url: string, network: string): (providers: any) => a
 
 const homestead: Network = {
     chainId: 1,
-    ensAddress: "0x314159265dd8dbb310642f98f50c066173c1259b",
+    ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
     name: "homestead",
     _defaultProvider: ethDefaultProvider('homestead')
 };
 
 const ropsten: Network = {
     chainId: 3,
-    ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
+    ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
     name: "ropsten",
     _defaultProvider: ethDefaultProvider('ropsten')
 };
@@ -77,14 +77,14 @@ const networks: { [name: string]: Network } = {
 
     rinkeby: {
         chainId: 4,
-        ensAddress: "0xe7410170f87102DF0055eB195163A03B7F2Bff4A",
+        ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
         name: 'rinkeby',
         _defaultProvider: ethDefaultProvider('rinkeby')
     },
 
     goerli: {
         chainId: 5,
-        ensAddress: "0x112234455c3a32fd11230c42e7bccd4a84e02010",
+        ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
         name: "goerli",
         _defaultProvider: ethDefaultProvider('goerli')
     },

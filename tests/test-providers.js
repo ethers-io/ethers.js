@@ -393,6 +393,15 @@ function testProvider(providerName, networkName) {
             });
         }
 
+        if (networkName === "homestead") {
+            it('fetches ENS names', function() {
+                this.timeout(20000);
+                return provider.resolveName("ricmoo.firefly.eth").then(function(address) {
+                    assert.equal(address, "0x8ba1f109551bD432803012645Ac136ddd64DBA72");
+                });
+            });
+        }
+
         // Obviously many more cases to add here
         // - getTransactionCount
         // - getCode
