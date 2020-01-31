@@ -147,6 +147,7 @@ export abstract class Node {
 
     constructor(guard: any, location: Location, options: { [ key: string ]: any }) {
         if (guard !== Guard) { throw new Error("cannot instantiate class"); }
+        logger.checkAbstract(new.target, Node);
 
         ethers.utils.defineReadOnly(this, "location", location);
 
@@ -194,10 +195,19 @@ export abstract class Node {
     }
 }
 
-export abstract class CodeNode extends Node { }
+export abstract class CodeNode extends Node {
+    constructor(guard: any, location: Location, options: { [ key: string ]: any }) {
+        logger.checkAbstract(new.target, CodeNode);
+        super(guard, location, options);
+    }
+}
 
-export abstract class ValueNode extends CodeNode { }
-
+export abstract class ValueNode extends CodeNode {
+    constructor(guard: any, location: Location, options: { [ key: string ]: any }) {
+        logger.checkAbstract(new.target, ValueNode);
+        super(guard, location, options);
+    }
+}
 
 function pushLiteral(value: ethers.utils.BytesLike | ethers.utils.Hexable | number) {
     // Convert value into a hexstring
@@ -352,6 +362,7 @@ export abstract class LabelledNode extends CodeNode {
     readonly name: string;
 
     constructor(guard: any, location: Location, name: string, values?: { [ key: string ]: any }) {
+        logger.checkAbstract(new.target, LabelledNode);
         values = ethers.utils.shallowCopy(values || { });
         values.name = name;
         super(guard, location, values);
@@ -539,7 +550,6 @@ export function parse(code: string): Node {
     // Givens a line (1 offset) and column (0 offset) return the byte offset
     const getOffset = function(line: number, column: number): number {
         const info = lines[line - 1];
-        console.log(line, column, info);
         if (!info || column >= info.line.length) { throw new Error("out of range"); }
         return info.offset + column;
     };
@@ -977,64 +987,3 @@ export async function assemble(ast: Node, options?: AssemblerOptions): Promise<s
     const assembler = new Assembler(ast, options || { });
     return assembler.assemble();
 }
-
-/*
-export const code = `; SimpleStore (uint)
-
-; Set the inital value of 42
-sstore(0, 42)
-
-; Init code to deploy myContract
-codecopy(0, $myContract, #myContract)
-return(0, #myContract)
-
-@myContract {
-    ; Non-payable
-    jumpi($error, callvalue)
-
-    ; Get the Sighash
-    shr({{= 256 - 32 }}, calldataload(0))
-
-    ; getValue()
-    dup1
-    {{= sighash("getValue()") }}
-    jumpi($getValue, eq)
-
-    ; setValue(uint)
-    dup1
-    {{= sighash("setValue(uint)") }}
-    jumpi($setValue, eq)
-
-    ; No matching signature
-    @error:
-        revert(0, 0)
-
-    @getValue:
-        mstore(0, sload(0))
-        return (0, 32)
-
-    @setValue:
-        ; Make sure we have exactly a uint
-        jumpi($error, iszero(eq(calldatasize, 36)))
-
-        ; Store the value
-        sstore(0, calldataload(4))
-        return (0, 0)
-
-    @checksum[
-        {{= (defines.checksum ? concat([ Opcode.from("PUSH32"), id(_.source) ]): "0x") }}
-    ]
-}`;
-
-
-(async function() {
-    console.log("AST");
-    const ast = parse(code);
-    console.dir(ast, { depth: null });
-
-    const asm = await assemble(ast, { defines: { checksum: true } } );
-    console.log("ASSEMBLE\n", asm);
-
-    console.log("OPCODES\n" + formatBytecode(disassemble(asm)));
-})();
-*/
