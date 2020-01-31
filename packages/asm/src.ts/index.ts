@@ -1,13 +1,12 @@
 "use strict";
 
 import { assemble, CodeNode, DataNode, disassemble, EvaluationNode, ExecutionNode, formatBytecode, LabelNode, LabelledNode, LinkNode, LiteralNode, Node, OpcodeNode, parse, ScopeNode, ValueNode } from "./assembler";
-import { getOpcode, Opcode } from "./opcodes";
+import { Opcode } from "./opcodes";
 
 import { AssemblerOptions, AssembleVisitFunc, Bytecode, Location, Operation, VisitFunc } from "./assembler";
 
 export {
     // Opcodes
-    getOpcode,
     Opcode,
 
     // Assembler functions

@@ -170,6 +170,35 @@ impossible to synthesize recursive hardware.
 }
 ```
 
+Or code that tries to include its own hash internally:
+
+```
+@myContract {
+
+   ; NOT OK! hash(hash(hash( .... (data))) will never resolve stable bytecode
+   @checksumBad[
+       {{= keccak256(myContract) }}
+   ]
+
+   ; The hash excluding of bytecode excluding the checksum works.
+   @checksumOk[
+       {{= keccak256(myContract.slice(0, checksumOk.offset)) }}
+       {{= zeroPad("0x", 32) }}
+       {{= keccak256(myContract.slice(checksumOk.offset + 32)) }}
+   ]
+
+   ; But this is fine... The source code of a file does not change
+   @checksumGood[
+      {{= id(myContract.source) }
+   ]
+
+   ; Even better; this will make disassembled code look nicer...
+   @checksumBest[
+      {{= concat([ Opcode.from("PUSH32"), id(myContract.source) ]) }
+   ]
+}
+```
+
 Building
 ========
 

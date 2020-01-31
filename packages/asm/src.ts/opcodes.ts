@@ -55,6 +55,13 @@ export class Opcode {
     isStatic(): boolean {
         throw new Error("@TODO: return true if certain non-state-changing");
     }
+
+    static from(valueOrMnemonic: number | string) {
+        if (typeof(valueOrMnemonic) === "string") {
+            return OpcodeMap[valueOrMnemonic.toLowerCase()] || null;
+        }
+        return (Opcodes[valueOrMnemonic] || null);
+    }
 }
 
 type _Opcode = {
@@ -249,10 +256,4 @@ function repeat(char: string, length: number): string {
     return result.substring(0, length);
 }
 */
-export function getOpcode(valueOrMnemonic: number | string) {
-    if (typeof(valueOrMnemonic) === "string") {
-        return OpcodeMap[valueOrMnemonic.toLowerCase()] || null;
-    }
-    return (Opcodes[valueOrMnemonic] || null);
-}
 

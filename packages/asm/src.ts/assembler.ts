@@ -14,7 +14,7 @@ import vm from "vm";
 
 import { ethers } from "ethers";
 
-import { getOpcode, Opcode } from "./opcodes";
+import { Opcode } from "./opcodes";
 
 import { parse as _parse, parser as _parser } from "./_parser";
 
@@ -61,9 +61,14 @@ class Script {
             ethers: ethers,
             utils: ethers.utils,
 
+            BigNumber: ethers.BigNumber,
+
             arrayify: ethers.utils.arrayify,
-            hexlify: ethers.utils.hexlify,
             concat: hexConcat,
+            hexlify: ethers.utils.hexlify,
+            zeroPad: function(value: ethers.utils.BytesLike, length: number) {
+                return ethers.utils.hexlify(ethers.utils.zeroPad(value, length));
+            },
 
             id: ethers.utils.id,
             keccak256: ethers.utils.keccak256,
@@ -84,7 +89,7 @@ class Script {
             formatBytes32String: ethers.utils.formatBytes32String,
             parseBytes32String: ethers.utils.parseBytes32String,
 
-            getOpcode: getOpcode,
+            Opcode: Opcode,
 
             sighash: function(signature: string): string {
                return ethers.utils.id(ethers.utils.FunctionFragment.from(signature).format()).substring(0, 10);
@@ -206,7 +211,7 @@ function pushLiteral(value: ethers.utils.BytesLike | ethers.utils.Hexable | numb
     const length = ethers.utils.hexDataLength(hex);
     if (length === 0 || length > 32) { throw new Error(`literal out of range: ${ hex }`); }
 
-    return hexConcat([ getOpcode("PUSH" + String(length)), hex ]);
+    return hexConcat([ Opcode.from("PUSH" + String(length)), hex ]);
 }
 
 export class LiteralNode extends ValueNode {
@@ -320,7 +325,7 @@ export class OpcodeNode extends ValueNode {
 
     static from(options: any): OpcodeNode {
         if (options.type !== "opcode") { throw new Error("expected opcode type"); }
-        const opcode = getOpcode(options.mnemonic);
+        const opcode = Opcode.from(options.mnemonic);
         if (!opcode) { throw new Error("unknown opcode: " + options.mnemonic); }
 
         // Using the function syntax will check the operand count
@@ -356,7 +361,7 @@ export abstract class LabelledNode extends CodeNode {
 export class LabelNode extends LabelledNode {
     async assemble(assembler: Assembler, visit: AssembleVisitFunc): Promise<void> {
         assembler.start(this);
-        visit(this, ethers.utils.hexlify(getOpcode("JUMPDEST").value));
+        visit(this, ethers.utils.hexlify(Opcode.from("JUMPDEST").value));
         assembler.end(this);
     }
 
@@ -389,7 +394,7 @@ export class DataNode extends LabelledNode {
         // Replay the data as bytecode, skipping PUSH data
         let i = 0;
         while (i < bytecode.length) {
-            const opcode = getOpcode(bytecode[i++]);
+            const opcode = Opcode.from(bytecode[i++]);
             if (opcode) {
                 i += opcode.isPush();
             }
@@ -398,7 +403,7 @@ export class DataNode extends LabelledNode {
         // The amount we overshot the data by is how much padding we need
         const padding = new Uint8Array(i - bytecode.length);
         // What makes more sense? INVALID or 0 (i.e. STOP)?
-        //padding.fill(getOpcode("INVALID").value);
+        //padding.fill(Opcode.from("INVALID").value);
         padding.fill(0);
         visit(this, ethers.utils.hexlify(padding))
 
@@ -587,7 +592,7 @@ export function disassemble(bytecode: string): Bytecode {
     let i = 0;
     let oob = false;
     while (i < bytes.length) {
-        let opcode = getOpcode(bytes[i]);
+        let opcode = Opcode.from(bytes[i]);
         if (!opcode) {
             opcode = new Opcode(`unknown (${ ethers.utils.hexlify(bytes[i]) })`, bytes[i], 0, 0);
         } else if (oob && opcode.mnemonic === "JUMPDEST") {
@@ -1017,7 +1022,7 @@ return(0, #myContract)
         return (0, 0)
 
     @checksum[
-        {{= (defines.checksum ? concat([ getOpcode("PUSH32"), id(_.source) ]): "0x") }}
+        {{= (defines.checksum ? concat([ Opcode.from("PUSH32"), id(_.source) ]): "0x") }}
     ]
 }`;
 
