@@ -883,15 +883,20 @@ export class CLI {
         }
 
         console.log("OTHER OPTIONS");
-        console.log("  --wait                      Wait until transactions are mined");
+        if (this.options.transaction) {
+            console.log("  --wait                      Wait until transactions are mined");
+        }
         console.log("  --debug                     Show stack traces for errors");
         console.log("  --help                      Show this usage and exit");
         console.log("  --version                   Show this version and exit");
         console.log("");
-        console.log("(*) By including mnemonics or private keys on the command line they are");
-        console.log("    possibly readable by other users on your system and may get stored in");
-        console.log("    your bash history file. This is NOT recommended.");
-        console.log("");
+
+        if (this.options.account) {
+            console.log("(*) By including mnemonics or private keys on the command line they are");
+            console.log("    possibly readable by other users on your system and may get stored in");
+            console.log("    your bash history file. This is NOT recommended.");
+            console.log("");
+        }
 
         if (message) {
             console.log(message);

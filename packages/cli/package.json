@@ -2,10 +2,12 @@
   "author": "Richard Moore <me@ricmoo.com>",
   "bin": {
     "ethers": "./lib/bin/ethers.js",
+    "ethers-asm": "./lib/bin/ethers-asm.js",
     "ethers-ens": "./lib/bin/ethers-ens.js",
     "ethers-ts": "./lib/bin/ethers-ts.js"
   },
   "dependencies": {
+    "@ethersproject/asm": ">=5.0.0-beta.148",
     "@ethersproject/basex": ">=5.0.0-beta.127",
     "ethers": ">=5.0.0-beta.156",
     "mime-types": "2.1.11",

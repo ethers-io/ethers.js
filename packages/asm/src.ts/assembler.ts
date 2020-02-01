@@ -655,9 +655,9 @@ export function formatBytecode(bytecode: Array<Operation>): string {
         const push = opcode.isPush();
         if (push) {
             if (op.pushValue) {
-                operation = op.pushValue + `${ repeat(" ", 65 - op.pushValue.length) }; ${ operation } `;
+                operation = op.pushValue + `${ repeat(" ", 67 - op.pushValue.length) }; #${ push } `;
             } else {
-                operation += `${ repeat(" ", 65 - operation.length) }; OOB!! `;
+                operation += `${ repeat(" ", 67 - operation.length) }; OOB!! `;
             }
         }
 
