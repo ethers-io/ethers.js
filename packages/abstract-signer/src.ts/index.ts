@@ -137,7 +137,22 @@ export abstract class Signer {
         }
 
         const tx = shallowCopy(transaction);
-        if (tx.from == null) { tx.from = this.getAddress(); }
+
+        if (tx.from == null) {
+            tx.from = this.getAddress();
+        } else {
+            // Make sure any provided address matches this signer
+            tx.from = Promise.all([
+                Promise.resolve(tx.from),
+                this.getAddress()
+            ]).then((result) => {
+                if (result[0] !== result[1]) {
+                    logger.throwArgumentError("from address mismatch", "transaction", transaction);
+                }
+                return result[0];
+            });
+        }
+
         return tx;
     }
 
@@ -152,7 +167,8 @@ export abstract class Signer {
         if (tx.gasPrice == null) { tx.gasPrice = this.getGasPrice(); }
         if (tx.nonce == null) { tx.nonce = this.getTransactionCount("pending"); }
 
-        // Make sure any provided address matches this signer
+        /*
+        // checkTransaction does this...
         if (tx.from == null) {
             tx.from = this.getAddress();
         } else {
@@ -166,6 +182,7 @@ export abstract class Signer {
                 return results[0];
             });
         }
+        */
 
         if (tx.gasLimit == null) {
             tx.gasLimit = this.estimateGas(tx).catch((error) => {
@@ -174,7 +191,20 @@ export abstract class Signer {
                 });
             });
         }
-        if (tx.chainId == null) { tx.chainId = this.getChainId(); }
+
+        if (tx.chainId == null) {
+            tx.chainId = this.getChainId();
+        } else {
+            tx.chainId = Promise.all([
+                Promise.resolve(tx.chainId),
+                this.getChainId()
+            ]).then((results) => {
+                if (results[1] !== 0 && results[0] !== results[1]) {
+                    logger.throwArgumentError("chainId address mismatch", "transaction", transaction);
+                }
+                return results[0];
+            });
+        }
 
         return await resolveProperties(tx);
     }
