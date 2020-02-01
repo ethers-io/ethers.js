@@ -27,7 +27,7 @@ Returns the [HMAC](https://en.wikipedia.org/wiki/HMAC) of //data// with //key//
 using the [Algorithm](supported-algorithm) //algorithm//.
 
 
-_heading: HMAC Supported Algorithms @<supported-algorithm> @SRC<sha2:enum.SupportedAlgorithms>
+_heading: HMAC Supported Algorithms @<supported-algorithm> @SRC<sha2:enum.SupportedAlgorithm>
 
 _property: utils.SupportedAlgorithms.sha256 => string
 Use the [SHA2-256](https://en.wikipedia.org/wiki/SHA-2) hash algorithm.

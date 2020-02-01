@@ -1,0 +1,7 @@
+_title: Property Utilities
+
+_section: Property Utilities
+
+_property: utils.resolveProperties(anObject) => Promise<any> @<utils-resolveproperties> @SRC<properties>
+
+

@@ -8,7 +8,7 @@ _subsection: Signer @<signer> @SRC<abstract-signer:class.Signer>
 
 The **Signer** class is abstract and cannot be directly instaniated. Instead
 use one of the concreate sub-classes, such as the [[wallet]], [[void-signer]]
-or [[jsonrpc-signer]].
+or [[signer-jsonrpc]].
 
 _property: signer.connect(provider) => [[signer]]  @<signer-connect>
 
@@ -29,25 +29,28 @@ Returns true if an only if //object// is a **Signer**.
 _heading: Blockchain Methods @<signer-blockchain>
 
 _property: signer.getBalance([ blockTag = "latest" ]) => Promise<[[bignumber]]>  @<signer-getbalance> @SRC<abstract-signer>
-TODO
+Returns the balance of this wallet at //blockTag//.
 
 _property: signer.getChainId() => Promise<number>  @<signer-getchainid> @SRC<abstract-signer>
-TODO
+Returns ths chain ID this wallet is connected to.
 
 _property: signer.getGasPrice() => Promise<[[bignumber]]>  @<signer-getgasprice> @SRC<abstract-signer>
-TODO
+Returns the current gas price.
 
 _property: signer.getTransactionCount([ blockTag = "latest" ]) => Promise<number>  @<signer-gettransactioncount> @SRC<abstract-signer>
-TODO
+Returns the number of transactions this account has ever sent. This
+is the value required to be included in transactions as the ``nonce``.
 
 _property: signer.call(transactionRequest) => Promise<string<[[datahexstring]]>>  @<signer-call> @SRC<abstract-signer>
-TODO
+Returns the result of calling using the //transactionRequest//, with this
+account address being used as the ``from`` field.
 
 _property: signer.estimateGas(transactionRequest) => Promise<[[bignumber]]>  @<signer-estimategas> @SRC<abstract-signer>
-TODO
+Returns the result of estimating the cost to send the //transactionRequest//,
+with this account address being used as the ``from`` field.
 
-_property: signer.resolveName(name) => Promise<string<[Address](address)>> @<signer-resolvename> @SRC<abstract-signer>
-TODO
+_property: signer.resolveName(ensName) => Promise<string<[Address](address)>> @<signer-resolvename> @SRC<abstract-signer>
+Returns the address associated with the //ensName//.
 
 
 _heading: Signing
@@ -102,11 +105,29 @@ serious issues.
 A sub-class **must** call ``super()``.
 
 _property: signer.checkTransaction(transactionRequest) => [[provider-transactionrequest]]  @<signer-checktransaction> @SRC<abstract-signer>
-TODO
+This is generally not required to be overridden, but may needed to provide
+custom behaviour in sub-classes.
+
+This should return a **copy** of the //transactionRequest//, with any properties
+needed by ``call``, ``estimateGas`` and ``populateTransaction`` (which is used
+by sendTransaction). It should also throw an error if any unknown key is specified.
+
+The default implementation checks only valid [[provider-transactionrequest]] properties
+exist and adds ``from`` to the transaction if it does not exist, or verifies it is equal
+to the Signer's address if it does exist.
 
 _property: signer.populateTransaction(transactionRequest) => Promise<[[provider-transactionrequest]]> @<signer-populatetransaction> @SRC<abstract-signer>
-TODO
+This is generally not required to be overridden, but may needed to provide
+custom behaviour in sub-classes.
 
+This should return a **copy** of //transactionRequest//, follow the same procedure
+as ``checkTransaction`` and fill in any properties required for sending a transaction.
+The result should have all promises resolved; if needed the [resolveProperties](utils-resolveproperties)
+utility function can be used for this.
+
+The default implementation calls ``checkTransaction`` and resolves to if it is an
+ENS name, adds ``gasPrice``, ``nonce``, ``gasLimit`` and ``chainId`` based on the
+related operations on Signer.
 
 _subsection: Wallet  @<wallet> @INHERIT<[[externally-owned-account]] and [[signer]]> @SRC<wallet:class.Wallet>
 

@@ -1,0 +1,72 @@
+_title: Transactions
+
+_section: Transactions @<utils-transactions>
+
+_subsection: Types
+
+_heading: UnsignedTransaction @<types-unsignedtransaction>
+An unsigned transaction represents a transaction that has not been signed.
+
+_property: unsignedTransaction.to => string<[Address](address)>
+
+_property: unsignedTransaction.nonce => number
+
+_property: unsignedTransaction.gasLimit => [[bignumber]]
+
+_property: unsignedTransaction.gasPrice => [[bignumber]]
+
+_property: unsignedTransaction.data => [[byteslike]]
+
+_property: unsignedTransaction.value => [[bignumber]]
+
+_property: unsignedTransaction.chainId => number
+
+
+_heading: Transaction @<types-transaction>
+A generic object to represent a transaction.
+
+_property: unsignedTransaction.hash => string<[[datahexstring]]<32>>
+
+_property: unsignedTransaction.to => string<[Address](address)>
+
+_property: unsignedTransaction.from => string<[Address](address)>
+
+_property: unsignedTransaction.nonce => number
+
+_property: unsignedTransaction.gasLimit => [[bignumber]]
+
+_property: unsignedTransaction.gasPrice => [[bignumber]]
+
+_property: unsignedTransaction.data => [[byteslike]]
+
+_property: unsignedTransaction.value => [[bignumber]]
+
+_property: unsignedTransaction.chainId => number
+
+_property: unsignedTransaction.r => [[byteslike]]
+
+_property: unsignedTransaction.s => [[byteslike]]
+
+_property: unsignedTransaction.v => number
+
+
+_subsection: Functions
+
+_property: ethers.utils.computeAddress(publicOrPrivateKey) => string<[Address](address)>  @<utils-computeaddress> @SRC<transactions>
+Compute the address of //publicOrPrivateKey//. If a public key is
+provided, it may be either compressed or uncompressed.
+
+_property: ethers.utils.parse(aBytesLike) => [[types-transaction]]  @<utils-parse> @SRC<transactions>
+Parses the transaction properties from a serialized transactions.
+
+_property: ethers.utils.recoverAddress(digest, aSignatureLike) => string<[Address](address)>  @<utils-recoveraddress> @SRC<transactions>
+Computes the address that signed //digest// to get //aSignatureLike// using the
+ecrecover algorithm.
+
+_property: ethers.utils.serialize(transaction [ , signature ]) => string<[[datahexstring]]>  @<utils-serialize> @SRC<transactions>
+Computes the serialized //transaction/, optionally signed with //signature//. If
+signature is not presented, the unsigned serialized transaction is returned, which can
+be used to compute the hash necessary to sign.
+
+This function uses EIP-155 if a chainId is provided, otherwise legacy serialization is
+used. It is **highly** recommended to always specify a //chainId//.

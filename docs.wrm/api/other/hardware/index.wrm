@@ -1,0 +1,17 @@
+_title: Hardware Wallets
+
+_section: Hardware Wallets
+
+_subsection: LedgerSigner @<hw-ledger> @INHERIT<[[signer]]> @SRC<hardware-wallets:class.LedgerSigner>
+
+The [Ledger Hardware Wallets](https://www.ledger.com) are a fairly
+popular brand.
+
+TODO: importing
+
+_heading: API
+
+_property: new LedgerSigner([provider [, type [ , path ] ] ]) => [[hw-ledger]]
+Connects to a Ledger Hardware Wallet. The //type// if left unspecified is
+determined by the environment; in node the default is "hid" and in the browser
+"u2f" is the default. The default Ethereum path is used if //path// is left unspecified.
