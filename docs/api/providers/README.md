@@ -64,25 +64,26 @@ Provider Documentation
   * [Transactions Methods](provider)
   * [Event Emitter Methods](provider)
   * [Inspection Methods](provider)
-* [JSON-RPC Provider](jsonrpc-provider)
-  * [JsonRpcProvider](jsonrpc-provider)
+* [JsonRpcProvider](jsonrpc-provider)
   * [JsonRpcSigner](jsonrpc-provider)
   * [JsonRpcUncheckedSigner](jsonrpc-provider)
 * [API Providers](api-providers)
   * [EtherscanProvider](api-providers)
   * [InfuraProvider](api-providers)
-  * [NodesmithProvider](api-providers)
   * [AlchemyProvider](api-providers)
   * [CloudfrontProvider](api-providers)
 * [Other Providers](other)
   * [FallbackProvider](other)
   * [IpcProvider](other)
+  * [UrlJsonRpcProvider](other)
+  * [Web3Provider](other)
 * [Types](types)
-  * [Blocks](types)
+  * [Network](types)
+  * [Block](types)
   * [Events and Logs](types)
   * [Transactions](types)
 
 
 
 -----
-**Content Hash:** 4bae65aa1521a7ecf045f950c9a702ad597d83095d079e66a5abbd327373877c
+**Content Hash:** 90fa0754bfed9594694637e2d5167de53e514a4c3527cd10a42083488ad112bf

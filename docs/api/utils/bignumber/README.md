@@ -108,7 +108,44 @@ Returns an instance of a **BigNumber** for *aBigNumberish*.
 
 
 ```javascript
-Skipping JavaScript Evaluation.
+// From a decimal string...
+BigNumber.from("42")
+// { BigNumber: "42" }
+
+// From a hexstring...
+BigNumber.from("0x2a")
+// { BigNumber: "42" }
+
+// From a negative hexstring...
+BigNumber.from("-0x2a")
+// { BigNumber: "-42" }
+
+// From an Array (or Uint8Array)...
+BigNumber.from([ 42 ])
+// { BigNumber: "42" }
+
+// From an existing BigNumber...
+let one1 = constants.One;
+let one2 = BigNumber.from(one1)
+
+one2
+// { BigNumber: "1" }
+
+// ...which returns the same instance
+one1 === one2
+// true
+
+// From a (safe) number...
+BigNumber.from(42)
+// { BigNumber: "42" }
+
+// From a ES2015 BigInt... (only on platforms with BigInt support)
+BigNumber.from(42n)
+// { BigNumber: "42" }
+
+// Numbers outside the safe range fail:
+BigNumber.from(Number.MAX_SAFE_INTEGER);
+// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, version=bignumber/5.0.0-beta.135)
 ```
 
 
@@ -273,7 +310,7 @@ Returns the value of *bignumber* as a base-10 string.
 
 
 
-#### *bignumber* . **toHexString** (  )  **=>** *string*
+#### *bignumber* . **toHexString** (  )  **=>** *string< [DataHexstring](../bytes) >*
 
 Returns the value of *bignumber* as a base-16, `0x`-prefixed [hexstring](../bytes).
 
@@ -296,7 +333,11 @@ Returns true if and only if the *object* is a BigNumber object.
 
 
 ```javascript
-Skipping JavaScript Evaluation.
+let a = BigNumber.from(42);
+let b = BigNumber.from("91");
+
+  a.mul(b);
+  // { BigNumber: "3822" }
 ```
 
 
@@ -328,7 +369,8 @@ To demonstrate how this may be an issue in your code, consider:
 
 
 ```javascript
-Skipping JavaScript Evaluation.
+(Number.MAX_SAFE_INTEGER + 2 - 2) == (Number.MAX_SAFE_INTEGER)
+// false
 ```
 
 
@@ -344,4 +386,4 @@ mathematical operations handled safely.
 
 
 -----
-**Content Hash:** 76be4f72801f0d772c1ebe1acff4c41f6d52ed96f603de4b168f12d099470273
+**Content Hash:** 8aa8cbe047d299ae822c3d322def66e29bbbd395d1c9bad59c61c97432d83ffa

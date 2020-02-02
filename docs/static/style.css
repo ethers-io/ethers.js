@@ -351,6 +351,8 @@ div.breadcrumbs span.current {
 }
 
 .anchors a.source {
+    font-size: 14px;
+    font-weight: normal;
     right: 0;
     opacity: 0.3;
     transform: translate(100%, -50%);
@@ -364,7 +366,14 @@ div.breadcrumbs span.current {
     opacity: 1;
 }
 
-
+.inherits {
+    font-weight: normal;
+    font-size: 16px;
+    font-style: italic;
+    position: absolute;
+    letter-spacing: 0.1ex;
+    padding-left: 25px;
+}
 
 .definition {
     margin: 10px 0 0 15px;
@@ -381,12 +390,13 @@ div.breadcrumbs span.current {
 
 .definition.container-box {
     border-radius: 5px;
-    left: 15px;
+    left: 48px;
     margin-bottom: 30px;
     margin-top: 30px;
+    overflow: hidden;
     padding: 0;
     position: relative;
-    width: 90%;
+    width: 80%;
 }
 
 .definition.container-box .term {
@@ -398,7 +408,15 @@ div.breadcrumbs span.current {
 
 .definition.container-box p {
     font-size: 16px;
-    padding: 10px 30px;
+    padding: 0px 30px;
+}
+
+.definition.container-box p:first-child {
+    padding-top: 15px;
+}
+
+.definition.container-box p:last-child {
+    padding-bottom: 10px;
 }
 
 .definition.container-box.note {

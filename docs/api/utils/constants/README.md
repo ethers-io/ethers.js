@@ -17,7 +17,8 @@ The **ethers.contants** Object contains commonly used values.
 
 
 ```javascript
-Skipping JavaScript Evaluation.
+//const { constants } = require("ethers");
+// const { constants } = require("@ethersproject/constants");
 ```
 
 
@@ -27,14 +28,14 @@ Bytes
 
 
 
-#### *constants* . **AddressZero** **=>** *[DataHexstring](../bytes)*
+#### *constants* . **AddressZero** **=>** *string< [Address](../address) >*
 
 The Address Zero, which is 20 bytes (40 nibbles) of zero.
 
 
 
 
-#### *constants* . **HashZero** **=>** *[DataHexstring](../bytes)*
+#### *constants* . **HashZero** **=>** *string< [DataHexstring](../bytes)< 32 > >*
 
 The Hash Zero, which is 32 bytes (64 nibbles) of zero.
 
@@ -103,4 +104,4 @@ The BigNumber value representing the maximum `uint256` value.
 
 
 -----
-**Content Hash:** 11a9a2e37a2a553b79931caf5374bcd894edf343a897c4253ddeaf4d2f8e1213
+**Content Hash:** 622800454a6a66b0fc5bbd1aa149f58e00727d81f05a8d32f3eb7be9e1abbf8d
