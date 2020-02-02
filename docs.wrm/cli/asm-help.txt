@@ -1,0 +1,11 @@
+Usage:
+   ethers-asm [ FILENAME ] [ OPTIONS ]
+
+OPTIONS
+  --disassemble               Disassemble input bytecode
+  --define KEY=VALUE          provide assembler defines
+
+OTHER OPTIONS
+  --debug                     Show stack traces for errors
+  --help                      Show this usage and exit
+  --version                   Show this version and exit

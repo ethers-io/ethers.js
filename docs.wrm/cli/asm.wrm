@@ -1,0 +1,17 @@
+_title: Assembler
+
+_section: Assembler
+
+The assembler Command-Line utility allows you to assemble EVM asm files
+into deployable bytecode and disassemle EVM bytecode into human-readable
+mnemonics.
+
+_subsection: Help
+
+_code: asm-help.txt
+
+_subsection: Examples
+
+TODO examples
+
+
