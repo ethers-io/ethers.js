@@ -4,7 +4,7 @@ _section: Hardware Wallets
 
 _subsection: LedgerSigner @<hw-ledger> @INHERIT<[[signer]]> @SRC<hardware-wallets:class.LedgerSigner>
 
-The [Ledger Hardware Wallets](https://www.ledger.com) are a fairly
+The [Ledger Hardware Wallets](link-ledger) are a fairly
 popular brand.
 
 TODO: importing

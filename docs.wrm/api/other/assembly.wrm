@@ -1,0 +1,194 @@
+_title: Assembly
+
+_section: Assembly @<asm>
+
+_subsection: Opcode @<asm-opcode>
+
+_property: asm.Opcode.from(valueOrMnemonic) => [[asm-opcode]]
+Create a new instnace of an Opcode for a given numeric value
+(e.g. 0x60 is PUSH1) or mnemonic (e.g. "PUSH1").
+
+_property: opcode.value => number
+The value (bytecode as a number) of this opcode.
+
+_property: opcode.mnemonic => string
+The mnemonic string of this opcode.
+
+_property: opcode.delta => number
+The number of items this opcode will consume from the stack.
+
+_property: opcode.alpha => number
+The number of items this opcode will push onto the stack.
+
+_property: opcode.doc => string
+A short description of what this opcode does.
+
+_property: opcode.isMemory() => boolean
+Returns true if the opcode accesses memory.
+
+_property: opcode.isStatic() => boolean
+Returns true if the opcode cannot change state.
+
+_property: opcode.isJump() => boolean
+Returns true if the opcode is a jumper operation.
+
+_property: opcode.isPush() => number
+Returns 0 if the opcode is not a ``PUSH*``, or the number
+of bytes this opcode will push if it is.
+
+_subsection: Assembler
+
+_heading: Operation @<asm-operation>
+
+An **Operation** is a single command from a disassembled bytecode
+stream.
+
+_property: operation.opcode => [[asm-opcode]]
+_property: operation.offset => number
+_property: operation.pushValue => string
+
+_heading: Functions
+
+_property: asm.parse(code) => [[asm-node]] @SRC<asm/assembler>
+Parse an ethers-format assembly file and return the [[asm-ast]].
+
+_property: asm.assemble(node) => string<[[datahexstring]]> @SRC<asm/assembler:function.assemble>
+Performs assembly of the [[asm-ast]] //node// and return the
+resulting bytecode representation.
+
+_property: asm.disassemble(bytecode) => Array<[[asm-operation]]> @SRC<asm/assembler>
+Returns an array of Operations given //bytecode//.
+
+In addition to a standard array, the return also has a
+``getOperation(offset)`` method, which can be used to get
+the operation at a given byte offset, which prevents access
+to internal ``PUSH`` bytes (i.e. safe JUMPDEST).
+
+_property: asm.formatBytecode(operations) => string @SRC<asm/assembler>
+Create a formatted output of an array of [[asm-operation]].
+
+_subsection: Abstract Syntax Tree @<asm-ast>
+
+Parsing an file using the [Ethers ASM Grammar](link-ethers-asm-grammar)
+will generate an Abstract Syntax Tree. The root node will always
+be a [[asm-scopenode]] whose name is ``_``.
+
+_heading: Location @<asm-location>
+
+_property: offset => number
+The offset into the source code to the start of this node.
+
+_property: length => number
+The length of characters in the source code to the end of this node.
+
+_property: source => string
+The source code of this node.
+
+
+_heading: Node @<asm-node> @SRC<asm:class.Node>
+
+_property: node.tag => string
+A unique tag for this node for the lifetime of the process.
+
+_property: node.location => [[asm-location]]
+The source code and location within the source code that this
+node represents.
+
+
+_heading: ValueNode @<asm-valuenode> @INHERIT<[[asm-node]]> @SRC<asm:class.ValueNode>
+
+A **ValueNode** is a node which may manipulate the stack.
+
+
+_heading: LiteralNode @<asm-literalnode> @INHERIT<[[asm-valuenode]]> @SRC<asm:class.LiteralNode>
+
+_property: literalNode.value => string
+The literal value of this node, which may be a [[datahexstring]] or
+string of a decimal number.
+
+_property: literalNode.verbatim => boolean
+This is true in a [[asm-datanode]] context, since in that case the
+value should be taken verbatim and no ``PUSH`` operation shoud be
+added, otherwise false.
+
+
+_heading: LinkNode @<asm-linknode> @INHERIT<[[asm-valuenode]]> @SRC<asm:class.LinkNode>
+
+A **LinkNode** represents a link to another [[asm-node]]'s data,
+for example ``$foo`` or ``#bar``.
+
+_property: linkNode.label => string
+Te name of the target node.
+
+_property: linkNode.type => "offset" | "length"
+Whether this node is for an offset or a length value of the
+target node.
+
+
+_heading: OpcodeNode @<asm-opcodenode> @INHERIT<[[asm-valuenode]]> @SRC<asm:class.OpcodeNode>
+
+_property: opcodeNode.opcode => [[asm-opcode]]
+The opcode for this Node.
+
+_property: opcodeNode.operands => Array<[[asm-valuenode]]>
+A list of all operands passed into this Node.
+
+
+_heading: EvaluationNode @<asm-evaluationnode> @INHERIT<[[asm-valuenode]]> @SRC<asm:class.EvaluationNode>
+
+An **EvaluationNode** is used to execute code and insert the results
+but does not generate
+any output assembly, using the ``{{! code here }}`` syntax.
+
+_property: literalNode.verbatim => boolean
+This is true in a [[asm-datanode]] context, since in that case the
+value should be taken verbatim and no ``PUSH`` operation shoud be
+added, otherwise false.
+
+_property: evaluationNode.script => string
+The code to evaluate and produce the result to use as a literal.
+
+
+_heading: ExecutionNode @<asm-executionnode> @INHERIT<[[asm-node]]> @SRC<asm:class.ExecutionNode>
+
+An **ExecutionNode** is used to execute code but does not generate
+any output assembly, using the ``{{! code here }}`` syntax.
+
+_property: evaluationNode.script => string
+The code to execute. Any result is ignored.
+
+
+_heading: LabelledNode @<asm-labellednode> @INHERIT<[[asm-node]]> @SRC<asm:class.LabelledNode>
+
+A **LabelledNode** is used for any Node that has a name, and can therefore
+be targetted by a [[asm-linknode]].
+
+_property: labelledNode.name => string
+The name of this node.
+
+
+_heading: LabelNode @<asm-labelnode> @INHERIT<[[asm-labellednode]]> @SRC<asm:class.LabelNode>
+
+A **LabelNode** is used as a place to ``JUMP`` to by referencing it
+name, using ``@myLabel:``. A ``JUMPDEST`` is automatically inserted
+at the bytecode offset.
+
+
+_heading: DataNode @<asm-datanode> @INHERIT<[[asm-labellednode]]> @SRC<asm:class.DataNode>
+
+A **DataNode** allows for data to be inserted directly into the output
+assembly, using ``@myData[ ... ]``. The data is padded if needed to ensure
+values that would otherwise be regarded as a ``PUSH`` value does not impact
+anything past the data.
+
+_property: dataNode.data => Array<[[asm-valuenode]]>
+The child nodes, which each represent a verbatim piece of data in insert.
+
+_heading: ScopeNode @<asm-scopenode> @INHERIT<[[asm-labellednode]]> @SRC<asm:class.ScopeNode>
+
+
+A **ScopeNode** allows a new frame of reference that all [[asm-linknode]]'s
+will use when resolving offset locations, using ``@myScope{ ... }``.
+
+_property: scopeNode.statements => Array<[[asm-node]]>
+The list of child nodes for this scope.

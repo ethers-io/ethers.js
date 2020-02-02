@@ -16,7 +16,7 @@ To mitigate these issues, it is recommended you use a
 _subsection: EtherscanProvider @INHERIT<[[provider]]>
 
 The **EtherscanProvider** is backed by a combination of the various
-[Etherscan APIs](https://etherscan.io/apis).
+[Etherscan APIs](link-etherscan-api).
 
 _property: provider.getHistory(address) => Array<History>
 
@@ -33,7 +33,7 @@ _definition: **Supported Networks**
 
 _subsection: InfuraProvider @INHERIT<[[provider-urljsonrpc]]>
 
-The **InfuraProvider** is backed by the popular [INFURA](https://infura.io)
+The **InfuraProvider** is backed by the popular [INFURA](link-infura)
 Ethereum service.
 
 _definition: **Supported Networks**
@@ -47,7 +47,7 @@ _definition: **Supported Networks**
 
 _subsection: AlchemyProvider @INHERIT<[[provider-urljsonrpc]]>
 
-The **AlchemtProvider** is backed by [Alchemy](https://alchemyapi.io).
+The **AlchemtProvider** is backed by [Alchemy](link-alchemy).
 
 _definition: **Supported Networks**
 
@@ -60,8 +60,7 @@ _definition: **Supported Networks**
 
 _subsection: CloudfrontProvider @INHERIT<[[provider-urljsonrpc]]>
 
-The CloudfrontProvider is backed by the
-[Cloudflare Ethereum Gateway](https://developers.cloudflare.com/distributed-web/ethereum-gateway/).
+The CloudfrontProvider is backed by the [Cloudflare Ethereum Gateway](link-cloudflare).
 
 _definition: **Supported Networks**
 

@@ -97,13 +97,11 @@ The URL to use for the JsonRpcProvider instance.
 
 _subsection: Web3Provider @<provider-web3> @INHERIT<[[provider-jsonrpc]]>
 
-The Web3Provider is meant to ease moving from a [web3.js based](https://github.com/ethereum/web3.js)
+The Web3Provider is meant to ease moving from a [web3.js based](link-web3)
 application to ethers by wraping an existing Web3-compatible (such as a
-[Web3HttpProvider](https://github.com/ethereum/web3.js/tree/1.x/packages/web3-providers-http)
-[Web3IpcProvider](https://github.com/ethereum/web3.js/tree/1.x/packages/web3-providers-ipc) or
-[Web3WsProvider](https://github.com/ethereum/web3.js/tree/1.x/packages/web3-providers-ws))
-and exposing it as an ethers.js [[provider]] which can then be used with the rest of
-the library.
+[Web3HttpProvider](link-web3-http)[Web3IpcProvider](link-web3-ipc) or
+[Web3WsProvider](link-web3-ws)) and exposing it as an ethers.js [[provider]]
+which can then be used with the rest of the library.
 
 _property: new ethers.providers.Web3Provider(web3Provider [, network ])
 Create a new **Web3Provider**, which wraps an [EIP-1193 Provider]() or

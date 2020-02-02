@@ -193,7 +193,7 @@ The amount (in wei) this transaction is sending.
 
 _property: transactionRequest.chainId => number | Promise<number>
 The chain ID this transaction is authorized on, as specified by
-[EIP-155](https:/\/eips.ethereum.org/EIPS/eip-155).
+[EIP-155](link-eip-155).
 
 If the chain ID is 0 will disable EIP-155 and the transaction will be valid
 on any network. This can be **dangerous** and care should be taken, since it
@@ -253,7 +253,7 @@ the block this transaction was mined in.
 _property: receipt.root => string
 The intermediate state root of a receipt.
 
-Only transactions included in blocks **before** the [Byzantium Hard Fork](https:/\/eips.ethereum.org/EIPS/eip-609)
+Only transactions included in blocks **before** the [Byzantium Hard Fork](link-eip-609)
 have this property, as it was replaced by the ``status`` property.
 
 The property is generally of little use to developers. At the time
@@ -265,7 +265,7 @@ _property: receipt.gasUsed => [[bignumber]]
 The amount of gas actually used by this transaction.
 
 _property: receipt.logsBloom => string<[[datahexstring]]>
-A [bloom-filter](https:/\/en.wikipedia.org/wiki/Bloom_filter), which
+A [bloom-filter](link-wiki-bloomfilter), which
 incldues all the addresses and topics included in any log in this
 transaction.
 
@@ -294,10 +294,10 @@ up to (and including) this transaction.
 This is generally of little interest to developers.
 
 _property: receipt.byzantium => boolean
-This is true if the block is in a [post-Byzantium Hard Fork](https:/\/eips.ethereum.org/EIPS/eip-609)
+This is true if the block is in a [post-Byzantium Hard Fork](link-eip-609)
 block.
 
 _property: receipt.status => boolean
 The status of a transaction is 1 is successful or 0 if it was
-reverted. Only transactions included in blocks [post-Byzantium Hard Fork](https:/\/eips.ethereum.org/EIPS/eip-609)
+reverted. Only transactions included in blocks [post-Byzantium Hard Fork](link-eip-609)
 have this property.

@@ -31,7 +31,7 @@ _definition: **//number//**
 A number that is within the safe range for JavaScript numbers.
 
 _definition: **//BigInt//**
-A JavaScript [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)
+A JavaScript [BigInt](link-js-bigint)
 object, on environments that support BigInt.
 
 
@@ -83,7 +83,7 @@ the //bitcount// least significant bits set to zero.
 
 _heading: Two's Compliment
 
-[Two's Complicment](https://en.wikipedia.org/wiki/Two%27s_complement)
+[Two's Complicment](link-wiki-twoscomplement)
 is an elegant method used to encode and decode fixed-width signed values
 while efficiently preserving mathematic operations.
 Most users will not need to interact with these.
@@ -154,7 +154,7 @@ with very little granularity. For example, there are only 100
 cents in a single dollar. However, there are 10^^18^^ **wei** in a
 single **ether**.
 
-JavaScript uses [IEEE 754 double-precision binary floating point](https://en.wikipedia.org/wiki/Double-precision_floating-point_format)
+JavaScript uses [IEEE 754 double-precision binary floating point](link-wiki-ieee754)
 numbers to represent numeric values. As a result, there are //holes//
 in the integer set after 9,007,199,254,740,991; which is
 problematic for //Ethereum// because that is only around 0.009

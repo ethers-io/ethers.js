@@ -6,8 +6,8 @@ The //Flatworm Docs// rendering script is designed to be **very**
 simple, but provide enough formatting necessary for documenting
 JavaScript libraries.
 
-A lot of its inspiration came from [Read the Docs](https://github.com/readthedocs/sphinx_rtd_theme) and
-the [Sphinx](https://www.sphinx-doc.org/) project.
+A lot of its inspiration came from [Read the Docs](link-rtd) and
+the [Sphinx](link-sphinx) project.
 
 
 _subsection: Fragments @<flatworm-fragments>

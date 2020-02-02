@@ -48,7 +48,7 @@ _heading: Using Mnemonics (with experimental memory-hard passwords)  @<cliex-mne
 
 The ``-\-xxx-mnemonic-password`` is similar to the ``-\-mnemonic-password`` options,
 which uses a password to decrypt the account for a mnemonic, however it passes
-the password through the [scrypt](https:/\/en.wikipedia.org/wiki/Scrypt)
+the password through the [scrypt](link-wiki-scrypt)
 //password-based key derivation function// first, which is intentionally slow and makes
 a brute-force attack far more difficult.
 
