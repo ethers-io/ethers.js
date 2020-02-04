@@ -83,7 +83,8 @@ export class Logger {
                 messageDetails.push(key + "=" + JSON.stringify(params[key].toString()));
             }
         });
-        messageDetails.push("version=" + this.version);
+        messageDetails.push(`code=${code}`);
+        messageDetails.push(`version=${this.version}`);
         const reason = message;
         if (messageDetails.length) {
             message += " (" + messageDetails.join(", ") + ")";

@@ -92,6 +92,18 @@ export class Signer {
         if (tx.from == null) {
             tx.from = this.getAddress();
         }
+        else {
+            // Make sure any provided address matches this signer
+            tx.from = Promise.all([
+                Promise.resolve(tx.from),
+                this.getAddress()
+            ]).then((result) => {
+                if (result[0] !== result[1]) {
+                    logger.throwArgumentError("from address mismatch", "transaction", transaction);
+                }
+                return result[0];
+            });
+        }
         return tx;
     }
     // Populates ALL keys for a transaction and checks that "from" matches
@@ -110,11 +122,11 @@ export class Signer {
             if (tx.nonce == null) {
                 tx.nonce = this.getTransactionCount("pending");
             }
-            // Make sure any provided address matches this signer
+            /*
+            // checkTransaction does this...
             if (tx.from == null) {
                 tx.from = this.getAddress();
-            }
-            else {
+            } else {
                 tx.from = Promise.all([
                     this.getAddress(),
                     this.provider.resolveName(tx.from)
@@ -125,6 +137,7 @@ export class Signer {
                     return results[0];
                 });
             }
+            */
             if (tx.gasLimit == null) {
                 tx.gasLimit = this.estimateGas(tx).catch((error) => {
                     logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
@@ -134,6 +147,17 @@ export class Signer {
             }
             if (tx.chainId == null) {
                 tx.chainId = this.getChainId();
+            }
+            else {
+                tx.chainId = Promise.all([
+                    Promise.resolve(tx.chainId),
+                    this.getChainId()
+                ]).then((results) => {
+                    if (results[1] !== 0 && results[0] !== results[1]) {
+                        logger.throwArgumentError("chainId address mismatch", "transaction", transaction);
+                    }
+                    return results[0];
+                });
             }
             return yield resolveProperties(tx);
         });

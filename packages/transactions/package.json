@@ -31,7 +31,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xdb72999fa8554641b74dd9b519933cb7d04a827c2d39f26943b9fe9b9672041a",
+  "tarballHash": "0x1a441a0ab7805cb00c9a04e3c6ddbb16e3e49e5d68833696cb081e0bd44f047a",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.133"
+  "version": "5.0.0-beta.134"
 }

@@ -430,7 +430,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
     //        this will be used once we move to the WebSocket or other alternatives to polling
-    BaseProvider.prototype.waitForTransaction = function (transactionHash, confirmations) {
+    BaseProvider.prototype.waitForTransaction = function (transactionHash, confirmations, timeout) {
         return __awaiter(this, void 0, void 0, function () {
             var receipt;
             var _this = this;
@@ -444,19 +444,42 @@ var BaseProvider = /** @class */ (function (_super) {
                     case 1:
                         receipt = _a.sent();
                         // Receipt is already good
-                        if (receipt.confirmations >= confirmations) {
+                        if ((receipt ? receipt.confirmations : 0) >= confirmations) {
                             return [2 /*return*/, receipt];
                         }
                         // Poll until the receipt is good...
-                        return [2 /*return*/, new Promise(function (resolve) {
+                        return [2 /*return*/, new Promise(function (resolve, reject) {
+                                var timer = null;
+                                var done = false;
                                 var handler = function (receipt) {
                                     if (receipt.confirmations < confirmations) {
                                         return;
                                     }
+                                    if (timer) {
+                                        clearTimeout(timer);
+                                    }
+                                    if (done) {
+                                        return;
+                                    }
+                                    done = true;
                                     _this.removeListener(transactionHash, handler);
                                     resolve(receipt);
                                 };
                                 _this.on(transactionHash, handler);
+                                if (typeof (timeout) === "number" && timeout > 0) {
+                                    timer = setTimeout(function () {
+                                        if (done) {
+                                            return;
+                                        }
+                                        timer = null;
+                                        done = true;
+                                        _this.removeListener(transactionHash, handler);
+                                        reject(logger.makeError("timeout exceeded", logger_1.Logger.errors.TIMEOUT, { timeout: timeout }));
+                                    }, timeout);
+                                    if (timer.unref) {
+                                        timer.unref();
+                                    }
+                                }
                             })];
                 }
             });

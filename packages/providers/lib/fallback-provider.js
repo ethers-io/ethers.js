@@ -94,7 +94,7 @@ function median(values) {
 }
 function serialize(value) {
     if (value === null) {
-        return null;
+        return "null";
     }
     else if (typeof (value) === "number" || typeof (value) === "boolean") {
         return JSON.stringify(value);
@@ -231,6 +231,9 @@ function getProcessFunc(provider, method, params) {
         case "getTransaction":
         case "getTransactionReceipt":
             normalize = function (tx) {
+                if (tx == null) {
+                    return null;
+                }
                 tx = properties_1.shallowCopy(tx);
                 tx.confirmations = -1;
                 return serialize(tx);
@@ -241,12 +244,23 @@ function getProcessFunc(provider, method, params) {
             // We drop the confirmations from transactions as it is approximate
             if (params.includeTransactions) {
                 normalize = function (block) {
+                    if (block == null) {
+                        return null;
+                    }
                     block = properties_1.shallowCopy(block);
                     block.transactions = block.transactions.map(function (tx) {
                         tx = properties_1.shallowCopy(tx);
                         tx.confirmations = -1;
                         return tx;
                     });
+                    return serialize(block);
+                };
+            }
+            else {
+                normalize = function (block) {
+                    if (block == null) {
+                        return null;
+                    }
                     return serialize(block);
                 };
             }
@@ -448,7 +462,7 @@ var FallbackProvider = /** @class */ (function (_super) {
                                         results = configs.filter(function (c) { return (c.done && c.error == null); });
                                         if (results.length >= this_1.quorum) {
                                             result = processFunc(results);
-                                            if (result != undefined) {
+                                            if (result !== undefined) {
                                                 return [2 /*return*/, { value: result }];
                                             }
                                         }
@@ -475,8 +489,9 @@ var FallbackProvider = /** @class */ (function (_super) {
                     case 3: return [2 /*return*/, logger.throwError("failed to meet quorum", logger_1.Logger.errors.SERVER_ERROR, {
                             method: method,
                             params: params,
-                            results: configs.map(function (c) { return exposeDebugConfig(c); }),
+                            //results: configs.map((c) => c.result),
                             //errors: configs.map((c) => c.error),
+                            results: configs.map(function (c) { return exposeDebugConfig(c); }),
                             provider: this
                         })];
                 }

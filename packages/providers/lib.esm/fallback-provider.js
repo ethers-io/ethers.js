@@ -53,7 +53,7 @@ function median(values) {
 }
 function serialize(value) {
     if (value === null) {
-        return null;
+        return "null";
     }
     else if (typeof (value) === "number" || typeof (value) === "boolean") {
         return JSON.stringify(value);
@@ -190,6 +190,9 @@ function getProcessFunc(provider, method, params) {
         case "getTransaction":
         case "getTransactionReceipt":
             normalize = function (tx) {
+                if (tx == null) {
+                    return null;
+                }
                 tx = shallowCopy(tx);
                 tx.confirmations = -1;
                 return serialize(tx);
@@ -200,12 +203,23 @@ function getProcessFunc(provider, method, params) {
             // We drop the confirmations from transactions as it is approximate
             if (params.includeTransactions) {
                 normalize = function (block) {
+                    if (block == null) {
+                        return null;
+                    }
                     block = shallowCopy(block);
                     block.transactions = block.transactions.map((tx) => {
                         tx = shallowCopy(tx);
                         tx.confirmations = -1;
                         return tx;
                     });
+                    return serialize(block);
+                };
+            }
+            else {
+                normalize = function (block) {
+                    if (block == null) {
+                        return null;
+                    }
                     return serialize(block);
                 };
             }
@@ -396,7 +410,7 @@ export class FallbackProvider extends BaseProvider {
                 const results = configs.filter((c) => (c.done && c.error == null));
                 if (results.length >= this.quorum) {
                     const result = processFunc(results);
-                    if (result != undefined) {
+                    if (result !== undefined) {
                         return result;
                     }
                 }
@@ -408,8 +422,9 @@ export class FallbackProvider extends BaseProvider {
             return logger.throwError("failed to meet quorum", Logger.errors.SERVER_ERROR, {
                 method: method,
                 params: params,
-                results: configs.map((c) => exposeDebugConfig(c)),
+                //results: configs.map((c) => c.result),
                 //errors: configs.map((c) => c.error),
+                results: configs.map((c) => exposeDebugConfig(c)),
                 provider: this
             });
         });

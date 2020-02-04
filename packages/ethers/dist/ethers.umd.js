@@ -3464,7 +3464,7 @@
 	var _version = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "logger/5.0.0-beta.133";
+	exports.version = "logger/5.0.0-beta.134";
 	});
 
 	var _version$1 = unwrapExports(_version);
@@ -3569,6 +3569,7 @@
 	                messageDetails.push(key + "=" + JSON.stringify(params[key].toString()));
 	            }
 	        });
+	        messageDetails.push("code=" + code);
 	        messageDetails.push("version=" + this.version);
 	        var reason = message;
 	        if (messageDetails.length) {
@@ -8409,7 +8410,7 @@
 	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-provider/5.0.0-beta.137";
+	exports.version = "abstract-provider/5.0.0-beta.138";
 	});
 
 	var _version$h = unwrapExports(_version$g);
@@ -8544,7 +8545,7 @@
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.0-beta.138";
+	exports.version = "abstract-signer/5.0.0-beta.139";
 	});
 
 	var _version$j = unwrapExports(_version$i);
@@ -8690,6 +8691,18 @@
 	        if (tx.from == null) {
 	            tx.from = this.getAddress();
 	        }
+	        else {
+	            // Make sure any provided address matches this signer
+	            tx.from = Promise.all([
+	                Promise.resolve(tx.from),
+	                this.getAddress()
+	            ]).then(function (result) {
+	                if (result[0] !== result[1]) {
+	                    logger.throwArgumentError("from address mismatch", "transaction", transaction);
+	                }
+	                return result[0];
+	            });
+	        }
 	        return tx;
 	    };
 	    // Populates ALL keys for a transaction and checks that "from" matches
@@ -8714,21 +8727,22 @@
 	                        if (tx.nonce == null) {
 	                            tx.nonce = this.getTransactionCount("pending");
 	                        }
-	                        // Make sure any provided address matches this signer
+	                        /*
+	                        // checkTransaction does this...
 	                        if (tx.from == null) {
 	                            tx.from = this.getAddress();
-	                        }
-	                        else {
+	                        } else {
 	                            tx.from = Promise.all([
 	                                this.getAddress(),
 	                                this.provider.resolveName(tx.from)
-	                            ]).then(function (results) {
+	                            ]).then((results) => {
 	                                if (results[0] !== results[1]) {
 	                                    logger.throwArgumentError("from address mismatch", "transaction", transaction);
 	                                }
 	                                return results[0];
 	                            });
 	                        }
+	                        */
 	                        if (tx.gasLimit == null) {
 	                            tx.gasLimit = this.estimateGas(tx).catch(function (error) {
 	                                logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", lib.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
@@ -8738,6 +8752,17 @@
 	                        }
 	                        if (tx.chainId == null) {
 	                            tx.chainId = this.getChainId();
+	                        }
+	                        else {
+	                            tx.chainId = Promise.all([
+	                                Promise.resolve(tx.chainId),
+	                                this.getChainId()
+	                            ]).then(function (results) {
+	                                if (results[1] !== 0 && results[0] !== results[1]) {
+	                                    logger.throwArgumentError("chainId address mismatch", "transaction", transaction);
+	                                }
+	                                return results[0];
+	                            });
 	                        }
 	                        return [4 /*yield*/, lib$3.resolveProperties(tx)];
 	                    case 2: return [2 /*return*/, _a.sent()];
@@ -13497,7 +13522,7 @@
 	var _version$q = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "transactions/5.0.0-beta.133";
+	exports.version = "transactions/5.0.0-beta.134";
 	});
 
 	var _version$r = unwrapExports(_version$q);
@@ -13580,26 +13605,45 @@
 	        }
 	        raw.push(lib$1.hexlify(value));
 	    });
-	    if (transaction.chainId != null && transaction.chainId !== 0) {
-	        raw.push(lib$1.hexlify(transaction.chainId));
+	    var chainId = 0;
+	    if (transaction.chainId != null) {
+	        // A chainId was provided; if non-zero we'll use EIP-155
+	        chainId = transaction.chainId;
+	        if (typeof (chainId) !== "number") {
+	            logger.throwArgumentError("invalid transaction.chainId", "transaction", transaction);
+	        }
+	    }
+	    else if (signature && !lib$1.isBytesLike(signature) && signature.v > 28) {
+	        // No chainId provided, but the signature is signing with EIP-155; derive chainId
+	        chainId = Math.floor((signature.v - 35) / 2);
+	    }
+	    // We have an EIP-155 transaction (chainId was specified and non-zero)
+	    if (chainId !== 0) {
+	        raw.push(lib$1.hexlify(chainId));
 	        raw.push("0x");
 	        raw.push("0x");
 	    }
-	    var unsignedTransaction = RLP.encode(raw);
 	    // Requesting an unsigned transation
 	    if (!signature) {
-	        return unsignedTransaction;
+	        return RLP.encode(raw);
 	    }
 	    // The splitSignature will ensure the transaction has a recoveryParam in the
 	    // case that the signTransaction function only adds a v.
 	    var sig = lib$1.splitSignature(signature);
 	    // We pushed a chainId and null r, s on for hashing only; remove those
 	    var v = 27 + sig.recoveryParam;
-	    if (raw.length === 9) {
+	    if (chainId !== 0) {
 	        raw.pop();
 	        raw.pop();
 	        raw.pop();
-	        v += transaction.chainId * 2 + 8;
+	        v += chainId * 2 + 8;
+	        // If an EIP-155 v (directly or indirectly; maybe _vs) was provided, check it!
+	        if (sig.v > 28 && sig.v !== v) {
+	            logger.throwArgumentError("transaction.chainId/signature.v mismatch", "signature", signature);
+	        }
+	    }
+	    else if (sig.v !== v) {
+	        logger.throwArgumentError("transaction.chainId/signature.v mismatch", "signature", signature);
 	    }
 	    raw.push(lib$1.hexlify(v));
 	    raw.push(lib$1.stripZeros(lib$1.arrayify(sig.r)));
@@ -17666,7 +17710,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.151";
+	exports.version = "providers/5.0.0-beta.152";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -18507,7 +18551,7 @@
 	    };
 	    // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
 	    //        this will be used once we move to the WebSocket or other alternatives to polling
-	    BaseProvider.prototype.waitForTransaction = function (transactionHash, confirmations) {
+	    BaseProvider.prototype.waitForTransaction = function (transactionHash, confirmations, timeout) {
 	        return __awaiter(this, void 0, void 0, function () {
 	            var receipt;
 	            var _this = this;
@@ -18521,19 +18565,42 @@
 	                    case 1:
 	                        receipt = _a.sent();
 	                        // Receipt is already good
-	                        if (receipt.confirmations >= confirmations) {
+	                        if ((receipt ? receipt.confirmations : 0) >= confirmations) {
 	                            return [2 /*return*/, receipt];
 	                        }
 	                        // Poll until the receipt is good...
-	                        return [2 /*return*/, new Promise(function (resolve) {
+	                        return [2 /*return*/, new Promise(function (resolve, reject) {
+	                                var timer = null;
+	                                var done = false;
 	                                var handler = function (receipt) {
 	                                    if (receipt.confirmations < confirmations) {
 	                                        return;
 	                                    }
+	                                    if (timer) {
+	                                        clearTimeout(timer);
+	                                    }
+	                                    if (done) {
+	                                        return;
+	                                    }
+	                                    done = true;
 	                                    _this.removeListener(transactionHash, handler);
 	                                    resolve(receipt);
 	                                };
 	                                _this.on(transactionHash, handler);
+	                                if (typeof (timeout) === "number" && timeout > 0) {
+	                                    timer = setTimeout(function () {
+	                                        if (done) {
+	                                            return;
+	                                        }
+	                                        timer = null;
+	                                        done = true;
+	                                        _this.removeListener(transactionHash, handler);
+	                                        reject(logger.makeError("timeout exceeded", lib.Logger.errors.TIMEOUT, { timeout: timeout }));
+	                                    }, timeout);
+	                                    if (timer.unref) {
+	                                        timer.unref();
+	                                    }
+	                                }
 	                            })];
 	                }
 	            });
@@ -20577,7 +20644,7 @@
 	}
 	function serialize(value) {
 	    if (value === null) {
-	        return null;
+	        return "null";
 	    }
 	    else if (typeof (value) === "number" || typeof (value) === "boolean") {
 	        return JSON.stringify(value);
@@ -20714,6 +20781,9 @@
 	        case "getTransaction":
 	        case "getTransactionReceipt":
 	            normalize = function (tx) {
+	                if (tx == null) {
+	                    return null;
+	                }
 	                tx = lib$3.shallowCopy(tx);
 	                tx.confirmations = -1;
 	                return serialize(tx);
@@ -20724,12 +20794,23 @@
 	            // We drop the confirmations from transactions as it is approximate
 	            if (params.includeTransactions) {
 	                normalize = function (block) {
+	                    if (block == null) {
+	                        return null;
+	                    }
 	                    block = lib$3.shallowCopy(block);
 	                    block.transactions = block.transactions.map(function (tx) {
 	                        tx = lib$3.shallowCopy(tx);
 	                        tx.confirmations = -1;
 	                        return tx;
 	                    });
+	                    return serialize(block);
+	                };
+	            }
+	            else {
+	                normalize = function (block) {
+	                    if (block == null) {
+	                        return null;
+	                    }
 	                    return serialize(block);
 	                };
 	            }
@@ -20931,7 +21012,7 @@
 	                                        results = configs.filter(function (c) { return (c.done && c.error == null); });
 	                                        if (results.length >= this_1.quorum) {
 	                                            result = processFunc(results);
-	                                            if (result != undefined) {
+	                                            if (result !== undefined) {
 	                                                return [2 /*return*/, { value: result }];
 	                                            }
 	                                        }
@@ -20958,8 +21039,9 @@
 	                    case 3: return [2 /*return*/, logger.throwError("failed to meet quorum", lib.Logger.errors.SERVER_ERROR, {
 	                            method: method,
 	                            params: params,
-	                            results: configs.map(function (c) { return exposeDebugConfig(c); }),
+	                            //results: configs.map((c) => c.result),
 	                            //errors: configs.map((c) => c.error),
+	                            results: configs.map(function (c) { return exposeDebugConfig(c); }),
 	                            provider: this
 	                        })];
 	                }
@@ -21793,7 +21875,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.171";
+	exports.version = "ethers/5.0.0-beta.172";
 	});
 
 	var _version$L = unwrapExports(_version$K);

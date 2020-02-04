@@ -74,26 +74,45 @@ function serialize(transaction, signature) {
         }
         raw.push(bytes_1.hexlify(value));
     });
-    if (transaction.chainId != null && transaction.chainId !== 0) {
-        raw.push(bytes_1.hexlify(transaction.chainId));
+    var chainId = 0;
+    if (transaction.chainId != null) {
+        // A chainId was provided; if non-zero we'll use EIP-155
+        chainId = transaction.chainId;
+        if (typeof (chainId) !== "number") {
+            logger.throwArgumentError("invalid transaction.chainId", "transaction", transaction);
+        }
+    }
+    else if (signature && !bytes_1.isBytesLike(signature) && signature.v > 28) {
+        // No chainId provided, but the signature is signing with EIP-155; derive chainId
+        chainId = Math.floor((signature.v - 35) / 2);
+    }
+    // We have an EIP-155 transaction (chainId was specified and non-zero)
+    if (chainId !== 0) {
+        raw.push(bytes_1.hexlify(chainId));
         raw.push("0x");
         raw.push("0x");
     }
-    var unsignedTransaction = RLP.encode(raw);
     // Requesting an unsigned transation
     if (!signature) {
-        return unsignedTransaction;
+        return RLP.encode(raw);
     }
     // The splitSignature will ensure the transaction has a recoveryParam in the
     // case that the signTransaction function only adds a v.
     var sig = bytes_1.splitSignature(signature);
     // We pushed a chainId and null r, s on for hashing only; remove those
     var v = 27 + sig.recoveryParam;
-    if (raw.length === 9) {
+    if (chainId !== 0) {
         raw.pop();
         raw.pop();
         raw.pop();
-        v += transaction.chainId * 2 + 8;
+        v += chainId * 2 + 8;
+        // If an EIP-155 v (directly or indirectly; maybe _vs) was provided, check it!
+        if (sig.v > 28 && sig.v !== v) {
+            logger.throwArgumentError("transaction.chainId/signature.v mismatch", "signature", signature);
+        }
+    }
+    else if (sig.v !== v) {
+        logger.throwArgumentError("transaction.chainId/signature.v mismatch", "signature", signature);
     }
     raw.push(bytes_1.hexlify(v));
     raw.push(bytes_1.stripZeros(bytes_1.arrayify(sig.r)));

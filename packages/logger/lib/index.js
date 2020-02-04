@@ -96,6 +96,7 @@ var Logger = /** @class */ (function () {
                 messageDetails.push(key + "=" + JSON.stringify(params[key].toString()));
             }
         });
+        messageDetails.push("code=" + code);
         messageDetails.push("version=" + this.version);
         var reason = message;
         if (messageDetails.length) {

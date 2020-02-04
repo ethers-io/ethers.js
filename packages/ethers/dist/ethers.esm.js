@@ -3455,7 +3455,7 @@ var bn = createCommonjsModule(function (module) {
 });
 var bn_1 = bn.BN;
 
-const version = "logger/5.0.0-beta.133";
+const version = "logger/5.0.0-beta.134";
 
 "use strict";
 let _permanentCensorErrors = false;
@@ -3541,7 +3541,8 @@ class Logger {
                 messageDetails.push(key + "=" + JSON.stringify(params[key].toString()));
             }
         });
-        messageDetails.push("version=" + this.version);
+        messageDetails.push(`code=${code}`);
+        messageDetails.push(`version=${this.version}`);
         const reason = message;
         if (messageDetails.length) {
             message += " (" + messageDetails.join(", ") + ")";
@@ -7637,7 +7638,7 @@ class Interface {
 
 "use strict";
 
-const version$8 = "abstract-provider/5.0.0-beta.137";
+const version$8 = "abstract-provider/5.0.0-beta.138";
 
 "use strict";
 const logger$c = new Logger(version$8);
@@ -7714,7 +7715,7 @@ class Provider {
     }
 }
 
-const version$9 = "abstract-signer/5.0.0-beta.138";
+const version$9 = "abstract-signer/5.0.0-beta.139";
 
 "use strict";
 var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -7807,6 +7808,18 @@ class Signer {
         if (tx.from == null) {
             tx.from = this.getAddress();
         }
+        else {
+            // Make sure any provided address matches this signer
+            tx.from = Promise.all([
+                Promise.resolve(tx.from),
+                this.getAddress()
+            ]).then((result) => {
+                if (result[0] !== result[1]) {
+                    logger$d.throwArgumentError("from address mismatch", "transaction", transaction);
+                }
+                return result[0];
+            });
+        }
         return tx;
     }
     // Populates ALL keys for a transaction and checks that "from" matches
@@ -7825,21 +7838,22 @@ class Signer {
             if (tx.nonce == null) {
                 tx.nonce = this.getTransactionCount("pending");
             }
-            // Make sure any provided address matches this signer
+            /*
+            // checkTransaction does this...
             if (tx.from == null) {
                 tx.from = this.getAddress();
-            }
-            else {
+            } else {
                 tx.from = Promise.all([
                     this.getAddress(),
                     this.provider.resolveName(tx.from)
                 ]).then((results) => {
                     if (results[0] !== results[1]) {
-                        logger$d.throwArgumentError("from address mismatch", "transaction", transaction);
+                        logger.throwArgumentError("from address mismatch", "transaction", transaction);
                     }
                     return results[0];
                 });
             }
+            */
             if (tx.gasLimit == null) {
                 tx.gasLimit = this.estimateGas(tx).catch((error) => {
                     logger$d.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
@@ -7849,6 +7863,17 @@ class Signer {
             }
             if (tx.chainId == null) {
                 tx.chainId = this.getChainId();
+            }
+            else {
+                tx.chainId = Promise.all([
+                    Promise.resolve(tx.chainId),
+                    this.getChainId()
+                ]).then((results) => {
+                    if (results[1] !== 0 && results[0] !== results[1]) {
+                        logger$d.throwArgumentError("chainId address mismatch", "transaction", transaction);
+                    }
+                    return results[0];
+                });
             }
             return yield resolveProperties(tx);
         });
@@ -12459,7 +12484,7 @@ function computePublicKey(key, compressed) {
     return logger$f.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$d = "transactions/5.0.0-beta.133";
+const version$d = "transactions/5.0.0-beta.134";
 
 "use strict";
 const logger$g = new Logger(version$d);
@@ -12517,26 +12542,45 @@ function serialize(transaction, signature) {
         }
         raw.push(hexlify(value));
     });
-    if (transaction.chainId != null && transaction.chainId !== 0) {
-        raw.push(hexlify(transaction.chainId));
+    let chainId = 0;
+    if (transaction.chainId != null) {
+        // A chainId was provided; if non-zero we'll use EIP-155
+        chainId = transaction.chainId;
+        if (typeof (chainId) !== "number") {
+            logger$g.throwArgumentError("invalid transaction.chainId", "transaction", transaction);
+        }
+    }
+    else if (signature && !isBytesLike(signature) && signature.v > 28) {
+        // No chainId provided, but the signature is signing with EIP-155; derive chainId
+        chainId = Math.floor((signature.v - 35) / 2);
+    }
+    // We have an EIP-155 transaction (chainId was specified and non-zero)
+    if (chainId !== 0) {
+        raw.push(hexlify(chainId));
         raw.push("0x");
         raw.push("0x");
     }
-    const unsignedTransaction = encode(raw);
     // Requesting an unsigned transation
     if (!signature) {
-        return unsignedTransaction;
+        return encode(raw);
     }
     // The splitSignature will ensure the transaction has a recoveryParam in the
     // case that the signTransaction function only adds a v.
     const sig = splitSignature(signature);
     // We pushed a chainId and null r, s on for hashing only; remove those
     let v = 27 + sig.recoveryParam;
-    if (raw.length === 9) {
+    if (chainId !== 0) {
         raw.pop();
         raw.pop();
         raw.pop();
-        v += transaction.chainId * 2 + 8;
+        v += chainId * 2 + 8;
+        // If an EIP-155 v (directly or indirectly; maybe _vs) was provided, check it!
+        if (sig.v > 28 && sig.v !== v) {
+            logger$g.throwArgumentError("transaction.chainId/signature.v mismatch", "signature", signature);
+        }
+    }
+    else if (sig.v !== v) {
+        logger$g.throwArgumentError("transaction.chainId/signature.v mismatch", "signature", signature);
     }
     raw.push(hexlify(v));
     raw.push(stripZeros(arrayify(sig.r)));
@@ -16221,7 +16265,7 @@ function poll(func, options) {
     });
 }
 
-const version$j = "providers/5.0.0-beta.151";
+const version$j = "providers/5.0.0-beta.152";
 
 "use strict";
 const logger$n = new Logger(version$j);
@@ -16942,26 +16986,49 @@ class BaseProvider extends Provider {
     }
     // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
     //        this will be used once we move to the WebSocket or other alternatives to polling
-    waitForTransaction(transactionHash, confirmations) {
+    waitForTransaction(transactionHash, confirmations, timeout) {
         return __awaiter$3(this, void 0, void 0, function* () {
             if (confirmations == null) {
                 confirmations = 1;
             }
             const receipt = yield this.getTransactionReceipt(transactionHash);
             // Receipt is already good
-            if (receipt.confirmations >= confirmations) {
+            if ((receipt ? receipt.confirmations : 0) >= confirmations) {
                 return receipt;
             }
             // Poll until the receipt is good...
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
+                let timer = null;
+                let done = false;
                 const handler = (receipt) => {
                     if (receipt.confirmations < confirmations) {
                         return;
                     }
+                    if (timer) {
+                        clearTimeout(timer);
+                    }
+                    if (done) {
+                        return;
+                    }
+                    done = true;
                     this.removeListener(transactionHash, handler);
                     resolve(receipt);
                 };
                 this.on(transactionHash, handler);
+                if (typeof (timeout) === "number" && timeout > 0) {
+                    timer = setTimeout(() => {
+                        if (done) {
+                            return;
+                        }
+                        timer = null;
+                        done = true;
+                        this.removeListener(transactionHash, handler);
+                        reject(logger$o.makeError("timeout exceeded", Logger.errors.TIMEOUT, { timeout: timeout }));
+                    }, timeout);
+                    if (timer.unref) {
+                        timer.unref();
+                    }
+                }
             });
         });
     }
@@ -18408,7 +18475,7 @@ function median(values) {
 }
 function serialize$1(value) {
     if (value === null) {
-        return null;
+        return "null";
     }
     else if (typeof (value) === "number" || typeof (value) === "boolean") {
         return JSON.stringify(value);
@@ -18545,6 +18612,9 @@ function getProcessFunc(provider, method, params) {
         case "getTransaction":
         case "getTransactionReceipt":
             normalize = function (tx) {
+                if (tx == null) {
+                    return null;
+                }
                 tx = shallowCopy(tx);
                 tx.confirmations = -1;
                 return serialize$1(tx);
@@ -18555,12 +18625,23 @@ function getProcessFunc(provider, method, params) {
             // We drop the confirmations from transactions as it is approximate
             if (params.includeTransactions) {
                 normalize = function (block) {
+                    if (block == null) {
+                        return null;
+                    }
                     block = shallowCopy(block);
                     block.transactions = block.transactions.map((tx) => {
                         tx = shallowCopy(tx);
                         tx.confirmations = -1;
                         return tx;
                     });
+                    return serialize$1(block);
+                };
+            }
+            else {
+                normalize = function (block) {
+                    if (block == null) {
+                        return null;
+                    }
                     return serialize$1(block);
                 };
             }
@@ -18751,7 +18832,7 @@ class FallbackProvider extends BaseProvider {
                 const results = configs.filter((c) => (c.done && c.error == null));
                 if (results.length >= this.quorum) {
                     const result = processFunc(results);
-                    if (result != undefined) {
+                    if (result !== undefined) {
                         return result;
                     }
                 }
@@ -18763,8 +18844,9 @@ class FallbackProvider extends BaseProvider {
             return logger$u.throwError("failed to meet quorum", Logger.errors.SERVER_ERROR, {
                 method: method,
                 params: params,
-                results: configs.map((c) => exposeDebugConfig(c)),
+                //results: configs.map((c) => c.result),
                 //errors: configs.map((c) => c.error),
+                results: configs.map((c) => exposeDebugConfig(c)),
                 provider: this
             });
         });
@@ -19280,7 +19362,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$l = "ethers/5.0.0-beta.171";
+const version$l = "ethers/5.0.0-beta.172";
 
 "use strict";
 const errors = Logger.errors;

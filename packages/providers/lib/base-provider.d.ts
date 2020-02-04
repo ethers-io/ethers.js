@@ -61,7 +61,7 @@ export declare class BaseProvider extends Provider {
     pollingInterval: number;
     _getFastBlockNumber(): Promise<number>;
     _setFastBlockNumber(blockNumber: number): void;
-    waitForTransaction(transactionHash: string, confirmations?: number): Promise<TransactionReceipt>;
+    waitForTransaction(transactionHash: string, confirmations?: number, timeout?: number): Promise<TransactionReceipt>;
     getBlockNumber(): Promise<number>;
     getGasPrice(): Promise<BigNumber>;
     getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber>;

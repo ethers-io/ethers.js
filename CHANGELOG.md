@@ -3,6 +3,33 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.172 (2020-02-04 00:59)
+-----------------------------------------
+
+  - Synced GitHub issue cache. ([13dbf1f](https://github.com/ethers-io/ethers.js/commit/13dbf1f965eab344d2a304f7612d19ea96391261))
+  - Better typing for Timers. ([5622f70](https://github.com/ethers-io/ethers.js/commit/5622f703d962993442623ef1450a595825c4efa8))
+  - Safer transaction serialization, matching signature.v with chainId. ([#708](https://github.com/ethers-io/ethers.js/issues/708); [edb7c5d](https://github.com/ethers-io/ethers.js/commit/edb7c5da91ce271688561364d867998b0f0675e3))
+  - Fixed Opcode typo and added check to prevent future typos. ([15bb840](https://github.com/ethers-io/ethers.js/commit/15bb8409077f96b22e8bd60c426cddd015454e6b))
+  - Renamed AST nodes for teh assembler. ([f02c7db](https://github.com/ethers-io/ethers.js/commit/f02c7db4109d1785b4528757aa50f24948e896ae))
+  - Added timeout to waitForTransaction. ([#477](https://github.com/ethers-io/ethers.js/issues/477); [bacc440](https://github.com/ethers-io/ethers.js/commit/bacc4403979fa423890e269e7a5c7d11c6891a9f))
+  - Added CLI for asm package. ([aafa42a](https://github.com/ethers-io/ethers.js/commit/aafa42a32b2a5c7481a409ad048dfc06112c6599))
+  - Prevent Signer.checkTransaction from creating conflicting from properties. ([1decb13](https://github.com/ethers-io/ethers.js/commit/1decb1379902b60a15925b9b1de39633393db825))
+  - Include asm in generated TypeScript dependencies. ([ba29618](https://github.com/ethers-io/ethers.js/commit/ba296188960fb345dfdab12f2bb3ed3dc5eab51a))
+  - Clean up some asm checks and dead code. ([fa317eb](https://github.com/ethers-io/ethers.js/commit/fa317ebc032f8a5f9fb2dd10e23496252ae744e1))
+  - More contained Opcode API. ([da8153c](https://github.com/ethers-io/ethers.js/commit/da8153c87753b79e5e4cd34d484b8e0e717426d9))
+  - Added initial codedrop for the asm package. ([0296594](https://github.com/ethers-io/ethers.js/commit/0296594aba8d1e90e9ef7a18d2324f6cac815953))
+
+ethers/v5.0.0-beta.171 (2020-02-01 05:05)
+-----------------------------------------
+
+  - Added CLI for asm package. ([aafa42a](https://github.com/ethers-io/ethers.js/commit/aafa42a32b2a5c7481a409ad048dfc06112c6599))
+  - Added more flatworm documentation. ([1c85fe9](https://github.com/ethers-io/ethers.js/commit/1c85fe95b2b536828e83087676becba85c9a90bb))
+  - Prevent Signer.checkTransaction from creating conflicting from properties. ([1decb13](https://github.com/ethers-io/ethers.js/commit/1decb1379902b60a15925b9b1de39633393db825))
+  - Include asm in generated TypeScript dependencies. ([ba29618](https://github.com/ethers-io/ethers.js/commit/ba296188960fb345dfdab12f2bb3ed3dc5eab51a))
+  - Clean up some asm checks and dead code. ([fa317eb](https://github.com/ethers-io/ethers.js/commit/fa317ebc032f8a5f9fb2dd10e23496252ae744e1))
+  - More contained Opcode API. ([da8153c](https://github.com/ethers-io/ethers.js/commit/da8153c87753b79e5e4cd34d484b8e0e717426d9))
+  - Added initial codedrop for the asm package. ([0296594](https://github.com/ethers-io/ethers.js/commit/0296594aba8d1e90e9ef7a18d2324f6cac815953))
+
 ethers/v5.0.0-beta.171 (2020-01-29 21:41)
 -----------------------------------------
 
