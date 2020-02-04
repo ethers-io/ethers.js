@@ -6,14 +6,22 @@ import fs from "fs";
 import _module from "module";
 import { dirname, resolve } from "path";
 import REPL from "repl";
-import util from "util";
 import vm from "vm";
 
 import { ethers } from "ethers";
 
+import { parseExpression as babelParseExpression } from "@babel/parser";
+
 import { ArgParser, CLI, dump, Help, Plugin } from "../cli";
 import { getPassword, getProgressBar } from "../prompt";
 import { compile, ContractCode, customRequire } from "../solc";
+
+function repeat(c: string, length: number): string {
+    if (c.length === 0) { throw new Error("too short"); }
+    let result = c;
+    while (result.length < length) { result += result; }
+    return result.substring(0, length);
+}
 
 function setupContext(path: string, context: any, plugin: Plugin) {
 
@@ -24,7 +32,6 @@ function setupContext(path: string, context: any, plugin: Plugin) {
     if (!context.__dirname) { context.__dirname = dirname(path); }
     if (!context.console) { context.console = console; }
     if (!context.require) {
-        //context.require = _module.createRequireFromPath(path);
         context.require = customRequire(path);
     }
     if (!context.process) { context.process = process; }
@@ -78,6 +85,42 @@ function setupContext(path: string, context: any, plugin: Plugin) {
 
 const cli = new CLI("sandbox");
 
+function prepareCode(code: string): string {
+    let ast = babelParseExpression(code, {
+        createParenthesizedExpressions: true
+    });
+
+    // Crawl the AST, to compute needed source code manipulations
+    const insert: Array<{ char: string, offset: number }> = [];
+    const descend = function(node: any) {
+        if (node == null || typeof(node) !== "object") { return; }
+        if (Array.isArray(node)) {
+            return node.forEach(descend);
+        }
+
+        // We will add parenthesis around ObjectExpressions, which
+        // otherwise look like blocks
+        if (node.type === "ObjectExpression") {
+            insert.push({ char: "(", offset: node.start });
+            insert.push({ char: ")", offset: node.end });
+        }
+
+        Object.keys(node).forEach((key) => descend(key));
+    }
+    descend(ast);
+
+    // We make modifications from back to front, so we don't need
+    // to adjust offsets
+    insert.sort((a, b) => (b.offset - a.offset));
+
+    // Modify the code for REPL
+    insert.forEach((mod) => {
+        code = code.substring(0, mod.offset) + mod.char + code.substring(mod.offset);
+    });
+
+    return code;
+}
+
 class SandboxPlugin extends Plugin {
     static getHelp(): Help {
         return {
@@ -103,35 +146,62 @@ class SandboxPlugin extends Plugin {
     }
 
     run(): Promise<void> {
-        console.log("network: " + this.network.name + " (chainId: " + this.network.chainId + ")");
+        console.log(`version: ${ ethers.version }`);
+        console.log(`network: ${ this.network.name } (chainId: ${ this.network.chainId })`);
 
-        let nextPromiseId = 0;
-        function promiseWriter(output: any): string {
-            if (output instanceof Promise) {
-                repl.context._p = output;
-                let promiseId = nextPromiseId++;
-                output.then((result) => {
-                    console.log(`\n<Promise id=${promiseId} resolved>`);
-                    console.log(util.inspect(result));
-                    repl.context._r = result;
-                    repl.displayPrompt(true)
-                }, (error) => {
-                    console.log(`\n<Promise id=${promiseId} rejected>`);
-                    console.log(util.inspect(error));
-                    repl.displayPrompt(true)
-                });
-                return `<Promise id=${promiseId} pending>`;
+        const filename = resolve(process.cwd(), "./sandbox.js");
+        const prompt = (this.provider ? this.network.name: "no-network") + "> ";
+
+        const evaluate = function(code: string, context: any, file: any, _callback: (error: Error, result?: any) => void) {
+            // Pausing the stdin (which prompt does when it leaves), causes
+            // readline to end us. So, we always re-enable stdin on a result
+            const callback = (error: Error, result?: any) => {
+                _callback(error, result);
+                process.stdin.resume();
+            };
+
+            try {
+                code = prepareCode(code);
+            } catch (error) {
+                if (error instanceof SyntaxError) {
+                    const leftover = code.substring((<any>error).pos);
+                    const loc: { line: number, column: number } = (<any>error).loc;
+                    if (leftover.trim()) {
+                        // After the first line, the prompt is "... "
+                        console.log(repeat("-", ((loc.line === 1) ? prompt.length: 4) + loc.column - 1) + "^");
+                        console.log(`Syntax Error! ${ error.message }`);
+                    } else {
+                        error = new REPL.Recoverable(error);
+                    }
+                }
+                return callback(error);
             }
-            return util.inspect(output);
-        }
 
-        let repl = REPL.start({
-            input: process.stdin,
-            output: process.stdout,
-            prompt: (this.provider ? this.network.name: "no-network") + "> ",
-            writer: promiseWriter
+            try {
+                const result = vm.runInContext(code, context, {
+                     filename: filename
+                });
+
+                if (result instanceof Promise) {
+                    result.then((result) => {
+                        callback(null, result);
+                    }, (error) => {
+                        callback(error);
+                    });
+                } else {
+                    callback(null, result);
+                }
+            } catch (error) {
+                callback(error);
+            }
+        };
+
+        const repl = REPL.start({
+            prompt: prompt,
+            eval: evaluate
         });
-        setupContext(resolve(process.cwd(), "./sandbox.js"), repl.context, this);
+
+        setupContext(filename, repl.context, this);
 
         return new Promise((resolve) => {
             repl.on("exit", function() {

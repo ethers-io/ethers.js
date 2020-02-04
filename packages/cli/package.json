@@ -7,6 +7,7 @@
     "ethers-ts": "./lib/bin/ethers-ts.js"
   },
   "dependencies": {
+    "@babel/parser": "7.8.4",
     "@ethersproject/asm": ">=5.0.0-beta.148",
     "@ethersproject/basex": ">=5.0.0-beta.127",
     "ethers": ">=5.0.0-beta.156",
