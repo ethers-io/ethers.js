@@ -136,7 +136,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
     options.headers = flatHeaders;
 
     const runningTimeout = (function() {
-        let timer: any = null;
+        let timer: NodeJS.Timer = null;
         const promise = new Promise(function(resolve, reject) {
             if (timeout) {
                 timer = setTimeout(() => {
@@ -232,7 +232,7 @@ export function poll(func: () => Promise<any>, options?: PollOptions): Promise<a
 
     return new Promise(function(resolve, reject) {
 
-        let timer: any = null;
+        let timer: NodeJS.Timer = null;
         let done: boolean = false;
 
         // Returns true if cancel was successful. Unsuccessful cancel means we're already done.
