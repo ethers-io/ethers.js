@@ -195,14 +195,15 @@ export abstract class Node {
     }
 }
 
+/*
 export abstract class CodeNode extends Node {
     constructor(guard: any, location: Location, options: { [ key: string ]: any }) {
         logger.checkAbstract(new.target, CodeNode);
         super(guard, location, options);
     }
 }
-
-export abstract class ValueNode extends CodeNode {
+*/
+export abstract class ValueNode extends Node {
     constructor(guard: any, location: Location, options: { [ key: string ]: any }) {
         logger.checkAbstract(new.target, ValueNode);
         super(guard, location, options);
@@ -358,7 +359,7 @@ export class OpcodeNode extends ValueNode {
     }
 }
 
-export abstract class LabelledNode extends CodeNode {
+export abstract class LabelledNode extends Node {
     readonly name: string;
 
     constructor(guard: any, location: Location, name: string, values?: { [ key: string ]: any }) {
@@ -467,7 +468,7 @@ export class EvaluationNode extends ValueNode {
     }
 }
 
-export class ExecutionNode extends CodeNode {
+export class ExecutionNode extends Node {
     readonly script: string;
 
     constructor(guard: any, location: Location, script: string) {
