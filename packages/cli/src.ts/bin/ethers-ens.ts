@@ -241,16 +241,10 @@ abstract class AccountPlugin extends EnsPlugin {
     }
 
     async _setValue(key: string, value: string): Promise<void> {
-        ethers.utils.defineReadOnly(this, key, value);
+        ethers.utils.defineReadOnly<any, any>(this, key, value);
         if (key === "name") {
             await this._setValue("nodehash", ethers.utils.namehash(value));
         }
-    }
-
-    async prepareOptions(argParser: ArgParser): Promise<void> {
-        await super.prepareOptions(argParser);
-
-        ethers.utils.defineReadOnly(this, "_wait", argParser.consumeFlag("wait"));
     }
 
     async prepareArgs(args: Array<string>): Promise<void> {

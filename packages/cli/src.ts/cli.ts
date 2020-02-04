@@ -491,7 +491,7 @@ export abstract class Plugin {
     network: ethers.providers.Network;
     provider: ethers.providers.Provider;
 
-    accounts: Array<WrappedSigner>;
+    accounts: ReadonlyArray<WrappedSigner>;
     mnemonicPassword: boolean;
     _xxxMnemonicPasswordHard: boolean;
 

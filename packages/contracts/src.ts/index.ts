@@ -477,7 +477,7 @@ export class Contract {
             const uniqueFilters: { [ name: string ]: Array<string> } = { };
             Object.keys(this.interface.events).forEach((eventSignature) => {
                 const event = this.interface.events[eventSignature];
-                defineReadOnly(this.filters, eventSignature, (...args: Array<any>) => {
+                defineReadOnly<any, any>(this.filters, eventSignature, (...args: Array<any>) => {
                     return {
                         address: this.address,
                         topics: this.interface.encodeFilterTopics(event, args)
@@ -526,7 +526,7 @@ export class Contract {
             const run = runMethod(this, name, { });
 
             if (this[name] == null) {
-                defineReadOnly(this, name, run);
+                defineReadOnly<any, any>(this, name, run);
             }
 
             if (this.functions[name] == null) {

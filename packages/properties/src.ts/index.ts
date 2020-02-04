@@ -4,7 +4,7 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
-export function defineReadOnly(object: any, name: string, value: any): void {
+export function defineReadOnly<T, K extends keyof T>(object: T, name: K, value: T[K]): void {
     Object.defineProperty(object, name, {
         enumerable: true,
         value: value,

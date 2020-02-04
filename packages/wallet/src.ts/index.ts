@@ -67,7 +67,6 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
                 }
             } else {
                 defineReadOnly(this, "_mnemonic", (): Mnemonic => null);
-                defineReadOnly(this, "path", null);
             }
 
 
@@ -82,7 +81,6 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
                 defineReadOnly(this, "_signingKey", () => signingKey);
             }
             defineReadOnly(this, "_mnemonic", (): Mnemonic => null);
-            defineReadOnly(this, "path", null);
             defineReadOnly(this, "address", computeAddress(this.publicKey));
         }
 

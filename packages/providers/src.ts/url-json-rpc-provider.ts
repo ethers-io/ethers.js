@@ -1,3 +1,4 @@
+
 "use strict";
 
 import { Network, Networkish } from "@ethersproject/networks";
@@ -30,7 +31,7 @@ export abstract class UrlJsonRpcProvider extends JsonRpcProvider {
             defineReadOnly(this, "apiKey", apiKey);
         } else if (apiKey != null) {
             Object.keys(apiKey).forEach((key) => {
-                defineReadOnly(this, key, apiKey[key]);
+                defineReadOnly<any, any>(this, key, apiKey[key]);
             });
         }
     }

@@ -298,7 +298,7 @@ function getRunner(provider: Provider, method: string, params: { [ key: string]:
 }
 
 export class FallbackProvider extends BaseProvider {
-    readonly providerConfigs: Array<FallbackProviderConfig>;
+    readonly providerConfigs: ReadonlyArray<FallbackProviderConfig>;
     readonly quorum: number;
 
     // Due to teh highly asyncronous nature of the blockchain, we need

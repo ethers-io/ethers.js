@@ -155,7 +155,7 @@ export abstract class Node {
         ethers.utils.defineReadOnly(this, "warnings", [ ]);
 
         for (const key in options) {
-            ethers.utils.defineReadOnly(this, key, options[key]);
+            ethers.utils.defineReadOnly<any, any>(this, key, options[key]);
         }
     }
 
@@ -702,11 +702,11 @@ class Assembler {
 
     readonly defines: { [ name: string ]: any };
 
-    private _stack: Array<Node>;
-    private _parents: { [ tag: string ]: Node };
-    private _script: Script;
+    _stack: Array<Node>;
+    _parents: { [ tag: string ]: Node };
+    _script: Script;
 
-    private _changed: boolean;
+    _changed: boolean;
 
     constructor(root: Node, options: AssemblerOptions) {
         ethers.utils.defineReadOnly(this, "positionIndependentCode", !!options.positionIndependentCode);
@@ -718,7 +718,7 @@ class Assembler {
 
 
         const nodes: { [ tag: string ]: NodeState } = { };
-        const labels: { [ name: string ]: Node } = { };
+        const labels: { [ name: string ]: LabelledNode } = { };
         const parents: { [ tag: string ]: Node } = { };
 
         // Link labels to their target node
