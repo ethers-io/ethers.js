@@ -100,7 +100,7 @@ const _Opcodes: { [ name: string ]: _Opcode } = {
     byte:           { value: 0x1a, delta: 2, alpha: 1, doc: "v = byte(msbByteIndex, value)" },
     shl:            { value: 0x1b, delta: 2, alpha: 1, doc: "v = shl(shiftBits, value)" },
     shr:            { value: 0x1c, delta: 2, alpha: 1, doc: "v = shr(shiftBits, value)" },
-    sar:            { value: 0x1c, delta: 2, alpha: 1, doc: "v = sar(shiftBits, value)" },
+    sar:            { value: 0x1d, delta: 2, alpha: 1, doc: "v = sar(shiftBits, value)" },
 
     // SHA3
     sha3:           { value: 0x20, delta: 2, alpha: 1, doc: "v = sha3(offset, length)" },
@@ -244,8 +244,16 @@ Object.keys(_Opcodes).forEach((mnemonic) => {
     const info = _Opcodes[mnemonic];
     const opcode = new Opcode(mnemonic.toUpperCase(), info.value, info.delta, info.alpha, info.doc);
 
-    OpcodeMap[opcode.mnemonic.toLowerCase()] = opcode;
-    Opcodes[opcode.value] = opcode;
+    const key = opcode.mnemonic.toLowerCase();
+    const value = opcode.value;
+
+    if (OpcodeMap[key] || Opcodes[value]) {
+        console.log(key, OpcodeMap[key], value, Opcodes[value]);
+        throw new Error("There is a type in the above table.");
+    }
+
+    OpcodeMap[key] = opcode;
+    Opcodes[value] = opcode;
 });
 Object.freeze(Opcodes);
 
