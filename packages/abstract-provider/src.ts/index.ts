@@ -259,7 +259,7 @@ export abstract class Provider implements OnceBlockable {
     }
 
     // @TODO: This *could* be implemented here, but would pull in events...
-    abstract waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt>;
+    abstract waitForTransaction(transactionHash: string, confirmations?: number, timeout?: number): Promise<TransactionReceipt>;
 
     readonly _isProvider: boolean;
 

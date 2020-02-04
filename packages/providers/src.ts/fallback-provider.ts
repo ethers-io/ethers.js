@@ -1,7 +1,7 @@
 "use strict";
 
 import { Network } from "@ethersproject/networks";
-import { BlockWithTransactions, Provider } from "@ethersproject/abstract-provider";
+import { Block, BlockWithTransactions, Provider } from "@ethersproject/abstract-provider";
 import { shuffled } from "@ethersproject/random";
 import { deepCopy, defineReadOnly, shallowCopy } from "@ethersproject/properties";
 import { BigNumber } from "@ethersproject/bignumber";
@@ -56,7 +56,7 @@ function median(values: Array<number>): number {
 
 function serialize(value: any): string {
     if (value === null) {
-        return null;
+        return "null";
     } else if (typeof(value) === "number" || typeof(value) === "boolean") {
         return JSON.stringify(value);
     } else if (typeof(value) === "string") {
@@ -222,6 +222,8 @@ function getProcessFunc(provider: FallbackProvider, method: string, params: { [ 
         case "getTransaction":
         case "getTransactionReceipt":
             normalize = function(tx: any): string {
+                if (tx == null) { return null; }
+
                 tx = shallowCopy(tx);
                 tx.confirmations = -1;
                 return serialize(tx);
@@ -233,6 +235,8 @@ function getProcessFunc(provider: FallbackProvider, method: string, params: { [ 
             // We drop the confirmations from transactions as it is approximate
             if (params.includeTransactions) {
                 normalize = function(block: BlockWithTransactions): string {
+                    if (block == null) { return null; }
+
                     block = shallowCopy(block);
                     block.transactions = block.transactions.map((tx) => {
                         tx = shallowCopy(tx);
@@ -241,6 +245,11 @@ function getProcessFunc(provider: FallbackProvider, method: string, params: { [ 
                     });
                     return serialize(block);
                 };
+            } else {
+                normalize = function(block: Block): string {
+                    if (block == null) { return null; }
+                    return serialize(block);
+                }
             }
             break;
 
@@ -460,7 +469,7 @@ export class FallbackProvider extends BaseProvider {
             const results = configs.filter((c) => (c.done && c.error == null));
             if (results.length >= this.quorum) {
                 const result = processFunc(results);
-                if (result != undefined) { return result; }
+                if (result !== undefined) { return result; }
             }
 
             // All configs have run to completion; we will never get more data
@@ -470,8 +479,9 @@ export class FallbackProvider extends BaseProvider {
         return logger.throwError("failed to meet quorum", Logger.errors.SERVER_ERROR, {
             method: method,
             params: params,
-            results: configs.map((c) => exposeDebugConfig(c)),
+            //results: configs.map((c) => c.result),
             //errors: configs.map((c) => c.error),
+            results: configs.map((c) => exposeDebugConfig(c)),
             provider: this
         });
     }
