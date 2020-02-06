@@ -18,7 +18,7 @@
 ([;][^\n]*\n)                                  // Ignore comments
 (\s+)                                          // Ignore Whitespace
 
-// Identifiers (and opcodes)
+// Opcodes
 ([A-Za-z][A-Za-z0-9]*)                         return "ID"
 
 // Lists
@@ -26,14 +26,18 @@
 ")"                                            return "CLOSE_PAREN"
 ","                                            return "COMMA"
 
-// Labels prefixes
+// Labelled Target Prefixes
 ([@][A-Za-z][A-Za-z0-9]*)                      return "AT_ID"
-([#][A-Za-z][A-Za-z0-9]*)                      return "HASH_ID"
-([$][A-Za-z][A-Za-z0-9]*)                      return "DOLLAR_ID"
+
+// Label References
+([$](_|[A-Za-z][A-Za-z0-9]*))                  return "DOLLAR_ID"
+([#](_|[A-Za-z][A-Za-z0-9]*))                  return "HASH_ID"
 
 // Scope
 "{"                                            return "OPEN_BRACE"
 "}"                                            return "CLOSE_BRACE"
+
+// Label
 ":"                                            return "COLON"
 
 // Data
@@ -44,6 +48,7 @@
 (0x([0-9a-fA-F][0-9a-fA-F])*)                  return "HEX"
 ([1-9][0-9]*|0)                                return "DECIMAL"
 //(0b[01]*)                                      return "BINARY"
+"$$"                                           return "DOLLAR_DOLLAR"
 
 // Special
 <<EOF>>                                        return "EOF"
@@ -93,6 +98,8 @@ opcode
         { $$ = { type: "hex", value: $1, loc: getLoc(yy, @1)  }; }
     | DECIMAL
         { $$ = { type: "decimal", value: $1, loc: getLoc(yy, @1)  }; }
+    | DOLLAR_DOLLAR
+        { $$ = { type: "pop", loc: getLoc(yy, @1)  }; }
     | SCRIPT_EVAL javascript
         { $$ = { type: "eval", script: $2, loc: getLoc(yy, @1, @2)  }; }
     ;
@@ -134,19 +141,24 @@ statement_list
 
 statement
     : opcode
+        { {
+            const statement = $1;
+            statement.loc.statement = true;
+            $$ = statement;
+        } }
     | AT_ID COLON
-        { $$ = { type: "label", name: $1.substring(1), loc: getLoc(yy, @1, @2)  }; }
+        { $$ = { type: "label", name: $1.substring(1), loc: getLoc(yy, @1, @2, true)  }; }
     | AT_ID OPEN_BRACE statement_list CLOSE_BRACE
-        { $$ = { type: "scope", name: $1.substring(1), statements: $3, loc: getLoc(yy, @1, @4) }; }
+        { $$ = { type: "scope", name: $1.substring(1), statements: $3, loc: getLoc(yy, @1, @4, true) }; }
     | AT_ID OPEN_BRACKET hex_list CLOSE_BRACKET
-        { $$ = { type: "data", name: $1.substring(1), data: $3, loc: getLoc(yy, @1, @4) }; }
+        { $$ = { type: "data", name: $1.substring(1), data: $3, loc: getLoc(yy, @1, @4, true) }; }
     | SCRIPT_EXEC javascript
-        { $$ = { type: "exec", script: $2, loc: getLoc(yy, @1, @2) }; }
+        { $$ = { type: "exec", script: $2, loc: getLoc(yy, @1, @2, true) }; }
     ;
 
 %%
 
-function getLoc(yy, start, end) {
+function getLoc(yy, start, end, statement) {
     if (end == null) { end = start; }
 
     let result = null;
@@ -155,7 +167,8 @@ function getLoc(yy, start, end) {
             first_line: start.first_line,
             first_column: start.first_column,
             last_line: end.last_line,
-            last_column: end.last_column
+            last_column: end.last_column,
+            statement: !!statement
         };
     }
 
@@ -163,6 +176,6 @@ function getLoc(yy, start, end) {
         return yy._ethersLocation(result);
     }
 
-    return Object.freeze(result);
+    return result;
 }
 

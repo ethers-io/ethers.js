@@ -131,8 +131,10 @@ let nextTag = 1;
 
 export type Location = {
     offset: number;
+    line: number;
     length: number;
     source: string;
+    statement: boolean;
 };
 
 export type AssembleVisitFunc = (node: Node, bytecode: string) => void;
@@ -143,16 +145,13 @@ export abstract class Node {
     readonly tag: string;
     readonly location: Location;
 
-    readonly warnings: Array<string>;
-
     constructor(guard: any, location: Location, options: { [ key: string ]: any }) {
         if (guard !== Guard) { throw new Error("cannot instantiate class"); }
         logger.checkAbstract(new.target, Node);
 
-        ethers.utils.defineReadOnly(this, "location", location);
+        ethers.utils.defineReadOnly(this, "location", Object.freeze(location));
 
         ethers.utils.defineReadOnly(this, "tag", `node-${ nextTag++ }-${ this.constructor.name }`);
-        ethers.utils.defineReadOnly(this, "warnings", [ ]);
 
         for (const key in options) {
             ethers.utils.defineReadOnly<any, any>(this, key, options[key]);
@@ -173,6 +172,9 @@ export abstract class Node {
 
     visit(visit: VisitFunc): void {
         visit(this);
+        this.children().forEach((child) => {
+            child.visit(visit);
+        });
     }
 
     static from(options: any): Node {
@@ -186,6 +188,7 @@ export abstract class Node {
             length: LinkNode,
             offset: LinkNode,
             opcode: OpcodeNode,
+            pop: PopNode,
             scope: ScopeNode,
         };
 
@@ -195,14 +198,6 @@ export abstract class Node {
     }
 }
 
-/*
-export abstract class CodeNode extends Node {
-    constructor(guard: any, location: Location, options: { [ key: string ]: any }) {
-        logger.checkAbstract(new.target, CodeNode);
-        super(guard, location, options);
-    }
-}
-*/
 export abstract class ValueNode extends Node {
     constructor(guard: any, location: Location, options: { [ key: string ]: any }) {
         logger.checkAbstract(new.target, ValueNode);
@@ -253,6 +248,12 @@ export class LiteralNode extends ValueNode {
     }
 }
 
+export class PopNode extends ValueNode {
+    static from(options: any): PopNode {
+        return new PopNode(Guard, options.loc, { });
+    }
+}
+
 export class LinkNode extends ValueNode {
     readonly type: string;
     readonly label: string;
@@ -275,10 +276,8 @@ export class LinkNode extends ValueNode {
         } else {
             const result = (<DataSource>(assembler.getLinkValue(target, this)));
             if (this.type === "offset") {
-                //value = assembler.getOffset(this.label);
                 value = result.offset;
             } else if (this.type === "length") {
-                //value = assembler.getLength(this.label);
                 value = result.length;
             }
         }
@@ -302,11 +301,10 @@ export class OpcodeNode extends ValueNode {
     readonly opcode: Opcode;
     readonly operands: Array<ValueNode>;
 
-    constructor(guard: any, location: Location, opcode: Opcode, operands: Array<ValueNode>) {
-        super(guard, location, { opcode, operands });
-        if (opcode.isPush()) {
-            this.warnings.push("the PUSH opcode modifies program flow - use literals instead");
-        }
+    readonly instructional: boolean;
+
+    constructor(guard: any, location: Location, opcode: Opcode, operands: Array<ValueNode>, instructional: boolean) {
+        super(guard, location, { instructional, opcode, operands });
     }
 
     async assemble(assembler: Assembler, visit: AssembleVisitFunc): Promise<void> {
@@ -339,23 +337,14 @@ export class OpcodeNode extends ValueNode {
         const opcode = Opcode.from(options.mnemonic);
         if (!opcode) { throw new Error("unknown opcode: " + options.mnemonic); }
 
-        // Using the function syntax will check the operand count
-        if (!options.bare) {
-            if (opcode.mnemonic === "POP" && options.operands.length === 0) {
-                // This is ok... Pop has a delta of 0, but without operands
-            } else if (options.operands.length !== opcode.delta) {
-                throw new Error(`opcode ${ opcode.mnemonic } expects ${ opcode.delta } operands`);
-            }
-        }
-
         const operands = Object.freeze(options.operands.map((o: any) => {
             const operand = Node.from(o);
             if (!(operand instanceof ValueNode)) {
-                throw new Error("invalid operand");
+                throw new Error("bad grammar?!");
             }
             return operand;
         }));
-        return new OpcodeNode(Guard, options.loc, opcode, operands);
+        return new OpcodeNode(Guard, options.loc, opcode, operands, !!options.bare);
     }
 }
 
@@ -401,7 +390,7 @@ export class DataNode extends LabelledNode {
         // the data, which could eclipse valid operations (since the
         // VM won't execute or jump within PUSH operations)
 
-        const bytecode = ethers.utils.arrayify(assembler.getPendingBytecode(this));
+        const bytecode = ethers.utils.arrayify(assembler.getBytecode(this));
 
         // Replay the data as bytecode, skipping PUSH data
         let i = 0;
@@ -414,9 +403,11 @@ export class DataNode extends LabelledNode {
 
         // The amount we overshot the data by is how much padding we need
         const padding = new Uint8Array(i - bytecode.length);
+
         // What makes more sense? INVALID or 0 (i.e. STOP)?
         //padding.fill(Opcode.from("INVALID").value);
         padding.fill(0);
+
         visit(this, ethers.utils.hexlify(padding))
 
         assembler.end(this);
@@ -424,13 +415,6 @@ export class DataNode extends LabelledNode {
 
     children(): Array<Node> {
         return this.data;
-    }
-
-    visit(visit: VisitFunc): void {
-        visit(this);
-        for (let i = 0; i < this.data.length; i++) {
-            this.data[i].visit(visit);
-        }
     }
 
     static from(options: any): DataNode {
@@ -507,81 +491,10 @@ export class ScopeNode extends LabelledNode {
         return this.statements;
     }
 
-    visit(visit: VisitFunc): void {
-        visit(this);
-        for (let i = 0; i < this.statements.length; i++) {
-            this.statements[i].visit(visit);
-        }
-    }
-
     static from(options: any): ScopeNode {
         if (options.type !== "scope") { throw new Error("expected scope type"); }
         return new ScopeNode(Guard, options.loc, options.name, Object.freeze(options.statements.map((s: any) => Node.from(s))));
     }
-}
-
-type _Location = {
-    first_line: number;
-    last_line: number;
-    first_column: number;
-    last_column: number;
-}
-
-export function parse(code: string): Node {
-
-    // Since jison allows \n, \r or \r\n line endings, we need some
-    // twekaing to get the correct position
-    const lines: Array<{ line: string, offset: number }> = [ ];
-    let offset = 0;
-    code.split(/(\r\n?|\n)/g).forEach((clump, index) => {
-        if (index % 2) {
-            lines[lines.length - 1].line += clump;
-        } else {
-            lines.push({ line: clump, offset: offset });
-        }
-        offset += clump.length;
-    });
-
-    // Add a mock-EOF to the end of the file so we don't out-of-bounds
-    // on the last character
-    if (lines.length) {
-        lines[lines.length - 1].line += "\n";
-    }
-
-    // Givens a line (1 offset) and column (0 offset) return the byte offset
-    const getOffset = function(line: number, column: number): number {
-        const info = lines[line - 1];
-        if (!info || column >= info.line.length) { throw new Error("out of range"); }
-        return info.offset + column;
-    };
-
-    // We use this in the _parser to convert locations to source
-    _parser.yy._ethersLocation = function(loc?: _Location): Location {
-
-        // The _ scope should call with null to get the full source
-        if (loc == null) {
-            return Object.freeze({
-                offset: 0,
-                length: code.length,
-                source: code
-            });
-        }
-
-        const offset = getOffset(loc.first_line, loc.first_column);
-        const end = getOffset(loc.last_line, loc.last_column);
-        return Object.freeze({
-            offset: offset,
-            length: (end - offset),
-            source: code.substring(offset, end)
-        });
-    };
-
-    const result = Node.from(_parse(code));
-
-    // Nuke the source code lookup callback
-    _parser.yy._ethersLocation = null;
-
-    return result;
 }
 
 export type Operation = {
@@ -670,16 +583,16 @@ export function formatBytecode(bytecode: Array<Operation>): string {
 }
 
 
-interface DataSource extends Array<number> {
-    readonly offset: number;
+export interface DataSource extends Array<number> {
+    offset: number;
+    ast: Node;
+    source: string;
 }
 
-type NodeState = {
+export type NodeState = {
     node: Node;
     offset: number;
     bytecode: string;
-    pending: string;
-    object?: number | DataSource;
 };
 
 export type AssemblerOptions = {
@@ -687,35 +600,23 @@ export type AssemblerOptions = {
     retry?: number;
     positionIndependentCode?: boolean;
     defines?: { [ name: string ]: any };
+    target?: string;
 };
 
-// @TODO: Rename to Assembler?
+export type ParserOptions = {
+    ignoreWarnings?: boolean;
+}
+
 class Assembler {
     readonly root: Node;
 
     readonly nodes: { [ tag: string ]: NodeState };
     readonly labels: { [ name: string ]: LabelledNode };
 
-    readonly filename: string;
-    readonly positionIndependentCode: boolean;
-    readonly retry: number;
-
-    readonly defines: { [ name: string ]: any };
-
-    _stack: Array<Node>;
     _parents: { [ tag: string ]: Node };
-    _script: Script;
 
-    _changed: boolean;
-
-    constructor(root: Node, options: AssemblerOptions) {
-        ethers.utils.defineReadOnly(this, "positionIndependentCode", !!options.positionIndependentCode);
-        ethers.utils.defineReadOnly(this, "retry", ((options.retry != null) ? options.retry: 512));
-        ethers.utils.defineReadOnly(this, "filename", resolve(options.filename || "./contract.asm"));
-        ethers.utils.defineReadOnly(this, "defines", Object.freeze(options.defines || { }));
-
+    constructor(root: Node) {
         ethers.utils.defineReadOnly(this, "root", root);
-
 
         const nodes: { [ tag: string ]: NodeState } = { };
         const labels: { [ name: string ]: LabelledNode } = { };
@@ -726,8 +627,7 @@ class Assembler {
             nodes[node.tag] = {
                 node: node,
                 offset: 0x0,
-                bytecode: "0x",
-                pending: "0x"
+                bytecode: "0x"
             };
 
             if (node instanceof LabelledNode) {
@@ -768,63 +668,16 @@ class Assembler {
         ethers.utils.defineReadOnly(this, "nodes", Object.freeze(nodes));
 
         ethers.utils.defineReadOnly(this, "_parents", Object.freeze(parents));
-
-        ethers.utils.defineReadOnly(this, "_stack", [ ]);
-
-        this.reset();
-    }
-
-    get changed(): boolean {
-        return this._changed;
     }
 
     // Link operations
-    getTarget(name: string): LabelledNode {
-        return this.labels[name];
+    getTarget(label: string): LabelledNode {
+        return this.labels[label];
     }
 
-    // Reset the assmebler for another run with updated values
-    reset(): void {
-        this._changed = false;
-        for (const tag in this.nodes) {
-            delete this.nodes[tag].object;
-        }
-        this._script = new Script(this.filename, (name: string, context: any) => {
-            return this.get(name, context);
-        });
-    }
-
+    // Evaluate script in the context of a {{! }} or {{= }}
     evaluate(script: string, source: Node): Promise<any> {
-        return this._script.evaluate(script, source);
-    }
-
-    start(node: Node): void {
-        this._stack.push(node);
-        const info = this.nodes[node.tag];
-        info.pending = "0x";
-    }
-
-    end(node: Node): void {
-        if (this._stack.pop() !== node) {
-            throw new Error("missing push/pop pair");
-        }
-
-        const info = this.nodes[node.tag];
-        if (info.pending !== info.bytecode) {
-            this._didChange();
-        }
-        info.bytecode = info.pending;
-    }
-
-    getPendingBytecode(node: Node): string {
-        return this.nodes[node.tag].pending;
-    }
-
-    _appendBytecode(bytecode: string) {
-        this._stack.forEach((node) => {
-            const info = this.nodes[node.tag];
-            info.pending = hexConcat([ info.pending, bytecode ]);
-        });
+         return Promise.resolve(new Uint8Array(0));
     }
 
     getAncestor<T = Node>(node: Node, cls: { new(...args: any[]): T }): T {
@@ -834,6 +687,14 @@ class Assembler {
             node = this._parents[node.tag];
         }
         return null;
+    }
+
+    getBytecode(node: Node): string {
+        return this.nodes[node.tag].bytecode;
+    }
+
+    setBytecode(node: Node, bytecode: string): void {
+        this.nodes[node.tag].bytecode = bytecode;
     }
 
     getLinkValue(target: LabelledNode, source: Node): number | DataSource {
@@ -849,15 +710,7 @@ class Assembler {
             }
 
             // Return the offset relative to its scope
-            let offset = this.nodes[target.tag].offset - this.nodes[targetScope.tag].offset;
-
-            // Offsets are wrong; but we should finish this run and then try again
-            if (offset < 0) {
-                offset = 0;
-                this._didChange();
-            }
-
-            return offset;
+            return this.nodes[target.tag].offset - this.nodes[targetScope.tag].offset;
         }
 
         const info = this.nodes[target.tag];
@@ -891,17 +744,225 @@ class Assembler {
         // been marked as invalid, in which case accessing it will fail
         if (safeOffset) {
             bytes.offset = info.offset - this.nodes[sourceScope.tag].offset;
-
-            // Offsets are wqrong; but we should finish this run and then try again
-            if (bytes.offset < 0) {
-                bytes.offset = 0;
-                this._didChange();
-            }
         }
 
-        return Object.freeze(bytes);
+        return bytes;
     }
 
+    start(node: Node): void { }
+    end(node: Node): void { }
+}
+
+export enum SemanticErrorSeverity {
+    error = "error",
+    warning = "warning"
+};
+
+export type SemanticError = {
+    readonly message: string;
+    readonly severity: SemanticErrorSeverity;
+    readonly node: Node;
+};
+
+// This Assembler is designed to only check for errors and warnings
+// Warnings
+//  - Bare PUSH opcodes
+//  - Instructional opcode that has parameters
+// Errors
+//  - Using a $$ outside of RPN
+//  - Using a $$ when it is not adjacent to the stack
+//  - The operand count does not match the opcode
+//  - An opcode is used as an operand but does not return a value
+class SemanticChecker extends Assembler {
+    check(): Array<SemanticError> {
+        const errors: Array<SemanticError> = [ ];
+
+        this.root.visit((node) => {
+            if (node instanceof OpcodeNode) {
+                const opcode = node.opcode;
+                if (node.instructional) {
+                    if (opcode.delta) {
+                        errors.push({
+                            message: `${ opcode.mnemonic } used as instructional`,
+                            severity: SemanticErrorSeverity.warning,
+                            node: node
+                        });
+                    }
+                } else {
+                    if (opcode.mnemonic === "POP") {
+                        if (node.operands.length !== 0) {
+                            errors.push({
+                                message: "POP expects 0 operands",
+                                severity: SemanticErrorSeverity.error,
+                                node: node
+                            });
+                        }
+                    } else if (node.operands.length !== opcode.delta) {
+                        errors.push({
+                            message: `${ opcode.mnemonic } expects ${ opcode.delta } operands`,
+                            severity: SemanticErrorSeverity.error,
+                            node: node
+                        });
+                    }
+                }
+
+                if (opcode.isPush()) {
+                    // A stray PUSH operation will gobble up the following code
+                    // bytes which is bad. But this may be a disassembled program
+                    // and that PUSH may actually be just some data (which is safe)
+                    errors.push({
+                        message: "PUSH opcode modifies program flow - use literals instead",
+                        severity: SemanticErrorSeverity.warning,
+                        node: node
+                    });
+
+                } else if (!node.location.statement && opcode.alpha !== 1) {
+                    // If an opcode does not push anything on the stack, it
+                    // cannot be used as an operand
+                    errors.push({
+                        message: `${ node.opcode.mnemonic } cannot be an operand`,
+                        severity: SemanticErrorSeverity.error,
+                        node: node
+                    });
+                }
+            }
+
+            if (node.location.statement) {
+                if (node instanceof PopNode) {
+                    // $$ by istelf is useless and is intended to be an operand
+                    errors.push({
+                        message: `$$ must be an operand`,
+                        severity: SemanticErrorSeverity.error,
+                        node: node
+                    });
+
+                } else {
+                    const scope = this.getAncestor(node, ScopeNode);
+
+                    // Make sure any $$ is stack adjacent (within this scope)
+                    const ordered: Array<Node> = [ ];
+                    node.visit((node) => {
+                        if (scope !== this.getAncestor(node, ScopeNode)) { return; }
+                        ordered.push(node);
+                    });
+
+                    // Allow any number of stack adjacent $$
+                    while (ordered.length && ordered[0] instanceof PopNode) {
+                        ordered.shift();
+                    }
+
+                    // If there are still any buried, we have a problem
+                    const pops = ordered.filter((n) => (n instanceof PopNode));
+                    if (pops.length) {
+                        errors.push({
+                            message: `$$ must be stack adjacent`,
+                            severity: SemanticErrorSeverity.error,
+                            node: node
+                        });
+                    }
+                }
+            }
+        });
+
+        return errors;
+    }
+}
+
+class CodeGenerationAssembler extends Assembler {
+    readonly filename: string;
+    readonly positionIndependentCode: boolean;
+    readonly retry: number;
+
+    readonly defines: { [ name: string ]: any };
+
+    readonly _stack: Array<Node>;
+
+    _oldBytecode: { [ tag: string ]: string };
+    _objectCache: { [ tag: string ]: any };
+
+    _script: Script;
+
+    _changed: boolean;
+
+    constructor(root: Node, options: AssemblerOptions) {
+        super(root);
+
+        ethers.utils.defineReadOnly(this, "positionIndependentCode", !!options.positionIndependentCode);
+        ethers.utils.defineReadOnly(this, "retry", ((options.retry != null) ? options.retry: 512));
+        ethers.utils.defineReadOnly(this, "filename", resolve(options.filename || "./contract.asm"));
+        ethers.utils.defineReadOnly(this, "defines", Object.freeze(options.defines || { }));
+
+        ethers.utils.defineReadOnly(this, "_stack", [ ]);
+
+        this.reset();
+    }
+
+    _didChange(): void {
+        this._changed = true;
+    }
+
+    get changed(): boolean {
+        return this._changed;
+    }
+
+    // Reset the assmebler for another run with updated values
+    reset(): void {
+        this._changed = false;
+        this._oldBytecode = { };
+        this._objectCache = { };
+
+        this._script = new Script(this.filename, (name: string, context: any) => {
+            return this.get(name, context);
+        });
+    }
+
+    evaluate(script: string, source: Node): Promise<any> {
+        return this._script.evaluate(script, source);
+    }
+
+    getLinkValue(target: LabelledNode, source: Node): number | DataSource {
+        // Since we are iteratively generating code, offsets and lengths
+        // may not be stable at any given point in time, so if an offset
+        // is negative the code is obviously wrong, however we set it to
+        // 0 so we can proceed with generation to fill in as many blanks
+        // as possible; then we will try assembling again
+        const result = super.getLinkValue(target, source);
+
+        if (typeof(result) === "number") {
+            if (result < 0) {
+                this._didChange();
+                return 0;
+            }
+            return result;
+        }
+
+        if (result.offset < 0) {
+            result.offset = 0;
+            this._didChange();
+        }
+        return result;
+    }
+
+    start(node: Node): void {
+        this._stack.push(node);
+        this._oldBytecode[node.tag] = this.getBytecode(node);
+        this.setBytecode(node, "0x");
+    }
+
+    end(node: Node): void {
+        if (this._stack.pop() !== node) {
+            throw new Error("missing push/pop pair");
+        }
+
+        if (this._oldBytecode[node.tag] !== this.getBytecode(node)) {
+            this._didChange();
+        }
+    }
+
+    // This is used by evaluate to access properties in JavaScript
+    // - "defines" allow meta-programming values to be used
+    // - jump destinations are available as numbers
+    // - bytecode and data are available as an immuatble DataSource
     get(name: string, source: Node): any {
         if (name === "defines") {
             return this.defines;
@@ -910,20 +971,20 @@ class Assembler {
         const node = this.labels[name];
         if (!node) { return undefined; }
 
-        const info = this.nodes[node.tag];
-        if (info.object == null) {
-            info.object = this.getLinkValue(node, source);
+        // We cache objects when they are generated so all nodes
+        // receive consistent data; if there is a change we will
+        // run the entire assembly process again with the updated
+        // values
+        if (this._objectCache[node.tag] == null) {
+            this._objectCache[node.tag] = Object.freeze(this.getLinkValue(node, source));
         }
-        return info.object;
+
+        return this._objectCache[node.tag];
     }
 
-    _didChange(): void {
-        this._changed = true;
-    }
-
-    async _assemble(): Promise<string> {
+    async _assemble(): Promise<void> {
         let offset = 0;
-        const bytecodes: Array<string> = [ ];
+
         await this.root.assemble(this, (node, bytecode) => {
             const state = this.nodes[node.tag];
 
@@ -933,46 +994,45 @@ class Assembler {
                 this._didChange();
             }
 
-            this._appendBytecode(bytecode);
-
-            bytecodes.push(bytecode);
-
-            // The bytecode has changed; we will need to try again
-            //if (state.bytecode !== bytecode) {
-            //    state.bytecode = bytecode;
-            //    this._didChange();
-            //}
+            this._stack.forEach((node) => {
+                this.setBytecode(node, hexConcat([ this.getBytecode(node), bytecode ]));
+            });
 
             offset += ethers.utils.hexDataLength(bytecode);
         });
-        return hexConcat(bytecodes);
     }
 
-    async assemble(): Promise<string> {
+    async assemble(label?: string): Promise<string> {
+        if (label == null) { label = "_"; }
+        const target = this.getTarget(label);
+
+        if (!target) {
+            logger.throwArgumentError(`unknown labelled target: ${ label }`, "label", label);
+        } else if (!(target instanceof ScopeNode || target instanceof DataNode)) {
+            logger.throwArgumentError(`cannot assemble a bodyless label: ${ label }`, "label", label);
+        }
 
         // Continue re-evaluating the bytecode until a stable set of
         // offsets, length and values are reached.
-        let bytecode = await this._assemble();
+        await this._assemble();
         for (let i = 0; i < this.retry; i++) {
 
             // Regenerate the code with the updated assembler values
             this.reset();
-            const adjusted = await this._assemble();
+            await this._assemble();
 
             // Generated bytecode is stable!! :)
             if (!this.changed) {
-                console.log(`Assembled in ${ i } attempts`);
-                return bytecode;
+
+                // This should not happen; something is wrong with the grammar
+                // or missing enter/exit call in assemble
+                if (this._stack.length !== 0) {
+                    throw new Error("Bad AST! Bad grammar?!");
+                }
+
+                //console.log(`Assembled in ${ i } attempts`);
+                return this.getBytecode(target);;
             }
-
-            // Try again...
-            bytecode = adjusted;
-        }
-
-        // This should not happen; something is wrong with the grammar
-        // or missing enter/exit call in assemble
-        if (this._stack.length !== 0) {
-            throw new Error("bad AST");
         }
 
         return logger.throwError(
@@ -984,7 +1044,86 @@ class Assembler {
 }
 
 
+type _Location = {
+    first_line: number;
+    last_line: number;
+    first_column: number;
+    last_column: number;
+    statement: boolean;
+}
+
+export function parse(code: string, options?: ParserOptions): Node {
+    if (options == null) { options = { }; }
+
+    // Since jison allows \n, \r or \r\n line endings, we need some
+    // twekaing to get the correct position
+    const lines: Array<{ line: string, offset: number }> = [ ];
+    let offset = 0;
+    code.split(/(\r\n?|\n)/g).forEach((clump, index) => {
+        if (index % 2) {
+            lines[lines.length - 1].line += clump;
+        } else {
+            lines.push({ line: clump, offset: offset });
+        }
+        offset += clump.length;
+    });
+
+    // Add a mock-EOF to the end of the file so we don't out-of-bounds
+    // on the last character
+    if (lines.length) {
+        lines[lines.length - 1].line += "\n";
+    }
+
+    // Givens a line (1 offset) and column (0 offset) return the byte offset
+    const getOffset = function(line: number, column: number): number {
+        const info = lines[line - 1];
+        if (!info || column >= info.line.length) { throw new Error("out of range"); }
+        return info.offset + column;
+    };
+
+    // We use this in the _parser to convert locations to source
+    _parser.yy._ethersLocation = function(loc?: _Location): Location {
+
+        // The _ scope should call with null to get the full source
+        if (loc == null) {
+            return {
+                offset: 0,
+                line: 0,
+                length: code.length,
+                source: code,
+                statement: true
+            };
+        }
+
+        const offset = getOffset(loc.first_line, loc.first_column);
+        const end = getOffset(loc.last_line, loc.last_column);
+        return {
+            offset: offset,
+            line: loc.first_line - 1,
+            length: (end - offset),
+            source: code.substring(offset, end),
+            statement: (!!loc.statement)
+        };
+    };
+
+    const result = Node.from(_parse(code));
+
+    // Nuke the source code lookup callback
+    _parser.yy._ethersLocation = null;
+
+    // Semantic Checks
+    const checker = new SemanticChecker(result);
+    const errors = checker.check();
+    if (errors.filter((e) => (e.severity === SemanticErrorSeverity.error)).length || (errors.length && !options.ignoreWarnings)) {
+        const error = new Error("semantic errors during parsing");
+        (<any>error).errors = errors;
+        throw error;
+    }
+
+    return result;
+}
+
 export async function assemble(ast: Node, options?: AssemblerOptions): Promise<string> {
-    const assembler = new Assembler(ast, options || { });
-    return assembler.assemble();
+    const assembler = new CodeGenerationAssembler(ast, options || { });
+    return assembler.assemble(options.target || "_");
 }

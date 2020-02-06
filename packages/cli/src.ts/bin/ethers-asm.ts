@@ -6,7 +6,7 @@ import fs from "fs";
 import _module from "module";
 import { resolve } from "path";
 
-import { assemble, disassemble, formatBytecode, parse } from "@ethersproject/asm";
+import { assemble, disassemble, formatBytecode, parse, SemanticError, SemanticErrorSeverity } from "@ethersproject/asm";
 
 import { ArgParser, CLI, Help, Plugin } from "../cli";
 
@@ -29,7 +29,11 @@ class AssemblePlugin extends Plugin {
 
     filename: string;
     content: string;
+
     disassemble: boolean;
+    ignoreWarnings: boolean;
+    target: string;
+
     defines: { [ key: string ]: string | boolean }
 
     static getHelp(): Help {
@@ -41,13 +45,21 @@ class AssemblePlugin extends Plugin {
     static getOptionHelp(): Array<Help> {
         return [
             {
+                name: "--define KEY=VALUE",
+                help: "provide assembler defines"
+            },
+            {
                 name: "--disassemble",
                 help: "Disassemble input bytecode"
             },
             {
-                name: "--define KEY=VALUE",
-                help: "provide assembler defines"
-            }
+                name: "--ignore-warnings",
+                help: "Ignore warnings"
+            },
+            {
+                name: "--target LABEL",
+                help: "output LABEL bytecode (default: _)"
+            },
         ];
     }
 
@@ -66,6 +78,9 @@ class AssemblePlugin extends Plugin {
 
         // We are disassembling...
         this.disassemble = argParser.consumeFlag("disassemble");
+
+        this.ignoreWarnings = argParser.consumeFlag("ignore-warnings");
+        this.target = argParser.consumeOption("target");
     }
 
     async prepareArgs(args: Array<string>): Promise<void> {
@@ -137,10 +152,29 @@ class AssemblePlugin extends Plugin {
         if (this.disassemble) {
             console.log(formatBytecode(disassemble(this.content)));
         } else {
-            console.log(await assemble(parse(this.content), {
-                defines: this.defines,
-                filename: this.filename,
-            }));
+            try {
+                const ast = parse(this.content, {
+                    ignoreWarnings: !!this.ignoreWarnings
+                });
+                console.log(await assemble(ast, {
+                    defines: this.defines,
+                    filename: this.filename,
+                    target: (this.target || "_")
+                }));
+            } catch (error) {
+                if ((<any>error).errors) {
+                     ((<any>error).errors).forEach((error: SemanticError) => {
+                         if (error.severity === SemanticErrorSeverity.error) {
+                             console.log(`Error: ${ error.message } (line: ${ error.node.location.line + 1 })`);
+                         } else if (error.severity === SemanticErrorSeverity.warning) {
+                             console.log(`Warning: ${ error.message } (line: ${ error.node.location.line + 1 })`);
+                         } else {
+                             console.log(error);
+                             return;
+                         }
+                     });
+                }
+            }
         }
     }
 }
