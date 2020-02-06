@@ -1,10 +1,7 @@
 "use strict";
 
 // @TODO:
-// - PIC
-// - warn on opcode non-function iff parameters
 // - warn return/revert non-empty, comment ; !assert(+1 @extra)
-// - $$
 // - In JS add config (positionIndependent)
 // - When checking name collisions, verify no collision in javascript
 
@@ -267,16 +264,19 @@ export class LinkNode extends ValueNode {
 
         let value: number = null;
 
+        let isOffset = false;
+
         const target = assembler.getTarget(this.label);
         if (target instanceof LabelNode) {
             if (this.type === "offset") {
-                //value = assembler.getOffset(this.label);
                 value = (<number>(assembler.getLinkValue(target, this)));
+                isOffset = true;
             }
         } else {
             const result = (<DataSource>(assembler.getLinkValue(target, this)));
             if (this.type === "offset") {
                 value = result.offset;
+                isOffset = true;
             } else if (this.type === "length") {
                 value = result.length;
             }
@@ -286,7 +286,42 @@ export class LinkNode extends ValueNode {
              throw new Error("labels can only be targetted as offsets");
         }
 
-        visit(this, pushLiteral(value));
+        if (isOffset && assembler.positionIndependentCode) {
+            const here = assembler.getOffset(this, this);
+
+            const opcodes = [ ];
+
+            // Have to jump backwards
+            if (here > value) {
+                // Find a literal which can include its own length in the delta
+                let literal = "0x";
+                for (let w = 1; w <= 5; w++) {
+                    if (w > 4) { throw new Error("jump too large!"); }
+                    literal = pushLiteral(here - value + w);
+                    if (ethers.utils.hexDataLength(literal) <= w) {
+                        literal = ethers.utils.hexZeroPad(literal, w);
+                        break;
+                    }
+                }
+
+                opcodes.push(literal);
+                opcodes.push(Opcode.from("PC"));
+                opcodes.push(Opcode.from("SUB"));
+
+                // This also works, in case the above literal thing doesn't work out...
+                //opcodes.push(Opcode.from("PC"));
+                //opcodes.push(pushLiteral(-delta));
+                //opcodes.push(Opcode.from("SWAP1"));
+                //opcodes.push(Opcode.from("SUB"));
+            } else {
+                opcodes.push(Opcode.from("PC"));
+                opcodes.push(pushLiteral(value - here));
+                opcodes.push(Opcode.from("ADD"));
+            }
+            visit(this, hexConcat(opcodes));
+        } else {
+            visit(this, pushLiteral(value));
+        }
 
         assembler.end(this);
     }
@@ -609,14 +644,16 @@ export type ParserOptions = {
 
 class Assembler {
     readonly root: Node;
+    readonly positionIndependentCode: boolean;
 
     readonly nodes: { [ tag: string ]: NodeState };
     readonly labels: { [ name: string ]: LabelledNode };
 
     _parents: { [ tag: string ]: Node };
 
-    constructor(root: Node) {
+    constructor(root: Node, positionIndependentCode?: boolean) {
         ethers.utils.defineReadOnly(this, "root", root);
+        ethers.utils.defineReadOnly(this, "positionIndependentCode", !!positionIndependentCode);
 
         const nodes: { [ tag: string ]: NodeState } = { };
         const labels: { [ name: string ]: LabelledNode } = { };
@@ -687,6 +724,19 @@ class Assembler {
             node = this._parents[node.tag];
         }
         return null;
+    }
+
+    getOffset(node: Node, source?: Node): number {
+        const offset =  this.nodes[node.tag].offset;
+
+        if (source == null) { return offset }
+
+        const sourceScope: ScopeNode = ((source instanceof ScopeNode) ? source: this.getAncestor<ScopeNode>(source, ScopeNode));
+        return offset - this.nodes[sourceScope.tag].offset;
+    }
+
+    setOffset(node: Node, offset: number): void {
+        this.nodes[node.tag].offset = offset;
     }
 
     getBytecode(node: Node): string {
@@ -870,7 +920,6 @@ class SemanticChecker extends Assembler {
 
 class CodeGenerationAssembler extends Assembler {
     readonly filename: string;
-    readonly positionIndependentCode: boolean;
     readonly retry: number;
 
     readonly defines: { [ name: string ]: any };
@@ -885,9 +934,8 @@ class CodeGenerationAssembler extends Assembler {
     _changed: boolean;
 
     constructor(root: Node, options: AssemblerOptions) {
-        super(root);
+        super(root, !!options.positionIndependentCode);
 
-        ethers.utils.defineReadOnly(this, "positionIndependentCode", !!options.positionIndependentCode);
         ethers.utils.defineReadOnly(this, "retry", ((options.retry != null) ? options.retry: 512));
         ethers.utils.defineReadOnly(this, "filename", resolve(options.filename || "./contract.asm"));
         ethers.utils.defineReadOnly(this, "defines", Object.freeze(options.defines || { }));
@@ -986,16 +1034,18 @@ class CodeGenerationAssembler extends Assembler {
         let offset = 0;
 
         await this.root.assemble(this, (node, bytecode) => {
-            const state = this.nodes[node.tag];
 
             // Things have moved; we will need to try again
-            if (state.offset !== offset) {
-                state.offset = offset;
+            if (this.getOffset(node) !== offset) {
+                this.setOffset(node, offset);
                 this._didChange();
             }
 
             this._stack.forEach((node) => {
-                this.setBytecode(node, hexConcat([ this.getBytecode(node), bytecode ]));
+                this.setBytecode(node, hexConcat([
+                    this.getBytecode(node),
+                    bytecode
+                ]));
             });
 
             offset += ethers.utils.hexDataLength(bytecode);

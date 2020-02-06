@@ -32,6 +32,7 @@ class AssemblePlugin extends Plugin {
 
     disassemble: boolean;
     ignoreWarnings: boolean;
+    pic: boolean;
     target: string;
 
     defines: { [ key: string ]: string | boolean }
@@ -57,6 +58,10 @@ class AssemblePlugin extends Plugin {
                 help: "Ignore warnings"
             },
             {
+                name: "--pic",
+                help: "generate position independent code"
+            },
+            {
                 name: "--target LABEL",
                 help: "output LABEL bytecode (default: _)"
             },
@@ -80,6 +85,7 @@ class AssemblePlugin extends Plugin {
         this.disassemble = argParser.consumeFlag("disassemble");
 
         this.ignoreWarnings = argParser.consumeFlag("ignore-warnings");
+        this.pic = argParser.consumeFlag("pic");
         this.target = argParser.consumeOption("target");
     }
 
@@ -159,6 +165,7 @@ class AssemblePlugin extends Plugin {
                 console.log(await assemble(ast, {
                     defines: this.defines,
                     filename: this.filename,
+                    positionIndependentCode: this.pic,
                     target: (this.target || "_")
                 }));
             } catch (error) {
