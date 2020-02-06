@@ -246,8 +246,19 @@ export class LiteralNode extends ValueNode {
 }
 
 export class PopNode extends ValueNode {
+    readonly index: number;
+
+    constructor(guard: any, location: Location, index: number) {
+        super(guard, location, { index });
+    }
+
+    get placeholder(): string {
+        if (this.index === 0) { return "$$"; }
+        return "$" + String(this.index);
+    }
+
     static from(options: any): PopNode {
-        return new PopNode(Guard, options.loc, { });
+        return new PopNode(Guard, options.loc, options.index);
     }
 }
 
@@ -291,9 +302,10 @@ export class LinkNode extends ValueNode {
 
             const opcodes = [ ];
 
-            // Have to jump backwards
             if (here > value) {
-                // Find a literal which can include its own length in the delta
+                // Jump backwards
+
+                // Find a literal with length the encodes its own length in the delta
                 let literal = "0x";
                 for (let w = 1; w <= 5; w++) {
                     if (w > 4) { throw new Error("jump too large!"); }
@@ -314,6 +326,8 @@ export class LinkNode extends ValueNode {
                 //opcodes.push(Opcode.from("SWAP1"));
                 //opcodes.push(Opcode.from("SUB"));
             } else {
+                // Jump forwards; this is easy to calculate since we can
+                // do PC firat.
                 opcodes.push(Opcode.from("PC"));
                 opcodes.push(pushLiteral(value - here));
                 opcodes.push(Opcode.from("ADD"));
@@ -897,17 +911,44 @@ class SemanticChecker extends Assembler {
                     });
 
                     // Allow any number of stack adjacent $$
+                    let foundZero = null;
+                    let lastIndex = 0;
+
                     while (ordered.length && ordered[0] instanceof PopNode) {
-                        ordered.shift();
+                        const popNode = (<PopNode>(ordered.shift()));
+                        const index = popNode.index;
+                        if (index === 0) {
+                            foundZero = popNode;
+                        } else if (index !== lastIndex + 1) {
+                            errors.push({
+                                message: `out-of-order stack placeholder ${ popNode.placeholder }; expected $$${ lastIndex + 1 }`,
+                                severity: SemanticErrorSeverity.error,
+                                node: popNode
+                            });
+                            while (ordered.length && ordered[0] instanceof PopNode) {
+                                ordered.shift();
+                            }
+                            break;
+                        } else {
+                            lastIndex = index;
+                        }
+                    }
+
+                    if (foundZero && lastIndex > 0) {
+                        errors.push({
+                            message: "cannot mix $$ and $1 stack placeholder",
+                            severity: SemanticErrorSeverity.error,
+                            node: foundZero
+                        });
                     }
 
                     // If there are still any buried, we have a problem
                     const pops = ordered.filter((n) => (n instanceof PopNode));
                     if (pops.length) {
                         errors.push({
-                            message: `$$ must be stack adjacent`,
+                            message: `stack placeholder ${ (<PopNode>(pops[0])).placeholder } must be stack adjacent`,
                             severity: SemanticErrorSeverity.error,
-                            node: node
+                            node: pops[0]
                         });
                     }
                 }

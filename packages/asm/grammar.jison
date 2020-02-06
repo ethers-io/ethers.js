@@ -48,7 +48,10 @@
 (0x([0-9a-fA-F][0-9a-fA-F])*)                  return "HEX"
 ([1-9][0-9]*|0)                                return "DECIMAL"
 //(0b[01]*)                                      return "BINARY"
+
+// Pop Placeholders
 "$$"                                           return "DOLLAR_DOLLAR"
+([$][1-9][0-9]*)                               return "DOLLAR_INDEX"
 
 // Special
 <<EOF>>                                        return "EOF"
@@ -99,7 +102,9 @@ opcode
     | DECIMAL
         { $$ = { type: "decimal", value: $1, loc: getLoc(yy, @1)  }; }
     | DOLLAR_DOLLAR
-        { $$ = { type: "pop", loc: getLoc(yy, @1)  }; }
+        { $$ = { type: "pop", index: 0, loc: getLoc(yy, @1)  }; }
+    | DOLLAR_INDEX
+        { $$ = { type: "pop", index: parseInt(($1).substring(1)), loc: getLoc(yy, @1)  }; }
     | SCRIPT_EVAL javascript
         { $$ = { type: "eval", script: $2, loc: getLoc(yy, @1, @2)  }; }
     ;
@@ -122,7 +127,9 @@ hex
         { {
             const value = parseInt($1);
             if (value >= 256) { throw new Error("decimal data values must be single bytes"); }
-            $$ = { type: "hex", verbatim: true, value: ("0x" + (value).toString(16)), loc: getLoc(yy, @1) };
+            let hex = (value).toString(16);
+            while (hex.length < 2) { hex = "0" + hex; }
+            $$ = { type: "hex", verbatim: true, value: ("0x" + hex), loc: getLoc(yy, @1) };
         } }
     | SCRIPT_EVAL javascript
         { $$ = { type: "eval", verbatim: true, script: $2, loc: getLoc(yy, @1, @2) }; }
