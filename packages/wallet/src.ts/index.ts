@@ -11,7 +11,7 @@ import { defineReadOnly, resolveProperties } from "@ethersproject/properties";
 import { randomBytes } from "@ethersproject/random";
 import { SigningKey } from "@ethersproject/signing-key";
 import { decryptJsonWallet, encryptKeystore, ProgressCallback } from "@ethersproject/json-wallets";
-import { computeAddress, recoverAddress, serialize } from "@ethersproject/transactions";
+import { computeAddress, recoverAddress, serialize, UnsignedTransaction } from "@ethersproject/transactions";
 import { Wordlist } from "@ethersproject/wordlists";
 
 import { Logger } from "@ethersproject/logger";
@@ -112,8 +112,8 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
                 delete tx.from;
             }
 
-            const signature = this._signingKey().signDigest(keccak256(serialize(tx)));
-            return serialize(tx, signature);
+            const signature = this._signingKey().signDigest(keccak256(serialize(<UnsignedTransaction>tx)));
+            return serialize(<UnsignedTransaction>tx, signature);
         });
     }
 

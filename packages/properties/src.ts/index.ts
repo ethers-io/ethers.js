@@ -22,11 +22,19 @@ export function getStatic<T>(ctor: any, key: string): T {
     return null;
 }
 
+export type Similar<T> = {
+    [P in keyof T]: T[P];
+}
+
+export type Resolvable<T> = {
+    [P in keyof T]: T[P] | Promise<T[P]>;
+}
+
 type Result = { key: string, value: any};
-export function resolveProperties(object: any): Promise<any> {
+export function resolveProperties<T>(object: Resolvable<T>): Promise<Similar<T>> {
 
     const promises: Array<Promise<Result>> = Object.keys(object).map((key) => {
-        const value = object[key];
+        const value = (<any>object)[key];
 
         if (!(value instanceof Promise)) {
             return Promise.resolve({ key: key, value: value });
@@ -39,10 +47,10 @@ export function resolveProperties(object: any): Promise<any> {
 
     return Promise.all(promises).then((results) => {
         const result: any = { };
-        return results.reduce((accum, result) => {
+        return (<Similar<T>>(results.reduce((accum, result) => {
             accum[result.key] = result.value;
             return accum;
-        }, result);
+        }, result)));
     });
 }
 
@@ -58,7 +66,7 @@ export function checkProperties(object: any, properties: { [ name: string ]: boo
     });
 }
 
-export function shallowCopy(object: any): any {
+export function shallowCopy<T>(object: T): Similar<T> {
     const result: any = {};
     for (const key in object) { result[key] = object[key]; }
     return result;
@@ -68,7 +76,7 @@ const opaque: { [key: string]: boolean } = { bigint: true, boolean: true, number
 
 // Returns a new copy of object, such that no properties may be replaced.
 // New properties may be added only to objects.
-export function deepCopy(object: any): any {
+function _deepCopy(object: any): any {
 
     // Opaque objects are not mutable, so safe to copy by assignment
     if (object === undefined || object === null || opaque[typeof(object)]) { return object; }
@@ -98,7 +106,11 @@ export function deepCopy(object: any): any {
         return object;
     }
 
-    throw new Error("Cannot deepCopy " + typeof(object));
+    logger.throwArgumentError(`Cannot deepCopy ${ typeof(object) }`, "object", object);
+}
+
+export function deepCopy<T>(object: T): Similar<T> {
+    return _deepCopy(object);
 }
 
 export class Description<T = any> {

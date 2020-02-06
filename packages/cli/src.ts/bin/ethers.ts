@@ -57,7 +57,9 @@ function setupContext(path: string, context: any, plugin: Plugin) {
     context.getIcapAddress = ethers.utils.getIcapAddress;
 
     context.arrayify = ethers.utils.arrayify;
+    context.concat = ethers.utils.concat;
     context.hexlify = ethers.utils.hexlify;
+    context.zeroPad = ethers.utils.zeroPad;
 
     context.joinSignature = ethers.utils.joinSignature;
     context.splitSignature = ethers.utils.splitSignature;

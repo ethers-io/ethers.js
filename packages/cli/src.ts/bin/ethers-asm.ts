@@ -180,6 +180,8 @@ class AssemblePlugin extends Plugin {
                              return;
                          }
                      });
+                } else {
+                    throw error;
                 }
             }
         }

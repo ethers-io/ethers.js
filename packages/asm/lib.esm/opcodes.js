@@ -8,6 +8,13 @@
 // EXTCODEHASH
 //   See: https://eips.ethereum.org/EIPS/eip-1052
 import { ethers } from "ethers";
+export var OpcodeMemoryAccess;
+(function (OpcodeMemoryAccess) {
+    OpcodeMemoryAccess["write"] = "write";
+    OpcodeMemoryAccess["read"] = "read";
+    OpcodeMemoryAccess["full"] = "full";
+})(OpcodeMemoryAccess || (OpcodeMemoryAccess = {}));
+;
 export class Opcode {
     constructor(mnemonic, value, delta, alpha, doc) {
         ethers.utils.defineReadOnly(this, "mnemonic", mnemonic);
@@ -31,12 +38,19 @@ export class Opcode {
         return 0;
     }
     // Returns true if this operation writes to memory contents (or if readOrWrite, reads memory)
-    isMemory(readOrWrite) {
-        throw new Error("@TODO: return true if modifies memory");
+    // Unknown opcodes return null
+    isMemoryAccess(readOrWrite) {
+        switch ((_Opcodes[this.mnemonic.toLowerCase()] || { memory: null }).memory) {
+            case "read": return OpcodeMemoryAccess.read;
+            case "write": return OpcodeMemoryAccess.write;
+            case "full": return OpcodeMemoryAccess.full;
+        }
+        return null;
     }
     // Returns true if this opcode does not affect state
+    // Unknown opcodes return false
     isStatic() {
-        throw new Error("@TODO: return true if certain non-state-changing");
+        return !(_Opcodes[this.mnemonic.toLowerCase()] || { nonStatic: true }).nonStatic;
     }
     static from(valueOrMnemonic) {
         if (typeof (valueOrMnemonic) === "string") {
@@ -75,7 +89,7 @@ const _Opcodes = {
     shr: { value: 0x1c, delta: 2, alpha: 1, doc: "v = shr(shiftBits, value)" },
     sar: { value: 0x1d, delta: 2, alpha: 1, doc: "v = sar(shiftBits, value)" },
     // SHA3
-    sha3: { value: 0x20, delta: 2, alpha: 1, doc: "v = sha3(offset, length)" },
+    sha3: { value: 0x20, delta: 2, alpha: 1, doc: "v = sha3(offset, length)", memory: "read" },
     // Environmental Information
     address: { value: 0x30, delta: 0, alpha: 1, doc: "myAddr = address" },
     balance: { value: 0x31, delta: 1, alpha: 1, doc: "wei = balance(address)" },
@@ -84,14 +98,14 @@ const _Opcodes = {
     callvalue: { value: 0x34, delta: 0, alpha: 1, doc: "msgValue = callvalue" },
     calldataload: { value: 0x35, delta: 1, alpha: 1, doc: "calldataWordValue = calldataload(byteOffet)" },
     calldatasize: { value: 0x36, delta: 0, alpha: 1, doc: "calldataLength = calldatasize" },
-    calldatacopy: { value: 0x37, delta: 3, alpha: 0, doc: "calldatacopy(dstMemoryIndex, dataIndex, length)" },
+    calldatacopy: { value: 0x37, delta: 3, alpha: 0, doc: "calldatacopy(dstMemoryIndex, dataIndex, length)", memory: "write" },
     codesize: { value: 0x38, delta: 0, alpha: 1, doc: "myCodeLength = codesize" },
-    codecopy: { value: 0x39, delta: 3, alpha: 0, doc: "codecopy(dstMemoryIndex, codeIndex, length)" },
+    codecopy: { value: 0x39, delta: 3, alpha: 0, doc: "codecopy(dstMemoryIndex, codeIndex, length)", memory: "write" },
     gasprice: { value: 0x3a, delta: 0, alpha: 1, doc: "txGasPrice = gasprice" },
     extcodesize: { value: 0x3b, delta: 1, alpha: 1, doc: "otherCodeLength = extcodesize(address)" },
-    extcodecopy: { value: 0x3c, delta: 4, alpha: 0, doc: "extcodecopy(address, dstMemoryIndex, extcodeIndex, length)" },
+    extcodecopy: { value: 0x3c, delta: 4, alpha: 0, doc: "extcodecopy(address, dstMemoryIndex, extcodeIndex, length)", memory: "write" },
     returndatasize: { value: 0x3d, delta: 0, alpha: 1, doc: "v = returndatasize" },
-    returndatacopy: { value: 0x3e, delta: 3, alpha: 0, doc: "returndatacopy(dstMemoryOffset, returndataIndex, length)" },
+    returndatacopy: { value: 0x3e, delta: 3, alpha: 0, doc: "returndatacopy(dstMemoryOffset, returndataIndex, length)", memory: "write" },
     extcodehash: { value: 0x3f, delta: 1, alpha: 1, doc: "hash = extcodehash(address)" },
     // Block Information
     blockhash: { value: 0x40, delta: 1, alpha: 1, doc: "hash = blockhash(blockNumber)" },
@@ -102,11 +116,11 @@ const _Opcodes = {
     gaslimit: { value: 0x45, delta: 0, alpha: 1, doc: "gas = gaslimit" },
     // Stack, Memory, Storage and Flow Operations
     pop: { value: 0x50, delta: 1, alpha: 0, doc: "stackTopValue = pop" },
-    mload: { value: 0x51, delta: 1, alpha: 1, doc: "memoryWordValue = mload(memoryByteIndex)" },
-    mstore: { value: 0x52, delta: 2, alpha: 0, doc: "mstore(memoryByteIndex, valueOut)" },
-    mstore8: { value: 0x53, delta: 2, alpha: 0, doc: "mstore8(memoryByteIndex, valueOut [ & 0xff ])" },
+    mload: { value: 0x51, delta: 1, alpha: 1, doc: "memoryWordValue = mload(memoryByteIndex)", memory: "read" },
+    mstore: { value: 0x52, delta: 2, alpha: 0, doc: "mstore(memoryByteIndex, valueOut)", memory: "write" },
+    mstore8: { value: 0x53, delta: 2, alpha: 0, doc: "mstore8(memoryByteIndex, valueOut [ & 0xff ])", memory: "write" },
     sload: { value: 0x54, delta: 1, alpha: 1, doc: "storageWordValue = sload(storageWordIndex)" },
-    sstore: { value: 0x55, delta: 2, alpha: 0, doc: "sstore(storageWordIndex, valueOut)" },
+    sstore: { value: 0x55, delta: 2, alpha: 0, doc: "sstore(storageWordIndex, valueOut)", nonStatic: true },
     jump: { value: 0x56, delta: 1, alpha: 0, doc: "jump(target)" },
     jumpi: { value: 0x57, delta: 2, alpha: 0, doc: "jumpi(target, notZero)" },
     pc: { value: 0x58, delta: 0, alpha: 1, doc: "programCounter = pc" },
@@ -181,22 +195,22 @@ const _Opcodes = {
     swap15: { value: 0x9e, delta: 0, alpha: 0 },
     swap16: { value: 0x9f, delta: 0, alpha: 0 },
     // Loggin Operations
-    log0: { value: 0xa0, delta: 2, alpha: 0 },
-    log1: { value: 0xa1, delta: 3, alpha: 0 },
-    log2: { value: 0xa2, delta: 4, alpha: 0 },
-    log3: { value: 0xa3, delta: 5, alpha: 0 },
-    log4: { value: 0xa4, delta: 6, alpha: 0 },
+    log0: { value: 0xa0, delta: 2, alpha: 0, nonStatic: true, memory: "read" },
+    log1: { value: 0xa1, delta: 3, alpha: 0, nonStatic: true, memory: "read" },
+    log2: { value: 0xa2, delta: 4, alpha: 0, nonStatic: true, memory: "read" },
+    log3: { value: 0xa3, delta: 5, alpha: 0, nonStatic: true, memory: "read" },
+    log4: { value: 0xa4, delta: 6, alpha: 0, nonStatic: true, memory: "read" },
     // System Operations
-    create: { value: 0xf0, delta: 3, alpha: 1, doc: "address = create(value, index, length)" },
-    call: { value: 0xf1, delta: 7, alpha: 1, doc: "v = call(gasLimit, address, value, inputIndex, inputLength, outputIndex, outputLength)" },
-    callcode: { value: 0xf2, delta: 7, alpha: 1, doc: "v = callcode(@TODO)" },
-    "return": { value: 0xf3, delta: 2, alpha: 0, doc: "return(index, length)" },
-    delegatecall: { value: 0xf4, delta: 6, alpha: 1, doc: "v = delegatecall(gasLimit, address, inputIndex, inputLength, outputIndex, outputLength)" },
-    create2: { value: 0xf5, delta: 4, alpha: 1, doc: "address = create2(value, index, length, salt)" },
-    staticcall: { value: 0xfa, delta: 6, alpha: 1, doc: "v = staticcall(gasLimit, address, inputIndex, inputLength, outputIndex, outputLength)" },
-    revert: { value: 0xfd, delta: 2, alpha: 0, doc: "revert(returnDataOffset, returnDataLength)" },
+    create: { value: 0xf0, delta: 3, alpha: 1, doc: "address = create(value, index, length)", nonStatic: true, memory: "read" },
+    call: { value: 0xf1, delta: 7, alpha: 1, doc: "v = call(gasLimit, address, value, inputIndex, inputLength, outputIndex, outputLength)", nonStatic: true, memory: "full" },
+    callcode: { value: 0xf2, delta: 7, alpha: 1, doc: "v = callcode(@TODO)", nonStatic: true, memory: "full" },
+    "return": { value: 0xf3, delta: 2, alpha: 0, doc: "return(index, length)", memory: "read" },
+    delegatecall: { value: 0xf4, delta: 6, alpha: 1, doc: "v = delegatecall(gasLimit, address, inputIndex, inputLength, outputIndex, outputLength)", nonStatic: true, memory: "full" },
+    create2: { value: 0xf5, delta: 4, alpha: 1, doc: "address = create2(value, index, length, salt)", nonStatic: true, memory: "read" },
+    staticcall: { value: 0xfa, delta: 6, alpha: 1, doc: "v = staticcall(gasLimit, address, inputIndex, inputLength, outputIndex, outputLength)", memory: "full" },
+    revert: { value: 0xfd, delta: 2, alpha: 0, doc: "revert(returnDataOffset, returnDataLength)", memory: "read" },
     invalid: { value: 0xfe, delta: 0, alpha: 0, doc: "invalid" },
-    suicide: { value: 0xff, delta: 1, alpha: 0, doc: "suicide(targetAddress)" },
+    suicide: { value: 0xff, delta: 1, alpha: 0, doc: "suicide(targetAddress)", nonStatic: true },
 };
 const OpcodeMap = {};
 const Opcodes = [];

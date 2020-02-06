@@ -64,7 +64,6 @@ var Wallet = /** @class */ (function (_super) {
             }
             else {
                 properties_1.defineReadOnly(_this, "_mnemonic", function () { return null; });
-                properties_1.defineReadOnly(_this, "path", null);
             }
         }
         else {
@@ -79,7 +78,6 @@ var Wallet = /** @class */ (function (_super) {
                 properties_1.defineReadOnly(_this, "_signingKey", function () { return signingKey_2; });
             }
             properties_1.defineReadOnly(_this, "_mnemonic", function () { return null; });
-            properties_1.defineReadOnly(_this, "path", null);
             properties_1.defineReadOnly(_this, "address", transactions_1.computeAddress(_this.publicKey));
         }
         if (provider && !abstract_provider_1.Provider.isProvider(provider)) {

@@ -173,25 +173,9 @@ var Signer = /** @class */ (function () {
                         if (tx.nonce == null) {
                             tx.nonce = this.getTransactionCount("pending");
                         }
-                        /*
-                        // checkTransaction does this...
-                        if (tx.from == null) {
-                            tx.from = this.getAddress();
-                        } else {
-                            tx.from = Promise.all([
-                                this.getAddress(),
-                                this.provider.resolveName(tx.from)
-                            ]).then((results) => {
-                                if (results[0] !== results[1]) {
-                                    logger.throwArgumentError("from address mismatch", "transaction", transaction);
-                                }
-                                return results[0];
-                            });
-                        }
-                        */
                         if (tx.gasLimit == null) {
                             tx.gasLimit = this.estimateGas(tx).catch(function (error) {
-                                logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+                                return logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
                                     tx: tx
                                 });
                             });

@@ -238,15 +238,6 @@ class AccountPlugin extends EnsPlugin {
             }
         });
     }
-    prepareOptions(argParser) {
-        const _super = Object.create(null, {
-            prepareOptions: { get: () => super.prepareOptions }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            yield _super.prepareOptions.call(this, argParser);
-            ethers.utils.defineReadOnly(this, "_wait", argParser.consumeFlag("wait"));
-        });
-    }
     prepareArgs(args) {
         const _super = Object.create(null, {
             prepareArgs: { get: () => super.prepareArgs }

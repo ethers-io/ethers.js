@@ -86,13 +86,25 @@ var AssemblePlugin = /** @class */ (function (_super) {
     AssemblePlugin.getOptionHelp = function () {
         return [
             {
+                name: "--define KEY=VALUE",
+                help: "provide assembler defines"
+            },
+            {
                 name: "--disassemble",
                 help: "Disassemble input bytecode"
             },
             {
-                name: "--define KEY=VALUE",
-                help: "provide assembler defines"
-            }
+                name: "--ignore-warnings",
+                help: "Ignore warnings"
+            },
+            {
+                name: "--pic",
+                help: "generate position independent code"
+            },
+            {
+                name: "--target LABEL",
+                help: "output LABEL bytecode (default: _)"
+            },
         ];
     };
     AssemblePlugin.prototype.prepareOptions = function (argParser) {
@@ -114,6 +126,9 @@ var AssemblePlugin = /** @class */ (function (_super) {
                         });
                         // We are disassembling...
                         this.disassemble = argParser.consumeFlag("disassemble");
+                        this.ignoreWarnings = argParser.consumeFlag("ignore-warnings");
+                        this.pic = argParser.consumeFlag("pic");
+                        this.target = argParser.consumeOption("target");
                         return [2 /*return*/];
                 }
             });
@@ -181,23 +196,49 @@ var AssemblePlugin = /** @class */ (function (_super) {
     };
     AssemblePlugin.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, _b;
+            var ast, _a, _b, error_1;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         if (!this.disassemble) return [3 /*break*/, 1];
                         console.log(asm_1.formatBytecode(asm_1.disassemble(this.content)));
-                        return [3 /*break*/, 3];
+                        return [3 /*break*/, 4];
                     case 1:
+                        _c.trys.push([1, 3, , 4]);
+                        ast = asm_1.parse(this.content, {
+                            ignoreWarnings: !!this.ignoreWarnings
+                        });
                         _b = (_a = console).log;
-                        return [4 /*yield*/, asm_1.assemble(asm_1.parse(this.content), {
+                        return [4 /*yield*/, asm_1.assemble(ast, {
                                 defines: this.defines,
                                 filename: this.filename,
+                                positionIndependentCode: this.pic,
+                                target: (this.target || "_")
                             })];
                     case 2:
                         _b.apply(_a, [_c.sent()]);
-                        _c.label = 3;
-                    case 3: return [2 /*return*/];
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_1 = _c.sent();
+                        if (error_1.errors) {
+                            (error_1.errors).forEach(function (error) {
+                                if (error.severity === asm_1.SemanticErrorSeverity.error) {
+                                    console.log("Error: " + error.message + " (line: " + (error.node.location.line + 1) + ")");
+                                }
+                                else if (error.severity === asm_1.SemanticErrorSeverity.warning) {
+                                    console.log("Warning: " + error.message + " (line: " + (error.node.location.line + 1) + ")");
+                                }
+                                else {
+                                    console.log(error);
+                                    return;
+                                }
+                            });
+                        }
+                        else {
+                            throw error_1;
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         });

@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import fs from "fs";
 import { resolve } from "path";
-import { assemble, disassemble, formatBytecode, parse } from "@ethersproject/asm";
+import { assemble, disassemble, formatBytecode, parse, SemanticErrorSeverity } from "@ethersproject/asm";
 import { CLI, Plugin } from "../cli";
 function repeat(text, length) {
     if (text.length === 0) {
@@ -38,13 +38,25 @@ class AssemblePlugin extends Plugin {
     static getOptionHelp() {
         return [
             {
+                name: "--define KEY=VALUE",
+                help: "provide assembler defines"
+            },
+            {
                 name: "--disassemble",
                 help: "Disassemble input bytecode"
             },
             {
-                name: "--define KEY=VALUE",
-                help: "provide assembler defines"
-            }
+                name: "--ignore-warnings",
+                help: "Ignore warnings"
+            },
+            {
+                name: "--pic",
+                help: "generate position independent code"
+            },
+            {
+                name: "--target LABEL",
+                help: "output LABEL bytecode (default: _)"
+            },
         ];
     }
     prepareOptions(argParser) {
@@ -64,6 +76,9 @@ class AssemblePlugin extends Plugin {
             });
             // We are disassembling...
             this.disassemble = argParser.consumeFlag("disassemble");
+            this.ignoreWarnings = argParser.consumeFlag("ignore-warnings");
+            this.pic = argParser.consumeFlag("pic");
+            this.target = argParser.consumeOption("target");
         });
     }
     prepareArgs(args) {
@@ -126,10 +141,36 @@ class AssemblePlugin extends Plugin {
                 console.log(formatBytecode(disassemble(this.content)));
             }
             else {
-                console.log(yield assemble(parse(this.content), {
-                    defines: this.defines,
-                    filename: this.filename,
-                }));
+                try {
+                    const ast = parse(this.content, {
+                        ignoreWarnings: !!this.ignoreWarnings
+                    });
+                    console.log(yield assemble(ast, {
+                        defines: this.defines,
+                        filename: this.filename,
+                        positionIndependentCode: this.pic,
+                        target: (this.target || "_")
+                    }));
+                }
+                catch (error) {
+                    if (error.errors) {
+                        (error.errors).forEach((error) => {
+                            if (error.severity === SemanticErrorSeverity.error) {
+                                console.log(`Error: ${error.message} (line: ${error.node.location.line + 1})`);
+                            }
+                            else if (error.severity === SemanticErrorSeverity.warning) {
+                                console.log(`Warning: ${error.message} (line: ${error.node.location.line + 1})`);
+                            }
+                            else {
+                                console.log(error);
+                                return;
+                            }
+                        });
+                    }
+                    else {
+                        throw error;
+                    }
+                }
             }
         });
     }

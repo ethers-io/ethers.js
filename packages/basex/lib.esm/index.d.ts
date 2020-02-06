@@ -41,8 +41,10 @@ import { BytesLike } from "@ethersproject/bytes";
 export declare class BaseX {
     readonly alphabet: string;
     readonly base: number;
-    private _alphabetMap;
-    private _leader;
+    _alphabetMap: {
+        [character: string]: number;
+    };
+    _leader: string;
     constructor(alphabet: string);
     encode(value: BytesLike): string;
     decode(value: string): Uint8Array;

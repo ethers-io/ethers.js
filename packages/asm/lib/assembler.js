@@ -53,10 +53,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // @TODO:
-// - PIC
-// - warn on opcode non-function iff parameters
 // - warn return/revert non-empty, comment ; !assert(+1 @extra)
-// - $$
 // - In JS add config (positionIndependent)
 // - When checking name collisions, verify no collision in javascript
 var path_1 = require("path");
@@ -174,9 +171,8 @@ var Node = /** @class */ (function () {
             throw new Error("cannot instantiate class");
         }
         logger.checkAbstract(_newTarget, Node);
-        ethers_1.ethers.utils.defineReadOnly(this, "location", location);
+        ethers_1.ethers.utils.defineReadOnly(this, "location", Object.freeze(location));
         ethers_1.ethers.utils.defineReadOnly(this, "tag", "node-" + nextTag++ + "-" + this.constructor.name);
-        ethers_1.ethers.utils.defineReadOnly(this, "warnings", []);
         for (var key in options) {
             ethers_1.ethers.utils.defineReadOnly(this, key, options[key]);
         }
@@ -198,6 +194,9 @@ var Node = /** @class */ (function () {
     };
     Node.prototype.visit = function (visit) {
         visit(this);
+        this.children().forEach(function (child) {
+            child.visit(visit);
+        });
     };
     Node.from = function (options) {
         var Factories = {
@@ -210,6 +209,7 @@ var Node = /** @class */ (function () {
             length: LinkNode,
             offset: LinkNode,
             opcode: OpcodeNode,
+            pop: PopNode,
             scope: ScopeNode,
         };
         var factory = Factories[options.type];
@@ -221,14 +221,6 @@ var Node = /** @class */ (function () {
     return Node;
 }());
 exports.Node = Node;
-/*
-export abstract class CodeNode extends Node {
-    constructor(guard: any, location: Location, options: { [ key: string ]: any }) {
-        logger.checkAbstract(new.target, CodeNode);
-        super(guard, location, options);
-    }
-}
-*/
 var ValueNode = /** @class */ (function (_super) {
     __extends(ValueNode, _super);
     function ValueNode(guard, location, options) {
@@ -288,6 +280,27 @@ var LiteralNode = /** @class */ (function (_super) {
     return LiteralNode;
 }(ValueNode));
 exports.LiteralNode = LiteralNode;
+var PopNode = /** @class */ (function (_super) {
+    __extends(PopNode, _super);
+    function PopNode(guard, location, index) {
+        return _super.call(this, guard, location, { index: index }) || this;
+    }
+    Object.defineProperty(PopNode.prototype, "placeholder", {
+        get: function () {
+            if (this.index === 0) {
+                return "$$";
+            }
+            return "$" + String(this.index);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    PopNode.from = function (options) {
+        return new PopNode(Guard, options.loc, options.index);
+    };
+    return PopNode;
+}(ValueNode));
+exports.PopNode = PopNode;
 var LinkNode = /** @class */ (function (_super) {
     __extends(LinkNode, _super);
     function LinkNode(guard, location, type, label) {
@@ -295,32 +308,67 @@ var LinkNode = /** @class */ (function (_super) {
     }
     LinkNode.prototype.assemble = function (assembler, visit) {
         return __awaiter(this, void 0, void 0, function () {
-            var value, target, result;
+            var value, isOffset, target, result, here, opcodes, literal, w;
             return __generator(this, function (_a) {
                 assembler.start(this);
                 value = null;
+                isOffset = false;
                 target = assembler.getTarget(this.label);
                 if (target instanceof LabelNode) {
                     if (this.type === "offset") {
-                        //value = assembler.getOffset(this.label);
                         value = (assembler.getLinkValue(target, this));
+                        isOffset = true;
                     }
                 }
                 else {
                     result = (assembler.getLinkValue(target, this));
                     if (this.type === "offset") {
-                        //value = assembler.getOffset(this.label);
                         value = result.offset;
+                        isOffset = true;
                     }
                     else if (this.type === "length") {
-                        //value = assembler.getLength(this.label);
                         value = result.length;
                     }
                 }
                 if (value == null) {
                     throw new Error("labels can only be targetted as offsets");
                 }
-                visit(this, pushLiteral(value));
+                if (isOffset && assembler.positionIndependentCode) {
+                    here = assembler.getOffset(this, this);
+                    opcodes = [];
+                    if (here > value) {
+                        literal = "0x";
+                        for (w = 1; w <= 5; w++) {
+                            if (w > 4) {
+                                throw new Error("jump too large!");
+                            }
+                            literal = pushLiteral(here - value + w);
+                            if (ethers_1.ethers.utils.hexDataLength(literal) <= w) {
+                                literal = ethers_1.ethers.utils.hexZeroPad(literal, w);
+                                break;
+                            }
+                        }
+                        opcodes.push(literal);
+                        opcodes.push(opcodes_1.Opcode.from("PC"));
+                        opcodes.push(opcodes_1.Opcode.from("SUB"));
+                        // This also works, in case the above literal thing doesn't work out...
+                        //opcodes.push(Opcode.from("PC"));
+                        //opcodes.push(pushLiteral(-delta));
+                        //opcodes.push(Opcode.from("SWAP1"));
+                        //opcodes.push(Opcode.from("SUB"));
+                    }
+                    else {
+                        // Jump forwards; this is easy to calculate since we can
+                        // do PC firat.
+                        opcodes.push(opcodes_1.Opcode.from("PC"));
+                        opcodes.push(pushLiteral(value - here));
+                        opcodes.push(opcodes_1.Opcode.from("ADD"));
+                    }
+                    visit(this, hexConcat(opcodes));
+                }
+                else {
+                    visit(this, pushLiteral(value));
+                }
                 assembler.end(this);
                 return [2 /*return*/];
             });
@@ -335,12 +383,8 @@ var LinkNode = /** @class */ (function (_super) {
 exports.LinkNode = LinkNode;
 var OpcodeNode = /** @class */ (function (_super) {
     __extends(OpcodeNode, _super);
-    function OpcodeNode(guard, location, opcode, operands) {
-        var _this = _super.call(this, guard, location, { opcode: opcode, operands: operands }) || this;
-        if (opcode.isPush()) {
-            _this.warnings.push("the PUSH opcode modifies program flow - use literals instead");
-        }
-        return _this;
+    function OpcodeNode(guard, location, opcode, operands, instructional) {
+        return _super.call(this, guard, location, { instructional: instructional, opcode: opcode, operands: operands }) || this;
     }
     OpcodeNode.prototype.assemble = function (assembler, visit) {
         return __awaiter(this, void 0, void 0, function () {
@@ -386,23 +430,14 @@ var OpcodeNode = /** @class */ (function (_super) {
         if (!opcode) {
             throw new Error("unknown opcode: " + options.mnemonic);
         }
-        // Using the function syntax will check the operand count
-        if (!options.bare) {
-            if (opcode.mnemonic === "POP" && options.operands.length === 0) {
-                // This is ok... Pop has a delta of 0, but without operands
-            }
-            else if (options.operands.length !== opcode.delta) {
-                throw new Error("opcode " + opcode.mnemonic + " expects " + opcode.delta + " operands");
-            }
-        }
         var operands = Object.freeze(options.operands.map(function (o) {
             var operand = Node.from(o);
             if (!(operand instanceof ValueNode)) {
-                throw new Error("invalid operand");
+                throw new Error("bad grammar?!");
             }
             return operand;
         }));
-        return new OpcodeNode(Guard, options.loc, opcode, operands);
+        return new OpcodeNode(Guard, options.loc, opcode, operands, !!options.bare);
     };
     return OpcodeNode;
 }(ValueNode));
@@ -469,7 +504,7 @@ var DataNode = /** @class */ (function (_super) {
                         i_1++;
                         return [3 /*break*/, 1];
                     case 4:
-                        bytecode = ethers_1.ethers.utils.arrayify(assembler.getPendingBytecode(this));
+                        bytecode = ethers_1.ethers.utils.arrayify(assembler.getBytecode(this));
                         i = 0;
                         while (i < bytecode.length) {
                             opcode = opcodes_1.Opcode.from(bytecode[i++]);
@@ -490,12 +525,6 @@ var DataNode = /** @class */ (function (_super) {
     };
     DataNode.prototype.children = function () {
         return this.data;
-    };
-    DataNode.prototype.visit = function (visit) {
-        visit(this);
-        for (var i = 0; i < this.data.length; i++) {
-            this.data[i].visit(visit);
-        }
     };
     DataNode.from = function (options) {
         if (options.type !== "data") {
@@ -610,12 +639,6 @@ var ScopeNode = /** @class */ (function (_super) {
     ScopeNode.prototype.children = function () {
         return this.statements;
     };
-    ScopeNode.prototype.visit = function (visit) {
-        visit(this);
-        for (var i = 0; i < this.statements.length; i++) {
-            this.statements[i].visit(visit);
-        }
-    };
     ScopeNode.from = function (options) {
         if (options.type !== "scope") {
             throw new Error("expected scope type");
@@ -625,57 +648,6 @@ var ScopeNode = /** @class */ (function (_super) {
     return ScopeNode;
 }(LabelledNode));
 exports.ScopeNode = ScopeNode;
-function parse(code) {
-    // Since jison allows \n, \r or \r\n line endings, we need some
-    // twekaing to get the correct position
-    var lines = [];
-    var offset = 0;
-    code.split(/(\r\n?|\n)/g).forEach(function (clump, index) {
-        if (index % 2) {
-            lines[lines.length - 1].line += clump;
-        }
-        else {
-            lines.push({ line: clump, offset: offset });
-        }
-        offset += clump.length;
-    });
-    // Add a mock-EOF to the end of the file so we don't out-of-bounds
-    // on the last character
-    if (lines.length) {
-        lines[lines.length - 1].line += "\n";
-    }
-    // Givens a line (1 offset) and column (0 offset) return the byte offset
-    var getOffset = function (line, column) {
-        var info = lines[line - 1];
-        if (!info || column >= info.line.length) {
-            throw new Error("out of range");
-        }
-        return info.offset + column;
-    };
-    // We use this in the _parser to convert locations to source
-    _parser_1.parser.yy._ethersLocation = function (loc) {
-        // The _ scope should call with null to get the full source
-        if (loc == null) {
-            return Object.freeze({
-                offset: 0,
-                length: code.length,
-                source: code
-            });
-        }
-        var offset = getOffset(loc.first_line, loc.first_column);
-        var end = getOffset(loc.last_line, loc.last_column);
-        return Object.freeze({
-            offset: offset,
-            length: (end - offset),
-            source: code.substring(offset, end)
-        });
-    };
-    var result = Node.from(_parser_1.parse(code));
-    // Nuke the source code lookup callback
-    _parser_1.parser.yy._ethersLocation = null;
-    return result;
-}
-exports.parse = parse;
 function disassemble(bytecode) {
     var ops = [];
     var offsets = {};
@@ -741,14 +713,10 @@ function formatBytecode(bytecode) {
     return lines.join("\n");
 }
 exports.formatBytecode = formatBytecode;
-// @TODO: Rename to Assembler?
 var Assembler = /** @class */ (function () {
-    function Assembler(root, options) {
-        ethers_1.ethers.utils.defineReadOnly(this, "positionIndependentCode", !!options.positionIndependentCode);
-        ethers_1.ethers.utils.defineReadOnly(this, "retry", ((options.retry != null) ? options.retry : 512));
-        ethers_1.ethers.utils.defineReadOnly(this, "filename", path_1.resolve(options.filename || "./contract.asm"));
-        ethers_1.ethers.utils.defineReadOnly(this, "defines", Object.freeze(options.defines || {}));
+    function Assembler(root, positionIndependentCode) {
         ethers_1.ethers.utils.defineReadOnly(this, "root", root);
+        ethers_1.ethers.utils.defineReadOnly(this, "positionIndependentCode", !!positionIndependentCode);
         var nodes = {};
         var labels = {};
         var parents = {};
@@ -757,8 +725,7 @@ var Assembler = /** @class */ (function () {
             nodes[node.tag] = {
                 node: node,
                 offset: 0x0,
-                bytecode: "0x",
-                pending: "0x"
+                bytecode: "0x"
             };
             if (node instanceof LabelledNode) {
                 // Check for duplicate labels
@@ -784,58 +751,14 @@ var Assembler = /** @class */ (function () {
         ethers_1.ethers.utils.defineReadOnly(this, "labels", Object.freeze(labels));
         ethers_1.ethers.utils.defineReadOnly(this, "nodes", Object.freeze(nodes));
         ethers_1.ethers.utils.defineReadOnly(this, "_parents", Object.freeze(parents));
-        ethers_1.ethers.utils.defineReadOnly(this, "_stack", []);
-        this.reset();
     }
-    Object.defineProperty(Assembler.prototype, "changed", {
-        get: function () {
-            return this._changed;
-        },
-        enumerable: true,
-        configurable: true
-    });
     // Link operations
-    Assembler.prototype.getTarget = function (name) {
-        return this.labels[name];
+    Assembler.prototype.getTarget = function (label) {
+        return this.labels[label];
     };
-    // Reset the assmebler for another run with updated values
-    Assembler.prototype.reset = function () {
-        var _this = this;
-        this._changed = false;
-        for (var tag in this.nodes) {
-            delete this.nodes[tag].object;
-        }
-        this._script = new Script(this.filename, function (name, context) {
-            return _this.get(name, context);
-        });
-    };
+    // Evaluate script in the context of a {{! }} or {{= }}
     Assembler.prototype.evaluate = function (script, source) {
-        return this._script.evaluate(script, source);
-    };
-    Assembler.prototype.start = function (node) {
-        this._stack.push(node);
-        var info = this.nodes[node.tag];
-        info.pending = "0x";
-    };
-    Assembler.prototype.end = function (node) {
-        if (this._stack.pop() !== node) {
-            throw new Error("missing push/pop pair");
-        }
-        var info = this.nodes[node.tag];
-        if (info.pending !== info.bytecode) {
-            this._didChange();
-        }
-        info.bytecode = info.pending;
-    };
-    Assembler.prototype.getPendingBytecode = function (node) {
-        return this.nodes[node.tag].pending;
-    };
-    Assembler.prototype._appendBytecode = function (bytecode) {
-        var _this = this;
-        this._stack.forEach(function (node) {
-            var info = _this.nodes[node.tag];
-            info.pending = hexConcat([info.pending, bytecode]);
-        });
+        return Promise.resolve(new Uint8Array(0));
     };
     Assembler.prototype.getAncestor = function (node, cls) {
         node = this._parents[node.tag];
@@ -847,6 +770,23 @@ var Assembler = /** @class */ (function () {
         }
         return null;
     };
+    Assembler.prototype.getOffset = function (node, source) {
+        var offset = this.nodes[node.tag].offset;
+        if (source == null) {
+            return offset;
+        }
+        var sourceScope = ((source instanceof ScopeNode) ? source : this.getAncestor(source, ScopeNode));
+        return offset - this.nodes[sourceScope.tag].offset;
+    };
+    Assembler.prototype.setOffset = function (node, offset) {
+        this.nodes[node.tag].offset = offset;
+    };
+    Assembler.prototype.getBytecode = function (node) {
+        return this.nodes[node.tag].bytecode;
+    };
+    Assembler.prototype.setBytecode = function (node, bytecode) {
+        this.nodes[node.tag].bytecode = bytecode;
+    };
     Assembler.prototype.getLinkValue = function (target, source) {
         var sourceScope = ((source instanceof ScopeNode) ? source : this.getAncestor(source, ScopeNode));
         var targetScope = ((target instanceof ScopeNode) ? target : this.getAncestor(target, ScopeNode));
@@ -857,13 +797,7 @@ var Assembler = /** @class */ (function () {
                 throw new Error("cannot access " + target.name + " from " + source.tag);
             }
             // Return the offset relative to its scope
-            var offset = this.nodes[target.tag].offset - this.nodes[targetScope.tag].offset;
-            // Offsets are wrong; but we should finish this run and then try again
-            if (offset < 0) {
-                offset = 0;
-                this._didChange();
-            }
-            return offset;
+            return this.nodes[target.tag].offset - this.nodes[targetScope.tag].offset;
         }
         var info = this.nodes[target.tag];
         // Return the offset is relative to its scope
@@ -892,15 +826,224 @@ var Assembler = /** @class */ (function () {
         // been marked as invalid, in which case accessing it will fail
         if (safeOffset) {
             bytes.offset = info.offset - this.nodes[sourceScope.tag].offset;
-            // Offsets are wqrong; but we should finish this run and then try again
-            if (bytes.offset < 0) {
-                bytes.offset = 0;
-                this._didChange();
-            }
         }
-        return Object.freeze(bytes);
+        return bytes;
     };
-    Assembler.prototype.get = function (name, source) {
+    Assembler.prototype.start = function (node) { };
+    Assembler.prototype.end = function (node) { };
+    return Assembler;
+}());
+var SemanticErrorSeverity;
+(function (SemanticErrorSeverity) {
+    SemanticErrorSeverity["error"] = "error";
+    SemanticErrorSeverity["warning"] = "warning";
+})(SemanticErrorSeverity = exports.SemanticErrorSeverity || (exports.SemanticErrorSeverity = {}));
+;
+// This Assembler is designed to only check for errors and warnings
+// Warnings
+//  - Bare PUSH opcodes
+//  - Instructional opcode that has parameters
+// Errors
+//  - Using a $$ outside of RPN
+//  - Using a $$ when it is not adjacent to the stack
+//  - The operand count does not match the opcode
+//  - An opcode is used as an operand but does not return a value
+var SemanticChecker = /** @class */ (function (_super) {
+    __extends(SemanticChecker, _super);
+    function SemanticChecker() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    SemanticChecker.prototype.check = function () {
+        var _this = this;
+        var errors = [];
+        this.root.visit(function (node) {
+            if (node instanceof OpcodeNode) {
+                var opcode = node.opcode;
+                if (node.instructional) {
+                    if (opcode.delta) {
+                        errors.push({
+                            message: opcode.mnemonic + " used as instructional",
+                            severity: SemanticErrorSeverity.warning,
+                            node: node
+                        });
+                    }
+                }
+                else {
+                    if (opcode.mnemonic === "POP") {
+                        if (node.operands.length !== 0) {
+                            errors.push({
+                                message: "POP expects 0 operands",
+                                severity: SemanticErrorSeverity.error,
+                                node: node
+                            });
+                        }
+                    }
+                    else if (node.operands.length !== opcode.delta) {
+                        errors.push({
+                            message: opcode.mnemonic + " expects " + opcode.delta + " operands",
+                            severity: SemanticErrorSeverity.error,
+                            node: node
+                        });
+                    }
+                }
+                if (opcode.isPush()) {
+                    // A stray PUSH operation will gobble up the following code
+                    // bytes which is bad. But this may be a disassembled program
+                    // and that PUSH may actually be just some data (which is safe)
+                    errors.push({
+                        message: "PUSH opcode modifies program flow - use literals instead",
+                        severity: SemanticErrorSeverity.warning,
+                        node: node
+                    });
+                }
+                else if (!node.location.statement && opcode.alpha !== 1) {
+                    // If an opcode does not push anything on the stack, it
+                    // cannot be used as an operand
+                    errors.push({
+                        message: node.opcode.mnemonic + " cannot be an operand",
+                        severity: SemanticErrorSeverity.error,
+                        node: node
+                    });
+                }
+            }
+            if (node.location.statement) {
+                if (node instanceof PopNode) {
+                    // $$ by istelf is useless and is intended to be an operand
+                    errors.push({
+                        message: "$$ must be an operand",
+                        severity: SemanticErrorSeverity.error,
+                        node: node
+                    });
+                }
+                else {
+                    var scope_1 = _this.getAncestor(node, ScopeNode);
+                    // Make sure any $$ is stack adjacent (within this scope)
+                    var ordered_1 = [];
+                    node.visit(function (node) {
+                        if (scope_1 !== _this.getAncestor(node, ScopeNode)) {
+                            return;
+                        }
+                        ordered_1.push(node);
+                    });
+                    // Allow any number of stack adjacent $$
+                    var foundZero = null;
+                    var lastIndex = 0;
+                    while (ordered_1.length && ordered_1[0] instanceof PopNode) {
+                        var popNode = (ordered_1.shift());
+                        var index = popNode.index;
+                        if (index === 0) {
+                            foundZero = popNode;
+                        }
+                        else if (index !== lastIndex + 1) {
+                            errors.push({
+                                message: "out-of-order stack placeholder " + popNode.placeholder + "; expected $$" + (lastIndex + 1),
+                                severity: SemanticErrorSeverity.error,
+                                node: popNode
+                            });
+                            while (ordered_1.length && ordered_1[0] instanceof PopNode) {
+                                ordered_1.shift();
+                            }
+                            break;
+                        }
+                        else {
+                            lastIndex = index;
+                        }
+                    }
+                    if (foundZero && lastIndex > 0) {
+                        errors.push({
+                            message: "cannot mix $$ and $1 stack placeholder",
+                            severity: SemanticErrorSeverity.error,
+                            node: foundZero
+                        });
+                    }
+                    // If there are still any buried, we have a problem
+                    var pops = ordered_1.filter(function (n) { return (n instanceof PopNode); });
+                    if (pops.length) {
+                        errors.push({
+                            message: "stack placeholder " + (pops[0]).placeholder + " must be stack adjacent",
+                            severity: SemanticErrorSeverity.error,
+                            node: pops[0]
+                        });
+                    }
+                }
+            }
+        });
+        return errors;
+    };
+    return SemanticChecker;
+}(Assembler));
+var CodeGenerationAssembler = /** @class */ (function (_super) {
+    __extends(CodeGenerationAssembler, _super);
+    function CodeGenerationAssembler(root, options) {
+        var _this = _super.call(this, root, !!options.positionIndependentCode) || this;
+        ethers_1.ethers.utils.defineReadOnly(_this, "retry", ((options.retry != null) ? options.retry : 512));
+        ethers_1.ethers.utils.defineReadOnly(_this, "filename", path_1.resolve(options.filename || "./contract.asm"));
+        ethers_1.ethers.utils.defineReadOnly(_this, "defines", Object.freeze(options.defines || {}));
+        ethers_1.ethers.utils.defineReadOnly(_this, "_stack", []);
+        _this.reset();
+        return _this;
+    }
+    CodeGenerationAssembler.prototype._didChange = function () {
+        this._changed = true;
+    };
+    Object.defineProperty(CodeGenerationAssembler.prototype, "changed", {
+        get: function () {
+            return this._changed;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    // Reset the assmebler for another run with updated values
+    CodeGenerationAssembler.prototype.reset = function () {
+        var _this = this;
+        this._changed = false;
+        this._oldBytecode = {};
+        this._objectCache = {};
+        this._script = new Script(this.filename, function (name, context) {
+            return _this.get(name, context);
+        });
+    };
+    CodeGenerationAssembler.prototype.evaluate = function (script, source) {
+        return this._script.evaluate(script, source);
+    };
+    CodeGenerationAssembler.prototype.getLinkValue = function (target, source) {
+        // Since we are iteratively generating code, offsets and lengths
+        // may not be stable at any given point in time, so if an offset
+        // is negative the code is obviously wrong, however we set it to
+        // 0 so we can proceed with generation to fill in as many blanks
+        // as possible; then we will try assembling again
+        var result = _super.prototype.getLinkValue.call(this, target, source);
+        if (typeof (result) === "number") {
+            if (result < 0) {
+                this._didChange();
+                return 0;
+            }
+            return result;
+        }
+        if (result.offset < 0) {
+            result.offset = 0;
+            this._didChange();
+        }
+        return result;
+    };
+    CodeGenerationAssembler.prototype.start = function (node) {
+        this._stack.push(node);
+        this._oldBytecode[node.tag] = this.getBytecode(node);
+        this.setBytecode(node, "0x");
+    };
+    CodeGenerationAssembler.prototype.end = function (node) {
+        if (this._stack.pop() !== node) {
+            throw new Error("missing push/pop pair");
+        }
+        if (this._oldBytecode[node.tag] !== this.getBytecode(node)) {
+            this._didChange();
+        }
+    };
+    // This is used by evaluate to access properties in JavaScript
+    // - "defines" allow meta-programming values to be used
+    // - jump destinations are available as numbers
+    // - bytecode and data are available as an immuatble DataSource
+    CodeGenerationAssembler.prototype.get = function (name, source) {
         if (name === "defines") {
             return this.defines;
         }
@@ -908,55 +1051,67 @@ var Assembler = /** @class */ (function () {
         if (!node) {
             return undefined;
         }
-        var info = this.nodes[node.tag];
-        if (info.object == null) {
-            info.object = this.getLinkValue(node, source);
+        // We cache objects when they are generated so all nodes
+        // receive consistent data; if there is a change we will
+        // run the entire assembly process again with the updated
+        // values
+        if (this._objectCache[node.tag] == null) {
+            this._objectCache[node.tag] = Object.freeze(this.getLinkValue(node, source));
         }
-        return info.object;
+        return this._objectCache[node.tag];
     };
-    Assembler.prototype._didChange = function () {
-        this._changed = true;
-    };
-    Assembler.prototype._assemble = function () {
+    CodeGenerationAssembler.prototype._assemble = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var offset, bytecodes;
+            var offset;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         offset = 0;
-                        bytecodes = [];
                         return [4 /*yield*/, this.root.assemble(this, function (node, bytecode) {
-                                var state = _this.nodes[node.tag];
                                 // Things have moved; we will need to try again
-                                if (state.offset !== offset) {
-                                    state.offset = offset;
+                                if (_this.getOffset(node) !== offset) {
+                                    _this.setOffset(node, offset);
                                     _this._didChange();
                                 }
-                                _this._appendBytecode(bytecode);
-                                bytecodes.push(bytecode);
-                                // The bytecode has changed; we will need to try again
-                                //if (state.bytecode !== bytecode) {
-                                //    state.bytecode = bytecode;
-                                //    this._didChange();
-                                //}
+                                _this._stack.forEach(function (node) {
+                                    _this.setBytecode(node, hexConcat([
+                                        _this.getBytecode(node),
+                                        bytecode
+                                    ]));
+                                });
                                 offset += ethers_1.ethers.utils.hexDataLength(bytecode);
                             })];
                     case 1:
                         _a.sent();
-                        return [2 /*return*/, hexConcat(bytecodes)];
+                        return [2 /*return*/];
                 }
             });
         });
     };
-    Assembler.prototype.assemble = function () {
+    CodeGenerationAssembler.prototype.assemble = function (label) {
         return __awaiter(this, void 0, void 0, function () {
-            var bytecode, i, adjusted;
+            var target, i;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this._assemble()];
+                    case 0:
+                        if (label == null) {
+                            label = "_";
+                        }
+                        target = this.getTarget(label);
+                        if (!target) {
+                            logger.throwArgumentError("unknown labelled target: " + label, "label", label);
+                        }
+                        else if (!(target instanceof ScopeNode || target instanceof DataNode)) {
+                            logger.throwArgumentError("cannot assemble a bodyless label: " + label, "label", label);
+                        }
+                        // Continue re-evaluating the bytecode until a stable set of
+                        // offsets, length and values are reached.
+                        return [4 /*yield*/, this._assemble()];
                     case 1:
-                        bytecode = _a.sent();
+                        // Continue re-evaluating the bytecode until a stable set of
+                        // offsets, length and values are reached.
+                        _a.sent();
                         i = 0;
                         _a.label = 2;
                     case 2:
@@ -965,37 +1120,101 @@ var Assembler = /** @class */ (function () {
                         this.reset();
                         return [4 /*yield*/, this._assemble()];
                     case 3:
-                        adjusted = _a.sent();
+                        _a.sent();
                         // Generated bytecode is stable!! :)
                         if (!this.changed) {
-                            console.log("Assembled in " + i + " attempts");
-                            return [2 /*return*/, bytecode];
+                            // This should not happen; something is wrong with the grammar
+                            // or missing enter/exit call in assemble
+                            if (this._stack.length !== 0) {
+                                throw new Error("Bad AST! Bad grammar?!");
+                            }
+                            //console.log(`Assembled in ${ i } attempts`);
+                            return [2 /*return*/, this.getBytecode(target)];
+                            ;
                         }
-                        // Try again...
-                        bytecode = adjusted;
                         _a.label = 4;
                     case 4:
                         i++;
                         return [3 /*break*/, 2];
-                    case 5:
-                        // This should not happen; something is wrong with the grammar
-                        // or missing enter/exit call in assemble
-                        if (this._stack.length !== 0) {
-                            throw new Error("bad AST");
-                        }
-                        return [2 /*return*/, logger.throwError("unable to assemble; " + this.retry + " attempts failed to generate stable bytecode", ethers_1.ethers.utils.Logger.errors.UNKNOWN_ERROR, {})];
+                    case 5: return [2 /*return*/, logger.throwError("unable to assemble; " + this.retry + " attempts failed to generate stable bytecode", ethers_1.ethers.utils.Logger.errors.UNKNOWN_ERROR, {})];
                 }
             });
         });
     };
-    return Assembler;
-}());
+    return CodeGenerationAssembler;
+}(Assembler));
+function parse(code, options) {
+    if (options == null) {
+        options = {};
+    }
+    // Since jison allows \n, \r or \r\n line endings, we need some
+    // twekaing to get the correct position
+    var lines = [];
+    var offset = 0;
+    code.split(/(\r\n?|\n)/g).forEach(function (clump, index) {
+        if (index % 2) {
+            lines[lines.length - 1].line += clump;
+        }
+        else {
+            lines.push({ line: clump, offset: offset });
+        }
+        offset += clump.length;
+    });
+    // Add a mock-EOF to the end of the file so we don't out-of-bounds
+    // on the last character
+    if (lines.length) {
+        lines[lines.length - 1].line += "\n";
+    }
+    // Givens a line (1 offset) and column (0 offset) return the byte offset
+    var getOffset = function (line, column) {
+        var info = lines[line - 1];
+        if (!info || column >= info.line.length) {
+            throw new Error("out of range");
+        }
+        return info.offset + column;
+    };
+    // We use this in the _parser to convert locations to source
+    _parser_1.parser.yy._ethersLocation = function (loc) {
+        // The _ scope should call with null to get the full source
+        if (loc == null) {
+            return {
+                offset: 0,
+                line: 0,
+                length: code.length,
+                source: code,
+                statement: true
+            };
+        }
+        var offset = getOffset(loc.first_line, loc.first_column);
+        var end = getOffset(loc.last_line, loc.last_column);
+        return {
+            offset: offset,
+            line: loc.first_line - 1,
+            length: (end - offset),
+            source: code.substring(offset, end),
+            statement: (!!loc.statement)
+        };
+    };
+    var result = Node.from(_parser_1.parse(code));
+    // Nuke the source code lookup callback
+    _parser_1.parser.yy._ethersLocation = null;
+    // Semantic Checks
+    var checker = new SemanticChecker(result);
+    var errors = checker.check();
+    if (errors.filter(function (e) { return (e.severity === SemanticErrorSeverity.error); }).length || (errors.length && !options.ignoreWarnings)) {
+        var error = new Error("semantic errors during parsing");
+        error.errors = errors;
+        throw error;
+    }
+    return result;
+}
+exports.parse = parse;
 function assemble(ast, options) {
     return __awaiter(this, void 0, void 0, function () {
         var assembler;
         return __generator(this, function (_a) {
-            assembler = new Assembler(ast, options || {});
-            return [2 /*return*/, assembler.assemble()];
+            assembler = new CodeGenerationAssembler(ast, options || {});
+            return [2 /*return*/, assembler.assemble(options.target || "_")];
         });
     });
 }

@@ -26,7 +26,7 @@ import { fetchJson, poll } from "@ethersproject/web";
 
 import { SupportedAlgorithm } from "@ethersproject/sha2";
 import { UnicodeNormalizationForm, Utf8ErrorReason } from "@ethersproject/strings";
-
+import { UnsignedTransaction } from "@ethersproject/transactions";
 
 ////////////////////////
 // Types and Interfaces
@@ -164,6 +164,8 @@ export {
     Bytes,
     BytesLike,
     Hexable,
+
+    UnsignedTransaction,
 
     CoerceFunc,
 

@@ -34,10 +34,10 @@ export function resolveProperties(object) {
     });
     return Promise.all(promises).then((results) => {
         const result = {};
-        return results.reduce((accum, result) => {
+        return (results.reduce((accum, result) => {
             accum[result.key] = result.value;
             return accum;
-        }, result);
+        }, result));
     });
 }
 export function checkProperties(object, properties) {
@@ -60,7 +60,7 @@ export function shallowCopy(object) {
 const opaque = { bigint: true, boolean: true, number: true, string: true };
 // Returns a new copy of object, such that no properties may be replaced.
 // New properties may be added only to objects.
-export function deepCopy(object) {
+function _deepCopy(object) {
     // Opaque objects are not mutable, so safe to copy by assignment
     if (object === undefined || object === null || opaque[typeof (object)]) {
         return object;
@@ -88,7 +88,10 @@ export function deepCopy(object) {
     if (typeof (object) === "function") {
         return object;
     }
-    throw new Error("Cannot deepCopy " + typeof (object));
+    logger.throwArgumentError(`Cannot deepCopy ${typeof (object)}`, "object", object);
+}
+export function deepCopy(object) {
+    return _deepCopy(object);
 }
 export class Description {
     constructor(info) {

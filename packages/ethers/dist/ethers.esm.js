@@ -4629,7 +4629,7 @@ class FixedNumber {
     }
 }
 
-const version$3 = "properties/5.0.0-beta.136";
+const version$3 = "properties/5.0.0-beta.137";
 
 "use strict";
 const logger$3 = new Logger(version$3);
@@ -4665,10 +4665,10 @@ function resolveProperties(object) {
     });
     return Promise.all(promises).then((results) => {
         const result = {};
-        return results.reduce((accum, result) => {
+        return (results.reduce((accum, result) => {
             accum[result.key] = result.value;
             return accum;
-        }, result);
+        }, result));
     });
 }
 function checkProperties(object, properties) {
@@ -4691,7 +4691,7 @@ function shallowCopy(object) {
 const opaque = { bigint: true, boolean: true, number: true, string: true };
 // Returns a new copy of object, such that no properties may be replaced.
 // New properties may be added only to objects.
-function deepCopy(object) {
+function _deepCopy(object) {
     // Opaque objects are not mutable, so safe to copy by assignment
     if (object === undefined || object === null || opaque[typeof (object)]) {
         return object;
@@ -4719,7 +4719,10 @@ function deepCopy(object) {
     if (typeof (object) === "function") {
         return object;
     }
-    throw new Error("Cannot deepCopy " + typeof (object));
+    logger$3.throwArgumentError(`Cannot deepCopy ${typeof (object)}`, "object", object);
+}
+function deepCopy(object) {
+    return _deepCopy(object);
 }
 class Description {
     constructor(info) {
@@ -4739,7 +4742,7 @@ var lib_esm$2 = /*#__PURE__*/Object.freeze({
 	Description: Description
 });
 
-const version$4 = "abi/5.0.0-beta.144";
+const version$4 = "abi/5.0.0-beta.145";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -7715,7 +7718,7 @@ class Provider {
     }
 }
 
-const version$9 = "abstract-signer/5.0.0-beta.139";
+const version$9 = "abstract-signer/5.0.0-beta.140";
 
 "use strict";
 var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -7838,25 +7841,9 @@ class Signer {
             if (tx.nonce == null) {
                 tx.nonce = this.getTransactionCount("pending");
             }
-            /*
-            // checkTransaction does this...
-            if (tx.from == null) {
-                tx.from = this.getAddress();
-            } else {
-                tx.from = Promise.all([
-                    this.getAddress(),
-                    this.provider.resolveName(tx.from)
-                ]).then((results) => {
-                    if (results[0] !== results[1]) {
-                        logger.throwArgumentError("from address mismatch", "transaction", transaction);
-                    }
-                    return results[0];
-                });
-            }
-            */
             if (tx.gasLimit == null) {
                 tx.gasLimit = this.estimateGas(tx).catch((error) => {
-                    logger$d.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+                    return logger$d.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
                         tx: tx
                     });
                 });
@@ -15111,7 +15098,7 @@ function decryptJsonWallet(json, password, progressCallback) {
     return Promise.reject(new Error("invalid JSON wallet"));
 }
 
-const version$g = "wallet/5.0.0-beta.136";
+const version$g = "wallet/5.0.0-beta.137";
 
 "use strict";
 const logger$k = new Logger(version$g);
@@ -15148,7 +15135,6 @@ class Wallet extends Signer {
             }
             else {
                 defineReadOnly(this, "_mnemonic", () => null);
-                defineReadOnly(this, "path", null);
             }
         }
         else {
@@ -15163,7 +15149,6 @@ class Wallet extends Signer {
                 defineReadOnly(this, "_signingKey", () => signingKey);
             }
             defineReadOnly(this, "_mnemonic", () => null);
-            defineReadOnly(this, "path", null);
             defineReadOnly(this, "address", computeAddress(this.publicKey));
         }
         if (provider && !Provider.isProvider(provider)) {
@@ -16265,7 +16250,7 @@ function poll(func, options) {
     });
 }
 
-const version$j = "providers/5.0.0-beta.152";
+const version$j = "providers/5.0.0-beta.153";
 
 "use strict";
 const logger$n = new Logger(version$j);
@@ -19362,7 +19347,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$l = "ethers/5.0.0-beta.172";
+const version$l = "ethers/5.0.0-beta.173";
 
 "use strict";
 const errors = Logger.errors;

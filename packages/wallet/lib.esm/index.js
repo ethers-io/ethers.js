@@ -47,7 +47,6 @@ export class Wallet extends Signer {
             }
             else {
                 defineReadOnly(this, "_mnemonic", () => null);
-                defineReadOnly(this, "path", null);
             }
         }
         else {
@@ -62,7 +61,6 @@ export class Wallet extends Signer {
                 defineReadOnly(this, "_signingKey", () => signingKey);
             }
             defineReadOnly(this, "_mnemonic", () => null);
-            defineReadOnly(this, "path", null);
             defineReadOnly(this, "address", computeAddress(this.publicKey));
         }
         if (provider && !Provider.isProvider(provider)) {

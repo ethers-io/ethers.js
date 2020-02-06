@@ -1,3 +1,8 @@
+export declare enum OpcodeMemoryAccess {
+    write = "write",
+    read = "read",
+    full = "full"
+}
 export declare class Opcode {
     readonly value: number;
     readonly mnemonic: string;
@@ -8,7 +13,7 @@ export declare class Opcode {
     isJump(): boolean;
     isValidJumpDest(): boolean;
     isPush(): number;
-    isMemory(readOrWrite?: boolean): boolean;
+    isMemoryAccess(readOrWrite?: boolean): OpcodeMemoryAccess;
     isStatic(): boolean;
     static from(valueOrMnemonic: number | string): Opcode;
 }

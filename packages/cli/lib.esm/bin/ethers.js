@@ -12,12 +12,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import fs from "fs";
 import { dirname, resolve } from "path";
 import REPL from "repl";
-import util from "util";
 import vm from "vm";
 import { ethers } from "ethers";
+import { parseExpression as babelParseExpression } from "@babel/parser";
 import { CLI, dump, Plugin } from "../cli";
 import { getPassword, getProgressBar } from "../prompt";
 import { compile, customRequire } from "../solc";
+function repeat(c, length) {
+    if (c.length === 0) {
+        throw new Error("too short");
+    }
+    let result = c;
+    while (result.length < length) {
+        result += result;
+    }
+    return result.substring(0, length);
+}
 function setupContext(path, context, plugin) {
     context.provider = plugin.provider;
     context.accounts = plugin.accounts;
@@ -31,7 +41,6 @@ function setupContext(path, context, plugin) {
         context.console = console;
     }
     if (!context.require) {
-        //context.require = _module.createRequireFromPath(path);
         context.require = customRequire(path);
     }
     if (!context.process) {
@@ -52,7 +61,9 @@ function setupContext(path, context, plugin) {
     context.getContractAddress = ethers.utils.getContractAddress;
     context.getIcapAddress = ethers.utils.getIcapAddress;
     context.arrayify = ethers.utils.arrayify;
+    context.concat = ethers.utils.concat;
     context.hexlify = ethers.utils.hexlify;
+    context.zeroPad = ethers.utils.zeroPad;
     context.joinSignature = ethers.utils.joinSignature;
     context.splitSignature = ethers.utils.splitSignature;
     context.id = ethers.utils.id;
@@ -71,6 +82,37 @@ function setupContext(path, context, plugin) {
     context.toUtf8String = ethers.utils.toUtf8String;
 }
 const cli = new CLI("sandbox");
+function prepareCode(code) {
+    let ast = babelParseExpression(code, {
+        createParenthesizedExpressions: true
+    });
+    // Crawl the AST, to compute needed source code manipulations
+    const insert = [];
+    const descend = function (node) {
+        if (node == null || typeof (node) !== "object") {
+            return;
+        }
+        if (Array.isArray(node)) {
+            return node.forEach(descend);
+        }
+        // We will add parenthesis around ObjectExpressions, which
+        // otherwise look like blocks
+        if (node.type === "ObjectExpression") {
+            insert.push({ char: "(", offset: node.start });
+            insert.push({ char: ")", offset: node.end });
+        }
+        Object.keys(node).forEach((key) => descend(key));
+    };
+    descend(ast);
+    // We make modifications from back to front, so we don't need
+    // to adjust offsets
+    insert.sort((a, b) => (b.offset - a.offset));
+    // Modify the code for REPL
+    insert.forEach((mod) => {
+        code = code.substring(0, mod.offset) + mod.char + code.substring(mod.offset);
+    });
+    return code;
+}
 class SandboxPlugin extends Plugin {
     static getHelp() {
         return {
@@ -101,33 +143,59 @@ class SandboxPlugin extends Plugin {
         });
     }
     run() {
-        console.log("network: " + this.network.name + " (chainId: " + this.network.chainId + ")");
-        let nextPromiseId = 0;
-        function promiseWriter(output) {
-            if (output instanceof Promise) {
-                repl.context._p = output;
-                let promiseId = nextPromiseId++;
-                output.then((result) => {
-                    console.log(`\n<Promise id=${promiseId} resolved>`);
-                    console.log(util.inspect(result));
-                    repl.context._r = result;
-                    repl.displayPrompt(true);
-                }, (error) => {
-                    console.log(`\n<Promise id=${promiseId} rejected>`);
-                    console.log(util.inspect(error));
-                    repl.displayPrompt(true);
-                });
-                return `<Promise id=${promiseId} pending>`;
+        console.log(`version: ${ethers.version}`);
+        console.log(`network: ${this.network.name} (chainId: ${this.network.chainId})`);
+        const filename = resolve(process.cwd(), "./sandbox.js");
+        const prompt = (this.provider ? this.network.name : "no-network") + "> ";
+        const evaluate = function (code, context, file, _callback) {
+            // Pausing the stdin (which prompt does when it leaves), causes
+            // readline to end us. So, we always re-enable stdin on a result
+            const callback = (error, result) => {
+                _callback(error, result);
+                process.stdin.resume();
+            };
+            try {
+                code = prepareCode(code);
             }
-            return util.inspect(output);
-        }
-        let repl = REPL.start({
-            input: process.stdin,
-            output: process.stdout,
-            prompt: (this.provider ? this.network.name : "no-network") + "> ",
-            writer: promiseWriter
+            catch (error) {
+                if (error instanceof SyntaxError) {
+                    const leftover = code.substring(error.pos);
+                    const loc = error.loc;
+                    if (leftover.trim()) {
+                        // After the first line, the prompt is "... "
+                        console.log(repeat("-", ((loc.line === 1) ? prompt.length : 4) + loc.column - 1) + "^");
+                        console.log(`Syntax Error! ${error.message}`);
+                    }
+                    else {
+                        error = new REPL.Recoverable(error);
+                    }
+                }
+                return callback(error);
+            }
+            try {
+                const result = vm.runInContext(code, context, {
+                    filename: filename
+                });
+                if (result instanceof Promise) {
+                    result.then((result) => {
+                        callback(null, result);
+                    }, (error) => {
+                        callback(error);
+                    });
+                }
+                else {
+                    callback(null, result);
+                }
+            }
+            catch (error) {
+                callback(error);
+            }
+        };
+        const repl = REPL.start({
+            prompt: prompt,
+            eval: evaluate
         });
-        setupContext(resolve(process.cwd(), "./sandbox.js"), repl.context, this);
+        setupContext(filename, repl.context, this);
         return new Promise((resolve) => {
             repl.on("exit", function () {
                 console.log("");

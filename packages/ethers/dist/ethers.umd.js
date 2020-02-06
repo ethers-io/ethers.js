@@ -4757,7 +4757,7 @@
 	var _version$6 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "properties/5.0.0-beta.136";
+	exports.version = "properties/5.0.0-beta.137";
 	});
 
 	var _version$7 = unwrapExports(_version$6);
@@ -4803,10 +4803,10 @@
 	    });
 	    return Promise.all(promises).then(function (results) {
 	        var result = {};
-	        return results.reduce(function (accum, result) {
+	        return (results.reduce(function (accum, result) {
 	            accum[result.key] = result.value;
 	            return accum;
-	        }, result);
+	        }, result));
 	    });
 	}
 	exports.resolveProperties = resolveProperties;
@@ -4832,7 +4832,7 @@
 	var opaque = { bigint: true, boolean: true, number: true, string: true };
 	// Returns a new copy of object, such that no properties may be replaced.
 	// New properties may be added only to objects.
-	function deepCopy(object) {
+	function _deepCopy(object) {
 	    // Opaque objects are not mutable, so safe to copy by assignment
 	    if (object === undefined || object === null || opaque[typeof (object)]) {
 	        return object;
@@ -4860,7 +4860,10 @@
 	    if (typeof (object) === "function") {
 	        return object;
 	    }
-	    throw new Error("Cannot deepCopy " + typeof (object));
+	    logger.throwArgumentError("Cannot deepCopy " + typeof (object), "object", object);
+	}
+	function deepCopy(object) {
+	    return _deepCopy(object);
 	}
 	exports.deepCopy = deepCopy;
 	var Description = /** @class */ (function () {
@@ -4886,7 +4889,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.144";
+	exports.version = "abi/5.0.0-beta.145";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -8545,7 +8548,7 @@
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.0-beta.139";
+	exports.version = "abstract-signer/5.0.0-beta.140";
 	});
 
 	var _version$j = unwrapExports(_version$i);
@@ -8727,25 +8730,9 @@
 	                        if (tx.nonce == null) {
 	                            tx.nonce = this.getTransactionCount("pending");
 	                        }
-	                        /*
-	                        // checkTransaction does this...
-	                        if (tx.from == null) {
-	                            tx.from = this.getAddress();
-	                        } else {
-	                            tx.from = Promise.all([
-	                                this.getAddress(),
-	                                this.provider.resolveName(tx.from)
-	                            ]).then((results) => {
-	                                if (results[0] !== results[1]) {
-	                                    logger.throwArgumentError("from address mismatch", "transaction", transaction);
-	                                }
-	                                return results[0];
-	                            });
-	                        }
-	                        */
 	                        if (tx.gasLimit == null) {
 	                            tx.gasLimit = this.estimateGas(tx).catch(function (error) {
-	                                logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", lib.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+	                                return logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", lib.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
 	                                    tx: tx
 	                                });
 	                            });
@@ -16414,7 +16401,7 @@
 	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.0-beta.136";
+	exports.version = "wallet/5.0.0-beta.137";
 	});
 
 	var _version$B = unwrapExports(_version$A);
@@ -16487,7 +16474,6 @@
 	            }
 	            else {
 	                lib$3.defineReadOnly(_this, "_mnemonic", function () { return null; });
-	                lib$3.defineReadOnly(_this, "path", null);
 	            }
 	        }
 	        else {
@@ -16502,7 +16488,6 @@
 	                lib$3.defineReadOnly(_this, "_signingKey", function () { return signingKey_2; });
 	            }
 	            lib$3.defineReadOnly(_this, "_mnemonic", function () { return null; });
-	            lib$3.defineReadOnly(_this, "path", null);
 	            lib$3.defineReadOnly(_this, "address", lib$g.computeAddress(_this.publicKey));
 	        }
 	        if (provider && !lib$b.Provider.isProvider(provider)) {
@@ -17710,7 +17695,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.152";
+	exports.version = "providers/5.0.0-beta.153";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -21875,7 +21860,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.172";
+	exports.version = "ethers/5.0.0-beta.173";
 	});
 
 	var _version$L = unwrapExports(_version$K);

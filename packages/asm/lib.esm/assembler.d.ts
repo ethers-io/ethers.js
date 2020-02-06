@@ -1,15 +1,16 @@
 import { Opcode } from "./opcodes";
 export declare type Location = {
     offset: number;
+    line: number;
     length: number;
     source: string;
+    statement: boolean;
 };
 export declare type AssembleVisitFunc = (node: Node, bytecode: string) => void;
 export declare type VisitFunc = (node: Node) => void;
 export declare abstract class Node {
     readonly tag: string;
     readonly location: Location;
-    readonly warnings: Array<string>;
     constructor(guard: any, location: Location, options: {
         [key: string]: any;
     });
@@ -30,6 +31,12 @@ export declare class LiteralNode extends ValueNode {
     assemble(assembler: Assembler, visit: AssembleVisitFunc): Promise<void>;
     static from(options: any): LiteralNode;
 }
+export declare class PopNode extends ValueNode {
+    readonly index: number;
+    constructor(guard: any, location: Location, index: number);
+    readonly placeholder: string;
+    static from(options: any): PopNode;
+}
 export declare class LinkNode extends ValueNode {
     readonly type: string;
     readonly label: string;
@@ -40,7 +47,8 @@ export declare class LinkNode extends ValueNode {
 export declare class OpcodeNode extends ValueNode {
     readonly opcode: Opcode;
     readonly operands: Array<ValueNode>;
-    constructor(guard: any, location: Location, opcode: Opcode, operands: Array<ValueNode>);
+    readonly instructional: boolean;
+    constructor(guard: any, location: Location, opcode: Opcode, operands: Array<ValueNode>, instructional: boolean);
     assemble(assembler: Assembler, visit: AssembleVisitFunc): Promise<void>;
     children(): Array<Node>;
     visit(visit: VisitFunc): void;
@@ -61,7 +69,6 @@ export declare class DataNode extends LabelledNode {
     constructor(guard: any, location: Location, name: string, data: string);
     assemble(assembler: Assembler, visit: AssembleVisitFunc): Promise<void>;
     children(): Array<Node>;
-    visit(visit: VisitFunc): void;
     static from(options: any): DataNode;
 }
 export declare class EvaluationNode extends ValueNode {
@@ -82,10 +89,8 @@ export declare class ScopeNode extends LabelledNode {
     constructor(guard: any, location: Location, name: string, statements: Array<Node>);
     assemble(assembler: Assembler, visit: AssembleVisitFunc): Promise<void>;
     children(): Array<Node>;
-    visit(visit: VisitFunc): void;
     static from(options: any): ScopeNode;
 }
-export declare function parse(code: string): Node;
 export declare type Operation = {
     opcode: Opcode;
     offset: number;
@@ -96,15 +101,15 @@ export interface Bytecode extends Array<Operation> {
 }
 export declare function disassemble(bytecode: string): Bytecode;
 export declare function formatBytecode(bytecode: Array<Operation>): string;
-interface DataSource extends Array<number> {
-    readonly offset: number;
+export interface DataSource extends Array<number> {
+    offset: number;
+    ast: Node;
+    source: string;
 }
-declare type NodeState = {
+export declare type NodeState = {
     node: Node;
     offset: number;
     bytecode: string;
-    pending: string;
-    object?: number | DataSource;
 };
 export declare type AssemblerOptions = {
     filename?: string;
@@ -113,42 +118,46 @@ export declare type AssemblerOptions = {
     defines?: {
         [name: string]: any;
     };
+    target?: string;
+};
+export declare type ParserOptions = {
+    ignoreWarnings?: boolean;
 };
 declare class Assembler {
     readonly root: Node;
+    readonly positionIndependentCode: boolean;
     readonly nodes: {
         [tag: string]: NodeState;
     };
     readonly labels: {
         [name: string]: LabelledNode;
     };
-    readonly filename: string;
-    readonly positionIndependentCode: boolean;
-    readonly retry: number;
-    readonly defines: {
-        [name: string]: any;
+    _parents: {
+        [tag: string]: Node;
     };
-    private _stack;
-    private _parents;
-    private _script;
-    private _changed;
-    constructor(root: Node, options: AssemblerOptions);
-    readonly changed: boolean;
-    getTarget(name: string): LabelledNode;
-    reset(): void;
+    constructor(root: Node, positionIndependentCode?: boolean);
+    getTarget(label: string): LabelledNode;
     evaluate(script: string, source: Node): Promise<any>;
-    start(node: Node): void;
-    end(node: Node): void;
-    getPendingBytecode(node: Node): string;
-    _appendBytecode(bytecode: string): void;
     getAncestor<T = Node>(node: Node, cls: {
         new (...args: any[]): T;
     }): T;
+    getOffset(node: Node, source?: Node): number;
+    setOffset(node: Node, offset: number): void;
+    getBytecode(node: Node): string;
+    setBytecode(node: Node, bytecode: string): void;
     getLinkValue(target: LabelledNode, source: Node): number | DataSource;
-    get(name: string, source: Node): any;
-    _didChange(): void;
-    _assemble(): Promise<string>;
-    assemble(): Promise<string>;
+    start(node: Node): void;
+    end(node: Node): void;
 }
+export declare enum SemanticErrorSeverity {
+    error = "error",
+    warning = "warning"
+}
+export declare type SemanticError = {
+    readonly message: string;
+    readonly severity: SemanticErrorSeverity;
+    readonly node: Node;
+};
+export declare function parse(code: string, options?: ParserOptions): Node;
 export declare function assemble(ast: Node, options?: AssemblerOptions): Promise<string>;
 export {};

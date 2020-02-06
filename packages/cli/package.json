@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@babel/parser": "7.8.4",
+    "@babel/types": "7.8.3",
     "@ethersproject/asm": ">=5.0.0-beta.148",
     "@ethersproject/basex": ">=5.0.0-beta.127",
     "ethers": ">=5.0.0-beta.156",
@@ -40,7 +41,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0xf20ecfe28643c5e68c573b3204e4a03e02494722929d2fa2467d800ef0ff6edb",
+  "tarballHash": "0xf7cdf17b34ec310a5d6e2f93116a70787764532f9c9a11d7dcb5484ed44d731d",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.150"
+  "version": "5.0.0-beta.151"
 }

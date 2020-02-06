@@ -7,7 +7,7 @@ export interface FallbackProviderConfig {
     weight?: number;
 }
 export declare class FallbackProvider extends BaseProvider {
-    readonly providerConfigs: Array<FallbackProviderConfig>;
+    readonly providerConfigs: ReadonlyArray<FallbackProviderConfig>;
     readonly quorum: number;
     _highestBlockNumber: number;
     constructor(providers: Array<Provider | FallbackProviderConfig>, quorum?: number);
