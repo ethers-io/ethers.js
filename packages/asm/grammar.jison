@@ -40,14 +40,14 @@
 // Label
 ":"                                            return "COLON"
 
-// Data
+// Data Segment
 "["                                            return "OPEN_BRACKET"
 "]"                                            return "CLOSE_BRACKET"
 
 // Literals
 (0x([0-9a-fA-F][0-9a-fA-F])*)                  return "HEX"
+(0b(0|1)+)                                     return "BINARY"
 ([1-9][0-9]*|0)                                return "DECIMAL"
-//(0b[01]*)                                      return "BINARY"
 
 // Pop Placeholders
 "$$"                                           return "DOLLAR_DOLLAR"
@@ -101,6 +101,11 @@ opcode
         { $$ = { type: "hex", value: $1, loc: getLoc(yy, @1)  }; }
     | DECIMAL
         { $$ = { type: "decimal", value: $1, loc: getLoc(yy, @1)  }; }
+    | BINARY
+        { {
+            const hex = "0x" + parseInt(("0" + ($1).substring(2)), 2).toString(16);
+            $$ = { type: "hex", value: hex, loc: getLoc(yy, @1)  };
+        } }
     | DOLLAR_DOLLAR
         { $$ = { type: "pop", index: 0, loc: getLoc(yy, @1)  }; }
     | DOLLAR_INDEX
@@ -130,6 +135,13 @@ hex
             let hex = (value).toString(16);
             while (hex.length < 2) { hex = "0" + hex; }
             $$ = { type: "hex", verbatim: true, value: ("0x" + hex), loc: getLoc(yy, @1) };
+        } }
+    | BINARY
+        { {
+            const value = parseInt(($1).substring(2), 2);
+            if (value >= 256) { throw new Error("binary data values must be single bytes"); }
+            const hex = ("0x" + (value).toString(16));
+            $$ = { type: "hex", verbatim: true, value: hex, loc: getLoc(yy, @1)  };
         } }
     | SCRIPT_EVAL javascript
         { $$ = { type: "eval", verbatim: true, script: $2, loc: getLoc(yy, @1, @2) }; }
