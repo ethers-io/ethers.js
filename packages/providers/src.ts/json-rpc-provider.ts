@@ -290,7 +290,7 @@ export class JsonRpcProvider extends BaseProvider {
         });
     }
 
-    send(method: string, params: any): Promise<any> {
+    send(method: string, params: Array<any>): Promise<any> {
         let request = {
             method: method,
             params: params,

@@ -19,14 +19,6 @@ export type AsyncSendable = {
     send?: (request: any, callback: (error: any, response: any) => void) => void
 }
 
-/*
-@TODO
-utils.defineProperty(Web3Signer, "onchange", {
-
-});
-
-*/
-
 export class Web3Provider extends JsonRpcProvider {
     readonly provider: AsyncSendable;
     private _sendAsync: (request: any, callback: (error: any, response: any) => void) => void;
@@ -45,14 +37,14 @@ export class Web3Provider extends JsonRpcProvider {
             }
         }
 
-        if (!web3Provider || !this._sendAsync) {
+        if (!this._sendAsync) {
             logger.throwArgumentError("invalid web3Provider", "web3Provider", web3Provider);
         }
 
         defineReadOnly(this, "provider", web3Provider);
     }
 
-    send(method: string, params: any): Promise<any> {
+    send(method: string, params: Array<any>): Promise<any> {
 
         // Metamask complains about eth_sign (and on some versions hangs)
         if (method == "eth_sign" && this.provider.isMetaMask) {
@@ -65,7 +57,7 @@ export class Web3Provider extends JsonRpcProvider {
             const request = {
                 method: method,
                 params: params,
-                id: 42,
+                id: (this._nextId++),
                 jsonrpc: "2.0"
             };
 

@@ -29,7 +29,7 @@ export class IpcProvider extends JsonRpcProvider {
 
     // @TODO: Create a connection to the IPC path and use filters instead of polling for block
 
-    send(method: string, params: any): Promise<any> {
+    send(method: string, params: Array<any>): Promise<any> {
         // This method is very simple right now. We create a new socket
         // connection each time, which may be slower, but the main
         // advantage we are aiming for now is security. This simplifies
