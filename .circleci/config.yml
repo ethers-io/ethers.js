@@ -35,12 +35,11 @@ commands:
                   google-chrome --version
 
       - run:
-          name: Update gcc version
+          name: Update C build environment
           command: |
             sudo add-apt-repository ppa:ubuntu-toolchain-r/test
             sudo apt update
-            sudo apt install gcc-6
-            sudo apt install g++-6
+            sudo apt install gcc-6 g++-6 libusb-1.0-0-dev
             sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6
 
       - run:
