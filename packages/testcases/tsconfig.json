@@ -8,8 +8,9 @@
   "include": [
     "./thirdparty.d.ts",
     "./src.ts/*.ts",
-    "./src.ts/*.json",
-    "./src.ts/generation-scripts/*"
+    "./src.ts/*.json"
   ],
-  "exclude": []
+  "exclude": [
+    "./src.ts/generation-scripts/*"
+  ]
 }

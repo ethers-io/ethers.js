@@ -11,5 +11,5 @@ export declare class Web3Provider extends JsonRpcProvider {
     readonly provider: AsyncSendable;
     private _sendAsync;
     constructor(web3Provider: AsyncSendable, network?: Networkish);
-    send(method: string, params: any): Promise<any>;
+    send(method: string, params: Array<any>): Promise<any>;
 }

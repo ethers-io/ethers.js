@@ -72,12 +72,12 @@
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[2,21],$V1=[1,7],$V2=[1,8],$V3=[1,9],$V4=[1,10],$V5=[1,11],$V6=[1,12],$V7=[1,13],$V8=[1,14],$V9=[1,5],$Va=[1,6],$Vb=[5,27],$Vc=[5,11,14,15,16,17,18,19,20,24,27,30],$Vd=[2,2],$Ve=[1,21],$Vf=[5,10,11,13,14,15,16,17,18,19,20,24,27,30],$Vg=[1,27],$Vh=[1,28],$Vi=[1,29],$Vj=[2,16],$Vk=[5,10,11,13,14,15,16,17,18,19,20,24,27,29,30],$Vl=[16,17,20,29];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[2,23],$V1=[1,7],$V2=[1,8],$V3=[1,9],$V4=[1,10],$V5=[1,11],$V6=[1,12],$V7=[1,13],$V8=[1,14],$V9=[1,15],$Va=[1,5],$Vb=[1,6],$Vc=[5,28],$Vd=[5,11,14,15,16,17,18,19,20,21,25,28,31],$Ve=[2,2],$Vf=[1,22],$Vg=[5,10,11,13,14,15,16,17,18,19,20,21,25,28,31],$Vh=[1,28],$Vi=[1,29],$Vj=[1,30],$Vk=[1,31],$Vl=[2,17],$Vm=[5,10,11,13,14,15,16,17,18,19,20,21,25,28,30,31],$Vn=[16,17,18,21,30];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"program":3,"statement_list":4,"EOF":5,"javascript":6,"SCRIPT_TOKEN":7,"opcode_list":8,"opcode":9,"COMMA":10,"ID":11,"OPEN_PAREN":12,"CLOSE_PAREN":13,"HASH_ID":14,"DOLLAR_ID":15,"HEX":16,"DECIMAL":17,"DOLLAR_DOLLAR":18,"DOLLAR_INDEX":19,"SCRIPT_EVAL":20,"hex_list":21,"hex":22,"statement":23,"AT_ID":24,"COLON":25,"OPEN_BRACE":26,"CLOSE_BRACE":27,"OPEN_BRACKET":28,"CLOSE_BRACKET":29,"SCRIPT_EXEC":30,"$accept":0,"$end":1},
-terminals_: {2:"error",5:"EOF",7:"SCRIPT_TOKEN",10:"COMMA",11:"ID",12:"OPEN_PAREN",13:"CLOSE_PAREN",14:"HASH_ID",15:"DOLLAR_ID",16:"HEX",17:"DECIMAL",18:"DOLLAR_DOLLAR",19:"DOLLAR_INDEX",20:"SCRIPT_EVAL",24:"AT_ID",25:"COLON",26:"OPEN_BRACE",27:"CLOSE_BRACE",28:"OPEN_BRACKET",29:"CLOSE_BRACKET",30:"SCRIPT_EXEC"},
-productions_: [0,[3,2],[6,0],[6,2],[8,1],[8,3],[9,1],[9,3],[9,4],[9,1],[9,1],[9,1],[9,1],[9,1],[9,1],[9,2],[21,0],[21,2],[22,1],[22,1],[22,2],[4,0],[4,2],[23,1],[23,2],[23,4],[23,4],[23,2]],
+symbols_: {"error":2,"program":3,"statement_list":4,"EOF":5,"javascript":6,"SCRIPT_TOKEN":7,"opcode_list":8,"opcode":9,"COMMA":10,"ID":11,"OPEN_PAREN":12,"CLOSE_PAREN":13,"HASH_ID":14,"DOLLAR_ID":15,"HEX":16,"DECIMAL":17,"BINARY":18,"DOLLAR_DOLLAR":19,"DOLLAR_INDEX":20,"SCRIPT_EVAL":21,"hex_list":22,"hex":23,"statement":24,"AT_ID":25,"COLON":26,"OPEN_BRACE":27,"CLOSE_BRACE":28,"OPEN_BRACKET":29,"CLOSE_BRACKET":30,"SCRIPT_EXEC":31,"$accept":0,"$end":1},
+terminals_: {2:"error",5:"EOF",7:"SCRIPT_TOKEN",10:"COMMA",11:"ID",12:"OPEN_PAREN",13:"CLOSE_PAREN",14:"HASH_ID",15:"DOLLAR_ID",16:"HEX",17:"DECIMAL",18:"BINARY",19:"DOLLAR_DOLLAR",20:"DOLLAR_INDEX",21:"SCRIPT_EVAL",25:"AT_ID",26:"COLON",27:"OPEN_BRACE",28:"CLOSE_BRACE",29:"OPEN_BRACKET",30:"CLOSE_BRACKET",31:"SCRIPT_EXEC"},
+productions_: [0,[3,2],[6,0],[6,2],[8,1],[8,3],[9,1],[9,3],[9,4],[9,1],[9,1],[9,1],[9,1],[9,1],[9,1],[9,1],[9,2],[22,0],[22,2],[23,1],[23,1],[23,1],[23,2],[4,0],[4,2],[24,1],[24,2],[24,4],[24,4],[24,2]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -124,28 +124,34 @@ case 12:
  this.$ = { type: "decimal", value: $$[$0], loc: getLoc(yy, _$[$0])  }; 
 break;
 case 13:
- this.$ = { type: "pop", index: 0, loc: getLoc(yy, _$[$0])  }; 
+ {
+            const hex = "0x" + parseInt(("0" + ($$[$0]).substring(2)), 2).toString(16);
+            this.$ = { type: "hex", value: hex, loc: getLoc(yy, _$[$0])  };
+        } 
 break;
 case 14:
- this.$ = { type: "pop", index: parseInt(($$[$0]).substring(1)), loc: getLoc(yy, _$[$0])  }; 
+ this.$ = { type: "pop", index: 0, loc: getLoc(yy, _$[$0])  }; 
 break;
 case 15:
+ this.$ = { type: "pop", index: parseInt(($$[$0]).substring(1)), loc: getLoc(yy, _$[$0])  }; 
+break;
+case 16:
  this.$ = { type: "eval", script: $$[$0], loc: getLoc(yy, _$[$0-1], _$[$0])  }; 
 break;
-case 16: case 21:
+case 17: case 23:
  this.$ = [ ]; 
 break;
-case 17:
+case 18:
  {
             const hexes = $$[$0].slice();;
             hexes.unshift($$[$0-1]);
             this.$ = hexes;
         } 
 break;
-case 18:
+case 19:
  this.$ = { type: "hex", verbatim: true, value: $$[$0], loc: getLoc(yy, _$[$0]) }; 
 break;
-case 19:
+case 20:
  {
             const value = parseInt($$[$0]);
             if (value >= 256) { throw new Error("decimal data values must be single bytes"); }
@@ -154,39 +160,47 @@ case 19:
             this.$ = { type: "hex", verbatim: true, value: ("0x" + hex), loc: getLoc(yy, _$[$0]) };
         } 
 break;
-case 20:
- this.$ = { type: "eval", verbatim: true, script: $$[$0], loc: getLoc(yy, _$[$0-1], _$[$0]) }; 
+case 21:
+ {
+            const value = parseInt(($$[$0]).substring(2), 2);
+            if (value >= 256) { throw new Error("binary data values must be single bytes"); }
+            const hex = ("0x" + (value).toString(16));
+            this.$ = { type: "hex", verbatim: true, value: hex, loc: getLoc(yy, _$[$0])  };
+        } 
 break;
 case 22:
+ this.$ = { type: "eval", verbatim: true, script: $$[$0], loc: getLoc(yy, _$[$0-1], _$[$0]) }; 
+break;
+case 24:
  {
             const statements = $$[$0].slice();
             statements.unshift($$[$0-1]);
             this.$ = statements;
         } 
 break;
-case 23:
+case 25:
  {
             const statement = $$[$0];
             statement.loc.statement = true;
             this.$ = statement;
         } 
 break;
-case 24:
+case 26:
  this.$ = { type: "label", name: $$[$0-1].substring(1), loc: getLoc(yy, _$[$0-1], _$[$0], true)  }; 
 break;
-case 25:
+case 27:
  this.$ = { type: "scope", name: $$[$0-3].substring(1), statements: $$[$0-1], loc: getLoc(yy, _$[$0-3], _$[$0], true) }; 
 break;
-case 26:
+case 28:
  this.$ = { type: "data", name: $$[$0-3].substring(1), data: $$[$0-1], loc: getLoc(yy, _$[$0-3], _$[$0], true) }; 
 break;
-case 27:
+case 29:
  this.$ = { type: "exec", script: $$[$0], loc: getLoc(yy, _$[$0-1], _$[$0], true) }; 
 break;
 }
 },
-table: [{3:1,4:2,5:$V0,9:4,11:$V1,14:$V2,15:$V3,16:$V4,17:$V5,18:$V6,19:$V7,20:$V8,23:3,24:$V9,30:$Va},{1:[3]},{5:[1,15]},o($Vb,$V0,{23:3,9:4,4:16,11:$V1,14:$V2,15:$V3,16:$V4,17:$V5,18:$V6,19:$V7,20:$V8,24:$V9,30:$Va}),o($Vc,[2,23]),{25:[1,17],26:[1,18],28:[1,19]},o($Vc,$Vd,{6:20,7:$Ve}),o($Vf,[2,6],{12:[1,22]}),o($Vf,[2,9]),o($Vf,[2,10]),o($Vf,[2,11]),o($Vf,[2,12]),o($Vf,[2,13]),o($Vf,[2,14]),o($Vf,$Vd,{6:23,7:$Ve}),{1:[2,1]},o($Vb,[2,22]),o($Vc,[2,24]),{4:24,9:4,11:$V1,14:$V2,15:$V3,16:$V4,17:$V5,18:$V6,19:$V7,20:$V8,23:3,24:$V9,27:$V0,30:$Va},{16:$Vg,17:$Vh,20:$Vi,21:25,22:26,29:$Vj},o($Vc,[2,27]),o($Vk,$Vd,{6:30,7:$Ve}),{8:32,9:33,11:$V1,13:[1,31],14:$V2,15:$V3,16:$V4,17:$V5,18:$V6,19:$V7,20:$V8},o($Vf,[2,15]),{27:[1,34]},{29:[1,35]},{16:$Vg,17:$Vh,20:$Vi,21:36,22:26,29:$Vj},o($Vl,[2,18]),o($Vl,[2,19]),o($Vl,$Vd,{6:37,7:$Ve}),o($Vk,[2,3]),o($Vf,[2,7]),{13:[1,38]},{10:[1,39],13:[2,4]},o($Vc,[2,25]),o($Vc,[2,26]),{29:[2,17]},o($Vl,[2,20]),o($Vf,[2,8]),{8:40,9:33,11:$V1,14:$V2,15:$V3,16:$V4,17:$V5,18:$V6,19:$V7,20:$V8},{13:[2,5]}],
-defaultActions: {15:[2,1],36:[2,17],40:[2,5]},
+table: [{3:1,4:2,5:$V0,9:4,11:$V1,14:$V2,15:$V3,16:$V4,17:$V5,18:$V6,19:$V7,20:$V8,21:$V9,24:3,25:$Va,31:$Vb},{1:[3]},{5:[1,16]},o($Vc,$V0,{24:3,9:4,4:17,11:$V1,14:$V2,15:$V3,16:$V4,17:$V5,18:$V6,19:$V7,20:$V8,21:$V9,25:$Va,31:$Vb}),o($Vd,[2,25]),{26:[1,18],27:[1,19],29:[1,20]},o($Vd,$Ve,{6:21,7:$Vf}),o($Vg,[2,6],{12:[1,23]}),o($Vg,[2,9]),o($Vg,[2,10]),o($Vg,[2,11]),o($Vg,[2,12]),o($Vg,[2,13]),o($Vg,[2,14]),o($Vg,[2,15]),o($Vg,$Ve,{6:24,7:$Vf}),{1:[2,1]},o($Vc,[2,24]),o($Vd,[2,26]),{4:25,9:4,11:$V1,14:$V2,15:$V3,16:$V4,17:$V5,18:$V6,19:$V7,20:$V8,21:$V9,24:3,25:$Va,28:$V0,31:$Vb},{16:$Vh,17:$Vi,18:$Vj,21:$Vk,22:26,23:27,30:$Vl},o($Vd,[2,29]),o($Vm,$Ve,{6:32,7:$Vf}),{8:34,9:35,11:$V1,13:[1,33],14:$V2,15:$V3,16:$V4,17:$V5,18:$V6,19:$V7,20:$V8,21:$V9},o($Vg,[2,16]),{28:[1,36]},{30:[1,37]},{16:$Vh,17:$Vi,18:$Vj,21:$Vk,22:38,23:27,30:$Vl},o($Vn,[2,19]),o($Vn,[2,20]),o($Vn,[2,21]),o($Vn,$Ve,{6:39,7:$Vf}),o($Vm,[2,3]),o($Vg,[2,7]),{13:[1,40]},{10:[1,41],13:[2,4]},o($Vd,[2,27]),o($Vd,[2,28]),{30:[2,18]},o($Vn,[2,22]),o($Vg,[2,8]),{8:42,9:35,11:$V1,14:$V2,15:$V3,16:$V4,17:$V5,18:$V6,19:$V7,20:$V8,21:$V9},{13:[2,5]}],
+defaultActions: {16:[2,1],38:[2,18],42:[2,5]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -722,20 +736,22 @@ case 17:return "CLOSE_BRACKET"
 break;
 case 18:return "HEX"
 break;
-case 19:return "DECIMAL"
+case 19:return "BINARY"
 break;
-case 20:return "DOLLAR_DOLLAR"
+case 20:return "DECIMAL"
 break;
-case 21:return "DOLLAR_INDEX"
+case 21:return "DOLLAR_DOLLAR"
 break;
-case 22:return "EOF"
+case 22:return "DOLLAR_INDEX"
 break;
-case 23:return "INVALID"
+case 23:return "EOF"
+break;
+case 24:return "INVALID"
 break;
 }
 },
-rules: [/^(?:\{\{=)/,/^(?:\{\{!)/,/^(?:([^\}]|\n|\}[^}]))/,/^(?:\}\})/,/^(?:([;][^\n]*\n))/,/^(?:(\s+))/,/^(?:([A-Za-z][A-Za-z0-9]*))/,/^(?:\()/,/^(?:\))/,/^(?:,)/,/^(?:([@][A-Za-z][A-Za-z0-9]*))/,/^(?:([$](_|[A-Za-z][A-Za-z0-9]*)))/,/^(?:([#](_|[A-Za-z][A-Za-z0-9]*)))/,/^(?:\{)/,/^(?:\})/,/^(?::)/,/^(?:\[)/,/^(?:\])/,/^(?:(0x([0-9a-fA-F][0-9a-fA-F])*))/,/^(?:([1-9][0-9]*|0))/,/^(?:\$\$)/,/^(?:([$][1-9][0-9]*))/,/^(?:$)/,/^(?:)/],
-conditions: {"script":{"rules":[2,3],"inclusive":false},"INITIAL":{"rules":[0,1,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],"inclusive":true}}
+rules: [/^(?:\{\{=)/,/^(?:\{\{!)/,/^(?:([^\}]|\n|\}[^}]))/,/^(?:\}\})/,/^(?:([;][^\n]*\n))/,/^(?:(\s+))/,/^(?:([A-Za-z][A-Za-z0-9]*))/,/^(?:\()/,/^(?:\))/,/^(?:,)/,/^(?:([@][A-Za-z][A-Za-z0-9]*))/,/^(?:([$](_|[A-Za-z][A-Za-z0-9]*)))/,/^(?:([#](_|[A-Za-z][A-Za-z0-9]*)))/,/^(?:\{)/,/^(?:\})/,/^(?::)/,/^(?:\[)/,/^(?:\])/,/^(?:(0x([0-9a-fA-F][0-9a-fA-F])*))/,/^(?:(0b(0|1)+))/,/^(?:([1-9][0-9]*|0))/,/^(?:\$\$)/,/^(?:([$][1-9][0-9]*))/,/^(?:$)/,/^(?:)/],
+conditions: {"script":{"rules":[2,3],"inclusive":false},"INITIAL":{"rules":[0,1,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24],"inclusive":true}}
 });
 return lexer;
 })();

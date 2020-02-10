@@ -3,6 +3,18 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.173 (2020-02-10 15:50)
+-----------------------------------------
+
+  - Added experimental EipWrappedProvider. ([944600d](https://github.com/ethers-io/ethers.js/commit/944600d779564c500ab98d3265286a0717642614))
+  - Updated signature for JsonRpcProvider.send to match EIP-1193. ([b962b59](https://github.com/ethers-io/ethers.js/commit/b962b59ab72e67bc4566a361964e42cf1b791025))
+  - Added binary literal support to ASM grammar. ([375bd15](https://github.com/ethers-io/ethers.js/commit/375bd15594a3179432e8452d819d91ea72b4bdd8))
+  - Added explicit pop placeholders to ASM dialect. ([a6b696d](https://github.com/ethers-io/ethers.js/commit/a6b696d8bd03c4027b52fe23745f066d158f1420))
+  - Added position independent code option for asm. ([89615c5](https://github.com/ethers-io/ethers.js/commit/89615c59d385a58fa79b6bbd8eae53c30e45fe96))
+  - Added ASM semantic checking and the Pop placeholder. ([a33bf0e](https://github.com/ethers-io/ethers.js/commit/a33bf0e37f4f969cc03b85ebf0dbadcf3e9b068a))
+  - Better type safety for defineReadOnly. ([e7adc84](https://github.com/ethers-io/ethers.js/commit/e7adc84a972968f39a983efb6f21b6ceaacd6cc5))
+  - Fixed CLI sandbox quiting after prompt entry. ([ff9bc2a](https://github.com/ethers-io/ethers.js/commit/ff9bc2a282e617125bbca76702dec85149661390))
+
 ethers/v5.0.0-beta.172 (2020-02-04 00:59)
 -----------------------------------------
 

@@ -18,13 +18,6 @@ var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var json_rpc_provider_1 = require("./json-rpc-provider");
-/*
-@TODO
-utils.defineProperty(Web3Signer, "onchange", {
-
-});
-
-*/
 var Web3Provider = /** @class */ (function (_super) {
     __extends(Web3Provider, _super);
     function Web3Provider(web3Provider, network) {
@@ -41,7 +34,7 @@ var Web3Provider = /** @class */ (function (_super) {
                 _this._sendAsync = web3Provider.send.bind(web3Provider);
             }
         }
-        if (!web3Provider || !_this._sendAsync) {
+        if (!_this._sendAsync) {
             logger.throwArgumentError("invalid web3Provider", "web3Provider", web3Provider);
         }
         properties_1.defineReadOnly(_this, "provider", web3Provider);
@@ -59,7 +52,7 @@ var Web3Provider = /** @class */ (function (_super) {
             var request = {
                 method: method,
                 params: params,
-                id: 42,
+                id: (_this._nextId++),
                 jsonrpc: "2.0"
             };
             _this._sendAsync(request, function (error, result) {

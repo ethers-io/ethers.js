@@ -21309,13 +21309,6 @@
 
 	var logger = new lib.Logger(_version$G.version);
 
-	/*
-	@TODO
-	utils.defineProperty(Web3Signer, "onchange", {
-
-	});
-
-	*/
 	var Web3Provider = /** @class */ (function (_super) {
 	    __extends(Web3Provider, _super);
 	    function Web3Provider(web3Provider, network) {
@@ -21332,7 +21325,7 @@
 	                _this._sendAsync = web3Provider.send.bind(web3Provider);
 	            }
 	        }
-	        if (!web3Provider || !_this._sendAsync) {
+	        if (!_this._sendAsync) {
 	            logger.throwArgumentError("invalid web3Provider", "web3Provider", web3Provider);
 	        }
 	        lib$3.defineReadOnly(_this, "provider", web3Provider);
@@ -21350,7 +21343,7 @@
 	            var request = {
 	                method: method,
 	                params: params,
-	                id: 42,
+	                id: (_this._nextId++),
 	                jsonrpc: "2.0"
 	            };
 	            _this._sendAsync(request, function (error, result) {

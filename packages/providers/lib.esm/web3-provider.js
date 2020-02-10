@@ -4,13 +4,6 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 import { JsonRpcProvider } from "./json-rpc-provider";
-/*
-@TODO
-utils.defineProperty(Web3Signer, "onchange", {
-
-});
-
-*/
 export class Web3Provider extends JsonRpcProvider {
     constructor(web3Provider, network) {
         logger.checkNew(new.target, Web3Provider);
@@ -24,7 +17,7 @@ export class Web3Provider extends JsonRpcProvider {
                 this._sendAsync = web3Provider.send.bind(web3Provider);
             }
         }
-        if (!web3Provider || !this._sendAsync) {
+        if (!this._sendAsync) {
             logger.throwArgumentError("invalid web3Provider", "web3Provider", web3Provider);
         }
         defineReadOnly(this, "provider", web3Provider);
@@ -40,7 +33,7 @@ export class Web3Provider extends JsonRpcProvider {
             const request = {
                 method: method,
                 params: params,
-                id: 42,
+                id: (this._nextId++),
                 jsonrpc: "2.0"
             };
             this._sendAsync(request, function (error, result) {

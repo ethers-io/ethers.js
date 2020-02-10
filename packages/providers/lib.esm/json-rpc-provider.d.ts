@@ -29,7 +29,7 @@ export declare class JsonRpcProvider extends BaseProvider {
     getSigner(addressOrIndex?: string | number): JsonRpcSigner;
     getUncheckedSigner(addressOrIndex?: string | number): UncheckedJsonRpcSigner;
     listAccounts(): Promise<Array<string>>;
-    send(method: string, params: any): Promise<any>;
+    send(method: string, params: Array<any>): Promise<any>;
     perform(method: string, params: any): Promise<any>;
     _startPending(): void;
     _stopPending(): void;
