@@ -39,46 +39,46 @@ commands:
           command: |
             sudo add-apt-repository ppa:ubuntu-toolchain-r/test
             sudo apt update
-            sudo apt install gcc-6 g++-6 libusb-1.0-0-dev
+            sudo apt install gcc-6 g++-6 libusb-1.0-0-dev libudev-dev
             sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6
 
-      - run:
-          name: Prepare to run parity
-          command: |
-            mkdir -p /tmp/parity/keys
-            cp -r admin/test-parity/parity-keys /tmp/parity/keys/DevelopmentChain
-            cp admin/test-parity/parity-dev.* /tmp/parity
-            chmod -R 777 /tmp/parity
-            ls -la /tmp/parity
+#      - run:
+#          name: Prepare to run parity
+#          command: |
+#            mkdir -p /tmp/parity/keys
+#            cp -r admin/test-parity/parity-keys /tmp/parity/keys/DevelopmentChain
+#            cp admin/test-parity/parity-dev.* /tmp/parity
+#            chmod -R 777 /tmp/parity
+#            ls -la /tmp/parity
 
-      - run:
-          name: Starting Parity
-          command: |
-            docker run -d \
-            -p 8545:8545 \
-            -p 8546:8546 \
-            -p 30303:30303 \
-            -p 30303:30303/udp \
-            --name parity \
-            -v /tmp/parity:/home/parity/.local/share/io.parity.ethereum parity/parity:v2.4.8-stable \
-            --chain /home/parity/.local/share/io.parity.ethereum/parity-dev.json \
-            --unlock=0x7454a8F5a7c7555d79B172C89D20E1f4e4CC226C \
-            --password /home/parity/.local/share/io.parity.ethereum/parity-dev.pwds \
-            --min-gas-price 1000000000 \
-            --jsonrpc-interface all
+#      - run:
+#          name: Starting Parity
+#          command: |
+#           docker run -d \
+#            -p 8545:8545 \
+#            -p 8546:8546 \
+#            -p 30303:30303 \
+#            -p 30303:30303/udp \
+#            --name parity \
+#            -v /tmp/parity:/home/parity/.local/share/io.parity.ethereum parity/parity:v2.4.8-stable \
+#            --chain /home/parity/.local/share/io.parity.ethereum/parity-dev.json \
+#            --unlock=0x7454a8F5a7c7555d79B172C89D20E1f4e4CC226C \
+#            --password /home/parity/.local/share/io.parity.ethereum/parity-dev.pwds \
+#            --min-gas-price 1000000000 \
+#            --jsonrpc-interface all
 
-      - run:
-          name: Waiting for Parity to be ready
-          command: |
-            for i in `seq 1 20`;
-            do
-              nc -z localhost 8545 && echo Success && exit 0
-              echo -n .
-              sleep 2
-            done
-            docker ps -a
-            docker logs parity 
-            echo Failed waiting for Parity && exit 1
+#      - run:
+#          name: Waiting for Parity to be ready
+#          command: |
+#            for i in `seq 1 20`;
+#            do
+#              nc -z localhost 8545 && echo Success && exit 0
+#              echo -n .
+#              sleep 2
+#            done
+#            docker ps -a
+#            docker logs parity 
+#            echo Failed waiting for Parity && exit 1
 
       - run:
           name: Run << parameters.test-script >> with node version << parameters.node-version >>
