@@ -52,7 +52,11 @@ function TestContractEvents() {
 
         function waitForEvent(eventName: string, expected: Array<any>): Promise<void> {
             return new Promise(function(resolve, reject) {
+                let done = false;
                 contract.on(eventName, function() {
+                    if (done) { return; }
+                    done = true;
+
                     let args = Array.prototype.slice.call(arguments);
                     let event = args.pop();
                     event.removeListener();
@@ -60,10 +64,14 @@ function TestContractEvents() {
                     resolve();
                 });
 
-                setTimeout(() => {
+                const timer = setTimeout(() => {
+                    if (done) { return; }
+                    done = true;
+
                     contract.removeAllListeners();
                     reject(new Error("timeout"));
-                }, TIMEOUT_PERIOD)
+                }, TIMEOUT_PERIOD);
+                if (timer.unref) { timer.unref(); }
             });
         }
 
