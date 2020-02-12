@@ -12,7 +12,7 @@ var blockchainData = {
         addresses: [
             {
                 address: "0xAC1639CF97a3A46D431e6d1216f576622894cBB5",
-                balance: bnify("4918774100000000"),
+                balance: bnify("4813414100000000"),
                 code: "0x"
             },
             // Splitter contract

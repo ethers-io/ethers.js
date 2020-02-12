@@ -7,6 +7,7 @@ var assert_1 = __importDefault(require("assert"));
 var ethers_1 = require("ethers");
 var test_contract_json_1 = __importDefault(require("./test-contract.json"));
 var provider = new ethers_1.ethers.providers.InfuraProvider('rinkeby');
+var TIMEOUT_PERIOD = 120000;
 var contract = (function () {
     return new ethers_1.ethers.Contract(test_contract_json_1.default.contractAddress, test_contract_json_1.default.interface, provider);
 })();
@@ -42,13 +43,29 @@ function TestContractEvents() {
         });
         function waitForEvent(eventName, expected) {
             return new Promise(function (resolve, reject) {
+                var done = false;
                 contract.on(eventName, function () {
+                    if (done) {
+                        return;
+                    }
+                    done = true;
                     var args = Array.prototype.slice.call(arguments);
                     var event = args.pop();
                     event.removeListener();
                     equals(event.event, args, expected);
                     resolve();
                 });
+                var timer = setTimeout(function () {
+                    if (done) {
+                        return;
+                    }
+                    done = true;
+                    contract.removeAllListeners();
+                    reject(new Error("timeout"));
+                }, TIMEOUT_PERIOD);
+                if (timer.unref) {
+                    timer.unref();
+                }
             });
         }
         return new Promise(function (resolve, reject) {
@@ -71,11 +88,11 @@ function TestContractEvents() {
 }
 describe('Test Contract Objects', function () {
     it('parses events', function () {
-        this.timeout(120000);
+        this.timeout(TIMEOUT_PERIOD);
         return TestContractEvents();
     });
     it('ABIv2 parameters and return types work', function () {
-        this.timeout(120000);
+        this.timeout(TIMEOUT_PERIOD);
         var p0 = '0x06B5955A67D827CDF91823E3bB8F069e6c89c1D6';
         var p0_0f = '0x06B5955a67d827cDF91823e3bB8F069E6c89c1e5';
         var p0_f0 = '0x06b5955a67D827CDF91823e3Bb8F069E6C89c2C6';
@@ -103,13 +120,13 @@ describe('Test Contract Objects', function () {
         return seq;
     });
     it('collapses single argument solidity methods', function () {
-        this.timeout(120000);
+        this.timeout(TIMEOUT_PERIOD);
         return contract.testSingleResult(4).then(function (result) {
             assert_1.default.equal(result, 5, 'single value returned');
         });
     });
     it('does not collapses multi argument solidity methods', function () {
-        this.timeout(120000);
+        this.timeout(TIMEOUT_PERIOD);
         return contract.testMultiResult(6).then(function (result) {
             assert_1.default.equal(result[0], 7, 'multi value [0] returned');
             assert_1.default.equal(result[1], 8, 'multi value [1] returned');
