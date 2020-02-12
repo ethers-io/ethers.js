@@ -3,7 +3,7 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.0-beta.173 (2020-02-10 15:50)
+ethers/v5.0.0-beta.173 (2020-02-12 17:09)
 -----------------------------------------
 
   - Added experimental EipWrappedProvider. ([944600d](https://github.com/ethers-io/ethers.js/commit/944600d779564c500ab98d3265286a0717642614))
