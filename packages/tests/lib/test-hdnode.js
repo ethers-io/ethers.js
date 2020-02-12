@@ -14,9 +14,20 @@ function randomCase(seed, text) {
         return c;
     }).join("");
 }
+// Too many test cases are caussing issues for the CI
+// Only run random cases under random-128
+function checkRandom(name) {
+    if (name.substring(0, 7) === "random-") {
+        return (parseInt(name.substring(7)) <= 128);
+    }
+    return true;
+}
 describe('Test HD Node Derivation is Case Agnostic', function () {
     var tests = testcases_1.loadTests('hdnode');
     tests.forEach(function (test) {
+        if (!checkRandom(test.name)) {
+            return;
+        }
         it("Normalizes case - " + test.name, function () {
             this.timeout(10000);
             var wordlist = (ethers_1.ethers.wordlists)[test.locale];
@@ -30,6 +41,9 @@ describe('Test HD Node Derivation is Case Agnostic', function () {
 describe('Test HD Node Derivation from Seed', function () {
     var tests = testcases_1.loadTests('hdnode');
     tests.forEach(function (test) {
+        if (!checkRandom(test.name)) {
+            return;
+        }
         // If there is nothing to derive, skip this portion of the test
         if (test.hdnodes.length === 0) {
             return;
@@ -49,6 +63,9 @@ describe('Test HD Node Derivation from Seed', function () {
 describe('Test HD Node Derivation from Mnemonic', function () {
     var tests = testcases_1.loadTests('hdnode');
     tests.forEach(function (test) {
+        if (!checkRandom(test.name)) {
+            return;
+        }
         // If there is nothing to derive, skip this portion of the test
         if (test.hdnodes.length === 0) {
             return;
@@ -71,6 +88,9 @@ describe('Test HD Node Derivation from Mnemonic', function () {
 describe('Test HD Mnemonic Phrases', function testMnemonic() {
     var tests = testcases_1.loadTests('hdnode');
     tests.forEach(function (test) {
+        if (!checkRandom(test.name)) {
+            return;
+        }
         it(('converts mnemonic phrases - ' + test.name), function () {
             this.timeout(1000000);
             assert_1.default.equal(ethers_1.ethers.utils.mnemonicToSeed(test.mnemonic, test.password), test.seed, 'Converts mnemonic to seed - ' + test.mnemonic + ':' + test.password);
