@@ -14,9 +14,20 @@ function randomCase(seed: string, text: string): string {
     }).join("");
 }
 
+// Too many test cases are caussing issues for the CI
+// Only run random cases under random-128
+function checkRandom(name: string): boolean {
+    if (name.substring(0, 7) === "random-") {
+        return (parseInt(name.substring(7)) <= 128);
+    }
+    return true;
+}
+
 describe('Test HD Node Derivation is Case Agnostic', function() {
     let tests: Array<TestCase.HDWallet> = loadTests('hdnode');
     tests.forEach((test) => {
+        if (!checkRandom(test.name)) { return; }
+
         it("Normalizes case - " + test.name, function() {
             this.timeout(10000);
             let wordlist = (<{ [ locale: string ]: ethers.Wordlist }>(ethers.wordlists))[test.locale];
@@ -36,6 +47,7 @@ describe('Test HD Node Derivation from Seed', function() {
     let tests: Array<TestCase.HDWallet> = loadTests('hdnode');
 
     tests.forEach((test) => {
+        if (!checkRandom(test.name)) { return; }
 
         // If there is nothing to derive, skip this portion of the test
         if (test.hdnodes.length === 0) { return; }
@@ -63,6 +75,7 @@ describe('Test HD Node Derivation from Mnemonic', function() {
     let tests: Array<TestCase.HDWallet> = loadTests('hdnode');
 
     tests.forEach((test) => {
+        if (!checkRandom(test.name)) { return; }
 
         // If there is nothing to derive, skip this portion of the test
         if (test.hdnodes.length === 0) { return; }
@@ -97,6 +110,8 @@ describe('Test HD Mnemonic Phrases', function testMnemonic() {
     let tests: Array<TestCase.HDWallet> = loadTests('hdnode');
 
     tests.forEach(function(test) {
+        if (!checkRandom(test.name)) { return; }
+
         it(('converts mnemonic phrases - ' + test.name), function() {
             this.timeout(1000000);
 
