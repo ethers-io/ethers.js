@@ -99,8 +99,12 @@ function _compile(_solc, source, options) {
 // Creates a require which will first search from the current location,
 // and for solc will fallback onto the version included in @ethersproject/cli
 function customRequire(path) {
-    var pathRequire = module_1.default.createRequireFromPath(path_1.resolve(path, "./sandbox.js"));
-    var libRequire = module_1.default.createRequireFromPath(path_1.resolve(__filename));
+    // Node 8.x does not support createRequireFromPath
+    var createRequire = (module_1.default.createRequireFromPath || (function (path) {
+        return require;
+    }));
+    var pathRequire = createRequire(path_1.resolve(path, "./sandbox.js"));
+    var libRequire = createRequire(path_1.resolve(__filename));
     return function (name) {
         try {
             return pathRequire(name);
