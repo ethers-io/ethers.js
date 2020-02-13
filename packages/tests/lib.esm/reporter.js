@@ -1,4 +1,6 @@
 'use strict';
+// Maximum time in seconds to suppress output
+const MAX_DELAY = 30;
 function getTime() {
     return (new Date()).getTime();
 }
@@ -31,8 +33,7 @@ export function Reporter(runner) {
         if (!message) {
             message = '';
         }
-        let indent = getIndent();
-        console.log(indent + message);
+        console.log(getIndent() + message);
         lastOutput = getTime();
     }
     runner.on('suite', function (suite) {
@@ -67,12 +68,19 @@ export function Reporter(runner) {
             currentSuite._countTotal += suite._countTotal;
         }
     });
-    runner.on('test', function (test) {
-        let currentSuite = suites[suites.length - 1];
-        if (((getTime() - lastOutput) / 1000) > 60) {
+    function forceOutput() {
+        if (((getTime() - lastOutput) / 1000) > MAX_DELAY) {
+            const currentSuite = suites[suites.length - 1];
             log('[ Still running suite - test #' + currentSuite._countTotal + ' ]');
-            lastOutput = getTime();
         }
+    }
+    const timer = setInterval(forceOutput, 1000);
+    if (timer.unref) {
+        timer.unref();
+    }
+    runner.on('test', function (test) {
+        forceOutput();
+        const currentSuite = suites[suites.length - 1];
         currentSuite._countTotal++;
     });
     runner.on('fail', function (test, error) {

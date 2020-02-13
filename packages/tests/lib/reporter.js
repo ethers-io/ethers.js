@@ -1,5 +1,7 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+// Maximum time in seconds to suppress output
+var MAX_DELAY = 30;
 function getTime() {
     return (new Date()).getTime();
 }
@@ -32,8 +34,7 @@ function Reporter(runner) {
         if (!message) {
             message = '';
         }
-        var indent = getIndent();
-        console.log(indent + message);
+        console.log(getIndent() + message);
         lastOutput = getTime();
     }
     runner.on('suite', function (suite) {
@@ -68,12 +69,19 @@ function Reporter(runner) {
             currentSuite._countTotal += suite._countTotal;
         }
     });
-    runner.on('test', function (test) {
-        var currentSuite = suites[suites.length - 1];
-        if (((getTime() - lastOutput) / 1000) > 60) {
+    function forceOutput() {
+        if (((getTime() - lastOutput) / 1000) > MAX_DELAY) {
+            var currentSuite = suites[suites.length - 1];
             log('[ Still running suite - test #' + currentSuite._countTotal + ' ]');
-            lastOutput = getTime();
         }
+    }
+    var timer = setInterval(forceOutput, 1000);
+    if (timer.unref) {
+        timer.unref();
+    }
+    runner.on('test', function (test) {
+        forceOutput();
+        var currentSuite = suites[suites.length - 1];
         currentSuite._countTotal++;
     });
     runner.on('fail', function (test, error) {
