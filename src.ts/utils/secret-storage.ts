@@ -26,6 +26,7 @@ export type EncryptOptions = {
    entropy?: Arrayish;
    mnemonic?: string;
    path?: string;
+   wordlist?: any; // Should be a wordlist, but don't want to create the dependency
    client?: string;
    salt?: Arrayish;
    uuid?: string;
@@ -177,7 +178,8 @@ export function decrypt(json: string, password: Arrayish, progressCallback?: Pro
         }
 
         // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
-        if (searchPath(data, 'x-ethers/version') === '0.1') {
+        const locale = searchPath(data, 'x-ethers/locale');
+        if (searchPath(data, 'x-ethers/version') === '0.1' && (locale == null || locale === "en")) {
             var mnemonicCiphertext = looseArrayify(searchPath(data, 'x-ethers/mnemonicCiphertext'));
             var mnemonicIv = looseArrayify(searchPath(data, 'x-ethers/mnemonicCounter'));
 
@@ -318,7 +320,7 @@ export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | 
                 throw new Error('entropy and mnemonic mismatch');
             }
         } else {
-            entropy = arrayify(HDNode.mnemonicToEntropy(options.mnemonic));
+            entropy = arrayify(HDNode.mnemonicToEntropy(options.mnemonic, options.wordlist));
         }
     }
 
@@ -441,6 +443,9 @@ export function encrypt(privateKey: Arrayish | SigningKey, password: Arrayish | 
                         path: path,
                         version: "0.1"
                     };
+                    if (options.wordlist && typeof(options.wordlist.locale) === "string") {
+                        data['x-ethers'].locale = options.wordlist.locale;
+                    }
                 }
 
                 if (progressCallback) { progressCallback(1); }
