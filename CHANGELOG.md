@@ -1,6 +1,14 @@
 CHANGELOG
 =========
 
+ethers/v4.0.45 (2020-02-16 16:16)
+---------------------------------
+
+  - Added default API key for EtherscanProvider. ([a930047](https://github.com/ethers-io/ethers.js/commit/a930047a102d3369c4e847d7ef43bd850704cf00)).
+  - Fixed typo in arguments name for waitForTransaction. ([#477](https://github.com/ethers-io/ethers.js/issues/477); [4e41871](https://github.com/ethers-io/ethers.js/commit/4e41871fa4cf701d714ad73527a367e9ca1d3431)).
+  - Partial support for non-English mnemonics for encrypted JSON wallets. ([#685](https://github.com/ethers-io/ethers.js/issues/685); [9947acc](https://github.com/ethers-io/ethers.js/commit/9947acc349691734bce8b33d870ab48944a7962f)).
+  - Updated expected balance in test cases. ([748f896](https://github.com/ethers-io/ethers.js/commit/748f89660ac4bf60175f936da755cf1a0d370f46)).
+
 ethers/v4.0.44 (2020-01-29 22:01)
 ---------------------------------
 

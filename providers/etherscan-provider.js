@@ -81,6 +81,7 @@ function checkLogTag(blockTag) {
     }
     return parseInt(blockTag.substring(2), 16);
 }
+var defaultApiKey = "8FG3JMZ9USS4NTA6YKEKHINU56SEPPVBJR";
 var EtherscanProvider = /** @class */ (function (_super) {
     __extends(EtherscanProvider, _super);
     function EtherscanProvider(network, apiKey) {
@@ -111,7 +112,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 throw new Error('unsupported network');
         }
         properties_1.defineReadOnly(_this, 'baseUrl', baseUrl);
-        properties_1.defineReadOnly(_this, 'apiKey', apiKey);
+        properties_1.defineReadOnly(_this, 'apiKey', apiKey || defaultApiKey);
         return _this;
     }
     EtherscanProvider.prototype.perform = function (method, params) {

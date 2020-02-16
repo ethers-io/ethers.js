@@ -6,6 +6,7 @@ export declare type EncryptOptions = {
     entropy?: Arrayish;
     mnemonic?: string;
     path?: string;
+    wordlist?: any;
     client?: string;
     salt?: Arrayish;
     uuid?: string;

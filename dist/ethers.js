@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethers = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "4.0.44";
+exports.version = "4.0.45";
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -11404,6 +11404,7 @@ function checkLogTag(blockTag) {
     }
     return parseInt(blockTag.substring(2), 16);
 }
+var defaultApiKey = "8FG3JMZ9USS4NTA6YKEKHINU56SEPPVBJR";
 var EtherscanProvider = /** @class */ (function (_super) {
     __extends(EtherscanProvider, _super);
     function EtherscanProvider(network, apiKey) {
@@ -11434,7 +11435,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 throw new Error('unsupported network');
         }
         properties_1.defineReadOnly(_this, 'baseUrl', baseUrl);
-        properties_1.defineReadOnly(_this, 'apiKey', apiKey);
+        properties_1.defineReadOnly(_this, 'apiKey', apiKey || defaultApiKey);
         return _this;
     }
     EtherscanProvider.prototype.perform = function (method, params) {
@@ -15833,7 +15834,8 @@ function decrypt(json, password, progressCallback) {
             return null;
         }
         // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
-        if (searchPath(data, 'x-ethers/version') === '0.1') {
+        var locale = searchPath(data, 'x-ethers/locale');
+        if (searchPath(data, 'x-ethers/version') === '0.1' && (locale == null || locale === "en")) {
             var mnemonicCiphertext = looseArrayify(searchPath(data, 'x-ethers/mnemonicCiphertext'));
             var mnemonicIv = looseArrayify(searchPath(data, 'x-ethers/mnemonicCounter'));
             var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
@@ -15965,7 +15967,7 @@ function encrypt(privateKey, password, options, progressCallback) {
             }
         }
         else {
-            entropy = bytes_1.arrayify(HDNode.mnemonicToEntropy(options.mnemonic));
+            entropy = bytes_1.arrayify(HDNode.mnemonicToEntropy(options.mnemonic, options.wordlist));
         }
     }
     var path = options.path;
@@ -16090,6 +16092,9 @@ function encrypt(privateKey, password, options, progressCallback) {
                         path: path,
                         version: "0.1"
                     };
+                    if (options.wordlist && typeof (options.wordlist.locale) === "string") {
+                        data['x-ethers'].locale = options.wordlist.locale;
+                    }
                 }
                 if (progressCallback) {
                     progressCallback(1);

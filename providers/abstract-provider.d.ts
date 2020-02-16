@@ -102,7 +102,7 @@ export declare abstract class Provider implements OnceBlockable {
     abstract listeners(eventName: EventType): Array<Listener>;
     abstract removeAllListeners(eventName: EventType): Provider;
     abstract removeListener(eventName: EventType, listener: Listener): Provider;
-    abstract waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt>;
+    abstract waitForTransaction(transactionHash: string, confirmations?: number): Promise<TransactionReceipt>;
     constructor();
     static isProvider(value: any): value is Provider;
 }
