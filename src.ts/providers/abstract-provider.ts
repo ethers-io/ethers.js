@@ -156,7 +156,7 @@ export abstract class Provider implements OnceBlockable {
     abstract removeListener(eventName: EventType, listener: Listener): Provider;
 
     // @TODO: This *could* be implemented here, but would pull in events...
-    abstract waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt>;
+    abstract waitForTransaction(transactionHash: string, confirmations?: number): Promise<TransactionReceipt>;
 
     constructor() {
         setType(this, 'Provider');
