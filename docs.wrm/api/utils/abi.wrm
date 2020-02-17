@@ -56,6 +56,9 @@ The ``sighash`` format is **insufficient** to re-create the original [[abi-fragm
 since it discards modifiers such as indexed, anonymous, stateMutability, etc.
 
 
+_subsection: Interface @<abi-interface> @SRC<abi/interface:class.Interface>
+TODO
+
 _subsection: Fragment @<abi-fragment> @SRC<abi/fragments:class.Fragment>
 
 An ABI is a collection of **Fragments**, where each fragment specifies:

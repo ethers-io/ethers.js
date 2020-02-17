@@ -1,0 +1,66 @@
+_title: Web Utilities
+
+_section: Web Utilities
+
+
+_property: ethers.utils.fetchJson(urlOrConnectionInfo [, json [ , processFunc ] ]) => Promise<any> @<web-fetchjson>
+Fetch and parse the JSON content from //urlOrConnectionInfo//, with the
+optiona body //json// and optionally processing the result with //processFun//
+before returning it.
+
+_property: ethers.utils.poll(pollFunc [, options ]) => Promise<any> @<web-poll>
+Repeatedly call pollFunc using the [[web-polloptions]] until it returns a
+value other than undefined.
+
+
+_heading: Connection Info @<web-connectioninfo>
+
+_property: connection.url => string
+The URL to connect to.
+
+_property: connection.user => string
+The username to use for [[link-wiki-basicauth]].
+The default is null (i.e. do not use basic authentication)
+
+_property: connection.password => string
+The password to use for [[link-wiki-basicauth]].
+The default is null (i.e. do not use basic authentication)
+
+_property: connection.allowInsecureAuthentication => boolean
+Allow [[link-wiki-basicauth]] over non-secure HTTP. The default is false.
+
+_property: connection.timeout => number
+How long to wait before rejecting with a //timeout// error.
+
+_property: connection.headers => { [ key: string]: string }
+Additional headers to include in the connection.
+
+
+_heading: Poll Options @<web-polloptions>
+
+_property: options.timeout => number
+The amount of time allowed to ellapse before triggering a timeout
+error.
+
+_property: options.floor => number
+The minimum time limit to allow for [[link-wiki-backoff]].
+
+The default is 0s.
+
+_property: options.ceiling => number
+The maximum time limit to allow for [[link-wiki-backoff]].
+
+The default is 10s.
+
+_property: options.interval => number
+The interval used during [[link-wiki-backoff]] calculation.
+
+The default is 250ms.
+
+_property: options.retryLimit => number
+The number of times to retry in the event of an error or //undefined// is
+returned.
+
+_property: options.onceBlock => [[provider]]
+If this is specified, the polling will wait on new blocks from
+//provider// before attempting the //pollFunc// again.

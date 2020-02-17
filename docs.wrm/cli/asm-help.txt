@@ -2,8 +2,11 @@ Usage:
    ethers-asm [ FILENAME ] [ OPTIONS ]
 
 OPTIONS
-  --disassemble               Disassemble input bytecode
   --define KEY=VALUE          provide assembler defines
+  --disassemble               Disassemble input bytecode
+  --ignore-warnings           Ignore warnings
+  --pic                       generate position independent code
+  --target LABEL              output LABEL bytecode (default: _)
 
 OTHER OPTIONS
   --debug                     Show stack traces for errors

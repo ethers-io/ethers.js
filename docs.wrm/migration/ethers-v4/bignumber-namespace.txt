@@ -1,0 +1,7 @@
+// v4
+ethers.utils.BigNumber
+ethers.utils.BigNumberish
+
+// v5
+ethers.BigNumber
+ethers.BigNumberish

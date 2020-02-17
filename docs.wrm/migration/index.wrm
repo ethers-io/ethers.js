@@ -2,12 +2,9 @@ _title: Migration Guide
 
 _section: Migration Guide
 
-Migratimg...
+Here are some migration guides when upgrading from older versions
+of Ethers or other libraries.
 
-_subsection: From Web3
-
-test
-
-_subsection: From ethers v4
-
-test
+_toc:
+    web3
+    ethers-v4

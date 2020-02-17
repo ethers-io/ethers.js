@@ -134,3 +134,7 @@ _property: utils.splitSignature(aSignatureLikeOrBytesLike) => [[signature]]  @<u
 Return the full expanded-format of //aSignaturelike// or a flat-format [[datahexstring]].
 Any missing properties will be computed.
 
+_subsection: Random Bytes
+
+_property: ethers.utils.randomBytes(length) => Uint8Array
+Return a new Uint8Array of //length// random bytes.

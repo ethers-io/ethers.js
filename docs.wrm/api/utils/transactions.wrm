@@ -5,49 +5,96 @@ _section: Transactions @<utils-transactions>
 _subsection: Types
 
 _heading: UnsignedTransaction @<types-unsignedtransaction>
-An unsigned transaction represents a transaction that has not been signed.
+An unsigned transaction represents a transaction that has not been
+signed and its values are flexible as long as they are not ambiguous.
 
 _property: unsignedTransaction.to => string<[Address](address)>
+The addres this transaction is to.
 
 _property: unsignedTransaction.nonce => number
+The nonce of this transaction.
 
-_property: unsignedTransaction.gasLimit => [[bignumber]]
+_property: unsignedTransaction.gasLimit => [[bignumberish]]
+The gas limit for this transaction.
 
-_property: unsignedTransaction.gasPrice => [[bignumber]]
+_property: unsignedTransaction.gasPrice => [[bignumberish]]
+The gas price for this transaction.
 
 _property: unsignedTransaction.data => [[byteslike]]
+The data for this transaction.
 
-_property: unsignedTransaction.value => [[bignumber]]
+_property: unsignedTransaction.value => [[bignumberish]]
+The value (in wei) for this transaction.
 
 _property: unsignedTransaction.chainId => number
+The chain ID for this transaction. If the chain ID is 0 or null,
+then [[link-eip-155]] is disabled and legacy signing is
+used, unless overridden in a signature.
 
 
 _heading: Transaction @<types-transaction>
 A generic object to represent a transaction.
 
-_property: unsignedTransaction.hash => string<[[datahexstring]]<32>>
+_property: transaction.hash => string<[[datahexstring]]<32>>
+The transaction hash, which can be used as an identifier for
+//transaction//. This is the keccak256 of the serialized RLP encoded
+representation of //transaction//.
 
 _property: unsignedTransaction.to => string<[Address](address)>
+The address //transaction// is to.
 
-_property: unsignedTransaction.from => string<[Address](address)>
+_property: transaction.from => string<[Address](address)>
+The address //transaction// is from.
 
-_property: unsignedTransaction.nonce => number
+_property: transaction.nonce => number
+The nonce for //transaction//. Each transaction sent to the network
+from an account includes this, which ensures the order and
+non-replayability of a transaction. This must be equal to the current
+number of transactions ever sent to the network by the **from** address.
 
-_property: unsignedTransaction.gasLimit => [[bignumber]]
+_property: transaction.gasLimit => [[bignumber]]
+The gas limit for //transaction//. An account must have enough ether to
+cover the gas (at the specified **gasPrice**). Any unused gas is
+refunded at the end of the transaction, and if there is insufficient gas
+to complete execution, the effects of the trasaction are reverted, but
+the gas is **fully consumed** and an out-of-gas error occurs.
 
-_property: unsignedTransaction.gasPrice => [[bignumber]]
+_property: transaction.gasPrice => [[bignumber]]
+The price (in wei) per unit of gas for //transaction//.
 
-_property: unsignedTransaction.data => [[byteslike]]
+_property: transaction.data => [[byteslike]]
+The data for //transaction//. In a contract this is the call data.
 
-_property: unsignedTransaction.value => [[bignumber]]
+_property: transaction.value => [[bignumber]]
+The value (in wei) for //transaction//.
 
-_property: unsignedTransaction.chainId => number
+_property: transaction.chainId => number
+The chain ID for //transaction//. This is used as part of
+[[link-eip-155]] to prevent replay attacks on different
+networks.
 
-_property: unsignedTransaction.r => [[byteslike]]
+For example, if a transaction was made on ropsten with an account
+also used on homestead, it would be possible for a transaction
+signed on ropsten to be executed on homestead, which is likely
+unintended.
 
-_property: unsignedTransaction.s => [[byteslike]]
+There are situations where replay may be desired, however these
+are very rare and it is almost always recommended to specify the
+chain ID.
 
-_property: unsignedTransaction.v => number
+_property: transaction.r => string<[[datahexstring]]<32>>
+The r portion of the elliptic curve signatures for //transaction//.
+This is more accurately, the x coordinate of the point r (from
+which the y can be computed, along with v).
+
+_property: transaction.s => string<[[datahexstring]]<32>>
+The s portion of the elliptic curve signatures for //transaction//.
+
+_property: transaction.v => number
+The v portion of the elliptic curve signatures for //transaction//.
+This is used to refine which of the two possible points a given
+x-coordinate can have, and in [[link-eip-155]] is additionally
+used to encode the chain ID into the serialized transaction.
 
 
 _subsection: Functions
@@ -64,9 +111,18 @@ Computes the address that signed //digest// to get //aSignatureLike// using the
 ecrecover algorithm.
 
 _property: ethers.utils.serialize(transaction [ , signature ]) => string<[[datahexstring]]>  @<utils-serialize> @SRC<transactions>
-Computes the serialized //transaction/, optionally signed with //signature//. If
-signature is not presented, the unsigned serialized transaction is returned, which can
-be used to compute the hash necessary to sign.
+Computes the serialized //transaction//, optionally serialized with
+the a //signature//. If //signature// is not present, the unsigned
+serialized transaction is returned, which can be used to compute the
+hash necessary to sign.
 
-This function uses EIP-155 if a chainId is provided, otherwise legacy serialization is
-used. It is **highly** recommended to always specify a //chainId//.
+This function uses [[link-eip-155]] if a chainId is provided,
+otherwise legacy serialization is used. It is **highly** recommended
+to always specify a //chainId//.
+
+If //signature// includes a chain ID (explicitly or implicitly by using an
+[[link-eip-155]] ``v`` or ``_vs``) it will be used to compute the
+chain ID.
+
+If there is a mismatch between the chain ID of //transaction// and //signature//
+an error is thrown.

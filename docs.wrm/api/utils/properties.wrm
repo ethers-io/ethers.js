@@ -2,6 +2,10 @@ _title: Property Utilities
 
 _section: Property Utilities
 
-_property: utils.resolveProperties(anObject) => Promise<any> @<utils-resolveproperties> @SRC<properties>
+_property: ethers.utils.checkPropertoes() => void
 
-
+_property: ethers.utils.deepCopy(anObject) => any
+_property: ethers.utils.defineReadOnly(anObject, name, value) => void
+_property: ethers.utils.getStatic(aConstructor, key) => any
+_property: ethers.utils.resolveProperties(anObject) => Promise<any> @<utils-resolveproperties> @SRC<properties>
+_property: ethers.utils.shallowCopy(anObject) => any

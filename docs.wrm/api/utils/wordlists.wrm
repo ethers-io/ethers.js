@@ -1,0 +1,60 @@
+_title: Wordlists
+
+_section: Wordlists @<wordlists>
+
+_subsection: Wordlist @<wordlist>
+
+_property: wordlist.locale => string
+The locale for this wordlist.
+
+_property: wordlist.getWord(index) => string
+Returns the word at //index//.
+
+_property: wordlist.getWordIndex(word) => number
+Returns the index of //word// within the wordlist.
+
+_property: wordlist.split(mnemonic) => Array<string>
+Returns the mnemonic split into each individual word, according to a
+locale's valid whitespace character set.
+
+_property: wordlist.join(words) => string
+Returns the mnemonic by joining //words// together using the
+whitespace that is standard for the locale.
+
+_property: Wordlist.check(wordlists) => string<[[datahexstring]]<32>>
+Checks that all words map both directions correctly and return the
+hash of the lists. Sub-classes should use this to validate the wordlist
+is correct against the official wordlist hash.
+
+_property: Wordlist.register(wordlist [ , name ]) => string<[[datahexstring]]<32>>
+Register a wordlist with the list of wordlists, optionally overriding
+the registered //name//.
+
+_subsection: Languages @<wordlist-languages>
+
+_property: ethers.wordlists.cz => Wordlist
+The Czech [[wordlist]].
+
+_property: ethers.wordlists.en => Wordlist
+The English [[wordlist]].
+
+_property: ethers.wordlists.es => Wordlist
+The Spanish [[wordlist]].
+
+_property: ethers.wordlists.fr => Wordlist
+The French [[wordlist]].
+
+_property: ethers.wordlists.it => Wordlist
+The Italian [[wordlist]].
+
+_property: ethers.wordlists.js => Wordlist
+The Japanese [[wordlist]].
+
+_property: ethers.wordlists.ko => Wordlist
+The Korean [[wordlist]].
+
+_property: ethers.wordlists.zh_cn => Wordlist
+The Simplified Chinese [[wordlist]].
+
+_property: ethers.wordlists.zh_tw => Wordlist
+The Traditional Chinese [[wordlist]].
