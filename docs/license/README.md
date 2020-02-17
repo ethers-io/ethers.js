@@ -10,8 +10,8 @@ License and Copyright
 
 
 The ethers library (including all dependencies) are available
-under the [MIT License](https://en.m.wikipedia.org/wiki/MIT_License),
-which permits a wide variety of uses.
+under the [MIT License](../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.m.wikipedia.org/wiki/MIT_License), which permits a wide variety
+of uses.
 
 
 ### MIT License
@@ -40,4 +40,4 @@ SOFTWARE.
 
 
 -----
-**Content Hash:** 91addf1f9680c79e0db3ee454bc36cf3ba11b14221c075f21d8faf4d94146c65
+**Content Hash:** db370fbc48a417a5ddf3ab42646642bf6e87afc445b56a6d4b24c3b3a3c407d8

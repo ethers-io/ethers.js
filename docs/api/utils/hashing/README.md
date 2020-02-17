@@ -16,41 +16,41 @@ Cryptographic Hashing
 ---------------------
 
 
-The [Cryptographic Hash Functions](https://en.wikipedia.org/wiki/Cryptographic_hash_function)
+The [Cryptographic Hash Functions](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/Cryptographic_hash_function)
 are a specific family of hash functions.
 
 
 #### *ethers* . *utils* . **keccak256** ( aBytesLike )  **=>** *string< [DataHexstring](../bytes)< 32 > >*
 
-Returns the [KECCAK256](https://en.wikipedia.org/wiki/SHA-3) digest *aBytesLike*.
+Returns the [KECCAK256](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/SHA-3) digest *aBytesLike*.
 
 
 
 
 #### *ethers* . *utils* . **ripemd160** ( aBytesLike )  **=>** *string< [DataHexstring](../bytes)< 20 > >*
 
-Returns the [RIPEMD-160](https://en.m.wikipedia.org/wiki/RIPEMD) digest of *aBytesLike*.
+Returns the [RIPEMD-160](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.m.wikipedia.org/wiki/RIPEMD) digest of *aBytesLike*.
 
 
 
 
 #### *ethers* . *utils* . **sha256** ( aBytesLike )  **=>** *string< [DataHexstring](../bytes)< 32 > >*
 
-Returns the [SHA2-256](https://en.wikipedia.org/wiki/SHA-2) digest of *aBytesLike*.
+Returns the [SHA2-256](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/SHA-2) digest of *aBytesLike*.
 
 
 
 
 #### *ethers* . *utils* . **sha512** ( aBytesLike )  **=>** *string< [DataHexstring](../bytes)< 64 > >*
 
-Returns the [SHA2-512](https://en.wikipedia.org/wiki/SHA-2) digest of *aBytesLike*.
+Returns the [SHA2-512](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/SHA-2) digest of *aBytesLike*.
 
 
 
 
 #### *ethers* . *utils* . **computeHmac** ( algorithm , key , data )  **=>** *string< [DataHexstring](../bytes) >*
 
-Returns the [HMAC](https://en.wikipedia.org/wiki/HMAC) of *data* with *key*
+Returns the [HMAC](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/HMAC) of *data* with *key*
 using the [Algorithm](./) *algorithm*.
 
 
@@ -62,14 +62,14 @@ using the [Algorithm](./) *algorithm*.
 
 #### *ethers* . *utils* . *SupportedAlgorithm* . **sha256** **=>** *string*
 
-Use the [SHA2-256](https://en.wikipedia.org/wiki/SHA-2) hash algorithm.
+Use the [SHA2-256](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/SHA-2) hash algorithm.
 
 
 
 
 #### *ethers* . *utils* . *SupportedAlgorithm* . **sha512** **=>** *string*
 
-Use the [SHA2-512](https://en.wikipedia.org/wiki/SHA-2) hash algorithm.
+Use the [SHA2-512](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/SHA-2) hash algorithm.
 
 
 
@@ -97,7 +97,7 @@ The Ethereum Identity function computs the keccak256 hash of the *text* bytes.
 
 #### *ethers* . *utils* . **namehash** ( name )  **=>** *string< [DataHexstring](../bytes)< 32 > >*
 
-Returns the [ENS Namehash](https://docs.ens.domains/contract-api-reference/name-processing#hashing-names) of *name*.
+Returns the [ENS Namehash](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/docs.ens.domains/contract-api-reference/name-processing) of *name*.
 
 
 
@@ -137,4 +137,4 @@ according to their respective type in *arrayOfTypes*.
 
 
 -----
-**Content Hash:** 2fd8814fdbe671ecc9c4aa5a9e248528f076bc34c0a1c26caef769d704d24b8b
+**Content Hash:** 45555de5a99896ceb416df9f1c5da990ab6d1decc0ecbfba38eea5a476772fba

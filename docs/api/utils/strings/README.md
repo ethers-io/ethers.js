@@ -96,7 +96,7 @@ UnicodeNormalizationForm
 ------------------------
 
 
-There are several [commonly used forms](https://en.wikipedia.org/wiki/Unicode_equivalence)
+There are several [commonly used forms](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/Unicode_equivalence)
 when normalizing UTF-8 data, which allow strings to be compared or hashed in a stable
 way.
 
@@ -155,7 +155,7 @@ See NFKC for more an example.
 
 Only certain specified characters are folded in Canonical Equivalence, and thus
 it should **not** be considered a method to acheive *any* level of security from
-[homoglyph attacks](https://en.wikipedia.org/wiki/IDN_homograph_attack).
+[homoglyph attacks](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/IDN_homograph_attack).
 
 
 
@@ -220,7 +220,7 @@ the custom error function.
 Due to the way UTF-8 allows variable length byte sequences
 to be used, it is possible to have multiple representations
 of the same character, which means
-[overlong sequences](https://en.wikipedia.org/wiki/UTF-8#Overlong_encodings)
+[overlong sequences](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/UTF-8)
 allow for a non-distinguished string to be formed, which can
 impact security as multiple strings that are otherwise
 equal can have different hashes.
@@ -293,7 +293,7 @@ overlong sequences to be converted to their equivalent string.
 
 This will replace all invalid sequences (by consuming invalid prefix bytes and
 any following continuation bytes) with the
-[UTF-8 Replacement Character](https://en.wikipedia.org/wiki/Specials_%28Unicode_block%29#Replacement_character),
+[UTF-8 Replacement Character](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/Specials_%28Unicode_block%29),
 (i.e. U+FFFD).
 
 
@@ -301,4 +301,4 @@ any following continuation bytes) with the
 
 
 -----
-**Content Hash:** c3856e40d58241c0a7f5bc29928731971ede8e8e8c75e6eda97778c9b952e1f0
+**Content Hash:** 8654a53455522a9b4187d77e56c47fb9a908574b594aed3ce1a8a7d445c8fe75

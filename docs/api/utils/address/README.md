@@ -37,7 +37,7 @@ All functions that return an Address will return a Checksum Address.
 
 The **ICAP Address Format** was an early attempt to introduce a checksum
 into Ethereum addresses using the popular banking industry's
-[IBAN](https://en.wikipedia.org/wiki/International_Bank_Account_Number)
+[IBAN](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/International_Bank_Account_Number)
 format with the country code specified as **XE**.
 
 Due to the way IBAN encodes address, only addresses that fit into 30 base-36
@@ -79,7 +79,7 @@ Returns true if *address* is valid (in any supported format).
 
 #### *utils* . **getIcapAddress** ( address )  **=>** *string< [IcapAddress](./) >*
 
-Returns *address* as an [ICAP address](https://github.com/ethereum/wiki/wiki/Inter-exchange-Client-Address-Protocol-%28ICAP%29).
+Returns *address* as an [ICAP address](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/github.com/ethereum/wiki/wiki/Inter-exchange-Client-Address-Protocol-%28ICAP%29).
 Supports the same restrictions as [utils.getAddress](./).
 
 
@@ -96,11 +96,11 @@ used to deploy a contract.
 #### *utils* . **getCreate2Address** ( from , salt , initCodeHash )  **=>** *string< [Address](./) >*
 
 Returns the contract address that would result from the given
-[CREATE2](https://eips.ethereum.org/EIPS/eip-1014) call.
+[CREATE2](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/eips.ethereum.org/EIPS/eip-1014) call.
 
 
 
 
 
 -----
-**Content Hash:** 7835c97c8afbbdf59c39d32a9d79d86c4e446a2ed6acd6eae1f21c0b190b73c1
+**Content Hash:** 9c4842c79e4a9f307ba1de2c84f1d996b2dbcb53af5b8dd153508f6c2f7b7f1d

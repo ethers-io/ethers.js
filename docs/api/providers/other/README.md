@@ -161,13 +161,11 @@ Web3Provider
 ------------
 
 
-The Web3Provider is meant to ease moving from a [web3.js based](https://github.com/ethereum/web3.js)
+The Web3Provider is meant to ease moving from a [web3.js based](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/github.com/ethereum/web3.js)
 application to ethers by wraping an existing Web3-compatible (such as a
-[Web3HttpProvider](https://github.com/ethereum/web3.js/tree/1.x/packages/web3-providers-http)
-[Web3IpcProvider](https://github.com/ethereum/web3.js/tree/1.x/packages/web3-providers-ipc) or
-[Web3WsProvider](https://github.com/ethereum/web3.js/tree/1.x/packages/web3-providers-ws))
-and exposing it as an ethers.js [Provider](../provider) which can then be used with the rest of
-the library.
+[Web3HttpProvider](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/github.com/ethereum/web3.js/tree/1.x/packages/web3-providers-http)[Web3IpcProvider](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/github.com/ethereum/web3.js/tree/1.x/packages/web3-providers-ipc) or
+[Web3WsProvider](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/github.com/ethereum/web3.js/tree/1.x/packages/web3-providers-ws)) and exposing it as an ethers.js [Provider](../provider)
+which can then be used with the rest of the library.
 
 
 #### **new** *ethers* . *providers* . **Web3Provider** ( web3Provider [  , network ]  ) 
@@ -187,4 +185,4 @@ The provider used to create this instance.
 
 
 -----
-**Content Hash:** 95791f5b36e1becb2e1222424eb25b0b14743670c827dea2041b048e686d2118
+**Content Hash:** 38479cce7fbf5192e1085bce407362ec5169b3a56f42f27e515a623ffeab670b

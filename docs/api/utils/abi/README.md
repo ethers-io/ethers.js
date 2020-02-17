@@ -21,7 +21,7 @@ Formats
 
 
 The **JSON ABI Format** is the format that is
-[output from the Solidity compiler](https://solidity.readthedocs.io/en/v0.6.0/using-the-compiler.html#output-description).
+[output from the Solidity compiler](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/solidity.readthedocs.io/en/v0.6.0/using-the-compiler.html).
 
 A JSON serialized object is always a string, which represents an Array
 of Objects, where each Object has various properties describing the [Fragment](./) of the ABI.
@@ -35,7 +35,7 @@ also be passed into any function which accepts a JSON String ABI.
 
 The Human-Readable ABI was
 
-[article](https://blog.ricmoo.com/human-readable-contract-abis-in-ethers-js-141902f4d917)
+[article](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/blog.ricmoo.com/human-readable-contract-abis-in-ethers-js-141902f4d917)
 
 
 ### Output Formats
@@ -85,6 +85,13 @@ The `sighash` format is **insufficient** to re-create the original [Fragment](./
 since it discards modifiers such as indexed, anonymous, stateMutability, etc.
 
 
+
+
+Interface
+---------
+
+
+TODO
 
 
 Fragment
@@ -396,4 +403,4 @@ Tra la la...
 
 
 -----
-**Content Hash:** cae7aa26d26d5f02ebe0f227e25759db5d2437b4104d2950b364ced87e7c83f6
+**Content Hash:** 139ec4826ff24c5f5ca9c964bc0432e3b3065f90a5b012744b2ff43be0eb7121

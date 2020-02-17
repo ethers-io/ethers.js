@@ -380,7 +380,7 @@ The amount (in wei) this transaction is sending.
 #### *transactionRequest* . **chainId** **=>** *number|Promise< number >*
 
 The chain ID this transaction is authorized on, as specified by
-[EIP-155](https://eips.ethereum.org/EIPS/eip-155).
+[EIP-155](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/eips.ethereum.org/EIPS/eip-155).
 
 If the chain ID is 0 will disable EIP-155 and the transaction will be valid
 on any network. This can be **dangerous** and care should be taken, since it
@@ -488,7 +488,7 @@ the block this transaction was mined in.
 
 The intermediate state root of a receipt.
 
-Only transactions included in blocks **before** the [Byzantium Hard Fork](https://eips.ethereum.org/EIPS/eip-609)
+Only transactions included in blocks **before** the [Byzantium Hard Fork](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/eips.ethereum.org/EIPS/eip-609)
 have this property, as it was replaced by the `status` property.
 
 The property is generally of little use to developers. At the time
@@ -508,7 +508,7 @@ The amount of gas actually used by this transaction.
 
 #### *receipt* . **logsBloom** **=>** *string< [DataHexstring](../../utils/bytes) >*
 
-A [bloom-filter](https://en.wikipedia.org/wiki/Bloom_filter), which
+A [bloom-filter](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/Bloom_filter), which
 incldues all the addresses and topics included in any log in this
 transaction.
 
@@ -565,7 +565,7 @@ This is generally of little interest to developers.
 
 #### *receipt* . **byzantium** **=>** *boolean*
 
-This is true if the block is in a [post-Byzantium Hard Fork](https://eips.ethereum.org/EIPS/eip-609)
+This is true if the block is in a [post-Byzantium Hard Fork](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/eips.ethereum.org/EIPS/eip-609)
 block.
 
 
@@ -574,7 +574,7 @@ block.
 #### *receipt* . **status** **=>** *boolean*
 
 The status of a transaction is 1 is successful or 0 if it was
-reverted. Only transactions included in blocks [post-Byzantium Hard Fork](https://eips.ethereum.org/EIPS/eip-609)
+reverted. Only transactions included in blocks [post-Byzantium Hard Fork](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/eips.ethereum.org/EIPS/eip-609)
 have this property.
 
 
@@ -582,4 +582,4 @@ have this property.
 
 
 -----
-**Content Hash:** ef41b33439a40aa374a5af245d4320705c3a647c86f90d9bb8c127503e2477c9
+**Content Hash:** 8e36229154dd0afe40cd45ca1043bde05c78a54779aa56728d8ba585ba288978

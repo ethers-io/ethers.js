@@ -21,8 +21,7 @@ Types
 
 
 A **Bytes** is any object which is an
-[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) or
-[TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) with
+[Array](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) or [TypedArray](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) with
 each value in the valid byte range (i.e. between 0 and 255 inclusive),
 or is an Object with a `length` property where each indexed property
 is in the valid byte range.
@@ -56,7 +55,7 @@ number of nibbles (i.e. case-insensitive hexidecumal characters, `0-9` and `a-f`
 
 * **r** and **s** --- The x co-ordinate of **r** and the **s** value of the signature
 * **v** --- The parity of the y co-ordinate of **r**
-* **_vs** --- The [compact representation](https://eips.ethereum.org/EIPS/eip-2098) of the **s** and **v**
+* **_vs** --- The [compact representation](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/eips.ethereum.org/EIPS/eip-2098) of the **s** and **v**
 * **recoveryParam** --- The normalized (i.e. 0 or 1) value of **v**
 
 
@@ -139,29 +138,7 @@ zeros.
 
 
 ```javascript
-// Convert a hexstring to a Uint8Array
-arrayify("0x1234")
-// [ 18, 52 ]
-
-// Convert an Array to a hexstring
-hexlify([1, 2, 3, 4])
-// 0x01020304
-
-// Convert an Object to a hexstring
-hexlify({ length: 2, "0": 1, "1": 2 })
-// 0x0102
-
-// Convert an Array to a hexstring
-hexlify([ 1 ])
-// 0x01
-
-// Convert a number to a stripped hex value
-hexValue(1)
-// 0x1
-
-// Convert an Array to a stripped hex value
-hexValue([ 1, 2 ])
-// 0x102
+Skipping JavaScript Evaluation.
 ```
 
 
@@ -263,6 +240,18 @@ Any missing properties will be computed.
 
 
 
+Random Bytes
+------------
+
+
+
+#### *ethers* . *utils* . **randomBytes** ( length )  **=>** *Uint8Array*
+
+Return a new Uint8Array of *length* random bytes.
+
+
+
+
 
 -----
-**Content Hash:** ef5d3728657f7c650f7531071145048e55ee632bd0fe4ee01b6d11a1e9b1c39b
+**Content Hash:** 36831e9bb9c02d184b22e8b4b8700572a545c366ced4d9811a92c560dafaf035

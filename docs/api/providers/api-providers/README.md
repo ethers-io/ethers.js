@@ -25,7 +25,7 @@ EtherscanProvider
 
 
 The **EtherscanProvider** is backed by a combination of the various
-[Etherscan APIs](https://etherscan.io/apis).
+[Etherscan APIs](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/etherscan.io/apis).
 
 
 #### *provider* . **getHistory** ( address )  **=>** *Array< History >*
@@ -41,7 +41,7 @@ The **EtherscanProvider** is backed by a combination of the various
 
 * Homestead (Mainnet)
 * Ropsten (proof-of-work testnet)
-* Rinkeby (proof-of-Authority testnet)
+* Rinkeby (proof-of-authority testnet)
 * G&ouml;rli (clique testnet)
 * Kovan (proof-of-authority testnet)
 
@@ -52,7 +52,7 @@ InfuraProvider
 --------------
 
 
-The **InfuraProvider** is backed by the popular [INFURA](https://infura.io)
+The **InfuraProvider** is backed by the popular [INFURA](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/infura.io)
 Ethereum service.
 
 
@@ -62,7 +62,7 @@ Ethereum service.
 
 * Homestead (Mainnet)
 * Ropsten (proof-of-work testnet)
-* Rinkeby (proof-of-Authority testnet)
+* Rinkeby (proof-of-authority testnet)
 * G&ouml;rli (clique testnet)
 * Kovan (proof-of-authority testnet)
 
@@ -73,7 +73,7 @@ AlchemyProvider
 ---------------
 
 
-The **AlchemtProvider** is backed by [Alchemy](https://alchemyapi.io).
+The **AlchemtProvider** is backed by [Alchemy](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/alchemyapi.io).
 
 
 #### **Supported Networks**
@@ -82,7 +82,7 @@ The **AlchemtProvider** is backed by [Alchemy](https://alchemyapi.io).
 
 * Homestead (Mainnet)
 * Ropsten (proof-of-work testnet)
-* Rinkeby (proof-of-Authority testnet)
+* Rinkeby (proof-of-authority testnet)
 * G&ouml;rli (clique testnet)
 * Kovan (proof-of-authority testnet)
 
@@ -93,8 +93,7 @@ CloudfrontProvider
 ------------------
 
 
-The CloudfrontProvider is backed by the
-[Cloudflare Ethereum Gateway](https://developers.cloudflare.com/distributed-web/ethereum-gateway/).
+The CloudfrontProvider is backed by the [Cloudflare Ethereum Gateway](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/developers.cloudflare.com/distributed-web/ethereum-gateway).
 
 
 #### **Supported Networks**
@@ -108,4 +107,4 @@ The CloudfrontProvider is backed by the
 
 
 -----
-**Content Hash:** 516111e087ee3f12588ba555c0719f7170ea532e269590586c95ddc1d7eb7e7b
+**Content Hash:** 8a464bf5a272f32a697857e4e5813b1569ee9293156f77dcfa8f4bd71a8e5c9f

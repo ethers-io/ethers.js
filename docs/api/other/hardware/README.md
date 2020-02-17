@@ -14,7 +14,7 @@ LedgerSigner
 ------------
 
 
-The [Ledger Hardware Wallets](https://www.ledger.com) are a fairly
+The [Ledger Hardware Wallets](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/www.ledger.com) are a fairly
 popular brand.
 
 TODO: importing
@@ -35,4 +35,4 @@ determined by the environment; in node the default is "hid" and in the browser
 
 
 -----
-**Content Hash:** 240366cd9757f396d08ed65ebfceafa51f82bfc44c04695ab68e3560e7a0016b
+**Content Hash:** c6b6d4f14f0e973a30c3cff935960a15715712830e38cece0edfb864ba921a6c
