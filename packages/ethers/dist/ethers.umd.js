@@ -3464,7 +3464,7 @@
 	var _version = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "logger/5.0.0-beta.134";
+	exports.version = "logger/5.0.0-beta.135";
 	});
 
 	var _version$1 = unwrapExports(_version);
@@ -3551,8 +3551,9 @@
 	        this._log(Logger.levels.WARNING, args);
 	    };
 	    Logger.prototype.makeError = function (message, code, params) {
+	        // Errors are being censored
 	        if (_censorErrors) {
-	            return new Error("unknown error");
+	            return this.makeError("censored error", code, {});
 	        }
 	        if (!code) {
 	            code = Logger.errors.UNKNOWN_ERROR;
@@ -3665,6 +3666,11 @@
 	        return _globalLogger;
 	    };
 	    Logger.setCensorship = function (censorship, permanent) {
+	        if (!censorship && permanent) {
+	            this.globalLogger().throwError("cannot permanently disable censorship", Logger.errors.UNSUPPORTED_OPERATION, {
+	                operation: "setCensorship"
+	            });
+	        }
 	        if (_permanentCensorErrors) {
 	            if (!censorship) {
 	                return;
@@ -17372,7 +17378,7 @@
 	var _version$E = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.0-beta.135";
+	exports.version = "web/5.0.0-beta.136";
 	});
 
 	var _version$F = unwrapExports(_version$E);
@@ -17459,10 +17465,6 @@
 	    };
 	    var allow304 = false;
 	    var timeout = 2 * 60 * 1000;
-	    var throttle = 25;
-	    if (options.throttleLimit) {
-	        throttle = options.throttleLimit;
-	    }
 	    if (typeof (connection) === "string") {
 	        url = connection;
 	    }
@@ -17526,9 +17528,6 @@
 	        };
 	        return { promise: promise, cancel: cancel };
 	    })();
-	    if (throttle == 100) {
-	        console.log(throttle);
-	    }
 	    var runningFetch = (function () {
 	        return __awaiter(this, void 0, void 0, function () {
 	            var response, body, error_1, json, error_2;
@@ -17695,7 +17694,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.153";
+	exports.version = "providers/5.0.0-beta.154";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -20227,6 +20226,7 @@
 	    }
 	    return parseInt(blockTag.substring(2), 16);
 	}
+	var defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 	var EtherscanProvider = /** @class */ (function (_super) {
 	    __extends(EtherscanProvider, _super);
 	    function EtherscanProvider(network, apiKey) {
@@ -20259,7 +20259,7 @@
 	                throw new Error("unsupported network");
 	        }
 	        lib$3.defineReadOnly(_this, "baseUrl", baseUrl);
-	        lib$3.defineReadOnly(_this, "apiKey", apiKey);
+	        lib$3.defineReadOnly(_this, "apiKey", apiKey || defaultApiKey);
 	        return _this;
 	    }
 	    EtherscanProvider.prototype.perform = function (method, params) {

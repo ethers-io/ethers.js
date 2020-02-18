@@ -47,10 +47,6 @@ export function fetchJson(connection, json, processFunc) {
     };
     let allow304 = false;
     let timeout = 2 * 60 * 1000;
-    let throttle = 25;
-    if (options.throttleLimit) {
-        throttle = options.throttleLimit;
-    }
     if (typeof (connection) === "string") {
         url = connection;
     }
@@ -114,9 +110,6 @@ export function fetchJson(connection, json, processFunc) {
         };
         return { promise, cancel };
     })();
-    if (throttle == 100) {
-        console.log(throttle);
-    }
     const runningFetch = (function () {
         return __awaiter(this, void 0, void 0, function* () {
             let response = null;

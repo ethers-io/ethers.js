@@ -3455,7 +3455,7 @@ var bn = createCommonjsModule(function (module) {
 });
 var bn_1 = bn.BN;
 
-const version = "logger/5.0.0-beta.134";
+const version = "logger/5.0.0-beta.135";
 
 "use strict";
 let _permanentCensorErrors = false;
@@ -3523,8 +3523,9 @@ class Logger {
         this._log(Logger.levels.WARNING, args);
     }
     makeError(message, code, params) {
+        // Errors are being censored
         if (_censorErrors) {
-            return new Error("unknown error");
+            return this.makeError("censored error", code, {});
         }
         if (!code) {
             code = Logger.errors.UNKNOWN_ERROR;
@@ -3637,6 +3638,11 @@ class Logger {
         return _globalLogger;
     }
     static setCensorship(censorship, permanent) {
+        if (!censorship && permanent) {
+            this.globalLogger().throwError("cannot permanently disable censorship", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "setCensorship"
+            });
+        }
         if (_permanentCensorErrors) {
             if (!censorship) {
                 return;
@@ -15999,7 +16005,7 @@ var browser$a = /*#__PURE__*/Object.freeze({
 	encode: browser_2$3
 });
 
-const version$i = "web/5.0.0-beta.135";
+const version$i = "web/5.0.0-beta.136";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -16044,10 +16050,6 @@ function fetchJson(connection, json, processFunc) {
     };
     let allow304 = false;
     let timeout = 2 * 60 * 1000;
-    let throttle = 25;
-    if (options.throttleLimit) {
-        throttle = options.throttleLimit;
-    }
     if (typeof (connection) === "string") {
         url = connection;
     }
@@ -16111,9 +16113,6 @@ function fetchJson(connection, json, processFunc) {
         };
         return { promise, cancel };
     })();
-    if (throttle == 100) {
-        console.log(throttle);
-    }
     const runningFetch = (function () {
         return __awaiter$2(this, void 0, void 0, function* () {
             let response = null;
@@ -16250,7 +16249,7 @@ function poll(func, options) {
     });
 }
 
-const version$j = "providers/5.0.0-beta.153";
+const version$j = "providers/5.0.0-beta.154";
 
 "use strict";
 const logger$n = new Logger(version$j);
@@ -18159,6 +18158,7 @@ function checkLogTag(blockTag) {
     }
     return parseInt(blockTag.substring(2), 16);
 }
+const defaultApiKey$1 = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 class EtherscanProvider extends BaseProvider {
     constructor(network, apiKey) {
         logger$t.checkNew(new.target, EtherscanProvider);
@@ -18188,7 +18188,7 @@ class EtherscanProvider extends BaseProvider {
                 throw new Error("unsupported network");
         }
         defineReadOnly(this, "baseUrl", baseUrl);
-        defineReadOnly(this, "apiKey", apiKey);
+        defineReadOnly(this, "apiKey", apiKey || defaultApiKey$1);
     }
     perform(method, params) {
         const _super = Object.create(null, {
@@ -18961,13 +18961,13 @@ class InfuraProvider extends UrlJsonRpcProvider {
 "use strict";
 const logger$x = new Logger(version$j);
 // Special API key provided by Nodesmith for ethers.js
-const defaultApiKey$1 = "ETHERS_JS_SHARED";
+const defaultApiKey$2 = "ETHERS_JS_SHARED";
 class NodesmithProvider extends UrlJsonRpcProvider {
     static getApiKey(apiKey) {
         if (apiKey && typeof (apiKey) !== "string") {
             logger$x.throwArgumentError("invalid apiKey", "apiKey", apiKey);
         }
-        return apiKey || defaultApiKey$1;
+        return apiKey || defaultApiKey$2;
     }
     static getUrl(network, apiKey) {
         logger$x.warn("NodeSmith will be discontinued on 2019-12-20; please migrate to another platform.");

@@ -73,6 +73,7 @@ function checkLogTag(blockTag) {
     }
     return parseInt(blockTag.substring(2), 16);
 }
+const defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 export class EtherscanProvider extends BaseProvider {
     constructor(network, apiKey) {
         logger.checkNew(new.target, EtherscanProvider);
@@ -102,7 +103,7 @@ export class EtherscanProvider extends BaseProvider {
                 throw new Error("unsupported network");
         }
         defineReadOnly(this, "baseUrl", baseUrl);
-        defineReadOnly(this, "apiKey", apiKey);
+        defineReadOnly(this, "apiKey", apiKey || defaultApiKey);
     }
     perform(method, params) {
         const _super = Object.create(null, {
