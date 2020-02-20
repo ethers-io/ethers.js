@@ -95,11 +95,11 @@ export class LedgerSigner extends ethers.Signer {
 
     async signTransaction(transaction: ethers.providers.TransactionRequest): Promise<string> {
         const tx = transaction = await ethers.utils.resolveProperties(transaction);
-        const unsignedTx = ethers.utils.serializeTransaction(tx).substring(2);
+        const unsignedTx = ethers.utils.serializeTransaction(<ethers.utils.UnsignedTransaction>tx).substring(2);
 
         const sig = await this._retry((eth) => eth.signTransaction(this.path, unsignedTx));
 
-        return ethers.utils.serializeTransaction(tx, {
+        return ethers.utils.serializeTransaction(<ethers.utils.UnsignedTransaction>tx, {
             v: sig.v,
             r: ("0x" + sig.r),
             s: ("0x" + sig.s),

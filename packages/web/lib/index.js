@@ -78,10 +78,6 @@ function fetchJson(connection, json, processFunc) {
     };
     var allow304 = false;
     var timeout = 2 * 60 * 1000;
-    var throttle = 25;
-    if (options.throttleLimit) {
-        throttle = options.throttleLimit;
-    }
     if (typeof (connection) === "string") {
         url = connection;
     }
@@ -145,9 +141,6 @@ function fetchJson(connection, json, processFunc) {
         };
         return { promise: promise, cancel: cancel };
     })();
-    if (throttle == 100) {
-        console.log(throttle);
-    }
     var runningFetch = (function () {
         return __awaiter(this, void 0, void 0, function () {
             var response, body, error_1, json, error_2;
@@ -174,7 +167,7 @@ function fetchJson(connection, json, processFunc) {
                     case 6:
                         body = _a.sent();
                         if (allow304 && response.status === 304) {
-                            // Leave body as null
+                            body = null;
                             return [3 /*break*/, 7];
                         }
                         else if (!response.ok) {

@@ -20,6 +20,13 @@ import { randomBytes } from "@ethersproject/random";
 import { Description } from "@ethersproject/properties";
 import { computeAddress } from "@ethersproject/transactions";
 import { getPassword, looseArrayify, searchPath, zpad } from "./utils";
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
+// Exported Types
+function hasMnemonic(value) {
+    return (value != null && value.mnemonic && value.mnemonic.phrase);
+}
 export class KeystoreAccount extends Description {
     isKeystoreAccount(value) {
         return !!(value && value._isKeystoreAccount);
@@ -52,7 +59,9 @@ export function decrypt(json, password, progressCallback) {
                 const privateKey = decrypt(key.slice(0, 16), ciphertext);
                 const mnemonicKey = key.slice(32, 64);
                 if (!privateKey) {
-                    throw new Error("unsupported cipher");
+                    logger.throwError("unsupported cipher", Logger.errors.UNSUPPORTED_OPERATION, {
+                        operation: "decrypt"
+                    });
                 }
                 const address = computeAddress(privateKey);
                 if (data.address) {
@@ -76,35 +85,49 @@ export function decrypt(json, password, progressCallback) {
                     const mnemonicCounter = new aes.Counter(mnemonicIv);
                     const mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
                     const path = searchPath(data, "x-ethers/path") || defaultPath;
+                    const locale = searchPath(data, "x-ethers/locale") || "en";
                     const entropy = arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
-                    const mnemonic = entropyToMnemonic(entropy);
-                    const node = HDNode.fromMnemonic(mnemonic).derivePath(path);
-                    if (node.privateKey != account.privateKey) {
-                        throw new Error("mnemonic mismatch");
+                    try {
+                        const mnemonic = entropyToMnemonic(entropy, locale);
+                        const node = HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
+                        if (node.privateKey != account.privateKey) {
+                            throw new Error("mnemonic mismatch");
+                        }
+                        account.mnemonic = node.mnemonic;
                     }
-                    account.mnemonic = node.mnemonic;
-                    account.path = node.path;
+                    catch (error) {
+                        // If we don't have the locale wordlist installed to
+                        // read this mnemonic, just bail and don't set the
+                        // mnemonic
+                        if (error.code !== Logger.errors.INVALID_ARGUMENT || error.argument !== "wordlist") {
+                            throw error;
+                        }
+                    }
                 }
                 return new KeystoreAccount(account);
             });
         };
         const kdf = searchPath(data, "crypto/kdf");
         if (kdf && typeof (kdf) === "string") {
+            const throwError = function (name, value) {
+                return logger.throwArgumentError("invalid key-derivation function parameters", name, value);
+            };
             if (kdf.toLowerCase() === "scrypt") {
                 const salt = looseArrayify(searchPath(data, "crypto/kdfparams/salt"));
                 const N = parseInt(searchPath(data, "crypto/kdfparams/n"));
                 const r = parseInt(searchPath(data, "crypto/kdfparams/r"));
                 const p = parseInt(searchPath(data, "crypto/kdfparams/p"));
+                // Check for all required parameters
                 if (!N || !r || !p) {
-                    throw new Error("unsupported key-derivation function parameters");
+                    throwError("kdf", kdf);
                 }
                 // Make sure N is a power of 2
                 if ((N & (N - 1)) !== 0) {
-                    throw new Error("unsupported key-derivation function parameter value for N");
+                    throwError("N", N);
                 }
                 const dkLen = parseInt(searchPath(data, "crypto/kdfparams/dklen"));
                 if (dkLen !== 32) {
-                    throw new Error("unsupported key-derivation derived-key length");
+                    throwError("dklen", dkLen);
                 }
                 const key = yield scrypt.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback);
                 //key = arrayify(key);
@@ -121,39 +144,39 @@ export function decrypt(json, password, progressCallback) {
                     prfFunc = "sha512";
                 }
                 else {
-                    throw new Error("unsupported prf");
+                    throwError("prf", prf);
                 }
                 const c = parseInt(searchPath(data, "crypto/kdfparams/c"));
                 const dkLen = parseInt(searchPath(data, "crypto/kdfparams/dklen"));
                 if (dkLen !== 32) {
-                    throw new Error("unsupported key-derivation derived-key length");
+                    throwError("dklen", dkLen);
                 }
                 const key = arrayify(pbkdf2(passwordBytes, salt, c, dkLen, prfFunc));
                 return getAccount(key);
             }
         }
-        throw new Error("unsupported key-derivation function");
+        return logger.throwArgumentError("unsupported key-derivation function", "kdf", kdf);
     });
 }
 export function encrypt(account, password, options, progressCallback) {
     try {
+        // Check the address matches the private key
         if (getAddress(account.address) !== computeAddress(account.privateKey)) {
             throw new Error("address/privateKey mismatch");
         }
-        if (account.mnemonic != null) {
-            const node = HDNode.fromMnemonic(account.mnemonic).derivePath(account.path || defaultPath);
+        // Check the mnemonic (if any) matches the private key
+        if (hasMnemonic(account)) {
+            const mnemonic = account.mnemonic;
+            const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path || defaultPath);
             if (node.privateKey != account.privateKey) {
                 throw new Error("mnemonic mismatch");
             }
-        }
-        else if (account.path != null) {
-            throw new Error("cannot specify path without mnemonic");
         }
     }
     catch (e) {
         return Promise.reject(e);
     }
-    // the options are optional, so adjust the call as needed
+    // The options are optional, so adjust the call as needed
     if (typeof (options) === "function" && !progressCallback) {
         progressCallback = options;
         options = {};
@@ -164,12 +187,13 @@ export function encrypt(account, password, options, progressCallback) {
     const privateKey = arrayify(account.privateKey);
     const passwordBytes = getPassword(password);
     let entropy = null;
-    let path = account.path;
-    if (account.mnemonic) {
-        entropy = arrayify(mnemonicToEntropy(account.mnemonic));
-        if (!path) {
-            path = defaultPath;
-        }
+    let path = null;
+    let locale = null;
+    if (hasMnemonic(account)) {
+        const srcMnemonic = account.mnemonic;
+        entropy = arrayify(mnemonicToEntropy(srcMnemonic.phrase, srcMnemonic.locale || "en"));
+        path = srcMnemonic.path || defaultPath;
+        locale = srcMnemonic.locale || "en";
     }
     let client = options.client;
     if (!client) {
@@ -276,6 +300,7 @@ export function encrypt(account, password, options, progressCallback) {
                 mnemonicCounter: hexlify(mnemonicIv).substring(2),
                 mnemonicCiphertext: hexlify(mnemonicCiphertext).substring(2),
                 path: path,
+                locale: locale,
                 version: "0.1"
             };
         }

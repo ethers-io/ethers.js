@@ -33,7 +33,7 @@ else {
 var browserEthers$1 = unwrapExports(browserEthers);
 var browserEthers_1 = browserEthers.ethers;
 
-const version = "hardware-wallets/5.0.0-beta.2";
+const version = "hardware-wallets/5.0.0-beta.3";
 
 var global$1 = (typeof global !== "undefined" ? global :
             typeof self !== "undefined" ? self :

@@ -10,7 +10,8 @@ Concepts
 
 
 This is a very breif overview of some aspects of *Ethereum*
-which developers can make use of or should be aware of.
+and blockchains which developers can make use of or should
+be aware of.
 
 
 * [Events](events)
@@ -22,4 +23,4 @@ which developers can make use of or should be aware of.
 
 
 -----
-**Content Hash:** 1846ad5571101be31cf9617167b5cc53338c83c0fc9389da19c8dd9d4153558b
+**Content Hash:** d28f134e37610473fc3f0fd205f5928f30ee754cb7f9e13ad01a4ed9cf6dfc38

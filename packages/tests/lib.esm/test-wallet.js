@@ -15,7 +15,7 @@ describe('Test JSON Wallets', function () {
                 assert.equal(wallet.privateKey, test.privateKey, 'generated correct private key - ' + wallet.privateKey);
                 assert.equal(wallet.address.toLowerCase(), test.address, 'generate correct address - ' + wallet.address);
                 if (test.mnemonic) {
-                    assert.equal(wallet.mnemonic, test.mnemonic, 'mnemonic enabled encrypted wallet has a mnemonic');
+                    assert.equal(wallet.mnemonic.phrase, test.mnemonic, 'mnemonic enabled encrypted wallet has a mnemonic phrase');
                 }
             });
         });
@@ -29,8 +29,8 @@ describe('Test JSON Wallets', function () {
             return wallet.encrypt(password).then((json) => {
                 return ethers.Wallet.fromEncryptedJson(json, password).then((decryptedWallet) => {
                     assert.equal(decryptedWallet.address, wallet.address, 'decrypted wallet - ' + wallet.privateKey);
-                    assert.equal(decryptedWallet.mnemonic, wallet.mnemonic, "decrypted wallet menonic - " + wallet.privateKey);
-                    assert.equal(decryptedWallet.path, wallet.path, "decrypted wallet path - " + wallet.privateKey);
+                    assert.equal(decryptedWallet.mnemonic.phrase, wallet.mnemonic.phrase, "decrypted wallet menonic - " + wallet.privateKey);
+                    assert.equal(decryptedWallet.mnemonic.path, wallet.mnemonic.path, "decrypted wallet path - " + wallet.privateKey);
                     return decryptedWallet.encrypt(password).then((encryptedWallet) => {
                         let parsedWallet = JSON.parse(encryptedWallet);
                         assert.equal(decryptedWallet.address.toLowerCase().substring(2), parsedWallet.address, 're-encrypted wallet - ' + wallet.privateKey);

@@ -2,10 +2,14 @@
   "author": "Richard Moore <me@ricmoo.com>",
   "bin": {
     "ethers": "./lib/bin/ethers.js",
+    "ethers-asm": "./lib/bin/ethers-asm.js",
     "ethers-ens": "./lib/bin/ethers-ens.js",
     "ethers-ts": "./lib/bin/ethers-ts.js"
   },
   "dependencies": {
+    "@babel/parser": "7.8.4",
+    "@babel/types": "7.8.3",
+    "@ethersproject/asm": ">=5.0.0-beta.148",
     "@ethersproject/basex": ">=5.0.0-beta.127",
     "ethers": ">=5.0.0-beta.156",
     "mime-types": "2.1.11",
@@ -37,7 +41,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0x8c1c74059eaf59d10d94fcb2285fb2512a1fdf121ef5c3167e8afa16807bbbb3",
+  "tarballHash": "0x4a44142a8fc8253eb6d93afbbe286914fd3feb5960c4ffe8ddd4221a8ab52f91",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.148"
+  "version": "5.0.0-beta.151"
 }

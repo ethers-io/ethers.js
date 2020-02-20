@@ -9,7 +9,7 @@ _subsection: Formats
 _heading: JSON String ABI (Solidity Output JSON)
 
 The **JSON ABI Format** is the format that is
-[output from the Solidity compiler](https://solidity.readthedocs.io/en/v0.6.0/using-the-compiler.html#output-description).
+[output from the Solidity compiler](link-solc-output).
 
 A JSON serialized object is always a string, which represents an Array
 of Objects, where each Object has various properties describing the [[abi-fragment]] of the ABI.
@@ -21,7 +21,7 @@ _heading: Humanb-Readable ABI
 
 The Human-Readable ABI was 
 
-[article](https://blog.ricmoo.com/human-readable-contract-abis-in-ethers-js-141902f4d917)
+[article](link-ricmoo-humanreadableabi)
 
 _heading: Output Formats @<abi-outputformats> @src<abi/fragments:FormatTypes>
 
@@ -55,6 +55,9 @@ _warning: Note
 The ``sighash`` format is **insufficient** to re-create the original [[abi-fragment]],
 since it discards modifiers such as indexed, anonymous, stateMutability, etc.
 
+
+_subsection: Interface @<abi-interface> @SRC<abi/interface:class.Interface>
+TODO
 
 _subsection: Fragment @<abi-fragment> @SRC<abi/fragments:class.Fragment>
 

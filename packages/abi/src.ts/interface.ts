@@ -55,7 +55,7 @@ export class Interface {
 
     readonly _abiCoder: AbiCoder;
 
-    static _isInterface: boolean;
+    readonly _isInterface: boolean;
 
     constructor(fragments: string | Array<Fragment | JsonFragment | string>) {
         logger.checkNew(new.target, Interface);
@@ -87,7 +87,7 @@ export class Interface {
                         logger.warn("duplicate definition - constructor");
                         return;
                     }
-                    defineReadOnly(this, "deploy", fragment);
+                    defineReadOnly(this, "deploy", <ConstructorFragment>fragment);
                     return;
                 case "function":
                     bucket = this.functions;

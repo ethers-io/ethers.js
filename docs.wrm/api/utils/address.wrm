@@ -8,15 +8,42 @@ Also see: [constants.AddressZero](constants)
 
 _subsection: Address Formats  @<address-formats>
 
-_heading: Checksum Address  @<address>
-TODO
+
+_heading: Address  @<address>
+
+An **Address** is a [[datahexstring]] of 20 bytes (40 nibbles), with optional
+mixed case.
+
+If the case is mixed, it is a **Checksum Address**, which uses a specific pattern
+of uppercase and lowercase letters within a given address to reduce the risk
+of errors introduced from typing an address or cut and paste issues.
+
+All functions that return an Address will return a Checksum Address.
+
 
 _heading: ICAP Address  @<address-icap>
-TODO
+
+The **ICAP Address Format** was an early attempt to introduce a checksum
+into Ethereum addresses using the popular banking industry's
+[IBAN](link-wiki-iban)
+format with the country code specified as **XE**.
+
+Due to the way IBAN encodes address, only addresses that fit into 30 base-36
+characters are actually compatible, so the format was adapted to support 31
+base-36 characters which is large enough for a full Ethereum address, however
+the preferred method was to select a private key whose address has a ``0`` as
+the first byte, which allows the address to be formatted as a fully compatibly
+standard IBAN address with 30 base-36 characters.
+
+In general this format is no longer widely supported anymore, however any function that
+accepts an address can receive an ICAP address, and it will be converted internally.
+
+To convert an address into the ICAP format, see [getIcapAddress](utils-getIcapAddress).
+
 
 _subsection: Functions
 
-_property: utils.getAddress(address) => string<[Address](address)>  @<utils-getAddress> @SRC<address>
+_property: utils.getAddress(address) => string<[[address]]>  @<utils-getAddress> @SRC<address>
 Returns //address// as a Checksum Address.
 
 If //address// is an invalid 40-nibble [[hexstring]] or if it contains mixed case and
@@ -29,13 +56,13 @@ _property: utils.isAddress(address) => boolean  @<utils-isAddress> @SRC<address>
 Returns true if //address// is valid (in any supported format).
 
 _property: utils.getIcapAddress(address) => string<[IcapAddress](address-icap)>  @<utils-getIcapAddress> @SRC<address>
-Returns //address// as an [ICAP address](https://github.com/ethereum/wiki/wiki/Inter-exchange-Client-Address-Protocol-%28ICAP%29).
+Returns //address// as an [ICAP address](link-icap).
 Supports the same restrictions as [utils.getAddress](utils-getAddress).
 
-_property: utils.getContractAddress(transaction) => string<[Address](address)>  @<utils-getContractAddress> @SRC<address>
+_property: utils.getContractAddress(transaction) => string<[[address]]>  @<utils-getcontractaddress> @SRC<address>
 Returns the contract address that would result if //transaction// was
 used to deploy a contract.
 
-_property: utils.getCreate2Address(from, salt, initCodeHash) => string<[Address](address)> @<utils.getCreate2Address> @SRC<address>
+_property: utils.getCreate2Address(from, salt, initCodeHash) => string<[[address]]> @<utils.getCreate2Address> @SRC<address>
 Returns the contract address that would result from the given
-[CREATE2](https://eips.ethereum.org/EIPS/eip-1014) call.
+[CREATE2](link-eip-1014) call.

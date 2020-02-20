@@ -9,8 +9,7 @@ _subsection: Types
 _heading: Bytes @<bytes>
 
 A **Bytes** is any object which is an
-[Array](https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) or
-[TypedArray](https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) with
+[Array](link-js-array) or [TypedArray](link-js-typedarray) with
 each value in the valid byte range (i.e. between 0 and 255 inclusive),
 or is an Object with a ``length`` property where each indexed property
 is in the valid byte range.
@@ -34,7 +33,7 @@ _heading: Signature @<signature>
 
 - **r** and **s** --- The x co-ordinate of **r** and the **s** value of the signature
 - **v** --- The parity of the y co-ordinate of **r**
-- **_vs** --- The [compact representation](https://eips.ethereum.org/EIPS/eip-2098) of the **s** and **v**
+- **_vs** --- The [compact representation](link-eip-2098) of the **s** and **v**
 - **recoveryParam** --- The normalized (i.e. 0 or 1) value of **v**
 
 _heading: Flat-Format Signature @<signature-flat>
@@ -135,3 +134,7 @@ _property: utils.splitSignature(aSignatureLikeOrBytesLike) => [[signature]]  @<u
 Return the full expanded-format of //aSignaturelike// or a flat-format [[datahexstring]].
 Any missing properties will be computed.
 
+_subsection: Random Bytes
+
+_property: ethers.utils.randomBytes(length) => Uint8Array
+Return a new Uint8Array of //length// random bytes.

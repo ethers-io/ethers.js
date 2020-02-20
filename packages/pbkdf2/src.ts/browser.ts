@@ -1,9 +1,9 @@
 "use strict";
 
 import { arrayify, BytesLike, hexlify } from "@ethersproject/bytes";
-import { computeHmac, SupportedAlgorithms } from "@ethersproject/sha2";
+import { computeHmac, SupportedAlgorithm } from "@ethersproject/sha2";
 
-export function pbkdf2(password: BytesLike, salt: BytesLike, iterations: number, keylen: number, hashAlgorithm: SupportedAlgorithms): string {
+export function pbkdf2(password: BytesLike, salt: BytesLike, iterations: number, keylen: number, hashAlgorithm: SupportedAlgorithm): string {
     password = arrayify(password);
     salt = arrayify(salt);
     let hLen;

@@ -54,15 +54,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = __importDefault(require("fs"));
-var module_1 = __importDefault(require("module"));
 var path_1 = require("path");
 var repl_1 = __importDefault(require("repl"));
-var util_1 = __importDefault(require("util"));
 var vm_1 = __importDefault(require("vm"));
 var ethers_1 = require("ethers");
+var parser_1 = require("@babel/parser");
 var cli_1 = require("../cli");
 var prompt_1 = require("../prompt");
 var solc_1 = require("../solc");
+function repeat(c, length) {
+    if (c.length === 0) {
+        throw new Error("too short");
+    }
+    var result = c;
+    while (result.length < length) {
+        result += result;
+    }
+    return result.substring(0, length);
+}
 function setupContext(path, context, plugin) {
     context.provider = plugin.provider;
     context.accounts = plugin.accounts;
@@ -76,7 +85,7 @@ function setupContext(path, context, plugin) {
         context.console = console;
     }
     if (!context.require) {
-        context.require = module_1.default.createRequireFromPath(path);
+        context.require = solc_1.customRequire(path);
     }
     if (!context.process) {
         context.process = process;
@@ -96,7 +105,9 @@ function setupContext(path, context, plugin) {
     context.getContractAddress = ethers_1.ethers.utils.getContractAddress;
     context.getIcapAddress = ethers_1.ethers.utils.getIcapAddress;
     context.arrayify = ethers_1.ethers.utils.arrayify;
+    context.concat = ethers_1.ethers.utils.concat;
     context.hexlify = ethers_1.ethers.utils.hexlify;
+    context.zeroPad = ethers_1.ethers.utils.zeroPad;
     context.joinSignature = ethers_1.ethers.utils.joinSignature;
     context.splitSignature = ethers_1.ethers.utils.splitSignature;
     context.id = ethers_1.ethers.utils.id;
@@ -115,6 +126,37 @@ function setupContext(path, context, plugin) {
     context.toUtf8String = ethers_1.ethers.utils.toUtf8String;
 }
 var cli = new cli_1.CLI("sandbox");
+function prepareCode(code) {
+    var ast = parser_1.parseExpression(code, {
+        createParenthesizedExpressions: true
+    });
+    // Crawl the AST, to compute needed source code manipulations
+    var insert = [];
+    var descend = function (node) {
+        if (node == null || typeof (node) !== "object") {
+            return;
+        }
+        if (Array.isArray(node)) {
+            return node.forEach(descend);
+        }
+        // We will add parenthesis around ObjectExpressions, which
+        // otherwise look like blocks
+        if (node.type === "ObjectExpression") {
+            insert.push({ char: "(", offset: node.start });
+            insert.push({ char: ")", offset: node.end });
+        }
+        Object.keys(node).forEach(function (key) { return descend(key); });
+    };
+    descend(ast);
+    // We make modifications from back to front, so we don't need
+    // to adjust offsets
+    insert.sort(function (a, b) { return (b.offset - a.offset); });
+    // Modify the code for REPL
+    insert.forEach(function (mod) {
+        code = code.substring(0, mod.offset) + mod.char + code.substring(mod.offset);
+    });
+    return code;
+}
 var SandboxPlugin = /** @class */ (function (_super) {
     __extends(SandboxPlugin, _super);
     function SandboxPlugin() {
@@ -166,33 +208,59 @@ var SandboxPlugin = /** @class */ (function (_super) {
         });
     };
     SandboxPlugin.prototype.run = function () {
+        console.log("version: " + ethers_1.ethers.version);
         console.log("network: " + this.network.name + " (chainId: " + this.network.chainId + ")");
-        var nextPromiseId = 0;
-        function promiseWriter(output) {
-            if (output instanceof Promise) {
-                repl.context._p = output;
-                var promiseId_1 = nextPromiseId++;
-                output.then(function (result) {
-                    console.log("\n<Promise id=" + promiseId_1 + " resolved>");
-                    console.log(util_1.default.inspect(result));
-                    repl.context._r = result;
-                    repl.displayPrompt(true);
-                }, function (error) {
-                    console.log("\n<Promise id=" + promiseId_1 + " rejected>");
-                    console.log(util_1.default.inspect(error));
-                    repl.displayPrompt(true);
-                });
-                return "<Promise id=" + promiseId_1 + " pending>";
+        var filename = path_1.resolve(process.cwd(), "./sandbox.js");
+        var prompt = (this.provider ? this.network.name : "no-network") + "> ";
+        var evaluate = function (code, context, file, _callback) {
+            // Pausing the stdin (which prompt does when it leaves), causes
+            // readline to end us. So, we always re-enable stdin on a result
+            var callback = function (error, result) {
+                _callback(error, result);
+                process.stdin.resume();
+            };
+            try {
+                code = prepareCode(code);
             }
-            return util_1.default.inspect(output);
-        }
+            catch (error) {
+                if (error instanceof SyntaxError) {
+                    var leftover = code.substring(error.pos);
+                    var loc = error.loc;
+                    if (leftover.trim()) {
+                        // After the first line, the prompt is "... "
+                        console.log(repeat("-", ((loc.line === 1) ? prompt.length : 4) + loc.column - 1) + "^");
+                        console.log("Syntax Error! " + error.message);
+                    }
+                    else {
+                        error = new repl_1.default.Recoverable(error);
+                    }
+                }
+                return callback(error);
+            }
+            try {
+                var result = vm_1.default.runInContext(code, context, {
+                    filename: filename
+                });
+                if (result instanceof Promise) {
+                    result.then(function (result) {
+                        callback(null, result);
+                    }, function (error) {
+                        callback(error);
+                    });
+                }
+                else {
+                    callback(null, result);
+                }
+            }
+            catch (error) {
+                callback(error);
+            }
+        };
         var repl = repl_1.default.start({
-            input: process.stdin,
-            output: process.stdout,
-            prompt: (this.provider ? this.network.name : "no-network") + "> ",
-            writer: promiseWriter
+            prompt: prompt,
+            eval: evaluate
         });
-        setupContext(path_1.resolve(process.cwd(), "./sandbox.js"), repl.context, this);
+        setupContext(filename, repl.context, this);
         return new Promise(function (resolve) {
             repl.on("exit", function () {
                 console.log("");
@@ -316,23 +384,32 @@ var FundPlugin = /** @class */ (function (_super) {
     };
     FundPlugin.prototype.prepareArgs = function (args) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0: return [4 /*yield*/, _super.prototype.prepareArgs.call(this, args)];
                     case 1:
-                        _b.sent();
+                        _c.sent();
                         if (this.network.name !== "ropsten") {
                             this.throwError("Funding requires --network ropsten");
                         }
-                        if (args.length !== 1) {
-                            this.throwUsageError("fund requires ADDRESS");
-                        }
+                        if (!(args.length === 1)) return [3 /*break*/, 3];
                         _a = this;
                         return [4 /*yield*/, this.getAddress(args[0], "Cannot fund ZERO address", false)];
                     case 2:
-                        _a.toAddress = _b.sent();
-                        return [2 /*return*/];
+                        _a.toAddress = _c.sent();
+                        return [3 /*break*/, 6];
+                    case 3:
+                        if (!(args.length === 0 && this.accounts.length === 1)) return [3 /*break*/, 5];
+                        _b = this;
+                        return [4 /*yield*/, this.accounts[0].getAddress()];
+                    case 4:
+                        _b.toAddress = _c.sent();
+                        return [3 /*break*/, 6];
+                    case 5:
+                        this.throwUsageError("fund requires ADDRESS");
+                        _c.label = 6;
+                    case 6: return [2 /*return*/];
                 }
             });
         });
@@ -1106,7 +1183,7 @@ var CompilePlugin = /** @class */ (function (_super) {
                         if (args.length !== 1) {
                             this.throwError("compile requires exactly FILENAME");
                         }
-                        this.filename = args[0];
+                        this.filename = path_1.resolve(args[0]);
                         return [2 /*return*/];
                 }
             });
@@ -1117,16 +1194,31 @@ var CompilePlugin = /** @class */ (function (_super) {
             var source, result, output;
             return __generator(this, function (_a) {
                 source = fs_1.default.readFileSync(this.filename).toString();
-                result = solc_1.compile(source, {
-                    filename: this.filename,
-                    optimize: (!this.noOptimize)
-                });
+                result = null;
+                try {
+                    result = solc_1.compile(source, {
+                        filename: this.filename,
+                        optimize: (!this.noOptimize)
+                    });
+                }
+                catch (error) {
+                    if (error.errors) {
+                        error.errors.forEach(function (error) {
+                            console.log(error);
+                        });
+                    }
+                    else {
+                        throw error;
+                    }
+                    throw new Error("Failed to compile contract.");
+                }
                 output = {};
                 result.forEach(function (contract, index) {
                     output[contract.name] = {
                         bytecode: contract.bytecode,
                         runtime: contract.runtime,
-                        interface: contract.interface.fragments.map(function (f) { return f.format(ethers_1.ethers.utils.FormatTypes.full); })
+                        interface: contract.interface.fragments.map(function (f) { return f.format(ethers_1.ethers.utils.FormatTypes.full); }),
+                        compiler: contract.compiler
                     };
                 });
                 console.log(JSON.stringify(output, null, 4));
@@ -1187,7 +1279,7 @@ var DeployPlugin = /** @class */ (function (_super) {
                         if (args.length !== 1) {
                             this.throwError("deploy requires exactly FILENAME");
                         }
-                        this.filename = args[0];
+                        this.filename = path_1.resolve(args[0]);
                         return [2 /*return*/];
                 }
             });
@@ -1201,26 +1293,45 @@ var DeployPlugin = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         source = fs_1.default.readFileSync(this.filename).toString();
-                        result = solc_1.compile(source, {
-                            filename: this.filename,
-                            optimize: (!this.noOptimize)
-                        });
-                        codes = result.filter(function (c) { return (c.bytecode !== "0x" && (_this.contractName == null || _this.contractName == c.name)); });
+                        result = null;
+                        try {
+                            result = solc_1.compile(source, {
+                                filename: this.filename,
+                                optimize: (!this.noOptimize)
+                            });
+                        }
+                        catch (error) {
+                            if (error.errors) {
+                                error.errors.forEach(function (error) {
+                                    console.log(error);
+                                });
+                            }
+                            else {
+                                throw error;
+                            }
+                            throw new Error("Failed to compile contract.");
+                        }
+                        codes = result.filter(function (c) { return (_this.contractName == null || _this.contractName == c.name); });
                         if (codes.length > 1) {
-                            this.throwError("Please specify a contract with --contract NAME");
+                            this.throwError("Multiple contracts found; please specify a contract with --contract NAME");
                         }
                         if (codes.length === 0) {
                             this.throwError("No contract found");
                         }
                         factory = new ethers_1.ethers.ContractFactory(codes[0].interface, codes[0].bytecode, this.accounts[0]);
+                        cli_1.dump("Deploying:", {
+                            Contract: codes[0].name,
+                            Bytecode: codes[0].bytecode,
+                            Interface: codes[0].interface.fragments.map(function (f) { return f.format(ethers_1.ethers.utils.FormatTypes.full); }),
+                            Compiler: codes[0].compiler,
+                            Optimizer: (this.noOptimize ? "No" : "Yes")
+                        });
                         return [4 /*yield*/, factory.deploy()];
                     case 1:
                         contract = _a.sent();
                         cli_1.dump("Deployed:", {
                             Contract: codes[0].name,
                             Address: contract.address,
-                            Bytecode: codes[0].bytecode,
-                            Interface: codes[0].interface.fragments.map(function (f) { return f.format(ethers_1.ethers.utils.FormatTypes.full); })
                         });
                         return [2 /*return*/];
                 }

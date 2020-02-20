@@ -9,7 +9,15 @@ BigNumber
 =========
 
 
-Explain about BigNumber here...
+Many operations in Ethereum operation on numbers which are
+[outside the range of safe values](./) to use
+in JavaScript.
+
+A **BigNumber** is an object which safely allows mathematic operations
+on numbers of any magnitude.
+
+Most operations which need to return a value will return a **BigNumber**
+and parameters which accept values will generally accept them.
 
 
 ### Importing
@@ -69,21 +77,21 @@ A [BytesLike](../bytes) Object, such as an Array or Uint8Array.
 
 #### ***BigNumber***
 
-An existing BigNumber instance.
+An existing [BigNumber](./) instance.
 
 
 
 
 #### ***number***
 
-A number that is within the safe range for JavaScript numbers.
+A number that is within the [safe range](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER) for JavaScript numbers.
 
 
 
 
 #### ***BigInt***
 
-A JavaScript [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)
+A JavaScript [BigInt](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)
 object, on environments that support BigInt.
 
 
@@ -185,7 +193,7 @@ the *bitcount* least significant bits set to zero.
 ### Two's Compliment
 
 
-[Two's Complicment](https://en.wikipedia.org/wiki/Two%27s_complement)
+[Two's Complicment](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/Two%27s_complement)
 is an elegant method used to encode and decode fixed-width signed values
 while efficiently preserving mathematic operations.
 Most users will not need to interact with these.
@@ -273,9 +281,9 @@ Returns the value of *bignumber* as a base-10 string.
 
 
 
-#### *bignumber* . **toHexString** (  )  **=>** *string*
+#### *bignumber* . **toHexString** (  )  **=>** *string< [DataHexstring](../bytes) >*
 
-Returns the value of *bignumber* as a base-16, `0x`-prefixed [hexstring](../bytes).
+Returns the value of *bignumber* as a base-16, `0x`-prefixed [DataHexstring](../bytes).
 
 
 
@@ -305,7 +313,7 @@ Notes
 -----
 
 
-A few short notes on numbers...
+This section is a for a couple of questions that come up frequently.
 
 
 ### Why can't I just use numbers?
@@ -317,7 +325,7 @@ with very little granularity. For example, there are only 100
 cents in a single dollar. However, there are 10^18 **wei** in a
 single **ether**.
 
-JavaScript uses [IEEE 754 double-precision binary floating point](https://en.wikipedia.org/wiki/Double-precision_floating-point_format)
+JavaScript uses [IEEE 754 double-precision binary floating point](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/Double-precision_floating-point_format)
 numbers to represent numeric values. As a result, there are *holes*
 in the integer set after 9,007,199,254,740,991; which is
 problematic for *Ethereum* because that is only around 0.009
@@ -342,6 +350,67 @@ by the user and Big Number representations which can have
 mathematical operations handled safely.
 
 
+### Why not BigNumber.js, BN.js, BigDecimal, etc?
+
+
+Everyone has their own favourite Big Number library, and once someone
+has choosen one, it becomes part of their identity, like their editor,
+vi vs emacs. There are over 100 Big Number libraries on [npm](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/www.npmjs.com/search?q=bignumber).
+
+One of the biggest differences between the Ethers [BigNumber](./) object and
+other libraries is that it is immutable, which is very important when
+dealing with the asynchronous nature of the blockchain.
+
+Capturing the value is not safe in async functions, so immutability
+protects us from easy to make mistakes, which is not possible on the
+low-level library's objects which supports myriad in-place operations.
+
+Second, the Ethers [BigNumber](./) provides all the functionality required
+internally and should generally be sufficient for most developers while
+not exposing some of the more advanced and rare functionality. So it will
+be eaiser to swap out the underlying library without impacting consumers.
+
+For example, if [BN.js](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/www.npmjs.com/package/bn.js) was exposed, someone may use the
+greatest-common-denominator functions, which would then be functionality
+the replacing library should also provide to ensure anyone depending on
+that functionality is not broken.
+
+
+### Why BN.js??
+
+
+The reason why [BN.js](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/www.npmjs.com/package/bn.js) is used internally as the big
+number is because that is the library used by [elliptic](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/www.npmjs.com/package/elliptic).
+
+Therefore it **must** be included regardless, so we leverage that
+library rather than adding another Big Number library, which would
+mean two different libraries offering the same functionality.
+
+This has saved about 85kb (80% of this library size) of library size
+over other libraries which include separate Big Number libraries for
+various purposes.
+
+
+### Why not allow us to set a global Big Number library?
+
+
+Another comment that comes up frequently is tha desire to specify a
+global user-defined Big Number library, which all functions would
+return.
+
+This becomes problematic since your code may live along side other
+libraries or code that use Ethers. In fact, even Ethers uses a lot
+of the public functions internally.
+
+If you, for example, used a library that used `a.plus(b)` instead
+of `a.add(b)`, this would break Ethers when it tries to compute
+fees internally, and other libraries likely have similar logic.
+
+But, the [BigNumber](./) prototype is exposed, so you can always add a
+`toMyCustomBigNumber()` method to all [BigNumber](./)'s globally
+which is safe.
+
+
 
 -----
-**Content Hash:** 76be4f72801f0d772c1ebe1acff4c41f6d52ed96f603de4b168f12d099470273
+**Content Hash:** 87481a6a9d99504396f1d013094f713846f9d4d51891778928744cee04bd85bb

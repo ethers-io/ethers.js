@@ -5,11 +5,11 @@ var bytes_1 = require("@ethersproject/bytes");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
-var SupportedAlgorithms;
-(function (SupportedAlgorithms) {
-    SupportedAlgorithms["sha256"] = "sha256";
-    SupportedAlgorithms["sha512"] = "sha512";
-})(SupportedAlgorithms = exports.SupportedAlgorithms || (exports.SupportedAlgorithms = {}));
+var SupportedAlgorithm;
+(function (SupportedAlgorithm) {
+    SupportedAlgorithm["sha256"] = "sha256";
+    SupportedAlgorithm["sha512"] = "sha512";
+})(SupportedAlgorithm = exports.SupportedAlgorithm || (exports.SupportedAlgorithm = {}));
 ;
 function ripemd160(data) {
     return "0x" + crypto_1.createHash("ripemd160").update(Buffer.from(bytes_1.arrayify(data))).digest("hex");
@@ -24,7 +24,7 @@ function sha512(data) {
 }
 exports.sha512 = sha512;
 function computeHmac(algorithm, key, data) {
-    if (!SupportedAlgorithms[algorithm]) {
+    if (!SupportedAlgorithm[algorithm]) {
         logger.throwError("unsupported algorithm - " + algorithm, logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "computeHmac",
             algorithm: algorithm

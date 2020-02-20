@@ -21,22 +21,22 @@ _note: Note
 Strings that are 31 __//bytes//__ long may contain fewer than 31 __//characters//__,
 since UTF-8 requires multiple bytes to encode international characters.
 
-_property: utils.parseBytes32String(aBytesLike) => string  @<utils-parsebytes32> @SRC<strings>
+_property: ethers.utils.parseBytes32String(aBytesLike) => string  @<utils-parsebytes32> @SRC<strings>
 Returns the decoded string represented by the ``Bytes32`` encoded data.
 
-_property: utils.formatBytes32String(text) => string<[[datahexstring]]<32>>  @<utils-formatbytes32> @SRC<strings>
+_property: ethers.utils.formatBytes32String(text) => string<[[datahexstring]]<32>>  @<utils-formatbytes32> @SRC<strings>
 Returns a ``bytes32`` string representation of //text//. If the
 length of //text// exceeds 31 bytes, it will throw an error.
 
 
 _subsection: UTF-8 Strings @<utf8-string>
 
-_property: utils.toUtf8Bytes(text [ , form = current ] ) => Uint8Array  @<utils-toutf8bytes> @SRC<strings>
+_property: ethers.utils.toUtf8Bytes(text [ , form = current ] ) => Uint8Array  @<utils-toutf8bytes> @SRC<strings>
 Returns the UTF-8 bytes of //text//, optionally normalizing it using the
 [[unicode-normalization-form]] //form//.
 
-_property: utils.toUtf8CodePoints(aBytesLike [ , form = current ] ) => Array<number>  @<utils-toutf8codepoints> @SRC<strings>
-Returns the Array of codepoints of //aBytesLike//, optionally normalizing it using the
+_property: ethers.utils.toUtf8CodePoints(text [ , form = current ] ) => Array<number>  @<utils-toutf8codepoints> @SRC<strings>
+Returns the Array of codepoints of //text//, optionally normalized using the
 [[unicode-normalization-form]] //form//.
 
 _note: Note
@@ -45,28 +45,29 @@ its codepoint, accounting for surrogate pairs. This should not be confused with
 ``string.split("")``, which destroys surrogate pairs, spliting between each UTF-16
 codeunit instead.
 
-_property: utils.toUtf8String(aBytesLike [ , ignoreErrors = false ] ) => string  @<utils-toutf8string> @SRC<strings>
-Returns the string represented by the UTF-8 bytes of //aBytesLike//. This will
-throw an error for invalid surrogates, overlong sequences or other UTF-8 issues,
-unless //ignoreErrors// is specified.
+_property: ethers.utils.toUtf8String(aBytesLike [ , onError = error ] ) => string  @<utils-toutf8string> @SRC<strings>
+Returns the string represented by the UTF-8 bytes of //aBytesLike//.
 
+The //onError// is a [Custom UTF-8 Error function](utf8error) and if not specified
+it defaults to the [error](utf8error-error) function, which throws an error
+on **any** UTF-8 error.
 
-_heading: UnicodeNormalizationForm @<unicode-normalization-form> @SRC<strings/utf8:enum.UnicodeNormalizationForm>
+_subsection: UnicodeNormalizationForm @<unicode-normalization-form> @SRC<strings/utf8:enum.UnicodeNormalizationForm>
 
-There are several [commonly used forms](https://en.wikipedia.org/wiki/Unicode_equivalence)
+There are several [commonly used forms](link-wiki-unicode-equivalence)
 when normalizing UTF-8 data, which allow strings to be compared or hashed in a stable
 way.
 
-_property: utils.UnicodeNormalizationForm.current
+_property: ethers.utils.UnicodeNormalizationForm.current
 Maintain the current normalization form.
 
-_property: utils.UnicodeNormalizationForm.NFC
+_property: ethers.utils.UnicodeNormalizationForm.NFC
 The Composed Normalization Form. This form uses single codepoints
 which represent the fully composed character.
 
 For example, the **&eacute;** is a single codepoint, ``0x00e9``.
 
-_property: utils.UnicodeNormalizationForm.NFD
+_property: ethers.utils.UnicodeNormalizationForm.NFD
 The Decomposed Normalization Form. This form uses multiple codepoints
 (when necessary) to compose a character.
 
@@ -75,7 +76,7 @@ is made up of two codepoints, ``"0x0065"`` (which is the letter ``"e"``)
 and ``"0x0301"`` which is a special diacritic UTF-8 codepoint which
 indicates the previous character should have an acute accent.
 
-_property: utils.UnicodeNormalizationForm.NFKC
+_property: ethers.utils.UnicodeNormalizationForm.NFKC
 The Composed Normalization Form with Canonical Equivalence. The Canonical
 representation folds characters which have the same syntactic representation
 but different semantic meaning.
@@ -83,11 +84,101 @@ but different semantic meaning.
 For example, the Roman Numeral **I**, which has a UTF-8
 codepoint ``"0x2160"``, is folded into the capital letter I, ``"0x0049"``.
 
-_property: utils.UnicodeNormalizationForm.NFKD
+_property: ethers.utils.UnicodeNormalizationForm.NFKD
 The Decomposed Normalization Form with Canonical Equivalence.
 See NFKC for more an example.
 
 _note: Note
 Only certain specified characters are folded in Canonical Equivalence, and thus
 it should **not** be considered a method to acheive //any// level of security from
-[homoglyph attacks](https://en.wikipedia.org/wiki/IDN_homograph_attack).
+[homoglyph attacks](link-wiki-homoglyph).
+
+_subsection: Custom UTF-8 Error Handling @<utf8error>
+
+When converting a string to its codepoints, there is the possibility
+of invalid byte sequences. Since certain situations may need specific
+ways to handle UTF-8 errors, a custom error handling function can be used,
+which has the signature:
+
+_property: errorFunction(reason, offset, bytes, output [ , badCodepoint ]) => number
+The //reason// is one of the [UTF-8 Error Reasons](utf8error-reasons), //offset// is the index
+into //bytes// where the error was first encountered, output is the list
+of codepoints already processed (and may be modified) and in certain Error
+Reasons, the //badCodepoint// indicates the currently computed codepoint,
+but which would be rejected because its value is invalid.
+
+This function should return the number of bytes to skip past keeping in
+mind the value at //offset// will already be consumed.
+
+_heading: UTF-8 Error Reasons @<utf8error-reasons> @SRC<strings/utf8:Utf8ErrorReason>
+
+_property: ethers.utils.Utf8ErrorReason.BAD_PREFIX
+A byte was encountered which is invalid to begin a UTF-8 byte
+sequence with.
+
+_property: ethers.utils.Utf8ErrorReason.MISSING_CONTINUE
+A UTF-8 sequence was begun, but did not have enough continuation
+bytes for the sequence. For this error the //ofset// is the index
+at which a continuation byte was expected.
+
+_property: ethers.utils.Utf8ErrorReason.OUT_OF_RANGE
+The computed codepoint is outside the range for valid UTF-8
+codepoints (i.e. the codepoint is greater than 0x10ffff).
+This reason will pass the computed //badCountpoint// into
+the custom error function.
+
+_property: ethers.utils.Utf8ErrorReason.OVERLONG
+Due to the way UTF-8 allows variable length byte sequences
+to be used, it is possible to have multiple representations
+of the same character, which means
+[overlong sequences](link-wiki-utf8-overlong)
+allow for a non-distinguished string to be formed, which can
+impact security as multiple strings that are otherwise
+equal can have different hashes.
+
+Generally, overlong sequences are an attempt to circumvent
+some part of security, but in rare cases may be produced by
+lazy libraries or used to encode the null terminating
+character in a way that is safe to include in a ``char*``.
+
+This reason will pass the computed //badCountpoint// into the
+custom error function, which is actually a valid codepoint, just
+one that was arrived at through unsafe methods.
+
+_property: ethers.utils.Utf8ErrorReason.OVERRUN
+The string does not have enough characters remaining for the
+length of this sequence.
+
+_property: ethers.utils.Utf8ErrorReason.UNEXPECTED_CONTINUE
+This error is similar to BAD_PREFIX, since a continuation byte
+cannot begin a valid sequence, but many may wish to process this
+differently. However, most developers would want to trap this
+and perform the same operation as a BAD_PREFIX.
+
+_property: ethers.utils.Utf8ErrorReason.UTF16_SURROGATE
+The computed codepoint represents a value reserved for
+UTF-16 surrogate pairs.
+This reason will pass the computed surrogate half
+//badCountpoint// into the custom error function.
+
+
+
+_heading: Provided UTF-8 Error Handling Functions
+
+There are already several functions available for the  most common
+situations.
+
+_property: ethers.utils.Utf8ErrorFuncs.error @<utf8error-error> @SRC<strings/utf8:errorFunc>
+The will throw an error on **any** error with a UTF-8 sequence, including
+invalid prefix bytes, overlong sequences, UTF-16 surrogate pairs.
+
+_property: ethers.utils.Utf8ErrorFuncs.ignore @<utf8error-ignore> @SRC<strings/utf8:ignoreFunc>
+This will drop all invalid sequences (by consuming invalid prefix bytes and
+any following continuation bytes) from the final string as well as permit
+overlong sequences to be converted to their equivalent string.
+
+_property: ethers.utils.Utf8ErrorFuncs.replace @<utf8error-replace> @SRC<strings/utf8:replaceFunc>
+This will replace all invalid sequences (by consuming invalid prefix bytes and
+any following continuation bytes) with the
+[UTF-8 Replacement Character](link-wiki-utf8-replacement),
+(i.e. U+FFFD).

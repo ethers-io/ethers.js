@@ -105,9 +105,41 @@ async function generate() {
     return formatted.join("\n") + "\n";
 }
 
-module.exports = {
-    generate: generate,
-    ChangelogPath: ChangelogPath,
+function getChanges() {
+    const changes = [ ];
+
+    let lastLine = null;
+    fs.readFileSync(ChangelogPath).toString().split("\n").forEach((line) => {
+        line = line.trim();
+        if (line === "") { return; }
+
+        if (line.substring(0, 5) === "-----") {
+            changes.push({ title: lastLine, lines: [ ] });
+        } else if (line.substring(0, 1) === "-" && changes.length) {
+            changes[changes.length - 1].lines.push(line);
+        }
+        lastLine = line;
+    });
+
+    return changes;
 }
 
+function latestChange() {
+    const recent = getChanges()[0];
+
+    const match = recent.title.match(/ethers\/([^\(]*)\(([^\)]*)\)/);
+
+    return {
+        title: recent.title,
+        version: match[1].trim(),
+        data: match[2].trim(),
+        content: recent.lines.join("\n")
+    };
+}
+
+module.exports = {
+    generate: generate,
+    latestChange: latestChange,
+    ChangelogPath: ChangelogPath,
+}
 

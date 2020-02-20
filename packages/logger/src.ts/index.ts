@@ -178,8 +178,9 @@ export class Logger {
     }
 
     makeError(message: string, code?: string, params?: any): Error {
+        // Errors are being censored
         if (_censorErrors) {
-            return new Error("unknown error");
+            return this.makeError("censored error", code, { });
         }
 
         if (!code) { code = Logger.errors.UNKNOWN_ERROR; }
@@ -193,7 +194,8 @@ export class Logger {
                 messageDetails.push(key + "=" + JSON.stringify(params[key].toString()));
             }
         });
-        messageDetails.push("version=" + this.version);
+        messageDetails.push(`code=${ code }`);
+        messageDetails.push(`version=${ this.version }`);
 
         const reason = message;
         if (messageDetails.length) {
@@ -300,6 +302,12 @@ export class Logger {
     }
 
     static setCensorship(censorship: boolean, permanent?: boolean): void {
+        if (!censorship && permanent) {
+            this.globalLogger().throwError("cannot permanently disable censorship", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "setCensorship"
+            });
+        }
+
         if (_permanentCensorErrors) {
             if (!censorship) { return; }
             this.globalLogger().throwError("error censorship permanent", Logger.errors.UNSUPPORTED_OPERATION, {

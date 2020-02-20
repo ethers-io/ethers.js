@@ -37,10 +37,10 @@ function resolveProperties(object) {
     });
     return Promise.all(promises).then(function (results) {
         var result = {};
-        return results.reduce(function (accum, result) {
+        return (results.reduce(function (accum, result) {
             accum[result.key] = result.value;
             return accum;
-        }, result);
+        }, result));
     });
 }
 exports.resolveProperties = resolveProperties;
@@ -66,7 +66,7 @@ exports.shallowCopy = shallowCopy;
 var opaque = { bigint: true, boolean: true, number: true, string: true };
 // Returns a new copy of object, such that no properties may be replaced.
 // New properties may be added only to objects.
-function deepCopy(object) {
+function _deepCopy(object) {
     // Opaque objects are not mutable, so safe to copy by assignment
     if (object === undefined || object === null || opaque[typeof (object)]) {
         return object;
@@ -94,7 +94,10 @@ function deepCopy(object) {
     if (typeof (object) === "function") {
         return object;
     }
-    throw new Error("Cannot deepCopy " + typeof (object));
+    logger.throwArgumentError("Cannot deepCopy " + typeof (object), "object", object);
+}
+function deepCopy(object) {
+    return _deepCopy(object);
 }
 exports.deepCopy = deepCopy;
 var Description = /** @class */ (function () {

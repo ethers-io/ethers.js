@@ -99,7 +99,7 @@ Submits //transaction// to the network to be mined. The //transaction// **must**
 and be valid (i.e. the nonce is correct and the account has sufficient balance to pay
 for the transaction).
 
-_property: provider.waitForTransaction(transactionHash) => Promise<[[provider-transactionreceipt]]>  @<providers-waitfortransaction> @SRC<providers/base-provider>
+_property: provider.waitForTransaction(transactionHash) => Promise<[[provider-receipt]]>  @<providers-waitfortransaction> @SRC<providers/base-provider>
 Returns a Promise which will not resolve until //transactionHash// is mined.
 
 

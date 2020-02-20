@@ -5,13 +5,13 @@ import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
 import { ExternallyOwnedAccount, Signer } from "@ethersproject/abstract-signer";
 import { arrayify, Bytes, BytesLike, concat, hexDataSlice, isHexString, joinSignature, SignatureLike } from "@ethersproject/bytes";
 import { hashMessage } from "@ethersproject/hash";
-import { defaultPath, HDNode, entropyToMnemonic } from "@ethersproject/hdnode";
+import { defaultPath, HDNode, entropyToMnemonic, Mnemonic } from "@ethersproject/hdnode";
 import { keccak256 } from "@ethersproject/keccak256";
 import { defineReadOnly, resolveProperties } from "@ethersproject/properties";
 import { randomBytes } from "@ethersproject/random";
 import { SigningKey } from "@ethersproject/signing-key";
 import { decryptJsonWallet, encryptKeystore, ProgressCallback } from "@ethersproject/json-wallets";
-import { computeAddress, recoverAddress, serialize } from "@ethersproject/transactions";
+import { computeAddress, recoverAddress, serialize, UnsignedTransaction } from "@ethersproject/transactions";
 import { Wordlist } from "@ethersproject/wordlists";
 
 import { Logger } from "@ethersproject/logger";
@@ -22,17 +22,20 @@ function isAccount(value: any): value is ExternallyOwnedAccount {
     return (value != null && isHexString(value.privateKey, 32) && value.address != null);
 }
 
+function hasMnemonic(value: any): value is { mnemonic: Mnemonic } {
+    const mnemonic = value.mnemonic;
+    return (mnemonic && mnemonic.phrase);
+}
+
 export class Wallet extends Signer implements ExternallyOwnedAccount {
 
     readonly address: string;
     readonly provider: Provider;
 
-    readonly path: string;
-
     // Wrapping the _signingKey and _mnemonic in a getter function prevents
     // leaking the private key in console.log; still, be careful! :)
     readonly _signingKey: () => SigningKey;
-    readonly _mnemonic: () => string;
+    readonly _mnemonic: () => Mnemonic;
 
     constructor(privateKey: BytesLike | ExternallyOwnedAccount | SigningKey, provider?: Provider) {
         logger.checkNew(new.target, Wallet);
@@ -48,18 +51,22 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
                 logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDCACTED]");
             }
 
-            if (privateKey.mnemonic != null) {
-                const mnemonic = privateKey.mnemonic;
-                const path = privateKey.path || defaultPath;
-                defineReadOnly(this, "_mnemonic", () => mnemonic);
-                defineReadOnly(this, "path", privateKey.path);
-                const node = HDNode.fromMnemonic(mnemonic).derivePath(path);
+            if (hasMnemonic(privateKey)) {
+                const srcMnemonic = privateKey.mnemonic;
+                defineReadOnly(this, "_mnemonic", () => (
+                    {
+                        phrase: srcMnemonic.phrase,
+                        path: srcMnemonic.path || defaultPath,
+                        locale: srcMnemonic.locale || "en"
+                    }
+                ));
+                const mnemonic = this.mnemonic;
+                const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
                 if (computeAddress(node.privateKey) !== this.address) {
                     logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDCACTED]");
                 }
             } else {
-                defineReadOnly(this, "_mnemonic", (): string => null);
-                defineReadOnly(this, "path", null);
+                defineReadOnly(this, "_mnemonic", (): Mnemonic => null);
             }
 
 
@@ -73,8 +80,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
                 const signingKey = new SigningKey(privateKey);
                 defineReadOnly(this, "_signingKey", () => signingKey);
             }
-            defineReadOnly(this, "_mnemonic", (): string => null);
-            defineReadOnly(this, "path", null);
+            defineReadOnly(this, "_mnemonic", (): Mnemonic => null);
             defineReadOnly(this, "address", computeAddress(this.publicKey));
         }
 
@@ -85,7 +91,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
         defineReadOnly(this, "provider", provider || null);
     }
 
-    get mnemonic(): string { return this._mnemonic(); }
+    get mnemonic(): Mnemonic { return this._mnemonic(); }
     get privateKey(): string { return this._signingKey().privateKey; }
     get publicKey(): string { return this._signingKey().publicKey; }
 
@@ -106,8 +112,8 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
                 delete tx.from;
             }
 
-            const signature = this._signingKey().signDigest(keccak256(serialize(tx)));
-            return serialize(tx, signature);
+            const signature = this._signingKey().signDigest(keccak256(serialize(<UnsignedTransaction>tx)));
+            return serialize(<UnsignedTransaction>tx, signature);
         });
     }
 

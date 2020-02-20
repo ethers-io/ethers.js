@@ -1,0 +1,83 @@
+_title: Assembler
+
+_section: Assembler @<cli-asm>
+
+The assembler Command-Line utility allows you to assemble the
+[Ethers ASM Dialect](asm-dialect) into deployable EVM bytecode
+and disassemle EVM bytecode into human-readable mnemonics.
+
+
+_subsection: Help
+
+_code: asm-help.txt
+
+
+_subsection: Example Input Files
+
+_definition: **SimpleStore.asm**
+
+_code: asm-simplestore-asm.txt
+
+_definition: **SimpleStore.bin**
+
+_code: asm-simplestore-bin.txt
+
+_note: Note: Bytecode File Syntax
+A bin file may be made up of multiple blocks of bytecode, each may
+optionally begin with a ``0x`` prefix, all of which **must** be of
+even length (since bytes are required, with 2 nibbles per byte)
+
+All whitespace is ignored.
+
+_subsection: Assembler Examples
+
+The assembler converts an [Ethers ASM Dialect](asm-dialect) into
+bytecode by running multiple passes of an assemble stage, each pass
+more closely approximating the final result.
+
+This allows small portions of the bytecode to be massaged and tweaked
+until the bytecode stablizes. This allows for more compact jump
+destinations and for code to be include more advanced meta-programming
+techniques.
+
+_code: asm-examples-assemble.txt
+
+_heading: Options
+
+_definition: **-\-define KEY=VALUE** //or// **-\-define FLAG**
+This allows key/value pairs (where the value is a string) and
+flags (which the value is ``true``) to be passed along to the
+assembler, which can be accessed in
+[Scripting Blocks](asm-dialect-scripting), such as ``{{= defined.someKey }}``.
+
+_definition: **-\-ignore-warnings**
+By default any warning will be treated like an error. This enabled
+by-passing warnings.
+
+_definition: **-\-pic**
+When a program is assembled, the labels are usually given as an
+absolute byte position, which can be jumped to for loops and
+control flow. This means that a program must be installed at a specific
+location.
+
+Byt specifying the **Position Independent Code** flag, code
+will be generated in a way such that all offsets are relative, allowing
+the program to be moved without any impact to its logic.
+
+This does incur an additional gsas cost of 8 gas per offset access though.
+
+_definition: **-\-target LABEL**
+All programs have a root scope named ``_`` which is by default
+assembled. This option allows another labelled target (either a
+[[asm-dialect-scope]] or a [[asm-dialect-datasegment]] to be
+assembled instead. The entire program is still assembled per usual,
+so this only impacts which part of the program is output.
+
+_subsection: Disassembler Examples
+
+A disassembled program shows offsets and mnemonics for the given
+bytecode. This format may change in the future to be more
+human-readable.
+
+_code: asm-examples-disassemble.txt
+

@@ -25,12 +25,25 @@ EtherscanProvider
 
 
 The **EtherscanProvider** is backed by a combination of the various
-[Etherscan APIs](https://etherscan.io/apis).
+[Etherscan APIs](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/etherscan.io/apis).
 
 
 #### *provider* . **getHistory** ( address )  **=>** *Array< History >*
 
+@TODO... Explain
 
+
+
+
+#### **Supported Networks**
+
+
+
+* Homestead (Mainnet)
+* Ropsten (proof-of-work testnet)
+* Rinkeby (proof-of-authority testnet)
+* G&ouml;rli (clique testnet)
+* Kovan (proof-of-authority testnet)
 
 
 
@@ -39,43 +52,59 @@ InfuraProvider
 --------------
 
 
-The **InfuraProvider** is backed by the popular [INFURA](https://infura.io)
+The **InfuraProvider** is backed by the popular [INFURA](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/infura.io)
 Ethereum service.
 
-It supports Mainnet (homestead) and all common testnets (Ropsten, Rinkeby,
-G&ouml;rli and Kovan).
+
+#### **Supported Networks**
 
 
-NodesmithProvider
------------------
+
+* Homestead (Mainnet)
+* Ropsten (proof-of-work testnet)
+* Rinkeby (proof-of-authority testnet)
+* G&ouml;rli (clique testnet)
+* Kovan (proof-of-authority testnet)
 
 
-The **NodesmithProvider** is backed by [Nodesmith](https://nodesmith.io).
-
-It supports Mainnet (homestead) and all common testnets (Ropsten, Rinkeby,
-G&ouml;rli and Kovan), as well as the Ethereum-like network [Aion](https://aion.network).
 
 
 AlchemyProvider
 ---------------
 
 
-The **AlchemtProvider** is backed by [Alchemy](https://alchemyapi.io).
+The **AlchemtProvider** is backed by [Alchemy](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/alchemyapi.io).
 
-It supports Mainnet (homestead) and all common testnets (Ropsten, Rinkeby,
-G&ouml;rli and Kovan).
+
+#### **Supported Networks**
+
+
+
+* Homestead (Mainnet)
+* Ropsten (proof-of-work testnet)
+* Rinkeby (proof-of-authority testnet)
+* G&ouml;rli (clique testnet)
+* Kovan (proof-of-authority testnet)
+
+
 
 
 CloudfrontProvider
 ------------------
 
 
-The CloudfrontProvider is backed by the
-[Cloudflare Ethereum Gateway](https://developers.cloudflare.com/distributed-web/ethereum-gateway/).
+The CloudfrontProvider is backed by the [Cloudflare Ethereum Gateway](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/developers.cloudflare.com/distributed-web/ethereum-gateway).
 
-It only supports Mainnet (homestead).
+
+#### **Supported Networks**
+
+
+
+* Homestead (Mainnet)
+
+
 
 
 
 -----
-**Content Hash:** 2e1dfa80bd4ab1ba02610654b00ee4250a89758a496670822e7950d5db449b1c
+**Content Hash:** 8a464bf5a272f32a697857e4e5813b1569ee9293156f77dcfa8f4bd71a8e5c9f

@@ -45,8 +45,8 @@ export class BaseX {
     readonly alphabet: string;
     readonly base: number;
 
-    private _alphabetMap: { [ character: string ]: number };
-    private _leader: string;
+    _alphabetMap: { [ character: string ]: number };
+    _leader: string;
 
     constructor(alphabet: string) {
         defineReadOnly(this, "alphabet", alphabet);

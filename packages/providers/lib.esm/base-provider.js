@@ -345,26 +345,49 @@ export class BaseProvider extends Provider {
     }
     // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
     //        this will be used once we move to the WebSocket or other alternatives to polling
-    waitForTransaction(transactionHash, confirmations) {
+    waitForTransaction(transactionHash, confirmations, timeout) {
         return __awaiter(this, void 0, void 0, function* () {
             if (confirmations == null) {
                 confirmations = 1;
             }
             const receipt = yield this.getTransactionReceipt(transactionHash);
             // Receipt is already good
-            if (receipt.confirmations >= confirmations) {
+            if ((receipt ? receipt.confirmations : 0) >= confirmations) {
                 return receipt;
             }
             // Poll until the receipt is good...
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
+                let timer = null;
+                let done = false;
                 const handler = (receipt) => {
                     if (receipt.confirmations < confirmations) {
                         return;
                     }
+                    if (timer) {
+                        clearTimeout(timer);
+                    }
+                    if (done) {
+                        return;
+                    }
+                    done = true;
                     this.removeListener(transactionHash, handler);
                     resolve(receipt);
                 };
                 this.on(transactionHash, handler);
+                if (typeof (timeout) === "number" && timeout > 0) {
+                    timer = setTimeout(() => {
+                        if (done) {
+                            return;
+                        }
+                        timer = null;
+                        done = true;
+                        this.removeListener(transactionHash, handler);
+                        reject(logger.makeError("timeout exceeded", Logger.errors.TIMEOUT, { timeout: timeout }));
+                    }, timeout);
+                    if (timer.unref) {
+                        timer.unref();
+                    }
+                }
             });
         });
     }
@@ -596,6 +619,24 @@ export class BaseProvider extends Provider {
                 }
                 // Add transactions
                 if (includeTransactions) {
+                    let blockNumber = null;
+                    for (let i = 0; i < block.transactions.length; i++) {
+                        const tx = block.transactions[i];
+                        if (tx.blockNumber == null) {
+                            tx.confirmations = 0;
+                        }
+                        else if (tx.confirmations == null) {
+                            if (blockNumber == null) {
+                                blockNumber = yield this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
+                            }
+                            // Add the confirmations using the fast block number (pessimistic)
+                            let confirmations = (blockNumber - tx.blockNumber) + 1;
+                            if (confirmations <= 0) {
+                                confirmations = 1;
+                            }
+                            tx.confirmations = confirmations;
+                        }
+                    }
                     return this.formatter.blockWithTransactions(block);
                 }
                 return this.formatter.block(block);
@@ -681,6 +722,11 @@ export class BaseProvider extends Provider {
             yield this.ready;
             const params = yield resolveProperties({ filter: this._getFilter(filter) });
             const logs = yield this.perform("getLogs", params);
+            logs.forEach((log) => {
+                if (log.removed == null) {
+                    log.removed = false;
+                }
+            });
             return Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(logs);
         });
     }

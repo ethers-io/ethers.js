@@ -13,8 +13,8 @@ The *Flatworm Docs* rendering script is designed to be **very**
 simple, but provide enough formatting necessary for documenting
 JavaScript libraries.
 
-A lot of its inspiration came from [Read the Docs](https://github.com/readthedocs/sphinx_rtd_theme) and
-the [Sphinx](https://www.sphinx-doc.org/) project.
+A lot of its inspiration came from [Read the Docs](../Users/ricmoo/Development/ethers/ethers.js-v5/https:/github.com/readthedocs/sphinx_rtd_theme) and
+the [Sphinx](../Users/ricmoo/Development/ethers/ethers.js-v5/https:/www.sphinx-doc.org) project.
 
 
 Fragments
@@ -32,13 +32,15 @@ itself have body.
 
 
 ```
-_DIRECTIVE: VALUE @<LINK>
+_DIRECTIVE: VALUE @<LINK> @META<PARAMETER>
 BODY
 
-DIRECTIVE: The directive name
-VALUE:     Optional; the value to pass to the directive
-LINK:      Optional; a name for internal linking
-BODY:      Optional; the directive body (certain directives only)
+DIRECTIVE:  The directive name
+VALUE:      Optional; the value to pass to the directive
+LINK:       Optional; a name for internal linking
+META:       Optional; extended directive functionality
+PARAMETER:  Optional; value to pass to extended directive functions
+BODY:       Optional; the directive body (certain directives only)
 ```
 
 
@@ -87,6 +89,20 @@ indented.
 
 A *property* has its JavaScript **SIGNATURE** formatted and the
 markdown body is indented.
+
+
+
+
+#### **_note:** *TITLE*
+
+A *note* is placed in a blue bordered-box to draw attention to it.
+
+
+
+
+#### **_warning:** *TITLE*
+
+A *warning* is placed in an orange bordered-box to draw attention to it.
 
 
 
@@ -147,10 +163,16 @@ _toc:
     some-file
     some-directory
 
+_definition and reset the indentation.
+
+_note: Title
+This is placed in a blue box.
+
+_warning: Title
+This is placed in an orange box.
+
 _null:
 This breaks out of a directive. For example, to end a
-
-_definition and reset the indentation.
 ```
 
 
@@ -193,6 +215,55 @@ This is a self-titled link [[https://ethereumorg]] and this
 
 
 
+Configuration
+-------------
+
+
+Configuration is optional (but highly recommended) and may be either
+a simple JSON file (config.json) or a JS file (config.js) placed in
+the top  of the source folder.
+
+TODO:  example JSON and example JS
+
+
+Extended Directive Functions
+----------------------------
+
+
+
+### @INHERIT<markdown>
+
+
+Adds an inherits description to a directive. The *markdown* may contain links.
+
+This extended directive function is available for:
+
+
+
+* _section
+* _subsetion
+* _heading
+
+
+### @SRC<text>
+
+
+Calls the configuration `getSourceUrl(text, VALUE)` to get a URL which
+will be linked to by a link next to the *directive*.
+
+This extended directive function requires an advanced `config.js` [Configuration](./)
+file since it requires a JavaScript function.
+
+This extended directive function is available for:
+
+
+
+* _section
+* _subsetion
+* _heading
+* _property
+
+
 
 -----
-**Content Hash:** 2d45e62661589ea3cdf50cc4da9faf63c33b7385840b31fddaf9d3cbe35d6015
+**Content Hash:** 2fbf0adb4f6ef934152ddd2d9b321be74cb28610a04f34a62b6eff9cf3667993

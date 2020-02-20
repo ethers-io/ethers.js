@@ -1,7 +1,7 @@
 "use strict";
 
 import { EventFragment, Fragment, Indexed, Interface, JsonFragment, ParamType, Result } from "@ethersproject/abi";
-import { Block, BlockTag, Listener, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
+import { Block, BlockTag, Filter, FilterByBlockHash, Listener, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { Signer, VoidSigner } from "@ethersproject/abstract-signer";
 import { getContractAddress } from "@ethersproject/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
@@ -477,7 +477,7 @@ export class Contract {
             const uniqueFilters: { [ name: string ]: Array<string> } = { };
             Object.keys(this.interface.events).forEach((eventSignature) => {
                 const event = this.interface.events[eventSignature];
-                defineReadOnly(this.filters, eventSignature, (...args: Array<any>) => {
+                defineReadOnly<any, any>(this.filters, eventSignature, (...args: Array<any>) => {
                     return {
                         address: this.address,
                         topics: this.interface.encodeFilterTopics(event, args)
@@ -526,7 +526,7 @@ export class Contract {
             const run = runMethod(this, name, { });
 
             if (this[name] == null) {
-                defineReadOnly(this, name, run);
+                defineReadOnly<any, any>(this, name, run);
             }
 
             if (this.functions[name] == null) {
@@ -780,10 +780,10 @@ export class Contract {
             if (toBlock != null) {
                 logger.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
             }
-            filter.blockhash = fromBlockOrBlockhash;
+            (<FilterByBlockHash>filter).blockhash = fromBlockOrBlockhash;
         } else {
-             filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash: 0);
-             filter.toBlock = ((toBlock != null) ? toBlock: "latest");
+             (<Filter>filter).fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash: 0);
+             (<Filter>filter).toBlock = ((toBlock != null) ? toBlock: "latest");
         }
 
         return this.provider.getLogs(filter).then((logs) => {

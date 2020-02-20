@@ -16,39 +16,52 @@ To mitigate these issues, it is recommended you use a
 _subsection: EtherscanProvider @INHERIT<[[provider]]>
 
 The **EtherscanProvider** is backed by a combination of the various
-[Etherscan APIs](https://etherscan.io/apis).
+[Etherscan APIs](link-etherscan-api).
 
 _property: provider.getHistory(address) => Array<History>
 
+@TODO... Explain
 
-_subsection: InfuraProvider @INHERIT<[[urljsonrpc-provider]]>
+_definition: **Supported Networks**
 
-The **InfuraProvider** is backed by the popular [INFURA](https://infura.io)
+- Homestead (Mainnet)
+- Ropsten (proof-of-work testnet)
+- Rinkeby (proof-of-authority testnet)
+- G&ouml;rli (clique testnet)
+- Kovan (proof-of-authority testnet)
+
+
+_subsection: InfuraProvider @INHERIT<[[provider-urljsonrpc]]>
+
+The **InfuraProvider** is backed by the popular [INFURA](link-infura)
 Ethereum service.
 
-It supports Mainnet (homestead) and all common testnets (Ropsten, Rinkeby,
-G&ouml;rli and Kovan).
+_definition: **Supported Networks**
+
+- Homestead (Mainnet)
+- Ropsten (proof-of-work testnet)
+- Rinkeby (proof-of-authority testnet)
+- G&ouml;rli (clique testnet)
+- Kovan (proof-of-authority testnet)
 
 
-_subsection: NodesmithProvider @INHERIT<[[urljsonrpc-provider]]>
+_subsection: AlchemyProvider @INHERIT<[[provider-urljsonrpc]]>
 
-The **NodesmithProvider** is backed by [Nodesmith](https://nodesmith.io).
+The **AlchemtProvider** is backed by [Alchemy](link-alchemy).
 
-It supports Mainnet (homestead) and all common testnets (Ropsten, Rinkeby,
-G&ouml;rli and Kovan), as well as the Ethereum-like network [Aion](https://aion.network).
+_definition: **Supported Networks**
 
-
-_subsection: AlchemyProvider @INHERIT<[[urljsonrpc-provider]]>
-
-The **AlchemtProvider** is backed by [Alchemy](https://alchemyapi.io).
-
-It supports Mainnet (homestead) and all common testnets (Ropsten, Rinkeby,
-G&ouml;rli and Kovan).
+- Homestead (Mainnet)
+- Ropsten (proof-of-work testnet)
+- Rinkeby (proof-of-authority testnet)
+- G&ouml;rli (clique testnet)
+- Kovan (proof-of-authority testnet)
 
 
-_subsection: CloudfrontProvider @INHERIT<[[urljsonrpc-provider]]>
+_subsection: CloudfrontProvider @INHERIT<[[provider-urljsonrpc]]>
 
-The CloudfrontProvider is backed by the
-[Cloudflare Ethereum Gateway](https://developers.cloudflare.com/distributed-web/ethereum-gateway/).
+The CloudfrontProvider is backed by the [Cloudflare Ethereum Gateway](link-cloudflare).
 
-It only supports Mainnet (homestead).
+_definition: **Supported Networks**
+
+- Homestead (Mainnet)

@@ -24,7 +24,7 @@ Returns the balance of *address* as of the *blockTag* block height.
 
 
 
-#### *provider* . **getCode** ( address [  , blockTag="latest" ]  )  **=>** *Promise< [Hexstring](../../utils/bytes) >*
+#### *provider* . **getCode** ( address [  , blockTag="latest" ]  )  **=>** *Promise< string< [DataHexstring](../../utils/bytes) > >*
 
 Returns the contract code of *address* as of the *blockTag* block height. If there is
 no contract currently deployed, the result is `0x`.
@@ -32,9 +32,9 @@ no contract currently deployed, the result is `0x`.
 
 
 
-#### *provider* . **getStorageAt** ( address , position [  , blockTag="latest" ]  )  **=>** *Promise< [Hexstring](../../utils/bytes) >*
+#### *provider* . **getStorageAt** ( addr , pos [  , blockTag="latest" ]  )  **=>** *Promise< string< [DataHexstring](../../utils/bytes) > >*
 
-Returns the `Bytes32` value of the *position* at *address*, as of the *blockTag*.
+Returns the `Bytes32` value of the position *pos* at address *addr*, as of the *blockTag*.
 
 
 
@@ -95,7 +95,7 @@ forward lookup does not match, `null` is returned.
 
 
 
-#### *provider* . **resovleName** ( name )  **=>** *Promise< string >*
+#### *provider* . **resolveName** ( name )  **=>** *Promise< string< [Address](../../utils/address) > >*
 
 Looks up the address of *name*. If the name is not owned, or
 does not have a *Resolver* configured, or the *Resolver* does
@@ -161,7 +161,7 @@ Transactions Methods
 
 
 
-#### *provider* . **call** ( transaction [  , blockTag="latest" ]  )  **=>** *Promise< [Hexstring](../../utils/bytes) >*
+#### *provider* . **call** ( transaction [  , blockTag="latest" ]  )  **=>** *Promise< string< [Hexstring](../../utils/bytes) > >*
 
 Returns the result of executing the *transaction*, using *call*. A call
 does not require any ether, but cannot change any state. This is useful
@@ -273,4 +273,4 @@ Returns true if and only if *object* is a Provider.
 
 
 -----
-**Content Hash:** 95fe0eed62718e6b1f1836b94380b8dd580d48931b261723c8100531c1f570c2
+**Content Hash:** 84bebb527966dbb498f230579a26f0a01f8013a69a490b77726126165262f661

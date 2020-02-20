@@ -3,7 +3,7 @@
 import { AbiCoder, defaultAbiCoder, EventFragment, FormatTypes, Fragment, FunctionFragment, Indexed, Interface, ParamType } from "@ethersproject/abi";
 import { getAddress, getCreate2Address, getContractAddress, getIcapAddress, isAddress } from "@ethersproject/address";
 import * as base64 from "@ethersproject/base64";
-import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexValue, hexZeroPad, isHexString, joinSignature, zeroPad, splitSignature, stripZeros } from "@ethersproject/bytes";
+import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexValue, hexZeroPad, isBytes, isBytesLike, isHexString, joinSignature, zeroPad, splitSignature, stripZeros } from "@ethersproject/bytes";
 import { hashMessage, id, isValidName, namehash } from "@ethersproject/hash";
 import { defaultPath, entropyToMnemonic, HDNode, isValidMnemonic, mnemonicToEntropy, mnemonicToSeed } from "@ethersproject/hdnode";
 import { getJsonWalletAddress } from "@ethersproject/json-wallets";
@@ -15,7 +15,7 @@ import { randomBytes } from "@ethersproject/random";
 import { checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import * as RLP from "@ethersproject/rlp";
 import { computePublicKey, recoverPublicKey, SigningKey } from "@ethersproject/signing-key";
-import { formatBytes32String, nameprep, parseBytes32String, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String } from "@ethersproject/strings";
+import { formatBytes32String, nameprep, parseBytes32String, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, Utf8ErrorFuncs } from "@ethersproject/strings";
 import { computeAddress, parse as parseTransaction, recoverAddress, serialize as serializeTransaction } from "@ethersproject/transactions";
 import { commify, formatEther, parseEther, formatUnits, parseUnits } from "@ethersproject/units";
 import { verifyMessage } from "@ethersproject/wallet";
@@ -24,17 +24,19 @@ import { fetchJson, poll } from "@ethersproject/web";
 ////////////////////////
 // Enums
 
-import { SupportedAlgorithms } from "@ethersproject/sha2";
-import { UnicodeNormalizationForm } from "@ethersproject/strings";
-
+import { SupportedAlgorithm } from "@ethersproject/sha2";
+import { UnicodeNormalizationForm, Utf8ErrorReason } from "@ethersproject/strings";
+import { UnsignedTransaction } from "@ethersproject/transactions";
 
 ////////////////////////
 // Types and Interfaces
 
 import { CoerceFunc } from "@ethersproject/abi";
 import { Bytes, BytesLike, Hexable } from "@ethersproject/bytes"
-import { ConnectionInfo, FetchJsonResponse, OnceBlockable, PollOptions } from "@ethersproject/web";
+import { Mnemonic } from "@ethersproject/hdnode";
 import { EncryptOptions, ProgressCallback } from "@ethersproject/json-wallets";
+import { Utf8ErrorFunc } from "@ethersproject/strings";
+import { ConnectionInfo, FetchJsonResponse, OnceBlockable, PollOptions } from "@ethersproject/web";
 
 ////////////////////////
 // Exports
@@ -69,6 +71,9 @@ export {
     stripZeros,
     zeroPad,
 
+    isBytes,
+    isBytesLike,
+
     defaultPath,
     HDNode,
     SigningKey,
@@ -90,6 +95,7 @@ export {
     toUtf8Bytes,
     toUtf8CodePoints,
     toUtf8String,
+    Utf8ErrorFuncs,
 
     formatBytes32String,
     parseBytes32String,
@@ -147,9 +153,10 @@ export {
     ////////////////////////
     // Enums
 
-    SupportedAlgorithms,
-    UnicodeNormalizationForm,
+    SupportedAlgorithm,
 
+    UnicodeNormalizationForm,
+    Utf8ErrorReason,
 
     ////////////////////////
     // Types
@@ -158,9 +165,15 @@ export {
     BytesLike,
     Hexable,
 
+    UnsignedTransaction,
+
     CoerceFunc,
 
     Indexed,
+
+    Mnemonic,
+
+    Utf8ErrorFunc,
 
     ConnectionInfo,
     OnceBlockable,

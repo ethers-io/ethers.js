@@ -6,7 +6,7 @@ import { toUtf8Bytes, UnicodeNormalizationForm } from "@ethersproject/strings";
 import { pbkdf2 } from "@ethersproject/pbkdf2";
 import { defineReadOnly } from "@ethersproject/properties";
 import { SigningKey } from "@ethersproject/signing-key";
-import { computeHmac, ripemd160, sha256, SupportedAlgorithms } from "@ethersproject/sha2";
+import { computeHmac, ripemd160, sha256, SupportedAlgorithm } from "@ethersproject/sha2";
 import { computeAddress } from "@ethersproject/transactions";
 import { wordlists } from "@ethersproject/wordlists";
 import { Logger } from "@ethersproject/logger";
@@ -30,8 +30,22 @@ function bytes32(value) {
 function base58check(data) {
     return Base58.encode(concat([data, hexDataSlice(sha256(sha256(data)), 0, 4)]));
 }
+function getWordlist(wordlist) {
+    if (wordlist == null) {
+        return wordlists["en"];
+    }
+    if (typeof (wordlist) === "string") {
+        const words = wordlists[wordlist];
+        if (words == null) {
+            logger.throwArgumentError("unknown locale", "wordlist", wordlist);
+        }
+        return words;
+    }
+    return wordlist;
+}
 const _constructorGuard = {};
 export const defaultPath = "m/44'/60'/0'/0/0";
+;
 export class HDNode {
     /**
      *  This constructor should not be called directly.
@@ -40,7 +54,7 @@ export class HDNode {
      *   - fromMnemonic
      *   - fromSeed
      */
-    constructor(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonic, path) {
+    constructor(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonicOrPath) {
         logger.checkNew(new.target, HDNode);
         if (constructorGuard !== _constructorGuard) {
             throw new Error("HDNode constructor cannot be called directly");
@@ -60,8 +74,21 @@ export class HDNode {
         defineReadOnly(this, "chainCode", chainCode);
         defineReadOnly(this, "index", index);
         defineReadOnly(this, "depth", depth);
-        defineReadOnly(this, "mnemonic", mnemonic);
-        defineReadOnly(this, "path", path);
+        if (mnemonicOrPath == null) {
+            // From a source that does not preserve the path (e.g. extended keys)
+            defineReadOnly(this, "mnemonic", null);
+            defineReadOnly(this, "path", null);
+        }
+        else if (typeof (mnemonicOrPath) === "string") {
+            // From a source that does not preserve the mnemonic (e.g. neutered)
+            defineReadOnly(this, "mnemonic", null);
+            defineReadOnly(this, "path", mnemonicOrPath);
+        }
+        else {
+            // From a fully qualified source
+            defineReadOnly(this, "mnemonic", mnemonicOrPath);
+            defineReadOnly(this, "path", mnemonicOrPath.path);
+        }
     }
     get extendedKey() {
         // We only support the mainnet values for now, but if anyone needs
@@ -82,7 +109,7 @@ export class HDNode {
         ]));
     }
     neuter() {
-        return new HDNode(_constructorGuard, null, this.publicKey, this.parentFingerprint, this.chainCode, this.index, this.depth, null, this.path);
+        return new HDNode(_constructorGuard, null, this.publicKey, this.parentFingerprint, this.chainCode, this.index, this.depth, this.path);
     }
     _derive(index) {
         if (index > 0xffffffff) {
@@ -113,7 +140,7 @@ export class HDNode {
         for (let i = 24; i >= 0; i -= 8) {
             data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff);
         }
-        const I = arrayify(computeHmac(SupportedAlgorithms.sha512, this.chainCode, data));
+        const I = arrayify(computeHmac(SupportedAlgorithm.sha512, this.chainCode, data));
         const IL = I.slice(0, 32);
         const IR = I.slice(32);
         // The private key
@@ -127,7 +154,16 @@ export class HDNode {
             const ek = new SigningKey(hexlify(IL));
             Ki = ek._addPoint(this.publicKey);
         }
-        return new HDNode(_constructorGuard, ki, Ki, this.fingerprint, bytes32(IR), index, this.depth + 1, this.mnemonic, path);
+        let mnemonicOrPath = path;
+        const srcMnemonic = this.mnemonic;
+        if (srcMnemonic) {
+            mnemonicOrPath = Object.freeze({
+                phrase: srcMnemonic.phrase,
+                path: path,
+                locale: (srcMnemonic.locale || "en")
+            });
+        }
+        return new HDNode(_constructorGuard, ki, Ki, this.fingerprint, bytes32(IR), index, this.depth + 1, mnemonicOrPath);
     }
     derivePath(path) {
         const components = path.split("/");
@@ -165,13 +201,19 @@ export class HDNode {
         if (seedArray.length < 16 || seedArray.length > 64) {
             throw new Error("invalid seed");
         }
-        const I = arrayify(computeHmac(SupportedAlgorithms.sha512, MasterSecret, seedArray));
-        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic, "m");
+        const I = arrayify(computeHmac(SupportedAlgorithm.sha512, MasterSecret, seedArray));
+        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic);
     }
     static fromMnemonic(mnemonic, password, wordlist) {
+        // If a locale name was passed in, find the associated wordlist
+        wordlist = getWordlist(wordlist);
         // Normalize the case and spacing in the mnemonic (throws if the mnemonic is invalid)
         mnemonic = entropyToMnemonic(mnemonicToEntropy(mnemonic, wordlist), wordlist);
-        return HDNode._fromSeed(mnemonicToSeed(mnemonic, password), mnemonic);
+        return HDNode._fromSeed(mnemonicToSeed(mnemonic, password), {
+            phrase: mnemonic,
+            path: "m",
+            locale: wordlist.locale
+        });
     }
     static fromSeed(seed) {
         return HDNode._fromSeed(seed, null);
@@ -190,14 +232,14 @@ export class HDNode {
             // Public Key
             case "0x0488b21e":
             case "0x043587cf":
-                return new HDNode(_constructorGuard, null, hexlify(key), parentFingerprint, chainCode, index, depth, null, null);
+                return new HDNode(_constructorGuard, null, hexlify(key), parentFingerprint, chainCode, index, depth, null);
             // Private Key
             case "0x0488ade4":
             case "0x04358394 ":
                 if (key[0] !== 0) {
                     break;
                 }
-                return new HDNode(_constructorGuard, hexlify(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null, null);
+                return new HDNode(_constructorGuard, hexlify(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null);
         }
         return logger.throwError("invalid extended key", "extendedKey", "[REDACTED]");
     }
@@ -210,9 +252,7 @@ export function mnemonicToSeed(mnemonic, password) {
     return pbkdf2(toUtf8Bytes(mnemonic, UnicodeNormalizationForm.NFKD), salt, 2048, 64, "sha512");
 }
 export function mnemonicToEntropy(mnemonic, wordlist) {
-    if (!wordlist) {
-        wordlist = wordlists["en"];
-    }
+    wordlist = getWordlist(wordlist);
     logger.checkNormalize();
     const words = wordlist.split(mnemonic);
     if ((words.length % 3) !== 0) {
@@ -242,6 +282,7 @@ export function mnemonicToEntropy(mnemonic, wordlist) {
     return hexlify(entropy.slice(0, entropyBits / 8));
 }
 export function entropyToMnemonic(entropy, wordlist) {
+    wordlist = getWordlist(wordlist);
     entropy = arrayify(entropy);
     if ((entropy.length % 4) !== 0 || entropy.length < 16 || entropy.length > 32) {
         throw new Error("invalid entropy");
@@ -270,9 +311,6 @@ export function entropyToMnemonic(entropy, wordlist) {
     // Shift the checksum into the word indices
     indices[indices.length - 1] <<= checksumBits;
     indices[indices.length - 1] |= (checksum >> (8 - checksumBits));
-    if (!wordlist) {
-        wordlist = wordlists["en"];
-    }
     return wordlist.join(indices.map((index) => wordlist.getWord(index)));
 }
 export function isValidMnemonic(mnemonic, wordlist) {

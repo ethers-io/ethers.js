@@ -404,19 +404,6 @@ var AccountPlugin = /** @class */ (function (_super) {
             });
         });
     };
-    AccountPlugin.prototype.prepareOptions = function (argParser) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, _super.prototype.prepareOptions.call(this, argParser)];
-                    case 1:
-                        _a.sent();
-                        ethers_1.ethers.utils.defineReadOnly(this, "_wait", argParser.consumeFlag("wait"));
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
     AccountPlugin.prototype.prepareArgs = function (args) {
         return __awaiter(this, void 0, void 0, function () {
             var helpLine, params, command, i;

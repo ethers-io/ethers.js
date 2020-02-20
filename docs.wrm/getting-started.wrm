@@ -6,8 +6,7 @@ _section: Getting Started
 _subsection: Installing
 
 The various Classes and Functions are available to be imported
-manually from sub-packages under the
-[@ethersproject](https://www.npmjs.com/search?q=%40ethersproject%2F)
+manually from sub-packages under the [@ethersproject](link-ethers-npm)
 but for most projects, the umbrella package is the easiest way to
 get started.
 
@@ -23,8 +22,8 @@ _code: importing-node.source
 _heading: Web Browser
 
 It is generally better practice (for security reasons) to copy the
-[ethers library](https://cdn.ethers.io/lib/ethers-5.0.esm.min.js) to
-your own webserver and serve it yourself.
+[ethers library](link-ethers-js) to your own webserver and serve it
+yourself.
 
 For quick demos or prototyping though, it can be loaded in your
 Web Applications from our CDN.

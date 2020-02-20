@@ -1,0 +1,64 @@
+_title: ethers v4 to v5
+
+_section: Migration: From Ethers v4
+
+_subsection: BigNumber
+
+_heading: Namespace
+Since [[bignumber]] is used quite frequently, it has been moved to
+the top level of the umbrella package.
+_code: bignumber-namespace.txt
+
+_heading: Creating Instances
+The ``bigNumberify`` method was always preferred over the constructor
+since it could short-circuit an object instantiation for [[bignumber]
+objects (since they are immutable). This has been moved to a static
+``from`` class method.
+_code: bignumber-creating.txt
+
+
+_subsection: Contracts
+_code: contracts.txt
+
+_subsection: Errors
+
+_heading: Namespace
+All errors now belong to the [[logger]] class and the related functions
+have been moved to [[logger]] instances, which can include a per-package
+version string.
+
+Global error fucntions have been moved [[logger]] class methods.
+_code: errors.txt
+
+
+_subsection: Interface
+The [[abi-interface]] object has undergone the most dramatic changes.
+
+It is no longer a meta-class and now has methods that simplify handling
+contract interface operations without the need for object inspection and
+special edge cases.
+
+_heading: Functions
+_code: interface-functions.txt
+
+_heading: Events
+_code: interface-events.txt
+
+_heading: Inspection
+Interrogating properties about a function or event can now (mostly) be
+done directly on the [[abi-fragment]] object.
+_code: interface-inspection.txt
+
+
+_subsection: Utilities
+
+_heading: Renaming
+_code: utils.txt
+
+
+_subsection: Wallet
+
+_heading: Mnemonic Phrases
+The **mnemonic** phrase and related properties have been merged into
+a single ``mnemonic`` object, which also now includes the ``locale``.
+_code: wallet.txt

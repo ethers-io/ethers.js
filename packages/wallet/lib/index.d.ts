@@ -1,17 +1,17 @@
 import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
 import { ExternallyOwnedAccount, Signer } from "@ethersproject/abstract-signer";
 import { Bytes, BytesLike, SignatureLike } from "@ethersproject/bytes";
+import { Mnemonic } from "@ethersproject/hdnode";
 import { SigningKey } from "@ethersproject/signing-key";
 import { ProgressCallback } from "@ethersproject/json-wallets";
 import { Wordlist } from "@ethersproject/wordlists";
 export declare class Wallet extends Signer implements ExternallyOwnedAccount {
     readonly address: string;
     readonly provider: Provider;
-    readonly path: string;
     readonly _signingKey: () => SigningKey;
-    readonly _mnemonic: () => string;
+    readonly _mnemonic: () => Mnemonic;
     constructor(privateKey: BytesLike | ExternallyOwnedAccount | SigningKey, provider?: Provider);
-    readonly mnemonic: string;
+    readonly mnemonic: Mnemonic;
     readonly privateKey: string;
     readonly publicKey: string;
     getAddress(): Promise<string>;

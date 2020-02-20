@@ -128,7 +128,35 @@ function syncIssues(user, password) {
     return _getIssues(user, password);
 }
 
+async function createRelease(user, password, tagName, title, body, prerelease, commit) {
+    const payload = {
+        tag_name: tagName,
+        target_commitish: (commit || "master"),
+        name: title,
+        body: body,
+        //draft: true,
+        draft: false,
+        prerelease: !!prerelease
+    };
+
+    const headers = {
+        "User-Agent": "ethers-io",
+    };
+
+    const result = await fetchJson({
+        url: "https://api.github.com/repos/ethers-io/ethers.js/releases",
+        user: user,
+        password: password,
+        headers: headers
+    }, JSON.stringify(payload));
+
+
+    return result.html_url;
+}
+
 module.exports = {
     getIssues,
     syncIssues,
+    createRelease,
 }
+

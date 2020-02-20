@@ -2,12 +2,15 @@
 
 const config = require("../config");
 
+const { latestChange } = require("../changelog");
 const { getOrdered, loadPackage } = require("../depgraph");
+const { createRelease } = require("../github");
 const { getPackageVersion, publish } = require("../npm");
 const { log } = require("../log");
 
 const USER_AGENT = "ethers-dist@0.0.0";
 const TAG = "next";
+
 
 let dirnames = getOrdered();
 
@@ -31,6 +34,8 @@ if (process.argv.length > 2) {
 
 (async function() {
     let token = null;
+
+    let includeEthers = false;
 
     // @TODO: Fail if there are any untracked files or unchecked in files
 
@@ -68,6 +73,7 @@ if (process.argv.length > 2) {
 
         if (dirname === "ethers") {
             options.tag = "next";
+            includeEthers = true;
         } else {
             options.tag = "latest";
         }
@@ -87,6 +93,22 @@ if (process.argv.length > 2) {
             return;
         }
         log("  <green:Done.>");
+    }
+
+    // Publish the GitHub release (currently beta)
+    const beta = true;
+    if (includeEthers) {
+
+        // The password above already succeeded
+        const username = await config.get("github-user");
+        const password = await config.get("github-release");
+
+        // Get the latest change from the changelog
+        const change = latestChange();
+
+        // Publish the release
+        const link = await createRelease(username, password, change.version, change.title, change.content, beta);
+        log(`<bold:Published Release:> ${ link }...`);
     }
 
 })();

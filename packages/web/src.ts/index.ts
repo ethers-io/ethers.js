@@ -79,8 +79,6 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
     let allow304 = false;
 
     let timeout = 2 * 60 * 1000;
-    let throttle = 25;
-    if (options.throttleLimit) { throttle = options.throttleLimit; }
 
     if (typeof(connection) === "string") {
         url = connection;
@@ -136,7 +134,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
     options.headers = flatHeaders;
 
     const runningTimeout = (function() {
-        let timer: any = null;
+        let timer: NodeJS.Timer = null;
         const promise = new Promise(function(resolve, reject) {
             if (timeout) {
                 timer = setTimeout(() => {
@@ -156,9 +154,6 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
 
         return { promise, cancel };
     })();
-    if (throttle == 100) {
-        console.log(throttle);
-    }
 
     const runningFetch = (async function() {
 
@@ -167,14 +162,14 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
 
         while (true) {
             try {
-            response = await fetch(url, options);
+                response = await fetch(url, options);
             } catch (error) {
                 console.log(error);
             }
             body = await response.text();
 
             if (allow304 && response.status === 304) {
-                // Leave body as null
+                body = null;
                 break;
 
             } else if (!response.ok) {
@@ -232,7 +227,7 @@ export function poll(func: () => Promise<any>, options?: PollOptions): Promise<a
 
     return new Promise(function(resolve, reject) {
 
-        let timer: any = null;
+        let timer: NodeJS.Timer = null;
         let done: boolean = false;
 
         // Returns true if cancel was successful. Unsuccessful cancel means we're already done.

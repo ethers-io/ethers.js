@@ -3,6 +3,75 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.173 (2020-02-12 17:09)
+-----------------------------------------
+
+  - Added experimental EipWrappedProvider. ([944600d](https://github.com/ethers-io/ethers.js/commit/944600d779564c500ab98d3265286a0717642614))
+  - Updated signature for JsonRpcProvider.send to match EIP-1193. ([b962b59](https://github.com/ethers-io/ethers.js/commit/b962b59ab72e67bc4566a361964e42cf1b791025))
+  - Added binary literal support to ASM grammar. ([375bd15](https://github.com/ethers-io/ethers.js/commit/375bd15594a3179432e8452d819d91ea72b4bdd8))
+  - Added explicit pop placeholders to ASM dialect. ([a6b696d](https://github.com/ethers-io/ethers.js/commit/a6b696d8bd03c4027b52fe23745f066d158f1420))
+  - Added position independent code option for asm. ([89615c5](https://github.com/ethers-io/ethers.js/commit/89615c59d385a58fa79b6bbd8eae53c30e45fe96))
+  - Added ASM semantic checking and the Pop placeholder. ([a33bf0e](https://github.com/ethers-io/ethers.js/commit/a33bf0e37f4f969cc03b85ebf0dbadcf3e9b068a))
+  - Better type safety for defineReadOnly. ([e7adc84](https://github.com/ethers-io/ethers.js/commit/e7adc84a972968f39a983efb6f21b6ceaacd6cc5))
+  - Fixed CLI sandbox quiting after prompt entry. ([ff9bc2a](https://github.com/ethers-io/ethers.js/commit/ff9bc2a282e617125bbca76702dec85149661390))
+
+ethers/v5.0.0-beta.172 (2020-02-04 00:59)
+-----------------------------------------
+
+  - Synced GitHub issue cache. ([13dbf1f](https://github.com/ethers-io/ethers.js/commit/13dbf1f965eab344d2a304f7612d19ea96391261))
+  - Better typing for Timers. ([5622f70](https://github.com/ethers-io/ethers.js/commit/5622f703d962993442623ef1450a595825c4efa8))
+  - Safer transaction serialization, matching signature.v with chainId. ([#708](https://github.com/ethers-io/ethers.js/issues/708); [edb7c5d](https://github.com/ethers-io/ethers.js/commit/edb7c5da91ce271688561364d867998b0f0675e3))
+  - Fixed Opcode typo and added check to prevent future typos. ([15bb840](https://github.com/ethers-io/ethers.js/commit/15bb8409077f96b22e8bd60c426cddd015454e6b))
+  - Renamed AST nodes for teh assembler. ([f02c7db](https://github.com/ethers-io/ethers.js/commit/f02c7db4109d1785b4528757aa50f24948e896ae))
+  - Added timeout to waitForTransaction. ([#477](https://github.com/ethers-io/ethers.js/issues/477); [bacc440](https://github.com/ethers-io/ethers.js/commit/bacc4403979fa423890e269e7a5c7d11c6891a9f))
+  - Added CLI for asm package. ([aafa42a](https://github.com/ethers-io/ethers.js/commit/aafa42a32b2a5c7481a409ad048dfc06112c6599))
+  - Prevent Signer.checkTransaction from creating conflicting from properties. ([1decb13](https://github.com/ethers-io/ethers.js/commit/1decb1379902b60a15925b9b1de39633393db825))
+  - Include asm in generated TypeScript dependencies. ([ba29618](https://github.com/ethers-io/ethers.js/commit/ba296188960fb345dfdab12f2bb3ed3dc5eab51a))
+  - Clean up some asm checks and dead code. ([fa317eb](https://github.com/ethers-io/ethers.js/commit/fa317ebc032f8a5f9fb2dd10e23496252ae744e1))
+  - More contained Opcode API. ([da8153c](https://github.com/ethers-io/ethers.js/commit/da8153c87753b79e5e4cd34d484b8e0e717426d9))
+  - Added initial codedrop for the asm package. ([0296594](https://github.com/ethers-io/ethers.js/commit/0296594aba8d1e90e9ef7a18d2324f6cac815953))
+
+ethers/v5.0.0-beta.171 (2020-02-01 05:05)
+-----------------------------------------
+
+  - Added CLI for asm package. ([aafa42a](https://github.com/ethers-io/ethers.js/commit/aafa42a32b2a5c7481a409ad048dfc06112c6599))
+  - Added more flatworm documentation. ([1c85fe9](https://github.com/ethers-io/ethers.js/commit/1c85fe95b2b536828e83087676becba85c9a90bb))
+  - Prevent Signer.checkTransaction from creating conflicting from properties. ([1decb13](https://github.com/ethers-io/ethers.js/commit/1decb1379902b60a15925b9b1de39633393db825))
+  - Include asm in generated TypeScript dependencies. ([ba29618](https://github.com/ethers-io/ethers.js/commit/ba296188960fb345dfdab12f2bb3ed3dc5eab51a))
+  - Clean up some asm checks and dead code. ([fa317eb](https://github.com/ethers-io/ethers.js/commit/fa317ebc032f8a5f9fb2dd10e23496252ae744e1))
+  - More contained Opcode API. ([da8153c](https://github.com/ethers-io/ethers.js/commit/da8153c87753b79e5e4cd34d484b8e0e717426d9))
+  - Added initial codedrop for the asm package. ([0296594](https://github.com/ethers-io/ethers.js/commit/0296594aba8d1e90e9ef7a18d2324f6cac815953))
+
+ethers/v5.0.0-beta.171 (2020-01-29 21:41)
+-----------------------------------------
+
+  - Better solc support in CLI; it will search the local pacakge for an existing solc version. ([7428776](https://github.com/ethers-io/ethers.js/commit/7428776f75222d5c07282bc29c3dd8ed99f5d2cc))
+  - Update ENS registry address and lower default quorum for testnets. ([edb49da](https://github.com/ethers-io/ethers.js/commit/edb49da15518f25b3d60813ebb84f54171e308f3))
+  - Exposed isBytes and isBytesLike in ethers.utils. ([99329b0](https://github.com/ethers-io/ethers.js/commit/99329b013ce7f3af301d40c41f7eb35bff288910))
+
+ethers/v5.0.0-beta.170 (2020-01-21 20:37)
+-----------------------------------------
+
+  - Better, easier and more provider testing. ([e0d1d38](https://github.com/ethers-io/ethers.js/commit/e0d1d3866d2559f39627254873a0a1d4c0fcaf3d))
+  - Fixed out-of-bounds difficulty in getBlock, which can affect PoA networks. ([#711](https://github.com/ethers-io/ethers.js/issues/711); [251882c](https://github.com/ethers-io/ethers.js/commit/251882ced4379931ec82ba28a4db10bc7dbf3580))
+
+ethers/v5.0.0-beta.169 (2020-01-20 19:42)
+-----------------------------------------
+
+  - Fixed imports after refactor. ([adf5622](https://github.com/ethers-io/ethers.js/commit/adf56229c6cc83003d319ea9a004677e2555d478))
+  - Refactor some enum names and add UTF-8 error support to the umbrella package. ([931da2f](https://github.com/ethers-io/ethers.js/commit/931da2f77446fc9266cf07f0d7d78d4376625005))
+  - Allow arbitrary apiKey for UrlJsonRpcProvider. ([5878b54](https://github.com/ethers-io/ethers.js/commit/5878b54d6eded1329a6dc3b4023f876a87f72b6e))
+  - Added more general error handling (e.g. error, ignore, replace) for calling toUtf8String. ([a055edb](https://github.com/ethers-io/ethers.js/commit/a055edb5855b96fdf179403458c1694b96fd906c))
+
+ethers/v5.0.0-beta.168 (2020-01-18 21:46)
+-----------------------------------------
+
+  - Much more resiliant FallbackProvider which can ignore properties that are only approximate and supports per-provider priorities. ([#635](https://github.com/ethers-io/ethers.js/issues/635), [#588](https://github.com/ethers-io/ethers.js/issues/588); [f4bcf24](https://github.com/ethers-io/ethers.js/commit/f4bcf24a257a17ec9beb98f3d0b3682de543534c))
+  - Fixed some typing for receipts and logs. ([#497](https://github.com/ethers-io/ethers.js/issues/497); [ea102ef](https://github.com/ethers-io/ethers.js/commit/ea102ef7c4fa5df7b9389fbc8a2947bbbd4c471e))
+  - Abstracting mnemonic phrases. ([#685](https://github.com/ethers-io/ethers.js/issues/685); [92a383f](https://github.com/ethers-io/ethers.js/commit/92a383ff0dad4587e44953efca3c6ab795a1b1bd))
+  - Sync GitHub issues. ([75e1a37](https://github.com/ethers-io/ethers.js/commit/75e1a37bb5935d5d538ffcfce5b0073e1334d457))
+  - Fixed 304 status for fetchJson. ([c66d81e](https://github.com/ethers-io/ethers.js/commit/c66d81e96f7c9b0808f181085ffe1c92f6219d46))
+
 ethers/v5.0.0-beta.167 (2020-01-11 04:16)
 -----------------------------------------
 

@@ -1,3 +1,4 @@
+
 "use strict";
 
 import { Network, Networkish } from "@ethersproject/networks";
@@ -13,7 +14,7 @@ import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 type getUrlFunc = (network: Network, apiKey: string) => string | ConnectionInfo;
 
 export abstract class UrlJsonRpcProvider extends JsonRpcProvider {
-    readonly apiKey: string;
+    readonly apiKey: any;
 
     constructor(network?: Networkish, apiKey?: any) {
         logger.checkAbstract(new.target, UrlJsonRpcProvider);
@@ -30,7 +31,7 @@ export abstract class UrlJsonRpcProvider extends JsonRpcProvider {
             defineReadOnly(this, "apiKey", apiKey);
         } else if (apiKey != null) {
             Object.keys(apiKey).forEach((key) => {
-                defineReadOnly(this, key, apiKey[key]);
+                defineReadOnly<any, any>(this, key, apiKey[key]);
             });
         }
     }

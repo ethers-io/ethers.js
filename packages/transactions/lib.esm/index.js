@@ -1,7 +1,7 @@
 "use strict";
 import { getAddress } from "@ethersproject/address";
 import { BigNumber } from "@ethersproject/bignumber";
-import { arrayify, hexDataSlice, hexlify, hexZeroPad, splitSignature, stripZeros, } from "@ethersproject/bytes";
+import { arrayify, hexDataSlice, hexlify, hexZeroPad, isBytesLike, splitSignature, stripZeros, } from "@ethersproject/bytes";
 import { Zero } from "@ethersproject/constants";
 import { keccak256 } from "@ethersproject/keccak256";
 import { checkProperties } from "@ethersproject/properties";
@@ -64,26 +64,45 @@ export function serialize(transaction, signature) {
         }
         raw.push(hexlify(value));
     });
-    if (transaction.chainId != null && transaction.chainId !== 0) {
-        raw.push(hexlify(transaction.chainId));
+    let chainId = 0;
+    if (transaction.chainId != null) {
+        // A chainId was provided; if non-zero we'll use EIP-155
+        chainId = transaction.chainId;
+        if (typeof (chainId) !== "number") {
+            logger.throwArgumentError("invalid transaction.chainId", "transaction", transaction);
+        }
+    }
+    else if (signature && !isBytesLike(signature) && signature.v > 28) {
+        // No chainId provided, but the signature is signing with EIP-155; derive chainId
+        chainId = Math.floor((signature.v - 35) / 2);
+    }
+    // We have an EIP-155 transaction (chainId was specified and non-zero)
+    if (chainId !== 0) {
+        raw.push(hexlify(chainId));
         raw.push("0x");
         raw.push("0x");
     }
-    const unsignedTransaction = RLP.encode(raw);
     // Requesting an unsigned transation
     if (!signature) {
-        return unsignedTransaction;
+        return RLP.encode(raw);
     }
     // The splitSignature will ensure the transaction has a recoveryParam in the
     // case that the signTransaction function only adds a v.
     const sig = splitSignature(signature);
     // We pushed a chainId and null r, s on for hashing only; remove those
     let v = 27 + sig.recoveryParam;
-    if (raw.length === 9) {
+    if (chainId !== 0) {
         raw.pop();
         raw.pop();
         raw.pop();
-        v += transaction.chainId * 2 + 8;
+        v += chainId * 2 + 8;
+        // If an EIP-155 v (directly or indirectly; maybe _vs) was provided, check it!
+        if (sig.v > 28 && sig.v !== v) {
+            logger.throwArgumentError("transaction.chainId/signature.v mismatch", "signature", signature);
+        }
+    }
+    else if (sig.v !== v) {
+        logger.throwArgumentError("transaction.chainId/signature.v mismatch", "signature", signature);
     }
     raw.push(hexlify(v));
     raw.push(stripZeros(arrayify(sig.r)));

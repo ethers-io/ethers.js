@@ -26,7 +26,7 @@ describe('Test JSON Wallets', function () {
                 assert_1.default.equal(wallet.privateKey, test.privateKey, 'generated correct private key - ' + wallet.privateKey);
                 assert_1.default.equal(wallet.address.toLowerCase(), test.address, 'generate correct address - ' + wallet.address);
                 if (test.mnemonic) {
-                    assert_1.default.equal(wallet.mnemonic, test.mnemonic, 'mnemonic enabled encrypted wallet has a mnemonic');
+                    assert_1.default.equal(wallet.mnemonic.phrase, test.mnemonic, 'mnemonic enabled encrypted wallet has a mnemonic phrase');
                 }
             });
         });
@@ -40,8 +40,8 @@ describe('Test JSON Wallets', function () {
             return wallet.encrypt(password).then(function (json) {
                 return ethers_1.ethers.Wallet.fromEncryptedJson(json, password).then(function (decryptedWallet) {
                     assert_1.default.equal(decryptedWallet.address, wallet.address, 'decrypted wallet - ' + wallet.privateKey);
-                    assert_1.default.equal(decryptedWallet.mnemonic, wallet.mnemonic, "decrypted wallet menonic - " + wallet.privateKey);
-                    assert_1.default.equal(decryptedWallet.path, wallet.path, "decrypted wallet path - " + wallet.privateKey);
+                    assert_1.default.equal(decryptedWallet.mnemonic.phrase, wallet.mnemonic.phrase, "decrypted wallet menonic - " + wallet.privateKey);
+                    assert_1.default.equal(decryptedWallet.mnemonic.path, wallet.mnemonic.path, "decrypted wallet path - " + wallet.privateKey);
                     return decryptedWallet.encrypt(password).then(function (encryptedWallet) {
                         var parsedWallet = JSON.parse(encryptedWallet);
                         assert_1.default.equal(decryptedWallet.address.toLowerCase().substring(2), parsedWallet.address, 're-encrypted wallet - ' + wallet.privateKey);

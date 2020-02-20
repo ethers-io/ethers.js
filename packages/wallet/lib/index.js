@@ -31,6 +31,10 @@ var logger = new logger_1.Logger(_version_1.version);
 function isAccount(value) {
     return (value != null && bytes_1.isHexString(value.privateKey, 32) && value.address != null);
 }
+function hasMnemonic(value) {
+    var mnemonic = value.mnemonic;
+    return (mnemonic && mnemonic.phrase);
+}
 var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);
     function Wallet(privateKey, provider) {
@@ -45,19 +49,21 @@ var Wallet = /** @class */ (function (_super) {
             if (_this.address !== address_1.getAddress(privateKey.address)) {
                 logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDCACTED]");
             }
-            if (privateKey.mnemonic != null) {
-                var mnemonic_1 = privateKey.mnemonic;
-                var path = privateKey.path || hdnode_1.defaultPath;
-                properties_1.defineReadOnly(_this, "_mnemonic", function () { return mnemonic_1; });
-                properties_1.defineReadOnly(_this, "path", privateKey.path);
-                var node = hdnode_1.HDNode.fromMnemonic(mnemonic_1).derivePath(path);
+            if (hasMnemonic(privateKey)) {
+                var srcMnemonic_1 = privateKey.mnemonic;
+                properties_1.defineReadOnly(_this, "_mnemonic", function () { return ({
+                    phrase: srcMnemonic_1.phrase,
+                    path: srcMnemonic_1.path || hdnode_1.defaultPath,
+                    locale: srcMnemonic_1.locale || "en"
+                }); });
+                var mnemonic = _this.mnemonic;
+                var node = hdnode_1.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
                 if (transactions_1.computeAddress(node.privateKey) !== _this.address) {
                     logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDCACTED]");
                 }
             }
             else {
                 properties_1.defineReadOnly(_this, "_mnemonic", function () { return null; });
-                properties_1.defineReadOnly(_this, "path", null);
             }
         }
         else {
@@ -72,7 +78,6 @@ var Wallet = /** @class */ (function (_super) {
                 properties_1.defineReadOnly(_this, "_signingKey", function () { return signingKey_2; });
             }
             properties_1.defineReadOnly(_this, "_mnemonic", function () { return null; });
-            properties_1.defineReadOnly(_this, "path", null);
             properties_1.defineReadOnly(_this, "address", transactions_1.computeAddress(_this.publicKey));
         }
         if (provider && !abstract_provider_1.Provider.isProvider(provider)) {

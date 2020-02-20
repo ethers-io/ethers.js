@@ -2,20 +2,50 @@ _title: Encoding Utilies
 
 _section: Encoding Utilities
 
-_property: utils.base58.decode(textData) => Uin8Array
+_subsection: Base58
 
+_property: ethers.utils.base58.decode(textData) => Uin8Array
 Return a typed Uint8Array representation of //textData// decoded using
 base-58 encoding.
 
-_property: utils.base58.encode(aBytesLike) => string
-
+_property: ethers.utils.base58.encode(aBytesLike) => string
 Return //aBytesLike// encoded as a string using the base-58 encoding.
 
-_property: utils.base64.decode(textData) => Uin8Array
 
+_subsection: Base64
+
+_property: ethers.utils.base64.decode(textData) => Uin8Array
 Return a typed Uint8Array representation of //textData// decoded using
 base-64 encoding.
 
-_property: utils.base64.encode(aBytesLike) => string
-
+_property: ethers.utils.base64.encode(aBytesLike) => string
 Return //aBytesLike// encoded as a string using the base-64 encoding.
+
+
+_subsection: Recursive-Length Prefix
+
+The [[link-rlp]] encoding is used throughout Ethereum to serialize nested
+structures of Arrays and data.
+
+_property: ethers.utils.RLP.encode(dataObject) => string<[[datahexstring]]>
+Encode a structured Data Object into its RLP-encoded representation.
+
+Each Data component may be an valid [[byteslike]].
+
+_property: ethers.utils.RLP.decode(aBytesLike) => [DataObject](rlp-dataobject)
+Decode an RLP-encoded //aBytesLike// into its structured Data Object.
+
+All Data components will be returned as a [[datahexstring]].
+
+_heading: Data Object @<rlp-dataobject>
+
+A **Data Object** is a recursive structure which is used to serialize many
+internal structures in Ethereum. Each **Data Object** can either be:
+
+- Binary Data
+- An Array of **Data Objects** (i.e. this recursively includes Nesting)
+
+_definition: **Examples**
+
+- ``"0x1234"``
+- ``[ "0x1234", [ "0xdead", "0xbeef" ], [ ] ]``

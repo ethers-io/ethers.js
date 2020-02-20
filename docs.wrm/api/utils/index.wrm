@@ -6,12 +6,20 @@ These utilities are used extensively within the library, but
 are also quite useful for application developers.
 
 _toc:
-    address
     abi
+    address
     bignumber
     bytes
     constants
     display-logic
+    encoding
     fixednumber
     hashing
+    hdnode
+    logger
+    properties
+    signing-key
     strings
+    transactions
+    web
+    wordlists

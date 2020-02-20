@@ -10,15 +10,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import fs from "fs";
-import _module from "module";
 import { dirname, resolve } from "path";
 import REPL from "repl";
-import util from "util";
 import vm from "vm";
 import { ethers } from "ethers";
+import { parseExpression as babelParseExpression } from "@babel/parser";
 import { CLI, dump, Plugin } from "../cli";
 import { getPassword, getProgressBar } from "../prompt";
-import { compile } from "../solc";
+import { compile, customRequire } from "../solc";
+function repeat(c, length) {
+    if (c.length === 0) {
+        throw new Error("too short");
+    }
+    let result = c;
+    while (result.length < length) {
+        result += result;
+    }
+    return result.substring(0, length);
+}
 function setupContext(path, context, plugin) {
     context.provider = plugin.provider;
     context.accounts = plugin.accounts;
@@ -32,7 +41,7 @@ function setupContext(path, context, plugin) {
         context.console = console;
     }
     if (!context.require) {
-        context.require = _module.createRequireFromPath(path);
+        context.require = customRequire(path);
     }
     if (!context.process) {
         context.process = process;
@@ -52,7 +61,9 @@ function setupContext(path, context, plugin) {
     context.getContractAddress = ethers.utils.getContractAddress;
     context.getIcapAddress = ethers.utils.getIcapAddress;
     context.arrayify = ethers.utils.arrayify;
+    context.concat = ethers.utils.concat;
     context.hexlify = ethers.utils.hexlify;
+    context.zeroPad = ethers.utils.zeroPad;
     context.joinSignature = ethers.utils.joinSignature;
     context.splitSignature = ethers.utils.splitSignature;
     context.id = ethers.utils.id;
@@ -71,6 +82,37 @@ function setupContext(path, context, plugin) {
     context.toUtf8String = ethers.utils.toUtf8String;
 }
 const cli = new CLI("sandbox");
+function prepareCode(code) {
+    let ast = babelParseExpression(code, {
+        createParenthesizedExpressions: true
+    });
+    // Crawl the AST, to compute needed source code manipulations
+    const insert = [];
+    const descend = function (node) {
+        if (node == null || typeof (node) !== "object") {
+            return;
+        }
+        if (Array.isArray(node)) {
+            return node.forEach(descend);
+        }
+        // We will add parenthesis around ObjectExpressions, which
+        // otherwise look like blocks
+        if (node.type === "ObjectExpression") {
+            insert.push({ char: "(", offset: node.start });
+            insert.push({ char: ")", offset: node.end });
+        }
+        Object.keys(node).forEach((key) => descend(key));
+    };
+    descend(ast);
+    // We make modifications from back to front, so we don't need
+    // to adjust offsets
+    insert.sort((a, b) => (b.offset - a.offset));
+    // Modify the code for REPL
+    insert.forEach((mod) => {
+        code = code.substring(0, mod.offset) + mod.char + code.substring(mod.offset);
+    });
+    return code;
+}
 class SandboxPlugin extends Plugin {
     static getHelp() {
         return {
@@ -101,33 +143,59 @@ class SandboxPlugin extends Plugin {
         });
     }
     run() {
-        console.log("network: " + this.network.name + " (chainId: " + this.network.chainId + ")");
-        let nextPromiseId = 0;
-        function promiseWriter(output) {
-            if (output instanceof Promise) {
-                repl.context._p = output;
-                let promiseId = nextPromiseId++;
-                output.then((result) => {
-                    console.log(`\n<Promise id=${promiseId} resolved>`);
-                    console.log(util.inspect(result));
-                    repl.context._r = result;
-                    repl.displayPrompt(true);
-                }, (error) => {
-                    console.log(`\n<Promise id=${promiseId} rejected>`);
-                    console.log(util.inspect(error));
-                    repl.displayPrompt(true);
-                });
-                return `<Promise id=${promiseId} pending>`;
+        console.log(`version: ${ethers.version}`);
+        console.log(`network: ${this.network.name} (chainId: ${this.network.chainId})`);
+        const filename = resolve(process.cwd(), "./sandbox.js");
+        const prompt = (this.provider ? this.network.name : "no-network") + "> ";
+        const evaluate = function (code, context, file, _callback) {
+            // Pausing the stdin (which prompt does when it leaves), causes
+            // readline to end us. So, we always re-enable stdin on a result
+            const callback = (error, result) => {
+                _callback(error, result);
+                process.stdin.resume();
+            };
+            try {
+                code = prepareCode(code);
             }
-            return util.inspect(output);
-        }
-        let repl = REPL.start({
-            input: process.stdin,
-            output: process.stdout,
-            prompt: (this.provider ? this.network.name : "no-network") + "> ",
-            writer: promiseWriter
+            catch (error) {
+                if (error instanceof SyntaxError) {
+                    const leftover = code.substring(error.pos);
+                    const loc = error.loc;
+                    if (leftover.trim()) {
+                        // After the first line, the prompt is "... "
+                        console.log(repeat("-", ((loc.line === 1) ? prompt.length : 4) + loc.column - 1) + "^");
+                        console.log(`Syntax Error! ${error.message}`);
+                    }
+                    else {
+                        error = new REPL.Recoverable(error);
+                    }
+                }
+                return callback(error);
+            }
+            try {
+                const result = vm.runInContext(code, context, {
+                    filename: filename
+                });
+                if (result instanceof Promise) {
+                    result.then((result) => {
+                        callback(null, result);
+                    }, (error) => {
+                        callback(error);
+                    });
+                }
+                else {
+                    callback(null, result);
+                }
+            }
+            catch (error) {
+                callback(error);
+            }
+        };
+        const repl = REPL.start({
+            prompt: prompt,
+            eval: evaluate
         });
-        setupContext(resolve(process.cwd(), "./sandbox.js"), repl.context, this);
+        setupContext(filename, repl.context, this);
         return new Promise((resolve) => {
             repl.on("exit", function () {
                 console.log("");
@@ -225,10 +293,15 @@ class FundPlugin extends Plugin {
             if (this.network.name !== "ropsten") {
                 this.throwError("Funding requires --network ropsten");
             }
-            if (args.length !== 1) {
+            if (args.length === 1) {
+                this.toAddress = yield this.getAddress(args[0], "Cannot fund ZERO address", false);
+            }
+            else if (args.length === 0 && this.accounts.length === 1) {
+                this.toAddress = yield this.accounts[0].getAddress();
+            }
+            else {
                 this.throwUsageError("fund requires ADDRESS");
             }
-            this.toAddress = yield this.getAddress(args[0], "Cannot fund ZERO address", false);
         });
     }
     run() {
@@ -757,22 +830,37 @@ class CompilePlugin extends Plugin {
             if (args.length !== 1) {
                 this.throwError("compile requires exactly FILENAME");
             }
-            this.filename = args[0];
+            this.filename = resolve(args[0]);
         });
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            let source = fs.readFileSync(this.filename).toString();
-            let result = compile(source, {
-                filename: this.filename,
-                optimize: (!this.noOptimize)
-            });
+            const source = fs.readFileSync(this.filename).toString();
+            let result = null;
+            try {
+                result = compile(source, {
+                    filename: this.filename,
+                    optimize: (!this.noOptimize)
+                });
+            }
+            catch (error) {
+                if (error.errors) {
+                    error.errors.forEach((error) => {
+                        console.log(error);
+                    });
+                }
+                else {
+                    throw error;
+                }
+                throw new Error("Failed to compile contract.");
+            }
             let output = {};
             result.forEach((contract, index) => {
                 output[contract.name] = {
                     bytecode: contract.bytecode,
                     runtime: contract.runtime,
-                    interface: contract.interface.fragments.map((f) => f.format(ethers.utils.FormatTypes.full))
+                    interface: contract.interface.fragments.map((f) => f.format(ethers.utils.FormatTypes.full)),
+                    compiler: contract.compiler
                 };
             });
             console.log(JSON.stringify(output, null, 4));
@@ -821,30 +909,49 @@ class DeployPlugin extends Plugin {
             if (args.length !== 1) {
                 this.throwError("deploy requires exactly FILENAME");
             }
-            this.filename = args[0];
+            this.filename = resolve(args[0]);
         });
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
             let source = fs.readFileSync(this.filename).toString();
-            let result = compile(source, {
-                filename: this.filename,
-                optimize: (!this.noOptimize)
-            });
-            let codes = result.filter((c) => (c.bytecode !== "0x" && (this.contractName == null || this.contractName == c.name)));
+            let result = null;
+            try {
+                result = compile(source, {
+                    filename: this.filename,
+                    optimize: (!this.noOptimize)
+                });
+            }
+            catch (error) {
+                if (error.errors) {
+                    error.errors.forEach((error) => {
+                        console.log(error);
+                    });
+                }
+                else {
+                    throw error;
+                }
+                throw new Error("Failed to compile contract.");
+            }
+            const codes = result.filter((c) => (this.contractName == null || this.contractName == c.name));
             if (codes.length > 1) {
-                this.throwError("Please specify a contract with --contract NAME");
+                this.throwError("Multiple contracts found; please specify a contract with --contract NAME");
             }
             if (codes.length === 0) {
                 this.throwError("No contract found");
             }
-            let factory = new ethers.ContractFactory(codes[0].interface, codes[0].bytecode, this.accounts[0]);
-            let contract = yield factory.deploy();
+            const factory = new ethers.ContractFactory(codes[0].interface, codes[0].bytecode, this.accounts[0]);
+            dump("Deploying:", {
+                Contract: codes[0].name,
+                Bytecode: codes[0].bytecode,
+                Interface: codes[0].interface.fragments.map((f) => f.format(ethers.utils.FormatTypes.full)),
+                Compiler: codes[0].compiler,
+                Optimizer: (this.noOptimize ? "No" : "Yes")
+            });
+            const contract = yield factory.deploy();
             dump("Deployed:", {
                 Contract: codes[0].name,
                 Address: contract.address,
-                Bytecode: codes[0].bytecode,
-                Interface: codes[0].interface.fragments.map((f) => f.format(ethers.utils.FormatTypes.full))
             });
         });
     }

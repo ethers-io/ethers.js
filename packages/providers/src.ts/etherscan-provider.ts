@@ -71,6 +71,8 @@ function checkLogTag(blockTag: string): number | "latest" {
 }
 
 
+const defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
+
 export class EtherscanProvider extends BaseProvider{
     readonly baseUrl: string;
     readonly apiKey: string;
@@ -104,7 +106,7 @@ export class EtherscanProvider extends BaseProvider{
         }
 
         defineReadOnly(this, "baseUrl", baseUrl);
-        defineReadOnly(this, "apiKey", apiKey);
+        defineReadOnly(this, "apiKey", apiKey || defaultApiKey);
     }
 
 

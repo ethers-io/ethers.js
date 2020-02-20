@@ -57,6 +57,11 @@ Config.prototype.load = async function() {
     }
 };
 
+Config.prototype.keys = async function() {
+    await this.load();
+    return Object.keys(this.values);
+}
+
 Config.prototype.save = function() {
     this.values._junk = Buffer.from(randomBytes(16 + parseInt(Math.random() * 48))).toString("base64")
 
@@ -101,6 +106,9 @@ module.exports = {
     },
     set: function(key, value) {
         config.set(key, value);
+    },
+    keys: function() {
+        return config.keys();
     },
     lock: function() {
         config.lock();

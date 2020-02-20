@@ -1,1 +1,1 @@
-export declare const version = "sha2/5.0.0-beta.133";
+export declare const version = "sha2/5.0.0-beta.134";

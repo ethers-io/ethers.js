@@ -41,7 +41,7 @@ export declare class Interface {
     };
     readonly deploy: ConstructorFragment;
     readonly _abiCoder: AbiCoder;
-    static _isInterface: boolean;
+    readonly _isInterface: boolean;
     constructor(fragments: string | Array<Fragment | JsonFragment | string>);
     format(format?: string): string | Array<string>;
     static getAbiCoder(): AbiCoder;

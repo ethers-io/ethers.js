@@ -7,47 +7,47 @@ Explain what hash functions are?
 
 _subsection: Cryptographic Hashing
 
-The [Cryptographic Hash Functions](https://en.wikipedia.org/wiki/Cryptographic_hash_function)
+The [Cryptographic Hash Functions](link-wiki-cryptographichash)
 are a specific family of hash functions.
 
-_property: utils.keccak256(aBytesLike) => string<[[datahexstring]]<32>>  @<utils-keccak256> @SRC<keccak256>
-Returns the [KECCAK256](https://en.wikipedia.org/wiki/SHA-3) digest //aBytesLike//.
+_property: ethers.utils.keccak256(aBytesLike) => string<[[datahexstring]]<32>>  @<utils-keccak256> @SRC<keccak256>
+Returns the [KECCAK256](link-wiki-sha3) digest //aBytesLike//.
 
-_property: utils.ripemd160(aBytesLike) => string<[[datahexstring]]<20>>  @<utils-ripemd160> @SRC<sha2>
-Returns the [RIPEMD-160](https://en.m.wikipedia.org/wiki/RIPEMD) digest of //aBytesLike//.
+_property: ethers.utils.ripemd160(aBytesLike) => string<[[datahexstring]]<20>>  @<utils-ripemd160> @SRC<sha2>
+Returns the [RIPEMD-160](link-wiki-ripemd) digest of //aBytesLike//.
 
-_property: utils.sha256(aBytesLike) => string<[[datahexstring]]<32>>  @<utils-sha256> @SRC<sha2:function.sha256>
-Returns the [SHA2-256](https://en.wikipedia.org/wiki/SHA-2) digest of //aBytesLike//.
+_property: ethers.utils.sha256(aBytesLike) => string<[[datahexstring]]<32>>  @<utils-sha256> @SRC<sha2:function.sha256>
+Returns the [SHA2-256](link-wiki-sha2) digest of //aBytesLike//.
 
-_property: utils.sha512(aBytesLike) => string<[[datahexstring]]<64>>  @<utils-sha512> @SRC<sha2:function.sha512>
-Returns the [SHA2-512](https://en.wikipedia.org/wiki/SHA-2) digest of //aBytesLike//.
+_property: ethers.utils.sha512(aBytesLike) => string<[[datahexstring]]<64>>  @<utils-sha512> @SRC<sha2:function.sha512>
+Returns the [SHA2-512](link-wiki-sha2) digest of //aBytesLike//.
 
-_property: utils.computeHmac(algorithm, key, data) => string<[[datahexstring]]>  @<utils-computehmac> @SRC<sha2>
-Returns the [HMAC](https://en.wikipedia.org/wiki/HMAC) of //data// with //key//
+_property: ethers.utils.computeHmac(algorithm, key, data) => string<[[datahexstring]]>  @<utils-computehmac> @SRC<sha2>
+Returns the [HMAC](link-wiki-hmac) of //data// with //key//
 using the [Algorithm](supported-algorithm) //algorithm//.
 
 
-_heading: HMAC Supported Algorithms @<supported-algorithm> @SRC<sha2:enum.SupportedAlgorithms>
+_heading: HMAC Supported Algorithms @<supported-algorithm> @SRC<sha2:enum.SupportedAlgorithm>
 
-_property: utils.SupportedAlgorithms.sha256 => string
-Use the [SHA2-256](https://en.wikipedia.org/wiki/SHA-2) hash algorithm.
+_property: ethers.utils.SupportedAlgorithm.sha256 => string
+Use the [SHA2-256](link-wiki-sha2) hash algorithm.
 
-_property: utils.SupportedAlgorithms.sha512 => string
-Use the [SHA2-512](https://en.wikipedia.org/wiki/SHA-2) hash algorithm.
+_property: ethers.utils.SupportedAlgorithm.sha512 => string
+Use the [SHA2-512](link-wiki-sha2) hash algorithm.
 
 
 _subsection: Common Hashing Helpers
 
-_property: utils.hashMessage(message) => string<[[datahexstring]]<32>>  @<utils-hashmessage> @SRC<hash>
+_property: ethers.utils.hashMessage(message) => string<[[datahexstring]]<32>>  @<utils-hashmessage> @SRC<hash>
 Computes the Ethereum message digest of //message//. Ethereum messages are
-converted to UTF-8 bytes and prefixed with ``\x19Ethereum Signed Message:``
+converted to UTF-8 bytes and prefixed with ``\\x19Ethereum Signed Message:``
 and the length of //message//.
 
-_property: utils.id(text) => string<[[datahexstring]]<32>>  @<utils-id> @SRC<hash>
+_property: ethers.utils.id(text) => string<[[datahexstring]]<32>>  @<utils-id> @SRC<hash>
 The Ethereum Identity function computs the keccak256 hash of the //text// bytes.
 
-_property: utils.namehash(name) => string<[[datahexstring]]<32>>  @<utils-namehash> @SRC<hash>
-Returns the [ENS Namehash](https://docs.ens.domains/contract-api-reference/name-processing#hashing-names) of //name//.
+_property: ethers.utils.namehash(name) => string<[[datahexstring]]<32>>  @<utils-namehash> @SRC<hash>
+Returns the [ENS Namehash](link-namehash) of //name//.
 
 
 _subsection: Solidity Hashing Algorithms
@@ -56,15 +56,15 @@ When using the Solidity ``abi.packEncoded(...)`` function, a non-standard
 //tightly packed// version of encoding is used. These functions implement
 the tightly packing algorithm.
 
-_property: utils.solidityPack(arrayOfTypes, arrayOfValues) => string<[[datahexstring]]>  @<utils-soliditypack> @SRC<solidity:pack>
+_property: ethers.utils.solidityPack(arrayOfTypes, arrayOfValues) => string<[[datahexstring]]>  @<utils-soliditypack> @SRC<solidity:pack>
 Returns the non-standard encoded //arrayOfValues// packed according to
 their respecive type in //arrayOfTypes//.
 
-_property: utils.solidityKeccak256(arrayOfTypes, arrayOfValues) => string<[[datahexstring]]<32>>  @<utils-soliditykeccak256> @SRC<solidity:keccak256>
+_property: ethers.utils.solidityKeccak256(arrayOfTypes, arrayOfValues) => string<[[datahexstring]]<32>>  @<utils-soliditykeccak256> @SRC<solidity:keccak256>
 Returns the KECCAK256 of the non-standard encoded //arrayOfValues// packed
 according to their respective type in //arrayOfTypes//.
 
-_property: utils.soliditySha256(arrayOfTypes, arrayOfValues) => string<[[datahexstring]]<32>>  @<utils-soliditysha256> @SRC<solidity:sha256>
+_property: ethers.utils.soliditySha256(arrayOfTypes, arrayOfValues) => string<[[datahexstring]]<32>>  @<utils-soliditysha256> @SRC<solidity:sha256>
 Returns the SHA2-256 of the non-standard encoded //arrayOfValues// packed
 according to their respective type in //arrayOfTypes//.
 

@@ -106,6 +106,9 @@
       "path": "./packages/ethers"
     },
     {
+      "path": "./packages/asm"
+    },
+    {
       "path": "./packages/cli"
     },
     {

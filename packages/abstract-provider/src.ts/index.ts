@@ -80,7 +80,7 @@ export interface Log {
     blockHash?: string;
     transactionIndex?: number;
 
-    removed?: boolean;
+    removed: boolean;
 
     transactionLogIndex?: number,
 
@@ -94,19 +94,19 @@ export interface Log {
 }
 
 export interface TransactionReceipt {
-    to?: string;
-    from?: string;
-    contractAddress?: string,
-    transactionIndex?: number,
+    to: string;
+    from: string;
+    contractAddress: string,
+    transactionIndex: number,
     root?: string,
-    gasUsed?: BigNumber,
-    logsBloom?: string,
-    blockHash?: string,
-    transactionHash?: string,
-    logs?: Array<Log>,
-    blockNumber?: number,
-    confirmations?: number,
-    cumulativeGasUsed?: BigNumber,
+    gasUsed: BigNumber,
+    logsBloom: string,
+    blockHash: string,
+    transactionHash: string,
+    logs: Array<Log>,
+    blockNumber: number,
+    confirmations: number,
+    cumulativeGasUsed: BigNumber,
     byzantium: boolean,
     status?: number
 };
@@ -259,7 +259,7 @@ export abstract class Provider implements OnceBlockable {
     }
 
     // @TODO: This *could* be implemented here, but would pull in events...
-    abstract waitForTransaction(transactionHash: string, timeout?: number): Promise<TransactionReceipt>;
+    abstract waitForTransaction(transactionHash: string, confirmations?: number, timeout?: number): Promise<TransactionReceipt>;
 
     readonly _isProvider: boolean;
 
