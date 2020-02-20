@@ -12,6 +12,7 @@ import { UnsignedTransaction } from "@ethersproject/transactions";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
+import { LogDescription } from "@ethersproject/abi/lib/interface";
 const logger = new Logger(version);
 
 export interface Overrides {
@@ -240,7 +241,10 @@ function runMethod(contract: Contract, functionName: string, options: RunOptions
                         receipt.events = receipt.logs.map((log) => {
                              let event: Event = (<Event>deepCopy(log));
 
-                             let parsed = contract.interface.parseLog(log);
+                             let parsed: LogDescription;
+                             try {
+                                parsed = contract.interface.parseLog(log);
+                             } catch (e){}
                              if (parsed) {
                                  event.args = parsed.args;
                                  event.decode = (data: BytesLike, topics?: Array<any>) => {
