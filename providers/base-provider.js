@@ -54,7 +54,7 @@ function check(format, object) {
 }
 function allowNull(check, nullValue) {
     return (function (value) {
-        if (value == null) {
+        if (value == null || value === '0x00') {
             return nullValue;
         }
         return check(value);
@@ -88,6 +88,15 @@ function checkHash(hash, requirePrefix) {
         }
         if (bytes_1.hexDataLength(hash) === 32) {
             return hash.toLowerCase();
+        } else if (bytes_1.hexDataLength(hash) < 32) {
+            let completedHash = '0x';
+            const data = hash.substring(2, hash.length);
+            const toFill = 64 - data.length;
+            for (let i = 0; i < toFill; i++) {
+                completedHash += '0';
+            }
+            completedHash += data;
+            return completedHash.toLowerCase()
         }
     }
     errors.throwError('invalid hash', errors.INVALID_ARGUMENT, { arg: 'hash', value: hash });
@@ -198,7 +207,7 @@ function checkTransactionResponse(transaction) {
                 bytes_1.stripZeros(bytes_1.hexlify(transaction.gasPrice)),
                 bytes_1.stripZeros(bytes_1.hexlify(transaction.gasLimit)),
                 (transaction.to || "0x"),
-                bytes_1.stripZeros(bytes_1.hexlify(transaction.value || '0x')),
+                bytes_1.stripZeros(bytes_1.hexlify(Number(transaction.value) || '0x')),
                 bytes_1.hexlify(transaction.data || '0x'),
                 bytes_1.stripZeros(bytes_1.hexlify(transaction.v || '0x')),
                 bytes_1.stripZeros(bytes_1.hexlify(transaction.r)),
