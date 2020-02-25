@@ -43,15 +43,11 @@ function ethDefaultProvider(network: string): (providers: any) => any {
         if (providerList.length === 0) { return null; }
 
         if (providers.FallbackProvider) {
-            let quorum = providerList.length / 2;
+            let quorum = 1;
             if (options.quorum != null) {
                 quorum = options.quorum;
-            } else if (quorum > 2) {
-                if (network === "homestead") {
-                    quorum = 2;
-                } else {
-                    quorum = 1;
-                }
+            } else if (network === "homestead") {
+                quorum = 2;
             }
             return new providers.FallbackProvider(providerList, quorum);
         }
