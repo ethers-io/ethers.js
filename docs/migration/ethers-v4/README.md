@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Migration: From Ethers v4
 =========================
 
@@ -118,7 +117,7 @@ Interface
 ---------
 
 
-The [Interface](../../api/utils/abi) object has undergone the most dramatic changes.
+The [Interface](../../api/utils/abi/interface) object has undergone the most dramatic changes.
 
 It is no longer a meta-class and now has methods that simplify handling
 contract interface operations without the need for object inspection and
@@ -165,7 +164,7 @@ interface.encodeEventLog("Transfer", data, topics)
 
 
 Interrogating properties about a function or event can now (mostly) be
-done directly on the [Fragment](../../api/utils/abi) object.
+done directly on the [Fragment](../../api/utils/abi/fragments) object.
 
 
 ```
@@ -263,4 +262,4 @@ wallet.mnemonic.path
 
 
 -----
-**Content Hash:** 575f41bfdadff38c736a0bb8d7cad7f9f605f3d2667264dea0ce40a904acb479
+**Content Hash:** 27061bfb6d646d514915e15779b869747049a93a7f75eda79a9f92fdb81b41ae

@@ -1,5 +1,3 @@
-_title: Fixed Number
-
 _section: FixedNumber @<fixednumber>
 
 A **FixedNumber** is a fixed-width (in bits) number with an internal

@@ -4,13 +4,13 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Types
 =====
 
 
 
-### BlockTag
+BlockTag
+--------
 
 
 A **BlockTag** specifies a specific location in the Blockchain.
@@ -582,4 +582,4 @@ have this property.
 
 
 -----
-**Content Hash:** 8e36229154dd0afe40cd45ca1043bde05c78a54779aa56728d8ba585ba288978
+**Content Hash:** 911f42520657ebece6d9fe0456cae0540134758a7253057c42acffac94fb0895

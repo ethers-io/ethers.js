@@ -1,0 +1,196 @@
+_section: Interface @<abi-interface> @SRC<abi/interface:class.Interface>
+
+The **Interface** Class abstracts the encoding and decoding required
+to interact with contracts on the Ethereum network.
+
+Many of the standards organically evolved along side the [[link-solidity]]
+language, which other languages have adopted to remain compatibile with
+existing deployed contracts.
+
+The EVM itself does not understand what the ABI is. It is simply an agreed
+upon set of formats to encode various types of data which each contract can
+expect so they can interoperate with each other.
+
+
+_subsection: Creating Instances
+
+_property: new ethers.utils.Interface(abi) @SRC<abi/interface:constructor.Interface>
+Create a new **Interface** from a JSON string or object representing
+//abi//.
+
+The //abi// may be a JSON string or the parsed Object (using JSON.parse)
+which is emitted by the [Solidity compiler](link-solc-output) (or compatible languages).
+
+The //abi// may also be a [Human-Readable Abi](link-ricmoo-humanreadableabi),
+which is a format the Ethers created to simplify manually typing the ABI
+into the source and so that a Contract ABI can also be referenced easily
+within the same source file.
+
+_subsection: Properties
+
+_property: interface.fragments => Array<[[abi-fragment]]>
+All the [Fragments](abi-fragment) in the interface.
+
+_property: interface.events => Array<[[abi-eventfragment]]>
+All the [Event Fragments](abi-eventfragment) in the interface.
+
+_property: interface.functions => Array<[[abi-functionfragment]]>
+All the [Function Fragments](abi-functionfragment) in the interface.
+
+_property: interface.deploy => [[abi-constructorfragment]]
+The [Constructor Fragments](abi-constructorfragment) for the interface.
+
+
+_subsection: Formatting
+
+_property: interface.format( [ format ]) => string | Array<string> @SRC<abi/interface>
+Return the formatted **Interface**. If the format type is ``json`` a
+single string is returned, otherwise an Array of the human-readable
+strings is returned.
+
+
+_subsection: Fragment Access
+
+_property: interface.getFunction(fragment) => [[abi-functionfragment]]  @SRC<abi/interface>
+Returns the [[abi-functionfragment]] for //fragment// (see [[abi-fragmentid]]).
+
+_property: interface.getEvent(fragment) => [[abi-eventfragment]] @SRC<abi/interface>
+Returns the [[abi-eventfragment]] for //fragment// (see [[abi-fragmentid]]).
+
+
+_subsection: Signature and Topic Hashes
+
+_property: interface.getSighash(fragment) => string<[[datahexstring]]<4>> @SRC<abi/interface:method.Interface.getSighash>
+Return the sighash (or Function Selector) for //fragment// (see [[abi-fragmentid]]).
+
+_property: interface.getEventTopic(fragment) => string<[[datahexstring]]<32>> @SRC<abi/interface:method.Interface.getEventTopic>
+Return the topic hash for //fragment// (see [[abi-fragmentid]]).
+
+
+_subsection: Encoding Data
+
+_property: interface.encodeDeploy([ values ]) => string<[[datahexstring]]> @SRC<abi/interface>
+Return the encoded deployment data, which can be concatenated to the
+deployment bytecode of a contract to pass //values// into the contract
+constructor.
+
+_property: interface.encodeFilterTopics(fragment [ , values ]) => Array<topic | Array<topic>> @SRC<abi/interface>
+Returns the encoded topic filter, which can be passed to getLogs for //fragment//
+(see [[abi-fragmentid]]) for the given //values//.
+
+Each //topic// is a 32 byte (64 nibble) [[datahexstring]].
+
+_property: interface.encodeFunctionData(fragment [ , values ]) => string<[[datahexstring]]> @SRC<abi/interface>
+Returns the encoded data, which can be used as the data for a transaction for
+//fragment// (see [[abi-fragmentid]]) for the given //values//.
+
+_property: interface.encodeFunctionResult(fragment [ , values ]) => string<[[datahexstring]]> @SRC<abi/interface>
+Returns the encoded result, which would normally be the response from a call for
+//fragment// (see [[abi-fragmentid]]) for the given //values//.
+
+Most developers will not need this method, but may be useful for authors of a mock blockchain.
+
+
+_subsection: Decoding Data
+
+_property: interface.decodeEventLog(fragment, data [ , topics ]) => [[abi-result]] @SRC<abi/interface>
+Returns the decoded event values from an event log for
+//fragment// (see [[abi-fragmentid]]) for the given //data//
+with the optional //topics//.
+
+If //topics// is not specified, placeholders will be inserted into the result.
+
+_property: interface.decodeFunctionData(fragment, data) => [[abi-result]] @SRC<abi/interface>
+Returns the decoded values from transaction data for
+//fragment// (see [[abi-fragmentid]]) for the given //data//.
+
+Most developers will not need this method, but may be useful for debugging
+or inspecting transactions.
+
+_property: interface.decodeFunctionResult(fragment, data) => [[abi-result]] @SRC<abi/interface>
+Returns the decoded values from the result of a call for
+//fragment// (see [[abi-fragmentid]]) for the given //data//.
+
+
+_subsection: Parsing
+
+The functions are generally the most useful for most developers. They will
+automatically search the ABI for a matching Event or Function and decode
+the components as a fully specified description.
+
+_property: interface.parseLog(log) => [[abi-log]] @SRC<abi/interface>
+Search the event that matches the //log// topic hash and parse the values
+the log represents.
+
+_property: interface.parseTransaction(transaction) => [[abi-transaction]] @SRC<abi/interface>
+Search for the function that matches the //transaction// data sighash
+and parse the transaction properties.
+
+
+_subsection: Types
+
+_heading: Result @<abi-result> @INHERIT<Array&lt;any&gt;>
+
+A **Result** is an array, so each value can be accessed as a positional
+argument.
+
+Additionally, if values are named, the identical object as its positional
+value can be accessed by its name.
+
+The name ``length`` is however reserved as it is part of the Array, so
+any named value for this key is renamed to ``_length``. If there is a
+name collision, only the first is available by its key.
+
+
+_heading: LogDescription @<abi-log>
+
+_property: logDescription.args => [[abi-result]]
+The values of the input parameters of the event.
+
+_property: logDescription.eventFragment => [[abi-eventfragment]]
+The [[abi-eventfragment]] which matches the topic in the Log.
+
+_property: logDescription.name => string
+The event name. (e.g. ``Transfer``)
+
+_property: logDescription.signature => string
+The event signature. (e.g. ``Transfer(address,address,uint256)``)
+
+_property: logDescription.topic => string
+The topic hash.
+
+
+_heading: TransactionDescription @<abi-transaction>
+
+_property: transactionDescription.args => [[abi-result]]
+The decoded values from the transaction data which were passed
+as the input parameters.
+
+_property: transactionDescription.functionFragment => [[abi-functionfragment]]
+The [[abi-functionfragment]] which matches the sighash in the transaction data.
+
+_property: transactionDescription.name => string
+The name of the function. (e.g. ``transfer``)
+
+_property: transactionDescription.sighash => string
+The sighash (or function selector) that matched the transaction data.
+
+_property: transactionDescription.signature => string
+The signature of the function. (e.g. ``transfer(address,uint256)``)
+
+_property: transactionDescription.value => [[bignumber]]
+The value from the transaction.
+
+
+_subsection: Specifying Fragments @<abi-fragmentid>
+
+When specifying a fragment to any of the functions in an **Interface**,
+any of the following may be used:
+
+- The name of the event or function, if it is unique and non-ambiguous
+  within the ABI (e.g. ``transfer``)
+- The signature of the event or function. The signature is normalized,
+  so, for example, ``uint`` and ``uint256`` are equivalent (e.g. ``transfer(address, uint)``)
+- The sighash or topichash of the function. The sighash is often referred
+  to the function selector in Solidity (e.g. ``0xa9059cbb``)
+- A [[abi-fragment]]    

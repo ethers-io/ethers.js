@@ -1,6 +1,4 @@
-_title: ethers v4 to v5
-
-_section: Migration: From Ethers v4
+_section: Migration: From Ethers v4  @<migration-v4>
 
 _subsection: BigNumber
 

@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Display Logic and Input
 =======================
 
@@ -66,7 +65,7 @@ Functions
 
 
 
-#### *utils* . **commify** ( value )  **=>** *string*
+#### *ethers* . *utils* . **commify** ( value )  **=>** *string*
 
 Returns a string with value grouped by 3 digits, separated by `,`.
 
@@ -77,7 +76,7 @@ Returns a string with value grouped by 3 digits, separated by `,`.
 
 
 
-#### *utils* . **formatUnits** ( value [  , unit="ether" ]  )  **=>** *string*
+#### *ethers* . *utils* . **formatUnits** ( value [  , unit="ether" ]  )  **=>** *string*
 
 Returns a string representation of *value* formatted with *unit*
 digits (if it is a number) or to the unit specified (if a string).
@@ -85,14 +84,14 @@ digits (if it is a number) or to the unit specified (if a string).
 
 
 
-#### *utils* . **formatEther** ( value )  **=>** *string*
+#### *ethers* . *utils* . **formatEther** ( value )  **=>** *string*
 
 The equivalent to calling `formatUnits(value, "ether")`.
 
 
 
 
-#### *utils* . **parseUnits** ( value [  , unit="ether" ]  )  **=>** *[BigNumber](../bignumber)*
+#### *ethers* . *utils* . **parseUnits** ( value [  , unit="ether" ]  )  **=>** *[BigNumber](../bignumber)*
 
 Returns a [BigNumber](../bignumber) representation of *value*, parsed with
 *unit* digits (if it is a number) or from the unit specified (if
@@ -101,7 +100,7 @@ a string).
 
 
 
-#### *utils* . **parseEther** ( value )  **=>** *[BigNumber](../bignumber)*
+#### *ethers* . *utils* . **parseEther** ( value )  **=>** *[BigNumber](../bignumber)*
 
 The equivalent to calling `parseUnits(value, "ether")`.
 
@@ -110,4 +109,4 @@ The equivalent to calling `parseUnits(value, "ether")`.
 
 
 -----
-**Content Hash:** 172c3345092afd2abb6a47dc225ae54c13c3ee3ce87868dd87e19656f4e6078d
+**Content Hash:** dc749d05e2f4c378032440c4cdc06b705479b15b2582dca2c838021861f86a03

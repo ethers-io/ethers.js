@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Making Your Own
 ===============
 
@@ -274,4 +273,4 @@ Remove all options with their values for *name* and return the list
 
 
 -----
-**Content Hash:** 6ba720f007a15375ca684057e122c2acdb317b30f87b898e10fbe4c150169358
+**Content Hash:** f9148238ca768a6f2bbbc0d0d062bc5934629f900aca1df124fe07d1582fa03f

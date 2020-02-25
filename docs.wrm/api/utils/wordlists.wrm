@@ -1,5 +1,3 @@
-_title: Wordlists
-
 _section: Wordlists @<wordlists>
 
 _subsection: Wordlist @<wordlist>
@@ -26,7 +24,7 @@ Checks that all words map both directions correctly and return the
 hash of the lists. Sub-classes should use this to validate the wordlist
 is correct against the official wordlist hash.
 
-_property: Wordlist.register(wordlist [ , name ]) => string<[[datahexstring]]<32>>
+_property: Wordlist.register(wordlist [ , name ]) => void
 Register a wordlist with the list of wordlists, optionally overriding
 the registered //name//.
 
@@ -47,7 +45,7 @@ The French [[wordlist]].
 _property: ethers.wordlists.it => Wordlist
 The Italian [[wordlist]].
 
-_property: ethers.wordlists.js => Wordlist
+_property: ethers.wordlists.ja => Wordlist
 The Japanese [[wordlist]].
 
 _property: ethers.wordlists.ko => Wordlist

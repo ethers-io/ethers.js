@@ -1,6 +1,3 @@
-_title: Big Number
-
-
 _section: BigNumber @<bignumber>
 
 Many operations in Ethereum operation on numbers which are
@@ -48,10 +45,10 @@ _subsection: Creating Instances
 
 The constructor of BigNumber cannot be called directly. Instead, Use the static ``BigNumber.from``.
 
-_property: BigNumber.from(aBigNumberish) => [[bignumber]]
+_property: ethers.BigNumber.from(aBigNumberish) => [[bignumber]]
 Returns an instance of a **BigNumber** for //aBigNumberish//.
 
-_heading: Examples:
+_heading: Examples:  @<>
 
 _code: bignumber-create.js
 
@@ -143,7 +140,7 @@ Returns the value of //bignumber// as a base-16, ``0x``-prefixed [[datahexstring
 
 _heading: Inspection
 
-_property: BigNumnber.isBigNumber(object) => boolean  @SRC<bignumber>
+_property: ethers.BigNumnber.isBigNumber(object) => boolean  @SRC<bignumber>
 Returns true if and only if the //object// is a BigNumber object.
 
 

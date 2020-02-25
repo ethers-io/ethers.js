@@ -1,5 +1,3 @@
-_title: Hashing
-
 _section: Hashing Algorithms
 
 Explain what hash functions are?
@@ -39,12 +37,12 @@ Use the [SHA2-512](link-wiki-sha2) hash algorithm.
 _subsection: Common Hashing Helpers
 
 _property: ethers.utils.hashMessage(message) => string<[[datahexstring]]<32>>  @<utils-hashmessage> @SRC<hash>
-Computes the Ethereum message digest of //message//. Ethereum messages are
+Computes the [[link-eip-191]] personal message digest of //message//. Personal messages are
 converted to UTF-8 bytes and prefixed with ``\\x19Ethereum Signed Message:``
 and the length of //message//.
 
 _property: ethers.utils.id(text) => string<[[datahexstring]]<32>>  @<utils-id> @SRC<hash>
-The Ethereum Identity function computs the keccak256 hash of the //text// bytes.
+The Ethereum Identity function computs the [KECCAK256](link-wiki-sha3) hash of the //text// bytes.
 
 _property: ethers.utils.namehash(name) => string<[[datahexstring]]<32>>  @<utils-namehash> @SRC<hash>
 Returns the [ENS Namehash](link-namehash) of //name//.
@@ -61,11 +59,11 @@ Returns the non-standard encoded //arrayOfValues// packed according to
 their respecive type in //arrayOfTypes//.
 
 _property: ethers.utils.solidityKeccak256(arrayOfTypes, arrayOfValues) => string<[[datahexstring]]<32>>  @<utils-soliditykeccak256> @SRC<solidity:keccak256>
-Returns the KECCAK256 of the non-standard encoded //arrayOfValues// packed
+Returns the [KECCAK256](link-wiki-sha3) of the non-standard encoded //arrayOfValues// packed
 according to their respective type in //arrayOfTypes//.
 
 _property: ethers.utils.soliditySha256(arrayOfTypes, arrayOfValues) => string<[[datahexstring]]<32>>  @<utils-soliditysha256> @SRC<solidity:sha256>
-Returns the SHA2-256 of the non-standard encoded //arrayOfValues// packed
+Returns the [SHA2-256](link-wiki-sha2) of the non-standard encoded //arrayOfValues// packed
 according to their respective type in //arrayOfTypes//.
 
 

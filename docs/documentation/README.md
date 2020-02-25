@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Flatworm Docs
 =============
 
@@ -245,6 +244,18 @@ This extended directive function is available for:
 * _heading
 
 
+### @NAV<text>
+
+
+Sets the name in the breadcrumbs when not the current node.
+
+This extended directive function is available for:
+
+
+
+* _section
+
+
 ### @SRC<text>
 
 
@@ -266,4 +277,4 @@ This extended directive function is available for:
 
 
 -----
-**Content Hash:** 2fbf0adb4f6ef934152ddd2d9b321be74cb28610a04f34a62b6eff9cf3667993
+**Content Hash:** d9553352210e8259406507b6b50fc3a611a1dde0aab1a979cbcc6c22af677fb9

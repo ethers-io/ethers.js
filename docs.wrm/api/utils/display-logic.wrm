@@ -1,5 +1,3 @@
-_title: Display Logic and Input
-
 _section: Display Logic and Input
 
 When creating an Application, it is useful to convert between
@@ -46,23 +44,23 @@ _subsection: Functions
 
 _heading: Formatting
 
-_property: utils.commify(value) => string  @<util-commify> @SRC<units>
+_property: ethers.utils.commify(value) => string  @<utils-commify> @SRC<units>
 Returns a string with value grouped by 3 digits, separated by ``,``.
 
 
 _heading: Conversion @<unit-conversion>
 
-_property: utils.formatUnits(value [ , unit = "ether" ] ) => string  @<util-formatunits> @SRC<units>
+_property: ethers.utils.formatUnits(value [ , unit = "ether" ] ) => string  @<utils-formatunits> @SRC<units>
 Returns a string representation of //value// formatted with //unit//
 digits (if it is a number) or to the unit specified (if a string).
 
-_property: utils.formatEther(value) => string  @<util-formatether> @SRC<units>
+_property: ethers.utils.formatEther(value) => string  @<utils-formatether> @SRC<units>
 The equivalent to calling ``formatUnits(value, "ether")``.
 
-_property: utils.parseUnits(value [ , unit = "ether" ] ) => [BigNumber](bignumber)  @<util-parseunits> @SRC<units>
+_property: ethers.utils.parseUnits(value [ , unit = "ether" ] ) => [BigNumber](bignumber)  @<utils-parseunits> @SRC<units>
 Returns a [BigNumber](bignumber) representation of //value//, parsed with
 //unit// digits (if it is a number) or from the unit specified (if
 a string).
 
-_property: utils.parseEther(value) => [BigNumber](bignumber)  @<util-parseether> @SRC<units>
+_property: ethers.utils.parseEther(value) => [BigNumber](bignumber)  @<utils-parseether> @SRC<units>
 The equivalent to calling ``parseUnits(value, "ether")``.

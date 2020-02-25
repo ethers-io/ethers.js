@@ -1,5 +1,3 @@
-_title: Hardware Wallets
-
 _section: Hardware Wallets
 
 _subsection: LedgerSigner @<hw-ledger> @INHERIT<[[signer]]> @SRC<hardware-wallets:class.LedgerSigner>

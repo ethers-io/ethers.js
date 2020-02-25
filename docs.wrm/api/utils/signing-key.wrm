@@ -1,5 +1,3 @@
-_title: Signing Keys
-
 _section: Signing Key @<utils-signingkey>
 
 _property: new ethers.utils.SigningKey(privateKey)

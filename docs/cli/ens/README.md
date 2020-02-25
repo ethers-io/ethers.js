@@ -4,9 +4,8 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
-ENS
-===
+Ethereum Naming Service
+=======================
 
 
 
@@ -98,4 +97,4 @@ TODO examples
 
 
 -----
-**Content Hash:** 535334ba246058d715afd01bd59aa14948d6557aca5b2e4e0c4e997aa1eec864
+**Content Hash:** d7930b78b29531a5f2ea467260bd5f809711fd1747a4c0d5781708c1c4db867e

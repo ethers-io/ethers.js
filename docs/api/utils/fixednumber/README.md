@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 FixedNumber
 ===========
 
@@ -240,4 +239,4 @@ A shorthand for `fixed128x80`.
 
 
 -----
-**Content Hash:** 722ae303e23974bf47d77cc0fede7fd8fe534421d7c8f39189898e0592b7ef8d
+**Content Hash:** 60fa7fc0a5e28ce6608684d52fe57c2758aa6c9482cd19f71cb5b91fd7d392b8

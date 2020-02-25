@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Wordlists
 =========
 
@@ -61,7 +60,7 @@ is correct against the official wordlist hash.
 
 
 
-#### *Wordlist* . **register** ( wordlist [  , name ]  )  **=>** *string< [DataHexstring](../bytes)< 32 > >*
+#### *Wordlist* . **register** ( wordlist [  , name ]  )  **=>** *void*
 
 Register a wordlist with the list of wordlists, optionally overriding
 the registered *name*.
@@ -109,7 +108,7 @@ The Italian [Wordlist](./).
 
 
 
-#### *ethers* . *wordlists* . **js** **=>** *Wordlist*
+#### *ethers* . *wordlists* . **ja** **=>** *Wordlist*
 
 The Japanese [Wordlist](./).
 
@@ -139,4 +138,4 @@ The Traditional Chinese [Wordlist](./).
 
 
 -----
-**Content Hash:** de4a1b1a39943d23744fb0cdc9b489e08eb83a52f94da8bec0cbc3b91aae5a17
+**Content Hash:** a5616892113b9a9a384590f4154ea1c32b078a3eb0c3eb82ac80a79c894394d7

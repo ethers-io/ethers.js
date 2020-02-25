@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Hacking
 =======
 
@@ -67,4 +66,4 @@ keeping that dot-file up-to-date as new versions of that platform are released.
 
 
 -----
-**Content Hash:** 55f49a4430f6cc2ae9ca51a5932a710217a99e253a57173223b869e4378ab8bd
+**Content Hash:** f57a28af18b23637056db38ed6a6d081daf52dccb227dd23f73e161dd7894517

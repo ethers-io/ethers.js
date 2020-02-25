@@ -1,8 +1,6 @@
-_title: Types
-
 _section: Types
 
-_heading: BlockTag @<provider-blocktag>
+_subsection: BlockTag @<provider-blocktag>
 A **BlockTag** specifies a specific location in the Blockchain.
 
 - **``"latest"``** -- The most recently mined block

@@ -4,9 +4,13 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
+Documentation
+=============
 
-What is ethers?
-===============
+
+
+What is Ethers?
+---------------
 
 
 The ethers.js library aims to be a complete and compact library for
@@ -50,8 +54,19 @@ Developer Documentation
     * [Gas Price](concepts/gas)
     * [Gas Limit](concepts/gas)
 * [Application Programming Interface](api)
-  * [Contracts](api/contract)
-    * [Buckets](api/contract)
+  * [Contract Interaction](api/contract)
+    * [Contract](api/contract/contract)
+      * [Properties](api/contract/contract)
+      * [Methods](api/contract/contract)
+      * [Events](api/contract/contract)
+      * [Meta-Class](api/contract/contract)
+    * [Example: ERC-20 Contract](api/contract/example)
+      * [Connecting to a Contract](api/contract/example)
+      * [Properties ^^//(inheritted from [[contract]])//^^](api/contract/example)
+      * [Methods ^^//(inheritted from [[contract]])//^^](api/contract/example)
+      * [Events ^^//(inheritted from Contract)//^^](api/contract/example)
+      * [Meta-Class Methods ^^//(added at Runtime)//^^](api/contract/example)
+      * [Meta-Class Filters ^^//(added at Runtime)//^^](api/contract/example)
   * [Signers](api/signer)
     * [Signer](api/signer)
     * [Wallet](api/signer)
@@ -81,19 +96,31 @@ Developer Documentation
       * [UrlJsonRpcProvider](api/providers/other)
       * [Web3Provider](api/providers/other)
     * [Types](api/providers/types)
+      * [BlockTag](api/providers/types)
       * [Network](api/providers/types)
       * [Block](api/providers/types)
       * [Events and Logs](api/providers/types)
       * [Transactions](api/providers/types)
   * [Utilities](api/utils)
     * [Application Binary Interface](api/utils/abi)
-      * [Formats](api/utils/abi)
-      * [Interface](api/utils/abi)
-      * [Fragment](api/utils/abi)
-      * [ConstructorFragment](api/utils/abi)
-      * [EventFragment](api/utils/abi)
-      * [FunctionFragment](api/utils/abi)
-      * [ParamType](api/utils/abi)
+      * [Interface](api/utils/abi/interface)
+        * [Creating Instances](api/utils/abi/interface)
+        * [Properties](api/utils/abi/interface)
+        * [Formatting](api/utils/abi/interface)
+        * [Fragment Access](api/utils/abi/interface)
+        * [Signature and Topic Hashes](api/utils/abi/interface)
+        * [Encoding Data](api/utils/abi/interface)
+        * [Decoding Data](api/utils/abi/interface)
+        * [Parsing](api/utils/abi/interface)
+        * [Types](api/utils/abi/interface)
+        * [Specifying Fragments](api/utils/abi/interface)
+      * [Fragments](api/utils/abi/fragments)
+        * [Formats](api/utils/abi/fragments)
+        * [Fragment](api/utils/abi/fragments)
+        * [ConstructorFragment](api/utils/abi/fragments)
+        * [EventFragment](api/utils/abi/fragments)
+        * [FunctionFragment](api/utils/abi/fragments)
+        * [ParamType](api/utils/abi/fragments)
     * [Addresses](api/utils/address)
       * [Address Formats](api/utils/address)
       * [Functions](api/utils/address)
@@ -134,9 +161,10 @@ Developer Documentation
       * [Types](api/utils/hdnode)
       * [HDNode](api/utils/hdnode)
       * [Other Functions](api/utils/hdnode)
-    * [Logger](api/utils/logger)
+    * [Logging](api/utils/logger)
+      * [Logger](api/utils/logger)
       * [Errors](api/utils/logger)
-      * [Creating instances](api/utils/logger)
+      * [Log Levels](api/utils/logger)
     * [Property Utilities](api/utils/properties)
     * [Signing Key](api/utils/signing-key)
       * [Other Functions](api/utils/signing-key)
@@ -182,7 +210,7 @@ Developer Documentation
     * [Example Input Files](cli/asm)
     * [Assembler Examples](cli/asm)
     * [Disassembler Examples](cli/asm)
-  * [ENS](cli/ens)
+  * [Ethereum Naming Service](cli/ens)
     * [Help](cli/ens)
     * [Examples](cli/ens)
   * [TypeScript](cli/typescript)
@@ -232,4 +260,4 @@ older versions of the library.
 
 
 -----
-**Content Hash:** e47c57b222edf98628be3e6d682eba93201d2163e7e059d2a963004f8ee81059
+**Content Hash:** 1ccc27c4ba6e59efa2be69cc0fb345ea9c397f1f4444d08ec13780d0d1a46b60

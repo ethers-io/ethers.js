@@ -1,5 +1,3 @@
-_title: Addresses
-
 _section: Addresses @<addresses>
 
 Explain addresses,formats and checksumming here.
@@ -43,7 +41,7 @@ To convert an address into the ICAP format, see [getIcapAddress](utils-getIcapAd
 
 _subsection: Functions
 
-_property: utils.getAddress(address) => string<[[address]]>  @<utils-getAddress> @SRC<address>
+_property: ethers.utils.getAddress(address) => string<[[address]]>  @<utils-getAddress> @SRC<address>
 Returns //address// as a Checksum Address.
 
 If //address// is an invalid 40-nibble [[hexstring]] or if it contains mixed case and
@@ -52,17 +50,17 @@ the checksum is invalid, an InvalidArgument Error is throw.
 The value of //address// may be any supported address format.
 
 
-_property: utils.isAddress(address) => boolean  @<utils-isAddress> @SRC<address>
+_property: ethers.utils.isAddress(address) => boolean  @<utils-isAddress> @SRC<address>
 Returns true if //address// is valid (in any supported format).
 
-_property: utils.getIcapAddress(address) => string<[IcapAddress](address-icap)>  @<utils-getIcapAddress> @SRC<address>
+_property: ethers.utils.getIcapAddress(address) => string<[IcapAddress](address-icap)>  @<utils-getIcapAddress> @SRC<address>
 Returns //address// as an [ICAP address](link-icap).
 Supports the same restrictions as [utils.getAddress](utils-getAddress).
 
-_property: utils.getContractAddress(transaction) => string<[[address]]>  @<utils-getcontractaddress> @SRC<address>
+_property: ethers.utils.getContractAddress(transaction) => string<[[address]]>  @<utils-getcontractaddress> @SRC<address>
 Returns the contract address that would result if //transaction// was
 used to deploy a contract.
 
-_property: utils.getCreate2Address(from, salt, initCodeHash) => string<[[address]]> @<utils.getCreate2Address> @SRC<address>
+_property: ethers.utils.getCreate2Address(from, salt, initCodeHash) => string<[[address]]> @<utils-getCreate2Address> @SRC<address>
 Returns the contract address that would result from the given
 [CREATE2](link-eip-1014) call.

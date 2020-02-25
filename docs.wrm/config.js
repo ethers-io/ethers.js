@@ -100,12 +100,11 @@ const getSourceUrl = (function(path, include, exclude) {
             if (!def.filename.match(pathCheck)) { return; }
             def.defs.forEach((d) => {
                 if (!d.name.match(match)) { return; }
-                result.push({ filename: def.filename, lineNo: d.lineNo });
+                result.push({ filename: def.filename, lineNo: d.lineNo, name: d.name });
             });
         });
-
         if (result.length > 1) {
-            throw new Error(`Amibguous TypeScript link: ${ key } in [ ${ result.map((r) => JSON.stringify(r.filename + ":" + r.lineNo)).join(", ") }]`);
+            throw new Error(`Ambiguous TypeScript link: ${ key } in [ ${ result.map((r) => JSON.stringify(r.filename + ":" + r.lineNo + "@" + r.name)).join(", ") }]`);
         } else if (result.length === 0) {
             throw new Error(`No matching TypeScript link: ${ key }`);
         }
@@ -142,6 +141,7 @@ module.exports = {
       "link-metamask": "https:/\/metamask.io/",
       "link-parity": "https:/\/www.parity.io",
       "link-rtd": "https:/\/github.com/readthedocs/sphinx_rtd_theme",
+      "link-solidity": { name: "Solidity" , url: "https:/\/solidity.readthedocs.io/en/v0.6.2/" },
       "link-sphinx": "https:/\/www.sphinx-doc.org/",
 
       "link-legacy-docs3": "https:/\/docs.ethers.io/ethers.js/v3.0/html/",
@@ -167,6 +167,7 @@ module.exports = {
       "link-ethers-asm-grammar": "https:/\/github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/asm/grammar.jison",
 
       "link-eip-155": { name: "EIP-155", url: "https:/\/eips.ethereum.org/EIPS/eip-155" },
+      "link-eip-191": { name: "EIP-191", url: "https:/\/eips.ethereum.org/EIPS/eip-191" },
       "link-eip-609": "https:/\/eips.ethereum.org/EIPS/eip-609",
       "link-eip-1014": "https:/\/eips.ethereum.org/EIPS/eip-1014",
       "link-eip-2098": "https:/\/eips.ethereum.org/EIPS/eip-2098",
@@ -179,6 +180,7 @@ module.exports = {
 
       "link-js-array": "https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
       "link-js-bigint": "https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt",
+      "link-js-normalize": { name: "String.normalize", url: "https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize" },
       "link-js-maxsafe": "https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER#Description",
       "link-js-typedarray": "https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray",
 
@@ -186,7 +188,7 @@ module.exports = {
 
       "link-wiki-basicauth": { name: "Basic Authentication", url: "https:/\/en.wikipedia.org/wiki/Basic_access_authentication" },
       "link-wiki-backoff": { name: "Exponential Backoff", url: "https:/\/en.wikipedia.org/wiki/Exponential_backoff" },
-      "link-wiki-bloomfilter": "https:/\/en.wikipedia.org/wiki/Bloom_filter",
+      "link-wiki-bloomfilter": { name: "Bloom Filter", url: "https:/\/en.wikipedia.org/wiki/Bloom_filter" },
       "link-wiki-cryptographichash": "https:/\/en.wikipedia.org/wiki/Cryptographic_hash_function",
       "link-wiki-homoglyph": "https:/\/en.wikipedia.org/wiki/IDN_homograph_attack",
       "link-wiki-hmac": "https:/\/en.wikipedia.org/wiki/HMAC",
@@ -200,6 +202,7 @@ module.exports = {
       "link-wiki-utf8-replacement": "https:/\/en.wikipedia.org/wiki/Specials_%28Unicode_block%29#Replacement_character",
       "link-wiki-scrypt": "https:/\/en.wikipedia.org/wiki/Scrypt",
       "link-wiki-sha3": "https:/\/en.wikipedia.org/wiki/SHA-3",
+      "link-wiki-shuffle": { name: "Fisher-Yates Shuffle", url: "https:/\/en.wikipedia.org/wiki/Fisher-Yates_shuffle" },
       "link-wiki-overflow": { name: "overflow", url: "https:/\/en.wikipedia.org/wiki/Integer_overflow" },
       "link-wiki-underflow": { name: "arithmetic underflow", url: "https:/\/en.wikipedia.org/wiki/Arithmetic_underflow" },
   }

@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 HD Wallet
 =========
 
@@ -241,4 +240,4 @@ testing the checksum.
 
 
 -----
-**Content Hash:** c33ab4f669006710c2364a857d2d69c24a8676fb3d1dfc7e66a8d07bc12ee1a2
+**Content Hash:** 042e28f2a611879151bc40783559c6310e23d466a310b508b22f264fa40d53e8

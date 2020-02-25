@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Hashing Algorithms
 ==================
 
@@ -81,7 +80,7 @@ Common Hashing Helpers
 
 #### *ethers* . *utils* . **hashMessage** ( message )  **=>** *string< [DataHexstring](../bytes)< 32 > >*
 
-Computes the Ethereum message digest of *message*. Ethereum messages are
+Computes the [EIP-191](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/eips.ethereum.org/EIPS/eip-191) personal message digest of *message*. Personal messages are
 converted to UTF-8 bytes and prefixed with `\x19Ethereum Signed Message:`
 and the length of *message*.
 
@@ -90,7 +89,7 @@ and the length of *message*.
 
 #### *ethers* . *utils* . **id** ( text )  **=>** *string< [DataHexstring](../bytes)< 32 > >*
 
-The Ethereum Identity function computs the keccak256 hash of the *text* bytes.
+The Ethereum Identity function computs the [KECCAK256](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/SHA-3) hash of the *text* bytes.
 
 
 
@@ -121,7 +120,7 @@ their respecive type in *arrayOfTypes*.
 
 #### *ethers* . *utils* . **solidityKeccak256** ( arrayOfTypes , arrayOfValues )  **=>** *string< [DataHexstring](../bytes)< 32 > >*
 
-Returns the KECCAK256 of the non-standard encoded *arrayOfValues* packed
+Returns the [KECCAK256](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/SHA-3) of the non-standard encoded *arrayOfValues* packed
 according to their respective type in *arrayOfTypes*.
 
 
@@ -129,7 +128,7 @@ according to their respective type in *arrayOfTypes*.
 
 #### *ethers* . *utils* . **soliditySha256** ( arrayOfTypes , arrayOfValues )  **=>** *string< [DataHexstring](../bytes)< 32 > >*
 
-Returns the SHA2-256 of the non-standard encoded *arrayOfValues* packed
+Returns the [SHA2-256](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/SHA-2) of the non-standard encoded *arrayOfValues* packed
 according to their respective type in *arrayOfTypes*.
 
 
@@ -137,4 +136,4 @@ according to their respective type in *arrayOfTypes*.
 
 
 -----
-**Content Hash:** 45555de5a99896ceb416df9f1c5da990ab6d1decc0ecbfba38eea5a476772fba
+**Content Hash:** 5c27393d66c46e7175edbe51257fb8cb69e8dc965d45ed7913b9599deec14e80

@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Migration Guide
 ===============
 
@@ -29,4 +28,4 @@ of Ethers or other libraries.
 
 
 -----
-**Content Hash:** 740fa7ef44cdf2de76bd3b7e6564144cac3e389786cc5f3c19382bbba20dc90b
+**Content Hash:** 1c08c66f8c8376f30781c83ea1697b5004b361b2d69ec89fd70a4131e1003256

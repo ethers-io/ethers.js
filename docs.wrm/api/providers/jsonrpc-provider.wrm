@@ -1,5 +1,3 @@
-_title: JSON-RPC Provider
-
 _section: JsonRpcProvider  @<provider-jsonrpc> @INHERIT<[[provider]]>
 
 The [JSON-RPC API](link-jsonrpc) is a

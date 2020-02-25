@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Other Providers
 ===============
 
@@ -185,4 +184,4 @@ The provider used to create this instance.
 
 
 -----
-**Content Hash:** 38479cce7fbf5192e1085bce407362ec5169b3a56f42f27e515a623ffeab670b
+**Content Hash:** e85f8ef6e4b1924ef63365dd6f761aa0ef5db23ebdd124686763d5061551a8bf

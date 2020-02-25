@@ -1,5 +1,3 @@
-_title: Flatworm Docs
-
 _section: Flatworm Docs
 
 The //Flatworm Docs// rendering script is designed to be **very**
@@ -75,7 +73,7 @@ a //definition//, the bodies are indented, so a //null// can be
 used to reset the indentation.
 
 
-_heading: Examples
+_heading: Examples @<>
 
 _code: examples.txt
 
@@ -109,6 +107,16 @@ This extended directive function is available for:
 - _section
 - _subsetion
 - _heading
+
+
+_heading: @NAV\<text>
+
+Sets the name in the breadcrumbs when not the current node.
+
+This extended directive function is available for:
+
+- _section
+
 
 _heading: @SRC\<text>
 

@@ -1,5 +1,3 @@
-_title: Property Utilities
-
 _section: Property Utilities
 
 _property: ethers.utils.checkPropertoes() => void

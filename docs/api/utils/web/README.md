@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Web Utilities
 =============
 
@@ -132,4 +131,4 @@ If this is specified, the polling will wait on new blocks from
 
 
 -----
-**Content Hash:** b7c1a3182a84ac1c136e7e90d5e2ba18269f0a9a91ce8523ee4e77d87a83d0b0
+**Content Hash:** 595f603aa2c0b7be3b5139c1ea9ea198dabddd6dc76793b1558911ab70bda06f

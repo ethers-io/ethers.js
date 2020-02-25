@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 API Providers
 =============
 
@@ -107,4 +106,4 @@ The CloudfrontProvider is backed by the [Cloudflare Ethereum Gateway](../../../U
 
 
 -----
-**Content Hash:** 8a464bf5a272f32a697857e4e5813b1569ee9293156f77dcfa8f4bd71a8e5c9f
+**Content Hash:** 79ad5dae92f00fc2ef2aceff6620ed9ae5f12d92d9e29ebc6be1c5752e65322f

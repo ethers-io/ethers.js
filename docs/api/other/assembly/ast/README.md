@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Abstract Syntax Tree
 ====================
 
@@ -249,4 +248,4 @@ The list of child nodes for this scope.
 
 
 -----
-**Content Hash:** ee220fb350a143a9868feecd1513ad6a66dbb033b8c108852cfe86fe8dcd871a
+**Content Hash:** 27350094145eafe8e3b166698c29705f2edee81f6126de4e45d957a7c35a7109

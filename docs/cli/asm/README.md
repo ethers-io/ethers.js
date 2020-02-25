@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Assembler
 =========
 
@@ -280,4 +279,4 @@ human-readable.
 
 
 -----
-**Content Hash:** 72c24560588bdf16e1bb96c2a1f3b367692b5e97c81f89d5d55396c1ccff834b
+**Content Hash:** a948279ca64461ea65339332c81e2ae6705ff5eae5cf930e8ddd78e80739746e

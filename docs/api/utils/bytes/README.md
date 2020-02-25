@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Byte Manipulation
 =================
 
@@ -83,21 +82,21 @@ Inspection
 
 
 
-#### *utils* . **isBytes** ( object )  **=>** *boolean*
+#### *ethers* . *utils* . **isBytes** ( object )  **=>** *boolean*
 
 Returns true if and only if *object* is a valid [Bytes](./).
 
 
 
 
-#### *utils* . **isBytesLike** ( object )  **=>** *boolean*
+#### *ethers* . *utils* . **isBytesLike** ( object )  **=>** *boolean*
 
 Returns true if and only if *object* is a [Bytes](./) or [DataHexstring](./).
 
 
 
 
-#### *utils* . **isHexString** ( object ,  [ length ]  )  **=>** *boolean*
+#### *ethers* . *utils* . **isHexString** ( object ,  [ length ]  )  **=>** *boolean*
 
 Returns true if and only if *object* is a valid hex string.
 If *length* is specified and *object* is not a valid [DataHexstring](./) of
@@ -111,21 +110,21 @@ Converting between Arrays and Hexstrings
 
 
 
-#### *utils* . **arrayify** ( datahexstringOrArrayish [  , options ]  )  **=>** *Uint8Array*
+#### *ethers* . *utils* . **arrayify** ( datahexstringOrArrayish [  , options ]  )  **=>** *Uint8Array*
 
 Converts *datahexstringOrArrayish* to a Uint8Array.
 
 
 
 
-#### *utils* . **hexlify** ( hexstringOrArrayish )  **=>** *string< [DataHexstring](./) >*
+#### *ethers* . *utils* . **hexlify** ( hexstringOrArrayish )  **=>** *string< [DataHexstring](./) >*
 
 Converts *hexstringOrArrayish* to a [DataHexstring](./).
 
 
 
 
-#### *utils* . **hexValue** ( aBigNumberish )  **=>** *string< [Hexstring](./) >*
+#### *ethers* . *utils* . **hexValue** ( aBigNumberish )  **=>** *string< [Hexstring](./) >*
 
 Converts *aBigNumberish* to a [Hexstring](./), with no *unnecessary* leading
 zeros.
@@ -148,21 +147,21 @@ Array Manipulation
 
 
 
-#### *utils* . **concat** ( arrayOfBytesLike )  **=>** *Uint8Array*
+#### *ethers* . *utils* . **concat** ( arrayOfBytesLike )  **=>** *Uint8Array*
 
 Concatenates all the [BytesLike](./) in *arrayOfBytesLike* into a single Uint8Array.
 
 
 
 
-#### *utils* . **stripZeros** ( aBytesLike )  **=>** *Uint8Array*
+#### *ethers* . *utils* . **stripZeros** ( aBytesLike )  **=>** *Uint8Array*
 
 Returns a Uint8Array with all leading `0` bytes of *aBtyesLike* removed.
 
 
 
 
-#### *utils* . **zeroPad** ( aBytesLike , length )  **=>** *Uint8Array*
+#### *ethers* . *utils* . **zeroPad** ( aBytesLike , length )  **=>** *Uint8Array*
 
 Retutns a Uint8Array of the data in *aBytesLike* with `0` bytes prepended to
 *length* bytes long.
@@ -178,21 +177,21 @@ Hexstring Manipulation
 
 
 
-#### *utils* . **hexConcat** ( arrayOfBytesLike )  **=>** *string< [DataHexstring](./) >*
+#### *ethers* . *utils* . **hexConcat** ( arrayOfBytesLike )  **=>** *string< [DataHexstring](./) >*
 
 Concatenates all the [BytesLike](./) in *arrayOfBytesLike* into a single [DataHexstring](./)
 
 
 
 
-#### *utils* . **hexDataLength** ( aBytesLike )  **=>** *string< [DataHexstring](./) >*
+#### *ethers* . *utils* . **hexDataLength** ( aBytesLike )  **=>** *string< [DataHexstring](./) >*
 
 Returns the length (in bytes) of *aBytesLike*.
 
 
 
 
-#### *utils* . **hexDataSlice** ( aBytesLike , offset [  , endOffset ]  )  **=>** *string< [DataHexstring](./) >*
+#### *ethers* . *utils* . **hexDataSlice** ( aBytesLike , offset [  , endOffset ]  )  **=>** *string< [DataHexstring](./) >*
 
 Returns a [DataHexstring](./) representation of a slice of *aBytesLike*, from
 *offset* (in bytes) to *endOffset* (in bytes). If *endOffset* is
@@ -201,7 +200,7 @@ omitted, the length of *aBytesLike* is used.
 
 
 
-#### *utils* . **hexStripZeros** ( aBytesLike )  **=>** *string< [Hexstring](./) >*
+#### *ethers* . *utils* . **hexStripZeros** ( aBytesLike )  **=>** *string< [Hexstring](./) >*
 
 Returns a [Hexstring](./) representation of *aBytesLike* with all
 leading zeros removed.
@@ -209,7 +208,7 @@ leading zeros removed.
 
 
 
-#### *utils* . **hexZeroPad** ( aBytesLike , length )  **=>** *string< [DataHexstring](./) >*
+#### *ethers* . *utils* . **hexZeroPad** ( aBytesLike , length )  **=>** *string< [DataHexstring](./) >*
 
 Returns a [DataHexstring](./) representation of *aBytesLike* padded to *length* bytes.
 
@@ -224,7 +223,7 @@ Signature Conversion
 
 
 
-#### *utils* . **joinSignature** ( aSignatureLike )  **=>** *string< [FlatSignature](./) >*
+#### *ethers* . *utils* . **joinSignature** ( aSignatureLike )  **=>** *string< [FlatSignature](./) >*
 
 Return the flat-format of *aSignaturelike*, which is 65 bytes (130 nibbles)
 long, concatenating the **r**, **s** and (normalized) **v** of a Signature.
@@ -232,7 +231,7 @@ long, concatenating the **r**, **s** and (normalized) **v** of a Signature.
 
 
 
-#### *utils* . **splitSignature** ( aSignatureLikeOrBytesLike )  **=>** *[Signature](./)*
+#### *ethers* . *utils* . **splitSignature** ( aSignatureLikeOrBytesLike )  **=>** *[Signature](./)*
 
 Return the full expanded-format of *aSignaturelike* or a flat-format [DataHexstring](./).
 Any missing properties will be computed.
@@ -252,6 +251,13 @@ Return a new Uint8Array of *length* random bytes.
 
 
 
+#### *ethers* . *utils* . **shuffled** ( array )  **=>** *Array< any >*
+
+Return a copy of *array* shuffled using [Fisher-Yates Shuffle](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/Fisher-Yates_shuffle).
+
+
+
+
 
 -----
-**Content Hash:** 36831e9bb9c02d184b22e8b4b8700572a545c366ced4d9811a92c560dafaf035
+**Content Hash:** 8736c2f7c64aa2a0ba9f987036158ef0cecc8110bbc30f88c7365f24809af3fc

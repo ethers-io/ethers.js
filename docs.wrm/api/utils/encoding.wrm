@@ -1,8 +1,6 @@
-_title: Encoding Utilies
+_section: Encoding Utilities @<encoding>
 
-_section: Encoding Utilities
-
-_subsection: Base58
+_subsection: Base58 @<bse58> @SRC<basex:Base58>
 
 _property: ethers.utils.base58.decode(textData) => Uin8Array
 Return a typed Uint8Array representation of //textData// decoded using
@@ -12,27 +10,27 @@ _property: ethers.utils.base58.encode(aBytesLike) => string
 Return //aBytesLike// encoded as a string using the base-58 encoding.
 
 
-_subsection: Base64
+_subsection: Base64 @<base64>
 
-_property: ethers.utils.base64.decode(textData) => Uin8Array
+_property: ethers.utils.base64.decode(textData) => Uin8Array  @SRC<base64>
 Return a typed Uint8Array representation of //textData// decoded using
 base-64 encoding.
 
-_property: ethers.utils.base64.encode(aBytesLike) => string
+_property: ethers.utils.base64.encode(aBytesLike) => string  @SRC<base64>
 Return //aBytesLike// encoded as a string using the base-64 encoding.
 
 
-_subsection: Recursive-Length Prefix
+_subsection: Recursive-Length Prefix @<rlp>
 
 The [[link-rlp]] encoding is used throughout Ethereum to serialize nested
 structures of Arrays and data.
 
-_property: ethers.utils.RLP.encode(dataObject) => string<[[datahexstring]]>
+_property: ethers.utils.RLP.encode(dataObject) => string<[[datahexstring]]>  @<rlp-encode> @SRC<rlp>
 Encode a structured Data Object into its RLP-encoded representation.
 
 Each Data component may be an valid [[byteslike]].
 
-_property: ethers.utils.RLP.decode(aBytesLike) => [DataObject](rlp-dataobject)
+_property: ethers.utils.RLP.decode(aBytesLike) => [DataObject](rlp-dataobject)  @<rlp-decode> @SRC<rlp>
 Decode an RLP-encoded //aBytesLike// into its structured Data Object.
 
 All Data components will be returned as a [[datahexstring]].

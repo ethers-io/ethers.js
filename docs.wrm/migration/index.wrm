@@ -1,6 +1,4 @@
-_title: Migration Guide
-
-_section: Migration Guide
+_section: Migration Guide @<migration>
 
 Here are some migration guides when upgrading from older versions
 of Ethers or other libraries.

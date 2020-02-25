@@ -1,5 +1,3 @@
-_title: Abstract Syntax Tree
-
 _section: Abstract Syntax Tree @<asm-ast>
 
 Parsing a file using the [Ethers ASM Dialect](asm-dialect) will

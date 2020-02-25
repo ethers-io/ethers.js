@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Encoding Utilities
 ==================
 
@@ -100,4 +99,4 @@ internal structures in Ethereum. Each **Data Object** can either be:
 
 
 -----
-**Content Hash:** e91a94dca2969f6acf544fb285df0faebedf4cf04b09056fe5c6cf8d2d013097
+**Content Hash:** ebb4f7f25cb19e1ca1f2b2fa0a73140ec30365c55a2ff6b15c3637b5ef58ff06

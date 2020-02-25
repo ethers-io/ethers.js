@@ -4,9 +4,165 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
+Logging
+=======
+
+
+These are just a few simple logging utilities provided to simplify
+and standardize the error facilities across the Ethers library.
+
+The [Logger](./) library has zero dependencies and is intentionally
+very light so it can be easily included in each library.
+
+The [Censorship](./) functionality relies on one instance
+of the Ethers library being included. In large bundled packages or when
+`npm link` is used, this may not be the case. If you require this
+functionality, ensure that your bundling is configured properly.
+
 
 Logger
-======
+------
+
+
+
+#### **new** *ethers* . *utils* . **Logger** ( version ) 
+
+Create a new logger which will include *version* in all errors thrown.
+
+
+
+
+#### *Logger* . **globalLogger** (  )  **=>** *[Logger](./)*
+
+Returns the singleton global logger.
+
+
+
+
+### Logging Output
+
+
+
+#### *logger* . **debug** ( ...args )  **=>** *void*
+
+Log debugging information.
+
+
+
+
+#### *logger* . **info** ( ...args )  **=>** *void*
+
+Log generic information.
+
+
+
+
+#### *logger* . **warn** ( ...args )  **=>** *void*
+
+Log warnings.
+
+
+
+
+### Errors
+
+
+These functions honor the current [Censorship](./) and help create
+a standard error model for detecting and processing errors within Ethers.
+
+
+#### *logger* . **makeError** ( message [  , code=UNKNOWN_ERROR [  , params ]  ]  )  **=>** *Error*
+
+Create an Error object with *message* and an optional *code* and
+additional *params* set. This is useful when an error is needed to be
+rejected instead of thrown.
+
+
+
+
+#### *logger* . **throwError** ( message [  , code=UNKNOWN_ERROR [  , params ]  ]  )  **=>** *never*
+
+Throw an Error with *message* and an optional *code* and
+additional *params* set.
+
+
+
+
+#### *logger* . **throwArgumentError** ( message , name , value )  **=>** *never*
+
+Throw an [INVALID_ARGUMENT](./) Error with *name* and *value*.
+
+
+
+
+### Usage Validation
+
+
+There can be used to ensure various properties and actions are safe.
+
+
+#### *logger* . **checkAbstract** ( target , kind )  **=>** *void*
+
+Checks that *target* is not *kind* and performs the same operatons
+as `checkNew`. This is useful for ensuring abstract classes are not
+being instantiated.
+
+
+
+
+#### *logger* . **checkArgumentCount** ( count , expectedCound [  , message )  **=>** *void*
+
+If *count* is not equal to *expectedCount*, throws a [MISSING_ARGUMENT](./)
+or [UNEXPECTED_ARGUMENT](./) error.
+
+
+
+
+#### *logger* . **checkNew** ( target , kind )  **=>** *void*
+
+If *target* is not a valid `this` or `target` value, throw a
+[MISSING_NEW](./) error. This is useful to ensure
+callers of a Class are using `new`.
+
+
+
+
+#### *logger* . **checkNormalize** ( message )  **=>** *void*
+
+Check that the environment has a correctly functioning [String.normalize](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize). If not, a
+[UNSUPPORTED_OPERATION](./) error is thrown.
+
+
+
+
+#### *logger* . **checkSafeUint53** ( value [  , message ]  )  **=>** *void*
+
+If *value* is not safe as a [JavaScript number](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/Double-precision_floating-point_format), throws a
+[NUMERIC_FAULT](./) error.
+
+
+
+
+### Censorship
+
+
+
+#### *Logger* . **setCensorship** ( censor [  , permanent=false ]  )  **=>** *void*
+
+Set error censorship, optionally preventing errors from being uncensored.
+
+In production applications, this prevents any error from leaking information
+by masking the message and values of errors.
+
+This can impact debugging, making it substantially more difficult.
+
+
+
+
+#### *Logger* . **setLogLevel** ( logLevel )  **=>** *void*
+
+Set the log level, to suppress logging output below a [particular log level](./).
+
 
 
 
@@ -14,31 +170,17 @@ Errors
 ------
 
 
+Every error in Ethers has a `code` value, which is a string that will
+match one of the following error codes.
 
-#### *Logger* . *errors* . **UNKNOWN_ERROR**
 
-A generic unknown error.
-
+### Generic Error Codes
 
 
 
 #### *Logger* . *errors* . **NOT_IMPLEMENTED**
 
 The operation is not implemented.
-
-
-
-
-#### *Logger* . *errors* . **UNSUPPORTED_OPERATION**
-
-The operation is not supported.
-
-
-
-
-#### *Logger* . *errors* . **NETWORK_ERROR**
-
-An Ethereum network validation error, such as an invalid chain ID.
 
 
 
@@ -54,6 +196,24 @@ There was an error communicating with a server.
 
 A timeout occurred.
 
+
+
+
+#### *Logger* . *errors* . **UNKNOWN_ERROR**
+
+A generic unknown error.
+
+
+
+
+#### *Logger* . *errors* . **UNSUPPORTED_OPERATION**
+
+The operation is not supported.
+
+
+
+
+### Safety Error Codes
 
 
 
@@ -75,10 +235,7 @@ Common cases of this occur when there is [overflow](../../../Users/ricmoo/Develo
 
 
 
-#### *Logger* . *errors* . **MISSING_NEW**
-
-An object is a Class, but is now being called with `new`.
-
+### Usage Error Codes
 
 
 
@@ -87,7 +244,7 @@ An object is a Class, but is now being called with `new`.
 The type or value of an argument is invalid. This will generally also
 include the `name` and `value` of the argument. Any function which
 accepts sensitive data (such as a private key) will include the string
-`[REDACTED]]` instead of the value passed in.
+`[[REDACTED]]` instead of the value passed in.
 
 
 
@@ -99,10 +256,21 @@ An expected parameter was not specified.
 
 
 
+#### *Logger* . *errors* . **MISSING_NEW**
+
+An object is a Class, but is now being called with `new`.
+
+
+
+
 #### *Logger* . *errors* . **UNEXPECTED_ARGUMENT**
 
 Too many parameters we passed into a function.
 
+
+
+
+### Ethereum Error Codes
 
 
 
@@ -122,6 +290,13 @@ available.
 A sending account must have enough ether to pay for the value, the gas limit
 (at the gas price) as well as the intrinsic cost of data. The intrinsic cost
 of data is 4 gas for each zero byte and 68 gas for each non-zero byte.
+
+
+
+
+#### *Logger* . *errors* . **NETWORK_ERROR**
+
+An Ethereum network validation error, such as an invalid chain ID.
 
 
 
@@ -163,18 +338,46 @@ if for example an account with no tokens is attempting to send a token.
 
 
 
-Creating instances
-------------------
+Log Levels
+----------
 
 
 
-#### **new** *ethers* . *utils* . **Logger** ( version ) 
+#### *Logger* . *levels* . **DEBUG**
 
-Create a new logger which will include *version* in all errors thrown.
+Log all output, including debugging information.
+
+
+
+
+#### *Logger* . *levels* . **INFO**
+
+Only log output for infomational, warnings and errors.
+
+
+
+
+#### *Logger* . *levels* . **WARNING**
+
+Only log output for warnings and errors.
+
+
+
+
+#### *Logger* . *levels* . **ERROR**
+
+Only log output for errors.
+
+
+
+
+#### *Logger* . *levels* . **OFF**
+
+Do not output any logs.
 
 
 
 
 
 -----
-**Content Hash:** 8e9a442738b535dee543efeb8207f15f887a9ed3fbc984567c751c73c6ad541a
+**Content Hash:** 22f86858ee436554a50ae97e21e1866ac72fc3b0d0aec16ae331ab718c122c95

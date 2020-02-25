@@ -1,51 +1,153 @@
-_title: Logger
+_section: Logging @<logging>
 
-_section: Logger @<logger>
+These are just a few simple logging utilities provided to simplify
+and standardize the error facilities across the Ethers library.
 
-_subsection: Errors @<logger-errors>
+The [[logger]] library has zero dependencies and is intentionally
+very light so it can be easily included in each library.
 
-_property: Logger.errors.UNKNOWN_ERROR
-A generic unknown error.
+The [Censorship](logger-censorship) functionality relies on one instance
+of the Ethers library being included. In large bundled packages or when
+``npm link`` is used, this may not be the case. If you require this
+functionality, ensure that your bundling is configured properly.
+
+
+_subsection: Logger @<logger> @SRC<logger:class.Logger>
+
+_property: new ethers.utils.Logger(version) @SRC<logger:constructor.Logger>
+Create a new logger which will include //version// in all errors thrown.
+
+_property: Logger.globalLogger() => [[logger]] @SRC<logger>
+Returns the singleton global logger.
+
+
+_heading: Logging Output
+
+_property: logger.debug(...args) => void @SRC<logger>
+Log debugging information.
+
+_property: logger.info(...args) => void @SRC<logger>
+Log generic information.
+
+_property: logger.warn(...args) => void @SRC<logger>
+Log warnings.
+
+
+_heading: Errors
+
+These functions honor the current [Censorship](logger-censorship) and help create
+a standard error model for detecting and processing errors within Ethers.
+
+_property: logger.makeError(message [ , code = UNKNOWN_ERROR [ , params ] ]) => Error @SRC<logger>
+Create an Error object with //message// and an optional //code// and
+additional //params// set. This is useful when an error is needed to be
+rejected instead of thrown.
+
+_property: logger.throwError(message [ , code = UNKNOWN_ERROR [ , params ] ]) => never @SRC<logger>
+Throw an Error with //message// and an optional //code// and
+additional //params// set.
+
+_property: logger.throwArgumentError(message, name, value) => never @SRC<logger>
+Throw an [INVALID_ARGUMENT](error-invalidargument) Error with //name// and //value//.
+
+
+_heading: Usage Validation
+
+There can be used to ensure various properties and actions are safe.
+
+_property: logger.checkAbstract(target, kind) => void @SRC<logger>
+Checks that //target// is not //kind// and performs the same operatons
+as ``checkNew``. This is useful for ensuring abstract classes are not
+being instantiated.
+
+_property: logger.checkArgumentCount(count, expectedCound [ , message) => void @SRC<logger>
+If //count// is not equal to //expectedCount//, throws a [MISSING_ARGUMENT](error-missingargument)
+or [UNEXPECTED_ARGUMENT](error-unexpectedargument) error.
+
+_property: logger.checkNew(target, kind) => void @SRC<logger>
+If //target// is not a valid ``this`` or ``target`` value, throw a
+[MISSING_NEW](error-missingnew) error. This is useful to ensure
+callers of a Class are using ``new``.
+
+_property: logger.checkNormalize(message) => void @SRC<logger>
+Check that the environment has a correctly functioning [[link-js-normalize]]. If not, a
+[UNSUPPORTED_OPERATION](error-unsupported) error is thrown.
+
+_property: logger.checkSafeUint53(value [, message ]) => void @SRC<logger>
+If //value// is not safe as a [JavaScript number](link-wiki-ieee754), throws a
+[NUMERIC_FAULT](error-numericfault) error.
+
+
+_heading: Censorship @<logger-censorship>
+
+_property: Logger.setCensorship(censor [ , permanent = false ]) => void @SRC<logger>
+Set error censorship, optionally preventing errors from being uncensored.
+
+In production applications, this prevents any error from leaking information
+by masking the message and values of errors.
+
+This can impact debugging, making it substantially more difficult.
+
+_property: Logger.setLogLevel(logLevel) => void @SRC<logger>
+Set the log level, to suppress logging output below a [particular log level](logger-levels).
+
+
+_subsection: Errors @<errors>
+
+Every error in Ethers has a ``code`` value, which is a string that will
+match one of the following error codes.
+
+
+_heading: Generic Error Codes
 
 _property: Logger.errors.NOT_IMPLEMENTED
 The operation is not implemented.
 
-_property: Logger.errors.UNSUPPORTED_OPERATION
-The operation is not supported.
-
-_property: Logger.errors.NETWORK_ERROR
-An Ethereum network validation error, such as an invalid chain ID.
-
 _property: Logger.errors.SERVER_ERROR
 There was an error communicating with a server.
 
-_property: Logger.errors.TIMEOUT
+_property: Logger.errors.TIMEOUT @<error-timeout>
 A timeout occurred.
+
+_property: Logger.errors.UNKNOWN_ERROR @<error-unknown>
+A generic unknown error.
+
+_property: Logger.errors.UNSUPPORTED_OPERATION @<error-unsupported>
+The operation is not supported.
+
+
+_heading: Safety Error Codes
 
 _property: Logger.errors.BUFFER_OVERRUN
 The amount of data needed is more than the amount of data required,
 which would cause the data buffer to read past its end.
 
-_property: Logger.errors.NUMERIC_FAULT
+_property: Logger.errors.NUMERIC_FAULT @<error-numericfault>
 There was an invalid operation done on numeric values.
 
 Common cases of this occur when there is [[link-wiki-overflow]],
 [[link-wiki-underflow]] in fixed numeric types or division by zero.
 
-_property: Logger.errors.MISSING_NEW
-An object is a Class, but is now being called with ``new``.
 
-_property: Logger.errors.INVALID_ARGUMENT
+_heading: Usage Error Codes
+
+_property: Logger.errors.INVALID_ARGUMENT @<error-invalidargument>
 The type or value of an argument is invalid. This will generally also
 include the ``name`` and ``value`` of the argument. Any function which
 accepts sensitive data (such as a private key) will include the string
-``[REDACTED]]`` instead of the value passed in.
+``[\[REDACTED]\]`` instead of the value passed in.
 
-_property: Logger.errors.MISSING_ARGUMENT
+_property: Logger.errors.MISSING_ARGUMENT @<error-missingargument>
 An expected parameter was not specified.
 
-_property: Logger.errors.UNEXPECTED_ARGUMENT
+_property: Logger.errors.MISSING_NEW @<error-missingnew>
+An object is a Class, but is now being called with ``new``.
+
+_property: Logger.errors.UNEXPECTED_ARGUMENT @<error-unexpectedargument>
 Too many parameters we passed into a function.
+
+
+_heading: Ethereum Error Codes
 
 _property: Logger.errors.CALL_EXCEPTION
 An attempt to call a blockchain contract (getter) resulted in a
@@ -58,6 +160,9 @@ available.
 A sending account must have enough ether to pay for the value, the gas limit
 (at the gas price) as well as the intrinsic cost of data. The intrinsic cost
 of data is 4 gas for each zero byte and 68 gas for each non-zero byte.
+
+_property: Logger.errors.NETWORK_ERROR
+An Ethereum network validation error, such as an invalid chain ID.
 
 _property: Logger.errors.NONCE_EXPIRED
 The nonce being specified has already been used in a mined transaction.
@@ -85,8 +190,19 @@ This error can also indicate that the transaction is expected to fail regardless
 if for example an account with no tokens is attempting to send a token.
 
 
-_subsection: Creating instances
+_subsection: Log Levels @<logger-levels>
 
-_property: new ethers.utils.Logger(version)
-Create a new logger which will include //version// in all errors thrown.
+_property: Logger.levels.DEBUG
+Log all output, including debugging information.
 
+_property: Logger.levels.INFO
+Only log output for infomational, warnings and errors.
+
+_property: Logger.levels.WARNING
+Only log output for warnings and errors.
+
+_property: Logger.levels.ERROR
+Only log output for errors.
+
+_property: Logger.levels.OFF
+Do not output any logs.

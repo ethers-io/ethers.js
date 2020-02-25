@@ -1,5 +1,3 @@
-_title: Constants
-
 _section: Constants @<constants>
 
 The **ethers.contants** Object contains commonly used values.

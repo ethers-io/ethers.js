@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 BigNumber
 =========
 
@@ -104,7 +103,7 @@ Creating Instances
 The constructor of BigNumber cannot be called directly. Instead, Use the static `BigNumber.from`.
 
 
-#### *BigNumber* . **from** ( aBigNumberish )  **=>** *[BigNumber](./)*
+#### *ethers* . *BigNumber* . **from** ( aBigNumberish )  **=>** *[BigNumber](./)*
 
 Returns an instance of a **BigNumber** for *aBigNumberish*.
 
@@ -292,7 +291,7 @@ Returns the value of *bignumber* as a base-16, `0x`-prefixed [DataHexstring](../
 
 
 
-#### *BigNumnber* . **isBigNumber** ( object )  **=>** *boolean*
+#### *ethers* . *BigNumnber* . **isBigNumber** ( object )  **=>** *boolean*
 
 Returns true if and only if the *object* is a BigNumber object.
 
@@ -413,4 +412,4 @@ which is safe.
 
 
 -----
-**Content Hash:** 87481a6a9d99504396f1d013094f713846f9d4d51891778928744cee04bd85bb
+**Content Hash:** 8f8f918b6d3350f7494845577cf2d350c6f0c556a963040cadbde6520395311d

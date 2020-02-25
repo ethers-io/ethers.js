@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Providers
 =========
 
@@ -78,6 +77,7 @@ Provider Documentation
   * [UrlJsonRpcProvider](other)
   * [Web3Provider](other)
 * [Types](types)
+  * [BlockTag](types)
   * [Network](types)
   * [Block](types)
   * [Events and Logs](types)
@@ -86,4 +86,4 @@ Provider Documentation
 
 
 -----
-**Content Hash:** 90fa0754bfed9594694637e2d5167de53e514a4c3527cd10a42083488ad112bf
+**Content Hash:** 29575fb7fa8a7a126446a463e402b3d444aaf8a36c9226d0644466e3ff899b07

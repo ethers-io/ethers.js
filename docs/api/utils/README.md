@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Utilities
 =========
 
@@ -14,13 +13,24 @@ are also quite useful for application developers.
 
 
 * [Application Binary Interface](abi)
-  * [Formats](abi)
-  * [Interface](abi)
-  * [Fragment](abi)
-  * [ConstructorFragment](abi)
-  * [EventFragment](abi)
-  * [FunctionFragment](abi)
-  * [ParamType](abi)
+  * [Interface](abi/interface)
+    * [Creating Instances](abi/interface)
+    * [Properties](abi/interface)
+    * [Formatting](abi/interface)
+    * [Fragment Access](abi/interface)
+    * [Signature and Topic Hashes](abi/interface)
+    * [Encoding Data](abi/interface)
+    * [Decoding Data](abi/interface)
+    * [Parsing](abi/interface)
+    * [Types](abi/interface)
+    * [Specifying Fragments](abi/interface)
+  * [Fragments](abi/fragments)
+    * [Formats](abi/fragments)
+    * [Fragment](abi/fragments)
+    * [ConstructorFragment](abi/fragments)
+    * [EventFragment](abi/fragments)
+    * [FunctionFragment](abi/fragments)
+    * [ParamType](abi/fragments)
 * [Addresses](address)
   * [Address Formats](address)
   * [Functions](address)
@@ -61,9 +71,10 @@ are also quite useful for application developers.
   * [Types](hdnode)
   * [HDNode](hdnode)
   * [Other Functions](hdnode)
-* [Logger](logger)
+* [Logging](logger)
+  * [Logger](logger)
   * [Errors](logger)
-  * [Creating instances](logger)
+  * [Log Levels](logger)
 * [Property Utilities](properties)
 * [Signing Key](signing-key)
   * [Other Functions](signing-key)
@@ -83,4 +94,4 @@ are also quite useful for application developers.
 
 
 -----
-**Content Hash:** 96bd0d92678b30c766203c98bbadbee19c546aa9d34a50ee6bab3b869b704e6e
+**Content Hash:** 5be9157e89f865d007e6b7e1fb3bb47369a474882824264c5241e5bb05c80865

@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Hardware Wallets
 ================
 
@@ -35,4 +34,4 @@ determined by the environment; in node the default is "hid" and in the browser
 
 
 -----
-**Content Hash:** c6b6d4f14f0e973a30c3cff935960a15715712830e38cece0edfb864ba921a6c
+**Content Hash:** 04412211499f34796f91e7112977e6f84607638be72dc600e488df07c4465805

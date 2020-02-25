@@ -4,16 +4,26 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
-Application Programming Interface (API)
-=======================================
+Application Programming Interface
+=================================
 
 
 Here...
 
 
-* [Contracts](contract)
-  * [Buckets](contract)
+* [Contract Interaction](contract)
+  * [Contract](contract/contract)
+    * [Properties](contract/contract)
+    * [Methods](contract/contract)
+    * [Events](contract/contract)
+    * [Meta-Class](contract/contract)
+  * [Example: ERC-20 Contract](contract/example)
+    * [Connecting to a Contract](contract/example)
+    * [Properties ^^//(inheritted from [[contract]])//^^](contract/example)
+    * [Methods ^^//(inheritted from [[contract]])//^^](contract/example)
+    * [Events ^^//(inheritted from Contract)//^^](contract/example)
+    * [Meta-Class Methods ^^//(added at Runtime)//^^](contract/example)
+    * [Meta-Class Filters ^^//(added at Runtime)//^^](contract/example)
 * [Signers](signer)
   * [Signer](signer)
   * [Wallet](signer)
@@ -43,19 +53,31 @@ Here...
     * [UrlJsonRpcProvider](providers/other)
     * [Web3Provider](providers/other)
   * [Types](providers/types)
+    * [BlockTag](providers/types)
     * [Network](providers/types)
     * [Block](providers/types)
     * [Events and Logs](providers/types)
     * [Transactions](providers/types)
 * [Utilities](utils)
   * [Application Binary Interface](utils/abi)
-    * [Formats](utils/abi)
-    * [Interface](utils/abi)
-    * [Fragment](utils/abi)
-    * [ConstructorFragment](utils/abi)
-    * [EventFragment](utils/abi)
-    * [FunctionFragment](utils/abi)
-    * [ParamType](utils/abi)
+    * [Interface](utils/abi/interface)
+      * [Creating Instances](utils/abi/interface)
+      * [Properties](utils/abi/interface)
+      * [Formatting](utils/abi/interface)
+      * [Fragment Access](utils/abi/interface)
+      * [Signature and Topic Hashes](utils/abi/interface)
+      * [Encoding Data](utils/abi/interface)
+      * [Decoding Data](utils/abi/interface)
+      * [Parsing](utils/abi/interface)
+      * [Types](utils/abi/interface)
+      * [Specifying Fragments](utils/abi/interface)
+    * [Fragments](utils/abi/fragments)
+      * [Formats](utils/abi/fragments)
+      * [Fragment](utils/abi/fragments)
+      * [ConstructorFragment](utils/abi/fragments)
+      * [EventFragment](utils/abi/fragments)
+      * [FunctionFragment](utils/abi/fragments)
+      * [ParamType](utils/abi/fragments)
   * [Addresses](utils/address)
     * [Address Formats](utils/address)
     * [Functions](utils/address)
@@ -96,9 +118,10 @@ Here...
     * [Types](utils/hdnode)
     * [HDNode](utils/hdnode)
     * [Other Functions](utils/hdnode)
-  * [Logger](utils/logger)
+  * [Logging](utils/logger)
+    * [Logger](utils/logger)
     * [Errors](utils/logger)
-    * [Creating instances](utils/logger)
+    * [Log Levels](utils/logger)
   * [Property Utilities](utils/properties)
   * [Signing Key](utils/signing-key)
     * [Other Functions](utils/signing-key)
@@ -139,4 +162,4 @@ Here...
 
 
 -----
-**Content Hash:** be5b26283f92ba2629be4efa3939fb71d8b7d3531bd335a1bd7b5b8386eaf876
+**Content Hash:** 792936ddc8c609e435d356c2bfde1adacf9f0b5b708481720f22081f1a61f73d

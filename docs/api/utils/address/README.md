@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Addresses
 =========
 
@@ -58,7 +57,7 @@ Functions
 
 
 
-#### *utils* . **getAddress** ( address )  **=>** *string< [Address](./) >*
+#### *ethers* . *utils* . **getAddress** ( address )  **=>** *string< [Address](./) >*
 
 Returns *address* as a Checksum Address.
 
@@ -70,14 +69,14 @@ The value of *address* may be any supported address format.
 
 
 
-#### *utils* . **isAddress** ( address )  **=>** *boolean*
+#### *ethers* . *utils* . **isAddress** ( address )  **=>** *boolean*
 
 Returns true if *address* is valid (in any supported format).
 
 
 
 
-#### *utils* . **getIcapAddress** ( address )  **=>** *string< [IcapAddress](./) >*
+#### *ethers* . *utils* . **getIcapAddress** ( address )  **=>** *string< [IcapAddress](./) >*
 
 Returns *address* as an [ICAP address](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/github.com/ethereum/wiki/wiki/Inter-exchange-Client-Address-Protocol-%28ICAP%29).
 Supports the same restrictions as [utils.getAddress](./).
@@ -85,7 +84,7 @@ Supports the same restrictions as [utils.getAddress](./).
 
 
 
-#### *utils* . **getContractAddress** ( transaction )  **=>** *string< [Address](./) >*
+#### *ethers* . *utils* . **getContractAddress** ( transaction )  **=>** *string< [Address](./) >*
 
 Returns the contract address that would result if *transaction* was
 used to deploy a contract.
@@ -93,7 +92,7 @@ used to deploy a contract.
 
 
 
-#### *utils* . **getCreate2Address** ( from , salt , initCodeHash )  **=>** *string< [Address](./) >*
+#### *ethers* . *utils* . **getCreate2Address** ( from , salt , initCodeHash )  **=>** *string< [Address](./) >*
 
 Returns the contract address that would result from the given
 [CREATE2](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/eips.ethereum.org/EIPS/eip-1014) call.
@@ -103,4 +102,4 @@ Returns the contract address that would result from the given
 
 
 -----
-**Content Hash:** 9c4842c79e4a9f307ba1de2c84f1d996b2dbcb53af5b8dd153508f6c2f7b7f1d
+**Content Hash:** 94de1affabe23203e5796f6ad2bd7ccacfb9dd51e5ea7db004c10cd2aea8fded

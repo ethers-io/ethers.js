@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Signers
 =======
 
@@ -330,6 +329,10 @@ ExternallyOwnedAccount
 ----------------------
 
 
+This is an interface which contains a minimal set of properties
+required for Externally Owned Accounts which can have certain
+operations performed, such as encoding as a JSON wallet.
+
 
 #### *eoa* . **address** **=>** *string< [Address](../utils/address) >*
 
@@ -345,20 +348,15 @@ The privateKey of this EOA
 
 
 
-#### *eoa* . **mnemonic** **=>** *string*
+#### *eoa* . **mnemonic** **=>** *[Mnemonic](../utils/hdnode)*
 
-*Optional*. The account HD mnemonic, if it has one and can be determined.
-
-
-
-
-#### *eoa* . **path** **=>** *string*
-
-*Optional*. The account HD path, if it has one and can be determined.
+*Optional*. The account HD mnemonic, if it has one and can be
+determined. Some sources do not encode the mnemonic, such as an
+HD extended keys.
 
 
 
 
 
 -----
-**Content Hash:** 0d8eb5d3cf69da2ecac958fba6a88d9f4d1aa6c6545354a2b00ccee770832c96
+**Content Hash:** 142e4d9da1f8b8a900a2e97de899649447054c6addb8cba0fb3342ff02d29fd8

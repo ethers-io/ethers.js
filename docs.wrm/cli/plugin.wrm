@@ -1,6 +1,4 @@
-_title: Making Your Own
-
-_section: Making Your Own
+_section: Making Your Own @<cli-diy>
 
 The //cli// library is meant to make it easy to create command
 line utilities of your own.

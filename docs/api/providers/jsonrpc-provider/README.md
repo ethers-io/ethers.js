@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 JsonRpcProvider
 ===============
 
@@ -131,4 +130,4 @@ transaction hash quickly, if that is all that is required.
 
 
 -----
-**Content Hash:** d05797dcbeabc9dbd764aad98f3c9346b4350e955a4a6210d6d0a6ea17d3a50b
+**Content Hash:** d60a1c5ef2f317ae59bc4b22a1e9d079f1762f60f6321b5da1efbe07d8284284

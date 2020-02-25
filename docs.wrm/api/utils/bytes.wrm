@@ -1,5 +1,3 @@
-_title: Byte Manipulation
-
 _section: Byte Manipulation
 
 Tra la la...
@@ -55,13 +53,13 @@ missing values can be computed).
 
 _subsection: Inspection
 
-_property: utils.isBytes(object) => boolean  @<utils-isbytes> @SRC<bytes>
+_property: ethers.utils.isBytes(object) => boolean  @<utils-isbytes> @SRC<bytes>
 Returns true if and only if //object// is a valid [[bytes]].
 
-_property: utils.isBytesLike(object) => boolean  @<utils-isbyteslike> @SRC<bytes>
+_property: ethers.utils.isBytesLike(object) => boolean  @<utils-isbyteslike> @SRC<bytes>
 Returns true if and only if //object// is a [[bytes]] or [[datahexstring]].
 
-_property: utils.isHexString(object, [ length ] ) => boolean  @<utils-ishexstring> @SRC<bytes>
+_property: ethers.utils.isHexString(object, [ length ] ) => boolean  @<utils-ishexstring> @SRC<bytes>
 Returns true if and only if //object// is a valid hex string.
 If //length// is specified and //object// is not a valid [[datahexstring]] of
 //length// bytes, an InvalidArgument error is thrown.
@@ -69,13 +67,13 @@ If //length// is specified and //object// is not a valid [[datahexstring]] of
 
 _subsection: Converting between Arrays and Hexstrings
 
-_property: utils.arrayify(datahexstringOrArrayish [ , options ]) => Uint8Array  @<utils-arrayify> @SRC<bytes>
+_property: ethers.utils.arrayify(datahexstringOrArrayish [ , options ]) => Uint8Array  @<utils-arrayify> @SRC<bytes>
 Converts //datahexstringOrArrayish// to a Uint8Array.
 
-_property: utils.hexlify(hexstringOrArrayish) => string<[[datahexstring]]>  @<utils-hexlify> @SRC<bytes>
+_property: ethers.utils.hexlify(hexstringOrArrayish) => string<[[datahexstring]]>  @<utils-hexlify> @SRC<bytes>
 Converts //hexstringOrArrayish// to a [[datahexstring]].
 
-_property: utils.hexValue(aBigNumberish) => string<[[hexstring]]>  @<utils-hexvalue> @SRC<bytes>
+_property: ethers.utils.hexValue(aBigNumberish) => string<[[hexstring]]>  @<utils-hexvalue> @SRC<bytes>
 Converts //aBigNumberish// to a [[hexstring]], with no __unnecessary__ leading
 zeros.
 
@@ -86,13 +84,13 @@ _code: bytes-conversion.js
 
 _subsection: Array Manipulation
 
-_property: utils.concat(arrayOfBytesLike) => Uint8Array  @<utils-concat> @SRC<bytes>
+_property: ethers.utils.concat(arrayOfBytesLike) => Uint8Array  @<utils-concat> @SRC<bytes>
 Concatenates all the [[byteslike]] in //arrayOfBytesLike// into a single Uint8Array.
 
-_property: utils.stripZeros(aBytesLike) => Uint8Array  @<utils-stripzeros> @SRC<bytes>
+_property: ethers.utils.stripZeros(aBytesLike) => Uint8Array  @<utils-stripzeros> @SRC<bytes>
 Returns a Uint8Array with all leading ``0`` bytes of //aBtyesLike// removed.
 
-_property: utils.zeroPad(aBytesLike, length) => Uint8Array  @<utils-zeropad> @SRC<bytes>
+_property: ethers.utils.zeroPad(aBytesLike, length) => Uint8Array  @<utils-zeropad> @SRC<bytes>
 Retutns a Uint8Array of the data in //aBytesLike// with ``0`` bytes prepended to
 //length// bytes long.
 
@@ -102,22 +100,22 @@ error will be thrown.
 
 _subsection: Hexstring Manipulation
 
-_property: utils.hexConcat(arrayOfBytesLike) => string<[[datahexstring]]>  @<utils-hexconcat> @SRC<bytes>
+_property: ethers.utils.hexConcat(arrayOfBytesLike) => string<[[datahexstring]]>  @<utils-hexconcat> @SRC<bytes>
 Concatenates all the [[byteslike]] in //arrayOfBytesLike// into a single [[datahexstring]]
 
-_property: utils.hexDataLength(aBytesLike) => string<[[datahexstring]]>  @<utils-hexdatalength> @SRC<bytes>
+_property: ethers.utils.hexDataLength(aBytesLike) => string<[[datahexstring]]>  @<utils-hexdatalength> @SRC<bytes>
 Returns the length (in bytes) of //aBytesLike//.
 
-_property: utils.hexDataSlice(aBytesLike, offset [ , endOffset ] ) => string<[[datahexstring]]>  @<utils-hexdataslice> @SRC<bytes>
+_property: ethers.utils.hexDataSlice(aBytesLike, offset [ , endOffset ] ) => string<[[datahexstring]]>  @<utils-hexdataslice> @SRC<bytes>
 Returns a [[datahexstring]] representation of a slice of //aBytesLike//, from
 //offset// (in bytes) to //endOffset// (in bytes). If //endOffset// is
 omitted, the length of //aBytesLike// is used.
 
-_property: utils.hexStripZeros(aBytesLike) => string<[[hexstring]]>  @<utils-hexstripzeros> @SRC<bytes>
+_property: ethers.utils.hexStripZeros(aBytesLike) => string<[[hexstring]]>  @<utils-hexstripzeros> @SRC<bytes>
 Returns a [[hexstring]] representation of //aBytesLike// with all
 leading zeros removed.
 
-_property: utils.hexZeroPad(aBytesLike, length) => string<[[datahexstring]]>  @<utils-hexzeropad> @SRC<bytes>
+_property: ethers.utils.hexZeroPad(aBytesLike, length) => string<[[datahexstring]]>  @<utils-hexzeropad> @SRC<bytes>
 Returns a [[datahexstring]] representation of //aBytesLike// padded to //length// bytes.
 
 If //aBytesLike// is already longer than //length// bytes long, an InvalidArgument
@@ -126,15 +124,18 @@ error will be thrown.
 
 _subsection: Signature Conversion
 
-_property: utils.joinSignature(aSignatureLike) => string<[FlatSignature](signature-flat)>  @<utils-joinsignature> @SRC<bytes>
+_property: ethers.utils.joinSignature(aSignatureLike) => string<[FlatSignature](signature-flat)>  @<utils-joinsignature> @SRC<bytes>
 Return the flat-format of //aSignaturelike//, which is 65 bytes (130 nibbles)
 long, concatenating the **r**, **s** and (normalized) **v** of a Signature.
 
-_property: utils.splitSignature(aSignatureLikeOrBytesLike) => [[signature]]  @<utils-splitsignature> @SRC<bytes>
+_property: ethers.utils.splitSignature(aSignatureLikeOrBytesLike) => [[signature]]  @<utils-splitsignature> @SRC<bytes>
 Return the full expanded-format of //aSignaturelike// or a flat-format [[datahexstring]].
 Any missing properties will be computed.
 
 _subsection: Random Bytes
 
-_property: ethers.utils.randomBytes(length) => Uint8Array
+_property: ethers.utils.randomBytes(length) => Uint8Array  @<utils-randombytes> @SRC<random/index>
 Return a new Uint8Array of //length// random bytes.
+
+_property: ethers.utils.shuffled(array) => Array<any>  @<utils.shuffled> @SRC<random>
+Return a copy of //array// shuffled using [[link-wiki-shuffle]].

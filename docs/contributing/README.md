@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Contributing and Hacking
 ========================
 
@@ -42,4 +41,4 @@ use npm run update-version
 
 
 -----
-**Content Hash:** f817d13fd530f58e6a03c9b5cb7190a3b7a084e8bf6eb05b130665c36d421950
+**Content Hash:** 3afa848a6ccb408a68688beca905d8156e85277534f8cace5b7dd08991c30347

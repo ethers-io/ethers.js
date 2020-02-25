@@ -1,5 +1,3 @@
-_title: Signer
-
 _section: Signers
 
 A Signer represents...
@@ -200,6 +198,10 @@ The address of this **VoidSigner**.
 
 _subsection: ExternallyOwnedAccount  @<externally-owned-account>
 
+This is an interface which contains a minimal set of properties
+required for Externally Owned Accounts which can have certain
+operations performed, such as encoding as a JSON wallet.
+
 _property: eoa.address => string<[Address](address)>
 
 The [[address]] of this EOA.
@@ -208,10 +210,8 @@ _property: eoa.privateKey => string<[[datahexstring]]<32>>
 
 The privateKey of this EOA
 
-_property: eoa.mnemonic => string
+_property: eoa.mnemonic => [[hdnode-mnemonic]]
 
-//Optional//. The account HD mnemonic, if it has one and can be determined.
-
-_property: eoa.path => string
-
-//Optional//. The account HD path, if it has one and can be determined.
+//Optional//. The account HD mnemonic, if it has one and can be
+determined. Some sources do not encode the mnemonic, such as an
+HD extended keys.

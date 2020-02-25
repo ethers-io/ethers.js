@@ -1,7 +1,4 @@
-_title: License and Copyright
-
-
-_section: License and Copyright
+_section: License and Copyright  @<license>
 
 The ethers library (including all dependencies) are available
 under the [MIT License](link-mit), which permits a wide variety

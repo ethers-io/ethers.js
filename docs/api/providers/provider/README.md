@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Provider
 ========
 
@@ -273,4 +272,4 @@ Returns true if and only if *object* is a Provider.
 
 
 -----
-**Content Hash:** 84bebb527966dbb498f230579a26f0a01f8013a69a490b77726126165262f661
+**Content Hash:** 22872aec1236c5cf8fb457e93f36ca9bcd260acddc08c1ededc642931fd1625f

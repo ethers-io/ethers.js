@@ -4,7 +4,6 @@ Documentation: [html](https://docs-beta.ethers.io/)
 
 -----
 
-
 Utilities
 =========
 
@@ -182,4 +181,4 @@ of bytes this opcode will push if it is.
 
 
 -----
-**Content Hash:** 1c170b94b22fa807a3906f95d76719a78fba6627996b108356643ef72b21f940
+**Content Hash:** d71fdeafad470effc353664c161dec6982a9c29b1015a5726fd2a3f576f8e377
