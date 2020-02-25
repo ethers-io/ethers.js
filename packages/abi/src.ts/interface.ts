@@ -145,7 +145,7 @@ export class Interface {
         return hexDataSlice(id(functionFragment.format()), 0, 4);
     }
 
-    static getTopic(eventFragment: EventFragment): string {
+    static getEventTopic(eventFragment: EventFragment): string {
         return id(eventFragment.format());
     }
 
@@ -229,7 +229,7 @@ export class Interface {
             eventFragment = this.getEvent(eventFragment);
         }
 
-        return getStatic<(e: EventFragment) => string>(this.constructor, "getTopic")(eventFragment);
+        return getStatic<(e: EventFragment) => string>(this.constructor, "getEventTopic")(eventFragment);
     }
 
 
