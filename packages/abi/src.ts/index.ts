@@ -2,7 +2,7 @@
 
 import { ConstructorFragment, EventFragment, FormatTypes, Fragment, FunctionFragment, JsonFragment, JsonFragmentType, ParamType } from "./fragments";
 import { AbiCoder, CoerceFunc, defaultAbiCoder } from "./abi-coder";
-import { Indexed, Interface, Result } from "./interface";
+import { Indexed, Interface, LogDescription, Result, TransactionDescription } from "./interface";
 
 export {
     ConstructorFragment,
@@ -25,5 +25,8 @@ export {
     JsonFragment,
     JsonFragmentType,
 
-    Result
+    Result,
+
+    LogDescription,
+    TransactionDescription
 };

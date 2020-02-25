@@ -1,6 +1,6 @@
 "use strict";
 
-import { EventFragment, Fragment, Indexed, Interface, JsonFragment, ParamType, Result } from "@ethersproject/abi";
+import { EventFragment, Fragment, Indexed, Interface, JsonFragment, LogDescription, ParamType, Result } from "@ethersproject/abi";
 import { Block, BlockTag, Filter, FilterByBlockHash, Listener, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { Signer, VoidSigner } from "@ethersproject/abstract-signer";
 import { getContractAddress } from "@ethersproject/address";
@@ -12,6 +12,7 @@ import { UnsignedTransaction } from "@ethersproject/transactions";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
+
 const logger = new Logger(version);
 
 export interface Overrides {
@@ -240,7 +241,10 @@ function runMethod(contract: Contract, functionName: string, options: RunOptions
                         receipt.events = receipt.logs.map((log) => {
                              let event: Event = (<Event>deepCopy(log));
 
-                             let parsed = contract.interface.parseLog(log);
+                             let parsed: LogDescription = null;
+                             try {
+                                parsed = contract.interface.parseLog(log);
+                             } catch (e){}
                              if (parsed) {
                                  event.args = parsed.args;
                                  event.decode = (data: BytesLike, topics?: Array<any>) => {
