@@ -3,7 +3,7 @@
 import path from "path"
 import fs from "fs";
 
-import builtins from 'rollup-plugin-node-builtins';
+import builtins from '@erquhart/rollup-plugin-node-builtins';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import json from 'rollup-plugin-json';
