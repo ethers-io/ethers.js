@@ -33,7 +33,7 @@ else {
 var browserEthers$1 = unwrapExports(browserEthers);
 var browserEthers_1 = browserEthers.ethers;
 
-const version = "hardware-wallets/5.0.0-beta.3";
+const version = "hardware-wallets/5.0.0-beta.4";
 
 var global$1 = (typeof global !== "undefined" ? global :
             typeof self !== "undefined" ? self :
@@ -2279,6 +2279,7 @@ const DisconnectedDeviceDuringOperation = createCustomErrorClass("DisconnectedDe
 const EnpointConfigError = createCustomErrorClass("EnpointConfig");
 const EthAppPleaseEnableContractData = createCustomErrorClass("EthAppPleaseEnableContractData");
 const FeeEstimationFailed = createCustomErrorClass("FeeEstimationFailed");
+const FirmwareNotRecognized = createCustomErrorClass("FirmwareNotRecognized");
 const HardResetFail = createCustomErrorClass("HardResetFail");
 const InvalidXRPTag = createCustomErrorClass("InvalidXRPTag");
 const InvalidAddress = createCustomErrorClass("InvalidAddress");
@@ -2317,6 +2318,9 @@ const MCUNotGenuineToDashboard = createCustomErrorClass("MCUNotGenuineToDashboar
 const RecipientRequired = createCustomErrorClass("RecipientRequired");
 const UnavailableTezosOriginatedAccountReceive = createCustomErrorClass("UnavailableTezosOriginatedAccountReceive");
 const UnavailableTezosOriginatedAccountSend = createCustomErrorClass("UnavailableTezosOriginatedAccountSend");
+const UpdateFetchFileFail = createCustomErrorClass("UpdateFetchFileFail");
+const UpdateIncorrectHash = createCustomErrorClass("UpdateIncorrectHash");
+const UpdateIncorrectSig = createCustomErrorClass("UpdateIncorrectSig");
 const UpdateYourApp = createCustomErrorClass("UpdateYourApp");
 const UserRefusedDeviceNameChange = createCustomErrorClass("UserRefusedDeviceNameChange");
 const UserRefusedAddress = createCustomErrorClass("UserRefusedAddress");
@@ -2326,6 +2330,7 @@ const UserRefusedOnDevice = createCustomErrorClass("UserRefusedOnDevice"); // TO
 
 const TransportOpenUserCancelled = createCustomErrorClass("TransportOpenUserCancelled");
 const TransportInterfaceNotAvailable = createCustomErrorClass("TransportInterfaceNotAvailable");
+const TransportRaceCondition = createCustomErrorClass("TransportRaceCondition");
 const TransportWebUSBGestureRequired = createCustomErrorClass("TransportWebUSBGestureRequired");
 const DeviceShouldStayInApp = createCustomErrorClass("DeviceShouldStayInApp");
 const WebsocketConnectionError = createCustomErrorClass("WebsocketConnectionError");

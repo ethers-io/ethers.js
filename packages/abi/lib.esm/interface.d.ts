@@ -47,7 +47,7 @@ export declare class Interface {
     static getAbiCoder(): AbiCoder;
     static getAddress(address: string): string;
     static getSighash(functionFragment: FunctionFragment): string;
-    static getTopic(eventFragment: EventFragment): string;
+    static getEventTopic(eventFragment: EventFragment): string;
     getFunction(nameOrSignatureOrSighash: string): FunctionFragment;
     getEvent(nameOrSignatureOrTopic: string): EventFragment;
     getSighash(functionFragment: FunctionFragment | string): string;

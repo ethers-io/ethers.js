@@ -37,17 +37,12 @@ function ethDefaultProvider(network) {
             return null;
         }
         if (providers.FallbackProvider) {
-            var quorum = providerList.length / 2;
+            var quorum = 1;
             if (options.quorum != null) {
                 quorum = options.quorum;
             }
-            else if (quorum > 2) {
-                if (network === "homestead") {
-                    quorum = 2;
-                }
-                else {
-                    quorum = 1;
-                }
+            else if (network === "homestead") {
+                quorum = 2;
             }
             return new providers.FallbackProvider(providerList, quorum);
         }

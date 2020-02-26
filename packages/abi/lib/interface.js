@@ -128,7 +128,7 @@ var Interface = /** @class */ (function () {
     Interface.getSighash = function (functionFragment) {
         return bytes_1.hexDataSlice(hash_1.id(functionFragment.format()), 0, 4);
     };
-    Interface.getTopic = function (eventFragment) {
+    Interface.getEventTopic = function (eventFragment) {
         return hash_1.id(eventFragment.format());
     };
     // Find a function definition by any means necessary (unless it is ambiguous)
@@ -202,7 +202,7 @@ var Interface = /** @class */ (function () {
         if (typeof (eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
         }
-        return properties_1.getStatic(this.constructor, "getTopic")(eventFragment);
+        return properties_1.getStatic(this.constructor, "getEventTopic")(eventFragment);
     };
     Interface.prototype._decodeParams = function (params, data) {
         return this._abiCoder.decode(params, data);

@@ -223,9 +223,7 @@ export class JsonRpcProvider extends BaseProvider {
                         try {
                             return resolve(getNetwork(BigNumber.from(chainId).toNumber()));
                         }
-                        catch (error) {
-                            console.log("e3", error);
-                        }
+                        catch (error) { }
                     }
                     reject(logger.makeError("could not detect network", Logger.errors.NETWORK_ERROR));
                 }), 0);
@@ -277,6 +275,14 @@ export class JsonRpcProvider extends BaseProvider {
                 provider: this
             });
             return result;
+        }, (error) => {
+            this.emit("debug", {
+                action: "response",
+                error: error,
+                request: request,
+                provider: this
+            });
+            throw error;
         });
     }
     perform(method, params) {

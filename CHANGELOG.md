@@ -3,6 +3,15 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.174 (2020-02-25 14:57)
+-----------------------------------------
+
+  - Reduced default Provider quorum for testnets. ([1cfab31](https://github.com/ethers-io/ethers.js/commit/1cfab3173c3d0519beffc054efe73f70b7d28501))
+  - Added JSON-RPC debugging on error responses. ([ad27600](https://github.com/ethers-io/ethers.js/commit/ad27600c699827858e7343adff2d4fa622248e42))
+  - Fixed setLogLevel to affect global logging. ([ac51a88](https://github.com/ethers-io/ethers.js/commit/ac51a88c2913d7055e050c91d7d96bb42abf6656))
+  - Renamed interface getTopic to getEventTopic. ([f61f34b](https://github.com/ethers-io/ethers.js/commit/f61f34bfb295bafee3b7ee426efa696aaa9bbafe))
+  - Fix log parsing when no matching topic hash is found. ([#733](https://github.com/ethers-io/ethers.js/issues/733); [a5d2ec5](https://github.com/ethers-io/ethers.js/commit/a5d2ec534f75b21eebe69a789a3c43c33014a825), [4b8e198](https://github.com/ethers-io/ethers.js/commit/4b8e198bf209fcf0aea55018d8940355ea4345de), [89ac9f4](https://github.com/ethers-io/ethers.js/commit/89ac9f4f298ac340c4429e8ebdacd29962eba7f4))
+
 ethers/v5.0.0-beta.173 (2020-02-12 17:09)
 -----------------------------------------
 

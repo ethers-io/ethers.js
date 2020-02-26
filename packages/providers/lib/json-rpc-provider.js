@@ -299,9 +299,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                                     try {
                                         return [2 /*return*/, resolve(getNetwork(bignumber_1.BigNumber.from(chainId).toNumber()))];
                                     }
-                                    catch (error) {
-                                        console.log("e3", error);
-                                    }
+                                    catch (error) { }
                                 }
                                 reject(logger.makeError("could not detect network", logger_1.Logger.errors.NETWORK_ERROR));
                                 return [2 /*return*/];
@@ -359,6 +357,14 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                 provider: _this
             });
             return result;
+        }, function (error) {
+            _this.emit("debug", {
+                action: "response",
+                error: error,
+                request: request,
+                provider: _this
+            });
+            throw error;
         });
     };
     JsonRpcProvider.prototype.perform = function (method, params) {

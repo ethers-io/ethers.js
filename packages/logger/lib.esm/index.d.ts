@@ -24,7 +24,6 @@ export declare class Logger {
         [name: string]: LogLevel;
     };
     constructor(version: string);
-    setLogLevel(logLevel: LogLevel): void;
     _log(logLevel: LogLevel, args: Array<any>): void;
     debug(...args: Array<any>): void;
     info(...args: Array<any>): void;
@@ -39,4 +38,5 @@ export declare class Logger {
     checkAbstract(target: any, kind: any): void;
     static globalLogger(): Logger;
     static setCensorship(censorship: boolean, permanent?: boolean): void;
+    static setLogLevel(logLevel: LogLevel): void;
 }

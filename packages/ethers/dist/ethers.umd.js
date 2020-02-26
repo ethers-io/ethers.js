@@ -3515,14 +3515,6 @@
 	            writable: false
 	        });
 	    }
-	    Logger.prototype.setLogLevel = function (logLevel) {
-	        var level = LogLevels[logLevel];
-	        if (level == null) {
-	            this.warn("invalid log level - " + logLevel);
-	            return;
-	        }
-	        LogLevel = level;
-	    };
 	    Logger.prototype._log = function (logLevel, args) {
 	        if (LogLevel > LogLevels[logLevel]) {
 	            return;
@@ -3681,6 +3673,14 @@
 	        }
 	        _censorErrors = !!censorship;
 	        _permanentCensorErrors = !!permanent;
+	    };
+	    Logger.setLogLevel = function (logLevel) {
+	        var level = LogLevels[logLevel];
+	        if (level == null) {
+	            Logger.globalLogger().warn("invalid log level - " + logLevel);
+	            return;
+	        }
+	        LogLevel = level;
 	    };
 	    Logger.errors = {
 	        ///////////////////
@@ -4895,7 +4895,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.145";
+	exports.version = "abi/5.0.0-beta.146";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -8079,7 +8079,7 @@
 	    Interface.getSighash = function (functionFragment) {
 	        return lib$1.hexDataSlice(lib$9.id(functionFragment.format()), 0, 4);
 	    };
-	    Interface.getTopic = function (eventFragment) {
+	    Interface.getEventTopic = function (eventFragment) {
 	        return lib$9.id(eventFragment.format());
 	    };
 	    // Find a function definition by any means necessary (unless it is ambiguous)
@@ -8153,7 +8153,7 @@
 	        if (typeof (eventFragment) === "string") {
 	            eventFragment = this.getEvent(eventFragment);
 	        }
-	        return lib$3.getStatic(this.constructor, "getTopic")(eventFragment);
+	        return lib$3.getStatic(this.constructor, "getEventTopic")(eventFragment);
 	    };
 	    Interface.prototype._decodeParams = function (params, data) {
 	        return this._abiCoder.decode(params, data);
@@ -8402,6 +8402,8 @@
 
 	exports.Indexed = _interface.Indexed;
 	exports.Interface = _interface.Interface;
+	exports.LogDescription = _interface.LogDescription;
+	exports.TransactionDescription = _interface.TransactionDescription;
 	});
 
 	var index$a = unwrapExports(lib$a);
@@ -8415,6 +8417,8 @@
 	var lib_8$3 = lib$a.defaultAbiCoder;
 	var lib_9$3 = lib$a.Indexed;
 	var lib_10$2 = lib$a.Interface;
+	var lib_11$1 = lib$a.LogDescription;
+	var lib_12$1 = lib$a.TransactionDescription;
 
 	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -8818,7 +8822,7 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.0-beta.143";
+	exports.version = "contracts/5.0.0-beta.144";
 	});
 
 	var _version$l = unwrapExports(_version$k);
@@ -8994,7 +8998,11 @@
 	                    return wait(confirmations).then(function (receipt) {
 	                        receipt.events = receipt.logs.map(function (log) {
 	                            var event = lib$3.deepCopy(log);
-	                            var parsed = contract.interface.parseLog(log);
+	                            var parsed = null;
+	                            try {
+	                                parsed = contract.interface.parseLog(log);
+	                            }
+	                            catch (e) { }
 	                            if (parsed) {
 	                                event.args = parsed.args;
 	                                event.decode = function (data, topics) {
@@ -10941,7 +10949,7 @@
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "sha2/5.0.0-beta.134";
+	exports.version = "sha2/5.0.0-beta.135";
 	});
 
 	var _version$n = unwrapExports(_version$m);
@@ -14205,7 +14213,7 @@
 	var _version$w = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "random/5.0.0-beta.133";
+	exports.version = "random/5.0.0-beta.134";
 	});
 
 	var _version$x = unwrapExports(_version$w);
@@ -16593,7 +16601,7 @@
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "networks/5.0.0-beta.135";
+	exports.version = "networks/5.0.0-beta.136";
 	});
 
 	var _version$D = unwrapExports(_version$C);
@@ -16639,17 +16647,12 @@
 	            return null;
 	        }
 	        if (providers.FallbackProvider) {
-	            var quorum = providerList.length / 2;
+	            var quorum = 1;
 	            if (options.quorum != null) {
 	                quorum = options.quorum;
 	            }
-	            else if (quorum > 2) {
-	                if (network === "homestead") {
-	                    quorum = 2;
-	                }
-	                else {
-	                    quorum = 1;
-	                }
+	            else if (network === "homestead") {
+	                quorum = 2;
 	            }
 	            return new providers.FallbackProvider(providerList, quorum);
 	        }
@@ -19708,9 +19711,7 @@
 	                                    try {
 	                                        return [2 /*return*/, resolve(getNetwork(lib$2.BigNumber.from(chainId).toNumber()))];
 	                                    }
-	                                    catch (error) {
-	                                        console.log("e3", error);
-	                                    }
+	                                    catch (error) { }
 	                                }
 	                                reject(logger.makeError("could not detect network", lib.Logger.errors.NETWORK_ERROR));
 	                                return [2 /*return*/];
@@ -19768,6 +19769,14 @@
 	                provider: _this
 	            });
 	            return result;
+	        }, function (error) {
+	            _this.emit("debug", {
+	                action: "response",
+	                error: error,
+	                request: request,
+	                provider: _this
+	            });
+	            throw error;
 	        });
 	    };
 	    JsonRpcProvider.prototype.perform = function (method, params) {
@@ -21443,8 +21452,8 @@
 	var lib_8$4 = lib$m.IpcProvider;
 	var lib_9$4 = lib$m.InfuraProvider;
 	var lib_10$3 = lib$m.JsonRpcProvider;
-	var lib_11$1 = lib$m.JsonRpcSigner;
-	var lib_12$1 = lib$m.NodesmithProvider;
+	var lib_11$2 = lib$m.JsonRpcSigner;
+	var lib_12$2 = lib$m.NodesmithProvider;
 	var lib_13$1 = lib$m.Web3Provider;
 	var lib_14$1 = lib$m.Formatter;
 	var lib_15$1 = lib$m.getDefaultProvider;
@@ -21853,7 +21862,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.173";
+	exports.version = "ethers/5.0.0-beta.174";
 	});
 
 	var _version$L = unwrapExports(_version$K);
@@ -21973,8 +21982,8 @@
 	var lib_8$5 = lib$p.ContractFactory;
 	var lib_9$5 = lib$p.BigNumber;
 	var lib_10$4 = lib$p.FixedNumber;
-	var lib_11$2 = lib$p.constants;
-	var lib_12$2 = lib$p.errors;
+	var lib_11$3 = lib$p.constants;
+	var lib_12$3 = lib$p.errors;
 	var lib_13$2 = lib$p.logger;
 	var lib_14$2 = lib$p.utils;
 	var lib_15$2 = lib$p.wordlists;
@@ -21989,9 +21998,9 @@
 	exports.VoidSigner = lib_4$e;
 	exports.Wallet = lib_3$h;
 	exports.Wordlist = lib_17;
-	exports.constants = lib_11$2;
+	exports.constants = lib_11$3;
 	exports.default = index$p;
-	exports.errors = lib_12$2;
+	exports.errors = lib_12$3;
 	exports.ethers = lib_1$p;
 	exports.getDefaultProvider = lib_5$d;
 	exports.logger = lib_13$2;

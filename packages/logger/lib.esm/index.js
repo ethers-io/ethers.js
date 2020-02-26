@@ -41,14 +41,6 @@ export class Logger {
             writable: false
         });
     }
-    setLogLevel(logLevel) {
-        const level = LogLevels[logLevel];
-        if (level == null) {
-            this.warn("invalid log level - " + logLevel);
-            return;
-        }
-        LogLevel = level;
-    }
     _log(logLevel, args) {
         if (LogLevel > LogLevels[logLevel]) {
             return;
@@ -195,6 +187,14 @@ export class Logger {
         }
         _censorErrors = !!censorship;
         _permanentCensorErrors = !!permanent;
+    }
+    static setLogLevel(logLevel) {
+        const level = LogLevels[logLevel];
+        if (level == null) {
+            Logger.globalLogger().warn("invalid log level - " + logLevel);
+            return;
+        }
+        LogLevel = level;
     }
 }
 Logger.errors = {

@@ -3499,14 +3499,6 @@ class Logger {
             writable: false
         });
     }
-    setLogLevel(logLevel) {
-        const level = LogLevels[logLevel];
-        if (level == null) {
-            this.warn("invalid log level - " + logLevel);
-            return;
-        }
-        LogLevel = level;
-    }
     _log(logLevel, args) {
         if (LogLevel > LogLevels[logLevel]) {
             return;
@@ -3653,6 +3645,14 @@ class Logger {
         }
         _censorErrors = !!censorship;
         _permanentCensorErrors = !!permanent;
+    }
+    static setLogLevel(logLevel) {
+        const level = LogLevels[logLevel];
+        if (level == null) {
+            Logger.globalLogger().warn("invalid log level - " + logLevel);
+            return;
+        }
+        LogLevel = level;
     }
 }
 Logger.errors = {
@@ -4748,7 +4748,7 @@ var lib_esm$2 = /*#__PURE__*/Object.freeze({
 	Description: Description
 });
 
-const version$4 = "abi/5.0.0-beta.145";
+const version$4 = "abi/5.0.0-beta.146";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -7348,7 +7348,7 @@ class Interface {
     static getSighash(functionFragment) {
         return hexDataSlice(id(functionFragment.format()), 0, 4);
     }
-    static getTopic(eventFragment) {
+    static getEventTopic(eventFragment) {
         return id(eventFragment.format());
     }
     // Find a function definition by any means necessary (unless it is ambiguous)
@@ -7422,7 +7422,7 @@ class Interface {
         if (typeof (eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
         }
-        return getStatic(this.constructor, "getTopic")(eventFragment);
+        return getStatic(this.constructor, "getEventTopic")(eventFragment);
     }
     _decodeParams(params, data) {
         return this._abiCoder.decode(params, data);
@@ -7910,7 +7910,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$a = "contracts/5.0.0-beta.143";
+const version$a = "contracts/5.0.0-beta.144";
 
 "use strict";
 const logger$e = new Logger(version$a);
@@ -8045,7 +8045,11 @@ function runMethod(contract, functionName, options) {
                     return wait(confirmations).then((receipt) => {
                         receipt.events = receipt.logs.map((log) => {
                             let event = deepCopy(log);
-                            let parsed = contract.interface.parseLog(log);
+                            let parsed = null;
+                            try {
+                                parsed = contract.interface.parseLog(log);
+                            }
+                            catch (e) { }
                             if (parsed) {
                                 event.args = parsed.args;
                                 event.decode = (data, topics) => {
@@ -9930,7 +9934,7 @@ hash.ripemd160 = hash.ripemd.ripemd160;
 var _version = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "sha2/5.0.0-beta.134";
+exports.version = "sha2/5.0.0-beta.135";
 });
 
 var _version$1 = unwrapExports(_version);
@@ -13092,7 +13096,7 @@ function isValidMnemonic(mnemonic, wordlist) {
 var _version$4 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "random/5.0.0-beta.133";
+exports.version = "random/5.0.0-beta.134";
 });
 
 var _version$5 = unwrapExports(_version$4);
@@ -15229,7 +15233,7 @@ function verifyMessage(message, signature) {
     return recoverAddress(hashMessage(message), signature);
 }
 
-const version$h = "networks/5.0.0-beta.135";
+const version$h = "networks/5.0.0-beta.136";
 
 "use strict";
 const logger$l = new Logger(version$h);
@@ -15267,17 +15271,12 @@ function ethDefaultProvider(network) {
             return null;
         }
         if (providers.FallbackProvider) {
-            let quorum = providerList.length / 2;
+            let quorum = 1;
             if (options.quorum != null) {
                 quorum = options.quorum;
             }
-            else if (quorum > 2) {
-                if (network === "homestead") {
-                    quorum = 2;
-                }
-                else {
-                    quorum = 1;
-                }
+            else if (network === "homestead") {
+                quorum = 2;
             }
             return new providers.FallbackProvider(providerList, quorum);
         }
@@ -17786,9 +17785,7 @@ class JsonRpcProvider extends BaseProvider {
                         try {
                             return resolve(getNetwork(BigNumber.from(chainId).toNumber()));
                         }
-                        catch (error) {
-                            console.log("e3", error);
-                        }
+                        catch (error) { }
                     }
                     reject(logger$p.makeError("could not detect network", Logger.errors.NETWORK_ERROR));
                 }), 0);
@@ -17840,6 +17837,14 @@ class JsonRpcProvider extends BaseProvider {
                 provider: this
             });
             return result;
+        }, (error) => {
+            this.emit("debug", {
+                action: "response",
+                error: error,
+                request: request,
+                provider: this
+            });
+            throw error;
         });
     }
     perform(method, params) {
@@ -19340,7 +19345,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$l = "ethers/5.0.0-beta.173";
+const version$l = "ethers/5.0.0-beta.174";
 
 "use strict";
 const errors = Logger.errors;

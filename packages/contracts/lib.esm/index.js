@@ -141,7 +141,11 @@ function runMethod(contract, functionName, options) {
                     return wait(confirmations).then((receipt) => {
                         receipt.events = receipt.logs.map((log) => {
                             let event = deepCopy(log);
-                            let parsed = contract.interface.parseLog(log);
+                            let parsed = null;
+                            try {
+                                parsed = contract.interface.parseLog(log);
+                            }
+                            catch (e) { }
                             if (parsed) {
                                 event.args = parsed.args;
                                 event.decode = (data, topics) => {

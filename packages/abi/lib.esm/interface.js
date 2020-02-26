@@ -94,7 +94,7 @@ export class Interface {
     static getSighash(functionFragment) {
         return hexDataSlice(id(functionFragment.format()), 0, 4);
     }
-    static getTopic(eventFragment) {
+    static getEventTopic(eventFragment) {
         return id(eventFragment.format());
     }
     // Find a function definition by any means necessary (unless it is ambiguous)
@@ -168,7 +168,7 @@ export class Interface {
         if (typeof (eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
         }
-        return getStatic(this.constructor, "getTopic")(eventFragment);
+        return getStatic(this.constructor, "getEventTopic")(eventFragment);
     }
     _decodeParams(params, data) {
         return this._abiCoder.decode(params, data);

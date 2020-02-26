@@ -42,14 +42,6 @@ var Logger = /** @class */ (function () {
             writable: false
         });
     }
-    Logger.prototype.setLogLevel = function (logLevel) {
-        var level = LogLevels[logLevel];
-        if (level == null) {
-            this.warn("invalid log level - " + logLevel);
-            return;
-        }
-        LogLevel = level;
-    };
     Logger.prototype._log = function (logLevel, args) {
         if (LogLevel > LogLevels[logLevel]) {
             return;
@@ -208,6 +200,14 @@ var Logger = /** @class */ (function () {
         }
         _censorErrors = !!censorship;
         _permanentCensorErrors = !!permanent;
+    };
+    Logger.setLogLevel = function (logLevel) {
+        var level = LogLevels[logLevel];
+        if (level == null) {
+            Logger.globalLogger().warn("invalid log level - " + logLevel);
+            return;
+        }
+        LogLevel = level;
     };
     Logger.errors = {
         ///////////////////

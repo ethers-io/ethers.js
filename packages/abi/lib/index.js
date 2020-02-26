@@ -13,3 +13,5 @@ exports.defaultAbiCoder = abi_coder_1.defaultAbiCoder;
 var interface_1 = require("./interface");
 exports.Indexed = interface_1.Indexed;
 exports.Interface = interface_1.Interface;
+exports.LogDescription = interface_1.LogDescription;
+exports.TransactionDescription = interface_1.TransactionDescription;
