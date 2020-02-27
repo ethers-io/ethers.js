@@ -213,7 +213,7 @@ function _computeKdfKey<T>(data: any, password: Bytes | string, pbkdf2Func: Pbkd
 export function decryptSync(json: string, password: Bytes | string): KeystoreAccount {
     const data = JSON.parse(json);
 
-    const key = _computeKdfKey(data, password, pbkdf2Sync, scrypt.scryptSync);
+    const key = _computeKdfKey(data, password, pbkdf2Sync, scrypt.syncScrypt);
     return _getAccount(data, key);
 }
 
