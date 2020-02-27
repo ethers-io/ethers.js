@@ -24,6 +24,7 @@ export declare class Wallet extends Signer implements ExternallyOwnedAccount {
      */
     static createRandom(options?: any): Wallet;
     static fromEncryptedJson(json: string, password: Bytes | string, progressCallback?: ProgressCallback): Promise<Wallet>;
+    static fromEncryptedJsonSync(json: string, password: Bytes | string): Wallet;
     static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet;
 }
 export declare function verifyMessage(message: Bytes | string, signature: SignatureLike): string;

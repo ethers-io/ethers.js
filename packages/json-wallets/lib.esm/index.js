@@ -1,7 +1,7 @@
 "use strict";
 import { decrypt as decryptCrowdsale } from "./crowdsale";
 import { getJsonWalletAddress, isCrowdsaleWallet, isKeystoreWallet } from "./inspect";
-import { decrypt as decryptKeystore, encrypt as encryptKeystore } from "./keystore";
+import { decrypt as decryptKeystore, decryptSync as decryptKeystoreSync, encrypt as encryptKeystore } from "./keystore";
 function decryptJsonWallet(json, password, progressCallback) {
     if (isCrowdsaleWallet(json)) {
         if (progressCallback) {
@@ -18,4 +18,13 @@ function decryptJsonWallet(json, password, progressCallback) {
     }
     return Promise.reject(new Error("invalid JSON wallet"));
 }
-export { decryptCrowdsale, decryptKeystore, encryptKeystore, isCrowdsaleWallet, isKeystoreWallet, getJsonWalletAddress, decryptJsonWallet, };
+function decryptJsonWalletSync(json, password) {
+    if (isCrowdsaleWallet(json)) {
+        return decryptCrowdsale(json, password);
+    }
+    if (isKeystoreWallet(json)) {
+        return decryptKeystoreSync(json, password);
+    }
+    throw new Error("invalid JSON wallet");
+}
+export { decryptCrowdsale, decryptKeystore, decryptKeystoreSync, encryptKeystore, isCrowdsaleWallet, isKeystoreWallet, getJsonWalletAddress, decryptJsonWallet, decryptJsonWalletSync, };

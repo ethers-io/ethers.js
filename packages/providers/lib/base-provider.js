@@ -311,7 +311,7 @@ var BaseProvider = /** @class */ (function (_super) {
                                         toBlock: blockNumber,
                                         topics: topics
                                     };
-                                    if (!filter_1.address) {
+                                    if (!filter_1.address || filter_1.address === "*") {
                                         delete filter_1.address;
                                     }
                                     var runner = _this.getLogs(filter_1).then(function (logs) {

@@ -3,6 +3,18 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.175 (2020-02-27 19:53)
+-----------------------------------------
+
+  - Fix address-less filter listening in Provider. ([#741](https://github.com/ethers-io/ethers.js/issues/741); [64dccb2](https://github.com/ethers-io/ethers.js/commit/64dccb275c68ebb40328350d4ab5be0f29b8a02e))
+  - Added sync version of wallet decryption. ([0ad94cd](https://github.com/ethers-io/ethers.js/commit/0ad94cdf8137259bedb38c0dc949b61570bcdac0), [6809c37](https://github.com/ethers-io/ethers.js/commit/6809c370c027aea148466c00d3ce09c6d0ee6ddc))
+
+ethers/v5.0.0-beta.175 (2020-02-27 19:38)
+-----------------------------------------
+
+  - Fix address-less filter listening in Provider. ([#741](https://github.com/ethers-io/ethers.js/issues/741); [64dccb2](https://github.com/ethers-io/ethers.js/commit/64dccb275c68ebb40328350d4ab5be0f29b8a02e))
+  - Added sync version of wallet decryption. ([0ad94cd](https://github.com/ethers-io/ethers.js/commit/0ad94cdf8137259bedb38c0dc949b61570bcdac0))
+
 ethers/v5.0.0-beta.174 (2020-02-25 14:57)
 -----------------------------------------
 

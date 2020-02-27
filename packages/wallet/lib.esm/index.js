@@ -9,7 +9,7 @@ import { keccak256 } from "@ethersproject/keccak256";
 import { defineReadOnly, resolveProperties } from "@ethersproject/properties";
 import { randomBytes } from "@ethersproject/random";
 import { SigningKey } from "@ethersproject/signing-key";
-import { decryptJsonWallet, encryptKeystore } from "@ethersproject/json-wallets";
+import { decryptJsonWallet, decryptJsonWalletSync, encryptKeystore } from "@ethersproject/json-wallets";
 import { computeAddress, recoverAddress, serialize } from "@ethersproject/transactions";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -123,6 +123,9 @@ export class Wallet extends Signer {
         return decryptJsonWallet(json, password, progressCallback).then((account) => {
             return new Wallet(account);
         });
+    }
+    static fromEncryptedJsonSync(json, password) {
+        return new Wallet(decryptJsonWalletSync(json, password));
     }
     static fromMnemonic(mnemonic, path, wordlist) {
         if (!path) {

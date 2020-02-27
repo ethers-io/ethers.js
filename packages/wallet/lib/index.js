@@ -155,6 +155,9 @@ var Wallet = /** @class */ (function (_super) {
             return new Wallet(account);
         });
     };
+    Wallet.fromEncryptedJsonSync = function (json, password) {
+        return new Wallet(json_wallets_1.decryptJsonWalletSync(json, password));
+    };
     Wallet.fromMnemonic = function (mnemonic, path, wordlist) {
         if (!path) {
             path = hdnode_1.defaultPath;

@@ -15078,7 +15078,7 @@
 	var _version$y = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "json-wallets/5.0.0-beta.136";
+	exports.version = "json-wallets/5.0.0-beta.137";
 	});
 
 	var _version$z = unwrapExports(_version$y);
@@ -16077,139 +16077,144 @@
 	    return KeystoreAccount;
 	}(lib$3.Description));
 	exports.KeystoreAccount = KeystoreAccount;
+	function _decrypt(data, key, ciphertext) {
+	    var cipher = utils$1.searchPath(data, "crypto/cipher");
+	    if (cipher === "aes-128-ctr") {
+	        var iv = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/cipherparams/iv"));
+	        var counter = new aes_js_1.default.Counter(iv);
+	        var aesCtr = new aes_js_1.default.ModeOfOperation.ctr(key, counter);
+	        return lib$1.arrayify(aesCtr.decrypt(ciphertext));
+	    }
+	    return null;
+	}
+	function _getAccount(data, key) {
+	    var ciphertext = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/ciphertext"));
+	    var computedMAC = lib$1.hexlify(lib$4.keccak256(lib$1.concat([key.slice(16, 32), ciphertext]))).substring(2);
+	    if (computedMAC !== utils$1.searchPath(data, "crypto/mac").toLowerCase()) {
+	        throw new Error("invalid password");
+	    }
+	    var privateKey = _decrypt(data, key.slice(0, 16), ciphertext);
+	    if (!privateKey) {
+	        logger.throwError("unsupported cipher", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	            operation: "decrypt"
+	        });
+	    }
+	    var mnemonicKey = key.slice(32, 64);
+	    var address = lib$g.computeAddress(privateKey);
+	    if (data.address) {
+	        var check = data.address.toLowerCase();
+	        if (check.substring(0, 2) !== "0x") {
+	            check = "0x" + check;
+	        }
+	        if (lib$6.getAddress(check) !== address) {
+	            throw new Error("address mismatch");
+	        }
+	    }
+	    var account = {
+	        _isKeystoreAccount: true,
+	        address: address,
+	        privateKey: lib$1.hexlify(privateKey)
+	    };
+	    // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
+	    if (utils$1.searchPath(data, "x-ethers/version") === "0.1") {
+	        var mnemonicCiphertext = utils$1.looseArrayify(utils$1.searchPath(data, "x-ethers/mnemonicCiphertext"));
+	        var mnemonicIv = utils$1.looseArrayify(utils$1.searchPath(data, "x-ethers/mnemonicCounter"));
+	        var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
+	        var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
+	        var path = utils$1.searchPath(data, "x-ethers/path") || lib$h.defaultPath;
+	        var locale = utils$1.searchPath(data, "x-ethers/locale") || "en";
+	        var entropy = lib$1.arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
+	        try {
+	            var mnemonic = lib$h.entropyToMnemonic(entropy, locale);
+	            var node = lib$h.HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
+	            if (node.privateKey != account.privateKey) {
+	                throw new Error("mnemonic mismatch");
+	            }
+	            account.mnemonic = node.mnemonic;
+	        }
+	        catch (error) {
+	            // If we don't have the locale wordlist installed to
+	            // read this mnemonic, just bail and don't set the
+	            // mnemonic
+	            if (error.code !== lib.Logger.errors.INVALID_ARGUMENT || error.argument !== "wordlist") {
+	                throw error;
+	            }
+	        }
+	    }
+	    return new KeystoreAccount(account);
+	}
+	function pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc) {
+	    return lib$1.arrayify(browser$2.pbkdf2(passwordBytes, salt, count, dkLen, prfFunc));
+	}
+	function pbkdf2(passwordBytes, salt, count, dkLen, prfFunc) {
+	    return Promise.resolve(pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc));
+	}
+	function _computeKdfKey(data, password, pbkdf2Func, scryptFunc, progressCallback) {
+	    var passwordBytes = utils$1.getPassword(password);
+	    var kdf = utils$1.searchPath(data, "crypto/kdf");
+	    if (kdf && typeof (kdf) === "string") {
+	        var throwError = function (name, value) {
+	            return logger.throwArgumentError("invalid key-derivation function parameters", name, value);
+	        };
+	        if (kdf.toLowerCase() === "scrypt") {
+	            var salt = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/kdfparams/salt"));
+	            var N = parseInt(utils$1.searchPath(data, "crypto/kdfparams/n"));
+	            var r = parseInt(utils$1.searchPath(data, "crypto/kdfparams/r"));
+	            var p = parseInt(utils$1.searchPath(data, "crypto/kdfparams/p"));
+	            // Check for all required parameters
+	            if (!N || !r || !p) {
+	                throwError("kdf", kdf);
+	            }
+	            // Make sure N is a power of 2
+	            if ((N & (N - 1)) !== 0) {
+	                throwError("N", N);
+	            }
+	            var dkLen = parseInt(utils$1.searchPath(data, "crypto/kdfparams/dklen"));
+	            if (dkLen !== 32) {
+	                throwError("dklen", dkLen);
+	            }
+	            return scryptFunc(passwordBytes, salt, N, r, p, 64, progressCallback);
+	        }
+	        else if (kdf.toLowerCase() === "pbkdf2") {
+	            var salt = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/kdfparams/salt"));
+	            var prfFunc = null;
+	            var prf = utils$1.searchPath(data, "crypto/kdfparams/prf");
+	            if (prf === "hmac-sha256") {
+	                prfFunc = "sha256";
+	            }
+	            else if (prf === "hmac-sha512") {
+	                prfFunc = "sha512";
+	            }
+	            else {
+	                throwError("prf", prf);
+	            }
+	            var count = parseInt(utils$1.searchPath(data, "crypto/kdfparams/c"));
+	            var dkLen = parseInt(utils$1.searchPath(data, "crypto/kdfparams/dklen"));
+	            if (dkLen !== 32) {
+	                throwError("dklen", dkLen);
+	            }
+	            return pbkdf2Func(passwordBytes, salt, count, dkLen, prfFunc);
+	        }
+	    }
+	    return logger.throwArgumentError("unsupported key-derivation function", "kdf", kdf);
+	}
+	function decryptSync(json, password) {
+	    var data = JSON.parse(json);
+	    var key = _computeKdfKey(data, password, pbkdf2Sync, scrypt$1.syncScrypt);
+	    return _getAccount(data, key);
+	}
+	exports.decryptSync = decryptSync;
 	function decrypt(json, password, progressCallback) {
 	    return __awaiter(this, void 0, void 0, function () {
-	        var data, passwordBytes, decrypt, computeMAC, getAccount, kdf, throwError, salt, N, r, p, dkLen, key, salt, prfFunc, prf, c, dkLen, key;
+	        var data, key;
 	        return __generator(this, function (_a) {
 	            switch (_a.label) {
 	                case 0:
 	                    data = JSON.parse(json);
-	                    passwordBytes = utils$1.getPassword(password);
-	                    decrypt = function (key, ciphertext) {
-	                        var cipher = utils$1.searchPath(data, "crypto/cipher");
-	                        if (cipher === "aes-128-ctr") {
-	                            var iv = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/cipherparams/iv"));
-	                            var counter = new aes_js_1.default.Counter(iv);
-	                            var aesCtr = new aes_js_1.default.ModeOfOperation.ctr(key, counter);
-	                            return lib$1.arrayify(aesCtr.decrypt(ciphertext));
-	                        }
-	                        return null;
-	                    };
-	                    computeMAC = function (derivedHalf, ciphertext) {
-	                        return lib$4.keccak256(lib$1.concat([derivedHalf, ciphertext]));
-	                    };
-	                    getAccount = function (key) {
-	                        return __awaiter(this, void 0, void 0, function () {
-	                            var ciphertext, computedMAC, privateKey, mnemonicKey, address, check, account, mnemonicCiphertext, mnemonicIv, mnemonicCounter, mnemonicAesCtr, path, locale, entropy, mnemonic, node;
-	                            return __generator(this, function (_a) {
-	                                ciphertext = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/ciphertext"));
-	                                computedMAC = lib$1.hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
-	                                if (computedMAC !== utils$1.searchPath(data, "crypto/mac").toLowerCase()) {
-	                                    throw new Error("invalid password");
-	                                }
-	                                privateKey = decrypt(key.slice(0, 16), ciphertext);
-	                                mnemonicKey = key.slice(32, 64);
-	                                if (!privateKey) {
-	                                    logger.throwError("unsupported cipher", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                                        operation: "decrypt"
-	                                    });
-	                                }
-	                                address = lib$g.computeAddress(privateKey);
-	                                if (data.address) {
-	                                    check = data.address.toLowerCase();
-	                                    if (check.substring(0, 2) !== "0x") {
-	                                        check = "0x" + check;
-	                                    }
-	                                    if (lib$6.getAddress(check) !== address) {
-	                                        throw new Error("address mismatch");
-	                                    }
-	                                }
-	                                account = {
-	                                    _isKeystoreAccount: true,
-	                                    address: address,
-	                                    privateKey: lib$1.hexlify(privateKey)
-	                                };
-	                                // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
-	                                if (utils$1.searchPath(data, "x-ethers/version") === "0.1") {
-	                                    mnemonicCiphertext = utils$1.looseArrayify(utils$1.searchPath(data, "x-ethers/mnemonicCiphertext"));
-	                                    mnemonicIv = utils$1.looseArrayify(utils$1.searchPath(data, "x-ethers/mnemonicCounter"));
-	                                    mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
-	                                    mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-	                                    path = utils$1.searchPath(data, "x-ethers/path") || lib$h.defaultPath;
-	                                    locale = utils$1.searchPath(data, "x-ethers/locale") || "en";
-	                                    entropy = lib$1.arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
-	                                    try {
-	                                        mnemonic = lib$h.entropyToMnemonic(entropy, locale);
-	                                        node = lib$h.HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
-	                                        if (node.privateKey != account.privateKey) {
-	                                            throw new Error("mnemonic mismatch");
-	                                        }
-	                                        account.mnemonic = node.mnemonic;
-	                                    }
-	                                    catch (error) {
-	                                        // If we don't have the locale wordlist installed to
-	                                        // read this mnemonic, just bail and don't set the
-	                                        // mnemonic
-	                                        if (error.code !== lib.Logger.errors.INVALID_ARGUMENT || error.argument !== "wordlist") {
-	                                            throw error;
-	                                        }
-	                                    }
-	                                }
-	                                return [2 /*return*/, new KeystoreAccount(account)];
-	                            });
-	                        });
-	                    };
-	                    kdf = utils$1.searchPath(data, "crypto/kdf");
-	                    if (!(kdf && typeof (kdf) === "string")) return [3 /*break*/, 3];
-	                    throwError = function (name, value) {
-	                        return logger.throwArgumentError("invalid key-derivation function parameters", name, value);
-	                    };
-	                    if (!(kdf.toLowerCase() === "scrypt")) return [3 /*break*/, 2];
-	                    salt = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/kdfparams/salt"));
-	                    N = parseInt(utils$1.searchPath(data, "crypto/kdfparams/n"));
-	                    r = parseInt(utils$1.searchPath(data, "crypto/kdfparams/r"));
-	                    p = parseInt(utils$1.searchPath(data, "crypto/kdfparams/p"));
-	                    // Check for all required parameters
-	                    if (!N || !r || !p) {
-	                        throwError("kdf", kdf);
-	                    }
-	                    // Make sure N is a power of 2
-	                    if ((N & (N - 1)) !== 0) {
-	                        throwError("N", N);
-	                    }
-	                    dkLen = parseInt(utils$1.searchPath(data, "crypto/kdfparams/dklen"));
-	                    if (dkLen !== 32) {
-	                        throwError("dklen", dkLen);
-	                    }
-	                    return [4 /*yield*/, scrypt$1.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback)];
+	                    return [4 /*yield*/, _computeKdfKey(data, password, pbkdf2, scrypt$1.scrypt, progressCallback)];
 	                case 1:
 	                    key = _a.sent();
-	                    //key = arrayify(key);
-	                    return [2 /*return*/, getAccount(key)];
-	                case 2:
-	                    if (kdf.toLowerCase() === "pbkdf2") {
-	                        salt = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/kdfparams/salt"));
-	                        prfFunc = null;
-	                        prf = utils$1.searchPath(data, "crypto/kdfparams/prf");
-	                        if (prf === "hmac-sha256") {
-	                            prfFunc = "sha256";
-	                        }
-	                        else if (prf === "hmac-sha512") {
-	                            prfFunc = "sha512";
-	                        }
-	                        else {
-	                            throwError("prf", prf);
-	                        }
-	                        c = parseInt(utils$1.searchPath(data, "crypto/kdfparams/c"));
-	                        dkLen = parseInt(utils$1.searchPath(data, "crypto/kdfparams/dklen"));
-	                        if (dkLen !== 32) {
-	                            throwError("dklen", dkLen);
-	                        }
-	                        key = lib$1.arrayify(browser$2.pbkdf2(passwordBytes, salt, c, dkLen, prfFunc));
-	                        return [2 /*return*/, getAccount(key)];
-	                    }
-	                    _a.label = 3;
-	                case 3: return [2 /*return*/, logger.throwArgumentError("unsupported key-derivation function", "kdf", kdf)];
+	                    return [2 /*return*/, _getAccount(data, key)];
 	            }
 	        });
 	    });
@@ -16369,8 +16374,9 @@
 
 	var keystore$1 = unwrapExports(keystore);
 	var keystore_1 = keystore.KeystoreAccount;
-	var keystore_2 = keystore.decrypt;
-	var keystore_3 = keystore.encrypt;
+	var keystore_2 = keystore.decryptSync;
+	var keystore_3 = keystore.decrypt;
+	var keystore_4 = keystore.encrypt;
 
 	var lib$i = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -16383,6 +16389,7 @@
 	exports.isKeystoreWallet = inspect.isKeystoreWallet;
 
 	exports.decryptKeystore = keystore.decrypt;
+	exports.decryptKeystoreSync = keystore.decryptSync;
 	exports.encryptKeystore = keystore.encrypt;
 	function decryptJsonWallet(json, password, progressCallback) {
 	    if (inspect.isCrowdsaleWallet(json)) {
@@ -16401,6 +16408,16 @@
 	    return Promise.reject(new Error("invalid JSON wallet"));
 	}
 	exports.decryptJsonWallet = decryptJsonWallet;
+	function decryptJsonWalletSync(json, password) {
+	    if (inspect.isCrowdsaleWallet(json)) {
+	        return crowdsale.decrypt(json, password);
+	    }
+	    if (inspect.isKeystoreWallet(json)) {
+	        return keystore.decryptSync(json, password);
+	    }
+	    throw new Error("invalid JSON wallet");
+	}
+	exports.decryptJsonWalletSync = decryptJsonWalletSync;
 	});
 
 	var index$i = unwrapExports(lib$i);
@@ -16409,13 +16426,15 @@
 	var lib_3$d = lib$i.isCrowdsaleWallet;
 	var lib_4$b = lib$i.isKeystoreWallet;
 	var lib_5$a = lib$i.decryptKeystore;
-	var lib_6$6 = lib$i.encryptKeystore;
-	var lib_7$5 = lib$i.decryptJsonWallet;
+	var lib_6$6 = lib$i.decryptKeystoreSync;
+	var lib_7$5 = lib$i.encryptKeystore;
+	var lib_8$4 = lib$i.decryptJsonWallet;
+	var lib_9$4 = lib$i.decryptJsonWalletSync;
 
 	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.0-beta.137";
+	exports.version = "wallet/5.0.0-beta.138";
 	});
 
 	var _version$B = unwrapExports(_version$A);
@@ -16578,6 +16597,9 @@
 	        return lib$i.decryptJsonWallet(json, password, progressCallback).then(function (account) {
 	            return new Wallet(account);
 	        });
+	    };
+	    Wallet.fromEncryptedJsonSync = function (json, password) {
+	        return new Wallet(lib$i.decryptJsonWalletSync(json, password));
 	    };
 	    Wallet.fromMnemonic = function (mnemonic, path, wordlist) {
 	        if (!path) {
@@ -17697,7 +17719,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.154";
+	exports.version = "providers/5.0.0-beta.155";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -18419,7 +18441,7 @@
 	                                        toBlock: blockNumber,
 	                                        topics: topics
 	                                    };
-	                                    if (!filter_1.address) {
+	                                    if (!filter_1.address || filter_1.address === "*") {
 	                                        delete filter_1.address;
 	                                    }
 	                                    var runner = _this.getLogs(filter_1).then(function (logs) {
@@ -21449,8 +21471,8 @@
 	var lib_5$b = lib$m.CloudflareProvider;
 	var lib_6$7 = lib$m.EtherscanProvider;
 	var lib_7$6 = lib$m.FallbackProvider;
-	var lib_8$4 = lib$m.IpcProvider;
-	var lib_9$4 = lib$m.InfuraProvider;
+	var lib_8$5 = lib$m.IpcProvider;
+	var lib_9$5 = lib$m.InfuraProvider;
 	var lib_10$3 = lib$m.JsonRpcProvider;
 	var lib_11$2 = lib$m.JsonRpcSigner;
 	var lib_12$2 = lib$m.NodesmithProvider;
@@ -21862,7 +21884,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.174";
+	exports.version = "ethers/5.0.0-beta.175";
 	});
 
 	var _version$L = unwrapExports(_version$K);
@@ -21979,8 +22001,8 @@
 	var lib_5$d = lib$p.getDefaultProvider;
 	var lib_6$8 = lib$p.providers;
 	var lib_7$7 = lib$p.Contract;
-	var lib_8$5 = lib$p.ContractFactory;
-	var lib_9$5 = lib$p.BigNumber;
+	var lib_8$6 = lib$p.ContractFactory;
+	var lib_9$6 = lib$p.BigNumber;
 	var lib_10$4 = lib$p.FixedNumber;
 	var lib_11$3 = lib$p.constants;
 	var lib_12$3 = lib$p.errors;
@@ -21990,9 +22012,9 @@
 	var lib_16$1 = lib$p.version;
 	var lib_17 = lib$p.Wordlist;
 
-	exports.BigNumber = lib_9$5;
+	exports.BigNumber = lib_9$6;
 	exports.Contract = lib_7$7;
-	exports.ContractFactory = lib_8$5;
+	exports.ContractFactory = lib_8$6;
 	exports.FixedNumber = lib_10$4;
 	exports.Signer = lib_2$m;
 	exports.VoidSigner = lib_4$e;
