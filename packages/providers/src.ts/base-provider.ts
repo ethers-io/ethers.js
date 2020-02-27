@@ -333,7 +333,8 @@ export class BaseProvider extends Provider {
                         toBlock: blockNumber,
                         topics: topics
                     }
-                    if (!filter.address) { delete filter.address; }
+                    if (!filter.address || filter.address === "*") { delete filter.address; }
+
                     const runner = this.getLogs(filter).then((logs) => {
                         if (logs.length === 0) { return; }
                         logs.forEach((log: Log) => {
