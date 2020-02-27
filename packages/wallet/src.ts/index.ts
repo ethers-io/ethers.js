@@ -10,7 +10,7 @@ import { keccak256 } from "@ethersproject/keccak256";
 import { defineReadOnly, resolveProperties } from "@ethersproject/properties";
 import { randomBytes } from "@ethersproject/random";
 import { SigningKey } from "@ethersproject/signing-key";
-import { decryptJsonWallet, encryptKeystore, ProgressCallback } from "@ethersproject/json-wallets";
+import { decryptJsonWallet, decryptJsonWalletSync, encryptKeystore, ProgressCallback } from "@ethersproject/json-wallets";
 import { computeAddress, recoverAddress, serialize, UnsignedTransaction } from "@ethersproject/transactions";
 import { Wordlist } from "@ethersproject/wordlists";
 
@@ -157,6 +157,10 @@ export class Wallet extends Signer implements ExternallyOwnedAccount {
         return decryptJsonWallet(json, password, progressCallback).then((account) => {
             return new Wallet(account);
         });
+    }
+
+    static fromEncryptedJsonSync(json: string, password: Bytes | string): Wallet {
+        return new Wallet(decryptJsonWalletSync(json, password));
     }
 
     static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet {

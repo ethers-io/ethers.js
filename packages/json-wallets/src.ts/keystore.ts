@@ -9,7 +9,7 @@ import { getAddress } from "@ethersproject/address";
 import { arrayify, Bytes, BytesLike, concat, hexlify } from "@ethersproject/bytes";
 import { defaultPath, entropyToMnemonic, HDNode, Mnemonic, mnemonicToEntropy } from "@ethersproject/hdnode";
 import { keccak256 } from "@ethersproject/keccak256";
-import { pbkdf2 } from "@ethersproject/pbkdf2";
+import { pbkdf2 as _pbkdf2 } from "@ethersproject/pbkdf2";
 import { randomBytes } from "@ethersproject/random";
 import { Description } from "@ethersproject/properties";
 import { computeAddress } from "@ethersproject/transactions";
@@ -61,100 +61,106 @@ export type EncryptOptions = {
    }
 }
 
-export async function decrypt(json: string, password: Bytes | string, progressCallback?: ProgressCallback): Promise<KeystoreAccount> {
-    const data = JSON.parse(json);
+function _decrypt(data: any, key: Uint8Array, ciphertext: Uint8Array): Uint8Array {
+    const cipher = searchPath(data, "crypto/cipher");
+    if (cipher === "aes-128-ctr") {
+        const iv = looseArrayify(searchPath(data, "crypto/cipherparams/iv"))
+        const counter = new aes.Counter(iv);
 
-    const passwordBytes = getPassword(password);
+        const aesCtr = new aes.ModeOfOperation.ctr(key, counter);
 
-    const decrypt = function(key: Uint8Array, ciphertext: Uint8Array): Uint8Array {
-        const cipher = searchPath(data, "crypto/cipher");
-        if (cipher === "aes-128-ctr") {
-            const iv = looseArrayify(searchPath(data, "crypto/cipherparams/iv"))
-            const counter = new aes.Counter(iv);
+        return arrayify(aesCtr.decrypt(ciphertext));
+    }
 
-            const aesCtr = new aes.ModeOfOperation.ctr(key, counter);
+    return null;
+}
 
-            return arrayify(aesCtr.decrypt(ciphertext));
+function _getAccount(data: any, key: Uint8Array): KeystoreAccount {
+    const ciphertext = looseArrayify(searchPath(data, "crypto/ciphertext"));
+
+    const computedMAC = hexlify(keccak256(concat([ key.slice(16, 32), ciphertext ]))).substring(2);
+    if (computedMAC !== searchPath(data, "crypto/mac").toLowerCase()) {
+        throw new Error("invalid password");
+    }
+
+    const privateKey = _decrypt(data, key.slice(0, 16), ciphertext);
+
+    if (!privateKey) {
+        logger.throwError("unsupported cipher", Logger.errors.UNSUPPORTED_OPERATION, {
+            operation: "decrypt"
+        });
+    }
+
+    const mnemonicKey = key.slice(32, 64);
+
+    const address = computeAddress(privateKey);
+    if (data.address) {
+        let check = data.address.toLowerCase();
+        if (check.substring(0, 2) !== "0x") { check = "0x" + check; }
+
+        if (getAddress(check) !== address) {
+            throw new Error("address mismatch");
         }
+    }
 
-        return null;
+    const account: _KeystoreAccount = {
+        _isKeystoreAccount: true,
+        address: address,
+        privateKey: hexlify(privateKey)
     };
 
-    const computeMAC = function(derivedHalf: Uint8Array, ciphertext: Uint8Array) {
-        return keccak256(concat([ derivedHalf, ciphertext ]));
-    }
+    // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
+    if (searchPath(data, "x-ethers/version") === "0.1") {
+        const mnemonicCiphertext = looseArrayify(searchPath(data, "x-ethers/mnemonicCiphertext"));
+        const mnemonicIv = looseArrayify(searchPath(data, "x-ethers/mnemonicCounter"));
 
-    const getAccount = async function(key: Uint8Array): Promise<KeystoreAccount> {
-        const ciphertext = looseArrayify(searchPath(data, "crypto/ciphertext"));
+        const mnemonicCounter = new aes.Counter(mnemonicIv);
+        const mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
 
-        const computedMAC = hexlify(computeMAC(key.slice(16, 32), ciphertext)).substring(2);
-        if (computedMAC !== searchPath(data, "crypto/mac").toLowerCase()) {
-            throw new Error("invalid password");
-        }
+        const path = searchPath(data, "x-ethers/path") || defaultPath;
+        const locale = searchPath(data, "x-ethers/locale") || "en";
 
-        const privateKey = decrypt(key.slice(0, 16), ciphertext);
-        const mnemonicKey = key.slice(32, 64);
+        const entropy = arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
 
-        if (!privateKey) {
-            logger.throwError("unsupported cipher", Logger.errors.UNSUPPORTED_OPERATION, {
-                operation: "decrypt"
-            });
-        }
+        try {
+            const mnemonic = entropyToMnemonic(entropy, locale);
+            const node = HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
 
-        const address = computeAddress(privateKey);
-        if (data.address) {
-            let check = data.address.toLowerCase();
-            if (check.substring(0, 2) !== "0x") { check = "0x" + check; }
+            if (node.privateKey != account.privateKey) {
+                throw new Error("mnemonic mismatch");
+            }
 
-            if (getAddress(check) !== address) {
-                throw new Error("address mismatch");
+            account.mnemonic = node.mnemonic;
+
+        } catch (error) {
+            // If we don't have the locale wordlist installed to
+            // read this mnemonic, just bail and don't set the
+            // mnemonic
+            if (error.code !== Logger.errors.INVALID_ARGUMENT || error.argument !== "wordlist") {
+                throw error;
             }
         }
-
-        const account: _KeystoreAccount = {
-            _isKeystoreAccount: true,
-            address: address,
-            privateKey: hexlify(privateKey)
-        };
-
-        // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
-        if (searchPath(data, "x-ethers/version") === "0.1") {
-            const mnemonicCiphertext = looseArrayify(searchPath(data, "x-ethers/mnemonicCiphertext"));
-            const mnemonicIv = looseArrayify(searchPath(data, "x-ethers/mnemonicCounter"));
-
-            const mnemonicCounter = new aes.Counter(mnemonicIv);
-            const mnemonicAesCtr = new aes.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-
-            const path = searchPath(data, "x-ethers/path") || defaultPath;
-            const locale = searchPath(data, "x-ethers/locale") || "en";
-
-            const entropy = arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
-
-            try {
-                const mnemonic = entropyToMnemonic(entropy, locale);
-                const node = HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
-
-                if (node.privateKey != account.privateKey) {
-                    throw new Error("mnemonic mismatch");
-                }
-
-                account.mnemonic = node.mnemonic;
-
-            } catch (error) {
-                // If we don't have the locale wordlist installed to
-                // read this mnemonic, just bail and don't set the
-                // mnemonic
-                if (error.code !== Logger.errors.INVALID_ARGUMENT || error.argument !== "wordlist") {
-                    throw error;
-                }
-            }
-        }
-
-        return new KeystoreAccount(account);
     }
 
+    return new KeystoreAccount(account);
+}
+
+type ScryptFunc<T> = (pw: Uint8Array, salt: Uint8Array, n: number, r: number, p: number, dkLen: number, callback?: ProgressCallback) => T;
+type Pbkdf2Func<T> = (pw: Uint8Array, salt: Uint8Array, c: number, dkLen: number, prfFunc: string) => T;
+
+function pbkdf2Sync(passwordBytes: Uint8Array, salt: Uint8Array, count: number, dkLen: number, prfFunc: string): Uint8Array {
+    return arrayify(_pbkdf2(passwordBytes, salt, count, dkLen, prfFunc));
+}
+
+function pbkdf2(passwordBytes: Uint8Array, salt: Uint8Array, count: number, dkLen: number, prfFunc: string): Promise<Uint8Array> {
+    return Promise.resolve(pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc));
+}
+
+function _computeKdfKey<T>(data: any, password: Bytes | string, pbkdf2Func: Pbkdf2Func<T>, scryptFunc: ScryptFunc<T>, progressCallback?: ProgressCallback): T {
+    const passwordBytes = getPassword(password);
 
     const kdf = searchPath(data, "crypto/kdf");
+
     if (kdf && typeof(kdf) === "string") {
         const throwError = function(name: string, value: any): never {
             return logger.throwArgumentError("invalid key-derivation function parameters", name, value);
@@ -175,10 +181,7 @@ export async function decrypt(json: string, password: Bytes | string, progressCa
             const dkLen = parseInt(searchPath(data, "crypto/kdfparams/dklen"));
             if (dkLen !== 32) { throwError("dklen", dkLen); }
 
-            const key = await scrypt.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback);
-            //key = arrayify(key);
-
-            return getAccount(key);
+            return scryptFunc(passwordBytes, salt, N, r, p, 64, progressCallback);
 
         } else if (kdf.toLowerCase() === "pbkdf2") {
 
@@ -194,19 +197,33 @@ export async function decrypt(json: string, password: Bytes | string, progressCa
                 throwError("prf", prf);
             }
 
-            const c = parseInt(searchPath(data, "crypto/kdfparams/c"));
+            const count = parseInt(searchPath(data, "crypto/kdfparams/c"));
 
             const dkLen = parseInt(searchPath(data, "crypto/kdfparams/dklen"));
             if (dkLen !== 32) { throwError("dklen", dkLen); }
 
-            const key = arrayify(pbkdf2(passwordBytes, salt, c, dkLen, prfFunc));
-
-            return getAccount(key);
+            return pbkdf2Func(passwordBytes, salt, count, dkLen, prfFunc);
         }
     }
 
     return logger.throwArgumentError("unsupported key-derivation function", "kdf", kdf);
 }
+
+
+export function decryptSync(json: string, password: Bytes | string): KeystoreAccount {
+    const data = JSON.parse(json);
+
+    const key = _computeKdfKey(data, password, pbkdf2Sync, scrypt.scryptSync);
+    return _getAccount(data, key);
+}
+
+export async function decrypt(json: string, password: Bytes | string, progressCallback?: ProgressCallback): Promise<KeystoreAccount> {
+    const data = JSON.parse(json);
+
+    const key = await _computeKdfKey(data, password, pbkdf2, scrypt.scrypt, progressCallback);
+    return _getAccount(data, key);
+}
+
 
 export function encrypt(account: ExternallyOwnedAccount, password: Bytes | string, options?: EncryptOptions, progressCallback?: ProgressCallback): Promise<string> {
 
