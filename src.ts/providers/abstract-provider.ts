@@ -14,7 +14,7 @@ import { Transaction } from '../utils/transaction';
 ///////////////////////////////
 // Exported Types
 
-export interface Block {
+export interface Block<IncludeTransactions extends boolean> {
     hash: string;
     parentHash: string;
     number: number;
@@ -29,7 +29,7 @@ export interface Block {
     miner: string;
     extraData: string;
 
-    transactions: Array<string>;
+    transactions: Array<IncludeTransactions extends false ? string : TransactionResponse>;
 }
 
 export type BlockTag = string | number;
@@ -133,14 +133,14 @@ export abstract class Provider implements OnceBlockable {
 
     abstract getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber>;
     abstract getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number>;
-    abstract getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> ;
+    abstract getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
     abstract getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
 
     abstract sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
     abstract call(transaction: TransactionRequest, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
     abstract estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
 
-    abstract getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block>;
+    abstract getBlock<IncludeTransactions extends boolean = undefined>(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: IncludeTransactions): Promise<Block<IncludeTransactions>>;
     abstract getTransaction(transactionHash: string): Promise<TransactionResponse>;
     abstract getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
 

@@ -280,7 +280,7 @@ const formatBlock = {
 const formatBlockWithTransactions = shallowCopy(formatBlock);
 formatBlockWithTransactions.transactions = allowNull(arrayOf(checkTransactionResponse));
 
-function checkBlock(block: any, includeTransactions: boolean): Block {
+function checkBlock<IncludeTransactions extends boolean>(block: any, includeTransactions: IncludeTransactions): Block<IncludeTransactions> {
     if (block.author != null && block.miner == null) {
         block.miner = block.author;
     }
@@ -970,7 +970,7 @@ export class BaseProvider extends Provider {
         });
    }
 
-    getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block> {
+    getBlock<IncludeTransactions extends boolean = undefined>(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: IncludeTransactions): Promise<Block<IncludeTransactions>> {
         return this.ready.then(() => {
             return resolveProperties({ blockHashOrBlockTag: blockHashOrBlockTag }).then(({ blockHashOrBlockTag }) => {
                 try {
