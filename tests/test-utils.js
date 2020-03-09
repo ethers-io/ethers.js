@@ -366,7 +366,7 @@ describe("Hexlify", function() {
     });
 });
 
-describe.only("getUnitInfo", function() {
+describe("getUnitInfo", function() {
     it("Get unit info by cache", function() {
         ['gwei', 'ether'].forEach(function(name, index) {
             const expected = 1000000000 ** (1 - index)
