@@ -365,3 +365,36 @@ describe("Hexlify", function() {
         });
     });
 });
+
+describe.only("getUnitInfo", function() {
+    it("Get unit info by cache", function() {
+        ['gwei', 'ether'].forEach(function(name, index) {
+            const expected = 1000000000 ** (1 - index)
+            assert.equal(ethers.utils.formatUnits('1000000000000000000', name), expected.toFixed(1), "formatUnits with names");
+        });
+
+        ['9', '18'].forEach(function(name, index) {
+            const expected = 1000000000 ** (1 - index)
+            assert.equal(ethers.utils.formatUnits('1000000000000000000', name), expected.toFixed(1), "formatUnits with names");
+        });
+
+        [9, 18].forEach(function(name, index) {
+            const expected = 1000000000 ** (1 - index)
+            assert.equal(ethers.utils.formatUnits('1000000000000000000', name), expected.toFixed(1), "formatUnits with names");
+        });
+    });
+
+    it("Get unit info by strings", function() {
+        ['7', '14'].forEach(function(name, index) {
+            const expected = 1000000000000000000 / 10000000 ** (index + 1)
+            assert.equal(ethers.utils.formatUnits('1000000000000000000', name), expected.toFixed(1), "formatUnits with string");
+        });
+    });
+
+    it("Get unit info by numbers", function() {
+        [7, 14].forEach(function(name, index) {
+            const expected = 1000000000000000000 / 10000000 ** (index + 1)
+            assert.equal(ethers.utils.formatUnits('1000000000000000000', name), expected.toFixed(1), "formatUnits with number");
+        });
+    });
+});

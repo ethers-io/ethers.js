@@ -40,9 +40,10 @@ function _getUnitInfo(value) {
 function getUnitInfo(name) {
     // Try the cache
     var info = unitInfos[String(name).toLowerCase()];
-    if (!info && typeof (name) === 'number' && parseInt(String(name)) == name && name >= 0 && name <= 256) {
+    var castedName = parseInt(String(name));
+    if (!info && castedName == name && castedName >= 0 && castedName <= 256) {
         var value = '1';
-        for (var i = 0; i < name; i++) {
+        for (var i = 0; i < castedName; i++) {
             value += '0';
         }
         info = _getUnitInfo(value);

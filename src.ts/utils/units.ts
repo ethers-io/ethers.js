@@ -52,9 +52,10 @@ function getUnitInfo(name: string | number): UnitInfo {
     // Try the cache
     let info = unitInfos[String(name).toLowerCase()];
 
-    if (!info && typeof(name) === 'number' && parseInt(String(name)) == name && name >= 0 && name <= 256) {
+    const castedName = parseInt(String(name))
+    if (!info && castedName == name && castedName >= 0 && castedName <= 256) {
         let value = '1';
-        for (let i = 0; i < name; i++) { value += '0'; }
+        for (let i = 0; i < castedName; i++) { value += '0'; }
         info = _getUnitInfo(value);
     }
 
