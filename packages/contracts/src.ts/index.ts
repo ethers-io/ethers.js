@@ -161,10 +161,10 @@ function runMethod(contract: Contract, functionName: string, options: RunOptions
         // If the contract was just deployed, wait until it is minded
         if (contract.deployTransaction != null) {
             tx.to = contract._deployed(blockTag).then(() => {
-                return contract.addressPromise;
+                return contract.resolvedAddress;
             });
         } else {
-            tx.to = contract.addressPromise;
+            tx.to = contract.resolvedAddress;
         }
 
         return resolveAddresses(contract.signer || contract.provider, params, method.inputs).then((params) => {
@@ -433,14 +433,14 @@ export class Contract {
     readonly functions: Bucket<ContractFunction>;
 
     readonly callStatic: Bucket<ContractFunction>;
-    readonly estimate: Bucket<(...params: Array<any>) => Promise<BigNumber>>;
+    readonly estimateGas: Bucket<(...params: Array<any>) => Promise<BigNumber>>;
     readonly populateTransaction: Bucket<(...params: Array<any>) => Promise<UnsignedTransaction>>;
 
     readonly filters: Bucket<(...params: Array<any>) => EventFilter>;
 
     readonly [ name: string ]: ContractFunction | any;
 
-    readonly addressPromise: Promise<string>;
+    readonly resolvedAddress: Promise<string>;
 
     // This is only set if the contract was created with a call to deploy
     readonly deployTransaction: TransactionResponse;
@@ -471,7 +471,7 @@ export class Contract {
         }
 
         defineReadOnly(this, "callStatic", { });
-        defineReadOnly(this, "estimate", { });
+        defineReadOnly(this, "estimateGas", { });
         defineReadOnly(this, "functions", { });
         defineReadOnly(this, "populateTransaction", { });
 
@@ -506,7 +506,7 @@ export class Contract {
 
         defineReadOnly(this, "address", addressOrName);
         if (this.provider) {
-            defineReadOnly(this, "addressPromise", this.provider.resolveName(addressOrName).then((address) => {
+            defineReadOnly(this, "resolvedAddress", this.provider.resolveName(addressOrName).then((address) => {
                 if (address == null) { throw new Error("name not found"); }
                 return address;
             }).catch((error: Error) => {
@@ -515,7 +515,7 @@ export class Contract {
             }));
         } else {
             try {
-                defineReadOnly(this, "addressPromise", Promise.resolve((<any>(this.interface.constructor)).getAddress(addressOrName)));
+                defineReadOnly(this, "resolvedAddress", Promise.resolve((<any>(this.interface.constructor)).getAddress(addressOrName)));
             } catch (error) {
                 // Without a provider, we cannot use ENS names
                 logger.throwArgumentError("provider is required to use non-address contract address", "addressOrName", addressOrName);
@@ -545,8 +545,8 @@ export class Contract {
                 defineReadOnly(this.populateTransaction, name, runMethod(this, name, { transaction: true }));
             }
 
-            if (this.estimate[name] == null) {
-                defineReadOnly(this.estimate, name, runMethod(this, name, { estimate: true }));
+            if (this.estimateGas[name] == null) {
+                defineReadOnly(this.estimateGas, name, runMethod(this, name, { estimate: true }));
             }
 
             if (!uniqueFunctions[fragment.name]) { uniqueFunctions[fragment.name] = [ ]; }
@@ -567,7 +567,7 @@ export class Contract {
             defineReadOnly(this.functions, name, this.functions[signatures[0]]);
             defineReadOnly(this.callStatic, name, this.callStatic[signatures[0]]);
             defineReadOnly(this.populateTransaction, name, this.populateTransaction[signatures[0]]);
-            defineReadOnly(this.estimate, name, this.estimate[signatures[0]]);
+            defineReadOnly(this.estimateGas, name, this.estimateGas[signatures[0]]);
         });
     }
 
@@ -634,7 +634,7 @@ export class Contract {
             logger.throwError("cannot override " + key, Logger.errors.UNSUPPORTED_OPERATION, { operation: key })
         });
 
-        tx.to = this.addressPromise;
+        tx.to = this.resolvedAddress;
         return this.deployed().then(() => {
             return this.signer.sendTransaction(tx);
         });
