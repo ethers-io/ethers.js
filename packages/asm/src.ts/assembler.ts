@@ -23,6 +23,13 @@ const Guard = { };
 function hexConcat(values: Array<Opcode | ethers.utils.BytesLike>): string {
     return ethers.utils.hexlify(ethers.utils.concat(values.map((v) => {
         if (v instanceof Opcode) { return [ v.value ]; }
+        if (typeof(v) === "number") {
+            if (v >= 0 && v <= 255 && !(v % 1)) {
+                return ethers.utils.hexlify(v);
+            } else {
+                throw new Error("invalid number: " + v);
+            }
+        }
         return v;
     })));
 }
@@ -96,7 +103,9 @@ class Script {
             },
 
             assemble: assemble,
-            disassemble: disassemble
+            disassemble: disassemble,
+
+            Error: Error
         }, {
             get: (obj: any, key: string): any => {
                 if (obj[key]) { return obj[key]; }
@@ -138,12 +147,18 @@ export type AssembleVisitFunc = (node: Node, bytecode: string) => void;
 
 export type VisitFunc = (node: Node) => void;
 
+function throwError(message: string, location: Location): never {
+    return logger.throwError(message, "ASSEMBLER", {
+        location: location
+    });
+}
+
 export abstract class Node {
     readonly tag: string;
     readonly location: Location;
 
     constructor(guard: any, location: Location, options: { [ key: string ]: any }) {
-        if (guard !== Guard) { throw new Error("cannot instantiate class"); }
+        if (guard !== Guard) { throwError("cannot instantiate class", location); }
         logger.checkAbstract(new.target, Node);
 
         ethers.utils.defineReadOnly(this, "location", Object.freeze(location));
@@ -190,7 +205,7 @@ export abstract class Node {
         };
 
         const factory = Factories[options.type];
-        if (!factory) { throw new Error("uknown type: " + options.type); }
+        if (!factory) { throwError("uknown type: " + options.type, options.loc); }
         return factory.from(options);
     }
 }
@@ -200,21 +215,23 @@ export abstract class ValueNode extends Node {
         logger.checkAbstract(new.target, ValueNode);
         super(guard, location, options);
     }
-}
 
-function pushLiteral(value: ethers.utils.BytesLike | ethers.utils.Hexable | number) {
-    // Convert value into a hexstring
-    const hex = ethers.utils.hexlify(value);
+    getPushLiteral(value: ethers.utils.BytesLike | ethers.utils.Hexable | number) {
+        // Convert value into a hexstring
+        const hex = ethers.utils.hexlify(value);
 
-    if (hex === "0x") {
-        throw new Error("invalid literal: 0x");
+        if (hex === "0x") {
+            throwError("invalid literal: 0x", this.location);
+        }
+
+        // Make sure it will fit into a push
+        const length = ethers.utils.hexDataLength(hex);
+        if (length === 0 || length > 32) {
+            throwError(`literal out of range: ${ hex }`, this.location);
+        }
+
+        return hexConcat([ Opcode.from("PUSH" + String(length)), hex ]);
     }
-
-    // Make sure it will fit into a push
-    const length = ethers.utils.hexDataLength(hex);
-    if (length === 0 || length > 32) { throw new Error(`literal out of range: ${ hex }`); }
-
-    return hexConcat([ Opcode.from("PUSH" + String(length)), hex ]);
 }
 
 export class LiteralNode extends ValueNode {
@@ -234,13 +251,13 @@ export class LiteralNode extends ValueNode {
                 visit(this, ethers.BigNumber.from(this.value).toHexString());
             }
         } else {
-            visit(this, pushLiteral(ethers.BigNumber.from(this.value)));
+            visit(this, this.getPushLiteral(ethers.BigNumber.from(this.value)));
         }
         assembler.end(this);
     }
 
     static from(options: any): LiteralNode {
-        if (options.type !== "hex" && options.type !== "decimal") { throw new Error("expected hex or decimal type"); }
+        if (options.type !== "hex" && options.type !== "decimal") { throwError("expected hex or decimal type", options.loc); }
         return new LiteralNode(Guard, options.loc, options.value, !!options.verbatim);
     }
 }
@@ -285,6 +302,7 @@ export class LinkNode extends ValueNode {
             }
         } else {
             const result = (<DataSource>(assembler.getLinkValue(target, this)));
+
             if (this.type === "offset") {
                 value = result.offset;
                 isOffset = true;
@@ -294,7 +312,7 @@ export class LinkNode extends ValueNode {
         }
 
         if (value == null) {
-             throw new Error("labels can only be targetted as offsets");
+             throwError("labels can only be targetted as offsets", this.location);
         }
 
         if (isOffset && assembler.positionIndependentCode) {
@@ -308,8 +326,8 @@ export class LinkNode extends ValueNode {
                 // Find a literal with length the encodes its own length in the delta
                 let literal = "0x";
                 for (let w = 1; w <= 5; w++) {
-                    if (w > 4) { throw new Error("jump too large!"); }
-                    literal = pushLiteral(here - value + w);
+                    if (w > 4) { throwError("jump too large!", this.location); }
+                    literal = this.getPushLiteral(here - value + w);
                     if (ethers.utils.hexDataLength(literal) <= w) {
                         literal = ethers.utils.hexZeroPad(literal, w);
                         break;
@@ -329,12 +347,12 @@ export class LinkNode extends ValueNode {
                 // Jump forwards; this is easy to calculate since we can
                 // do PC firat.
                 opcodes.push(Opcode.from("PC"));
-                opcodes.push(pushLiteral(value - here));
+                opcodes.push(this.getPushLiteral(value - here));
                 opcodes.push(Opcode.from("ADD"));
             }
             visit(this, hexConcat(opcodes));
         } else {
-            visit(this, pushLiteral(value));
+            visit(this, this.getPushLiteral(value));
         }
 
         assembler.end(this);
@@ -382,14 +400,14 @@ export class OpcodeNode extends ValueNode {
     }
 
     static from(options: any): OpcodeNode {
-        if (options.type !== "opcode") { throw new Error("expected opcode type"); }
+        if (options.type !== "opcode") { throwError("expected opcode type", options.loc); }
         const opcode = Opcode.from(options.mnemonic);
-        if (!opcode) { throw new Error("unknown opcode: " + options.mnemonic); }
+        if (!opcode) { throwError("unknown opcode: " + options.mnemonic, options.loc); }
 
         const operands = Object.freeze(options.operands.map((o: any) => {
             const operand = Node.from(o);
             if (!(operand instanceof ValueNode)) {
-                throw new Error("bad grammar?!");
+                throwError("bad grammar?!", options.loc);
             }
             return operand;
         }));
@@ -416,20 +434,49 @@ export class LabelNode extends LabelledNode {
     }
 
     static from(options: any): LabelNode {
-        if (options.type !== "label") { throw new Error("expected label type"); }
+        if (options.type !== "label") { throwError("expected label type", options.loc); }
         return new LabelNode(Guard, options.loc, options.name);
+    }
+}
+
+export class PaddingNode extends ValueNode {
+    _length: number;
+
+    constructor(guard: any, location: Location) {
+        super(guard, location, { });
+        this._length = 0;
+    }
+
+    setLength(length: number): void {
+        this._length = length;
+    }
+
+    async assemble(assembler: Assembler, visit: AssembleVisitFunc): Promise<void> {
+        assembler.start(this);
+
+        const padding = new Uint8Array(this._length);
+        padding.fill(0);
+        visit(this, ethers.utils.hexlify(padding));
+
+        assembler.end(this);
     }
 }
 
 export class DataNode extends LabelledNode {
     readonly data: Array<ValueNode>;
+    readonly padding: PaddingNode;
 
     constructor(guard: any, location: Location, name: string, data: string) {
         super(guard, location, name, { data });
+        ethers.utils.defineReadOnly(this, "padding", new PaddingNode(Guard, this.location));
     }
 
     async assemble(assembler: Assembler, visit: AssembleVisitFunc): Promise<void> {
         assembler.start(this);
+
+        // @TODO: This is a problem... We need to visit before visiting children
+        // so offsets are correct, but then we cannot pad...
+        visit(this, "0x")
 
         for (let i = 0; i < this.data.length; i++) {
             await this.data[i].assemble(assembler, visit);
@@ -438,36 +485,31 @@ export class DataNode extends LabelledNode {
         // We pad data if is contains PUSH opcodes that would overrun
         // the data, which could eclipse valid operations (since the
         // VM won't execute or jump within PUSH operations)
-
-        const bytecode = ethers.utils.arrayify(assembler.getBytecode(this));
+        const bytecode = ethers.utils.concat(this.data.map((d) => assembler.getBytecode(d)));
 
         // Replay the data as bytecode, skipping PUSH data
         let i = 0;
         while (i < bytecode.length) {
             const opcode = Opcode.from(bytecode[i++]);
-            if (opcode) {
-                i += opcode.isPush();
-            }
+            if (opcode) { i += opcode.isPush(); }
         }
 
         // The amount we overshot the data by is how much padding we need
-        const padding = new Uint8Array(i - bytecode.length);
+        this.padding.setLength(i - bytecode.length);
 
-        // What makes more sense? INVALID or 0 (i.e. STOP)?
-        //padding.fill(Opcode.from("INVALID").value);
-        padding.fill(0);
-
-        visit(this, ethers.utils.hexlify(padding))
+        await this.padding.assemble(assembler, visit);
 
         assembler.end(this);
     }
 
     children(): Array<Node> {
-        return this.data;
+        const children = this.data.slice();
+        children.push(this.padding);
+        return children;
     }
 
     static from(options: any): DataNode {
-        if (options.type !== "data") { throw new Error("expected data type"); }
+        if (options.type !== "data") { throwError("expected data type", options.loc); }
         return new DataNode(Guard, options.loc, options.name, Object.freeze(options.data.map((d: any) => Node.from(d))));
     }
 }
@@ -490,13 +532,13 @@ export class EvaluationNode extends ValueNode {
                 visit(this, ethers.utils.hexlify(result));
             }
         } else {
-            visit(this, pushLiteral(result));
+            visit(this, this.getPushLiteral(result));
         }
         assembler.end(this);
     }
 
     static from(options: any): EvaluationNode {
-        if (options.type !== "eval") { throw new Error("expected eval type"); }
+        if (options.type !== "eval") { throwError("expected eval type", options.loc); }
         return new EvaluationNode(Guard, options.loc, options.script, !!options.verbatim);
     }
 }
@@ -515,7 +557,7 @@ export class ExecutionNode extends Node {
     }
 
     static from(options: any): ExecutionNode {
-        if (options.type !== "exec") { throw new Error("expected exec type"); }
+        if (options.type !== "exec") { throwError("expected exec type", options.loc); }
         return new ExecutionNode(Guard, options.loc, options.script);
     }
 }
@@ -541,7 +583,7 @@ export class ScopeNode extends LabelledNode {
     }
 
     static from(options: any): ScopeNode {
-        if (options.type !== "scope") { throw new Error("expected scope type"); }
+        if (options.type !== "scope") { throwError("expected scope type", options.loc); }
         return new ScopeNode(Guard, options.loc, options.name, Object.freeze(options.statements.map((s: any) => Node.from(s))));
     }
 }
@@ -636,6 +678,7 @@ export interface DataSource extends Array<number> {
     offset: number;
     ast: Node;
     source: string;
+    _freeze?: () => void;
 }
 
 export type NodeState = {
@@ -770,7 +813,7 @@ class Assembler {
             // Label offset (e.g. "@foo:"); accessible only within its direct scope
             //const scope = this.getAncestor(source, Scope);
             if (targetScope !== sourceScope) {
-                throw new Error(`cannot access ${ target.name } from ${ source.tag }`);
+                throwError(`cannot access ${ target.name } from ${ source.tag }`, source.location);
             }
 
             // Return the offset relative to its scope
@@ -782,11 +825,11 @@ class Assembler {
         // Return the offset is relative to its scope
         const bytes = Array.prototype.slice.call(ethers.utils.arrayify(info.bytecode));
 
-        bytes.ast = target;
-        bytes.source = target.location.source;
+        ethers.utils.defineReadOnly(bytes, "ast", target);
+        ethers.utils.defineReadOnly(bytes, "source", target.location.source);
 
         if (!((target instanceof DataNode) || (target instanceof ScopeNode))) {
-            throw new Error("invalid link value lookup");
+            throwError("invalid link value lookup", source.location);
         }
 
         // Check that target is any descendant (or self) of the source scope
@@ -800,14 +843,21 @@ class Assembler {
         // Not safe to access the offset; this will fault if anything tries.
         if (!safeOffset) {
             Object.defineProperty(bytes, "offset", {
-                get: function() { throw new Error(`cannot access ${ target.name }.offset from ${ source.tag }`); }
+                get: function() { throwError(`cannot access ${ target.name }.offset from ${ source.tag }`, this.location); }
             });
+            ethers.utils.defineReadOnly(bytes, "_freeze", function() { });
         }
 
         // Add the offset relative to the scope; unless the offset has
         // been marked as invalid, in which case accessing it will fail
         if (safeOffset) {
             bytes.offset = info.offset - this.nodes[sourceScope.tag].offset;
+            let frozen = false;
+            ethers.utils.defineReadOnly(bytes, "_freeze", function() {
+                 if (frozen) { return; }
+                 frozen = true;
+                 ethers.utils.defineReadOnly(bytes, "offset", bytes.offset);
+            });
         }
 
         return bytes;
@@ -967,8 +1017,11 @@ class CodeGenerationAssembler extends Assembler {
 
     readonly _stack: Array<Node>;
 
-    _oldBytecode: { [ tag: string ]: string };
+    //_oldBytecode: { [ tag: string ]: string };
+    _nextBytecode: { [ tag: string ]: string };
     _objectCache: { [ tag: string ]: any };
+
+    private _checks: Array<() => boolean>;
 
     _script: Script;
 
@@ -997,16 +1050,25 @@ class CodeGenerationAssembler extends Assembler {
     // Reset the assmebler for another run with updated values
     reset(): void {
         this._changed = false;
-        this._oldBytecode = { };
         this._objectCache = { };
+
+        this._nextBytecode = { };
 
         this._script = new Script(this.filename, (name: string, context: any) => {
             return this.get(name, context);
         });
+
+        this._checks = [ ];
     }
 
     evaluate(script: string, source: Node): Promise<any> {
         return this._script.evaluate(script, source);
+    }
+
+    _runChecks(): void {
+        this._checks.forEach((func) => {
+            if (!func()) { this._didChange(); }
+        });
     }
 
     getLinkValue(target: LabelledNode, source: Node): number | DataSource {
@@ -1019,32 +1081,59 @@ class CodeGenerationAssembler extends Assembler {
 
         if (typeof(result) === "number") {
             if (result < 0) {
-                this._didChange();
+                this._checks.push(() => false);
                 return 0;
             }
+            this._checks.push(() => {
+                return (super.getLinkValue(target, source) === result);
+            });
             return result;
         }
 
-        if (result.offset < 0) {
-            result.offset = 0;
-            this._didChange();
+        // The offset cannot be used so is independent
+        try {
+            if (result.offset < 0) {
+                this._checks.push(() => false);
+                result.offset = 0;
+                //this._didChange();
+            } else {
+                this._checks.push(() => {
+                    const check = <DataSource>super.getLinkValue(target, source);
+                    if (check.offset === result.offset && ethers.utils.hexlify(check) === ethers.utils.hexlify(result)) {
+                        return true;
+                    }
+                    return false;
+                });
+            }
+        } catch (error) {
+            this._checks.push(() => {
+                const check = <DataSource>super.getLinkValue(target, source);
+                return (ethers.utils.hexlify(check) === ethers.utils.hexlify(result));
+            });
         }
+
         return result;
     }
 
     start(node: Node): void {
         this._stack.push(node);
-        this._oldBytecode[node.tag] = this.getBytecode(node);
-        this.setBytecode(node, "0x");
+        //this._oldBytecode[node.tag] = this.getBytecode(node);
+        //this.setBytecode(node, "0x");
+        this._nextBytecode[node.tag] = "0x";
     }
 
     end(node: Node): void {
         if (this._stack.pop() !== node) {
-            throw new Error("missing push/pop pair");
+            throwError("missing push/pop pair", node.location);
         }
 
-        if (this._oldBytecode[node.tag] !== this.getBytecode(node)) {
-            this._didChange();
+        const oldBytecode = this.getBytecode(node);
+        this.setBytecode(node, this._nextBytecode[node.tag]);
+
+        if (!(node instanceof PaddingNode)) {
+            this._checks.push(() => {
+                return (oldBytecode === this.getBytecode(node));
+            });
         }
     }
 
@@ -1055,6 +1144,9 @@ class CodeGenerationAssembler extends Assembler {
     get(name: string, source: Node): any {
         if (name === "defines") {
             return this.defines;
+        } else if (name === "_ok") {
+            this._runChecks();
+            return !this._didChange;
         }
 
         const node = this.labels[name];
@@ -1065,7 +1157,11 @@ class CodeGenerationAssembler extends Assembler {
         // run the entire assembly process again with the updated
         // values
         if (this._objectCache[node.tag] == null) {
-            this._objectCache[node.tag] = Object.freeze(this.getLinkValue(node, source));
+
+            const result = this.getLinkValue(node, source);
+            if (typeof(result) !== "number" ) { result._freeze(); }
+
+            this._objectCache[node.tag] = result;
         }
 
         return this._objectCache[node.tag];
@@ -1079,18 +1175,21 @@ class CodeGenerationAssembler extends Assembler {
             // Things have moved; we will need to try again
             if (this.getOffset(node) !== offset) {
                 this.setOffset(node, offset);
-                this._didChange();
+                //this._didChange();
+                this._checks.push(() => false);
             }
 
             this._stack.forEach((node) => {
-                this.setBytecode(node, hexConcat([
-                    this.getBytecode(node),
+                this._nextBytecode[node.tag] = hexConcat([
+                    this._nextBytecode[node.tag],
                     bytecode
-                ]));
+                ]);
             });
 
             offset += ethers.utils.hexDataLength(bytecode);
         });
+
+        this._runChecks();
     }
 
     async assemble(label?: string): Promise<string> {
@@ -1118,11 +1217,11 @@ class CodeGenerationAssembler extends Assembler {
                 // This should not happen; something is wrong with the grammar
                 // or missing enter/exit call in assemble
                 if (this._stack.length !== 0) {
-                    throw new Error("Bad AST! Bad grammar?!");
+                    throwError("Bad AST! Bad grammar?!", null);
                 }
 
                 //console.log(`Assembled in ${ i } attempts`);
-                return this.getBytecode(target);;
+                return this.getBytecode(target);
             }
         }
 
