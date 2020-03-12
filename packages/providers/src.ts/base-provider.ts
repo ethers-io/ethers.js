@@ -112,7 +112,7 @@ function getTime() {
  *   - transaction hash
  */
 
-class Event {
+export class Event {
     readonly listener: Listener;
     readonly once: boolean;
     readonly tag: string;
@@ -121,6 +121,27 @@ class Event {
         defineReadOnly(this, "tag", tag);
         defineReadOnly(this, "listener", listener);
         defineReadOnly(this, "once", once);
+    }
+
+    get type(): string {
+        return this.tag.split(":")[0]
+    }
+
+    get hash(): string {
+        const comps = this.tag.split(":");
+        if (comps[0] !== "tx") { return null; }
+        return comps[1];
+    }
+
+    get filter(): Filter {
+        const comps = this.tag.split(":");
+        if (comps[0] !== "filter") { return null; }
+        const filter = {
+            address: comps[1],
+            topics: deserializeTopics(comps[2])
+        }
+        if (!filter.address || filter.address === "*") { delete filter.address; }
+        return filter;
     }
 
     pollable(): boolean {
@@ -154,7 +175,7 @@ export class BaseProvider extends Provider {
     _emitted: { [ eventName: string ]: number | "pending" };
 
     _pollingInterval: number;
-    _poller: any; // @TODO: what does TypeScript think setInterval returns?
+    _poller: NodeJS.Timer;
 
     _lastBlockNumber: number;
 
@@ -309,10 +330,9 @@ export class BaseProvider extends Provider {
 
         // Find all transaction hashes we are waiting on
         this._events.forEach((event) => {
-            const comps = event.tag.split(":");
-            switch (comps[0]) {
+            switch (event.type) {
                 case "tx": {
-                    const hash = comps[1];
+                    const hash = event.hash;
                     let runner = this.getTransactionReceipt(hash).then((receipt) => {
                         if (!receipt || receipt.blockNumber == null) { return null; }
                         this._emitted["t:" + hash] = receipt.blockNumber;
@@ -326,14 +346,9 @@ export class BaseProvider extends Provider {
                 }
 
                 case "filter": {
-                    const topics = deserializeTopics(comps[2]);
-                    const filter = {
-                        address: comps[1],
-                        fromBlock: this._lastBlockNumber + 1,
-                        toBlock: blockNumber,
-                        topics: topics
-                    }
-                    if (!filter.address || filter.address === "*") { delete filter.address; }
+                    const filter = event.filter;
+                    filter.fromBlock = this._lastBlockNumber + 1;
+                    filter.toBlock = blockNumber;
 
                     const runner = this.getLogs(filter).then((logs) => {
                         if (logs.length === 0) { return; }
@@ -342,7 +357,6 @@ export class BaseProvider extends Provider {
                             this._emitted["t:" + log.transactionHash] = log.blockNumber;
                             this.emit(filter, log);
                         });
-                        return null;
                     }).catch((error: Error) => { this.emit("error", error); });
                     runners.push(runner);
 
@@ -937,25 +951,19 @@ export class BaseProvider extends Provider {
         return logger.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
     }
 
-    _startPending(): void {
-        console.log("WARNING: this provider does not support pending events");
+    _startEvent(event: Event): void {
+        this.polling = (this._events.filter((e) => e.pollable()).length > 0);
     }
 
-    _stopPending(): void {
-    }
-
-    // Returns true if there are events that still require polling
-    _checkPolling(): void {
+    _stopEvent(event: Event): void {
         this.polling = (this._events.filter((e) => e.pollable()).length > 0);
     }
 
     _addEventListener(eventName: EventType, listener: Listener, once: boolean): this {
-        this._events.push(new Event(getEventTag(eventName), listener, once));
+        const event = new Event(getEventTag(eventName), listener, once)
+        this._events.push(event);
 
-        if (eventName === "pending") { this._startPending(); }
-
-        // Do we still now have any events that require polling?
-        this._checkPolling();
+        this._startEvent(event);
 
         return this;
     }
@@ -972,18 +980,27 @@ export class BaseProvider extends Provider {
     emit(eventName: EventType, ...args: Array<any>): boolean {
         let result = false;
 
+        let stopped: Array<Event> = [ ];
+
         let eventTag = getEventTag(eventName);
         this._events = this._events.filter((event) => {
             if (event.tag !== eventTag) { return true; }
+
             setTimeout(() => {
                 event.listener.apply(this, args);
             }, 0);
+
             result = true;
-            return !(event.once);
+
+            if (event.once) {
+                stopped.push(event);
+                return false;
+            }
+
+            return true;
         });
 
-        // Do we still have any events that require polling? ("once" events remove themselves)
-        this._checkPolling();
+        stopped.forEach((event) => { this._stopEvent(event); });
 
         return result;
     }
@@ -1013,6 +1030,8 @@ export class BaseProvider extends Provider {
             return this.removeAllListeners(eventName);
         }
 
+        const stopped: Array<Event> = [ ];
+
         let found = false;
 
         let eventTag = getEventTag(eventName);
@@ -1020,31 +1039,31 @@ export class BaseProvider extends Provider {
             if (event.tag !== eventTag || event.listener != listener) { return true; }
             if (found) { return true; }
             found = true;
+            stopped.push(event);
             return false;
         });
 
-        if (eventName === "pending" && this.listenerCount("pending") === 0) { this._stopPending(); }
-
-        // Do we still have any events that require polling?
-        this._checkPolling();
+        stopped.forEach((event) => { this._stopEvent(event); });
 
         return this;
     }
 
     removeAllListeners(eventName?: EventType): this {
+        let stopped: Array<Event> = [ ];
         if (eventName == null) {
+            stopped = this._events;
+
             this._events = [ ];
-            this._stopPending();
         } else {
-            let eventTag = getEventTag(eventName);
+            const eventTag = getEventTag(eventName);
             this._events = this._events.filter((event) => {
-                return (event.tag !== eventTag);
+                if (event.tag !== eventTag) { return true; }
+                stopped.push(event);
+                return false;
             });
-            if (eventName === "pending") { this._stopPending(); }
         }
 
-        // Do we still have any events that require polling?
-        this._checkPolling();
+        stopped.forEach((event) => { this._stopEvent(event); });
 
         return this;
     }

@@ -2,6 +2,7 @@
   "author": "Richard Moore <me@ricmoo.com>",
   "browser": {
     "./ipc-provider": "./lib/browser-ipc-provider.js",
+    "ws": "./lib/browser-ws.js",
     "net": "./lib/browser-net.js"
   },
   "dependencies": {
@@ -19,7 +20,8 @@
     "@ethersproject/rlp": ">=5.0.0-beta.126",
     "@ethersproject/strings": ">=5.0.0-beta.130",
     "@ethersproject/transactions": ">=5.0.0-beta.128",
-    "@ethersproject/web": ">=5.0.0-beta.129"
+    "@ethersproject/web": ">=5.0.0-beta.129",
+    "ws": "7.2.3"
   },
   "description": "Ethereum Providers for ethers.",
   "devDependencies": {

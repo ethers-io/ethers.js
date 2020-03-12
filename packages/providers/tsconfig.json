@@ -5,7 +5,8 @@
     "outDir": "./lib/"
   },
   "include": [
-    "./src.ts/*.ts"
+    "./src.ts/*.ts",
+    "./thirdparty.d.ts"
   ],
   "exclude": []
 }

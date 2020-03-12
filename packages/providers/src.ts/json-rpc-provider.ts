@@ -15,7 +15,7 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
-import { BaseProvider } from "./base-provider";
+import { BaseProvider, Event } from "./base-provider";
 
 
 function timer(timeout: number): Promise<any> {
@@ -263,7 +263,7 @@ export class JsonRpcProvider extends BaseProvider {
         }
 
         // Default URL
-        if (!url) { url = "http:/" + "/localhost:8545"; }
+        if (!url) { url = getStatic<() => string>(this.constructor, "defaultUrl")(); }
 
         if (typeof(url) === "string") {
             this.connection = Object.freeze({
@@ -274,6 +274,10 @@ export class JsonRpcProvider extends BaseProvider {
         }
 
         this._nextId = 42;
+    }
+
+    static defaultUrl(): string {
+        return "http:/" + "/localhost:8545";
     }
 
     getSigner(addressOrIndex?: string | number): JsonRpcSigner {
@@ -402,6 +406,11 @@ export class JsonRpcProvider extends BaseProvider {
         return logger.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
     }
 
+    _startEvent(event: Event): void {
+        if (event.tag === "pending") { this._startPending(); }
+        super._startEvent(event);
+    }
+
     _startPending(): void {
         if (this._pendingFilter != null) { return; }
         let self = this;
@@ -445,9 +454,13 @@ export class JsonRpcProvider extends BaseProvider {
         }).catch((error: Error) => { });
     }
 
-    _stopPending(): void {
-        this._pendingFilter = null;
+    _stopEvent(event: Event): void {
+        if (event.tag === "pending" && this.listenerCount("pending") === 0) {
+            this._pendingFilter = null;
+        }
+        super._stopEvent(event);
     }
+
 
     // Convert an ethers.js transaction into a JSON-RPC transaction
     //  - gasLimit => gas

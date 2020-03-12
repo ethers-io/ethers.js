@@ -98,7 +98,7 @@ export default commandLineArgs => {
             namedExports: {
                 "bn.js": [ "BN" ],
                 "elliptic": [ "ec" ],
-                "scrypt-js": [ "scrypt" ],
+                "scrypt-js": [ "scrypt", "syncScrypt" ],
             },
         }),
     ];

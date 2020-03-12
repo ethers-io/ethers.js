@@ -27,6 +27,7 @@ import { InfuraProvider } from "./infura-provider";
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 import { NodesmithProvider } from "./nodesmith-provider";
 import { Web3Provider } from "./web3-provider";
+import { WebSocketProvider } from "./websocket-provider";
 
 import { AsyncSendable } from "./web3-provider";
 
@@ -86,6 +87,7 @@ export {
     JsonRpcProvider,
     NodesmithProvider,
     Web3Provider,
+    WebSocketProvider,
 
     IpcProvider,
 
