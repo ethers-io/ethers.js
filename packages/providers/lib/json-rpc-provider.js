@@ -311,7 +311,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         }
         // Default URL
         if (!url) {
-            url = "http:/" + "/localhost:8545";
+            url = properties_1.getStatic(_this.constructor, "defaultUrl")();
         }
         if (typeof (url) === "string") {
             _this.connection = Object.freeze({
@@ -324,6 +324,9 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         _this._nextId = 42;
         return _this;
     }
+    JsonRpcProvider.defaultUrl = function () {
+        return "http:/" + "/localhost:8545";
+    };
     JsonRpcProvider.prototype.getSigner = function (addressOrIndex) {
         return new JsonRpcSigner(_constructorGuard, this, addressOrIndex);
     };
@@ -429,6 +432,12 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         }
         return logger.throwError(method + " not implemented", logger_1.Logger.errors.NOT_IMPLEMENTED, { operation: method });
     };
+    JsonRpcProvider.prototype._startEvent = function (event) {
+        if (event.tag === "pending") {
+            this._startPending();
+        }
+        _super.prototype._startEvent.call(this, event);
+    };
     JsonRpcProvider.prototype._startPending = function () {
         if (this._pendingFilter != null) {
             return;
@@ -469,8 +478,11 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             return filterId;
         }).catch(function (error) { });
     };
-    JsonRpcProvider.prototype._stopPending = function () {
-        this._pendingFilter = null;
+    JsonRpcProvider.prototype._stopEvent = function (event) {
+        if (event.tag === "pending" && this.listenerCount("pending") === 0) {
+            this._pendingFilter = null;
+        }
+        _super.prototype._stopEvent.call(this, event);
     };
     // Convert an ethers.js transaction into a JSON-RPC transaction
     //  - gasLimit => gas

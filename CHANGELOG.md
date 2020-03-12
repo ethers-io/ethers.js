@@ -3,6 +3,14 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.176 (2020-03-12 19:10)
+-----------------------------------------
+
+  - Checking in initial Eip1193Bridge (experimental). ([2c78f0b](https://github.com/ethers-io/ethers.js/commit/2c78f0bf265a0f7c9f4cfc1bc79ecd4629b59c49))
+  - Added initial WebSocketProvider. ([#141](https://github.com/ethers-io/ethers.js/issues/141); [117a5dd](https://github.com/ethers-io/ethers.js/commit/117a5dd7ffa783c4335c0b87621437447cd499d0))
+  - Renamed properties based on community recommendations; estimate to estimateGas and addressPromise to resovledAddress. ([fe3b3fa](https://github.com/ethers-io/ethers.js/commit/fe3b3fa1aded67827fec1131931d95d8153d8f32))
+  - Better error reporting and fixed look-ahead for data labels. ([e52312e](https://github.com/ethers-io/ethers.js/commit/e52312e783b8d0fdd7e9992716cbe2e179751b38))
+
 ethers/v5.0.0-beta.175 (2020-02-27 19:53)
 -----------------------------------------
 

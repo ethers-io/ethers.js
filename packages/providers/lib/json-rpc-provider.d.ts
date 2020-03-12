@@ -3,7 +3,7 @@ import { Signer } from "@ethersproject/abstract-signer";
 import { Bytes } from "@ethersproject/bytes";
 import { Networkish } from "@ethersproject/networks";
 import { ConnectionInfo } from "@ethersproject/web";
-import { BaseProvider } from "./base-provider";
+import { BaseProvider, Event } from "./base-provider";
 export declare class JsonRpcSigner extends Signer {
     readonly provider: JsonRpcProvider;
     _index: number;
@@ -26,13 +26,15 @@ export declare class JsonRpcProvider extends BaseProvider {
     _pendingFilter: Promise<number>;
     _nextId: number;
     constructor(url?: ConnectionInfo | string, network?: Networkish);
+    static defaultUrl(): string;
     getSigner(addressOrIndex?: string | number): JsonRpcSigner;
     getUncheckedSigner(addressOrIndex?: string | number): UncheckedJsonRpcSigner;
     listAccounts(): Promise<Array<string>>;
     send(method: string, params: Array<any>): Promise<any>;
     perform(method: string, params: any): Promise<any>;
+    _startEvent(event: Event): void;
     _startPending(): void;
-    _stopPending(): void;
+    _stopEvent(event: Event): void;
     static hexlifyTransaction(transaction: TransactionRequest, allowExtra?: {
         [key: string]: boolean;
     }): {

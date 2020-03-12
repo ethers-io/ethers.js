@@ -99,11 +99,11 @@ function runMethod(contract, functionName, options) {
         // If the contract was just deployed, wait until it is minded
         if (contract.deployTransaction != null) {
             tx.to = contract._deployed(blockTag).then(function () {
-                return contract.addressPromise;
+                return contract.resolvedAddress;
             });
         }
         else {
-            tx.to = contract.addressPromise;
+            tx.to = contract.resolvedAddress;
         }
         return resolveAddresses(contract.signer || contract.provider, params, method.inputs).then(function (params) {
             tx.data = contract.interface.encodeFunctionData(method, params);
@@ -337,7 +337,7 @@ var Contract = /** @class */ (function () {
             logger.throwArgumentError("invalid signer or provider", "signerOrProvider", signerOrProvider);
         }
         properties_1.defineReadOnly(this, "callStatic", {});
-        properties_1.defineReadOnly(this, "estimate", {});
+        properties_1.defineReadOnly(this, "estimateGas", {});
         properties_1.defineReadOnly(this, "functions", {});
         properties_1.defineReadOnly(this, "populateTransaction", {});
         properties_1.defineReadOnly(this, "filters", {});
@@ -374,7 +374,7 @@ var Contract = /** @class */ (function () {
         properties_1.defineReadOnly(this, "_wrappedEmits", {});
         properties_1.defineReadOnly(this, "address", addressOrName);
         if (this.provider) {
-            properties_1.defineReadOnly(this, "addressPromise", this.provider.resolveName(addressOrName).then(function (address) {
+            properties_1.defineReadOnly(this, "resolvedAddress", this.provider.resolveName(addressOrName).then(function (address) {
                 if (address == null) {
                     throw new Error("name not found");
                 }
@@ -386,7 +386,7 @@ var Contract = /** @class */ (function () {
         }
         else {
             try {
-                properties_1.defineReadOnly(this, "addressPromise", Promise.resolve((this.interface.constructor).getAddress(addressOrName)));
+                properties_1.defineReadOnly(this, "resolvedAddress", Promise.resolve((this.interface.constructor).getAddress(addressOrName)));
             }
             catch (error) {
                 // Without a provider, we cannot use ENS names
@@ -410,8 +410,8 @@ var Contract = /** @class */ (function () {
             if (_this.populateTransaction[name] == null) {
                 properties_1.defineReadOnly(_this.populateTransaction, name, runMethod(_this, name, { transaction: true }));
             }
-            if (_this.estimate[name] == null) {
-                properties_1.defineReadOnly(_this.estimate, name, runMethod(_this, name, { estimate: true }));
+            if (_this.estimateGas[name] == null) {
+                properties_1.defineReadOnly(_this.estimateGas, name, runMethod(_this, name, { estimate: true }));
             }
             if (!uniqueFunctions[fragment.name]) {
                 uniqueFunctions[fragment.name] = [];
@@ -430,7 +430,7 @@ var Contract = /** @class */ (function () {
             properties_1.defineReadOnly(_this.functions, name, _this.functions[signatures[0]]);
             properties_1.defineReadOnly(_this.callStatic, name, _this.callStatic[signatures[0]]);
             properties_1.defineReadOnly(_this.populateTransaction, name, _this.populateTransaction[signatures[0]]);
-            properties_1.defineReadOnly(_this.estimate, name, _this.estimate[signatures[0]]);
+            properties_1.defineReadOnly(_this.estimateGas, name, _this.estimateGas[signatures[0]]);
         });
     }
     Contract.getContractAddress = function (transaction) {
@@ -488,7 +488,7 @@ var Contract = /** @class */ (function () {
             }
             logger.throwError("cannot override " + key, logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
         });
-        tx.to = this.addressPromise;
+        tx.to = this.resolvedAddress;
         return this.deployed().then(function () {
             return _this.signer.sendTransaction(tx);
         });

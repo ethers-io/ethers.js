@@ -232,7 +232,7 @@ export class JsonRpcProvider extends BaseProvider {
         }
         // Default URL
         if (!url) {
-            url = "http:/" + "/localhost:8545";
+            url = getStatic(this.constructor, "defaultUrl")();
         }
         if (typeof (url) === "string") {
             this.connection = Object.freeze({
@@ -243,6 +243,9 @@ export class JsonRpcProvider extends BaseProvider {
             this.connection = Object.freeze(shallowCopy(url));
         }
         this._nextId = 42;
+    }
+    static defaultUrl() {
+        return "http:/" + "/localhost:8545";
     }
     getSigner(addressOrIndex) {
         return new JsonRpcSigner(_constructorGuard, this, addressOrIndex);
@@ -347,6 +350,12 @@ export class JsonRpcProvider extends BaseProvider {
         }
         return logger.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
     }
+    _startEvent(event) {
+        if (event.tag === "pending") {
+            this._startPending();
+        }
+        super._startEvent(event);
+    }
     _startPending() {
         if (this._pendingFilter != null) {
             return;
@@ -387,8 +396,11 @@ export class JsonRpcProvider extends BaseProvider {
             return filterId;
         }).catch((error) => { });
     }
-    _stopPending() {
-        this._pendingFilter = null;
+    _stopEvent(event) {
+        if (event.tag === "pending" && this.listenerCount("pending") === 0) {
+            this._pendingFilter = null;
+        }
+        super._stopEvent(event);
     }
     // Convert an ethers.js transaction into a JSON-RPC transaction
     //  - gasLimit => gas

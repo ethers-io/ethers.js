@@ -11,6 +11,7 @@ import { InfuraProvider } from "./infura-provider";
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 import { NodesmithProvider } from "./nodesmith-provider";
 import { Web3Provider } from "./web3-provider";
+import { WebSocketProvider } from "./websocket-provider";
 import { Formatter } from "./formatter";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -47,7 +48,7 @@ export {
 Provider, BaseProvider, 
 ///////////////////////
 // Concreate Providers
-FallbackProvider, AlchemyProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, NodesmithProvider, Web3Provider, IpcProvider, 
+FallbackProvider, AlchemyProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, NodesmithProvider, Web3Provider, WebSocketProvider, IpcProvider, 
 ///////////////////////
 // Signer
 JsonRpcSigner, 

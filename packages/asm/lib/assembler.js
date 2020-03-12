@@ -69,6 +69,14 @@ function hexConcat(values) {
         if (v instanceof opcodes_1.Opcode) {
             return [v.value];
         }
+        if (typeof (v) === "number") {
+            if (v >= 0 && v <= 255 && !(v % 1)) {
+                return ethers_1.ethers.utils.hexlify(v);
+            }
+            else {
+                throw new Error("invalid number: " + v);
+            }
+        }
         return v;
     })));
 }
@@ -124,7 +132,8 @@ var Script = /** @class */ (function () {
                 return ethers_1.ethers.utils.id(ethers_1.ethers.utils.EventFragment.from(signature).format());
             },
             assemble: assemble,
-            disassemble: disassemble
+            disassemble: disassemble,
+            Error: Error
         }, {
             get: function (obj, key) {
                 if (obj[key]) {
@@ -164,11 +173,16 @@ var Script = /** @class */ (function () {
     return Script;
 }());
 var nextTag = 1;
+function throwError(message, location) {
+    return logger.throwError(message, "ASSEMBLER", {
+        location: location
+    });
+}
 var Node = /** @class */ (function () {
     function Node(guard, location, options) {
         var _newTarget = this.constructor;
         if (guard !== Guard) {
-            throw new Error("cannot instantiate class");
+            throwError("cannot instantiate class", location);
         }
         logger.checkAbstract(_newTarget, Node);
         ethers_1.ethers.utils.defineReadOnly(this, "location", Object.freeze(location));
@@ -214,7 +228,7 @@ var Node = /** @class */ (function () {
         };
         var factory = Factories[options.type];
         if (!factory) {
-            throw new Error("uknown type: " + options.type);
+            throwError("uknown type: " + options.type, options.loc);
         }
         return factory.from(options);
     };
@@ -230,22 +244,22 @@ var ValueNode = /** @class */ (function (_super) {
         _this = _super.call(this, guard, location, options) || this;
         return _this;
     }
+    ValueNode.prototype.getPushLiteral = function (value) {
+        // Convert value into a hexstring
+        var hex = ethers_1.ethers.utils.hexlify(value);
+        if (hex === "0x") {
+            throwError("invalid literal: 0x", this.location);
+        }
+        // Make sure it will fit into a push
+        var length = ethers_1.ethers.utils.hexDataLength(hex);
+        if (length === 0 || length > 32) {
+            throwError("literal out of range: " + hex, this.location);
+        }
+        return hexConcat([opcodes_1.Opcode.from("PUSH" + String(length)), hex]);
+    };
     return ValueNode;
 }(Node));
 exports.ValueNode = ValueNode;
-function pushLiteral(value) {
-    // Convert value into a hexstring
-    var hex = ethers_1.ethers.utils.hexlify(value);
-    if (hex === "0x") {
-        throw new Error("invalid literal: 0x");
-    }
-    // Make sure it will fit into a push
-    var length = ethers_1.ethers.utils.hexDataLength(hex);
-    if (length === 0 || length > 32) {
-        throw new Error("literal out of range: " + hex);
-    }
-    return hexConcat([opcodes_1.Opcode.from("PUSH" + String(length)), hex]);
-}
 var LiteralNode = /** @class */ (function (_super) {
     __extends(LiteralNode, _super);
     function LiteralNode(guard, location, value, verbatim) {
@@ -264,7 +278,7 @@ var LiteralNode = /** @class */ (function (_super) {
                     }
                 }
                 else {
-                    visit(this, pushLiteral(ethers_1.ethers.BigNumber.from(this.value)));
+                    visit(this, this.getPushLiteral(ethers_1.ethers.BigNumber.from(this.value)));
                 }
                 assembler.end(this);
                 return [2 /*return*/];
@@ -273,7 +287,7 @@ var LiteralNode = /** @class */ (function (_super) {
     };
     LiteralNode.from = function (options) {
         if (options.type !== "hex" && options.type !== "decimal") {
-            throw new Error("expected hex or decimal type");
+            throwError("expected hex or decimal type", options.loc);
         }
         return new LiteralNode(Guard, options.loc, options.value, !!options.verbatim);
     };
@@ -331,7 +345,7 @@ var LinkNode = /** @class */ (function (_super) {
                     }
                 }
                 if (value == null) {
-                    throw new Error("labels can only be targetted as offsets");
+                    throwError("labels can only be targetted as offsets", this.location);
                 }
                 if (isOffset && assembler.positionIndependentCode) {
                     here = assembler.getOffset(this, this);
@@ -340,9 +354,9 @@ var LinkNode = /** @class */ (function (_super) {
                         literal = "0x";
                         for (w = 1; w <= 5; w++) {
                             if (w > 4) {
-                                throw new Error("jump too large!");
+                                throwError("jump too large!", this.location);
                             }
-                            literal = pushLiteral(here - value + w);
+                            literal = this.getPushLiteral(here - value + w);
                             if (ethers_1.ethers.utils.hexDataLength(literal) <= w) {
                                 literal = ethers_1.ethers.utils.hexZeroPad(literal, w);
                                 break;
@@ -361,13 +375,13 @@ var LinkNode = /** @class */ (function (_super) {
                         // Jump forwards; this is easy to calculate since we can
                         // do PC firat.
                         opcodes.push(opcodes_1.Opcode.from("PC"));
-                        opcodes.push(pushLiteral(value - here));
+                        opcodes.push(this.getPushLiteral(value - here));
                         opcodes.push(opcodes_1.Opcode.from("ADD"));
                     }
                     visit(this, hexConcat(opcodes));
                 }
                 else {
-                    visit(this, pushLiteral(value));
+                    visit(this, this.getPushLiteral(value));
                 }
                 assembler.end(this);
                 return [2 /*return*/];
@@ -424,16 +438,16 @@ var OpcodeNode = /** @class */ (function (_super) {
     };
     OpcodeNode.from = function (options) {
         if (options.type !== "opcode") {
-            throw new Error("expected opcode type");
+            throwError("expected opcode type", options.loc);
         }
         var opcode = opcodes_1.Opcode.from(options.mnemonic);
         if (!opcode) {
-            throw new Error("unknown opcode: " + options.mnemonic);
+            throwError("unknown opcode: " + options.mnemonic, options.loc);
         }
         var operands = Object.freeze(options.operands.map(function (o) {
             var operand = Node.from(o);
             if (!(operand instanceof ValueNode)) {
-                throw new Error("bad grammar?!");
+                throwError("bad grammar?!", options.loc);
             }
             return operand;
         }));
@@ -473,25 +487,56 @@ var LabelNode = /** @class */ (function (_super) {
     };
     LabelNode.from = function (options) {
         if (options.type !== "label") {
-            throw new Error("expected label type");
+            throwError("expected label type", options.loc);
         }
         return new LabelNode(Guard, options.loc, options.name);
     };
     return LabelNode;
 }(LabelledNode));
 exports.LabelNode = LabelNode;
+var PaddingNode = /** @class */ (function (_super) {
+    __extends(PaddingNode, _super);
+    function PaddingNode(guard, location) {
+        var _this = _super.call(this, guard, location, {}) || this;
+        _this._length = 0;
+        return _this;
+    }
+    PaddingNode.prototype.setLength = function (length) {
+        this._length = length;
+    };
+    PaddingNode.prototype.assemble = function (assembler, visit) {
+        return __awaiter(this, void 0, void 0, function () {
+            var padding;
+            return __generator(this, function (_a) {
+                assembler.start(this);
+                padding = new Uint8Array(this._length);
+                padding.fill(0);
+                visit(this, ethers_1.ethers.utils.hexlify(padding));
+                assembler.end(this);
+                return [2 /*return*/];
+            });
+        });
+    };
+    return PaddingNode;
+}(ValueNode));
+exports.PaddingNode = PaddingNode;
 var DataNode = /** @class */ (function (_super) {
     __extends(DataNode, _super);
     function DataNode(guard, location, name, data) {
-        return _super.call(this, guard, location, name, { data: data }) || this;
+        var _this = _super.call(this, guard, location, name, { data: data }) || this;
+        ethers_1.ethers.utils.defineReadOnly(_this, "padding", new PaddingNode(Guard, _this.location));
+        return _this;
     }
     DataNode.prototype.assemble = function (assembler, visit) {
         return __awaiter(this, void 0, void 0, function () {
-            var i_1, bytecode, i, opcode, padding;
+            var i_1, bytecode, i, opcode;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         assembler.start(this);
+                        // @TODO: This is a problem... We need to visit before visiting children
+                        // so offsets are correct, but then we cannot pad...
+                        visit(this, "0x");
                         i_1 = 0;
                         _a.label = 1;
                     case 1:
@@ -504,7 +549,7 @@ var DataNode = /** @class */ (function (_super) {
                         i_1++;
                         return [3 /*break*/, 1];
                     case 4:
-                        bytecode = ethers_1.ethers.utils.arrayify(assembler.getBytecode(this));
+                        bytecode = ethers_1.ethers.utils.concat(this.data.map(function (d) { return assembler.getBytecode(d); }));
                         i = 0;
                         while (i < bytecode.length) {
                             opcode = opcodes_1.Opcode.from(bytecode[i++]);
@@ -512,11 +557,11 @@ var DataNode = /** @class */ (function (_super) {
                                 i += opcode.isPush();
                             }
                         }
-                        padding = new Uint8Array(i - bytecode.length);
-                        // What makes more sense? INVALID or 0 (i.e. STOP)?
-                        //padding.fill(Opcode.from("INVALID").value);
-                        padding.fill(0);
-                        visit(this, ethers_1.ethers.utils.hexlify(padding));
+                        // The amount we overshot the data by is how much padding we need
+                        this.padding.setLength(i - bytecode.length);
+                        return [4 /*yield*/, this.padding.assemble(assembler, visit)];
+                    case 5:
+                        _a.sent();
                         assembler.end(this);
                         return [2 /*return*/];
                 }
@@ -524,11 +569,13 @@ var DataNode = /** @class */ (function (_super) {
         });
     };
     DataNode.prototype.children = function () {
-        return this.data;
+        var children = this.data.slice();
+        children.push(this.padding);
+        return children;
     };
     DataNode.from = function (options) {
         if (options.type !== "data") {
-            throw new Error("expected data type");
+            throwError("expected data type", options.loc);
         }
         return new DataNode(Guard, options.loc, options.name, Object.freeze(options.data.map(function (d) { return Node.from(d); })));
     };
@@ -559,7 +606,7 @@ var EvaluationNode = /** @class */ (function (_super) {
                             }
                         }
                         else {
-                            visit(this, pushLiteral(result));
+                            visit(this, this.getPushLiteral(result));
                         }
                         assembler.end(this);
                         return [2 /*return*/];
@@ -569,7 +616,7 @@ var EvaluationNode = /** @class */ (function (_super) {
     };
     EvaluationNode.from = function (options) {
         if (options.type !== "eval") {
-            throw new Error("expected eval type");
+            throwError("expected eval type", options.loc);
         }
         return new EvaluationNode(Guard, options.loc, options.script, !!options.verbatim);
     };
@@ -598,7 +645,7 @@ var ExecutionNode = /** @class */ (function (_super) {
     };
     ExecutionNode.from = function (options) {
         if (options.type !== "exec") {
-            throw new Error("expected exec type");
+            throwError("expected exec type", options.loc);
         }
         return new ExecutionNode(Guard, options.loc, options.script);
     };
@@ -641,7 +688,7 @@ var ScopeNode = /** @class */ (function (_super) {
     };
     ScopeNode.from = function (options) {
         if (options.type !== "scope") {
-            throw new Error("expected scope type");
+            throwError("expected scope type", options.loc);
         }
         return new ScopeNode(Guard, options.loc, options.name, Object.freeze(options.statements.map(function (s) { return Node.from(s); })));
     };
@@ -794,7 +841,7 @@ var Assembler = /** @class */ (function () {
             // Label offset (e.g. "@foo:"); accessible only within its direct scope
             //const scope = this.getAncestor(source, Scope);
             if (targetScope !== sourceScope) {
-                throw new Error("cannot access " + target.name + " from " + source.tag);
+                throwError("cannot access " + target.name + " from " + source.tag, source.location);
             }
             // Return the offset relative to its scope
             return this.nodes[target.tag].offset - this.nodes[targetScope.tag].offset;
@@ -802,10 +849,10 @@ var Assembler = /** @class */ (function () {
         var info = this.nodes[target.tag];
         // Return the offset is relative to its scope
         var bytes = Array.prototype.slice.call(ethers_1.ethers.utils.arrayify(info.bytecode));
-        bytes.ast = target;
-        bytes.source = target.location.source;
+        ethers_1.ethers.utils.defineReadOnly(bytes, "ast", target);
+        ethers_1.ethers.utils.defineReadOnly(bytes, "source", target.location.source);
         if (!((target instanceof DataNode) || (target instanceof ScopeNode))) {
-            throw new Error("invalid link value lookup");
+            throwError("invalid link value lookup", source.location);
         }
         // Check that target is any descendant (or self) of the source scope
         var safeOffset = (sourceScope == targetScope);
@@ -819,13 +866,22 @@ var Assembler = /** @class */ (function () {
         // Not safe to access the offset; this will fault if anything tries.
         if (!safeOffset) {
             Object.defineProperty(bytes, "offset", {
-                get: function () { throw new Error("cannot access " + target.name + ".offset from " + source.tag); }
+                get: function () { throwError("cannot access " + target.name + ".offset from " + source.tag, this.location); }
             });
+            ethers_1.ethers.utils.defineReadOnly(bytes, "_freeze", function () { });
         }
         // Add the offset relative to the scope; unless the offset has
         // been marked as invalid, in which case accessing it will fail
         if (safeOffset) {
             bytes.offset = info.offset - this.nodes[sourceScope.tag].offset;
+            var frozen_1 = false;
+            ethers_1.ethers.utils.defineReadOnly(bytes, "_freeze", function () {
+                if (frozen_1) {
+                    return;
+                }
+                frozen_1 = true;
+                ethers_1.ethers.utils.defineReadOnly(bytes, "offset", bytes.offset);
+            });
         }
         return bytes;
     };
@@ -997,16 +1053,26 @@ var CodeGenerationAssembler = /** @class */ (function (_super) {
     CodeGenerationAssembler.prototype.reset = function () {
         var _this = this;
         this._changed = false;
-        this._oldBytecode = {};
         this._objectCache = {};
+        this._nextBytecode = {};
         this._script = new Script(this.filename, function (name, context) {
             return _this.get(name, context);
         });
+        this._checks = [];
     };
     CodeGenerationAssembler.prototype.evaluate = function (script, source) {
         return this._script.evaluate(script, source);
     };
+    CodeGenerationAssembler.prototype._runChecks = function () {
+        var _this = this;
+        this._checks.forEach(function (func) {
+            if (!func()) {
+                _this._didChange();
+            }
+        });
+    };
     CodeGenerationAssembler.prototype.getLinkValue = function (target, source) {
+        var _this = this;
         // Since we are iteratively generating code, offsets and lengths
         // may not be stable at any given point in time, so if an offset
         // is negative the code is obviously wrong, however we set it to
@@ -1015,28 +1081,56 @@ var CodeGenerationAssembler = /** @class */ (function (_super) {
         var result = _super.prototype.getLinkValue.call(this, target, source);
         if (typeof (result) === "number") {
             if (result < 0) {
-                this._didChange();
+                this._checks.push(function () { return false; });
                 return 0;
             }
+            this._checks.push(function () {
+                return (_super.prototype.getLinkValue.call(_this, target, source) === result);
+            });
             return result;
         }
-        if (result.offset < 0) {
-            result.offset = 0;
-            this._didChange();
+        // The offset cannot be used so is independent
+        try {
+            if (result.offset < 0) {
+                this._checks.push(function () { return false; });
+                result.offset = 0;
+                //this._didChange();
+            }
+            else {
+                this._checks.push(function () {
+                    var check = _super.prototype.getLinkValue.call(_this, target, source);
+                    if (check.offset === result.offset && ethers_1.ethers.utils.hexlify(check) === ethers_1.ethers.utils.hexlify(result)) {
+                        return true;
+                    }
+                    return false;
+                });
+            }
+        }
+        catch (error) {
+            this._checks.push(function () {
+                var check = _super.prototype.getLinkValue.call(_this, target, source);
+                return (ethers_1.ethers.utils.hexlify(check) === ethers_1.ethers.utils.hexlify(result));
+            });
         }
         return result;
     };
     CodeGenerationAssembler.prototype.start = function (node) {
         this._stack.push(node);
-        this._oldBytecode[node.tag] = this.getBytecode(node);
-        this.setBytecode(node, "0x");
+        //this._oldBytecode[node.tag] = this.getBytecode(node);
+        //this.setBytecode(node, "0x");
+        this._nextBytecode[node.tag] = "0x";
     };
     CodeGenerationAssembler.prototype.end = function (node) {
+        var _this = this;
         if (this._stack.pop() !== node) {
-            throw new Error("missing push/pop pair");
+            throwError("missing push/pop pair", node.location);
         }
-        if (this._oldBytecode[node.tag] !== this.getBytecode(node)) {
-            this._didChange();
+        var oldBytecode = this.getBytecode(node);
+        this.setBytecode(node, this._nextBytecode[node.tag]);
+        if (!(node instanceof PaddingNode)) {
+            this._checks.push(function () {
+                return (oldBytecode === _this.getBytecode(node));
+            });
         }
     };
     // This is used by evaluate to access properties in JavaScript
@@ -1047,6 +1141,10 @@ var CodeGenerationAssembler = /** @class */ (function (_super) {
         if (name === "defines") {
             return this.defines;
         }
+        else if (name === "_ok") {
+            this._runChecks();
+            return !this._didChange;
+        }
         var node = this.labels[name];
         if (!node) {
             return undefined;
@@ -1056,7 +1154,11 @@ var CodeGenerationAssembler = /** @class */ (function (_super) {
         // run the entire assembly process again with the updated
         // values
         if (this._objectCache[node.tag] == null) {
-            this._objectCache[node.tag] = Object.freeze(this.getLinkValue(node, source));
+            var result = this.getLinkValue(node, source);
+            if (typeof (result) !== "number") {
+                result._freeze();
+            }
+            this._objectCache[node.tag] = result;
         }
         return this._objectCache[node.tag];
     };
@@ -1072,18 +1174,20 @@ var CodeGenerationAssembler = /** @class */ (function (_super) {
                                 // Things have moved; we will need to try again
                                 if (_this.getOffset(node) !== offset) {
                                     _this.setOffset(node, offset);
-                                    _this._didChange();
+                                    //this._didChange();
+                                    _this._checks.push(function () { return false; });
                                 }
                                 _this._stack.forEach(function (node) {
-                                    _this.setBytecode(node, hexConcat([
-                                        _this.getBytecode(node),
+                                    _this._nextBytecode[node.tag] = hexConcat([
+                                        _this._nextBytecode[node.tag],
                                         bytecode
-                                    ]));
+                                    ]);
                                 });
                                 offset += ethers_1.ethers.utils.hexDataLength(bytecode);
                             })];
                     case 1:
                         _a.sent();
+                        this._runChecks();
                         return [2 /*return*/];
                 }
             });
@@ -1126,11 +1230,10 @@ var CodeGenerationAssembler = /** @class */ (function (_super) {
                             // This should not happen; something is wrong with the grammar
                             // or missing enter/exit call in assemble
                             if (this._stack.length !== 0) {
-                                throw new Error("Bad AST! Bad grammar?!");
+                                throwError("Bad AST! Bad grammar?!", null);
                             }
                             //console.log(`Assembled in ${ i } attempts`);
                             return [2 /*return*/, this.getBytecode(target)];
-                            ;
                         }
                         _a.label = 4;
                     case 4:

@@ -2,8 +2,8 @@
   "author": "Richard Moore <me@ricmoo.com>",
   "browser": {
     "./ipc-provider": "./lib/browser-ipc-provider.js",
-    "ws": "./lib/browser-ws.js",
-    "net": "./lib/browser-net.js"
+    "net": "./lib/browser-net.js",
+    "ws": "./lib/browser-ws.js"
   },
   "dependencies": {
     "@ethersproject/abstract-provider": ">=5.0.0-beta.131",
@@ -46,7 +46,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xc767c5ec2d6ff95465d7c3618d0acc436a5ca169469e63f2ca63d783da619895",
+  "tarballHash": "0x06280abf7ef6696ec26d64c316267b16efb1a8708dfe9b9f619105c4658fd21a",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.155"
+  "version": "5.0.0-beta.156"
 }

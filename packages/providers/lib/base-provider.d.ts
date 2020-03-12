@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { Block, BlockTag, BlockWithTransactions, EventType, Filter, FilterByBlockHash, Listener, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { Network, Networkish } from "@ethersproject/networks";
@@ -12,11 +13,14 @@ import { Formatter } from "./formatter";
  *   - topics array
  *   - transaction hash
  */
-declare class Event {
+export declare class Event {
     readonly listener: Listener;
     readonly once: boolean;
     readonly tag: string;
     constructor(tag: string, listener: Listener, once: boolean);
+    readonly type: string;
+    readonly hash: string;
+    readonly filter: Filter;
     pollable(): boolean;
 }
 export declare class BaseProvider extends Provider {
@@ -27,7 +31,7 @@ export declare class BaseProvider extends Provider {
         [eventName: string]: number | "pending";
     };
     _pollingInterval: number;
-    _poller: any;
+    _poller: NodeJS.Timer;
     _lastBlockNumber: number;
     _fastBlockNumber: number;
     _fastBlockNumberPromise: Promise<number>;
@@ -87,9 +91,8 @@ export declare class BaseProvider extends Provider {
     resolveName(name: string | Promise<string>): Promise<string>;
     lookupAddress(address: string | Promise<string>): Promise<string>;
     perform(method: string, params: any): Promise<any>;
-    _startPending(): void;
-    _stopPending(): void;
-    _checkPolling(): void;
+    _startEvent(event: Event): void;
+    _stopEvent(event: Event): void;
     _addEventListener(eventName: EventType, listener: Listener, once: boolean): this;
     on(eventName: EventType, listener: Listener): this;
     once(eventName: EventType, listener: Listener): this;
@@ -99,4 +102,3 @@ export declare class BaseProvider extends Provider {
     off(eventName: EventType, listener?: Listener): this;
     removeAllListeners(eventName?: EventType): this;
 }
-export {};

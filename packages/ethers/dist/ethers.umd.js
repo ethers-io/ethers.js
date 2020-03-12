@@ -8822,7 +8822,7 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.0-beta.144";
+	exports.version = "contracts/5.0.0-beta.145";
 	});
 
 	var _version$l = unwrapExports(_version$k);
@@ -8930,11 +8930,11 @@
 	        // If the contract was just deployed, wait until it is minded
 	        if (contract.deployTransaction != null) {
 	            tx.to = contract._deployed(blockTag).then(function () {
-	                return contract.addressPromise;
+	                return contract.resolvedAddress;
 	            });
 	        }
 	        else {
-	            tx.to = contract.addressPromise;
+	            tx.to = contract.resolvedAddress;
 	        }
 	        return resolveAddresses(contract.signer || contract.provider, params, method.inputs).then(function (params) {
 	            tx.data = contract.interface.encodeFunctionData(method, params);
@@ -9168,7 +9168,7 @@
 	            logger.throwArgumentError("invalid signer or provider", "signerOrProvider", signerOrProvider);
 	        }
 	        lib$3.defineReadOnly(this, "callStatic", {});
-	        lib$3.defineReadOnly(this, "estimate", {});
+	        lib$3.defineReadOnly(this, "estimateGas", {});
 	        lib$3.defineReadOnly(this, "functions", {});
 	        lib$3.defineReadOnly(this, "populateTransaction", {});
 	        lib$3.defineReadOnly(this, "filters", {});
@@ -9205,7 +9205,7 @@
 	        lib$3.defineReadOnly(this, "_wrappedEmits", {});
 	        lib$3.defineReadOnly(this, "address", addressOrName);
 	        if (this.provider) {
-	            lib$3.defineReadOnly(this, "addressPromise", this.provider.resolveName(addressOrName).then(function (address) {
+	            lib$3.defineReadOnly(this, "resolvedAddress", this.provider.resolveName(addressOrName).then(function (address) {
 	                if (address == null) {
 	                    throw new Error("name not found");
 	                }
@@ -9217,7 +9217,7 @@
 	        }
 	        else {
 	            try {
-	                lib$3.defineReadOnly(this, "addressPromise", Promise.resolve((this.interface.constructor).getAddress(addressOrName)));
+	                lib$3.defineReadOnly(this, "resolvedAddress", Promise.resolve((this.interface.constructor).getAddress(addressOrName)));
 	            }
 	            catch (error) {
 	                // Without a provider, we cannot use ENS names
@@ -9241,8 +9241,8 @@
 	            if (_this.populateTransaction[name] == null) {
 	                lib$3.defineReadOnly(_this.populateTransaction, name, runMethod(_this, name, { transaction: true }));
 	            }
-	            if (_this.estimate[name] == null) {
-	                lib$3.defineReadOnly(_this.estimate, name, runMethod(_this, name, { estimate: true }));
+	            if (_this.estimateGas[name] == null) {
+	                lib$3.defineReadOnly(_this.estimateGas, name, runMethod(_this, name, { estimate: true }));
 	            }
 	            if (!uniqueFunctions[fragment.name]) {
 	                uniqueFunctions[fragment.name] = [];
@@ -9261,7 +9261,7 @@
 	            lib$3.defineReadOnly(_this.functions, name, _this.functions[signatures[0]]);
 	            lib$3.defineReadOnly(_this.callStatic, name, _this.callStatic[signatures[0]]);
 	            lib$3.defineReadOnly(_this.populateTransaction, name, _this.populateTransaction[signatures[0]]);
-	            lib$3.defineReadOnly(_this.estimate, name, _this.estimate[signatures[0]]);
+	            lib$3.defineReadOnly(_this.estimateGas, name, _this.estimateGas[signatures[0]]);
 	        });
 	    }
 	    Contract.getContractAddress = function (transaction) {
@@ -9319,7 +9319,7 @@
 	            }
 	            logger.throwError("cannot override " + key, lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
 	        });
-	        tx.to = this.addressPromise;
+	        tx.to = this.resolvedAddress;
 	        return this.deployed().then(function () {
 	            return _this.signer.sendTransaction(tx);
 	        });
@@ -15770,6 +15770,7 @@
 	})(commonjsGlobal);
 	});
 	var scrypt_1 = scrypt.scrypt;
+	var scrypt_2 = scrypt.syncScrypt;
 
 	var rng;
 
@@ -17719,7 +17720,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.155";
+	exports.version = "providers/5.0.0-beta.156";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -18276,11 +18277,48 @@
 	        lib$3.defineReadOnly(this, "listener", listener);
 	        lib$3.defineReadOnly(this, "once", once);
 	    }
+	    Object.defineProperty(Event.prototype, "type", {
+	        get: function () {
+	            return this.tag.split(":")[0];
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(Event.prototype, "hash", {
+	        get: function () {
+	            var comps = this.tag.split(":");
+	            if (comps[0] !== "tx") {
+	                return null;
+	            }
+	            return comps[1];
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(Event.prototype, "filter", {
+	        get: function () {
+	            var comps = this.tag.split(":");
+	            if (comps[0] !== "filter") {
+	                return null;
+	            }
+	            var filter = {
+	                address: comps[1],
+	                topics: deserializeTopics(comps[2])
+	            };
+	            if (!filter.address || filter.address === "*") {
+	                delete filter.address;
+	            }
+	            return filter;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
 	    Event.prototype.pollable = function () {
 	        return (this.tag.indexOf(":") >= 0 || this.tag === "block" || this.tag === "pending");
 	    };
 	    return Event;
 	}());
+	exports.Event = Event;
 	var defaultFormatter = null;
 	var nextPollId = 1;
 	var BaseProvider = /** @class */ (function (_super) {
@@ -18418,10 +18456,9 @@
 	                        }
 	                        // Find all transaction hashes we are waiting on
 	                        this._events.forEach(function (event) {
-	                            var comps = event.tag.split(":");
-	                            switch (comps[0]) {
+	                            switch (event.type) {
 	                                case "tx": {
-	                                    var hash_2 = comps[1];
+	                                    var hash_2 = event.hash;
 	                                    var runner = _this.getTransactionReceipt(hash_2).then(function (receipt) {
 	                                        if (!receipt || receipt.blockNumber == null) {
 	                                            return null;
@@ -18434,16 +18471,9 @@
 	                                    break;
 	                                }
 	                                case "filter": {
-	                                    var topics = deserializeTopics(comps[2]);
-	                                    var filter_1 = {
-	                                        address: comps[1],
-	                                        fromBlock: _this._lastBlockNumber + 1,
-	                                        toBlock: blockNumber,
-	                                        topics: topics
-	                                    };
-	                                    if (!filter_1.address || filter_1.address === "*") {
-	                                        delete filter_1.address;
-	                                    }
+	                                    var filter_1 = event.filter;
+	                                    filter_1.fromBlock = _this._lastBlockNumber + 1;
+	                                    filter_1.toBlock = blockNumber;
 	                                    var runner = _this.getLogs(filter_1).then(function (logs) {
 	                                        if (logs.length === 0) {
 	                                            return;
@@ -18453,7 +18483,6 @@
 	                                            _this._emitted["t:" + log.transactionHash] = log.blockNumber;
 	                                            _this.emit(filter_1, log);
 	                                        });
-	                                        return null;
 	                                    }).catch(function (error) { _this.emit("error", error); });
 	                                    runners.push(runner);
 	                                    break;
@@ -19318,22 +19347,16 @@
 	    BaseProvider.prototype.perform = function (method, params) {
 	        return logger.throwError(method + " not implemented", lib.Logger.errors.NOT_IMPLEMENTED, { operation: method });
 	    };
-	    BaseProvider.prototype._startPending = function () {
-	        console.log("WARNING: this provider does not support pending events");
+	    BaseProvider.prototype._startEvent = function (event) {
+	        this.polling = (this._events.filter(function (e) { return e.pollable(); }).length > 0);
 	    };
-	    BaseProvider.prototype._stopPending = function () {
-	    };
-	    // Returns true if there are events that still require polling
-	    BaseProvider.prototype._checkPolling = function () {
+	    BaseProvider.prototype._stopEvent = function (event) {
 	        this.polling = (this._events.filter(function (e) { return e.pollable(); }).length > 0);
 	    };
 	    BaseProvider.prototype._addEventListener = function (eventName, listener, once) {
-	        this._events.push(new Event(getEventTag(eventName), listener, once));
-	        if (eventName === "pending") {
-	            this._startPending();
-	        }
-	        // Do we still now have any events that require polling?
-	        this._checkPolling();
+	        var event = new Event(getEventTag(eventName), listener, once);
+	        this._events.push(event);
+	        this._startEvent(event);
 	        return this;
 	    };
 	    BaseProvider.prototype.on = function (eventName, listener) {
@@ -19349,6 +19372,7 @@
 	            args[_i - 1] = arguments[_i];
 	        }
 	        var result = false;
+	        var stopped = [];
 	        var eventTag = getEventTag(eventName);
 	        this._events = this._events.filter(function (event) {
 	            if (event.tag !== eventTag) {
@@ -19358,10 +19382,13 @@
 	                event.listener.apply(_this, args);
 	            }, 0);
 	            result = true;
-	            return !(event.once);
+	            if (event.once) {
+	                stopped.push(event);
+	                return false;
+	            }
+	            return true;
 	        });
-	        // Do we still have any events that require polling? ("once" events remove themselves)
-	        this._checkPolling();
+	        stopped.forEach(function (event) { _this._stopEvent(event); });
 	        return result;
 	    };
 	    BaseProvider.prototype.listenerCount = function (eventName) {
@@ -19383,9 +19410,11 @@
 	            .map(function (event) { return event.listener; });
 	    };
 	    BaseProvider.prototype.off = function (eventName, listener) {
+	        var _this = this;
 	        if (listener == null) {
 	            return this.removeAllListeners(eventName);
 	        }
+	        var stopped = [];
 	        var found = false;
 	        var eventTag = getEventTag(eventName);
 	        this._events = this._events.filter(function (event) {
@@ -19396,31 +19425,30 @@
 	                return true;
 	            }
 	            found = true;
+	            stopped.push(event);
 	            return false;
 	        });
-	        if (eventName === "pending" && this.listenerCount("pending") === 0) {
-	            this._stopPending();
-	        }
-	        // Do we still have any events that require polling?
-	        this._checkPolling();
+	        stopped.forEach(function (event) { _this._stopEvent(event); });
 	        return this;
 	    };
 	    BaseProvider.prototype.removeAllListeners = function (eventName) {
+	        var _this = this;
+	        var stopped = [];
 	        if (eventName == null) {
+	            stopped = this._events;
 	            this._events = [];
-	            this._stopPending();
 	        }
 	        else {
 	            var eventTag_1 = getEventTag(eventName);
 	            this._events = this._events.filter(function (event) {
-	                return (event.tag !== eventTag_1);
+	                if (event.tag !== eventTag_1) {
+	                    return true;
+	                }
+	                stopped.push(event);
+	                return false;
 	            });
-	            if (eventName === "pending") {
-	                this._stopPending();
-	            }
 	        }
-	        // Do we still have any events that require polling?
-	        this._checkPolling();
+	        stopped.forEach(function (event) { _this._stopEvent(event); });
 	        return this;
 	    };
 	    return BaseProvider;
@@ -19429,7 +19457,8 @@
 	});
 
 	var baseProvider$1 = unwrapExports(baseProvider);
-	var baseProvider_1 = baseProvider.BaseProvider;
+	var baseProvider_1 = baseProvider.Event;
+	var baseProvider_2 = baseProvider.BaseProvider;
 
 	var jsonRpcProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -19745,7 +19774,7 @@
 	        }
 	        // Default URL
 	        if (!url) {
-	            url = "http:/" + "/localhost:8545";
+	            url = lib$3.getStatic(_this.constructor, "defaultUrl")();
 	        }
 	        if (typeof (url) === "string") {
 	            _this.connection = Object.freeze({
@@ -19758,6 +19787,9 @@
 	        _this._nextId = 42;
 	        return _this;
 	    }
+	    JsonRpcProvider.defaultUrl = function () {
+	        return "http:/" + "/localhost:8545";
+	    };
 	    JsonRpcProvider.prototype.getSigner = function (addressOrIndex) {
 	        return new JsonRpcSigner(_constructorGuard, this, addressOrIndex);
 	    };
@@ -19863,6 +19895,12 @@
 	        }
 	        return logger.throwError(method + " not implemented", lib.Logger.errors.NOT_IMPLEMENTED, { operation: method });
 	    };
+	    JsonRpcProvider.prototype._startEvent = function (event) {
+	        if (event.tag === "pending") {
+	            this._startPending();
+	        }
+	        _super.prototype._startEvent.call(this, event);
+	    };
 	    JsonRpcProvider.prototype._startPending = function () {
 	        if (this._pendingFilter != null) {
 	            return;
@@ -19903,8 +19941,11 @@
 	            return filterId;
 	        }).catch(function (error) { });
 	    };
-	    JsonRpcProvider.prototype._stopPending = function () {
-	        this._pendingFilter = null;
+	    JsonRpcProvider.prototype._stopEvent = function (event) {
+	        if (event.tag === "pending" && this.listenerCount("pending") === 0) {
+	            this._pendingFilter = null;
+	        }
+	        _super.prototype._stopEvent.call(this, event);
 	    };
 	    // Convert an ethers.js transaction into a JSON-RPC transaction
 	    //  - gasLimit => gas
@@ -21402,6 +21443,324 @@
 	var web3Provider$1 = unwrapExports(web3Provider);
 	var web3Provider_1 = web3Provider.Web3Provider;
 
+	var browserWs = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+
+	var WS = WebSocket;
+	if (WS == null) {
+	    var logger_2 = new lib.Logger(_version$G.version);
+	    WS = function () {
+	        logger_2.throwError("WebSockets not supported in this environment", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	            operation: "new WebSocket()"
+	        });
+	    };
+	}
+	module.exports = WS;
+	});
+
+	var browserWs$1 = unwrapExports(browserWs);
+
+	var websocketProvider = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
+	    var extendStatics = function (d, b) {
+	        extendStatics = Object.setPrototypeOf ||
+	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	        return extendStatics(d, b);
+	    };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	    });
+	};
+	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
+	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+	    function verb(n) { return function (v) { return step([n, v]); }; }
+	    function step(op) {
+	        if (f) throw new TypeError("Generator is already executing.");
+	        while (_) try {
+	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+	            if (y = 0, t) op = [op[0] & 2, t.value];
+	            switch (op[0]) {
+	                case 0: case 1: t = op; break;
+	                case 4: _.label++; return { value: op[1], done: false };
+	                case 5: _.label++; y = op[1]; op = [0]; continue;
+	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+	                default:
+	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+	                    if (t[2]) _.ops.pop();
+	                    _.trys.pop(); continue;
+	            }
+	            op = body.call(thisArg, _);
+	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+	    }
+	};
+	var __importDefault = (commonjsGlobal && commonjsGlobal.__importDefault) || function (mod) {
+	    return (mod && mod.__esModule) ? mod : { "default": mod };
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var ws_1 = __importDefault(browserWs);
+
+
+
+
+
+	var logger = new lib.Logger(_version$G.version);
+	/**
+	 *  Notes:
+	 *
+	 *  This provider differs a bit from the polling providers. One main
+	 *  difference is how it handles consistency. The polling providers
+	 *  will stall responses to ensure a consistent state, while this
+	 *  WebSocket provider assumes the connected backend will manage this.
+	 *
+	 *  For example, if a polling provider emits an event which indicats
+	 *  the event occurred in blockhash XXX, a call to fetch that block by
+	 *  its hash XXX, if not present will retry until it is present. This
+	 *  can occur when querying a pool of nodes that are mildly out of sync
+	 *  with each other.
+	 */
+	var NextId = 1;
+	/*
+	function subscribable(tag: string): boolean {
+	    return (tag === "block" || tag === "pending");
+	}
+	*/
+	var WebSocketProvider = /** @class */ (function (_super) {
+	    __extends(WebSocketProvider, _super);
+	    function WebSocketProvider(url, network) {
+	        var _this = _super.call(this, url, network) || this;
+	        _this._pollingInterval = -1;
+	        lib$3.defineReadOnly(_this, "_websocket", new ws_1.default(_this.connection.url));
+	        lib$3.defineReadOnly(_this, "_requests", {});
+	        lib$3.defineReadOnly(_this, "_subs", {});
+	        lib$3.defineReadOnly(_this, "_subIds", {});
+	        // Stall sending requests until the socket is open...
+	        _this._wsReady = false;
+	        _this._websocket.onopen = function () {
+	            _this._wsReady = true;
+	            Object.keys(_this._requests).forEach(function (id) {
+	                _this._websocket.send(_this._requests[id].payload);
+	            });
+	        };
+	        _this._websocket.onmessage = function (messageEvent) {
+	            var data = messageEvent.data;
+	            var result = JSON.parse(data);
+	            if (result.id) {
+	                var id = String(result.id);
+	                var request = _this._requests[id];
+	                delete _this._requests[id];
+	                if (result.result) {
+	                    request.callback(null, result.result);
+	                }
+	                else {
+	                    if (result.error) {
+	                        var error = new Error(result.error.message || "unknown error");
+	                        lib$3.defineReadOnly(error, "code", result.error.code || null);
+	                        lib$3.defineReadOnly(error, "response", data);
+	                        request.callback(error, undefined);
+	                    }
+	                    else {
+	                        request.callback(new Error("unknown error"), undefined);
+	                    }
+	                }
+	            }
+	            else if (result.method === "eth_subscription") {
+	                // Subscription...
+	                var sub = _this._subs[result.params.subscription];
+	                if (sub) {
+	                    //this.emit.apply(this,                  );
+	                    sub.processFunc(result.params.result);
+	                }
+	            }
+	            else {
+	                console.warn("this should not happen");
+	            }
+	        };
+	        return _this;
+	    }
+	    Object.defineProperty(WebSocketProvider.prototype, "pollingInterval", {
+	        get: function () {
+	            return 0;
+	        },
+	        set: function (value) {
+	            logger.throwError("cannot set polling interval on WebSocketProvider", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                operation: "setPollingInterval"
+	            });
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    WebSocketProvider.prototype.resetEventsBlock = function (blockNumber) {
+	        logger.throwError("cannot reset events block on WebSocketProvider", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	            operation: "resetEventBlock"
+	        });
+	    };
+	    WebSocketProvider.prototype.poll = function () {
+	        return __awaiter(this, void 0, void 0, function () {
+	            return __generator(this, function (_a) {
+	                return [2 /*return*/, null];
+	            });
+	        });
+	    };
+	    Object.defineProperty(WebSocketProvider.prototype, "polling", {
+	        set: function (value) {
+	            if (!value) {
+	                return;
+	            }
+	            logger.throwError("cannot set polling on WebSocketProvider", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                operation: "setPolling"
+	            });
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    WebSocketProvider.prototype.send = function (method, params) {
+	        var _this = this;
+	        var rid = NextId++;
+	        return new Promise(function (resolve, reject) {
+	            function callback(error, result) {
+	                if (error) {
+	                    return reject(error);
+	                }
+	                return resolve(result);
+	            }
+	            var payload = JSON.stringify({
+	                method: method,
+	                params: params,
+	                id: rid,
+	                jsonrpc: "2.0"
+	            });
+	            _this._requests[String(rid)] = { callback: callback, payload: payload };
+	            if (_this._wsReady) {
+	                _this._websocket.send(payload);
+	            }
+	        });
+	    };
+	    WebSocketProvider.defaultUrl = function () {
+	        return "ws:/" + "/localhost:8546";
+	    };
+	    WebSocketProvider.prototype._subscribe = function (tag, param, processFunc) {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var subIdPromise, subId;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        subIdPromise = this._subIds[tag];
+	                        if (subIdPromise == null) {
+	                            subIdPromise = this.send("eth_subscribe", param);
+	                            this._subIds[tag] = subIdPromise;
+	                        }
+	                        return [4 /*yield*/, subIdPromise];
+	                    case 1:
+	                        subId = _a.sent();
+	                        this._subs[subId] = { tag: tag, processFunc: processFunc };
+	                        return [2 /*return*/];
+	                }
+	            });
+	        });
+	    };
+	    WebSocketProvider.prototype._startEvent = function (event) {
+	        var _this = this;
+	        switch (event.type) {
+	            case "block":
+	                this._subscribe("block", ["newHeads", {}], function (result) {
+	                    _this.emit("block", lib$2.BigNumber.from(result.number).toNumber());
+	                });
+	                break;
+	            case "pending":
+	                this._subscribe("pending", ["newPendingTransactions"], function (result) {
+	                    _this.emit("pending", result);
+	                });
+	                break;
+	            case "filter":
+	                this._subscribe(event.tag, ["logs", event.filter], function (result) {
+	                    _this.emit(event.filter, result);
+	                });
+	                break;
+	            case "tx": {
+	                var emitReceipt_1 = function (event) {
+	                    var hash = event.hash;
+	                    _this.getTransactionReceipt(hash).then(function (receipt) {
+	                        if (!receipt) {
+	                            return;
+	                        }
+	                        _this.emit(hash, receipt);
+	                    });
+	                };
+	                // In case it is already mined
+	                emitReceipt_1(event);
+	                // To keep things simple, we start up a single newHeads subscription
+	                // to keep an eye out for transactions we are watching for.
+	                // Starting a subscription for an event (i.e. "tx") that is already
+	                // running is (basically) a nop.
+	                this._subscribe("tx", ["newHeads", {}], function (result) {
+	                    _this._events.filter(function (e) { return (e.type === "tx"); }).forEach(emitReceipt_1);
+	                });
+	                break;
+	            }
+	            // Nothing is needed
+	            case "debug":
+	            case "error":
+	                break;
+	            default:
+	                console.log("unhandled:", event);
+	                break;
+	        }
+	    };
+	    WebSocketProvider.prototype._stopEvent = function (event) {
+	        var _this = this;
+	        var tag = event.tag;
+	        if (event.type === "tx") {
+	            // There are remaining transaction event listeners
+	            if (this._events.filter(function (e) { return (e.type === "tx"); }).length) {
+	                return;
+	            }
+	            tag = "tx";
+	        }
+	        else if (this.listenerCount(event.tag)) {
+	            // There are remaining event listeners
+	            return;
+	        }
+	        var subId = this._subIds[tag];
+	        if (!subId) {
+	            return;
+	        }
+	        delete this._subIds[tag];
+	        subId.then(function (subId) {
+	            if (!_this._subs[subId]) {
+	                return;
+	            }
+	            delete _this._subs[subId];
+	            _this.send("eth_unsubscribe", [subId]);
+	        });
+	    };
+	    return WebSocketProvider;
+	}(jsonRpcProvider.JsonRpcProvider));
+	exports.WebSocketProvider = WebSocketProvider;
+	});
+
+	var websocketProvider$1 = unwrapExports(websocketProvider);
+	var websocketProvider_1 = websocketProvider.WebSocketProvider;
+
 	var lib$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
@@ -21430,6 +21789,8 @@
 	exports.NodesmithProvider = nodesmithProvider.NodesmithProvider;
 
 	exports.Web3Provider = web3Provider.Web3Provider;
+
+	exports.WebSocketProvider = websocketProvider.WebSocketProvider;
 
 	exports.Formatter = formatter.Formatter;
 
@@ -21477,8 +21838,9 @@
 	var lib_11$2 = lib$m.JsonRpcSigner;
 	var lib_12$2 = lib$m.NodesmithProvider;
 	var lib_13$1 = lib$m.Web3Provider;
-	var lib_14$1 = lib$m.Formatter;
-	var lib_15$1 = lib$m.getDefaultProvider;
+	var lib_14$1 = lib$m.WebSocketProvider;
+	var lib_15$1 = lib$m.Formatter;
+	var lib_16$1 = lib$m.getDefaultProvider;
 
 	var lib$n = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -21884,7 +22246,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.175";
+	exports.version = "ethers/5.0.0-beta.176";
 	});
 
 	var _version$L = unwrapExports(_version$K);
@@ -22009,7 +22371,7 @@
 	var lib_13$2 = lib$p.logger;
 	var lib_14$2 = lib$p.utils;
 	var lib_15$2 = lib$p.wordlists;
-	var lib_16$1 = lib$p.version;
+	var lib_16$2 = lib$p.version;
 	var lib_17 = lib$p.Wordlist;
 
 	exports.BigNumber = lib_9$6;
@@ -22028,7 +22390,7 @@
 	exports.logger = lib_13$2;
 	exports.providers = lib_6$8;
 	exports.utils = lib_14$2;
-	exports.version = lib_16$1;
+	exports.version = lib_16$2;
 	exports.wordlists = lib_15$2;
 
 	Object.defineProperty(exports, '__esModule', { value: true });

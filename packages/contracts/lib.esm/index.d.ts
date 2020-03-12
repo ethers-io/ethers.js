@@ -61,11 +61,11 @@ export declare class Contract {
     readonly provider: Provider;
     readonly functions: Bucket<ContractFunction>;
     readonly callStatic: Bucket<ContractFunction>;
-    readonly estimate: Bucket<(...params: Array<any>) => Promise<BigNumber>>;
+    readonly estimateGas: Bucket<(...params: Array<any>) => Promise<BigNumber>>;
     readonly populateTransaction: Bucket<(...params: Array<any>) => Promise<UnsignedTransaction>>;
     readonly filters: Bucket<(...params: Array<any>) => EventFilter>;
     readonly [name: string]: ContractFunction | any;
-    readonly addressPromise: Promise<string>;
+    readonly resolvedAddress: Promise<string>;
     readonly deployTransaction: TransactionResponse;
     private _deployedPromise;
     private _runningEvents;

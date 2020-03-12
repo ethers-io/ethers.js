@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import { Opcode } from "./opcodes";
 export declare type Location = {
     offset: number;
@@ -23,6 +24,7 @@ export declare abstract class ValueNode extends Node {
     constructor(guard: any, location: Location, options: {
         [key: string]: any;
     });
+    getPushLiteral(value: ethers.utils.BytesLike | ethers.utils.Hexable | number): string;
 }
 export declare class LiteralNode extends ValueNode {
     readonly value: string;
@@ -64,8 +66,15 @@ export declare class LabelNode extends LabelledNode {
     assemble(assembler: Assembler, visit: AssembleVisitFunc): Promise<void>;
     static from(options: any): LabelNode;
 }
+export declare class PaddingNode extends ValueNode {
+    _length: number;
+    constructor(guard: any, location: Location);
+    setLength(length: number): void;
+    assemble(assembler: Assembler, visit: AssembleVisitFunc): Promise<void>;
+}
 export declare class DataNode extends LabelledNode {
     readonly data: Array<ValueNode>;
+    readonly padding: PaddingNode;
     constructor(guard: any, location: Location, name: string, data: string);
     assemble(assembler: Assembler, visit: AssembleVisitFunc): Promise<void>;
     children(): Array<Node>;
@@ -105,6 +114,7 @@ export interface DataSource extends Array<number> {
     offset: number;
     ast: Node;
     source: string;
+    _freeze?: () => void;
 }
 export declare type NodeState = {
     node: Node;
