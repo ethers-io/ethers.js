@@ -194,7 +194,7 @@ export class EtherscanProvider extends BaseProvider{
                     url += apiKey;
                     return get(url);
                 }
-                return Promise.reject(new Error('getBlock by blockHash not implmeneted'));
+                return Promise.reject(new Error('getBlock by blockHash not implemeneted'));
 
             case 'getTransaction':
                 url += '/api?module=proxy&action=eth_getTransactionByHash&txhash=' + params.transactionHash;
