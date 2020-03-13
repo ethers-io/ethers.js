@@ -408,10 +408,20 @@ function equals(name: string, actual: any, expected: any): void {
     }
 }
 
+function waiter(duration: number): Promise<void> {
+    return new Promise((resolve) => {
+        setTimeout(resolve, duration);
+    });
+}
+
 function testProvider(providerName: string, networkName: string) {
+
+    // Delay (ms) after each test case to prevent the backends from throttling
+    const delay = 1000;
 
     describe(("Read-Only " + providerName + " (" + networkName + ")"), function() {
 
+        // Get the Provider based on the name of the provider we are testing and the network
         let provider: ethers.providers.Provider = null;
         if (networkName === "default") {
             if (providerName === "getDefaultProvider") {
@@ -439,6 +449,11 @@ function testProvider(providerName: string, networkName: string) {
 
         const tests: TestCases = blockchainData[networkName];
 
+        // And address test case can have any of the following:
+        // - balance
+        // - code
+        // - storage
+        // - ENS name
         tests.addresses.forEach((test) => {
             if (test.balance) {
                 it(`fetches address balance: ${ test.address }`, function() {
@@ -449,6 +464,7 @@ function testProvider(providerName: string, networkName: string) {
                     this.timeout(20000);
                     return provider.getBalance(test.address).then((balance) => {
                         equals("Balance", test.balance, balance);
+                        return waiter(delay);
                     });
                 });
             }
@@ -458,6 +474,7 @@ function testProvider(providerName: string, networkName: string) {
                     this.timeout(20000);
                     return provider.getCode(test.address).then((code) => {
                         equals("Code", test.code, code);
+                        return waiter(delay);
                     });
                 });
             }
@@ -465,8 +482,10 @@ function testProvider(providerName: string, networkName: string) {
             if (test.storage) {
                 Object.keys(test.storage).forEach((position) => {
                     it(`fetches storage: ${ test.address }:${ position }`, function() {
+                        this.timeout(20000);
                         return provider.getStorageAt(test.address, bnify(position)).then((value) => {
                             equals("Storage", test.storage[position], value);
+                            return waiter(delay);
                         });
                     });
                 });
@@ -477,6 +496,7 @@ function testProvider(providerName: string, networkName: string) {
                     this.timeout(20000);
                     return provider.resolveName(test.name).then((address) => {
                         equals("ENS Name", test.address, address);
+                        return waiter(delay);
                     });
                 });
             }
@@ -486,8 +506,9 @@ function testProvider(providerName: string, networkName: string) {
             function checkBlock(promise: Promise<any>): Promise<any> {
                 return promise.then((block) => {
                     for (let key in test) {
-                       equals("Block " + key, block[key], test[key]);
+                        equals("Block " + key, block[key], test[key]);
                     }
+                    return waiter(delay);
                 });
             }
 
@@ -522,6 +543,8 @@ function testProvider(providerName: string, networkName: string) {
                     for (const key in tx) {
                         equals((title + key), (<any>tx)[key], expected[key]);
                     }
+
+                    return waiter(delay);
                 });
             }
 
@@ -544,6 +567,8 @@ function testProvider(providerName: string, networkName: string) {
                         equals((title + key), (<any>receipt)[key], expected[key]);
                     }
                     //equals(("Receipt " + expected.transactionHash.substring(0, 10)), receipt, expected);
+
+                    return waiter(delay);
                 });
             }
 
