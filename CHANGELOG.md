@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+ethers/v4.0.46 (2020-03-14 16:56)
+---------------------------------
+
+  - Fixed typo in error. ([#722](https://github.com/ethers-io/ethers.js/issues/722); [3b7176f](https://github.com/ethers-io/ethers.js/commit/3b7176f322376f8f42c333082388ef56d1720bae)).
+  - Fix EtherscanProvider from throwing outside async context. ([#729](https://github.com/ethers-io/ethers.js/issues/729); [5f7ddcd](https://github.com/ethers-io/ethers.js/commit/5f7ddcd5d71d8a1c9efbeef1232c34ef93f92e5a)).
+
 ethers/v4.0.45 (2020-02-16 16:16)
 ---------------------------------
 

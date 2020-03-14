@@ -190,7 +190,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                     url += apiKey;
                     return get(url);
                 }
-                throw new Error('getBlock by blockHash not implmeneted');
+                return Promise.reject(new Error('getBlock by blockHash not implemeneted'));
             case 'getTransaction':
                 url += '/api?module=proxy&action=eth_getTransactionByHash&txhash=' + params.transactionHash;
                 url += apiKey;
@@ -207,7 +207,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 url += '/api?module=proxy&action=eth_call' + transaction;
                 //url += '&tag=' + params.blockTag + apiKey;
                 if (params.blockTag !== 'latest') {
-                    throw new Error('EtherscanProvider does not support blockTag for call');
+                    return Promise.reject(new Error('EtherscanProvider does not support blockTag for call'));
                 }
                 url += apiKey;
                 return get(url);
