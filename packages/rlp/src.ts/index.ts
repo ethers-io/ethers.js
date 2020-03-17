@@ -2,8 +2,7 @@
 
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
-
-import { arrayify, BytesLike, hexlify } from "@ethersproject/bytes";
+import { arrayify, BytesLike, hexlify, isBytesLike } from "@ethersproject/bytes";
 
 function arrayifyInteger(value: number): Array<number> {
     const result = [];
@@ -39,6 +38,10 @@ function _encode(object: Array<any> | string): Array<number> {
 
         return length.concat(payload);
 
+    }
+
+    if (!isBytesLike(object)) {
+        throw new Error("RLP object must be BytesLike");
     }
 
     const data: Array<number> = Array.prototype.slice.call(arrayify(object));
