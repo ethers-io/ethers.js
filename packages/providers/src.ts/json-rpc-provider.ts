@@ -330,80 +330,95 @@ export class JsonRpcProvider extends BaseProvider {
         });
     }
 
-    perform(method: string, params: any): Promise<any> {
+    prepareRequest(method: string, params: any): [ string, Array<any> ] {
         switch (method) {
             case "getBlockNumber":
-                return this.send("eth_blockNumber", []);
+                return [ "eth_blockNumber", [] ];
 
             case "getGasPrice":
-                return this.send("eth_gasPrice", []);
+                return [ "eth_gasPrice", [] ];
 
             case "getBalance":
-                return this.send("eth_getBalance", [ getLowerCase(params.address), params.blockTag ]);
+                return [ "eth_getBalance", [ getLowerCase(params.address), params.blockTag ] ];
 
             case "getTransactionCount":
-                return this.send("eth_getTransactionCount", [ getLowerCase(params.address), params.blockTag ]);
+                return [ "eth_getTransactionCount", [ getLowerCase(params.address), params.blockTag ] ];
 
             case "getCode":
-                return this.send("eth_getCode", [ getLowerCase(params.address), params.blockTag ]);
+                return [ "eth_getCode", [ getLowerCase(params.address), params.blockTag ] ];
 
             case "getStorageAt":
-                return this.send("eth_getStorageAt", [ getLowerCase(params.address), params.position, params.blockTag ]);
+                return [ "eth_getStorageAt", [ getLowerCase(params.address), params.position, params.blockTag ] ];
 
             case "sendTransaction":
-                return this.send("eth_sendRawTransaction", [ params.signedTransaction ]).catch((error) => {
-                    if (error.responseText) {
-                        // "insufficient funds for gas * price + value"
-                        if (error.responseText.indexOf("insufficient funds") > 0) {
-                            logger.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, { });
-                        }
-                        // "nonce too low"
-                        if (error.responseText.indexOf("nonce too low") > 0) {
-                            logger.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, { });
-                        }
-                        // "replacement transaction underpriced"
-                        if (error.responseText.indexOf("replacement transaction underpriced") > 0) {
-                            logger.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, { });
-                        }
-                    }
-                    throw error;
-                });
+                return [ "eth_sendRawTransaction", [ params.signedTransaction ] ]
 
             case "getBlock":
                 if (params.blockTag) {
-                    return this.send("eth_getBlockByNumber", [ params.blockTag, !!params.includeTransactions ]);
+                    return [ "eth_getBlockByNumber", [ params.blockTag, !!params.includeTransactions ] ];
                 } else if (params.blockHash) {
-                    return this.send("eth_getBlockByHash", [ params.blockHash, !!params.includeTransactions ]);
+                    return [ "eth_getBlockByHash", [ params.blockHash, !!params.includeTransactions ] ];
                 }
-                return logger.throwArgumentError("invalid block tag or block hash", "params", params);
+                return null;
 
             case "getTransaction":
-                return this.send("eth_getTransactionByHash", [ params.transactionHash ]);
+                return [ "eth_getTransactionByHash", [ params.transactionHash ] ];
 
             case "getTransactionReceipt":
-                return this.send("eth_getTransactionReceipt", [ params.transactionHash ]);
+                return [ "eth_getTransactionReceipt", [ params.transactionHash ] ];
 
             case "call": {
                 const hexlifyTransaction = getStatic<(t: TransactionRequest, a?: { [key: string]: boolean }) => { [key: string]: string }>(this.constructor, "hexlifyTransaction");
-                return this.send("eth_call", [ hexlifyTransaction(params.transaction, { from: true }), params.blockTag ]);
+                return [ "eth_call", [ hexlifyTransaction(params.transaction, { from: true }), params.blockTag ] ];
             }
 
             case "estimateGas": {
                 const hexlifyTransaction = getStatic<(t: TransactionRequest, a?: { [key: string]: boolean }) => { [key: string]: string }>(this.constructor, "hexlifyTransaction");
-                return this.send("eth_estimateGas", [ hexlifyTransaction(params.transaction, { from: true }) ]);
+                return [ "eth_estimateGas", [ hexlifyTransaction(params.transaction, { from: true }) ] ];
             }
 
             case "getLogs":
                 if (params.filter && params.filter.address != null) {
                     params.filter.address = getLowerCase(params.filter.address);
                 }
-                return this.send("eth_getLogs", [ params.filter ]);
+                return [ "eth_getLogs", [ params.filter ] ];
 
             default:
                 break;
         }
 
-        return logger.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
+        return null;
+    }
+
+    perform(method: string, params: any): Promise<any> {
+        const args = this.prepareRequest(method,  params);
+
+        if (args == null) {
+            logger.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
+        }
+
+        // We need a little extra logic to process errors from sendTransaction
+        if (method === "sendTransaction") {
+            return this.send(args[0], args[1]).catch((error) => {
+                if (error.responseText) {
+                    // "insufficient funds for gas * price + value"
+                    if (error.responseText.indexOf("insufficient funds") > 0) {
+                        logger.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, { });
+                    }
+                    // "nonce too low"
+                    if (error.responseText.indexOf("nonce too low") > 0) {
+                        logger.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, { });
+                    }
+                    // "replacement transaction underpriced"
+                    if (error.responseText.indexOf("replacement transaction underpriced") > 0) {
+                        logger.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, { });
+                    }
+                }
+                throw error;
+            });
+        }
+
+        return this.send(args[0], args[1])
     }
 
     _startEvent(event: Event): void {
@@ -466,8 +481,11 @@ export class JsonRpcProvider extends BaseProvider {
     //  - gasLimit => gas
     //  - All values hexlified
     //  - All numeric values zero-striped
+    //  - All addresses are lowercased
     // NOTE: This allows a TransactionRequest, but all values should be resolved
     //       before this is called
+    // @TODO: This will likely be removed in future versions and prepareRequest
+    //        will be the preferred method for this.
     static hexlifyTransaction(transaction: TransactionRequest, allowExtra?: { [key: string]: boolean }): { [key: string]: string } {
         // Check only allowed properties are given
         const allowed = shallowCopy(allowedTransactionKeys);
