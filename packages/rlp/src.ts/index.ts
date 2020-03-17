@@ -4,6 +4,10 @@
 
 import { arrayify, BytesLike, hexlify, isBytesLike } from "@ethersproject/bytes";
 
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
+
 function arrayifyInteger(value: number): Array<number> {
     const result = [];
     while (value) {
@@ -41,7 +45,7 @@ function _encode(object: Array<any> | string): Array<number> {
     }
 
     if (!isBytesLike(object)) {
-        throw new Error("RLP object must be BytesLike");
+        logger.throwArgumentError("RLP object must be BytesLike", "object", object);
     }
 
     const data: Array<number> = Array.prototype.slice.call(arrayify(object));
@@ -79,7 +83,7 @@ function _decodeChildren(data: Uint8Array, offset: number, childOffset: number, 
 
         childOffset += decoded.consumed;
         if (childOffset > offset + 1 + length) {
-            throw new Error("invalid rlp");
+            logger.throwError("child data too short", Logger.errors.BUFFER_OVERRUN, { });
         }
     }
 
@@ -88,18 +92,20 @@ function _decodeChildren(data: Uint8Array, offset: number, childOffset: number, 
 
 // returns { consumed: number, result: Object }
 function _decode(data: Uint8Array, offset: number): { consumed: number, result: any } {
-    if (data.length === 0) { throw new Error("invalid rlp data"); }
+    if (data.length === 0) {
+        logger.throwError("data too short", Logger.errors.BUFFER_OVERRUN, { });
+    }
 
     // Array with extra length prefix
     if (data[offset] >= 0xf8) {
         const lengthLength = data[offset] - 0xf7;
         if (offset + 1 + lengthLength > data.length) {
-            throw new Error("too short");
+            logger.throwError("data short segment too short", Logger.errors.BUFFER_OVERRUN, { });
         }
 
         const length = unarrayifyInteger(data, offset + 1, lengthLength);
         if (offset + 1 + lengthLength + length > data.length) {
-            throw new Error("to short");
+            logger.throwError("data long segment too short", Logger.errors.BUFFER_OVERRUN, { });
         }
 
         return _decodeChildren(data, offset, offset + 1 + lengthLength, lengthLength + length);
@@ -107,7 +113,7 @@ function _decode(data: Uint8Array, offset: number): { consumed: number, result: 
     } else if (data[offset] >= 0xc0) {
         const length = data[offset] - 0xc0;
         if (offset + 1 + length > data.length) {
-            throw new Error("invalid rlp data");
+            logger.throwError("data array too short", Logger.errors.BUFFER_OVERRUN, { });
         }
 
         return _decodeChildren(data, offset, offset + 1, length);
@@ -115,12 +121,12 @@ function _decode(data: Uint8Array, offset: number): { consumed: number, result: 
     } else if (data[offset] >= 0xb8) {
         const lengthLength = data[offset] - 0xb7;
         if (offset + 1 + lengthLength > data.length) {
-            throw new Error("invalid rlp data");
+            logger.throwError("data array too short", Logger.errors.BUFFER_OVERRUN, { });
         }
 
         const length = unarrayifyInteger(data, offset + 1, lengthLength);
         if (offset + 1 + lengthLength + length > data.length) {
-            throw new Error("invalid rlp data");
+            logger.throwError("data array too short", Logger.errors.BUFFER_OVERRUN, { });
         }
 
         const result = hexlify(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length));
@@ -129,7 +135,7 @@ function _decode(data: Uint8Array, offset: number): { consumed: number, result: 
     } else if (data[offset] >= 0x80) {
         const length = data[offset] - 0x80;
         if (offset + 1 + length > data.length) {
-            throw new Error("invalid rlp data");
+            logger.throwError("data too short", Logger.errors.BUFFER_OVERRUN, { });
         }
 
         const result = hexlify(data.slice(offset + 1, offset + 1 + length));
@@ -142,7 +148,7 @@ export function decode(data: BytesLike): any {
     const bytes = arrayify(data);
     const decoded = _decode(bytes, 0);
     if (decoded.consumed !== bytes.length) {
-        throw new Error("invalid rlp data");
+        logger.throwArgumentError("invalid rlp data", "data", data);
     }
     return decoded.result;
 }
