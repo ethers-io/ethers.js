@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var _permanentCensorErrors = false;
 var _censorErrors = false;
-var LogLevels = { debug: 1, "default": 2, info: 2, warn: 3, error: 4, off: 5 };
+var LogLevels = { debug: 1, "default": 2, info: 2, warning: 3, error: 4, off: 5 };
 var LogLevel = LogLevels["default"];
 var _version_1 = require("./_version");
 var _globalLogger = null;
@@ -43,7 +43,11 @@ var Logger = /** @class */ (function () {
         });
     }
     Logger.prototype._log = function (logLevel, args) {
-        if (LogLevel > LogLevels[logLevel]) {
+        var level = logLevel.toLowerCase();
+        if (LogLevels[level] == null) {
+            this.throwArgumentError("invalid log level name", "logLevel", logLevel);
+        }
+        if (LogLevel > LogLevels[level]) {
             return;
         }
         console.log.apply(console, args);

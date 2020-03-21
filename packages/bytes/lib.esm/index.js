@@ -49,7 +49,7 @@ export function arrayify(value, options) {
         const result = [];
         while (value) {
             result.unshift(value & 0xff);
-            value /= 256;
+            value = parseInt(String(value / 256));
         }
         if (result.length === 0) {
             result.push(0);

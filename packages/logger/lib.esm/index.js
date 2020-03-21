@@ -1,7 +1,7 @@
 "use strict";
 let _permanentCensorErrors = false;
 let _censorErrors = false;
-const LogLevels = { debug: 1, "default": 2, info: 2, warn: 3, error: 4, off: 5 };
+const LogLevels = { debug: 1, "default": 2, info: 2, warning: 3, error: 4, off: 5 };
 let LogLevel = LogLevels["default"];
 import { version } from "./_version";
 let _globalLogger = null;
@@ -42,7 +42,11 @@ export class Logger {
         });
     }
     _log(logLevel, args) {
-        if (LogLevel > LogLevels[logLevel]) {
+        const level = logLevel.toLowerCase();
+        if (LogLevels[level] == null) {
+            this.throwArgumentError("invalid log level name", "logLevel", logLevel);
+        }
+        if (LogLevel > LogLevels[level]) {
             return;
         }
         console.log.apply(console, args);

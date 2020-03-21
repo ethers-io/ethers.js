@@ -421,15 +421,17 @@ export abstract class Fragment {
     static fromObject(value: Fragment | JsonFragment): Fragment {
         if (Fragment.isFragment(value)) { return value; }
 
-        if (value.type === "function") {
-            return FunctionFragment.fromObject(value);
-        } else if (value.type === "event") {
-           return EventFragment.fromObject(value);
-        } else if (value.type === "constructor") {
-           return ConstructorFragment.fromObject(value);
-        } else if (value.type === "fallback") {
-            // @TODO:
-            return null;
+        switch (value.type) {
+            case "function":
+                return FunctionFragment.fromObject(value);
+            case "event":
+                return EventFragment.fromObject(value);
+            case "constructor":
+                return ConstructorFragment.fromObject(value);
+            case "fallback":
+            case "receive":
+                // @TODO: Something? Maybe return a FunctionFragment? A custom DefaultFunctionFragment?
+                return null;
         }
 
         return logger.throwArgumentError("invalid fragment object", "value", value);

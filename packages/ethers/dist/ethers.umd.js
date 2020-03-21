@@ -3464,7 +3464,7 @@
 	var _version = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "logger/5.0.0-beta.135";
+	exports.version = "logger/5.0.0-beta.136";
 	});
 
 	var _version$1 = unwrapExports(_version);
@@ -3475,7 +3475,7 @@
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var _permanentCensorErrors = false;
 	var _censorErrors = false;
-	var LogLevels = { debug: 1, "default": 2, info: 2, warn: 3, error: 4, off: 5 };
+	var LogLevels = { debug: 1, "default": 2, info: 2, warning: 3, error: 4, off: 5 };
 	var LogLevel = LogLevels["default"];
 
 	var _globalLogger = null;
@@ -3516,7 +3516,11 @@
 	        });
 	    }
 	    Logger.prototype._log = function (logLevel, args) {
-	        if (LogLevel > LogLevels[logLevel]) {
+	        var level = logLevel.toLowerCase();
+	        if (LogLevels[level] == null) {
+	            this.throwArgumentError("invalid log level name", "logLevel", logLevel);
+	        }
+	        if (LogLevel > LogLevels[level]) {
 	            return;
 	        }
 	        console.log.apply(console, args);
@@ -3765,7 +3769,7 @@
 	var _version$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bytes/5.0.0-beta.136";
+	exports.version = "bytes/5.0.0-beta.137";
 	});
 
 	var _version$3 = unwrapExports(_version$2);
@@ -3826,7 +3830,7 @@
 	        var result = [];
 	        while (value) {
 	            result.unshift(value & 0xff);
-	            value /= 256;
+	            value = parseInt(String(value / 256));
 	        }
 	        if (result.length === 0) {
 	            result.push(0);
@@ -4191,7 +4195,7 @@
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.0-beta.135";
+	exports.version = "bignumber/5.0.0-beta.136";
 	});
 
 	var _version$5 = unwrapExports(_version$4);
@@ -4895,7 +4899,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.146";
+	exports.version = "abi/5.0.0-beta.147";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -5257,18 +5261,17 @@
 	        if (Fragment.isFragment(value)) {
 	            return value;
 	        }
-	        if (value.type === "function") {
-	            return FunctionFragment.fromObject(value);
-	        }
-	        else if (value.type === "event") {
-	            return EventFragment.fromObject(value);
-	        }
-	        else if (value.type === "constructor") {
-	            return ConstructorFragment.fromObject(value);
-	        }
-	        else if (value.type === "fallback") {
-	            // @TODO:
-	            return null;
+	        switch (value.type) {
+	            case "function":
+	                return FunctionFragment.fromObject(value);
+	            case "event":
+	                return EventFragment.fromObject(value);
+	            case "constructor":
+	                return ConstructorFragment.fromObject(value);
+	            case "fallback":
+	            case "receive":
+	                // @TODO: Something? Maybe return a FunctionFragment? A custom DefaultFunctionFragment?
+	                return null;
 	        }
 	        return logger.throwArgumentError("invalid fragment object", "value", value);
 	    };
@@ -6340,11 +6343,23 @@
 	var index$4 = unwrapExports(lib$4);
 	var lib_1$4 = lib$4.keccak256;
 
+	var _version$a = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.version = "rlp/5.0.0-beta.132";
+	});
+
+	var _version$b = unwrapExports(_version$a);
+	var _version_1$5 = _version$a.version;
+
 	var lib$5 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	//See: https://github.com/ethereum/wiki/wiki/RLP
 
+
+
+	var logger = new lib.Logger(_version$a.version);
 	function arrayifyInteger(value) {
 	    var result = [];
 	    while (value) {
@@ -6374,6 +6389,9 @@
 	        length_1.unshift(0xf7 + length_1.length);
 	        return length_1.concat(payload_1);
 	    }
+	    if (!lib$1.isBytesLike(object)) {
+	        logger.throwArgumentError("RLP object must be BytesLike", "object", object);
+	    }
 	    var data = Array.prototype.slice.call(lib$1.arrayify(object));
 	    if (data.length === 1 && data[0] <= 0x7f) {
 	        return data;
@@ -6397,7 +6415,7 @@
 	        result.push(decoded.result);
 	        childOffset += decoded.consumed;
 	        if (childOffset > offset + 1 + length) {
-	            throw new Error("invalid rlp");
+	            logger.throwError("child data too short", lib.Logger.errors.BUFFER_OVERRUN, {});
 	        }
 	    }
 	    return { consumed: (1 + length), result: result };
@@ -6405,35 +6423,35 @@
 	// returns { consumed: number, result: Object }
 	function _decode(data, offset) {
 	    if (data.length === 0) {
-	        throw new Error("invalid rlp data");
+	        logger.throwError("data too short", lib.Logger.errors.BUFFER_OVERRUN, {});
 	    }
 	    // Array with extra length prefix
 	    if (data[offset] >= 0xf8) {
 	        var lengthLength = data[offset] - 0xf7;
 	        if (offset + 1 + lengthLength > data.length) {
-	            throw new Error("too short");
+	            logger.throwError("data short segment too short", lib.Logger.errors.BUFFER_OVERRUN, {});
 	        }
 	        var length_2 = unarrayifyInteger(data, offset + 1, lengthLength);
 	        if (offset + 1 + lengthLength + length_2 > data.length) {
-	            throw new Error("to short");
+	            logger.throwError("data long segment too short", lib.Logger.errors.BUFFER_OVERRUN, {});
 	        }
 	        return _decodeChildren(data, offset, offset + 1 + lengthLength, lengthLength + length_2);
 	    }
 	    else if (data[offset] >= 0xc0) {
 	        var length_3 = data[offset] - 0xc0;
 	        if (offset + 1 + length_3 > data.length) {
-	            throw new Error("invalid rlp data");
+	            logger.throwError("data array too short", lib.Logger.errors.BUFFER_OVERRUN, {});
 	        }
 	        return _decodeChildren(data, offset, offset + 1, length_3);
 	    }
 	    else if (data[offset] >= 0xb8) {
 	        var lengthLength = data[offset] - 0xb7;
 	        if (offset + 1 + lengthLength > data.length) {
-	            throw new Error("invalid rlp data");
+	            logger.throwError("data array too short", lib.Logger.errors.BUFFER_OVERRUN, {});
 	        }
 	        var length_4 = unarrayifyInteger(data, offset + 1, lengthLength);
 	        if (offset + 1 + lengthLength + length_4 > data.length) {
-	            throw new Error("invalid rlp data");
+	            logger.throwError("data array too short", lib.Logger.errors.BUFFER_OVERRUN, {});
 	        }
 	        var result = lib$1.hexlify(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length_4));
 	        return { consumed: (1 + lengthLength + length_4), result: result };
@@ -6441,7 +6459,7 @@
 	    else if (data[offset] >= 0x80) {
 	        var length_5 = data[offset] - 0x80;
 	        if (offset + 1 + length_5 > data.length) {
-	            throw new Error("invalid rlp data");
+	            logger.throwError("data too short", lib.Logger.errors.BUFFER_OVERRUN, {});
 	        }
 	        var result = lib$1.hexlify(data.slice(offset + 1, offset + 1 + length_5));
 	        return { consumed: (1 + length_5), result: result };
@@ -6452,7 +6470,7 @@
 	    var bytes = lib$1.arrayify(data);
 	    var decoded = _decode(bytes, 0);
 	    if (decoded.consumed !== bytes.length) {
-	        throw new Error("invalid rlp data");
+	        logger.throwArgumentError("invalid rlp data", "data", data);
 	    }
 	    return decoded.result;
 	}
@@ -6463,14 +6481,14 @@
 	var lib_1$5 = lib$5.encode;
 	var lib_2$3 = lib$5.decode;
 
-	var _version$a = createCommonjsModule(function (module, exports) {
+	var _version$c = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "address/5.0.0-beta.134";
 	});
 
-	var _version$b = unwrapExports(_version$a);
-	var _version_1$5 = _version$a.version;
+	var _version$d = unwrapExports(_version$c);
+	var _version_1$6 = _version$c.version;
 
 	var lib$6 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -6483,7 +6501,7 @@
 
 
 
-	var logger = new lib.Logger(_version$a.version);
+	var logger = new lib.Logger(_version$c.version);
 	function getChecksumAddress(address) {
 	    if (!lib$1.isHexString(address, 20)) {
 	        logger.throwArgumentError("invalid address", "address", address);
@@ -7134,14 +7152,14 @@
 	var number$1 = unwrapExports(number);
 	var number_1 = number.NumberCoder;
 
-	var _version$c = createCommonjsModule(function (module, exports) {
+	var _version$e = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "strings/5.0.0-beta.136";
 	});
 
-	var _version$d = unwrapExports(_version$c);
-	var _version_1$6 = _version$c.version;
+	var _version$f = unwrapExports(_version$e);
+	var _version_1$7 = _version$e.version;
 
 	var utf8 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -7149,7 +7167,7 @@
 
 
 
-	var logger = new lib.Logger(_version$c.version);
+	var logger = new lib.Logger(_version$e.version);
 	///////////////////////////////
 	var UnicodeNormalizationForm;
 	(function (UnicodeNormalizationForm) {
@@ -7874,14 +7892,14 @@
 	var abiCoder_1 = abiCoder.AbiCoder;
 	var abiCoder_2 = abiCoder.defaultAbiCoder;
 
-	var _version$e = createCommonjsModule(function (module, exports) {
+	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "hash/5.0.0-beta.133";
 	});
 
-	var _version$f = unwrapExports(_version$e);
-	var _version_1$7 = _version$e.version;
+	var _version$h = unwrapExports(_version$g);
+	var _version_1$8 = _version$g.version;
 
 	var lib$9 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -7891,7 +7909,7 @@
 
 
 
-	var logger = new lib.Logger(_version$e.version);
+	var logger = new lib.Logger(_version$g.version);
 	///////////////////////////////
 	var Zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 	var Partition = new RegExp("^((.*)\\.)?([^.]+)$");
@@ -8420,14 +8438,14 @@
 	var lib_11$1 = lib$a.LogDescription;
 	var lib_12$1 = lib$a.TransactionDescription;
 
-	var _version$g = createCommonjsModule(function (module, exports) {
+	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "abstract-provider/5.0.0-beta.138";
 	});
 
-	var _version$h = unwrapExports(_version$g);
-	var _version_1$8 = _version$g.version;
+	var _version$j = unwrapExports(_version$i);
+	var _version_1$9 = _version$i.version;
 
 	var lib$b = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -8449,7 +8467,7 @@
 
 
 
-	var logger = new lib.Logger(_version$g.version);
+	var logger = new lib.Logger(_version$i.version);
 	;
 	;
 	//export type CallTransactionable = {
@@ -8555,14 +8573,14 @@
 	var lib_4$8 = lib$b.TransactionOrderForkEvent;
 	var lib_5$8 = lib$b.Provider;
 
-	var _version$i = createCommonjsModule(function (module, exports) {
+	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "abstract-signer/5.0.0-beta.140";
 	});
 
-	var _version$j = unwrapExports(_version$i);
-	var _version_1$9 = _version$i.version;
+	var _version$l = unwrapExports(_version$k);
+	var _version_1$a = _version$k.version;
 
 	var lib$c = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -8619,7 +8637,7 @@
 
 
 
-	var logger = new lib.Logger(_version$i.version);
+	var logger = new lib.Logger(_version$k.version);
 	var allowedTransactionKeys = [
 	    "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "value"
 	];
@@ -8819,14 +8837,14 @@
 	var lib_1$c = lib$c.Signer;
 	var lib_2$a = lib$c.VoidSigner;
 
-	var _version$k = createCommonjsModule(function (module, exports) {
+	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "contracts/5.0.0-beta.145";
 	});
 
-	var _version$l = unwrapExports(_version$k);
-	var _version_1$a = _version$k.version;
+	var _version$n = unwrapExports(_version$m);
+	var _version_1$b = _version$m.version;
 
 	var lib$d = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -8861,7 +8879,7 @@
 
 
 
-	var logger = new lib.Logger(_version$k.version);
+	var logger = new lib.Logger(_version$m.version);
 	///////////////////////////////
 	var allowedTransactionKeys = {
 	    chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
@@ -10946,14 +10964,14 @@
 	hash.ripemd160 = hash.ripemd.ripemd160;
 	});
 
-	var _version$m = createCommonjsModule(function (module, exports) {
+	var _version$o = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "sha2/5.0.0-beta.135";
 	});
 
-	var _version$n = unwrapExports(_version$m);
-	var _version_1$b = _version$m.version;
+	var _version$p = unwrapExports(_version$o);
+	var _version_1$c = _version$o.version;
 
 	var browser = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -10969,7 +10987,7 @@
 
 
 
-	var logger = new lib.Logger(_version$m.version);
+	var logger = new lib.Logger(_version$o.version);
 	var SupportedAlgorithm;
 	(function (SupportedAlgorithm) {
 	    SupportedAlgorithm["sha256"] = "sha256";
@@ -13424,14 +13442,14 @@
 	});
 	var elliptic_2 = elliptic_1.ec;
 
-	var _version$o = createCommonjsModule(function (module, exports) {
+	var _version$q = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "signing-key/5.0.0-beta.135";
 	});
 
-	var _version$p = unwrapExports(_version$o);
-	var _version_1$c = _version$o.version;
+	var _version$r = unwrapExports(_version$q);
+	var _version_1$d = _version$q.version;
 
 	var lib$f = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -13441,7 +13459,7 @@
 
 
 
-	var logger = new lib.Logger(_version$o.version);
+	var logger = new lib.Logger(_version$q.version);
 	var _curve = null;
 	function getCurve() {
 	    if (!_curve) {
@@ -13520,14 +13538,14 @@
 	var lib_2$d = lib$f.recoverPublicKey;
 	var lib_3$a = lib$f.computePublicKey;
 
-	var _version$q = createCommonjsModule(function (module, exports) {
+	var _version$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "transactions/5.0.0-beta.134";
 	});
 
-	var _version$r = unwrapExports(_version$q);
-	var _version_1$d = _version$q.version;
+	var _version$t = unwrapExports(_version$s);
+	var _version_1$e = _version$s.version;
 
 	var lib$g = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -13549,7 +13567,7 @@
 
 
 
-	var logger = new lib.Logger(_version$q.version);
+	var logger = new lib.Logger(_version$s.version);
 	///////////////////////////////
 	function handleAddress(value) {
 	    if (value === "0x") {
@@ -13718,14 +13736,14 @@
 	var lib_3$b = lib$g.serialize;
 	var lib_4$9 = lib$g.parse;
 
-	var _version$s = createCommonjsModule(function (module, exports) {
+	var _version$u = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "wordlists/5.0.0-beta.135";
 	});
 
-	var _version$t = unwrapExports(_version$s);
-	var _version_1$e = _version$s.version;
+	var _version$v = unwrapExports(_version$u);
+	var _version_1$f = _version$u.version;
 
 	var wordlist = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -13736,7 +13754,7 @@
 
 
 
-	exports.logger = new lib.Logger(_version$s.version);
+	exports.logger = new lib.Logger(_version$u.version);
 	var Wordlist = /** @class */ (function () {
 	    function Wordlist(locale) {
 	        var _newTarget = this.constructor;
@@ -13855,14 +13873,14 @@
 	var browser_1$2 = browser$4.Wordlist;
 	var browser_2$1 = browser$4.wordlists;
 
-	var _version$u = createCommonjsModule(function (module, exports) {
+	var _version$w = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "hdnode/5.0.0-beta.137";
 	});
 
-	var _version$v = unwrapExports(_version$u);
-	var _version_1$f = _version$u.version;
+	var _version$x = unwrapExports(_version$w);
+	var _version_1$g = _version$w.version;
 
 	var lib$h = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -13879,7 +13897,7 @@
 
 
 
-	var logger = new lib.Logger(_version$u.version);
+	var logger = new lib.Logger(_version$w.version);
 	var N = lib$2.BigNumber.from("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 	// "Bitcoin seed"
 	var MasterSecret = lib$8.toUtf8Bytes("Bitcoin seed");
@@ -14210,14 +14228,14 @@
 	var lib_5$9 = lib$h.entropyToMnemonic;
 	var lib_6$5 = lib$h.isValidMnemonic;
 
-	var _version$w = createCommonjsModule(function (module, exports) {
+	var _version$y = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "random/5.0.0-beta.134";
 	});
 
-	var _version$x = unwrapExports(_version$w);
-	var _version_1$g = _version$w.version;
+	var _version$z = unwrapExports(_version$y);
+	var _version_1$h = _version$y.version;
 
 	var shuffle = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -14244,7 +14262,7 @@
 
 
 
-	var logger = new lib.Logger(_version$w.version);
+	var logger = new lib.Logger(_version$y.version);
 
 	exports.shuffled = shuffle.shuffled;
 	var crypto = commonjsGlobal.crypto || commonjsGlobal.msCrypto;
@@ -15075,14 +15093,14 @@
 	})(commonjsGlobal);
 	});
 
-	var _version$y = createCommonjsModule(function (module, exports) {
+	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "json-wallets/5.0.0-beta.137";
 	});
 
-	var _version$z = unwrapExports(_version$y);
-	var _version_1$h = _version$y.version;
+	var _version$B = unwrapExports(_version$A);
+	var _version_1$i = _version$A.version;
 
 	var utils$1 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -15169,7 +15187,7 @@
 
 
 
-	var logger = new lib.Logger(_version$y.version);
+	var logger = new lib.Logger(_version$A.version);
 
 	var CrowdsaleAccount = /** @class */ (function (_super) {
 	    __extends(CrowdsaleAccount, _super);
@@ -16062,7 +16080,7 @@
 
 
 
-	var logger = new lib.Logger(_version$y.version);
+	var logger = new lib.Logger(_version$A.version);
 	// Exported Types
 	function hasMnemonic(value) {
 	    return (value != null && value.mnemonic && value.mnemonic.phrase);
@@ -16432,14 +16450,14 @@
 	var lib_8$4 = lib$i.decryptJsonWallet;
 	var lib_9$4 = lib$i.decryptJsonWalletSync;
 
-	var _version$A = createCommonjsModule(function (module, exports) {
+	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "wallet/5.0.0-beta.138";
 	});
 
-	var _version$B = unwrapExports(_version$A);
-	var _version_1$i = _version$A.version;
+	var _version$D = unwrapExports(_version$C);
+	var _version_1$j = _version$C.version;
 
 	var lib$j = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -16471,7 +16489,7 @@
 
 
 
-	var logger = new lib.Logger(_version$A.version);
+	var logger = new lib.Logger(_version$C.version);
 	function isAccount(value) {
 	    return (value != null && lib$1.isHexString(value.privateKey, 32) && value.address != null);
 	}
@@ -16621,21 +16639,21 @@
 	var lib_1$j = lib$j.Wallet;
 	var lib_2$h = lib$j.verifyMessage;
 
-	var _version$C = createCommonjsModule(function (module, exports) {
+	var _version$E = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "networks/5.0.0-beta.136";
 	});
 
-	var _version$D = unwrapExports(_version$C);
-	var _version_1$j = _version$C.version;
+	var _version$F = unwrapExports(_version$E);
+	var _version_1$k = _version$E.version;
 
 	var lib$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 
-	var logger = new lib.Logger(_version$C.version);
+	var logger = new lib.Logger(_version$E.version);
 	function ethDefaultProvider(network) {
 	    return function (providers, options) {
 	        if (options == null) {
@@ -17401,14 +17419,14 @@
 	var browser_1$4 = browser$8.decode;
 	var browser_2$3 = browser$8.encode;
 
-	var _version$E = createCommonjsModule(function (module, exports) {
+	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "web/5.0.0-beta.136";
 	});
 
-	var _version$F = unwrapExports(_version$E);
-	var _version_1$k = _version$E.version;
+	var _version$H = unwrapExports(_version$G);
+	var _version_1$l = _version$G.version;
 
 	var lib$l = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -17458,7 +17476,7 @@
 
 
 
-	var logger = new lib.Logger(_version$E.version);
+	var logger = new lib.Logger(_version$G.version);
 	function getResponse(response) {
 	    var headers = {};
 	    if (response.headers.forEach) {
@@ -17717,14 +17735,14 @@
 	var lib_1$l = lib$l.fetchJson;
 	var lib_2$i = lib$l.poll;
 
-	var _version$G = createCommonjsModule(function (module, exports) {
+	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.156";
+	exports.version = "providers/5.0.0-beta.157";
 	});
 
-	var _version$H = unwrapExports(_version$G);
-	var _version_1$l = _version$G.version;
+	var _version$J = unwrapExports(_version$I);
+	var _version_1$m = _version$I.version;
 
 	var formatter = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -17737,7 +17755,7 @@
 
 
 
-	var logger = new lib.Logger(_version$G.version);
+	var logger = new lib.Logger(_version$I.version);
 	var Formatter = /** @class */ (function () {
 	    function Formatter() {
 	        var _newTarget = this.constructor;
@@ -18190,7 +18208,7 @@
 
 
 
-	var logger = new lib.Logger(_version$G.version);
+	var logger = new lib.Logger(_version$I.version);
 
 	//////////////////////////////
 	// Event Serializeing
@@ -19520,7 +19538,7 @@
 
 
 
-	var logger = new lib.Logger(_version$G.version);
+	var logger = new lib.Logger(_version$I.version);
 
 	function timer(timeout) {
 	    return new Promise(function (resolve) {
@@ -19833,67 +19851,78 @@
 	            throw error;
 	        });
 	    };
-	    JsonRpcProvider.prototype.perform = function (method, params) {
+	    JsonRpcProvider.prototype.prepareRequest = function (method, params) {
 	        switch (method) {
 	            case "getBlockNumber":
-	                return this.send("eth_blockNumber", []);
+	                return ["eth_blockNumber", []];
 	            case "getGasPrice":
-	                return this.send("eth_gasPrice", []);
+	                return ["eth_gasPrice", []];
 	            case "getBalance":
-	                return this.send("eth_getBalance", [getLowerCase(params.address), params.blockTag]);
+	                return ["eth_getBalance", [getLowerCase(params.address), params.blockTag]];
 	            case "getTransactionCount":
-	                return this.send("eth_getTransactionCount", [getLowerCase(params.address), params.blockTag]);
+	                return ["eth_getTransactionCount", [getLowerCase(params.address), params.blockTag]];
 	            case "getCode":
-	                return this.send("eth_getCode", [getLowerCase(params.address), params.blockTag]);
+	                return ["eth_getCode", [getLowerCase(params.address), params.blockTag]];
 	            case "getStorageAt":
-	                return this.send("eth_getStorageAt", [getLowerCase(params.address), params.position, params.blockTag]);
+	                return ["eth_getStorageAt", [getLowerCase(params.address), params.position, params.blockTag]];
 	            case "sendTransaction":
-	                return this.send("eth_sendRawTransaction", [params.signedTransaction]).catch(function (error) {
-	                    if (error.responseText) {
-	                        // "insufficient funds for gas * price + value"
-	                        if (error.responseText.indexOf("insufficient funds") > 0) {
-	                            logger.throwError("insufficient funds", lib.Logger.errors.INSUFFICIENT_FUNDS, {});
-	                        }
-	                        // "nonce too low"
-	                        if (error.responseText.indexOf("nonce too low") > 0) {
-	                            logger.throwError("nonce has already been used", lib.Logger.errors.NONCE_EXPIRED, {});
-	                        }
-	                        // "replacement transaction underpriced"
-	                        if (error.responseText.indexOf("replacement transaction underpriced") > 0) {
-	                            logger.throwError("replacement fee too low", lib.Logger.errors.REPLACEMENT_UNDERPRICED, {});
-	                        }
-	                    }
-	                    throw error;
-	                });
+	                return ["eth_sendRawTransaction", [params.signedTransaction]];
 	            case "getBlock":
 	                if (params.blockTag) {
-	                    return this.send("eth_getBlockByNumber", [params.blockTag, !!params.includeTransactions]);
+	                    return ["eth_getBlockByNumber", [params.blockTag, !!params.includeTransactions]];
 	                }
 	                else if (params.blockHash) {
-	                    return this.send("eth_getBlockByHash", [params.blockHash, !!params.includeTransactions]);
+	                    return ["eth_getBlockByHash", [params.blockHash, !!params.includeTransactions]];
 	                }
-	                return logger.throwArgumentError("invalid block tag or block hash", "params", params);
+	                return null;
 	            case "getTransaction":
-	                return this.send("eth_getTransactionByHash", [params.transactionHash]);
+	                return ["eth_getTransactionByHash", [params.transactionHash]];
 	            case "getTransactionReceipt":
-	                return this.send("eth_getTransactionReceipt", [params.transactionHash]);
+	                return ["eth_getTransactionReceipt", [params.transactionHash]];
 	            case "call": {
 	                var hexlifyTransaction = lib$3.getStatic(this.constructor, "hexlifyTransaction");
-	                return this.send("eth_call", [hexlifyTransaction(params.transaction, { from: true }), params.blockTag]);
+	                return ["eth_call", [hexlifyTransaction(params.transaction, { from: true }), params.blockTag]];
 	            }
 	            case "estimateGas": {
 	                var hexlifyTransaction = lib$3.getStatic(this.constructor, "hexlifyTransaction");
-	                return this.send("eth_estimateGas", [hexlifyTransaction(params.transaction, { from: true })]);
+	                return ["eth_estimateGas", [hexlifyTransaction(params.transaction, { from: true })]];
 	            }
 	            case "getLogs":
 	                if (params.filter && params.filter.address != null) {
 	                    params.filter.address = getLowerCase(params.filter.address);
 	                }
-	                return this.send("eth_getLogs", [params.filter]);
+	                return ["eth_getLogs", [params.filter]];
 	            default:
 	                break;
 	        }
-	        return logger.throwError(method + " not implemented", lib.Logger.errors.NOT_IMPLEMENTED, { operation: method });
+	        return null;
+	    };
+	    JsonRpcProvider.prototype.perform = function (method, params) {
+	        var args = this.prepareRequest(method, params);
+	        if (args == null) {
+	            logger.throwError(method + " not implemented", lib.Logger.errors.NOT_IMPLEMENTED, { operation: method });
+	        }
+	        // We need a little extra logic to process errors from sendTransaction
+	        if (method === "sendTransaction") {
+	            return this.send(args[0], args[1]).catch(function (error) {
+	                if (error.responseText) {
+	                    // "insufficient funds for gas * price + value"
+	                    if (error.responseText.indexOf("insufficient funds") > 0) {
+	                        logger.throwError("insufficient funds", lib.Logger.errors.INSUFFICIENT_FUNDS, {});
+	                    }
+	                    // "nonce too low"
+	                    if (error.responseText.indexOf("nonce too low") > 0) {
+	                        logger.throwError("nonce has already been used", lib.Logger.errors.NONCE_EXPIRED, {});
+	                    }
+	                    // "replacement transaction underpriced"
+	                    if (error.responseText.indexOf("replacement transaction underpriced") > 0) {
+	                        logger.throwError("replacement fee too low", lib.Logger.errors.REPLACEMENT_UNDERPRICED, {});
+	                    }
+	                }
+	                throw error;
+	            });
+	        }
+	        return this.send(args[0], args[1]);
 	    };
 	    JsonRpcProvider.prototype._startEvent = function (event) {
 	        if (event.tag === "pending") {
@@ -19951,8 +19980,11 @@
 	    //  - gasLimit => gas
 	    //  - All values hexlified
 	    //  - All numeric values zero-striped
+	    //  - All addresses are lowercased
 	    // NOTE: This allows a TransactionRequest, but all values should be resolved
 	    //       before this is called
+	    // @TODO: This will likely be removed in future versions and prepareRequest
+	    //        will be the preferred method for this.
 	    JsonRpcProvider.hexlifyTransaction = function (transaction, allowExtra) {
 	        // Check only allowed properties are given
 	        var allowed = lib$3.shallowCopy(allowedTransactionKeys);
@@ -20012,7 +20044,7 @@
 
 
 
-	var logger = new lib.Logger(_version$G.version);
+	var logger = new lib.Logger(_version$I.version);
 
 	var UrlJsonRpcProvider = /** @class */ (function (_super) {
 	    __extends(UrlJsonRpcProvider, _super);
@@ -20082,7 +20114,7 @@
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 
-	var logger = new lib.Logger(_version$G.version);
+	var logger = new lib.Logger(_version$I.version);
 
 	// This key was provided to ethers.js by Alchemy to be used by the
 	// default provider, but it is recommended that for your own
@@ -20150,7 +20182,7 @@
 
 
 
-	var logger = new lib.Logger(_version$G.version);
+	var logger = new lib.Logger(_version$I.version);
 	var CloudflareProvider = /** @class */ (function (_super) {
 	    __extends(CloudflareProvider, _super);
 	    function CloudflareProvider() {
@@ -20238,7 +20270,7 @@
 
 
 
-	var logger = new lib.Logger(_version$G.version);
+	var logger = new lib.Logger(_version$I.version);
 
 	// The transaction has already been sanitized by the calls in Provider
 	function getTransactionString(transaction) {
@@ -20662,7 +20694,7 @@
 
 
 
-	var logger = new lib.Logger(_version$G.version);
+	var logger = new lib.Logger(_version$I.version);
 
 	function now() { return (new Date()).getTime(); }
 	// Returns to network as long as all agree, or null if any is null.
@@ -21139,7 +21171,7 @@
 
 
 
-	var logger = new lib.Logger(_version$G.version);
+	var logger = new lib.Logger(_version$I.version);
 
 	var IpcProvider = /** @class */ (function (_super) {
 	    __extends(IpcProvider, _super);
@@ -21218,7 +21250,7 @@
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 
-	var logger = new lib.Logger(_version$G.version);
+	var logger = new lib.Logger(_version$I.version);
 
 	var defaultProjectId = "84842078b09946638c03157f83405213";
 	var InfuraProvider = /** @class */ (function (_super) {
@@ -21314,7 +21346,7 @@
 
 
 
-	var logger = new lib.Logger(_version$G.version);
+	var logger = new lib.Logger(_version$I.version);
 	// Special API key provided by Nodesmith for ethers.js
 	var defaultApiKey = "ETHERS_JS_SHARED";
 	var NodesmithProvider = /** @class */ (function (_super) {
@@ -21379,7 +21411,7 @@
 
 
 
-	var logger = new lib.Logger(_version$G.version);
+	var logger = new lib.Logger(_version$I.version);
 
 	var Web3Provider = /** @class */ (function (_super) {
 	    __extends(Web3Provider, _super);
@@ -21450,7 +21482,7 @@
 
 	var WS = WebSocket;
 	if (WS == null) {
-	    var logger_2 = new lib.Logger(_version$G.version);
+	    var logger_2 = new lib.Logger(_version$I.version);
 	    WS = function () {
 	        logger_2.throwError("WebSockets not supported in this environment", lib.Logger.errors.UNSUPPORTED_OPERATION, {
 	            operation: "new WebSocket()"
@@ -21523,7 +21555,7 @@
 
 
 
-	var logger = new lib.Logger(_version$G.version);
+	var logger = new lib.Logger(_version$I.version);
 	/**
 	 *  Notes:
 	 *
@@ -21795,7 +21827,7 @@
 	exports.Formatter = formatter.Formatter;
 
 
-	var logger = new lib.Logger(_version$G.version);
+	var logger = new lib.Logger(_version$I.version);
 	////////////////////////
 	// Helper Functions
 	function getDefaultProvider(network, options) {
@@ -21941,14 +21973,14 @@
 	var lib_2$k = lib$n.keccak256;
 	var lib_3$f = lib$n.sha256;
 
-	var _version$I = createCommonjsModule(function (module, exports) {
+	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = "units/5.0.0-beta.132";
 	});
 
-	var _version$J = unwrapExports(_version$I);
-	var _version_1$m = _version$I.version;
+	var _version$L = unwrapExports(_version$K);
+	var _version_1$n = _version$K.version;
 
 	var lib$o = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -21956,7 +21988,7 @@
 
 
 
-	var logger = new lib.Logger(_version$I.version);
+	var logger = new lib.Logger(_version$K.version);
 	var names = [
 	    "wei",
 	    "kwei",
@@ -22243,14 +22275,14 @@
 	var utils_80 = utils$3.UnicodeNormalizationForm;
 	var utils_81 = utils$3.Utf8ErrorReason;
 
-	var _version$K = createCommonjsModule(function (module, exports) {
+	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.176";
+	exports.version = "ethers/5.0.0-beta.177";
 	});
 
-	var _version$L = unwrapExports(_version$K);
-	var _version_1$n = _version$K.version;
+	var _version$N = unwrapExports(_version$M);
+	var _version_1$o = _version$M.version;
 
 	var ethers = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -22291,8 +22323,8 @@
 	// Compile-Time Constants
 	// This is generated by "npm run dist"
 
-	exports.version = _version$K.version;
-	var logger = new lib.Logger(_version$K.version);
+	exports.version = _version$M.version;
+	var logger = new lib.Logger(_version$M.version);
 	exports.logger = logger;
 	});
 

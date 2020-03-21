@@ -3,6 +3,15 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.177 (2020-03-21 12:46)
+-----------------------------------------
+
+  - Abstracted JSON-RPC parameter generation for others to use. ([030f65e](https://github.com/ethers-io/ethers.js/commit/030f65e66ce059d69d8d77973d5c3190745eaac2))
+  - Updated RLP package to use Logger instead of bare errors. ([390497f](https://github.com/ethers-io/ethers.js/commit/390497f38964a052837f6c0e7c96efe74c668517))
+  - Fixed log level filtering for Logger. ([#379](https://github.com/ethers-io/ethers.js/issues/379); [72c8992](https://github.com/ethers-io/ethers.js/commit/72c89922a4e1b77295414c8e0717a7373f2397b8))
+  - Throw errors when trying to RLP encode integers. ([9ea16e5](https://github.com/ethers-io/ethers.js/commit/9ea16e5172928962792ba4c0273e23db373409e0))
+  - Added delays to provider tests to prevent throttling causing failed tests. ([3e44aac](https://github.com/ethers-io/ethers.js/commit/3e44aac8f199ec09babb20c4af2ee668e0ab05a1))
+
 ethers/v5.0.0-beta.176 (2020-03-12 19:10)
 -----------------------------------------
 

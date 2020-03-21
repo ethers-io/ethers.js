@@ -1,6 +1,9 @@
 "use strict";
 //See: https://github.com/ethereum/wiki/wiki/RLP
-import { arrayify, hexlify } from "@ethersproject/bytes";
+import { arrayify, hexlify, isBytesLike } from "@ethersproject/bytes";
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 function arrayifyInteger(value) {
     const result = [];
     while (value) {
@@ -30,6 +33,9 @@ function _encode(object) {
         length.unshift(0xf7 + length.length);
         return length.concat(payload);
     }
+    if (!isBytesLike(object)) {
+        logger.throwArgumentError("RLP object must be BytesLike", "object", object);
+    }
     const data = Array.prototype.slice.call(arrayify(object));
     if (data.length === 1 && data[0] <= 0x7f) {
         return data;
@@ -52,7 +58,7 @@ function _decodeChildren(data, offset, childOffset, length) {
         result.push(decoded.result);
         childOffset += decoded.consumed;
         if (childOffset > offset + 1 + length) {
-            throw new Error("invalid rlp");
+            logger.throwError("child data too short", Logger.errors.BUFFER_OVERRUN, {});
         }
     }
     return { consumed: (1 + length), result: result };
@@ -60,35 +66,35 @@ function _decodeChildren(data, offset, childOffset, length) {
 // returns { consumed: number, result: Object }
 function _decode(data, offset) {
     if (data.length === 0) {
-        throw new Error("invalid rlp data");
+        logger.throwError("data too short", Logger.errors.BUFFER_OVERRUN, {});
     }
     // Array with extra length prefix
     if (data[offset] >= 0xf8) {
         const lengthLength = data[offset] - 0xf7;
         if (offset + 1 + lengthLength > data.length) {
-            throw new Error("too short");
+            logger.throwError("data short segment too short", Logger.errors.BUFFER_OVERRUN, {});
         }
         const length = unarrayifyInteger(data, offset + 1, lengthLength);
         if (offset + 1 + lengthLength + length > data.length) {
-            throw new Error("to short");
+            logger.throwError("data long segment too short", Logger.errors.BUFFER_OVERRUN, {});
         }
         return _decodeChildren(data, offset, offset + 1 + lengthLength, lengthLength + length);
     }
     else if (data[offset] >= 0xc0) {
         const length = data[offset] - 0xc0;
         if (offset + 1 + length > data.length) {
-            throw new Error("invalid rlp data");
+            logger.throwError("data array too short", Logger.errors.BUFFER_OVERRUN, {});
         }
         return _decodeChildren(data, offset, offset + 1, length);
     }
     else if (data[offset] >= 0xb8) {
         const lengthLength = data[offset] - 0xb7;
         if (offset + 1 + lengthLength > data.length) {
-            throw new Error("invalid rlp data");
+            logger.throwError("data array too short", Logger.errors.BUFFER_OVERRUN, {});
         }
         const length = unarrayifyInteger(data, offset + 1, lengthLength);
         if (offset + 1 + lengthLength + length > data.length) {
-            throw new Error("invalid rlp data");
+            logger.throwError("data array too short", Logger.errors.BUFFER_OVERRUN, {});
         }
         const result = hexlify(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length));
         return { consumed: (1 + lengthLength + length), result: result };
@@ -96,7 +102,7 @@ function _decode(data, offset) {
     else if (data[offset] >= 0x80) {
         const length = data[offset] - 0x80;
         if (offset + 1 + length > data.length) {
-            throw new Error("invalid rlp data");
+            logger.throwError("data too short", Logger.errors.BUFFER_OVERRUN, {});
         }
         const result = hexlify(data.slice(offset + 1, offset + 1 + length));
         return { consumed: (1 + length), result: result };
@@ -107,7 +113,7 @@ export function decode(data) {
     const bytes = arrayify(data);
     const decoded = _decode(bytes, 0);
     if (decoded.consumed !== bytes.length) {
-        throw new Error("invalid rlp data");
+        logger.throwArgumentError("invalid rlp data", "data", data);
     }
     return decoded.result;
 }
