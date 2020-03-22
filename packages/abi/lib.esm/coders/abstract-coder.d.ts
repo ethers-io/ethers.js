@@ -19,8 +19,8 @@ export declare class Writer {
     _data: Uint8Array;
     _padding: Uint8Array;
     constructor(wordSize?: number);
-    readonly data: string;
-    readonly length: number;
+    get data(): string;
+    get length(): number;
     _writeData(data: Uint8Array): number;
     writeBytes(value: BytesLike): number;
     _getValue(value: BigNumberish): Uint8Array;
@@ -33,8 +33,8 @@ export declare class Reader {
     readonly _coerceFunc: CoerceFunc;
     _offset: number;
     constructor(data: BytesLike, wordSize?: number, coerceFunc?: CoerceFunc);
-    readonly data: string;
-    readonly consumed: number;
+    get data(): string;
+    get consumed(): number;
     static coerce(name: string, value: any): any;
     coerce(name: string, value: any): any;
     _peekBytes(offset: number, length: number): Uint8Array;

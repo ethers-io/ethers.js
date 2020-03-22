@@ -12,7 +12,7 @@
   "description": "Testing package for ethers.",
   "devDependencies": {
     "browserify": "16.2.3",
-    "mocha": "^5.2.0"
+    "mocha": "^7.1.1"
   },
   "ethereum": "donations.ethers.eth",
   "keywords": [
@@ -33,7 +33,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0xd9e3db701d52ed9479a1f43d00a738320000a61a76c2225c9e30b68e86ec1e54",
+  "tarballHash": "0xcc8b17299dc3c35500e804359f4cfc7236cf6fa315546b156f6cd8d4f303fde8",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.153"
+  "version": "5.0.0-beta.154"
 }

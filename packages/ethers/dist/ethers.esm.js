@@ -4752,7 +4752,7 @@ var lib_esm$2 = /*#__PURE__*/Object.freeze({
 	Description: Description
 });
 
-const version$4 = "abi/5.0.0-beta.147";
+const version$4 = "abi/5.0.0-beta.148";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -12788,7 +12788,7 @@ var browser$5 = unwrapExports(browser$4);
 var browser_1$2 = browser$4.Wordlist;
 var browser_2$1 = browser$4.wordlists;
 
-const version$f = "hdnode/5.0.0-beta.137";
+const version$f = "hdnode/5.0.0-beta.138";
 
 "use strict";
 const logger$i = new Logger(version$f);
@@ -15134,7 +15134,7 @@ function decryptJsonWalletSync(json, password) {
     throw new Error("invalid JSON wallet");
 }
 
-const version$h = "wallet/5.0.0-beta.138";
+const version$h = "wallet/5.0.0-beta.139";
 
 "use strict";
 const logger$l = new Logger(version$h);
@@ -16277,7 +16277,7 @@ function poll(func, options) {
     });
 }
 
-const version$k = "providers/5.0.0-beta.157";
+const version$k = "providers/5.0.0-beta.158";
 
 "use strict";
 const logger$o = new Logger(version$k);
@@ -19123,7 +19123,7 @@ class Web3Provider extends JsonRpcProvider {
 var _version$6 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.0-beta.157";
+exports.version = "providers/5.0.0-beta.158";
 });
 
 var _version$7 = unwrapExports(_version$6);

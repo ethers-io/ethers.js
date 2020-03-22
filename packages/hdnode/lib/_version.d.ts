@@ -1,1 +1,1 @@
-export declare const version = "hdnode/5.0.0-beta.137";
+export declare const version = "hdnode/5.0.0-beta.138";

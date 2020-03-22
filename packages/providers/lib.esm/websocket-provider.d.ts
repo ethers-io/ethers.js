@@ -22,10 +22,11 @@ export declare class WebSocketProvider extends JsonRpcProvider {
     };
     _wsReady: boolean;
     constructor(url: string, network: Networkish);
-    pollingInterval: number;
+    get pollingInterval(): number;
     resetEventsBlock(blockNumber: number): void;
+    set pollingInterval(value: number);
     poll(): Promise<void>;
-    polling: boolean;
+    set polling(value: boolean);
     send(method: string, params?: Array<any>): Promise<any>;
     static defaultUrl(): string;
     _subscribe(tag: string, param: Array<any>, processFunc: (result: any) => void): Promise<void>;

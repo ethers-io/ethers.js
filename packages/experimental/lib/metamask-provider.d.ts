@@ -4,7 +4,7 @@ export declare class MetamaskProvider extends ethers.providers.Web3Provider {
     _pollAccountFunc: () => void;
     constructor(ethereum?: ethers.providers.AsyncSendable);
     getSigner(addressOrIndex?: string | number): ethers.providers.JsonRpcSigner;
-    readonly enabled: boolean;
+    get enabled(): boolean;
     _startPollingAccount(): void;
     _stopPollingAccount(): void;
     on(eventName: ethers.providers.EventType, listener: ethers.providers.Listener): this;

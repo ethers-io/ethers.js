@@ -4899,7 +4899,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.147";
+	exports.version = "abi/5.0.0-beta.148";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -13876,7 +13876,7 @@
 	var _version$w = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hdnode/5.0.0-beta.137";
+	exports.version = "hdnode/5.0.0-beta.138";
 	});
 
 	var _version$x = unwrapExports(_version$w);
@@ -16453,7 +16453,7 @@
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.0-beta.138";
+	exports.version = "wallet/5.0.0-beta.139";
 	});
 
 	var _version$D = unwrapExports(_version$C);
@@ -17738,7 +17738,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.157";
+	exports.version = "providers/5.0.0-beta.158";
 	});
 
 	var _version$J = unwrapExports(_version$I);

@@ -18,9 +18,9 @@ export declare class Event {
     readonly once: boolean;
     readonly tag: string;
     constructor(tag: string, listener: Listener, once: boolean);
-    readonly type: string;
-    readonly hash: string;
-    readonly filter: Filter;
+    get type(): string;
+    get hash(): string;
+    get filter(): Filter;
     pollable(): boolean;
 }
 export declare class BaseProvider extends Provider {
@@ -58,11 +58,13 @@ export declare class BaseProvider extends Provider {
     _getInternalBlockNumber(maxAge: number): Promise<number>;
     poll(): Promise<void>;
     resetEventsBlock(blockNumber: number): void;
-    readonly network: Network;
+    get network(): Network;
     getNetwork(): Promise<Network>;
-    readonly blockNumber: number;
-    polling: boolean;
-    pollingInterval: number;
+    get blockNumber(): number;
+    get polling(): boolean;
+    set polling(value: boolean);
+    get pollingInterval(): number;
+    set pollingInterval(value: number);
     _getFastBlockNumber(): Promise<number>;
     _setFastBlockNumber(blockNumber: number): void;
     waitForTransaction(transactionHash: string, confirmations?: number, timeout?: number): Promise<TransactionReceipt>;

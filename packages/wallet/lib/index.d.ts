@@ -11,9 +11,9 @@ export declare class Wallet extends Signer implements ExternallyOwnedAccount {
     readonly _signingKey: () => SigningKey;
     readonly _mnemonic: () => Mnemonic;
     constructor(privateKey: BytesLike | ExternallyOwnedAccount | SigningKey, provider?: Provider);
-    readonly mnemonic: Mnemonic;
-    readonly privateKey: string;
-    readonly publicKey: string;
+    get mnemonic(): Mnemonic;
+    get privateKey(): string;
+    get publicKey(): string;
     getAddress(): Promise<string>;
     connect(provider: Provider): Wallet;
     signTransaction(transaction: TransactionRequest): Promise<string>;

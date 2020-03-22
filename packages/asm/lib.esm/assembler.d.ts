@@ -36,7 +36,7 @@ export declare class LiteralNode extends ValueNode {
 export declare class PopNode extends ValueNode {
     readonly index: number;
     constructor(guard: any, location: Location, index: number);
-    readonly placeholder: string;
+    get placeholder(): string;
     static from(options: any): PopNode;
 }
 export declare class LinkNode extends ValueNode {
