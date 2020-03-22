@@ -141,8 +141,8 @@ export abstract class Provider implements OnceBlockable {
     abstract estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
 
     abstract getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block>;
-    abstract getTransaction(transactionHash: string): Promise<TransactionResponse>;
-    abstract getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
+    abstract getTransaction(transactionHash: string): Promise<TransactionResponse | null>;
+    abstract getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt | null>;
 
     abstract getLogs(filter: Filter | FilterByBlock): Promise<Array<Log>>;
 
