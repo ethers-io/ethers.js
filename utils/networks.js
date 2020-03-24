@@ -38,6 +38,7 @@ function etcDefaultProvider(url, network) {
 var homestead = {
     chainId: 1,
     ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    cnsAddress: "0xd1e5b0ff1287aa9f9a268759062e4ab08b9dacbe",
     name: "homestead",
     _defaultProvider: ethDefaultProvider('homestead')
 };
@@ -107,6 +108,7 @@ function getNetwork(network) {
                     name: n_1.name,
                     chainId: n_1.chainId,
                     ensAddress: (n_1.ensAddress || null),
+                    cnsAddress: (n_1.cnsAddress || null),
                     _defaultProvider: (n_1._defaultProvider || null)
                 };
             }
@@ -125,6 +127,7 @@ function getNetwork(network) {
             name: n_2.name,
             chainId: n_2.chainId,
             ensAddress: n_2.ensAddress,
+            cnsAddress: n_2.cnsAddress,
             _defaultProvider: (n_2._defaultProvider || null)
         };
     }
@@ -145,6 +148,7 @@ function getNetwork(network) {
         name: network.name,
         chainId: n.chainId,
         ensAddress: (network.ensAddress || n.ensAddress || null),
+        cnsAddress: (network.cnsAddress || n.cnsAddress || null),
         _defaultProvider: (network._defaultProvider || n._defaultProvider || null)
     };
 }

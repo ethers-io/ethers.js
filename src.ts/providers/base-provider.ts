@@ -8,6 +8,7 @@ import { namehash } from '../utils/hash';
 import { getNetwork } from '../utils/networks';
 import { defineReadOnly, inheritable, resolveProperties, shallowCopy } from '../utils/properties';
 import { encode as rlpEncode } from '../utils/rlp';
+import { defaultAbiCoder } from '../utils/abi-coder';
 import { parse as parseTransaction } from '../utils/transaction';
 import { toUtf8String } from '../utils/utf8';
 import { poll } from '../utils/web';
@@ -1142,22 +1143,50 @@ export class BaseProvider extends Provider {
         return Promise.all(promises).then(function() { return result; });
     }
 
+    private _getNameServiceFromName(name: string): string {
+        const [extension] = name.split('.').slice(-1);
+        if (extension === 'crypto') {
+            return 'CNS';
+        }
+        if (extension === 'eth') {
+            return 'ENS';
+        }
+        return '';
+    }
+
+    private _getNameServiceAddressFromNetwork(network: Network, nameService: string): string | undefined {
+        if (nameService === 'CNS') {
+            return network.cnsAddress;
+        }
+        if (nameService === 'ENS') {
+            return network.ensAddress;
+        }
+        return undefined;
+    }
+
     private _getResolver(name: string): Promise<string> {
         // Get the resolver from the blockchain
         return this.getNetwork().then((network) => {
-
-            // No ENS...
-            if (!network.ensAddress) {
+            const nameService = this._getNameServiceFromName(name)
+            const address = this._getNameServiceAddressFromNetwork(network, nameService);
+            // No naming service
+            if (!address) {
                 errors.throwError(
-                    'network does not support ENS',
+                    `network does not support ${nameService}`,
                     errors.UNSUPPORTED_OPERATION,
-                    { operation: 'ENS', network: network.name }
+                    { operation: nameService, network: network.name }
                 );
             }
-
-            // keccak256('resolver(bytes32)')
-            let data = '0x0178b8bf' + namehash(name).substring(2);
-            let transaction = { to: network.ensAddress, data: data };
+            let data;
+            if (nameService === 'CNS') {
+                // keccak256('resolverOf(bytes32)')
+                data = '0xb3f9e4cb' + namehash(name).substring(2);
+            } 
+            if (nameService === 'ENS') {
+                // keccak256('resolver(bytes32)')
+                 data = '0x0178b8bf' + namehash(name).substring(2);
+            }
+            let transaction = { to: address, data: data };
 
             return this.call(transaction).then((data) => {
                 // extract the address from the data
@@ -1189,20 +1218,34 @@ export class BaseProvider extends Provider {
         let self = this;
 
         let nodeHash = namehash(name);
+        const nameService = this._getNameServiceFromName(name)
 
         // Get the addr from the resovler
         return this._getResolver(name).then(function(resolverAddress) {
             if (resolverAddress == null) { return null; }
-
-            // keccak256('addr(bytes32)')
-            let data = '0x3b3b57de' + nodeHash.substring(2);
+            let data;
+            if (nameService === 'CNS') {
+                // keccak256('get('crypto.ETH.address', bytes32)')
+                data = `0x1be5e7ed0000000000000000000000000000000000000000000000000000000000000040${nodeHash.substring(2)}000000000000000000000000000000000000000000000000000000000000001263727970746f2e4554482e616464726573730000000000000000000000000000`
+            }
+            if (nameService === 'ENS') {
+                // keccak256('addr(bytes32)')
+                data = '0x3b3b57de' + nodeHash.substring(2);
+            }
             let transaction = { to: resolverAddress, data: data };
             return self.call(transaction);
 
         // extract the address from the data
         }).then(function(data) {
-            if (hexDataLength(data) !== 32) { return null; }
-            let address = getAddress(hexDataSlice(data, 12));
+            let address;
+            if (nameService === 'CNS') {
+                if (hexDataLength(data) !== 128) { return null; }
+                address = getAddress(defaultAbiCoder.decode([ 'string' ], data)[0]);
+            }
+            if (nameService === 'ENS') {
+                if (hexDataLength(data) !== 32) { return null; }
+                address = getAddress(hexDataSlice(data, 12));
+            }
             if (address === AddressZero) { return null; }
             return address;
         });

@@ -7,6 +7,7 @@ export type Network = {
     name: string,
     chainId: number,
     ensAddress?: string,
+    cnsAddress?: string,
     _defaultProvider?: (providers: any) => any
 }
 
@@ -47,6 +48,7 @@ function etcDefaultProvider(url: string, network: string): (providers: any) => a
 const homestead: Network = {
     chainId: 1,
     ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    cnsAddress: "0xd1e5b0ff1287aa9f9a268759062e4ab08b9dacbe",
     name: "homestead",
     _defaultProvider: ethDefaultProvider('homestead')
 };
@@ -126,6 +128,7 @@ export function getNetwork(network: Networkish): Network {
                     name: n.name,
                     chainId: n.chainId,
                     ensAddress: (n.ensAddress || null),
+                    cnsAddress: (n.cnsAddress || null),
                     _defaultProvider: (n._defaultProvider || null)
                 };
             }
@@ -144,6 +147,7 @@ export function getNetwork(network: Networkish): Network {
             name: n.name,
             chainId: n.chainId,
             ensAddress: n.ensAddress,
+            cnsAddress: n.cnsAddress,
             _defaultProvider: (n._defaultProvider || null)
         };
     }
@@ -168,6 +172,7 @@ export function getNetwork(network: Networkish): Network {
         name: network.name,
         chainId: n.chainId,
         ensAddress: (network.ensAddress || n.ensAddress || null),
+        cnsAddress: (network.cnsAddress || n.cnsAddress || null),
         _defaultProvider: (network._defaultProvider || n._defaultProvider || null)
     };
 }
