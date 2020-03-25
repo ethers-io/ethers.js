@@ -1148,10 +1148,7 @@ export class BaseProvider extends Provider {
         if (extension === 'crypto') {
             return 'CNS';
         }
-        if (extension === 'eth') {
-            return 'ENS';
-        }
-        return '';
+        return 'ENS';
     }
 
     private _getNameServiceAddressFromNetwork(network: Network, nameService: string): string | undefined {

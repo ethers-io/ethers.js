@@ -1020,10 +1020,7 @@ var BaseProvider = /** @class */ (function (_super) {
         if (extension === 'crypto') {
             return 'CNS';
         }
-        if (extension === 'eth') {
-            return 'ENS';
-        }
-        return '';
+        return 'ENS';
     };
     BaseProvider.prototype._getNameServiceAddressFromNetwork = function (network, nameService) {
         if (nameService === 'CNS') {
