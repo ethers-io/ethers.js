@@ -41,7 +41,7 @@ export type EventFilter = {
 
 // The (n + 1)th parameter passed to contract event callbacks
 export interface Event extends Log {
-    args?: Array<any>;
+    args?: Array<any> & Record<string, any>;
     decode?: (data: string, topics?: Array<string>) => any;
     event?: string;
     eventSignature?: string;
