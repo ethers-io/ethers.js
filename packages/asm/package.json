@@ -29,7 +29,7 @@
     "generate": "node ./generate.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xfa54a99b7ede20247114aec6d110912828f43740b961c331644bf11dad1ccf21",
+  "tarballHash": "0xbb58918bc51fc3dc01d936a972382d7ffb1b28f46dcf6d1a36b8bc31cf6ef4bb",
   "types": "./lib/index.d.ts",
   "version": "5.0.0-beta.154"
 }

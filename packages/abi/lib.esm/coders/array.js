@@ -85,7 +85,7 @@ export function unpack(reader, coders) {
         }
         values[name] = values[index];
     });
-    return values;
+    return Object.freeze(values);
 }
 export class ArrayCoder extends Coder {
     constructor(coder, length, localName) {

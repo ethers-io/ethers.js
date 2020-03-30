@@ -4639,7 +4639,7 @@ class FixedNumber {
     }
 }
 
-const version$3 = "properties/5.0.0-beta.137";
+const version$3 = "properties/5.0.0-beta.138";
 
 "use strict";
 const logger$3 = new Logger(version$3);
@@ -4698,12 +4698,30 @@ function shallowCopy(object) {
     }
     return result;
 }
-const opaque = { bigint: true, boolean: true, number: true, string: true };
+const opaque = { bigint: true, boolean: true, "function": true, number: true, string: true };
+function _isFrozen(object) {
+    // Opaque objects are not mutable, so safe to copy by assignment
+    if (object === undefined || object === null || opaque[typeof (object)]) {
+        return true;
+    }
+    if (Array.isArray(object) || typeof (object) === "object") {
+        if (!Object.isFrozen(object)) {
+            return false;
+        }
+        const keys = Object.keys(object);
+        for (let i = 0; i < keys.length; i++) {
+            if (!_isFrozen(object[keys[i]])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return logger$3.throwArgumentError(`Cannot deepCopy ${typeof (object)}`, "object", object);
+}
 // Returns a new copy of object, such that no properties may be replaced.
 // New properties may be added only to objects.
 function _deepCopy(object) {
-    // Opaque objects are not mutable, so safe to copy by assignment
-    if (object === undefined || object === null || opaque[typeof (object)]) {
+    if (_isFrozen(object)) {
         return object;
     }
     // Arrays are mutable, so we need to create a copy
@@ -4711,10 +4729,6 @@ function _deepCopy(object) {
         return Object.freeze(object.map((item) => deepCopy(item)));
     }
     if (typeof (object) === "object") {
-        // Immutable objects are safe to just use
-        if (Object.isFrozen(object)) {
-            return object;
-        }
         const result = {};
         for (const key in object) {
             const value = object[key];
@@ -4725,11 +4739,7 @@ function _deepCopy(object) {
         }
         return result;
     }
-    // The function type is also immutable, so safe to copy by assignment
-    if (typeof (object) === "function") {
-        return object;
-    }
-    logger$3.throwArgumentError(`Cannot deepCopy ${typeof (object)}`, "object", object);
+    return logger$3.throwArgumentError(`Cannot deepCopy ${typeof (object)}`, "object", object);
 }
 function deepCopy(object) {
     return _deepCopy(object);
@@ -6464,7 +6474,7 @@ function unpack(reader, coders) {
         }
         values[name] = values[index];
     });
-    return values;
+    return Object.freeze(values);
 }
 class ArrayCoder extends Coder {
     constructor(coder, length, localName) {
@@ -7602,7 +7612,7 @@ class Interface {
                 result[param.name] = result[index];
             }
         });
-        return result;
+        return Object.freeze(result);
     }
     // Given a transaction, find the matching function fragment (if any) and
     // determine all its properties and call parameters
@@ -19659,7 +19669,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$m = "ethers/5.0.0-beta.177";
+const version$m = "ethers/5.0.0-beta.178";
 
 "use strict";
 const errors = Logger.errors;

@@ -100,7 +100,7 @@ function unpack(reader, coders) {
         }
         values[name] = values[index];
     });
-    return values;
+    return Object.freeze(values);
 }
 exports.unpack = unpack;
 var ArrayCoder = /** @class */ (function (_super) {

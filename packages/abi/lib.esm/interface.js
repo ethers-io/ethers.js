@@ -339,7 +339,7 @@ export class Interface {
                 result[param.name] = result[index];
             }
         });
-        return result;
+        return Object.freeze(result);
     }
     // Given a transaction, find the matching function fragment (if any) and
     // determine all its properties and call parameters
