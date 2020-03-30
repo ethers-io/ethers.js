@@ -244,7 +244,8 @@ function runMethod(contract: Contract, functionName: string, options: RunOptions
                              let parsed: LogDescription = null;
                              try {
                                 parsed = contract.interface.parseLog(log);
-                             } catch (e){}
+                             } catch (e){ }
+
                              if (parsed) {
                                  event.args = parsed.args;
                                  event.decode = (data: BytesLike, topics?: Array<any>) => {

@@ -102,7 +102,7 @@ export function unpack(reader: Reader, coders: Array<Coder>): Array<any> {
         values[name] = values[index];
     });
 
-    return values;
+    return Object.freeze(values);
 }
 
 

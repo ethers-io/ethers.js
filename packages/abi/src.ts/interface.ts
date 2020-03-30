@@ -400,7 +400,7 @@ export class Interface {
         let resultIndexed = (topics != null) ? this._abiCoder.decode(indexed, concat(topics)): null;
         let resultNonIndexed = this._abiCoder.decode(nonIndexed, data);
 
-        let result: Result = [ ];
+        let result: (Array<any> & { [ key: string ]: any }) = [ ];
         let nonIndexedIndex = 0, indexedIndex = 0;
         eventFragment.inputs.forEach((param, index) => {
             if (param.indexed) {
@@ -416,10 +416,11 @@ export class Interface {
             } else {
                 result[index] = resultNonIndexed[nonIndexedIndex++];
             }
+
             if (param.name && result[param.name] == null) { result[param.name] = result[index]; }
         });
 
-        return result;
+        return Object.freeze(result);
     }
 
     // Given a transaction, find the matching function fragment (if any) and
