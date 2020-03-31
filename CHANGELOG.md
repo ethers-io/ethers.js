@@ -3,10 +3,10 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.0-beta.178 (2020-03-30 15:22)
+ethers/v5.0.0-beta.178 (2020-03-30 22:14)
 -----------------------------------------
 
-  - Fixed Event args keyword access. ([2692e78](https://github.com/ethers-io/ethers.js/commit/2692e783b40ce16207fa1a8e8513ebb5455fd2d0))
+  - Fixed Event args keyword access. ([2692e78](https://github.com/ethers-io/ethers.js/commit/2692e783b40ce16207fa1a8e8513ebb5455fd2d0), [092ce9b](https://github.com/ethers-io/ethers.js/commit/092ce9bcc2abf92c40550c4a990a8e2c889cc250))
   - Updating TypeScript library and fixing some audit issues. ([bd32ee0](https://github.com/ethers-io/ethers.js/commit/bd32ee0af5b25a435e5896773d8bfd482d3adcaf))
 
 ethers/v5.0.0-beta.177 (2020-03-21 12:46)

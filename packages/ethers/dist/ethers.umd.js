@@ -8850,7 +8850,7 @@
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.0-beta.145";
+	exports.version = "contracts/5.0.0-beta.146";
 	});
 
 	var _version$n = unwrapExports(_version$m);
@@ -9455,7 +9455,7 @@
 	        if (!this._wrappedEmits[runningEvent.tag]) {
 	            var wrappedEmit = function (log) {
 	                var event = _this._wrapEvent(runningEvent, log, listener);
-	                var args = (event.args || []);
+	                var args = (event.args || []).slice();
 	                args.push(event);
 	                _this.emit.apply(_this, __spreadArrays([runningEvent.filter], args));
 	            };

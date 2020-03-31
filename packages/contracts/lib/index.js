@@ -596,7 +596,7 @@ var Contract = /** @class */ (function () {
         if (!this._wrappedEmits[runningEvent.tag]) {
             var wrappedEmit = function (log) {
                 var event = _this._wrapEvent(runningEvent, log, listener);
-                var args = (event.args || []);
+                var args = (event.args || []).slice();
                 args.push(event);
                 _this.emit.apply(_this, __spreadArrays([runningEvent.filter], args));
             };

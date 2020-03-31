@@ -547,7 +547,7 @@ export class Contract {
         if (!this._wrappedEmits[runningEvent.tag]) {
             const wrappedEmit = (log) => {
                 const event = this._wrapEvent(runningEvent, log, listener);
-                const args = (event.args || []);
+                const args = (event.args || []).slice();
                 args.push(event);
                 this.emit(runningEvent.filter, ...args);
             };

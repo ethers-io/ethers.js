@@ -46,9 +46,9 @@ function TestContractEvents() {
                     }
                     done = true;
                     let args = Array.prototype.slice.call(arguments);
-                    let event = args.pop();
+                    let event = args[args.length - 1];
                     event.removeListener();
-                    equals(event.event, args, expected);
+                    equals(event.event, args.slice(0, args.length - 1), expected);
                     resolve();
                 });
                 const timer = setTimeout(() => {

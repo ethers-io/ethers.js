@@ -50,9 +50,9 @@ function TestContractEvents() {
                     }
                     done = true;
                     var args = Array.prototype.slice.call(arguments);
-                    var event = args.pop();
+                    var event = args[args.length - 1];
                     event.removeListener();
-                    equals(event.event, args, expected);
+                    equals(event.event, args.slice(0, args.length - 1), expected);
                     resolve();
                 });
                 var timer = setTimeout(function () {
