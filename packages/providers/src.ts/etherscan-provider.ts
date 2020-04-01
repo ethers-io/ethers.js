@@ -290,7 +290,7 @@ export class EtherscanProvider extends BaseProvider{
                 if (this.network.name !== "homestead") { return 0.0; }
                 url += "/api?module=stats&action=ethprice";
                 url += apiKey;
-                return parseFloat(await get(url, getResult));
+                return parseFloat((await get(url, getResult)).ethusd);
 
             default:
                 break;
