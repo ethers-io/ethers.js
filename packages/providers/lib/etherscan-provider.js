@@ -354,7 +354,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                         url += apiKey;
                         _b = parseFloat;
                         return [4 /*yield*/, get(url, getResult)];
-                    case 21: return [2 /*return*/, _b.apply(void 0, [_c.sent()])];
+                    case 21: return [2 /*return*/, _b.apply(void 0, [(_c.sent()).ethusd])];
                     case 22: return [3 /*break*/, 23];
                     case 23: return [2 /*return*/, _super.prototype.perform.call(this, method, params)];
                 }

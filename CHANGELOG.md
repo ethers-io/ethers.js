@@ -3,6 +3,13 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.179 (2020-03-31 23:40)
+-----------------------------------------
+
+  - Fixed ENS CLI lookup for Website. ([0f144c6](https://github.com/ethers-io/ethers.js/commit/0f144c6cc03082026080782356b940af3389b34e))
+  - Fixed getEtherPrice for EtherscanProvider. ([#776](https://github.com/ethers-io/ethers.js/issues/776); [6c71b51](https://github.com/ethers-io/ethers.js/commit/6c71b515126d8ef3cea5a1aec814c4cab56cc1a5))
+  - Fixed ENS CLI tool set-websites and added set-name. ([70cffb6](https://github.com/ethers-io/ethers.js/commit/70cffb6a5166a79a54e02b03b6a7ec0085407e07))
+
 ethers/v5.0.0-beta.178 (2020-03-30 22:14)
 -----------------------------------------
 

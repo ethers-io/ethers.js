@@ -16287,7 +16287,7 @@ function poll(func, options) {
     });
 }
 
-const version$k = "providers/5.0.0-beta.158";
+const version$k = "providers/5.0.0-beta.159";
 
 "use strict";
 const logger$o = new Logger(version$k);
@@ -18435,7 +18435,7 @@ class EtherscanProvider extends BaseProvider {
                     }
                     url += "/api?module=stats&action=ethprice";
                     url += apiKey;
-                    return parseFloat(yield get(url, getResult$1));
+                    return parseFloat((yield get(url, getResult$1)).ethusd);
                 default:
                     break;
             }
@@ -19133,7 +19133,7 @@ class Web3Provider extends JsonRpcProvider {
 var _version$6 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.0-beta.158";
+exports.version = "providers/5.0.0-beta.159";
 });
 
 var _version$7 = unwrapExports(_version$6);
@@ -19669,7 +19669,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$m = "ethers/5.0.0-beta.178";
+const version$m = "ethers/5.0.0-beta.179";
 
 "use strict";
 const errors = Logger.errors;

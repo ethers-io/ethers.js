@@ -87,6 +87,8 @@ var resolverAbi = [
     "function interfaceImplementer(bytes32 nodehash, bytes4 interfaceId) view returns (address)",
     "function addr(bytes32 nodehash) view returns (address)",
     "function setAddr(bytes32 nodehash, address addr) @500000",
+    "function name(bytes32 nodehash) view returns (string)",
+    "function setName(bytes32 nodehash, string name) @500000",
     "function text(bytes32 nodehash, string key) view returns (string)",
     "function setText(bytes32 nodehash, string key, string value) @500000",
     "function contenthash(bytes32 nodehash) view returns (bytes)",
@@ -318,7 +320,7 @@ var LookupPlugin = /** @class */ (function (_super) {
                                         if (email) {
                                             details["E-mail"] = email;
                                         }
-                                        return [4 /*yield*/, resolver.text(nodehash, "website").catch(function (error) { return (""); })];
+                                        return [4 /*yield*/, resolver.text(nodehash, "url").catch(function (error) { return (""); })];
                                     case 14:
                                         website = _f.sent();
                                         if (website) {
@@ -699,20 +701,23 @@ var AddressAccountPlugin = /** @class */ (function (_super) {
     };
     AddressAccountPlugin.prototype.prepareOptions = function (argParser) {
         return __awaiter(this, void 0, void 0, function () {
-            var address;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var address, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0: return [4 /*yield*/, _super.prototype.prepareOptions.call(this, argParser)];
                     case 1:
-                        _a.sent();
+                        _b.sent();
                         address = argParser.consumeOption("address");
                         if (!!address) return [3 /*break*/, 3];
                         return [4 /*yield*/, this.getDefaultAddress()];
                     case 2:
-                        address = _a.sent();
-                        _a.label = 3;
+                        address = _b.sent();
+                        _b.label = 3;
                     case 3:
-                        this.address = address;
+                        _a = this;
+                        return [4 /*yield*/, this.getAddress(address)];
+                    case 4:
+                        _a.address = _b.sent();
                         return [2 /*return*/];
                 }
             });
@@ -881,6 +886,44 @@ var SetAddrPlugin = /** @class */ (function (_super) {
     return SetAddrPlugin;
 }(AddressAccountPlugin));
 cli.addPlugin("set-addr", SetAddrPlugin);
+var SetNamePlugin = /** @class */ (function (_super) {
+    __extends(SetNamePlugin, _super);
+    function SetNamePlugin() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    SetNamePlugin.getHelp = function () {
+        return {
+            name: "set-name NAME",
+            help: "Set the reverse name record (default: current account)"
+        };
+    };
+    SetNamePlugin.prototype.run = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var nodehash, resolver;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, _super.prototype.run.call(this)];
+                    case 1:
+                        _a.sent();
+                        nodehash = ethers_1.ethers.utils.namehash(this.address.substring(2) + ".addr.reverse");
+                        this.dump("Set Name: " + this.name, {
+                            "Nodehash": nodehash,
+                            "Address": this.address
+                        });
+                        return [4 /*yield*/, this.getResolver(nodehash)];
+                    case 2:
+                        resolver = _a.sent();
+                        return [4 /*yield*/, resolver.setName(nodehash, this.name)];
+                    case 3:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    return SetNamePlugin;
+}(AddressAccountPlugin));
+cli.addPlugin("set-name", SetNamePlugin);
 var TextAccountPlugin = /** @class */ (function (_super) {
     __extends(TextAccountPlugin, _super);
     function TextAccountPlugin() {
@@ -960,7 +1003,7 @@ var SetWebsitePlugin = /** @class */ (function (_super) {
         };
     };
     SetWebsitePlugin.prototype.getHeader = function () { return "Website"; };
-    SetWebsitePlugin.prototype.getKey = function () { return "website"; };
+    SetWebsitePlugin.prototype.getKey = function () { return "url"; };
     SetWebsitePlugin.prototype.getValue = function () { return this.url; };
     return SetWebsitePlugin;
 }(TextAccountPlugin));

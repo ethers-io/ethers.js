@@ -268,7 +268,7 @@ export class EtherscanProvider extends BaseProvider {
                     }
                     url += "/api?module=stats&action=ethprice";
                     url += apiKey;
-                    return parseFloat(yield get(url, getResult));
+                    return parseFloat((yield get(url, getResult)).ethusd);
                 default:
                     break;
             }

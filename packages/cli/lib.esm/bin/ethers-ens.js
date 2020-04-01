@@ -46,6 +46,8 @@ const resolverAbi = [
     "function interfaceImplementer(bytes32 nodehash, bytes4 interfaceId) view returns (address)",
     "function addr(bytes32 nodehash) view returns (address)",
     "function setAddr(bytes32 nodehash, address addr) @500000",
+    "function name(bytes32 nodehash) view returns (string)",
+    "function setName(bytes32 nodehash, string name) @500000",
     "function text(bytes32 nodehash, string key) view returns (string)",
     "function setText(bytes32 nodehash, string key, string value) @500000",
     "function contenthash(bytes32 nodehash) view returns (bytes)",
@@ -188,7 +190,7 @@ class LookupPlugin extends EnsPlugin {
                     if (email) {
                         details["E-mail"] = email;
                     }
-                    let website = yield resolver.text(nodehash, "website").catch((error) => (""));
+                    let website = yield resolver.text(nodehash, "url").catch((error) => (""));
                     if (website) {
                         details["Website"] = website;
                     }
@@ -457,7 +459,7 @@ class AddressAccountPlugin extends AccountPlugin {
             if (!address) {
                 address = yield this.getDefaultAddress();
             }
-            this.address = address;
+            this.address = yield this.getAddress(address);
         });
     }
 }
@@ -567,6 +569,30 @@ class SetAddrPlugin extends AddressAccountPlugin {
     }
 }
 cli.addPlugin("set-addr", SetAddrPlugin);
+class SetNamePlugin extends AddressAccountPlugin {
+    static getHelp() {
+        return {
+            name: "set-name NAME",
+            help: "Set the reverse name record (default: current account)"
+        };
+    }
+    run() {
+        const _super = Object.create(null, {
+            run: { get: () => super.run }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            yield _super.run.call(this);
+            const nodehash = ethers.utils.namehash(this.address.substring(2) + ".addr.reverse");
+            this.dump("Set Name: " + this.name, {
+                "Nodehash": nodehash,
+                "Address": this.address
+            });
+            let resolver = yield this.getResolver(nodehash);
+            yield resolver.setName(nodehash, this.name);
+        });
+    }
+}
+cli.addPlugin("set-name", SetNamePlugin);
 class TextAccountPlugin extends AccountPlugin {
     run() {
         const _super = Object.create(null, {
@@ -618,7 +644,7 @@ class SetWebsitePlugin extends TextAccountPlugin {
         };
     }
     getHeader() { return "Website"; }
-    getKey() { return "website"; }
+    getKey() { return "url"; }
     getValue() { return this.url; }
 }
 cli.addPlugin("set-website", SetWebsitePlugin);
