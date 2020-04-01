@@ -49,6 +49,8 @@ const resolverAbi = [
     "function interfaceImplementer(bytes32 nodehash, bytes4 interfaceId) view returns (address)",
     "function addr(bytes32 nodehash) view returns (address)",
     "function setAddr(bytes32 nodehash, address addr) @500000",
+    "function name(bytes32 nodehash) view returns (string)",
+    "function setName(bytes32 nodehash, string name) @500000",
     "function text(bytes32 nodehash, string key) view returns (string)",
     "function setText(bytes32 nodehash, string key, string value) @500000",
     "function contenthash(bytes32 nodehash) view returns (bytes)",
@@ -471,7 +473,7 @@ abstract class AddressAccountPlugin extends AccountPlugin {
             address = await this.getDefaultAddress();
         }
 
-        this.address = address;
+        this.address = await this.getAddress(address);
     }
 }
 
@@ -579,6 +581,31 @@ class SetAddrPlugin extends AddressAccountPlugin {
 }
 cli.addPlugin("set-addr", SetAddrPlugin);
 
+class SetNamePlugin extends AddressAccountPlugin {
+
+    static getHelp(): Help {
+        return {
+           name: "set-name NAME",
+           help: "Set the reverse name record (default: current account)"
+        }
+    }
+
+    async run(): Promise<void> {
+        await super.run();
+
+        const nodehash = ethers.utils.namehash(this.address.substring(2) + ".addr.reverse");
+
+        this.dump("Set Name: " + this.name, {
+            "Nodehash": nodehash,
+            "Address": this.address
+        });
+
+        let resolver = await this.getResolver(nodehash);
+        await resolver.setName(nodehash, this.name);
+    }
+}
+cli.addPlugin("set-name", SetNamePlugin);
+
 abstract class TextAccountPlugin extends AccountPlugin {
     abstract getHeader(): string;
     abstract getKey(): string;
@@ -645,7 +672,7 @@ class SetWebsitePlugin extends TextAccountPlugin {
     }
 
     getHeader(): string { return "Website" }
-    getKey(): string { return "website"; }
+    getKey(): string { return "url"; }
     getValue(): string { return this.url; }
 }
 
