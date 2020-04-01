@@ -203,7 +203,7 @@ class LookupPlugin extends EnsPlugin {
                 let email = await resolver.text(nodehash, "email").catch((error: any) => (""));
                 if (email) { details["E-mail"] = email; }
 
-                let website = await resolver.text(nodehash, "website").catch((error: any) => (""));
+                let website = await resolver.text(nodehash, "url").catch((error: any) => (""));
                 if (website) { details["Website"] = website; }
 
                 let content = await resolver.contenthash(nodehash).then((hash: string) => {
