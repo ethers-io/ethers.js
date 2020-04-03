@@ -88,7 +88,7 @@ export abstract class Signer {
     call(transaction: TransactionRequest, blockTag?: BlockTag): Promise<string> {
         this._checkProvider("call");
         return resolveProperties(this.checkTransaction(transaction)).then((tx) => {
-            return this.provider.call(tx);
+            return this.provider.call(tx, blockTag);
         });
     }
 
