@@ -801,6 +801,9 @@ export class BaseProvider extends Provider {
                     throw error;
                 }
             }
+            if (typeof (name) !== "string") {
+                logger.throwArgumentError("invalid ENS name", "name", name);
+            }
             // Get the addr from the resovler
             const resolverAddress = yield this._getResolver(name);
             if (!resolverAddress) {

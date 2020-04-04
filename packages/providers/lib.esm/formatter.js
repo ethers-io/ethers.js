@@ -52,7 +52,6 @@ export class Formatter {
             data: Formatter.allowNull(strictData),
         };
         formats.receiptLog = {
-            transactionLogIndex: Formatter.allowNull(number),
             transactionIndex: number,
             blockNumber: number,
             transactionHash: hash,
@@ -311,14 +310,7 @@ export class Formatter {
         return Formatter.check(this.formats.receiptLog, value);
     }
     receipt(value) {
-        //let status = transactionReceipt.status;
-        //let root = transactionReceipt.root;
         const result = Formatter.check(this.formats.receipt, value);
-        result.logs.forEach((entry, index) => {
-            if (entry.transactionLogIndex == null) {
-                entry.transactionLogIndex = index;
-            }
-        });
         if (value.status != null) {
             result.byzantium = true;
         }

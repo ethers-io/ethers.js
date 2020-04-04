@@ -1142,6 +1142,9 @@ var BaseProvider = /** @class */ (function (_super) {
                                 throw error;
                             }
                         }
+                        if (typeof (name) !== "string") {
+                            logger.throwArgumentError("invalid ENS name", "name", name);
+                        }
                         return [4 /*yield*/, this._getResolver(name)];
                     case 3:
                         resolverAddress = _c.sent();

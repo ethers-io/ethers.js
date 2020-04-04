@@ -4909,7 +4909,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.148";
+	exports.version = "abi/5.0.0-beta.149";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -5442,12 +5442,14 @@
 	    };
 	    if (value.stateMutability != null) {
 	        result.stateMutability = value.stateMutability;
+	        // Set (and check things are consistent) the constant property
 	        result.constant = (result.stateMutability === "view" || result.stateMutability === "pure");
 	        if (value.constant != null) {
 	            if ((!!value.constant) !== result.constant) {
 	                throw new Error("cannot have constant function with mutability " + result.stateMutability);
 	            }
 	        }
+	        // Set (and check things are consistent) the payable property
 	        result.payable = (result.stateMutability === "payable");
 	        if (value.payable != null) {
 	            if ((!!value.payable) !== result.payable) {
@@ -5457,9 +5459,18 @@
 	    }
 	    else if (value.payable != null) {
 	        result.payable = !!value.payable;
-	        result.stateMutability = (result.payable ? "payable" : "nonpayable");
-	        result.constant = !result.payable;
-	        if (value.constant != null && (value.constant !== result.constant)) {
+	        // If payable we can assume non-constant; otherwise we can't assume
+	        if (value.constant == null && !result.payable && value.type !== "constructor") {
+	            throw new Error("unable to determine stateMutability");
+	        }
+	        result.constant = !!value.constant;
+	        if (result.constant) {
+	            result.stateMutability = "view";
+	        }
+	        else {
+	            result.stateMutability = (result.payable ? "payable" : "nonpayable");
+	        }
+	        if (result.payable && result.constant) {
 	            throw new Error("cannot have constant payable function");
 	        }
 	    }
@@ -5467,6 +5478,9 @@
 	        result.constant = !!value.constant;
 	        result.payable = !result.constant;
 	        result.stateMutability = (result.constant ? "view" : "payable");
+	    }
+	    else if (value.type !== "constructor") {
+	        throw new Error("unable to determine stateMutability");
 	    }
 	    return result;
 	}
@@ -8451,7 +8465,7 @@
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-provider/5.0.0-beta.138";
+	exports.version = "abstract-provider/5.0.0-beta.139";
 	});
 
 	var _version$j = unwrapExports(_version$i);
@@ -8586,7 +8600,7 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.0-beta.140";
+	exports.version = "abstract-signer/5.0.0-beta.141";
 	});
 
 	var _version$l = unwrapExports(_version$k);
@@ -8688,7 +8702,7 @@
 	        var _this = this;
 	        this._checkProvider("call");
 	        return lib$3.resolveProperties(this.checkTransaction(transaction)).then(function (tx) {
-	            return _this.provider.call(tx);
+	            return _this.provider.call(tx, blockTag);
 	        });
 	    };
 	    // Populates all fields in a transaction, signs it and sends it to the network
@@ -17748,7 +17762,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.159";
+	exports.version = "providers/5.0.0-beta.160";
 	});
 
 	var _version$J = unwrapExports(_version$I);
@@ -17812,7 +17826,6 @@
 	            data: Formatter.allowNull(strictData),
 	        };
 	        formats.receiptLog = {
-	            transactionLogIndex: Formatter.allowNull(number),
 	            transactionIndex: number,
 	            blockNumber: number,
 	            transactionHash: hash,
@@ -18071,14 +18084,7 @@
 	        return Formatter.check(this.formats.receiptLog, value);
 	    };
 	    Formatter.prototype.receipt = function (value) {
-	        //let status = transactionReceipt.status;
-	        //let root = transactionReceipt.root;
 	        var result = Formatter.check(this.formats.receipt, value);
-	        result.logs.forEach(function (entry, index) {
-	            if (entry.transactionLogIndex == null) {
-	                entry.transactionLogIndex = index;
-	            }
-	        });
 	        if (value.status != null) {
 	            result.byzantium = true;
 	        }
@@ -19300,6 +19306,9 @@
 	                            if (lib$1.isHexString(name)) {
 	                                throw error;
 	                            }
+	                        }
+	                        if (typeof (name) !== "string") {
+	                            logger.throwArgumentError("invalid ENS name", "name", name);
 	                        }
 	                        return [4 /*yield*/, this._getResolver(name)];
 	                    case 3:
@@ -22288,7 +22297,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.179";
+	exports.version = "ethers/5.0.0-beta.180";
 	});
 
 	var _version$N = unwrapExports(_version$M);

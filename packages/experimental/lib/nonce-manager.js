@@ -29,6 +29,13 @@ var NonceManager = /** @class */ (function (_super) {
         ethers_1.ethers.utils.defineReadOnly(_this, "signer", signer);
         return _this;
     }
+    Object.defineProperty(NonceManager.prototype, "provider", {
+        get: function () {
+            return this.signer.provider;
+        },
+        enumerable: true,
+        configurable: true
+    });
     NonceManager.prototype.connect = function (provider) {
         return new NonceManager(this.signer.connect(provider));
     };

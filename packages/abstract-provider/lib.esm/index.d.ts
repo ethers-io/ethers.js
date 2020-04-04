@@ -44,16 +44,15 @@ export interface BlockWithTransactions extends _Block {
     transactions: Array<TransactionResponse>;
 }
 export interface Log {
-    blockNumber?: number;
-    blockHash?: string;
-    transactionIndex?: number;
+    blockNumber: number;
+    blockHash: string;
+    transactionIndex: number;
     removed: boolean;
-    transactionLogIndex?: number;
     address: string;
     data: string;
     topics: Array<string>;
-    transactionHash?: string;
-    logIndex?: number;
+    transactionHash: string;
+    logIndex: number;
 }
 export interface TransactionReceipt {
     to: string;

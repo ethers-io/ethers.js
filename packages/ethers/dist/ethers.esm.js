@@ -4762,7 +4762,7 @@ var lib_esm$2 = /*#__PURE__*/Object.freeze({
 	Description: Description
 });
 
-const version$4 = "abi/5.0.0-beta.148";
+const version$4 = "abi/5.0.0-beta.149";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -5262,12 +5262,14 @@ function verifyState(value) {
     };
     if (value.stateMutability != null) {
         result.stateMutability = value.stateMutability;
+        // Set (and check things are consistent) the constant property
         result.constant = (result.stateMutability === "view" || result.stateMutability === "pure");
         if (value.constant != null) {
             if ((!!value.constant) !== result.constant) {
                 throw new Error("cannot have constant function with mutability " + result.stateMutability);
             }
         }
+        // Set (and check things are consistent) the payable property
         result.payable = (result.stateMutability === "payable");
         if (value.payable != null) {
             if ((!!value.payable) !== result.payable) {
@@ -5277,9 +5279,18 @@ function verifyState(value) {
     }
     else if (value.payable != null) {
         result.payable = !!value.payable;
-        result.stateMutability = (result.payable ? "payable" : "nonpayable");
-        result.constant = !result.payable;
-        if (value.constant != null && (value.constant !== result.constant)) {
+        // If payable we can assume non-constant; otherwise we can't assume
+        if (value.constant == null && !result.payable && value.type !== "constructor") {
+            throw new Error("unable to determine stateMutability");
+        }
+        result.constant = !!value.constant;
+        if (result.constant) {
+            result.stateMutability = "view";
+        }
+        else {
+            result.stateMutability = (result.payable ? "payable" : "nonpayable");
+        }
+        if (result.payable && result.constant) {
             throw new Error("cannot have constant payable function");
         }
     }
@@ -5287,6 +5298,9 @@ function verifyState(value) {
         result.constant = !!value.constant;
         result.payable = !result.constant;
         result.stateMutability = (result.constant ? "view" : "payable");
+    }
+    else if (value.type !== "constructor") {
+        throw new Error("unable to determine stateMutability");
     }
     return result;
 }
@@ -7666,7 +7680,7 @@ class Interface {
 
 "use strict";
 
-const version$9 = "abstract-provider/5.0.0-beta.138";
+const version$9 = "abstract-provider/5.0.0-beta.139";
 
 "use strict";
 const logger$d = new Logger(version$9);
@@ -7743,7 +7757,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.0.0-beta.140";
+const version$a = "abstract-signer/5.0.0-beta.141";
 
 "use strict";
 var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -7793,7 +7807,7 @@ class Signer {
     call(transaction, blockTag) {
         this._checkProvider("call");
         return resolveProperties(this.checkTransaction(transaction)).then((tx) => {
-            return this.provider.call(tx);
+            return this.provider.call(tx, blockTag);
         });
     }
     // Populates all fields in a transaction, signs it and sends it to the network
@@ -16287,7 +16301,7 @@ function poll(func, options) {
     });
 }
 
-const version$k = "providers/5.0.0-beta.159";
+const version$k = "providers/5.0.0-beta.160";
 
 "use strict";
 const logger$o = new Logger(version$k);
@@ -16335,7 +16349,6 @@ class Formatter {
             data: Formatter.allowNull(strictData),
         };
         formats.receiptLog = {
-            transactionLogIndex: Formatter.allowNull(number),
             transactionIndex: number,
             blockNumber: number,
             transactionHash: hash,
@@ -16594,14 +16607,7 @@ class Formatter {
         return Formatter.check(this.formats.receiptLog, value);
     }
     receipt(value) {
-        //let status = transactionReceipt.status;
-        //let root = transactionReceipt.root;
         const result = Formatter.check(this.formats.receipt, value);
-        result.logs.forEach((entry, index) => {
-            if (entry.transactionLogIndex == null) {
-                entry.transactionLogIndex = index;
-            }
-        });
         if (value.status != null) {
             result.byzantium = true;
         }
@@ -17463,6 +17469,9 @@ class BaseProvider extends Provider {
                 if (isHexString(name)) {
                     throw error;
                 }
+            }
+            if (typeof (name) !== "string") {
+                logger$p.throwArgumentError("invalid ENS name", "name", name);
             }
             // Get the addr from the resovler
             const resolverAddress = yield this._getResolver(name);
@@ -19133,7 +19142,7 @@ class Web3Provider extends JsonRpcProvider {
 var _version$6 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.0-beta.159";
+exports.version = "providers/5.0.0-beta.160";
 });
 
 var _version$7 = unwrapExports(_version$6);
@@ -19669,7 +19678,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$m = "ethers/5.0.0-beta.179";
+const version$m = "ethers/5.0.0-beta.180";
 
 "use strict";
 const errors = Logger.errors;

@@ -93,7 +93,7 @@ var Signer = /** @class */ (function () {
         var _this = this;
         this._checkProvider("call");
         return properties_1.resolveProperties(this.checkTransaction(transaction)).then(function (tx) {
-            return _this.provider.call(tx);
+            return _this.provider.call(tx, blockTag);
         });
     };
     // Populates all fields in a transaction, signs it and sends it to the network

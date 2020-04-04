@@ -500,12 +500,14 @@ function verifyState(value) {
     };
     if (value.stateMutability != null) {
         result.stateMutability = value.stateMutability;
+        // Set (and check things are consistent) the constant property
         result.constant = (result.stateMutability === "view" || result.stateMutability === "pure");
         if (value.constant != null) {
             if ((!!value.constant) !== result.constant) {
                 throw new Error("cannot have constant function with mutability " + result.stateMutability);
             }
         }
+        // Set (and check things are consistent) the payable property
         result.payable = (result.stateMutability === "payable");
         if (value.payable != null) {
             if ((!!value.payable) !== result.payable) {
@@ -515,9 +517,18 @@ function verifyState(value) {
     }
     else if (value.payable != null) {
         result.payable = !!value.payable;
-        result.stateMutability = (result.payable ? "payable" : "nonpayable");
-        result.constant = !result.payable;
-        if (value.constant != null && (value.constant !== result.constant)) {
+        // If payable we can assume non-constant; otherwise we can't assume
+        if (value.constant == null && !result.payable && value.type !== "constructor") {
+            throw new Error("unable to determine stateMutability");
+        }
+        result.constant = !!value.constant;
+        if (result.constant) {
+            result.stateMutability = "view";
+        }
+        else {
+            result.stateMutability = (result.payable ? "payable" : "nonpayable");
+        }
+        if (result.payable && result.constant) {
             throw new Error("cannot have constant payable function");
         }
     }
@@ -525,6 +536,9 @@ function verifyState(value) {
         result.constant = !!value.constant;
         result.payable = !result.constant;
         result.stateMutability = (result.constant ? "view" : "payable");
+    }
+    else if (value.type !== "constructor") {
+        throw new Error("unable to determine stateMutability");
     }
     return result;
 }

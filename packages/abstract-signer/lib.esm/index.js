@@ -49,7 +49,7 @@ export class Signer {
     call(transaction, blockTag) {
         this._checkProvider("call");
         return resolveProperties(this.checkTransaction(transaction)).then((tx) => {
-            return this.provider.call(tx);
+            return this.provider.call(tx, blockTag);
         });
     }
     // Populates all fields in a transaction, signs it and sends it to the network
