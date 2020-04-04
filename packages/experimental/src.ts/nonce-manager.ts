@@ -11,7 +11,6 @@ const logger = new ethers.utils.Logger(version);
 
 export class NonceManager extends ethers.Signer {
     readonly signer: ethers.Signer;
-    readonly provider: ethers.providers.Provider;
 
     _initialPromise: Promise<number>;
     _deltaCount: number;
@@ -21,6 +20,10 @@ export class NonceManager extends ethers.Signer {
         super();
         this._deltaCount = 0;
         ethers.utils.defineReadOnly(this, "signer", signer);
+    }
+
+    get provider(): ethers.providers.Provider {
+        return this.signer.provider;
     }
 
     connect(provider: ethers.providers.Provider): NonceManager {
