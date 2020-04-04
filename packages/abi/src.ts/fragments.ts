@@ -607,6 +607,7 @@ function verifyState(value: any): { constant: boolean, payable: boolean, stateMu
     if (value.stateMutability != null) {
         result.stateMutability = value.stateMutability;
 
+        // Set (and check things are consistent) the constant property
         result.constant = (result.stateMutability === "view" || result.stateMutability === "pure");
         if (value.constant != null) {
             if ((!!value.constant) !== result.constant) {
@@ -614,6 +615,7 @@ function verifyState(value: any): { constant: boolean, payable: boolean, stateMu
             }
         }
 
+        // Set (and check things are consistent) the payable property
         result.payable = (result.stateMutability === "payable");
         if (value.payable != null) {
             if ((!!value.payable) !== result.payable) {
@@ -623,9 +625,21 @@ function verifyState(value: any): { constant: boolean, payable: boolean, stateMu
 
     } else if (value.payable != null) {
         result.payable = !!value.payable;
-        result.stateMutability = (result.payable ? "payable": "nonpayable");
-        result.constant = !result.payable;
-        if (value.constant != null && (value.constant !== result.constant)) {
+
+        // If payable we can assume non-constant; otherwise we can't assume
+        if (value.constant == null && !result.payable) {
+            throw new Error("unable to determine stateMutability");
+        }
+
+        result.constant = !!value.constant;
+
+        if (result.constant) {
+            result.stateMutability = "view";
+        } else {
+            result.stateMutability = (result.payable ? "payable": "nonpayable");
+        }
+
+        if (result.payable && result.constant) {
             throw new Error("cannot have constant payable function");
         }
 
@@ -633,6 +647,9 @@ function verifyState(value: any): { constant: boolean, payable: boolean, stateMu
         result.constant = !!value.constant;
         result.payable = !result.constant;
         result.stateMutability = (result.constant ? "view": "payable");
+
+    } else {
+        throw new Error("unable to determine stateMutability");
     }
 
     return result;
