@@ -627,7 +627,7 @@ function verifyState(value: any): { constant: boolean, payable: boolean, stateMu
         result.payable = !!value.payable;
 
         // If payable we can assume non-constant; otherwise we can't assume
-        if (value.constant == null && !result.payable) {
+        if (value.constant == null && !result.payable && value.type !== "constructor") {
             throw new Error("unable to determine stateMutability");
         }
 
@@ -648,7 +648,7 @@ function verifyState(value: any): { constant: boolean, payable: boolean, stateMu
         result.payable = !result.constant;
         result.stateMutability = (result.constant ? "view": "payable");
 
-    } else {
+    } else if (value.type !== "constructor") {
         throw new Error("unable to determine stateMutability");
     }
 

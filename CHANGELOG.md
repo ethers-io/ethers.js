@@ -3,6 +3,15 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.180 (2020-04-03 21:40)
+-----------------------------------------
+
+  - Correctly return the Provider in NonceManager. ([6caf7c2](https://github.com/ethers-io/ethers.js/commit/6caf7c292cd5f03741cd6b30053c3325c4f30a81))
+  - Fail earlier when resolving an ENS name that is not a string. ([2882546](https://github.com/ethers-io/ethers.js/commit/28825463517f8821392464ec2283ee59c431d928))
+  - Fixed mutabilityState calculation for function fragments. ([#762](https://github.com/ethers-io/ethers.js/issues/762); [6526de0](https://github.com/ethers-io/ethers.js/commit/6526de016fda5403474dad61ee59acc62ee25ebc))
+  - Force Log properties to be non-optional. ([#415](https://github.com/ethers-io/ethers.js/issues/415); [da412f6](https://github.com/ethers-io/ethers.js/commit/da412f660723d1c411484e74970ce4eb166374c2))
+  - Fixed Signer call not forwarding blockTag. ([#768](https://github.com/ethers-io/ethers.js/issues/768); [053a2d7](https://github.com/ethers-io/ethers.js/commit/053a2d7fcdb4ca4c9bfd0bee0f42e0187d3db477))
+
 ethers/v5.0.0-beta.179 (2020-03-31 23:40)
 -----------------------------------------
 
