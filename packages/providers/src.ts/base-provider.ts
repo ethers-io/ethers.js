@@ -895,6 +895,10 @@ export class BaseProvider extends Provider {
             if (isHexString(name)) { throw error; }
         }
 
+        if (typeof(name) !== "string") {
+            logger.throwArgumentError("invalid ENS name", "name", name);
+        }
+
         // Get the addr from the resovler
         const resolverAddress = await this._getResolver(name);
         if (!resolverAddress) { return null; }
