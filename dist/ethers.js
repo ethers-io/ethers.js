@@ -9816,7 +9816,7 @@ module.exports = { browser: true };
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("timers").clearImmediate)
 },{"_process":43,"timers":46}],46:[function(require,module,exports){
 (function (global){
-module.exports = { setImmediate: global.setImmediate }; 
+module.exports = { setImmediate: global.setImmediate };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],47:[function(require,module,exports){
 (function (global){
@@ -12328,7 +12328,7 @@ var _nextId = 42;
 var Web3Provider = /** @class */ (function (_super) {
     __extends(Web3Provider, _super);
     function Web3Provider(web3Provider, network) {
-        var _this = 
+        var _this =
         // HTTP has a host; IPC has a path.
         _super.call(this, web3Provider.host || web3Provider.path || '', network) || this;
         errors.checkNew(_this, Web3Provider);
@@ -12901,7 +12901,7 @@ var CoderAddress = /** @class */ (function (_super) {
     };
     CoderAddress.prototype.decode = function (data, offset) {
         if (data.length < offset + 32) {
-            errors.throwError('insufficuent data for address type', errors.INVALID_ARGUMENT, {
+            errors.throwError('insufficient data for address type', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
                 coderType: 'address',
                 value: bytes_1.hexlify(data.slice(offset, offset + 32))

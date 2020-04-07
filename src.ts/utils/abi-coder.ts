@@ -607,7 +607,7 @@ class CoderAddress extends Coder {
     }
     decode(data: Uint8Array, offset: number): DecodedResult {
         if (data.length < offset + 32) {
-            errors.throwError('insufficuent data for address type', errors.INVALID_ARGUMENT, {
+            errors.throwError('insufficient data for address type', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
                 coderType: 'address',
                 value: hexlify(data.slice(offset, offset + 32))
