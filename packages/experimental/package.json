@@ -1,5 +1,14 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
+  "browser": {
+    "ethers": "./lib.esm/browser-ethers.js"
+  },
+  "browser.esm": {
+    "ethers": "./lib.esm/browser-ethers.js"
+  },
+  "browser.umd": {
+    "ethers": "./lib/browser-ethers.js"
+  },
   "dependencies": {
     "@ensdomains/address-encoder": "^0.1.2",
     "@ethersproject/web": "^5.0.0",

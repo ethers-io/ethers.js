@@ -64,7 +64,7 @@ let managedSigner = new NonceManager(signer);
 **RetryProvider**
 
 ```javascript
-import { RetryProvider } from "@ethersproject/experimenatl/retry-provider";
+import { RetryProvider } from "@ethersproject/experimental/retry-provider";
 
 let provider = "... any way you get a signer...";
 
@@ -75,6 +75,28 @@ let options = {
 let retryProivder = new RetryProvider(provider, options);
 ```
 
+**GsnSigner**
+
+GsnSigner is a special type of signer that forwards signed transactions to the [Gas Station Network](https://www.opengsn.org) relayers to be submitted to the ethereum network, allowing accounts to interact with contracts without paying for gas fee.
+
+```javascript
+import { ethers } from "ethers";
+import { GsnSigner } from "@ethersproject/experimental";
+
+const provider = new ethers.providers.InfuraProvider('rinkeby');
+
+// All options are optional
+let options = {
+}
+
+const wallet = ethers.Wallet.createRandom().connect(provider);
+const signer = new GsnSigner(wallet, options);
+const contractAddress = "0x7d6bea40FD170B2cF3caA101f908545E4991a3a8";
+const abi = ["function setValue(uint256 val) public payable"];
+const contract = new ethers.Contract(contractAddress, abi, signer);
+const tx = await contract.setValue(value);
+
+```
 
 License
 -------
