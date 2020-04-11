@@ -165,6 +165,14 @@ export class BigNumber implements Hexable {
     gte(other: BigNumberish): boolean {
         return _bnify(this).gte(toBN(other));
     }
+    
+    shln(other: BigNumberish): boolean {
+        return _bnify(this).shln(toBN(other));
+    }
+
+    shrn(other: BigNumberish): boolean {
+        return _bnify(this).shrn(toBN(other));
+    }
 
     isZero(): boolean {
         return _bnify(this).isZero();
