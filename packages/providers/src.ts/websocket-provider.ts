@@ -13,7 +13,6 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
-
 /**
  *  Notes:
  *
@@ -40,11 +39,11 @@ export type Subscription = {
     tag: string;
     processFunc: (payload: any) => void;
 };
-/*
-function subscribable(tag: string): boolean {
-    return (tag === "block" || tag === "pending");
-}
-*/
+
+
+// For more info about the Real-time Event API see:
+//   https://geth.ethereum.org/docs/rpc/pubsub
+
 export class WebSocketProvider extends JsonRpcProvider {
     readonly _websocket: any;
     readonly _requests: { [ name: string ]: InflightRequest };
@@ -237,7 +236,7 @@ export class WebSocketProvider extends JsonRpcProvider {
                 return;
             }
             tag = "tx";
-        } else if (this.listenerCount(event.tag)) {
+        } else if (this.listenerCount(event.event)) {
             // There are remaining event listeners
             return;
         }
@@ -252,5 +251,4 @@ export class WebSocketProvider extends JsonRpcProvider {
             this.send("eth_unsubscribe", [ subId ]);
         });
     }
-
 }

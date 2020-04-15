@@ -123,6 +123,16 @@ export class Event {
         defineReadOnly(this, "once", once);
     }
 
+    get event(): EventType {
+        switch (this.type) {
+            case "tx":
+               return this.hash;
+            case "filter":
+               return this.filter;
+        }
+        return this.tag;
+    }
+
     get type(): string {
         return this.tag.split(":")[0]
     }
