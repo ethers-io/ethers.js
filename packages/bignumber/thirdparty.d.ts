@@ -9,7 +9,7 @@ declare module "bn.js" {
         mul(other: BN): BN;
 
         pow(other: BN): BN;
-        maskn(other: number): BN;
+        umod(other: BN): BN;
 
         eq(other: BN): boolean;
         lt(other: BN): boolean;
@@ -17,10 +17,18 @@ declare module "bn.js" {
         gt(other: BN): boolean;
         gte(other: BN): boolean;
 
+        isNeg(): boolean;
         isZero(): boolean;
 
         toTwos(other: number): BN;
         fromTwos(other: number): BN;
+
+        or(other: BN): BN;
+        and(other: BN): BN;
+        xor(other: BN): BN;
+        shln(other: number): BN;
+        shrn(other: number): BN;
+        maskn(other: number): BN;
 
         toString(radix: number): string;
         toNumber(): number;

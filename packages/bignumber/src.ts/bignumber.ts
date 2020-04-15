@@ -89,15 +89,60 @@ export class BigNumber implements Hexable {
     }
 
     mod(other: BigNumberish): BigNumber {
-        return toBigNumber(toBN(this).mod(toBN(other)));
+        const value = toBN(other);
+        if (value.isNeg()) {
+            throwFault("cannot modulo negative values", "mod");
+        }
+        return toBigNumber(toBN(this).umod(value));
     }
 
     pow(other: BigNumberish): BigNumber {
         return toBigNumber(toBN(this).pow(toBN(other)));
     }
 
-    maskn(value: number): BigNumber {
+    and(other: BigNumberish): BigNumber {
+        const value = toBN(other);
+        if (this.isNegative() || value.isNeg()) {
+            throwFault("cannot 'and' negative values", "and");
+        }
+        return toBigNumber(toBN(this).and(value));
+    }
+
+    or(other: BigNumberish): BigNumber {
+        const value = toBN(other);
+        if (this.isNegative() || value.isNeg()) {
+            throwFault("cannot 'or' negative values", "or");
+        }
+        return toBigNumber(toBN(this).or(value));
+    }
+
+    xor(other: BigNumberish): BigNumber {
+        const value = toBN(other);
+        if (this.isNegative() || value.isNeg()) {
+            throwFault("cannot 'xor' negative values", "xor");
+        }
+        return toBigNumber(toBN(this).xor(value));
+    }
+
+    mask(value: number): BigNumber {
+        if (this.isNegative() || value < 0) {
+            throwFault("cannot mask negative values", "mask");
+        }
         return toBigNumber(toBN(this).maskn(value));
+    }
+
+    shl(value: number): BigNumber {
+        if (this.isNegative() || value < 0) {
+            throwFault("cannot shift negative values", "shl");
+        }
+        return toBigNumber(toBN(this).shln(value));
+    }
+
+    shr(value: number): BigNumber {
+        if (this.isNegative() || value < 0) {
+            throwFault("cannot shift negative values", "shr");
+        }
+        return toBigNumber(toBN(this).shrn(value));
     }
 
     eq(other: BigNumberish): boolean {
@@ -118,6 +163,10 @@ export class BigNumber implements Hexable {
 
     gte(other: BigNumberish): boolean {
         return toBN(this).gte(toBN(other));
+    }
+
+    isNegative(): boolean {
+        return (this._hex[0] === "-");
     }
 
     isZero(): boolean {
