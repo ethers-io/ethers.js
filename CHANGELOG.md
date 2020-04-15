@@ -3,6 +3,15 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.181 (2020-04-15 18:23)
+-----------------------------------------
+
+  - Temporarily remove CloudflareProvider tests; it is down and breaking the tests. ([797abb7](https://github.com/ethers-io/ethers.js/commit/797abb726711499d96bf1c12c61e3bb1a7b4925d))
+  - Better error reporting for Fragments. ([7dcefcb](https://github.com/ethers-io/ethers.js/commit/7dcefcbf71ef337103639bbe3f4ad2625565651a))
+  - Fixed Contract filter unsubscribing. ([2eb3823](https://github.com/ethers-io/ethers.js/commit/2eb3823de4ba111cc0c746a0715fe6dd3d1b16da), [39c78f3](https://github.com/ethers-io/ethers.js/commit/39c78f37ceff9b8ec08329903dcba7bd53bd8661))
+  - Fixed WebSocketProvider filter events. ([#784](https://github.com/ethers-io/ethers.js/issues/784); [69f7077](https://github.com/ethers-io/ethers.js/commit/69f707762ed5939c5f52bf6dce5c5513aaf6fa1d))
+  - Added bitwise operations to BigNumber. ([#781](https://github.com/ethers-io/ethers.js/issues/781); [7498c18](https://github.com/ethers-io/ethers.js/commit/7498c18235c7566b2f652cddba991f55e0943da8), [284771e](https://github.com/ethers-io/ethers.js/commit/284771ea39b6f4ee9cdf75ce5feea9e6aa9a65c5))
+
 ethers/v5.0.0-beta.180 (2020-04-03 22:10)
 -----------------------------------------
 

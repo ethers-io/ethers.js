@@ -30,11 +30,8 @@ const logger = new Logger(version);
  *  with each other.
  */
 let NextId = 1;
-/*
-function subscribable(tag: string): boolean {
-    return (tag === "block" || tag === "pending");
-}
-*/
+// For more info about the Real-time Event API see:
+//   https://geth.ethereum.org/docs/rpc/pubsub
 export class WebSocketProvider extends JsonRpcProvider {
     constructor(url, network) {
         super(url, network);
@@ -203,7 +200,7 @@ export class WebSocketProvider extends JsonRpcProvider {
             }
             tag = "tx";
         }
-        else if (this.listenerCount(event.tag)) {
+        else if (this.listenerCount(event.event)) {
             // There are remaining event listeners
             return;
         }

@@ -65,13 +65,53 @@ var BigNumber = /** @class */ (function () {
         return toBigNumber(toBN(this).mul(toBN(other)));
     };
     BigNumber.prototype.mod = function (other) {
-        return toBigNumber(toBN(this).mod(toBN(other)));
+        var value = toBN(other);
+        if (value.isNeg()) {
+            throwFault("cannot modulo negative values", "mod");
+        }
+        return toBigNumber(toBN(this).umod(value));
     };
     BigNumber.prototype.pow = function (other) {
         return toBigNumber(toBN(this).pow(toBN(other)));
     };
-    BigNumber.prototype.maskn = function (value) {
+    BigNumber.prototype.and = function (other) {
+        var value = toBN(other);
+        if (this.isNegative() || value.isNeg()) {
+            throwFault("cannot 'and' negative values", "and");
+        }
+        return toBigNumber(toBN(this).and(value));
+    };
+    BigNumber.prototype.or = function (other) {
+        var value = toBN(other);
+        if (this.isNegative() || value.isNeg()) {
+            throwFault("cannot 'or' negative values", "or");
+        }
+        return toBigNumber(toBN(this).or(value));
+    };
+    BigNumber.prototype.xor = function (other) {
+        var value = toBN(other);
+        if (this.isNegative() || value.isNeg()) {
+            throwFault("cannot 'xor' negative values", "xor");
+        }
+        return toBigNumber(toBN(this).xor(value));
+    };
+    BigNumber.prototype.mask = function (value) {
+        if (this.isNegative() || value < 0) {
+            throwFault("cannot mask negative values", "mask");
+        }
         return toBigNumber(toBN(this).maskn(value));
+    };
+    BigNumber.prototype.shl = function (value) {
+        if (this.isNegative() || value < 0) {
+            throwFault("cannot shift negative values", "shl");
+        }
+        return toBigNumber(toBN(this).shln(value));
+    };
+    BigNumber.prototype.shr = function (value) {
+        if (this.isNegative() || value < 0) {
+            throwFault("cannot shift negative values", "shr");
+        }
+        return toBigNumber(toBN(this).shrn(value));
     };
     BigNumber.prototype.eq = function (other) {
         return toBN(this).eq(toBN(other));
@@ -87,6 +127,9 @@ var BigNumber = /** @class */ (function () {
     };
     BigNumber.prototype.gte = function (other) {
         return toBN(this).gte(toBN(other));
+    };
+    BigNumber.prototype.isNegative = function () {
+        return (this._hex[0] === "-");
     };
     BigNumber.prototype.isZero = function () {
         return toBN(this).isZero();

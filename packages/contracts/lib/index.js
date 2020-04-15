@@ -554,12 +554,12 @@ var Contract = /** @class */ (function () {
     Contract.prototype._checkRunningEvents = function (runningEvent) {
         if (runningEvent.listenerCount() === 0) {
             delete this._runningEvents[runningEvent.tag];
-        }
-        // If we have a poller for this, remove it
-        var emit = this._wrappedEmits[runningEvent.tag];
-        if (emit) {
-            this.provider.off(runningEvent.filter, emit);
-            delete this._wrappedEmits[runningEvent.tag];
+            // If we have a poller for this, remove it
+            var emit = this._wrappedEmits[runningEvent.tag];
+            if (emit) {
+                this.provider.off(runningEvent.filter, emit);
+                delete this._wrappedEmits[runningEvent.tag];
+            }
         }
     };
     Contract.prototype._wrapEvent = function (runningEvent, log, listener) {

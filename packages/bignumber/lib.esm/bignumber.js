@@ -62,13 +62,53 @@ export class BigNumber {
         return toBigNumber(toBN(this).mul(toBN(other)));
     }
     mod(other) {
-        return toBigNumber(toBN(this).mod(toBN(other)));
+        const value = toBN(other);
+        if (value.isNeg()) {
+            throwFault("cannot modulo negative values", "mod");
+        }
+        return toBigNumber(toBN(this).umod(value));
     }
     pow(other) {
         return toBigNumber(toBN(this).pow(toBN(other)));
     }
-    maskn(value) {
+    and(other) {
+        const value = toBN(other);
+        if (this.isNegative() || value.isNeg()) {
+            throwFault("cannot 'and' negative values", "and");
+        }
+        return toBigNumber(toBN(this).and(value));
+    }
+    or(other) {
+        const value = toBN(other);
+        if (this.isNegative() || value.isNeg()) {
+            throwFault("cannot 'or' negative values", "or");
+        }
+        return toBigNumber(toBN(this).or(value));
+    }
+    xor(other) {
+        const value = toBN(other);
+        if (this.isNegative() || value.isNeg()) {
+            throwFault("cannot 'xor' negative values", "xor");
+        }
+        return toBigNumber(toBN(this).xor(value));
+    }
+    mask(value) {
+        if (this.isNegative() || value < 0) {
+            throwFault("cannot mask negative values", "mask");
+        }
         return toBigNumber(toBN(this).maskn(value));
+    }
+    shl(value) {
+        if (this.isNegative() || value < 0) {
+            throwFault("cannot shift negative values", "shl");
+        }
+        return toBigNumber(toBN(this).shln(value));
+    }
+    shr(value) {
+        if (this.isNegative() || value < 0) {
+            throwFault("cannot shift negative values", "shr");
+        }
+        return toBigNumber(toBN(this).shrn(value));
     }
     eq(other) {
         return toBN(this).eq(toBN(other));
@@ -84,6 +124,9 @@ export class BigNumber {
     }
     gte(other) {
         return toBN(this).gte(toBN(other));
+    }
+    isNegative() {
+        return (this._hex[0] === "-");
     }
     isZero() {
         return toBN(this).isZero();

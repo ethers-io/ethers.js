@@ -18,6 +18,7 @@ export declare class Event {
     readonly once: boolean;
     readonly tag: string;
     constructor(tag: string, listener: Listener, once: boolean);
+    get event(): EventType;
     get type(): string;
     get hash(): string;
     get filter(): Filter;

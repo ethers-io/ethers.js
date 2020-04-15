@@ -29,24 +29,24 @@ var NumberCoder = /** @class */ (function (_super) {
     NumberCoder.prototype.encode = function (writer, value) {
         var v = bignumber_1.BigNumber.from(value);
         // Check bounds are safe for encoding
-        var maxUintValue = constants_1.MaxUint256.maskn(writer.wordSize * 8);
+        var maxUintValue = constants_1.MaxUint256.mask(writer.wordSize * 8);
         if (this.signed) {
-            var bounds = maxUintValue.maskn(this.size * 8 - 1);
+            var bounds = maxUintValue.mask(this.size * 8 - 1);
             if (v.gt(bounds) || v.lt(bounds.add(constants_1.One).mul(constants_1.NegativeOne))) {
                 this._throwError("value out-of-bounds", value);
             }
         }
-        else if (v.lt(constants_1.Zero) || v.gt(maxUintValue.maskn(this.size * 8))) {
+        else if (v.lt(constants_1.Zero) || v.gt(maxUintValue.mask(this.size * 8))) {
             this._throwError("value out-of-bounds", value);
         }
-        v = v.toTwos(this.size * 8).maskn(this.size * 8);
+        v = v.toTwos(this.size * 8).mask(this.size * 8);
         if (this.signed) {
             v = v.fromTwos(this.size * 8).toTwos(8 * writer.wordSize);
         }
         return writer.writeValue(v);
     };
     NumberCoder.prototype.decode = function (reader) {
-        var value = reader.readValue().maskn(this.size * 8);
+        var value = reader.readValue().mask(this.size * 8);
         if (this.signed) {
             value = value.fromTwos(this.size * 8);
         }

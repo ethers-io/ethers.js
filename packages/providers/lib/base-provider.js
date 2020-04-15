@@ -146,6 +146,19 @@ var Event = /** @class */ (function () {
         properties_1.defineReadOnly(this, "listener", listener);
         properties_1.defineReadOnly(this, "once", once);
     }
+    Object.defineProperty(Event.prototype, "event", {
+        get: function () {
+            switch (this.type) {
+                case "tx":
+                    return this.hash;
+                case "filter":
+                    return this.filter;
+            }
+            return this.tag;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Event.prototype, "type", {
         get: function () {
             return this.tag.split(":")[0];

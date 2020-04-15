@@ -507,12 +507,12 @@ export class Contract {
     _checkRunningEvents(runningEvent) {
         if (runningEvent.listenerCount() === 0) {
             delete this._runningEvents[runningEvent.tag];
-        }
-        // If we have a poller for this, remove it
-        const emit = this._wrappedEmits[runningEvent.tag];
-        if (emit) {
-            this.provider.off(runningEvent.filter, emit);
-            delete this._wrappedEmits[runningEvent.tag];
+            // If we have a poller for this, remove it
+            const emit = this._wrappedEmits[runningEvent.tag];
+            if (emit) {
+                this.provider.off(runningEvent.filter, emit);
+                delete this._wrappedEmits[runningEvent.tag];
+            }
         }
     }
     _wrapEvent(runningEvent, log, listener) {

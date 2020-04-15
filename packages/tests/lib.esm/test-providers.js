@@ -556,6 +556,10 @@ function testProvider(providerName, networkName) {
         if (providerName === "NodesmithProvider") {
             return;
         }
+        // Cloudflare seems down and I want a fix out. RicMoo
+        if (providerName === "CloudflareProvider") {
+            return;
+        }
         if (networkName === "goerli" && providerName === "AlchemyProvider") {
             return;
         }

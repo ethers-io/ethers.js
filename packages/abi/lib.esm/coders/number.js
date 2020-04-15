@@ -12,24 +12,24 @@ export class NumberCoder extends Coder {
     encode(writer, value) {
         let v = BigNumber.from(value);
         // Check bounds are safe for encoding
-        let maxUintValue = MaxUint256.maskn(writer.wordSize * 8);
+        let maxUintValue = MaxUint256.mask(writer.wordSize * 8);
         if (this.signed) {
-            let bounds = maxUintValue.maskn(this.size * 8 - 1);
+            let bounds = maxUintValue.mask(this.size * 8 - 1);
             if (v.gt(bounds) || v.lt(bounds.add(One).mul(NegativeOne))) {
                 this._throwError("value out-of-bounds", value);
             }
         }
-        else if (v.lt(Zero) || v.gt(maxUintValue.maskn(this.size * 8))) {
+        else if (v.lt(Zero) || v.gt(maxUintValue.mask(this.size * 8))) {
             this._throwError("value out-of-bounds", value);
         }
-        v = v.toTwos(this.size * 8).maskn(this.size * 8);
+        v = v.toTwos(this.size * 8).mask(this.size * 8);
         if (this.signed) {
             v = v.fromTwos(this.size * 8).toTwos(8 * writer.wordSize);
         }
         return writer.writeValue(v);
     }
     decode(reader) {
-        let value = reader.readValue().maskn(this.size * 8);
+        let value = reader.readValue().mask(this.size * 8);
         if (this.signed) {
             value = value.fromTwos(this.size * 8);
         }

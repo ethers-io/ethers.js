@@ -105,6 +105,15 @@ export class Event {
         defineReadOnly(this, "listener", listener);
         defineReadOnly(this, "once", once);
     }
+    get event() {
+        switch (this.type) {
+            case "tx":
+                return this.hash;
+            case "filter":
+                return this.filter;
+        }
+        return this.tag;
+    }
     get type() {
         return this.tag.split(":")[0];
     }

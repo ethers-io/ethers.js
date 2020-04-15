@@ -74,11 +74,8 @@ var logger = new logger_1.Logger(_version_1.version);
  *  with each other.
  */
 var NextId = 1;
-/*
-function subscribable(tag: string): boolean {
-    return (tag === "block" || tag === "pending");
-}
-*/
+// For more info about the Real-time Event API see:
+//   https://geth.ethereum.org/docs/rpc/pubsub
 var WebSocketProvider = /** @class */ (function (_super) {
     __extends(WebSocketProvider, _super);
     function WebSocketProvider(url, network) {
@@ -271,7 +268,7 @@ var WebSocketProvider = /** @class */ (function (_super) {
             }
             tag = "tx";
         }
-        else if (this.listenerCount(event.tag)) {
+        else if (this.listenerCount(event.event)) {
             // There are remaining event listeners
             return;
         }
