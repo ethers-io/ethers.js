@@ -34,7 +34,7 @@ function checkTopic(topic) {
 function serializeTopics(topics) {
     // Remove trailing null AND-topics; they are redundant
     topics = topics.slice();
-    while (topics[topics.length - 1] == null) {
+    while (topics.length > 0 && topics[topics.length - 1] == null) {
         topics.pop();
     }
     return topics.map((topic) => {
@@ -55,6 +55,9 @@ function serializeTopics(topics) {
     }).join("&");
 }
 function deserializeTopics(data) {
+    if (data === "") {
+        return [];
+    }
     return data.split(/&/g).map((topic) => {
         return topic.split("|").map((topic) => {
             return ((topic === "null") ? null : topic);
@@ -129,12 +132,14 @@ export class Event {
         if (comps[0] !== "filter") {
             return null;
         }
-        const filter = {
-            address: comps[1],
-            topics: deserializeTopics(comps[2])
-        };
-        if (!filter.address || filter.address === "*") {
-            delete filter.address;
+        const address = comps[1];
+        const topics = deserializeTopics(comps[2]);
+        const filter = {};
+        if (topics.length > 0) {
+            filter.topics = topics;
+        }
+        if (address && address !== "*") {
+            filter.address = address;
         }
         return filter;
     }

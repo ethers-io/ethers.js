@@ -75,7 +75,7 @@ function checkTopic(topic) {
 function serializeTopics(topics) {
     // Remove trailing null AND-topics; they are redundant
     topics = topics.slice();
-    while (topics[topics.length - 1] == null) {
+    while (topics.length > 0 && topics[topics.length - 1] == null) {
         topics.pop();
     }
     return topics.map(function (topic) {
@@ -96,6 +96,9 @@ function serializeTopics(topics) {
     }).join("&");
 }
 function deserializeTopics(data) {
+    if (data === "") {
+        return [];
+    }
     return data.split(/&/g).map(function (topic) {
         return topic.split("|").map(function (topic) {
             return ((topic === "null") ? null : topic);
@@ -183,12 +186,14 @@ var Event = /** @class */ (function () {
             if (comps[0] !== "filter") {
                 return null;
             }
-            var filter = {
-                address: comps[1],
-                topics: deserializeTopics(comps[2])
-            };
-            if (!filter.address || filter.address === "*") {
-                delete filter.address;
+            var address = comps[1];
+            var topics = deserializeTopics(comps[2]);
+            var filter = {};
+            if (topics.length > 0) {
+                filter.topics = topics;
+            }
+            if (address && address !== "*") {
+                filter.address = address;
             }
             return filter;
         },

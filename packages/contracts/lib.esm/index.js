@@ -223,12 +223,21 @@ class RunningEvent {
     }
     prepareEvent(event) {
     }
+    // Returns the array that will be applied to an emit
+    getEmit(event) {
+        return [event];
+    }
 }
 class ErrorRunningEvent extends RunningEvent {
     constructor() {
         super("error", null);
     }
 }
+// @TODO Fragment should inherit Wildcard? and just override getEmit?
+//       or have a common abstract super class, with enough constructor
+//       options to configure both.
+// A Fragment Event will populate all the properties that Wildcard
+// will, and additioanlly dereference the arguments when emitting
 class FragmentRunningEvent extends RunningEvent {
     constructor(address, contractInterface, fragment, topics) {
         const filter = {
@@ -256,9 +265,26 @@ class FragmentRunningEvent extends RunningEvent {
         event.decode = (data, topics) => {
             return this.interface.decodeEventLog(this.fragment, data, topics);
         };
-        event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+        try {
+            event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+        }
+        catch (error) {
+            event.args = null;
+            event.decodeError = error;
+            throw error;
+        }
+    }
+    getEmit(event) {
+        const args = (event.args || []).slice();
+        args.push(event);
+        return args;
     }
 }
+// A Wildard Event will attempt to populate:
+//  - event            The name of the event name
+//  - eventSignature   The full signature of the event
+//  - decode           A function to decode data and topics
+//  - args             The decoded data and topics
 class WildcardRunningEvent extends RunningEvent {
     constructor(address, contractInterface) {
         super("*", { address: address });
@@ -267,14 +293,17 @@ class WildcardRunningEvent extends RunningEvent {
     }
     prepareEvent(event) {
         super.prepareEvent(event);
-        const parsed = this.interface.parseLog(event);
-        if (parsed) {
+        try {
+            const parsed = this.interface.parseLog(event);
             event.event = parsed.name;
             event.eventSignature = parsed.signature;
             event.decode = (data, topics) => {
                 return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
             };
             event.args = parsed.args;
+        }
+        catch (error) {
+            // No matching event
         }
     }
 }
@@ -482,27 +511,26 @@ export class Contract {
             if (eventName === "*") {
                 return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
             }
+            // Get the event Fragment (throws if ambiguous/unknown event)
             const fragment = this.interface.getEvent(eventName);
-            if (!fragment) {
-                logger.throwArgumentError("unknown event - " + eventName, "eventName", eventName);
-            }
             return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
         }
-        const filter = {
-            address: this.address
-        };
-        // Find the matching event in the ABI; if none, we still allow filtering
-        // since it may be a filter for an otherwise unknown event
-        if (eventName.topics) {
-            if (eventName.topics[0]) {
+        // We have topics to filter by...
+        if (eventName.topics && eventName.topics.length > 0) {
+            // Is it a known topichash? (throws if no matching topichash)
+            try {
                 const fragment = this.interface.getEvent(eventName.topics[0]);
-                if (fragment) {
-                    return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
-                }
+                return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
             }
-            filter.topics = eventName.topics;
+            catch (error) { }
+            // Filter by the unknown topichash
+            const filter = {
+                address: this.address,
+                topics: eventName.topics
+            };
+            return this._normalizeRunningEvent(new RunningEvent(getEventTag(filter), filter));
         }
-        return this._normalizeRunningEvent(new RunningEvent(getEventTag(filter), filter));
+        return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
     }
     _checkRunningEvents(runningEvent) {
         if (runningEvent.listenerCount() === 0) {
@@ -515,15 +543,10 @@ export class Contract {
             }
         }
     }
+    // Subclasses can override this to gracefully recover
+    // from parse errors if they wish
     _wrapEvent(runningEvent, log, listener) {
         const event = deepCopy(log);
-        try {
-            runningEvent.prepareEvent(event);
-        }
-        catch (error) {
-            this.emit("error", error);
-            throw error;
-        }
         event.removeListener = () => {
             if (!listener) {
                 return;
@@ -534,6 +557,8 @@ export class Contract {
         event.getBlock = () => { return this.provider.getBlock(log.blockHash); };
         event.getTransaction = () => { return this.provider.getTransaction(log.transactionHash); };
         event.getTransactionReceipt = () => { return this.provider.getTransactionReceipt(log.transactionHash); };
+        // This may throw if the topics and data mismatch the signature
+        runningEvent.prepareEvent(event);
         return event;
     }
     _addEventListener(runningEvent, listener, once) {
@@ -543,12 +568,19 @@ export class Contract {
         runningEvent.addListener(listener, once);
         // Track this running event and its listeners (may already be there; but no hard in updating)
         this._runningEvents[runningEvent.tag] = runningEvent;
-        // If we are not polling the provider, start
+        // If we are not polling the provider, start polling
         if (!this._wrappedEmits[runningEvent.tag]) {
             const wrappedEmit = (log) => {
-                const event = this._wrapEvent(runningEvent, log, listener);
-                const args = (event.args || []).slice();
-                args.push(event);
+                let event = null;
+                try {
+                    event = this._wrapEvent(runningEvent, log, listener);
+                }
+                catch (error) {
+                    // There was an error decoding the data and topics
+                    this.emit("error", error, event);
+                    return;
+                }
+                const args = runningEvent.getEmit(event);
                 this.emit(runningEvent.filter, ...args);
             };
             this._wrappedEmits[runningEvent.tag] = wrappedEmit;

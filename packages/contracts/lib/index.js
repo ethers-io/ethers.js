@@ -250,6 +250,10 @@ var RunningEvent = /** @class */ (function () {
     };
     RunningEvent.prototype.prepareEvent = function (event) {
     };
+    // Returns the array that will be applied to an emit
+    RunningEvent.prototype.getEmit = function (event) {
+        return [event];
+    };
     return RunningEvent;
 }());
 var ErrorRunningEvent = /** @class */ (function (_super) {
@@ -259,6 +263,11 @@ var ErrorRunningEvent = /** @class */ (function (_super) {
     }
     return ErrorRunningEvent;
 }(RunningEvent));
+// @TODO Fragment should inherit Wildcard? and just override getEmit?
+//       or have a common abstract super class, with enough constructor
+//       options to configure both.
+// A Fragment Event will populate all the properties that Wildcard
+// will, and additioanlly dereference the arguments when emitting
 var FragmentRunningEvent = /** @class */ (function (_super) {
     __extends(FragmentRunningEvent, _super);
     function FragmentRunningEvent(address, contractInterface, fragment, topics) {
@@ -290,10 +299,27 @@ var FragmentRunningEvent = /** @class */ (function (_super) {
         event.decode = function (data, topics) {
             return _this.interface.decodeEventLog(_this.fragment, data, topics);
         };
-        event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+        try {
+            event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+        }
+        catch (error) {
+            event.args = null;
+            event.decodeError = error;
+            throw error;
+        }
+    };
+    FragmentRunningEvent.prototype.getEmit = function (event) {
+        var args = (event.args || []).slice();
+        args.push(event);
+        return args;
     };
     return FragmentRunningEvent;
 }(RunningEvent));
+// A Wildard Event will attempt to populate:
+//  - event            The name of the event name
+//  - eventSignature   The full signature of the event
+//  - decode           A function to decode data and topics
+//  - args             The decoded data and topics
 var WildcardRunningEvent = /** @class */ (function (_super) {
     __extends(WildcardRunningEvent, _super);
     function WildcardRunningEvent(address, contractInterface) {
@@ -305,14 +331,17 @@ var WildcardRunningEvent = /** @class */ (function (_super) {
     WildcardRunningEvent.prototype.prepareEvent = function (event) {
         var _this = this;
         _super.prototype.prepareEvent.call(this, event);
-        var parsed = this.interface.parseLog(event);
-        if (parsed) {
-            event.event = parsed.name;
-            event.eventSignature = parsed.signature;
+        try {
+            var parsed_1 = this.interface.parseLog(event);
+            event.event = parsed_1.name;
+            event.eventSignature = parsed_1.signature;
             event.decode = function (data, topics) {
-                return _this.interface.decodeEventLog(parsed.eventFragment, data, topics);
+                return _this.interface.decodeEventLog(parsed_1.eventFragment, data, topics);
             };
-            event.args = parsed.args;
+            event.args = parsed_1.args;
+        }
+        catch (error) {
+            // No matching event
         }
     };
     return WildcardRunningEvent;
@@ -529,27 +558,26 @@ var Contract = /** @class */ (function () {
             if (eventName === "*") {
                 return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
             }
+            // Get the event Fragment (throws if ambiguous/unknown event)
             var fragment = this.interface.getEvent(eventName);
-            if (!fragment) {
-                logger.throwArgumentError("unknown event - " + eventName, "eventName", eventName);
-            }
             return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
         }
-        var filter = {
-            address: this.address
-        };
-        // Find the matching event in the ABI; if none, we still allow filtering
-        // since it may be a filter for an otherwise unknown event
-        if (eventName.topics) {
-            if (eventName.topics[0]) {
+        // We have topics to filter by...
+        if (eventName.topics && eventName.topics.length > 0) {
+            // Is it a known topichash? (throws if no matching topichash)
+            try {
                 var fragment = this.interface.getEvent(eventName.topics[0]);
-                if (fragment) {
-                    return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
-                }
+                return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
             }
-            filter.topics = eventName.topics;
+            catch (error) { }
+            // Filter by the unknown topichash
+            var filter = {
+                address: this.address,
+                topics: eventName.topics
+            };
+            return this._normalizeRunningEvent(new RunningEvent(getEventTag(filter), filter));
         }
-        return this._normalizeRunningEvent(new RunningEvent(getEventTag(filter), filter));
+        return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
     };
     Contract.prototype._checkRunningEvents = function (runningEvent) {
         if (runningEvent.listenerCount() === 0) {
@@ -562,16 +590,11 @@ var Contract = /** @class */ (function () {
             }
         }
     };
+    // Subclasses can override this to gracefully recover
+    // from parse errors if they wish
     Contract.prototype._wrapEvent = function (runningEvent, log, listener) {
         var _this = this;
         var event = properties_1.deepCopy(log);
-        try {
-            runningEvent.prepareEvent(event);
-        }
-        catch (error) {
-            this.emit("error", error);
-            throw error;
-        }
         event.removeListener = function () {
             if (!listener) {
                 return;
@@ -582,6 +605,8 @@ var Contract = /** @class */ (function () {
         event.getBlock = function () { return _this.provider.getBlock(log.blockHash); };
         event.getTransaction = function () { return _this.provider.getTransaction(log.transactionHash); };
         event.getTransactionReceipt = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
+        // This may throw if the topics and data mismatch the signature
+        runningEvent.prepareEvent(event);
         return event;
     };
     Contract.prototype._addEventListener = function (runningEvent, listener, once) {
@@ -592,12 +617,19 @@ var Contract = /** @class */ (function () {
         runningEvent.addListener(listener, once);
         // Track this running event and its listeners (may already be there; but no hard in updating)
         this._runningEvents[runningEvent.tag] = runningEvent;
-        // If we are not polling the provider, start
+        // If we are not polling the provider, start polling
         if (!this._wrappedEmits[runningEvent.tag]) {
             var wrappedEmit = function (log) {
-                var event = _this._wrapEvent(runningEvent, log, listener);
-                var args = (event.args || []).slice();
-                args.push(event);
+                var event = null;
+                try {
+                    event = _this._wrapEvent(runningEvent, log, listener);
+                }
+                catch (error) {
+                    // There was an error decoding the data and topics
+                    _this.emit("error", error, event);
+                    return;
+                }
+                var args = runningEvent.getEmit(event);
                 _this.emit.apply(_this, __spreadArrays([runningEvent.filter], args));
             };
             this._wrappedEmits[runningEvent.tag] = wrappedEmit;

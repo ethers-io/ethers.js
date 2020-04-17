@@ -3,6 +3,12 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.182 (2020-04-16 21:53)
+-----------------------------------------
+
+  - Added support for Contract event parsing error recovery. ([cc72f76](https://github.com/ethers-io/ethers.js/commit/cc72f76695572d235d7f5a5ad4dc1838a5fe884a))
+  - Fix provider log filters with zero topics. ([#785](https://github.com/ethers-io/ethers.js/issues/785); [4ef0e4f](https://github.com/ethers-io/ethers.js/commit/4ef0e4f7653226bf8cca86e065ad614e7288af96))
+
 ethers/v5.0.0-beta.181 (2020-04-15 18:23)
 -----------------------------------------
 
