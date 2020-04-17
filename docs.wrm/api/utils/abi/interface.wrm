@@ -187,10 +187,10 @@ _subsection: Specifying Fragments @<abi-fragmentid>
 When specifying a fragment to any of the functions in an **Interface**,
 any of the following may be used:
 
-- The name of the event or function, if it is unique and non-ambiguous
+- The **name** of the event or function, if it is unique and non-ambiguous
   within the ABI (e.g. ``transfer``)
-- The signature of the event or function. The signature is normalized,
+- The **signature** of the event or function. The signature is normalized,
   so, for example, ``uint`` and ``uint256`` are equivalent (e.g. ``transfer(address, uint)``)
-- The sighash or topichash of the function. The sighash is often referred
+- The **sighash** or **topichash** of the function. The sighash is often referred
   to the function selector in Solidity (e.g. ``0xa9059cbb``)
-- A [[abi-fragment]]    
+- A [[abi-fragment]]

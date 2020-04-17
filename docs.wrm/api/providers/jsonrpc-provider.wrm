@@ -7,8 +7,8 @@ and [Parity](link-parity)) as well as many third-party web
 services (e.g. [INFURA](link-infura))
 
 _property: new ethers.providers.JsonRpcProvider([ url [ , aNetworkish ] ])
-Connect to a JSON-RPC API located at //url// using the /aNetworkish// network.
-If //url// is not specified, the default (i.e. ``http://localhost:8545``) is used
+Connect to a JSON-RPC API located at //url// using the //aNetworkish// network.
+If //url// is not specified, the default (i.e. ``http:/\/localhost:8545``) is used
 and if no network is specified, it will be determined automatically by
 querying the node.
 

@@ -146,6 +146,13 @@ Create an instance from an encrypted JSON wallet. If //progress//
 is provided it will be called during decryption with a value between 0 and
 1 indicating the progress towards completion.
 
+_property: ethers.Wallet.fromEncryptedJsonSync(json, password)  => [[wallet]] @<wallet-fromencryptedjsonsync> @SRC<wallet>
+Create an instance from an encrypted JSON wallet.
+
+This operation will operate synchronously which will lock up the user
+interface, possibly for a non-trivial duration. Most applications should
+use the asynchronous ``fromEncryptedJson`` instead.
+
 _property: ethers.Wallet.fromMnemonic(mnemonic [ , path, [ wordlist ] ]) => [[wallet]]
 Create an instance from a mnemonic phrase.
 

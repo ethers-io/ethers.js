@@ -71,10 +71,10 @@ _property: bignumber.mul(otherValue) => [[bignumber]]  @SRC<bignumber>
 Returns a BigNumber with the value of //bignumber// **&times;** //otherValue//.
 
 _property: bignumber.div(divisor) => [[bignumber]]  @SRC<bignumber>
-Returns a BigNumber with the value of //bignumber// **&#247;** //divisor//.
+Returns a BigNumber with the value of //bignumber// **&div;** //divisor//.
 
 _property: bignumber.mod(divisor) => [[bignumber]]  @SRC<bignumber>
-Returns a BigNumber with the value of the **remainder** of //bignumber// &#247; //divisor//.
+Returns a BigNumber with the value of the **remainder** of //bignumber// &div; //divisor//.
 
 _property: bignumber.pow(exponent) => [[bignumber]]  @SRC<bignumber>
 Returns a BigNumber with the value of //bignumber// to the power of //exponent//.
@@ -82,7 +82,7 @@ Returns a BigNumber with the value of //bignumber// to the power of //exponent//
 _property: bignumber.abs() => [[bignumber]]  @SRC<bignumber>
 Returns a BigNumber with the absolute value of //bignumber//.
 
-_property: bignumber.maskn(bitcount) => [[bignumber]]  @SRC<bignumber>
+_property: bignumber.mask(bitcount) => [[bignumber]]  @SRC<bignumber>
 Returns a BigNumber with the value of //bignumber// with bits beyond
 the //bitcount// least significant bits set to zero.
 
@@ -176,8 +176,8 @@ _code: bignumber-ieee754.js
 To remedy this, all numbers (which can be large) are stored
 and manipulated as [Big Numbers](bignumber).
 
-The functions [parseEther( etherString )](http://linkto) and
-[formatEther( wei )](http://linkto) can be used to convert
+The functions [parseEther( etherString )](utils-parseether) and
+[formatEther( wei )](utils-formatether) can be used to convert
 between string representations, which are displayed to or entered
 by the user and Big Number representations which can have
 mathematical operations handled safely.
@@ -222,7 +222,7 @@ over other libraries which include separate Big Number libraries for
 various purposes.
 
 
-_heading: Why not allow us to set a global Big Number library?
+_heading: Allow us to set a global Big Number library?
 
 Another comment that comes up frequently is tha desire to specify a
 global user-defined Big Number library, which all functions would

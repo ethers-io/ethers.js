@@ -1,6 +1,6 @@
 _section: Property Utilities
 
-_property: ethers.utils.checkPropertoes() => void
+_property: ethers.utils.checkProperties() => void
 
 _property: ethers.utils.deepCopy(anObject) => any
 _property: ethers.utils.defineReadOnly(anObject, name, value) => void

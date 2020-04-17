@@ -56,9 +56,9 @@ _definition: **Supported Networks**
 - Kovan (proof-of-authority testnet)
 
 
-_subsection: CloudfrontProvider @INHERIT<[[provider-urljsonrpc]]>
+_subsection: CloudflareProvider @INHERIT<[[provider-urljsonrpc]]>
 
-The CloudfrontProvider is backed by the [Cloudflare Ethereum Gateway](link-cloudflare).
+The CloudflareProvider is backed by the [Cloudflare Ethereum Gateway](link-cloudflare).
 
 _definition: **Supported Networks**
 

@@ -1,4 +1,4 @@
-_section: Concepts
+_section: Ethereum Basics
 
 This is a very breif overview of some aspects of //Ethereum//
 and blockchains which developers can make use of or should
@@ -7,3 +7,4 @@ be aware of.
 _toc:
     events
     gas
+    security

@@ -11,6 +11,13 @@ Building
 --------
 
 ```
-/home/ricmoo/ethers.js> npm run build-docs 
+/home/ricmoo/ethers.js> npm run build-docs
 ```
 
+
+License
+-------
+
+All documentation for ethers.js and Flatworm is released under the
+[Creative Commons Attribution 4.0 International License](https://choosealicense.com/licenses/cc-by-4.0/)
+license.

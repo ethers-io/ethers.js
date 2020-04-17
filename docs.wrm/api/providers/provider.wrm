@@ -5,17 +5,17 @@ Explain what a provider is...
 
 _subsection: Accounts Methods
 
-_property: provider.getBalance(address [ , blockTag = "latest" ]) => Promise<[[bignumber]]>  @<provider-getbalance> @SRC<providers/base-provider>
+_property: provider.getBalance(address [ , blockTag = latest ]) => Promise<[[bignumber]]>  @<provider-getbalance> @SRC<providers/base-provider>
 Returns the balance of //address// as of the //blockTag// block height.
 
-_property: provider.getCode(address [ , blockTag = "latest" ]) => Promise<string<[[datahexstring]]>>  @<providers-getcode> @SRC<providers/base-provider>
+_property: provider.getCode(address [ , blockTag = latest ]) => Promise<string<[[datahexstring]]>>  @<providers-getcode> @SRC<providers/base-provider>
 Returns the contract code of //address// as of the //blockTag// block height. If there is
 no contract currently deployed, the result is ``0x``.
 
-_property: provider.getStorageAt(addr, pos [ , blockTag = "latest" ]) => Promise<string<[[datahexstring]]>>  @<providers-getstorageat> @SRC<providers/base-provider>
+_property: provider.getStorageAt(addr, pos [ , blockTag = latest ]) => Promise<string<[[datahexstring]]>>  @<providers-getstorageat> @SRC<providers/base-provider>
 Returns the ``Bytes32`` value of the position //pos// at address //addr//, as of the //blockTag//.
 
-_property: provider.getTransactionCount(address [ , blockTag = "latest" ]) => Promise<number>  @<providers-gettransactioncount> @SRC<providers/base-provider>
+_property: provider.getTransactionCount(address [ , blockTag = latest ]) => Promise<number>  @<providers-gettransactioncount> @SRC<providers/base-provider>
 Returns the number of transactions //address// has ever **sent**, as of //blockTag//.
 This value is required to be the nonce for the next transaction from //address//
 sent to the network.
@@ -78,7 +78,7 @@ Returns a //best guess// of the [[gas-price]] to use in a transaction.
 
 _subsection: Transactions Methods
 
-_property: provider.call(transaction [ , blockTag = "latest" ]) => Promise<string<[[hexstring]]>>  @<providers-call> @SRC<providers/base-provider>
+_property: provider.call(transaction [ , blockTag = latest ]) => Promise<string<[[datahexstring]]>>  @<providers-call> @SRC<providers/base-provider>
 Returns the result of executing the //transaction//, using //call//. A call
 does not require any ether, but cannot change any state. This is useful
 for calling gettings on Contracts.
@@ -96,7 +96,7 @@ Submits //transaction// to the network to be mined. The //transaction// **must**
 and be valid (i.e. the nonce is correct and the account has sufficient balance to pay
 for the transaction).
 
-_property: provider.waitForTransaction(transactionHash) => Promise<[[provider-receipt]]>  @<providers-waitfortransaction> @SRC<providers/base-provider>
+_property: provider.waitForTransaction(hash [ , confirms = 1 [ , timeout ] ]) => Promise<[TxReceipt](provider-receipt)>  @<providers-waitfortransaction> @SRC<providers/base-provider>
 Returns a Promise which will not resolve until //transactionHash// is mined.
 
 

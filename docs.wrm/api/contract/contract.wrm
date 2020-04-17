@@ -130,14 +130,14 @@ _heading: Write Methods Analysis @<contract-write-check>
 There are secveral options to analyze properties and results of a
 write method without actually executing it.
 
-_property: contract.estimate.METHOD_NAME(...args [ , overrides ]) => Promise<[[bignumber]]>  @<contract-estimateGas>
+_property: contract.estimateGas.METHOD_NAME(...args [ , overrides ]) => Promise<[[bignumber]]>  @<contract-estimateGas>
 Returns the estimate units of gas that would be required to
 execute the //METHOD_NAME// with //args// and //overrides//.
 
 _property: contract.populateTransaction.METHOD_NAME(...args [ , overrides ]) => Promise<[UnsignedTx](types-unsignedtransaction)>  @<contract-populateTransaction>
 Returns an [[types-unsignedtransaction]] which represents the transaction
 that would need to be signed and submitted to the network to execute
-//METHOD_NAME// with //args/ and //overrides//.
+//METHOD_NAME// with //args// and //overrides//.
 
 _property: contract.staticCall.METHOD_NAME(...args [ , overrides ]) => Promise<any>  @<contract-staticCall>
 Rather than executing the state-change of a transaction, it is possible

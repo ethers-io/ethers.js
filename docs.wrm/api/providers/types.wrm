@@ -236,7 +236,7 @@ _property: receipt.from => string<[[address]]>
 The address this transaction is from.
 
 _property: receipt.contractAddress => string<[[address]]>
-If this transaction has a ``null` to address, it is an **init transaction**
+If this transaction has a ``null`` to address, it is an **init transaction**
 used to deploy a contract, in which case this is the address created by that
 contract.
 

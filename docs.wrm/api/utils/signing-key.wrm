@@ -14,7 +14,7 @@ _property: signingKey.compressedPublicKey => string<[[datahexstring]]<33>>
 The compressed public key for this Signing Key. It will always be
 33 bytes (66 nibbles) and begine with either ``0x02`` or ``0x03``.
 
-_property: signingKey.signDisgest(digest) => [[signature]]
+_property: signingKey.signDigest(digest) => [[signature]]
 Sign the //digest// and return the signature.
 
 _property: signingKey.computeSharedSecret(otherKey) => string<[[datahexstring]]<32>>
@@ -39,7 +39,7 @@ will then be used to compute the address; this allows systems which use
 the v to encode additional data (such as [EIP-155](link-eip-155))
 to be used since the v parameter is still completely non-ambiguous.
 
-_property: ethers.utils.recocverPublicKey(digest, signature) => string<[[datahexstring]]<65>> @<utils-recoverpublickey>
+_property: ethers.utils.recoverPublicKey(digest, signature) => string<[[datahexstring]]<65>> @<utils-recoverpublickey>
 
 _property: ethers.utils.computePublicKey(key [, compressed = false ]) => string<[[datahexstring]]> @<utils-computepublickey>
 Computes the public key of //key//, optionally compressing it. The //key//

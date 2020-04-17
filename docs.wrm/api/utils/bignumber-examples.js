@@ -12,5 +12,5 @@ function _inspect(result) {
 let a = BigNumber.from(42);
 let b = BigNumber.from("91");
 
-  a.mul(b);
-  //!
+a.mul(b);
+//!

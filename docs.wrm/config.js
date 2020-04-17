@@ -121,12 +121,15 @@ module.exports = {
   logo: "logo.svg",
 
   link: "https://docs-beta.ethers.io",
+  copyright: "The content of this site is licensed under the [Creative Commons Attribution 4.0 International License](https://choosealicense.com/licenses/cc-by-4.0/).",
 
   markdown: {
       "banner": "-----\n\nDocumentation: [html](https://docs-beta.ethers.io/)\n\n-----\n\n"
   },
 
   getSourceUrl: getSourceUrl,
+
+  codeRoot: "../",
 
   externalLinks: {
       "link-alchemy": "https:/\/alchemyapi.io",
@@ -141,6 +144,7 @@ module.exports = {
       "link-metamask": "https:/\/metamask.io/",
       "link-parity": "https:/\/www.parity.io",
       "link-rtd": "https:/\/github.com/readthedocs/sphinx_rtd_theme",
+      "link-semver": { name: "semver", url: "https:/\/semver.org" },
       "link-solidity": { name: "Solidity" , url: "https:/\/solidity.readthedocs.io/en/v0.6.2/" },
       "link-sphinx": "https:/\/www.sphinx-doc.org/",
 
@@ -170,11 +174,13 @@ module.exports = {
       "link-eip-191": { name: "EIP-191", url: "https:/\/eips.ethereum.org/EIPS/eip-191" },
       "link-eip-609": "https:/\/eips.ethereum.org/EIPS/eip-609",
       "link-eip-1014": "https:/\/eips.ethereum.org/EIPS/eip-1014",
+      "link-eip-1193": { name: "EIP-1193", url: "https:/\/eips.ethereum.org/EIPS/eip-1193" },
       "link-eip-2098": "https:/\/eips.ethereum.org/EIPS/eip-2098",
       "link-bip-39": "https://en.bitcoin.it/wiki/BIP_0039",
       "link-bip-32": "https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki",
 
       "link-npm-elliptic": { name: "elliptic", url: "https:/\/www.npmjs.com/package/elliptic" },
+      "link-npm-events": { name: "EventEmitter", url: "https:/\/nodejs.org/dist/latest-v13.x/docs/api/events.html#events_class_eventemitter" },
       "link-npm-bnjs": { name: "BN.js", url: "https:/\/www.npmjs.com/package/bn.js" },
       "link-npm-query-bignumber": "https:/\/www.npmjs.com/search?q=bignumber",
 
@@ -189,6 +195,7 @@ module.exports = {
       "link-wiki-basicauth": { name: "Basic Authentication", url: "https:/\/en.wikipedia.org/wiki/Basic_access_authentication" },
       "link-wiki-backoff": { name: "Exponential Backoff", url: "https:/\/en.wikipedia.org/wiki/Exponential_backoff" },
       "link-wiki-bloomfilter": { name: "Bloom Filter", url: "https:/\/en.wikipedia.org/wiki/Bloom_filter" },
+      "link-wiki-bruteforce": "https:/\/en.wikipedia.org/wiki/Brute-force_attack",
       "link-wiki-cryptographichash": "https:/\/en.wikipedia.org/wiki/Cryptographic_hash_function",
       "link-wiki-homoglyph": "https:/\/en.wikipedia.org/wiki/IDN_homograph_attack",
       "link-wiki-hmac": "https:/\/en.wikipedia.org/wiki/HMAC",

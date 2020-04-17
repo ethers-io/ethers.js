@@ -93,10 +93,10 @@ larger than 256 bits and the number of decimals must be no larger than 80.
 For example:
 
 - **fixed128x18** is signed, 128 bits wide and has 18 decimals; this is useful for most purposes
-- **fixed32x0** is signed, 32 bits wide and has 0 decimals; this would be the same as a ``int32_t` in C
-- **ufixed32x0** is unsigned, 32 bits wide and has 0 decimals; this would be the same as a ``uint32_t` in C
-- **fixed** is shorthand for ``fixed128x18`
-- **ufixed** is shorthand for ``ufixed128x18`
+- **fixed32x0** is signed, 32 bits wide and has 0 decimals; this would be the same as a ``int32_t`` in C
+- **ufixed32x0** is unsigned, 32 bits wide and has 0 decimals; this would be the same as a ``uint32_t`` in C
+- **fixed** is shorthand for ``fixed128x18``
+- **ufixed** is shorthand for ``ufixed128x18``
 
 _heading: Creating Instances
 
