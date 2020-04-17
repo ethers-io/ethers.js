@@ -51,6 +51,9 @@ export interface Event extends Log {
     // The parsed arguments to the event
     args?: Result;
 
+    // If parsing the arguments failed, this is the error
+    decodeError?: Error;
+
     // A function that can be used to decode event data and topics
     decode?: (data: string, topics?: Array<string>) => any;
 
@@ -346,6 +349,11 @@ class RunningEvent {
 
     prepareEvent(event: Event): void {
     }
+
+    // Returns the array that will be applied to an emit
+    getEmit(event: Event): Array<any> {
+        return [ event ];
+    }
 }
 
 class ErrorRunningEvent extends RunningEvent {
@@ -354,6 +362,12 @@ class ErrorRunningEvent extends RunningEvent {
     }
 }
 
+// @TODO Fragment should inherit Wildcard? and just override getEmit?
+//       or have a common abstract super class, with enough constructor
+//       options to configure both.
+
+// A Fragment Event will populate all the properties that Wildcard
+// will, and additioanlly dereference the arguments when emitting
 class FragmentRunningEvent extends RunningEvent {
     readonly address: string;
     readonly interface: Interface;
@@ -389,15 +403,32 @@ class FragmentRunningEvent extends RunningEvent {
             return this.interface.decodeEventLog(this.fragment, data, topics);
         };
 
-        event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+        try {
+            event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+        } catch (error) {
+            event.args = null;
+            event.decodeError = error;
+            throw error;
+        }
+    }
+
+    getEmit(event: Event): Array<any> {
+        const args = (event.args || []).slice();
+        args.push(event);
+        return args;
     }
 }
 
+// A Wildard Event will attempt to populate:
+//  - event            The name of the event name
+//  - eventSignature   The full signature of the event
+//  - decode           A function to decode data and topics
+//  - args             The decoded data and topics
 class WildcardRunningEvent extends RunningEvent {
     readonly address: string;
     readonly interface: Interface;
 
-    constructor(address :string, contractInterface: Interface) {
+    constructor(address: string, contractInterface: Interface) {
         super("*", { address: address });
         defineReadOnly(this, "address", address);
         defineReadOnly(this, "interface", contractInterface);
@@ -406,8 +437,8 @@ class WildcardRunningEvent extends RunningEvent {
     prepareEvent(event: Event): void {
         super.prepareEvent(event);
 
-        const parsed = this.interface.parseLog(event);
-        if (parsed) {
+        try {
+            const parsed = this.interface.parseLog(event);
             event.event = parsed.name;
             event.eventSignature = parsed.signature;
 
@@ -416,6 +447,8 @@ class WildcardRunningEvent extends RunningEvent {
             };
 
             event.args = parsed.args;
+        } catch (error) {
+            // No matching event
         }
     }
 }
@@ -674,7 +707,6 @@ export class Contract {
     private _getRunningEvent(eventName: EventFilter | string): RunningEvent {
         if (typeof(eventName) === "string") {
 
-
             // Listen for "error" events (if your contract has an error event, include
             // the full signature to bypass this special event keyword)
             if (eventName === "error") {
@@ -686,32 +718,30 @@ export class Contract {
                 return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
             }
 
+            // Get the event Fragment (throws if ambiguous/unknown event)
             const fragment = this.interface.getEvent(eventName)
-            if (!fragment) {
-                logger.throwArgumentError("unknown event - " + eventName, "eventName", eventName);
-            }
-
             return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
         }
 
-        const filter: EventFilter = {
-            address: this.address
-        }
+        // We have topics to filter by...
+        if (eventName.topics && eventName.topics.length > 0) {
 
-        // Find the matching event in the ABI; if none, we still allow filtering
-        // since it may be a filter for an otherwise unknown event
-        if (eventName.topics) {
-            if (eventName.topics[0]) {
+            // Is it a known topichash? (throws if no matching topichash)
+            try {
                 const fragment = this.interface.getEvent(eventName.topics[0]);
-                if (fragment) {
-                    return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
-                }
+                return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
+            } catch (error) { }
+
+            // Filter by the unknown topichash
+            const filter: EventFilter = {
+                address: this.address,
+                topics: eventName.topics
             }
 
-            filter.topics = eventName.topics;
+            return this._normalizeRunningEvent(new RunningEvent(getEventTag(filter), filter));
         }
 
-        return this._normalizeRunningEvent(new RunningEvent(getEventTag(filter), filter));
+        return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
     }
 
     _checkRunningEvents(runningEvent: RunningEvent): void {
@@ -727,15 +757,10 @@ export class Contract {
         }
     }
 
-    private _wrapEvent(runningEvent: RunningEvent, log: Log, listener: Listener): Event {
+    // Subclasses can override this to gracefully recover
+    // from parse errors if they wish
+    _wrapEvent(runningEvent: RunningEvent, log: Log, listener: Listener): Event {
         const event = <Event>deepCopy(log);
-
-        try {
-            runningEvent.prepareEvent(event);
-        } catch (error) {
-            this.emit("error", error);
-            throw error;
-        }
 
         event.removeListener = () => {
             if (!listener) { return; }
@@ -746,6 +771,9 @@ export class Contract {
         event.getBlock = () => { return this.provider.getBlock(log.blockHash); }
         event.getTransaction = () => { return this.provider.getTransaction(log.transactionHash); }
         event.getTransactionReceipt = () => { return this.provider.getTransactionReceipt(log.transactionHash); }
+
+        // This may throw if the topics and data mismatch the signature
+        runningEvent.prepareEvent(event);
 
         return event;
     }
@@ -760,12 +788,18 @@ export class Contract {
         // Track this running event and its listeners (may already be there; but no hard in updating)
         this._runningEvents[runningEvent.tag] = runningEvent;
 
-        // If we are not polling the provider, start
+        // If we are not polling the provider, start polling
         if (!this._wrappedEmits[runningEvent.tag]) {
             const wrappedEmit = (log: Log) => {
-                const event = this._wrapEvent(runningEvent, log, listener);
-                const args = (event.args || []).slice();
-                args.push(event);
+                let event = null;
+                try {
+                    event = this._wrapEvent(runningEvent, log, listener);
+                } catch (error) {
+                    // There was an error decoding the data and topics
+                    this.emit("error", error, event);
+                    return;
+                }
+                const args = runningEvent.getEmit(event);
                 this.emit(runningEvent.filter, ...args);
             };
             this._wrappedEmits[runningEvent.tag] = wrappedEmit;
