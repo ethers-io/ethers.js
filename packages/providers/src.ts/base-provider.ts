@@ -32,10 +32,9 @@ function checkTopic(topic: string): string {
 }
 
 function serializeTopics(topics: Array<string | Array<string>>): string {
-
     // Remove trailing null AND-topics; they are redundant
     topics = topics.slice();
-    while (topics[topics.length - 1] == null) { topics.pop(); }
+    while (topics.length > 0 && topics[topics.length - 1] == null) { topics.pop(); }
 
     return topics.map((topic) => {
         if (Array.isArray(topic)) {
@@ -58,6 +57,7 @@ function serializeTopics(topics: Array<string | Array<string>>): string {
 }
 
 function deserializeTopics(data: string): Array<string | Array<string>> {
+    if (data === "") { return [ ]; }
     return data.split(/&/g).map((topic) => {
         return topic.split("|").map((topic) => {
             return ((topic === "null") ? null: topic);
@@ -146,11 +146,14 @@ export class Event {
     get filter(): Filter {
         const comps = this.tag.split(":");
         if (comps[0] !== "filter") { return null; }
-        const filter = {
-            address: comps[1],
-            topics: deserializeTopics(comps[2])
-        }
-        if (!filter.address || filter.address === "*") { delete filter.address; }
+        const address = comps[1];
+
+        const topics = deserializeTopics(comps[2]);
+        const filter: Filter = { };
+
+        if (topics.length > 0) { filter.topics = topics; }
+        if (address && address !== "*") { filter.address = address; }
+
         return filter;
     }
 
@@ -976,7 +979,6 @@ export class BaseProvider extends Provider {
     _addEventListener(eventName: EventType, listener: Listener, once: boolean): this {
         const event = new Event(getEventTag(eventName), listener, once)
         this._events.push(event);
-
         this._startEvent(event);
 
         return this;
