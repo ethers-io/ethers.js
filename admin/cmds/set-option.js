@@ -26,7 +26,7 @@ const arg = process.argv[2];
             }
 
             default:
-                console.log("unknown option");
+                console.log("Unknown option:", arg);
                 return 1;
       }
     });

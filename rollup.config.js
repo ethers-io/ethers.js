@@ -102,6 +102,7 @@ function getConfig(minify, buildModule, testing) {
         commonjs({
             namedExports: {
                 "bn.js": [ "BN" ],
+                "hash.js": [ "hmac", "ripemd160", "sha256", "sha512" ],
                 "elliptic": [ "ec" ],
                 "scrypt-js": [ "scrypt", "syncScrypt" ],
             },
@@ -135,15 +136,10 @@ function getConfig(minify, buildModule, testing) {
 
 export default commandLineArgs => {
     const testing = commandLineArgs.configTest;
+    const buildModule = commandLineArgs.configModule;
 
-    if (commandLineArgs.configAll) {
-        return [
-            getConfig(false, false, testing),
-            getConfig(false, true, testing),
-            getConfig(true, false, testing),
-            getConfig(true, true, testing)
-        ];
-    }
-
-    return getConfig(commandLineArgs.configMinify, commandLineArgs.configModule, testing);
+    return [
+        getConfig(false, buildModule, testing),
+        getConfig(true, buildModule, testing),
+    ];
 }
