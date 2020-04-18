@@ -108,7 +108,7 @@ if (process.argv.length > 2) {
 
         // Publish the release
         const link = await createRelease(username, password, change.version, change.title, change.content, beta);
-        log(`<bold:Published Release:> ${ link }...`);
+        log(`<bold:Published Release:> ${ link }`);
     }
 
 })();

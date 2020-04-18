@@ -49,13 +49,6 @@ function run(progname, args, ignoreErrorStream) {
 }
 
 function setupConfig(outDir, moduleType, targetType) {
-    function update(value) {
-        let comps = value.split("/");
-        if (comps.length >= 3 && comps[0] === "." && comps[1].match(/^lib(\.esm)?$/)) {
-            return outDir + comps.slice(2).join("/");
-        }
-        return value;
-    }
 
     // Configure the tsconfit.package.json...
     const path = resolve(__dirname, "../tsconfig.package.json");
@@ -64,22 +57,24 @@ function setupConfig(outDir, moduleType, targetType) {
     content.compilerOptions.target = targetType;
     saveJson(path, content);
 
+    // Configure the browser field for every pacakge, copying the
+    // browser.umd filed for UMD and browser.esm for ESM
     dirnames.forEach((dirname) => {
         let info = loadPackage(dirname);
 
         if (info._ethers_nobuild) { return; }
 
-        [ "browser", "_browser" ].forEach((key) => {
-            if (info[key]) {
-                if (typeof(info[key]) === "string") {
-                    info[key] = update(info[key]);
-                } else {
-                    for (let k in info[key]) {
-                        info[key][k] = update(info[key][k]);
-                    }
-                }
+        if (targetType === "es2015") {
+            if (info["browser.esm"]) {
+                info.browser = info["browser.esm"];
             }
-        });
+        } else if (targetType === "es5") {
+            if (info["browser.umd"]) {
+                info.browser = info["browser.umd"];
+            }
+        } else {
+            throw new Error("unsupported target");
+        }
         savePackage(dirname, info);
 
         let path = resolve(__dirname, "../packages", dirname, "tsconfig.json");
