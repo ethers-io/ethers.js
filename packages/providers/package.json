@@ -1,7 +1,7 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "browser": {
-    "./ipc-provider": "./lib/browser-ipc-provider.js",
+    "./lib/ipc-provider": "./lib/browser-ipc-provider.js",
     "net": "./lib/browser-net.js",
     "ws": "./lib/browser-ws.js"
   },

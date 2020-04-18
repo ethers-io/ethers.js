@@ -1,7 +1,5 @@
 "use strict";
 
-import fetch from "cross-fetch";
-
 import { encode as base64Encode } from "@ethersproject/base64";
 import { shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes } from "@ethersproject/strings";
@@ -9,6 +7,8 @@ import { toUtf8Bytes } from "@ethersproject/strings";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
+
+import { getUrl, GetUrlResponse } from "./geturl";
 
 // Exported Types
 export type ConnectionInfo = {
@@ -36,31 +36,12 @@ export type PollOptions = {
 
 export type FetchJsonResponse = {
     statusCode: number;
-    status: string;
     headers: { [ header: string ]: string };
 };
 
 
 type Header = { key: string, value: string };
 
-function getResponse(response: Response): FetchJsonResponse {
-    const headers: { [ header: string ]: string } = { };
-    if (response.headers.forEach) {
-        response.headers.forEach((value, key) => {
-            headers[key.toLowerCase()] = value;
-        });
-    } else {
-        (<() => Array<string>>((<any>(response.headers)).keys))().forEach((key) => {
-            headers[key.toLowerCase()] = response.headers.get(key);
-        });
-    }
-
-    return {
-        statusCode: response.status,
-        status: response.statusText,
-        headers: headers
-    };
-}
 export function fetchJson(connection: string | ConnectionInfo, json?: string, processFunc?: (value: any, response: FetchJsonResponse) => any): Promise<any> {
     const headers: { [key: string]: Header } = { };
 
@@ -69,11 +50,6 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
     // @TODO: Allow ConnectionInfo to override some of these values
     const options: any = {
         method: "GET",
-        mode: "cors",               // no-cors, cors, *same-origin
-        cache: "no-cache",          // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: "same-origin", // include, *same-origin, omit
-        redirect: "follow",         // manual, *follow, error
-        referrer: "client",         // no-referrer, *client
     };
 
     let allow304 = false;
@@ -157,33 +133,27 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
 
     const runningFetch = (async function() {
 
-        let response: Response = null;
-        let body: string = null;
+        let response: GetUrlResponse = null;
+        try {
+            response = await getUrl(url, options);
+        } catch (error) {
+            console.log(error);
+            response = (<any>error).response;
+        }
 
-        while (true) {
-            try {
-                response = await fetch(url, options);
-            } catch (error) {
-                console.log(error);
-            }
-            body = await response.text();
+        let body = response.body;
 
-            if (allow304 && response.status === 304) {
-                body = null;
-                break;
+        if (allow304 && response.statusCode === 304) {
+            body = null;
 
-            } else if (!response.ok) {
-                runningTimeout.cancel();
-                logger.throwError("bad response", Logger.errors.SERVER_ERROR, {
-                    status: response.status,
-                    body: body,
-                    type: response.type,
-                    url: response.url
-                });
-
-            } else {
-                break;
-            }
+        } else if (response.statusCode < 200 || response.statusCode >= 300) {
+            runningTimeout.cancel();
+            logger.throwError("bad response", Logger.errors.SERVER_ERROR, {
+                status: response.statusCode,
+                headers: response.headers,
+                body: body,
+                url: url
+            });
         }
 
         runningTimeout.cancel();
@@ -203,7 +173,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
 
         if (processFunc) {
             try {
-                json = await processFunc(json, getResponse(response));
+                json = await processFunc(json, response);
             } catch (error) {
                 logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
                     body: json,

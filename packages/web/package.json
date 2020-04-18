@@ -1,11 +1,13 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
+  "browser": {
+    "./lib/geturl": "./lib/browser-geturl.js"
+  },
   "dependencies": {
     "@ethersproject/base64": ">=5.0.0-beta.126",
     "@ethersproject/logger": ">=5.0.0-beta.129",
     "@ethersproject/properties": ">=5.0.0-beta.131",
-    "@ethersproject/strings": ">=5.0.0-beta.130",
-    "cross-fetch": "3.0.4"
+    "@ethersproject/strings": ">=5.0.0-beta.130"
   },
   "description": "Utility fucntions for managing web requests for ethers.",
   "ethereum": "donations.ethers.eth",
