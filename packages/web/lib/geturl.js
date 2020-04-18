@@ -90,17 +90,20 @@ function getUrl(href, options) {
                     }
                     url = new url_1.URL(href);
                     request = {
+                        protocol: url.protocol,
+                        hostname: url.hostname,
+                        port: url.port,
+                        path: (url.pathname + url.search),
                         method: (options.method || "GET"),
                         headers: (options.headers || {}),
                     };
                     req = null;
                     switch (url.protocol) {
-                        case "http:": {
-                            req = http_1.default.request(url, request);
+                        case "http:":
+                            req = http_1.default.request(request);
                             break;
-                        }
                         case "https:":
-                            req = https_1.default.request(url, request);
+                            req = https_1.default.request(request);
                             break;
                         default:
                             logger.throwError("unsupported protocol " + url.protocol, logger_1.Logger.errors.UNSUPPORTED_OPERATION, {

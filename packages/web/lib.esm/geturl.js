@@ -53,19 +53,25 @@ export function getUrl(href, options) {
         if (options == null) {
             options = {};
         }
+        // @TODO: Once we drop support for node 8, we can pass the href
+        //        firectly into request and skip adding the components
+        //        to this request object
         const url = new URL(href);
         const request = {
+            protocol: url.protocol,
+            hostname: url.hostname,
+            port: url.port,
+            path: (url.pathname + url.search),
             method: (options.method || "GET"),
             headers: (options.headers || {}),
         };
         let req = null;
         switch (url.protocol) {
-            case "http:": {
-                req = http.request(url, request);
+            case "http:":
+                req = http.request(request);
                 break;
-            }
             case "https:":
-                req = https.request(url, request);
+                req = https.request(request);
                 break;
             default:
                 logger.throwError(`unsupported protocol ${url.protocol}`, Logger.errors.UNSUPPORTED_OPERATION, {
