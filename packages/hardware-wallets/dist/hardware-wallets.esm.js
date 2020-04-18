@@ -1,39 +1,14 @@
-var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-function commonjsRequire () {
-	throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
-}
-
-function unwrapExports (x) {
-	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
-}
-
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
-
-function getCjsExportFromNamespace (n) {
-	return n && n['default'] || n;
-}
-
-var browserEthers = createCommonjsModule(function (module, exports) {
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var ethers = {};
-exports.ethers = ethers;
-var w = window;
+let ethers = {};
+const w = window;
 if (w._ethers == null) {
     console.log("WARNING: @ethersproject/hardware-wallet requires ethers loaded first");
 }
 else {
-    exports.ethers = ethers = w._ethers;
+    ethers = w._ethers;
 }
-});
 
-var browserEthers$1 = unwrapExports(browserEthers);
-var browserEthers_1 = browserEthers.ethers;
-
-const version = "hardware-wallets/5.0.0-beta.4";
+const version = "hardware-wallets/5.0.0-beta.5";
 
 var global$1 = (typeof global !== "undefined" ? global :
             typeof self !== "undefined" ? self :
@@ -2124,321 +2099,294 @@ function asyncWhile(predicate, callback) {
 }
 
 /* eslint-disable no-continue */
-
 /* eslint-disable no-param-reassign */
-
 /* eslint-disable no-prototype-builtins */
-const errorClasses = {};
-const deserializers = {};
-const addCustomErrorDeserializer = (name, deserializer) => {
-  deserializers[name] = deserializer;
+var errorClasses = {};
+var deserializers = {};
+var addCustomErrorDeserializer = function (name, deserializer) {
+    deserializers[name] = deserializer;
 };
-const createCustomErrorClass = name => {
-  const C = function CustomError(message, fields) {
-    Object.assign(this, fields);
-    this.name = name;
-    this.message = message || name;
-    this.stack = new Error().stack;
-  }; // $FlowFixMe
-
-
-  C.prototype = new Error();
-  errorClasses[name] = C; // $FlowFixMe we can't easily type a subset of Error for now...
-
-  return C;
-}; // inspired from https://github.com/programble/errio/blob/master/index.js
-
-const deserializeError = object => {
-  if (typeof object === "object" && object) {
-    try {
-      // $FlowFixMe FIXME HACK
-      const msg = JSON.parse(object.message);
-
-      if (msg.message && msg.name) {
-        object = msg;
-      }
-    } catch (e) {// nothing
-    }
-
-    let error;
-
-    if (typeof object.name === "string") {
-      const {
-        name
-      } = object;
-      const des = deserializers[name];
-
-      if (des) {
-        error = des(object);
-      } else {
-        let constructor = name === "Error" ? Error : errorClasses[name];
-
-        if (!constructor) {
-          console.warn("deserializing an unknown class '" + name + "'");
-          constructor = createCustomErrorClass(name);
-        }
-
-        error = Object.create(constructor.prototype);
-
+var createCustomErrorClass = function (name) {
+    var C = function CustomError(message, fields) {
+        Object.assign(this, fields);
+        this.name = name;
+        this.message = message || name;
+        this.stack = new Error().stack;
+    };
+    C.prototype = new Error();
+    errorClasses[name] = C;
+    return C;
+};
+// inspired from https://github.com/programble/errio/blob/master/index.js
+var deserializeError = function (object) {
+    if (typeof object === "object" && object) {
         try {
-          for (const prop in object) {
-            if (object.hasOwnProperty(prop)) {
-              error[prop] = object[prop];
+            // $FlowFixMe FIXME HACK
+            var msg = JSON.parse(object.message);
+            if (msg.message && msg.name) {
+                object = msg;
             }
-          }
-        } catch (e) {// sometimes setting a property can fail (e.g. .name)
         }
-      }
-    } else {
-      error = new Error(object.message);
+        catch (e) {
+            // nothing
+        }
+        var error = void 0;
+        if (typeof object.name === "string") {
+            var name_1 = object.name;
+            var des = deserializers[name_1];
+            if (des) {
+                error = des(object);
+            }
+            else {
+                var constructor = name_1 === "Error" ? Error : errorClasses[name_1];
+                if (!constructor) {
+                    console.warn("deserializing an unknown class '" + name_1 + "'");
+                    constructor = createCustomErrorClass(name_1);
+                }
+                error = Object.create(constructor.prototype);
+                try {
+                    for (var prop in object) {
+                        if (object.hasOwnProperty(prop)) {
+                            error[prop] = object[prop];
+                        }
+                    }
+                }
+                catch (e) {
+                    // sometimes setting a property can fail (e.g. .name)
+                }
+            }
+        }
+        else {
+            error = new Error(object.message);
+        }
+        if (!error.stack && Error.captureStackTrace) {
+            Error.captureStackTrace(error, deserializeError);
+        }
+        return error;
     }
-
-    if (!error.stack && Error.captureStackTrace) {
-      Error.captureStackTrace(error, deserializeError);
+    return new Error(String(object));
+};
+// inspired from https://github.com/sindresorhus/serialize-error/blob/master/index.js
+var serializeError = function (value) {
+    if (!value)
+        return value;
+    if (typeof value === "object") {
+        return destroyCircular(value, []);
     }
-
-    return error;
-  }
-
-  return new Error(String(object));
-}; // inspired from https://github.com/sindresorhus/serialize-error/blob/master/index.js
-
-const serializeError = value => {
-  if (!value) return value;
-
-  if (typeof value === "object") {
-    return destroyCircular(value, []);
-  }
-
-  if (typeof value === "function") {
-    return `[Function: ${value.name || "anonymous"}]`;
-  }
-
-  return value;
-}; // https://www.npmjs.com/package/destroy-circular
-
-function destroyCircular(from, seen) {
-  const to = {};
-  seen.push(from);
-
-  for (const key of Object.keys(from)) {
-    const value = from[key];
-
     if (typeof value === "function") {
-      continue;
+        return "[Function: " + (value.name || "anonymous") + "]";
     }
-
-    if (!value || typeof value !== "object") {
-      to[key] = value;
-      continue;
+    return value;
+};
+// https://www.npmjs.com/package/destroy-circular
+function destroyCircular(from, seen) {
+    var to = {};
+    seen.push(from);
+    for (var _i = 0, _a = Object.keys(from); _i < _a.length; _i++) {
+        var key = _a[_i];
+        var value = from[key];
+        if (typeof value === "function") {
+            continue;
+        }
+        if (!value || typeof value !== "object") {
+            to[key] = value;
+            continue;
+        }
+        if (seen.indexOf(from[key]) === -1) {
+            to[key] = destroyCircular(from[key], seen.slice(0));
+            continue;
+        }
+        to[key] = "[Circular]";
     }
-
-    if (seen.indexOf(from[key]) === -1) {
-      to[key] = destroyCircular(from[key], seen.slice(0));
-      continue;
+    if (typeof from.name === "string") {
+        to.name = from.name;
     }
-
-    to[key] = "[Circular]";
-  }
-
-  if (typeof from.name === "string") {
-    to.name = from.name;
-  }
-
-  if (typeof from.message === "string") {
-    to.message = from.message;
-  }
-
-  if (typeof from.stack === "string") {
-    to.stack = from.stack;
-  }
-
-  return to;
+    if (typeof from.message === "string") {
+        to.message = from.message;
+    }
+    if (typeof from.stack === "string") {
+        to.stack = from.stack;
+    }
+    return to;
 }
 
-const AccountNameRequiredError = createCustomErrorClass("AccountNameRequired");
-const AccountNotSupported = createCustomErrorClass("AccountNotSupported");
-const AmountRequired = createCustomErrorClass("AmountRequired");
-const BluetoothRequired = createCustomErrorClass("BluetoothRequired");
-const BtcUnmatchedApp = createCustomErrorClass("BtcUnmatchedApp");
-const CantOpenDevice = createCustomErrorClass("CantOpenDevice");
-const CashAddrNotSupported = createCustomErrorClass("CashAddrNotSupported");
-const CurrencyNotSupported = createCustomErrorClass("CurrencyNotSupported");
-const DeviceAppVerifyNotSupported = createCustomErrorClass("DeviceAppVerifyNotSupported");
-const DeviceGenuineSocketEarlyClose = createCustomErrorClass("DeviceGenuineSocketEarlyClose");
-const DeviceNotGenuineError = createCustomErrorClass("DeviceNotGenuine");
-const DeviceOnDashboardExpected = createCustomErrorClass("DeviceOnDashboardExpected");
-const DeviceOnDashboardUnexpected = createCustomErrorClass("DeviceOnDashboardUnexpected");
-const DeviceInOSUExpected = createCustomErrorClass("DeviceInOSUExpected");
-const DeviceHalted = createCustomErrorClass("DeviceHalted");
-const DeviceNameInvalid = createCustomErrorClass("DeviceNameInvalid");
-const DeviceSocketFail = createCustomErrorClass("DeviceSocketFail");
-const DeviceSocketNoBulkStatus = createCustomErrorClass("DeviceSocketNoBulkStatus");
-const DisconnectedDevice = createCustomErrorClass("DisconnectedDevice");
-const DisconnectedDeviceDuringOperation = createCustomErrorClass("DisconnectedDeviceDuringOperation");
-const EnpointConfigError = createCustomErrorClass("EnpointConfig");
-const EthAppPleaseEnableContractData = createCustomErrorClass("EthAppPleaseEnableContractData");
-const FeeEstimationFailed = createCustomErrorClass("FeeEstimationFailed");
-const FirmwareNotRecognized = createCustomErrorClass("FirmwareNotRecognized");
-const HardResetFail = createCustomErrorClass("HardResetFail");
-const InvalidXRPTag = createCustomErrorClass("InvalidXRPTag");
-const InvalidAddress = createCustomErrorClass("InvalidAddress");
-const InvalidAddressBecauseDestinationIsAlsoSource = createCustomErrorClass("InvalidAddressBecauseDestinationIsAlsoSource");
-const LatestMCUInstalledError = createCustomErrorClass("LatestMCUInstalledError");
-const UnknownMCU = createCustomErrorClass("UnknownMCU");
-const LedgerAPIError = createCustomErrorClass("LedgerAPIError");
-const LedgerAPIErrorWithMessage = createCustomErrorClass("LedgerAPIErrorWithMessage");
-const LedgerAPINotAvailable = createCustomErrorClass("LedgerAPINotAvailable");
-const ManagerAppAlreadyInstalledError = createCustomErrorClass("ManagerAppAlreadyInstalled");
-const ManagerAppRelyOnBTCError = createCustomErrorClass("ManagerAppRelyOnBTC");
-const ManagerAppDepInstallRequired = createCustomErrorClass("ManagerAppDepInstallRequired");
-const ManagerAppDepUninstallRequired = createCustomErrorClass("ManagerAppDepUninstallRequired");
-const ManagerDeviceLockedError = createCustomErrorClass("ManagerDeviceLocked");
-const ManagerFirmwareNotEnoughSpaceError = createCustomErrorClass("ManagerFirmwareNotEnoughSpace");
-const ManagerNotEnoughSpaceError = createCustomErrorClass("ManagerNotEnoughSpace");
-const ManagerUninstallBTCDep = createCustomErrorClass("ManagerUninstallBTCDep");
-const NetworkDown = createCustomErrorClass("NetworkDown");
-const NoAddressesFound = createCustomErrorClass("NoAddressesFound");
-const NotEnoughBalance = createCustomErrorClass("NotEnoughBalance");
-const NotEnoughBalanceToDelegate = createCustomErrorClass("NotEnoughBalanceToDelegate");
-const NotEnoughBalanceInParentAccount = createCustomErrorClass("NotEnoughBalanceInParentAccount");
-const NotEnoughSpendableBalance = createCustomErrorClass("NotEnoughSpendableBalance");
-const NotEnoughBalanceBecauseDestinationNotCreated = createCustomErrorClass("NotEnoughBalanceBecauseDestinationNotCreated");
-const NoAccessToCamera = createCustomErrorClass("NoAccessToCamera");
-const NotEnoughGas = createCustomErrorClass("NotEnoughGas");
-const NotSupportedLegacyAddress = createCustomErrorClass("NotSupportedLegacyAddress");
-const GasLessThanEstimate = createCustomErrorClass("GasLessThanEstimate");
-const PasswordsDontMatchError = createCustomErrorClass("PasswordsDontMatch");
-const PasswordIncorrectError = createCustomErrorClass("PasswordIncorrect");
-const RecommendSubAccountsToEmpty = createCustomErrorClass("RecommendSubAccountsToEmpty");
-const RecommendUndelegation = createCustomErrorClass("RecommendUndelegation");
-const TimeoutTagged = createCustomErrorClass("TimeoutTagged");
-const UnexpectedBootloader = createCustomErrorClass("UnexpectedBootloader");
-const MCUNotGenuineToDashboard = createCustomErrorClass("MCUNotGenuineToDashboard");
-const RecipientRequired = createCustomErrorClass("RecipientRequired");
-const UnavailableTezosOriginatedAccountReceive = createCustomErrorClass("UnavailableTezosOriginatedAccountReceive");
-const UnavailableTezosOriginatedAccountSend = createCustomErrorClass("UnavailableTezosOriginatedAccountSend");
-const UpdateFetchFileFail = createCustomErrorClass("UpdateFetchFileFail");
-const UpdateIncorrectHash = createCustomErrorClass("UpdateIncorrectHash");
-const UpdateIncorrectSig = createCustomErrorClass("UpdateIncorrectSig");
-const UpdateYourApp = createCustomErrorClass("UpdateYourApp");
-const UserRefusedDeviceNameChange = createCustomErrorClass("UserRefusedDeviceNameChange");
-const UserRefusedAddress = createCustomErrorClass("UserRefusedAddress");
-const UserRefusedFirmwareUpdate = createCustomErrorClass("UserRefusedFirmwareUpdate");
-const UserRefusedAllowManager = createCustomErrorClass("UserRefusedAllowManager");
-const UserRefusedOnDevice = createCustomErrorClass("UserRefusedOnDevice"); // TODO rename because it's just for transaction refusal
-
-const TransportOpenUserCancelled = createCustomErrorClass("TransportOpenUserCancelled");
-const TransportInterfaceNotAvailable = createCustomErrorClass("TransportInterfaceNotAvailable");
-const TransportRaceCondition = createCustomErrorClass("TransportRaceCondition");
-const TransportWebUSBGestureRequired = createCustomErrorClass("TransportWebUSBGestureRequired");
-const DeviceShouldStayInApp = createCustomErrorClass("DeviceShouldStayInApp");
-const WebsocketConnectionError = createCustomErrorClass("WebsocketConnectionError");
-const WebsocketConnectionFailed = createCustomErrorClass("WebsocketConnectionFailed");
-const WrongDeviceForAccount = createCustomErrorClass("WrongDeviceForAccount");
-const WrongAppForCurrency = createCustomErrorClass("WrongAppForCurrency");
-const ETHAddressNonEIP = createCustomErrorClass("ETHAddressNonEIP");
-const CantScanQRCode = createCustomErrorClass("CantScanQRCode");
-const FeeNotLoaded = createCustomErrorClass("FeeNotLoaded");
-const FeeRequired = createCustomErrorClass("FeeRequired");
-const FeeTooHigh = createCustomErrorClass("FeeTooHigh");
-const SyncError = createCustomErrorClass("SyncError");
-const PairingFailed = createCustomErrorClass("PairingFailed");
-const GenuineCheckFailed = createCustomErrorClass("GenuineCheckFailed");
-const LedgerAPI4xx = createCustomErrorClass("LedgerAPI4xx");
-const LedgerAPI5xx = createCustomErrorClass("LedgerAPI5xx");
-const FirmwareOrAppUpdateRequired = createCustomErrorClass("FirmwareOrAppUpdateRequired"); // db stuff, no need to translate
-
-const NoDBPathGiven = createCustomErrorClass("NoDBPathGiven");
-const DBWrongPassword = createCustomErrorClass("DBWrongPassword");
-const DBNotReset = createCustomErrorClass("DBNotReset");
+var AccountNameRequiredError = createCustomErrorClass("AccountNameRequired");
+var AccountNotSupported = createCustomErrorClass("AccountNotSupported");
+var AmountRequired = createCustomErrorClass("AmountRequired");
+var BluetoothRequired = createCustomErrorClass("BluetoothRequired");
+var BtcUnmatchedApp = createCustomErrorClass("BtcUnmatchedApp");
+var CantOpenDevice = createCustomErrorClass("CantOpenDevice");
+var CashAddrNotSupported = createCustomErrorClass("CashAddrNotSupported");
+var CurrencyNotSupported = createCustomErrorClass("CurrencyNotSupported");
+var DeviceAppVerifyNotSupported = createCustomErrorClass("DeviceAppVerifyNotSupported");
+var DeviceGenuineSocketEarlyClose = createCustomErrorClass("DeviceGenuineSocketEarlyClose");
+var DeviceNotGenuineError = createCustomErrorClass("DeviceNotGenuine");
+var DeviceOnDashboardExpected = createCustomErrorClass("DeviceOnDashboardExpected");
+var DeviceOnDashboardUnexpected = createCustomErrorClass("DeviceOnDashboardUnexpected");
+var DeviceInOSUExpected = createCustomErrorClass("DeviceInOSUExpected");
+var DeviceHalted = createCustomErrorClass("DeviceHalted");
+var DeviceNameInvalid = createCustomErrorClass("DeviceNameInvalid");
+var DeviceSocketFail = createCustomErrorClass("DeviceSocketFail");
+var DeviceSocketNoBulkStatus = createCustomErrorClass("DeviceSocketNoBulkStatus");
+var DisconnectedDevice = createCustomErrorClass("DisconnectedDevice");
+var DisconnectedDeviceDuringOperation = createCustomErrorClass("DisconnectedDeviceDuringOperation");
+var EnpointConfigError = createCustomErrorClass("EnpointConfig");
+var EthAppPleaseEnableContractData = createCustomErrorClass("EthAppPleaseEnableContractData");
+var FeeEstimationFailed = createCustomErrorClass("FeeEstimationFailed");
+var FirmwareNotRecognized = createCustomErrorClass("FirmwareNotRecognized");
+var HardResetFail = createCustomErrorClass("HardResetFail");
+var InvalidXRPTag = createCustomErrorClass("InvalidXRPTag");
+var InvalidAddress = createCustomErrorClass("InvalidAddress");
+var InvalidAddressBecauseDestinationIsAlsoSource = createCustomErrorClass("InvalidAddressBecauseDestinationIsAlsoSource");
+var LatestMCUInstalledError = createCustomErrorClass("LatestMCUInstalledError");
+var UnknownMCU = createCustomErrorClass("UnknownMCU");
+var LedgerAPIError = createCustomErrorClass("LedgerAPIError");
+var LedgerAPIErrorWithMessage = createCustomErrorClass("LedgerAPIErrorWithMessage");
+var LedgerAPINotAvailable = createCustomErrorClass("LedgerAPINotAvailable");
+var ManagerAppAlreadyInstalledError = createCustomErrorClass("ManagerAppAlreadyInstalled");
+var ManagerAppRelyOnBTCError = createCustomErrorClass("ManagerAppRelyOnBTC");
+var ManagerAppDepInstallRequired = createCustomErrorClass("ManagerAppDepInstallRequired");
+var ManagerAppDepUninstallRequired = createCustomErrorClass("ManagerAppDepUninstallRequired");
+var ManagerDeviceLockedError = createCustomErrorClass("ManagerDeviceLocked");
+var ManagerFirmwareNotEnoughSpaceError = createCustomErrorClass("ManagerFirmwareNotEnoughSpace");
+var ManagerNotEnoughSpaceError = createCustomErrorClass("ManagerNotEnoughSpace");
+var ManagerUninstallBTCDep = createCustomErrorClass("ManagerUninstallBTCDep");
+var NetworkDown = createCustomErrorClass("NetworkDown");
+var NoAddressesFound = createCustomErrorClass("NoAddressesFound");
+var NotEnoughBalance = createCustomErrorClass("NotEnoughBalance");
+var NotEnoughBalanceToDelegate = createCustomErrorClass("NotEnoughBalanceToDelegate");
+var NotEnoughBalanceInParentAccount = createCustomErrorClass("NotEnoughBalanceInParentAccount");
+var NotEnoughSpendableBalance = createCustomErrorClass("NotEnoughSpendableBalance");
+var NotEnoughBalanceBecauseDestinationNotCreated = createCustomErrorClass("NotEnoughBalanceBecauseDestinationNotCreated");
+var NoAccessToCamera = createCustomErrorClass("NoAccessToCamera");
+var NotEnoughGas = createCustomErrorClass("NotEnoughGas");
+var NotSupportedLegacyAddress = createCustomErrorClass("NotSupportedLegacyAddress");
+var GasLessThanEstimate = createCustomErrorClass("GasLessThanEstimate");
+var PasswordsDontMatchError = createCustomErrorClass("PasswordsDontMatch");
+var PasswordIncorrectError = createCustomErrorClass("PasswordIncorrect");
+var RecommendSubAccountsToEmpty = createCustomErrorClass("RecommendSubAccountsToEmpty");
+var RecommendUndelegation = createCustomErrorClass("RecommendUndelegation");
+var TimeoutTagged = createCustomErrorClass("TimeoutTagged");
+var UnexpectedBootloader = createCustomErrorClass("UnexpectedBootloader");
+var MCUNotGenuineToDashboard = createCustomErrorClass("MCUNotGenuineToDashboard");
+var RecipientRequired = createCustomErrorClass("RecipientRequired");
+var UnavailableTezosOriginatedAccountReceive = createCustomErrorClass("UnavailableTezosOriginatedAccountReceive");
+var UnavailableTezosOriginatedAccountSend = createCustomErrorClass("UnavailableTezosOriginatedAccountSend");
+var UpdateFetchFileFail = createCustomErrorClass("UpdateFetchFileFail");
+var UpdateIncorrectHash = createCustomErrorClass("UpdateIncorrectHash");
+var UpdateIncorrectSig = createCustomErrorClass("UpdateIncorrectSig");
+var UpdateYourApp = createCustomErrorClass("UpdateYourApp");
+var UserRefusedDeviceNameChange = createCustomErrorClass("UserRefusedDeviceNameChange");
+var UserRefusedAddress = createCustomErrorClass("UserRefusedAddress");
+var UserRefusedFirmwareUpdate = createCustomErrorClass("UserRefusedFirmwareUpdate");
+var UserRefusedAllowManager = createCustomErrorClass("UserRefusedAllowManager");
+var UserRefusedOnDevice = createCustomErrorClass("UserRefusedOnDevice"); // TODO rename because it's just for transaction refusal
+var TransportOpenUserCancelled = createCustomErrorClass("TransportOpenUserCancelled");
+var TransportInterfaceNotAvailable = createCustomErrorClass("TransportInterfaceNotAvailable");
+var TransportRaceCondition = createCustomErrorClass("TransportRaceCondition");
+var TransportWebUSBGestureRequired = createCustomErrorClass("TransportWebUSBGestureRequired");
+var DeviceShouldStayInApp = createCustomErrorClass("DeviceShouldStayInApp");
+var WebsocketConnectionError = createCustomErrorClass("WebsocketConnectionError");
+var WebsocketConnectionFailed = createCustomErrorClass("WebsocketConnectionFailed");
+var WrongDeviceForAccount = createCustomErrorClass("WrongDeviceForAccount");
+var WrongAppForCurrency = createCustomErrorClass("WrongAppForCurrency");
+var ETHAddressNonEIP = createCustomErrorClass("ETHAddressNonEIP");
+var CantScanQRCode = createCustomErrorClass("CantScanQRCode");
+var FeeNotLoaded = createCustomErrorClass("FeeNotLoaded");
+var FeeRequired = createCustomErrorClass("FeeRequired");
+var FeeTooHigh = createCustomErrorClass("FeeTooHigh");
+var SyncError = createCustomErrorClass("SyncError");
+var PairingFailed = createCustomErrorClass("PairingFailed");
+var GenuineCheckFailed = createCustomErrorClass("GenuineCheckFailed");
+var LedgerAPI4xx = createCustomErrorClass("LedgerAPI4xx");
+var LedgerAPI5xx = createCustomErrorClass("LedgerAPI5xx");
+var FirmwareOrAppUpdateRequired = createCustomErrorClass("FirmwareOrAppUpdateRequired");
+// db stuff, no need to translate
+var NoDBPathGiven = createCustomErrorClass("NoDBPathGiven");
+var DBWrongPassword = createCustomErrorClass("DBWrongPassword");
+var DBNotReset = createCustomErrorClass("DBNotReset");
 /**
  * TransportError is used for any generic transport errors.
  * e.g. Error thrown when data received by exchanges are incorrect or if exchanged failed to communicate with the device for various reason.
  */
-
 function TransportError(message, id) {
-  this.name = "TransportError";
-  this.message = message;
-  this.stack = new Error().stack;
-  this.id = id;
-} //$FlowFixMe
-
+    this.name = "TransportError";
+    this.message = message;
+    this.stack = new Error().stack;
+    this.id = id;
+}
 TransportError.prototype = new Error();
-addCustomErrorDeserializer("TransportError", e => new TransportError(e.message, e.id));
-const StatusCodes = {
-  PIN_REMAINING_ATTEMPTS: 0x63c0,
-  INCORRECT_LENGTH: 0x6700,
-  COMMAND_INCOMPATIBLE_FILE_STRUCTURE: 0x6981,
-  SECURITY_STATUS_NOT_SATISFIED: 0x6982,
-  CONDITIONS_OF_USE_NOT_SATISFIED: 0x6985,
-  INCORRECT_DATA: 0x6a80,
-  NOT_ENOUGH_MEMORY_SPACE: 0x6a84,
-  REFERENCED_DATA_NOT_FOUND: 0x6a88,
-  FILE_ALREADY_EXISTS: 0x6a89,
-  INCORRECT_P1_P2: 0x6b00,
-  INS_NOT_SUPPORTED: 0x6d00,
-  CLA_NOT_SUPPORTED: 0x6e00,
-  TECHNICAL_PROBLEM: 0x6f00,
-  OK: 0x9000,
-  MEMORY_PROBLEM: 0x9240,
-  NO_EF_SELECTED: 0x9400,
-  INVALID_OFFSET: 0x9402,
-  FILE_NOT_FOUND: 0x9404,
-  INCONSISTENT_FILE: 0x9408,
-  ALGORITHM_NOT_SUPPORTED: 0x9484,
-  INVALID_KCV: 0x9485,
-  CODE_NOT_INITIALIZED: 0x9802,
-  ACCESS_CONDITION_NOT_FULFILLED: 0x9804,
-  CONTRADICTION_SECRET_CODE_STATUS: 0x9808,
-  CONTRADICTION_INVALIDATION: 0x9810,
-  CODE_BLOCKED: 0x9840,
-  MAX_VALUE_REACHED: 0x9850,
-  GP_AUTH_FAILED: 0x6300,
-  LICENSING: 0x6f42,
-  HALTED: 0x6faa
+addCustomErrorDeserializer("TransportError", function (e) { return new TransportError(e.message, e.id); });
+var StatusCodes = {
+    PIN_REMAINING_ATTEMPTS: 0x63c0,
+    INCORRECT_LENGTH: 0x6700,
+    MISSING_CRITICAL_PARAMETER: 0x6800,
+    COMMAND_INCOMPATIBLE_FILE_STRUCTURE: 0x6981,
+    SECURITY_STATUS_NOT_SATISFIED: 0x6982,
+    CONDITIONS_OF_USE_NOT_SATISFIED: 0x6985,
+    INCORRECT_DATA: 0x6a80,
+    NOT_ENOUGH_MEMORY_SPACE: 0x6a84,
+    REFERENCED_DATA_NOT_FOUND: 0x6a88,
+    FILE_ALREADY_EXISTS: 0x6a89,
+    INCORRECT_P1_P2: 0x6b00,
+    INS_NOT_SUPPORTED: 0x6d00,
+    CLA_NOT_SUPPORTED: 0x6e00,
+    TECHNICAL_PROBLEM: 0x6f00,
+    OK: 0x9000,
+    MEMORY_PROBLEM: 0x9240,
+    NO_EF_SELECTED: 0x9400,
+    INVALID_OFFSET: 0x9402,
+    FILE_NOT_FOUND: 0x9404,
+    INCONSISTENT_FILE: 0x9408,
+    ALGORITHM_NOT_SUPPORTED: 0x9484,
+    INVALID_KCV: 0x9485,
+    CODE_NOT_INITIALIZED: 0x9802,
+    ACCESS_CONDITION_NOT_FULFILLED: 0x9804,
+    CONTRADICTION_SECRET_CODE_STATUS: 0x9808,
+    CONTRADICTION_INVALIDATION: 0x9810,
+    CODE_BLOCKED: 0x9840,
+    MAX_VALUE_REACHED: 0x9850,
+    GP_AUTH_FAILED: 0x6300,
+    LICENSING: 0x6f42,
+    HALTED: 0x6faa
 };
 function getAltStatusMessage(code) {
-  switch (code) {
-    // improve text of most common errors
-    case 0x6700:
-      return "Incorrect length";
-
-    case 0x6982:
-      return "Security not satisfied (dongle locked or have invalid access rights)";
-
-    case 0x6985:
-      return "Condition of use not satisfied (denied by the user?)";
-
-    case 0x6a80:
-      return "Invalid data received";
-
-    case 0x6b00:
-      return "Invalid parameter received";
-  }
-
-  if (0x6f00 <= code && code <= 0x6fff) {
-    return "Internal error, please report";
-  }
+    switch (code) {
+        // improve text of most common errors
+        case 0x6700:
+            return "Incorrect length";
+        case 0x6800:
+            return "Missing critical parameter";
+        case 0x6982:
+            return "Security not satisfied (dongle locked or have invalid access rights)";
+        case 0x6985:
+            return "Condition of use not satisfied (denied by the user?)";
+        case 0x6a80:
+            return "Invalid data received";
+        case 0x6b00:
+            return "Invalid parameter received";
+    }
+    if (0x6f00 <= code && code <= 0x6fff) {
+        return "Internal error, please report";
+    }
 }
 /**
  * Error thrown when a device returned a non success status.
  * the error.statusCode is one of the `StatusCodes` exported by this library.
  */
-
 function TransportStatusError(statusCode) {
-  this.name = "TransportStatusError";
-  const statusText = Object.keys(StatusCodes).find(k => StatusCodes[k] === statusCode) || "UNKNOWN_ERROR";
-  const smsg = getAltStatusMessage(statusCode) || statusText;
-  const statusCodeStr = statusCode.toString(16);
-  this.message = `Ledger device: ${smsg} (0x${statusCodeStr})`;
-  this.stack = new Error().stack;
-  this.statusCode = statusCode;
-  this.statusText = statusText;
-} //$FlowFixMe
-
+    this.name = "TransportStatusError";
+    var statusText = Object.keys(StatusCodes).find(function (k) { return StatusCodes[k] === statusCode; }) ||
+        "UNKNOWN_ERROR";
+    var smsg = getAltStatusMessage(statusCode) || statusText;
+    var statusCodeStr = statusCode.toString(16);
+    this.message = "Ledger device: " + smsg + " (0x" + statusCodeStr + ")";
+    this.stack = new Error().stack;
+    this.statusCode = statusCode;
+    this.statusText = statusText;
+}
 TransportStatusError.prototype = new Error();
-addCustomErrorDeserializer("TransportStatusError", e => new TransportStatusError(e.statusCode));
+addCustomErrorDeserializer("TransportStatusError", function (e) { return new TransportStatusError(e.statusCode); });
 
 const remapTransactionRelatedErrors = e => {
   if (e && e.statusCode === 0x6a80) {
@@ -2639,6 +2587,24 @@ class Eth {
     });
   }
 
+}
+
+var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+function commonjsRequire () {
+	throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
+}
+
+function unwrapExports (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+function getCjsExportFromNamespace (n) {
+	return n && n['default'] || n;
 }
 
 // Copyright 2014 Google Inc. All rights reserved
@@ -4066,7 +4032,9 @@ function dispatch(log) {
 } // for debug purpose
 
 
-global$1.__ledgerLogsListen = listen;
+if (typeof window !== "undefined") {
+  window.__ledgerLogsListen = listen;
+}
 
 function wrapU2FTransportError(originalError, message, id) {
   const err = new TransportError(message, id); // $FlowFixMe
@@ -4236,21 +4204,11 @@ TransportU2F.listen = observer => {
   };
 };
 
-var browserLedgerTransport = createCommonjsModule(function (module, exports) {
 "use strict";
-var __importDefault = (commonjsGlobal && commonjsGlobal.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+const transports = {
+    "u2f": TransportU2F,
+    "default": TransportU2F
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-var hw_transport_u2f_1 = __importDefault(TransportU2F);
-exports.transports = {
-    "u2f": hw_transport_u2f_1.default,
-    "default": hw_transport_u2f_1.default
-};
-});
-
-var browserLedgerTransport$1 = unwrapExports(browserLedgerTransport);
-var browserLedgerTransport_1 = browserLedgerTransport.transports;
 
 "use strict";
 var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -4262,14 +4220,14 @@ var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const logger = new browserEthers_1.utils.Logger(version);
+const logger = new ethers.utils.Logger(version);
 const defaultPath = "m/44'/60'/0'/0/0";
 function waiter(duration) {
     return new Promise((resolve) => {
         setTimeout(resolve, duration);
     });
 }
-class LedgerSigner extends browserEthers_1.Signer {
+class LedgerSigner extends ethers.Signer {
     constructor(provider, type, path) {
         super();
         if (path == null) {
@@ -4278,14 +4236,14 @@ class LedgerSigner extends browserEthers_1.Signer {
         if (type == null) {
             type = "default";
         }
-        browserEthers_1.utils.defineReadOnly(this, "path", path);
-        browserEthers_1.utils.defineReadOnly(this, "type", type);
-        browserEthers_1.utils.defineReadOnly(this, "provider", provider || null);
-        const transport = browserLedgerTransport_1[type];
+        ethers.utils.defineReadOnly(this, "path", path);
+        ethers.utils.defineReadOnly(this, "type", type);
+        ethers.utils.defineReadOnly(this, "provider", provider || null);
+        const transport = transports[type];
         if (!transport) {
             logger.throwArgumentError("unknown or unsupport type", "type", type);
         }
-        browserEthers_1.utils.defineReadOnly(this, "_eth", transport.create().then((transport) => {
+        ethers.utils.defineReadOnly(this, "_eth", transport.create().then((transport) => {
             const eth = new Eth(transport);
             return eth.getAppConfiguration().then((config) => {
                 return eth;
@@ -4321,27 +4279,27 @@ class LedgerSigner extends browserEthers_1.Signer {
     getAddress() {
         return __awaiter(this, void 0, void 0, function* () {
             const account = yield this._retry((eth) => eth.getAddress(this.path));
-            return browserEthers_1.utils.getAddress(account.address);
+            return ethers.utils.getAddress(account.address);
         });
     }
     signMessage(message) {
         return __awaiter(this, void 0, void 0, function* () {
             if (typeof (message) === 'string') {
-                message = browserEthers_1.utils.toUtf8Bytes(message);
+                message = ethers.utils.toUtf8Bytes(message);
             }
-            const messageHex = browserEthers_1.utils.hexlify(message).substring(2);
+            const messageHex = ethers.utils.hexlify(message).substring(2);
             const sig = yield this._retry((eth) => eth.signPersonalMessage(this.path, messageHex));
             sig.r = '0x' + sig.r;
             sig.s = '0x' + sig.s;
-            return browserEthers_1.utils.joinSignature(sig);
+            return ethers.utils.joinSignature(sig);
         });
     }
     signTransaction(transaction) {
         return __awaiter(this, void 0, void 0, function* () {
-            const tx = transaction = yield browserEthers_1.utils.resolveProperties(transaction);
-            const unsignedTx = browserEthers_1.utils.serializeTransaction(tx).substring(2);
+            const tx = transaction = yield ethers.utils.resolveProperties(transaction);
+            const unsignedTx = ethers.utils.serializeTransaction(tx).substring(2);
             const sig = yield this._retry((eth) => eth.signTransaction(this.path, unsignedTx));
-            return browserEthers_1.utils.serializeTransaction(tx, {
+            return ethers.utils.serializeTransaction(tx, {
                 v: sig.v,
                 r: ("0x" + sig.r),
                 s: ("0x" + sig.s),

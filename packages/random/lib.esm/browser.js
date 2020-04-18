@@ -4,7 +4,25 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 export { shuffled } from "./shuffle";
-let crypto = global.crypto || global.msCrypto;
+let anyGlobal = null;
+try {
+    anyGlobal = window;
+    if (anyGlobal == null) {
+        throw new Error("try next");
+    }
+}
+catch (error) {
+    try {
+        anyGlobal = global;
+        if (anyGlobal == null) {
+            throw new Error("try next");
+        }
+    }
+    catch (error) {
+        anyGlobal = {};
+    }
+}
+let crypto = anyGlobal.crypto || anyGlobal.msCrypto;
 if (!crypto || !crypto.getRandomValues) {
     logger.warn("WARNING: Missing strong random number source");
     crypto = {
@@ -16,7 +34,7 @@ if (!crypto || !crypto.getRandomValues) {
     };
 }
 export function randomBytes(length) {
-    if (length <= 0 || length > 1024 || parseInt(String(length)) != length) {
+    if (length <= 0 || length > 1024 || (length % 1)) {
         logger.throwArgumentError("invalid length", "length", length);
     }
     const result = new Uint8Array(length);

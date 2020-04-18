@@ -35,46 +35,20 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var cross_fetch_1 = __importDefault(require("cross-fetch"));
 var base64_1 = require("@ethersproject/base64");
 var properties_1 = require("@ethersproject/properties");
 var strings_1 = require("@ethersproject/strings");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
-function getResponse(response) {
-    var headers = {};
-    if (response.headers.forEach) {
-        response.headers.forEach(function (value, key) {
-            headers[key.toLowerCase()] = value;
-        });
-    }
-    else {
-        ((response.headers).keys)().forEach(function (key) {
-            headers[key.toLowerCase()] = response.headers.get(key);
-        });
-    }
-    return {
-        statusCode: response.status,
-        status: response.statusText,
-        headers: headers
-    };
-}
+var geturl_1 = require("./geturl");
 function fetchJson(connection, json, processFunc) {
     var headers = {};
     var url = null;
     // @TODO: Allow ConnectionInfo to override some of these values
     var options = {
         method: "GET",
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        redirect: "follow",
-        referrer: "client",
     };
     var allow304 = false;
     var timeout = 2 * 60 * 1000;
@@ -143,47 +117,37 @@ function fetchJson(connection, json, processFunc) {
     })();
     var runningFetch = (function () {
         return __awaiter(this, void 0, void 0, function () {
-            var response, body, error_1, json, error_2;
+            var response, error_1, body, json, error_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         response = null;
-                        body = null;
                         _a.label = 1;
                     case 1:
-                        if (!true) return [3 /*break*/, 7];
-                        _a.label = 2;
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, geturl_1.getUrl(url, options)];
                     case 2:
-                        _a.trys.push([2, 4, , 5]);
-                        return [4 /*yield*/, cross_fetch_1.default(url, options)];
-                    case 3:
                         response = _a.sent();
-                        return [3 /*break*/, 5];
-                    case 4:
+                        return [3 /*break*/, 4];
+                    case 3:
                         error_1 = _a.sent();
                         console.log(error_1);
-                        return [3 /*break*/, 5];
-                    case 5: return [4 /*yield*/, response.text()];
-                    case 6:
-                        body = _a.sent();
-                        if (allow304 && response.status === 304) {
+                        response = error_1.response;
+                        return [3 /*break*/, 4];
+                    case 4:
+                        body = response.body;
+                        if (allow304 && response.statusCode === 304) {
                             body = null;
-                            return [3 /*break*/, 7];
                         }
-                        else if (!response.ok) {
+                        else if (response.statusCode < 200 || response.statusCode >= 300) {
                             runningTimeout.cancel();
                             logger.throwError("bad response", logger_1.Logger.errors.SERVER_ERROR, {
-                                status: response.status,
+                                status: response.statusCode,
+                                headers: response.headers,
                                 body: body,
-                                type: response.type,
-                                url: response.url
+                                url: url
                             });
                         }
-                        else {
-                            return [3 /*break*/, 7];
-                        }
-                        return [3 /*break*/, 1];
-                    case 7:
                         runningTimeout.cancel();
                         json = null;
                         if (body != null) {
@@ -198,22 +162,22 @@ function fetchJson(connection, json, processFunc) {
                                 });
                             }
                         }
-                        if (!processFunc) return [3 /*break*/, 11];
-                        _a.label = 8;
-                    case 8:
-                        _a.trys.push([8, 10, , 11]);
-                        return [4 /*yield*/, processFunc(json, getResponse(response))];
-                    case 9:
+                        if (!processFunc) return [3 /*break*/, 8];
+                        _a.label = 5;
+                    case 5:
+                        _a.trys.push([5, 7, , 8]);
+                        return [4 /*yield*/, processFunc(json, response)];
+                    case 6:
                         json = _a.sent();
-                        return [3 /*break*/, 11];
-                    case 10:
+                        return [3 /*break*/, 8];
+                    case 7:
                         error_2 = _a.sent();
                         logger.throwError("processing response error", logger_1.Logger.errors.SERVER_ERROR, {
                             body: json,
                             error: error_2
                         });
-                        return [3 /*break*/, 11];
-                    case 11: return [2 /*return*/, json];
+                        return [3 /*break*/, 8];
+                    case 8: return [2 /*return*/, json];
                 }
             });
         });

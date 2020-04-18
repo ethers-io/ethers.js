@@ -22,7 +22,6 @@ export declare type PollOptions = {
 };
 export declare type FetchJsonResponse = {
     statusCode: number;
-    status: string;
     headers: {
         [header: string]: string;
     };

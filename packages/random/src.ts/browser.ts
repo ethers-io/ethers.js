@@ -8,7 +8,20 @@ const logger = new Logger(version);
 
 export { shuffled } from "./shuffle";
 
-let crypto: any = (<any>global).crypto || (<any>global).msCrypto;
+let anyGlobal: any = null;
+try {
+    anyGlobal = (window as any);
+    if (anyGlobal == null) { throw new Error("try next"); }
+} catch (error) {
+    try {
+        anyGlobal = (global as any);
+        if (anyGlobal == null) { throw new Error("try next"); }
+    } catch (error) {
+        anyGlobal = { };
+    }
+}
+
+let crypto: any = anyGlobal.crypto || anyGlobal.msCrypto;
 if (!crypto || !crypto.getRandomValues) {
 
     logger.warn("WARNING: Missing strong random number source");
@@ -23,7 +36,7 @@ if (!crypto || !crypto.getRandomValues) {
 }
 
 export function randomBytes(length: number): Uint8Array {
-    if (length <= 0 || length > 1024 || parseInt(String(length)) != length) {
+    if (length <= 0 || length > 1024 || (length % 1)) {
         logger.throwArgumentError("invalid length", "length", length);
     }
 

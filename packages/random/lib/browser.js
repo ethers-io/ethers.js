@@ -6,7 +6,25 @@ var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var shuffle_1 = require("./shuffle");
 exports.shuffled = shuffle_1.shuffled;
-var crypto = global.crypto || global.msCrypto;
+var anyGlobal = null;
+try {
+    anyGlobal = window;
+    if (anyGlobal == null) {
+        throw new Error("try next");
+    }
+}
+catch (error) {
+    try {
+        anyGlobal = global;
+        if (anyGlobal == null) {
+            throw new Error("try next");
+        }
+    }
+    catch (error) {
+        anyGlobal = {};
+    }
+}
+var crypto = anyGlobal.crypto || anyGlobal.msCrypto;
 if (!crypto || !crypto.getRandomValues) {
     logger.warn("WARNING: Missing strong random number source");
     crypto = {
@@ -18,7 +36,7 @@ if (!crypto || !crypto.getRandomValues) {
     };
 }
 function randomBytes(length) {
-    if (length <= 0 || length > 1024 || parseInt(String(length)) != length) {
+    if (length <= 0 || length > 1024 || (length % 1)) {
         logger.throwArgumentError("invalid length", "length", length);
     }
     var result = new Uint8Array(length);

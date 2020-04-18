@@ -1,6 +1,8 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "browser": "./lib/browser.js",
+  "browser.esm": "./lib.esm/browser.js",
+  "browser.umd": "./lib/browser.js",
   "dependencies": {
     "@ethersproject/bytes": ">=5.0.0-beta.129",
     "@ethersproject/hash": ">=5.0.0-beta.128",
@@ -28,7 +30,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xe32bd1fd981edfe799027c0748ce31c33478b5af30df8768b972b175448f0c42",
+  "tarballHash": "0x81ae2255995ae0769bfc53a6cad9948f5eb68b5f619ed771babecb660274cfba",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.135"
+  "version": "5.0.0-beta.136"
 }

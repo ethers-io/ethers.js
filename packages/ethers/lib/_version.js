@@ -1,3 +1,3 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "ethers/5.0.0-beta.182";
+exports.version = "ethers/5.0.0-beta.183";

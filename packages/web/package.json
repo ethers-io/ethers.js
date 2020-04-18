@@ -3,6 +3,12 @@
   "browser": {
     "./lib/geturl": "./lib/browser-geturl.js"
   },
+  "browser.esm": {
+    "./lib.esm/geturl": "./lib.esm/browser-geturl.js"
+  },
+  "browser.umd": {
+    "./lib/geturl": "./lib/browser-geturl.js"
+  },
   "dependencies": {
     "@ethersproject/base64": ">=5.0.0-beta.126",
     "@ethersproject/logger": ">=5.0.0-beta.129",
@@ -29,7 +35,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xa50a391e8106fcabd98b0c1e058d9d90c2e369689b08e42d88f59709785ff89f",
+  "tarballHash": "0x650d63a4fb9545025d67d16a3cf2f0dc41d0ccbf0bd90b095c119700de80144f",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.136"
+  "version": "5.0.0-beta.137"
 }

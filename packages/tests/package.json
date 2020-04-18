@@ -3,6 +3,12 @@
   "browser": {
     "ethers": "./lib/browser-ethers.js"
   },
+  "browser.esm": {
+    "ethers": "./lib.esm/browser-ethers.js"
+  },
+  "browser.umd": {
+    "ethers": "./lib/browser-ethers.js"
+  },
   "dependencies": {
     "@ethersproject/cli": ">=5.0.0-beta.145",
     "@ethersproject/testcases": ">=5.0.0-beta.131",
@@ -33,7 +39,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0x01732e6bde3152353f3ebcd09b5e272eb7337ebd892faf66f3ce4036c89a94cc",
+  "tarballHash": "0x6b5c3b2a65eadbb9c8080540429f43ebbaccb67135db81ebfafa605a8bdb35a6",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.156"
+  "version": "5.0.0-beta.157"
 }

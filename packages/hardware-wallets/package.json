@@ -1,7 +1,15 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "browser": {
-    "./lib.esm/ledger-transport.js": "./lib/browser-ledger-transport.js",
+    "./lib/ledger-transport.js": "./lib/browser-ledger-transport.js",
+    "ethers": "./lib/browser-ethers.js"
+  },
+  "browser.esm": {
+    "./lib.esm/ledger-transport.js": "./lib.esm/browser-ledger-transport.js",
+    "ethers": "./lib.esm/browser-ethers.js"
+  },
+  "browser.umd": {
+    "./lib/ledger-transport.js": "./lib/browser-ledger-transport.js",
     "ethers": "./lib/browser-ethers.js"
   },
   "dependencies": {
@@ -35,7 +43,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0x632e87114d5488d93fc31b156769c1aac184e038e8eb698c311cf6273990796a",
+  "tarballHash": "0xebc0cb4f4552b0f6e80c88d7c2c1e9fe9e3de359808fd322afd8c54bc1347bc5",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.4"
+  "version": "5.0.0-beta.5"
 }

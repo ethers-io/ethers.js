@@ -5,6 +5,16 @@
     "net": "./lib/browser-net.js",
     "ws": "./lib/browser-ws.js"
   },
+  "browser.esm": {
+    "./lib.esm/ipc-provider": "./lib.esm/browser-ipc-provider.js",
+    "net": "./lib.esm/browser-net.js",
+    "ws": "./lib/browser-ws.js"
+  },
+  "browser.umd": {
+    "./lib/ipc-provider": "./lib/browser-ipc-provider.js",
+    "net": "./lib/browser-net.js",
+    "ws": "./lib/browser-ws.js"
+  },
   "dependencies": {
     "@ethersproject/abstract-provider": ">=5.0.0-beta.131",
     "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
@@ -46,7 +56,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x820979f20cca0966c9833c0a1b55e28ec19ed526cf3b4ac7401131dd0bcdf8ef",
+  "tarballHash": "0xdf3ecc5dba96a760a59197769b212c72a8c5f8b607d528d4654c975381ab3e25",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.162"
+  "version": "5.0.0-beta.163"
 }

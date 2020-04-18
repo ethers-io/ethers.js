@@ -3,6 +3,14 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.183 (2020-04-18 05:14)
+-----------------------------------------
+
+  - Dependency security updates. ([da3b0bf](https://github.com/ethers-io/ethers.js/commit/da3b0bf0786fe8a95c68485d130ca59c597ffe4d))
+  - Fixes for dist builds without injected XMLHttpRequest. ([#789](https://github.com/ethers-io/ethers.js/issues/789), [#506](https://github.com/ethers-io/ethers.js/issues/506); [9ae6b70](https://github.com/ethers-io/ethers.js/commit/9ae6b70efb9f3d3251820403597085cfa30ace05))
+  - Added documentation. ([723249d](https://github.com/ethers-io/ethers.js/commit/723249d36c082894d98e12281085c70f4b4e0fe9))
+  - Added npmignore for asm package. ([5b51549](https://github.com/ethers-io/ethers.js/commit/5b51549437125603793c3c0c4aca5794b8335690))
+
 ethers/v5.0.0-beta.182 (2020-04-16 21:53)
 -----------------------------------------
 
