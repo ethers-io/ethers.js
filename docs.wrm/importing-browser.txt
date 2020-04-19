@@ -1,2 +1,0 @@
-<script src="https://cdn.ethers.io/lib/ethers-5.0.esm.min.js"
-        type="application/javascipt"></script>

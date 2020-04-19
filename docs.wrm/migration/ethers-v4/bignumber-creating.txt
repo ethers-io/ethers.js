@@ -1,8 +1,0 @@
-// v4
-new ethers.utils.BigNumber(someValue)
-ethers.utils.bigNumberify(someValue);
-
-// v5
-// - Constructor is private
-// - Removed `bigNumberify`
-ethers.BigNumber.from(someValue)

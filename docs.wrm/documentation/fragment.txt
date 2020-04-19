@@ -1,9 +1,0 @@
-_DIRECTIVE: VALUE @<LINK> @META<PARAMETER>
-BODY
-
-DIRECTIVE:  The directive name
-VALUE:      Optional; the value to pass to the directive
-LINK:       Optional; a name for internal linking
-META:       Optional; extended directive functionality
-PARAMETER:  Optional; value to pass to extended directive functions
-BODY:       Optional; the directive body (certain directives only)

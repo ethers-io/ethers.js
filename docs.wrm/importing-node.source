@@ -1,5 +1,0 @@
-// CommonJS
-const { ethers } = require("ethers");
-
-// ES6 or TypeScript
-import { ethers } from "ethers";

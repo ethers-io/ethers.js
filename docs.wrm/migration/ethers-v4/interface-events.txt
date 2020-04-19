@@ -1,7 +1,0 @@
-// v4 (example: Transfer(address indexed, address indexed, uint256)
-interface.events.Transfer.encodeTopics(values)
-interface.events.Transfer.decode(data, topics)
-
-// v5
-interface.encodeFilterTopics("Transfer", values)
-interface.encodeEventLog("Transfer", data, topics)

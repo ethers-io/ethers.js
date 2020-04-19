@@ -1,8 +1,0 @@
-/home/ricmoo> ethers --account mnemonic.txt --xxx-mnemonic-password
-Password (mnemonic; experimental - hard): ******
-Decrypting... 100%
-network: homestead (chainId: 1)
-homestead> accounts[0].getAddress()
-<Promise id=0 resolved>
-'0x56FC8792cC17971C19bEC4Ced978beEA44711EeD'
-homestead> 

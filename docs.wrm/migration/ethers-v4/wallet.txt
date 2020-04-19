@@ -1,9 +1,0 @@
-// v4
-wallet.mnemonic
-wallet.path
-
-// v5
-// - Mnemonic phrase and path are a Mnemonic object
-// - Note: wallet.mnemonic is null if there is no mnemonic
-wallet.mnemonic.phrase
-wallet.mnemonic.path
