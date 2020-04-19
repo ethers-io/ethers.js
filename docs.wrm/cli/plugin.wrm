@@ -114,7 +114,20 @@ _subsection: ArgParser @<cli-argparser> @SRC<cli:class.ArgParser>
 The **ArgParser** is used to parse a command line into flags, options
 and arguments.
 
-_code: plugin.txt
+_code: @lang<shell>
+
+/home/ethers> ethers --account wallet.json --yes send ricmoo.eth 1.0
+#  An Option ----------^                     ^   ^
+#    - name =  "account"                     |   |
+#    - value = "wallet.json"                 |   |
+#  A Flag -----------------------------------+   |
+#    - name  = "yes"                             |
+#    - value = true                              |
+#  Arguments ------------------------------------+
+#    - count = 3
+#    - [ "send", "ricmoo.eth", "1.0" ]
+
+_null:
 
 Flags are simple binary options (such as the ``--yes``), which are true if present
 otherwise false.

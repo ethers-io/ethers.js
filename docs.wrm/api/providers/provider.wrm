@@ -22,7 +22,27 @@ sent to the network.
 
 _heading: Examples
 
-_code: example-account.js
+_code: @lang<javascript>
+
+// <hide>
+const provider = ethers.getDefaultProvider()
+// </hide>
+
+// Get the balance for an account...
+provider.getBalance("ricmoo.firefly.eth");
+//!
+
+// Get the code for a contract...
+provider.getCode("registrar.firefly.eth");
+//!
+
+// Get the storage value at position 0...
+provider.getStorageAt("registrar.firefly.eth", 0)
+//!
+
+// Get transaction count of an account...
+provider.getTransactionCount("ricmoo.firefly.eth");
+//!
 
 
 _subsection: Blocks Methods
@@ -52,7 +72,20 @@ not have an address configured, ``null`` is returned.
 
 _heading: Examples
 
-_code: example-ens.js
+_code: @lang<javascript>
+
+// <hide>
+const provider = ethers.getDefaultProvider()
+// </hide>
+
+// Reverse lookup of an ENS by address...
+provider.lookupAddress("0x6fC21092DA55B392b045eD78F4732bff3C580e2c");
+//!
+
+// Lookup an address of an ENS name...
+provider.resolveName("ricmoo.firefly.eth");
+//!
+
 
 _subsection: Logs Methods
 

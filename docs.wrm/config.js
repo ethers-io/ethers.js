@@ -115,6 +115,31 @@ const getSourceUrl = (function(path, include, exclude) {
     }
 })("../packages/", new RegExp("packages/.*/src.ts/.*\.ts$"), new RegExp("/node_modules/|src.ts/.*browser.*"));
 
+function codeContextify(context) {
+    const ethers = context.require("./packages/ethers");
+
+    context.ethers = ethers;
+    context.BigNumber = ethers.BigNumber;
+    context.constants = ethers.constants;
+    context.utils = ethers.utils;
+    context.arrayify = ethers.utils.arrayify;
+    context.hexlify = ethers.utils.hexlify;
+    context.hexValue = ethers.utils.hexValue;
+    context.Wallet = ethers.Wallet;
+
+    context._inspect = function(value) {
+        if (context.BigNumber.isBigNumber(value)) {
+            return `{ BigNumber: ${ JSON.stringify(value.toString()) } }`;
+        }
+
+        if (value && typeof(value.length) === "number" && typeof(value) !== "string") {
+            return "[ " + Array.prototype.map.call(value, (i) => context._inspect(i)).join(", ") + " ]";
+        }
+
+        return JSON.stringify(value);
+    }
+}
+
 module.exports = {
   title: "ethers",
   subtitle: "v5.0-beta",
@@ -126,6 +151,8 @@ module.exports = {
   markdown: {
       "banner": "-----\n\nDocumentation: [html](https://docs-beta.ethers.io/)\n\n-----\n\n"
   },
+
+  codeContextify: codeContextify,
 
   getSourceUrl: getSourceUrl,
 
@@ -197,6 +224,7 @@ module.exports = {
       "link-wiki-bloomfilter": { name: "Bloom Filter", url: "https:/\/en.wikipedia.org/wiki/Bloom_filter" },
       "link-wiki-bruteforce": "https:/\/en.wikipedia.org/wiki/Brute-force_attack",
       "link-wiki-cryptographichash": "https:/\/en.wikipedia.org/wiki/Cryptographic_hash_function",
+      "link-wiki-ecrecover": { name: "ECDSA Public Key Recovery", url: "https:/\/en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm#Public_key_recovery" },
       "link-wiki-homoglyph": "https:/\/en.wikipedia.org/wiki/IDN_homograph_attack",
       "link-wiki-hmac": "https:/\/en.wikipedia.org/wiki/HMAC",
       "link-wiki-iban": "https:/\/en.wikipedia.org/wiki/International_Bank_Account_Number",

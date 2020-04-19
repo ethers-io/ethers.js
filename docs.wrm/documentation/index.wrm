@@ -18,7 +18,17 @@ itself have body.
 
 _heading: Directive Format
 
-_code: fragment.txt
+_code: @lang<text>
+
+\_DIRECTIVE: VALUE @<LINK> @EXTENSION<PARAMETER>
+BODY
+
+DIRECTIVE:  The directive name
+VALUE:      Optional; the value to pass to the directive
+LINK:       Optional; a name for internal linking
+EXTENSION:  Optional; extended directive functionality
+PARAMETER:  Optional; value to pass to extended directive functions
+BODY:       Optional; the directive body (certain directives only)
 
 
 _heading: Flatworm Directives @<flatworm-directive>
@@ -29,15 +39,21 @@ to in //Table of Contents// and have a dividing line drawn above
 them. If an option is specified, it is avaialble as a name for
 intern linking. There should only be one ``_section:`` per page.
 
+**Extensions:** @INHERIT, @SRC, @NAV, @NOTE
+
 _definition: **_subsection:** //TITLE//
 A //subsection// has its **TITLE** in an H2 font. Subsections are linked
 to in //Table of Contents// and have a dividing line drawn above
 them. If an option is specified, it is avaialble as a name for
 internal linking.
 
+**Extensions:** @INHERIT, @SRC, @NOTE
+
 _definition: **_heading:** //TITLE//
 A //heading// has its **TITLE** in an H3 font. If an option is specified,
 it is available as a name for internal linking.
+
+**Extensions:** @INHERIT, @SRC, @NOTE
 
 _definition: **_definition:** //TERM//
 A //definition// has its **TERM** bolded and the markdown body is
@@ -47,15 +63,18 @@ _definition: **_property:** //SIGNATURE//
 A //property// has its JavaScript **SIGNATURE** formatted and the
 markdown body is indented.
 
+**Extensions:** @SRC
+
 _definition: **_note:** //TITLE//
 A //note// is placed in a blue bordered-box to draw attention to it.
 
 _definition: **_warning:** //TITLE//
 A //warning// is placed in an orange bordered-box to draw attention to it.
 
-_definition: **_code:** //FILENAME//
-A //code// reads the **FILENAME** and depending on the extension
-adjusts it.
+_definition: **_code:** //TITLE//
+A //code// creates a code block.
+
+**Extensions:** @LANG
 
 For JavaScript files, the file is executed, with ``\/\/!`` replaced
 with the result of the last statement and ``\/\/!error`` is replaced
@@ -75,16 +94,73 @@ used to reset the indentation.
 
 _heading: Examples @<>
 
-_code: examples.txt
+_code: @lang<text>
+
+\_section: Hello World @<link-to-this-section>
+
+\_subsection: Some Example @<link-to-this-subsection>
+
+\_heading: Large Bold Text @<link-to-this-heading>
+
+\_definition: Flatworm
+A phylum of relatively **simple** bilaterian, unsegmented,
+soft-bodied invertebrates.
+
+\_property: String.fromCharCode(code) => string
+Returns a string created from //code//, a sequence of
+UTF-16 code units.
+
+\_code: heading
+
+// Some code goes here
+while(1);
+
+\_toc:
+    some-file
+    some-directory
+
+\_definition and reset the indentation.
+
+\_note: Title
+This is placed in a blue box.
+
+\_warning: Title
+This is placed in an orange box.
+
+\_null:
+This breaks out of a directive. For example, to end a
+
 
 _subsection: Markdown @<flatworm-markdown>
 
 The markdown is simple and does not have the flexibility of
 other dialects, but allows for **bold**, //italic//,
-__underlined__, ``monospaced``, ^^super-scripted^^ text,
-supporting [links](flatworm-markdown) and lists.
+__underlined__, ``monospaced``, super^^script^^ and ~~strike~~
+text, supporting [links](flatworm-markdown) and lists.
 
-_code: markdown.txt
+_code: @lang<text>
+
+**bold text**
+
+//italic text//
+
+__underlined text__
+
+``monospace code``
+
+^^superscript text^^
+
+~~strikeout text~~
+
+- This is a list
+- With bullet points
+- With a total of three items
+
+This is a [Link to Ethereum](https://ethereum.org) and this
+is an [Internal Link](some-link).
+
+This is a self-titled link [[https://ethereumorg]] and this
+[[some-link]] will use the title from its directives value.
 
 
 _subsection: Configuration @<flatworm-config>
@@ -96,26 +172,34 @@ the top  of the source folder.
 TODO:  example JSON and example JS
 
 
-_subsection: Extended Directive Functions @<flatworm-extended-directive-functions>
+_subsection: Extensions @<flatworm-extensions>
 
 _heading: @INHERIT\<markdown>
 
 Adds an inherits description to a directive. The //markdown// may contain links.
 
-This extended directive function is available for:
 
-- _section
-- _subsetion
-- _heading
+_heading: @LANG\<text>
+
+Set the language the code should be syntax-highlighted for. If "javascript", the
+code will be evaluated.
+
+- javascript (will be evaluated)
+- script (useful for JavaScript but that should not be evaluated)
+- shell
+- text
 
 
 _heading: @NAV\<text>
 
 Sets the name in the breadcrumbs when not the current node.
 
-This extended directive function is available for:
 
-- _section
+_heading: @NOTE\<markdown>
+
+Adds a note to a directive. The //markdown// may contain links. If the directive
+already has an @INHERIT extension, that will be used instead and the @NOTE will
+be ignored.
 
 
 _heading: @SRC\<text>
@@ -125,10 +209,3 @@ will be linked to by a link next to the //directive//.
 
 This extended directive function requires an advanced ``config.js`` [[flatworm-config]]
 file since it requires a JavaScript function.
-
-This extended directive function is available for:
-
-- _section
-- _subsetion
-- _heading
-- _property

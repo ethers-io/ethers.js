@@ -240,7 +240,7 @@ If this transaction has a ``null`` to address, it is an **init transaction**
 used to deploy a contract, in which case this is the address created by that
 contract.
 
-To compute a contract address, the [getContractAddress](utils-getcontractaddress)
+To compute a contract address, the [getContractAddress](utils-getContractAddress)
 utility function can also be used with a [[provider-transactionresponse]]
 object, which requires the transaction nonce and the address of the sender.
 

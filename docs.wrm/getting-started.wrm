@@ -8,14 +8,23 @@ manually from sub-packages under the [@ethersproject](link-ethers-npm)
 but for most projects, the umbrella package is the easiest way to
 get started.
 
-_code: installing.txt
+_code: @lang<shell>
+
+/home/ricmoo> npm install --save ethers@next
 
 
 _subsection: Importing
 
 _heading: Node.js
 
-_code: importing-node.source
+_code: @lang<script>
+
+// CommonJS
+const { ethers } = require("ethers");
+
+// ES6 or TypeScript
+import { ethers } from "ethers";
+
 
 _heading: Web Browser
 
@@ -26,4 +35,7 @@ yourself.
 For quick demos or prototyping though, it can be loaded in your
 Web Applications from our CDN.
 
-_code: importing-browser.txt
+_code: @lang<html>
+
+<script src="https://cdn.ethers.io/lib/ethers-5.0.esm.min.js"
+        type="application/javascipt"></script>

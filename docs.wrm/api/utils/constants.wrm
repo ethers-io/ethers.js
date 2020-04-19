@@ -4,7 +4,10 @@ The **ethers.contants** Object contains commonly used values.
 
 _heading: Importing
 
-_code: constants-import.js
+_code: @lang<script>
+
+const { constants } = require("ethers");
+const { constants } = require("@ethersproject/constants");
 
 
 _subsection: Bytes

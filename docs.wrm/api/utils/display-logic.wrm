@@ -21,23 +21,29 @@ _subsection: Units
 
 _heading: Decimal Count
 
-The //unit// specified may be an integer, which indicates how
-many decimal place the unit has. For example, 1 ether has 18 decimal
-places for wei, and if this library were used with Bitcoin, 1 BTC
-has 8 decimal places for satoshis.
+A **Unit** can be specified as an number, which indicates the
+number of decimal places that should be used.
+
+**Examples:**
+
+- 1 ether in wei, has **18** decimal places (i.e. 1 ether represents 10^^18^^ wei)
+- 1 bitcoin in Satoshi, has **8** decimal places (i.e. 1 bitcoin represents 10^^8^^ satoshi)
 
 _heading: Named Units
 
-In addition to specifying //unit// as a number of decimals, there
-are several common units, which can be passed in as a string:
+There are also several common **Named Units**, in which case their name (as
+a string) may be used.
 
-- **wei** --- 0
-- **kwei** --- 3
-- **mwei** --- 6
-- **gwei** --- 9
-- **szabo** --- 12
-- **finney** --- 15
-- **ether** --- 18
+_table: @STYLE<compact>
+
+|  **Name**    |  **Decimals**  |
+|  //wei//     |      0         |
+|  //kwei//    |      3         |
+|  //mwei//    |      6         |
+|  //gwei//    |      9         |
+|  //szabo//   |     12         |
+|  //finney//  |     15         |
+|  //ether//   |     18         |
 
 
 _subsection: Functions

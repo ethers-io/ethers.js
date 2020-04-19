@@ -79,7 +79,31 @@ zeros.
 
 _heading: Examples
 
-_code: bytes-conversion.js
+_code: @lang<javascript>
+
+// Convert a hexstring to a Uint8Array
+arrayify("0x1234")
+//!
+
+// Convert an Array to a hexstring
+hexlify([1, 2, 3, 4])
+//!
+
+// Convert an Object to a hexstring
+hexlify({ length: 2, "0": 1, "1": 2 })
+//!
+
+// Convert an Array to a hexstring
+hexlify([ 1 ])
+//!
+
+// Convert a number to a stripped hex value
+hexValue(1)
+//!
+
+// Convert an Array to a stripped hex value
+hexValue([ 1, 2 ])
+//!
 
 
 _subsection: Array Manipulation
@@ -139,3 +163,16 @@ Return a new Uint8Array of //length// random bytes.
 
 _property: ethers.utils.shuffled(array) => Array<any>  @<utils.shuffled> @SRC<random>
 Return a copy of //array// shuffled using [[link-wiki-shuffle]].
+
+_code: Examples @lang<javascript>
+
+utils.randomBytes(8)
+//!
+
+const foo = [ 1, 2, 3, 4, 5, 6, 7 ];
+utils.shuffled(foo);
+//!
+
+// The original array is unscathed...
+foo
+//!
