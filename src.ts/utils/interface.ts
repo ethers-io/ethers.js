@@ -374,6 +374,7 @@ function addMethod(method: any): void {
             break;
         }
 
+        case "receive":
         case 'fallback':
             // Nothing to do for fallback
             break;
