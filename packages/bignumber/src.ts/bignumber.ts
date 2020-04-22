@@ -42,7 +42,7 @@ export class BigNumber implements Hexable {
         logger.checkNew(new.target, BigNumber);
 
         if (constructorGuard !== _constructorGuard) {
-            logger.throwError("cannot call consturtor directly; use BigNumber.from", Logger.errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("cannot call constructor directly; use BigNumber.from", Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "new (BigNumber)"
             });
         }

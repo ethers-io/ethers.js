@@ -180,7 +180,7 @@ export class Formatter {
             if (value === "true") { return true; }
             if (value === "false") { return false; }
         }
-        throw new Error("invaid boolean - " + value);
+        throw new Error("invalid boolean - " + value);
     }
 
     hex(value: any, strict?: boolean): string {

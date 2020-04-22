@@ -421,7 +421,7 @@ class SendPlugin extends Plugin {
         await super.prepareOptions(argParser);
 
         if (this.accounts.length !== 1) {
-            this.throwUsageError("send requires exacly one account");
+            this.throwUsageError("send requires exactly one account");
         }
 
         this.data = ethers.utils.hexlify(argParser.consumeOption("data") || "0x");
@@ -464,7 +464,7 @@ class SweepPlugin extends Plugin {
         await super.prepareOptions(argParser);
 
         if (this.accounts.length !== 1) {
-            this.throwUsageError("sweep requires exacly one account");
+            this.throwUsageError("sweep requires exactly one account");
         }
     }
 
@@ -529,7 +529,7 @@ class SignMessagePlugin extends Plugin {
     async prepareOptions(argParser: ArgParser): Promise<void> {
         await super.prepareOptions(argParser);
         if (this.accounts.length !== 1) {
-            this.throwError("sign-message requires exacly one account");
+            this.throwError("sign-message requires exactly one account");
         }
         this.hex = argParser.consumeFlag("hex");
     }
@@ -741,7 +741,7 @@ class UnwrapEtherPlugin extends Plugin {
         let address = await this.accounts[0].getAddress();
         this.dump("Withdrawing Wrapped Ether", {
             "To": address,
-            "Valiue": ethers.utils.formatEther(this.value)
+            "Value": ethers.utils.formatEther(this.value)
         });
 
         let contract = new ethers.Contract(WethAddress, WethAbi, this.accounts[0]);

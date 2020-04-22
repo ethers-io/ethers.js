@@ -218,7 +218,7 @@ describe('Test Namehash', function() {
     });
 });
 
-describe('Test ID Hash Functione', function () {
+describe('Test ID Hash Functions', function () {
     type TestCase = {
          expected: string,
          name: string,
@@ -328,7 +328,7 @@ describe('Test Base64 coder', function() {
         let decoded = ethers.utils.toUtf8Bytes(decodedText);
         let encoded = 'TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=';
         assert.equal(ethers.utils.base64.encode(decoded), encoded, 'encodes to base64 string');
-        assert.equal(ethers.utils.toUtf8String(ethers.utils.base64.decode(encoded)), decodedText, 'decodes from base64 sstring');
+        assert.equal(ethers.utils.toUtf8String(ethers.utils.base64.decode(encoded)), decodedText, 'decodes from base64 string');
     });
 });
 
@@ -442,7 +442,7 @@ describe('Test Bytes32String coder', function() {
 });
 
 describe('Test BigNumber', function() {
-    it("computes absoltue values", function() {
+    it("computes absolute values", function() {
         function testAbs(test: { expected: string, value: string }) {
             let value = ethers.BigNumber.from(test.value);
             let expected = ethers.BigNumber.from(test.expected);

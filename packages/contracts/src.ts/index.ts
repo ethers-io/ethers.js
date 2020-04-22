@@ -147,7 +147,7 @@ function runMethod(contract: Contract, functionName: string, options: RunOptions
             // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
             for (let key in tx) {
                 if (!allowedTransactionKeys[key]) {
-                    logger.throwError(("unknown transaxction override - " + key), "overrides", tx);
+                    logger.throwError(("unknown transaction override - " + key), "overrides", tx);
                 }
             }
         }

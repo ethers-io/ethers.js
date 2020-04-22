@@ -237,7 +237,7 @@ abstract class AccountPlugin extends EnsPlugin {
     nodehash: string;
 
     static getHelp(): Help {
-        return logger.throwError("subclasses must implemetn this", ethers.errors.UNSUPPORTED_OPERATION, {
+        return logger.throwError("subclasses must implement this", ethers.errors.UNSUPPORTED_OPERATION, {
             operation: "getHelp"
         });
     }
@@ -841,7 +841,7 @@ class ReclaimPlugin extends AddressAccountPlugin {
             try {
                 ownerOf = await registrar.ownerOf(ethers.utils.id(comps[0]));
             } catch (error) {
-                this.throwError("Name not present in Permantent Registrar");
+                this.throwError("Name not present in Permanent Registrar");
             }
 
             if (account !== ownerOf) {

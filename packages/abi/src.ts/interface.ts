@@ -119,7 +119,7 @@ export class Interface {
     format(format?: string): string | Array<string> {
         if (!format) { format = FormatTypes.full; }
         if (format === FormatTypes.sighash) {
-            logger.throwArgumentError("interface does not support formating sighash", "format", format);
+            logger.throwArgumentError("interface does not support formatting sighash", "format", format);
         }
 
         const abi = this.fragments.map((fragment) => fragment.format(format));

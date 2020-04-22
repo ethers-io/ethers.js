@@ -32,8 +32,9 @@
     "lock-versions": "node ./admin/cmds/lock-versions",
     "build-docs": "flatworm docs.wrm docs",
     "upload-docs": " node ./admin/cmds/upload-docs.js",
+    "spell-check": "node admin/cmds/spell-check.js",
     "_admin_prepare": "npm run clean && npm run bootstrap && npm run build && node ./admin/cmds/update-exports.js",
-    "update-versions": "npm run _admin_prepare && node ./admin/cmds/update-versions",
+    "update-versions": "npm run spell-check && npm run _admin_prepare && node ./admin/cmds/update-versions",
     "publish-all": "node ./admin/cmds/publish",
     "sync-github": "node ./admin/cmds/cache-github"
   },

@@ -878,7 +878,7 @@ export class CLI {
             console.log("  --gasPrice GWEI             Default gas price for transactions(in wei)");
             console.log("  --gasLimit GAS              Default gas limit for transactions");
             console.log("  --nonce NONCE               Initial nonce for the first transaction");
-            console.log("  --yes                       Always accept Siging and Sending");
+            console.log("  --yes                       Always accept Signing and Sending");
             console.log("");
         }
 

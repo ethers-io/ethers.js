@@ -205,7 +205,7 @@ export abstract class Node {
         };
 
         const factory = Factories[options.type];
-        if (!factory) { throwError("uknown type: " + options.type, options.loc); }
+        if (!factory) { throwError("unknown type: " + options.type, options.loc); }
         return factory.from(options);
     }
 }

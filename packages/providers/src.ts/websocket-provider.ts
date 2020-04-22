@@ -161,7 +161,7 @@ export class WebSocketProvider extends JsonRpcProvider {
     }
 
     static defaultUrl(): string {
-        return "ws:/" + "/localhost:8546";
+        return "ws:/\/localhost:8546";
     }
 
     async _subscribe(tag: string, param: Array<any>, processFunc: (result: any) => void): Promise<void> {

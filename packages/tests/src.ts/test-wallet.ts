@@ -46,7 +46,7 @@ describe('Test JSON Wallets', function() {
                     assert.equal(decryptedWallet.address, wallet.address,
                         'decrypted wallet - ' + wallet.privateKey);
                     assert.equal(decryptedWallet.mnemonic.phrase, wallet.mnemonic.phrase,
-                        "decrypted wallet menonic - " + wallet.privateKey);
+                        "decrypted wallet mnemonic - " + wallet.privateKey);
                     assert.equal(decryptedWallet.mnemonic.path, wallet.mnemonic.path,
                         "decrypted wallet path - " + wallet.privateKey);
                     return decryptedWallet.encrypt(password).then((encryptedWallet) => {
@@ -129,7 +129,7 @@ describe('Test Transaction Signing and Parsing', function() {
             (function() {
                 let unsignedTx = ethers.utils.serializeTransaction(transaction);
                 assert.equal(unsignedTx, test.unsignedTransaction,
-                    'serializes undsigned transaction (legacy)');
+                    'serializes unsigned transaction (legacy)');
 
                 // Legacy signed serialized transaction
                 let signature = signDigest(ethers.utils.keccak256(unsignedTx));

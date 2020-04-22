@@ -86,7 +86,7 @@ export class _Eip1193Bridge extends EventEmitter {
              }
              case "estimateGas": {
                  if (params[1] && params[1] !== "latest") {
-                     throwUnsupported("estimateGas does not supprot blockTag");
+                     throwUnsupported("estimateGas does not support blockTag");
                  }
 
                  const req = ethers.providers.JsonRpcProvider.hexlifyTransaction(params[0]);
