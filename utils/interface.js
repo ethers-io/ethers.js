@@ -294,6 +294,7 @@ function addMethod(method) {
             }
             break;
         }
+        case "receive":
         case 'fallback':
             // Nothing to do for fallback
             break;

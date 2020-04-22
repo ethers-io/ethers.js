@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+ethers/v4.0.47 (2020-04-21 23:15)
+---------------------------------
+
+  - Fixed typo in error message. ([#778](https://github.com/ethers-io/ethers.js/issues/778); [fab14f8](https://github.com/ethers-io/ethers.js/commit/fab14f8f5a16091810bbe4d35f38e0b976adab7c)).
+  - Allow receive type in ABI without warning. ([#746](https://github.com/ethers-io/ethers.js/issues/746); [e8c89d7](https://github.com/ethers-io/ethers.js/commit/e8c89d7ca9cea6e20281f614c4fb22f180114622)).
+
 ethers/v4.0.46 (2020-03-14 16:56)
 ---------------------------------
 
