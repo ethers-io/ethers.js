@@ -40,18 +40,23 @@ function checkNetworks(networks: Array<Network>): Network {
     return result;
 }
 
-function median(values: Array<number>): number {
-        values = values.slice().sort();
-        const middle = Math.floor(values.length / 2);
+function median(values: Array<number>, maxDelta?: number): number {
+    values = values.slice().sort();
+    const middle = Math.floor(values.length / 2);
 
-        // Odd length; take the middle
-        if (values.length % 2) {
-            return values[middle];
-        }
+    // Odd length; take the middle
+    if (values.length % 2) {
+        return values[middle];
+    }
 
-        // Even length; take the average of the two middle
-        const a = values[middle - 1], b = values[middle];
-        return (a + b) / 2;
+    // Even length; take the average of the two middle
+    const a = values[middle - 1], b = values[middle];
+
+    if (maxDelta != null && Math.abs(a - b) > maxDelta) {
+        return null;
+    }
+
+    return (a + b) / 2;
 }
 
 function serialize(value: any): string {
@@ -178,7 +183,10 @@ function getProcessFunc(provider: FallbackProvider, method: string, params: { [ 
                 const values = configs.map((c) => c.result);
 
                 // Get the median block number
-                let blockNumber = Math.ceil(median(configs.map((c) => c.result)));
+                let blockNumber = median(configs.map((c) => c.result), 2);
+                if (blockNumber == null) { return undefined; }
+
+                blockNumber = Math.ceil(blockNumber);
 
                 // If the next block height is present, its prolly safe to use
                 if (values.indexOf(blockNumber + 1) >= 0) { blockNumber++; }
@@ -391,6 +399,7 @@ export class FallbackProvider extends BaseProvider {
         configs.sort((a, b) => (a.priority - b.priority));
 
         let i = 0;
+        let first = true;
         while (true) {
             const t0 = now();
 
@@ -470,6 +479,8 @@ export class FallbackProvider extends BaseProvider {
             if (results.length >= this.quorum) {
                 const result = processFunc(results);
                 if (result !== undefined) { return result; }
+                if (!first) { await stall(100); }
+                first = false;
             }
 
             // All configs have run to completion; we will never get more data
