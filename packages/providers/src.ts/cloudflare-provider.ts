@@ -28,4 +28,15 @@ export class CloudflareProvider extends UrlJsonRpcProvider {
 
         return host;
     }
+
+    async perform(method: string, params: any): Promise<any> {
+        // The Cloudflare provider does not support eth_blockNumber,
+        // so we get the latest block and pull it from that
+        if (method === "getBlockNumber") {
+            const block = await super.perform("getBlock", { blockTag: "latest" });
+            return block.number;
+        }
+
+        return super.perform(method, params);
+    }
 }
