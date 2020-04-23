@@ -595,7 +595,7 @@ function testProvider(providerName: string, networkName: string) {
         if (providerName === "NodesmithProvider") { return; }
 
         // Cloudflare seems down and I want a fix out. RicMoo
-        if (providerName === "CloudflareProvider") { return; }
+        //if (providerName === "CloudflareProvider") { return; }
 
         if (networkName === "goerli" && providerName === "AlchemyProvider") { return; }
         if ((networkName !== "homestead" && networkName !== "default") && providerName === "CloudflareProvider") { return; }
