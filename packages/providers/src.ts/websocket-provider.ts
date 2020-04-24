@@ -190,12 +190,12 @@ export class WebSocketProvider extends JsonRpcProvider {
                 });
                 break;
 
-            case "filter": {
+            case "filter":
                 this._subscribe(event.tag, [ "logs", this._getFilter(event.filter) ], (result: any) => {
-                    this.emit(event.filter, result);
+                    if (result.removed == null) { result.removed = false; }
+                    this.emit(event.filter, this.formatter.filterLog(result));
                 });
                 break;
-            }
 
             case "tx": {
                 const emitReceipt = (event: Event) => {
