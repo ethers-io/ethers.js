@@ -391,6 +391,14 @@ function parseParams(value: string, allowIndex: boolean): Array<ParamType> {
     return splitNesting(value).map((param) => ParamType.fromString(param, allowIndex));
 }
 
+type TypeCheck<T> = { -readonly [ K in keyof T ]: T[K] };
+
+interface _Fragment {
+    readonly type: string;
+    readonly name: string;
+    readonly inputs: Array<ParamType>;
+}
+
 export abstract class Fragment {
 
     readonly type: string;
@@ -465,6 +473,10 @@ export abstract class Fragment {
     }
 }
 
+interface _EventFragment extends _Fragment {
+    readonly anonymous: boolean;
+}
+
 export class EventFragment extends Fragment {
     readonly anonymous: boolean;
 
@@ -516,12 +528,14 @@ export class EventFragment extends Fragment {
             logger.throwArgumentError("invalid event object", "value", value);
         }
 
-        return new EventFragment(_constructorGuard, {
+        const params: TypeCheck<_EventFragment> = {
             name: verifyIdentifier(value.name),
             anonymous: value.anonymous,
             inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : []),
             type: "event"
-        });
+        };
+
+        return new EventFragment(_constructorGuard, params);
     }
 
     static fromString(value: string): EventFragment {
@@ -678,6 +692,12 @@ function verifyState(value: StateInputValue): StateOutputValue {
     return result;
 }
 
+interface _ConstructorFragment extends _Fragment {
+    stateMutability: string;
+    payable: boolean;
+    gas?: BigNumber;
+}
+
 export class ConstructorFragment extends Fragment {
     stateMutability: string;
     payable: boolean;
@@ -735,13 +755,16 @@ export class ConstructorFragment extends Fragment {
             logger.throwArgumentError("constructor cannot be constant", "value", value);
         }
 
-        return new ConstructorFragment(_constructorGuard, {
+        const params: TypeCheck<_ConstructorFragment> = {
             name: null,
             type: value.type,
             inputs: (value.inputs ? value.inputs.map(ParamType.fromObject): []),
             payable: state.payable,
+            stateMutability: state.stateMutability,
             gas: (value.gas ? BigNumber.from(value.gas): null)
-        });
+        };
+
+        return new ConstructorFragment(_constructorGuard, params);
     }
 
     static fromString(value: string): ConstructorFragment {
@@ -764,6 +787,11 @@ export class ConstructorFragment extends Fragment {
     static isConstructorFragment(value: any): value is ConstructorFragment {
         return (value && value._isFragment && value.type === "constructor");
     }
+}
+
+interface _FunctionFragment extends _ConstructorFragment {
+    constant: boolean;
+    outputs?: Array<ParamType>;
 }
 
 export class FunctionFragment extends ConstructorFragment {
@@ -838,7 +866,7 @@ export class FunctionFragment extends ConstructorFragment {
 
         let state = verifyState(value);
 
-        return new FunctionFragment(_constructorGuard, {
+        const params: TypeCheck<_FunctionFragment> = {
             type: value.type,
             name: verifyIdentifier(value.name),
             constant: state.constant,
@@ -847,7 +875,9 @@ export class FunctionFragment extends ConstructorFragment {
             payable: state.payable,
             stateMutability: state.stateMutability,
             gas: (value.gas ? BigNumber.from(value.gas): null)
-        });
+        };
+
+        return new FunctionFragment(_constructorGuard, params);
     }
 
     static fromString(value: string): FunctionFragment {

@@ -108,9 +108,12 @@ export class Interface {
             bucket[signature] = fragment;
         });
 
-        // If we do not have a constructor use the default "constructor() payable"
+        // If we do not have a constructor add a default
         if (!this.deploy) {
-            defineReadOnly(this, "deploy", ConstructorFragment.from({ type: "constructor" }));
+            defineReadOnly(this, "deploy", ConstructorFragment.from({
+                payable: false,
+                type: "constructor"
+            }));
         }
 
         defineReadOnly(this, "_isInterface", true);
