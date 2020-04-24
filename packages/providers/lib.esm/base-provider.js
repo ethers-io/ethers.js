@@ -567,7 +567,7 @@ export class BaseProvider extends Provider {
                 }
                 result[key] = this._getBlockTag(filter[key]);
             });
-            return this.formatter.filter(yield resolveProperties(filter));
+            return this.formatter.filter(yield resolveProperties(result));
         });
     }
     call(transaction, blockTag) {

@@ -203,7 +203,7 @@ export class FixedNumber {
             decimals = 0;
         }
         if (decimals < 0 || decimals > 80 || (decimals % 1)) {
-            logger.throwArgumentError("invalid decimal cound", "decimals", decimals);
+            logger.throwArgumentError("invalid decimal count", "decimals", decimals);
         }
         // If we are already in range, we're done
         let comps = this.toString().split(".");

@@ -131,13 +131,15 @@ export class WebSocketProvider extends JsonRpcProvider {
         });
     }
     static defaultUrl() {
-        return "ws:/" + "/localhost:8546";
+        return "ws:/\/localhost:8546";
     }
     _subscribe(tag, param, processFunc) {
         return __awaiter(this, void 0, void 0, function* () {
             let subIdPromise = this._subIds[tag];
             if (subIdPromise == null) {
-                subIdPromise = this.send("eth_subscribe", param);
+                subIdPromise = Promise.all(param).then((param) => {
+                    return this.send("eth_subscribe", param);
+                });
                 this._subIds[tag] = subIdPromise;
             }
             const subId = yield subIdPromise;
@@ -157,8 +159,11 @@ export class WebSocketProvider extends JsonRpcProvider {
                 });
                 break;
             case "filter":
-                this._subscribe(event.tag, ["logs", event.filter], (result) => {
-                    this.emit(event.filter, result);
+                this._subscribe(event.tag, ["logs", this._getFilter(event.filter)], (result) => {
+                    if (result.removed == null) {
+                        result.removed = false;
+                    }
+                    this.emit(event.filter, this.formatter.filterLog(result));
                 });
                 break;
             case "tx": {

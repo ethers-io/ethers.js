@@ -135,7 +135,7 @@ export class Formatter {
                 return false;
             }
         }
-        throw new Error("invaid boolean - " + value);
+        throw new Error("invalid boolean - " + value);
     }
     hex(value, strict) {
         if (typeof (value) === "string") {

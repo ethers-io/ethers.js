@@ -81,7 +81,7 @@ function checkNetworks(networks) {
     }
     return result;
 }
-function median(values) {
+function median(values, maxDelta) {
     values = values.slice().sort();
     var middle = Math.floor(values.length / 2);
     // Odd length; take the middle
@@ -90,6 +90,9 @@ function median(values) {
     }
     // Even length; take the average of the two middle
     var a = values[middle - 1], b = values[middle];
+    if (maxDelta != null && Math.abs(a - b) > maxDelta) {
+        return null;
+    }
     return (a + b) / 2;
 }
 function serialize(value) {
@@ -192,7 +195,11 @@ function getProcessFunc(provider, method, params) {
             return function (configs) {
                 var values = configs.map(function (c) { return c.result; });
                 // Get the median block number
-                var blockNumber = Math.ceil(median(configs.map(function (c) { return c.result; })));
+                var blockNumber = median(configs.map(function (c) { return c.result; }), 2);
+                if (blockNumber == null) {
+                    return undefined;
+                }
+                blockNumber = Math.ceil(blockNumber);
                 // If the next block height is present, its prolly safe to use
                 if (values.indexOf(blockNumber + 1) >= 0) {
                     blockNumber++;
@@ -360,7 +367,7 @@ var FallbackProvider = /** @class */ (function (_super) {
     }
     FallbackProvider.prototype.perform = function (method, params) {
         return __awaiter(this, void 0, void 0, function () {
-            var processFunc, configs, i, _loop_1, this_1, state_1;
+            var processFunc, configs, i, first, _loop_1, this_1, state_1;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -389,6 +396,7 @@ var FallbackProvider = /** @class */ (function (_super) {
                         configs = random_1.shuffled(this.providerConfigs.map(function (c) { return properties_1.shallowCopy(c); }));
                         configs.sort(function (a, b) { return (a.priority - b.priority); });
                         i = 0;
+                        first = true;
                         _loop_1 = function () {
                             var t0, inflightWeight, _loop_2, waiting, results, result;
                             return __generator(this, function (_a) {
@@ -460,12 +468,20 @@ var FallbackProvider = /** @class */ (function (_super) {
                                         _a.label = 2;
                                     case 2:
                                         results = configs.filter(function (c) { return (c.done && c.error == null); });
-                                        if (results.length >= this_1.quorum) {
-                                            result = processFunc(results);
-                                            if (result !== undefined) {
-                                                return [2 /*return*/, { value: result }];
-                                            }
+                                        if (!(results.length >= this_1.quorum)) return [3 /*break*/, 5];
+                                        result = processFunc(results);
+                                        if (result !== undefined) {
+                                            return [2 /*return*/, { value: result }];
                                         }
+                                        if (!!first) return [3 /*break*/, 4];
+                                        return [4 /*yield*/, stall(100)];
+                                    case 3:
+                                        _a.sent();
+                                        _a.label = 4;
+                                    case 4:
+                                        first = false;
+                                        _a.label = 5;
+                                    case 5:
                                         // All configs have run to completion; we will never get more data
                                         if (configs.filter(function (c) { return !c.done; }).length === 0) {
                                             return [2 /*return*/, "break"];

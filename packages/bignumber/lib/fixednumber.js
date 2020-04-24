@@ -209,7 +209,7 @@ var FixedNumber = /** @class */ (function () {
             decimals = 0;
         }
         if (decimals < 0 || decimals > 80 || (decimals % 1)) {
-            logger.throwArgumentError("invalid decimal cound", "decimals", decimals);
+            logger.throwArgumentError("invalid decimal count", "decimals", decimals);
         }
         // If we are already in range, we're done
         var comps = this.toString().split(".");

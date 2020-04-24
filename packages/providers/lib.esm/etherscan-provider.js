@@ -187,7 +187,7 @@ export class EtherscanProvider extends BaseProvider {
                         url += apiKey;
                         return get(url);
                     }
-                    throw new Error("getBlock by blockHash not implmeneted");
+                    throw new Error("getBlock by blockHash not implemented");
                 case "getTransaction":
                     url += "/api?module=proxy&action=eth_getTransactionByHash&txhash=" + params.transactionHash;
                     url += apiKey;

@@ -170,7 +170,7 @@ var _Eip1193Bridge = /** @class */ (function (_super) {
                     case 22: return [2 /*return*/, _b.sent()];
                     case 23:
                         if (params[1] && params[1] !== "latest") {
-                            throwUnsupported("estimateGas does not supprot blockTag");
+                            throwUnsupported("estimateGas does not support blockTag");
                         }
                         req = ethers_1.ethers.providers.JsonRpcProvider.hexlifyTransaction(params[0]);
                         return [4 /*yield*/, this.provider.estimateGas(req)];

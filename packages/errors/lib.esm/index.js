@@ -226,7 +226,7 @@ let LogLevel = LogLevels["default"];
 export function setLogLevel(logLevel) {
     let level = LogLevels[logLevel];
     if (level == null) {
-        warn("invliad log level - " + logLevel);
+        warn("invalid log level - " + logLevel);
         return;
     }
     LogLevel = level;

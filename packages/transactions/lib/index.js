@@ -123,7 +123,7 @@ exports.serialize = serialize;
 function parse(rawTransaction) {
     var transaction = RLP.decode(rawTransaction);
     if (transaction.length !== 9 && transaction.length !== 6) {
-        logger.throwArgumentError("invalid raw transaction", "rawTransactin", rawTransaction);
+        logger.throwArgumentError("invalid raw transaction", "rawTransaction", rawTransaction);
     }
     var tx = {
         nonce: handleNumber(transaction[0]).toNumber(),

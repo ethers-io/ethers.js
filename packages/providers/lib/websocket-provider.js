@@ -188,17 +188,20 @@ var WebSocketProvider = /** @class */ (function (_super) {
         });
     };
     WebSocketProvider.defaultUrl = function () {
-        return "ws:/" + "/localhost:8546";
+        return "ws:/\/localhost:8546";
     };
     WebSocketProvider.prototype._subscribe = function (tag, param, processFunc) {
         return __awaiter(this, void 0, void 0, function () {
             var subIdPromise, subId;
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         subIdPromise = this._subIds[tag];
                         if (subIdPromise == null) {
-                            subIdPromise = this.send("eth_subscribe", param);
+                            subIdPromise = Promise.all(param).then(function (param) {
+                                return _this.send("eth_subscribe", param);
+                            });
                             this._subIds[tag] = subIdPromise;
                         }
                         return [4 /*yield*/, subIdPromise];
@@ -224,8 +227,11 @@ var WebSocketProvider = /** @class */ (function (_super) {
                 });
                 break;
             case "filter":
-                this._subscribe(event.tag, ["logs", event.filter], function (result) {
-                    _this.emit(event.filter, result);
+                this._subscribe(event.tag, ["logs", this._getFilter(event.filter)], function (result) {
+                    if (result.removed == null) {
+                        result.removed = false;
+                    }
+                    _this.emit(event.filter, _this.formatter.filterLog(result));
                 });
                 break;
             case "tx": {

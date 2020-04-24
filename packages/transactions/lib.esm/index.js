@@ -112,7 +112,7 @@ export function serialize(transaction, signature) {
 export function parse(rawTransaction) {
     const transaction = RLP.decode(rawTransaction);
     if (transaction.length !== 9 && transaction.length !== 6) {
-        logger.throwArgumentError("invalid raw transaction", "rawTransactin", rawTransaction);
+        logger.throwArgumentError("invalid raw transaction", "rawTransaction", rawTransaction);
     }
     const tx = {
         nonce: handleNumber(transaction[0]).toNumber(),

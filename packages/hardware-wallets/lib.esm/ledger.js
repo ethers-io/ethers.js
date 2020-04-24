@@ -36,7 +36,7 @@ export class LedgerSigner extends ethers.Signer {
         ethers.utils.defineReadOnly(this, "provider", provider || null);
         const transport = transports[type];
         if (!transport) {
-            logger.throwArgumentError("unknown or unsupport type", "type", type);
+            logger.throwArgumentError("unknown or unsupported type", "type", type);
         }
         ethers.utils.defineReadOnly(this, "_eth", transport.create().then((transport) => {
             const eth = new Eth(transport);

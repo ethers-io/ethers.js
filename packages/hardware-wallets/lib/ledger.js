@@ -81,7 +81,7 @@ var LedgerSigner = /** @class */ (function (_super) {
         ethers_1.ethers.utils.defineReadOnly(_this, "provider", provider || null);
         var transport = ledger_transport_1.transports[type];
         if (!transport) {
-            logger.throwArgumentError("unknown or unsupport type", "type", type);
+            logger.throwArgumentError("unknown or unsupported type", "type", type);
         }
         ethers_1.ethers.utils.defineReadOnly(_this, "_eth", transport.create().then(function (transport) {
             var eth = new hw_app_eth_1.default(transport);

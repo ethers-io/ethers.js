@@ -47,7 +47,7 @@ var Wallet = /** @class */ (function (_super) {
             properties_1.defineReadOnly(_this, "_signingKey", function () { return signingKey_1; });
             properties_1.defineReadOnly(_this, "address", transactions_1.computeAddress(_this.publicKey));
             if (_this.address !== address_1.getAddress(privateKey.address)) {
-                logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDCACTED]");
+                logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDACTED]");
             }
             if (hasMnemonic(privateKey)) {
                 var srcMnemonic_1 = privateKey.mnemonic;
@@ -59,7 +59,7 @@ var Wallet = /** @class */ (function (_super) {
                 var mnemonic = _this.mnemonic;
                 var node = hdnode_1.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
                 if (transactions_1.computeAddress(node.privateKey) !== _this.address) {
-                    logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDCACTED]");
+                    logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDACTED]");
                 }
             }
             else {

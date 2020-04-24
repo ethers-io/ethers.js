@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { Indexed, Interface } from "@ethersproject/abi";
 import { Provider } from "@ethersproject/abstract-provider";
 import { Signer, VoidSigner } from "@ethersproject/abstract-signer";
@@ -59,7 +68,7 @@ function runMethod(contract, functionName, options) {
             // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
             for (let key in tx) {
                 if (!allowedTransactionKeys[key]) {
-                    logger.throwError(("unknown transaxction override - " + key), "overrides", tx);
+                    logger.throwError(("unknown transaction override - " + key), "overrides", tx);
                 }
             }
         }
@@ -713,7 +722,7 @@ export class ContractFactory {
     getDeployTransaction(...args) {
         let tx = {};
         // If we have 1 additional argument, we allow transaction overrides
-        if (args.length === this.interface.deploy.inputs.length + 1) {
+        if (args.length === this.interface.deploy.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
             tx = shallowCopy(args.pop());
             for (const key in tx) {
                 if (!allowedTransactionKeys[key]) {
@@ -738,16 +747,25 @@ export class ContractFactory {
         return tx;
     }
     deploy(...args) {
-        return resolveAddresses(this.signer, args, this.interface.deploy.inputs).then((args) => {
+        return __awaiter(this, void 0, void 0, function* () {
+            let overrides = {};
+            // If 1 extra parameter was passed in, it contains overrides
+            if (args.length === this.interface.deploy.inputs.length + 1) {
+                overrides = args.pop();
+            }
+            // Make sure the call matches the constructor signature
+            logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
+            // Resolve ENS names and promises in the arguments
+            const params = yield resolveAddresses(this.signer, args, this.interface.deploy.inputs);
+            params.push(overrides);
             // Get the deployment transaction (with optional overrides)
-            const tx = this.getDeployTransaction(...args);
+            const unsignedTx = this.getDeployTransaction(...params);
             // Send the deployment transaction
-            return this.signer.sendTransaction(tx).then((tx) => {
-                const address = (this.constructor).getContractAddress(tx);
-                const contract = (this.constructor).getContract(address, this.interface, this.signer);
-                defineReadOnly(contract, "deployTransaction", tx);
-                return contract;
-            });
+            const tx = yield this.signer.sendTransaction(unsignedTx);
+            const address = getStatic(this.constructor, "getContractAddress")(tx);
+            const contract = getStatic(this.constructor, "getContract")(address, this.interface, this.signer);
+            defineReadOnly(contract, "deployTransaction", tx);
+            return contract;
         });
     }
     attach(address) {

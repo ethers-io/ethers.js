@@ -28,7 +28,7 @@ var BigNumber = /** @class */ (function () {
         var _newTarget = this.constructor;
         logger.checkNew(_newTarget, BigNumber);
         if (constructorGuard !== _constructorGuard) {
-            logger.throwError("cannot call consturtor directly; use BigNumber.from", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("cannot call constructor directly; use BigNumber.from", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "new (BigNumber)"
             });
         }

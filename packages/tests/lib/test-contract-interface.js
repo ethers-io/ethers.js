@@ -107,7 +107,7 @@ describe('ABI Coder Encoding', function () {
         var types = JSON.parse(test.types);
         var result = test.result;
         var title = test.name + ' => (' + test.types + ') = (' + test.normalizedValues + ')';
-        it(('encodes paramters - ' + test.name + ' - ' + test.types), function () {
+        it(('encodes parameters - ' + test.name + ' - ' + test.types), function () {
             this.timeout(120000);
             var encoded = coder.encode(types, values);
             assert_1.default.equal(encoded, result, 'encoded data - ' + title);

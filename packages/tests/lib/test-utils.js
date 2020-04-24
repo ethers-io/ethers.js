@@ -176,7 +176,7 @@ describe('Test Namehash', function () {
         });
     });
 });
-describe('Test ID Hash Functione', function () {
+describe('Test ID Hash Functions', function () {
     var tests = [
         {
             name: 'setAddr signature hash',
@@ -256,7 +256,7 @@ describe('Test Base64 coder', function () {
         var decoded = ethers_1.ethers.utils.toUtf8Bytes(decodedText);
         var encoded = 'TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=';
         assert_1.default.equal(ethers_1.ethers.utils.base64.encode(decoded), encoded, 'encodes to base64 string');
-        assert_1.default.equal(ethers_1.ethers.utils.toUtf8String(ethers_1.ethers.utils.base64.decode(encoded)), decodedText, 'decodes from base64 sstring');
+        assert_1.default.equal(ethers_1.ethers.utils.toUtf8String(ethers_1.ethers.utils.base64.decode(encoded)), decodedText, 'decodes from base64 string');
     });
 });
 describe('Test UTF-8 coder', function () {
@@ -352,7 +352,7 @@ describe('Test Bytes32String coder', function () {
     });
 });
 describe('Test BigNumber', function () {
-    it("computes absoltue values", function () {
+    it("computes absolute values", function () {
         function testAbs(test) {
             var value = ethers_1.ethers.BigNumber.from(test.value);
             var expected = ethers_1.ethers.BigNumber.from(test.expected);

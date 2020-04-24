@@ -138,7 +138,7 @@ var Formatter = /** @class */ (function () {
                 return false;
             }
         }
-        throw new Error("invaid boolean - " + value);
+        throw new Error("invalid boolean - " + value);
     };
     Formatter.prototype.hex = function (value, strict) {
         if (typeof (value) === "string") {

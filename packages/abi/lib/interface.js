@@ -109,7 +109,7 @@ var Interface = /** @class */ (function () {
             format = fragments_1.FormatTypes.full;
         }
         if (format === fragments_1.FormatTypes.sighash) {
-            logger.throwArgumentError("interface does not support formating sighash", "format", format);
+            logger.throwArgumentError("interface does not support formatting sighash", "format", format);
         }
         var abi = this.fragments.map(function (fragment) { return fragment.format(format); });
         // We need to re-bundle the JSON fragments a bit

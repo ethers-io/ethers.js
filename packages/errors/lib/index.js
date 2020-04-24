@@ -236,7 +236,7 @@ var LogLevel = LogLevels["default"];
 function setLogLevel(logLevel) {
     var level = LogLevels[logLevel];
     if (level == null) {
-        warn("invliad log level - " + logLevel);
+        warn("invalid log level - " + logLevel);
         return;
     }
     LogLevel = level;

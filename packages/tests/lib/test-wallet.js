@@ -40,7 +40,7 @@ describe('Test JSON Wallets', function () {
             return wallet.encrypt(password).then(function (json) {
                 return ethers_1.ethers.Wallet.fromEncryptedJson(json, password).then(function (decryptedWallet) {
                     assert_1.default.equal(decryptedWallet.address, wallet.address, 'decrypted wallet - ' + wallet.privateKey);
-                    assert_1.default.equal(decryptedWallet.mnemonic.phrase, wallet.mnemonic.phrase, "decrypted wallet menonic - " + wallet.privateKey);
+                    assert_1.default.equal(decryptedWallet.mnemonic.phrase, wallet.mnemonic.phrase, "decrypted wallet mnemonic - " + wallet.privateKey);
                     assert_1.default.equal(decryptedWallet.mnemonic.path, wallet.mnemonic.path, "decrypted wallet path - " + wallet.privateKey);
                     return decryptedWallet.encrypt(password).then(function (encryptedWallet) {
                         var parsedWallet = JSON.parse(encryptedWallet);
@@ -105,7 +105,7 @@ describe('Test Transaction Signing and Parsing', function () {
             // Legacy serializes unsigned transaction
             (function () {
                 var unsignedTx = ethers_1.ethers.utils.serializeTransaction(transaction);
-                assert_1.default.equal(unsignedTx, test.unsignedTransaction, 'serializes undsigned transaction (legacy)');
+                assert_1.default.equal(unsignedTx, test.unsignedTransaction, 'serializes unsigned transaction (legacy)');
                 // Legacy signed serialized transaction
                 var signature = signDigest(ethers_1.ethers.utils.keccak256(unsignedTx));
                 assert_1.default.equal(ethers_1.ethers.utils.serializeTransaction(transaction, signature), test.signedTransaction, 'signs transaction (legacy)');

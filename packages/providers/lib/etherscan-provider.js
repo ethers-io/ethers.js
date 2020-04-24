@@ -259,7 +259,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                             url += apiKey;
                             return [2 /*return*/, get(url)];
                         }
-                        throw new Error("getBlock by blockHash not implmeneted");
+                        throw new Error("getBlock by blockHash not implemented");
                     case 9:
                         url += "/api?module=proxy&action=eth_getTransactionByHash&txhash=" + params.transactionHash;
                         url += apiKey;

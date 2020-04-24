@@ -3,13 +3,19 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.0-beta.183 (2020-04-18 05:14)
+ethers/v5.0.0-beta.183 (2020-04-23 23:28)
 -----------------------------------------
 
+  - Fixed inconsistent log format in WebSocketProvider. ([#795](https://github.com/ethers-io/ethers.js/issues/795); [8e7751f](https://github.com/ethers-io/ethers.js/commit/8e7751f7dfb41e58f81c7918cf36c152c3209ae2))
+  - Added WebSocketProvider support for ENS names in filters. ([6707754](https://github.com/ethers-io/ethers.js/commit/6707754580490c5a801d6205af0841794d20b3c9))
+  - Fixed provider filtering by ENS name. ([aeeb75f](https://github.com/ethers-io/ethers.js/commit/aeeb75f74c3be11b9b3b2925fd73349070542e54))
+  - Fixed ContractFactory.deploy ignoring overrides. ([#796](https://github.com/ethers-io/ethers.js/issues/796); [8bb2a0f](https://github.com/ethers-io/ethers.js/commit/8bb2a0fd08f6f128a80444e3fd90c29e4cd7edfb))
+  - Fix median calculation for large block number deltas across FallbackProvider backends. ([fca5ccb](https://github.com/ethers-io/ethers.js/commit/fca5ccbc2052569e700a96dbb1de1c9cef7c966f))
+  - Work-around for Cloudflare not offering eth_blockNumber. ([8cf4b3c](https://github.com/ethers-io/ethers.js/commit/8cf4b3cf4598f4f3643d5ebe9c366466d398cb83))
+  - Added string spell-checking to library and fixed discovered typos. ([71d03c6](https://github.com/ethers-io/ethers.js/commit/71d03c6e3cab1aacb3e4e74d3966fbaa7db2ee06))
+  - Fixed getUrl for node 8. ([560adea](https://github.com/ethers-io/ethers.js/commit/560adeabb06a2ab483bcad162f02ccef41ebc245))
   - Dependency security updates. ([da3b0bf](https://github.com/ethers-io/ethers.js/commit/da3b0bf0786fe8a95c68485d130ca59c597ffe4d))
   - Fixes for dist builds without injected XMLHttpRequest. ([#789](https://github.com/ethers-io/ethers.js/issues/789), [#506](https://github.com/ethers-io/ethers.js/issues/506); [9ae6b70](https://github.com/ethers-io/ethers.js/commit/9ae6b70efb9f3d3251820403597085cfa30ace05))
-  - Added documentation. ([723249d](https://github.com/ethers-io/ethers.js/commit/723249d36c082894d98e12281085c70f4b4e0fe9))
-  - Added npmignore for asm package. ([5b51549](https://github.com/ethers-io/ethers.js/commit/5b51549437125603793c3c0c4aca5794b8335690))
 
 ethers/v5.0.0-beta.182 (2020-04-16 21:53)
 -----------------------------------------

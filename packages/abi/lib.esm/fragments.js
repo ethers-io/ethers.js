@@ -459,7 +459,7 @@ function parseGas(value, params) {
             logger.throwArgumentError("invalid human-readable ABI signature", "value", value);
         }
         if (!comps[1].match(/^[0-9]+$/)) {
-            logger.throwArgumentError("invalid human-readable aBI signature gas", "value", value);
+            logger.throwArgumentError("invalid human-readable ABI signature gas", "value", value);
         }
         params.gas = BigNumber.from(comps[1]);
         return comps[0];
@@ -758,7 +758,7 @@ function splitNesting(value) {
             else if (c === ")") {
                 depth--;
                 if (depth === -1) {
-                    logger.throwArgumentError("unbalanced parenthsis", "value", value);
+                    logger.throwArgumentError("unbalanced parenthesis", "value", value);
                 }
             }
         }

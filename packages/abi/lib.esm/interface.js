@@ -75,7 +75,7 @@ export class Interface {
             format = FormatTypes.full;
         }
         if (format === FormatTypes.sighash) {
-            logger.throwArgumentError("interface does not support formating sighash", "format", format);
+            logger.throwArgumentError("interface does not support formatting sighash", "format", format);
         }
         const abi = this.fragments.map((fragment) => fragment.format(format));
         // We need to re-bundle the JSON fragments a bit

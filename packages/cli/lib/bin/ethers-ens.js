@@ -386,7 +386,7 @@ var AccountPlugin = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     AccountPlugin.getHelp = function () {
-        return logger.throwError("subclasses must implemetn this", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
+        return logger.throwError("subclasses must implement this", ethers_1.ethers.errors.UNSUPPORTED_OPERATION, {
             operation: "getHelp"
         });
     };
@@ -1265,7 +1265,7 @@ var ReclaimPlugin = /** @class */ (function (_super) {
                         return [3 /*break*/, 6];
                     case 5:
                         error_2 = _a.sent();
-                        this.throwError("Name not present in Permantent Registrar");
+                        this.throwError("Name not present in Permanent Registrar");
                         return [3 /*break*/, 6];
                     case 6:
                         if (account !== ownerOf) {

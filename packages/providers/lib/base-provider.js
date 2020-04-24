@@ -772,7 +772,7 @@ var BaseProvider = /** @class */ (function (_super) {
                             result[key] = _this._getBlockTag(filter[key]);
                         });
                         _b = (_a = this.formatter).filter;
-                        return [4 /*yield*/, properties_1.resolveProperties(filter)];
+                        return [4 /*yield*/, properties_1.resolveProperties(result)];
                     case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
                 }
             });

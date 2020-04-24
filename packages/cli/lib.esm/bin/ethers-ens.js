@@ -228,7 +228,7 @@ class LookupPlugin extends EnsPlugin {
 cli.addPlugin("lookup", LookupPlugin);
 class AccountPlugin extends EnsPlugin {
     static getHelp() {
-        return logger.throwError("subclasses must implemetn this", ethers.errors.UNSUPPORTED_OPERATION, {
+        return logger.throwError("subclasses must implement this", ethers.errors.UNSUPPORTED_OPERATION, {
             operation: "getHelp"
         });
     }
@@ -810,7 +810,7 @@ class ReclaimPlugin extends AddressAccountPlugin {
                     ownerOf = yield registrar.ownerOf(ethers.utils.id(comps[0]));
                 }
                 catch (error) {
-                    this.throwError("Name not present in Permantent Registrar");
+                    this.throwError("Name not present in Permanent Registrar");
                 }
                 if (account !== ownerOf) {
                     this.throwError("Only the registrant can call reclaim");

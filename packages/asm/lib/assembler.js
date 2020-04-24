@@ -228,7 +228,7 @@ var Node = /** @class */ (function () {
         };
         var factory = Factories[options.type];
         if (!factory) {
-            throwError("uknown type: " + options.type, options.loc);
+            throwError("unknown type: " + options.type, options.loc);
         }
         return factory.from(options);
     };

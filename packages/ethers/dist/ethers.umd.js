@@ -4195,7 +4195,7 @@
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.0-beta.137";
+	exports.version = "bignumber/5.0.0-beta.138";
 	});
 
 	var _version$5 = unwrapExports(_version$4);
@@ -4232,7 +4232,7 @@
 	        var _newTarget = this.constructor;
 	        logger.checkNew(_newTarget, BigNumber);
 	        if (constructorGuard !== _constructorGuard) {
-	            logger.throwError("cannot call consturtor directly; use BigNumber.from", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	            logger.throwError("cannot call constructor directly; use BigNumber.from", lib.Logger.errors.UNSUPPORTED_OPERATION, {
 	                operation: "new (BigNumber)"
 	            });
 	        }
@@ -4678,7 +4678,7 @@
 	            decimals = 0;
 	        }
 	        if (decimals < 0 || decimals > 80 || (decimals % 1)) {
-	            logger.throwArgumentError("invalid decimal cound", "decimals", decimals);
+	            logger.throwArgumentError("invalid decimal count", "decimals", decimals);
 	        }
 	        // If we are already in range, we're done
 	        var comps = this.toString().split(".");
@@ -4952,7 +4952,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.150";
+	exports.version = "abi/5.0.0-beta.151";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -5444,7 +5444,7 @@
 	            logger.throwArgumentError("invalid human-readable ABI signature", "value", value);
 	        }
 	        if (!comps[1].match(/^[0-9]+$/)) {
-	            logger.throwArgumentError("invalid human-readable aBI signature gas", "value", value);
+	            logger.throwArgumentError("invalid human-readable ABI signature gas", "value", value);
 	        }
 	        params.gas = lib$2.BigNumber.from(comps[1]);
 	        return comps[0];
@@ -5755,7 +5755,7 @@
 	            else if (c === ")") {
 	                depth--;
 	                if (depth === -1) {
-	                    logger.throwArgumentError("unbalanced parenthsis", "value", value);
+	                    logger.throwArgumentError("unbalanced parenthesis", "value", value);
 	                }
 	            }
 	        }
@@ -8146,7 +8146,7 @@
 	            format = fragments.FormatTypes.full;
 	        }
 	        if (format === fragments.FormatTypes.sighash) {
-	            logger.throwArgumentError("interface does not support formating sighash", "format", format);
+	            logger.throwArgumentError("interface does not support formatting sighash", "format", format);
 	        }
 	        var abi = this.fragments.map(function (fragment) { return fragment.format(format); });
 	        // We need to re-bundle the JSON fragments a bit
@@ -8908,7 +8908,7 @@
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.0-beta.148";
+	exports.version = "contracts/5.0.0-beta.149";
 	});
 
 	var _version$n = unwrapExports(_version$m);
@@ -8929,6 +8929,42 @@
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
+	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	    });
+	};
+	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
+	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+	    function verb(n) { return function (v) { return step([n, v]); }; }
+	    function step(op) {
+	        if (f) throw new TypeError("Generator is already executing.");
+	        while (_) try {
+	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+	            if (y = 0, t) op = [op[0] & 2, t.value];
+	            switch (op[0]) {
+	                case 0: case 1: t = op; break;
+	                case 4: _.label++; return { value: op[1], done: false };
+	                case 5: _.label++; y = op[1]; op = [0]; continue;
+	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+	                default:
+	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+	                    if (t[2]) _.ops.pop();
+	                    _.trys.pop(); continue;
+	            }
+	            op = body.call(thisArg, _);
+	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+	    }
+	};
 	var __spreadArrays = (commonjsGlobal && commonjsGlobal.__spreadArrays) || function () {
 	    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
 	    for (var r = Array(s), k = 0, i = 0; i < il; i++)
@@ -9002,7 +9038,7 @@
 	            // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
 	            for (var key in tx) {
 	                if (!allowedTransactionKeys[key]) {
-	                    logger.throwError(("unknown transaxction override - " + key), "overrides", tx);
+	                    logger.throwError(("unknown transaction override - " + key), "overrides", tx);
 	                }
 	            }
 	        }
@@ -9691,7 +9727,7 @@
 	        }
 	        var tx = {};
 	        // If we have 1 additional argument, we allow transaction overrides
-	        if (args.length === this.interface.deploy.inputs.length + 1) {
+	        if (args.length === this.interface.deploy.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
 	            tx = lib$3.shallowCopy(args.pop());
 	            for (var key in tx) {
 	                if (!allowedTransactionKeys[key]) {
@@ -9716,20 +9752,35 @@
 	        return tx;
 	    };
 	    ContractFactory.prototype.deploy = function () {
-	        var _this = this;
 	        var args = [];
 	        for (var _i = 0; _i < arguments.length; _i++) {
 	            args[_i] = arguments[_i];
 	        }
-	        return resolveAddresses(this.signer, args, this.interface.deploy.inputs).then(function (args) {
-	            // Get the deployment transaction (with optional overrides)
-	            var tx = _this.getDeployTransaction.apply(_this, args);
-	            // Send the deployment transaction
-	            return _this.signer.sendTransaction(tx).then(function (tx) {
-	                var address = (_this.constructor).getContractAddress(tx);
-	                var contract = (_this.constructor).getContract(address, _this.interface, _this.signer);
-	                lib$3.defineReadOnly(contract, "deployTransaction", tx);
-	                return contract;
+	        return __awaiter(this, void 0, void 0, function () {
+	            var overrides, params, unsignedTx, tx, address, contract;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        overrides = {};
+	                        // If 1 extra parameter was passed in, it contains overrides
+	                        if (args.length === this.interface.deploy.inputs.length + 1) {
+	                            overrides = args.pop();
+	                        }
+	                        // Make sure the call matches the constructor signature
+	                        logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
+	                        return [4 /*yield*/, resolveAddresses(this.signer, args, this.interface.deploy.inputs)];
+	                    case 1:
+	                        params = _a.sent();
+	                        params.push(overrides);
+	                        unsignedTx = this.getDeployTransaction.apply(this, params);
+	                        return [4 /*yield*/, this.signer.sendTransaction(unsignedTx)];
+	                    case 2:
+	                        tx = _a.sent();
+	                        address = lib$3.getStatic(this.constructor, "getContractAddress")(tx);
+	                        contract = lib$3.getStatic(this.constructor, "getContract")(address, this.interface, this.signer);
+	                        lib$3.defineReadOnly(contract, "deployTransaction", tx);
+	                        return [2 /*return*/, contract];
+	                }
 	            });
 	        });
 	    };
@@ -13645,7 +13696,7 @@
 	var _version$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "transactions/5.0.0-beta.134";
+	exports.version = "transactions/5.0.0-beta.135";
 	});
 
 	var _version$t = unwrapExports(_version$s);
@@ -13777,7 +13828,7 @@
 	function parse(rawTransaction) {
 	    var transaction = RLP.decode(rawTransaction);
 	    if (transaction.length !== 9 && transaction.length !== 6) {
-	        logger.throwArgumentError("invalid raw transaction", "rawTransactin", rawTransaction);
+	        logger.throwArgumentError("invalid raw transaction", "rawTransaction", rawTransaction);
 	    }
 	    var tx = {
 	        nonce: handleNumber(transaction[0]).toNumber(),
@@ -16575,7 +16626,7 @@
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.0-beta.139";
+	exports.version = "wallet/5.0.0-beta.140";
 	});
 
 	var _version$D = unwrapExports(_version$C);
@@ -16631,7 +16682,7 @@
 	            lib$3.defineReadOnly(_this, "_signingKey", function () { return signingKey_1; });
 	            lib$3.defineReadOnly(_this, "address", lib$g.computeAddress(_this.publicKey));
 	            if (_this.address !== lib$6.getAddress(privateKey.address)) {
-	                logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDCACTED]");
+	                logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDACTED]");
 	            }
 	            if (hasMnemonic(privateKey)) {
 	                var srcMnemonic_1 = privateKey.mnemonic;
@@ -16643,7 +16694,7 @@
 	                var mnemonic = _this.mnemonic;
 	                var node = lib$h.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
 	                if (lib$g.computeAddress(node.privateKey) !== _this.address) {
-	                    logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDCACTED]");
+	                    logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDACTED]");
 	                }
 	            }
 	            else {
@@ -17510,7 +17561,7 @@
 	                return false;
 	            }
 	        }
-	        throw new Error("invaid boolean - " + value);
+	        throw new Error("invalid boolean - " + value);
 	    };
 	    Formatter.prototype.hex = function (value, strict) {
 	        if (typeof (value) === "string") {
@@ -18538,7 +18589,7 @@
 	                            result[key] = _this._getBlockTag(filter[key]);
 	                        });
 	                        _b = (_a = this.formatter).filter;
-	                        return [4 /*yield*/, lib$3.resolveProperties(filter)];
+	                        return [4 /*yield*/, lib$3.resolveProperties(result)];
 	                    case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
 	                }
 	            });
@@ -19816,6 +19867,42 @@
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
+	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	    });
+	};
+	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
+	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+	    function verb(n) { return function (v) { return step([n, v]); }; }
+	    function step(op) {
+	        if (f) throw new TypeError("Generator is already executing.");
+	        while (_) try {
+	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+	            if (y = 0, t) op = [op[0] & 2, t.value];
+	            switch (op[0]) {
+	                case 0: case 1: t = op; break;
+	                case 4: _.label++; return { value: op[1], done: false };
+	                case 5: _.label++; y = op[1]; op = [0]; continue;
+	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+	                default:
+	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+	                    if (t[2]) _.ops.pop();
+	                    _.trys.pop(); continue;
+	            }
+	            op = body.call(thisArg, _);
+	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+	    }
+	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 
@@ -19842,6 +19929,22 @@
 	                logger.throwArgumentError("unsupported network", "network", arguments[0]);
 	        }
 	        return host;
+	    };
+	    CloudflareProvider.prototype.perform = function (method, params) {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var block;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        if (!(method === "getBlockNumber")) return [3 /*break*/, 2];
+	                        return [4 /*yield*/, _super.prototype.perform.call(this, "getBlock", { blockTag: "latest" })];
+	                    case 1:
+	                        block = _a.sent();
+	                        return [2 /*return*/, block.number];
+	                    case 2: return [2 /*return*/, _super.prototype.perform.call(this, method, params)];
+	                }
+	            });
+	        });
 	    };
 	    return CloudflareProvider;
 	}(urlJsonRpcProvider.UrlJsonRpcProvider));
@@ -20113,7 +20216,7 @@
 	                            url += apiKey;
 	                            return [2 /*return*/, get(url)];
 	                        }
-	                        throw new Error("getBlock by blockHash not implmeneted");
+	                        throw new Error("getBlock by blockHash not implemented");
 	                    case 9:
 	                        url += "/api?module=proxy&action=eth_getTransactionByHash&txhash=" + params.transactionHash;
 	                        url += apiKey;
@@ -20358,7 +20461,7 @@
 	    }
 	    return result;
 	}
-	function median(values) {
+	function median(values, maxDelta) {
 	    values = values.slice().sort();
 	    var middle = Math.floor(values.length / 2);
 	    // Odd length; take the middle
@@ -20367,6 +20470,9 @@
 	    }
 	    // Even length; take the average of the two middle
 	    var a = values[middle - 1], b = values[middle];
+	    if (maxDelta != null && Math.abs(a - b) > maxDelta) {
+	        return null;
+	    }
 	    return (a + b) / 2;
 	}
 	function serialize(value) {
@@ -20469,7 +20575,11 @@
 	            return function (configs) {
 	                var values = configs.map(function (c) { return c.result; });
 	                // Get the median block number
-	                var blockNumber = Math.ceil(median(configs.map(function (c) { return c.result; })));
+	                var blockNumber = median(configs.map(function (c) { return c.result; }), 2);
+	                if (blockNumber == null) {
+	                    return undefined;
+	                }
+	                blockNumber = Math.ceil(blockNumber);
 	                // If the next block height is present, its prolly safe to use
 	                if (values.indexOf(blockNumber + 1) >= 0) {
 	                    blockNumber++;
@@ -20637,7 +20747,7 @@
 	    }
 	    FallbackProvider.prototype.perform = function (method, params) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var processFunc, configs, i, _loop_1, this_1, state_1;
+	            var processFunc, configs, i, first, _loop_1, this_1, state_1;
 	            var _this = this;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
@@ -20666,6 +20776,7 @@
 	                        configs = browser$6.shuffled(this.providerConfigs.map(function (c) { return lib$3.shallowCopy(c); }));
 	                        configs.sort(function (a, b) { return (a.priority - b.priority); });
 	                        i = 0;
+	                        first = true;
 	                        _loop_1 = function () {
 	                            var t0, inflightWeight, _loop_2, waiting, results, result;
 	                            return __generator(this, function (_a) {
@@ -20737,12 +20848,20 @@
 	                                        _a.label = 2;
 	                                    case 2:
 	                                        results = configs.filter(function (c) { return (c.done && c.error == null); });
-	                                        if (results.length >= this_1.quorum) {
-	                                            result = processFunc(results);
-	                                            if (result !== undefined) {
-	                                                return [2 /*return*/, { value: result }];
-	                                            }
+	                                        if (!(results.length >= this_1.quorum)) return [3 /*break*/, 5];
+	                                        result = processFunc(results);
+	                                        if (result !== undefined) {
+	                                            return [2 /*return*/, { value: result }];
 	                                        }
+	                                        if (!!first) return [3 /*break*/, 4];
+	                                        return [4 /*yield*/, stall(100)];
+	                                    case 3:
+	                                        _a.sent();
+	                                        _a.label = 4;
+	                                    case 4:
+	                                        first = false;
+	                                        _a.label = 5;
+	                                    case 5:
 	                                        // All configs have run to completion; we will never get more data
 	                                        if (configs.filter(function (c) { return !c.done; }).length === 0) {
 	                                            return [2 /*return*/, "break"];
@@ -21249,17 +21368,20 @@
 	        });
 	    };
 	    WebSocketProvider.defaultUrl = function () {
-	        return "ws:/" + "/localhost:8546";
+	        return "ws:/\/localhost:8546";
 	    };
 	    WebSocketProvider.prototype._subscribe = function (tag, param, processFunc) {
 	        return __awaiter(this, void 0, void 0, function () {
 	            var subIdPromise, subId;
+	            var _this = this;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
 	                        subIdPromise = this._subIds[tag];
 	                        if (subIdPromise == null) {
-	                            subIdPromise = this.send("eth_subscribe", param);
+	                            subIdPromise = Promise.all(param).then(function (param) {
+	                                return _this.send("eth_subscribe", param);
+	                            });
 	                            this._subIds[tag] = subIdPromise;
 	                        }
 	                        return [4 /*yield*/, subIdPromise];
@@ -21285,8 +21407,11 @@
 	                });
 	                break;
 	            case "filter":
-	                this._subscribe(event.tag, ["logs", event.filter], function (result) {
-	                    _this.emit(event.filter, result);
+	                this._subscribe(event.tag, ["logs", this._getFilter(event.filter)], function (result) {
+	                    if (result.removed == null) {
+	                        result.removed = false;
+	                    }
+	                    _this.emit(event.filter, _this.formatter.filterLog(result));
 	                });
 	                break;
 	            case "tx": {
@@ -21699,13 +21824,17 @@
 
 	exports.Logger = lib.Logger;
 
+	exports.computeHmac = browser.computeHmac;
+	exports.ripemd160 = browser.ripemd160;
 	exports.sha256 = browser.sha256;
+	exports.sha512 = browser.sha512;
 
 	exports.solidityKeccak256 = lib$n.keccak256;
 	exports.solidityPack = lib$n.pack;
 	exports.soliditySha256 = lib$n.sha256;
 
 	exports.randomBytes = browser$6.randomBytes;
+	exports.shuffled = browser$6.shuffled;
 
 	exports.checkProperties = lib$3.checkProperties;
 	exports.deepCopy = lib$3.deepCopy;
@@ -21797,44 +21926,48 @@
 	var utils_41 = utils$3.getJsonWalletAddress;
 	var utils_42 = utils$3.keccak256;
 	var utils_43 = utils$3.Logger;
-	var utils_44 = utils$3.sha256;
-	var utils_45 = utils$3.solidityKeccak256;
-	var utils_46 = utils$3.solidityPack;
-	var utils_47 = utils$3.soliditySha256;
-	var utils_48 = utils$3.randomBytes;
-	var utils_49 = utils$3.checkProperties;
-	var utils_50 = utils$3.deepCopy;
-	var utils_51 = utils$3.defineReadOnly;
-	var utils_52 = utils$3.getStatic;
-	var utils_53 = utils$3.resolveProperties;
-	var utils_54 = utils$3.shallowCopy;
-	var utils_55 = utils$3.RLP;
-	var utils_56 = utils$3.computePublicKey;
-	var utils_57 = utils$3.recoverPublicKey;
-	var utils_58 = utils$3.SigningKey;
-	var utils_59 = utils$3.formatBytes32String;
-	var utils_60 = utils$3.nameprep;
-	var utils_61 = utils$3.parseBytes32String;
-	var utils_62 = utils$3._toEscapedUtf8String;
-	var utils_63 = utils$3.toUtf8Bytes;
-	var utils_64 = utils$3.toUtf8CodePoints;
-	var utils_65 = utils$3.toUtf8String;
-	var utils_66 = utils$3.Utf8ErrorFuncs;
-	var utils_67 = utils$3.computeAddress;
-	var utils_68 = utils$3.parseTransaction;
-	var utils_69 = utils$3.recoverAddress;
-	var utils_70 = utils$3.serializeTransaction;
-	var utils_71 = utils$3.commify;
-	var utils_72 = utils$3.formatEther;
-	var utils_73 = utils$3.parseEther;
-	var utils_74 = utils$3.formatUnits;
-	var utils_75 = utils$3.parseUnits;
-	var utils_76 = utils$3.verifyMessage;
-	var utils_77 = utils$3.fetchJson;
-	var utils_78 = utils$3.poll;
-	var utils_79 = utils$3.SupportedAlgorithm;
-	var utils_80 = utils$3.UnicodeNormalizationForm;
-	var utils_81 = utils$3.Utf8ErrorReason;
+	var utils_44 = utils$3.computeHmac;
+	var utils_45 = utils$3.ripemd160;
+	var utils_46 = utils$3.sha256;
+	var utils_47 = utils$3.sha512;
+	var utils_48 = utils$3.solidityKeccak256;
+	var utils_49 = utils$3.solidityPack;
+	var utils_50 = utils$3.soliditySha256;
+	var utils_51 = utils$3.randomBytes;
+	var utils_52 = utils$3.shuffled;
+	var utils_53 = utils$3.checkProperties;
+	var utils_54 = utils$3.deepCopy;
+	var utils_55 = utils$3.defineReadOnly;
+	var utils_56 = utils$3.getStatic;
+	var utils_57 = utils$3.resolveProperties;
+	var utils_58 = utils$3.shallowCopy;
+	var utils_59 = utils$3.RLP;
+	var utils_60 = utils$3.computePublicKey;
+	var utils_61 = utils$3.recoverPublicKey;
+	var utils_62 = utils$3.SigningKey;
+	var utils_63 = utils$3.formatBytes32String;
+	var utils_64 = utils$3.nameprep;
+	var utils_65 = utils$3.parseBytes32String;
+	var utils_66 = utils$3._toEscapedUtf8String;
+	var utils_67 = utils$3.toUtf8Bytes;
+	var utils_68 = utils$3.toUtf8CodePoints;
+	var utils_69 = utils$3.toUtf8String;
+	var utils_70 = utils$3.Utf8ErrorFuncs;
+	var utils_71 = utils$3.computeAddress;
+	var utils_72 = utils$3.parseTransaction;
+	var utils_73 = utils$3.recoverAddress;
+	var utils_74 = utils$3.serializeTransaction;
+	var utils_75 = utils$3.commify;
+	var utils_76 = utils$3.formatEther;
+	var utils_77 = utils$3.parseEther;
+	var utils_78 = utils$3.formatUnits;
+	var utils_79 = utils$3.parseUnits;
+	var utils_80 = utils$3.verifyMessage;
+	var utils_81 = utils$3.fetchJson;
+	var utils_82 = utils$3.poll;
+	var utils_83 = utils$3.SupportedAlgorithm;
+	var utils_84 = utils$3.UnicodeNormalizationForm;
+	var utils_85 = utils$3.Utf8ErrorReason;
 
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";

@@ -546,7 +546,7 @@ var SendPlugin = /** @class */ (function (_super) {
                     case 1:
                         _a.sent();
                         if (this.accounts.length !== 1) {
-                            this.throwUsageError("send requires exacly one account");
+                            this.throwUsageError("send requires exactly one account");
                         }
                         this.data = ethers_1.ethers.utils.hexlify(argParser.consumeOption("data") || "0x");
                         this.allowZero = argParser.consumeFlag("allow-zero");
@@ -615,7 +615,7 @@ var SweepPlugin = /** @class */ (function (_super) {
                     case 1:
                         _a.sent();
                         if (this.accounts.length !== 1) {
-                            this.throwUsageError("sweep requires exacly one account");
+                            this.throwUsageError("sweep requires exactly one account");
                         }
                         return [2 /*return*/];
                 }
@@ -705,7 +705,7 @@ var SignMessagePlugin = /** @class */ (function (_super) {
                     case 1:
                         _a.sent();
                         if (this.accounts.length !== 1) {
-                            this.throwError("sign-message requires exacly one account");
+                            this.throwError("sign-message requires exactly one account");
                         }
                         this.hex = argParser.consumeFlag("hex");
                         return [2 /*return*/];
@@ -1012,7 +1012,7 @@ var UnwrapEtherPlugin = /** @class */ (function (_super) {
                         address = _a.sent();
                         this.dump("Withdrawing Wrapped Ether", {
                             "To": address,
-                            "Valiue": ethers_1.ethers.utils.formatEther(this.value)
+                            "Value": ethers_1.ethers.utils.formatEther(this.value)
                         });
                         contract = new ethers_1.ethers.Contract(WethAddress, WethAbi, this.accounts[0]);
                         return [4 /*yield*/, contract.withdraw(this.value)];
