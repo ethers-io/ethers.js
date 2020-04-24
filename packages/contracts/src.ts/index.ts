@@ -948,11 +948,10 @@ export class ContractFactory {
     }
 
     getDeployTransaction(...args: Array<any>): UnsignedTransaction {
-
         let tx: UnsignedTransaction = { };
 
         // If we have 1 additional argument, we allow transaction overrides
-        if (args.length === this.interface.deploy.inputs.length + 1) {
+        if (args.length === this.interface.deploy.inputs.length + 1 && typeof(args[args.length - 1]) === "object") {
             tx = shallowCopy(args.pop());
             for (const key in tx) {
                 if (!allowedTransactionKeys[key]) {
@@ -979,20 +978,32 @@ export class ContractFactory {
         return tx
     }
 
-    deploy(...args: Array<any>): Promise<Contract> {
-        return resolveAddresses(this.signer, args, this.interface.deploy.inputs).then((args) => {
+    async deploy(...args: Array<any>): Promise<Contract> {
 
-            // Get the deployment transaction (with optional overrides)
-            const tx = this.getDeployTransaction(...args);
+        let overrides: any = { };
 
-            // Send the deployment transaction
-            return this.signer.sendTransaction(tx).then((tx) => {
-                const address = (<any>(this.constructor)).getContractAddress(tx);
-                const contract = (<any>(this.constructor)).getContract(address, this.interface, this.signer);
-                defineReadOnly(contract, "deployTransaction", tx);
-                return contract;
-            });
-        });
+        // If 1 extra parameter was passed in, it contains overrides
+        if (args.length === this.interface.deploy.inputs.length + 1) {
+            overrides = args.pop();
+        }
+
+        // Make sure the call matches the constructor signature
+        logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
+
+        // Resolve ENS names and promises in the arguments
+        const params = await resolveAddresses(this.signer, args, this.interface.deploy.inputs);
+        params.push(overrides);
+
+        // Get the deployment transaction (with optional overrides)
+        const unsignedTx = this.getDeployTransaction(...params);
+
+        // Send the deployment transaction
+        const tx = await this.signer.sendTransaction(unsignedTx);
+
+        const address = getStatic<(tx: TransactionResponse) => string>(this.constructor, "getContractAddress")(tx);
+        const contract = getStatic<(address: string, contractInterface: ContractInterface, signer?: Signer) => Contract>(this.constructor, "getContract")(address, this.interface, this.signer);
+        defineReadOnly(contract, "deployTransaction", tx);
+        return contract;
     }
 
     attach(address: string): Contract {
