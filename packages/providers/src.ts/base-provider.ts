@@ -653,7 +653,7 @@ export class BaseProvider extends Provider {
             result[key] = this._getBlockTag((<any>filter)[key]);
         });
 
-        return this.formatter.filter(await resolveProperties(filter));
+        return this.formatter.filter(await resolveProperties(result));
     }
 
 
