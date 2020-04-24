@@ -167,7 +167,9 @@ export class WebSocketProvider extends JsonRpcProvider {
     async _subscribe(tag: string, param: Array<any>, processFunc: (result: any) => void): Promise<void> {
         let subIdPromise = this._subIds[tag];
         if (subIdPromise == null) {
-            subIdPromise = this.send("eth_subscribe", param);
+            subIdPromise = Promise.all(param).then((param) => {
+                return this.send("eth_subscribe", param);
+            });
             this._subIds[tag] = subIdPromise;
         }
         const subId = await subIdPromise;
@@ -188,11 +190,12 @@ export class WebSocketProvider extends JsonRpcProvider {
                 });
                 break;
 
-            case "filter":
-                this._subscribe(event.tag, [ "logs", event.filter ], (result: any) => {
+            case "filter": {
+                this._subscribe(event.tag, [ "logs", this._getFilter(event.filter) ], (result: any) => {
                     this.emit(event.filter, result);
                 });
                 break;
+            }
 
             case "tx": {
                 const emitReceipt = (event: Event) => {
