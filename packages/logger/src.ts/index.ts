@@ -4,13 +4,11 @@ let _permanentCensorErrors = false;
 let _censorErrors = false;
 
 const LogLevels: { [ name: string ]: number } = { debug: 1, "default": 2, info: 2, warning: 3, error: 4, off: 5 };
-let LogLevel = LogLevels["default"];
+let _logLevel = LogLevels["default"];
 
 import { version } from "./_version";
 
 let _globalLogger: Logger = null;
-
-export type LogLevel = "DEBUG" | "INFO" | "WARNING" | "ERROR" | "OFF";
 
 function _checkNormalize(): string {
     try {
@@ -43,105 +41,110 @@ function _checkNormalize(): string {
 
 const _normalizeError = _checkNormalize();
 
+export enum LogLevel {
+    DEBUG    = "DEBUG",
+    INFO     = "INFO",
+    WARNING  = "WARNING",
+    ERROR    = "ERROR",
+    OFF      = "OFF"
+}
+
+
+export enum ErrorCode {
+
+    ///////////////////
+    // Generic Errors
+
+    // Unknown Error
+    UNKNOWN_ERROR = "UNKNOWN_ERROR",
+
+    // Not Implemented
+    NOT_IMPLEMENTED = "NOT_IMPLEMENTED",
+
+    // Unsupported Operation
+    //   - operation
+    UNSUPPORTED_OPERATION = "UNSUPPORTED_OPERATION",
+
+    // Network Error (i.e. Ethereum Network, such as an invalid chain ID)
+    NETWORK_ERROR = "NETWORK_ERROR",
+
+    // Some sort of bad response from the server
+    SERVER_ERROR = "SERVER_ERROR",
+
+    // Timeout
+    TIMEOUT = "TIMEOUT",
+
+    ///////////////////
+    // Operational  Errors
+
+    // Buffer Overrun
+    BUFFER_OVERRUN = "BUFFER_OVERRUN",
+
+    // Numeric Fault
+    //   - operation: the operation being executed
+    //   - fault: the reason this faulted
+    NUMERIC_FAULT = "NUMERIC_FAULT",
+
+
+    ///////////////////
+    // Argument Errors
+
+    // Missing new operator to an object
+    //  - name: The name of the class
+    MISSING_NEW = "MISSING_NEW",
+
+    // Invalid argument (e.g. value is incompatible with type) to a function:
+    //   - argument: The argument name that was invalid
+    //   - value: The value of the argument
+    INVALID_ARGUMENT = "INVALID_ARGUMENT",
+
+    // Missing argument to a function:
+    //   - count: The number of arguments received
+    //   - expectedCount: The number of arguments expected
+    MISSING_ARGUMENT = "MISSING_ARGUMENT",
+
+    // Too many arguments
+    //   - count: The number of arguments received
+    //   - expectedCount: The number of arguments expected
+    UNEXPECTED_ARGUMENT = "UNEXPECTED_ARGUMENT",
+
+
+    ///////////////////
+    // Blockchain Errors
+
+    // Call exception
+    //  - transaction: the transaction
+    //  - address?: the contract address
+    //  - args?: The arguments passed into the function
+    //  - method?: The Solidity method signature
+    //  - errorSignature?: The EIP848 error signature
+    //  - errorArgs?: The EIP848 error parameters
+    //  - reason: The reason (only for EIP848 "Error(string)")
+    CALL_EXCEPTION = "CALL_EXCEPTION",
+
+    // Insufficien funds (< value + gasLimit * gasPrice)
+    //   - transaction: the transaction attempted
+    INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS",
+
+    // Nonce has already been used
+    //   - transaction: the transaction attempted
+    NONCE_EXPIRED = "NONCE_EXPIRED",
+
+    // The replacement fee for the transaction is too low
+    //   - transaction: the transaction attempted
+    REPLACEMENT_UNDERPRICED = "REPLACEMENT_UNDERPRICED",
+
+    // The gas limit could not be estimated
+    //   - transaction: the transaction passed to estimateGas
+    UNPREDICTABLE_GAS_LIMIT = "UNPREDICTABLE_GAS_LIMIT",
+};
+
 export class Logger {
     readonly version: string;
 
-    static errors = {
+    static errors = ErrorCode;
 
-        ///////////////////
-        // Generic Errors
-
-        // Unknown Error
-        UNKNOWN_ERROR: "UNKNOWN_ERROR",
-
-        // Not Implemented
-        NOT_IMPLEMENTED: "NOT_IMPLEMENTED",
-
-        // Unsupported Operation
-        //   - operation
-        UNSUPPORTED_OPERATION: "UNSUPPORTED_OPERATION",
-
-        // Network Error (i.e. Ethereum Network, such as an invalid chain ID)
-        NETWORK_ERROR: "NETWORK_ERROR",
-
-        // Some sort of bad response from the server
-        SERVER_ERROR: "SERVER_ERROR",
-
-        // Timeout
-        TIMEOUT: "TIMEOUT",
-
-        ///////////////////
-        // Operational  Errors
-
-        // Buffer Overrun
-        BUFFER_OVERRUN: "BUFFER_OVERRUN",
-
-        // Numeric Fault
-        //   - operation: the operation being executed
-        //   - fault: the reason this faulted
-        NUMERIC_FAULT: "NUMERIC_FAULT",
-
-
-        ///////////////////
-        // Argument Errors
-
-        // Missing new operator to an object
-        //  - name: The name of the class
-        MISSING_NEW: "MISSING_NEW",
-
-        // Invalid argument (e.g. value is incompatible with type) to a function:
-        //   - argument: The argument name that was invalid
-        //   - value: The value of the argument
-        INVALID_ARGUMENT: "INVALID_ARGUMENT",
-
-        // Missing argument to a function:
-        //   - count: The number of arguments received
-        //   - expectedCount: The number of arguments expected
-        MISSING_ARGUMENT: "MISSING_ARGUMENT",
-
-        // Too many arguments
-        //   - count: The number of arguments received
-        //   - expectedCount: The number of arguments expected
-        UNEXPECTED_ARGUMENT: "UNEXPECTED_ARGUMENT",
-
-
-        ///////////////////
-        // Blockchain Errors
-
-        // Call exception
-        //  - transaction: the transaction
-        //  - address?: the contract address
-        //  - args?: The arguments passed into the function
-        //  - method?: The Solidity method signature
-        //  - errorSignature?: The EIP848 error signature
-        //  - errorArgs?: The EIP848 error parameters
-        //  - reason: The reason (only for EIP848 "Error(string)")
-        CALL_EXCEPTION: "CALL_EXCEPTION",
-
-        // Insufficien funds (< value + gasLimit * gasPrice)
-        //   - transaction: the transaction attempted
-        INSUFFICIENT_FUNDS: "INSUFFICIENT_FUNDS",
-
-        // Nonce has already been used
-        //   - transaction: the transaction attempted
-        NONCE_EXPIRED: "NONCE_EXPIRED",
-
-        // The replacement fee for the transaction is too low
-        //   - transaction: the transaction attempted
-        REPLACEMENT_UNDERPRICED: "REPLACEMENT_UNDERPRICED",
-
-        // The gas limit could not be estimated
-        //   - transaction: the transaction passed to estimateGas
-        UNPREDICTABLE_GAS_LIMIT: "UNPREDICTABLE_GAS_LIMIT",
-    };
-
-    static levels: { [ name: string ]: LogLevel } = {
-        DEBUG: "DEBUG",
-        INFO: "INFO",
-        WARNING: "WARNING",
-        ERROR: "ERROR",
-        OFF: "OFF"
-    };
+    static levels = LogLevel;
 
     constructor(version: string) {
         Object.defineProperty(this, "version", {
@@ -156,7 +159,7 @@ export class Logger {
         if (LogLevels[level] == null) {
             this.throwArgumentError("invalid log level name", "logLevel", logLevel);
         }
-        if (LogLevel > LogLevels[level]) { return; }
+        if (_logLevel > LogLevels[level]) { return; }
         console.log.apply(console, args);
     }
 
@@ -172,7 +175,7 @@ export class Logger {
         this._log(Logger.levels.WARNING, args);
     }
 
-    makeError(message: string, code?: string, params?: any): Error {
+    makeError(message: string, code?: ErrorCode, params?: any): Error {
         // Errors are being censored
         if (_censorErrors) {
             return this.makeError("censored error", code, { });
@@ -209,7 +212,7 @@ export class Logger {
         return error;
     }
 
-    throwError(message: string, code?: string, params?: any): never {
+    throwError(message: string, code?: ErrorCode, params?: any): never {
         throw this.makeError(message, code, params);
     }
 
@@ -320,6 +323,6 @@ export class Logger {
             Logger.globalLogger().warn("invalid log level - " + logLevel);
             return;
         }
-        LogLevel = level;
+        _logLevel = level;
     }
 }

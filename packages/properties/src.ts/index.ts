@@ -123,7 +123,7 @@ export function deepCopy<T>(object: T): Similar<T> {
 }
 
 export class Description<T = any> {
-    constructor(info: T) {
+    constructor(info: { [ K in keyof T ]: T[K] }) {
         for (const key in info) {
             (<any>this)[key] = deepCopy(info[key]);
         }

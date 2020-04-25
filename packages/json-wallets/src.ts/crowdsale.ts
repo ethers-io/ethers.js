@@ -16,7 +16,7 @@ const logger = new Logger(version);
 
 import { getPassword, looseArrayify, searchPath } from "./utils";
 
-interface _CrowdsaleAccount {
+export interface _CrowdsaleAccount {
     address: string;
     privateKey: string;
 

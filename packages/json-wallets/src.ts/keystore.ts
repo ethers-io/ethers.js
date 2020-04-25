@@ -26,7 +26,7 @@ function hasMnemonic(value: any): value is { mnemonic: Mnemonic } {
     return (value != null && value.mnemonic && value.mnemonic.phrase);
 }
 
-interface _KeystoreAccount {
+export interface _KeystoreAccount {
     address: string;
     privateKey: string;
     mnemonic?: Mnemonic;

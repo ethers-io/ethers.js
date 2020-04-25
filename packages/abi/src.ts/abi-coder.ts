@@ -78,7 +78,7 @@ export class AbiCoder {
             return new FixedBytesCoder(size, param.name);
         }
 
-        return logger.throwError("invalid type", "type", param.type);
+        return logger.throwArgumentError("invalid type", "type", param.type);
     }
 
     _getWordSize(): number { return 32; }
