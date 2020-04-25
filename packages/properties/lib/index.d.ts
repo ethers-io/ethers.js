@@ -13,5 +13,7 @@ export declare function checkProperties(object: any, properties: {
 export declare function shallowCopy<T>(object: T): Similar<T>;
 export declare function deepCopy<T>(object: T): Similar<T>;
 export declare class Description<T = any> {
-    constructor(info: T);
+    constructor(info: {
+        [K in keyof T]: T[K];
+    });
 }

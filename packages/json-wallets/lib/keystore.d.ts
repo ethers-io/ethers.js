@@ -2,7 +2,7 @@ import { ExternallyOwnedAccount } from "@ethersproject/abstract-signer";
 import { Bytes, BytesLike } from "@ethersproject/bytes";
 import { Mnemonic } from "@ethersproject/hdnode";
 import { Description } from "@ethersproject/properties";
-interface _KeystoreAccount {
+export interface _KeystoreAccount {
     address: string;
     privateKey: string;
     mnemonic?: Mnemonic;
@@ -31,4 +31,3 @@ export declare type EncryptOptions = {
 export declare function decryptSync(json: string, password: Bytes | string): KeystoreAccount;
 export declare function decrypt(json: string, password: Bytes | string, progressCallback?: ProgressCallback): Promise<KeystoreAccount>;
 export declare function encrypt(account: ExternallyOwnedAccount, password: Bytes | string, options?: EncryptOptions, progressCallback?: ProgressCallback): Promise<string>;
-export {};

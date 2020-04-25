@@ -3455,13 +3455,13 @@ var bn = createCommonjsModule(function (module) {
 });
 var bn_1 = bn.BN;
 
-const version = "logger/5.0.0-beta.136";
+const version = "logger/5.0.0-beta.137";
 
 "use strict";
 let _permanentCensorErrors = false;
 let _censorErrors = false;
 const LogLevels = { debug: 1, "default": 2, info: 2, warning: 3, error: 4, off: 5 };
-let LogLevel = LogLevels["default"];
+let _logLevel = LogLevels["default"];
 let _globalLogger = null;
 function _checkNormalize() {
     try {
@@ -3491,6 +3491,81 @@ function _checkNormalize() {
     return null;
 }
 const _normalizeError = _checkNormalize();
+var LogLevel;
+(function (LogLevel) {
+    LogLevel["DEBUG"] = "DEBUG";
+    LogLevel["INFO"] = "INFO";
+    LogLevel["WARNING"] = "WARNING";
+    LogLevel["ERROR"] = "ERROR";
+    LogLevel["OFF"] = "OFF";
+})(LogLevel || (LogLevel = {}));
+var ErrorCode;
+(function (ErrorCode) {
+    ///////////////////
+    // Generic Errors
+    // Unknown Error
+    ErrorCode["UNKNOWN_ERROR"] = "UNKNOWN_ERROR";
+    // Not Implemented
+    ErrorCode["NOT_IMPLEMENTED"] = "NOT_IMPLEMENTED";
+    // Unsupported Operation
+    //   - operation
+    ErrorCode["UNSUPPORTED_OPERATION"] = "UNSUPPORTED_OPERATION";
+    // Network Error (i.e. Ethereum Network, such as an invalid chain ID)
+    ErrorCode["NETWORK_ERROR"] = "NETWORK_ERROR";
+    // Some sort of bad response from the server
+    ErrorCode["SERVER_ERROR"] = "SERVER_ERROR";
+    // Timeout
+    ErrorCode["TIMEOUT"] = "TIMEOUT";
+    ///////////////////
+    // Operational  Errors
+    // Buffer Overrun
+    ErrorCode["BUFFER_OVERRUN"] = "BUFFER_OVERRUN";
+    // Numeric Fault
+    //   - operation: the operation being executed
+    //   - fault: the reason this faulted
+    ErrorCode["NUMERIC_FAULT"] = "NUMERIC_FAULT";
+    ///////////////////
+    // Argument Errors
+    // Missing new operator to an object
+    //  - name: The name of the class
+    ErrorCode["MISSING_NEW"] = "MISSING_NEW";
+    // Invalid argument (e.g. value is incompatible with type) to a function:
+    //   - argument: The argument name that was invalid
+    //   - value: The value of the argument
+    ErrorCode["INVALID_ARGUMENT"] = "INVALID_ARGUMENT";
+    // Missing argument to a function:
+    //   - count: The number of arguments received
+    //   - expectedCount: The number of arguments expected
+    ErrorCode["MISSING_ARGUMENT"] = "MISSING_ARGUMENT";
+    // Too many arguments
+    //   - count: The number of arguments received
+    //   - expectedCount: The number of arguments expected
+    ErrorCode["UNEXPECTED_ARGUMENT"] = "UNEXPECTED_ARGUMENT";
+    ///////////////////
+    // Blockchain Errors
+    // Call exception
+    //  - transaction: the transaction
+    //  - address?: the contract address
+    //  - args?: The arguments passed into the function
+    //  - method?: The Solidity method signature
+    //  - errorSignature?: The EIP848 error signature
+    //  - errorArgs?: The EIP848 error parameters
+    //  - reason: The reason (only for EIP848 "Error(string)")
+    ErrorCode["CALL_EXCEPTION"] = "CALL_EXCEPTION";
+    // Insufficien funds (< value + gasLimit * gasPrice)
+    //   - transaction: the transaction attempted
+    ErrorCode["INSUFFICIENT_FUNDS"] = "INSUFFICIENT_FUNDS";
+    // Nonce has already been used
+    //   - transaction: the transaction attempted
+    ErrorCode["NONCE_EXPIRED"] = "NONCE_EXPIRED";
+    // The replacement fee for the transaction is too low
+    //   - transaction: the transaction attempted
+    ErrorCode["REPLACEMENT_UNDERPRICED"] = "REPLACEMENT_UNDERPRICED";
+    // The gas limit could not be estimated
+    //   - transaction: the transaction passed to estimateGas
+    ErrorCode["UNPREDICTABLE_GAS_LIMIT"] = "UNPREDICTABLE_GAS_LIMIT";
+})(ErrorCode || (ErrorCode = {}));
+;
 class Logger {
     constructor(version) {
         Object.defineProperty(this, "version", {
@@ -3504,7 +3579,7 @@ class Logger {
         if (LogLevels[level] == null) {
             this.throwArgumentError("invalid log level name", "logLevel", logLevel);
         }
-        if (LogLevel > LogLevels[level]) {
+        if (_logLevel > LogLevels[level]) {
             return;
         }
         console.log.apply(console, args);
@@ -3656,83 +3731,15 @@ class Logger {
             Logger.globalLogger().warn("invalid log level - " + logLevel);
             return;
         }
-        LogLevel = level;
+        _logLevel = level;
     }
 }
-Logger.errors = {
-    ///////////////////
-    // Generic Errors
-    // Unknown Error
-    UNKNOWN_ERROR: "UNKNOWN_ERROR",
-    // Not Implemented
-    NOT_IMPLEMENTED: "NOT_IMPLEMENTED",
-    // Unsupported Operation
-    //   - operation
-    UNSUPPORTED_OPERATION: "UNSUPPORTED_OPERATION",
-    // Network Error (i.e. Ethereum Network, such as an invalid chain ID)
-    NETWORK_ERROR: "NETWORK_ERROR",
-    // Some sort of bad response from the server
-    SERVER_ERROR: "SERVER_ERROR",
-    // Timeout
-    TIMEOUT: "TIMEOUT",
-    ///////////////////
-    // Operational  Errors
-    // Buffer Overrun
-    BUFFER_OVERRUN: "BUFFER_OVERRUN",
-    // Numeric Fault
-    //   - operation: the operation being executed
-    //   - fault: the reason this faulted
-    NUMERIC_FAULT: "NUMERIC_FAULT",
-    ///////////////////
-    // Argument Errors
-    // Missing new operator to an object
-    //  - name: The name of the class
-    MISSING_NEW: "MISSING_NEW",
-    // Invalid argument (e.g. value is incompatible with type) to a function:
-    //   - argument: The argument name that was invalid
-    //   - value: The value of the argument
-    INVALID_ARGUMENT: "INVALID_ARGUMENT",
-    // Missing argument to a function:
-    //   - count: The number of arguments received
-    //   - expectedCount: The number of arguments expected
-    MISSING_ARGUMENT: "MISSING_ARGUMENT",
-    // Too many arguments
-    //   - count: The number of arguments received
-    //   - expectedCount: The number of arguments expected
-    UNEXPECTED_ARGUMENT: "UNEXPECTED_ARGUMENT",
-    ///////////////////
-    // Blockchain Errors
-    // Call exception
-    //  - transaction: the transaction
-    //  - address?: the contract address
-    //  - args?: The arguments passed into the function
-    //  - method?: The Solidity method signature
-    //  - errorSignature?: The EIP848 error signature
-    //  - errorArgs?: The EIP848 error parameters
-    //  - reason: The reason (only for EIP848 "Error(string)")
-    CALL_EXCEPTION: "CALL_EXCEPTION",
-    // Insufficien funds (< value + gasLimit * gasPrice)
-    //   - transaction: the transaction attempted
-    INSUFFICIENT_FUNDS: "INSUFFICIENT_FUNDS",
-    // Nonce has already been used
-    //   - transaction: the transaction attempted
-    NONCE_EXPIRED: "NONCE_EXPIRED",
-    // The replacement fee for the transaction is too low
-    //   - transaction: the transaction attempted
-    REPLACEMENT_UNDERPRICED: "REPLACEMENT_UNDERPRICED",
-    // The gas limit could not be estimated
-    //   - transaction: the transaction passed to estimateGas
-    UNPREDICTABLE_GAS_LIMIT: "UNPREDICTABLE_GAS_LIMIT",
-};
-Logger.levels = {
-    DEBUG: "DEBUG",
-    INFO: "INFO",
-    WARNING: "WARNING",
-    ERROR: "ERROR",
-    OFF: "OFF"
-};
+Logger.errors = ErrorCode;
+Logger.levels = LogLevel;
 
 var lib_esm = /*#__PURE__*/Object.freeze({
+	get LogLevel () { return LogLevel; },
+	get ErrorCode () { return ErrorCode; },
 	Logger: Logger
 });
 
@@ -4682,7 +4689,7 @@ class FixedNumber {
     }
 }
 
-const version$3 = "properties/5.0.0-beta.138";
+const version$3 = "properties/5.0.0-beta.139";
 
 "use strict";
 const logger$3 = new Logger(version$3);
@@ -4795,7 +4802,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.0.0-beta.151";
+const version$4 = "abi/5.0.0-beta.152";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -5211,12 +5218,13 @@ class EventFragment extends Fragment {
         if (value.type !== "event") {
             logger$4.throwArgumentError("invalid event object", "value", value);
         }
-        return new EventFragment(_constructorGuard$2, {
+        const params = {
             name: verifyIdentifier(value.name),
             anonymous: value.anonymous,
             inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : []),
             type: "event"
-        });
+        };
+        return new EventFragment(_constructorGuard$2, params);
     }
     static fromString(value) {
         let match = value.match(regexParen);
@@ -5386,13 +5394,15 @@ class ConstructorFragment extends Fragment {
         if (state.constant) {
             logger$4.throwArgumentError("constructor cannot be constant", "value", value);
         }
-        return new ConstructorFragment(_constructorGuard$2, {
+        const params = {
             name: null,
             type: value.type,
             inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : []),
             payable: state.payable,
+            stateMutability: state.stateMutability,
             gas: (value.gas ? BigNumber.from(value.gas) : null)
-        });
+        };
+        return new ConstructorFragment(_constructorGuard$2, params);
     }
     static fromString(value) {
         let params = { type: "constructor" };
@@ -5466,7 +5476,7 @@ class FunctionFragment extends ConstructorFragment {
             logger$4.throwArgumentError("invalid function object", "value", value);
         }
         let state = verifyState(value);
-        return new FunctionFragment(_constructorGuard$2, {
+        const params = {
             type: value.type,
             name: verifyIdentifier(value.name),
             constant: state.constant,
@@ -5475,7 +5485,8 @@ class FunctionFragment extends ConstructorFragment {
             payable: state.payable,
             stateMutability: state.stateMutability,
             gas: (value.gas ? BigNumber.from(value.gas) : null)
-        });
+        };
+        return new FunctionFragment(_constructorGuard$2, params);
     }
     static fromString(value) {
         let params = { type: "function" };
@@ -5566,8 +5577,30 @@ function splitNesting(value) {
 
 "use strict";
 const logger$5 = new Logger(version$4);
+function checkResultErrors(result) {
+    // Find the first error (if any)
+    const errors = [];
+    const checkErrors = function (path, object) {
+        if (!Array.isArray(object)) {
+            return;
+        }
+        for (let key in object) {
+            const childPath = path.slice();
+            childPath.push(key);
+            try {
+                checkErrors(childPath, object[key]);
+            }
+            catch (error) {
+                errors.push({ path: childPath, error: error });
+            }
+        }
+    };
+    checkErrors([], result);
+    return errors;
+}
 class Coder {
     constructor(name, type, localName, dynamic) {
+        // @TODO: defineReadOnly these
         this.name = name;
         this.type = type;
         this.localName = localName;
@@ -6495,11 +6528,35 @@ function unpack(reader, coders) {
         if (coder.dynamic) {
             let offset = reader.readValue();
             let offsetReader = baseReader.subReader(offset.toNumber());
-            value = coder.decode(offsetReader);
+            try {
+                value = coder.decode(offsetReader);
+            }
+            catch (error) {
+                // Cannot recover from this
+                if (error.code === Logger.errors.BUFFER_OVERRUN) {
+                    throw error;
+                }
+                value = error;
+                value.baseType = coder.name;
+                value.name = coder.localName;
+                value.type = coder.type;
+            }
             dynamicLength += offsetReader.consumed;
         }
         else {
-            value = coder.decode(reader);
+            try {
+                value = coder.decode(reader);
+            }
+            catch (error) {
+                // Cannot recover from this
+                if (error.code === Logger.errors.BUFFER_OVERRUN) {
+                    throw error;
+                }
+                value = error;
+                value.baseType = coder.name;
+                value.name = coder.localName;
+                value.type = coder.type;
+            }
         }
         if (value != undefined) {
             values.push(value);
@@ -6520,8 +6577,24 @@ function unpack(reader, coders) {
         if (values[name] != null) {
             return;
         }
-        values[name] = values[index];
+        const value = values[index];
+        if (value instanceof Error) {
+            Object.defineProperty(values, name, {
+                get: () => { throw value; }
+            });
+        }
+        else {
+            values[name] = value;
+        }
     });
+    for (let i = 0; i < values.length; i++) {
+        const value = values[i];
+        if (value instanceof Error) {
+            Object.defineProperty(values, i, {
+                get: () => { throw value; }
+            });
+        }
+    }
     return Object.freeze(values);
 }
 class ArrayCoder extends Coder {
@@ -6537,7 +6610,6 @@ class ArrayCoder extends Coder {
             this._throwError("expected array value", value);
         }
         let count = this.length;
-        //let result = new Uint8Array(0);
         if (count === -1) {
             count = value.length;
             writer.writeValue(value.length);
@@ -7178,14 +7250,14 @@ class StringCoder extends DynamicBytesCoder {
 class TupleCoder extends Coder {
     constructor(coders, localName) {
         let dynamic = false;
-        let types = [];
+        const types = [];
         coders.forEach((coder) => {
             if (coder.dynamic) {
                 dynamic = true;
             }
             types.push(coder.type);
         });
-        let type = ("tuple(" + types.join(",") + ")");
+        const type = ("tuple(" + types.join(",") + ")");
         super("tuple", type, localName, dynamic);
         this.coders = coders;
     }
@@ -7243,7 +7315,7 @@ class AbiCoder {
             }
             return new FixedBytesCoder(size, param.name);
         }
-        return logger$a.throwError("invalid type", "type", param.type);
+        return logger$a.throwArgumentError("invalid type", "type", param.type);
     }
     _getWordSize() { return 32; }
     _getReader(data) {
@@ -7332,6 +7404,22 @@ class Indexed extends Description {
         return !!(value && value._isIndexed);
     }
 }
+function wrapAccessError(property, error) {
+    const wrap = new Error(`deferred error during ABI decoding triggered accessing ${property}`);
+    wrap.error = error;
+    return wrap;
+}
+function checkNames(fragment, type, params) {
+    params.reduce((accum, param) => {
+        if (param.name) {
+            if (accum[param.name]) {
+                logger$c.throwArgumentError(`duplicate ${type} parameter ${JSON.stringify(param.name)} in ${fragment.format("full")}`, "fragment", fragment);
+            }
+            accum[param.name] = true;
+        }
+        return accum;
+    }, {});
+}
 class Interface {
     constructor(fragments) {
         logger$c.checkNew(new.target, Interface);
@@ -7359,12 +7447,16 @@ class Interface {
                         logger$c.warn("duplicate definition - constructor");
                         return;
                     }
+                    checkNames(fragment, "input", fragment.inputs);
                     defineReadOnly(this, "deploy", fragment);
                     return;
                 case "function":
+                    checkNames(fragment, "input", fragment.inputs);
+                    checkNames(fragment, "output", fragment.outputs);
                     bucket = this.functions;
                     break;
                 case "event":
+                    checkNames(fragment, "input", fragment.inputs);
                     bucket = this.events;
                     break;
                 default:
@@ -7377,9 +7469,12 @@ class Interface {
             }
             bucket[signature] = fragment;
         });
-        // If we do not have a constructor use the default "constructor() payable"
+        // If we do not have a constructor add a default
         if (!this.deploy) {
-            defineReadOnly(this, "deploy", ConstructorFragment.from({ type: "constructor" }));
+            defineReadOnly(this, "deploy", ConstructorFragment.from({
+                payable: false,
+                type: "constructor"
+            }));
         }
         defineReadOnly(this, "_isInterface", true);
     }
@@ -7598,6 +7693,46 @@ class Interface {
         }
         return topics;
     }
+    encodeEventLog(eventFragment, values) {
+        if (typeof (eventFragment) === "string") {
+            eventFragment = this.getEvent(eventFragment);
+        }
+        const topics = [];
+        const dataTypes = [];
+        const dataValues = [];
+        if (!eventFragment.anonymous) {
+            topics.push(this.getEventTopic(eventFragment));
+        }
+        if (values.length !== eventFragment.inputs.length) {
+            logger$c.throwArgumentError("event arguments/values mismatch", "values", values);
+        }
+        eventFragment.inputs.forEach((param, index) => {
+            const value = values[index];
+            if (param.indexed) {
+                if (param.type === "string") {
+                    topics.push(id(value));
+                }
+                else if (param.type === "bytes") {
+                    topics.push(keccak256(value));
+                }
+                else if (param.baseType === "tuple" || param.baseType === "array") {
+                    // @TOOD
+                    throw new Error("not implemented");
+                }
+                else {
+                    topics.push(this._abiCoder.encode([param.type], [value]));
+                }
+            }
+            else {
+                dataTypes.push(param);
+                dataValues.push(value);
+            }
+        });
+        return {
+            data: this._abiCoder.encode(dataTypes, dataValues),
+            topics: topics
+        };
+    }
     // Decode a filter for the event and the search criteria
     decodeEventLog(eventFragment, data, topics) {
         if (typeof (eventFragment) === "string") {
@@ -7642,16 +7777,45 @@ class Interface {
                     result[index] = new Indexed({ _isIndexed: true, hash: resultIndexed[indexedIndex++] });
                 }
                 else {
-                    result[index] = resultIndexed[indexedIndex++];
+                    try {
+                        result[index] = resultIndexed[indexedIndex++];
+                    }
+                    catch (error) {
+                        result[index] = error;
+                    }
                 }
             }
             else {
-                result[index] = resultNonIndexed[nonIndexedIndex++];
+                try {
+                    result[index] = resultNonIndexed[nonIndexedIndex++];
+                }
+                catch (error) {
+                    result[index] = error;
+                }
             }
+            // Add the keyword argument if named and safe
             if (param.name && result[param.name] == null) {
-                result[param.name] = result[index];
+                const value = result[index];
+                // Make error named values throw on access
+                if (value instanceof Error) {
+                    Object.defineProperty(result, param.name, {
+                        get: () => { throw wrapAccessError(`property ${JSON.stringify(param.name)}`, value); }
+                    });
+                }
+                else {
+                    result[param.name] = value;
+                }
             }
         });
+        // Make all error indexed values throw on access
+        for (let i = 0; i < result.length; i++) {
+            const value = result[i];
+            if (value instanceof Error) {
+                Object.defineProperty(result, i, {
+                    get: () => { throw wrapAccessError(`index ${i}`, value); }
+                });
+            }
+        }
         return Object.freeze(result);
     }
     // Given a transaction, find the matching function fragment (if any) and
@@ -7969,7 +8133,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$b = "contracts/5.0.0-beta.149";
+const version$b = "contracts/5.0.0-beta.150";
 
 "use strict";
 var __awaiter$1 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8031,7 +8195,7 @@ function runMethod(contract, functionName, options) {
             // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
             for (let key in tx) {
                 if (!allowedTransactionKeys$1[key]) {
-                    logger$f.throwError(("unknown transaction override - " + key), "overrides", tx);
+                    logger$f.throwArgumentError(("unknown transaction override - " + key), "overrides", tx);
                 }
             }
         }
@@ -8243,10 +8407,13 @@ class FragmentRunningEvent extends RunningEvent {
         catch (error) {
             event.args = null;
             event.decodeError = error;
-            throw error;
         }
     }
     getEmit(event) {
+        const errors = checkResultErrors(event.args);
+        if (errors.length) {
+            throw errors[0].error;
+        }
         const args = (event.args || []).slice();
         args.push(event);
         return args;
@@ -8479,6 +8646,10 @@ class Contract {
             if (eventName === "error") {
                 return this._normalizeRunningEvent(new ErrorRunningEvent());
             }
+            // Listen for any event that is registered
+            if (eventName === "event") {
+                return this._normalizeRunningEvent(new RunningEvent("event", null));
+            }
             // Listen for any event
             if (eventName === "*") {
                 return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
@@ -8543,17 +8714,25 @@ class Contract {
         // If we are not polling the provider, start polling
         if (!this._wrappedEmits[runningEvent.tag]) {
             const wrappedEmit = (log) => {
-                let event = null;
-                try {
-                    event = this._wrapEvent(runningEvent, log, listener);
+                let event = this._wrapEvent(runningEvent, log, listener);
+                // Try to emit the result for the parameterized event...
+                if (event.decodeError == null) {
+                    try {
+                        const args = runningEvent.getEmit(event);
+                        this.emit(runningEvent.filter, ...args);
+                    }
+                    catch (error) {
+                        event.decodeError = error.error;
+                    }
                 }
-                catch (error) {
-                    // There was an error decoding the data and topics
-                    this.emit("error", error, event);
-                    return;
+                // Always emit "event" for fragment-base events
+                if (runningEvent.filter != null) {
+                    this.emit("event", event);
                 }
-                const args = runningEvent.getEmit(event);
-                this.emit(runningEvent.filter, ...args);
+                // Emit "error" if there was an error
+                if (event.decodeError != null) {
+                    this.emit("error", event.decodeError, event);
+                }
             };
             this._wrappedEmits[runningEvent.tag] = wrappedEmit;
             // Special events, like "error" do not have a filter
@@ -12826,7 +13005,7 @@ Wordlist.register(langEn);
 "use strict";
 const wordlists = { en: langEn };
 
-const version$g = "hdnode/5.0.0-beta.138";
+const version$g = "hdnode/5.0.0-beta.139";
 
 "use strict";
 const logger$j = new Logger(version$g);
@@ -13059,7 +13238,7 @@ class HDNode {
                 }
                 return new HDNode(_constructorGuard$3, hexlify(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null);
         }
-        return logger$j.throwError("invalid extended key", "extendedKey", "[REDACTED]");
+        return logger$j.throwArgumentError("invalid extended key", "extendedKey", "[REDACTED]");
     }
 }
 function mnemonicToSeed(mnemonic, password) {
@@ -13996,7 +14175,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$i = "json-wallets/5.0.0-beta.137";
+const version$i = "json-wallets/5.0.0-beta.138";
 
 "use strict";
 function looseArrayify(hexString) {
@@ -19072,6 +19251,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	FunctionFragment: FunctionFragment,
 	ParamType: ParamType,
 	FormatTypes: FormatTypes,
+	checkResultErrors: checkResultErrors,
 	Logger: Logger,
 	RLP: index,
 	fetchJson: fetchJson,
@@ -19152,10 +19332,9 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.0-beta.183";
+const version$o = "ethers/5.0.0-beta.184";
 
 "use strict";
-const errors = Logger.errors;
 const logger$E = new Logger(version$o);
 
 var ethers = /*#__PURE__*/Object.freeze({
@@ -19169,7 +19348,7 @@ var ethers = /*#__PURE__*/Object.freeze({
 	BigNumber: BigNumber,
 	FixedNumber: FixedNumber,
 	constants: index$1,
-	errors: errors,
+	get errors () { return ErrorCode; },
 	logger: logger$E,
 	utils: utils$1,
 	wordlists: wordlists,
@@ -19186,4 +19365,4 @@ try {
 }
 catch (error) { }
 
-export { BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, Wordlist, index$1 as constants, errors, ethers, getDefaultProvider, logger$E as logger, index$2 as providers, utils$1 as utils, version$o as version, wordlists };
+export { BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, Wordlist, index$1 as constants, ErrorCode as errors, ethers, getDefaultProvider, logger$E as logger, index$2 as providers, utils$1 as utils, version$o as version, wordlists };

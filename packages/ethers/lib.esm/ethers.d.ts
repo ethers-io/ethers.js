@@ -7,9 +7,7 @@ import * as providers from "@ethersproject/providers";
 import { getDefaultProvider } from "@ethersproject/providers";
 import { Wordlist, wordlists } from "@ethersproject/wordlists";
 import * as utils from "./utils";
-declare const errors: {
-    [name: string]: string;
-};
+import { ErrorCode as errors } from "@ethersproject/logger";
 import { BigNumberish } from "@ethersproject/bignumber";
 import { Bytes, BytesLike, Signature } from "@ethersproject/bytes";
 import { Transaction, UnsignedTransaction } from "@ethersproject/transactions";

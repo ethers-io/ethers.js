@@ -4,14 +4,14 @@ import { pack, unpack } from "./array";
 export class TupleCoder extends Coder {
     constructor(coders, localName) {
         let dynamic = false;
-        let types = [];
+        const types = [];
         coders.forEach((coder) => {
             if (coder.dynamic) {
                 dynamic = true;
             }
             types.push(coder.type);
         });
-        let type = ("tuple(" + types.join(",") + ")");
+        const type = ("tuple(" + types.join(",") + ")");
         super("tuple", type, localName, dynamic);
         this.coders = coders;
     }

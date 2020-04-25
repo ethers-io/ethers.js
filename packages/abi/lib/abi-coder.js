@@ -63,7 +63,7 @@ var AbiCoder = /** @class */ (function () {
             }
             return new fixed_bytes_1.FixedBytesCoder(size, param.name);
         }
-        return logger.throwError("invalid type", "type", param.type);
+        return logger.throwArgumentError("invalid type", "type", param.type);
     };
     AbiCoder.prototype._getWordSize = function () { return 32; };
     AbiCoder.prototype._getReader = function (data) {

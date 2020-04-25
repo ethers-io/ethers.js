@@ -3,6 +3,15 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.184 (2020-04-25 03:51)
+-----------------------------------------
+
+  - Minor typing-detected fixes. ([d1f3a42](https://github.com/ethers-io/ethers.js/commit/d1f3a42c119d5588eab667ec7bb6e71042cfb656))
+  - Added initial support for recoverable coding erros. ([#800](https://github.com/ethers-io/ethers.js/issues/800); [bda6623](https://github.com/ethers-io/ethers.js/commit/bda66230916e58e25a522e8430ce4de25091eb6b))
+  - More draconian Typing. ([14e6811](https://github.com/ethers-io/ethers.js/commit/14e6811bf7d7c38a3b5714dededcc883c185d814))
+  - Omit HID libraries for hardware-wallets package on unsupported environments. ([#798](https://github.com/ethers-io/ethers.js/issues/798); [2e24920](https://github.com/ethers-io/ethers.js/commit/2e24920d028d42908d0764ad4ca0b56b55f852d1), [5aefb43](https://github.com/ethers-io/ethers.js/commit/5aefb4303d2fdda62e7e5ddb644919f613d6016a))
+  - Make default constructor non-payable. ([#684](https://github.com/ethers-io/ethers.js/issues/684); [017ea0d](https://github.com/ethers-io/ethers.js/commit/017ea0d6bd22833e9d399ae6b818443786f17884))
+
 ethers/v5.0.0-beta.183 (2020-04-23 23:28)
 -----------------------------------------
 

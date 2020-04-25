@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var _permanentCensorErrors = false;
 var _censorErrors = false;
 var LogLevels = { debug: 1, "default": 2, info: 2, warning: 3, error: 4, off: 5 };
-var LogLevel = LogLevels["default"];
+var _logLevel = LogLevels["default"];
 var _version_1 = require("./_version");
 var _globalLogger = null;
 function _checkNormalize() {
@@ -34,6 +34,81 @@ function _checkNormalize() {
     return null;
 }
 var _normalizeError = _checkNormalize();
+var LogLevel;
+(function (LogLevel) {
+    LogLevel["DEBUG"] = "DEBUG";
+    LogLevel["INFO"] = "INFO";
+    LogLevel["WARNING"] = "WARNING";
+    LogLevel["ERROR"] = "ERROR";
+    LogLevel["OFF"] = "OFF";
+})(LogLevel = exports.LogLevel || (exports.LogLevel = {}));
+var ErrorCode;
+(function (ErrorCode) {
+    ///////////////////
+    // Generic Errors
+    // Unknown Error
+    ErrorCode["UNKNOWN_ERROR"] = "UNKNOWN_ERROR";
+    // Not Implemented
+    ErrorCode["NOT_IMPLEMENTED"] = "NOT_IMPLEMENTED";
+    // Unsupported Operation
+    //   - operation
+    ErrorCode["UNSUPPORTED_OPERATION"] = "UNSUPPORTED_OPERATION";
+    // Network Error (i.e. Ethereum Network, such as an invalid chain ID)
+    ErrorCode["NETWORK_ERROR"] = "NETWORK_ERROR";
+    // Some sort of bad response from the server
+    ErrorCode["SERVER_ERROR"] = "SERVER_ERROR";
+    // Timeout
+    ErrorCode["TIMEOUT"] = "TIMEOUT";
+    ///////////////////
+    // Operational  Errors
+    // Buffer Overrun
+    ErrorCode["BUFFER_OVERRUN"] = "BUFFER_OVERRUN";
+    // Numeric Fault
+    //   - operation: the operation being executed
+    //   - fault: the reason this faulted
+    ErrorCode["NUMERIC_FAULT"] = "NUMERIC_FAULT";
+    ///////////////////
+    // Argument Errors
+    // Missing new operator to an object
+    //  - name: The name of the class
+    ErrorCode["MISSING_NEW"] = "MISSING_NEW";
+    // Invalid argument (e.g. value is incompatible with type) to a function:
+    //   - argument: The argument name that was invalid
+    //   - value: The value of the argument
+    ErrorCode["INVALID_ARGUMENT"] = "INVALID_ARGUMENT";
+    // Missing argument to a function:
+    //   - count: The number of arguments received
+    //   - expectedCount: The number of arguments expected
+    ErrorCode["MISSING_ARGUMENT"] = "MISSING_ARGUMENT";
+    // Too many arguments
+    //   - count: The number of arguments received
+    //   - expectedCount: The number of arguments expected
+    ErrorCode["UNEXPECTED_ARGUMENT"] = "UNEXPECTED_ARGUMENT";
+    ///////////////////
+    // Blockchain Errors
+    // Call exception
+    //  - transaction: the transaction
+    //  - address?: the contract address
+    //  - args?: The arguments passed into the function
+    //  - method?: The Solidity method signature
+    //  - errorSignature?: The EIP848 error signature
+    //  - errorArgs?: The EIP848 error parameters
+    //  - reason: The reason (only for EIP848 "Error(string)")
+    ErrorCode["CALL_EXCEPTION"] = "CALL_EXCEPTION";
+    // Insufficien funds (< value + gasLimit * gasPrice)
+    //   - transaction: the transaction attempted
+    ErrorCode["INSUFFICIENT_FUNDS"] = "INSUFFICIENT_FUNDS";
+    // Nonce has already been used
+    //   - transaction: the transaction attempted
+    ErrorCode["NONCE_EXPIRED"] = "NONCE_EXPIRED";
+    // The replacement fee for the transaction is too low
+    //   - transaction: the transaction attempted
+    ErrorCode["REPLACEMENT_UNDERPRICED"] = "REPLACEMENT_UNDERPRICED";
+    // The gas limit could not be estimated
+    //   - transaction: the transaction passed to estimateGas
+    ErrorCode["UNPREDICTABLE_GAS_LIMIT"] = "UNPREDICTABLE_GAS_LIMIT";
+})(ErrorCode = exports.ErrorCode || (exports.ErrorCode = {}));
+;
 var Logger = /** @class */ (function () {
     function Logger(version) {
         Object.defineProperty(this, "version", {
@@ -47,7 +122,7 @@ var Logger = /** @class */ (function () {
         if (LogLevels[level] == null) {
             this.throwArgumentError("invalid log level name", "logLevel", logLevel);
         }
-        if (LogLevel > LogLevels[level]) {
+        if (_logLevel > LogLevels[level]) {
             return;
         }
         console.log.apply(console, args);
@@ -211,80 +286,10 @@ var Logger = /** @class */ (function () {
             Logger.globalLogger().warn("invalid log level - " + logLevel);
             return;
         }
-        LogLevel = level;
+        _logLevel = level;
     };
-    Logger.errors = {
-        ///////////////////
-        // Generic Errors
-        // Unknown Error
-        UNKNOWN_ERROR: "UNKNOWN_ERROR",
-        // Not Implemented
-        NOT_IMPLEMENTED: "NOT_IMPLEMENTED",
-        // Unsupported Operation
-        //   - operation
-        UNSUPPORTED_OPERATION: "UNSUPPORTED_OPERATION",
-        // Network Error (i.e. Ethereum Network, such as an invalid chain ID)
-        NETWORK_ERROR: "NETWORK_ERROR",
-        // Some sort of bad response from the server
-        SERVER_ERROR: "SERVER_ERROR",
-        // Timeout
-        TIMEOUT: "TIMEOUT",
-        ///////////////////
-        // Operational  Errors
-        // Buffer Overrun
-        BUFFER_OVERRUN: "BUFFER_OVERRUN",
-        // Numeric Fault
-        //   - operation: the operation being executed
-        //   - fault: the reason this faulted
-        NUMERIC_FAULT: "NUMERIC_FAULT",
-        ///////////////////
-        // Argument Errors
-        // Missing new operator to an object
-        //  - name: The name of the class
-        MISSING_NEW: "MISSING_NEW",
-        // Invalid argument (e.g. value is incompatible with type) to a function:
-        //   - argument: The argument name that was invalid
-        //   - value: The value of the argument
-        INVALID_ARGUMENT: "INVALID_ARGUMENT",
-        // Missing argument to a function:
-        //   - count: The number of arguments received
-        //   - expectedCount: The number of arguments expected
-        MISSING_ARGUMENT: "MISSING_ARGUMENT",
-        // Too many arguments
-        //   - count: The number of arguments received
-        //   - expectedCount: The number of arguments expected
-        UNEXPECTED_ARGUMENT: "UNEXPECTED_ARGUMENT",
-        ///////////////////
-        // Blockchain Errors
-        // Call exception
-        //  - transaction: the transaction
-        //  - address?: the contract address
-        //  - args?: The arguments passed into the function
-        //  - method?: The Solidity method signature
-        //  - errorSignature?: The EIP848 error signature
-        //  - errorArgs?: The EIP848 error parameters
-        //  - reason: The reason (only for EIP848 "Error(string)")
-        CALL_EXCEPTION: "CALL_EXCEPTION",
-        // Insufficien funds (< value + gasLimit * gasPrice)
-        //   - transaction: the transaction attempted
-        INSUFFICIENT_FUNDS: "INSUFFICIENT_FUNDS",
-        // Nonce has already been used
-        //   - transaction: the transaction attempted
-        NONCE_EXPIRED: "NONCE_EXPIRED",
-        // The replacement fee for the transaction is too low
-        //   - transaction: the transaction attempted
-        REPLACEMENT_UNDERPRICED: "REPLACEMENT_UNDERPRICED",
-        // The gas limit could not be estimated
-        //   - transaction: the transaction passed to estimateGas
-        UNPREDICTABLE_GAS_LIMIT: "UNPREDICTABLE_GAS_LIMIT",
-    };
-    Logger.levels = {
-        DEBUG: "DEBUG",
-        INFO: "INFO",
-        WARNING: "WARNING",
-        ERROR: "ERROR",
-        OFF: "OFF"
-    };
+    Logger.errors = ErrorCode;
+    Logger.levels = LogLevel;
     return Logger;
 }());
 exports.Logger = Logger;

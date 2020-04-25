@@ -3464,7 +3464,7 @@
 	var _version = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "logger/5.0.0-beta.136";
+	exports.version = "logger/5.0.0-beta.137";
 	});
 
 	var _version$1 = unwrapExports(_version);
@@ -3476,7 +3476,7 @@
 	var _permanentCensorErrors = false;
 	var _censorErrors = false;
 	var LogLevels = { debug: 1, "default": 2, info: 2, warning: 3, error: 4, off: 5 };
-	var LogLevel = LogLevels["default"];
+	var _logLevel = LogLevels["default"];
 
 	var _globalLogger = null;
 	function _checkNormalize() {
@@ -3507,6 +3507,81 @@
 	    return null;
 	}
 	var _normalizeError = _checkNormalize();
+	var LogLevel;
+	(function (LogLevel) {
+	    LogLevel["DEBUG"] = "DEBUG";
+	    LogLevel["INFO"] = "INFO";
+	    LogLevel["WARNING"] = "WARNING";
+	    LogLevel["ERROR"] = "ERROR";
+	    LogLevel["OFF"] = "OFF";
+	})(LogLevel = exports.LogLevel || (exports.LogLevel = {}));
+	var ErrorCode;
+	(function (ErrorCode) {
+	    ///////////////////
+	    // Generic Errors
+	    // Unknown Error
+	    ErrorCode["UNKNOWN_ERROR"] = "UNKNOWN_ERROR";
+	    // Not Implemented
+	    ErrorCode["NOT_IMPLEMENTED"] = "NOT_IMPLEMENTED";
+	    // Unsupported Operation
+	    //   - operation
+	    ErrorCode["UNSUPPORTED_OPERATION"] = "UNSUPPORTED_OPERATION";
+	    // Network Error (i.e. Ethereum Network, such as an invalid chain ID)
+	    ErrorCode["NETWORK_ERROR"] = "NETWORK_ERROR";
+	    // Some sort of bad response from the server
+	    ErrorCode["SERVER_ERROR"] = "SERVER_ERROR";
+	    // Timeout
+	    ErrorCode["TIMEOUT"] = "TIMEOUT";
+	    ///////////////////
+	    // Operational  Errors
+	    // Buffer Overrun
+	    ErrorCode["BUFFER_OVERRUN"] = "BUFFER_OVERRUN";
+	    // Numeric Fault
+	    //   - operation: the operation being executed
+	    //   - fault: the reason this faulted
+	    ErrorCode["NUMERIC_FAULT"] = "NUMERIC_FAULT";
+	    ///////////////////
+	    // Argument Errors
+	    // Missing new operator to an object
+	    //  - name: The name of the class
+	    ErrorCode["MISSING_NEW"] = "MISSING_NEW";
+	    // Invalid argument (e.g. value is incompatible with type) to a function:
+	    //   - argument: The argument name that was invalid
+	    //   - value: The value of the argument
+	    ErrorCode["INVALID_ARGUMENT"] = "INVALID_ARGUMENT";
+	    // Missing argument to a function:
+	    //   - count: The number of arguments received
+	    //   - expectedCount: The number of arguments expected
+	    ErrorCode["MISSING_ARGUMENT"] = "MISSING_ARGUMENT";
+	    // Too many arguments
+	    //   - count: The number of arguments received
+	    //   - expectedCount: The number of arguments expected
+	    ErrorCode["UNEXPECTED_ARGUMENT"] = "UNEXPECTED_ARGUMENT";
+	    ///////////////////
+	    // Blockchain Errors
+	    // Call exception
+	    //  - transaction: the transaction
+	    //  - address?: the contract address
+	    //  - args?: The arguments passed into the function
+	    //  - method?: The Solidity method signature
+	    //  - errorSignature?: The EIP848 error signature
+	    //  - errorArgs?: The EIP848 error parameters
+	    //  - reason: The reason (only for EIP848 "Error(string)")
+	    ErrorCode["CALL_EXCEPTION"] = "CALL_EXCEPTION";
+	    // Insufficien funds (< value + gasLimit * gasPrice)
+	    //   - transaction: the transaction attempted
+	    ErrorCode["INSUFFICIENT_FUNDS"] = "INSUFFICIENT_FUNDS";
+	    // Nonce has already been used
+	    //   - transaction: the transaction attempted
+	    ErrorCode["NONCE_EXPIRED"] = "NONCE_EXPIRED";
+	    // The replacement fee for the transaction is too low
+	    //   - transaction: the transaction attempted
+	    ErrorCode["REPLACEMENT_UNDERPRICED"] = "REPLACEMENT_UNDERPRICED";
+	    // The gas limit could not be estimated
+	    //   - transaction: the transaction passed to estimateGas
+	    ErrorCode["UNPREDICTABLE_GAS_LIMIT"] = "UNPREDICTABLE_GAS_LIMIT";
+	})(ErrorCode = exports.ErrorCode || (exports.ErrorCode = {}));
+	;
 	var Logger = /** @class */ (function () {
 	    function Logger(version) {
 	        Object.defineProperty(this, "version", {
@@ -3520,7 +3595,7 @@
 	        if (LogLevels[level] == null) {
 	            this.throwArgumentError("invalid log level name", "logLevel", logLevel);
 	        }
-	        if (LogLevel > LogLevels[level]) {
+	        if (_logLevel > LogLevels[level]) {
 	            return;
 	        }
 	        console.log.apply(console, args);
@@ -3684,87 +3759,19 @@
 	            Logger.globalLogger().warn("invalid log level - " + logLevel);
 	            return;
 	        }
-	        LogLevel = level;
+	        _logLevel = level;
 	    };
-	    Logger.errors = {
-	        ///////////////////
-	        // Generic Errors
-	        // Unknown Error
-	        UNKNOWN_ERROR: "UNKNOWN_ERROR",
-	        // Not Implemented
-	        NOT_IMPLEMENTED: "NOT_IMPLEMENTED",
-	        // Unsupported Operation
-	        //   - operation
-	        UNSUPPORTED_OPERATION: "UNSUPPORTED_OPERATION",
-	        // Network Error (i.e. Ethereum Network, such as an invalid chain ID)
-	        NETWORK_ERROR: "NETWORK_ERROR",
-	        // Some sort of bad response from the server
-	        SERVER_ERROR: "SERVER_ERROR",
-	        // Timeout
-	        TIMEOUT: "TIMEOUT",
-	        ///////////////////
-	        // Operational  Errors
-	        // Buffer Overrun
-	        BUFFER_OVERRUN: "BUFFER_OVERRUN",
-	        // Numeric Fault
-	        //   - operation: the operation being executed
-	        //   - fault: the reason this faulted
-	        NUMERIC_FAULT: "NUMERIC_FAULT",
-	        ///////////////////
-	        // Argument Errors
-	        // Missing new operator to an object
-	        //  - name: The name of the class
-	        MISSING_NEW: "MISSING_NEW",
-	        // Invalid argument (e.g. value is incompatible with type) to a function:
-	        //   - argument: The argument name that was invalid
-	        //   - value: The value of the argument
-	        INVALID_ARGUMENT: "INVALID_ARGUMENT",
-	        // Missing argument to a function:
-	        //   - count: The number of arguments received
-	        //   - expectedCount: The number of arguments expected
-	        MISSING_ARGUMENT: "MISSING_ARGUMENT",
-	        // Too many arguments
-	        //   - count: The number of arguments received
-	        //   - expectedCount: The number of arguments expected
-	        UNEXPECTED_ARGUMENT: "UNEXPECTED_ARGUMENT",
-	        ///////////////////
-	        // Blockchain Errors
-	        // Call exception
-	        //  - transaction: the transaction
-	        //  - address?: the contract address
-	        //  - args?: The arguments passed into the function
-	        //  - method?: The Solidity method signature
-	        //  - errorSignature?: The EIP848 error signature
-	        //  - errorArgs?: The EIP848 error parameters
-	        //  - reason: The reason (only for EIP848 "Error(string)")
-	        CALL_EXCEPTION: "CALL_EXCEPTION",
-	        // Insufficien funds (< value + gasLimit * gasPrice)
-	        //   - transaction: the transaction attempted
-	        INSUFFICIENT_FUNDS: "INSUFFICIENT_FUNDS",
-	        // Nonce has already been used
-	        //   - transaction: the transaction attempted
-	        NONCE_EXPIRED: "NONCE_EXPIRED",
-	        // The replacement fee for the transaction is too low
-	        //   - transaction: the transaction attempted
-	        REPLACEMENT_UNDERPRICED: "REPLACEMENT_UNDERPRICED",
-	        // The gas limit could not be estimated
-	        //   - transaction: the transaction passed to estimateGas
-	        UNPREDICTABLE_GAS_LIMIT: "UNPREDICTABLE_GAS_LIMIT",
-	    };
-	    Logger.levels = {
-	        DEBUG: "DEBUG",
-	        INFO: "INFO",
-	        WARNING: "WARNING",
-	        ERROR: "ERROR",
-	        OFF: "OFF"
-	    };
+	    Logger.errors = ErrorCode;
+	    Logger.levels = LogLevel;
 	    return Logger;
 	}());
 	exports.Logger = Logger;
 	});
 
 	var index = unwrapExports(lib);
-	var lib_1 = lib.Logger;
+	var lib_1 = lib.LogLevel;
+	var lib_2 = lib.ErrorCode;
+	var lib_3 = lib.Logger;
 
 	var _version$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -4176,8 +4183,8 @@
 
 	var index$1 = unwrapExports(lib$1);
 	var lib_1$1 = lib$1.isBytesLike;
-	var lib_2 = lib$1.isBytes;
-	var lib_3 = lib$1.arrayify;
+	var lib_2$1 = lib$1.isBytes;
+	var lib_3$1 = lib$1.arrayify;
 	var lib_4 = lib$1.concat;
 	var lib_5 = lib$1.stripZeros;
 	var lib_6 = lib$1.zeroPad;
@@ -4802,15 +4809,15 @@
 
 	var index$2 = unwrapExports(lib$2);
 	var lib_1$2 = lib$2.BigNumber;
-	var lib_2$1 = lib$2.formatFixed;
-	var lib_3$1 = lib$2.FixedFormat;
+	var lib_2$2 = lib$2.formatFixed;
+	var lib_3$2 = lib$2.FixedFormat;
 	var lib_4$1 = lib$2.FixedNumber;
 	var lib_5$1 = lib$2.parseFixed;
 
 	var _version$6 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "properties/5.0.0-beta.138";
+	exports.version = "properties/5.0.0-beta.139";
 	});
 
 	var _version$7 = unwrapExports(_version$6);
@@ -4942,8 +4949,8 @@
 
 	var index$3 = unwrapExports(lib$3);
 	var lib_1$3 = lib$3.defineReadOnly;
-	var lib_2$2 = lib$3.getStatic;
-	var lib_3$2 = lib$3.resolveProperties;
+	var lib_2$3 = lib$3.getStatic;
+	var lib_3$3 = lib$3.resolveProperties;
 	var lib_4$2 = lib$3.checkProperties;
 	var lib_5$2 = lib$3.shallowCopy;
 	var lib_6$1 = lib$3.deepCopy;
@@ -4952,7 +4959,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.151";
+	exports.version = "abi/5.0.0-beta.152";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -5399,12 +5406,13 @@
 	        if (value.type !== "event") {
 	            logger.throwArgumentError("invalid event object", "value", value);
 	        }
-	        return new EventFragment(_constructorGuard, {
+	        var params = {
 	            name: verifyIdentifier(value.name),
 	            anonymous: value.anonymous,
 	            inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : []),
 	            type: "event"
-	        });
+	        };
+	        return new EventFragment(_constructorGuard, params);
 	    };
 	    EventFragment.fromString = function (value) {
 	        var match = value.match(regexParen);
@@ -5580,13 +5588,15 @@
 	        if (state.constant) {
 	            logger.throwArgumentError("constructor cannot be constant", "value", value);
 	        }
-	        return new ConstructorFragment(_constructorGuard, {
+	        var params = {
 	            name: null,
 	            type: value.type,
 	            inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : []),
 	            payable: state.payable,
+	            stateMutability: state.stateMutability,
 	            gas: (value.gas ? lib$2.BigNumber.from(value.gas) : null)
-	        });
+	        };
+	        return new ConstructorFragment(_constructorGuard, params);
 	    };
 	    ConstructorFragment.fromString = function (value) {
 	        var params = { type: "constructor" };
@@ -5666,7 +5676,7 @@
 	            logger.throwArgumentError("invalid function object", "value", value);
 	        }
 	        var state = verifyState(value);
-	        return new FunctionFragment(_constructorGuard, {
+	        var params = {
 	            type: value.type,
 	            name: verifyIdentifier(value.name),
 	            constant: state.constant,
@@ -5675,7 +5685,8 @@
 	            payable: state.payable,
 	            stateMutability: state.stateMutability,
 	            gas: (value.gas ? lib$2.BigNumber.from(value.gas) : null)
-	        });
+	        };
+	        return new FunctionFragment(_constructorGuard, params);
 	    };
 	    FunctionFragment.fromString = function (value) {
 	        var params = { type: "function" };
@@ -5784,8 +5795,31 @@
 
 
 	var logger = new lib.Logger(_version$8.version);
+	function checkResultErrors(result) {
+	    // Find the first error (if any)
+	    var errors = [];
+	    var checkErrors = function (path, object) {
+	        if (!Array.isArray(object)) {
+	            return;
+	        }
+	        for (var key in object) {
+	            var childPath = path.slice();
+	            childPath.push(key);
+	            try {
+	                checkErrors(childPath, object[key]);
+	            }
+	            catch (error) {
+	                errors.push({ path: childPath, error: error });
+	            }
+	        }
+	    };
+	    checkErrors([], result);
+	    return errors;
+	}
+	exports.checkResultErrors = checkResultErrors;
 	var Coder = /** @class */ (function () {
 	    function Coder(name, type, localName, dynamic) {
+	        // @TODO: defineReadOnly these
 	        this.name = name;
 	        this.type = type;
 	        this.localName = localName;
@@ -5912,9 +5946,10 @@
 	});
 
 	var abstractCoder$1 = unwrapExports(abstractCoder);
-	var abstractCoder_1 = abstractCoder.Coder;
-	var abstractCoder_2 = abstractCoder.Writer;
-	var abstractCoder_3 = abstractCoder.Reader;
+	var abstractCoder_1 = abstractCoder.checkResultErrors;
+	var abstractCoder_2 = abstractCoder.Coder;
+	var abstractCoder_3 = abstractCoder.Writer;
+	var abstractCoder_4 = abstractCoder.Reader;
 
 	var sha3 = createCommonjsModule(function (module) {
 	/**
@@ -6547,7 +6582,7 @@
 
 	var index$5 = unwrapExports(lib$5);
 	var lib_1$5 = lib$5.encode;
-	var lib_2$3 = lib$5.decode;
+	var lib_2$4 = lib$5.decode;
 
 	var _version$c = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -6704,8 +6739,8 @@
 
 	var index$6 = unwrapExports(lib$6);
 	var lib_1$6 = lib$6.getAddress;
-	var lib_2$4 = lib$6.isAddress;
-	var lib_3$3 = lib$6.getIcapAddress;
+	var lib_2$5 = lib$6.isAddress;
+	var lib_3$4 = lib$6.getIcapAddress;
 	var lib_4$3 = lib$6.getContractAddress;
 	var lib_5$3 = lib$6.getCreate2Address;
 
@@ -6868,11 +6903,35 @@
 	        if (coder.dynamic) {
 	            var offset = reader.readValue();
 	            var offsetReader = baseReader.subReader(offset.toNumber());
-	            value = coder.decode(offsetReader);
+	            try {
+	                value = coder.decode(offsetReader);
+	            }
+	            catch (error) {
+	                // Cannot recover from this
+	                if (error.code === lib.Logger.errors.BUFFER_OVERRUN) {
+	                    throw error;
+	                }
+	                value = error;
+	                value.baseType = coder.name;
+	                value.name = coder.localName;
+	                value.type = coder.type;
+	            }
 	            dynamicLength += offsetReader.consumed;
 	        }
 	        else {
-	            value = coder.decode(reader);
+	            try {
+	                value = coder.decode(reader);
+	            }
+	            catch (error) {
+	                // Cannot recover from this
+	                if (error.code === lib.Logger.errors.BUFFER_OVERRUN) {
+	                    throw error;
+	                }
+	                value = error;
+	                value.baseType = coder.name;
+	                value.name = coder.localName;
+	                value.type = coder.type;
+	            }
 	        }
 	        if (value != undefined) {
 	            values.push(value);
@@ -6893,8 +6952,27 @@
 	        if (values[name] != null) {
 	            return;
 	        }
-	        values[name] = values[index];
+	        var value = values[index];
+	        if (value instanceof Error) {
+	            Object.defineProperty(values, name, {
+	                get: function () { throw value; }
+	            });
+	        }
+	        else {
+	            values[name] = value;
+	        }
 	    });
+	    var _loop_1 = function (i) {
+	        var value = values[i];
+	        if (value instanceof Error) {
+	            Object.defineProperty(values, i, {
+	                get: function () { throw value; }
+	            });
+	        }
+	    };
+	    for (var i = 0; i < values.length; i++) {
+	        _loop_1(i);
+	    }
 	    return Object.freeze(values);
 	}
 	exports.unpack = unpack;
@@ -6914,7 +6992,6 @@
 	            this._throwError("expected array value", value);
 	        }
 	        var count = this.length;
-	        //let result = new Uint8Array(0);
 	        if (count === -1) {
 	            count = value.length;
 	            writer.writeValue(value.length);
@@ -7148,8 +7225,8 @@
 
 	var index$7 = unwrapExports(lib$7);
 	var lib_1$7 = lib$7.AddressZero;
-	var lib_2$5 = lib$7.HashZero;
-	var lib_3$4 = lib$7.EtherSymbol;
+	var lib_2$6 = lib$7.HashZero;
+	var lib_3$5 = lib$7.EtherSymbol;
 	var lib_4$4 = lib$7.NegativeOne;
 	var lib_5$4 = lib$7.Zero;
 	var lib_6$2 = lib$7.One;
@@ -7759,8 +7836,8 @@
 
 	var index$8 = unwrapExports(lib$8);
 	var lib_1$8 = lib$8.formatBytes32String;
-	var lib_2$6 = lib$8.parseBytes32String;
-	var lib_3$5 = lib$8.nameprep;
+	var lib_2$7 = lib$8.parseBytes32String;
+	var lib_3$6 = lib$8.nameprep;
 	var lib_4$5 = lib$8._toEscapedUtf8String;
 	var lib_5$5 = lib$8.toUtf8Bytes;
 	var lib_6$3 = lib$8.toUtf8CodePoints;
@@ -7921,7 +7998,7 @@
 	            }
 	            return new fixedBytes.FixedBytesCoder(size, param.name);
 	        }
-	        return logger.throwError("invalid type", "type", param.type);
+	        return logger.throwArgumentError("invalid type", "type", param.type);
 	    };
 	    AbiCoder.prototype._getWordSize = function () { return 32; };
 	    AbiCoder.prototype._getReader = function (data) {
@@ -8029,8 +8106,8 @@
 
 	var index$9 = unwrapExports(lib$9);
 	var lib_1$9 = lib$9.isValidName;
-	var lib_2$7 = lib$9.namehash;
-	var lib_3$6 = lib$9.id;
+	var lib_2$8 = lib$9.namehash;
+	var lib_3$7 = lib$9.id;
 	var lib_4$6 = lib$9.messagePrefix;
 	var lib_5$6 = lib$9.hashMessage;
 
@@ -8057,6 +8134,8 @@
 
 
 
+
+	exports.checkResultErrors = abstractCoder.checkResultErrors;
 
 
 
@@ -8088,6 +8167,22 @@
 	    return Indexed;
 	}(lib$3.Description));
 	exports.Indexed = Indexed;
+	function wrapAccessError(property, error) {
+	    var wrap = new Error("deferred error during ABI decoding triggered accessing " + property);
+	    wrap.error = error;
+	    return wrap;
+	}
+	function checkNames(fragment, type, params) {
+	    params.reduce(function (accum, param) {
+	        if (param.name) {
+	            if (accum[param.name]) {
+	                logger.throwArgumentError("duplicate " + type + " parameter " + JSON.stringify(param.name) + " in " + fragment.format("full"), "fragment", fragment);
+	            }
+	            accum[param.name] = true;
+	        }
+	        return accum;
+	    }, {});
+	}
 	var Interface = /** @class */ (function () {
 	    function Interface(fragments$1) {
 	        var _newTarget = this.constructor;
@@ -8117,12 +8212,16 @@
 	                        logger.warn("duplicate definition - constructor");
 	                        return;
 	                    }
+	                    checkNames(fragment, "input", fragment.inputs);
 	                    lib$3.defineReadOnly(_this, "deploy", fragment);
 	                    return;
 	                case "function":
+	                    checkNames(fragment, "input", fragment.inputs);
+	                    checkNames(fragment, "output", fragment.outputs);
 	                    bucket = _this.functions;
 	                    break;
 	                case "event":
+	                    checkNames(fragment, "input", fragment.inputs);
 	                    bucket = _this.events;
 	                    break;
 	                default:
@@ -8135,9 +8234,12 @@
 	            }
 	            bucket[signature] = fragment;
 	        });
-	        // If we do not have a constructor use the default "constructor() payable"
+	        // If we do not have a constructor add a default
 	        if (!this.deploy) {
-	            lib$3.defineReadOnly(this, "deploy", fragments.ConstructorFragment.from({ type: "constructor" }));
+	            lib$3.defineReadOnly(this, "deploy", fragments.ConstructorFragment.from({
+	                payable: false,
+	                type: "constructor"
+	            }));
 	        }
 	        lib$3.defineReadOnly(this, "_isInterface", true);
 	    }
@@ -8357,6 +8459,47 @@
 	        }
 	        return topics;
 	    };
+	    Interface.prototype.encodeEventLog = function (eventFragment, values) {
+	        var _this = this;
+	        if (typeof (eventFragment) === "string") {
+	            eventFragment = this.getEvent(eventFragment);
+	        }
+	        var topics = [];
+	        var dataTypes = [];
+	        var dataValues = [];
+	        if (!eventFragment.anonymous) {
+	            topics.push(this.getEventTopic(eventFragment));
+	        }
+	        if (values.length !== eventFragment.inputs.length) {
+	            logger.throwArgumentError("event arguments/values mismatch", "values", values);
+	        }
+	        eventFragment.inputs.forEach(function (param, index) {
+	            var value = values[index];
+	            if (param.indexed) {
+	                if (param.type === "string") {
+	                    topics.push(lib$9.id(value));
+	                }
+	                else if (param.type === "bytes") {
+	                    topics.push(lib$4.keccak256(value));
+	                }
+	                else if (param.baseType === "tuple" || param.baseType === "array") {
+	                    // @TOOD
+	                    throw new Error("not implemented");
+	                }
+	                else {
+	                    topics.push(_this._abiCoder.encode([param.type], [value]));
+	                }
+	            }
+	            else {
+	                dataTypes.push(param);
+	                dataValues.push(value);
+	            }
+	        });
+	        return {
+	            data: this._abiCoder.encode(dataTypes, dataValues),
+	            topics: topics
+	        };
+	    };
 	    // Decode a filter for the event and the search criteria
 	    Interface.prototype.decodeEventLog = function (eventFragment, data, topics) {
 	        if (typeof (eventFragment) === "string") {
@@ -8401,16 +8544,48 @@
 	                    result[index] = new Indexed({ _isIndexed: true, hash: resultIndexed[indexedIndex++] });
 	                }
 	                else {
-	                    result[index] = resultIndexed[indexedIndex++];
+	                    try {
+	                        result[index] = resultIndexed[indexedIndex++];
+	                    }
+	                    catch (error) {
+	                        result[index] = error;
+	                    }
 	                }
 	            }
 	            else {
-	                result[index] = resultNonIndexed[nonIndexedIndex++];
+	                try {
+	                    result[index] = resultNonIndexed[nonIndexedIndex++];
+	                }
+	                catch (error) {
+	                    result[index] = error;
+	                }
 	            }
+	            // Add the keyword argument if named and safe
 	            if (param.name && result[param.name] == null) {
-	                result[param.name] = result[index];
+	                var value_1 = result[index];
+	                // Make error named values throw on access
+	                if (value_1 instanceof Error) {
+	                    Object.defineProperty(result, param.name, {
+	                        get: function () { throw wrapAccessError("property " + JSON.stringify(param.name), value_1); }
+	                    });
+	                }
+	                else {
+	                    result[param.name] = value_1;
+	                }
 	            }
 	        });
+	        var _loop_1 = function (i) {
+	            var value = result[i];
+	            if (value instanceof Error) {
+	                Object.defineProperty(result, i, {
+	                    get: function () { throw wrapAccessError("index " + i, value); }
+	                });
+	            }
+	        };
+	        // Make all error indexed values throw on access
+	        for (var i = 0; i < result.length; i++) {
+	            _loop_1(i);
+	        }
 	        return Object.freeze(result);
 	    };
 	    // Given a transaction, find the matching function fragment (if any) and
@@ -8467,10 +8642,11 @@
 	});
 
 	var _interface$1 = unwrapExports(_interface);
-	var _interface_1 = _interface.LogDescription;
-	var _interface_2 = _interface.TransactionDescription;
-	var _interface_3 = _interface.Indexed;
-	var _interface_4 = _interface.Interface;
+	var _interface_1 = _interface.checkResultErrors;
+	var _interface_2 = _interface.LogDescription;
+	var _interface_3 = _interface.TransactionDescription;
+	var _interface_4 = _interface.Indexed;
+	var _interface_5 = _interface.Interface;
 
 	var lib$a = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -8486,6 +8662,7 @@
 	exports.AbiCoder = abiCoder.AbiCoder;
 	exports.defaultAbiCoder = abiCoder.defaultAbiCoder;
 
+	exports.checkResultErrors = _interface.checkResultErrors;
 	exports.Indexed = _interface.Indexed;
 	exports.Interface = _interface.Interface;
 	exports.LogDescription = _interface.LogDescription;
@@ -8494,17 +8671,18 @@
 
 	var index$a = unwrapExports(lib$a);
 	var lib_1$a = lib$a.ConstructorFragment;
-	var lib_2$8 = lib$a.EventFragment;
-	var lib_3$7 = lib$a.FormatTypes;
+	var lib_2$9 = lib$a.EventFragment;
+	var lib_3$8 = lib$a.FormatTypes;
 	var lib_4$7 = lib$a.Fragment;
 	var lib_5$7 = lib$a.FunctionFragment;
 	var lib_6$4 = lib$a.ParamType;
 	var lib_7$4 = lib$a.AbiCoder;
 	var lib_8$3 = lib$a.defaultAbiCoder;
-	var lib_9$3 = lib$a.Indexed;
-	var lib_10$2 = lib$a.Interface;
-	var lib_11$1 = lib$a.LogDescription;
-	var lib_12$1 = lib$a.TransactionDescription;
+	var lib_9$3 = lib$a.checkResultErrors;
+	var lib_10$2 = lib$a.Indexed;
+	var lib_11$1 = lib$a.Interface;
+	var lib_12$1 = lib$a.LogDescription;
+	var lib_13$1 = lib$a.TransactionDescription;
 
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -8636,8 +8814,8 @@
 
 	var index$b = unwrapExports(lib$b);
 	var lib_1$b = lib$b.ForkEvent;
-	var lib_2$9 = lib$b.BlockForkEvent;
-	var lib_3$8 = lib$b.TransactionForkEvent;
+	var lib_2$a = lib$b.BlockForkEvent;
+	var lib_3$9 = lib$b.TransactionForkEvent;
 	var lib_4$8 = lib$b.TransactionOrderForkEvent;
 	var lib_5$8 = lib$b.Provider;
 
@@ -8903,12 +9081,12 @@
 
 	var index$c = unwrapExports(lib$c);
 	var lib_1$c = lib$c.Signer;
-	var lib_2$a = lib$c.VoidSigner;
+	var lib_2$b = lib$c.VoidSigner;
 
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.0-beta.149";
+	exports.version = "contracts/5.0.0-beta.150";
 	});
 
 	var _version$n = unwrapExports(_version$m);
@@ -9038,7 +9216,7 @@
 	            // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
 	            for (var key in tx) {
 	                if (!allowedTransactionKeys[key]) {
-	                    logger.throwError(("unknown transaction override - " + key), "overrides", tx);
+	                    logger.throwArgumentError(("unknown transaction override - " + key), "overrides", tx);
 	                }
 	            }
 	        }
@@ -9258,10 +9436,13 @@
 	        catch (error) {
 	            event.args = null;
 	            event.decodeError = error;
-	            throw error;
 	        }
 	    };
 	    FragmentRunningEvent.prototype.getEmit = function (event) {
+	        var errors = lib$a.checkResultErrors(event.args);
+	        if (errors.length) {
+	            throw errors[0].error;
+	        }
 	        var args = (event.args || []).slice();
 	        args.push(event);
 	        return args;
@@ -9507,6 +9688,10 @@
 	            if (eventName === "error") {
 	                return this._normalizeRunningEvent(new ErrorRunningEvent());
 	            }
+	            // Listen for any event that is registered
+	            if (eventName === "event") {
+	                return this._normalizeRunningEvent(new RunningEvent("event", null));
+	            }
 	            // Listen for any event
 	            if (eventName === "*") {
 	                return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
@@ -9573,17 +9758,25 @@
 	        // If we are not polling the provider, start polling
 	        if (!this._wrappedEmits[runningEvent.tag]) {
 	            var wrappedEmit = function (log) {
-	                var event = null;
-	                try {
-	                    event = _this._wrapEvent(runningEvent, log, listener);
+	                var event = _this._wrapEvent(runningEvent, log, listener);
+	                // Try to emit the result for the parameterized event...
+	                if (event.decodeError == null) {
+	                    try {
+	                        var args = runningEvent.getEmit(event);
+	                        _this.emit.apply(_this, __spreadArrays([runningEvent.filter], args));
+	                    }
+	                    catch (error) {
+	                        event.decodeError = error.error;
+	                    }
 	                }
-	                catch (error) {
-	                    // There was an error decoding the data and topics
-	                    _this.emit("error", error, event);
-	                    return;
+	                // Always emit "event" for fragment-base events
+	                if (runningEvent.filter != null) {
+	                    _this.emit("event", event);
 	                }
-	                var args = runningEvent.getEmit(event);
-	                _this.emit.apply(_this, __spreadArrays([runningEvent.filter], args));
+	                // Emit "error" if there was an error
+	                if (event.decodeError != null) {
+	                    _this.emit("error", event.decodeError, event);
+	                }
 	            };
 	            this._wrappedEmits[runningEvent.tag] = wrappedEmit;
 	            // Special events, like "error" do not have a filter
@@ -9823,7 +10016,7 @@
 
 	var index$d = unwrapExports(lib$d);
 	var lib_1$d = lib$d.Contract;
-	var lib_2$b = lib$d.ContractFactory;
+	var lib_2$c = lib$d.ContractFactory;
 
 	var lib$e = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -9953,8 +10146,8 @@
 
 	var index$e = unwrapExports(lib$e);
 	var lib_1$e = lib$e.BaseX;
-	var lib_2$c = lib$e.Base32;
-	var lib_3$9 = lib$e.Base58;
+	var lib_2$d = lib$e.Base32;
+	var lib_3$a = lib$e.Base58;
 
 	var minimalisticAssert = assert;
 
@@ -13690,8 +13883,8 @@
 
 	var index$f = unwrapExports(lib$f);
 	var lib_1$f = lib$f.SigningKey;
-	var lib_2$d = lib$f.recoverPublicKey;
-	var lib_3$a = lib$f.computePublicKey;
+	var lib_2$e = lib$f.recoverPublicKey;
+	var lib_3$b = lib$f.computePublicKey;
 
 	var _version$s = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -13887,8 +14080,8 @@
 
 	var index$g = unwrapExports(lib$g);
 	var lib_1$g = lib$g.computeAddress;
-	var lib_2$e = lib$g.recoverAddress;
-	var lib_3$b = lib$g.serialize;
+	var lib_2$f = lib$g.recoverAddress;
+	var lib_3$c = lib$g.serialize;
 	var lib_4$9 = lib$g.parse;
 
 	var _version$u = createCommonjsModule(function (module, exports) {
@@ -14031,7 +14224,7 @@
 	var _version$w = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hdnode/5.0.0-beta.138";
+	exports.version = "hdnode/5.0.0-beta.139";
 	});
 
 	var _version$x = unwrapExports(_version$w);
@@ -14287,7 +14480,7 @@
 	                }
 	                return new HDNode(_constructorGuard, lib$1.hexlify(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null);
 	        }
-	        return logger.throwError("invalid extended key", "extendedKey", "[REDACTED]");
+	        return logger.throwArgumentError("invalid extended key", "extendedKey", "[REDACTED]");
 	    };
 	    return HDNode;
 	}());
@@ -14377,8 +14570,8 @@
 
 	var index$h = unwrapExports(lib$h);
 	var lib_1$h = lib$h.defaultPath;
-	var lib_2$f = lib$h.HDNode;
-	var lib_3$c = lib$h.mnemonicToSeed;
+	var lib_2$g = lib$h.HDNode;
+	var lib_3$d = lib$h.mnemonicToSeed;
 	var lib_4$a = lib$h.mnemonicToEntropy;
 	var lib_5$9 = lib$h.entropyToMnemonic;
 	var lib_6$5 = lib$h.isValidMnemonic;
@@ -15269,7 +15462,7 @@
 	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "json-wallets/5.0.0-beta.137";
+	exports.version = "json-wallets/5.0.0-beta.138";
 	});
 
 	var _version$B = unwrapExports(_version$A);
@@ -16614,8 +16807,8 @@
 
 	var index$i = unwrapExports(lib$i);
 	var lib_1$i = lib$i.decryptCrowdsale;
-	var lib_2$g = lib$i.getJsonWalletAddress;
-	var lib_3$d = lib$i.isCrowdsaleWallet;
+	var lib_2$h = lib$i.getJsonWalletAddress;
+	var lib_3$e = lib$i.isCrowdsaleWallet;
 	var lib_4$b = lib$i.isKeystoreWallet;
 	var lib_5$a = lib$i.decryptKeystore;
 	var lib_6$6 = lib$i.decryptKeystoreSync;
@@ -16810,7 +17003,7 @@
 
 	var index$j = unwrapExports(lib$j);
 	var lib_1$j = lib$j.Wallet;
-	var lib_2$h = lib$j.verifyMessage;
+	var lib_2$i = lib$j.verifyMessage;
 
 	var _version$E = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -17409,7 +17602,7 @@
 
 	var index$l = unwrapExports(lib$l);
 	var lib_1$l = lib$l.fetchJson;
-	var lib_2$i = lib$l.poll;
+	var lib_2$j = lib$l.poll;
 
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -21544,8 +21737,8 @@
 
 	var index$m = unwrapExports(lib$m);
 	var lib_1$m = lib$m.Provider;
-	var lib_2$j = lib$m.getNetwork;
-	var lib_3$e = lib$m.BaseProvider;
+	var lib_2$k = lib$m.getNetwork;
+	var lib_3$f = lib$m.BaseProvider;
 	var lib_4$c = lib$m.AlchemyProvider;
 	var lib_5$b = lib$m.CloudflareProvider;
 	var lib_6$7 = lib$m.EtherscanProvider;
@@ -21555,7 +21748,7 @@
 	var lib_10$3 = lib$m.JsonRpcProvider;
 	var lib_11$2 = lib$m.JsonRpcSigner;
 	var lib_12$2 = lib$m.NodesmithProvider;
-	var lib_13$1 = lib$m.Web3Provider;
+	var lib_13$2 = lib$m.Web3Provider;
 	var lib_14$1 = lib$m.WebSocketProvider;
 	var lib_15$1 = lib$m.Formatter;
 	var lib_16$1 = lib$m.getDefaultProvider;
@@ -21656,8 +21849,8 @@
 
 	var index$n = unwrapExports(lib$n);
 	var lib_1$n = lib$n.pack;
-	var lib_2$k = lib$n.keccak256;
-	var lib_3$f = lib$n.sha256;
+	var lib_2$l = lib$n.keccak256;
+	var lib_3$g = lib$n.sha256;
 
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -21756,8 +21949,8 @@
 
 	var index$o = unwrapExports(lib$o);
 	var lib_1$o = lib$o.commify;
-	var lib_2$l = lib$o.formatUnits;
-	var lib_3$g = lib$o.parseUnits;
+	var lib_2$m = lib$o.formatUnits;
+	var lib_3$h = lib$o.parseUnits;
 	var lib_4$d = lib$o.formatEther;
 	var lib_5$c = lib$o.parseEther;
 
@@ -21773,6 +21966,7 @@
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 	exports.AbiCoder = lib$a.AbiCoder;
+	exports.checkResultErrors = lib$a.checkResultErrors;
 	exports.defaultAbiCoder = lib$a.defaultAbiCoder;
 	exports.EventFragment = lib$a.EventFragment;
 	exports.FormatTypes = lib$a.FormatTypes;
@@ -21884,95 +22078,96 @@
 
 	var utils$4 = unwrapExports(utils$3);
 	var utils_1$3 = utils$3.AbiCoder;
-	var utils_2$1 = utils$3.defaultAbiCoder;
-	var utils_3$1 = utils$3.EventFragment;
-	var utils_4$1 = utils$3.FormatTypes;
-	var utils_5 = utils$3.Fragment;
-	var utils_6 = utils$3.FunctionFragment;
-	var utils_7 = utils$3.Indexed;
-	var utils_8 = utils$3.Interface;
-	var utils_9 = utils$3.ParamType;
-	var utils_10 = utils$3.getAddress;
-	var utils_11 = utils$3.getCreate2Address;
-	var utils_12 = utils$3.getContractAddress;
-	var utils_13 = utils$3.getIcapAddress;
-	var utils_14 = utils$3.isAddress;
-	var utils_15 = utils$3.base64;
-	var utils_16 = utils$3.arrayify;
-	var utils_17 = utils$3.concat;
-	var utils_18 = utils$3.hexDataSlice;
-	var utils_19 = utils$3.hexDataLength;
-	var utils_20 = utils$3.hexlify;
-	var utils_21 = utils$3.hexStripZeros;
-	var utils_22 = utils$3.hexValue;
-	var utils_23 = utils$3.hexZeroPad;
-	var utils_24 = utils$3.isBytes;
-	var utils_25 = utils$3.isBytesLike;
-	var utils_26 = utils$3.isHexString;
-	var utils_27 = utils$3.joinSignature;
-	var utils_28 = utils$3.zeroPad;
-	var utils_29 = utils$3.splitSignature;
-	var utils_30 = utils$3.stripZeros;
-	var utils_31 = utils$3.hashMessage;
-	var utils_32 = utils$3.id;
-	var utils_33 = utils$3.isValidName;
-	var utils_34 = utils$3.namehash;
-	var utils_35 = utils$3.defaultPath;
-	var utils_36 = utils$3.entropyToMnemonic;
-	var utils_37 = utils$3.HDNode;
-	var utils_38 = utils$3.isValidMnemonic;
-	var utils_39 = utils$3.mnemonicToEntropy;
-	var utils_40 = utils$3.mnemonicToSeed;
-	var utils_41 = utils$3.getJsonWalletAddress;
-	var utils_42 = utils$3.keccak256;
-	var utils_43 = utils$3.Logger;
-	var utils_44 = utils$3.computeHmac;
-	var utils_45 = utils$3.ripemd160;
-	var utils_46 = utils$3.sha256;
-	var utils_47 = utils$3.sha512;
-	var utils_48 = utils$3.solidityKeccak256;
-	var utils_49 = utils$3.solidityPack;
-	var utils_50 = utils$3.soliditySha256;
-	var utils_51 = utils$3.randomBytes;
-	var utils_52 = utils$3.shuffled;
-	var utils_53 = utils$3.checkProperties;
-	var utils_54 = utils$3.deepCopy;
-	var utils_55 = utils$3.defineReadOnly;
-	var utils_56 = utils$3.getStatic;
-	var utils_57 = utils$3.resolveProperties;
-	var utils_58 = utils$3.shallowCopy;
-	var utils_59 = utils$3.RLP;
-	var utils_60 = utils$3.computePublicKey;
-	var utils_61 = utils$3.recoverPublicKey;
-	var utils_62 = utils$3.SigningKey;
-	var utils_63 = utils$3.formatBytes32String;
-	var utils_64 = utils$3.nameprep;
-	var utils_65 = utils$3.parseBytes32String;
-	var utils_66 = utils$3._toEscapedUtf8String;
-	var utils_67 = utils$3.toUtf8Bytes;
-	var utils_68 = utils$3.toUtf8CodePoints;
-	var utils_69 = utils$3.toUtf8String;
-	var utils_70 = utils$3.Utf8ErrorFuncs;
-	var utils_71 = utils$3.computeAddress;
-	var utils_72 = utils$3.parseTransaction;
-	var utils_73 = utils$3.recoverAddress;
-	var utils_74 = utils$3.serializeTransaction;
-	var utils_75 = utils$3.commify;
-	var utils_76 = utils$3.formatEther;
-	var utils_77 = utils$3.parseEther;
-	var utils_78 = utils$3.formatUnits;
-	var utils_79 = utils$3.parseUnits;
-	var utils_80 = utils$3.verifyMessage;
-	var utils_81 = utils$3.fetchJson;
-	var utils_82 = utils$3.poll;
-	var utils_83 = utils$3.SupportedAlgorithm;
-	var utils_84 = utils$3.UnicodeNormalizationForm;
-	var utils_85 = utils$3.Utf8ErrorReason;
+	var utils_2$1 = utils$3.checkResultErrors;
+	var utils_3$1 = utils$3.defaultAbiCoder;
+	var utils_4$1 = utils$3.EventFragment;
+	var utils_5 = utils$3.FormatTypes;
+	var utils_6 = utils$3.Fragment;
+	var utils_7 = utils$3.FunctionFragment;
+	var utils_8 = utils$3.Indexed;
+	var utils_9 = utils$3.Interface;
+	var utils_10 = utils$3.ParamType;
+	var utils_11 = utils$3.getAddress;
+	var utils_12 = utils$3.getCreate2Address;
+	var utils_13 = utils$3.getContractAddress;
+	var utils_14 = utils$3.getIcapAddress;
+	var utils_15 = utils$3.isAddress;
+	var utils_16 = utils$3.base64;
+	var utils_17 = utils$3.arrayify;
+	var utils_18 = utils$3.concat;
+	var utils_19 = utils$3.hexDataSlice;
+	var utils_20 = utils$3.hexDataLength;
+	var utils_21 = utils$3.hexlify;
+	var utils_22 = utils$3.hexStripZeros;
+	var utils_23 = utils$3.hexValue;
+	var utils_24 = utils$3.hexZeroPad;
+	var utils_25 = utils$3.isBytes;
+	var utils_26 = utils$3.isBytesLike;
+	var utils_27 = utils$3.isHexString;
+	var utils_28 = utils$3.joinSignature;
+	var utils_29 = utils$3.zeroPad;
+	var utils_30 = utils$3.splitSignature;
+	var utils_31 = utils$3.stripZeros;
+	var utils_32 = utils$3.hashMessage;
+	var utils_33 = utils$3.id;
+	var utils_34 = utils$3.isValidName;
+	var utils_35 = utils$3.namehash;
+	var utils_36 = utils$3.defaultPath;
+	var utils_37 = utils$3.entropyToMnemonic;
+	var utils_38 = utils$3.HDNode;
+	var utils_39 = utils$3.isValidMnemonic;
+	var utils_40 = utils$3.mnemonicToEntropy;
+	var utils_41 = utils$3.mnemonicToSeed;
+	var utils_42 = utils$3.getJsonWalletAddress;
+	var utils_43 = utils$3.keccak256;
+	var utils_44 = utils$3.Logger;
+	var utils_45 = utils$3.computeHmac;
+	var utils_46 = utils$3.ripemd160;
+	var utils_47 = utils$3.sha256;
+	var utils_48 = utils$3.sha512;
+	var utils_49 = utils$3.solidityKeccak256;
+	var utils_50 = utils$3.solidityPack;
+	var utils_51 = utils$3.soliditySha256;
+	var utils_52 = utils$3.randomBytes;
+	var utils_53 = utils$3.shuffled;
+	var utils_54 = utils$3.checkProperties;
+	var utils_55 = utils$3.deepCopy;
+	var utils_56 = utils$3.defineReadOnly;
+	var utils_57 = utils$3.getStatic;
+	var utils_58 = utils$3.resolveProperties;
+	var utils_59 = utils$3.shallowCopy;
+	var utils_60 = utils$3.RLP;
+	var utils_61 = utils$3.computePublicKey;
+	var utils_62 = utils$3.recoverPublicKey;
+	var utils_63 = utils$3.SigningKey;
+	var utils_64 = utils$3.formatBytes32String;
+	var utils_65 = utils$3.nameprep;
+	var utils_66 = utils$3.parseBytes32String;
+	var utils_67 = utils$3._toEscapedUtf8String;
+	var utils_68 = utils$3.toUtf8Bytes;
+	var utils_69 = utils$3.toUtf8CodePoints;
+	var utils_70 = utils$3.toUtf8String;
+	var utils_71 = utils$3.Utf8ErrorFuncs;
+	var utils_72 = utils$3.computeAddress;
+	var utils_73 = utils$3.parseTransaction;
+	var utils_74 = utils$3.recoverAddress;
+	var utils_75 = utils$3.serializeTransaction;
+	var utils_76 = utils$3.commify;
+	var utils_77 = utils$3.formatEther;
+	var utils_78 = utils$3.parseEther;
+	var utils_79 = utils$3.formatUnits;
+	var utils_80 = utils$3.parseUnits;
+	var utils_81 = utils$3.verifyMessage;
+	var utils_82 = utils$3.fetchJson;
+	var utils_83 = utils$3.poll;
+	var utils_84 = utils$3.SupportedAlgorithm;
+	var utils_85 = utils$3.UnicodeNormalizationForm;
+	var utils_86 = utils$3.Utf8ErrorReason;
 
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.183";
+	exports.version = "ethers/5.0.0-beta.184";
 	});
 
 	var _version$N = unwrapExports(_version$M);
@@ -22011,8 +22206,7 @@
 	var utils = __importStar(utils$3);
 	exports.utils = utils;
 
-	var errors = lib.Logger.errors;
-	exports.errors = errors;
+	exports.errors = lib.ErrorCode;
 	////////////////////////
 	// Compile-Time Constants
 	// This is generated by "npm run dist"
@@ -22083,8 +22277,8 @@
 
 	var index$p = unwrapExports(lib$p);
 	var lib_1$p = lib$p.ethers;
-	var lib_2$m = lib$p.Signer;
-	var lib_3$h = lib$p.Wallet;
+	var lib_2$n = lib$p.Signer;
+	var lib_3$i = lib$p.Wallet;
 	var lib_4$e = lib$p.VoidSigner;
 	var lib_5$d = lib$p.getDefaultProvider;
 	var lib_6$8 = lib$p.providers;
@@ -22094,7 +22288,7 @@
 	var lib_10$4 = lib$p.FixedNumber;
 	var lib_11$3 = lib$p.constants;
 	var lib_12$3 = lib$p.errors;
-	var lib_13$2 = lib$p.logger;
+	var lib_13$3 = lib$p.logger;
 	var lib_14$2 = lib$p.utils;
 	var lib_15$2 = lib$p.wordlists;
 	var lib_16$2 = lib$p.version;
@@ -22104,16 +22298,16 @@
 	exports.Contract = lib_7$7;
 	exports.ContractFactory = lib_8$6;
 	exports.FixedNumber = lib_10$4;
-	exports.Signer = lib_2$m;
+	exports.Signer = lib_2$n;
 	exports.VoidSigner = lib_4$e;
-	exports.Wallet = lib_3$h;
+	exports.Wallet = lib_3$i;
 	exports.Wordlist = lib_17;
 	exports.constants = lib_11$3;
 	exports.default = index$p;
 	exports.errors = lib_12$3;
 	exports.ethers = lib_1$p;
 	exports.getDefaultProvider = lib_5$d;
-	exports.logger = lib_13$2;
+	exports.logger = lib_13$3;
 	exports.providers = lib_6$8;
 	exports.utils = lib_14$2;
 	exports.version = lib_16$2;

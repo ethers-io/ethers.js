@@ -5,8 +5,30 @@ import { defineReadOnly } from "@ethersproject/properties";
 import { Logger } from "@ethersproject/logger";
 import { version } from "../_version";
 const logger = new Logger(version);
+export function checkResultErrors(result) {
+    // Find the first error (if any)
+    const errors = [];
+    const checkErrors = function (path, object) {
+        if (!Array.isArray(object)) {
+            return;
+        }
+        for (let key in object) {
+            const childPath = path.slice();
+            childPath.push(key);
+            try {
+                checkErrors(childPath, object[key]);
+            }
+            catch (error) {
+                errors.push({ path: childPath, error: error });
+            }
+        }
+    };
+    checkErrors([], result);
+    return errors;
+}
 export class Coder {
     constructor(name, type, localName, dynamic) {
+        // @TODO: defineReadOnly these
         this.name = name;
         this.type = type;
         this.localName = localName;

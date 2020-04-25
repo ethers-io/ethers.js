@@ -121,7 +121,7 @@ function runMethod(contract, functionName, options) {
             // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
             for (var key in tx) {
                 if (!allowedTransactionKeys[key]) {
-                    logger.throwError(("unknown transaction override - " + key), "overrides", tx);
+                    logger.throwArgumentError(("unknown transaction override - " + key), "overrides", tx);
                 }
             }
         }
@@ -341,10 +341,13 @@ var FragmentRunningEvent = /** @class */ (function (_super) {
         catch (error) {
             event.args = null;
             event.decodeError = error;
-            throw error;
         }
     };
     FragmentRunningEvent.prototype.getEmit = function (event) {
+        var errors = abi_1.checkResultErrors(event.args);
+        if (errors.length) {
+            throw errors[0].error;
+        }
         var args = (event.args || []).slice();
         args.push(event);
         return args;
@@ -590,6 +593,10 @@ var Contract = /** @class */ (function () {
             if (eventName === "error") {
                 return this._normalizeRunningEvent(new ErrorRunningEvent());
             }
+            // Listen for any event that is registered
+            if (eventName === "event") {
+                return this._normalizeRunningEvent(new RunningEvent("event", null));
+            }
             // Listen for any event
             if (eventName === "*") {
                 return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
@@ -656,17 +663,25 @@ var Contract = /** @class */ (function () {
         // If we are not polling the provider, start polling
         if (!this._wrappedEmits[runningEvent.tag]) {
             var wrappedEmit = function (log) {
-                var event = null;
-                try {
-                    event = _this._wrapEvent(runningEvent, log, listener);
+                var event = _this._wrapEvent(runningEvent, log, listener);
+                // Try to emit the result for the parameterized event...
+                if (event.decodeError == null) {
+                    try {
+                        var args = runningEvent.getEmit(event);
+                        _this.emit.apply(_this, __spreadArrays([runningEvent.filter], args));
+                    }
+                    catch (error) {
+                        event.decodeError = error.error;
+                    }
                 }
-                catch (error) {
-                    // There was an error decoding the data and topics
-                    _this.emit("error", error, event);
-                    return;
+                // Always emit "event" for fragment-base events
+                if (runningEvent.filter != null) {
+                    _this.emit("event", event);
                 }
-                var args = runningEvent.getEmit(event);
-                _this.emit.apply(_this, __spreadArrays([runningEvent.filter], args));
+                // Emit "error" if there was an error
+                if (event.decodeError != null) {
+                    _this.emit("error", event.decodeError, event);
+                }
             };
             this._wrappedEmits[runningEvent.tag] = wrappedEmit;
             // Special events, like "error" do not have a filter

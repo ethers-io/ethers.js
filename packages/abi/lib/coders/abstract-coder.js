@@ -6,8 +6,31 @@ var properties_1 = require("@ethersproject/properties");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("../_version");
 var logger = new logger_1.Logger(_version_1.version);
+function checkResultErrors(result) {
+    // Find the first error (if any)
+    var errors = [];
+    var checkErrors = function (path, object) {
+        if (!Array.isArray(object)) {
+            return;
+        }
+        for (var key in object) {
+            var childPath = path.slice();
+            childPath.push(key);
+            try {
+                checkErrors(childPath, object[key]);
+            }
+            catch (error) {
+                errors.push({ path: childPath, error: error });
+            }
+        }
+    };
+    checkErrors([], result);
+    return errors;
+}
+exports.checkResultErrors = checkResultErrors;
 var Coder = /** @class */ (function () {
     function Coder(name, type, localName, dynamic) {
+        // @TODO: defineReadOnly these
         this.name = name;
         this.type = type;
         this.localName = localName;

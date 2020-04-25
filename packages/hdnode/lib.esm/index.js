@@ -241,7 +241,7 @@ export class HDNode {
                 }
                 return new HDNode(_constructorGuard, hexlify(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null);
         }
-        return logger.throwError("invalid extended key", "extendedKey", "[REDACTED]");
+        return logger.throwArgumentError("invalid extended key", "extendedKey", "[REDACTED]");
     }
 }
 export function mnemonicToSeed(mnemonic, password) {

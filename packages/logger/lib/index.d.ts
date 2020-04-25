@@ -1,35 +1,40 @@
-export declare type LogLevel = "DEBUG" | "INFO" | "WARNING" | "ERROR" | "OFF";
+export declare enum LogLevel {
+    DEBUG = "DEBUG",
+    INFO = "INFO",
+    WARNING = "WARNING",
+    ERROR = "ERROR",
+    OFF = "OFF"
+}
+export declare enum ErrorCode {
+    UNKNOWN_ERROR = "UNKNOWN_ERROR",
+    NOT_IMPLEMENTED = "NOT_IMPLEMENTED",
+    UNSUPPORTED_OPERATION = "UNSUPPORTED_OPERATION",
+    NETWORK_ERROR = "NETWORK_ERROR",
+    SERVER_ERROR = "SERVER_ERROR",
+    TIMEOUT = "TIMEOUT",
+    BUFFER_OVERRUN = "BUFFER_OVERRUN",
+    NUMERIC_FAULT = "NUMERIC_FAULT",
+    MISSING_NEW = "MISSING_NEW",
+    INVALID_ARGUMENT = "INVALID_ARGUMENT",
+    MISSING_ARGUMENT = "MISSING_ARGUMENT",
+    UNEXPECTED_ARGUMENT = "UNEXPECTED_ARGUMENT",
+    CALL_EXCEPTION = "CALL_EXCEPTION",
+    INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS",
+    NONCE_EXPIRED = "NONCE_EXPIRED",
+    REPLACEMENT_UNDERPRICED = "REPLACEMENT_UNDERPRICED",
+    UNPREDICTABLE_GAS_LIMIT = "UNPREDICTABLE_GAS_LIMIT"
+}
 export declare class Logger {
     readonly version: string;
-    static errors: {
-        UNKNOWN_ERROR: string;
-        NOT_IMPLEMENTED: string;
-        UNSUPPORTED_OPERATION: string;
-        NETWORK_ERROR: string;
-        SERVER_ERROR: string;
-        TIMEOUT: string;
-        BUFFER_OVERRUN: string;
-        NUMERIC_FAULT: string;
-        MISSING_NEW: string;
-        INVALID_ARGUMENT: string;
-        MISSING_ARGUMENT: string;
-        UNEXPECTED_ARGUMENT: string;
-        CALL_EXCEPTION: string;
-        INSUFFICIENT_FUNDS: string;
-        NONCE_EXPIRED: string;
-        REPLACEMENT_UNDERPRICED: string;
-        UNPREDICTABLE_GAS_LIMIT: string;
-    };
-    static levels: {
-        [name: string]: LogLevel;
-    };
+    static errors: typeof ErrorCode;
+    static levels: typeof LogLevel;
     constructor(version: string);
     _log(logLevel: LogLevel, args: Array<any>): void;
     debug(...args: Array<any>): void;
     info(...args: Array<any>): void;
     warn(...args: Array<any>): void;
-    makeError(message: string, code?: string, params?: any): Error;
-    throwError(message: string, code?: string, params?: any): never;
+    makeError(message: string, code?: ErrorCode, params?: any): Error;
+    throwError(message: string, code?: ErrorCode, params?: any): never;
     throwArgumentError(message: string, name: string, value: any): never;
     checkNormalize(message?: string): void;
     checkSafeUint53(value: number, message?: string): void;

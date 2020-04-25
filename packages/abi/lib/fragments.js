@@ -438,12 +438,13 @@ var EventFragment = /** @class */ (function (_super) {
         if (value.type !== "event") {
             logger.throwArgumentError("invalid event object", "value", value);
         }
-        return new EventFragment(_constructorGuard, {
+        var params = {
             name: verifyIdentifier(value.name),
             anonymous: value.anonymous,
             inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : []),
             type: "event"
-        });
+        };
+        return new EventFragment(_constructorGuard, params);
     };
     EventFragment.fromString = function (value) {
         var match = value.match(regexParen);
@@ -619,13 +620,15 @@ var ConstructorFragment = /** @class */ (function (_super) {
         if (state.constant) {
             logger.throwArgumentError("constructor cannot be constant", "value", value);
         }
-        return new ConstructorFragment(_constructorGuard, {
+        var params = {
             name: null,
             type: value.type,
             inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : []),
             payable: state.payable,
+            stateMutability: state.stateMutability,
             gas: (value.gas ? bignumber_1.BigNumber.from(value.gas) : null)
-        });
+        };
+        return new ConstructorFragment(_constructorGuard, params);
     };
     ConstructorFragment.fromString = function (value) {
         var params = { type: "constructor" };
@@ -705,7 +708,7 @@ var FunctionFragment = /** @class */ (function (_super) {
             logger.throwArgumentError("invalid function object", "value", value);
         }
         var state = verifyState(value);
-        return new FunctionFragment(_constructorGuard, {
+        var params = {
             type: value.type,
             name: verifyIdentifier(value.name),
             constant: state.constant,
@@ -714,7 +717,8 @@ var FunctionFragment = /** @class */ (function (_super) {
             payable: state.payable,
             stateMutability: state.stateMutability,
             gas: (value.gas ? bignumber_1.BigNumber.from(value.gas) : null)
-        });
+        };
+        return new FunctionFragment(_constructorGuard, params);
     };
     FunctionFragment.fromString = function (value) {
         var params = { type: "function" };

@@ -2,9 +2,9 @@ import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike } from "@ethersproject/bytes";
 import { Description } from "@ethersproject/properties";
 import { AbiCoder } from "./abi-coder";
-import { Result } from "./coders/abstract-coder";
+import { checkResultErrors, Result } from "./coders/abstract-coder";
 import { ConstructorFragment, EventFragment, Fragment, FunctionFragment, JsonFragment, ParamType } from "./fragments";
-export { Result };
+export { checkResultErrors, Result };
 export declare class LogDescription extends Description<LogDescription> {
     readonly eventFragment: EventFragment;
     readonly name: string;
@@ -60,6 +60,10 @@ export declare class Interface {
     decodeFunctionResult(functionFragment: FunctionFragment | string, data: BytesLike): Result;
     encodeFunctionResult(functionFragment: FunctionFragment | string, values?: Array<any>): string;
     encodeFilterTopics(eventFragment: EventFragment, values: Array<any>): Array<string | Array<string>>;
+    encodeEventLog(eventFragment: EventFragment, values: Array<any>): {
+        data: string;
+        topics: Array<string>;
+    };
     decodeEventLog(eventFragment: EventFragment | string, data: BytesLike, topics?: Array<string>): Result;
     parseTransaction(tx: {
         data: string;

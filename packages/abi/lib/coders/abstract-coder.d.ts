@@ -3,6 +3,10 @@ import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 export interface Result extends ReadonlyArray<any> {
     readonly [key: string]: any;
 }
+export declare function checkResultErrors(result: Result): Array<{
+    path: Array<string | number>;
+    error: Error;
+}>;
 export declare type CoerceFunc = (type: string, value: any) => any;
 export declare abstract class Coder {
     readonly name: string;

@@ -11,6 +11,7 @@ var abi_coder_1 = require("./abi-coder");
 exports.AbiCoder = abi_coder_1.AbiCoder;
 exports.defaultAbiCoder = abi_coder_1.defaultAbiCoder;
 var interface_1 = require("./interface");
+exports.checkResultErrors = interface_1.checkResultErrors;
 exports.Indexed = interface_1.Indexed;
 exports.Interface = interface_1.Interface;
 exports.LogDescription = interface_1.LogDescription;

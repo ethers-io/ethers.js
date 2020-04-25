@@ -416,12 +416,13 @@ export class EventFragment extends Fragment {
         if (value.type !== "event") {
             logger.throwArgumentError("invalid event object", "value", value);
         }
-        return new EventFragment(_constructorGuard, {
+        const params = {
             name: verifyIdentifier(value.name),
             anonymous: value.anonymous,
             inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : []),
             type: "event"
-        });
+        };
+        return new EventFragment(_constructorGuard, params);
     }
     static fromString(value) {
         let match = value.match(regexParen);
@@ -591,13 +592,15 @@ export class ConstructorFragment extends Fragment {
         if (state.constant) {
             logger.throwArgumentError("constructor cannot be constant", "value", value);
         }
-        return new ConstructorFragment(_constructorGuard, {
+        const params = {
             name: null,
             type: value.type,
             inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : []),
             payable: state.payable,
+            stateMutability: state.stateMutability,
             gas: (value.gas ? BigNumber.from(value.gas) : null)
-        });
+        };
+        return new ConstructorFragment(_constructorGuard, params);
     }
     static fromString(value) {
         let params = { type: "constructor" };
@@ -671,7 +674,7 @@ export class FunctionFragment extends ConstructorFragment {
             logger.throwArgumentError("invalid function object", "value", value);
         }
         let state = verifyState(value);
-        return new FunctionFragment(_constructorGuard, {
+        const params = {
             type: value.type,
             name: verifyIdentifier(value.name),
             constant: state.constant,
@@ -680,7 +683,8 @@ export class FunctionFragment extends ConstructorFragment {
             payable: state.payable,
             stateMutability: state.stateMutability,
             gas: (value.gas ? BigNumber.from(value.gas) : null)
-        });
+        };
+        return new FunctionFragment(_constructorGuard, params);
     }
     static fromString(value) {
         let params = { type: "function" };

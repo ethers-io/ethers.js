@@ -73,11 +73,35 @@ function unpack(reader, coders) {
         if (coder.dynamic) {
             var offset = reader.readValue();
             var offsetReader = baseReader.subReader(offset.toNumber());
-            value = coder.decode(offsetReader);
+            try {
+                value = coder.decode(offsetReader);
+            }
+            catch (error) {
+                // Cannot recover from this
+                if (error.code === logger_1.Logger.errors.BUFFER_OVERRUN) {
+                    throw error;
+                }
+                value = error;
+                value.baseType = coder.name;
+                value.name = coder.localName;
+                value.type = coder.type;
+            }
             dynamicLength += offsetReader.consumed;
         }
         else {
-            value = coder.decode(reader);
+            try {
+                value = coder.decode(reader);
+            }
+            catch (error) {
+                // Cannot recover from this
+                if (error.code === logger_1.Logger.errors.BUFFER_OVERRUN) {
+                    throw error;
+                }
+                value = error;
+                value.baseType = coder.name;
+                value.name = coder.localName;
+                value.type = coder.type;
+            }
         }
         if (value != undefined) {
             values.push(value);
@@ -98,8 +122,27 @@ function unpack(reader, coders) {
         if (values[name] != null) {
             return;
         }
-        values[name] = values[index];
+        var value = values[index];
+        if (value instanceof Error) {
+            Object.defineProperty(values, name, {
+                get: function () { throw value; }
+            });
+        }
+        else {
+            values[name] = value;
+        }
     });
+    var _loop_1 = function (i) {
+        var value = values[i];
+        if (value instanceof Error) {
+            Object.defineProperty(values, i, {
+                get: function () { throw value; }
+            });
+        }
+    };
+    for (var i = 0; i < values.length; i++) {
+        _loop_1(i);
+    }
     return Object.freeze(values);
 }
 exports.unpack = unpack;
@@ -119,7 +162,6 @@ var ArrayCoder = /** @class */ (function (_super) {
             this._throwError("expected array value", value);
         }
         var count = this.length;
-        //let result = new Uint8Array(0);
         if (count === -1) {
             count = value.length;
             writer.writeValue(value.length);

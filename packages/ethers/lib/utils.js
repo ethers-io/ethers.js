@@ -9,6 +9,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var abi_1 = require("@ethersproject/abi");
 exports.AbiCoder = abi_1.AbiCoder;
+exports.checkResultErrors = abi_1.checkResultErrors;
 exports.defaultAbiCoder = abi_1.defaultAbiCoder;
 exports.EventFragment = abi_1.EventFragment;
 exports.FormatTypes = abi_1.FormatTypes;
