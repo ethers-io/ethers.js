@@ -10,10 +10,21 @@ const hidWrapper = Object.freeze({
     create: function(): Promise<Transport> {
         // Load the library if not loaded
         if (hidCache == null) {
+            hidCache = new Promise((resolve, reject) => {
+                try {
+                    let hid = require("@ledgerhq/hw-transport-node-hid");
+                    if (hid.create == null) { resolve(hid["default"]); }
+                    resolve(hid);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+            /*
             hidCache = import("@ledgerhq/hw-transport-node-hid").then((hid) => {
                 if (hid.create == null) { return hid["default"]; }
                 return hid;
             });
+            */
         }
 
         return hidCache.then((hid) => {
