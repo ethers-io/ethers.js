@@ -148,7 +148,7 @@ export type AssembleVisitFunc = (node: Node, bytecode: string) => void;
 export type VisitFunc = (node: Node) => void;
 
 function throwError(message: string, location: Location): never {
-    return logger.throwError(message, "ASSEMBLER", {
+    return logger.throwError(message, <any>"ASSEMBLER", {
         location: location
     });
 }
