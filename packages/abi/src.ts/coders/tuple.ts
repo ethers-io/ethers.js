@@ -8,12 +8,12 @@ export class TupleCoder extends Coder {
 
     constructor(coders: Array<Coder>, localName: string) {
         let dynamic = false;
-        let types: Array<string> = [];
+        const types: Array<string> = [];
         coders.forEach((coder) => {
             if (coder.dynamic) { dynamic = true; }
             types.push(coder.type);
         });
-        let type = ("tuple(" + types.join(",") + ")");
+        const type = ("tuple(" + types.join(",") + ")");
 
         super("tuple", type, localName, dynamic);
         this.coders = coders;

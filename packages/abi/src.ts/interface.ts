@@ -8,14 +8,14 @@ import { keccak256 } from "@ethersproject/keccak256"
 import { defineReadOnly, Description, getStatic } from "@ethersproject/properties";
 
 import { AbiCoder, defaultAbiCoder } from "./abi-coder";
-import { Result } from "./coders/abstract-coder";
+import { checkResultErrors, Result } from "./coders/abstract-coder";
 import { ConstructorFragment, EventFragment, FormatTypes, Fragment, FunctionFragment, JsonFragment, ParamType } from "./fragments";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
-export { Result };
+export { checkResultErrors, Result };
 
 export class LogDescription extends Description<LogDescription> {
     readonly eventFragment: EventFragment;
@@ -41,6 +41,24 @@ export class Indexed extends Description<Indexed> {
     static isIndexed(value: any): value is Indexed {
         return !!(value && value._isIndexed);
     }
+}
+
+function wrapAccessError(property: string, error: Error): Error {
+    const wrap = new Error(`deferred error during ABI decoding triggered accessing ${ property }`);
+    (<any>wrap).error = error;
+    return wrap;
+}
+
+function checkNames(fragment: Fragment, type: "input" | "output", params: Array<ParamType>): void {
+    params.reduce((accum, param) => {
+        if (param.name) {
+            if (accum[param.name]) {
+                logger.throwArgumentError(`duplicate ${ type } parameter ${ JSON.stringify(param.name) } in ${ fragment.format("full") }`, "fragment", fragment);
+            }
+            accum[param.name] = true;
+        }
+        return accum;
+    }, <{ [ name: string ]: boolean }>{ });
 }
 
 export class Interface {
@@ -87,12 +105,16 @@ export class Interface {
                         logger.warn("duplicate definition - constructor");
                         return;
                     }
+                    checkNames(fragment, "input", fragment.inputs);
                     defineReadOnly(this, "deploy", <ConstructorFragment>fragment);
                     return;
                 case "function":
+                    checkNames(fragment, "input", fragment.inputs);
+                    checkNames(fragment, "output", (<FunctionFragment>fragment).outputs);
                     bucket = this.functions;
                     break;
                 case "event":
+                    checkNames(fragment, "input", fragment.inputs);
                     bucket = this.events;
                     break;
                 default:
@@ -367,6 +389,49 @@ export class Interface {
         return topics;
     }
 
+    encodeEventLog(eventFragment: EventFragment, values: Array<any>): { data: string, topics: Array<string> } {
+        if (typeof(eventFragment) === "string") {
+            eventFragment = this.getEvent(eventFragment);
+        }
+
+        const topics: Array<string> = [ ];
+
+        const dataTypes: Array<ParamType> = [ ];
+        const dataValues: Array<string> = [ ];
+
+        if (!eventFragment.anonymous) {
+            topics.push(this.getEventTopic(eventFragment));
+        }
+
+        if (values.length !== eventFragment.inputs.length) {
+            logger.throwArgumentError("event arguments/values mismatch", "values", values);
+        }
+
+        eventFragment.inputs.forEach((param, index) => {
+            const value = values[index];
+            if (param.indexed) {
+                if (param.type === "string") {
+                    topics.push(id(value))
+                } else if (param.type === "bytes") {
+                    topics.push(keccak256(value))
+                } else if (param.baseType === "tuple" || param.baseType === "array") {
+                    // @TOOD
+                    throw new Error("not implemented");
+                } else {
+                    topics.push(this._abiCoder.encode([ param.type] , [ value ]));
+                }
+            } else {
+                dataTypes.push(param);
+                dataValues.push(value);
+            }
+        });
+
+        return {
+            data: this._abiCoder.encode(dataTypes , dataValues),
+            topics: topics
+        };
+    }
+
     // Decode a filter for the event and the search criteria
     decodeEventLog(eventFragment: EventFragment | string, data: BytesLike, topics?: Array<string>): Result {
         if (typeof(eventFragment) === "string") {
@@ -414,14 +479,44 @@ export class Interface {
                     result[index] = new Indexed({ _isIndexed: true, hash: resultIndexed[indexedIndex++] });
 
                 } else {
-                    result[index] = resultIndexed[indexedIndex++];
+                    try {
+                        result[index] = resultIndexed[indexedIndex++];
+                    } catch (error) {
+                        result[index] = error;
+                    }
                 }
             } else {
-                result[index] = resultNonIndexed[nonIndexedIndex++];
+                try {
+                    result[index] = resultNonIndexed[nonIndexedIndex++];
+                } catch (error) {
+                    result[index] = error;
+                }
             }
 
-            if (param.name && result[param.name] == null) { result[param.name] = result[index]; }
+            // Add the keyword argument if named and safe
+            if (param.name && result[param.name] == null) {
+                const value = result[index];
+
+                // Make error named values throw on access
+                if (value instanceof Error) {
+                    Object.defineProperty(result, param.name, {
+                        get: () => { throw wrapAccessError(`property ${ JSON.stringify(param.name) }`, value); }
+                    });
+                } else {
+                    result[param.name] = value;
+                }
+            }
         });
+
+        // Make all error indexed values throw on access
+        for (let i = 0; i < result.length; i++) {
+            const value = result[i];
+            if (value instanceof Error) {
+                Object.defineProperty(result, i, {
+                    get: () => { throw wrapAccessError(`index ${ i }`, value); }
+                });
+            }
+        }
 
         return Object.freeze(result);
     }

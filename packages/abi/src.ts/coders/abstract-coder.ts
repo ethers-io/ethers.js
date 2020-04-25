@@ -12,6 +12,29 @@ export interface Result extends ReadonlyArray<any> {
     readonly [key: string]: any;
 }
 
+export function checkResultErrors(result: Result): Array<{ path: Array<string | number>, error: Error }> {
+    // Find the first error (if any)
+    const errors: Array<{ path: Array<string | number>, error: Error }> = [ ];
+
+    const checkErrors = function(path: Array<string | number>, object: any): void {
+        if (!Array.isArray(object)) { return; }
+        for (let key in object) {
+            const childPath = path.slice();
+            childPath.push(key);
+
+            try {
+                 checkErrors(childPath, object[key]);
+            } catch (error) {
+                errors.push({ path: childPath, error: error });
+            }
+        }
+    }
+    checkErrors([ ], result);
+
+    return errors;
+
+}
+
 export type CoerceFunc = (type: string, value: any) => any;
 
 export abstract class Coder {
@@ -34,6 +57,7 @@ export abstract class Coder {
     readonly dynamic: boolean;
 
     constructor(name: string, type: string, localName: string, dynamic: boolean) {
+        // @TODO: defineReadOnly these
         this.name = name;
         this.type = type;
         this.localName = localName;

@@ -16,9 +16,7 @@ import { Wordlist, wordlists} from "@ethersproject/wordlists";
 
 import * as utils from "./utils";
 
-import { Logger } from "@ethersproject/logger";
-
-const errors: { [ name: string ]: string } = Logger.errors;
+import { ErrorCode as errors, Logger } from "@ethersproject/logger";
 
 ////////////////////////
 // Types

@@ -75,10 +75,29 @@ export function unpack(reader: Reader, coders: Array<Coder>): Array<any> {
         if (coder.dynamic) {
             let offset = reader.readValue();
             let offsetReader = baseReader.subReader(offset.toNumber());
-            value = coder.decode(offsetReader);
+            try {
+                value = coder.decode(offsetReader);
+            } catch (error) {
+                // Cannot recover from this
+                if (error.code === Logger.errors.BUFFER_OVERRUN) { throw error; }
+                value = error;
+                value.baseType = coder.name;
+                value.name = coder.localName;
+                value.type = coder.type;
+            }
             dynamicLength += offsetReader.consumed;
+
         } else {
-            value = coder.decode(reader);
+            try {
+                value = coder.decode(reader);
+            } catch (error) {
+                // Cannot recover from this
+                if (error.code === Logger.errors.BUFFER_OVERRUN) { throw error; }
+                value = error;
+                value.baseType = coder.name;
+                value.name = coder.localName;
+                value.type = coder.type;
+            }
         }
 
         if (value != undefined) {
@@ -99,8 +118,25 @@ export function unpack(reader: Reader, coders: Array<Coder>): Array<any> {
 
         if (values[name] != null) { return; }
 
-        values[name] = values[index];
+        const value = values[index];
+
+        if (value instanceof Error) {
+            Object.defineProperty(values, name, {
+                get: () => { throw value; }
+            });
+        } else {
+            values[name] = value;
+        }
     });
+
+    for (let i = 0; i < values.length; i++) {
+        const value = values[i];
+        if (value instanceof Error) {
+            Object.defineProperty(values, i, {
+                get: () => { throw value; }
+            });
+        }
+    }
 
     return Object.freeze(values);
 }
@@ -126,7 +162,6 @@ export class ArrayCoder extends Coder {
 
         let count = this.length;
 
-        //let result = new Uint8Array(0);
         if (count === -1) {
             count = value.length;
             writer.writeValue(value.length);
