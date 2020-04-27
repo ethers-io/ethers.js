@@ -29,7 +29,7 @@ import { NodesmithProvider } from "./nodesmith-provider";
 import { Web3Provider } from "./web3-provider";
 import { WebSocketProvider } from "./websocket-provider";
 
-import { AsyncSendable } from "./web3-provider";
+import { ExternalProvider, JsonRpcFetchFunc } from "./web3-provider";
 
 import { Formatter } from "./formatter";
 
@@ -124,7 +124,8 @@ export {
     TransactionRequest,
     TransactionResponse,
 
-    AsyncSendable,
+    ExternalProvider,
+    JsonRpcFetchFunc,
 
     Network,
     Networkish

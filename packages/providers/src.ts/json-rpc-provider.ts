@@ -277,7 +277,7 @@ export class JsonRpcProvider extends BaseProvider {
     }
 
     static defaultUrl(): string {
-        return "http:/" + "/localhost:8545";
+        return "http:/\/localhost:8545";
     }
 
     getSigner(addressOrIndex?: string | number): JsonRpcSigner {

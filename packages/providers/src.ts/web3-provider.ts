@@ -9,75 +9,119 @@ const logger = new Logger(version);
 
 import { JsonRpcProvider } from "./json-rpc-provider";
 
-
 // Exported Types
-export type AsyncSendable = {
+export type ExternalProvider = {
     isMetaMask?: boolean;
     host?: string;
     path?: string;
-    sendAsync?: (request: any, callback: (error: any, response: any) => void) => void
-    send?: (request: any, callback: (error: any, response: any) => void) => void
+    sendAsync?: (request: { method: string, params?: Array<any> }, callback: (error: any, response: any) => void) => void
+    send?: (request: { method: string, params?: Array<any> }, callback: (error: any, response: any) => void) => void
+    request?: (request: { method: string, params?: Array<any> }) => Promise<any>
 }
 
-export class Web3Provider extends JsonRpcProvider {
-    readonly provider: AsyncSendable;
-    private _sendAsync: (request: any, callback: (error: any, response: any) => void) => void;
+let _nextId = 1;
 
-    constructor(web3Provider: AsyncSendable, network?: Networkish) {
-        logger.checkNew(new.target, Web3Provider);
+export type JsonRpcFetchFunc = (method: string, params?: Array<any>) => Promise<any>;
 
-        // HTTP has a host; IPC has a path.
-        super(web3Provider.host || web3Provider.path || "", network);
+type Web3LegacySend = (request: any, callback: (error: Error, response: any) => void) => void;
 
-        if (web3Provider) {
-            if (web3Provider.sendAsync) {
-                this._sendAsync = web3Provider.sendAsync.bind(web3Provider);
-            } else if (web3Provider.send) {
-                this._sendAsync = web3Provider.send.bind(web3Provider);
-            }
-        }
-
-        if (!this._sendAsync) {
-            logger.throwArgumentError("invalid web3Provider", "web3Provider", web3Provider);
-        }
-
-        defineReadOnly(this, "provider", web3Provider);
-    }
-
-    send(method: string, params: Array<any>): Promise<any> {
+function buildWeb3LegacyFetcher(provider: ExternalProvider, sendFunc: Web3LegacySend) : JsonRpcFetchFunc {
+    return function(method: string, params: Array<any>): Promise<any> {
 
         // Metamask complains about eth_sign (and on some versions hangs)
-        if (method == "eth_sign" && this.provider.isMetaMask) {
+        if (method == "eth_sign" && provider.isMetaMask) {
             // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
             method = "personal_sign";
             params = [ params[1], params[0] ];
         }
 
-        return new Promise((resolve, reject) => {
-            const request = {
-                method: method,
-                params: params,
-                id: (this._nextId++),
-                jsonrpc: "2.0"
-            };
+        const request = {
+            method: method,
+            params: params,
+            id: (_nextId++),
+            jsonrpc: "2.0"
+        };
 
-            this._sendAsync(request, function(error, result) {
-                if (error) {
-                    reject(error);
-                    return;
-                }
+        return new Promise((resolve, reject) => {
+            sendFunc(request, function(error, result) {
+                if (error) { return reject(error); }
 
                 if (result.error) {
-                    // @TODO: not any
-                    const error: any = new Error(result.error.message);
-                    error.code = result.error.code;
-                    error.data = result.error.data;
-                    reject(error);
-                    return;
+                    const error = new Error(result.error.message);
+                    (<any>error).code = result.error.code;
+                    (<any>error).data = result.error.data;
+                    return reject(error);
                 }
 
                 resolve(result.result);
             });
         });
+    }
+}
+
+function buildEip1193Fetcher(provider: ExternalProvider): JsonRpcFetchFunc {
+    return function(method: string, params: Array<any>): Promise<any> {
+        if (params == null) { params = [ ]; }
+
+        // Metamask complains about eth_sign (and on some versions hangs)
+        if (method == "eth_sign" && provider.isMetaMask) {
+            // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
+            method = "personal_sign";
+            params = [ params[1], params[0] ];
+        }
+
+        return provider.request({ method, params });
+    }
+}
+
+export class Web3Provider extends JsonRpcProvider {
+    readonly provider: ExternalProvider;
+    readonly jsonRpcFetchFunc: JsonRpcFetchFunc;
+
+    constructor(provider: ExternalProvider | JsonRpcFetchFunc, network?: Networkish) {
+        logger.checkNew(new.target, Web3Provider);
+
+        if (provider == null) {
+            logger.throwArgumentError("missing provider", "provider", provider);
+        }
+
+        let path: string = null;
+        let jsonRpcFetchFunc: JsonRpcFetchFunc = null;
+        let subprovider: ExternalProvider = null;
+
+        if (typeof(provider) === "function") {
+            path = "unknown:";
+            jsonRpcFetchFunc = provider;
+
+        } else {
+            path = provider.host || provider.path || "";
+            if (!path && provider.isMetaMask) {
+                path = "metamask";
+            }
+
+            subprovider = provider;
+
+            if (provider.request) {
+                if (path === "") { path = "eip-1193:"; }
+                jsonRpcFetchFunc = buildEip1193Fetcher(provider);
+            } else if (provider.sendAsync) {
+                jsonRpcFetchFunc = buildWeb3LegacyFetcher(provider, provider.sendAsync.bind(provider));
+            } else if (provider.send) {
+                jsonRpcFetchFunc = buildWeb3LegacyFetcher(provider, provider.send.bind(provider));
+            } else {
+                logger.throwArgumentError("unsupported provider", "provider", provider);
+            }
+
+            if (!path) { path = "unknown:"; }
+        }
+
+        super(path, network);
+
+        defineReadOnly(this, "jsonRpcFetchFunc", jsonRpcFetchFunc);
+        defineReadOnly(this, "provider", subprovider);
+    }
+
+    send(method: string, params: Array<any>): Promise<any> {
+        return this.jsonRpcFetchFunc(method, params);
     }
 }
