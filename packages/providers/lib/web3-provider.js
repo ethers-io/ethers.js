@@ -18,59 +18,99 @@ var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var json_rpc_provider_1 = require("./json-rpc-provider");
-var Web3Provider = /** @class */ (function (_super) {
-    __extends(Web3Provider, _super);
-    function Web3Provider(web3Provider, network) {
-        var _newTarget = this.constructor;
-        var _this = this;
-        logger.checkNew(_newTarget, Web3Provider);
-        // HTTP has a host; IPC has a path.
-        _this = _super.call(this, web3Provider.host || web3Provider.path || "", network) || this;
-        if (web3Provider) {
-            if (web3Provider.sendAsync) {
-                _this._sendAsync = web3Provider.sendAsync.bind(web3Provider);
-            }
-            else if (web3Provider.send) {
-                _this._sendAsync = web3Provider.send.bind(web3Provider);
-            }
-        }
-        if (!_this._sendAsync) {
-            logger.throwArgumentError("invalid web3Provider", "web3Provider", web3Provider);
-        }
-        properties_1.defineReadOnly(_this, "provider", web3Provider);
-        return _this;
-    }
-    Web3Provider.prototype.send = function (method, params) {
-        var _this = this;
+var _nextId = 1;
+function buildWeb3LegacyFetcher(provider, sendFunc) {
+    return function (method, params) {
         // Metamask complains about eth_sign (and on some versions hangs)
-        if (method == "eth_sign" && this.provider.isMetaMask) {
+        if (method == "eth_sign" && provider.isMetaMask) {
             // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
             method = "personal_sign";
             params = [params[1], params[0]];
         }
+        var request = {
+            method: method,
+            params: params,
+            id: (_nextId++),
+            jsonrpc: "2.0"
+        };
         return new Promise(function (resolve, reject) {
-            var request = {
-                method: method,
-                params: params,
-                id: (_this._nextId++),
-                jsonrpc: "2.0"
-            };
-            _this._sendAsync(request, function (error, result) {
+            sendFunc(request, function (error, result) {
                 if (error) {
-                    reject(error);
-                    return;
+                    return reject(error);
                 }
                 if (result.error) {
-                    // @TODO: not any
                     var error_1 = new Error(result.error.message);
                     error_1.code = result.error.code;
                     error_1.data = result.error.data;
-                    reject(error_1);
-                    return;
+                    return reject(error_1);
                 }
                 resolve(result.result);
             });
         });
+    };
+}
+function buildEip1193Fetcher(provider) {
+    return function (method, params) {
+        if (params == null) {
+            params = [];
+        }
+        // Metamask complains about eth_sign (and on some versions hangs)
+        if (method == "eth_sign" && provider.isMetaMask) {
+            // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
+            method = "personal_sign";
+            params = [params[1], params[0]];
+        }
+        return provider.request({ method: method, params: params });
+    };
+}
+var Web3Provider = /** @class */ (function (_super) {
+    __extends(Web3Provider, _super);
+    function Web3Provider(provider, network) {
+        var _newTarget = this.constructor;
+        var _this = this;
+        logger.checkNew(_newTarget, Web3Provider);
+        if (provider == null) {
+            logger.throwArgumentError("missing provider", "provider", provider);
+        }
+        var path = null;
+        var jsonRpcFetchFunc = null;
+        var subprovider = null;
+        if (typeof (provider) === "function") {
+            path = "unknown:";
+            jsonRpcFetchFunc = provider;
+        }
+        else {
+            path = provider.host || provider.path || "";
+            if (!path && provider.isMetaMask) {
+                path = "metamask";
+            }
+            subprovider = provider;
+            if (provider.request) {
+                if (path === "") {
+                    path = "eip-1193:";
+                }
+                jsonRpcFetchFunc = buildEip1193Fetcher(provider);
+            }
+            else if (provider.sendAsync) {
+                jsonRpcFetchFunc = buildWeb3LegacyFetcher(provider, provider.sendAsync.bind(provider));
+            }
+            else if (provider.send) {
+                jsonRpcFetchFunc = buildWeb3LegacyFetcher(provider, provider.send.bind(provider));
+            }
+            else {
+                logger.throwArgumentError("unsupported provider", "provider", provider);
+            }
+            if (!path) {
+                path = "unknown:";
+            }
+        }
+        _this = _super.call(this, path, network) || this;
+        properties_1.defineReadOnly(_this, "jsonRpcFetchFunc", jsonRpcFetchFunc);
+        properties_1.defineReadOnly(_this, "provider", subprovider);
+        return _this;
+    }
+    Web3Provider.prototype.send = function (method, params) {
+        return this.jsonRpcFetchFunc(method, params);
     };
     return Web3Provider;
 }(json_rpc_provider_1.JsonRpcProvider));

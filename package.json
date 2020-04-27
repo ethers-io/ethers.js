@@ -13,12 +13,10 @@
     "_build-cjs": "node ./admin/cmds/set-option cjs && npm run build",
     "_build-esm": "node ./admin/cmds/set-option esm && npm run build",
     "build-all": "node ./admin/cmds/update-exports.js && npm run _build-esm && npm run _build-cjs && npm run _dist",
-
     "_dist-ancillary": "node ./admin/cmds/set-option esm && rollup -c rollup-ancillary.config.js",
     "_dist-umd": "node ./admin/cmds/set-option cjs browser-lang-all && rollup -c && mv ./packages/ethers/dist/ethers.umd.min.js ./packages/ethers/dist/ethers-all.umd.min.js && node ./admin/cmds/set-option cjs && rollup -c",
     "_dist-esm": "node ./admin/cmds/set-option esm browser-lang-all && rollup -c --configModule && mv ./packages/ethers/dist/ethers.esm.min.js ./packages/ethers/dist/ethers-all.esm.min.js && node ./admin/cmds/set-option esm && rollup -c --configModule",
     "_dist": "npm run _dist-esm && npm run _dist-ancillary && npm run _dist-umd",
-
     "clean": "node ./admin/cmds/reset-build.js && tsc --build --clean ./tsconfig.project.json",
     "_dist-test-esm": "rollup -c rollup-tests.config.js --configModule",
     "_dist-test-umd": "rollup -c rollup-tests.config.js",
@@ -44,7 +42,6 @@
     "@types/node": "^12.7.4",
     "aes-js": "3.0.0",
     "aws-sdk": "2.137.0",
-    "browserify": "16.2.3",
     "diff": "4.0.1",
     "karma": "5.0.2",
     "karma-chrome-launcher": "3.1.0",
@@ -52,7 +49,6 @@
     "lerna": "^3.20.2",
     "libnpm": "2.0.1",
     "mocha": "^7.1.1",
-    "mocha-phantomjs-core": "2.1.2",
     "npm-packlist": "1.4.1",
     "rollup": "1.20.1",
     "rollup-plugin-commonjs": "10.0.2",

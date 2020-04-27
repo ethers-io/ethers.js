@@ -325,7 +325,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         return _this;
     }
     JsonRpcProvider.defaultUrl = function () {
-        return "http:/" + "/localhost:8545";
+        return "http:/\/localhost:8545";
     };
     JsonRpcProvider.prototype.getSigner = function (addressOrIndex) {
         return new JsonRpcSigner(_constructorGuard, this, addressOrIndex);

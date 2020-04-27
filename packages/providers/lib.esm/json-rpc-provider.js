@@ -245,7 +245,7 @@ export class JsonRpcProvider extends BaseProvider {
         this._nextId = 42;
     }
     static defaultUrl() {
-        return "http:/" + "/localhost:8545";
+        return "http:/\/localhost:8545";
     }
     getSigner(addressOrIndex) {
         return new JsonRpcSigner(_constructorGuard, this, addressOrIndex);

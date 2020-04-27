@@ -1,15 +1,26 @@
 import { Networkish } from "@ethersproject/networks";
 import { JsonRpcProvider } from "./json-rpc-provider";
-export declare type AsyncSendable = {
+export declare type ExternalProvider = {
     isMetaMask?: boolean;
     host?: string;
     path?: string;
-    sendAsync?: (request: any, callback: (error: any, response: any) => void) => void;
-    send?: (request: any, callback: (error: any, response: any) => void) => void;
+    sendAsync?: (request: {
+        method: string;
+        params?: Array<any>;
+    }, callback: (error: any, response: any) => void) => void;
+    send?: (request: {
+        method: string;
+        params?: Array<any>;
+    }, callback: (error: any, response: any) => void) => void;
+    request?: (request: {
+        method: string;
+        params?: Array<any>;
+    }) => Promise<any>;
 };
+export declare type JsonRpcFetchFunc = (method: string, params?: Array<any>) => Promise<any>;
 export declare class Web3Provider extends JsonRpcProvider {
-    readonly provider: AsyncSendable;
-    private _sendAsync;
-    constructor(web3Provider: AsyncSendable, network?: Networkish);
+    readonly provider: ExternalProvider;
+    readonly jsonRpcFetchFunc: JsonRpcFetchFunc;
+    constructor(provider: ExternalProvider | JsonRpcFetchFunc, network?: Networkish);
     send(method: string, params: Array<any>): Promise<any>;
 }

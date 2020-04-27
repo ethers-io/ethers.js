@@ -3,9 +3,10 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.0-beta.184 (2020-04-25 03:51)
+ethers/v5.0.0-beta.184 (2020-04-27 06:28)
 -----------------------------------------
 
+  - Added EIP-1193 support to Web3Provider. ([56af441](https://github.com/ethers-io/ethers.js/commit/56af4413b1dd1787db68985e0b612b63d86fdf7c))
   - Minor typing-detected fixes. ([d1f3a42](https://github.com/ethers-io/ethers.js/commit/d1f3a42c119d5588eab667ec7bb6e71042cfb656))
   - Added initial support for recoverable coding erros. ([#800](https://github.com/ethers-io/ethers.js/issues/800); [bda6623](https://github.com/ethers-io/ethers.js/commit/bda66230916e58e25a522e8430ce4de25091eb6b))
   - More draconian Typing. ([14e6811](https://github.com/ethers-io/ethers.js/commit/14e6811bf7d7c38a3b5714dededcc883c185d814))
