@@ -59,9 +59,10 @@ function serializeTopics(topics: Array<string | Array<string>>): string {
 function deserializeTopics(data: string): Array<string | Array<string>> {
     if (data === "") { return [ ]; }
     return data.split(/&/g).map((topic) => {
-        return topic.split("|").map((topic) => {
+        const comps = topic.split("|").map((topic) => {
             return ((topic === "null") ? null: topic);
         });
+        return comps.length === 1 ? comps[0] : comps;
     });
 }
 
