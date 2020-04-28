@@ -100,9 +100,13 @@ function deserializeTopics(data) {
         return [];
     }
     return data.split(/&/g).map(function (topic) {
-        return topic.split("|").map(function (topic) {
+        if (topic === "") {
+            return [];
+        }
+        var comps = topic.split("|").map(function (topic) {
             return ((topic === "null") ? null : topic);
         });
+        return ((comps.length === 1) ? comps[0] : comps);
     });
 }
 function getEventTag(eventName) {

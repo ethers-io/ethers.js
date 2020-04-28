@@ -59,9 +59,13 @@ function deserializeTopics(data) {
         return [];
     }
     return data.split(/&/g).map((topic) => {
-        return topic.split("|").map((topic) => {
+        if (topic === "") {
+            return [];
+        }
+        const comps = topic.split("|").map((topic) => {
             return ((topic === "null") ? null : topic);
         });
+        return ((comps.length === 1) ? comps[0] : comps);
     });
 }
 function getEventTag(eventName) {

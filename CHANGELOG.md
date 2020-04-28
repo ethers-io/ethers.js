@@ -3,9 +3,11 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.0-beta.184 (2020-04-27 06:28)
+ethers/v5.0.0-beta.184 (2020-04-28 04:58)
 -----------------------------------------
 
+  - Removed old EIP-1193 experimental provider; it can now be supported by Web3Provider as EIP-1193 is now backwards compatible. ([84c68ac](https://github.com/ethers-io/ethers.js/commit/84c68ac5c17b10897ade966d6c8fac1f1f66a4af))
+  - Fixed getLogs filter deserialization. ([#805](https://github.com/ethers-io/ethers.js/issues/805); [393c0c7](https://github.com/ethers-io/ethers.js/commit/393c0c74a91175adca2e25026dcdb9e6445afd8f))
   - Added EIP-1193 support to Web3Provider. ([56af441](https://github.com/ethers-io/ethers.js/commit/56af4413b1dd1787db68985e0b612b63d86fdf7c))
   - Minor typing-detected fixes. ([d1f3a42](https://github.com/ethers-io/ethers.js/commit/d1f3a42c119d5588eab667ec7bb6e71042cfb656))
   - Added initial support for recoverable coding erros. ([#800](https://github.com/ethers-io/ethers.js/issues/800); [bda6623](https://github.com/ethers-io/ethers.js/commit/bda66230916e58e25a522e8430ce4de25091eb6b))
