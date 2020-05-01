@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -23,21 +32,16 @@ export function getStatic(ctor, key) {
     return null;
 }
 export function resolveProperties(object) {
-    const promises = Object.keys(object).map((key) => {
-        const value = object[key];
-        if (!(value instanceof Promise)) {
-            return Promise.resolve({ key: key, value: value });
-        }
-        return value.then((value) => {
-            return { key: key, value: value };
+    return __awaiter(this, void 0, void 0, function* () {
+        const promises = Object.keys(object).map((key) => {
+            const value = object[key];
+            return Promise.resolve(value).then((v) => ({ key: key, value: v }));
         });
-    });
-    return Promise.all(promises).then((results) => {
-        const result = {};
-        return (results.reduce((accum, result) => {
-            accum[result.key] = result.value;
+        const results = yield Promise.all(promises);
+        return results.reduce((accum, result) => {
+            accum[(result.key)] = result.value;
             return accum;
-        }, result));
+        }, {});
     });
 }
 export function checkProperties(object, properties) {

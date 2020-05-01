@@ -2,6 +2,17 @@ Changelog
 =========
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
+During the v5-BETA, although attempts are made to minimize it, some of the APIs
+may change. It is generally recommended that you remove your `node_modules/`,
+`package-lock.json` (and similar files for yarn, etc.) and doing an `npm install`
+after upgrading to a newer version of the v5-BETA.
+
+ethers/v5.0.0-beta.185 (2020-05-01 16:45)
+-----------------------------------------
+
+  - Allow modifiers on Human-Readable ABI for tuples and arrays. ([83fba3d](https://github.com/ethers-io/ethers.js/commit/83fba3de25b524cc48975b1952f4319d63874205))
+  - Added initial renew support to ENS CLI. ([54dfb75](https://github.com/ethers-io/ethers.js/commit/54dfb757c4c88e4bcada1890c4016fadfb25581a))
+  - Allow contract filters to include OR-ed values. ([#437](https://github.com/ethers-io/ethers.js/issues/437); [28800d7](https://github.com/ethers-io/ethers.js/commit/28800d7681f3bab08f6d30a22f0813e04feee18a))
 
 ethers/v5.0.0-beta.184 (2020-04-28 04:58)
 -----------------------------------------

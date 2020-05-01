@@ -6,7 +6,7 @@ export declare type Similar<T> = {
 export declare type Resolvable<T> = {
     [P in keyof T]: T[P] | Promise<T[P]>;
 };
-export declare function resolveProperties<T>(object: Resolvable<T>): Promise<Similar<T>>;
+export declare function resolveProperties<T>(object: Readonly<Resolvable<T>>): Promise<Similar<T>>;
 export declare function checkProperties(object: any, properties: {
     [name: string]: boolean;
 }): void;

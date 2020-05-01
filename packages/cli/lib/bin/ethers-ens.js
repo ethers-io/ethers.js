@@ -81,7 +81,8 @@ var ethControllerAbi = [
 var ethRegistrarAbi = [
     "function ownerOf(uint256 tokenId) view returns (address)",
     "function reclaim(uint256 id, address owner) @500000",
-    "function safeTransferFrom(address from, address to, uint256 tokenId) @500000"
+    "function safeTransferFrom(address from, address to, uint256 tokenId) @500000",
+    "function nameExpires(uint256 id) external view returns(uint)"
 ];
 var resolverAbi = [
     "function interfaceImplementer(bytes32 nodehash, bytes4 interfaceId) view returns (address)",
@@ -1309,6 +1310,170 @@ var ReclaimPlugin = /** @class */ (function (_super) {
     return ReclaimPlugin;
 }(AddressAccountPlugin));
 cli.addPlugin("reclaim", ReclaimPlugin);
+function zpad(value, length) {
+    var v = String(value);
+    while (v.length < length) {
+        v = "0" + v;
+    }
+    return v;
+}
+function formatDate(date) {
+    var count = Math.round((date.getTime() - (new Date()).getTime()) / (24 * 60 * 60 * 1000));
+    return [
+        date.getFullYear(),
+        zpad(date.getMonth() + 1, 2),
+        zpad(date.getDate(), 2)
+    ].join("-") + (" (" + count + " days from now)");
+}
+var RenewPlugin = /** @class */ (function (_super) {
+    __extends(RenewPlugin, _super);
+    function RenewPlugin() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    RenewPlugin.getHelp = function () {
+        return {
+            name: "renew NAME [ NAME ... ]",
+            help: "Reset the controller by the registrant"
+        };
+    };
+    RenewPlugin.getOptionHelp = function () {
+        return [
+            {
+                name: "[ --duration DAYS ]",
+                help: "Register duration (default: 365 days)"
+            },
+            {
+                name: "[ --until YYYY-MM-DD ]",
+                help: "Register until date"
+            },
+        ];
+    };
+    RenewPlugin.prototype.getDuration = function (startDate, until) {
+        var match = until.match(/^(\d\d\d\d)-(\d\d)-(\d\d)$/);
+        if (!match) {
+            this.throwError("invalid date format; use YYYY-MM-DD");
+        }
+        var year = parseInt(match[1]);
+        var month = parseInt(match[2]);
+        var day = parseInt(match[3]);
+        // Not perfect; allow February 30 or April 31 @TODO?
+        if (month < 1 || month > 12 || day < 1 || day > 31) {
+            this.throwError("date out of range");
+        }
+        var endDate = (new Date(year, month - 1, day)).getTime() / 1000;
+        return Math.ceil(endDate - startDate);
+    };
+    RenewPlugin.prototype.prepareOptions = function (argParser) {
+        return __awaiter(this, void 0, void 0, function () {
+            var timespans, timespan;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, _super.prototype.prepareOptions.call(this, argParser)];
+                    case 1:
+                        _a.sent();
+                        if (this.accounts.length !== 1) {
+                            this.throwError("new requires ONE account");
+                        }
+                        timespans = argParser.consumeMultiOptions(["duration", "until"]);
+                        if (timespans.length === 1) {
+                            timespan = timespans.pop();
+                            if (timespan.name === "duration") {
+                                this.duration = parseInt(timespan.value) * 60 * 60 * 24;
+                            }
+                            else if (timespan.name === "until") {
+                                this.until = timespan.value;
+                            }
+                        }
+                        else if (timespans.length > 1) {
+                            this.throwError("renew requires at most ONE of --duration or --until");
+                        }
+                        else {
+                            this.duration = 365 * 60 * 60 * 24;
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    RenewPlugin.prototype.prepareArgs = function (args) {
+        return __awaiter(this, void 0, void 0, function () {
+            var labels;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, _super.prototype.prepareArgs.call(this, args)];
+                    case 1:
+                        _a.sent();
+                        labels = [];
+                        args.forEach(function (arg) {
+                            var comps = arg.split(".");
+                            if (comps.length !== 2 || comps[1] !== "eth") {
+                                _this.throwError("name not supported " + JSON.stringify(arg));
+                            }
+                            labels.push(comps[0]);
+                        });
+                        this.labels = Object.freeze(labels);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    RenewPlugin.prototype.run = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var ethController, ethRegistrar, i, label, expiration, duration, fee;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, _super.prototype.run.call(this)];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, this.getEthController()];
+                    case 2:
+                        ethController = _a.sent();
+                        return [4 /*yield*/, this.getEthRegistrar()];
+                    case 3:
+                        ethRegistrar = _a.sent();
+                        i = 0;
+                        _a.label = 4;
+                    case 4:
+                        if (!(i < this.labels.length)) return [3 /*break*/, 9];
+                        label = this.labels[i];
+                        console.log(label);
+                        return [4 /*yield*/, ethRegistrar.nameExpires(ethers_1.ethers.utils.id(label))];
+                    case 5:
+                        expiration = (_a.sent()).toNumber();
+                        if (expiration === 0) {
+                            this.throwError("not registered: " + label);
+                        }
+                        duration = this.duration ? this.duration : this.getDuration(expiration, this.until);
+                        if (duration < 0) {
+                            this.throwError("bad duration: " + duration);
+                        }
+                        return [4 /*yield*/, ethController.rentPrice(label, duration)];
+                    case 6:
+                        fee = (_a.sent()).mul(11).div(10);
+                        this.dump("Renew: " + label + ".eth", {
+                            "Current Expiry": formatDate(new Date(expiration * 1000)),
+                            "Duration": (duration / (24 * 60 * 60)) + " days",
+                            "Until": formatDate(new Date((expiration + duration) * 1000)),
+                            "Fee": ethers_1.ethers.utils.formatEther(fee) + " (+10% buffer)",
+                        });
+                        return [4 /*yield*/, ethController.renew(label, duration, {
+                                value: fee
+                            })];
+                    case 7:
+                        _a.sent();
+                        _a.label = 8;
+                    case 8:
+                        i++;
+                        return [3 /*break*/, 4];
+                    case 9: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    return RenewPlugin;
+}(EnsPlugin));
+cli.addPlugin("renew", RenewPlugin);
 /**
  *  To Do:
  *    register NAME --registrar

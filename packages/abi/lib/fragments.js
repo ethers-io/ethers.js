@@ -21,6 +21,7 @@ var logger = new logger_1.Logger(_version_1.version);
 ;
 var _constructorGuard = {};
 var ModifiersBytes = { calldata: true, memory: true, storage: true };
+var ModifiersNest = { calldata: true, memory: true };
 function checkModifier(type, name) {
     if (type === "bytes" || type === "string") {
         if (ModifiersBytes[name]) {
@@ -29,6 +30,11 @@ function checkModifier(type, name) {
     }
     else if (type === "address") {
         if (name === "payable") {
+            return true;
+        }
+    }
+    else if (type.indexOf("[") >= 0 || type === "tuple") {
+        if (ModifiersNest[name]) {
             return true;
         }
     }

@@ -73,27 +73,61 @@ var Signer = /** @class */ (function () {
     ///////////////////
     // Sub-classes MAY override these
     Signer.prototype.getBalance = function (blockTag) {
-        this._checkProvider("getBalance");
-        return this.provider.getBalance(this.getAddress(), blockTag);
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this._checkProvider("getBalance");
+                        return [4 /*yield*/, this.provider.getBalance(this.getAddress(), blockTag)];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
     };
     Signer.prototype.getTransactionCount = function (blockTag) {
-        this._checkProvider("getTransactionCount");
-        return this.provider.getTransactionCount(this.getAddress(), blockTag);
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this._checkProvider("getTransactionCount");
+                        return [4 /*yield*/, this.provider.getTransactionCount(this.getAddress(), blockTag)];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
     };
     // Populates "from" if unspecified, and estimates the gas for the transation
     Signer.prototype.estimateGas = function (transaction) {
-        var _this = this;
-        this._checkProvider("estimateGas");
-        return properties_1.resolveProperties(this.checkTransaction(transaction)).then(function (tx) {
-            return _this.provider.estimateGas(tx);
+        return __awaiter(this, void 0, void 0, function () {
+            var tx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this._checkProvider("estimateGas");
+                        return [4 /*yield*/, properties_1.resolveProperties(this.checkTransaction(transaction))];
+                    case 1:
+                        tx = _a.sent();
+                        return [4 /*yield*/, this.provider.estimateGas(tx)];
+                    case 2: return [2 /*return*/, _a.sent()];
+                }
+            });
         });
     };
     // Populates "from" if unspecified, and calls with the transation
     Signer.prototype.call = function (transaction, blockTag) {
-        var _this = this;
-        this._checkProvider("call");
-        return properties_1.resolveProperties(this.checkTransaction(transaction)).then(function (tx) {
-            return _this.provider.call(tx, blockTag);
+        return __awaiter(this, void 0, void 0, function () {
+            var tx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this._checkProvider("call");
+                        return [4 /*yield*/, properties_1.resolveProperties(this.checkTransaction(transaction))];
+                    case 1:
+                        tx = _a.sent();
+                        return [4 /*yield*/, this.provider.call(tx, blockTag)];
+                    case 2: return [2 /*return*/, _a.sent()];
+                }
+            });
         });
     };
     // Populates all fields in a transaction, signs it and sends it to the network
@@ -107,16 +141,43 @@ var Signer = /** @class */ (function () {
         });
     };
     Signer.prototype.getChainId = function () {
-        this._checkProvider("getChainId");
-        return this.provider.getNetwork().then(function (network) { return network.chainId; });
+        return __awaiter(this, void 0, void 0, function () {
+            var network;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this._checkProvider("getChainId");
+                        return [4 /*yield*/, this.provider.getNetwork()];
+                    case 1:
+                        network = _a.sent();
+                        return [2 /*return*/, network.chainId];
+                }
+            });
+        });
     };
     Signer.prototype.getGasPrice = function () {
-        this._checkProvider("getGasPrice");
-        return this.provider.getGasPrice();
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this._checkProvider("getGasPrice");
+                        return [4 /*yield*/, this.provider.getGasPrice()];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
     };
     Signer.prototype.resolveName = function (name) {
-        this._checkProvider("resolveName");
-        return this.provider.resolveName(name);
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this._checkProvider("resolveName");
+                        return [4 /*yield*/, this.provider.resolveName(name)];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
     };
     // Checks a transaction does not contain invalid keys and if
     // no "from" is provided, populates it.

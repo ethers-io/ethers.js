@@ -7,6 +7,7 @@ const logger = new Logger(version);
 ;
 const _constructorGuard = {};
 let ModifiersBytes = { calldata: true, memory: true, storage: true };
+let ModifiersNest = { calldata: true, memory: true };
 function checkModifier(type, name) {
     if (type === "bytes" || type === "string") {
         if (ModifiersBytes[name]) {
@@ -15,6 +16,11 @@ function checkModifier(type, name) {
     }
     else if (type === "address") {
         if (name === "payable") {
+            return true;
+        }
+    }
+    else if (type.indexOf("[") >= 0 || type === "tuple") {
+        if (ModifiersNest[name]) {
             return true;
         }
     }

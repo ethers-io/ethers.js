@@ -4689,9 +4689,18 @@ class FixedNumber {
     }
 }
 
-const version$3 = "properties/5.0.0-beta.139";
+const version$3 = "properties/5.0.0-beta.140";
 
 "use strict";
+var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 const logger$3 = new Logger(version$3);
 function defineReadOnly(object, name, value) {
     Object.defineProperty(object, name, {
@@ -4714,21 +4723,16 @@ function getStatic(ctor, key) {
     return null;
 }
 function resolveProperties(object) {
-    const promises = Object.keys(object).map((key) => {
-        const value = object[key];
-        if (!(value instanceof Promise)) {
-            return Promise.resolve({ key: key, value: value });
-        }
-        return value.then((value) => {
-            return { key: key, value: value };
+    return __awaiter(this, void 0, void 0, function* () {
+        const promises = Object.keys(object).map((key) => {
+            const value = object[key];
+            return Promise.resolve(value).then((v) => ({ key: key, value: v }));
         });
-    });
-    return Promise.all(promises).then((results) => {
-        const result = {};
-        return (results.reduce((accum, result) => {
-            accum[result.key] = result.value;
+        const results = yield Promise.all(promises);
+        return results.reduce((accum, result) => {
+            accum[(result.key)] = result.value;
             return accum;
-        }, result));
+        }, {});
     });
 }
 function checkProperties(object, properties) {
@@ -4802,13 +4806,14 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.0.0-beta.152";
+const version$4 = "abi/5.0.0-beta.153";
 
 "use strict";
 const logger$4 = new Logger(version$4);
 ;
 const _constructorGuard$2 = {};
 let ModifiersBytes = { calldata: true, memory: true, storage: true };
+let ModifiersNest = { calldata: true, memory: true };
 function checkModifier(type, name) {
     if (type === "bytes" || type === "string") {
         if (ModifiersBytes[name]) {
@@ -4817,6 +4822,11 @@ function checkModifier(type, name) {
     }
     else if (type === "address") {
         if (name === "payable") {
+            return true;
+        }
+    }
+    else if (type.indexOf("[") >= 0 || type === "tuple") {
+        if (ModifiersNest[name]) {
             return true;
         }
     }
@@ -7659,6 +7669,19 @@ class Interface {
         if (!eventFragment.anonymous) {
             topics.push(this.getEventTopic(eventFragment));
         }
+        const encodeTopic = (param, value) => {
+            if (param.type === "string") {
+                return id(value);
+            }
+            else if (param.type === "bytes") {
+                return keccak256(hexlify(value));
+            }
+            // Check addresses are valid
+            if (param.type === "address") {
+                this._abiCoder.encode(["address"], [value]);
+            }
+            return hexZeroPad(hexlify(value), 32);
+        };
         values.forEach((value, index) => {
             let param = eventFragment.inputs[index];
             if (!param.indexed) {
@@ -7670,21 +7693,14 @@ class Interface {
             if (value == null) {
                 topics.push(null);
             }
-            else if (param.type === "string") {
-                topics.push(id(value));
-            }
-            else if (param.type === "bytes") {
-                topics.push(keccak256(hexlify(value)));
-            }
-            else if (param.type.indexOf("[") !== -1 || param.type.substring(0, 5) === "tuple") {
+            else if (param.baseType === "array" || param.baseType === "tuple") {
                 logger$c.throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
             }
+            else if (Array.isArray(value)) {
+                topics.push(value.map((value) => encodeTopic(param, value)));
+            }
             else {
-                // Check addresses are valid
-                if (param.type === "address") {
-                    this._abiCoder.encode(["address"], [value]);
-                }
-                topics.push(hexZeroPad(hexlify(value), 32));
+                topics.push(encodeTopic(param, value));
             }
         });
         // Trim off trailing nulls
@@ -7947,10 +7963,10 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.0.0-beta.141";
+const version$a = "abstract-signer/5.0.0-beta.142";
 
 "use strict";
-var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$1 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -7979,25 +7995,31 @@ class Signer {
     ///////////////////
     // Sub-classes MAY override these
     getBalance(blockTag) {
-        this._checkProvider("getBalance");
-        return this.provider.getBalance(this.getAddress(), blockTag);
+        return __awaiter$1(this, void 0, void 0, function* () {
+            this._checkProvider("getBalance");
+            return yield this.provider.getBalance(this.getAddress(), blockTag);
+        });
     }
     getTransactionCount(blockTag) {
-        this._checkProvider("getTransactionCount");
-        return this.provider.getTransactionCount(this.getAddress(), blockTag);
+        return __awaiter$1(this, void 0, void 0, function* () {
+            this._checkProvider("getTransactionCount");
+            return yield this.provider.getTransactionCount(this.getAddress(), blockTag);
+        });
     }
     // Populates "from" if unspecified, and estimates the gas for the transation
     estimateGas(transaction) {
-        this._checkProvider("estimateGas");
-        return resolveProperties(this.checkTransaction(transaction)).then((tx) => {
-            return this.provider.estimateGas(tx);
+        return __awaiter$1(this, void 0, void 0, function* () {
+            this._checkProvider("estimateGas");
+            const tx = yield resolveProperties(this.checkTransaction(transaction));
+            return yield this.provider.estimateGas(tx);
         });
     }
     // Populates "from" if unspecified, and calls with the transation
     call(transaction, blockTag) {
-        this._checkProvider("call");
-        return resolveProperties(this.checkTransaction(transaction)).then((tx) => {
-            return this.provider.call(tx, blockTag);
+        return __awaiter$1(this, void 0, void 0, function* () {
+            this._checkProvider("call");
+            const tx = yield resolveProperties(this.checkTransaction(transaction));
+            return yield this.provider.call(tx, blockTag);
         });
     }
     // Populates all fields in a transaction, signs it and sends it to the network
@@ -8010,16 +8032,23 @@ class Signer {
         });
     }
     getChainId() {
-        this._checkProvider("getChainId");
-        return this.provider.getNetwork().then((network) => network.chainId);
+        return __awaiter$1(this, void 0, void 0, function* () {
+            this._checkProvider("getChainId");
+            const network = yield this.provider.getNetwork();
+            return network.chainId;
+        });
     }
     getGasPrice() {
-        this._checkProvider("getGasPrice");
-        return this.provider.getGasPrice();
+        return __awaiter$1(this, void 0, void 0, function* () {
+            this._checkProvider("getGasPrice");
+            return yield this.provider.getGasPrice();
+        });
     }
     resolveName(name) {
-        this._checkProvider("resolveName");
-        return this.provider.resolveName(name);
+        return __awaiter$1(this, void 0, void 0, function* () {
+            this._checkProvider("resolveName");
+            return yield this.provider.resolveName(name);
+        });
     }
     // Checks a transaction does not contain invalid keys and if
     // no "from" is provided, populates it.
@@ -8059,7 +8088,7 @@ class Signer {
     // By default called from: (overriding these prevents it)
     //   - sendTransaction
     populateTransaction(transaction) {
-        return __awaiter(this, void 0, void 0, function* () {
+        return __awaiter$1(this, void 0, void 0, function* () {
             const tx = yield resolveProperties(this.checkTransaction(transaction));
             if (tx.to != null) {
                 tx.to = Promise.resolve(tx.to).then((to) => this.resolveName(to));
@@ -8136,7 +8165,7 @@ class VoidSigner extends Signer {
 const version$b = "contracts/5.0.0-beta.150";
 
 "use strict";
-var __awaiter$1 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8889,7 +8918,7 @@ class ContractFactory {
         return tx;
     }
     deploy(...args) {
-        return __awaiter$1(this, void 0, void 0, function* () {
+        return __awaiter$2(this, void 0, void 0, function* () {
             let overrides = {};
             // If 1 extra parameter was passed in, it contains overrides
             if (args.length === this.interface.deploy.inputs.length + 1) {
@@ -15013,7 +15042,7 @@ uuid.unparse = unparse;
 var uuid_1 = uuid;
 
 "use strict";
-var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -15159,7 +15188,7 @@ function decryptSync(json, password) {
     return _getAccount(data, key);
 }
 function decrypt$1(json, password, progressCallback) {
-    return __awaiter$2(this, void 0, void 0, function* () {
+    return __awaiter$3(this, void 0, void 0, function* () {
         const data = JSON.parse(json);
         const key = yield _computeKdfKey(data, password, pbkdf2$1, scrypt_1, progressCallback);
         return _getAccount(data, key);
@@ -15680,7 +15709,7 @@ var browser$2 = /*#__PURE__*/Object.freeze({
 const version$l = "web/5.0.0-beta.137";
 
 "use strict";
-var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -15690,7 +15719,7 @@ var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments,
     });
 };
 function getUrl(href, options) {
-    return __awaiter$3(this, void 0, void 0, function* () {
+    return __awaiter$4(this, void 0, void 0, function* () {
         if (options == null) {
             options = {};
         }
@@ -15727,7 +15756,7 @@ function getUrl(href, options) {
 }
 
 "use strict";
-var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$5 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -15810,7 +15839,7 @@ function fetchJson(connection, json, processFunc) {
         return { promise, cancel };
     })();
     const runningFetch = (function () {
-        return __awaiter$4(this, void 0, void 0, function* () {
+        return __awaiter$5(this, void 0, void 0, function* () {
             let response = null;
             try {
                 response = yield getUrl(url, options);
@@ -15939,7 +15968,7 @@ function poll(func, options) {
     });
 }
 
-const version$m = "providers/5.0.0-beta.164";
+const version$m = "providers/5.0.0-beta.165";
 
 "use strict";
 const logger$q = new Logger(version$m);
@@ -16317,7 +16346,7 @@ class Formatter {
 }
 
 "use strict";
-var __awaiter$5 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$6 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -16501,7 +16530,7 @@ class BaseProvider extends Provider {
         return getNetwork((network == null) ? "homestead" : network);
     }
     _getInternalBlockNumber(maxAge) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
             const internalBlockNumber = this._internalBlockNumber;
             if (maxAge > 0 && this._internalBlockNumber) {
@@ -16525,7 +16554,7 @@ class BaseProvider extends Provider {
         });
     }
     poll() {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             const pollId = nextPollId++;
             this.emit("willPoll", pollId);
             // Track all running promises, so we can trigger a post-poll once they are complete
@@ -16686,7 +16715,7 @@ class BaseProvider extends Provider {
     // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
     //        this will be used once we move to the WebSocket or other alternatives to polling
     waitForTransaction(transactionHash, confirmations, timeout) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             if (confirmations == null) {
                 confirmations = 1;
             }
@@ -16735,13 +16764,13 @@ class BaseProvider extends Provider {
         return this._getInternalBlockNumber(0);
     }
     getGasPrice() {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
             return BigNumber.from(yield this.perform("getGasPrice", {}));
         });
     }
     getBalance(addressOrName, blockTag) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
@@ -16751,7 +16780,7 @@ class BaseProvider extends Provider {
         });
     }
     getTransactionCount(addressOrName, blockTag) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
@@ -16761,7 +16790,7 @@ class BaseProvider extends Provider {
         });
     }
     getCode(addressOrName, blockTag) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
@@ -16771,7 +16800,7 @@ class BaseProvider extends Provider {
         });
     }
     getStorageAt(addressOrName, position, blockTag) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
@@ -16792,7 +16821,7 @@ class BaseProvider extends Provider {
             logger$r.throwError("Transaction hash mismatch from Provider.sendTransaction.", Logger.errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
         // @TODO: (confirmations? number, timeout? number)
-        result.wait = (confirmations) => __awaiter$5(this, void 0, void 0, function* () {
+        result.wait = (confirmations) => __awaiter$6(this, void 0, void 0, function* () {
             // We know this transaction *must* exist (whether it gets mined is
             // another story), so setting an emitted value forces us to
             // wait even if the node returns null for the receipt
@@ -16817,7 +16846,7 @@ class BaseProvider extends Provider {
         return result;
     }
     sendTransaction(signedTransaction) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
             const hexTx = yield Promise.resolve(signedTransaction).then(t => hexlify(t));
             const tx = this.formatter.transaction(signedTransaction);
@@ -16833,7 +16862,7 @@ class BaseProvider extends Provider {
         });
     }
     _getTransactionRequest(transaction) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             const values = yield transaction;
             const tx = {};
             ["from", "to"].forEach((key) => {
@@ -16858,7 +16887,7 @@ class BaseProvider extends Provider {
         });
     }
     _getFilter(filter) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             if (filter instanceof Promise) {
                 filter = yield filter;
             }
@@ -16882,7 +16911,7 @@ class BaseProvider extends Provider {
         });
     }
     call(transaction, blockTag) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
             const params = yield resolveProperties({
                 transaction: this._getTransactionRequest(transaction),
@@ -16892,7 +16921,7 @@ class BaseProvider extends Provider {
         });
     }
     estimateGas(transaction) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
             const params = yield resolveProperties({
                 transaction: this._getTransactionRequest(transaction)
@@ -16901,7 +16930,7 @@ class BaseProvider extends Provider {
         });
     }
     _getAddress(addressOrName) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             const address = yield this.resolveName(addressOrName);
             if (address == null) {
                 logger$r.throwError("ENS name not configured", Logger.errors.UNSUPPORTED_OPERATION, {
@@ -16912,7 +16941,7 @@ class BaseProvider extends Provider {
         });
     }
     _getBlock(blockHashOrBlockTag, includeTransactions) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
             if (blockHashOrBlockTag instanceof Promise) {
                 blockHashOrBlockTag = yield blockHashOrBlockTag;
@@ -16936,7 +16965,7 @@ class BaseProvider extends Provider {
                     logger$r.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
                 }
             }
-            return poll(() => __awaiter$5(this, void 0, void 0, function* () {
+            return poll(() => __awaiter$6(this, void 0, void 0, function* () {
                 const block = yield this.perform("getBlock", params);
                 // Block was not found
                 if (block == null) {
@@ -16990,13 +17019,13 @@ class BaseProvider extends Provider {
         return (this._getBlock(blockHashOrBlockTag, true));
     }
     getTransaction(transactionHash) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
             if (transactionHash instanceof Promise) {
                 transactionHash = yield transactionHash;
             }
             const params = { transactionHash: this.formatter.hash(transactionHash, true) };
-            return poll(() => __awaiter$5(this, void 0, void 0, function* () {
+            return poll(() => __awaiter$6(this, void 0, void 0, function* () {
                 const result = yield this.perform("getTransaction", params);
                 if (result == null) {
                     if (this._emitted["t:" + transactionHash] == null) {
@@ -17022,13 +17051,13 @@ class BaseProvider extends Provider {
         });
     }
     getTransactionReceipt(transactionHash) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
             if (transactionHash instanceof Promise) {
                 transactionHash = yield transactionHash;
             }
             const params = { transactionHash: this.formatter.hash(transactionHash, true) };
-            return poll(() => __awaiter$5(this, void 0, void 0, function* () {
+            return poll(() => __awaiter$6(this, void 0, void 0, function* () {
                 const result = yield this.perform("getTransactionReceipt", params);
                 if (result == null) {
                     if (this._emitted["t:" + transactionHash] == null) {
@@ -17058,7 +17087,7 @@ class BaseProvider extends Provider {
         });
     }
     getLogs(filter) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
             const params = yield resolveProperties({ filter: this._getFilter(filter) });
             const logs = yield this.perform("getLogs", params);
@@ -17071,13 +17100,13 @@ class BaseProvider extends Provider {
         });
     }
     getEtherPrice() {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
             return this.perform("getEtherPrice", {});
         });
     }
     _getBlockTag(blockTag) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             if (blockTag instanceof Promise) {
                 blockTag = yield blockTag;
             }
@@ -17096,7 +17125,7 @@ class BaseProvider extends Provider {
         });
     }
     _getResolver(name) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             // Get the resolver from the blockchain
             const network = yield this.getNetwork();
             // No ENS...
@@ -17112,7 +17141,7 @@ class BaseProvider extends Provider {
         });
     }
     resolveName(name) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             if (name instanceof Promise) {
                 name = yield name;
             }
@@ -17143,7 +17172,7 @@ class BaseProvider extends Provider {
         });
     }
     lookupAddress(address) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             if (address instanceof Promise) {
                 address = yield address;
             }
@@ -17286,7 +17315,7 @@ class BaseProvider extends Provider {
 }
 
 "use strict";
-var __awaiter$6 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$7 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17486,7 +17515,7 @@ class JsonRpcProvider extends BaseProvider {
         else {
             // The network is unknown, query the JSON-RPC for it
             const ready = new Promise((resolve, reject) => {
-                setTimeout(() => __awaiter$6(this, void 0, void 0, function* () {
+                setTimeout(() => __awaiter$7(this, void 0, void 0, function* () {
                     let chainId = null;
                     try {
                         chainId = yield this.send("eth_chainId", []);
@@ -17815,7 +17844,7 @@ class AlchemyProvider extends UrlJsonRpcProvider {
 }
 
 "use strict";
-var __awaiter$7 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$8 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17847,7 +17876,7 @@ class CloudflareProvider extends UrlJsonRpcProvider {
         const _super = Object.create(null, {
             perform: { get: () => super.perform }
         });
-        return __awaiter$7(this, void 0, void 0, function* () {
+        return __awaiter$8(this, void 0, void 0, function* () {
             // The Cloudflare provider does not support eth_blockNumber,
             // so we get the latest block and pull it from that
             if (method === "getBlockNumber") {
@@ -17860,7 +17889,7 @@ class CloudflareProvider extends UrlJsonRpcProvider {
 }
 
 "use strict";
-var __awaiter$8 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$9 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17964,13 +17993,13 @@ class EtherscanProvider extends BaseProvider {
         const _super = Object.create(null, {
             perform: { get: () => super.perform }
         });
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             let url = this.baseUrl;
             let apiKey = "";
             if (this.apiKey) {
                 apiKey += "&apikey=" + this.apiKey;
             }
-            const get = (url, procFunc) => __awaiter$8(this, void 0, void 0, function* () {
+            const get = (url, procFunc) => __awaiter$9(this, void 0, void 0, function* () {
                 this.emit("debug", {
                     action: "request",
                     request: url,
@@ -18183,7 +18212,7 @@ class EtherscanProvider extends BaseProvider {
 }
 
 "use strict";
-var __awaiter$9 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$a = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -18498,7 +18527,7 @@ class FallbackProvider extends BaseProvider {
         this._highestBlockNumber = -1;
     }
     perform(method, params) {
-        return __awaiter$9(this, void 0, void 0, function* () {
+        return __awaiter$a(this, void 0, void 0, function* () {
             // Sending transactions is special; always broadcast it to all backends
             if (method === "sendTransaction") {
                 return Promise.all(this.providerConfigs.map((c) => {
@@ -18516,7 +18545,7 @@ class FallbackProvider extends BaseProvider {
                         }
                     }
                     // They were all an error; pick the first error
-                    return Promise.reject(results[0].error);
+                    return Promise.reject(results[0]);
                 });
             }
             const processFunc = getProcessFunc(this, method, params);
@@ -18828,7 +18857,7 @@ class Web3Provider extends JsonRpcProvider {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.0-beta.164";
+exports.version = "providers/5.0.0-beta.165";
 });
 
 var _version$3 = unwrapExports(_version$2);
@@ -18860,7 +18889,7 @@ module.exports = WS;
 var WebSocket$1 = unwrapExports(browserWs);
 
 "use strict";
-var __awaiter$a = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$b = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -18952,7 +18981,7 @@ class WebSocketProvider extends JsonRpcProvider {
         });
     }
     poll() {
-        return __awaiter$a(this, void 0, void 0, function* () {
+        return __awaiter$b(this, void 0, void 0, function* () {
             return null;
         });
     }
@@ -18989,7 +19018,7 @@ class WebSocketProvider extends JsonRpcProvider {
         return "ws:/\/localhost:8546";
     }
     _subscribe(tag, param, processFunc) {
-        return __awaiter$a(this, void 0, void 0, function* () {
+        return __awaiter$b(this, void 0, void 0, function* () {
             let subIdPromise = this._subIds[tag];
             if (subIdPromise == null) {
                 subIdPromise = Promise.all(param).then((param) => {
@@ -19377,7 +19406,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.0-beta.184";
+const version$o = "ethers/5.0.0-beta.185";
 
 "use strict";
 const logger$E = new Logger(version$o);

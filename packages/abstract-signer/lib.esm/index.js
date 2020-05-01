@@ -31,25 +31,31 @@ export class Signer {
     ///////////////////
     // Sub-classes MAY override these
     getBalance(blockTag) {
-        this._checkProvider("getBalance");
-        return this.provider.getBalance(this.getAddress(), blockTag);
+        return __awaiter(this, void 0, void 0, function* () {
+            this._checkProvider("getBalance");
+            return yield this.provider.getBalance(this.getAddress(), blockTag);
+        });
     }
     getTransactionCount(blockTag) {
-        this._checkProvider("getTransactionCount");
-        return this.provider.getTransactionCount(this.getAddress(), blockTag);
+        return __awaiter(this, void 0, void 0, function* () {
+            this._checkProvider("getTransactionCount");
+            return yield this.provider.getTransactionCount(this.getAddress(), blockTag);
+        });
     }
     // Populates "from" if unspecified, and estimates the gas for the transation
     estimateGas(transaction) {
-        this._checkProvider("estimateGas");
-        return resolveProperties(this.checkTransaction(transaction)).then((tx) => {
-            return this.provider.estimateGas(tx);
+        return __awaiter(this, void 0, void 0, function* () {
+            this._checkProvider("estimateGas");
+            const tx = yield resolveProperties(this.checkTransaction(transaction));
+            return yield this.provider.estimateGas(tx);
         });
     }
     // Populates "from" if unspecified, and calls with the transation
     call(transaction, blockTag) {
-        this._checkProvider("call");
-        return resolveProperties(this.checkTransaction(transaction)).then((tx) => {
-            return this.provider.call(tx, blockTag);
+        return __awaiter(this, void 0, void 0, function* () {
+            this._checkProvider("call");
+            const tx = yield resolveProperties(this.checkTransaction(transaction));
+            return yield this.provider.call(tx, blockTag);
         });
     }
     // Populates all fields in a transaction, signs it and sends it to the network
@@ -62,16 +68,23 @@ export class Signer {
         });
     }
     getChainId() {
-        this._checkProvider("getChainId");
-        return this.provider.getNetwork().then((network) => network.chainId);
+        return __awaiter(this, void 0, void 0, function* () {
+            this._checkProvider("getChainId");
+            const network = yield this.provider.getNetwork();
+            return network.chainId;
+        });
     }
     getGasPrice() {
-        this._checkProvider("getGasPrice");
-        return this.provider.getGasPrice();
+        return __awaiter(this, void 0, void 0, function* () {
+            this._checkProvider("getGasPrice");
+            return yield this.provider.getGasPrice();
+        });
     }
     resolveName(name) {
-        this._checkProvider("resolveName");
-        return this.provider.resolveName(name);
+        return __awaiter(this, void 0, void 0, function* () {
+            this._checkProvider("resolveName");
+            return yield this.provider.resolveName(name);
+        });
     }
     // Checks a transaction does not contain invalid keys and if
     // no "from" is provided, populates it.

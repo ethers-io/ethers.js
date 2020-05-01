@@ -311,6 +311,19 @@ var Interface = /** @class */ (function () {
         if (!eventFragment.anonymous) {
             topics.push(this.getEventTopic(eventFragment));
         }
+        var encodeTopic = function (param, value) {
+            if (param.type === "string") {
+                return hash_1.id(value);
+            }
+            else if (param.type === "bytes") {
+                return keccak256_1.keccak256(bytes_1.hexlify(value));
+            }
+            // Check addresses are valid
+            if (param.type === "address") {
+                _this._abiCoder.encode(["address"], [value]);
+            }
+            return bytes_1.hexZeroPad(bytes_1.hexlify(value), 32);
+        };
         values.forEach(function (value, index) {
             var param = eventFragment.inputs[index];
             if (!param.indexed) {
@@ -322,21 +335,14 @@ var Interface = /** @class */ (function () {
             if (value == null) {
                 topics.push(null);
             }
-            else if (param.type === "string") {
-                topics.push(hash_1.id(value));
-            }
-            else if (param.type === "bytes") {
-                topics.push(keccak256_1.keccak256(bytes_1.hexlify(value)));
-            }
-            else if (param.type.indexOf("[") !== -1 || param.type.substring(0, 5) === "tuple") {
+            else if (param.baseType === "array" || param.baseType === "tuple") {
                 logger.throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
             }
+            else if (Array.isArray(value)) {
+                topics.push(value.map(function (value) { return encodeTopic(param, value); }));
+            }
             else {
-                // Check addresses are valid
-                if (param.type === "address") {
-                    _this._abiCoder.encode(["address"], [value]);
-                }
-                topics.push(bytes_1.hexZeroPad(bytes_1.hexlify(value), 32));
+                topics.push(encodeTopic(param, value));
             }
         });
         // Trim off trailing nulls
