@@ -387,7 +387,7 @@ export class FallbackProvider extends BaseProvider {
                 }
 
                 // They were all an error; pick the first error
-                return Promise.reject(results[0].error);
+                return Promise.reject(results[0]);
             });
         }
 

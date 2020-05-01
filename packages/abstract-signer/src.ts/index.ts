@@ -66,30 +66,28 @@ export abstract class Signer {
     ///////////////////
     // Sub-classes MAY override these
 
-    getBalance(blockTag?: BlockTag): Promise<BigNumber> {
+    async getBalance(blockTag?: BlockTag): Promise<BigNumber> {
         this._checkProvider("getBalance");
-        return this.provider.getBalance(this.getAddress(), blockTag);
+        return await this.provider.getBalance(this.getAddress(), blockTag);
     }
 
-    getTransactionCount(blockTag?: BlockTag): Promise<number> {
+    async getTransactionCount(blockTag?: BlockTag): Promise<number> {
         this._checkProvider("getTransactionCount");
-        return this.provider.getTransactionCount(this.getAddress(), blockTag);
+        return await this.provider.getTransactionCount(this.getAddress(), blockTag);
     }
 
     // Populates "from" if unspecified, and estimates the gas for the transation
-    estimateGas(transaction: TransactionRequest): Promise<BigNumber> {
+    async estimateGas(transaction: TransactionRequest): Promise<BigNumber> {
         this._checkProvider("estimateGas");
-        return resolveProperties(this.checkTransaction(transaction)).then((tx) => {
-            return this.provider.estimateGas(tx);
-        });
+        const tx = await resolveProperties(this.checkTransaction(transaction));
+        return await this.provider.estimateGas(tx);
     }
 
     // Populates "from" if unspecified, and calls with the transation
-    call(transaction: TransactionRequest, blockTag?: BlockTag): Promise<string> {
+    async call(transaction: TransactionRequest, blockTag?: BlockTag): Promise<string> {
         this._checkProvider("call");
-        return resolveProperties(this.checkTransaction(transaction)).then((tx) => {
-            return this.provider.call(tx, blockTag);
-        });
+        const tx = await resolveProperties(this.checkTransaction(transaction));
+        return await this.provider.call(tx, blockTag);
     }
 
     // Populates all fields in a transaction, signs it and sends it to the network
@@ -102,19 +100,20 @@ export abstract class Signer {
         });
     }
 
-    getChainId(): Promise<number> {
+    async getChainId(): Promise<number> {
         this._checkProvider("getChainId");
-        return this.provider.getNetwork().then((network) => network.chainId);
+        const network = await this.provider.getNetwork();
+        return network.chainId;
     }
 
-    getGasPrice(): Promise<BigNumber> {
+    async getGasPrice(): Promise<BigNumber> {
         this._checkProvider("getGasPrice");
-        return this.provider.getGasPrice();
+        return await this.provider.getGasPrice();
     }
 
-    resolveName(name: string): Promise<string> {
+    async resolveName(name: string): Promise<string> {
         this._checkProvider("resolveName");
-        return this.provider.resolveName(name);
+        return await this.provider.resolveName(name);
     }
 
 
@@ -161,6 +160,7 @@ export abstract class Signer {
     // By default called from: (overriding these prevents it)
     //   - sendTransaction
     async populateTransaction(transaction: TransactionRequest): Promise<TransactionRequest> {
+
         const tx: TransactionRequest = await resolveProperties(this.checkTransaction(transaction))
 
         if (tx.to != null) { tx.to = Promise.resolve(tx.to).then((to) => this.resolveName(to)); }

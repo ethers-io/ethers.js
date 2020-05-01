@@ -31,27 +31,19 @@ export type Resolvable<T> = {
 }
 
 type Result = { key: string, value: any};
-export function resolveProperties<T>(object: Resolvable<T>): Promise<Similar<T>> {
 
+export async function resolveProperties<T>(object: Readonly<Resolvable<T>>): Promise<Similar<T>> {
     const promises: Array<Promise<Result>> = Object.keys(object).map((key) => {
-        const value = (<any>object)[key];
-
-        if (!(value instanceof Promise)) {
-            return Promise.resolve({ key: key, value: value });
-        }
-
-        return value.then((value) => {
-            return { key: key, value: value };
-        });
+        const value = object[<keyof Resolvable<T>>key];
+        return Promise.resolve(value).then((v) => ({ key: key, value: v }));
     });
 
-    return Promise.all(promises).then((results) => {
-        const result: any = { };
-        return (<Similar<T>>(results.reduce((accum, result) => {
-            accum[result.key] = result.value;
-            return accum;
-        }, result)));
-    });
+    const results = await Promise.all(promises);
+
+    return results.reduce((accum, result) => {
+        accum[<keyof Similar<T>>(result.key)] = result.value;
+        return accum;
+    }, <Similar<T>>{ });
 }
 
 export function checkProperties(object: any, properties: { [ name: string ]: boolean }): void {
