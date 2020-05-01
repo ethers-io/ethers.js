@@ -53,11 +53,14 @@ type ParseNode = {
 };
 
 let ModifiersBytes: { [ name: string ]: boolean } = { calldata: true, memory: true, storage: true };
+let ModifiersNest: { [ name: string ]: boolean } = { calldata: true, memory: true };
 function checkModifier(type: string, name: string): boolean {
     if (type === "bytes" || type === "string") {
         if (ModifiersBytes[name]) { return true; }
     } else if (type === "address") {
         if (name === "payable") { return true; }
+    } else if (type.indexOf("[") >= 0 || type === "tuple") {
+        if (ModifiersNest[name]) { return true; }
     }
     if (ModifiersBytes[name] || name === "payable") {
         logger.throwArgumentError("invalid modifier", "name", name);
