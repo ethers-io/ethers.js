@@ -352,8 +352,20 @@ export class Interface {
             })
         }
 
-        let topics: Array<string> = [];
+        let topics: Array<string | Array<string>> = [];
         if (!eventFragment.anonymous) { topics.push(this.getEventTopic(eventFragment)); }
+
+        const encodeTopic = (param: ParamType, value: any): string => {
+            if (param.type === "string") {
+                 return id(value);
+            } else if (param.type === "bytes") {
+                 return keccak256(hexlify(value));
+            }
+
+            // Check addresses are valid
+            if (param.type === "address") { this._abiCoder.encode( [ "address" ], [ value ]); }
+            return hexZeroPad(hexlify(value), 32);
+        };
 
         values.forEach((value, index) => {
 
@@ -368,16 +380,12 @@ export class Interface {
 
             if (value == null) {
                 topics.push(null);
-            } else if (param.type === "string") {
-                 topics.push(id(value));
-            } else if (param.type === "bytes") {
-                 topics.push(keccak256(hexlify(value)));
-            } else if (param.type.indexOf("[") !== -1 || param.type.substring(0, 5) === "tuple") {
+            } else if (param.baseType === "array" || param.baseType === "tuple") {
                 logger.throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
+            } else if (Array.isArray(value)) {
+                topics.push(value.map((value) => encodeTopic(param, value)));
             } else {
-                // Check addresses are valid
-                if (param.type === "address") { this._abiCoder.encode( [ "address" ], [ value ]); }
-                topics.push(hexZeroPad(hexlify(value), 32));
+                topics.push(encodeTopic(param, value));
             }
         });
 
