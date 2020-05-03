@@ -175,6 +175,7 @@ let nextPollId = 1;
 
 
 export class BaseProvider extends Provider {
+    _networkPromise: Promise<Network>;
     _network: Network;
 
     _events: Array<Event>;
@@ -215,7 +216,6 @@ export class BaseProvider extends Provider {
      *  MUST set this. Standard named networks have a known chainId.
      *
      */
-    ready: Promise<Network>;
 
     constructor(network: Networkish | Promise<Network>) {
         logger.checkNew(new.target, Provider);
@@ -225,19 +225,15 @@ export class BaseProvider extends Provider {
         this.formatter = new.target.getFormatter();
 
         if (network instanceof Promise) {
-            defineReadOnly(this, "ready", network.then((network) => {
-                defineReadOnly(this, "_network", network);
-                return network;
-            }));
+            this._networkPromise = network;
 
             // Squash any "unhandled promise" errors; that do not need to be handled
-            this.ready.catch((error) => { });
+            network.catch((error) => { });
 
         } else {
             const knownNetwork = getStatic<(network: Networkish) => Network>(new.target, "getNetwork")(network);
             if (knownNetwork) {
                 defineReadOnly(this, "_network", knownNetwork);
-                defineReadOnly(this, "ready", Promise.resolve(this._network));
 
             } else {
                 logger.throwArgumentError("invalid network", "network", network);
@@ -256,6 +252,42 @@ export class BaseProvider extends Provider {
         this._emitted = { block: -2 };
 
         this._fastQueryDate = 0;
+    }
+
+    async _ready(): Promise<Network> {
+        if (this._network == null) {
+            let network: Network = null;
+            if (this._networkPromise) {
+                try {
+                    network = await this._networkPromise;
+                } catch (error) { }
+            }
+
+            // Try the Provider's network detection (this MUST throw if it cannot)
+            if (network == null) {
+                network = await this.detectNetwork();
+            }
+
+            // This should never happen; every Provider sub-class should have
+            // suggested a network by here (or thrown).
+            if (!network) {
+                logger.throwError("no network detected", Logger.errors.UNKNOWN_ERROR, { });
+            }
+
+            defineReadOnly(this, "_network", network);
+        }
+
+        return this._network;
+    }
+
+    get ready(): Promise<Network> {
+        return this._ready();
+    }
+
+    async detectNetwork(): Promise<Network> {
+        return logger.throwError("provider does not support network detection", Logger.errors.UNSUPPORTED_OPERATION, {
+            operation: "provider.detectNetwork"
+        });
     }
 
     static getFormatter(): Formatter {

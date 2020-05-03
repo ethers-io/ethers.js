@@ -2,7 +2,7 @@
 
 import { BlockTag, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { hexlify, hexValue } from "@ethersproject/bytes";
-import { Networkish } from "@ethersproject/networks";
+import { Network, Networkish } from "@ethersproject/networks";
 import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 import { fetchJson } from "@ethersproject/web";
 
@@ -109,6 +109,9 @@ export class EtherscanProvider extends BaseProvider{
         defineReadOnly(this, "apiKey", apiKey || defaultApiKey);
     }
 
+    async detectNetwork(): Promise<Network> {
+        return this.network;
+    }
 
     async perform(method: string, params: any): Promise<any> {
         let url = this.baseUrl;

@@ -20,9 +20,7 @@ import { BaseProvider, Event } from "./base-provider";
 
 function timer(timeout: number): Promise<any> {
     return new Promise(function(resolve) {
-        setTimeout(function() {
-            resolve();
-        }, timeout);
+        setTimeout(resolve, timeout);
     });
 }
 
@@ -235,31 +233,9 @@ export class JsonRpcProvider extends BaseProvider {
         if (network) {
             // The network has been specified explicitly, we can use it
             super(network);
-
         } else {
-
             // The network is unknown, query the JSON-RPC for it
-            const ready: Promise<Network> = new Promise((resolve, reject) => {
-                setTimeout(async () => {
-                    let chainId = null;
-                    try {
-                        chainId = await this.send("eth_chainId", [ ]);
-                    } catch (error) {
-                        try {
-                            chainId = await this.send("net_version", [ ]);
-                        } catch (error) { }
-                    }
-
-                    if (chainId != null) {
-                        try {
-                            return resolve(getNetwork(BigNumber.from(chainId).toNumber()));
-                        } catch (error) { }
-                    }
-
-                    reject(logger.makeError("could not detect network", Logger.errors.NETWORK_ERROR));
-                }, 0);
-            });
-            super(ready);
+            super(this.detectNetwork());
         }
 
         // Default URL
@@ -278,6 +254,33 @@ export class JsonRpcProvider extends BaseProvider {
 
     static defaultUrl(): string {
         return "http:/\/localhost:8545";
+    }
+
+    async detectNetwork(): Promise<Network> {
+        await timer(0);
+
+        let chainId = null;
+        try {
+            chainId = await this.send("eth_chainId", [ ]);
+        } catch (error) {
+            try {
+                chainId = await this.send("net_version", [ ]);
+            } catch (error) { }
+        }
+
+        if (chainId != null) {
+            const getNetwork = getStatic<(network: Networkish) => Network>(this.constructor, "getNetwork");
+            try {
+                return getNetwork(BigNumber.from(chainId).toNumber());
+            } catch (error) {
+                return logger.throwError("could not detect network", Logger.errors.NETWORK_ERROR, {
+                    chainId: chainId,
+                    serverError: error
+                });
+            }
+        }
+
+        return logger.throwError("could not detect network", Logger.errors.NETWORK_ERROR);
     }
 
     getSigner(addressOrIndex?: string | number): JsonRpcSigner {

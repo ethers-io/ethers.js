@@ -379,14 +379,8 @@ export class FallbackProvider extends BaseProvider {
         const network = checkNetworks(providerConfigs.map((c) => (<any>(c.provider)).network));
         if (network) {
             super(network);
-
         } else {
-            // The network won't be known until all child providers know
-            const ready = Promise.all(providerConfigs.map((c) => c.provider.getNetwork())).then((networks) => {
-                return checkNetworks(networks);
-            });
-
-            super(ready);
+            super(this.detectNetwork());
         }
 
         // Preserve a copy, so we do not get mutated
@@ -394,6 +388,11 @@ export class FallbackProvider extends BaseProvider {
         defineReadOnly(this, "quorum", quorum);
 
         this._highestBlockNumber = -1;
+    }
+
+    async detectNetwork(): Promise<Network> {
+        const networks = await Promise.all(this.providerConfigs.map((c) => c.provider.getNetwork()));
+        return checkNetworks(networks);
     }
 
     async perform(method: string, params: { [name: string]: any }): Promise<any> {

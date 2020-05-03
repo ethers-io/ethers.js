@@ -36,6 +36,10 @@ export abstract class UrlJsonRpcProvider extends JsonRpcProvider {
         }
     }
 
+    async detectNetwork(): Promise<Network> {
+        return this.network;
+    }
+
     _startPending(): void {
         logger.warn("WARNING: API provider does not support pending filters");
     }
