@@ -137,9 +137,15 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
         try {
             response = await getUrl(url, options);
         } catch (error) {
-            console.log(error);
             response = (<any>error).response;
+            if (response == null) {
+                logger.throwError("missing response", Logger.errors.SERVER_ERROR, {
+                    serverError: error,
+                    url: url
+                });
+            }
         }
+
 
         let body = response.body;
 
