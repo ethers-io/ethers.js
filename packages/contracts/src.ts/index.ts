@@ -560,52 +560,78 @@ export class Contract {
             }
         }
 
-        const uniqueFunctions: { [ name: string ]: Array<string> } = { };
-        Object.keys(this.interface.functions).forEach((name) => {
-            const fragment = this.interface.functions[name];
-            // @TODO: This should take in fragment
+        const uniqueNames: { [ name: string ]: Array<string> } = { };
+        const uniqueSignatures: { [ signature: string ]: boolean } = { };
+        Object.keys(this.interface.functions).forEach((signature) => {
+            const fragment = this.interface.functions[signature];
 
-            const run = runMethod(this, name, { });
+            // Check that the signature is unique; if not the ABI generation has
+            // not been cleaned or may be incorrectly generated
+            if (uniqueSignatures[signature]) {
+                logger.warn(`Duplicate ABI entry for ${ JSON.stringify(name) }`);
+                return;
+            }
+            uniqueSignatures[signature] = true;
+
+            // Track unique names; we only expose bare named functions if they
+            // are ambiguous
+            {
+                const name = fragment.name;
+                if (!uniqueNames[name]) { uniqueNames[name] = [ ]; }
+                uniqueNames[name].push(signature);
+            }
+
+            // @TODO: This should take in fragment
+            const run = runMethod(this, signature, { });
+
+            if (this[signature] == null) {
+                defineReadOnly<any, any>(this, signature, run);
+            }
+
+            if (this.functions[signature] == null) {
+                defineReadOnly(this.functions, signature, run);
+            }
+
+            if (this.callStatic[signature] == null) {
+                defineReadOnly(this.callStatic, signature, runMethod(this, signature, { callStatic: true }));
+            }
+
+            if (this.populateTransaction[signature] == null) {
+                defineReadOnly(this.populateTransaction, signature, runMethod(this, signature, { transaction: true }));
+            }
+
+            if (this.estimateGas[signature] == null) {
+                defineReadOnly(this.estimateGas, signature, runMethod(this, signature, { estimate: true }));
+            }
+        });
+
+        Object.keys(uniqueNames).forEach((name) => {
+
+            // Ambiguous names to not get attached as bare names
+            const signatures = uniqueNames[name];
+            if (signatures.length > 1) { return; }
+
+            const signature = signatures[0];
 
             if (this[name] == null) {
-                defineReadOnly<any, any>(this, name, run);
+                defineReadOnly(this, name, this[signature]);
             }
 
             if (this.functions[name] == null) {
-                defineReadOnly(this.functions, name, run);
+                defineReadOnly(this.functions, name, this.functions[signature]);
             }
 
             if (this.callStatic[name] == null) {
-                defineReadOnly(this.callStatic, name, runMethod(this, name, { callStatic: true }));
+                defineReadOnly(this.callStatic, name, this.callStatic[signature]);
             }
 
             if (this.populateTransaction[name] == null) {
-                defineReadOnly(this.populateTransaction, name, runMethod(this, name, { transaction: true }));
+                defineReadOnly(this.populateTransaction, name, this.populateTransaction[signature]);
             }
 
             if (this.estimateGas[name] == null) {
-                defineReadOnly(this.estimateGas, name, runMethod(this, name, { estimate: true }));
+                defineReadOnly(this.estimateGas, name, this.estimateGas[signature]);
             }
-
-            if (!uniqueFunctions[fragment.name]) { uniqueFunctions[fragment.name] = [ ]; }
-            uniqueFunctions[fragment.name].push(name);
-        });
-
-        Object.keys(uniqueFunctions).forEach((name) => {
-            const signatures = uniqueFunctions[name];
-            if (signatures.length > 1) {
-                logger.warn(`Duplicate definition of ${ name } (${ signatures.join(", ")})`);
-                return;
-            }
-
-            if (this[name] == null) {
-                defineReadOnly(this, name, this[signatures[0]]);
-            }
-
-            defineReadOnly(this.functions, name, this.functions[signatures[0]]);
-            defineReadOnly(this.callStatic, name, this.callStatic[signatures[0]]);
-            defineReadOnly(this.populateTransaction, name, this.populateTransaction[signatures[0]]);
-            defineReadOnly(this.estimateGas, name, this.estimateGas[signatures[0]]);
         });
     }
 
