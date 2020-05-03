@@ -214,6 +214,15 @@ var defaultFormatter = null;
 var nextPollId = 1;
 var BaseProvider = /** @class */ (function (_super) {
     __extends(BaseProvider, _super);
+    /**
+     *  ready
+     *
+     *  A Promise<Network> that resolves only once the provider is ready.
+     *
+     *  Sub-classes that call the super with a network without a chainId
+     *  MUST set this. Standard named networks have a known chainId.
+     *
+     */
     function BaseProvider(network) {
         var _newTarget = this.constructor;
         var _this = this;
@@ -221,18 +230,14 @@ var BaseProvider = /** @class */ (function (_super) {
         _this = _super.call(this) || this;
         _this.formatter = _newTarget.getFormatter();
         if (network instanceof Promise) {
-            properties_1.defineReadOnly(_this, "ready", network.then(function (network) {
-                properties_1.defineReadOnly(_this, "_network", network);
-                return network;
-            }));
+            _this._networkPromise = network;
             // Squash any "unhandled promise" errors; that do not need to be handled
-            _this.ready.catch(function (error) { });
+            network.catch(function (error) { });
         }
         else {
             var knownNetwork = properties_1.getStatic((_newTarget), "getNetwork")(network);
             if (knownNetwork) {
                 properties_1.defineReadOnly(_this, "_network", knownNetwork);
-                properties_1.defineReadOnly(_this, "ready", Promise.resolve(_this._network));
             }
             else {
                 logger.throwArgumentError("invalid network", "network", network);
@@ -247,6 +252,60 @@ var BaseProvider = /** @class */ (function (_super) {
         _this._fastQueryDate = 0;
         return _this;
     }
+    BaseProvider.prototype._ready = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var network, error_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!(this._network == null)) return [3 /*break*/, 7];
+                        network = null;
+                        if (!this._networkPromise) return [3 /*break*/, 4];
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this._networkPromise];
+                    case 2:
+                        network = _a.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_1 = _a.sent();
+                        return [3 /*break*/, 4];
+                    case 4:
+                        if (!(network == null)) return [3 /*break*/, 6];
+                        return [4 /*yield*/, this.detectNetwork()];
+                    case 5:
+                        network = _a.sent();
+                        _a.label = 6;
+                    case 6:
+                        // This should never happen; every Provider sub-class should have
+                        // suggested a network by here (or thrown).
+                        if (!network) {
+                            logger.throwError("no network detected", logger_1.Logger.errors.UNKNOWN_ERROR, {});
+                        }
+                        properties_1.defineReadOnly(this, "_network", network);
+                        _a.label = 7;
+                    case 7: return [2 /*return*/, this._network];
+                }
+            });
+        });
+    };
+    Object.defineProperty(BaseProvider.prototype, "ready", {
+        get: function () {
+            return this._ready();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    BaseProvider.prototype.detectNetwork = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, logger.throwError("provider does not support network detection", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+                        operation: "provider.detectNetwork"
+                    })];
+            });
+        });
+    };
     BaseProvider.getFormatter = function () {
         if (defaultFormatter == null) {
             defaultFormatter = new formatter_1.Formatter();
@@ -684,7 +743,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.sendTransaction = function (signedTransaction) {
         return __awaiter(this, void 0, void 0, function () {
-            var hexTx, tx, hash, error_1;
+            var hexTx, tx, hash, error_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.ready];
@@ -702,10 +761,10 @@ var BaseProvider = /** @class */ (function (_super) {
                         hash = _a.sent();
                         return [2 /*return*/, this._wrapTransaction(tx, hash)];
                     case 5:
-                        error_1 = _a.sent();
-                        error_1.transaction = tx;
-                        error_1.transactionHash = tx.hash;
-                        throw error_1;
+                        error_2 = _a.sent();
+                        error_2.transaction = tx;
+                        error_2.transactionHash = tx.hash;
+                        throw error_2;
                     case 6: return [2 /*return*/];
                 }
             });
@@ -843,7 +902,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype._getBlock = function (blockHashOrBlockTag, includeTransactions) {
         return __awaiter(this, void 0, void 0, function () {
-            var blockNumber, params, _a, _b, _c, error_2;
+            var blockNumber, params, _a, _b, _c, error_3;
             var _this = this;
             return __generator(this, function (_d) {
                 switch (_d.label) {
@@ -875,7 +934,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         }
                         return [3 /*break*/, 7];
                     case 6:
-                        error_2 = _d.sent();
+                        error_3 = _d.sent();
                         logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
                         return [3 /*break*/, 7];
                     case 7: return [2 /*return*/, web_1.poll(function () { return __awaiter(_this, void 0, void 0, function () {

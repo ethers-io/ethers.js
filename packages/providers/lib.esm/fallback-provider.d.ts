@@ -1,3 +1,4 @@
+import { Network } from "@ethersproject/networks";
 import { Provider } from "@ethersproject/abstract-provider";
 import { BaseProvider } from "./base-provider";
 export interface FallbackProviderConfig {
@@ -11,6 +12,7 @@ export declare class FallbackProvider extends BaseProvider {
     readonly quorum: number;
     _highestBlockNumber: number;
     constructor(providers: Array<Provider | FallbackProviderConfig>, quorum?: number);
+    detectNetwork(): Promise<Network>;
     perform(method: string, params: {
         [name: string]: any;
     }): Promise<any>;

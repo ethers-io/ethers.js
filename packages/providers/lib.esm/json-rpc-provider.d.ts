@@ -1,7 +1,7 @@
 import { Provider, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { Signer } from "@ethersproject/abstract-signer";
 import { Bytes } from "@ethersproject/bytes";
-import { Networkish } from "@ethersproject/networks";
+import { Network, Networkish } from "@ethersproject/networks";
 import { ConnectionInfo } from "@ethersproject/web";
 import { BaseProvider, Event } from "./base-provider";
 export declare class JsonRpcSigner extends Signer {
@@ -27,6 +27,7 @@ export declare class JsonRpcProvider extends BaseProvider {
     _nextId: number;
     constructor(url?: ConnectionInfo | string, network?: Networkish);
     static defaultUrl(): string;
+    detectNetwork(): Promise<Network>;
     getSigner(addressOrIndex?: string | number): JsonRpcSigner;
     getUncheckedSigner(addressOrIndex?: string | number): UncheckedJsonRpcSigner;
     listAccounts(): Promise<Array<string>>;

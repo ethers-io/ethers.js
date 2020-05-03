@@ -94,8 +94,13 @@ export function fetchJson(connection, json, processFunc) {
                 response = yield getUrl(url, options);
             }
             catch (error) {
-                console.log(error);
                 response = error.response;
+                if (response == null) {
+                    logger.throwError("missing response", Logger.errors.SERVER_ERROR, {
+                        serverError: error,
+                        url: url
+                    });
+                }
             }
             let body = response.body;
             if (allow304 && response.statusCode === 304) {

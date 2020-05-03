@@ -7,9 +7,15 @@ may change. It is generally recommended that you remove your `node_modules/`,
 `package-lock.json` (and similar files for yarn, etc.) and doing an `npm install`
 after upgrading to a newer version of the v5-BETA.
 
-ethers/v5.0.0-beta.185 (2020-05-01 16:45)
+ethers/v5.0.0-beta.185 (2020-05-03 17:38)
 -----------------------------------------
 
+  - Allow providers to detect their network after instantiation. ([#814](https://github.com/ethers-io/ethers.js/issues/814); [99ae946](https://github.com/ethers-io/ethers.js/commit/99ae946476a317a9d89e5d8f57cf37f8680bfa2b))
+  - Better messaging on low-level network errors. ([#814](https://github.com/ethers-io/ethers.js/issues/814); [0e3a66c](https://github.com/ethers-io/ethers.js/commit/0e3a66c82959a08f3f4e4ffbca3ae3792ff2548f))
+  - Manage FallbackProvider stalling without unref. ([#815](https://github.com/ethers-io/ethers.js/issues/815); [7b1a7c7](https://github.com/ethers-io/ethers.js/commit/7b1a7c7f31a3631e12c2a341b562983360e670e9))
+  - Only error on duplicate signatures in Contract ABI. ([#499](https://github.com/ethers-io/ethers.js/issues/499); [098d7ef](https://github.com/ethers-io/ethers.js/commit/098d7efb21bd648c2660342297d2419904a10925))
+  - Added getWebSocketProvider static method to InfuraProvider. ([a6c1174](https://github.com/ethers-io/ethers.js/commit/a6c1174dffe6dca1a3a64d1d472cec6e12372117))
+  - Fix WebSocketProvider responses when message result is null. ([#813](https://github.com/ethers-io/ethers.js/issues/813); [472e5b0](https://github.com/ethers-io/ethers.js/commit/472e5b07eab180baa12185c8f00e5079ce4c671f))
   - Allow modifiers on Human-Readable ABI for tuples and arrays. ([83fba3d](https://github.com/ethers-io/ethers.js/commit/83fba3de25b524cc48975b1952f4319d63874205))
   - Added initial renew support to ENS CLI. ([54dfb75](https://github.com/ethers-io/ethers.js/commit/54dfb757c4c88e4bcada1890c4016fadfb25581a))
   - Allow contract filters to include OR-ed values. ([#437](https://github.com/ethers-io/ethers.js/issues/437); [28800d7](https://github.com/ethers-io/ethers.js/commit/28800d7681f3bab08f6d30a22f0813e04feee18a))

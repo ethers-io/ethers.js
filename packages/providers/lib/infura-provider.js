@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var websocket_provider_1 = require("./websocket-provider");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
@@ -23,6 +24,17 @@ var InfuraProvider = /** @class */ (function (_super) {
     function InfuraProvider() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    InfuraProvider.getWebSocketProvider = function (network, apiKey) {
+        var provider = new InfuraProvider(network, apiKey);
+        var connection = provider.connection;
+        if (connection.password) {
+            logger.throwError("INFURA WebSocket project secrets unsupported", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "InfuraProvider.getWebSocketProvider()"
+            });
+        }
+        var url = connection.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
+        return new websocket_provider_1.WebSocketProvider(url, network);
+    };
     InfuraProvider.getApiKey = function (apiKey) {
         var apiKeyObj = {
             apiKey: defaultProjectId,

@@ -105,6 +105,11 @@ export class EtherscanProvider extends BaseProvider {
         defineReadOnly(this, "baseUrl", baseUrl);
         defineReadOnly(this, "apiKey", apiKey || defaultApiKey);
     }
+    detectNetwork() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.network;
+        });
+    }
     perform(method, params) {
         const _super = Object.create(null, {
             perform: { get: () => super.perform }

@@ -12,7 +12,7 @@ const Words = fs.readFileSync("/usr/share/dict/words").toString().split("\n").re
 // Words missing from the dictionary
 accessing addresses aligned autofill called cancelled censored
 compiled computed configured consumed creating decoded decoding
-decrypt decrypted decrypting deployed deploying deprecated
+decrypt decrypted decrypting deployed deploying deprecated detected
 discontinued earliest email enabled encoded encoding encrypt
 encrypted encrypting entries euro exceeded existing expected
 expired failed fetches formatted formatting funding generated
@@ -44,13 +44,13 @@ ABIEncoder testcase numberish Wordlist
 // Common Code Strings
 abi addr api app arg arrayify asm basex bigint bn byte bytecode
 callback calldata checksum ciphertext cli codepoint config
-contenthash ctr ctrl debug dklen eexist encseed eof ethaddr
+contenthash ctr ctrl debug dd dklen eexist encseed eof ethaddr
 ethseed ethers eval exec filename func gz hid http https hw iv
-info init ipc json kdf kdfparams labelhash lang lib multihash nfc
+info init ipc json kdf kdfparams labelhash lang lib mm multihash nfc
 nfkc nfd nfkd nodehash oob opcode pbkdf pc plugin pragma pre prf
 repl rpc sighash topichash solc stdin stdout subclasses subnode
 timeout todo txt ufixed utc utf util url uuid vm vs websocket
-wikipedia wx xe zlib
+wikipedia wx xe yyyy zlib
 
 // AbiV2
 abiv

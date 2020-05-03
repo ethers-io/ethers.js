@@ -8162,7 +8162,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$b = "contracts/5.0.0-beta.150";
+const version$b = "contracts/5.0.0-beta.151";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8545,44 +8545,66 @@ class Contract {
                 logger$f.throwArgumentError("provider is required to use non-address contract address", "addressOrName", addressOrName);
             }
         }
-        const uniqueFunctions = {};
-        Object.keys(this.interface.functions).forEach((name) => {
-            const fragment = this.interface.functions[name];
-            // @TODO: This should take in fragment
-            const run = runMethod(this, name, {});
-            if (this[name] == null) {
-                defineReadOnly(this, name, run);
-            }
-            if (this.functions[name] == null) {
-                defineReadOnly(this.functions, name, run);
-            }
-            if (this.callStatic[name] == null) {
-                defineReadOnly(this.callStatic, name, runMethod(this, name, { callStatic: true }));
-            }
-            if (this.populateTransaction[name] == null) {
-                defineReadOnly(this.populateTransaction, name, runMethod(this, name, { transaction: true }));
-            }
-            if (this.estimateGas[name] == null) {
-                defineReadOnly(this.estimateGas, name, runMethod(this, name, { estimate: true }));
-            }
-            if (!uniqueFunctions[fragment.name]) {
-                uniqueFunctions[fragment.name] = [];
-            }
-            uniqueFunctions[fragment.name].push(name);
-        });
-        Object.keys(uniqueFunctions).forEach((name) => {
-            const signatures = uniqueFunctions[name];
-            if (signatures.length > 1) {
-                logger$f.warn(`Duplicate definition of ${name} (${signatures.join(", ")})`);
+        const uniqueNames = {};
+        const uniqueSignatures = {};
+        Object.keys(this.interface.functions).forEach((signature) => {
+            const fragment = this.interface.functions[signature];
+            // Check that the signature is unique; if not the ABI generation has
+            // not been cleaned or may be incorrectly generated
+            if (uniqueSignatures[signature]) {
+                logger$f.warn(`Duplicate ABI entry for ${JSON.stringify(name)}`);
                 return;
             }
-            if (this[name] == null) {
-                defineReadOnly(this, name, this[signatures[0]]);
+            uniqueSignatures[signature] = true;
+            // Track unique names; we only expose bare named functions if they
+            // are ambiguous
+            {
+                const name = fragment.name;
+                if (!uniqueNames[name]) {
+                    uniqueNames[name] = [];
+                }
+                uniqueNames[name].push(signature);
             }
-            defineReadOnly(this.functions, name, this.functions[signatures[0]]);
-            defineReadOnly(this.callStatic, name, this.callStatic[signatures[0]]);
-            defineReadOnly(this.populateTransaction, name, this.populateTransaction[signatures[0]]);
-            defineReadOnly(this.estimateGas, name, this.estimateGas[signatures[0]]);
+            // @TODO: This should take in fragment
+            const run = runMethod(this, signature, {});
+            if (this[signature] == null) {
+                defineReadOnly(this, signature, run);
+            }
+            if (this.functions[signature] == null) {
+                defineReadOnly(this.functions, signature, run);
+            }
+            if (this.callStatic[signature] == null) {
+                defineReadOnly(this.callStatic, signature, runMethod(this, signature, { callStatic: true }));
+            }
+            if (this.populateTransaction[signature] == null) {
+                defineReadOnly(this.populateTransaction, signature, runMethod(this, signature, { transaction: true }));
+            }
+            if (this.estimateGas[signature] == null) {
+                defineReadOnly(this.estimateGas, signature, runMethod(this, signature, { estimate: true }));
+            }
+        });
+        Object.keys(uniqueNames).forEach((name) => {
+            // Ambiguous names to not get attached as bare names
+            const signatures = uniqueNames[name];
+            if (signatures.length > 1) {
+                return;
+            }
+            const signature = signatures[0];
+            if (this[name] == null) {
+                defineReadOnly(this, name, this[signature]);
+            }
+            if (this.functions[name] == null) {
+                defineReadOnly(this.functions, name, this.functions[signature]);
+            }
+            if (this.callStatic[name] == null) {
+                defineReadOnly(this.callStatic, name, this.callStatic[signature]);
+            }
+            if (this.populateTransaction[name] == null) {
+                defineReadOnly(this.populateTransaction, name, this.populateTransaction[signature]);
+            }
+            if (this.estimateGas[name] == null) {
+                defineReadOnly(this.estimateGas, name, this.estimateGas[signature]);
+            }
         });
     }
     static getContractAddress(transaction) {
@@ -15706,7 +15728,7 @@ var browser$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.0.0-beta.137";
+const version$l = "web/5.0.0-beta.138";
 
 "use strict";
 var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -15845,8 +15867,13 @@ function fetchJson(connection, json, processFunc) {
                 response = yield getUrl(url, options);
             }
             catch (error) {
-                console.log(error);
                 response = error.response;
+                if (response == null) {
+                    logger$p.throwError("missing response", Logger.errors.SERVER_ERROR, {
+                        serverError: error,
+                        url: url
+                    });
+                }
             }
             let body = response.body;
             if (allow304 && response.statusCode === 304) {
@@ -16490,23 +16517,28 @@ class Event {
 let defaultFormatter = null;
 let nextPollId = 1;
 class BaseProvider extends Provider {
+    /**
+     *  ready
+     *
+     *  A Promise<Network> that resolves only once the provider is ready.
+     *
+     *  Sub-classes that call the super with a network without a chainId
+     *  MUST set this. Standard named networks have a known chainId.
+     *
+     */
     constructor(network) {
         logger$r.checkNew(new.target, Provider);
         super();
         this.formatter = new.target.getFormatter();
         if (network instanceof Promise) {
-            defineReadOnly(this, "ready", network.then((network) => {
-                defineReadOnly(this, "_network", network);
-                return network;
-            }));
+            this._networkPromise = network;
             // Squash any "unhandled promise" errors; that do not need to be handled
-            this.ready.catch((error) => { });
+            network.catch((error) => { });
         }
         else {
             const knownNetwork = getStatic((new.target), "getNetwork")(network);
             if (knownNetwork) {
                 defineReadOnly(this, "_network", knownNetwork);
-                defineReadOnly(this, "ready", Promise.resolve(this._network));
             }
             else {
                 logger$r.throwArgumentError("invalid network", "network", network);
@@ -16519,6 +16551,40 @@ class BaseProvider extends Provider {
         this._pollingInterval = 4000;
         this._emitted = { block: -2 };
         this._fastQueryDate = 0;
+    }
+    _ready() {
+        return __awaiter$6(this, void 0, void 0, function* () {
+            if (this._network == null) {
+                let network = null;
+                if (this._networkPromise) {
+                    try {
+                        network = yield this._networkPromise;
+                    }
+                    catch (error) { }
+                }
+                // Try the Provider's network detection (this MUST throw if it cannot)
+                if (network == null) {
+                    network = yield this.detectNetwork();
+                }
+                // This should never happen; every Provider sub-class should have
+                // suggested a network by here (or thrown).
+                if (!network) {
+                    logger$r.throwError("no network detected", Logger.errors.UNKNOWN_ERROR, {});
+                }
+                defineReadOnly(this, "_network", network);
+            }
+            return this._network;
+        });
+    }
+    get ready() {
+        return this._ready();
+    }
+    detectNetwork() {
+        return __awaiter$6(this, void 0, void 0, function* () {
+            return logger$r.throwError("provider does not support network detection", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "provider.detectNetwork"
+            });
+        });
     }
     static getFormatter() {
         if (defaultFormatter == null) {
@@ -17327,9 +17393,7 @@ var __awaiter$7 = (window && window.__awaiter) || function (thisArg, _arguments,
 const logger$s = new Logger(version$m);
 function timer(timeout) {
     return new Promise(function (resolve) {
-        setTimeout(function () {
-            resolve();
-        }, timeout);
+        setTimeout(resolve, timeout);
     });
 }
 function getResult(payload) {
@@ -17514,28 +17578,7 @@ class JsonRpcProvider extends BaseProvider {
         }
         else {
             // The network is unknown, query the JSON-RPC for it
-            const ready = new Promise((resolve, reject) => {
-                setTimeout(() => __awaiter$7(this, void 0, void 0, function* () {
-                    let chainId = null;
-                    try {
-                        chainId = yield this.send("eth_chainId", []);
-                    }
-                    catch (error) {
-                        try {
-                            chainId = yield this.send("net_version", []);
-                        }
-                        catch (error) { }
-                    }
-                    if (chainId != null) {
-                        try {
-                            return resolve(getNetwork(BigNumber.from(chainId).toNumber()));
-                        }
-                        catch (error) { }
-                    }
-                    reject(logger$s.makeError("could not detect network", Logger.errors.NETWORK_ERROR));
-                }), 0);
-            });
-            super(ready);
+            super(this.detectNetwork());
         }
         // Default URL
         if (!url) {
@@ -17553,6 +17596,34 @@ class JsonRpcProvider extends BaseProvider {
     }
     static defaultUrl() {
         return "http:/\/localhost:8545";
+    }
+    detectNetwork() {
+        return __awaiter$7(this, void 0, void 0, function* () {
+            yield timer(0);
+            let chainId = null;
+            try {
+                chainId = yield this.send("eth_chainId", []);
+            }
+            catch (error) {
+                try {
+                    chainId = yield this.send("net_version", []);
+                }
+                catch (error) { }
+            }
+            if (chainId != null) {
+                const getNetwork = getStatic(this.constructor, "getNetwork");
+                try {
+                    return getNetwork(BigNumber.from(chainId).toNumber());
+                }
+                catch (error) {
+                    return logger$s.throwError("could not detect network", Logger.errors.NETWORK_ERROR, {
+                        chainId: chainId,
+                        serverError: error
+                    });
+                }
+            }
+            return logger$s.throwError("could not detect network", Logger.errors.NETWORK_ERROR);
+        });
     }
     getSigner(addressOrIndex) {
         return new JsonRpcSigner(_constructorGuard$4, this, addressOrIndex);
@@ -17763,6 +17834,15 @@ class JsonRpcProvider extends BaseProvider {
 }
 
 "use strict";
+var __awaiter$8 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 const logger$t = new Logger(version$m);
 class UrlJsonRpcProvider extends JsonRpcProvider {
     constructor(network, apiKey) {
@@ -17780,6 +17860,11 @@ class UrlJsonRpcProvider extends JsonRpcProvider {
                 defineReadOnly(this, key, apiKey[key]);
             });
         }
+    }
+    detectNetwork() {
+        return __awaiter$8(this, void 0, void 0, function* () {
+            return this.network;
+        });
     }
     _startPending() {
         logger$t.warn("WARNING: API provider does not support pending filters");
@@ -17844,7 +17929,7 @@ class AlchemyProvider extends UrlJsonRpcProvider {
 }
 
 "use strict";
-var __awaiter$8 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$9 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17876,7 +17961,7 @@ class CloudflareProvider extends UrlJsonRpcProvider {
         const _super = Object.create(null, {
             perform: { get: () => super.perform }
         });
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             // The Cloudflare provider does not support eth_blockNumber,
             // so we get the latest block and pull it from that
             if (method === "getBlockNumber") {
@@ -17889,7 +17974,7 @@ class CloudflareProvider extends UrlJsonRpcProvider {
 }
 
 "use strict";
-var __awaiter$9 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$a = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17989,17 +18074,22 @@ class EtherscanProvider extends BaseProvider {
         defineReadOnly(this, "baseUrl", baseUrl);
         defineReadOnly(this, "apiKey", apiKey || defaultApiKey$1);
     }
+    detectNetwork() {
+        return __awaiter$a(this, void 0, void 0, function* () {
+            return this.network;
+        });
+    }
     perform(method, params) {
         const _super = Object.create(null, {
             perform: { get: () => super.perform }
         });
-        return __awaiter$9(this, void 0, void 0, function* () {
+        return __awaiter$a(this, void 0, void 0, function* () {
             let url = this.baseUrl;
             let apiKey = "";
             if (this.apiKey) {
                 apiKey += "&apikey=" + this.apiKey;
             }
-            const get = (url, procFunc) => __awaiter$9(this, void 0, void 0, function* () {
+            const get = (url, procFunc) => __awaiter$a(this, void 0, void 0, function* () {
                 this.emit("debug", {
                     action: "request",
                     request: url,
@@ -18212,7 +18302,7 @@ class EtherscanProvider extends BaseProvider {
 }
 
 "use strict";
-var __awaiter$a = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$b = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -18295,14 +18385,27 @@ function serialize$1(value) {
 // Next request ID to use for emitting debug info
 let nextRid = 1;
 ;
-// Returns a promise that delays for duration
 function stall(duration) {
-    return new Promise((resolve) => {
-        const timer = setTimeout(resolve, duration);
-        if (timer.unref) {
-            timer.unref();
-        }
-    });
+    let cancel = null;
+    let timer = null;
+    let promise = (new Promise((resolve) => {
+        cancel = function () {
+            if (timer) {
+                clearTimeout(timer);
+                timer = null;
+            }
+            resolve();
+        };
+        timer = setTimeout(cancel, duration);
+    }));
+    const wait = (func) => {
+        promise = promise.then(func);
+        return promise;
+    };
+    function getPromise() {
+        return promise;
+    }
+    return { cancel, getPromise, wait };
 }
 ;
 function exposeDebugConfig(config, now) {
@@ -18515,43 +18618,44 @@ class FallbackProvider extends BaseProvider {
             super(network);
         }
         else {
-            // The network won't be known until all child providers know
-            const ready = Promise.all(providerConfigs.map((c) => c.provider.getNetwork())).then((networks) => {
-                return checkNetworks(networks);
-            });
-            super(ready);
+            super(this.detectNetwork());
         }
         // Preserve a copy, so we do not get mutated
         defineReadOnly(this, "providerConfigs", Object.freeze(providerConfigs));
         defineReadOnly(this, "quorum", quorum);
         this._highestBlockNumber = -1;
     }
+    detectNetwork() {
+        return __awaiter$b(this, void 0, void 0, function* () {
+            const networks = yield Promise.all(this.providerConfigs.map((c) => c.provider.getNetwork()));
+            return checkNetworks(networks);
+        });
+    }
     perform(method, params) {
-        return __awaiter$a(this, void 0, void 0, function* () {
+        return __awaiter$b(this, void 0, void 0, function* () {
             // Sending transactions is special; always broadcast it to all backends
             if (method === "sendTransaction") {
-                return Promise.all(this.providerConfigs.map((c) => {
+                const results = yield Promise.all(this.providerConfigs.map((c) => {
                     return c.provider.sendTransaction(params.signedTransaction).then((result) => {
                         return result.hash;
                     }, (error) => {
                         return error;
                     });
-                })).then((results) => {
-                    // Any success is good enough (other errors are likely "already seen" errors
-                    for (let i = 0; i < results.length; i++) {
-                        const result = results[i];
-                        if (typeof (result) === "string") {
-                            return result;
-                        }
+                }));
+                // Any success is good enough (other errors are likely "already seen" errors
+                for (let i = 0; i < results.length; i++) {
+                    const result = results[i];
+                    if (typeof (result) === "string") {
+                        return result;
                     }
-                    // They were all an error; pick the first error
-                    return Promise.reject(results[0]);
-                });
+                }
+                // They were all an error; pick the first error
+                throw results[0];
             }
             const processFunc = getProcessFunc(this, method, params);
             // Shuffle the providers and then sort them by their priority; we
             // shallowCopy them since we will store the result in them too
-            const configs = shuffled(this.providerConfigs.map((c) => shallowCopy(c)));
+            const configs = shuffled(this.providerConfigs.map(shallowCopy));
             configs.sort((a, b) => (a.priority - b.priority));
             let i = 0;
             let first = true;
@@ -18567,7 +18671,8 @@ class FallbackProvider extends BaseProvider {
                     const config = configs[i++];
                     const rid = nextRid++;
                     config.start = now();
-                    config.staller = stall(config.stallTimeout).then(() => { config.staller = null; });
+                    config.staller = stall(config.stallTimeout);
+                    config.staller.wait(() => { config.staller = null; });
                     config.runner = getRunner(config.provider, method, params).then((result) => {
                         config.done = true;
                         config.result = result;
@@ -18593,7 +18698,6 @@ class FallbackProvider extends BaseProvider {
                             });
                         }
                     });
-                    //running.push(config);
                     if (this.listenerCount("debug")) {
                         this.emit("debug", {
                             action: "request",
@@ -18613,7 +18717,7 @@ class FallbackProvider extends BaseProvider {
                     }
                     waiting.push(c.runner);
                     if (c.staller) {
-                        waiting.push(c.staller);
+                        waiting.push(c.staller.getPromise());
                     }
                 });
                 if (waiting.length) {
@@ -18625,10 +18729,12 @@ class FallbackProvider extends BaseProvider {
                 if (results.length >= this.quorum) {
                     const result = processFunc(results);
                     if (result !== undefined) {
+                        // Shut down any stallers
+                        configs.filter(c => c.staller).forEach(c => c.staller.cancel());
                         return result;
                     }
                     if (!first) {
-                        yield stall(100);
+                        yield stall(100).getPromise();
                     }
                     first = false;
                 }
@@ -18637,6 +18743,8 @@ class FallbackProvider extends BaseProvider {
                     break;
                 }
             }
+            // Shut down any stallers; shouldn't be any
+            configs.filter(c => c.staller).forEach(c => c.staller.cancel());
             return logger$x.throwError("failed to meet quorum", Logger.errors.SERVER_ERROR, {
                 method: method,
                 params: params,
@@ -18655,204 +18763,6 @@ var IpcProvider = null;
 var browserIpcProvider = {
 	IpcProvider: IpcProvider
 };
-
-"use strict";
-const logger$y = new Logger(version$m);
-const defaultProjectId = "84842078b09946638c03157f83405213";
-class InfuraProvider extends UrlJsonRpcProvider {
-    static getApiKey(apiKey) {
-        const apiKeyObj = {
-            apiKey: defaultProjectId,
-            projectId: defaultProjectId,
-            projectSecret: null
-        };
-        if (apiKey == null) {
-            return apiKeyObj;
-        }
-        if (typeof (apiKey) === "string") {
-            apiKeyObj.projectId = apiKey;
-        }
-        else if (apiKey.projectSecret != null) {
-            if (typeof (apiKey.projectId) !== "string") {
-                logger$y.throwArgumentError("projectSecret requires a projectId", "projectId", apiKey.projectId);
-            }
-            if (typeof (apiKey.projectSecret) !== "string") {
-                logger$y.throwArgumentError("invalid projectSecret", "projectSecret", "[REDACTED]");
-            }
-            apiKeyObj.projectId = apiKey.projectId;
-            apiKeyObj.projectSecret = apiKey.projectSecret;
-        }
-        else if (apiKey.projectId) {
-            apiKeyObj.projectId = apiKey.projectId;
-        }
-        apiKeyObj.apiKey = apiKeyObj.projectId;
-        return apiKeyObj;
-    }
-    static getUrl(network, apiKey) {
-        let host = null;
-        switch (network.name) {
-            case "homestead":
-                host = "mainnet.infura.io";
-                break;
-            case "ropsten":
-                host = "ropsten.infura.io";
-                break;
-            case "rinkeby":
-                host = "rinkeby.infura.io";
-                break;
-            case "kovan":
-                host = "kovan.infura.io";
-                break;
-            case "goerli":
-                host = "goerli.infura.io";
-                break;
-            default:
-                logger$y.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
-                    argument: "network",
-                    value: network
-                });
-        }
-        const connection = {
-            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId)
-        };
-        if (apiKey.projectSecret != null) {
-            connection.user = "";
-            connection.password = apiKey.projectSecret;
-        }
-        return connection;
-    }
-}
-
-"use strict";
-const logger$z = new Logger(version$m);
-// Special API key provided by Nodesmith for ethers.js
-const defaultApiKey$2 = "ETHERS_JS_SHARED";
-class NodesmithProvider extends UrlJsonRpcProvider {
-    static getApiKey(apiKey) {
-        if (apiKey && typeof (apiKey) !== "string") {
-            logger$z.throwArgumentError("invalid apiKey", "apiKey", apiKey);
-        }
-        return apiKey || defaultApiKey$2;
-    }
-    static getUrl(network, apiKey) {
-        logger$z.warn("NodeSmith will be discontinued on 2019-12-20; please migrate to another platform.");
-        let host = null;
-        switch (network.name) {
-            case "homestead":
-                host = "https://ethereum.api.nodesmith.io/v1/mainnet/jsonrpc";
-                break;
-            case "ropsten":
-                host = "https://ethereum.api.nodesmith.io/v1/ropsten/jsonrpc";
-                break;
-            case "rinkeby":
-                host = "https://ethereum.api.nodesmith.io/v1/rinkeby/jsonrpc";
-                break;
-            case "goerli":
-                host = "https://ethereum.api.nodesmith.io/v1/goerli/jsonrpc";
-                break;
-            case "kovan":
-                host = "https://ethereum.api.nodesmith.io/v1/kovan/jsonrpc";
-                break;
-            default:
-                logger$z.throwArgumentError("unsupported network", "network", arguments[0]);
-        }
-        return (host + "?apiKey=" + apiKey);
-    }
-}
-
-"use strict";
-const logger$A = new Logger(version$m);
-let _nextId = 1;
-function buildWeb3LegacyFetcher(provider, sendFunc) {
-    return function (method, params) {
-        // Metamask complains about eth_sign (and on some versions hangs)
-        if (method == "eth_sign" && provider.isMetaMask) {
-            // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
-            method = "personal_sign";
-            params = [params[1], params[0]];
-        }
-        const request = {
-            method: method,
-            params: params,
-            id: (_nextId++),
-            jsonrpc: "2.0"
-        };
-        return new Promise((resolve, reject) => {
-            sendFunc(request, function (error, result) {
-                if (error) {
-                    return reject(error);
-                }
-                if (result.error) {
-                    const error = new Error(result.error.message);
-                    error.code = result.error.code;
-                    error.data = result.error.data;
-                    return reject(error);
-                }
-                resolve(result.result);
-            });
-        });
-    };
-}
-function buildEip1193Fetcher(provider) {
-    return function (method, params) {
-        if (params == null) {
-            params = [];
-        }
-        // Metamask complains about eth_sign (and on some versions hangs)
-        if (method == "eth_sign" && provider.isMetaMask) {
-            // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
-            method = "personal_sign";
-            params = [params[1], params[0]];
-        }
-        return provider.request({ method, params });
-    };
-}
-class Web3Provider extends JsonRpcProvider {
-    constructor(provider, network) {
-        logger$A.checkNew(new.target, Web3Provider);
-        if (provider == null) {
-            logger$A.throwArgumentError("missing provider", "provider", provider);
-        }
-        let path = null;
-        let jsonRpcFetchFunc = null;
-        let subprovider = null;
-        if (typeof (provider) === "function") {
-            path = "unknown:";
-            jsonRpcFetchFunc = provider;
-        }
-        else {
-            path = provider.host || provider.path || "";
-            if (!path && provider.isMetaMask) {
-                path = "metamask";
-            }
-            subprovider = provider;
-            if (provider.request) {
-                if (path === "") {
-                    path = "eip-1193:";
-                }
-                jsonRpcFetchFunc = buildEip1193Fetcher(provider);
-            }
-            else if (provider.sendAsync) {
-                jsonRpcFetchFunc = buildWeb3LegacyFetcher(provider, provider.sendAsync.bind(provider));
-            }
-            else if (provider.send) {
-                jsonRpcFetchFunc = buildWeb3LegacyFetcher(provider, provider.send.bind(provider));
-            }
-            else {
-                logger$A.throwArgumentError("unsupported provider", "provider", provider);
-            }
-            if (!path) {
-                path = "unknown:";
-            }
-        }
-        super(path, network);
-        defineReadOnly(this, "jsonRpcFetchFunc", jsonRpcFetchFunc);
-        defineReadOnly(this, "provider", subprovider);
-    }
-    send(method, params) {
-        return this.jsonRpcFetchFunc(method, params);
-    }
-}
 
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
@@ -18889,7 +18799,7 @@ module.exports = WS;
 var WebSocket$1 = unwrapExports(browserWs);
 
 "use strict";
-var __awaiter$b = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$c = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -18898,7 +18808,7 @@ var __awaiter$b = (window && window.__awaiter) || function (thisArg, _arguments,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const logger$B = new Logger(version$m);
+const logger$y = new Logger(version$m);
 /**
  *  Notes:
  *
@@ -18935,11 +18845,11 @@ class WebSocketProvider extends JsonRpcProvider {
         this._websocket.onmessage = (messageEvent) => {
             const data = messageEvent.data;
             const result = JSON.parse(data);
-            if (result.id) {
+            if (result.id != null) {
                 const id = String(result.id);
                 const request = this._requests[id];
                 delete this._requests[id];
-                if (result.result) {
+                if (result.result !== undefined) {
                     request.callback(null, result.result);
                 }
                 else {
@@ -18971,17 +18881,17 @@ class WebSocketProvider extends JsonRpcProvider {
         return 0;
     }
     resetEventsBlock(blockNumber) {
-        logger$B.throwError("cannot reset events block on WebSocketProvider", Logger.errors.UNSUPPORTED_OPERATION, {
+        logger$y.throwError("cannot reset events block on WebSocketProvider", Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "resetEventBlock"
         });
     }
     set pollingInterval(value) {
-        logger$B.throwError("cannot set polling interval on WebSocketProvider", Logger.errors.UNSUPPORTED_OPERATION, {
+        logger$y.throwError("cannot set polling interval on WebSocketProvider", Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "setPollingInterval"
         });
     }
     poll() {
-        return __awaiter$b(this, void 0, void 0, function* () {
+        return __awaiter$c(this, void 0, void 0, function* () {
             return null;
         });
     }
@@ -18989,7 +18899,7 @@ class WebSocketProvider extends JsonRpcProvider {
         if (!value) {
             return;
         }
-        logger$B.throwError("cannot set polling on WebSocketProvider", Logger.errors.UNSUPPORTED_OPERATION, {
+        logger$y.throwError("cannot set polling on WebSocketProvider", Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "setPolling"
         });
     }
@@ -19018,7 +18928,7 @@ class WebSocketProvider extends JsonRpcProvider {
         return "ws:/\/localhost:8546";
     }
     _subscribe(tag, param, processFunc) {
-        return __awaiter$b(this, void 0, void 0, function* () {
+        return __awaiter$c(this, void 0, void 0, function* () {
             let subIdPromise = this._subIds[tag];
             if (subIdPromise == null) {
                 subIdPromise = Promise.all(param).then((param) => {
@@ -19105,6 +19015,215 @@ class WebSocketProvider extends JsonRpcProvider {
             delete this._subs[subId];
             this.send("eth_unsubscribe", [subId]);
         });
+    }
+}
+
+"use strict";
+const logger$z = new Logger(version$m);
+const defaultProjectId = "84842078b09946638c03157f83405213";
+class InfuraProvider extends UrlJsonRpcProvider {
+    static getWebSocketProvider(network, apiKey) {
+        const provider = new InfuraProvider(network, apiKey);
+        const connection = provider.connection;
+        if (connection.password) {
+            logger$z.throwError("INFURA WebSocket project secrets unsupported", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "InfuraProvider.getWebSocketProvider()"
+            });
+        }
+        const url = connection.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
+        return new WebSocketProvider(url, network);
+    }
+    static getApiKey(apiKey) {
+        const apiKeyObj = {
+            apiKey: defaultProjectId,
+            projectId: defaultProjectId,
+            projectSecret: null
+        };
+        if (apiKey == null) {
+            return apiKeyObj;
+        }
+        if (typeof (apiKey) === "string") {
+            apiKeyObj.projectId = apiKey;
+        }
+        else if (apiKey.projectSecret != null) {
+            if (typeof (apiKey.projectId) !== "string") {
+                logger$z.throwArgumentError("projectSecret requires a projectId", "projectId", apiKey.projectId);
+            }
+            if (typeof (apiKey.projectSecret) !== "string") {
+                logger$z.throwArgumentError("invalid projectSecret", "projectSecret", "[REDACTED]");
+            }
+            apiKeyObj.projectId = apiKey.projectId;
+            apiKeyObj.projectSecret = apiKey.projectSecret;
+        }
+        else if (apiKey.projectId) {
+            apiKeyObj.projectId = apiKey.projectId;
+        }
+        apiKeyObj.apiKey = apiKeyObj.projectId;
+        return apiKeyObj;
+    }
+    static getUrl(network, apiKey) {
+        let host = null;
+        switch (network.name) {
+            case "homestead":
+                host = "mainnet.infura.io";
+                break;
+            case "ropsten":
+                host = "ropsten.infura.io";
+                break;
+            case "rinkeby":
+                host = "rinkeby.infura.io";
+                break;
+            case "kovan":
+                host = "kovan.infura.io";
+                break;
+            case "goerli":
+                host = "goerli.infura.io";
+                break;
+            default:
+                logger$z.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
+                    argument: "network",
+                    value: network
+                });
+        }
+        const connection = {
+            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId)
+        };
+        if (apiKey.projectSecret != null) {
+            connection.user = "";
+            connection.password = apiKey.projectSecret;
+        }
+        return connection;
+    }
+}
+
+"use strict";
+const logger$A = new Logger(version$m);
+// Special API key provided by Nodesmith for ethers.js
+const defaultApiKey$2 = "ETHERS_JS_SHARED";
+class NodesmithProvider extends UrlJsonRpcProvider {
+    static getApiKey(apiKey) {
+        if (apiKey && typeof (apiKey) !== "string") {
+            logger$A.throwArgumentError("invalid apiKey", "apiKey", apiKey);
+        }
+        return apiKey || defaultApiKey$2;
+    }
+    static getUrl(network, apiKey) {
+        logger$A.warn("NodeSmith will be discontinued on 2019-12-20; please migrate to another platform.");
+        let host = null;
+        switch (network.name) {
+            case "homestead":
+                host = "https://ethereum.api.nodesmith.io/v1/mainnet/jsonrpc";
+                break;
+            case "ropsten":
+                host = "https://ethereum.api.nodesmith.io/v1/ropsten/jsonrpc";
+                break;
+            case "rinkeby":
+                host = "https://ethereum.api.nodesmith.io/v1/rinkeby/jsonrpc";
+                break;
+            case "goerli":
+                host = "https://ethereum.api.nodesmith.io/v1/goerli/jsonrpc";
+                break;
+            case "kovan":
+                host = "https://ethereum.api.nodesmith.io/v1/kovan/jsonrpc";
+                break;
+            default:
+                logger$A.throwArgumentError("unsupported network", "network", arguments[0]);
+        }
+        return (host + "?apiKey=" + apiKey);
+    }
+}
+
+"use strict";
+const logger$B = new Logger(version$m);
+let _nextId = 1;
+function buildWeb3LegacyFetcher(provider, sendFunc) {
+    return function (method, params) {
+        // Metamask complains about eth_sign (and on some versions hangs)
+        if (method == "eth_sign" && provider.isMetaMask) {
+            // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
+            method = "personal_sign";
+            params = [params[1], params[0]];
+        }
+        const request = {
+            method: method,
+            params: params,
+            id: (_nextId++),
+            jsonrpc: "2.0"
+        };
+        return new Promise((resolve, reject) => {
+            sendFunc(request, function (error, result) {
+                if (error) {
+                    return reject(error);
+                }
+                if (result.error) {
+                    const error = new Error(result.error.message);
+                    error.code = result.error.code;
+                    error.data = result.error.data;
+                    return reject(error);
+                }
+                resolve(result.result);
+            });
+        });
+    };
+}
+function buildEip1193Fetcher(provider) {
+    return function (method, params) {
+        if (params == null) {
+            params = [];
+        }
+        // Metamask complains about eth_sign (and on some versions hangs)
+        if (method == "eth_sign" && provider.isMetaMask) {
+            // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
+            method = "personal_sign";
+            params = [params[1], params[0]];
+        }
+        return provider.request({ method, params });
+    };
+}
+class Web3Provider extends JsonRpcProvider {
+    constructor(provider, network) {
+        logger$B.checkNew(new.target, Web3Provider);
+        if (provider == null) {
+            logger$B.throwArgumentError("missing provider", "provider", provider);
+        }
+        let path = null;
+        let jsonRpcFetchFunc = null;
+        let subprovider = null;
+        if (typeof (provider) === "function") {
+            path = "unknown:";
+            jsonRpcFetchFunc = provider;
+        }
+        else {
+            path = provider.host || provider.path || "";
+            if (!path && provider.isMetaMask) {
+                path = "metamask";
+            }
+            subprovider = provider;
+            if (provider.request) {
+                if (path === "") {
+                    path = "eip-1193:";
+                }
+                jsonRpcFetchFunc = buildEip1193Fetcher(provider);
+            }
+            else if (provider.sendAsync) {
+                jsonRpcFetchFunc = buildWeb3LegacyFetcher(provider, provider.sendAsync.bind(provider));
+            }
+            else if (provider.send) {
+                jsonRpcFetchFunc = buildWeb3LegacyFetcher(provider, provider.send.bind(provider));
+            }
+            else {
+                logger$B.throwArgumentError("unsupported provider", "provider", provider);
+            }
+            if (!path) {
+                path = "unknown:";
+            }
+        }
+        super(path, network);
+        defineReadOnly(this, "jsonRpcFetchFunc", jsonRpcFetchFunc);
+        defineReadOnly(this, "provider", subprovider);
+    }
+    send(method, params) {
+        return this.jsonRpcFetchFunc(method, params);
     }
 }
 

@@ -130,14 +130,27 @@ function serialize(value) {
 // Next request ID to use for emitting debug info
 var nextRid = 1;
 ;
-// Returns a promise that delays for duration
 function stall(duration) {
-    return new Promise(function (resolve) {
-        var timer = setTimeout(resolve, duration);
-        if (timer.unref) {
-            timer.unref();
-        }
-    });
+    var cancel = null;
+    var timer = null;
+    var promise = (new Promise(function (resolve) {
+        cancel = function () {
+            if (timer) {
+                clearTimeout(timer);
+                timer = null;
+            }
+            resolve();
+        };
+        timer = setTimeout(cancel, duration);
+    }));
+    var wait = function (func) {
+        promise = promise.then(func);
+        return promise;
+    };
+    function getPromise() {
+        return promise;
+    }
+    return { cancel: cancel, getPromise: getPromise, wait: wait };
 }
 ;
 function exposeDebugConfig(config, now) {
@@ -353,11 +366,7 @@ var FallbackProvider = /** @class */ (function (_super) {
             _this = _super.call(this, network) || this;
         }
         else {
-            // The network won't be known until all child providers know
-            var ready = Promise.all(providerConfigs.map(function (c) { return c.provider.getNetwork(); })).then(function (networks) {
-                return checkNetworks(networks);
-            });
-            _this = _super.call(this, ready) || this;
+            _this = _super.call(this, _this.detectNetwork()) || this;
         }
         // Preserve a copy, so we do not get mutated
         properties_1.defineReadOnly(_this, "providerConfigs", Object.freeze(providerConfigs));
@@ -365,35 +374,48 @@ var FallbackProvider = /** @class */ (function (_super) {
         _this._highestBlockNumber = -1;
         return _this;
     }
+    FallbackProvider.prototype.detectNetwork = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var networks;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, Promise.all(this.providerConfigs.map(function (c) { return c.provider.getNetwork(); }))];
+                    case 1:
+                        networks = _a.sent();
+                        return [2 /*return*/, checkNetworks(networks)];
+                }
+            });
+        });
+    };
     FallbackProvider.prototype.perform = function (method, params) {
         return __awaiter(this, void 0, void 0, function () {
-            var processFunc, configs, i, first, _loop_1, this_1, state_1;
+            var results, i_1, result, processFunc, configs, i, first, _loop_1, this_1, state_1;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        // Sending transactions is special; always broadcast it to all backends
-                        if (method === "sendTransaction") {
-                            return [2 /*return*/, Promise.all(this.providerConfigs.map(function (c) {
-                                    return c.provider.sendTransaction(params.signedTransaction).then(function (result) {
-                                        return result.hash;
-                                    }, function (error) {
-                                        return error;
-                                    });
-                                })).then(function (results) {
-                                    // Any success is good enough (other errors are likely "already seen" errors
-                                    for (var i_1 = 0; i_1 < results.length; i_1++) {
-                                        var result = results[i_1];
-                                        if (typeof (result) === "string") {
-                                            return result;
-                                        }
-                                    }
-                                    // They were all an error; pick the first error
-                                    return Promise.reject(results[0]);
-                                })];
+                        if (!(method === "sendTransaction")) return [3 /*break*/, 2];
+                        return [4 /*yield*/, Promise.all(this.providerConfigs.map(function (c) {
+                                return c.provider.sendTransaction(params.signedTransaction).then(function (result) {
+                                    return result.hash;
+                                }, function (error) {
+                                    return error;
+                                });
+                            }))];
+                    case 1:
+                        results = _a.sent();
+                        // Any success is good enough (other errors are likely "already seen" errors
+                        for (i_1 = 0; i_1 < results.length; i_1++) {
+                            result = results[i_1];
+                            if (typeof (result) === "string") {
+                                return [2 /*return*/, result];
+                            }
                         }
+                        // They were all an error; pick the first error
+                        throw results[0];
+                    case 2:
                         processFunc = getProcessFunc(this, method, params);
-                        configs = random_1.shuffled(this.providerConfigs.map(function (c) { return properties_1.shallowCopy(c); }));
+                        configs = random_1.shuffled(this.providerConfigs.map(properties_1.shallowCopy));
                         configs.sort(function (a, b) { return (a.priority - b.priority); });
                         i = 0;
                         first = true;
@@ -409,7 +431,8 @@ var FallbackProvider = /** @class */ (function (_super) {
                                             var config = configs[i++];
                                             var rid = nextRid++;
                                             config.start = now();
-                                            config.staller = stall(config.stallTimeout).then(function () { config.staller = null; });
+                                            config.staller = stall(config.stallTimeout);
+                                            config.staller.wait(function () { config.staller = null; });
                                             config.runner = getRunner(config.provider, method, params).then(function (result) {
                                                 config.done = true;
                                                 config.result = result;
@@ -435,7 +458,6 @@ var FallbackProvider = /** @class */ (function (_super) {
                                                     });
                                                 }
                                             });
-                                            //running.push(config);
                                             if (this_1.listenerCount("debug")) {
                                                 this_1.emit("debug", {
                                                     action: "request",
@@ -458,7 +480,7 @@ var FallbackProvider = /** @class */ (function (_super) {
                                             }
                                             waiting.push(c.runner);
                                             if (c.staller) {
-                                                waiting.push(c.staller);
+                                                waiting.push(c.staller.getPromise());
                                             }
                                         });
                                         if (!waiting.length) return [3 /*break*/, 2];
@@ -471,10 +493,12 @@ var FallbackProvider = /** @class */ (function (_super) {
                                         if (!(results.length >= this_1.quorum)) return [3 /*break*/, 5];
                                         result = processFunc(results);
                                         if (result !== undefined) {
+                                            // Shut down any stallers
+                                            configs.filter(function (c) { return c.staller; }).forEach(function (c) { return c.staller.cancel(); });
                                             return [2 /*return*/, { value: result }];
                                         }
                                         if (!!first) return [3 /*break*/, 4];
-                                        return [4 /*yield*/, stall(100)];
+                                        return [4 /*yield*/, stall(100).getPromise()];
                                     case 3:
                                         _a.sent();
                                         _a.label = 4;
@@ -491,25 +515,28 @@ var FallbackProvider = /** @class */ (function (_super) {
                             });
                         };
                         this_1 = this;
-                        _a.label = 1;
-                    case 1:
-                        if (!true) return [3 /*break*/, 3];
+                        _a.label = 3;
+                    case 3:
+                        if (!true) return [3 /*break*/, 5];
                         return [5 /*yield**/, _loop_1()];
-                    case 2:
+                    case 4:
                         state_1 = _a.sent();
                         if (typeof state_1 === "object")
                             return [2 /*return*/, state_1.value];
                         if (state_1 === "break")
-                            return [3 /*break*/, 3];
-                        return [3 /*break*/, 1];
-                    case 3: return [2 /*return*/, logger.throwError("failed to meet quorum", logger_1.Logger.errors.SERVER_ERROR, {
-                            method: method,
-                            params: params,
-                            //results: configs.map((c) => c.result),
-                            //errors: configs.map((c) => c.error),
-                            results: configs.map(function (c) { return exposeDebugConfig(c); }),
-                            provider: this
-                        })];
+                            return [3 /*break*/, 5];
+                        return [3 /*break*/, 3];
+                    case 5:
+                        // Shut down any stallers; shouldn't be any
+                        configs.filter(function (c) { return c.staller; }).forEach(function (c) { return c.staller.cancel(); });
+                        return [2 /*return*/, logger.throwError("failed to meet quorum", logger_1.Logger.errors.SERVER_ERROR, {
+                                method: method,
+                                params: params,
+                                //results: configs.map((c) => c.result),
+                                //errors: configs.map((c) => c.error),
+                                results: configs.map(function (c) { return exposeDebugConfig(c); }),
+                                provider: this
+                            })];
                 }
             });
         });

@@ -51,11 +51,11 @@ export class WebSocketProvider extends JsonRpcProvider {
         this._websocket.onmessage = (messageEvent) => {
             const data = messageEvent.data;
             const result = JSON.parse(data);
-            if (result.id) {
+            if (result.id != null) {
                 const id = String(result.id);
                 const request = this._requests[id];
                 delete this._requests[id];
-                if (result.result) {
+                if (result.result !== undefined) {
                     request.callback(null, result.result);
                 }
                 else {

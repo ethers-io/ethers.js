@@ -4,6 +4,7 @@ import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 export declare abstract class UrlJsonRpcProvider extends JsonRpcProvider {
     readonly apiKey: any;
     constructor(network?: Networkish, apiKey?: any);
+    detectNetwork(): Promise<Network>;
     _startPending(): void;
     getSigner(address?: string): JsonRpcSigner;
     listAccounts(): Promise<Array<string>>;

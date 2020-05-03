@@ -461,44 +461,66 @@ var Contract = /** @class */ (function () {
                 logger.throwArgumentError("provider is required to use non-address contract address", "addressOrName", addressOrName);
             }
         }
-        var uniqueFunctions = {};
-        Object.keys(this.interface.functions).forEach(function (name) {
-            var fragment = _this.interface.functions[name];
-            // @TODO: This should take in fragment
-            var run = runMethod(_this, name, {});
-            if (_this[name] == null) {
-                properties_1.defineReadOnly(_this, name, run);
-            }
-            if (_this.functions[name] == null) {
-                properties_1.defineReadOnly(_this.functions, name, run);
-            }
-            if (_this.callStatic[name] == null) {
-                properties_1.defineReadOnly(_this.callStatic, name, runMethod(_this, name, { callStatic: true }));
-            }
-            if (_this.populateTransaction[name] == null) {
-                properties_1.defineReadOnly(_this.populateTransaction, name, runMethod(_this, name, { transaction: true }));
-            }
-            if (_this.estimateGas[name] == null) {
-                properties_1.defineReadOnly(_this.estimateGas, name, runMethod(_this, name, { estimate: true }));
-            }
-            if (!uniqueFunctions[fragment.name]) {
-                uniqueFunctions[fragment.name] = [];
-            }
-            uniqueFunctions[fragment.name].push(name);
-        });
-        Object.keys(uniqueFunctions).forEach(function (name) {
-            var signatures = uniqueFunctions[name];
-            if (signatures.length > 1) {
-                logger.warn("Duplicate definition of " + name + " (" + signatures.join(", ") + ")");
+        var uniqueNames = {};
+        var uniqueSignatures = {};
+        Object.keys(this.interface.functions).forEach(function (signature) {
+            var fragment = _this.interface.functions[signature];
+            // Check that the signature is unique; if not the ABI generation has
+            // not been cleaned or may be incorrectly generated
+            if (uniqueSignatures[signature]) {
+                logger.warn("Duplicate ABI entry for " + JSON.stringify(name));
                 return;
             }
-            if (_this[name] == null) {
-                properties_1.defineReadOnly(_this, name, _this[signatures[0]]);
+            uniqueSignatures[signature] = true;
+            // Track unique names; we only expose bare named functions if they
+            // are ambiguous
+            {
+                var name_1 = fragment.name;
+                if (!uniqueNames[name_1]) {
+                    uniqueNames[name_1] = [];
+                }
+                uniqueNames[name_1].push(signature);
             }
-            properties_1.defineReadOnly(_this.functions, name, _this.functions[signatures[0]]);
-            properties_1.defineReadOnly(_this.callStatic, name, _this.callStatic[signatures[0]]);
-            properties_1.defineReadOnly(_this.populateTransaction, name, _this.populateTransaction[signatures[0]]);
-            properties_1.defineReadOnly(_this.estimateGas, name, _this.estimateGas[signatures[0]]);
+            // @TODO: This should take in fragment
+            var run = runMethod(_this, signature, {});
+            if (_this[signature] == null) {
+                properties_1.defineReadOnly(_this, signature, run);
+            }
+            if (_this.functions[signature] == null) {
+                properties_1.defineReadOnly(_this.functions, signature, run);
+            }
+            if (_this.callStatic[signature] == null) {
+                properties_1.defineReadOnly(_this.callStatic, signature, runMethod(_this, signature, { callStatic: true }));
+            }
+            if (_this.populateTransaction[signature] == null) {
+                properties_1.defineReadOnly(_this.populateTransaction, signature, runMethod(_this, signature, { transaction: true }));
+            }
+            if (_this.estimateGas[signature] == null) {
+                properties_1.defineReadOnly(_this.estimateGas, signature, runMethod(_this, signature, { estimate: true }));
+            }
+        });
+        Object.keys(uniqueNames).forEach(function (name) {
+            // Ambiguous names to not get attached as bare names
+            var signatures = uniqueNames[name];
+            if (signatures.length > 1) {
+                return;
+            }
+            var signature = signatures[0];
+            if (_this[name] == null) {
+                properties_1.defineReadOnly(_this, name, _this[signature]);
+            }
+            if (_this.functions[name] == null) {
+                properties_1.defineReadOnly(_this.functions, name, _this.functions[signature]);
+            }
+            if (_this.callStatic[name] == null) {
+                properties_1.defineReadOnly(_this.callStatic, name, _this.callStatic[signature]);
+            }
+            if (_this.populateTransaction[name] == null) {
+                properties_1.defineReadOnly(_this.populateTransaction, name, _this.populateTransaction[signature]);
+            }
+            if (_this.estimateGas[name] == null) {
+                properties_1.defineReadOnly(_this.estimateGas, name, _this.estimateGas[signature]);
+            }
         });
     }
     Contract.getContractAddress = function (transaction) {

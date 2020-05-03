@@ -25,6 +25,7 @@ export declare class Event {
     pollable(): boolean;
 }
 export declare class BaseProvider extends Provider {
+    _networkPromise: Promise<Network>;
     _network: Network;
     _events: Array<Event>;
     formatter: Formatter;
@@ -52,8 +53,10 @@ export declare class BaseProvider extends Provider {
      *  MUST set this. Standard named networks have a known chainId.
      *
      */
-    ready: Promise<Network>;
     constructor(network: Networkish | Promise<Network>);
+    _ready(): Promise<Network>;
+    get ready(): Promise<Network>;
+    detectNetwork(): Promise<Network>;
     static getFormatter(): Formatter;
     static getNetwork(network: Networkish): Network;
     _getInternalBlockNumber(maxAge: number): Promise<number>;

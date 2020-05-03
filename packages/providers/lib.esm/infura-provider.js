@@ -1,10 +1,22 @@
 "use strict";
+import { WebSocketProvider } from "./websocket-provider";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 const defaultProjectId = "84842078b09946638c03157f83405213";
 export class InfuraProvider extends UrlJsonRpcProvider {
+    static getWebSocketProvider(network, apiKey) {
+        const provider = new InfuraProvider(network, apiKey);
+        const connection = provider.connection;
+        if (connection.password) {
+            logger.throwError("INFURA WebSocket project secrets unsupported", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "InfuraProvider.getWebSocketProvider()"
+            });
+        }
+        const url = connection.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
+        return new WebSocketProvider(url, network);
+    }
     static getApiKey(apiKey) {
         const apiKeyObj = {
             apiKey: defaultProjectId,

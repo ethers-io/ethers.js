@@ -96,11 +96,11 @@ var WebSocketProvider = /** @class */ (function (_super) {
         _this._websocket.onmessage = function (messageEvent) {
             var data = messageEvent.data;
             var result = JSON.parse(data);
-            if (result.id) {
+            if (result.id != null) {
                 var id = String(result.id);
                 var request = _this._requests[id];
                 delete _this._requests[id];
-                if (result.result) {
+                if (result.result !== undefined) {
                     request.callback(null, result.result);
                 }
                 else {

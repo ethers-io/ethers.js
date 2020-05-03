@@ -61,9 +61,7 @@ var logger = new logger_1.Logger(_version_1.version);
 var base_provider_1 = require("./base-provider");
 function timer(timeout) {
     return new Promise(function (resolve) {
-        setTimeout(function () {
-            resolve();
-        }, timeout);
+        setTimeout(resolve, timeout);
     });
 }
 function getResult(payload) {
@@ -267,47 +265,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         }
         else {
             // The network is unknown, query the JSON-RPC for it
-            var ready = new Promise(function (resolve, reject) {
-                setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
-                    var chainId, error_1, error_2;
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0:
-                                chainId = null;
-                                _a.label = 1;
-                            case 1:
-                                _a.trys.push([1, 3, , 8]);
-                                return [4 /*yield*/, this.send("eth_chainId", [])];
-                            case 2:
-                                chainId = _a.sent();
-                                return [3 /*break*/, 8];
-                            case 3:
-                                error_1 = _a.sent();
-                                _a.label = 4;
-                            case 4:
-                                _a.trys.push([4, 6, , 7]);
-                                return [4 /*yield*/, this.send("net_version", [])];
-                            case 5:
-                                chainId = _a.sent();
-                                return [3 /*break*/, 7];
-                            case 6:
-                                error_2 = _a.sent();
-                                return [3 /*break*/, 7];
-                            case 7: return [3 /*break*/, 8];
-                            case 8:
-                                if (chainId != null) {
-                                    try {
-                                        return [2 /*return*/, resolve(getNetwork(bignumber_1.BigNumber.from(chainId).toNumber()))];
-                                    }
-                                    catch (error) { }
-                                }
-                                reject(logger.makeError("could not detect network", logger_1.Logger.errors.NETWORK_ERROR));
-                                return [2 /*return*/];
-                        }
-                    });
-                }); }, 0);
-            });
-            _this = _super.call(this, ready) || this;
+            _this = _super.call(this, _this.detectNetwork()) || this;
         }
         // Default URL
         if (!url) {
@@ -326,6 +284,53 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     }
     JsonRpcProvider.defaultUrl = function () {
         return "http:/\/localhost:8545";
+    };
+    JsonRpcProvider.prototype.detectNetwork = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var chainId, error_1, error_2, getNetwork;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, timer(0)];
+                    case 1:
+                        _a.sent();
+                        chainId = null;
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 9]);
+                        return [4 /*yield*/, this.send("eth_chainId", [])];
+                    case 3:
+                        chainId = _a.sent();
+                        return [3 /*break*/, 9];
+                    case 4:
+                        error_1 = _a.sent();
+                        _a.label = 5;
+                    case 5:
+                        _a.trys.push([5, 7, , 8]);
+                        return [4 /*yield*/, this.send("net_version", [])];
+                    case 6:
+                        chainId = _a.sent();
+                        return [3 /*break*/, 8];
+                    case 7:
+                        error_2 = _a.sent();
+                        return [3 /*break*/, 8];
+                    case 8: return [3 /*break*/, 9];
+                    case 9:
+                        if (chainId != null) {
+                            getNetwork = properties_1.getStatic(this.constructor, "getNetwork");
+                            try {
+                                return [2 /*return*/, getNetwork(bignumber_1.BigNumber.from(chainId).toNumber())];
+                            }
+                            catch (error) {
+                                return [2 /*return*/, logger.throwError("could not detect network", logger_1.Logger.errors.NETWORK_ERROR, {
+                                        chainId: chainId,
+                                        serverError: error
+                                    })];
+                            }
+                        }
+                        return [2 /*return*/, logger.throwError("could not detect network", logger_1.Logger.errors.NETWORK_ERROR)];
+                }
+            });
+        });
     };
     JsonRpcProvider.prototype.getSigner = function (addressOrIndex) {
         return new JsonRpcSigner(_constructorGuard, this, addressOrIndex);

@@ -89,14 +89,27 @@ function serialize(value) {
 // Next request ID to use for emitting debug info
 let nextRid = 1;
 ;
-// Returns a promise that delays for duration
 function stall(duration) {
-    return new Promise((resolve) => {
-        const timer = setTimeout(resolve, duration);
-        if (timer.unref) {
-            timer.unref();
-        }
-    });
+    let cancel = null;
+    let timer = null;
+    let promise = (new Promise((resolve) => {
+        cancel = function () {
+            if (timer) {
+                clearTimeout(timer);
+                timer = null;
+            }
+            resolve();
+        };
+        timer = setTimeout(cancel, duration);
+    }));
+    const wait = (func) => {
+        promise = promise.then(func);
+        return promise;
+    };
+    function getPromise() {
+        return promise;
+    }
+    return { cancel, getPromise, wait };
 }
 ;
 function exposeDebugConfig(config, now) {
@@ -309,43 +322,44 @@ export class FallbackProvider extends BaseProvider {
             super(network);
         }
         else {
-            // The network won't be known until all child providers know
-            const ready = Promise.all(providerConfigs.map((c) => c.provider.getNetwork())).then((networks) => {
-                return checkNetworks(networks);
-            });
-            super(ready);
+            super(this.detectNetwork());
         }
         // Preserve a copy, so we do not get mutated
         defineReadOnly(this, "providerConfigs", Object.freeze(providerConfigs));
         defineReadOnly(this, "quorum", quorum);
         this._highestBlockNumber = -1;
     }
+    detectNetwork() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const networks = yield Promise.all(this.providerConfigs.map((c) => c.provider.getNetwork()));
+            return checkNetworks(networks);
+        });
+    }
     perform(method, params) {
         return __awaiter(this, void 0, void 0, function* () {
             // Sending transactions is special; always broadcast it to all backends
             if (method === "sendTransaction") {
-                return Promise.all(this.providerConfigs.map((c) => {
+                const results = yield Promise.all(this.providerConfigs.map((c) => {
                     return c.provider.sendTransaction(params.signedTransaction).then((result) => {
                         return result.hash;
                     }, (error) => {
                         return error;
                     });
-                })).then((results) => {
-                    // Any success is good enough (other errors are likely "already seen" errors
-                    for (let i = 0; i < results.length; i++) {
-                        const result = results[i];
-                        if (typeof (result) === "string") {
-                            return result;
-                        }
+                }));
+                // Any success is good enough (other errors are likely "already seen" errors
+                for (let i = 0; i < results.length; i++) {
+                    const result = results[i];
+                    if (typeof (result) === "string") {
+                        return result;
                     }
-                    // They were all an error; pick the first error
-                    return Promise.reject(results[0]);
-                });
+                }
+                // They were all an error; pick the first error
+                throw results[0];
             }
             const processFunc = getProcessFunc(this, method, params);
             // Shuffle the providers and then sort them by their priority; we
             // shallowCopy them since we will store the result in them too
-            const configs = shuffled(this.providerConfigs.map((c) => shallowCopy(c)));
+            const configs = shuffled(this.providerConfigs.map(shallowCopy));
             configs.sort((a, b) => (a.priority - b.priority));
             let i = 0;
             let first = true;
@@ -361,7 +375,8 @@ export class FallbackProvider extends BaseProvider {
                     const config = configs[i++];
                     const rid = nextRid++;
                     config.start = now();
-                    config.staller = stall(config.stallTimeout).then(() => { config.staller = null; });
+                    config.staller = stall(config.stallTimeout);
+                    config.staller.wait(() => { config.staller = null; });
                     config.runner = getRunner(config.provider, method, params).then((result) => {
                         config.done = true;
                         config.result = result;
@@ -387,7 +402,6 @@ export class FallbackProvider extends BaseProvider {
                             });
                         }
                     });
-                    //running.push(config);
                     if (this.listenerCount("debug")) {
                         this.emit("debug", {
                             action: "request",
@@ -407,7 +421,7 @@ export class FallbackProvider extends BaseProvider {
                     }
                     waiting.push(c.runner);
                     if (c.staller) {
-                        waiting.push(c.staller);
+                        waiting.push(c.staller.getPromise());
                     }
                 });
                 if (waiting.length) {
@@ -419,10 +433,12 @@ export class FallbackProvider extends BaseProvider {
                 if (results.length >= this.quorum) {
                     const result = processFunc(results);
                     if (result !== undefined) {
+                        // Shut down any stallers
+                        configs.filter(c => c.staller).forEach(c => c.staller.cancel());
                         return result;
                     }
                     if (!first) {
-                        yield stall(100);
+                        yield stall(100).getPromise();
                     }
                     first = false;
                 }
@@ -431,6 +447,8 @@ export class FallbackProvider extends BaseProvider {
                     break;
                 }
             }
+            // Shut down any stallers; shouldn't be any
+            configs.filter(c => c.staller).forEach(c => c.staller.cancel());
             return logger.throwError("failed to meet quorum", Logger.errors.SERVER_ERROR, {
                 method: method,
                 params: params,

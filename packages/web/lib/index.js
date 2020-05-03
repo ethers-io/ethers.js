@@ -131,8 +131,13 @@ function fetchJson(connection, json, processFunc) {
                         return [3 /*break*/, 4];
                     case 3:
                         error_1 = _a.sent();
-                        console.log(error_1);
                         response = error_1.response;
+                        if (response == null) {
+                            logger.throwError("missing response", logger_1.Logger.errors.SERVER_ERROR, {
+                                serverError: error_1,
+                                url: url
+                            });
+                        }
                         return [3 /*break*/, 4];
                     case 4:
                         body = response.body;

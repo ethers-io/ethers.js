@@ -20,9 +20,7 @@ const logger = new Logger(version);
 import { BaseProvider } from "./base-provider";
 function timer(timeout) {
     return new Promise(function (resolve) {
-        setTimeout(function () {
-            resolve();
-        }, timeout);
+        setTimeout(resolve, timeout);
     });
 }
 function getResult(payload) {
@@ -207,28 +205,7 @@ export class JsonRpcProvider extends BaseProvider {
         }
         else {
             // The network is unknown, query the JSON-RPC for it
-            const ready = new Promise((resolve, reject) => {
-                setTimeout(() => __awaiter(this, void 0, void 0, function* () {
-                    let chainId = null;
-                    try {
-                        chainId = yield this.send("eth_chainId", []);
-                    }
-                    catch (error) {
-                        try {
-                            chainId = yield this.send("net_version", []);
-                        }
-                        catch (error) { }
-                    }
-                    if (chainId != null) {
-                        try {
-                            return resolve(getNetwork(BigNumber.from(chainId).toNumber()));
-                        }
-                        catch (error) { }
-                    }
-                    reject(logger.makeError("could not detect network", Logger.errors.NETWORK_ERROR));
-                }), 0);
-            });
-            super(ready);
+            super(this.detectNetwork());
         }
         // Default URL
         if (!url) {
@@ -246,6 +223,34 @@ export class JsonRpcProvider extends BaseProvider {
     }
     static defaultUrl() {
         return "http:/\/localhost:8545";
+    }
+    detectNetwork() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield timer(0);
+            let chainId = null;
+            try {
+                chainId = yield this.send("eth_chainId", []);
+            }
+            catch (error) {
+                try {
+                    chainId = yield this.send("net_version", []);
+                }
+                catch (error) { }
+            }
+            if (chainId != null) {
+                const getNetwork = getStatic(this.constructor, "getNetwork");
+                try {
+                    return getNetwork(BigNumber.from(chainId).toNumber());
+                }
+                catch (error) {
+                    return logger.throwError("could not detect network", Logger.errors.NETWORK_ERROR, {
+                        chainId: chainId,
+                        serverError: error
+                    });
+                }
+            }
+            return logger.throwError("could not detect network", Logger.errors.NETWORK_ERROR);
+        });
     }
     getSigner(addressOrIndex) {
         return new JsonRpcSigner(_constructorGuard, this, addressOrIndex);

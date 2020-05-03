@@ -150,6 +150,13 @@ var EtherscanProvider = /** @class */ (function (_super) {
         properties_1.defineReadOnly(_this, "apiKey", apiKey || defaultApiKey);
         return _this;
     }
+    EtherscanProvider.prototype.detectNetwork = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this.network];
+            });
+        });
+    };
     EtherscanProvider.prototype.perform = function (method, params) {
         return __awaiter(this, void 0, void 0, function () {
             var url, apiKey, get, _a, transaction, transaction, topic0, logs, txs, i, log, tx, _b;
