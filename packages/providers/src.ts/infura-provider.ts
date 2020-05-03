@@ -1,7 +1,9 @@
 "use strict";
 
-import { Network } from "@ethersproject/networks";
+import { Network, Networkish } from "@ethersproject/networks";
 import { ConnectionInfo } from "@ethersproject/web";
+
+import { WebSocketProvider } from "./websocket-provider";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -15,6 +17,19 @@ const defaultProjectId = "84842078b09946638c03157f83405213"
 export class InfuraProvider extends UrlJsonRpcProvider {
     readonly projectId: string;
     readonly projectSecret: string;
+
+    static getWebSocketProvider(network: Networkish, apiKey: any): WebSocketProvider {
+        const provider = new InfuraProvider(network, apiKey);
+        const connection = provider.connection;
+        if (connection.password) {
+            logger.throwError("INFURA WebSocket project secrets unsupported", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "InfuraProvider.getWebSocketProvider()"
+            });
+        }
+
+        const url = connection.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
+        return new WebSocketProvider(url, network);
+    }
 
     static getApiKey(apiKey: any): any {
         const apiKeyObj: { apiKey: string, projectId: string, projectSecret: string } = {
