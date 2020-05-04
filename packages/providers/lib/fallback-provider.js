@@ -50,13 +50,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
-var random_1 = require("@ethersproject/random");
-var properties_1 = require("@ethersproject/properties");
 var bignumber_1 = require("@ethersproject/bignumber");
+var bytes_1 = require("@ethersproject/bytes");
+var properties_1 = require("@ethersproject/properties");
+var random_1 = require("@ethersproject/random");
+var web_1 = require("@ethersproject/web");
+var base_provider_1 = require("./base-provider");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
-var base_provider_1 = require("./base-provider");
 function now() { return (new Date()).getTime(); }
 // Returns to network as long as all agree, or null if any is null.
 // Throws an error if any two networks do not match.
@@ -292,36 +294,97 @@ function getProcessFunc(provider, method, params) {
     // satisfied and agreed upon for the final result.
     return normalizedTally(normalize, provider.quorum);
 }
-function getRunner(provider, method, params) {
-    switch (method) {
-        case "getBlockNumber":
-        case "getGasPrice":
-            return provider[method]();
-        case "getEtherPrice":
-            if (provider.getEtherPrice) {
-                return provider.getEtherPrice();
+// If we are doing a blockTag query, we need to make sure the backend is
+// caught up to the FallbackProvider, before sending a request to it.
+function waitForSync(provider, blockNumber) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
+                return [2 /*return*/, provider];
             }
-            break;
-        case "getBalance":
-        case "getTransactionCount":
-        case "getCode":
-            return provider[method](params.address, params.blockTag || "latest");
-        case "getStorageAt":
-            return provider.getStorageAt(params.address, params.position, params.blockTag || "latest");
-        case "getBlock":
-            return provider[(params.includeTransactions ? "getBlockWithTransactions" : "getBlock")](params.blockTag || params.blockHash);
-        case "call":
-        case "estimateGas":
-            return provider[method](params.transaction);
-        case "getTransaction":
-        case "getTransactionReceipt":
-            return provider[method](params.transactionHash);
-        case "getLogs":
-            return provider.getLogs(params.filter);
-    }
-    return logger.throwError("unknown method error", logger_1.Logger.errors.UNKNOWN_ERROR, {
-        method: method,
-        params: params
+            return [2 /*return*/, web_1.poll(function () {
+                    return provider.getBlockNumber().then(function (b) {
+                        if (b >= blockNumber) {
+                            return abstract_provider_1.Provider;
+                        }
+                        return undefined;
+                    });
+                }, { onceBlock: provider })];
+        });
+    });
+}
+function getRunner(provider, currentBlockNumber, method, params) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, filter;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    _a = method;
+                    switch (_a) {
+                        case "getBlockNumber": return [3 /*break*/, 1];
+                        case "getGasPrice": return [3 /*break*/, 1];
+                        case "getEtherPrice": return [3 /*break*/, 2];
+                        case "getBalance": return [3 /*break*/, 3];
+                        case "getTransactionCount": return [3 /*break*/, 3];
+                        case "getCode": return [3 /*break*/, 3];
+                        case "getStorageAt": return [3 /*break*/, 6];
+                        case "getBlock": return [3 /*break*/, 9];
+                        case "call": return [3 /*break*/, 12];
+                        case "estimateGas": return [3 /*break*/, 12];
+                        case "getTransaction": return [3 /*break*/, 15];
+                        case "getTransactionReceipt": return [3 /*break*/, 15];
+                        case "getLogs": return [3 /*break*/, 16];
+                    }
+                    return [3 /*break*/, 19];
+                case 1: return [2 /*return*/, provider[method]()];
+                case 2:
+                    if (provider.getEtherPrice) {
+                        return [2 /*return*/, provider.getEtherPrice()];
+                    }
+                    return [3 /*break*/, 19];
+                case 3:
+                    if (!(params.blockTag && bytes_1.isHexString(params.blockTag))) return [3 /*break*/, 5];
+                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+                case 4:
+                    provider = _b.sent();
+                    _b.label = 5;
+                case 5: return [2 /*return*/, provider[method](params.address, params.blockTag || "latest")];
+                case 6:
+                    if (!(params.blockTag && bytes_1.isHexString(params.blockTag))) return [3 /*break*/, 8];
+                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+                case 7:
+                    provider = _b.sent();
+                    _b.label = 8;
+                case 8: return [2 /*return*/, provider.getStorageAt(params.address, params.position, params.blockTag || "latest")];
+                case 9:
+                    if (!(params.blockTag && bytes_1.isHexString(params.blockTag))) return [3 /*break*/, 11];
+                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+                case 10:
+                    provider = _b.sent();
+                    _b.label = 11;
+                case 11: return [2 /*return*/, provider[(params.includeTransactions ? "getBlockWithTransactions" : "getBlock")](params.blockTag || params.blockHash)];
+                case 12:
+                    if (!(params.blockTag && bytes_1.isHexString(params.blockTag))) return [3 /*break*/, 14];
+                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+                case 13:
+                    provider = _b.sent();
+                    _b.label = 14;
+                case 14: return [2 /*return*/, provider[method](params.transaction)];
+                case 15: return [2 /*return*/, provider[method](params.transactionHash)];
+                case 16:
+                    filter = params.filter;
+                    if (!((filter.fromBlock && bytes_1.isHexString(filter.fromBlock)) || (filter.toBlock && bytes_1.isHexString(filter.toBlock)))) return [3 /*break*/, 18];
+                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+                case 17:
+                    provider = _b.sent();
+                    _b.label = 18;
+                case 18: return [2 /*return*/, provider.getLogs(filter)];
+                case 19: return [2 /*return*/, logger.throwError("unknown method error", logger_1.Logger.errors.UNKNOWN_ERROR, {
+                        method: method,
+                        params: params
+                    })];
+            }
+        });
     });
 }
 var FallbackProvider = /** @class */ (function (_super) {
@@ -389,7 +452,7 @@ var FallbackProvider = /** @class */ (function (_super) {
     };
     FallbackProvider.prototype.perform = function (method, params) {
         return __awaiter(this, void 0, void 0, function () {
-            var results, i_1, result, processFunc, configs, i, first, _loop_1, this_1, state_1;
+            var results, i_1, result, processFunc, configs, currentBlockNumber, i, first, _loop_1, this_1, state_1;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -414,9 +477,16 @@ var FallbackProvider = /** @class */ (function (_super) {
                         // They were all an error; pick the first error
                         throw results[0];
                     case 2:
+                        if (!(this._highestBlockNumber === -1 && method !== "getBlockNumber")) return [3 /*break*/, 4];
+                        return [4 /*yield*/, this.getBlockNumber()];
+                    case 3:
+                        _a.sent();
+                        _a.label = 4;
+                    case 4:
                         processFunc = getProcessFunc(this, method, params);
                         configs = random_1.shuffled(this.providerConfigs.map(properties_1.shallowCopy));
                         configs.sort(function (a, b) { return (a.priority - b.priority); });
+                        currentBlockNumber = this._highestBlockNumber;
                         i = 0;
                         first = true;
                         _loop_1 = function () {
@@ -433,7 +503,7 @@ var FallbackProvider = /** @class */ (function (_super) {
                                             config.start = now();
                                             config.staller = stall(config.stallTimeout);
                                             config.staller.wait(function () { config.staller = null; });
-                                            config.runner = getRunner(config.provider, method, params).then(function (result) {
+                                            config.runner = getRunner((config.provider), currentBlockNumber, method, params).then(function (result) {
                                                 config.done = true;
                                                 config.result = result;
                                                 if (_this.listenerCount("debug")) {
@@ -515,18 +585,18 @@ var FallbackProvider = /** @class */ (function (_super) {
                             });
                         };
                         this_1 = this;
-                        _a.label = 3;
-                    case 3:
-                        if (!true) return [3 /*break*/, 5];
+                        _a.label = 5;
+                    case 5:
+                        if (!true) return [3 /*break*/, 7];
                         return [5 /*yield**/, _loop_1()];
-                    case 4:
+                    case 6:
                         state_1 = _a.sent();
                         if (typeof state_1 === "object")
                             return [2 /*return*/, state_1.value];
                         if (state_1 === "break")
-                            return [3 /*break*/, 5];
-                        return [3 /*break*/, 3];
-                    case 5:
+                            return [3 /*break*/, 7];
+                        return [3 /*break*/, 5];
+                    case 7:
                         // Shut down any stallers; shouldn't be any
                         configs.filter(function (c) { return c.staller; }).forEach(function (c) { return c.staller.cancel(); });
                         return [2 /*return*/, logger.throwError("failed to meet quorum", logger_1.Logger.errors.SERVER_ERROR, {

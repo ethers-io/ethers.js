@@ -18547,36 +18547,72 @@ function getProcessFunc(provider, method, params) {
     // satisfied and agreed upon for the final result.
     return normalizedTally(normalize, provider.quorum);
 }
-function getRunner(provider, method, params) {
-    switch (method) {
-        case "getBlockNumber":
-        case "getGasPrice":
-            return provider[method]();
-        case "getEtherPrice":
-            if (provider.getEtherPrice) {
-                return provider.getEtherPrice();
+// If we are doing a blockTag query, we need to make sure the backend is
+// caught up to the FallbackProvider, before sending a request to it.
+function waitForSync(provider, blockNumber) {
+    return __awaiter$b(this, void 0, void 0, function* () {
+        if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
+            return provider;
+        }
+        return poll(() => {
+            return provider.getBlockNumber().then((b) => {
+                if (b >= blockNumber) {
+                    return Provider;
+                }
+                return undefined;
+            });
+        }, { onceBlock: provider });
+    });
+}
+function getRunner(provider, currentBlockNumber, method, params) {
+    return __awaiter$b(this, void 0, void 0, function* () {
+        switch (method) {
+            case "getBlockNumber":
+            case "getGasPrice":
+                return provider[method]();
+            case "getEtherPrice":
+                if (provider.getEtherPrice) {
+                    return provider.getEtherPrice();
+                }
+                break;
+            case "getBalance":
+            case "getTransactionCount":
+            case "getCode":
+                if (params.blockTag && isHexString(params.blockTag)) {
+                    provider = yield waitForSync(provider, currentBlockNumber);
+                }
+                return provider[method](params.address, params.blockTag || "latest");
+            case "getStorageAt":
+                if (params.blockTag && isHexString(params.blockTag)) {
+                    provider = yield waitForSync(provider, currentBlockNumber);
+                }
+                return provider.getStorageAt(params.address, params.position, params.blockTag || "latest");
+            case "getBlock":
+                if (params.blockTag && isHexString(params.blockTag)) {
+                    provider = yield waitForSync(provider, currentBlockNumber);
+                }
+                return provider[(params.includeTransactions ? "getBlockWithTransactions" : "getBlock")](params.blockTag || params.blockHash);
+            case "call":
+            case "estimateGas":
+                if (params.blockTag && isHexString(params.blockTag)) {
+                    provider = yield waitForSync(provider, currentBlockNumber);
+                }
+                return provider[method](params.transaction);
+            case "getTransaction":
+            case "getTransactionReceipt":
+                return provider[method](params.transactionHash);
+            case "getLogs": {
+                let filter = params.filter;
+                if ((filter.fromBlock && isHexString(filter.fromBlock)) || (filter.toBlock && isHexString(filter.toBlock))) {
+                    provider = yield waitForSync(provider, currentBlockNumber);
+                }
+                return provider.getLogs(filter);
             }
-            break;
-        case "getBalance":
-        case "getTransactionCount":
-        case "getCode":
-            return provider[method](params.address, params.blockTag || "latest");
-        case "getStorageAt":
-            return provider.getStorageAt(params.address, params.position, params.blockTag || "latest");
-        case "getBlock":
-            return provider[(params.includeTransactions ? "getBlockWithTransactions" : "getBlock")](params.blockTag || params.blockHash);
-        case "call":
-        case "estimateGas":
-            return provider[method](params.transaction);
-        case "getTransaction":
-        case "getTransactionReceipt":
-            return provider[method](params.transactionHash);
-        case "getLogs":
-            return provider.getLogs(params.filter);
-    }
-    return logger$x.throwError("unknown method error", Logger.errors.UNKNOWN_ERROR, {
-        method: method,
-        params: params
+        }
+        return logger$x.throwError("unknown method error", Logger.errors.UNKNOWN_ERROR, {
+            method: method,
+            params: params
+        });
     });
 }
 class FallbackProvider extends BaseProvider {
@@ -18652,17 +18688,21 @@ class FallbackProvider extends BaseProvider {
                 // They were all an error; pick the first error
                 throw results[0];
             }
+            // We need to make sure we are in sync with our backends, so we need
+            // to know this before we can make a lot of calls
+            if (this._highestBlockNumber === -1 && method !== "getBlockNumber") {
+                yield this.getBlockNumber();
+            }
             const processFunc = getProcessFunc(this, method, params);
             // Shuffle the providers and then sort them by their priority; we
             // shallowCopy them since we will store the result in them too
             const configs = shuffled(this.providerConfigs.map(shallowCopy));
             configs.sort((a, b) => (a.priority - b.priority));
+            const currentBlockNumber = this._highestBlockNumber;
             let i = 0;
             let first = true;
             while (true) {
                 const t0 = now();
-                // Get a list of running
-                //const running = configs.filter((c) => (c.runner && !c.done));
                 // Compute the inflight weight (exclude anything past)
                 let inflightWeight = configs.filter((c) => (c.runner && ((t0 - c.start) < c.stallTimeout)))
                     .reduce((accum, c) => (accum + c.weight), 0);
@@ -18673,7 +18713,7 @@ class FallbackProvider extends BaseProvider {
                     config.start = now();
                     config.staller = stall(config.stallTimeout);
                     config.staller.wait(() => { config.staller = null; });
-                    config.runner = getRunner(config.provider, method, params).then((result) => {
+                    config.runner = getRunner((config.provider), currentBlockNumber, method, params).then((result) => {
                         config.done = true;
                         config.result = result;
                         if (this.listenerCount("debug")) {

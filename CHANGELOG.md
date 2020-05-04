@@ -2,14 +2,16 @@ Changelog
 =========
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
+
 During the v5-BETA, although attempts are made to minimize it, some of the APIs
 may change. It is generally recommended that you remove your `node_modules/`,
 `package-lock.json` (and similar files for yarn, etc.) and doing an `npm install`
 after upgrading to a newer version of the v5-BETA.
 
-ethers/v5.0.0-beta.185 (2020-05-03 17:38)
+ethers/v5.0.0-beta.185 (2020-05-03 21:09)
 -----------------------------------------
 
+  - Stall FallbackProvider backends from requests if not in-sync. ([fa6904f](https://github.com/ethers-io/ethers.js/commit/fa6904fef35e7ab888221f3a0613bfe7e6df3594))
   - Allow providers to detect their network after instantiation. ([#814](https://github.com/ethers-io/ethers.js/issues/814); [99ae946](https://github.com/ethers-io/ethers.js/commit/99ae946476a317a9d89e5d8f57cf37f8680bfa2b))
   - Better messaging on low-level network errors. ([#814](https://github.com/ethers-io/ethers.js/issues/814); [0e3a66c](https://github.com/ethers-io/ethers.js/commit/0e3a66c82959a08f3f4e4ffbca3ae3792ff2548f))
   - Manage FallbackProvider stalling without unref. ([#815](https://github.com/ethers-io/ethers.js/issues/815); [7b1a7c7](https://github.com/ethers-io/ethers.js/commit/7b1a7c7f31a3631e12c2a341b562983360e670e9))
