@@ -72,7 +72,7 @@ function Reporter(runner) {
     function forceOutput() {
         if (((getTime() - lastOutput) / 1000) > MAX_DELAY) {
             var currentSuite = suites[suites.length - 1];
-            log('[ Still running suite - test #' + currentSuite._countTotal + ' ]');
+            log("[ Still running suite - test # " + (currentSuite ? currentSuite._countTotal : "0") + " ]");
         }
     }
     var timer = setInterval(forceOutput, 1000);
