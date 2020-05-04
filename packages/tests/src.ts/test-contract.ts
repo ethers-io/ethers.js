@@ -41,57 +41,57 @@ function equals(name: string, actual: any, expected: any): void {
     assert.equal(actual, expected, 'value matches - ' + name);
 }
 
-function TestContractEvents() {
-    return ethers.utils.fetchJson('https://api.ethers.io/api/v1/?action=triggerTest&address=' + contract.address).then(function(data) {
-        console.log('  *** Triggered Transaction Hash: ' + data.hash);
+async function TestContractEvents() {
+    const data = await ethers.utils.fetchJson('https://api.ethers.io/api/v1/?action=triggerTest&address=' + contract.address);
 
-        contract.on("error", (error) => {
-            console.log(error);
-            assert(false);
-            contract.removeAllListeners();
-        });
+    console.log('  *** Triggered Transaction Hash: ' + data.hash);
 
-        function waitForEvent(eventName: string, expected: Array<any>): Promise<void> {
-            return new Promise(function(resolve, reject) {
-                let done = false;
-                contract.on(eventName, function() {
-                    if (done) { return; }
-                    done = true;
+    contract.on("error", (error) => {
+        console.log(error);
+        assert(false);
+        contract.removeAllListeners();
+    });
 
-                    let args = Array.prototype.slice.call(arguments);
-                    let event = args[args.length - 1];
-                    event.removeListener();
-                    equals(event.event, args.slice(0, args.length - 1), expected);
-                    resolve();
-                });
-
-                const timer = setTimeout(() => {
-                    if (done) { return; }
-                    done = true;
-
-                    contract.removeAllListeners();
-                    reject(new Error("timeout"));
-                }, TIMEOUT_PERIOD);
-                if (timer.unref) { timer.unref(); }
-            });
-        }
-
+    function waitForEvent(eventName: string, expected: Array<any>): Promise<void> {
         return new Promise(function(resolve, reject) {
-            let p0 = '0x06B5955A67D827CDF91823E3bB8F069e6c89c1D6';
-            let p0_1 = '0x06b5955A67d827CdF91823e3Bb8F069e6C89C1d7';
-            let p1 = 0x42;
-            let p1_1 = 0x43;
+            let done = false;
+            contract.on(eventName, function() {
+                if (done) { return; }
+                done = true;
 
-            return Promise.all([
-                waitForEvent('Test', [ p0, p1 ]),
-                waitForEvent('TestP0', [ p0, p1 ]),
-                waitForEvent('TestP0P1', [ p0, p1 ]),
-                waitForEvent('TestIndexedString', [ { indexed: true, hash: '0x7c5ea36004851c764c44143b1dcb59679b11c9a68e5f41497f6cf3d480715331' }, p1 ]),
-                waitForEvent('TestV2', [ { indexed: true }, [ p0, p1 ] ]),
-                waitForEvent('TestV2Nested', [ { indexed: true }, [ p0_1, p1_1, [ p0, p1 ] ] ]),
-            ]).then(function(result) {
+                let args = Array.prototype.slice.call(arguments);
+                let event = args[args.length - 1];
+                event.removeListener();
+                equals(event.event, args.slice(0, args.length - 1), expected);
                 resolve();
             });
+
+            const timer = setTimeout(() => {
+                if (done) { return; }
+                done = true;
+
+                contract.removeAllListeners();
+                reject(new Error("timeout"));
+            }, TIMEOUT_PERIOD);
+            if (timer.unref) { timer.unref(); }
+        });
+    }
+
+    return new Promise(function(resolve, reject) {
+        let p0 = '0x06B5955A67D827CDF91823E3bB8F069e6c89c1D6';
+        let p0_1 = '0x06b5955A67d827CdF91823e3Bb8F069e6C89C1d7';
+        let p1 = 0x42;
+        let p1_1 = 0x43;
+
+        return Promise.all([
+            waitForEvent('Test', [ p0, p1 ]),
+            waitForEvent('TestP0', [ p0, p1 ]),
+            waitForEvent('TestP0P1', [ p0, p1 ]),
+            waitForEvent('TestIndexedString', [ { indexed: true, hash: '0x7c5ea36004851c764c44143b1dcb59679b11c9a68e5f41497f6cf3d480715331' }, p1 ]),
+            waitForEvent('TestV2', [ { indexed: true }, [ p0, p1 ] ]),
+            waitForEvent('TestV2Nested', [ { indexed: true }, [ p0_1, p1_1, [ p0, p1 ] ] ]),
+        ]).then(function(result) {
+            resolve();
         });
     });
 }
@@ -116,7 +116,7 @@ describe('Test Contract Objects', function() {
 
         let seq = Promise.resolve();
         [
-            [p0, p1, [ p0, p1 ] ],
+            [ p0, p1, [ p0, p1 ] ],
             { p0: p0, p1: p1, child: [ p0, p1 ] },
             [ p0, p1, { p0: p0, p1: p1 } ],
             { p0: p0, p1: p1, child: { p0: p0, p1: p1 } }
