@@ -25,6 +25,10 @@ export interface OnceBlockable {
     once(eventName: "block", handler: () => void): void;
 }
 
+export interface OncePollable {
+    once(eventName: "poll", handler: () => void): void;
+}
+
 export type PollOptions = {
     timeout?: number,
     floor?: number,
@@ -32,6 +36,7 @@ export type PollOptions = {
     interval?: number,
     retryLimit?: number,
     onceBlock?: OnceBlockable
+    oncePoll?: OncePollable
 };
 
 export type FetchJsonResponse = {
@@ -229,6 +234,9 @@ export function poll(func: () => Promise<any>, options?: PollOptions): Promise<a
                 // If we have a result, or are allowed null then we're done
                 if (result !== undefined) {
                     if (cancel()) { resolve(result); }
+
+                } else if (options.oncePoll) {
+                    options.oncePoll.once("poll", check);
 
                 } else if (options.onceBlock) {
                     options.onceBlock.once("block", check);

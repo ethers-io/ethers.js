@@ -111,6 +111,7 @@ function getTime() {
 /**
  *  EventType
  *   - "block"
+ *   - "poll"
  *   - "pending"
  *   - "error"
  *   - filter
@@ -164,7 +165,7 @@ export class Event {
     }
 
     pollable(): boolean {
-        return (this.tag.indexOf(":") >= 0 || this.tag === "block" || this.tag === "pending");
+        return (this.tag.indexOf(":") >= 0 || this.tag === "block" || this.tag === "pending" || this.tag === "poll");
     }
 }
 
@@ -196,6 +197,7 @@ export class BaseProvider extends Provider {
 
     _pollingInterval: number;
     _poller: NodeJS.Timer;
+    _bootstrapPoll: NodeJS.Timer;
 
     _lastBlockNumber: number;
 
@@ -328,17 +330,23 @@ export class BaseProvider extends Provider {
 
     async poll(): Promise<void> {
         const pollId = nextPollId++;
+
         this.emit("willPoll", pollId);
 
         // Track all running promises, so we can trigger a post-poll once they are complete
         const runners: Array<Promise<void>> = [];
 
         const blockNumber = await this._getInternalBlockNumber(100 + this.pollingInterval / 2);
-
         this._setFastBlockNumber(blockNumber);
 
+        // Emit a poll event after we have the latest (fast) block number
+        this.emit("poll", pollId, blockNumber);
+
         // If the block has not changed, meh.
-        if (blockNumber === this._lastBlockNumber) { return; }
+        if (blockNumber === this._lastBlockNumber) {
+            this.emit("didPoll", pollId);
+            return;
+        }
 
         // First polling cycle, trigger a "block" events
         if (this._emitted.block === -2) {
@@ -439,7 +447,11 @@ export class BaseProvider extends Provider {
     }
 
     get blockNumber(): number {
-        return this._fastBlockNumber;
+        this._getInternalBlockNumber(100 + this.pollingInterval / 2).then((blockNumber) => {
+            this._setFastBlockNumber(blockNumber);
+        });
+
+        return (this._fastBlockNumber != null) ? this._fastBlockNumber: -1;
     }
 
     get polling(): boolean {
@@ -447,16 +459,30 @@ export class BaseProvider extends Provider {
     }
 
     set polling(value: boolean) {
-        setTimeout(() => {
-            if (value && !this._poller) {
-                this._poller = setInterval(this.poll.bind(this), this.pollingInterval);
-                this.poll();
+        if (value && !this._poller) {
+            this._poller = setInterval(this.poll.bind(this), this.pollingInterval);
 
-            } else if (!value && this._poller) {
-                clearInterval(this._poller);
-                this._poller = null;
+            if (!this._bootstrapPoll) {
+                this._bootstrapPoll = setTimeout(() => {
+                    this.poll();
+
+                    // We block additional polls until the polling interval
+                    // is done, to prevent overwhelming the poll function
+                    this._bootstrapPoll = setTimeout(() => {
+                        // If polling was disabled, something may require a poke
+                        // since starting the bootstrap poll and it was disabled
+                        if (!this._poller) { this.poll(); }
+
+                        // Clear out the bootstrap so we can do another
+                        this._bootstrapPoll = null;
+                    }, this.pollingInterval);
+                }, 0);
             }
-        }, 0);
+
+        } else if (!value && this._poller) {
+            clearInterval(this._poller);
+            this._poller = null;
+        }
     }
 
     get pollingInterval(): number {

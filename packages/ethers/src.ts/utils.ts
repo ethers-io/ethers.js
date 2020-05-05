@@ -36,7 +36,7 @@ import { Bytes, BytesLike, Hexable } from "@ethersproject/bytes"
 import { Mnemonic } from "@ethersproject/hdnode";
 import { EncryptOptions, ProgressCallback } from "@ethersproject/json-wallets";
 import { Utf8ErrorFunc } from "@ethersproject/strings";
-import { ConnectionInfo, FetchJsonResponse, OnceBlockable, PollOptions } from "@ethersproject/web";
+import { ConnectionInfo, FetchJsonResponse, OnceBlockable, OncePollable, PollOptions } from "@ethersproject/web";
 
 ////////////////////////
 // Exports
@@ -184,6 +184,7 @@ export {
 
     ConnectionInfo,
     OnceBlockable,
+    OncePollable,
     PollOptions,
     FetchJsonResponse,
 
