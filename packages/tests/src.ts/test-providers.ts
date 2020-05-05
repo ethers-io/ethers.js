@@ -421,22 +421,12 @@ function testProvider(providerName: string, networkName: string) {
         if (networkName === "default") {
             if (providerName === "getDefaultProvider") {
                 provider = ethers.getDefaultProvider();
-            } else if (providerName === "Web3Provider") {
-                //let infuraUrl = (new ethers.providers.InfuraProvider()).connection.url;
-                //provider = new ethers.providers.Web3Provider(new Web3HttpProvider(infuraUrl));
-                //throw new Error("skipping Web3 tests; archos error on npm install");
-                return
             } else {
                 provider = new (<any>(ethers.providers))[providerName]();
             }
         } else {
             if (providerName === "getDefaultProvider") {
                 provider = ethers.getDefaultProvider(networkName);
-            } else if (providerName === "Web3Provider") {
-                //let infuraUrl = (new ethers.providers.InfuraProvider(networkName)).connection.url;
-                //provider = new ethers.providers.Web3Provider(new Web3HttpProvider(infuraUrl), networkName);
-                //throw new Error("skipping Web3 tests; archos error on npm install");
-                return;
             } else {
                 provider = new (<any>(ethers.providers))[providerName](networkName);
             }
@@ -594,9 +584,12 @@ function testProvider(providerName: string, networkName: string) {
     ["getDefaultProvider", "AlchemyProvider", "CloudflareProvider", "InfuraProvider", "EtherscanProvider", "NodesmithProvider", "Web3Provider"].forEach(function(providerName) {
         if (providerName === "NodesmithProvider") { return; }
         if (providerName === "CloudflareProvider") { return; }
+        if (providerName === "Web3Provider") { return; }
 
-        if (networkName === "goerli" && providerName === "AlchemyProvider") { return; }
-        if ((networkName !== "homestead" && networkName !== "default") && providerName === "CloudflareProvider") { return; }
+        if ((networkName !== "homestead" && networkName !== "default") && providerName === "CloudflareProvider") {
+            return;
+        }
+
         testProvider(providerName, networkName);
     });
 });
