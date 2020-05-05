@@ -37,7 +37,16 @@ interface Runner {
 export function Reporter(runner: Runner) {
     let suites: Array<Suite> = [];
 
+    // Force Output; Keeps the console output alive with periodic updates
     let lastOutput = getTime();
+    function forceOutput() {
+        if (((getTime() - lastOutput) / 1000) > MAX_DELAY) {
+            const currentSuite = suites[suites.length - 1];
+            log(`[ Still running suite - test # ${ (currentSuite ? currentSuite._countTotal: "0") } ]`);
+        }
+    }
+    const timer = setInterval(forceOutput, 1000);
+
 
     function getIndent(): string {
         let result = '';
@@ -70,27 +79,20 @@ export function Reporter(runner: Runner) {
         let suite = suites.pop();
         let failure = '';
         if (suite._countTotal > suite._countPass) {
-            failure = ' (' + (suite._countTotal - suite._countPass) + ' failed)';
+            failure = ' (' + (suite._countTotal - suite._countPass) + ' failed) *****';
         }
         log('  Total Tests: ' + suite._countPass + '/' + suite._countTotal + ' passed ' + getDelta(suite._t0) + failure);
         log();
+
         if (suites.length > 0) {
             let currentSuite = suites[suites.length - 1];
             currentSuite._countFail += suite._countFail;
             currentSuite._countPass += suite._countPass;
             currentSuite._countTotal += suite._countTotal;
+        } else {
+            clearTimeout(timer);
         }
     });
-
-    function forceOutput() {
-        if (((getTime() - lastOutput) / 1000) > MAX_DELAY) {
-            const currentSuite = suites[suites.length - 1];
-            log(`[ Still running suite - test # ${ (currentSuite ? currentSuite._countTotal: "0") } ]`);
-        }
-    }
-
-    const timer = setInterval(forceOutput, 1000);
-    if (timer.unref) { timer.unref(); }
 
     runner.on('test', function(test) {
         forceOutput();
