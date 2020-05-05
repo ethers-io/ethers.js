@@ -2,14 +2,20 @@ Changelog
 =========
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
+
 During the v5-BETA, although attempts are made to minimize it, some of the APIs
 may change. It is generally recommended that you remove your `node_modules/`,
 `package-lock.json` (and similar files for yarn, etc.) and doing an `npm install`
 after upgrading to a newer version of the v5-BETA.
 
-ethers/v5.0.0-beta.185 (2020-05-03 21:57)
+ethers/v5.0.0-beta.185 (2020-05-04 22:54)
 -----------------------------------------
 
+  - More robust FallbackProvider on clean exits. ([8eeda23](https://github.com/ethers-io/ethers.js/commit/8eeda23e989fcb0126bd20b17c67f62466d19259))
+  - Safer test suite reporter timer. ([657a039](https://github.com/ethers-io/ethers.js/commit/657a0394f56b51a13c691477c2b0dcf74678fd7c))
+  - Added goerli to AlchemyProvider tests. ([ab7c781](https://github.com/ethers-io/ethers.js/commit/ab7c78118ab80990a3e3368749599a1cf6e9d4ae))
+  - Added more robust poll event to Provider. ([dc48bfb](https://github.com/ethers-io/ethers.js/commit/dc48bfb7adb9334848c93173ba2c634f22a9a72f))
+  - Added goerli to AlchemyProvider. ([86670eb](https://github.com/ethers-io/ethers.js/commit/86670eb80e96fc4ba4e3664c9389f8130bbfea73))
   - Removed Cloudflare from test suite; it is down again. ([17dc022](https://github.com/ethers-io/ethers.js/commit/17dc022603afdfe4147638ab4b2704bcef09533f))
   - Prevent forceOutput in test reporter from crashing. ([cafd344](https://github.com/ethers-io/ethers.js/commit/cafd34460b194d78092021f1d7e0307130340b68))
   - Stall FallbackProvider backends from requests if not in-sync. ([fa6904f](https://github.com/ethers-io/ethers.js/commit/fa6904fef35e7ab888221f3a0613bfe7e6df3594))

@@ -7,6 +7,7 @@ import { Formatter } from "./formatter";
 /**
  *  EventType
  *   - "block"
+ *   - "poll"
  *   - "pending"
  *   - "error"
  *   - filter
@@ -34,6 +35,7 @@ export declare class BaseProvider extends Provider {
     };
     _pollingInterval: number;
     _poller: NodeJS.Timer;
+    _bootstrapPoll: NodeJS.Timer;
     _lastBlockNumber: number;
     _fastBlockNumber: number;
     _fastBlockNumberPromise: Promise<number>;

@@ -141,6 +141,7 @@ function getTime() {
 /**
  *  EventType
  *   - "block"
+ *   - "poll"
  *   - "pending"
  *   - "error"
  *   - filter
@@ -205,7 +206,7 @@ var Event = /** @class */ (function () {
         configurable: true
     });
     Event.prototype.pollable = function () {
-        return (this.tag.indexOf(":") >= 0 || this.tag === "block" || this.tag === "pending");
+        return (this.tag.indexOf(":") >= 0 || this.tag === "block" || this.tag === "pending" || this.tag === "poll");
     };
     return Event;
 }());
@@ -365,8 +366,11 @@ var BaseProvider = /** @class */ (function (_super) {
                     case 1:
                         blockNumber = _a.sent();
                         this._setFastBlockNumber(blockNumber);
+                        // Emit a poll event after we have the latest (fast) block number
+                        this.emit("poll", pollId, blockNumber);
                         // If the block has not changed, meh.
                         if (blockNumber === this._lastBlockNumber) {
+                            this.emit("didPoll", pollId);
                             return [2 /*return*/];
                         }
                         // First polling cycle, trigger a "block" events
@@ -466,7 +470,11 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     Object.defineProperty(BaseProvider.prototype, "blockNumber", {
         get: function () {
-            return this._fastBlockNumber;
+            var _this = this;
+            this._getInternalBlockNumber(100 + this.pollingInterval / 2).then(function (blockNumber) {
+                _this._setFastBlockNumber(blockNumber);
+            });
+            return (this._fastBlockNumber != null) ? this._fastBlockNumber : -1;
         },
         enumerable: true,
         configurable: true
@@ -477,16 +485,29 @@ var BaseProvider = /** @class */ (function (_super) {
         },
         set: function (value) {
             var _this = this;
-            setTimeout(function () {
-                if (value && !_this._poller) {
-                    _this._poller = setInterval(_this.poll.bind(_this), _this.pollingInterval);
-                    _this.poll();
+            if (value && !this._poller) {
+                this._poller = setInterval(this.poll.bind(this), this.pollingInterval);
+                if (!this._bootstrapPoll) {
+                    this._bootstrapPoll = setTimeout(function () {
+                        _this.poll();
+                        // We block additional polls until the polling interval
+                        // is done, to prevent overwhelming the poll function
+                        _this._bootstrapPoll = setTimeout(function () {
+                            // If polling was disabled, something may require a poke
+                            // since starting the bootstrap poll and it was disabled
+                            if (!_this._poller) {
+                                _this.poll();
+                            }
+                            // Clear out the bootstrap so we can do another
+                            _this._bootstrapPoll = null;
+                        }, _this.pollingInterval);
+                    }, 0);
                 }
-                else if (!value && _this._poller) {
-                    clearInterval(_this._poller);
-                    _this._poller = null;
-                }
-            }, 0);
+            }
+            else if (!value && this._poller) {
+                clearInterval(this._poller);
+                this._poller = null;
+            }
         },
         enumerable: true,
         configurable: true

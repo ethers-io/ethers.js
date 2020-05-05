@@ -21,7 +21,15 @@ function getDelta(t0) {
 }
 export function Reporter(runner) {
     let suites = [];
+    // Force Output; Keeps the console output alive with periodic updates
     let lastOutput = getTime();
+    function forceOutput() {
+        if (((getTime() - lastOutput) / 1000) > MAX_DELAY) {
+            const currentSuite = suites[suites.length - 1];
+            log(`[ Still running suite - test # ${(currentSuite ? currentSuite._countTotal : "0")} ]`);
+        }
+    }
+    const timer = setInterval(forceOutput, 1000);
     function getIndent() {
         let result = '';
         for (let i = 0; i < suites.length; i++) {
@@ -57,7 +65,7 @@ export function Reporter(runner) {
         let suite = suites.pop();
         let failure = '';
         if (suite._countTotal > suite._countPass) {
-            failure = ' (' + (suite._countTotal - suite._countPass) + ' failed)';
+            failure = ' (' + (suite._countTotal - suite._countPass) + ' failed) *****';
         }
         log('  Total Tests: ' + suite._countPass + '/' + suite._countTotal + ' passed ' + getDelta(suite._t0) + failure);
         log();
@@ -67,17 +75,10 @@ export function Reporter(runner) {
             currentSuite._countPass += suite._countPass;
             currentSuite._countTotal += suite._countTotal;
         }
-    });
-    function forceOutput() {
-        if (((getTime() - lastOutput) / 1000) > MAX_DELAY) {
-            const currentSuite = suites[suites.length - 1];
-            log(`[ Still running suite - test # ${(currentSuite ? currentSuite._countTotal : "0")} ]`);
+        else {
+            clearTimeout(timer);
         }
-    }
-    const timer = setInterval(forceOutput, 1000);
-    if (timer.unref) {
-        timer.unref();
-    }
+    });
     runner.on('test', function (test) {
         forceOutput();
         const currentSuite = suites[suites.length - 1];

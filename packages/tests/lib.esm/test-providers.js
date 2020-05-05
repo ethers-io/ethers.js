@@ -402,12 +402,6 @@ function testProvider(providerName, networkName) {
             if (providerName === "getDefaultProvider") {
                 provider = ethers.getDefaultProvider();
             }
-            else if (providerName === "Web3Provider") {
-                //let infuraUrl = (new ethers.providers.InfuraProvider()).connection.url;
-                //provider = new ethers.providers.Web3Provider(new Web3HttpProvider(infuraUrl));
-                //throw new Error("skipping Web3 tests; archos error on npm install");
-                return;
-            }
             else {
                 provider = new (ethers.providers)[providerName]();
             }
@@ -415,12 +409,6 @@ function testProvider(providerName, networkName) {
         else {
             if (providerName === "getDefaultProvider") {
                 provider = ethers.getDefaultProvider(networkName);
-            }
-            else if (providerName === "Web3Provider") {
-                //let infuraUrl = (new ethers.providers.InfuraProvider(networkName)).connection.url;
-                //provider = new ethers.providers.Web3Provider(new Web3HttpProvider(infuraUrl), networkName);
-                //throw new Error("skipping Web3 tests; archos error on npm install");
-                return;
             }
             else {
                 provider = new (ethers.providers)[providerName](networkName);
@@ -559,7 +547,7 @@ function testProvider(providerName, networkName) {
         if (providerName === "CloudflareProvider") {
             return;
         }
-        if (networkName === "goerli" && providerName === "AlchemyProvider") {
+        if (providerName === "Web3Provider") {
             return;
         }
         if ((networkName !== "homestead" && networkName !== "default") && providerName === "CloudflareProvider") {

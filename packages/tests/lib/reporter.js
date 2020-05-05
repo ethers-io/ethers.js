@@ -22,7 +22,15 @@ function getDelta(t0) {
 }
 function Reporter(runner) {
     var suites = [];
+    // Force Output; Keeps the console output alive with periodic updates
     var lastOutput = getTime();
+    function forceOutput() {
+        if (((getTime() - lastOutput) / 1000) > MAX_DELAY) {
+            var currentSuite = suites[suites.length - 1];
+            log("[ Still running suite - test # " + (currentSuite ? currentSuite._countTotal : "0") + " ]");
+        }
+    }
+    var timer = setInterval(forceOutput, 1000);
     function getIndent() {
         var result = '';
         for (var i = 0; i < suites.length; i++) {
@@ -58,7 +66,7 @@ function Reporter(runner) {
         var suite = suites.pop();
         var failure = '';
         if (suite._countTotal > suite._countPass) {
-            failure = ' (' + (suite._countTotal - suite._countPass) + ' failed)';
+            failure = ' (' + (suite._countTotal - suite._countPass) + ' failed) *****';
         }
         log('  Total Tests: ' + suite._countPass + '/' + suite._countTotal + ' passed ' + getDelta(suite._t0) + failure);
         log();
@@ -68,17 +76,10 @@ function Reporter(runner) {
             currentSuite._countPass += suite._countPass;
             currentSuite._countTotal += suite._countTotal;
         }
-    });
-    function forceOutput() {
-        if (((getTime() - lastOutput) / 1000) > MAX_DELAY) {
-            var currentSuite = suites[suites.length - 1];
-            log("[ Still running suite - test # " + (currentSuite ? currentSuite._countTotal : "0") + " ]");
+        else {
+            clearTimeout(timer);
         }
-    }
-    var timer = setInterval(forceOutput, 1000);
-    if (timer.unref) {
-        timer.unref();
-    }
+    });
     runner.on('test', function (test) {
         forceOutput();
         var currentSuite = suites[suites.length - 1];

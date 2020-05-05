@@ -12,6 +12,9 @@ export declare type ConnectionInfo = {
 export interface OnceBlockable {
     once(eventName: "block", handler: () => void): void;
 }
+export interface OncePollable {
+    once(eventName: "poll", handler: () => void): void;
+}
 export declare type PollOptions = {
     timeout?: number;
     floor?: number;
@@ -19,6 +22,7 @@ export declare type PollOptions = {
     interval?: number;
     retryLimit?: number;
     onceBlock?: OnceBlockable;
+    oncePoll?: OncePollable;
 };
 export declare type FetchJsonResponse = {
     statusCode: number;

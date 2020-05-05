@@ -255,23 +255,33 @@ function getProcessFunc(provider, method, params) {
 }
 // If we are doing a blockTag query, we need to make sure the backend is
 // caught up to the FallbackProvider, before sending a request to it.
-function waitForSync(provider, blockNumber) {
+function waitForSync(config, blockNumber) {
     return __awaiter(this, void 0, void 0, function* () {
+        const provider = (config.provider);
         if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
             return provider;
         }
         return poll(() => {
-            return provider.getBlockNumber().then((b) => {
-                if (b >= blockNumber) {
-                    return Provider;
-                }
-                return undefined;
+            return new Promise((resolve, reject) => {
+                setTimeout(function () {
+                    // We are synced
+                    if (provider.blockNumber >= blockNumber) {
+                        return resolve(Provider);
+                    }
+                    // We're done; just quit
+                    if (config.cancelled) {
+                        return resolve(null);
+                    }
+                    // Try again, next block
+                    return resolve(undefined);
+                }, 0);
             });
-        }, { onceBlock: provider });
+        }, { oncePoll: provider });
     });
 }
-function getRunner(provider, currentBlockNumber, method, params) {
+function getRunner(config, currentBlockNumber, method, params) {
     return __awaiter(this, void 0, void 0, function* () {
+        let provider = config.provider;
         switch (method) {
             case "getBlockNumber":
             case "getGasPrice":
@@ -285,23 +295,23 @@ function getRunner(provider, currentBlockNumber, method, params) {
             case "getTransactionCount":
             case "getCode":
                 if (params.blockTag && isHexString(params.blockTag)) {
-                    provider = yield waitForSync(provider, currentBlockNumber);
+                    provider = yield waitForSync(config, currentBlockNumber);
                 }
                 return provider[method](params.address, params.blockTag || "latest");
             case "getStorageAt":
                 if (params.blockTag && isHexString(params.blockTag)) {
-                    provider = yield waitForSync(provider, currentBlockNumber);
+                    provider = yield waitForSync(config, currentBlockNumber);
                 }
                 return provider.getStorageAt(params.address, params.position, params.blockTag || "latest");
             case "getBlock":
                 if (params.blockTag && isHexString(params.blockTag)) {
-                    provider = yield waitForSync(provider, currentBlockNumber);
+                    provider = yield waitForSync(config, currentBlockNumber);
                 }
                 return provider[(params.includeTransactions ? "getBlockWithTransactions" : "getBlock")](params.blockTag || params.blockHash);
             case "call":
             case "estimateGas":
                 if (params.blockTag && isHexString(params.blockTag)) {
-                    provider = yield waitForSync(provider, currentBlockNumber);
+                    provider = yield waitForSync(config, currentBlockNumber);
                 }
                 return provider[method](params.transaction);
             case "getTransaction":
@@ -310,7 +320,7 @@ function getRunner(provider, currentBlockNumber, method, params) {
             case "getLogs": {
                 let filter = params.filter;
                 if ((filter.fromBlock && isHexString(filter.fromBlock)) || (filter.toBlock && isHexString(filter.toBlock))) {
-                    provider = yield waitForSync(provider, currentBlockNumber);
+                    provider = yield waitForSync(config, currentBlockNumber);
                 }
                 return provider.getLogs(filter);
             }
@@ -419,7 +429,7 @@ export class FallbackProvider extends BaseProvider {
                     config.start = now();
                     config.staller = stall(config.stallTimeout);
                     config.staller.wait(() => { config.staller = null; });
-                    config.runner = getRunner((config.provider), currentBlockNumber, method, params).then((result) => {
+                    config.runner = getRunner(config, currentBlockNumber, method, params).then((result) => {
                         config.done = true;
                         config.result = result;
                         if (this.listenerCount("debug")) {
@@ -476,7 +486,12 @@ export class FallbackProvider extends BaseProvider {
                     const result = processFunc(results);
                     if (result !== undefined) {
                         // Shut down any stallers
-                        configs.filter(c => c.staller).forEach(c => c.staller.cancel());
+                        configs.forEach(c => {
+                            if (c.staller) {
+                                c.staller.cancel();
+                            }
+                            c.cancelled = true;
+                        });
                         return result;
                     }
                     if (!first) {
@@ -490,7 +505,12 @@ export class FallbackProvider extends BaseProvider {
                 }
             }
             // Shut down any stallers; shouldn't be any
-            configs.filter(c => c.staller).forEach(c => c.staller.cancel());
+            configs.forEach(c => {
+                if (c.staller) {
+                    c.staller.cancel();
+                }
+                c.cancelled = true;
+            });
             return logger.throwError("failed to meet quorum", Logger.errors.SERVER_ERROR, {
                 method: method,
                 params: params,

@@ -15963,6 +15963,9 @@ function poll(func, options) {
                         resolve(result);
                     }
                 }
+                else if (options.oncePoll) {
+                    options.oncePoll.once("poll", check);
+                }
                 else if (options.onceBlock) {
                     options.onceBlock.once("block", check);
                     // Otherwise, exponential back-off (up to 10s) our next request
@@ -16463,6 +16466,7 @@ function getTime() {
 /**
  *  EventType
  *   - "block"
+ *   - "poll"
  *   - "pending"
  *   - "error"
  *   - filter
@@ -16511,7 +16515,7 @@ class Event {
         return filter;
     }
     pollable() {
-        return (this.tag.indexOf(":") >= 0 || this.tag === "block" || this.tag === "pending");
+        return (this.tag.indexOf(":") >= 0 || this.tag === "block" || this.tag === "pending" || this.tag === "poll");
     }
 }
 let defaultFormatter = null;
@@ -16627,8 +16631,11 @@ class BaseProvider extends Provider {
             const runners = [];
             const blockNumber = yield this._getInternalBlockNumber(100 + this.pollingInterval / 2);
             this._setFastBlockNumber(blockNumber);
+            // Emit a poll event after we have the latest (fast) block number
+            this.emit("poll", pollId, blockNumber);
             // If the block has not changed, meh.
             if (blockNumber === this._lastBlockNumber) {
+                this.emit("didPoll", pollId);
                 return;
             }
             // First polling cycle, trigger a "block" events
@@ -16721,22 +16728,38 @@ class BaseProvider extends Provider {
         return this.ready;
     }
     get blockNumber() {
-        return this._fastBlockNumber;
+        this._getInternalBlockNumber(100 + this.pollingInterval / 2).then((blockNumber) => {
+            this._setFastBlockNumber(blockNumber);
+        });
+        return (this._fastBlockNumber != null) ? this._fastBlockNumber : -1;
     }
     get polling() {
         return (this._poller != null);
     }
     set polling(value) {
-        setTimeout(() => {
-            if (value && !this._poller) {
-                this._poller = setInterval(this.poll.bind(this), this.pollingInterval);
-                this.poll();
+        if (value && !this._poller) {
+            this._poller = setInterval(this.poll.bind(this), this.pollingInterval);
+            if (!this._bootstrapPoll) {
+                this._bootstrapPoll = setTimeout(() => {
+                    this.poll();
+                    // We block additional polls until the polling interval
+                    // is done, to prevent overwhelming the poll function
+                    this._bootstrapPoll = setTimeout(() => {
+                        // If polling was disabled, something may require a poke
+                        // since starting the bootstrap poll and it was disabled
+                        if (!this._poller) {
+                            this.poll();
+                        }
+                        // Clear out the bootstrap so we can do another
+                        this._bootstrapPoll = null;
+                    }, this.pollingInterval);
+                }, 0);
             }
-            else if (!value && this._poller) {
-                clearInterval(this._poller);
-                this._poller = null;
-            }
-        }, 0);
+        }
+        else if (!value && this._poller) {
+            clearInterval(this._poller);
+            this._poller = null;
+        }
     }
     get pollingInterval() {
         return this._pollingInterval;
@@ -17918,6 +17941,9 @@ class AlchemyProvider extends UrlJsonRpcProvider {
             case "rinkeby":
                 host = "eth-rinkeby.alchemyapi.io/jsonrpc/";
                 break;
+            case "goerli":
+                host = "eth-goerli.alchemyapi.io/jsonrpc/";
+                break;
             case "kovan":
                 host = "eth-kovan.alchemyapi.io/jsonrpc/";
                 break;
@@ -18549,23 +18575,33 @@ function getProcessFunc(provider, method, params) {
 }
 // If we are doing a blockTag query, we need to make sure the backend is
 // caught up to the FallbackProvider, before sending a request to it.
-function waitForSync(provider, blockNumber) {
+function waitForSync(config, blockNumber) {
     return __awaiter$b(this, void 0, void 0, function* () {
+        const provider = (config.provider);
         if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
             return provider;
         }
         return poll(() => {
-            return provider.getBlockNumber().then((b) => {
-                if (b >= blockNumber) {
-                    return Provider;
-                }
-                return undefined;
+            return new Promise((resolve, reject) => {
+                setTimeout(function () {
+                    // We are synced
+                    if (provider.blockNumber >= blockNumber) {
+                        return resolve(Provider);
+                    }
+                    // We're done; just quit
+                    if (config.cancelled) {
+                        return resolve(null);
+                    }
+                    // Try again, next block
+                    return resolve(undefined);
+                }, 0);
             });
-        }, { onceBlock: provider });
+        }, { oncePoll: provider });
     });
 }
-function getRunner(provider, currentBlockNumber, method, params) {
+function getRunner(config, currentBlockNumber, method, params) {
     return __awaiter$b(this, void 0, void 0, function* () {
+        let provider = config.provider;
         switch (method) {
             case "getBlockNumber":
             case "getGasPrice":
@@ -18579,23 +18615,23 @@ function getRunner(provider, currentBlockNumber, method, params) {
             case "getTransactionCount":
             case "getCode":
                 if (params.blockTag && isHexString(params.blockTag)) {
-                    provider = yield waitForSync(provider, currentBlockNumber);
+                    provider = yield waitForSync(config, currentBlockNumber);
                 }
                 return provider[method](params.address, params.blockTag || "latest");
             case "getStorageAt":
                 if (params.blockTag && isHexString(params.blockTag)) {
-                    provider = yield waitForSync(provider, currentBlockNumber);
+                    provider = yield waitForSync(config, currentBlockNumber);
                 }
                 return provider.getStorageAt(params.address, params.position, params.blockTag || "latest");
             case "getBlock":
                 if (params.blockTag && isHexString(params.blockTag)) {
-                    provider = yield waitForSync(provider, currentBlockNumber);
+                    provider = yield waitForSync(config, currentBlockNumber);
                 }
                 return provider[(params.includeTransactions ? "getBlockWithTransactions" : "getBlock")](params.blockTag || params.blockHash);
             case "call":
             case "estimateGas":
                 if (params.blockTag && isHexString(params.blockTag)) {
-                    provider = yield waitForSync(provider, currentBlockNumber);
+                    provider = yield waitForSync(config, currentBlockNumber);
                 }
                 return provider[method](params.transaction);
             case "getTransaction":
@@ -18604,7 +18640,7 @@ function getRunner(provider, currentBlockNumber, method, params) {
             case "getLogs": {
                 let filter = params.filter;
                 if ((filter.fromBlock && isHexString(filter.fromBlock)) || (filter.toBlock && isHexString(filter.toBlock))) {
-                    provider = yield waitForSync(provider, currentBlockNumber);
+                    provider = yield waitForSync(config, currentBlockNumber);
                 }
                 return provider.getLogs(filter);
             }
@@ -18713,7 +18749,7 @@ class FallbackProvider extends BaseProvider {
                     config.start = now();
                     config.staller = stall(config.stallTimeout);
                     config.staller.wait(() => { config.staller = null; });
-                    config.runner = getRunner((config.provider), currentBlockNumber, method, params).then((result) => {
+                    config.runner = getRunner(config, currentBlockNumber, method, params).then((result) => {
                         config.done = true;
                         config.result = result;
                         if (this.listenerCount("debug")) {
@@ -18770,7 +18806,12 @@ class FallbackProvider extends BaseProvider {
                     const result = processFunc(results);
                     if (result !== undefined) {
                         // Shut down any stallers
-                        configs.filter(c => c.staller).forEach(c => c.staller.cancel());
+                        configs.forEach(c => {
+                            if (c.staller) {
+                                c.staller.cancel();
+                            }
+                            c.cancelled = true;
+                        });
                         return result;
                     }
                     if (!first) {
@@ -18784,7 +18825,12 @@ class FallbackProvider extends BaseProvider {
                 }
             }
             // Shut down any stallers; shouldn't be any
-            configs.filter(c => c.staller).forEach(c => c.staller.cancel());
+            configs.forEach(c => {
+                if (c.staller) {
+                    c.staller.cancel();
+                }
+                c.cancelled = true;
+            });
             return logger$x.throwError("failed to meet quorum", Logger.errors.SERVER_ERROR, {
                 method: method,
                 params: params,

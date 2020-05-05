@@ -296,29 +296,40 @@ function getProcessFunc(provider, method, params) {
 }
 // If we are doing a blockTag query, we need to make sure the backend is
 // caught up to the FallbackProvider, before sending a request to it.
-function waitForSync(provider, blockNumber) {
+function waitForSync(config, blockNumber) {
     return __awaiter(this, void 0, void 0, function () {
+        var provider;
         return __generator(this, function (_a) {
+            provider = (config.provider);
             if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
                 return [2 /*return*/, provider];
             }
             return [2 /*return*/, web_1.poll(function () {
-                    return provider.getBlockNumber().then(function (b) {
-                        if (b >= blockNumber) {
-                            return abstract_provider_1.Provider;
-                        }
-                        return undefined;
+                    return new Promise(function (resolve, reject) {
+                        setTimeout(function () {
+                            // We are synced
+                            if (provider.blockNumber >= blockNumber) {
+                                return resolve(abstract_provider_1.Provider);
+                            }
+                            // We're done; just quit
+                            if (config.cancelled) {
+                                return resolve(null);
+                            }
+                            // Try again, next block
+                            return resolve(undefined);
+                        }, 0);
                     });
-                }, { onceBlock: provider })];
+                }, { oncePoll: provider })];
         });
     });
 }
-function getRunner(provider, currentBlockNumber, method, params) {
+function getRunner(config, currentBlockNumber, method, params) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, filter;
+        var provider, _a, filter;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
+                    provider = config.provider;
                     _a = method;
                     switch (_a) {
                         case "getBlockNumber": return [3 /*break*/, 1];
@@ -344,28 +355,28 @@ function getRunner(provider, currentBlockNumber, method, params) {
                     return [3 /*break*/, 19];
                 case 3:
                     if (!(params.blockTag && bytes_1.isHexString(params.blockTag))) return [3 /*break*/, 5];
-                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
                 case 4:
                     provider = _b.sent();
                     _b.label = 5;
                 case 5: return [2 /*return*/, provider[method](params.address, params.blockTag || "latest")];
                 case 6:
                     if (!(params.blockTag && bytes_1.isHexString(params.blockTag))) return [3 /*break*/, 8];
-                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
                 case 7:
                     provider = _b.sent();
                     _b.label = 8;
                 case 8: return [2 /*return*/, provider.getStorageAt(params.address, params.position, params.blockTag || "latest")];
                 case 9:
                     if (!(params.blockTag && bytes_1.isHexString(params.blockTag))) return [3 /*break*/, 11];
-                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
                 case 10:
                     provider = _b.sent();
                     _b.label = 11;
                 case 11: return [2 /*return*/, provider[(params.includeTransactions ? "getBlockWithTransactions" : "getBlock")](params.blockTag || params.blockHash)];
                 case 12:
                     if (!(params.blockTag && bytes_1.isHexString(params.blockTag))) return [3 /*break*/, 14];
-                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
                 case 13:
                     provider = _b.sent();
                     _b.label = 14;
@@ -374,7 +385,7 @@ function getRunner(provider, currentBlockNumber, method, params) {
                 case 16:
                     filter = params.filter;
                     if (!((filter.fromBlock && bytes_1.isHexString(filter.fromBlock)) || (filter.toBlock && bytes_1.isHexString(filter.toBlock)))) return [3 /*break*/, 18];
-                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
                 case 17:
                     provider = _b.sent();
                     _b.label = 18;
@@ -503,7 +514,7 @@ var FallbackProvider = /** @class */ (function (_super) {
                                             config.start = now();
                                             config.staller = stall(config.stallTimeout);
                                             config.staller.wait(function () { config.staller = null; });
-                                            config.runner = getRunner((config.provider), currentBlockNumber, method, params).then(function (result) {
+                                            config.runner = getRunner(config, currentBlockNumber, method, params).then(function (result) {
                                                 config.done = true;
                                                 config.result = result;
                                                 if (_this.listenerCount("debug")) {
@@ -564,7 +575,12 @@ var FallbackProvider = /** @class */ (function (_super) {
                                         result = processFunc(results);
                                         if (result !== undefined) {
                                             // Shut down any stallers
-                                            configs.filter(function (c) { return c.staller; }).forEach(function (c) { return c.staller.cancel(); });
+                                            configs.forEach(function (c) {
+                                                if (c.staller) {
+                                                    c.staller.cancel();
+                                                }
+                                                c.cancelled = true;
+                                            });
                                             return [2 /*return*/, { value: result }];
                                         }
                                         if (!!first) return [3 /*break*/, 4];
@@ -598,7 +614,12 @@ var FallbackProvider = /** @class */ (function (_super) {
                         return [3 /*break*/, 5];
                     case 7:
                         // Shut down any stallers; shouldn't be any
-                        configs.filter(function (c) { return c.staller; }).forEach(function (c) { return c.staller.cancel(); });
+                        configs.forEach(function (c) {
+                            if (c.staller) {
+                                c.staller.cancel();
+                            }
+                            c.cancelled = true;
+                        });
                         return [2 /*return*/, logger.throwError("failed to meet quorum", logger_1.Logger.errors.SERVER_ERROR, {
                                 method: method,
                                 params: params,

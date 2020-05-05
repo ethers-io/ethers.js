@@ -17705,6 +17705,9 @@
 	                        resolve(result);
 	                    }
 	                }
+	                else if (options.oncePoll) {
+	                    options.oncePoll.once("poll", check);
+	                }
 	                else if (options.onceBlock) {
 	                    options.onceBlock.once("block", check);
 	                    // Otherwise, exponential back-off (up to 10s) our next request
@@ -18290,6 +18293,7 @@
 	/**
 	 *  EventType
 	 *   - "block"
+	 *   - "poll"
 	 *   - "pending"
 	 *   - "error"
 	 *   - filter
@@ -18354,7 +18358,7 @@
 	        configurable: true
 	    });
 	    Event.prototype.pollable = function () {
-	        return (this.tag.indexOf(":") >= 0 || this.tag === "block" || this.tag === "pending");
+	        return (this.tag.indexOf(":") >= 0 || this.tag === "block" || this.tag === "pending" || this.tag === "poll");
 	    };
 	    return Event;
 	}());
@@ -18514,8 +18518,11 @@
 	                    case 1:
 	                        blockNumber = _a.sent();
 	                        this._setFastBlockNumber(blockNumber);
+	                        // Emit a poll event after we have the latest (fast) block number
+	                        this.emit("poll", pollId, blockNumber);
 	                        // If the block has not changed, meh.
 	                        if (blockNumber === this._lastBlockNumber) {
+	                            this.emit("didPoll", pollId);
 	                            return [2 /*return*/];
 	                        }
 	                        // First polling cycle, trigger a "block" events
@@ -18615,7 +18622,11 @@
 	    };
 	    Object.defineProperty(BaseProvider.prototype, "blockNumber", {
 	        get: function () {
-	            return this._fastBlockNumber;
+	            var _this = this;
+	            this._getInternalBlockNumber(100 + this.pollingInterval / 2).then(function (blockNumber) {
+	                _this._setFastBlockNumber(blockNumber);
+	            });
+	            return (this._fastBlockNumber != null) ? this._fastBlockNumber : -1;
 	        },
 	        enumerable: true,
 	        configurable: true
@@ -18626,16 +18637,29 @@
 	        },
 	        set: function (value) {
 	            var _this = this;
-	            setTimeout(function () {
-	                if (value && !_this._poller) {
-	                    _this._poller = setInterval(_this.poll.bind(_this), _this.pollingInterval);
-	                    _this.poll();
+	            if (value && !this._poller) {
+	                this._poller = setInterval(this.poll.bind(this), this.pollingInterval);
+	                if (!this._bootstrapPoll) {
+	                    this._bootstrapPoll = setTimeout(function () {
+	                        _this.poll();
+	                        // We block additional polls until the polling interval
+	                        // is done, to prevent overwhelming the poll function
+	                        _this._bootstrapPoll = setTimeout(function () {
+	                            // If polling was disabled, something may require a poke
+	                            // since starting the bootstrap poll and it was disabled
+	                            if (!_this._poller) {
+	                                _this.poll();
+	                            }
+	                            // Clear out the bootstrap so we can do another
+	                            _this._bootstrapPoll = null;
+	                        }, _this.pollingInterval);
+	                    }, 0);
 	                }
-	                else if (!value && _this._poller) {
-	                    clearInterval(_this._poller);
-	                    _this._poller = null;
-	                }
-	            }, 0);
+	            }
+	            else if (!value && this._poller) {
+	                clearInterval(this._poller);
+	                this._poller = null;
+	            }
 	        },
 	        enumerable: true,
 	        configurable: true
@@ -20279,6 +20303,9 @@
 	            case "rinkeby":
 	                host = "eth-rinkeby.alchemyapi.io/jsonrpc/";
 	                break;
+	            case "goerli":
+	                host = "eth-goerli.alchemyapi.io/jsonrpc/";
+	                break;
 	            case "kovan":
 	                host = "eth-kovan.alchemyapi.io/jsonrpc/";
 	                break;
@@ -21126,29 +21153,40 @@
 	}
 	// If we are doing a blockTag query, we need to make sure the backend is
 	// caught up to the FallbackProvider, before sending a request to it.
-	function waitForSync(provider, blockNumber) {
+	function waitForSync(config, blockNumber) {
 	    return __awaiter(this, void 0, void 0, function () {
+	        var provider;
 	        return __generator(this, function (_a) {
+	            provider = (config.provider);
 	            if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
 	                return [2 /*return*/, provider];
 	            }
 	            return [2 /*return*/, lib$l.poll(function () {
-	                    return provider.getBlockNumber().then(function (b) {
-	                        if (b >= blockNumber) {
-	                            return lib$b.Provider;
-	                        }
-	                        return undefined;
+	                    return new Promise(function (resolve, reject) {
+	                        setTimeout(function () {
+	                            // We are synced
+	                            if (provider.blockNumber >= blockNumber) {
+	                                return resolve(lib$b.Provider);
+	                            }
+	                            // We're done; just quit
+	                            if (config.cancelled) {
+	                                return resolve(null);
+	                            }
+	                            // Try again, next block
+	                            return resolve(undefined);
+	                        }, 0);
 	                    });
-	                }, { onceBlock: provider })];
+	                }, { oncePoll: provider })];
 	        });
 	    });
 	}
-	function getRunner(provider, currentBlockNumber, method, params) {
+	function getRunner(config, currentBlockNumber, method, params) {
 	    return __awaiter(this, void 0, void 0, function () {
-	        var _a, filter;
+	        var provider, _a, filter;
 	        return __generator(this, function (_b) {
 	            switch (_b.label) {
 	                case 0:
+	                    provider = config.provider;
 	                    _a = method;
 	                    switch (_a) {
 	                        case "getBlockNumber": return [3 /*break*/, 1];
@@ -21174,28 +21212,28 @@
 	                    return [3 /*break*/, 19];
 	                case 3:
 	                    if (!(params.blockTag && lib$1.isHexString(params.blockTag))) return [3 /*break*/, 5];
-	                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+	                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
 	                case 4:
 	                    provider = _b.sent();
 	                    _b.label = 5;
 	                case 5: return [2 /*return*/, provider[method](params.address, params.blockTag || "latest")];
 	                case 6:
 	                    if (!(params.blockTag && lib$1.isHexString(params.blockTag))) return [3 /*break*/, 8];
-	                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+	                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
 	                case 7:
 	                    provider = _b.sent();
 	                    _b.label = 8;
 	                case 8: return [2 /*return*/, provider.getStorageAt(params.address, params.position, params.blockTag || "latest")];
 	                case 9:
 	                    if (!(params.blockTag && lib$1.isHexString(params.blockTag))) return [3 /*break*/, 11];
-	                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+	                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
 	                case 10:
 	                    provider = _b.sent();
 	                    _b.label = 11;
 	                case 11: return [2 /*return*/, provider[(params.includeTransactions ? "getBlockWithTransactions" : "getBlock")](params.blockTag || params.blockHash)];
 	                case 12:
 	                    if (!(params.blockTag && lib$1.isHexString(params.blockTag))) return [3 /*break*/, 14];
-	                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+	                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
 	                case 13:
 	                    provider = _b.sent();
 	                    _b.label = 14;
@@ -21204,7 +21242,7 @@
 	                case 16:
 	                    filter = params.filter;
 	                    if (!((filter.fromBlock && lib$1.isHexString(filter.fromBlock)) || (filter.toBlock && lib$1.isHexString(filter.toBlock)))) return [3 /*break*/, 18];
-	                    return [4 /*yield*/, waitForSync(provider, currentBlockNumber)];
+	                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
 	                case 17:
 	                    provider = _b.sent();
 	                    _b.label = 18;
@@ -21333,7 +21371,7 @@
 	                                            config.start = now();
 	                                            config.staller = stall(config.stallTimeout);
 	                                            config.staller.wait(function () { config.staller = null; });
-	                                            config.runner = getRunner((config.provider), currentBlockNumber, method, params).then(function (result) {
+	                                            config.runner = getRunner(config, currentBlockNumber, method, params).then(function (result) {
 	                                                config.done = true;
 	                                                config.result = result;
 	                                                if (_this.listenerCount("debug")) {
@@ -21394,7 +21432,12 @@
 	                                        result = processFunc(results);
 	                                        if (result !== undefined) {
 	                                            // Shut down any stallers
-	                                            configs.filter(function (c) { return c.staller; }).forEach(function (c) { return c.staller.cancel(); });
+	                                            configs.forEach(function (c) {
+	                                                if (c.staller) {
+	                                                    c.staller.cancel();
+	                                                }
+	                                                c.cancelled = true;
+	                                            });
 	                                            return [2 /*return*/, { value: result }];
 	                                        }
 	                                        if (!!first) return [3 /*break*/, 4];
@@ -21428,7 +21471,12 @@
 	                        return [3 /*break*/, 5];
 	                    case 7:
 	                        // Shut down any stallers; shouldn't be any
-	                        configs.filter(function (c) { return c.staller; }).forEach(function (c) { return c.staller.cancel(); });
+	                        configs.forEach(function (c) {
+	                            if (c.staller) {
+	                                c.staller.cancel();
+	                            }
+	                            c.cancelled = true;
+	                        });
 	                        return [2 /*return*/, logger.throwError("failed to meet quorum", lib.Logger.errors.SERVER_ERROR, {
 	                                method: method,
 	                                params: params,
