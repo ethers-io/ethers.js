@@ -148,9 +148,11 @@ function stall(duration: number): Staller {
     return { cancel, getPromise, wait };
 }
 
+// @TODO: Make this an object with staller and cancel built-in
 interface RunningConfig extends FallbackProviderConfig {
     start?: number;
     done?: boolean;
+    cancelled?: boolean;
     runner?: Promise<any>;
     staller?: Staller;
     result?: any;
@@ -302,20 +304,33 @@ function getProcessFunc(provider: FallbackProvider, method: string, params: { [ 
 
 // If we are doing a blockTag query, we need to make sure the backend is
 // caught up to the FallbackProvider, before sending a request to it.
-async function waitForSync(provider: BaseProvider, blockNumber: number): Promise<BaseProvider> {
+async function waitForSync(config: RunningConfig, blockNumber: number): Promise<BaseProvider> {
+    const provider = <BaseProvider>(config.provider);
+
     if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
         return provider;
     }
 
     return poll(() => {
-        return provider.getBlockNumber().then((b) => {
-            if (b >= blockNumber) { return Provider; }
-            return undefined;
+        return new Promise((resolve, reject) => {
+            setTimeout(function() {
+
+                // We are synced
+                if (provider.blockNumber >= blockNumber) { return resolve(Provider); }
+
+                // We're done; just quit
+                if (config.cancelled) { return resolve(null); }
+
+                // Try again, next block
+                return resolve(undefined);
+            }, 0);
         });
-    }, { onceBlock: provider });
+    }, { oncePoll: provider });
 }
 
-async function getRunner(provider: BaseProvider, currentBlockNumber: number, method: string, params: { [ key: string]: any }): Promise<any> {
+async function getRunner(config: RunningConfig, currentBlockNumber: number, method: string, params: { [ key: string]: any }): Promise<any> {
+    let provider = config.provider;
+
     switch (method) {
         case "getBlockNumber":
         case "getGasPrice":
@@ -329,23 +344,23 @@ async function getRunner(provider: BaseProvider, currentBlockNumber: number, met
         case "getTransactionCount":
         case "getCode":
             if (params.blockTag && isHexString(params.blockTag)) {
-                provider = await waitForSync(provider, currentBlockNumber)
+                provider = await waitForSync(config, currentBlockNumber)
             }
             return provider[method](params.address, params.blockTag || "latest");
         case "getStorageAt":
             if (params.blockTag && isHexString(params.blockTag)) {
-                provider = await waitForSync(provider, currentBlockNumber)
+                provider = await waitForSync(config, currentBlockNumber)
             }
             return provider.getStorageAt(params.address, params.position, params.blockTag || "latest");
         case "getBlock":
             if (params.blockTag && isHexString(params.blockTag)) {
-                provider = await waitForSync(provider, currentBlockNumber)
+                provider = await waitForSync(config, currentBlockNumber)
             }
             return provider[(params.includeTransactions ? "getBlockWithTransactions": "getBlock")](params.blockTag || params.blockHash);
         case "call":
         case "estimateGas":
             if (params.blockTag && isHexString(params.blockTag)) {
-                provider = await waitForSync(provider, currentBlockNumber)
+                provider = await waitForSync(config, currentBlockNumber)
             }
             return provider[method](params.transaction);
         case "getTransaction":
@@ -354,7 +369,7 @@ async function getRunner(provider: BaseProvider, currentBlockNumber: number, met
         case "getLogs": {
             let filter = params.filter;
             if ((filter.fromBlock && isHexString(filter.fromBlock)) || (filter.toBlock && isHexString(filter.toBlock))) {
-                provider = await waitForSync(provider, currentBlockNumber)
+                provider = await waitForSync(config, currentBlockNumber)
             }
             return provider.getLogs(filter);
         }
@@ -484,7 +499,7 @@ export class FallbackProvider extends BaseProvider {
                 config.staller = stall(config.stallTimeout);
                 config.staller.wait(() => { config.staller = null; });
 
-                config.runner = getRunner(<BaseProvider>(config.provider), currentBlockNumber, method, params).then((result) => {
+                config.runner = getRunner(config, currentBlockNumber, method, params).then((result) => {
                     config.done = true;
                     config.result = result;
 
@@ -543,7 +558,10 @@ export class FallbackProvider extends BaseProvider {
                 const result = processFunc(results);
                 if (result !== undefined) {
                     // Shut down any stallers
-                    configs.filter(c => c.staller).forEach(c => c.staller.cancel());
+                    configs.forEach(c => {
+                        if (c.staller) { c.staller.cancel(); }
+                        c.cancelled = true;
+                    });
                     return result;
                 }
                 if (!first) { await stall(100).getPromise(); }
@@ -555,7 +573,10 @@ export class FallbackProvider extends BaseProvider {
         }
 
         // Shut down any stallers; shouldn't be any
-        configs.filter(c => c.staller).forEach(c => c.staller.cancel());
+        configs.forEach(c => {
+            if (c.staller) { c.staller.cancel(); }
+            c.cancelled = true;
+        });
 
         return logger.throwError("failed to meet quorum", Logger.errors.SERVER_ERROR, {
             method: method,
