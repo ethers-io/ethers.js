@@ -38,6 +38,9 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
             case "rinkeby":
                 host = "eth-rinkeby.alchemyapi.io/jsonrpc/";
                 break;
+            case "goerli":
+                host = "eth-goerli.alchemyapi.io/jsonrpc/";
+                break;
             case "kovan":
                 host = "eth-kovan.alchemyapi.io/jsonrpc/";
                 break;
