@@ -1,17 +1,17 @@
-_section: Web Utilities
+_section: Web Utilities  @<web>
 
 
-_property: ethers.utils.fetchJson(urlOrConnectionInfo [, json [ , processFunc ] ]) => Promise<any> @<web-fetchjson>
+_property: ethers.utils.fetchJson(urlOrConnectionInfo [, json [ , processFunc ] ]) => Promise<any> @<utils-fetchJson>
 Fetch and parse the JSON content from //urlOrConnectionInfo//, with the
 optiona body //json// and optionally processing the result with //processFun//
 before returning it.
 
-_property: ethers.utils.poll(pollFunc [, options ]) => Promise<any> @<web-poll>
-Repeatedly call pollFunc using the [[web-polloptions]] until it returns a
+_property: ethers.utils.poll(pollFunc [, options ]) => Promise<any> @<utils-poll>
+Repeatedly call pollFunc using the [[PollOptions]] until it returns a
 value other than undefined.
 
 
-_heading: Connection Info @<web-connectioninfo>
+_heading: ConnectionInfo @<ConnectionInfo>
 
 _property: connection.url => string
 The URL to connect to.
@@ -34,7 +34,7 @@ _property: connection.headers => { [ key: string]: string }
 Additional headers to include in the connection.
 
 
-_heading: Poll Options @<web-polloptions>
+_heading: PollOptions @<PollOptions>
 
 _property: options.timeout => number
 The amount of time allowed to ellapse before triggering a timeout
@@ -59,6 +59,11 @@ _property: options.retryLimit => number
 The number of times to retry in the event of an error or //undefined// is
 returned.
 
-_property: options.onceBlock => [[provider]]
+_property: options.onceBlock => [[Provider]]
 If this is specified, the polling will wait on new blocks from
 //provider// before attempting the //pollFunc// again.
+
+_property: options.oncePoll => [[Provider]]
+If this is specified, the polling will occur on each poll
+cycle of //provider// before attempting the //pollFunc//
+again.

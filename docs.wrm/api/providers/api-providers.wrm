@@ -1,4 +1,4 @@
-_section: API Providers
+_section: API Providers @<api-providers>
 
 There are many services which offer a web API for accessing
 the Ethereum Blockchain. These Providers allow connecting
@@ -8,17 +8,34 @@ to run your own instance or cluster of Ethereum nodes.
 However, this reliance on third-party services can reduce
 resiliance, security and increase the amount of required trust.
 To mitigate these issues, it is recommended you use a
-[Default Provider](get-default-provider).
+[Default Provider](providers-getDefaultProvider).
 
 
-_subsection: EtherscanProvider @INHERIT<[[provider]]>
+_subsection: EtherscanProvider @<EtherscanProvider> @inherit<[[Provider]]> @src<providers:class.EtherscanProvider>
 
 The **EtherscanProvider** is backed by a combination of the various
 [Etherscan APIs](link-etherscan-api).
 
-_property: provider.getHistory(address) => Array<History>
+_property: new ethers.providers.EtherscanProvider([ network = "homestead", [ apiKey ] ])
+Create a new **EtherscanProvider** connected to //network// with the
+optional //apiKey//.
 
-@TODO... Explain
+The //network// may be specified as **string** for a common
+network name, a **number** for a common chain ID or a
+[Network Object]provider-(network).
+
+If no //apiKey// is provided, a shared API key will be used,
+which may result in reduced performance and throttled requests.
+It is highly recommended for production, you register with
+[Etherscan](link-etherscan) for your own API key.
+
+_note: Note: Default API keys
+If no //apiKey// is provided, a shared API key will be used,
+which may result in reduced performance and throttled requests.
+
+It is highly recommended for production, you register with
+[Etherscan](link-etherscan) for your own API key.
+
 
 _definition: **Supported Networks**
 
@@ -28,12 +45,64 @@ _definition: **Supported Networks**
 - G&ouml;rli (clique testnet)
 - Kovan (proof-of-authority testnet)
 
+_code: Etherscan Examples @lang<javascript>
 
-_subsection: InfuraProvider @INHERIT<[[provider-urljsonrpc]]>
+// <hide>
+const EtherscanProvider = ethers.providers.EtherscanProvider;
+const apiKey = "...";
+// </hide>
+
+// Connect to mainnet (homestead)
+provider = new EtherscanProvider();
+
+// Connect to rinkeby testnet (these are equivalent)
+provider = new EtherscanProvider("rinkeby");
+provider = new EtherscanProvider(4);
+
+const network = ethers.providers.getNetwork("rinkeby");
+// <hide>
+delete network._defaultProvider;
+network
+// </hide>
+//!
+
+provider = new EtherscanProvider(network);
+
+// Connect to mainnet (homestead) with an API key
+provider = new EtherscanProvider(null, apiKey);
+provider = new EtherscanProvider("homestead", apiKey);
+
+
+_property: provider.getHistory(address) => Array<History> @src<providers>
+@TODO... Explain
+
+
+_subsection: InfuraProvider @INHERIT<[[UrlJsonRpcProvider]]> @src<providers:class.InfuraProvider>
 
 The **InfuraProvider** is backed by the popular [INFURA](link-infura)
 Ethereum service.
 
+_property: new ethers.providers.InfuraProvider([ network = "homestead", [ apiKey ] ])
+Create a new **InfuraProvider** connected to //network// with
+the optional //apiKey//.
+
+The //network// may be specified as **string** for a common
+network name, a **number** for a common chain ID or a
+[Network Object]provider-(network).
+
+The //apiKey// can be a **string** Project ID or an **object**
+with the properties ``projectId`` and ``projectSecret`` to
+specify a [Project Secret](link-infura-secret) which can be used
+on non-public sources (like on a server) to further secure your
+API access and quotas.
+
+_note: Note: Default API keys
+If no //apiKey// is provided, a shared API key will be used,
+which may result in reduced performance and throttled requests.
+
+It is highly recommended for production, you register with
+[INFURA](link-infura) for your own API key.
+
 _definition: **Supported Networks**
 
 - Homestead (Mainnet)
@@ -42,10 +111,50 @@ _definition: **Supported Networks**
 - G&ouml;rli (clique testnet)
 - Kovan (proof-of-authority testnet)
 
+_code: INFURA Examples @lang<javascript>
 
-_subsection: AlchemyProvider @INHERIT<[[provider-urljsonrpc]]>
+// <hide>
+const InfuraProvider = ethers.providers.InfuraProvider;
+const projectId = "...";
+const projectSecret = "...";
+// </hide>
 
-The **AlchemtProvider** is backed by [Alchemy](link-alchemy).
+// Connect to mainnet (homestead)
+provider = new InfuraProvider();
+
+// Connect to the ropsten testnet
+// (see EtherscanProvider above for other network examples)
+provider = new InfuraProvider("ropsten");
+
+// Connect to mainnet with a Project ID (these are equivalent)
+provider = new InfuraProvider(null, projectId);
+provider = new InfuraProvider("homestead", projectId);
+
+// Connect to mainnet with a Project ID and Project Secret
+provider = new InfuraProvider("homestead", {
+    projectId: projectId,
+    projectSecret: projectSecret
+});
+
+
+_subsection: AlchemyProvider @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.AlchemyProvider>
+
+The **AlchemyProvider** is backed by [Alchemy](link-alchemy).
+
+_property: new ethers.providers.AlchemyProvider([ network = "homestead", [ apiKey ] ])
+Create a new **AlchemyProvider** connected to //network// with
+the optional //apiKey//.
+
+The //network// may be specified as **string** for a common
+network name, a **number** for a common chain ID or a
+[Network Object](providers-Network).
+
+_note: Note: Default API keys
+If no //apiKey// is provided, a shared API key will be used,
+which may result in reduced performance and throttled requests.
+
+It is highly recommended for production, you register with
+[Alchemy](link-alchemy) for your own API key.
 
 _definition: **Supported Networks**
 
@@ -55,11 +164,41 @@ _definition: **Supported Networks**
 - G&ouml;rli (clique testnet)
 - Kovan (proof-of-authority testnet)
 
+_code: Alchemy Examples @lang<javascript>
 
-_subsection: CloudflareProvider @INHERIT<[[provider-urljsonrpc]]>
+// <hide>
+const AlchemyProvider = ethers.providers.AlchemyProvider;
+const apiKey = "...";
+// </hide>
+
+// Connect to mainnet (homestead)
+provider = new AlchemyProvider();
+
+// Connect to the ropsten testnet
+// (see EtherscanProvider above for other network examples)
+provider = new AlchemyProvider("ropsten");
+
+// Connect to mainnet with an API key (these are equivalent)
+provider = new AlchemyProvider(null, apiKey);
+provider = new AlchemyProvider("homestead", apiKey);
+
+
+_subsection: CloudflareProvider @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.CloudflareProvider>
 
 The CloudflareProvider is backed by the [Cloudflare Ethereum Gateway](link-cloudflare).
 
+_property: new ethers.providers.CloudflareProvider()
+Create a new **CloudflareProvider** connected to mainnet (i.e. "homestead").
+
 _definition: **Supported Networks**
 
 - Homestead (Mainnet)
+
+_code: Cloudflare Examples @lang<javascript>
+
+// <hide>
+const CloudflareProvider = ethers.providers.CloudflareProvider;
+// </hide>
+
+// Connect to mainnet (homestead)
+provider = new CloudflareProvider();

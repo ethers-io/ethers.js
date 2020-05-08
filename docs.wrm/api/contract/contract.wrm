@@ -1,57 +1,64 @@
-_section: Contract @<contract> @SRC<contracts:class.Contract>
+_section: Contract @<Contract> @SRC<contracts:class.Contract>
 
-_subsection: Properties
+Explain contract here...
 
-_property: contract.address => string<[[address]]>
-This is the address (or ENS name) the contract was constructed with.
+_subsection: Creating Instances @<contract--creating>
 
-_property: contract.addressPromise => string<[[address]]>
-This is a promise that will resolve to the address the **Contract**
-object is attached to. If an [[address]] was provided to the constructor,
-it will be equal to this; if an ENS name was provided, this will be the
-resolved address.
+_property: new ethers.Contract(address, abi, signerOrProvider) @src<contracts:constructor.Contract>
 
-_property: contract.deployTransaction => [[provider-transactionresponse]]
-If the **Contract** object is the result of a ContractFactory deployment,
-this is the transaction which was used to deploy the contract.
-
-_property: contract.interface => [[abi-interface]]
-This is the ABI as an [[abi-interface]].
-
-_property: contract.provider => [[provider]]
-If a provider was provided to the constructor, this is that provider. If
-a signer was provided that had a [[provider]], this is that provider.
-
-_property: contract.signer => [[signer]]
-If a signer was provided to the constructor, this is that signer.
-
-
-_subsection: Methods
-
-_property: contract.attach(addressOrName) => [[contract]]  @<contract-attach> @SRC<contracts:Contract.attach>
+_property: contract.attach(addressOrName) => [[Contract]]  @<contract-attach> @SRC<contracts:Contract.attach>
 Returns a new instance of the **Contract** attached to a new
 address. This is useful if there are multiple similar or identical
 copies of a Contract on the network and you wish to interact with
 each of them.
 
-_property: contract.connect(providerOrSigner) => [[contract]]  @<contract-connect> @SRC<contracts:Contract.connect>
+_property: contract.connect(providerOrSigner) => [[Contract]]  @<contract-connect> @SRC<contracts:Contract.connect>
 Returns a new instance of the Contract, but connected to
 //providerOrSigner//.
 
-By passing in a [[provider]], this will return a downgraded
+By passing in a [[Provider]], this will return a downgraded
 **Contract** which only has read-only access (i.e. constant calls).
 
-By passing in a [[signer]]. the will return a **Contract** which
+By passing in a [[Signer]]. the will return a **Contract** which
 will act on behalf of that signer.
 
-_property: contract.deployed() => Promise<[[contract]]>  @<contract-deployed> @SRC<contracts>
+
+_subsection: Properties  @<contrct--properties>
+
+_property: contract.address => string<[[address]]>
+This is the address (or ENS name) the contract was constructed with.
+
+_property: contract.resolvedAddress => string<[[address]]>
+This is a promise that will resolve to the address the **Contract**
+object is attached to. If an [[address]] was provided to the constructor,
+it will be equal to this; if an ENS name was provided, this will be the
+resolved address.
+
+_property: contract.deployTransaction => [[providers-TransactionResponse]]
+If the **Contract** object is the result of a ContractFactory deployment,
+this is the transaction which was used to deploy the contract.
+
+_property: contract.interface => [[Interface]]
+This is the ABI as an [[Interface]].
+
+_property: contract.provider => [[Provider]]
+If a provider was provided to the constructor, this is that provider. If
+a signer was provided that had a [[Provider]], this is that provider.
+
+_property: contract.signer => [[Signer]]
+If a signer was provided to the constructor, this is that signer.
+
+
+_subsection: Methods
+
+_property: contract.deployed() => Promise<[[Contract]]>  @<contract-deployed> @SRC<contracts>
 
 _property: Contract.isIndexed(value) => boolean  @<contract-isIndexed> @SRC<contracts>
 
 
 _subsection: Events
 
-_property: contract.queryFilter(event [ , fromBlockOrBlockHash [ , toBlock ]) => Promise<Array<Event>> @<contract-queryfilter> @SRC<contracts>
+_property: contract.queryFilter(event [ , fromBlockOrBlockHash [ , toBlock ]) => Promise<Array<Event>> @<contract-queryFilter> @SRC<contracts>
 Return Events that match the //event//.
 
 _property: contract.listenerCount([ event ]) => number  @<contract-listenerCount> @SRC<contracts:Contract.listenerCount>
@@ -76,7 +83,7 @@ Unsubscribe all listeners for //event//. If no event is provided,
 all events are unsubscribed.
 
 
-_subsection: Meta-Class  @<contract-metaclass>
+_subsection: Meta-Class  @<contract--metaclass>
 
 A Meta-Class is a Class which has any of its properties determined
 at run-time. The **Contract** object uses a Contract's ABI to
@@ -85,7 +92,7 @@ describe the generic ways to interact with the properties added
 at run-time during the **Contract** constructor.
 
 
-_heading: Read-Only Methods (constant)  @<contract-readonly>
+_heading: Read-Only Methods (constant)  @<contract--readonly>
 
 A constant method is read-only and evaluates a small amount of EVM
 code against the current blockchain state and can be computed by
@@ -93,7 +100,7 @@ asking a single node, which can return a result. It is therefore
 free and does not require any ether, but **cannot make changes** to
 the blockchain state..
 
-_property: contract.METHOD_NAME(...args [ overrides ]) => Promise<any>  @<contract-call>
+_property: contract.METHOD_NAME(...args [ overrides ]) => Promise<any>  @<contract-functionsCall>
 The type of the result depends on the ABI.
 
 For values that have a simple meaning in JavaScript, the types are fairly
@@ -102,12 +109,12 @@ and booleans.
 
 For numbers, if the **type** is in the JavaSsript safe range (i.e. less
 than 53 bits, such as an ``int24`` or ``uint48``) a normal JavaScript
-number is used. Otherwise a [[bignumber]] is returned.
+number is used. Otherwise a [[BigNumber]] is returned.
 
-For bytes (both fixed length and dynamic), a [[datahexstring]] is returned.
+For bytes (both fixed length and dynamic), a [[DataHexString]] is returned.
 
 
-_heading: Write Methods (non-constant) @<contract-write>
+_heading: Write Methods (non-constant) @<contract--write>
 
 A non-constant method requires a transaction to be signed and requires
 payment in the form of a fee to be paid to a miner. This transaction
@@ -119,23 +126,23 @@ It cannot return a result. If a result is required, it should be logged
 using a Solidity event (or EVM log), which can then be queried from the
 transaction receipt.
 
-_property: contract.METHOD_NAME(...args [ , overrides ]) => Promise<[[provider-transactionresponse]]>  @<contract-send>
-Returns a [[provider-transactionresponse]] for the transaction after
+_property: contract.METHOD_NAME(...args [ , overrides ]) => Promise<[[providers-TransactionResponse]]>  @<contract-functionsSend>
+Returns a [[providers-TransactionResponse]] for the transaction after
 it is sent to the network. This requires the **Contract** has a
 signer.
 
 
-_heading: Write Methods Analysis @<contract-write-check>
+_heading: Write Methods Analysis @<contract--check>
 
 There are secveral options to analyze properties and results of a
 write method without actually executing it.
 
-_property: contract.estimateGas.METHOD_NAME(...args [ , overrides ]) => Promise<[[bignumber]]>  @<contract-estimateGas>
+_property: contract.estimateGas.METHOD_NAME(...args [ , overrides ]) => Promise<[[BigNumber]]>  @<contract-estimateGas>
 Returns the estimate units of gas that would be required to
 execute the //METHOD_NAME// with //args// and //overrides//.
 
-_property: contract.populateTransaction.METHOD_NAME(...args [ , overrides ]) => Promise<[UnsignedTx](types-unsignedtransaction)>  @<contract-populateTransaction>
-Returns an [[types-unsignedtransaction]] which represents the transaction
+_property: contract.populateTransaction.METHOD_NAME(...args [ , overrides ]) => Promise<[UnsignedTx](UnsignedTransaction)>  @<contract-populateTransaction>
+Returns an [[UnsignedTransaction]] which represents the transaction
 that would need to be signed and submitted to the network to execute
 //METHOD_NAME// with //args// and //overrides//.
 
@@ -147,9 +154,9 @@ return the result.
 This does not actually chagne any state, but is free. This in some cases
 can be used to determine if a transaction will fail or succeed.
 
-This otherwise functions the same as a [Read-Only Method](contract-readonly).
+This otherwise functions the same as a [Read-Only Method](contract--readonly).
 
-_heading: Event Filters @<contract-filter>
+_heading: Event Filters @<contract-filters>
 An event filter is made up of topics, which are values logged in a
 [[link-wiki-bloomfilter]], allowing efficient searching for entries
 which match a filter.

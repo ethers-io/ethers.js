@@ -10,10 +10,10 @@ gas prices in gwei for the User Interface, but when sending
 a transaction, both must be specified in wei.
 
 The [parseUnits](unit-conversion) will parse a string representing
-ether, such as ``1.1`` into a [BigNumber](bignumber) in wei, and is
+ether, such as ``1.1`` into a [BigNumber](BigNumber) in wei, and is
 useful when a user types in a value, such as sending 1.1 ether.
 
-The [formatUnits](unit-conversion) will format a [BigNumberish](bignumberish)
+The [formatUnits](unit-conversion) will format a [BigNumberish](BigNumberish)
 into a string, which is useful when displaying a balance.
 
 
@@ -56,17 +56,17 @@ Returns a string with value grouped by 3 digits, separated by ``,``.
 
 _heading: Conversion @<unit-conversion>
 
-_property: ethers.utils.formatUnits(value [ , unit = "ether" ] ) => string  @<utils-formatunits> @SRC<units>
+_property: ethers.utils.formatUnits(value [ , unit = "ether" ] ) => string  @<utils-formatUnits> @SRC<units>
 Returns a string representation of //value// formatted with //unit//
 digits (if it is a number) or to the unit specified (if a string).
 
-_property: ethers.utils.formatEther(value) => string  @<utils-formatether> @SRC<units>
+_property: ethers.utils.formatEther(value) => string  @<utils-formatEther> @SRC<units>
 The equivalent to calling ``formatUnits(value, "ether")``.
 
-_property: ethers.utils.parseUnits(value [ , unit = "ether" ] ) => [BigNumber](bignumber)  @<utils-parseunits> @SRC<units>
-Returns a [BigNumber](bignumber) representation of //value//, parsed with
+_property: ethers.utils.parseUnits(value [ , unit = "ether" ] ) => [BigNumber](BigNumber)  @<utils-parseUnits> @SRC<units>
+Returns a [BigNumber](BigNumber) representation of //value//, parsed with
 //unit// digits (if it is a number) or from the unit specified (if
 a string).
 
-_property: ethers.utils.parseEther(value) => [BigNumber](bignumber)  @<utils-parseether> @SRC<units>
+_property: ethers.utils.parseEther(value) => [BigNumber](BigNumber)  @<utils-parseEther> @SRC<units>
 The equivalent to calling ``parseUnits(value, "ether")``.

@@ -1,4 +1,4 @@
-_section: FixedNumber @<fixednumber>
+_section: FixedNumber @<FixedNumber>
 
 A **FixedNumber** is a fixed-width (in bits) number with an internal
 base-10 divisor, which allows it to represent a decimal fractional
@@ -9,53 +9,53 @@ _subsection: Creating Instances
 The FixedNumber constructor cannot be called directly. There are several
 static methods for creating a FixedNumber.
 
-_property: FixedNumber.from(value [ , format = "fixed" ] ) => [[fixednumber]]  @SRC<bignumber:FixedNumber.from>
+_property: FixedNumber.from(value [ , format = "fixed" ] ) => [[FixedNumber]]  @SRC<bignumber:FixedNumber.from>
 Returns an instance of a **FixedNumber** for //value// as a //format//.
 
-_property: FixedNumber.fromBytes(aBytesLike [ , format = "fixed" ] ) => [[fixednumber]]  @SRC<bignumber>
+_property: FixedNumber.fromBytes(aBytesLike [ , format = "fixed" ] ) => [[FixedNumber]]  @SRC<bignumber>
 Returns an instance of a **FixedNumber** for //value// as a //format//.
 
-_property: FixedNumber.fromString(value [ , format = "fixed" ] ) => [[fixednumber]]  @SRC<bignumber:FixedNumber.fromString>
+_property: FixedNumber.fromString(value [ , format = "fixed" ] ) => [[FixedNumber]]  @SRC<bignumber:FixedNumber.fromString>
 Returns an instance of a **FixedNumber** for //value// as a //format//. The //value// must
 not contain more decimals than the //format// permits.
 
-_property: FixedNumber.fromValue(value [ , decimals = 0 [ , format = "fixed" ] ] ) => [[fixednumber]]  @SRC<bignumber:FixedNumber.fromValue>
+_property: FixedNumber.fromValue(value [ , decimals = 0 [ , format = "fixed" ] ] ) => [[FixedNumber]]  @SRC<bignumber:FixedNumber.fromValue>
 Returns an instance of a **FixedNumber** for //value// with //decimals// as a //format//.
 
 
 _subsection: Properties
 
 _property: fixednumber.format
-The [FixedFormat](fixedformat) of //fixednumber//.
+The [FixedFormat](FixedFormat) of //fixednumber//.
 
 
 _subsection: Methods
 
 _heading: Math Operations
 
-_property: fixednumber.addUnsafe(otherValue) => [[fixednumber]]  @SRC<bignumber/fixednumber>
+_property: fixednumber.addUnsafe(otherValue) => [[FixedNumber]]  @SRC<bignumber/fixednumber>
 Returns a new FixedNumber with the value of //fixedvalue// **+** //otherValue//.
 
-_property: fixednumber.subUnsafe(otherValue) => [[fixednumber]]  @SRC<bignumber/fixednumber>
-Returns a new FixedNumber with the value of //fixedvalue// **&ndash;** //otherValue//.
+_property: fixednumber.subUnsafe(otherValue) => [[FixedNumber]]  @SRC<bignumber/fixednumber>
+Returns a new FixedNumber with the value of //fixedvalue// **-** //otherValue//.
 
-_property: fixednumber.mulUnsafe(otherValue) => [[fixednumber]]  @SRC<bignumber/fixednumber>
+_property: fixednumber.mulUnsafe(otherValue) => [[FixedNumber]]  @SRC<bignumber/fixednumber>
 Returns a new FixedNumber with the value of //fixedvalue// **&times;** //otherValue//.
 
-_property: fixednumber.divUnsafe(otherValue) => [[fixednumber]]  @SRC<bignumber/fixednumber>
-Returns a new FixedNumber with the value of //fixedvalue// **&#247;** //otherValue//.
+_property: fixednumber.divUnsafe(otherValue) => [[FixedNumber]]  @SRC<bignumber/fixednumber>
+Returns a new FixedNumber with the value of //fixedvalue// **&div;** //otherValue//.
 
-_property: fixednumber.round([ decimals = 0 ]) => [[fixednumber]]  @SRC<bignumber/fixednumber>
+_property: fixednumber.round([ decimals = 0 ]) => [[FixedNumber]]  @SRC<bignumber/fixednumber>
 Returns a new FixedNumber with the value of //fixedvalue// rounded to //decimals//.
 
 
 _heading: Conversion
 
-_property: fixednumber.toFormat(format) => [[fixednumber]]  @SRC<bignumber/fixednumber>
+_property: fixednumber.toFormat(format) => [[FixedNumber]]  @SRC<bignumber/fixednumber>
 Returns a new FixedNumber with the value of //fixedvalue// with //format//.
 
 _property: fixednumber.toHexString() => string  @SRC<bignumber/fixednumber>
-Returns a [Hexstring](hexstring) representation of //fixednumber//.
+Returns a [[HexString]] representation of //fixednumber//.
 
 _property: fixednumber.toString() => string  @SRC<bignumber/fixednumber>
 Returns a string representation of //fixednumber//.
@@ -71,14 +71,14 @@ _property: FixedNumber.isFixedNumber(value) => boolean  @SRC<bignumber/fixednumb
 Returns true if and only if //value// is a **FixedNumber**.
 
 
-_subsection: FixedFormat @<fixedformat>
+_subsection: FixedFormat @<FixedFormat>
 
 A **FixedFormat** is a simple object which represents a decimal
 (base-10) Fixed-Point data representation. Usually using this
-class directly is uneccessary, as passing in a [[fixedformatstring]]
-directly into the [[fixednumber]] will automatically create this.
+class directly is uneccessary, as passing in a [[FixedFormat--strings]]
+directly into the [[FixedNumber]] will automatically create this.
 
-_heading: Format Strings  @<fixedformatstring>
+_heading: Format Strings  @<FixedFormat--strings>
 
 A format string is composed of three components, including signed-ness,
 bit-width and number of decimals.
@@ -100,11 +100,11 @@ For example:
 
 _heading: Creating Instances
 
-_property: FixedFormat.from(value = "fixed128x18") => [[fixedformat]]  @<fixednumber-from> @SRC<bignumber/fixednumber:FixedFormat.from>
+_property: FixedFormat.from(value = "fixed128x18") => [[FixedFormat]]  @<FixedNumber-from> @SRC<bignumber/fixednumber:FixedFormat.from>
 
-Returns a new instance of a **FixedFormat** defined by //value//. Any valid [[fixedformatstring]]
+Returns a new instance of a **FixedFormat** defined by //value//. Any valid [[FixedFormat--strings]]
 may be passed in as well as any object which has any of ``signed``, ``width`` and ``decimals``
-defined, including a [[fixedformat]] object.
+defined, including a [[FixedFormat]] object.
 
 _heading: Properties
 

@@ -1,9 +1,9 @@
-_section: Strings
+_section: Strings  @<strings>
 
 Tra la la
 
 
-_subsection: Bytes32String @<bytes32-string>
+_subsection: Bytes32String @<Bytes32String>
 
 A string in Solidity is length prefixed with its 256-bit (32 byte)
 length, which means that even short strings require 2 words (64 bytes)
@@ -19,23 +19,23 @@ _note: Note
 Strings that are 31 __//bytes//__ long may contain fewer than 31 __//characters//__,
 since UTF-8 requires multiple bytes to encode international characters.
 
-_property: ethers.utils.parseBytes32String(aBytesLike) => string  @<utils-parsebytes32> @SRC<strings>
+_property: ethers.utils.parseBytes32String(aBytesLike) => string  @<utils-parseBytes32> @SRC<strings>
 Returns the decoded string represented by the ``Bytes32`` encoded data.
 
-_property: ethers.utils.formatBytes32String(text) => string<[[datahexstring]]<32>>  @<utils-formatbytes32> @SRC<strings>
+_property: ethers.utils.formatBytes32String(text) => string<[[DataHexString]]<32>>  @<utils-formatBytes32> @SRC<strings>
 Returns a ``bytes32`` string representation of //text//. If the
 length of //text// exceeds 31 bytes, it will throw an error.
 
 
-_subsection: UTF-8 Strings @<utf8-string>
+_subsection: UTF-8 Strings @<strings-utf8>
 
-_property: ethers.utils.toUtf8Bytes(text [ , form = current ] ) => Uint8Array  @<utils-toutf8bytes> @SRC<strings>
+_property: ethers.utils.toUtf8Bytes(text [ , form = current ] ) => Uint8Array  @<utils-toUtf8Bytes> @SRC<strings>
 Returns the UTF-8 bytes of //text//, optionally normalizing it using the
-[[unicode-normalization-form]] //form//.
+[[strings--unicode-normalization-form]] //form//.
 
-_property: ethers.utils.toUtf8CodePoints(text [ , form = current ] ) => Array<number>  @<utils-toutf8codepoints> @SRC<strings>
+_property: ethers.utils.toUtf8CodePoints(text [ , form = current ] ) => Array<number>  @<utils-toUtf8CodePoints> @SRC<strings>
 Returns the Array of codepoints of //text//, optionally normalized using the
-[[unicode-normalization-form]] //form//.
+[[strings--unicode-normalization-form]] //form//.
 
 _note: Note
 This function correctly splits each **user-perceived character** into
@@ -43,14 +43,14 @@ its codepoint, accounting for surrogate pairs. This should not be confused with
 ``string.split("")``, which destroys surrogate pairs, spliting between each UTF-16
 codeunit instead.
 
-_property: ethers.utils.toUtf8String(aBytesLike [ , onError = error ] ) => string  @<utils-toutf8string> @SRC<strings>
+_property: ethers.utils.toUtf8String(aBytesLike [ , onError = error ] ) => string  @<utils-toUtf8String> @SRC<strings>
 Returns the string represented by the UTF-8 bytes of //aBytesLike//.
 
-The //onError// is a [Custom UTF-8 Error function](utf8error) and if not specified
-it defaults to the [error](utf8error-error) function, which throws an error
+The //onError// is a [Custom UTF-8 Error function](strings--error-handling) and if not specified
+it defaults to the [error](strings--Utf8Error) function, which throws an error
 on **any** UTF-8 error.
 
-_subsection: UnicodeNormalizationForm @<unicode-normalization-form> @SRC<strings/utf8:enum.UnicodeNormalizationForm>
+_subsection: UnicodeNormalizationForm @<strings--unicode-normalization-form> @SRC<strings/utf8:enum.UnicodeNormalizationForm>
 
 There are several [commonly used forms](link-wiki-unicode-equivalence)
 when normalizing UTF-8 data, which allow strings to be compared or hashed in a stable
@@ -91,7 +91,8 @@ Only certain specified characters are folded in Canonical Equivalence, and thus
 it should **not** be considered a method to acheive //any// level of security from
 [homoglyph attacks](link-wiki-homoglyph).
 
-_subsection: Custom UTF-8 Error Handling @<utf8error>
+
+_subsection: Custom UTF-8 Error Handling @<strings--error-handling>
 
 When converting a string to its codepoints, there is the possibility
 of invalid byte sequences. Since certain situations may need specific
@@ -99,7 +100,7 @@ ways to handle UTF-8 errors, a custom error handling function can be used,
 which has the signature:
 
 _property: errorFunction(reason, offset, bytes, output [ , badCodepoint ]) => number
-The //reason// is one of the [UTF-8 Error Reasons](utf8error-reasons), //offset// is the index
+The //reason// is one of the [UTF-8 Error Reasons](strings--error-reasons), //offset// is the index
 into //bytes// where the error was first encountered, output is the list
 of codepoints already processed (and may be modified) and in certain Error
 Reasons, the //badCodepoint// indicates the currently computed codepoint,
@@ -108,7 +109,8 @@ but which would be rejected because its value is invalid.
 This function should return the number of bytes to skip past keeping in
 mind the value at //offset// will already be consumed.
 
-_heading: UTF-8 Error Reasons @<utf8error-reasons> @SRC<strings/utf8:Utf8ErrorReason>
+
+_heading: UTF-8 Error Reasons @<strings--error-reasons> @SRC<strings/utf8:Utf8ErrorReason>
 
 _property: ethers.utils.Utf8ErrorReason.BAD_PREFIX
 A byte was encountered which is invalid to begin a UTF-8 byte
@@ -166,16 +168,16 @@ _heading: Provided UTF-8 Error Handling Functions
 There are already several functions available for the  most common
 situations.
 
-_property: ethers.utils.Utf8ErrorFuncs.error @<utf8error-error> @SRC<strings/utf8:errorFunc>
+_property: ethers.utils.Utf8ErrorFuncs.error @<strings--Utf8Error> @SRC<strings/utf8:errorFunc>
 The will throw an error on **any** error with a UTF-8 sequence, including
 invalid prefix bytes, overlong sequences, UTF-16 surrogate pairs.
 
-_property: ethers.utils.Utf8ErrorFuncs.ignore @<utf8error-ignore> @SRC<strings/utf8:ignoreFunc>
+_property: ethers.utils.Utf8ErrorFuncs.ignore @<strings--Utf8Ignore> @SRC<strings/utf8:ignoreFunc>
 This will drop all invalid sequences (by consuming invalid prefix bytes and
 any following continuation bytes) from the final string as well as permit
 overlong sequences to be converted to their equivalent string.
 
-_property: ethers.utils.Utf8ErrorFuncs.replace @<utf8error-replace> @SRC<strings/utf8:replaceFunc>
+_property: ethers.utils.Utf8ErrorFuncs.replace @<strings--Utf8Replace> @SRC<strings/utf8:replaceFunc>
 This will replace all invalid sequences (by consuming invalid prefix bytes and
 any following continuation bytes) with the
 [UTF-8 Replacement Character](link-wiki-utf8-replacement),

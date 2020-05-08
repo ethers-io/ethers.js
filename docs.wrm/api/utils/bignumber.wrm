@@ -1,7 +1,7 @@
-_section: BigNumber @<bignumber>
+_section: BigNumber @<BigNumber>
 
 Many operations in Ethereum operation on numbers which are
-[outside the range of safe values](notes-safenumbers) to use
+[outside the range of safe values](BigNumber--notes-safenumbers) to use
 in JavaScript.
 
 A **BigNumber** is an object which safely allows mathematic operations
@@ -18,8 +18,8 @@ _code: CommonJS @lang<script>
 // From the Umbrella ethers package...
 const { BigNumber } = require("ethers");
 
-// From the bignumber pacakge...
-const { BigNumber } = require("@ethersproject/bignumber");
+// From the BigNumber pacakge...
+const { BigNumber } = require("@ethersproject/BigNumber");
 
 
 _code: ES6 and TypeScript CommonJS @lang<script>
@@ -27,27 +27,27 @@ _code: ES6 and TypeScript CommonJS @lang<script>
 // From the Umbrella ethers package...
 import { BigNumber } from "ethers";
 
-// From the bignumber pacakge...
-import { BigNumber } from "@ethersproject/bignumber";
+// From the BigNumber pacakge...
+import { BigNumber } from "@ethersproject/BigNumber";
 
 
 _subsection: Types
 
-_heading: BigNumberish @<bignumberish>
+_heading: BigNumberish @<BigNumberish>
 
 Many functions and methods in this library take in values which
 can be non-ambiguously and safely converted to a BigNumber. These
 values can be sepcified as:
 
 _definition: **//string//**
-A [hexstring](hexstring) or a decimal string, either of which may
+A [[HexString]] or a decimal string, either of which may
 be negative.
 
 _definition: **//BytesLike//**
-A [BytesLike](byteslike) Object, such as an Array or Uint8Array.
+A [[BytesLike]] Object, such as an Array or Uint8Array.
 
 _definition: **//BigNumber//**
-An existing [[bignumber]] instance.
+An existing [[BigNumber]] instance.
 
 _definition: **//number//**
 A number that is within the [safe range](link-js-maxsafe) for JavaScript numbers.
@@ -61,7 +61,7 @@ _subsection: Creating Instances
 
 The constructor of BigNumber cannot be called directly. Instead, Use the static ``BigNumber.from``.
 
-_property: ethers.BigNumber.from(aBigNumberish) => [[bignumber]]
+_property: ethers.BigNumber.from(aBigNumberish) => [[BigNumber]]
 Returns an instance of a **BigNumber** for //aBigNumberish//.
 
 _heading: Examples:  @<>
@@ -72,11 +72,11 @@ _code: @lang<javascript>
 BigNumber.from("42")
 //!
 
-// From a hexstring...
+// From a HexString...
 BigNumber.from("0x2a")
 //!
 
-// From a negative hexstring...
+// From a negative HexString...
 BigNumber.from("-0x2a")
 //!
 
@@ -116,29 +116,29 @@ it represents.
 
 _heading: Math Operations
 
-_property: bignumber.add(otherValue) => [[bignumber]]  @SRC<bignumber>
-Returns a BigNumber with the value of //bignumber// **+** //otherValue//.
+_property: BigNumber.add(otherValue) => [[BigNumber]]  @SRC<bignumber>
+Returns a BigNumber with the value of //BigNumber// **+** //otherValue//.
 
-_property: bignumber.sub(otherValue) => [[bignumber]]  @SRC<bignumber>
-Returns a BigNumber with the value of //bignumber// **-** //otherValue//.
+_property: BigNumber.sub(otherValue) => [[BigNumber]]  @SRC<bignumber>
+Returns a BigNumber with the value of //BigNumber// **-** //otherValue//.
 
-_property: bignumber.mul(otherValue) => [[bignumber]]  @SRC<bignumber>
-Returns a BigNumber with the value of //bignumber// **&times;** //otherValue//.
+_property: BigNumber.mul(otherValue) => [[BigNumber]]  @SRC<bignumber>
+Returns a BigNumber with the value of //BigNumber// **&times;** //otherValue//.
 
-_property: bignumber.div(divisor) => [[bignumber]]  @SRC<bignumber>
-Returns a BigNumber with the value of //bignumber// **&div;** //divisor//.
+_property: BigNumber.div(divisor) => [[BigNumber]]  @SRC<bignumber>
+Returns a BigNumber with the value of //BigNumber// **&div;** //divisor//.
 
-_property: bignumber.mod(divisor) => [[bignumber]]  @SRC<bignumber>
-Returns a BigNumber with the value of the **remainder** of //bignumber// &div; //divisor//.
+_property: BigNumber.mod(divisor) => [[BigNumber]]  @SRC<bignumber>
+Returns a BigNumber with the value of the **remainder** of //BigNumber// &div; //divisor//.
 
-_property: bignumber.pow(exponent) => [[bignumber]]  @SRC<bignumber>
-Returns a BigNumber with the value of //bignumber// to the power of //exponent//.
+_property: BigNumber.pow(exponent) => [[BigNumber]]  @SRC<bignumber>
+Returns a BigNumber with the value of //BigNumber// to the power of //exponent//.
 
-_property: bignumber.abs() => [[bignumber]]  @SRC<bignumber>
-Returns a BigNumber with the absolute value of //bignumber//.
+_property: BigNumber.abs() => [[BigNumber]]  @SRC<bignumber>
+Returns a BigNumber with the absolute value of //BigNumber//.
 
-_property: bignumber.mask(bitcount) => [[bignumber]]  @SRC<bignumber>
-Returns a BigNumber with the value of //bignumber// with bits beyond
+_property: BigNumber.mask(bitcount) => [[BigNumber]]  @SRC<bignumber>
+Returns a BigNumber with the value of //BigNumber// with bits beyond
 the //bitcount// least significant bits set to zero.
 
 
@@ -149,48 +149,48 @@ is an elegant method used to encode and decode fixed-width signed values
 while efficiently preserving mathematic operations.
 Most users will not need to interact with these.
 
-_property: bignumber.fromTwos(bitwidth) => [[bignumber]]  @SRC<bignumber>
-Returns a BigNumber with the value of //bignumber// converted from twos-compliment with //bitwidth//.
+_property: BigNumber.fromTwos(bitwidth) => [[BigNumber]]  @SRC<bignumber>
+Returns a BigNumber with the value of //BigNumber// converted from twos-compliment with //bitwidth//.
 
-_property: bignumber.toTwos(bitwidth) => [[bignumber]]  @SRC<bignumber>
-Returns a BigNumber with the value of //bignumber// converted to twos-compliment with //bitwidth//.
+_property: BigNumber.toTwos(bitwidth) => [[BigNumber]]  @SRC<bignumber>
+Returns a BigNumber with the value of //BigNumber// converted to twos-compliment with //bitwidth//.
 
 
 _heading: Comparison and Equivalence
 
-_property: bignumber.eq(otherValue) => boolean  @SRC<bignumber>
-Returns true if and only if the value of //bignumber// is equal to //otherValue//.
+_property: BigNumber.eq(otherValue) => boolean  @SRC<bignumber>
+Returns true if and only if the value of //BigNumber// is equal to //otherValue//.
 
-_property: bignumber.lt(otherValue) => boolean  @SRC<bignumber>
-Returns true if and only if the value of //bignumber// **<** //otherValue//.
+_property: BigNumber.lt(otherValue) => boolean  @SRC<bignumber>
+Returns true if and only if the value of //BigNumber// **<** //otherValue//.
 
-_property: bignumber.lte(otherValue) => boolean  @SRC<bignumber>
-Returns true if and only if the value of //bignumber// **&le;** //otherValue//.
+_property: BigNumber.lte(otherValue) => boolean  @SRC<bignumber>
+Returns true if and only if the value of //BigNumber// **&le;** //otherValue//.
 
-_property: bignumber.gt(otherValue) => boolean  @SRC<bignumber>
-Returns true if and only if the value of //bignumber// **>** //otherValue//.
+_property: BigNumber.gt(otherValue) => boolean  @SRC<bignumber>
+Returns true if and only if the value of //BigNumber// **>** //otherValue//.
 
-_property: bignumber.gte(otherValue) => boolean  @SRC<bignumber>
-Returns true if and only if the value of //bignumber// **&ge;** //otherValue//.
+_property: BigNumber.gte(otherValue) => boolean  @SRC<bignumber>
+Returns true if and only if the value of //BigNumber// **&ge;** //otherValue//.
 
-_property: bignumber.isZero() => boolean  @SRC<bignumber>
-Returns true if and only if the value of //bignumber// is zero.
+_property: BigNumber.isZero() => boolean  @SRC<bignumber>
+Returns true if and only if the value of //BigNumber// is zero.
 
 
 _heading: Conversion
 
-_property: bignumber.toNumber() => number  @SRC<bignumber>
-Returns the value of //bignumber// as a JavaScript value.
+_property: BigNumber.toNumber() => number  @SRC<bignumber>
+Returns the value of //BigNumber// as a JavaScript value.
 
 This will **throw an error**
 if the value is greater than or equal to //Number.MAX_SAFE_INTEGER// or less than or
 equal to //Number.MIN_SAFE_INTEGER//.
 
-_property: bignumber.toString() => string  @SRC<bignumber:BigNumber.toString>
-Returns the value of //bignumber// as a base-10 string.
+_property: BigNumber.toString() => string  @SRC<bignumber:BigNumber.toString>
+Returns the value of //BigNumber// as a base-10 string.
 
-_property: bignumber.toHexString() => string<[[datahexstring]]>  @SRC<bignumber:BigNumber.toHexString>
-Returns the value of //bignumber// as a base-16, ``0x``-prefixed [[datahexstring]].
+_property: BigNumber.toHexString() => string<[[DataHexString]]>  @SRC<bignumber:BigNumber.toHexString>
+Returns the value of //BigNumber// as a base-16, ``0x``-prefixed [[DataHexString]].
 
 
 _heading: Inspection
@@ -215,7 +215,7 @@ _subsection: Notes
 This section is a for a couple of questions that come up frequently.
 
 
-_heading: Why can't I just use numbers? @<notes-safenumbers>
+_heading: Why can't I just use numbers? @<BigNumber--notes-safenumbers>
 
 The first problem many encounter when dealing with Ethereum is
 the concept of numbers. Most common currencies are broken down
@@ -240,10 +240,10 @@ _code: @lang<javascript>
 _null:
 
 To remedy this, all numbers (which can be large) are stored
-and manipulated as [Big Numbers](bignumber).
+and manipulated as [Big Numbers](BigNumber).
 
-The functions [parseEther( etherString )](utils-parseether) and
-[formatEther( wei )](utils-formatether) can be used to convert
+The functions [parseEther( etherString )](utils-parseEther) and
+[formatEther( wei )](utils-formatEther) can be used to convert
 between string representations, which are displayed to or entered
 by the user and Big Number representations which can have
 mathematical operations handled safely.
@@ -255,7 +255,7 @@ Everyone has their own favourite Big Number library, and once someone
 has choosen one, it becomes part of their identity, like their editor,
 vi vs emacs. There are over 100 Big Number libraries on [npm](link-npm-query-bignumber).
 
-One of the biggest differences between the Ethers [[bignumber]] object and
+One of the biggest differences between the Ethers [[BigNumber]] object and
 other libraries is that it is immutable, which is very important when
 dealing with the asynchronous nature of the blockchain.
 
@@ -263,7 +263,7 @@ Capturing the value is not safe in async functions, so immutability
 protects us from easy to make mistakes, which is not possible on the
 low-level library's objects which supports myriad in-place operations.
 
-Second, the Ethers [[bignumber]] provides all the functionality required
+Second, the Ethers [[BigNumber]] provides all the functionality required
 internally and should generally be sufficient for most developers while
 not exposing some of the more advanced and rare functionality. So it will
 be eaiser to swap out the underlying library without impacting consumers.
@@ -302,6 +302,6 @@ If you, for example, used a library that used ``a.plus(b)`` instead
 of ``a.add(b)``, this would break Ethers when it tries to compute
 fees internally, and other libraries likely have similar logic.
 
-But, the [[bignumber]] prototype is exposed, so you can always add a
-``toMyCustomBigNumber()`` method to all [[bignumber]]'s globally
+But, the [[BigNumber]] prototype is exposed, so you can always add a
+``toMyCustomBigNumber()`` method to all [[BigNumber]]'s globally
 which is safe.

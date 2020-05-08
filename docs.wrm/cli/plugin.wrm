@@ -54,20 +54,20 @@ make sense.
 Once the prepareArguments is complete (the returned promise is resolved), the ``run``
 is called.
 
-_property: plugin.network => [[provider-network]]
+_property: plugin.network => [[providers-Network]]
 The network this plugin is running for.
 
-_property: plugin.provider => [[provider]]
+_property: plugin.provider => [[Provider]]
 The provider for this plugin is running for.
 
-_property: plugin.accounts => Array<[[signer]]>
+_property: plugin.accounts => Array<[[Signer]]>
 The accounts passed into the plugin using ``--account``,
 ``--account-rpc`` and ``--account-void`` which this plugin can use.
 
-_property: plugin.gasLimit => [[bignumber]]
+_property: plugin.gasLimit => [[BigNumber]]
 The gas limit this plugin should use. This is null if unspecified.
 
-_property: plugin.gasPrice => [[bignumber]]
+_property: plugin.gasPrice => [[BigNumber]]
 The gas price this plugin should use. This is null if unspecified.
 
 _property: plugin.nonce => number

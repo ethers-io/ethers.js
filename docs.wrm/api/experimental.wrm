@@ -5,7 +5,7 @@ to be included in the base library. The API should not be considered
 stable and does not follow [[link-semver]] versioning, so applications
 requiring it should specify the //exact version// needed.
 
-_subsection: BrainWallet @<experimental-brainwallet> @INHERIT<[[wallet]]>
+_subsection: BrainWallet @<experimental-brainwallet> @INHERIT<[[Wallet]]>
 
 Ethers removed support for BrainWallets in v4, since they are unsafe and
 many can be easily guessed, allowing attackers to steal the funds. This
@@ -22,12 +22,12 @@ Generate a brain wallet which is compatibile with the ethers v3 and earlier.
 
 _subsection: EIP1193Bridge @<experimental-eip1193bridge> @INHERIT<[[link-npm-events]]>
 
-The **EIP1193Bridge** allows a normal Ethers [[signer]] and [[provider]] to be
+The **EIP1193Bridge** allows a normal Ethers [[Signer]] and [[Provider]] to be
 exposed in as a standard [EIP-1193 Provider](link-eip-1193), which may be useful
 when interacting with other libraries.
 
 
-_subsection: NonceManager @<experimental-noncemanager> @INHERIT<[[signer]]>
+_subsection: NonceManager @<experimental-noncemanager> @INHERIT<[[Signer]]>
 
 The **NonceManager** is designed to manage the nonce for a Signer,
 automatically increasing it as it sends transactions.
@@ -46,10 +46,10 @@ a transaction is dependent on another transaction being mined first.
 _property: new NonceManager(signer)
 Create a new NonceManager.
 
-_property: nonceManager.signer => [[signer]]
+_property: nonceManager.signer => [[Signer]]
 The signer whose nonce is being managed.
 
-_property: nonceManager.provider => [[provider]]
+_property: nonceManager.provider => [[Provider]]
 The provider associated with the signer.
 
 _property: nonceManager.setTransactionCount(count) => void

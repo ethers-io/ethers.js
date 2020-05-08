@@ -4,7 +4,7 @@ Tra la la...
 
 _subsection: Types
 
-_heading: Bytes @<bytes>
+_heading: Bytes @<Bytes>
 
 A **Bytes** is any object which is an
 [Array](link-js-array) or [TypedArray](link-js-typedarray) with
@@ -12,39 +12,38 @@ each value in the valid byte range (i.e. between 0 and 255 inclusive),
 or is an Object with a ``length`` property where each indexed property
 is in the valid byte range.
 
-_heading: BytesLike @<byteslike>
+_heading: BytesLike @<BytesLike>
 
-A **BytesLike** can be either a [[bytes]] or a [[datahexstring]].
+A **BytesLike** can be either a [[Bytes]] or a [[DataHexString]].
 
-_heading: DataHexstring @<datahexstring>
+_heading: DataHexString @<DataHexString>
 
-A **DataHexstring** is identical to a [[hexstring]] except that it has
+A **DataHexstring** is identical to a [[HexString]] except that it has
 an even number of nibbles, and therefore is a valid representation of
 binary data as a string.
 
-_heading: Hexstring @<hexstring>
+_heading: HexString @<HexString>
 
 A **Hexstring** is a string which has a ``0x`` prefix followed by any
 number of nibbles (i.e. case-insensitive hexidecumal characters, ``0-9`` and ``a-f``).
 
-_heading: Signature @<signature>
+_heading: Signature @<Signature>
 
 - **r** and **s** --- The x co-ordinate of **r** and the **s** value of the signature
 - **v** --- The parity of the y co-ordinate of **r**
 - **_vs** --- The [compact representation](link-eip-2098) of the **s** and **v**
 - **recoveryParam** --- The normalized (i.e. 0 or 1) value of **v**
 
-_heading: Flat-Format Signature @<signature-flat>
+_heading: Raw Signature @<signature-raw> @inherit<string\<[[DataHexString]]\<65\>\>>
 
-A **Flat-Format Signature** is a common Signature format where
-the r, s and v are concanenated into a 65 byte (130 nibble)
-[[datahexstring]].
+A **Raw Signature** is a common Signature format where the r, s and v are
+concanenated into a 65 byte (130 nibble) [[DataHexString]].
 
 
-_heading: SignatureLike @<signaturelike>
+_heading: SignatureLike @<SignatureLike>
 
-A **SignatureLike** is similar to a [[signature]], except redundant properties
-may be omitted or it may be a [[signature-flat]].
+A **SignatureLike** is similar to a [[Signature]], except redundant properties
+may be omitted or it may be a [[signature-raw]].
 
 For example, if **_vs** is specified, **s** and **v** may be omitted. Likewise,
 if **recoveryParam** is provided, **v** may be omitted (as in these cases the
@@ -53,33 +52,31 @@ missing values can be computed).
 
 _subsection: Inspection
 
-_property: ethers.utils.isBytes(object) => boolean  @<utils-isbytes> @SRC<bytes>
-Returns true if and only if //object// is a valid [[bytes]].
+_property: ethers.utils.isBytes(object) => boolean  @<utils-isBytes> @SRC<bytes>
+Returns true if and only if //object// is a valid [[Bytes]].
 
-_property: ethers.utils.isBytesLike(object) => boolean  @<utils-isbyteslike> @SRC<bytes>
-Returns true if and only if //object// is a [[bytes]] or [[datahexstring]].
+_property: ethers.utils.isBytesLike(object) => boolean  @<utils-isBytesLike> @SRC<bytes>
+Returns true if and only if //object// is a [[Bytes]] or [[DataHexString]].
 
-_property: ethers.utils.isHexString(object, [ length ] ) => boolean  @<utils-ishexstring> @SRC<bytes>
+_property: ethers.utils.isHexString(object, [ length ] ) => boolean  @<utils-isHexString> @SRC<bytes>
 Returns true if and only if //object// is a valid hex string.
-If //length// is specified and //object// is not a valid [[datahexstring]] of
+If //length// is specified and //object// is not a valid [[DataHexString]] of
 //length// bytes, an InvalidArgument error is thrown.
 
 
 _subsection: Converting between Arrays and Hexstrings
 
-_property: ethers.utils.arrayify(datahexstringOrArrayish [ , options ]) => Uint8Array  @<utils-arrayify> @SRC<bytes>
-Converts //datahexstringOrArrayish// to a Uint8Array.
+_property: ethers.utils.arrayify(DataHexStringOrArrayish [ , options ]) => Uint8Array  @<utils-arrayify> @SRC<bytes>
+Converts //DataHexStringOrArrayish// to a Uint8Array.
 
-_property: ethers.utils.hexlify(hexstringOrArrayish) => string<[[datahexstring]]>  @<utils-hexlify> @SRC<bytes>
-Converts //hexstringOrArrayish// to a [[datahexstring]].
+_property: ethers.utils.hexlify(hexstringOrArrayish) => string<[[DataHexString]]>  @<utils-hexlify> @SRC<bytes>
+Converts //hexstringOrArrayish// to a [[DataHexString]].
 
-_property: ethers.utils.hexValue(aBigNumberish) => string<[[hexstring]]>  @<utils-hexvalue> @SRC<bytes>
-Converts //aBigNumberish// to a [[hexstring]], with no __unnecessary__ leading
+_property: ethers.utils.hexValue(aBigNumberish) => string<[[HexString]]>  @<utils-hexValue> @SRC<bytes>
+Converts //aBigNumberish// to a [[HexString]], with no __unnecessary__ leading
 zeros.
 
-_heading: Examples
-
-_code: @lang<javascript>
+_code: Examples @lang<javascript>
 
 // Convert a hexstring to a Uint8Array
 arrayify("0x1234")
@@ -109,12 +106,12 @@ hexValue([ 1, 2 ])
 _subsection: Array Manipulation
 
 _property: ethers.utils.concat(arrayOfBytesLike) => Uint8Array  @<utils-concat> @SRC<bytes>
-Concatenates all the [[byteslike]] in //arrayOfBytesLike// into a single Uint8Array.
+Concatenates all the [[BytesLike]] in //arrayOfBytesLike// into a single Uint8Array.
 
-_property: ethers.utils.stripZeros(aBytesLike) => Uint8Array  @<utils-stripzeros> @SRC<bytes>
+_property: ethers.utils.stripZeros(aBytesLike) => Uint8Array  @<utils-stripZeros> @SRC<bytes>
 Returns a Uint8Array with all leading ``0`` bytes of //aBtyesLike// removed.
 
-_property: ethers.utils.zeroPad(aBytesLike, length) => Uint8Array  @<utils-zeropad> @SRC<bytes>
+_property: ethers.utils.zeroPad(aBytesLike, length) => Uint8Array  @<utils-zeroPad> @SRC<bytes>
 Retutns a Uint8Array of the data in //aBytesLike// with ``0`` bytes prepended to
 //length// bytes long.
 
@@ -124,23 +121,23 @@ error will be thrown.
 
 _subsection: Hexstring Manipulation
 
-_property: ethers.utils.hexConcat(arrayOfBytesLike) => string<[[datahexstring]]>  @<utils-hexconcat> @SRC<bytes>
-Concatenates all the [[byteslike]] in //arrayOfBytesLike// into a single [[datahexstring]]
+_property: ethers.utils.hexConcat(arrayOfBytesLike) => string<[[DataHexString]]>  @<utils-hexConcat> @SRC<bytes>
+Concatenates all the [[BytesLike]] in //arrayOfBytesLike// into a single [[DataHexString]]
 
-_property: ethers.utils.hexDataLength(aBytesLike) => string<[[datahexstring]]>  @<utils-hexdatalength> @SRC<bytes>
+_property: ethers.utils.hexDataLength(aBytesLike) => string<[[DataHexString]]>  @<utils-hexDataLength> @SRC<bytes>
 Returns the length (in bytes) of //aBytesLike//.
 
-_property: ethers.utils.hexDataSlice(aBytesLike, offset [ , endOffset ] ) => string<[[datahexstring]]>  @<utils-hexdataslice> @SRC<bytes>
-Returns a [[datahexstring]] representation of a slice of //aBytesLike//, from
+_property: ethers.utils.hexDataSlice(aBytesLike, offset [ , endOffset ] ) => string<[[DataHexString]]>  @<utils-hexDataSlice> @SRC<bytes>
+Returns a [[DataHexString]] representation of a slice of //aBytesLike//, from
 //offset// (in bytes) to //endOffset// (in bytes). If //endOffset// is
 omitted, the length of //aBytesLike// is used.
 
-_property: ethers.utils.hexStripZeros(aBytesLike) => string<[[hexstring]]>  @<utils-hexstripzeros> @SRC<bytes>
-Returns a [[hexstring]] representation of //aBytesLike// with all
+_property: ethers.utils.hexStripZeros(aBytesLike) => string<[[HexString]]>  @<utils-hexStripZeros> @SRC<bytes>
+Returns a [[HexString]] representation of //aBytesLike// with all
 leading zeros removed.
 
-_property: ethers.utils.hexZeroPad(aBytesLike, length) => string<[[datahexstring]]>  @<utils-hexzeropad> @SRC<bytes>
-Returns a [[datahexstring]] representation of //aBytesLike// padded to //length// bytes.
+_property: ethers.utils.hexZeroPad(aBytesLike, length) => string<[[DataHexString]]>  @<utils-hexZeroPad> @SRC<bytes>
+Returns a [[DataHexString]] representation of //aBytesLike// padded to //length// bytes.
 
 If //aBytesLike// is already longer than //length// bytes long, an InvalidArgument
 error will be thrown.
@@ -148,20 +145,20 @@ error will be thrown.
 
 _subsection: Signature Conversion
 
-_property: ethers.utils.joinSignature(aSignatureLike) => string<[FlatSignature](signature-flat)>  @<utils-joinsignature> @SRC<bytes>
-Return the flat-format of //aSignaturelike//, which is 65 bytes (130 nibbles)
+_property: ethers.utils.joinSignature(aSignatureLike) => string<[RawSignature](signature-raw)>  @<utils-joinSignature> @SRC<bytes>
+Return the raw-format of //aSignaturelike//, which is 65 bytes (130 nibbles)
 long, concatenating the **r**, **s** and (normalized) **v** of a Signature.
 
-_property: ethers.utils.splitSignature(aSignatureLikeOrBytesLike) => [[signature]]  @<utils-splitsignature> @SRC<bytes>
-Return the full expanded-format of //aSignaturelike// or a flat-format [[datahexstring]].
+_property: ethers.utils.splitSignature(aSignatureLikeOrBytesLike) => [[Signature]]  @<utils-splitSignature> @SRC<bytes>
+Return the full expanded-format of //aSignaturelike// or a raw-format [[DataHexString]].
 Any missing properties will be computed.
 
 _subsection: Random Bytes
 
-_property: ethers.utils.randomBytes(length) => Uint8Array  @<utils-randombytes> @SRC<random/index>
+_property: ethers.utils.randomBytes(length) => Uint8Array  @<utils-randomBytes> @SRC<random/index>
 Return a new Uint8Array of //length// random bytes.
 
-_property: ethers.utils.shuffled(array) => Array<any>  @<utils.shuffled> @SRC<random>
+_property: ethers.utils.shuffled(array) => Array<any>  @<utils-shuffled> @SRC<random>
 Return a copy of //array// shuffled using [[link-wiki-shuffle]].
 
 _code: Examples @lang<javascript>
@@ -169,10 +166,12 @@ _code: Examples @lang<javascript>
 utils.randomBytes(8)
 //!
 
-const foo = [ 1, 2, 3, 4, 5, 6, 7 ];
-utils.shuffled(foo);
+const data = [ 1, 2, 3, 4, 5, 6, 7 ];
+
+// Returns a new Array
+utils.shuffled(data);
 //!
 
-// The original array is unscathed...
-foo
+// The Original is unscathed...
+data
 //!

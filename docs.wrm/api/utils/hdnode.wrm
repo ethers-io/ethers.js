@@ -1,16 +1,16 @@
-_section: HD Wallet
+_section: HD Wallet @<hdnodes>
 
 TODO: Explain [BIP32](link-bip-32) [BIP-39](link-bip-39) and whatnot here...
 
 _subsection: Types
 
-_heading: Constants @<hdnode-defaultpath> @SRC<hdnode:defaultPath>
+_heading: Constants @<hdnodes--defaultpath> @SRC<hdnode:defaultPath>
 
 _property: ethers.utils.defaultPath => "m/44'/60'/0'/0/0"
 The default path for Ethereum in an HD Wallet
 
 
-_heading: Mnemonic @<hdnode-mnemonic>
+_heading: Mnemonic @<Mnemonic>
 
 _property: mnemonic.phrase => string
 The mnemonic phrase for this mnemonic. It is 12, 15, 18, 21 or 24 words long
@@ -23,39 +23,39 @@ _property: mnemonic.locale => string
 The language of the wordlist this mnemonic is using.
 
 
-_subsection: HDNode @<hdnode> @SRC<hdnode:class.HDNode>
+_subsection: HDNode @<HDNode> @SRC<hdnode:class.HDNode>
 
-_heading: Creating Instances
+_heading: Creating Instances @<HDNode--creating>
 
-_property: ethers.HDNode.fromMnemonic(phrase [, password [, wordlist ] ]) => [[hdnode]]  @SRC<hdnode>
-Return the [[hdnode]] for //phrase// with the optional //password//
+_property: ethers.HDNode.fromMnemonic(phrase [, password [, wordlist ] ]) => [[HDNode]]  @<HDNode-fromMnemonic> @SRC<hdnode>
+Return the [[HDNode]] for //phrase// with the optional //password//
 and //wordlist//.
 
-_property: ethers.HDNode.fromSeed(aBytesLike) => [[hdnode]]  @SRC<hdnode>
-Return the [[hdnode]] for the seed //aBytesLike//.
+_property: ethers.HDNode.fromSeed(aBytesLike) => [[HDNode]]  @<HDNode-fromSeed> @SRC<hdnode>
+Return the [[HDNode]] for the seed //aBytesLike//.
 
-_property: ethers.HDNode.fromExtendedKey(extendedKey) => [[hdnode]]  @SRC<hdnode>
-Return the [[hdnode]] for the //extendedKey//. If //extendedKey// was
+_property: ethers.HDNode.fromExtendedKey(extendedKey) => [[HDNode]]  @<HDNode-fromExtendedKey> @SRC<hdnode>
+Return the [[HDNode]] for the //extendedKey//. If //extendedKey// was
 neutered, the **HDNode** will only be able to compute addresses and not
 private keys.
 
 
-_heading: Properties
+_heading: Properties  @<HDNode--properties>
 
-_property: hdNode.privateKey => string<[[datahexstring]]<32>>
+_property: hdNode.privateKey => string<[[DataHexString]]<32>>
 The private key for this HDNode.
 
-_property: hdNode.publicKey => string<[[datahexstring]]<33>>
+_property: hdNode.publicKey => string<[[DataHexString]]<33>>
 The (compresses) public key for this HDNode.
 
-_property: hdNode.fingerprint => string<[[datahexstring]]<4>>
+_property: hdNode.fingerprint => string<[[DataHexString]]<4>>
 The fingerprint is meant as an index to quickly match parent and
 children nodes together, however collisions may occur and software
 should verify matching nodes.
 
 Most developers will not need to use this.
 
-_property: hdNode.parentFingerprint => string<[[datahexstring]]<4>>
+_property: hdNode.parentFingerprint => string<[[DataHexString]]<4>>
 The fingerprint of the parent node. See //fingerprint// for more
 details.
 
@@ -64,14 +64,14 @@ Most developers will not need to use this.
 _property: hdNode.address => string<[[address]]>
 The address of this HDNode.
 
-_property: hdNode.mnemonic => [[hdnode-mnemonic]]
+_property: hdNode.mnemonic => [[Mnemonic]]
 The mnemonic of this HDNode, if known.
 
 _property: hdNode.path => string
 The path of this HDNode, if known. If the //mnemonic// is also known,
 this will match ``mnemonic.path``.
 
-_property: hdNode.chainCode => string<[[datahexstring]]<32>>
+_property: hdNode.chainCode => string<[[DataHexString]]<32>>
 The chain code is used as a non-secret private key which is then used
 with EC-multiply to provide the ability to derive addresses without
 the private key of child non-hardened nodes.
@@ -97,29 +97,29 @@ serializing and deserializing (using the ``fromExtendedKey`` class
 method) will result in reduced information.
 
 
-_heading: Methods
+_heading: Methods  @<HDNode--methods>
 
-_property: hdNode.neuter() => [[hdnode]] @SRC<hdnode>
+_property: hdNode.neuter() => [[HDNode]]  @<HDNode-neuter> @SRC<hdnode>
 Return a new instance of //hdNode// with its private key removed
 but all otehr properties preserved. This ensures that the key
 can not leak the private key of itself or any derived children,
 but may still be used to compute the addresses of itself and
 any non-hardened children.
 
-_property: hdNode.derivePath(path) => [[hdnode]]  @SRC<hdnode>
-Return a new [[hdnode]] which is the child of //hdNode// found
+_property: hdNode.derivePath(path) => [[HDNode]]  @<HDNode-derivePath> @SRC<hdnode>
+Return a new [[HDNode]] which is the child of //hdNode// found
 by deriving //path//.
 
 
 
-_subsection: Other Functions
+_subsection: Other Functions  @<HDNode--utilities>
 
-_property: ethers.utils.mnemonicToSeed(phrase [ , password]) => string<[[datahexstring]]<64>>  @SRC<hdnode>
+_property: ethers.utils.mnemonicToSeed(phrase [ , password]) => string<[[DataHexString]]<64>>  @<utils-mnemonicToSeed> @SRC<hdnode>
 Convert a mnemonic phrase to a seed, according to [BIP-39](link-bip-39).
 
-_property: ethers.utils.mnemonicToEntropy(phrase [ , wordlist ]) => string<[[datahexstring]]> @SRC<hdnode>
+_property: ethers.utils.mnemonicToEntropy(phrase [ , wordlist ]) => string<[[DataHexString]]>  @<utils-mnemonicToEntropy> @SRC<hdnode>
 Convert a mnemonic phrase to its entropy, according to [BIP-39](link-bip-39).
 
-_property: ethers.utils.isValidMnemonic(phrase [ , wordlist ]) => boolean  @SRC<hdnode>
+_property: ethers.utils.isValidMnemonic(phrase [ , wordlist ]) => boolean  @<utils-isValidMnemonic> @SRC<hdnode>
 Returns true if //phrase// is a valid mnemonic phrase, by
 testing the checksum.

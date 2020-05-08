@@ -17,12 +17,12 @@ _subsection: Importing
 
 _heading: Node.js
 
-_code: @lang<script>
+_code: node.js require @lang<script>
 
-// CommonJS
 const { ethers } = require("ethers");
 
-// ES6 or TypeScript
+_code: ES6 or TypeScript @lang<script>
+
 import { ethers } from "ethers";
 
 
@@ -35,7 +35,14 @@ yourself.
 For quick demos or prototyping though, it can be loaded in your
 Web Applications from our CDN.
 
-_code: @lang<html>
+
+_code: ES6 in the Browser @lang<html>
 
 <script src="https://cdn.ethers.io/lib/ethers-5.0.esm.min.js"
+        type="application/javascipt"></script>
+
+
+_code: ES3 (UMD) in the Browser @lang<html>
+
+<script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"
         type="application/javascipt"></script>

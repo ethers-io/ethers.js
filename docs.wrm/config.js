@@ -116,6 +116,7 @@ const getSourceUrl = (function(path, include, exclude) {
 })("../packages/", new RegExp("packages/.*/src.ts/.*\.ts$"), new RegExp("/node_modules/|src.ts/.*browser.*"));
 
 function codeContextify(context) {
+    const { inspect } = require("util");
     const ethers = context.require("./packages/ethers");
 
     context.ethers = ethers;
@@ -127,16 +128,45 @@ function codeContextify(context) {
     context.hexValue = ethers.utils.hexValue;
     context.Wallet = ethers.Wallet;
 
-    context._inspect = function(value) {
+    context.BigNumber.prototype[inspect.custom] = function(depth, options) {
+        return `{ BigNumber: ${JSON.stringify(this.toString()) } }`;
+    }
+
+
+    context._inspect = function(value, depth) {
+        /*
         if (context.BigNumber.isBigNumber(value)) {
             return `{ BigNumber: ${ JSON.stringify(value.toString()) } }`;
         }
 
         if (value && typeof(value.length) === "number" && typeof(value) !== "string") {
-            return "[ " + Array.prototype.map.call(value, (i) => context._inspect(i)).join(", ") + " ]";
+            return "[ " + Array.prototype.map.call(value, (i) => context._inspect(i, (depth || 0) + 1)).join(", ") + " ]";
         }
 
-        return JSON.stringify(value);
+        if (typeof(value) === "object" && depth == null) {
+            const keys = Object.keys(value);
+            keys.sort();
+            value = keys.reduce((accum, key) => {
+                accum[key] = value[key];
+                return accum;
+            }, { });
+        */
+            /*
+            return [
+                "{",
+                keys.map((key) => {
+                    return `  ${key}: ${ context._inspect(value[key], 1) },`;
+                }).join("\n"),
+                "}"
+            ].join("\n");
+            */
+        //}
+
+        //return JSON.stringify(value);
+        return inspect(value, {
+            compact: false,
+            sorted: true,
+        });
     }
 }
 
@@ -145,8 +175,8 @@ module.exports = {
   subtitle: "v5.0-beta",
   logo: "logo.svg",
 
-  link: "https://docs-beta.ethers.io",
-  copyright: "The content of this site is licensed under the [Creative Commons Attribution 4.0 International License](https://choosealicense.com/licenses/cc-by-4.0/).",
+  link: "https:/\/docs-beta.ethers.io",
+  copyright: "The content of this site is licensed under the [Creative Commons License](https:/\/choosealicense.com/licenses/cc-by-4.0/). Generated on &$now;.",
 
   markdown: {
       "banner": "-----\n\nDocumentation: [html](https://docs-beta.ethers.io/)\n\n-----\n\n"
@@ -165,18 +195,26 @@ module.exports = {
       "link-etherscan": "https:/\/etherscan.io",
       "link-etherscan-api": "https:/\/etherscan.io/apis",
       "link-flatworm": "https:/\/github.com/ricmoo/flatworm",
-      "link-geth": "https:/\/geth.ethereum.org",
-      "link-infura": "https:/\/infura.io",
+      "link-geth": { name: "Geth", url: "https:/\/geth.ethereum.org" },
+      "link-infura": { name: "INFURA", url: "https:/\/infura.io" },
       "link-ledger": "https:/\/www.ledger.com",
-      "link-metamask": "https:/\/metamask.io/",
-      "link-parity": "https:/\/www.parity.io",
+      "link-metamask": { name: "Metamask", url: "https:/\/metamask.io/" },
+      "link-parity": { name: "Parity", url: "https:/\/www.parity.io" },
       "link-rtd": "https:/\/github.com/readthedocs/sphinx_rtd_theme",
       "link-semver": { name: "semver", url: "https:/\/semver.org" },
       "link-solidity": { name: "Solidity" , url: "https:/\/solidity.readthedocs.io/en/v0.6.2/" },
       "link-sphinx": "https:/\/www.sphinx-doc.org/",
 
+      "link-json-rpc": "https:/\/github.com/ethereum/wiki/wiki/JSON-RPC",
+      "link-parity-trace": "https:/\/openethereum.github.io/wiki/JSONRPC-trace-module",
+      "link-parity-rpc": "https:/\/openethereum.github.io/wiki/JSONRPC",
+      "link-geth-debug": "https:/\/github.com/ethereum/go-ethereum/wiki/Management-APIs#debug",
+      "link-geth-rpc": "https:/\/github.com/ethereum/go-ethereum/wiki/Management-APIs",
+
       "link-legacy-docs3": "https:/\/docs.ethers.io/ethers.js/v3.0/html/",
       "link-legacy-docs4": "https:/\/docs.ethers.io/ethers.js",
+
+      "link-infura-secret": "https:/\/infura.io/docs/gettingStarted/authentication",
 
       "link-web3": "https:/\/github.com/ethereum/web3.js",
       "link-web3-http": "https:/\/github.com/ethereum/web3.js/tree/1.x/packages/web3-providers-http",

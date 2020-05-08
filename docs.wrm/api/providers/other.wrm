@@ -2,12 +2,12 @@ _section: Other Providers
 
 Others...
 
-_subsection: FallbackProvider  @<provider-fallback> @INHERIT<[[provider]]> @SRC<providers/fallback-provider:class.FallbackProvider>
+_subsection: FallbackProvider  @<FallbackProvider> @INHERIT<[[Provider]]> @SRC<providers/fallback-provider:class.FallbackProvider>
 
-The **FallbackProvider** is the most advanced [[provider]] available in
+The **FallbackProvider** is the most advanced [[Provider]] available in
 ethers.
 
-It uses a quorum and connects to multiple [Providers](provider) as backends,
+It uses a quorum and connects to multiple [Providers](Provider) as backends,
 each configured with a //priority// and a //weight// .
 
 When a request is made, the request is dispatched to multiple backends, randomly
@@ -23,10 +23,10 @@ Creates a new instance of a FallbackProvider connected to //providers//. If
 quorum is not specified, half of the total sum of the provider weights is
 used.
 
-The //providers// can be either an array of [[provider]] or [[provider-fallback-config]].
-If a [[provider]] is provided, the defaults are a priority of 1 and a weight of 1.
+The //providers// can be either an array of [[Provider]] or [[FallbackProviderConfig]].
+If a [[Provider]] is provided, the defaults are a priority of 1 and a weight of 1.
 
-_property: provider.providerConfigs => Array<[[provider-fallback-config]]>
+_property: provider.providerConfigs => Array<[[FallbackProviderConfig]]>
 The list of Provider Configurations that describe the backends.
 
 _property: provider.quorum => number
@@ -34,9 +34,9 @@ The quorum the backend responses must agree upon before a result will be
 resolved. By default this is //half the sum of the weights//.
 
 
-_heading: FallbackProviderConfig  @<provider-fallback-config>
+_heading: FallbackProviderConfig  @<FallbackProviderConfig>
 
-_property: fallbackProviderConfig.provider => [[provider]]
+_property: fallbackProviderConfig.provider => [[Provider]]
 The provider for this configuration.
 
 _property: fallbackProviderConfig.priority => number
@@ -45,7 +45,7 @@ priorities. If multiple providers share the same prioirty, they are choosen
 at random.
 
 _property: fallbackProviderConfig.stallTimeout => number
-The timeout (in ms) after which another [[provider]] will be attempted. This
+The timeout (in ms) after which another [[Provider]] will be attempted. This
 does not affect the current Provider; if it returns a result it is counted
 as part of the quorum.
 
@@ -54,10 +54,10 @@ time of requests.
 
 _property: fallbackProviderConfig.weight => number
 The weight a response from this provider provides. This can be used if a given
-[[provider]] is more trusted, for example.
+[[Provider]] is more trusted, for example.
 
 
-_subsection: IpcProvider  @<provider-ipc> @INHERIT<[[provider-jsonrpc]]> @SRC<providers:class.IpcProvider>
+_subsection: IpcProvider  @<IpcProvider> @INHERIT<[[JsonRpcProvider]]> @SRC<providers:class.IpcProvider>
 
 The **IpcProvider** allows the JSON-RPC API to be used over a local
 filename on the file system, exposed by Geth, Parity and other nodes.
@@ -67,13 +67,13 @@ and may have additional complications due to file permissions. See any
 related notes on the documentation for the actual node implementation websites.
 
 _property: ipcProvider.path => string
-The path this [[provider]] is connected to.
+The path this [[Provider]] is connected to.
 
 
-_subsection: UrlJsonRpcProvider @<provider-urljsonrpc> @INHERIT<[[provider-jsonrpc]]> @SRC<providers:class.UrlJsonRpcProvider>
+_subsection: UrlJsonRpcProvider @<UrlJsonRpcProvider> @INHERIT<[[JsonRpcProvider]]> @SRC<providers:class.UrlJsonRpcProvider>
 
 This class is intended to be sub-classed and not used directly. It
-simplifies creating a [[provider]] where a normal [[provider-jsonrpc]]
+simplifies creating a [[Provider]] where a normal [[JsonRpcProvider]]
 would suffice, with a little extra effort needed to generate the JSON-RPC
 URL.
 
@@ -93,12 +93,12 @@ The URL to use for the JsonRpcProvider instance.
 
 
 
-_subsection: Web3Provider @<provider-web3> @INHERIT<[[provider-jsonrpc]]>
+_subsection: Web3Provider @<Web3Provider> @INHERIT<[[JsonRpcProvider]]>
 
 The Web3Provider is meant to ease moving from a [web3.js based](link-web3)
 application to ethers by wraping an existing Web3-compatible (such as a
 [Web3HttpProvider](link-web3-http)[Web3IpcProvider](link-web3-ipc) or
-[Web3WsProvider](link-web3-ws)) and exposing it as an ethers.js [[provider]]
+[Web3WsProvider](link-web3-ws)) and exposing it as an ethers.js [[Provider]]
 which can then be used with the rest of the library.
 
 _property: new ethers.providers.Web3Provider(web3Provider [, network ])

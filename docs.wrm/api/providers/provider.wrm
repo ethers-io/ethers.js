@@ -1,21 +1,21 @@
-_section: Provider @<provider>
+_section: Provider @<Provider>
 
 Explain what a provider is...
 
 
-_subsection: Accounts Methods
+_subsection: Accounts Methods  @<Provider--account-methods>
 
-_property: provider.getBalance(address [ , blockTag = latest ]) => Promise<[[bignumber]]>  @<provider-getbalance> @SRC<providers/base-provider>
+_property: provider.getBalance(address [ , blockTag = latest ]) => Promise<[[BigNumber]]>  @<Provider-getBalance> @SRC<providers/base-provider>
 Returns the balance of //address// as of the //blockTag// block height.
 
-_property: provider.getCode(address [ , blockTag = latest ]) => Promise<string<[[datahexstring]]>>  @<providers-getcode> @SRC<providers/base-provider>
+_property: provider.getCode(address [ , blockTag = latest ]) => Promise<string<[[DataHexString]]>>  @<Provider-getCode> @SRC<providers/base-provider>
 Returns the contract code of //address// as of the //blockTag// block height. If there is
 no contract currently deployed, the result is ``0x``.
 
-_property: provider.getStorageAt(addr, pos [ , blockTag = latest ]) => Promise<string<[[datahexstring]]>>  @<providers-getstorageat> @SRC<providers/base-provider>
+_property: provider.getStorageAt(addr, pos [ , blockTag = latest ]) => Promise<string<[[DataHexString]]>>  @<Provider-getStorageAt> @SRC<providers/base-provider>
 Returns the ``Bytes32`` value of the position //pos// at address //addr//, as of the //blockTag//.
 
-_property: provider.getTransactionCount(address [ , blockTag = latest ]) => Promise<number>  @<providers-gettransactioncount> @SRC<providers/base-provider>
+_property: provider.getTransactionCount(address [ , blockTag = latest ]) => Promise<number>  @<Provider-getTransactionCount> @SRC<providers/base-provider>
 Returns the number of transactions //address// has ever **sent**, as of //blockTag//.
 This value is required to be the nonce for the next transaction from //address//
 sent to the network.
@@ -45,27 +45,27 @@ provider.getTransactionCount("ricmoo.firefly.eth");
 //!
 
 
-_subsection: Blocks Methods
+_subsection: Blocks Methods  @<Provider--block-methods>
 
-_property: provider.getBlock(block) => Promise<[[provider-block]]>  @<providers-getblock> @SRC<providers/base-provider>
+_property: provider.getBlock(block) => Promise<[[providers-Block]]>  @<Provider-getBlock> @SRC<providers/base-provider>
 Get the //block// from the network, where the ``result.transactions`` is a list
 of transaction hashes.
 
-_property: provider.getBlockWithTransactions(block) => Promise<[[provider-blocktxs]]>  @<providers-getblockwithtransactions> @SRC<providers/base-provider>
+_property: provider.getBlockWithTransactions(block) => Promise<[[providers-BlockWithTransactions]]>  @<Provider-getBlockWithTransactions> @SRC<providers/base-provider>
 Get the //block// from the network, where the ``result.transactions`` is
-an Array of [[provider-transactionresponse]] objects.
+an Array of [[providers-TransactionResponse]] objects.
 
 
 _subsection: Ethereum Naming Service (ENS) Methods
 
 TODO: Explain ENS here...
 
-_property: provider.lookupAddress(address) => Promise<string>  @<providers-lookupaddress> @SRC<providers/base-provider>
+_property: provider.lookupAddress(address) => Promise<string>  @<Provider-lookupAddress> @SRC<providers/base-provider>
 Performs a reverse lookup of the //address// in ENS using the
 //Reverse Registrar//.  If the name does not exist, or the
 forward lookup does not match, ``null`` is returned.
 
-_property: provider.resolveName(name) => Promise<string<[Address](address)>>  @<providers-resolvename> @SRC<providers/base-provider>
+_property: provider.resolveName(name) => Promise<string<[Address](address)>>  @<Provider-ResolveName> @SRC<providers/base-provider>
 Looks up the address of //name//. If the name is not owned, or
 does not have a //Resolver// configured, or the //Resolver// does
 not have an address configured, ``null`` is returned.
@@ -87,36 +87,36 @@ provider.resolveName("ricmoo.firefly.eth");
 //!
 
 
-_subsection: Logs Methods
+_subsection: Logs Methods  @<Provider--log-methods>
 
-_property: provider.getLogs(filter) => Promise<Array<[[provider-log]]>>  @<providers-getlogs> @SRC<providers/base-provider>
-Returns the Array of [[provider-log]] matching the //filter//.
+_property: provider.getLogs(filter) => Promise<Array<[[providers-Log]]>>  @<Provider-getLogs> @SRC<providers/base-provider>
+Returns the Array of [[providers-Log]] matching the //filter//.
 
 Keep in mind that many backends will discard old events, and that requests
 which are too broad may get dropped as they require too many resources to
 execute the query.
 
 
-_subsection: Network Status Methods
+_subsection: Network Status Methods  @<Provider--network-methods>
 
-_property: provider.getNetwork() => Promise<[[provider-network]]>  @<providers-getnetwork> @SRC<providers/base-provider:method.BaseProvider.getNetwork>
-Returns the [[provider-network]] this Provider is connected to.
+_property: provider.getNetwork() => Promise<[[providers-Network]]>  @<Provider-getNetwork> @SRC<providers/base-provider:method.BaseProvider.getNetwork>
+Returns the [[providers-Network]] this Provider is connected to.
 
-_property: provider.getBlockNumber() => Promise<number>  @<providers-getblocknumber> @SRC<providers/base-provider>
+_property: provider.getBlockNumber() => Promise<number>  @<Provider-getBlockNumber> @SRC<providers/base-provider>
 Returns the block number (or height) of the most recently mined block.
 
-_property: provider.getGasPrice() => Promise<[[bignumber]]>  @<providers-getgasprice> @SRC<providers/base-provider>
+_property: provider.getGasPrice() => Promise<[[BigNumber]]>  @<Provider-getGasPrice> @SRC<providers/base-provider>
 Returns a //best guess// of the [[gas-price]] to use in a transaction.
 
 
-_subsection: Transactions Methods
+_subsection: Transactions Methods  @<Provider--transaction-methods>
 
-_property: provider.call(transaction [ , blockTag = latest ]) => Promise<string<[[datahexstring]]>>  @<providers-call> @SRC<providers/base-provider>
+_property: provider.call(transaction [ , blockTag = latest ]) => Promise<string<[[DataHexString]]>>  @<Provider-call> @SRC<providers/base-provider>
 Returns the result of executing the //transaction//, using //call//. A call
 does not require any ether, but cannot change any state. This is useful
 for calling gettings on Contracts.
 
-_property: provider.estimateGas(transaction) => Promise<[[bignumber]]>  @<providers-estimategas> @SRC<providers/base-provider>
+_property: provider.estimateGas(transaction) => Promise<[[BigNumber]]>  @<Provider-estimateGas> @SRC<providers/base-provider>
 Returns an estimate of the amount of gas that would be required to submit //transaction//
 to the network.
 
@@ -124,48 +124,165 @@ An estimate may not be accurate since there could be another transaction
 on the network that was not accounted for, but after being mined affected
 relevant state.
 
-_property: provider.sendTransaction(transaction) => Promise<[[provider-transactionresponse]]>  @<providers-sendtransaction> @SRC<providers/base-provider>
+_property: provider.sendTransaction(transaction) => Promise<[[providers-TransactionResponse]]>  @<Provider-sendTransaction> @SRC<providers/base-provider>
 Submits //transaction// to the network to be mined. The //transaction// **must** be signed,
 and be valid (i.e. the nonce is correct and the account has sufficient balance to pay
 for the transaction).
 
-_property: provider.waitForTransaction(hash [ , confirms = 1 [ , timeout ] ]) => Promise<[TxReceipt](provider-receipt)>  @<providers-waitfortransaction> @SRC<providers/base-provider>
+_property: provider.waitForTransaction(hash [ , confirms = 1 [ , timeout ] ]) => Promise<[TxReceipt](providers-TransactionReceipt)>  @<Provider-waitForTransaction> @SRC<providers/base-provider>
 Returns a Promise which will not resolve until //transactionHash// is mined.
 
 
-_subsection: Event Emitter Methods
+_subsection: Event Emitter Methods @<Provider--event-methods>
 
 Explain events here...
 
-_property: provider.on(eventName, listener) => this  @<providers-on> @SRC<providers/base-provider>
+_property: provider.on(eventName, listener) => this  @<Provider-on> @SRC<providers/base-provider>
 Add a //listener// to be triggered for each //eventName//.
 
-_property: provider.once(eventName, listener) => this  @<providers-once> @SRC<providers/base-provider>
+_property: provider.once(eventName, listener) => this  @<Provider-once> @SRC<providers/base-provider>
 Add a //listener// to be triggered for only the next //eventName//,
 at which time it be removed.
 
-_property: provider.emit(eventName, ...args) => boolean  @<providers-emit> @SRC<providers/base-provider>
+_property: provider.emit(eventName, ...args) => boolean  @<Provider-emit> @SRC<providers/base-provider>
 Notify all listeners of //eventName//, passing //args// to each listener. This
 is generally only used internally.
 
-_property: provider.off(eventName [ , listener ]) => this  @<providers-off> @SRC<providers/base-provider>
+_property: provider.off(eventName [ , listener ]) => this  @<Provider-off> @SRC<providers/base-provider>
 Remove a //listener// for //eventName//. If no //listener// is provided,
 all listeners for //eventName// are removed.
 
-_property: provider.removeAllListeners([ eventName ]) => this  @<providers-removealllisteners> @SRC<providers/base-provider>
+_property: provider.removeAllListeners([ eventName ]) => this  @<Provider-removeAllListeners> @SRC<providers/base-provider>
 Remove all the listeners for //eventName//. If no //eventName// is provided,
 **all** events are removed.
 
-_property: provider.listenerCount([ eventName ]) => number  @<providers-listenercount> @SRC<providers/base-provider>
+_property: provider.listenerCount([ eventName ]) => number  @<Provider-listenerCount> @SRC<providers/base-provider>
 Returns the number of listeners for //eventName//. If no //eventName// is
 provided, the total number of listeners is returned.
 
-_property: provider.listeners(eventName) => Array<Listener>  @<providers-listeners> @SRC<providers/base-provider>
+_property: provider.listeners(eventName) => Array<Listener>  @<Provider-listeners> @SRC<providers/base-provider>
 Returns the list of Listeners for //eventName//.
 
 
-_subsection: Inspection Methods
+_heading: Events  @<Provider--events>
 
-_property: Provider.isProvider(object) => boolean  @<providers-isprovider> @SRC<abstract-provider>
+Any of the following may be used as the //eventName// in the above methods.
+
+_definition: **Log Filter**
+
+A filter is an object, representing a contract log Filter, which has the optional
+properties ``address`` (the source contract) and ``topics`` (a topic-set to match).
+
+If ``address`` is unspecified, the filter matches any contract address.
+
+See events for more information on how to specify topic-sets.
+
+_definition: **Topic-Set Filter**
+
+The value of a **Topic-Set Filter** is a array of Topic-Sets.
+
+This event is identical to a //Log Filter// with the address omitted (i.e. from
+any contract).
+
+_definition: **Transaction Filter**
+
+The value of a **Transaction Filter** is any transaction hash.
+
+This event is emitted on every block that is part of a chain that
+includes the given mined transaction. It is much more common that the
+[once](Provider-once) method is used than the [on](Provider-on) method.
+
+_null:
+
+In addition to transaction and filter events, there are several named
+events.
+
+_table: Named Provider Events @style<full>
+
+$Block:    emitted when a new block is mined
+$Error:    emitted on any error
+$Pending:  emitted when a new transaction enters the memory pool; only
+           certain providers offer this event and may require
+           running your own node for reliable results
+$WillPoll: emitted prior to a polling loop is about to begin;
+           //(very rarely used by most developers)//
+$DidPoll:  emitted after all events from a polling loop are emitted;
+           //(very rarely used by most developers)//
+$Poll:     emitted during each poll cycle after `blockNumber` is updated
+           (if changed) and before any other events (if any) are emitted
+           during the poll loop;
+           //(very rarely used by most developers)//
+$Debug:    each Provider may use this to emit useful debugging information
+           and the format is up to the developer;
+           //(very rarely used by most developers)//
+
+|   **Event Name**    |  **Arguments**                   <|   **Description**  <<<|
+|    ``"block"``      |   //blockNumber//                <| $Block             <<<|
+|    ``"error"``      |   //error//                      <| $Error             <<<|
+|    ``"pending"``    |   //pendingTransaction//         <| $Pending           <<<|
+|    ``"willPoll"``   |   //pollId//                     <| $WillPoll          <<<|
+|    ``"poll"``       |   //pollId//, //blockNumber//    <| $Poll              <<<|
+|    ``"didPoll"``    |   //pollId//                     <| $DidPoll           <<<|
+|    ``"debug"``      |   provider dependent             <| $Debug             <<<|
+
+
+_code: Events Example @lang<javasript>
+
+// <hide>
+const provider = ethers.getDefaultProvider();
+const txHash = utils.id("dummy-data");
+// </hide>
+
+provide.on("block", (blockNumber) => {
+    // Emitted on every block change
+})
+
+
+provider.once(txHash, (transaction) => {
+    // Emitted when the transaction has been mined
+})
+
+
+// This filter could also be generated with the Contract or
+// Interface API. If address is not specified, any address
+// matches and if topics is not specified, any log matches
+const filter = {
+    address: "dai.tokens.ethers.eth",
+    topics: [
+        utils.id("Transfer(address,address,uint256")
+    ]
+}
+provider.on(filter, (log, event) => {
+    // Emitted whenever a DAI token transfer occurs
+})
+
+
+// Notice this is an array of topic-sets and is identical to
+// using a filter with no address (i.e. match any address)
+const topicSets = [
+    utils.id("Transfer(address,address,uint256"),
+    null,
+    [
+        myAddress,
+        myOtherAddress
+    ]
+]
+provider.on(topicSets, (log, event) => {
+    // Emitted any token is sent TO either address
+})
+
+
+provider.on("pending", (tx) => {
+    // Emitted when any new pending transaction is noticed
+});
+
+provider.on("error", (tx) => {
+    // Emitted when any error occurs
+});
+
+
+_subsection: Inspection Methods  @<Provider--inspection-methods>
+
+_property: Provider.isProvider(object) => boolean  @<Provider-isProvider> @SRC<abstract-provider>
 Returns true if and only if //object// is a Provider.
 

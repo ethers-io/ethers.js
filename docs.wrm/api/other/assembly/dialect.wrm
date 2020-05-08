@@ -42,7 +42,7 @@ _subsection: Literals @<asm-dialect-literal>
 A **Literal** puts data on the stack when executed using a ``PUSH``
 operation.
 
-A **Literal** can be provided using a [[datahexstring]] or a decimal
+A **Literal** can be provided using a [[DataHexString]] or a decimal
 byte value.
 
 @TODO: exmples

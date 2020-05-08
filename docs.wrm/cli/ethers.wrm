@@ -78,9 +78,7 @@ OTHER OPTIONS
 
 _subsection: Examples
 
-_heading: Creating Wallets  @<cliex-init>
-
-_code: @lang<shell>
+_code: Creating New Wallets @lang<shell> @<cliex-init>
 
 /home/ethers> ethers init wallet.json
 Creating a new JSON Wallet - wallet.json
@@ -98,9 +96,7 @@ Saved:               wallet.json
 Transaction Hash: 0x8dc55b8f8dc8076acded97f9e3ed7d6162460c0221e2769806006b6d7d1156e0
 
 
-_heading: Sending Ether and Tokens  @<cliex-send>
-
-_code: @lang<shell>
+_code: Sending Ether and Tokens  @<cliex-send> @lang<shell>
 
 # Sending ether
 /home/ricmoo> ethers --account wallet.json send ricmoo.firefly.eth 0.123
@@ -147,9 +143,7 @@ Response:
   Hash:  0xd609ecb7e3b5e8d36fd781dffceede3975ece6774b6322ea56cf1e4d0a17e3a1
 
 
-_heading: Signing Messages  @<cliex-signing>
-
-_code: @lang<shell>
+_code: Signing Messages  @<cliex-signing> @lang<shell>
 
 /home/ethers> ethers --account wallet.json sign-message 'Hello World'
 Password (wallet.json): ******
@@ -173,25 +167,47 @@ The ``eval`` command can be used to execute simple one-line scripts from
 the command line to be passed into other commands or stored in script
 environment variables.
 
-_code: @lang<shell>
-
-# Get the formatted balance of an account
-/home/ethers> ethers --network ropsten --account wallet.json eval 'accounts[0].getBalance().then(b => formatEther(b))'
+_code: Get the formatted balance of an account  @lang<shell>
+/home/ethers> ethers --network ropsten \
+               --account wallet.json \
+               eval \
+               'accounts[0].getBalance().then(b => formatEther(b))'
 3.141592653589793238
 
-# Get the current block number
-/home/ethers> ethers --network rinkeby eval "provider.getBlockNumber()"
+_code: Get the current block number  @lang<shell>
+/home/ethers> ethers --network rinkeby \
+               eval "provider.getBlockNumber()"
 5761009
 
-# Convert a Solidity signature to JSON
-/home/ethers> ethers eval 'utils.Fragment.from("function balanceOf(address owner) view returns (uint)").format("json")' 
-{"type":"function","name":"balanceOf","constant":true,"stateMutability":"view","payble":false,"inputs":[{"type":"address","name":"owner"}],"ouputs":[{"type":"uint256"}]}
+_code: Convert a Solidity signature to JSON  @lang<shell>
+/home/ethers> ethers eval 'utils.Fragment.from(
+               "function balanceOf(address) view returns (uint)"
+              ).format("json")' | json_pp
+{
+   "inputs" : [
+      {
+         "type" : "address",
+         "name" : "owner"
+      }
+   ],
+   "type" : "function",
+   "payble" : false,
+   "stateMutability" : "view",
+   "ouputs" : [
+      {
+         "type" : "uint256"
+      }
+   ],
+   "name" : "balanceOf",
+   "constant" : true
+}
 
-# Compute a topic hash
+
+_code: Compute a topic hash  @lang<shell>
 /home/ricmoo> ethers eval 'id("Transfer(address,address,uint256")'
 0xd99659a21de82e379975ce8df556f939a4ccb95e92144f38bb0dd35730ffcdd5
 
-# Create a random mnemonic
+_code: Create a random mnemonic  @lang<shell>
 /home/ricmoo> ethers eval 'Wallet.createRandom().mnemonic'
 useful pond inch knock ritual matrix giggle attend dilemma convince coach amazing
 
@@ -205,7 +221,7 @@ use to decrypt the account.
 
 _code: @lang<shell>
 
-/home/ricmoo> ethers --account public-mnemonic.txt --mnemonic-password
+/home/ricmoo> ethers --account mnemonic.txt --mnemonic-password
 Password (mnemonic): ******
 network: homestead (chainId: 1)
 homestead> accounts[0].getAddress()

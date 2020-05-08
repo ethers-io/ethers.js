@@ -1,0 +1,952 @@
+{
+  "ethers.js/html/api-advanced.html":
+    { "tag": "" },
+  "ethers.js/html/api-advanced.html#abi-coder":
+    { "tag": "" },
+  "ethers.js/html/api-advanced.html#api-interface":
+    { "tag": "interface" },
+  "ethers.js/html/api-advanced.html#creating-an-instance":
+    { "tag": "" },
+  "ethers.js/html/api-advanced.html#creating-instances":
+    { "tag": "" },
+  "ethers.js/html/api-advanced.html#cryptographic-operations":
+    { "tag": "" },
+  "ethers.js/html/api-advanced.html#deriving-child-and-neutered-nodes":
+    { "tag": "hd-wallet--hdnode--methods" },
+  "ethers.js/html/api-advanced.html#descriptions":
+    { "tag": "" },
+  "ethers.js/html/api-advanced.html#hdnode":
+    { "tag": "hd-wallet" },
+  "ethers.js/html/api-advanced.html#interface":
+    { "tag": "abi-interface" },
+  "ethers.js/html/api-advanced.html#low-level-api":
+    { "tag": "" },
+  "ethers.js/html/api-advanced.html#object-test-functions":
+    { "tag": "" },
+  "ethers.js/html/api-advanced.html#parsing-objects":
+    { "tag": "" },
+  "ethers.js/html/api-advanced.html#prototype":
+    { "tag": "" },
+  "ethers.js/html/api-advanced.html#provider-sub-classing":
+    { "tag": "" },
+  "ethers.js/html/api-advanced.html#recursive-length-prefixed-encoding-rlp":
+    { "tag": "rlp" },
+  "ethers.js/html/api-advanced.html#signing-key":
+    { "tag": "utils-signingkey" },
+  "ethers.js/html/api-advanced.html#static-methods":
+    { "tag": "" },
+  "ethers.js/html/api-advanced.html#static-properties":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html":
+    { "tag": "contract" },
+  "ethers.js/html/api-contract.html#api-contract":
+    { "tag": "contract" },
+  "ethers.js/html/api-contract.html#application-binary-interface-abi":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#bytes":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#configuring-events":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#connecting":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#connecting-to-a-contract":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#connecting-to-existing-contracts":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#contract-abi":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#contract-event-filters":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#contract-filter":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#contract-metaclass":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#contract-methods":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#contracts":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#creating-a-contract-factory":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#deploying-a-contract":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#deployment":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#event-emitter":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#event-names":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#event-object":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#filtering-events":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#integers":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#meta-class-properties":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#overrides":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#prototype":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#providers-vs-signers":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#strings":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#structs":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#types":
+    { "tag": "" },
+  "ethers.js/html/api-contract.html#waiting-for-deployment":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html":
+    { "tag": "providers" },
+  "ethers.js/html/api-providers.html#account":
+    { "tag": "provider--account-methods" },
+  "ethers.js/html/api-providers.html#api-provider":
+    { "tag": "providers" },
+  "ethers.js/html/api-providers.html#block-responses":
+    { "tag": "provider--block-methods" },
+  "ethers.js/html/api-providers.html#block-tag":
+    { "tag": "provider-blocktag" },
+  "ethers.js/html/api-providers.html#blockchain-status":
+    { "tag": "provider--network-status-methods" },
+  "ethers.js/html/api-providers.html#blockresponse":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#blocktag":
+    { "tag": "provider-blocktag" },
+  "ethers.js/html/api-providers.html#connecting-to-ethereum":
+    { "tag": "get-default-provider" },
+  "ethers.js/html/api-providers.html#contract-execution":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#contract-state":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#ethereum-naming-service":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#etherscan":
+    { "tag": "api-providers--etehrscanprovider" },
+  "ethers.js/html/api-providers.html#etherscanprovider-inherits-from-provider":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#event-types":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#events":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#fallbackprovider-inherits-from-provider":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#filter":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#filters":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#infuraprovider-inherits-from-jsonrpcprovider":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#ipcprovider-inherits-from-jsonrpcprovider":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#jsonrpcprovider":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#jsonrpcprovider-inherits-from-provider":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#jsonrpcsigner":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#log":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#network":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#objects-and-types":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#properties":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#provider":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#provider-connect":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#provider-etherscan-extra":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#provider-etherscan-properties":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#provider-fallback-properties":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#provider-infura-properties":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#provider-ipc-properties":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#provider-jsonrpc-extra":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#provider-jsonrpc-properties":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#provider-specific-extra-api-calls":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#provider-web3-properties":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#providers":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#signer-jsonrpc":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#transaction-receipt":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#transaction-receipts":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#transaction-request":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#transaction-requests":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#transaction-response":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#waitfortransaction":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#waiting-for-transactions":
+    { "tag": "" },
+  "ethers.js/html/api-providers.html#web3provider-inherits-from-jsonrpcprovider":
+    { "tag": "" },
+  "ethers.js/html/api-utils.html":
+    { "tag": "" },
+  "ethers.js/html/api-utils.html#addresses":
+    { "tag": "addresses" },
+  "ethers.js/html/api-utils.html#arrayish":
+    { "tag": "bytes" },
+  "ethers.js/html/api-utils.html#big-numbers":
+    { "tag": "bignumber" },
+  "ethers.js/html/api-utils.html#bignumber":
+    { "tag": "bignumber" },
+  "ethers.js/html/api-utils.html#bytes32-strings":
+    { "tag": "bytes32-string" },
+  "ethers.js/html/api-utils.html#bytes32string":
+    { "tag": "bytes32-string" },
+  "ethers.js/html/api-utils.html#constants":
+    { "tag": "constants" },
+  "ethers.js/html/api-utils.html#creating-instances":
+    { "tag": "" },
+  "ethers.js/html/api-utils.html#cryptographic-functions":
+    { "tag": "hashing-algorithms--cryptographic-hash-functions" },
+  "ethers.js/html/api-utils.html#elliptic-curve":
+    { "tag": "" },
+  "ethers.js/html/api-utils.html#ether-strings-and-wei":
+    { "tag": "" },
+  "ethers.js/html/api-utils.html#formatether":
+    { "tag": "utils-formatunits" },
+  "ethers.js/html/api-utils.html#hash-function-helpers":
+    { "tag": "" },
+  "ethers.js/html/api-utils.html#hash-functions":
+    { "tag": "hashing-algorithms--cryptographic-hash-functions" },
+  "ethers.js/html/api-utils.html#hex-strings":
+    { "tag": "hexstring" },
+  "ethers.js/html/api-utils.html#hexstring":
+    { "tag": "hexstring" },
+  "ethers.js/html/api-utils.html#key-derivation":
+    { "tag": "" },
+  "ethers.js/html/api-utils.html#namehash":
+    { "tag": "utils-namehash" },
+  "ethers.js/html/api-utils.html#parseether":
+    { "tag": "utils-parseunits" },
+  "ethers.js/html/api-utils.html#random":
+    { "tag": "utils-randombytes" },
+  "ethers.js/html/api-utils.html#signature":
+    { "tag": "signature" },
+  "ethers.js/html/api-utils.html#signatures":
+    { "tag": "signature" },
+  "ethers.js/html/api-utils.html#solidity":
+    { "tag": "" },
+  "ethers.js/html/api-utils.html#transactions":
+    { "tag": "" },
+  "ethers.js/html/api-utils.html#utf-8-strings":
+    { "tag": "utf8-string" },
+  "ethers.js/html/api-utils.html#utf8-strings":
+    { "tag": "utf8-string" },
+  "ethers.js/html/api-utils.html#utilities":
+    { "tag": "" },
+  "ethers.js/html/api-utils.html#utils-getaddress":
+    { "tag": "utils-getAddress" },
+  "ethers.js/html/api-utils.html#web":
+    { "tag": "web-utilities" },
+  "ethers.js/html/api-wallet.html":
+    { "tag": "wallet" },
+  "ethers.js/html/api-wallet.html#blockchain-operations":
+    { "tag": "signer-blockchain" },
+  "ethers.js/html/api-wallet.html#creating-instances":
+    { "tag": "wallet" },
+  "ethers.js/html/api-wallet.html#encrypted-json-wallets":
+    { "tag": "" },
+  "ethers.js/html/api-wallet.html#fromencryptedjson":
+    { "tag": "wallet-fromencryptedjson" },
+  "ethers.js/html/api-wallet.html#prototype":
+    { "tag": "signers--wallet--properties" },
+  "ethers.js/html/api-wallet.html#sendtransaction":
+    { "tag": "signer-sendtransaction" },
+  "ethers.js/html/api-wallet.html#signer":
+    { "tag": "signer" },
+  "ethers.js/html/api-wallet.html#signer-api":
+    { "tag": "signer" },
+  "ethers.js/html/api-wallet.html#signing":
+    { "tag": "signers--signer--signing" },
+  "ethers.js/html/api-wallet.html#wallet":
+    { "tag": "wallet" },
+  "ethers.js/html/api-wallet.html#wallet-connect":
+    { "tag": "" },
+  "ethers.js/html/api-wallet.html#wallets-and-signers":
+    { "tag": "" },
+  "ethers.js/html/api.html":
+    { "tag": "" },
+  "ethers.js/html/api.html#api":
+    { "tag": "" },
+  "ethers.js/html/api.html#application-programming-interface-api":
+    { "tag": "" },
+  "ethers.js/html/cookbook-accounts.html":
+    { "tag": "" },
+  "ethers.js/html/cookbook-accounts.html#access-funds-in-a-mnemonic-phrase-wallet":
+    { "tag": "" },
+  "ethers.js/html/cookbook-accounts.html#accounts":
+    { "tag": "" },
+  "ethers.js/html/cookbook-accounts.html#coalesce-jaxx-wallets":
+    { "tag": "" },
+  "ethers.js/html/cookbook-accounts.html#dump-all-json-wallet-balances-in-current-directory":
+    { "tag": "" },
+  "ethers.js/html/cookbook-accounts.html#get-transaction-history":
+    { "tag": "" },
+  "ethers.js/html/cookbook-accounts.html#random-mnemonic":
+    { "tag": "" },
+  "ethers.js/html/cookbook-accounts.html#sweep-an-account-into-another":
+    { "tag": "" },
+  "ethers.js/html/cookbook-contracts.html":
+    { "tag": "" },
+  "ethers.js/html/cookbook-contracts.html#contracts":
+    { "tag": "" },
+  "ethers.js/html/cookbook-contracts.html#economic-incentives-and-economic-value":
+    { "tag": "" },
+  "ethers.js/html/cookbook-contracts.html#return-a-value-from-a-state-changing-method":
+    { "tag": "" },
+  "ethers.js/html/cookbook-providers.html":
+    { "tag": "" },
+  "ethers.js/html/cookbook-providers.html#custom-provider":
+    { "tag": "" },
+  "ethers.js/html/cookbook-providers.html#metamask":
+    { "tag": "" },
+  "ethers.js/html/cookbook-providers.html#providers":
+    { "tag": "" },
+  "ethers.js/html/cookbook-providers.html#testrpc-ganache":
+    { "tag": "" },
+  "ethers.js/html/cookbook-react.html":
+    { "tag": "" },
+  "ethers.js/html/cookbook-react.html#other-notes":
+    { "tag": "" },
+  "ethers.js/html/cookbook-react.html#react-native":
+    { "tag": "" },
+  "ethers.js/html/cookbook-react.html#shims":
+    { "tag": "" },
+  "ethers.js/html/cookbook-react.html#wordlists":
+    { "tag": "" },
+  "ethers.js/html/cookbook-signing.html":
+    { "tag": "" },
+  "ethers.js/html/cookbook-signing.html#signing-a-digest-hash":
+    { "tag": "" },
+  "ethers.js/html/cookbook-signing.html#signing-a-string-message":
+    { "tag": "" },
+  "ethers.js/html/cookbook-signing.html#signing-messages":
+    { "tag": "" },
+  "ethers.js/html/cookbook-testing.html":
+    { "tag": "" },
+  "ethers.js/html/cookbook-testing.html#contract-events":
+    { "tag": "" },
+  "ethers.js/html/cookbook-testing.html#testing":
+    { "tag": "" },
+  "ethers.js/html/cookbook-testing.html#using-multiple-accounts":
+    { "tag": "" },
+  "ethers.js/html/cookbook.html":
+    { "tag": "" },
+  "ethers.js/html/cookbook.html#cookbook":
+    { "tag": "" },
+  "ethers.js/html/getting-started.html":
+    { "tag": "" },
+  "ethers.js/html/getting-started.html#getting-started":
+    { "tag": "" },
+  "ethers.js/html/getting-started.html#importing":
+    { "tag": "" },
+  "ethers.js/html/getting-started.html#including-in-web-applications":
+    { "tag": "" },
+  "ethers.js/html/getting-started.html#installing-in-node-js":
+    { "tag": "" },
+  "ethers.js/html/index.html":
+    { "tag": "" },
+  "ethers.js/html/index.html#features":
+    { "tag": "" },
+  "ethers.js/html/index.html#legacy-documentation":
+    { "tag": "" },
+  "ethers.js/html/index.html#what-is-ethers-js":
+    { "tag": "" },
+  "ethers.js/html/migration.html":
+    { "tag": "" },
+  "ethers.js/html/migration.html#big-number":
+    { "tag": "" },
+  "ethers.js/html/migration.html#constants":
+    { "tag": "" },
+  "ethers.js/html/migration.html#custom-signer":
+    { "tag": "" },
+  "ethers.js/html/migration.html#default-provider":
+    { "tag": "" },
+  "ethers.js/html/migration.html#deploying-contracts":
+    { "tag": "" },
+  "ethers.js/html/migration.html#encrypted-wallets":
+    { "tag": "" },
+  "ethers.js/html/migration.html#events":
+    { "tag": "" },
+  "ethers.js/html/migration.html#fetching-json":
+    { "tag": "" },
+  "ethers.js/html/migration.html#interfaces":
+    { "tag": "" },
+  "ethers.js/html/migration.html#jsonrpcprovider":
+    { "tag": "" },
+  "ethers.js/html/migration.html#migrating-from-ethers-v3-to-ethers-v4":
+    { "tag": "" },
+  "ethers.js/html/migration.html#migrating-from-web3-to-ethers-v4":
+    { "tag": "" },
+  "ethers.js/html/migration.html#migration-guides":
+    { "tag": "" },
+  "ethers.js/html/migration.html#networks":
+    { "tag": "" },
+  "ethers.js/html/migration.html#parsing-transactions":
+    { "tag": "" },
+  "ethers.js/html/migration.html#verifying-messages":
+    { "tag": "" },
+  "ethers.js/html/migration.html#waiting-for-transactions":
+    { "tag": "" },
+  "ethers.js/html/notes.html":
+    { "tag": "" },
+  "ethers.js/html/notes.html#checksum-address":
+    { "tag": "" },
+  "ethers.js/html/notes.html#contributing":
+    { "tag": "" },
+  "ethers.js/html/notes.html#icap-address":
+    { "tag": "" },
+  "ethers.js/html/notes.html#ieee754":
+    { "tag": "" },
+  "ethers.js/html/notes.html#memory-hard-brute-force-encrpyting":
+    { "tag": "" },
+  "ethers.js/html/notes.html#notes":
+    { "tag": "" },
+  "ethers.js/html/notes.html#promise":
+    { "tag": "" },
+  "ethers.js/html/notes.html#promises":
+    { "tag": "" },
+  "ethers.js/html/notes.html#responsible-disclosure":
+    { "tag": "" },
+  "ethers.js/html/notes.html#security":
+    { "tag": "" },
+  "ethers.js/html/notes.html#supported-platforms":
+    { "tag": "" },
+  "ethers.js/html/notes.html#the-github-and-npm-package":
+    { "tag": "" },
+  "ethers.js/html/notes.html#why-can-t-i-just-use-numbers":
+    { "tag": "" },
+  "ethers.js/html/testing.html":
+    { "tag": "" },
+  "ethers.js/html/testing.html#testing":
+    { "tag": "" },
+  "ethers.js/v3.0/examples/splitter/index.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/examples/splitter/index.html" },
+  "ethers.js/v3.0/examples/tool/index.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/examples/tool/index.html" },
+  "ethers.js/v3.0/examples/wallet/index.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/examples/wallet/index.html" },
+  "ethers.js/v3.0/html/api-advanced.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/html/api-advanced.html" },
+  "ethers.js/v3.0/html/api-contract.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/html/api-contract.html" },
+  "ethers.js/v3.0/html/api-providers.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/html/api-providers.html" },
+  "ethers.js/v3.0/html/api-utils.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/html/api-utils.html" },
+  "ethers.js/v3.0/html/api-wallet.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/html/api-wallet.html" },
+  "ethers.js/v3.0/html/api.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/html/api.html" },
+  "ethers.js/v3.0/html/cookbook.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/html/cookbook.html" },
+  "ethers.js/v3.0/html/genindex.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/html/genindex.html" },
+  "ethers.js/v3.0/html/getting-started.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/html/getting-started.html" },
+  "ethers.js/v3.0/html/index.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/html/index.html" },
+  "ethers.js/v3.0/html/notes.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/html/notes.html" },
+  "ethers.js/v3.0/html/search.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/html/search.html" },
+  "ethers.js/v3.0/html/testing.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/html/testing.html" },
+  "ethers.js/v3.0/index.html":
+    { "redirect": "https://docs-legacy.ethers.io/v3/index.html" },
+  "ethers.js/v5-beta/about-ethereum.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/about-ethereum.html#ethereum-basics":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#abi-coder":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#api-interface":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#creating-an-instance":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#creating-instances":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#cryptographic-operations":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#deriving-child-and-neutered-nodes":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#descriptions":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#hdnode":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#interface":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#low-level-api":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#object-test-functions":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#parsing-objects":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#prototype":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#provider-sub-classing":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#recursive-length-prefixed-encoding-rlp":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#signing-key":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#static-methods":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-advanced.html#static-properties":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#api-contract":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#application-binary-interface-abi":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#bytes":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#configuring-events":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#connecting":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#connecting-to-a-contract":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#connecting-to-existing-contracts":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#contract-abi":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#contract-event-filters":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#contract-filter":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#contract-metaclass":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#contract-methods":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#contracts":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#creating-a-contract-factory":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#deploying-a-contract":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#deployment":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#event-emitter":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#event-names":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#event-object":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#filtering-events":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#integers":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#meta-class-properties":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#overrides":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#prototype":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#providers-vs-signers":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#strings":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#structs":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#types":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-contract.html#waiting-for-deployment":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#account":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#api-provider":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#block-responses":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#block-tag":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#blockchain-status":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#blockresponse":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#blocktag":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#connecting-to-ethereum":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#contract-execution":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#contract-state":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#ethereum-naming-service":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#etherscanprovider-inherits-from-provider":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#event-types":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#events":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#fallbackprovider-inherits-from-provider":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#filter":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#filters":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#infuraprovider-inherits-from-jsonrpcprovider":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#ipcprovider-inherits-from-jsonrpcprovider":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#jsonrpcprovider-inherits-from-provider":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#jsonrpcsigner":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#log":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#network":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#nodesmithprovider-inherits-from-jsonrpcprovider":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#objects-and-types":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#properties":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#provider":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#provider-connect":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#provider-jsonrpc":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#provider-specific-properties-and-methods":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#providers":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#signer-jsonrpc":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#signer-uncheckedjsonrpc":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#transaction-receipt":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#transaction-receipts":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#transaction-request":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#transaction-requests":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#transaction-response":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#uncheckedjsonrpcsigner":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#waitfortransaction":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#waiting-for-transactions":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-providers.html#web3provider-inherits-from-jsonrpcprovider":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#addresses":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#arrayish":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#big-numbers":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#bignumber":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#bytes32-strings":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#bytes32string":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#constants":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#creating-instances":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#cryptographic-functions":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#elliptic-curve":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#ether-strings-and-wei":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#formatether":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#hash-function-helpers":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#hash-functions":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#hex-strings":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#hexstring":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#key-derivation":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#namehash":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#parseether":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#random":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#signature":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#signatures":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#solidity":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#transactions":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#utf-8-strings":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#utf8-strings":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#utilities":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#utils-getaddress":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-utils.html#web":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-wallet.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-wallet.html#blockchain-operations":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-wallet.html#creating-instances":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-wallet.html#encrypted-json-wallets":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-wallet.html#fromencryptedjson":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-wallet.html#prototype":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-wallet.html#sendtransaction":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-wallet.html#signer":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-wallet.html#signer-api":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-wallet.html#signing":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-wallet.html#void-signer":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-wallet.html#wallet":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-wallet.html#wallet-connect":
+    { "tag": "" },
+  "ethers.js/v5-beta/api-wallet.html#wallets-and-signers":
+    { "tag": "" },
+  "ethers.js/v5-beta/api.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/api.html#api":
+    { "tag": "" },
+  "ethers.js/v5-beta/api.html#application-programming-interface-api":
+    { "tag": "" },
+  "ethers.js/v5-beta/basics.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/basics.html#ethereum-basics":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-accounts.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-accounts.html#access-funds-in-a-mnemonic-phrase-wallet":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-accounts.html#accounts":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-accounts.html#coalesce-jaxx-wallets":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-accounts.html#dump-all-json-wallet-balances-in-current-directory":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-accounts.html#get-transaction-history":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-accounts.html#random-mnemonic":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-accounts.html#sweep-an-account-into-another":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-contracts.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-contracts.html#contracts":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-contracts.html#economic-incentives-and-economic-value":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-contracts.html#return-a-value-from-a-state-changing-method":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-providers.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-providers.html#custom-provider":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-providers.html#metamask":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-providers.html#providers":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-providers.html#testrpc-ganache":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-react.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-react.html#other-notes":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-react.html#react-native":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-react.html#shims":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-react.html#wordlists":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-signing.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-signing.html#signing-a-digest-hash":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-signing.html#signing-a-string-message":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-signing.html#signing-messages":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-testing.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-testing.html#contract-events":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-testing.html#testing":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook-testing.html#using-multiple-accounts":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/cookbook.html#cookbook":
+    { "tag": "" },
+  "ethers.js/v5-beta/getting-started.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/getting-started.html#getting-started":
+    { "tag": "" },
+  "ethers.js/v5-beta/getting-started.html#importing":
+    { "tag": "" },
+  "ethers.js/v5-beta/getting-started.html#including-in-web-applications":
+    { "tag": "" },
+  "ethers.js/v5-beta/getting-started.html#installing-in-node-js":
+    { "tag": "" },
+  "ethers.js/v5-beta/index.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/index.html#features":
+    { "tag": "" },
+  "ethers.js/v5-beta/index.html#legacy-documentation":
+    { "tag": "" },
+  "ethers.js/v5-beta/index.html#what-is-ethers-js":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#big-number":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#constants":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#custom-signer":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#default-provider":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#deploying-contracts":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#encrypted-wallets":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#events":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#fetching-json":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#interfaces":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#jsonrpcprovider":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#migrating-from-ethers-v3-to-ethers-v4":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#migrating-from-web3-to-ethers-v4":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#migration-guides":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#networks":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#parsing-transactions":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#verifying-messages":
+    { "tag": "" },
+  "ethers.js/v5-beta/migration.html#waiting-for-transactions":
+    { "tag": "" },
+  "ethers.js/v5-beta/notes.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/notes.html#checksum-address":
+    { "tag": "" },
+  "ethers.js/v5-beta/notes.html#contributing":
+    { "tag": "" },
+  "ethers.js/v5-beta/notes.html#icap-address":
+    { "tag": "" },
+  "ethers.js/v5-beta/notes.html#ieee754":
+    { "tag": "" },
+  "ethers.js/v5-beta/notes.html#memory-hard-brute-force-encrpyting":
+    { "tag": "" },
+  "ethers.js/v5-beta/notes.html#notes":
+    { "tag": "" },
+  "ethers.js/v5-beta/notes.html#promise":
+    { "tag": "" },
+  "ethers.js/v5-beta/notes.html#promises":
+    { "tag": "" },
+  "ethers.js/v5-beta/notes.html#responsible-disclosure":
+    { "tag": "" },
+  "ethers.js/v5-beta/notes.html#security":
+    { "tag": "" },
+  "ethers.js/v5-beta/notes.html#supported-platforms":
+    { "tag": "" },
+  "ethers.js/v5-beta/notes.html#the-github-and-npm-package":
+    { "tag": "" },
+  "ethers.js/v5-beta/notes.html#why-can-t-i-just-use-numbers":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-aion.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-aion.html#addresses":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-aion.html#aion-network":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-aion.html#api":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-aion.html#avm-contracts":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-aion.html#differences-from-ethereum":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-aion.html#elliptic-curve-cryptography":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-aion.html#fvm-contracts":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-aion.html#hashing":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-aion.html#hashing-algorithm":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-aion.html#serializing-transactions":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-aion.html#transactions":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-aion.html#wallet":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-ganache.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-ganache.html#ganache":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-react.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-react.html#react-native":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-truffle.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms-truffle.html#truffle":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/platforms.html#other-platform":
+    { "tag": "" },
+  "ethers.js/v5-beta/testing.html":
+    { "tag": "" },
+  "ethers.js/v5-beta/testing.html#testing":
+    { "tag": "" }
+}

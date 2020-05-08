@@ -9,16 +9,16 @@ cover the vast majority of use-cases, but also includes the
 necessary functions and classes for sub-classing if a more
 custom configuration is necessary.
 
-Most users should be able to simply use the [[get-default-provider]].
+Most users should be able to simply use the [[providers-getDefaultProvider]].
 
 
-_subsection: Default Provider @<get-default-provider>
+_subsection: Default Provider @<providers-getDefaultProvider>
 
 The default provider is the safest, easiest way to begin
 developing on //Ethereum//, and it is also robust enough
 for use in production.
 
-It creates a [[provider-fallback]] connected to as many backend
+It creates a [[FallbackProvider]] connected to as many backend
 services as possible. When a request is made, it is sent to
 multiple backends simulatenously. As responses from each backend
 are returned, they are checked that they agree. Once a quorum
@@ -29,10 +29,44 @@ This ensures that if a backend has become out-of-sync, or if it
 has been compromised that its responses are dropped in favor of
 responses that match the majority.
 
-_property: ethers.getDefaultProvider([ network ]) => [[provider]]
+_property: ethers.getDefaultProvider([ network, [ options ] ]) => [[Provider]]
 Returns a new Provider, backed by multiple services, connected
 to //network//. Is no //network// is provided, **homestead**
 (i.e. mainnet) is used.
+
+The //options// is an object, with the following properties:
+
+_table: Option Properties
+
+$Alchemy:     [[link-alchemy]] API Token
+$Etherscan:   [[link-etherscan]] API Token
+$Infura:      [[link-infura]] Project ID or ProjectID and Project Secret
+$Quroum:      The number of backends that must agree
+              //(default: 2 for mainnet, 1 for testnets)//
+    
+|  **Property**  |  **Description**  |
+|    alchemy     | $Alchemt          |
+|   etherscan    | $Etherscan        |
+|    infura      | $Infura           |
+|    quorum      | $Quorum           |
+
+_note: Note: API Keys
+
+It is highly recommended for production services that to acquire
+and specify an API Key for each sercice.
+
+The deafult API Keys used by ethers are shared across all users,
+so services may throttle all services that are using the default
+API Keys during periods of load without realizing it.
+
+Many services also have monitoring and usage metrics, which are
+only available if an API Key is specifie. This allows tracking
+how many requests are being sent and which methods are being
+used the most.
+
+Some services also provide additional paid features, whichare only
+available when specifying an API Key.
+
 
 _subsection: Provider Documentation
 

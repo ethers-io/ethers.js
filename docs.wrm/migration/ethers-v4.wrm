@@ -3,7 +3,7 @@ _section: Migration: From Ethers v4  @<migration-v4>
 _subsection: BigNumber
 
 _heading: Namespace
-Since [[bignumber]] is used quite frequently, it has been moved to
+Since [[BigNumber]] is used quite frequently, it has been moved to
 the top level of the umbrella package.
 
 _code: @lang<script>
@@ -19,7 +19,7 @@ ethers.BigNumberish
 
 _heading: Creating Instances
 The ``bigNumberify`` method was always preferred over the constructor
-since it could short-circuit an object instantiation for [[bignumber]
+since it could short-circuit an object instantiation for [[BigNumber]
 objects (since they are immutable). This has been moved to a static
 ``from`` class method.
 
@@ -45,11 +45,11 @@ _code: @lang<script>
 _subsection: Errors
 
 _heading: Namespace
-All errors now belong to the [[logger]] class and the related functions
-have been moved to [[logger]] instances, which can include a per-package
+All errors now belong to the [[Logger]] class and the related functions
+have been moved to [[Logger]] instances, which can include a per-package
 version string.
 
-Global error fucntions have been moved [[logger]] class methods.
+Global error fucntions have been moved [[Logger]] class methods.
 
 _code: @lang<script>
 
@@ -84,7 +84,7 @@ logger.info(...)
 
 
 _subsection: Interface
-The [[abi-interface]] object has undergone the most dramatic changes.
+The [[Interface]] object has undergone the most dramatic changes.
 
 It is no longer a meta-class and now has methods that simplify handling
 contract interface operations without the need for object inspection and
@@ -124,7 +124,7 @@ interface.encodeEventLog("Transfer", data, topics)
 
 _heading: Inspection
 Interrogating properties about a function or event can now (mostly) be
-done directly on the [[abi-fragment]] object.
+done directly on the [[Fragment]] object.
 
 _code:
 

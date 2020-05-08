@@ -9,7 +9,7 @@ _subsection: Address Formats  @<address-formats>
 
 _heading: Address  @<address>
 
-An **Address** is a [[datahexstring]] of 20 bytes (40 nibbles), with optional
+An **Address** is a [[DataHexString]] of 20 bytes (40 nibbles), with optional
 mixed case.
 
 If the case is mixed, it is a **Checksum Address**, which uses a specific pattern
@@ -39,12 +39,12 @@ accepts an address can receive an ICAP address, and it will be converted interna
 To convert an address into the ICAP format, see [getIcapAddress](utils-getIcapAddress).
 
 
-_subsection: Converting and Verifying @<urils--address-basic>
+_subsection: Converting and Verifying @<utils--address>
 
 _property: ethers.utils.getAddress(address) => string<[[address]]>  @<utils-getAddress> @SRC<address>
 Returns //address// as a Checksum Address.
 
-If //address// is an invalid 40-nibble [[hexstring]] or if it contains mixed case and
+If //address// is an invalid 40-nibble [[HexString]] or if it contains mixed case and
 the checksum is invalid, an InvalidArgument Error is throw.
 
 The value of //address// may be any supported address format.
@@ -57,7 +57,7 @@ _property: ethers.utils.isAddress(address) => boolean  @<utils-isAddress> @SRC<a
 Returns true if //address// is valid (in any supported format).
 
 
-_subsection: Derivation @<utils--address-computation>
+_subsection: Derivation @<utils--address-derivation>
 
 _property: ethers.utils.computeAddress(publicOrPrivateKey) => string<[[address]]>  @<utils-computeAddress> @SRC<transactions>
 Returns the address for //publicOrPrivateKey//. A public key may be

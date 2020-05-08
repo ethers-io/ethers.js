@@ -8,7 +8,7 @@ The assembler utilities allow parsing and assembling an
 _property: asm.parse(code) => [[asm-node]] @<asm-parse> @SRC<asm/assembler>
 Parse an ethers-format assembly file and return the [[asm-ast]].
 
-_property: asm.assemble(node) => string<[[datahexstring]]> @SRC<asm/assembler:function.assemble>
+_property: asm.assemble(node) => string<[[DataHexString]]> @SRC<asm/assembler:function.assemble>
 Performs assembly of the [[asm-ast]] //node// and return the
 resulting bytecode representation.
 
@@ -45,7 +45,7 @@ The opcode for this Operation.
 _property: operation.offset => number
 The offset into the bytecode for this Operation.
 
-_property: operation.pushValue => string<[[datahexstring]]>
+_property: operation.pushValue => string<[[DataHexString]]>
 If the opcode is a ``PUSH``, this is the value of that push
 
 

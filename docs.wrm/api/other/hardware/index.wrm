@@ -1,11 +1,16 @@
 _section: Hardware Wallets
 
-_subsection: LedgerSigner @<hw-ledger> @INHERIT<[[signer]]> @SRC<hardware-wallets:class.LedgerSigner>
+
+_subsection: LedgerSigner @<hw-ledger> @INHERIT<[[Signer]]> @SRC<hardware-wallets:class.LedgerSigner>
 
 The [Ledger Hardware Wallets](link-ledger) are a fairly
 popular brand.
 
-TODO: importing
+
+_code: Importing in ES6 or TypeScript @lang<script>
+
+import { LedgerSigner } from "@ethersproject/hardware-wallets";
+
 
 _heading: API
 

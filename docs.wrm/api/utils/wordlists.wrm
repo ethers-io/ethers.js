@@ -1,6 +1,6 @@
 _section: Wordlists @<wordlists>
 
-_subsection: Wordlist @<wordlist>
+_subsection: Wordlist @<Wordlist>
 
 _property: wordlist.locale => string
 The locale for this wordlist.
@@ -19,7 +19,7 @@ _property: wordlist.join(words) => string
 Returns the mnemonic by joining //words// together using the
 whitespace that is standard for the locale.
 
-_property: Wordlist.check(wordlists) => string<[[datahexstring]]<32>>
+_property: Wordlist.check(wordlists) => string<[[DataHexString]]<32>>
 Checks that all words map both directions correctly and return the
 hash of the lists. Sub-classes should use this to validate the wordlist
 is correct against the official wordlist hash.
@@ -28,31 +28,31 @@ _property: Wordlist.register(wordlist [ , name ]) => void
 Register a wordlist with the list of wordlists, optionally overriding
 the registered //name//.
 
-_subsection: Languages @<wordlist-languages>
+_subsection: Languages @<wordlists--languages>
 
 _property: ethers.wordlists.cz => Wordlist
-The Czech [[wordlist]].
+The Czech [[Wordlist]].
 
 _property: ethers.wordlists.en => Wordlist
-The English [[wordlist]].
+The English [[Wordlist]].
 
 _property: ethers.wordlists.es => Wordlist
-The Spanish [[wordlist]].
+The Spanish [[Wordlist]].
 
 _property: ethers.wordlists.fr => Wordlist
-The French [[wordlist]].
+The French [[Wordlist]].
 
 _property: ethers.wordlists.it => Wordlist
-The Italian [[wordlist]].
+The Italian [[Wordlist]].
 
 _property: ethers.wordlists.ja => Wordlist
-The Japanese [[wordlist]].
+The Japanese [[Wordlist]].
 
 _property: ethers.wordlists.ko => Wordlist
-The Korean [[wordlist]].
+The Korean [[Wordlist]].
 
 _property: ethers.wordlists.zh_cn => Wordlist
-The Simplified Chinese [[wordlist]].
+The Simplified Chinese [[Wordlist]].
 
 _property: ethers.wordlists.zh_tw => Wordlist
-The Traditional Chinese [[wordlist]].
+The Traditional Chinese [[Wordlist]].

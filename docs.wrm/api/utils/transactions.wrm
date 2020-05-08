@@ -1,8 +1,8 @@
-_section: Transactions @<utils-transactions>
+_section: Transactions @<transactions>
 
 _subsection: Types
 
-_heading: UnsignedTransaction @<types-unsignedtransaction>
+_heading: UnsignedTransaction @<UnsignedTransaction>
 An unsigned transaction represents a transaction that has not been
 signed and its values are flexible as long as they are not ambiguous.
 
@@ -12,16 +12,16 @@ The addres this transaction is to.
 _property: unsignedTransaction.nonce => number
 The nonce of this transaction.
 
-_property: unsignedTransaction.gasLimit => [[bignumberish]]
+_property: unsignedTransaction.gasLimit => [[BigNumberish]]
 The gas limit for this transaction.
 
-_property: unsignedTransaction.gasPrice => [[bignumberish]]
+_property: unsignedTransaction.gasPrice => [[BigNumberish]]
 The gas price for this transaction.
 
-_property: unsignedTransaction.data => [[byteslike]]
+_property: unsignedTransaction.data => [[BytesLike]]
 The data for this transaction.
 
-_property: unsignedTransaction.value => [[bignumberish]]
+_property: unsignedTransaction.value => [[BigNumberish]]
 The value (in wei) for this transaction.
 
 _property: unsignedTransaction.chainId => number
@@ -30,10 +30,10 @@ then [[link-eip-155]] is disabled and legacy signing is
 used, unless overridden in a signature.
 
 
-_heading: Transaction @<types-transaction>
+_heading: Transaction @<Transaction>
 A generic object to represent a transaction.
 
-_property: transaction.hash => string<[[datahexstring]]<32>>
+_property: transaction.hash => string<[[DataHexString]]<32>>
 The transaction hash, which can be used as an identifier for
 //transaction//. This is the keccak256 of the serialized RLP encoded
 representation of //transaction//.
@@ -50,20 +50,20 @@ from an account includes this, which ensures the order and
 non-replayability of a transaction. This must be equal to the current
 number of transactions ever sent to the network by the **from** address.
 
-_property: transaction.gasLimit => [[bignumber]]
+_property: transaction.gasLimit => [[BigNumber]]
 The gas limit for //transaction//. An account must have enough ether to
 cover the gas (at the specified **gasPrice**). Any unused gas is
 refunded at the end of the transaction, and if there is insufficient gas
 to complete execution, the effects of the trasaction are reverted, but
 the gas is **fully consumed** and an out-of-gas error occurs.
 
-_property: transaction.gasPrice => [[bignumber]]
+_property: transaction.gasPrice => [[BigNumber]]
 The price (in wei) per unit of gas for //transaction//.
 
-_property: transaction.data => [[byteslike]]
+_property: transaction.data => [[BytesLike]]
 The data for //transaction//. In a contract this is the call data.
 
-_property: transaction.value => [[bignumber]]
+_property: transaction.value => [[BigNumber]]
 The value (in wei) for //transaction//.
 
 _property: transaction.chainId => number
@@ -80,12 +80,12 @@ There are situations where replay may be desired, however these
 are very rare and it is almost always recommended to specify the
 chain ID.
 
-_property: transaction.r => string<[[datahexstring]]<32>>
+_property: transaction.r => string<[[DataHexString]]<32>>
 The r portion of the elliptic curve signatures for //transaction//.
 This is more accurately, the x coordinate of the point r (from
 which the y can be computed, along with v).
 
-_property: transaction.s => string<[[datahexstring]]<32>>
+_property: transaction.s => string<[[DataHexString]]<32>>
 The s portion of the elliptic curve signatures for //transaction//.
 
 _property: transaction.v => number
@@ -97,18 +97,10 @@ used to encode the chain ID into the serialized transaction.
 
 _subsection: Functions
 
-_property: ethers.utils.computeAddress(publicOrPrivateKey) => string<[Address](address)>  @<utils-computeaddress> @SRC<transactions>
-Compute the address of //publicOrPrivateKey//. If a public key is
-provided, it may be either compressed or uncompressed.
-
-_property: ethers.utils.parse(aBytesLike) => [[types-transaction]]  @<utils-parse> @SRC<transactions>
+_property: ethers.utils.parseTransaction(aBytesLike) => [[Transaction]]  @<utils-parseTransaction> @SRC<transactions:parse>
 Parses the transaction properties from a serialized transactions.
 
-_property: ethers.utils.recoverAddress(digest, aSignatureLike) => string<[Address](address)>  @<utils-recoveraddress> @SRC<transactions>
-Computes the address that signed //digest// to get //aSignatureLike// using the
-ecrecover algorithm.
-
-_property: ethers.utils.serialize(transaction [ , signature ]) => string<[[datahexstring]]>  @<utils-serialize> @SRC<transactions>
+_property: ethers.utils.serializeTransaction(tx [ , signature ]) => string<[[DataHexString]]>  @<utils-serializeTransaction> @SRC<transactions:serialize>
 Computes the serialized //transaction//, optionally serialized with
 the a //signature//. If //signature// is not present, the unsigned
 serialized transaction is returned, which can be used to compute the

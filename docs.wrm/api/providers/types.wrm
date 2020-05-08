@@ -1,6 +1,6 @@
 _section: Types
 
-_subsection: BlockTag @<provider-blocktag>
+_subsection: BlockTag @<providers-BlockTag>
 A **BlockTag** specifies a specific location in the Blockchain.
 
 - **``"latest"``** -- The most recently mined block
@@ -10,16 +10,16 @@ A **BlockTag** specifies a specific location in the Blockchain.
 - **//number//** -- The block at this height
 - **//a negative number//** -- The block this many blocks ago
 
-_heading: EventType @<provider-eventtype>
+_heading: EventType @<providers-EventType>
 
 And **EventType** can be any of the following.
 
 - **//string//** -- TODO...
-- **//Array<string<[[datahexstring]]<32>> | Array<string<[[datahexstring]]<32>>>>//** -- TODO...
-- **//[[provider-eventfilter]]//** -- TODO...
+- **//Array<string<[[DataHexString]]<32>> | Array<string<[[DataHexString]]<32>>>>//** -- TODO...
+- **//[[providers-EventFilter]]//** -- TODO...
 
 
-_subsection: Network @<provider-network>
+_subsection: Network @<providers-Network>
 A **Network** represents an Etherem network.
 
 _property: network.name => string
@@ -33,12 +33,12 @@ _property: network.ensAddress => string<[[address]]>
 The address at which the ENS registry is deployed on this network.
 
 
-_subsection: Block @<provider-block>
+_subsection: Block @<providers-Block>
 
-_property: block.hash => string<[[datahexstring]]<32>>
+_property: block.hash => string<[[DataHexString]]<32>>
 The hash of this block.
 
-_property: block.parentHash => string<[[datahexstring]]<32>>
+_property: block.parentHash => string<[[DataHexString]]<32>>
 The hash of the previous block.
 
 _property: block.number => number
@@ -47,7 +47,7 @@ The height (number) of this block.
 _property: block.timestamp => number
 The timestamp of this block.
 
-_property: block.nonce => string<[[datahexstring]]>
+_property: block.nonce => string<[[DataHexString]]>
 The nonce used as part of the proof-of-work to mine this block.
 
 This property is generally of little interest developers.
@@ -57,14 +57,14 @@ The difficulty target required to be met by the miner of the block.
 
 This property is generally of little interest developers.
 
-_property: block.gasLimit => [[bignumber]]
+_property: block.gasLimit => [[BigNumber]]
 The maximum amount of gas that this block was permitted to use. This
 is a value that can be voted up or voted down by miners and is used
 to automatically adjust the bandwidth requirements of the network.
 
 This property is generally of little interest developers.
 
-_property: block.gasUsed => [[bignumber]]
+_property: block.gasUsed => [[BigNumber]]
 The total amount of gas used by all transactions in this block.
 
 _property: block.miner => string
@@ -82,51 +82,51 @@ Often only the hashes of the transactions included in a block are needed,
 so by default a block only contains this information, as it is
 substantially less data.
 
-_property: block.transactions => Array<string<[[datahexstring]]<32>>>
+_property: block.transactions => Array<string<[[DataHexString]]<32>>>
 A list of the transactions hashes for each transaction this block
 includes.
 
-_heading: BlockWithTransactions @<provider-blocktxs> @INHERIT<[Block](provider-block)>
+_heading: BlockWithTransactions @<providers-BlockWithTransactions> @INHERIT<[Block](providers-Block)>
 
 If all transactions for a block are needed, this object instead includes
 the full details on each transaction.
 
-_property: block.transactions => Array<[[provider-transactionresponse]]>
+_property: block.transactions => Array<[[providers-TransactionResponse]]>
 A list of the transactions this block includes.
 
 
 _subsection: Events and Logs
 
-_heading: EventFilter @<provider-eventfilter>
+_heading: EventFilter @<providers-EventFilter>
 
 _property: filter.address => string<[[address]]>
 The address to filter by, or ``null`` to match any address.
 
-_property: filter.topics => Array<string<[[datahexstring]]<32>> | Array<string<[[datahexstring]]<32>>>>
+_property: filter.topics => Array<string<[[DataHexString]]<32>> | Array<string<[[DataHexString]]<32>>>>
 The topics to filter by, or ``null`` to match any topics. Each entry represents an
 **AND** condition that must match, or may be ``null`` to match anything. If a given
 entry is an Array, then that entry is treated as an **OR** for any value in the entry.
 
-_heading: Filter @<provider-filter> @INHERIT<[[provider-eventfilter]]>
+_heading: Filter @<providers-Filter> @INHERIT<[[providers-EventFilter]]>
 
-_property: filter.fromBlock => [[provider-blocktag]]
+_property: filter.fromBlock => [[providers-BlockTag]]
 The starting block (inclusive) to search for logs matching the filter criteria.
 
-_property: filter.toBlock => [[provider-blocktag]]
+_property: filter.toBlock => [[providers-BlockTag]]
 The end block (inclusive) to search for logs matching the filter criteria.
 
-_heading: FilterByBlockHash @<provider-filterbyblockhash> @INHERIT<[[provider-eventfilter]]>
+_heading: FilterByBlockHash @<providers-FilterByBlockHash> @INHERIT<[[providers-EventFilter]]>
 
-_property: filter.blockHash => string<[[datahexstring]]<32>>
+_property: filter.blockHash => string<[[DataHexString]]<32>>
 The specific block (by its block hash) to search for logs matching the filter criteria.
 
 
-_heading: Log @<provider-log>
+_heading: Log @<providers-Log>
 
 _property: log.blockNumber => number
 The block height (number) of the block including the transaction of this log.
 
-_property: log.blockHash => string<[[datahexstring]]<32>>
+_property: log.blockHash => string<[[DataHexString]]<32>>
 The block hash of the block including the transaction of this log.
 
 _property: log.removed => boolean
@@ -141,13 +141,13 @@ The index of this log in the transaction.
 _property: log.address => string<[[address]]>
 The address of the contract that generated this log.
 
-_property: log.data => string<[[datahexstring]]>
+_property: log.data => string<[[DataHexString]]>
 The data included in this log.
 
-_property: log.topics => Array<string<[[datahexstring]]<32> > >
+_property: log.topics => Array<string<[[DataHexString]]<32> > >
 The list of topics (indexed properties) for this log.
 
-_property: log.transactionHash => string<[[datahexstring]]<32>>
+_property: log.transactionHash => string<[[DataHexString]]<32>>
 The transaction hash of the transaction of this log.
 
 _property: log.transactionIndex => number
@@ -159,7 +159,7 @@ The index of this log across all logs in the entire **block**.
 
 _subsection: Transactions
 
-_heading: TransactionRequest @<provider-transactionrequest>
+_heading: TransactionRequest @<providers-TransactionRequest>
 
 A transaction request describes a transaction that is to
 be sent to the network or otherwise processed.
@@ -177,16 +177,16 @@ _property: transactionRequest.nonce => number | Promise<number>
 The nonce for this transaction. This should be set to the number of
 transactions ever sent **from** this address.
 
-_property: transactionRequest.gasLimit => [[bignumber]] | Promise<[[bignumber]]>
+_property: transactionRequest.gasLimit => [[BigNumber]] | Promise<[[BigNumber]]>
 The maximum amount of gas this transaction is permitted to use.
 
-_property: transactionRequest.gasPrice => [[bignumber]] | Promise<[[bignumber]]>
+_property: transactionRequest.gasPrice => [[BigNumber]] | Promise<[[BigNumber]]>
 The price (in wei) per unit of gas this transaction will pay.
 
-_property: transactionRequest.data => [[datahexstring]] | Promise<[[datahexstring]]>
+_property: transactionRequest.data => [[DataHexString]] | Promise<[[DataHexString]]>
 The transaction data.
 
-_property: transactionRequest.value => [[bignumber]] | Promise<[[bignumber]]>
+_property: transactionRequest.value => [[BigNumber]] | Promise<[[BigNumber]]>
 The amount (in wei) this transaction is sending.
 
 _property: transactionRequest.chainId => number | Promise<number>
@@ -198,16 +198,16 @@ on any network. This can be **dangerous** and care should be taken, since it
 allows transactions to be replayed on networks that were possibly not
 intended.
 
-_heading: TransactionResponse @INHERIT<[[types-transaction]]> @<provider-transactionresponse>
+_heading: TransactionResponse @<providers-TransactionResponse> @INHERIT<[[Transaction]]>
 
-A **TransactionResponse** includes all properties of a [[types-transaction]] as well as several
+A **TransactionResponse** includes all properties of a [[Transaction]] as well as several
 properties that are useful once it has been mined.
 
 _property: transaction.blockNumber => number
 The number ("height") of the block this transaction was mined in. If the block has not been mined,
 this is ``null``.
 
-_property: transaction.blockHash => string<[[datahexstring]]<32>>
+_property: transaction.blockHash => string<[[DataHexString]]<32>>
 The hash of the block this transaction was mined in. If the block has not been mined,
 this is ``null``.
 
@@ -219,14 +219,14 @@ _property: transaction.confirmations => number
 The number of blocks that have been mined (including the initial block) since this
 transaction was mined.
 
-_property: transaction.raw => string<[[datahexstring]]>
+_property: transaction.raw => string<[[DataHexString]]>
 The serialized transaction.
 
-_property: transaction.wait([ confirmations = 1 ]) => Promise<[[provider-receipt]]> @<transaction>
+_property: transaction.wait([ confirmations = 1 ]) => Promise<[[providers-TransactionReceipt]]>
 Wait for //confirmations//. If 0, and the transaction has not been mined,
 ``null`` is returned.
 
-_heading: TransactionReceipt @<provider-receipt>
+_heading: TransactionReceipt @<providers-TransactionReceipt>
 
 _property: receipt.to => string<[[address]]>
 The address this transaction is to. This is ``null`` if the the
@@ -241,7 +241,7 @@ used to deploy a contract, in which case this is the address created by that
 contract.
 
 To compute a contract address, the [getContractAddress](utils-getContractAddress)
-utility function can also be used with a [[provider-transactionresponse]]
+utility function can also be used with a [[providers-TransactionResponse]]
 object, which requires the transaction nonce and the address of the sender.
 
 _property: receipt.transactionIndex => number
@@ -259,21 +259,21 @@ it could be used to verify a state transition with a fraud-proof
 only considering the single transaction; without it the full block
 must be considered.
 
-_property: receipt.gasUsed => [[bignumber]]
+_property: receipt.gasUsed => [[BigNumber]]
 The amount of gas actually used by this transaction.
 
-_property: receipt.logsBloom => string<[[datahexstring]]>
+_property: receipt.logsBloom => string<[[DataHexString]]>
 A [bloom-filter](link-wiki-bloomfilter), which
 incldues all the addresses and topics included in any log in this
 transaction.
 
-_property: receipt.blockHash => string<[[datahexstring]]<32>>
+_property: receipt.blockHash => string<[[DataHexString]]<32>>
 The block hash of the block that this transaction was included in.
 
-_property: receipt.transactionHash => string<[[datahexstring]]<32>>
+_property: receipt.transactionHash => string<[[DataHexString]]<32>>
 The transaction hash of this transaction.
 
-_property: receipt.logs => Array<[[provider-log]]>
+_property: receipt.logs => Array<[[providers-Log]]>
 All the logs emitted by this transaction.
 
 _property: receipt.blockNumber => number
@@ -284,7 +284,7 @@ _property: receipt.confirmations => number
 The number of blocks that have been mined since this transaction,
 including the actual block it was mined in.
 
-_property: receipt.cumulativeGasUsed => [[bignumber]]
+_property: receipt.cumulativeGasUsed => [[BigNumber]]
 For the block this transaction was included in, this is the sum of the
 gas used used by each transaction in the ordered list of transactions
 up to (and including) this transaction.

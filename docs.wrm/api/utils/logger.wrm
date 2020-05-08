@@ -3,21 +3,21 @@ _section: Logging @<logging>
 These are just a few simple logging utilities provided to simplify
 and standardize the error facilities across the Ethers library.
 
-The [[logger]] library has zero dependencies and is intentionally
+The [[Logger]] library has zero dependencies and is intentionally
 very light so it can be easily included in each library.
 
-The [Censorship](logger-censorship) functionality relies on one instance
+The [Censorship](Logger--censorship) functionality relies on one instance
 of the Ethers library being included. In large bundled packages or when
 ``npm link`` is used, this may not be the case. If you require this
 functionality, ensure that your bundling is configured properly.
 
 
-_subsection: Logger @<logger> @SRC<logger:class.Logger>
+_subsection: Logger @<Logger> @SRC<logger:class.Logger>
 
 _property: new ethers.utils.Logger(version) @SRC<logger:constructor.Logger>
 Create a new logger which will include //version// in all errors thrown.
 
-_property: Logger.globalLogger() => [[logger]] @SRC<logger>
+_property: Logger.globalLogger() => [[Logger]] @SRC<logger>
 Returns the singleton global logger.
 
 
@@ -35,7 +35,7 @@ Log warnings.
 
 _heading: Errors
 
-These functions honor the current [Censorship](logger-censorship) and help create
+These functions honor the current [Censorship](Logger--censorship) and help create
 a standard error model for detecting and processing errors within Ethers.
 
 _property: logger.makeError(message [ , code = UNKNOWN_ERROR [ , params ] ]) => Error @SRC<logger>
@@ -48,7 +48,7 @@ Throw an Error with //message// and an optional //code// and
 additional //params// set.
 
 _property: logger.throwArgumentError(message, name, value) => never @SRC<logger>
-Throw an [INVALID_ARGUMENT](error-invalidargument) Error with //name// and //value//.
+Throw an [INVALID_ARGUMENT](errors-InvalidArgument) Error with //name// and //value//.
 
 
 _heading: Usage Validation
@@ -61,24 +61,24 @@ as ``checkNew``. This is useful for ensuring abstract classes are not
 being instantiated.
 
 _property: logger.checkArgumentCount(count, expectedCound [ , message) => void @SRC<logger>
-If //count// is not equal to //expectedCount//, throws a [MISSING_ARGUMENT](error-missingargument)
-or [UNEXPECTED_ARGUMENT](error-unexpectedargument) error.
+If //count// is not equal to //expectedCount//, throws a [MISSING_ARGUMENT](errors-MissingArgument)
+or [UNEXPECTED_ARGUMENT](errors-UnexpectedArgument) error.
 
 _property: logger.checkNew(target, kind) => void @SRC<logger>
 If //target// is not a valid ``this`` or ``target`` value, throw a
-[MISSING_NEW](error-missingnew) error. This is useful to ensure
+[MISSING_NEW](errors-MissingNew) error. This is useful to ensure
 callers of a Class are using ``new``.
 
 _property: logger.checkNormalize(message) => void @SRC<logger>
 Check that the environment has a correctly functioning [[link-js-normalize]]. If not, a
-[UNSUPPORTED_OPERATION](error-unsupported) error is thrown.
+[UNSUPPORTED_OPERATION](errors-UnsupportedOperation) error is thrown.
 
 _property: logger.checkSafeUint53(value [, message ]) => void @SRC<logger>
 If //value// is not safe as a [JavaScript number](link-wiki-ieee754), throws a
-[NUMERIC_FAULT](error-numericfault) error.
+[NUMERIC_FAULT](errors-NumericFault) error.
 
 
-_heading: Censorship @<logger-censorship>
+_heading: Censorship @<Logger--censorship>
 
 _property: Logger.setCensorship(censor [ , permanent = false ]) => void @SRC<logger>
 Set error censorship, optionally preventing errors from being uncensored.
@@ -89,7 +89,7 @@ by masking the message and values of errors.
 This can impact debugging, making it substantially more difficult.
 
 _property: Logger.setLogLevel(logLevel) => void @SRC<logger>
-Set the log level, to suppress logging output below a [particular log level](logger-levels).
+Set the log level, to suppress logging output below a [particular log level](Logger-levels).
 
 
 _subsection: Errors @<errors>
@@ -106,13 +106,13 @@ The operation is not implemented.
 _property: Logger.errors.SERVER_ERROR
 There was an error communicating with a server.
 
-_property: Logger.errors.TIMEOUT @<error-timeout>
+_property: Logger.errors.TIMEOUT @<errors-Timeout>
 A timeout occurred.
 
-_property: Logger.errors.UNKNOWN_ERROR @<error-unknown>
+_property: Logger.errors.UNKNOWN_ERROR @<errors-UnknownError>
 A generic unknown error.
 
-_property: Logger.errors.UNSUPPORTED_OPERATION @<error-unsupported>
+_property: Logger.errors.UNSUPPORTED_OPERATION @<errors-UnsupportedOperation>
 The operation is not supported.
 
 
@@ -122,7 +122,7 @@ _property: Logger.errors.BUFFER_OVERRUN
 The amount of data needed is more than the amount of data required,
 which would cause the data buffer to read past its end.
 
-_property: Logger.errors.NUMERIC_FAULT @<error-numericfault>
+_property: Logger.errors.NUMERIC_FAULT @<errors-NumericFault>
 There was an invalid operation done on numeric values.
 
 Common cases of this occur when there is [[link-wiki-overflow]],
@@ -131,19 +131,19 @@ Common cases of this occur when there is [[link-wiki-overflow]],
 
 _heading: Usage Error Codes
 
-_property: Logger.errors.INVALID_ARGUMENT @<error-invalidargument>
+_property: Logger.errors.INVALID_ARGUMENT @<errors-InvalidArgument>
 The type or value of an argument is invalid. This will generally also
 include the ``name`` and ``value`` of the argument. Any function which
 accepts sensitive data (such as a private key) will include the string
 ``[\[REDACTED]\]`` instead of the value passed in.
 
-_property: Logger.errors.MISSING_ARGUMENT @<error-missingargument>
+_property: Logger.errors.MISSING_ARGUMENT @<errors-MissingArgument>
 An expected parameter was not specified.
 
-_property: Logger.errors.MISSING_NEW @<error-missingnew>
+_property: Logger.errors.MISSING_NEW @<errors-MissingNew>
 An object is a Class, but is now being called with ``new``.
 
-_property: Logger.errors.UNEXPECTED_ARGUMENT @<error-unexpectedargument>
+_property: Logger.errors.UNEXPECTED_ARGUMENT @<errors-UnexpectedArgument>
 Too many parameters we passed into a function.
 
 
@@ -190,7 +190,7 @@ This error can also indicate that the transaction is expected to fail regardless
 if for example an account with no tokens is attempting to send a token.
 
 
-_subsection: Log Levels @<logger-levels>
+_subsection: Log Levels @<Logger-levels>
 
 _property: Logger.levels.DEBUG
 Log all output, including debugging information.
