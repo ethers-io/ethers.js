@@ -190,34 +190,31 @@ const allowedTransactionKeys = {
 export class JsonRpcProvider extends BaseProvider {
     constructor(url, network) {
         logger.checkNew(new.target, JsonRpcProvider);
-        const getNetwork = getStatic((new.target), "getNetwork");
-        // One parameter, but it is a network name, so swap it with the URL
-        if (typeof (url) === "string") {
-            if (network === null) {
-                const checkNetwork = getNetwork(url);
-                network = checkNetwork;
-                url = null;
-            }
+        let networkOrReady = network;
+        // The network is unknown, query the JSON-RPC for it
+        if (networkOrReady == null) {
+            networkOrReady = new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    this.detectNetwork().then((network) => {
+                        resolve(network);
+                    }, (error) => {
+                        reject(error);
+                    });
+                }, 0);
+            });
         }
-        if (network) {
-            // The network has been specified explicitly, we can use it
-            super(network);
-        }
-        else {
-            // The network is unknown, query the JSON-RPC for it
-            super(this.detectNetwork());
-        }
+        super(networkOrReady);
         // Default URL
         if (!url) {
             url = getStatic(this.constructor, "defaultUrl")();
         }
         if (typeof (url) === "string") {
-            this.connection = Object.freeze({
+            defineReadOnly(this, "connection", Object.freeze({
                 url: url
-            });
+            }));
         }
         else {
-            this.connection = Object.freeze(shallowCopy(url));
+            defineReadOnly(this, "connection", Object.freeze(shallowCopy(url)));
         }
         this._nextId = 42;
     }

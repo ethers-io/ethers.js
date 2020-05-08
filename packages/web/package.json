@@ -10,10 +10,10 @@
     "./lib/geturl": "./lib/browser-geturl.js"
   },
   "dependencies": {
-    "@ethersproject/base64": ">=5.0.0-beta.126",
-    "@ethersproject/logger": ">=5.0.0-beta.129",
-    "@ethersproject/properties": ">=5.0.0-beta.131",
-    "@ethersproject/strings": ">=5.0.0-beta.130"
+    "@ethersproject/base64": ">=5.0.0-beta.133",
+    "@ethersproject/logger": ">=5.0.0-beta.137",
+    "@ethersproject/properties": ">=5.0.0-beta.140",
+    "@ethersproject/strings": ">=5.0.0-beta.136"
   },
   "description": "Utility fucntions for managing web requests for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -35,7 +35,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xfc2c320ae603870cf3abd09b8a0f2c42f49821f21194f4bffa8354144eca6693",
+  "tarballHash": "0x6b0a1f1d0ccf60aea96c2496e10f9a91c0af6eba4274195bb6a6cb6d152b9bcf",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.138"
+  "version": "5.0.0-beta.139"
 }

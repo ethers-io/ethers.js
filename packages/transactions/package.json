@@ -1,15 +1,15 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/address": ">=5.0.0-beta.128",
-    "@ethersproject/bignumber": ">=5.0.0-beta.130",
-    "@ethersproject/bytes": ">=5.0.0-beta.129",
-    "@ethersproject/constants": ">=5.0.0-beta.128",
-    "@ethersproject/keccak256": ">=5.0.0-beta.127",
-    "@ethersproject/logger": ">=5.0.0-beta.129",
-    "@ethersproject/properties": ">=5.0.0-beta.131",
-    "@ethersproject/rlp": ">=5.0.0-beta.126",
-    "@ethersproject/signing-key": ">=5.0.0-beta.129"
+    "@ethersproject/address": ">=5.0.0-beta.134",
+    "@ethersproject/bignumber": ">=5.0.0-beta.138",
+    "@ethersproject/bytes": ">=5.0.0-beta.137",
+    "@ethersproject/constants": ">=5.0.0-beta.133",
+    "@ethersproject/keccak256": ">=5.0.0-beta.131",
+    "@ethersproject/logger": ">=5.0.0-beta.137",
+    "@ethersproject/properties": ">=5.0.0-beta.140",
+    "@ethersproject/rlp": ">=5.0.0-beta.132",
+    "@ethersproject/signing-key": ">=5.0.0-beta.135"
   },
   "description": "Utilities for decoding and encoding Ethereum transaction for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -31,7 +31,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x4fac38a6bdeeb376ae8f40c0fd64fb4791a863009f9465e407b301b1ac376820",
+  "tarballHash": "0x853e3b9ebf1cbfba22c64dcdcc46061cb8d4339f8c00d48ff29c72b647f77ca7",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.135"
+  "version": "5.0.0-beta.136"
 }

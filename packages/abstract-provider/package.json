@@ -1,13 +1,13 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bignumber": ">=5.0.0-beta.130",
-    "@ethersproject/bytes": ">=5.0.0-beta.129",
-    "@ethersproject/logger": ">=5.0.0-beta.129",
-    "@ethersproject/networks": ">=5.0.0-beta.129",
-    "@ethersproject/properties": ">=5.0.0-beta.131",
-    "@ethersproject/transactions": ">=5.0.0-beta.128",
-    "@ethersproject/web": ">=5.0.0-beta.129"
+    "@ethersproject/bignumber": ">=5.0.0-beta.138",
+    "@ethersproject/bytes": ">=5.0.0-beta.137",
+    "@ethersproject/logger": ">=5.0.0-beta.137",
+    "@ethersproject/networks": ">=5.0.0-beta.136",
+    "@ethersproject/properties": ">=5.0.0-beta.140",
+    "@ethersproject/transactions": ">=5.0.0-beta.135",
+    "@ethersproject/web": ">=5.0.0-beta.138"
   },
   "description": "An Abstract Class for describing an Ethereum Provider for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -29,7 +29,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xad40806c9e4998150e5bdcd5bea2f189a2ed7a24a011a29daf08dcca4e815670",
+  "tarballHash": "0x112911cec63f46185fc7274e32822878cd8e31ce19959652af94c70fc71d02ed",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.139"
+  "version": "5.0.0-beta.140"
 }

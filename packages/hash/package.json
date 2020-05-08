@@ -1,10 +1,10 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bytes": ">=5.0.0-beta.129",
-    "@ethersproject/keccak256": ">=5.0.0-beta.127",
-    "@ethersproject/logger": ">=5.0.0-beta.129",
-    "@ethersproject/strings": ">=5.0.0-beta.130"
+    "@ethersproject/bytes": ">=5.0.0-beta.137",
+    "@ethersproject/keccak256": ">=5.0.0-beta.131",
+    "@ethersproject/logger": ">=5.0.0-beta.137",
+    "@ethersproject/strings": ">=5.0.0-beta.136"
   },
   "description": "Hash utility functions for Ethereum.",
   "ethereum": "donations.ethers.eth",
@@ -26,7 +26,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x70a38ce13fde3798e68effb28379f6baca585605fb3c12f6f271baa7d8512895",
+  "tarballHash": "0xd7e2c82beb0cb8ab78d3f1b743e48c886bae5c1eb1c196b8891f8acfbf07939d",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.133"
+  "version": "5.0.0-beta.134"
 }

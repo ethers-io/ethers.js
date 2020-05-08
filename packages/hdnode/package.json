@@ -1,18 +1,18 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
-    "@ethersproject/basex": ">=5.0.0-beta.127",
-    "@ethersproject/bignumber": ">=5.0.0-beta.130",
-    "@ethersproject/bytes": ">=5.0.0-beta.129",
-    "@ethersproject/logger": ">=5.0.0-beta.129",
-    "@ethersproject/pbkdf2": ">=5.0.0-beta.127",
-    "@ethersproject/properties": ">=5.0.0-beta.131",
-    "@ethersproject/sha2": ">=5.0.0-beta.129",
-    "@ethersproject/signing-key": ">=5.0.0-beta.129",
-    "@ethersproject/strings": ">=5.0.0-beta.130",
-    "@ethersproject/transactions": ">=5.0.0-beta.128",
-    "@ethersproject/wordlists": ">=5.0.0-beta.128"
+    "@ethersproject/abstract-signer": ">=5.0.0-beta.142",
+    "@ethersproject/basex": ">=5.0.0-beta.132",
+    "@ethersproject/bignumber": ">=5.0.0-beta.138",
+    "@ethersproject/bytes": ">=5.0.0-beta.137",
+    "@ethersproject/logger": ">=5.0.0-beta.137",
+    "@ethersproject/pbkdf2": ">=5.0.0-beta.135",
+    "@ethersproject/properties": ">=5.0.0-beta.140",
+    "@ethersproject/sha2": ">=5.0.0-beta.136",
+    "@ethersproject/signing-key": ">=5.0.0-beta.135",
+    "@ethersproject/strings": ">=5.0.0-beta.136",
+    "@ethersproject/transactions": ">=5.0.0-beta.135",
+    "@ethersproject/wordlists": ">=5.0.0-beta.136"
   },
   "description": "BIP32 Hierarchal Deterministic Node operations.",
   "ethereum": "donations.ethers.eth",
@@ -34,7 +34,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xc4007b5f6a015f9f5942d6437a8497403202f732a428274a9b310a2bb68a0ad5",
+  "tarballHash": "0x36b02253d01dcf8adafbb0060bf4224e6abc1e6380144597c268253a90ee58cd",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.139"
+  "version": "5.0.0-beta.140"
 }

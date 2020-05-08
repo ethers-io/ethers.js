@@ -250,34 +250,31 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         var _newTarget = this.constructor;
         var _this = this;
         logger.checkNew(_newTarget, JsonRpcProvider);
-        var getNetwork = properties_1.getStatic((_newTarget), "getNetwork");
-        // One parameter, but it is a network name, so swap it with the URL
-        if (typeof (url) === "string") {
-            if (network === null) {
-                var checkNetwork = getNetwork(url);
-                network = checkNetwork;
-                url = null;
-            }
+        var networkOrReady = network;
+        // The network is unknown, query the JSON-RPC for it
+        if (networkOrReady == null) {
+            networkOrReady = new Promise(function (resolve, reject) {
+                setTimeout(function () {
+                    _this.detectNetwork().then(function (network) {
+                        resolve(network);
+                    }, function (error) {
+                        reject(error);
+                    });
+                }, 0);
+            });
         }
-        if (network) {
-            // The network has been specified explicitly, we can use it
-            _this = _super.call(this, network) || this;
-        }
-        else {
-            // The network is unknown, query the JSON-RPC for it
-            _this = _super.call(this, _this.detectNetwork()) || this;
-        }
+        _this = _super.call(this, networkOrReady) || this;
         // Default URL
         if (!url) {
             url = properties_1.getStatic(_this.constructor, "defaultUrl")();
         }
         if (typeof (url) === "string") {
-            _this.connection = Object.freeze({
+            properties_1.defineReadOnly(_this, "connection", Object.freeze({
                 url: url
-            });
+            }));
         }
         else {
-            _this.connection = Object.freeze(properties_1.shallowCopy(url));
+            properties_1.defineReadOnly(_this, "connection", Object.freeze(properties_1.shallowCopy(url)));
         }
         _this._nextId = 42;
         return _this;

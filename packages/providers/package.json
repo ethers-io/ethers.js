@@ -16,21 +16,21 @@
     "ws": "./lib/browser-ws.js"
   },
   "dependencies": {
-    "@ethersproject/abstract-provider": ">=5.0.0-beta.131",
-    "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
-    "@ethersproject/address": ">=5.0.0-beta.128",
-    "@ethersproject/bignumber": ">=5.0.0-beta.130",
-    "@ethersproject/bytes": ">=5.0.0-beta.129",
-    "@ethersproject/constants": ">=5.0.0-beta.128",
-    "@ethersproject/hash": ">=5.0.0-beta.128",
-    "@ethersproject/logger": ">=5.0.0-beta.129",
-    "@ethersproject/networks": ">=5.0.0-beta.129",
-    "@ethersproject/properties": ">=5.0.0-beta.131",
-    "@ethersproject/random": ">=5.0.0-beta.128",
-    "@ethersproject/rlp": ">=5.0.0-beta.126",
-    "@ethersproject/strings": ">=5.0.0-beta.130",
-    "@ethersproject/transactions": ">=5.0.0-beta.128",
-    "@ethersproject/web": ">=5.0.0-beta.129",
+    "@ethersproject/abstract-provider": ">=5.0.0-beta.139",
+    "@ethersproject/abstract-signer": ">=5.0.0-beta.142",
+    "@ethersproject/address": ">=5.0.0-beta.134",
+    "@ethersproject/bignumber": ">=5.0.0-beta.138",
+    "@ethersproject/bytes": ">=5.0.0-beta.137",
+    "@ethersproject/constants": ">=5.0.0-beta.133",
+    "@ethersproject/hash": ">=5.0.0-beta.133",
+    "@ethersproject/logger": ">=5.0.0-beta.137",
+    "@ethersproject/networks": ">=5.0.0-beta.136",
+    "@ethersproject/properties": ">=5.0.0-beta.140",
+    "@ethersproject/random": ">=5.0.0-beta.135",
+    "@ethersproject/rlp": ">=5.0.0-beta.132",
+    "@ethersproject/strings": ">=5.0.0-beta.136",
+    "@ethersproject/transactions": ">=5.0.0-beta.135",
+    "@ethersproject/web": ">=5.0.0-beta.138",
     "ws": "7.2.3"
   },
   "description": "Ethereum Providers for ethers.",
@@ -56,7 +56,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x37c5f15bcb70eac5b469a51a292980bfcef861eef0bff51eb6dbe23192a2bbc6",
+  "tarballHash": "0xafd62f450fffe0db9a7c125d5aa6e9f466b9998cbef8cdf60b19da04bac80924",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.165"
+  "version": "5.0.0-beta.166"
 }

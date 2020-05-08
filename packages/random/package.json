@@ -4,8 +4,8 @@
   "browser.esm": "./lib.esm/browser.js",
   "browser.umd": "./lib/browser.js",
   "dependencies": {
-    "@ethersproject/bytes": ">=5.0.0-beta.129",
-    "@ethersproject/logger": ">=5.0.0-beta.129"
+    "@ethersproject/bytes": ">=5.0.0-beta.137",
+    "@ethersproject/logger": ">=5.0.0-beta.137"
   },
   "description": "Random utility functions for ethers.",
   "devDependencies": {
@@ -31,7 +31,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x4a9adc0ad64040437f0c42e1a7ef2b5f8674da8f0eac5e84d701bbb389b557f6",
+  "tarballHash": "0xdc4062a56ffee0446914c8c7b052d3d74b78c961dba739809f53765fb7b776b2",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.135"
+  "version": "5.0.0-beta.136"
 }

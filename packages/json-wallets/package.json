@@ -1,17 +1,17 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
-    "@ethersproject/address": ">=5.0.0-beta.128",
-    "@ethersproject/bytes": ">=5.0.0-beta.129",
-    "@ethersproject/hdnode": ">=5.0.0-beta.130",
-    "@ethersproject/keccak256": ">=5.0.0-beta.127",
-    "@ethersproject/logger": ">=5.0.0-beta.129",
-    "@ethersproject/pbkdf2": ">=5.0.0-beta.127",
-    "@ethersproject/properties": ">=5.0.0-beta.131",
-    "@ethersproject/random": ">=5.0.0-beta.128",
-    "@ethersproject/strings": ">=5.0.0-beta.130",
-    "@ethersproject/transactions": ">=5.0.0-beta.128",
+    "@ethersproject/abstract-signer": ">=5.0.0-beta.142",
+    "@ethersproject/address": ">=5.0.0-beta.134",
+    "@ethersproject/bytes": ">=5.0.0-beta.137",
+    "@ethersproject/hdnode": ">=5.0.0-beta.139",
+    "@ethersproject/keccak256": ">=5.0.0-beta.131",
+    "@ethersproject/logger": ">=5.0.0-beta.137",
+    "@ethersproject/pbkdf2": ">=5.0.0-beta.135",
+    "@ethersproject/properties": ">=5.0.0-beta.140",
+    "@ethersproject/random": ">=5.0.0-beta.135",
+    "@ethersproject/strings": ">=5.0.0-beta.136",
+    "@ethersproject/transactions": ">=5.0.0-beta.135",
     "aes-js": "3.0.0",
     "scrypt-js": "3.0.0",
     "uuid": "2.0.1"
@@ -36,7 +36,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x1b8de5f813685d657c1fc20d0a7bd90d2d297e03341a9a93c5d65d594bdb7862",
+  "tarballHash": "0x93fb74fe10dc7907d97d537858ed70d603e1f80d1cd1faab948ddbe2105d2ce8",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.138"
+  "version": "5.0.0-beta.139"
 }

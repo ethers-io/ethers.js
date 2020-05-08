@@ -1,21 +1,21 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abstract-provider": ">=5.0.0-beta.131",
-    "@ethersproject/abstract-signer": ">=5.0.0-beta.132",
-    "@ethersproject/address": ">=5.0.0-beta.128",
-    "@ethersproject/bignumber": ">=5.0.0-beta.130",
-    "@ethersproject/bytes": ">=5.0.0-beta.129",
-    "@ethersproject/hash": ">=5.0.0-beta.128",
-    "@ethersproject/hdnode": ">=5.0.0-beta.130",
-    "@ethersproject/json-wallets": ">=5.0.0-beta.129",
-    "@ethersproject/keccak256": ">=5.0.0-beta.127",
-    "@ethersproject/logger": ">=5.0.0-beta.129",
-    "@ethersproject/properties": ">=5.0.0-beta.131",
-    "@ethersproject/random": ">=5.0.0-beta.128",
-    "@ethersproject/signing-key": ">=5.0.0-beta.129",
-    "@ethersproject/transactions": ">=5.0.0-beta.128",
-    "@ethersproject/wordlists": ">=5.0.0-beta.128"
+    "@ethersproject/abstract-provider": ">=5.0.0-beta.139",
+    "@ethersproject/abstract-signer": ">=5.0.0-beta.142",
+    "@ethersproject/address": ">=5.0.0-beta.134",
+    "@ethersproject/bignumber": ">=5.0.0-beta.138",
+    "@ethersproject/bytes": ">=5.0.0-beta.137",
+    "@ethersproject/hash": ">=5.0.0-beta.133",
+    "@ethersproject/hdnode": ">=5.0.0-beta.139",
+    "@ethersproject/json-wallets": ">=5.0.0-beta.138",
+    "@ethersproject/keccak256": ">=5.0.0-beta.131",
+    "@ethersproject/logger": ">=5.0.0-beta.137",
+    "@ethersproject/properties": ">=5.0.0-beta.140",
+    "@ethersproject/random": ">=5.0.0-beta.135",
+    "@ethersproject/signing-key": ">=5.0.0-beta.135",
+    "@ethersproject/transactions": ">=5.0.0-beta.135",
+    "@ethersproject/wordlists": ">=5.0.0-beta.136"
   },
   "description": "Classes for managing, encrypting and decrypting Ethereum private keys as a Signer for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -37,7 +37,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xb2a3c17bf3c99034f26e9af85ec89dae486b8400e8d06b6abb1461fb1dc60d9d",
+  "tarballHash": "0x377f1eb89b1ffcab3f5e8afc9e5508a86adae4b7582fdd89d7fd8149c2df3288",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.140"
+  "version": "5.0.0-beta.141"
 }

@@ -3776,7 +3776,7 @@
 	var _version$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bytes/5.0.0-beta.137";
+	exports.version = "bytes/5.0.0-beta.138";
 	});
 
 	var _version$3 = unwrapExports(_version$2);
@@ -4202,7 +4202,7 @@
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.0-beta.138";
+	exports.version = "bignumber/5.0.0-beta.139";
 	});
 
 	var _version$5 = unwrapExports(_version$4);
@@ -4817,7 +4817,7 @@
 	var _version$6 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "properties/5.0.0-beta.140";
+	exports.version = "properties/5.0.0-beta.141";
 	});
 
 	var _version$7 = unwrapExports(_version$6);
@@ -4998,7 +4998,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.153";
+	exports.version = "abi/5.0.0-beta.154";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -6494,7 +6494,7 @@
 	var _version$a = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "rlp/5.0.0-beta.132";
+	exports.version = "rlp/5.0.0-beta.133";
 	});
 
 	var _version$b = unwrapExports(_version$a);
@@ -6632,7 +6632,7 @@
 	var _version$c = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "address/5.0.0-beta.134";
+	exports.version = "address/5.0.0-beta.135";
 	});
 
 	var _version$d = unwrapExports(_version$c);
@@ -7345,7 +7345,7 @@
 	var _version$e = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "strings/5.0.0-beta.136";
+	exports.version = "strings/5.0.0-beta.137";
 	});
 
 	var _version$f = unwrapExports(_version$e);
@@ -8085,7 +8085,7 @@
 	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hash/5.0.0-beta.133";
+	exports.version = "hash/5.0.0-beta.134";
 	});
 
 	var _version$h = unwrapExports(_version$g);
@@ -8738,7 +8738,7 @@
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-provider/5.0.0-beta.139";
+	exports.version = "abstract-provider/5.0.0-beta.140";
 	});
 
 	var _version$j = unwrapExports(_version$i);
@@ -8873,7 +8873,7 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.0-beta.142";
+	exports.version = "abstract-signer/5.0.0-beta.143";
 	});
 
 	var _version$l = unwrapExports(_version$k);
@@ -9198,7 +9198,7 @@
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.0-beta.151";
+	exports.version = "contracts/5.0.0-beta.152";
 	});
 
 	var _version$n = unwrapExports(_version$m);
@@ -11449,7 +11449,7 @@
 	var _version$o = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "sha2/5.0.0-beta.136";
+	exports.version = "sha2/5.0.0-beta.137";
 	});
 
 	var _version$p = unwrapExports(_version$o);
@@ -13927,7 +13927,7 @@
 	var _version$q = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "signing-key/5.0.0-beta.135";
+	exports.version = "signing-key/5.0.0-beta.136";
 	});
 
 	var _version$r = unwrapExports(_version$q);
@@ -14023,7 +14023,7 @@
 	var _version$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "transactions/5.0.0-beta.135";
+	exports.version = "transactions/5.0.0-beta.136";
 	});
 
 	var _version$t = unwrapExports(_version$s);
@@ -14221,7 +14221,7 @@
 	var _version$u = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wordlists/5.0.0-beta.136";
+	exports.version = "wordlists/5.0.0-beta.137";
 	});
 
 	var _version$v = unwrapExports(_version$u);
@@ -14358,7 +14358,7 @@
 	var _version$w = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hdnode/5.0.0-beta.139";
+	exports.version = "hdnode/5.0.0-beta.140";
 	});
 
 	var _version$x = unwrapExports(_version$w);
@@ -14713,7 +14713,7 @@
 	var _version$y = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "random/5.0.0-beta.135";
+	exports.version = "random/5.0.0-beta.136";
 	});
 
 	var _version$z = unwrapExports(_version$y);
@@ -15596,7 +15596,7 @@
 	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "json-wallets/5.0.0-beta.138";
+	exports.version = "json-wallets/5.0.0-beta.139";
 	});
 
 	var _version$B = unwrapExports(_version$A);
@@ -16953,7 +16953,7 @@
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.0-beta.140";
+	exports.version = "wallet/5.0.0-beta.141";
 	});
 
 	var _version$D = unwrapExports(_version$C);
@@ -17142,7 +17142,7 @@
 	var _version$E = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "networks/5.0.0-beta.136";
+	exports.version = "networks/5.0.0-beta.137";
 	});
 
 	var _version$F = unwrapExports(_version$E);
@@ -17370,7 +17370,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.0-beta.138";
+	exports.version = "web/5.0.0-beta.139";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -17749,7 +17749,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.165";
+	exports.version = "providers/5.0.0-beta.166";
 	});
 
 	var _version$J = unwrapExports(_version$I);
@@ -19839,34 +19839,31 @@
 	        var _newTarget = this.constructor;
 	        var _this = this;
 	        logger.checkNew(_newTarget, JsonRpcProvider);
-	        var getNetwork = lib$3.getStatic((_newTarget), "getNetwork");
-	        // One parameter, but it is a network name, so swap it with the URL
-	        if (typeof (url) === "string") {
-	            if (network === null) {
-	                var checkNetwork = getNetwork(url);
-	                network = checkNetwork;
-	                url = null;
-	            }
+	        var networkOrReady = network;
+	        // The network is unknown, query the JSON-RPC for it
+	        if (networkOrReady == null) {
+	            networkOrReady = new Promise(function (resolve, reject) {
+	                setTimeout(function () {
+	                    _this.detectNetwork().then(function (network) {
+	                        resolve(network);
+	                    }, function (error) {
+	                        reject(error);
+	                    });
+	                }, 0);
+	            });
 	        }
-	        if (network) {
-	            // The network has been specified explicitly, we can use it
-	            _this = _super.call(this, network) || this;
-	        }
-	        else {
-	            // The network is unknown, query the JSON-RPC for it
-	            _this = _super.call(this, _this.detectNetwork()) || this;
-	        }
+	        _this = _super.call(this, networkOrReady) || this;
 	        // Default URL
 	        if (!url) {
 	            url = lib$3.getStatic(_this.constructor, "defaultUrl")();
 	        }
 	        if (typeof (url) === "string") {
-	            _this.connection = Object.freeze({
+	            lib$3.defineReadOnly(_this, "connection", Object.freeze({
 	                url: url
-	            });
+	            }));
 	        }
 	        else {
-	            _this.connection = Object.freeze(lib$3.shallowCopy(url));
+	            lib$3.defineReadOnly(_this, "connection", Object.freeze(lib$3.shallowCopy(url)));
 	        }
 	        _this._nextId = 42;
 	        return _this;
@@ -22309,7 +22306,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "units/5.0.0-beta.132";
+	exports.version = "units/5.0.0-beta.133";
 	});
 
 	var _version$L = unwrapExports(_version$K);
@@ -22621,7 +22618,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.185";
+	exports.version = "ethers/5.0.0-beta.186";
 	});
 
 	var _version$N = unwrapExports(_version$M);

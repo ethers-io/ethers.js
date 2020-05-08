@@ -13,12 +13,12 @@
   "browser.esm": "./lib.esm/browser.js",
   "browser.umd": "./lib/browser.js",
   "dependencies": {
-    "@ethersproject/bignumber": ">=5.0.0-beta.130",
-    "@ethersproject/bytes": ">=5.0.0-beta.129",
-    "@ethersproject/keccak256": ">=5.0.0-beta.127",
-    "@ethersproject/strings": ">=5.0.0-beta.130",
+    "@ethersproject/bignumber": ">=5.0.0-beta.138",
+    "@ethersproject/bytes": ">=5.0.0-beta.137",
+    "@ethersproject/keccak256": ">=5.0.0-beta.131",
+    "@ethersproject/strings": ">=5.0.0-beta.136",
     "browserify-zlib": "^0.2.0",
-    "ethers": ">=5.0.0-beta.161"
+    "ethers": ">=5.0.0-beta.186"
   },
   "description": "Testcases for Ethereum and scripts to generate testcases.",
   "ethereum": "donations.ethers.eth",
@@ -40,7 +40,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x8a71858f9b980c48d0a8b33196686cff68e3d999b31fdbc18865ca0ae4fefb07",
+  "tarballHash": "0x3aa3964ef3d3bf6156f11b65d4b12a879c28e61a29e8bfbd65fc30c2f8e1b4b3",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.140"
+  "version": "5.0.0-beta.141"
 }

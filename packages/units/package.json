@@ -1,9 +1,9 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bignumber": ">=5.0.0-beta.130",
-    "@ethersproject/constants": ">=5.0.0-beta.128",
-    "@ethersproject/logger": ">=5.0.0-beta.129"
+    "@ethersproject/bignumber": ">=5.0.0-beta.138",
+    "@ethersproject/constants": ">=5.0.0-beta.133",
+    "@ethersproject/logger": ">=5.0.0-beta.137"
   },
   "description": "Unit conversion functions for Ethereum.",
   "ethereum": "donations.ethers.eth",
@@ -27,7 +27,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x791cb2810bc9512f2fe6248a7914fa6b77ebdef3cc2850b3af4aedf908157bb4",
+  "tarballHash": "0xd01735693d1e33840b67eadad1a24acc7fb52db56de2e6005d604fac9455ea11",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.132"
+  "version": "5.0.0-beta.133"
 }

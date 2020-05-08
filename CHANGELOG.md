@@ -8,6 +8,11 @@ may change. It is generally recommended that you remove your `node_modules/`,
 `package-lock.json` (and similar files for yarn, etc.) and doing an `npm install`
 after upgrading to a newer version of the v5-BETA.
 
+ethers/v5.0.0-beta.186 (2020-05-08 15:27)
+-----------------------------------------
+
+  - Fix JsonRpcProvider out-of-order super call. ([#822](https://github.com/ethers-io/ethers.js/issues/822); [963197d](https://github.com/ethers-io/ethers.js/commit/963197d70c96e5970b431173c2cc782cb496674c))
+
 ethers/v5.0.0-beta.185 (2020-05-04 22:54)
 -----------------------------------------
 
