@@ -28,23 +28,6 @@ export declare function parseParamType(type: string): ParamType;
 export declare function formatParamType(paramType: ParamType): string;
 export declare function formatSignature(fragment: EventFragment | FunctionFragment): string;
 export declare function parseSignature(fragment: string): EventFragment | FunctionFragment;
-declare type DecodedResult = {
-    consumed: number;
-    value: any;
-};
-declare abstract class Coder {
-    readonly coerceFunc: CoerceFunc;
-    readonly name: string;
-    readonly type: string;
-    readonly localName: string;
-    readonly dynamic: boolean;
-    readonly size?: number;
-    constructor(coerceFunc: CoerceFunc, name: string, type: string, localName: string, dynamic: boolean, size?: number);
-    abstract encode(value: any, tight?: boolean): Uint8Array;
-    abstract decode(data: Uint8Array, offset: number, tight?: boolean): DecodedResult;
-}
-export declare function pack(coders: Array<Coder>, values: Array<any>, tight?: boolean): Uint8Array;
-export declare function unpack(coders: Array<Coder>, data: Uint8Array, offset: number, tight?: boolean): DecodedResult;
 export declare class AbiCoder {
     readonly coerceFunc: CoerceFunc;
     constructor(coerceFunc?: CoerceFunc);
@@ -54,4 +37,3 @@ export declare class AbiCoder {
     decodePacked(types: Array<string | ParamType>, data: Arrayish): any;
 }
 export declare const defaultAbiCoder: AbiCoder;
-export {};

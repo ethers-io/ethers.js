@@ -317,13 +317,12 @@ function parseSignature(fragment) {
 }
 exports.parseSignature = parseSignature;
 var Coder = /** @class */ (function () {
-    function Coder(coerceFunc, name, type, localName, dynamic, size) {
+    function Coder(coerceFunc, name, type, localName, dynamic) {
         this.coerceFunc = coerceFunc;
         this.name = name;
         this.type = type;
         this.localName = localName;
         this.dynamic = dynamic;
-        this.size = size;
     }
     return Coder;
 }());
@@ -331,7 +330,7 @@ var Coder = /** @class */ (function () {
 var CoderAnonymous = /** @class */ (function (_super) {
     __extends(CoderAnonymous, _super);
     function CoderAnonymous(coder) {
-        var _this = _super.call(this, coder.coerceFunc, coder.name, coder.type, undefined, coder.dynamic, coder.size) || this;
+        var _this = _super.call(this, coder.coerceFunc, coder.name, coder.type, undefined, coder.dynamic) || this;
         properties_1.defineReadOnly(_this, 'coder', coder);
         return _this;
     }
@@ -363,7 +362,7 @@ var CoderNumber = /** @class */ (function (_super) {
     function CoderNumber(coerceFunc, size, signed, localName) {
         var _this = this;
         var name = ((signed ? 'int' : 'uint') + (size * 8));
-        _this = _super.call(this, coerceFunc, name, name, localName, false, size * 8) || this;
+        _this = _super.call(this, coerceFunc, name, name, localName, false) || this;
         _this.size = size;
         _this.signed = signed;
         return _this;
@@ -428,7 +427,7 @@ var boolCoder = new CoderNumber(function (type, value) { return value; }, 1, fal
 var CoderBoolean = /** @class */ (function (_super) {
     __extends(CoderBoolean, _super);
     function CoderBoolean(coerceFunc, localName) {
-        return _super.call(this, coerceFunc, 'bool', 'bool', localName, false, 1) || this;
+        return _super.call(this, coerceFunc, 'bool', 'bool', localName, false) || this;
     }
     CoderBoolean.prototype.encode = function (value, tight) {
         return boolCoder.encode(!!value ? 1 : 0, tight);
@@ -459,7 +458,7 @@ var CoderFixedBytes = /** @class */ (function (_super) {
     function CoderFixedBytes(coerceFunc, length, localName) {
         var _this = this;
         var name = ('bytes' + length);
-        _this = _super.call(this, coerceFunc, name, name, localName, false, length) || this;
+        _this = _super.call(this, coerceFunc, name, name, localName, false) || this;
         _this.length = length;
         return _this;
     }
@@ -500,7 +499,7 @@ var CoderFixedBytes = /** @class */ (function (_super) {
 var CoderAddress = /** @class */ (function (_super) {
     __extends(CoderAddress, _super);
     function CoderAddress(coerceFunc, localName) {
-        return _super.call(this, coerceFunc, 'address', 'address', localName, false, 20) || this;
+        return _super.call(this, coerceFunc, 'address', 'address', localName, false) || this;
     }
     CoderAddress.prototype.encode = function (value, tight) {
         var result = new Uint8Array(tight ? 20 : 32);
@@ -685,7 +684,6 @@ function pack(coders, values, tight) {
     });
     return data;
 }
-exports.pack = pack;
 function unpack(coders, data, offset, tight) {
     var baseOffset = offset;
     var consumed = 0;
@@ -727,7 +725,6 @@ function unpack(coders, data, offset, tight) {
         consumed: consumed
     };
 }
-exports.unpack = unpack;
 var CoderArray = /** @class */ (function (_super) {
     __extends(CoderArray, _super);
     function CoderArray(coerceFunc, coder, length, localName) {
