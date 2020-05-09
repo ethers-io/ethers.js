@@ -44,6 +44,7 @@ var VoidSigner = /** @class */ (function (_super) {
     VoidSigner.prototype._fail = function (message, operation) {
         return Promise.resolve().then(function () {
             errors.throwError(message, errors.UNSUPPORTED_OPERATION, { operation: operation });
+            return;
         });
     };
     VoidSigner.prototype.signMessage = function (message) {
