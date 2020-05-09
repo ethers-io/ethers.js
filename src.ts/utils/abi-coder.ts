@@ -720,7 +720,7 @@ function alignSize(size: number): number {
     return 32 * Math.ceil(size / 32);
 }
 
-export function pack(coders: Array<Coder>, values: Array<any>, tight?: boolean): Uint8Array {
+function pack(coders: Array<Coder>, values: Array<any>, tight?: boolean): Uint8Array {
     if (Array.isArray(values)) {
        // do nothing
 
@@ -788,7 +788,7 @@ export function pack(coders: Array<Coder>, values: Array<any>, tight?: boolean):
     return data;
 }
 
-export function unpack(coders: Array<Coder>, data: Uint8Array, offset: number, tight?: boolean): DecodedResult {
+function unpack(coders: Array<Coder>, data: Uint8Array, offset: number, tight?: boolean): DecodedResult {
     var baseOffset = offset;
     var consumed = 0;
     var value: any = [];
