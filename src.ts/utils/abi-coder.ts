@@ -412,14 +412,12 @@ abstract class Coder {
     readonly type: string;
     readonly localName: string;
     readonly dynamic: boolean;
-    readonly size?: number;
-    constructor(coerceFunc: CoerceFunc, name: string, type: string, localName: string, dynamic: boolean, size?: number) {
+    constructor(coerceFunc: CoerceFunc, name: string, type: string, localName: string, dynamic: boolean) {
         this.coerceFunc = coerceFunc;
         this.name = name;
         this.type = type;
         this.localName = localName;
         this.dynamic = dynamic;
-        this.size = size;
     }
 
     abstract encode(value: any, tight?: boolean): Uint8Array;
@@ -430,7 +428,7 @@ abstract class Coder {
 class CoderAnonymous extends Coder {
     private coder: Coder;
     constructor(coder: Coder) {
-        super(coder.coerceFunc, coder.name, coder.type, undefined, coder.dynamic, coder.size);
+        super(coder.coerceFunc, coder.name, coder.type, undefined, coder.dynamic);
         defineReadOnly(this, 'coder', coder);
 
     }
@@ -461,7 +459,7 @@ class CoderNumber extends Coder {
     readonly signed: boolean;
     constructor(coerceFunc: CoerceFunc, size: number, signed: boolean, localName: string) {
         const name = ((signed ? 'int': 'uint') + (size * 8));
-        super(coerceFunc, name, name, localName, false, size * 8);
+        super(coerceFunc, name, name, localName, false);
 
         this.size = size;
         this.signed = signed;
@@ -524,7 +522,7 @@ var boolCoder = new CoderNumber(function(type: string, value: any) { return valu
 
 class CoderBoolean extends Coder {
     constructor(coerceFunc: CoerceFunc, localName: string) {
-        super(coerceFunc, 'bool', 'bool', localName, false, 1);
+        super(coerceFunc, 'bool', 'bool', localName, false);
     }
 
     encode(value: boolean, tight?: boolean): Uint8Array {
@@ -554,7 +552,7 @@ class CoderFixedBytes extends Coder {
     readonly length: number;
     constructor(coerceFunc: CoerceFunc, length: number, localName: string) {
         const name = ('bytes' + length);
-        super(coerceFunc, name, name, localName, false, length);
+        super(coerceFunc, name, name, localName, false);
         this.length = length;
     }
 
@@ -595,7 +593,7 @@ class CoderFixedBytes extends Coder {
 
 class CoderAddress extends Coder {
     constructor(coerceFunc: CoerceFunc, localName: string) {
-        super(coerceFunc, 'address', 'address', localName, false, 20);
+        super(coerceFunc, 'address', 'address', localName, false);
     }
     encode(value: string, tight?: boolean): Uint8Array {
         let result = new Uint8Array(tight ? 20 : 32);
