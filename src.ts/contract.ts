@@ -79,6 +79,7 @@ export class VoidSigner extends Signer {
     _fail(message: string, operation: string): Promise<any> {
         return Promise.resolve().then(() => {
             errors.throwError(message, errors.UNSUPPORTED_OPERATION, { operation: operation });
+            return;
         });
     }
 
