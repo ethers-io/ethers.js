@@ -412,27 +412,30 @@ abstract class Coder {
     readonly type: string;
     readonly localName: string;
     readonly dynamic: boolean;
-    constructor(coerceFunc: CoerceFunc, name: string, type: string, localName: string, dynamic: boolean) {
+    readonly size?: number;
+    constructor(coerceFunc: CoerceFunc, name: string, type: string, localName: string, dynamic: boolean, size?: number) {
         this.coerceFunc = coerceFunc;
         this.name = name;
         this.type = type;
         this.localName = localName;
         this.dynamic = dynamic;
+        this.size = size;
     }
 
-    abstract encode(value: any): Uint8Array;
-    abstract decode(data: Uint8Array, offset: number): DecodedResult;
+    abstract encode(value: any, tight?: boolean): Uint8Array;
+    abstract decode(data: Uint8Array, offset: number, tight?: boolean): DecodedResult;
 }
 
 // Clones the functionality of an existing Coder, but without a localName
 class CoderAnonymous extends Coder {
     private coder: Coder;
     constructor(coder: Coder) {
-        super(coder.coerceFunc, coder.name, coder.type, undefined, coder.dynamic);
+        super(coder.coerceFunc, coder.name, coder.type, undefined, coder.dynamic, coder.size);
         defineReadOnly(this, 'coder', coder);
+
     }
-    encode(value: any): Uint8Array { return this.coder.encode(value); }
-    decode(data: Uint8Array, offset: number): DecodedResult { return this.coder.decode(data, offset); }
+    encode(value: any, tight?: boolean): Uint8Array { return this.coder.encode(value, tight); }
+    decode(data: Uint8Array, offset: number, tight?: boolean): DecodedResult { return this.coder.decode(data, offset, tight); }
 }
 
 class CoderNull extends Coder {
@@ -458,13 +461,13 @@ class CoderNumber extends Coder {
     readonly signed: boolean;
     constructor(coerceFunc: CoerceFunc, size: number, signed: boolean, localName: string) {
         const name = ((signed ? 'int': 'uint') + (size * 8));
-        super(coerceFunc, name, name, localName, false);
+        super(coerceFunc, name, name, localName, false, size * 8);
 
         this.size = size;
         this.signed = signed;
     }
 
-    encode(value: BigNumberish): Uint8Array {
+    encode(value: BigNumberish, tight?: boolean): Uint8Array {
         try {
             let v = bigNumberify(value);
             if (this.signed) {
@@ -478,10 +481,10 @@ class CoderNumber extends Coder {
 
             v = v.toTwos(this.size * 8).maskn(this.size * 8);
             if (this.signed) {
-                v = v.fromTwos(this.size * 8).toTwos(256);
+                v = v.fromTwos(this.size * 8).toTwos(tight ? this.size * 8 : 256);
             }
 
-            return padZeros(arrayify(v), 32);
+            return padZeros(arrayify(v), tight ? this.size : 32);
 
         } catch (error) {
             errors.throwError('invalid number value', errors.INVALID_ARGUMENT, {
@@ -493,16 +496,17 @@ class CoderNumber extends Coder {
         return null;
     }
 
-    decode(data: Uint8Array, offset: number): DecodedResult {
-        if (data.length < offset + 32) {
+    decode(data: Uint8Array, offset: number, tight?: boolean): DecodedResult {
+        var expectedSize = tight ? this.size : 32;
+        if (data.length < offset + expectedSize) {
             errors.throwError('insufficient data for ' + this.name + ' type', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
                 coderType: this.name,
-                value: hexlify(data.slice(offset, offset + 32))
+                value: hexlify(data.slice(offset, offset + expectedSize))
             });
         }
-        var junkLength = 32 - this.size;
-        var value = bigNumberify(data.slice(offset + junkLength, offset + 32));
+        var junkLength = tight ? 0 : 32 - this.size;
+        var value = bigNumberify(data.slice(offset + junkLength, offset + expectedSize));
         if (this.signed) {
             value = value.fromTwos(this.size * 8);
         } else {
@@ -510,27 +514,28 @@ class CoderNumber extends Coder {
         }
 
         return {
-            consumed: 32,
+            consumed: expectedSize,
             value: this.coerceFunc(this.name, value),
         }
     }
 }
 var uint256Coder = new CoderNumber(function(type: string, value: any) { return value; }, 32, false, 'none');
+var boolCoder = new CoderNumber(function(type: string, value: any) { return value; }, 1, false, 'none');
 
 class CoderBoolean extends Coder {
     constructor(coerceFunc: CoerceFunc, localName: string) {
-        super(coerceFunc, 'bool', 'bool', localName, false);
+        super(coerceFunc, 'bool', 'bool', localName, false, 1);
     }
 
-    encode(value: boolean): Uint8Array {
-        return uint256Coder.encode(!!value ? 1: 0);
+    encode(value: boolean, tight?: boolean): Uint8Array {
+        return boolCoder.encode(!!value ? 1: 0, tight);
     }
 
-    decode(data: Uint8Array, offset: number): DecodedResult {
+    decode(data: Uint8Array, offset: number, tight?: boolean): DecodedResult {
         try {
-            var result = uint256Coder.decode(data, offset);
+            var result = boolCoder.decode(data, offset, tight);
         } catch (error) {
-            if (error.reason === 'insufficient data for uint256 type') {
+            if (error.reason.includes('insufficient data')) {
                 errors.throwError('insufficient data for boolean type', errors.INVALID_ARGUMENT, {
                     arg: this.localName,
                     coderType: 'boolean',
@@ -545,17 +550,16 @@ class CoderBoolean extends Coder {
         }
     }
 }
-
 class CoderFixedBytes extends Coder {
     readonly length: number;
     constructor(coerceFunc: CoerceFunc, length: number, localName: string) {
         const name = ('bytes' + length);
-        super(coerceFunc, name, name, localName, false);
+        super(coerceFunc, name, name, localName, false, length);
         this.length = length;
     }
 
-    encode(value: Arrayish): Uint8Array {
-        var result = new Uint8Array(32);
+    encode(value: Arrayish, tight?: boolean): Uint8Array {
+        var result = new Uint8Array(tight ? this.length : 32);
 
         try {
             let data = arrayify(value);
@@ -572,17 +576,18 @@ class CoderFixedBytes extends Coder {
         return result;
     }
 
-    decode(data: Uint8Array, offset: number): DecodedResult {
-        if (data.length < offset + 32) {
+    decode(data: Uint8Array, offset: number, tight?: boolean): DecodedResult {
+        var expectedSize = tight ? this.length : 32;
+        if (data.length < offset + expectedSize) {
             errors.throwError('insufficient data for ' + this.name + ' type', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
                 coderType: this.name,
-                value: hexlify(data.slice(offset, offset + 32))
+                value: hexlify(data.slice(offset, offset + expectedSize))
             });
         }
 
         return {
-            consumed: 32,
+            consumed: expectedSize,
             value: this.coerceFunc(this.name, hexlify(data.slice(offset, offset + this.length)))
         }
     }
@@ -590,12 +595,12 @@ class CoderFixedBytes extends Coder {
 
 class CoderAddress extends Coder {
     constructor(coerceFunc: CoerceFunc, localName: string) {
-        super(coerceFunc, 'address', 'address', localName, false);
+        super(coerceFunc, 'address', 'address', localName, false, 20);
     }
-    encode(value: string): Uint8Array {
-        let result = new Uint8Array(32);
+    encode(value: string, tight?: boolean): Uint8Array {
+        let result = new Uint8Array(tight ? 20 : 32);
         try {
-            result.set(arrayify(getAddress(value)), 12);
+            result.set(arrayify(getAddress(value)), tight ? 0 : 12);
         } catch (error) {
             errors.throwError('invalid address', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
@@ -605,23 +610,24 @@ class CoderAddress extends Coder {
         }
         return result;
     }
-    decode(data: Uint8Array, offset: number): DecodedResult {
-        if (data.length < offset + 32) {
+    decode(data: Uint8Array, offset: number, tight?: boolean): DecodedResult {
+        var expectedSize = tight ? 20 : 32;
+        if (data.length < offset + expectedSize) {
             errors.throwError('insufficient data for address type', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
                 coderType: 'address',
-                value: hexlify(data.slice(offset, offset + 32))
+                value: hexlify(data.slice(offset, offset + expectedSize))
             });
         }
         return {
-            consumed: 32,
-            value: this.coerceFunc('address', getAddress(hexlify(data.slice(offset + 12, offset + 32))))
+            consumed: expectedSize,
+            value: this.coerceFunc('address', getAddress(hexlify(data.slice(offset + (expectedSize - 20), offset + expectedSize))))
        }
     }
 }
 
-function _encodeDynamicBytes(value: Uint8Array): Uint8Array {
-    var dataLength = 32 * Math.ceil(value.length / 32);
+function _encodeDynamicBytes(value: Uint8Array, tight?: boolean): Uint8Array {
+    var dataLength = tight ? value.length : 32 * Math.ceil(value.length / 32);
     var padding = new Uint8Array(dataLength - value.length);
 
     return concat([
@@ -631,7 +637,7 @@ function _encodeDynamicBytes(value: Uint8Array): Uint8Array {
     ]);
 }
 
-function _decodeDynamicBytes(data: Uint8Array, offset: number, localName: string): DecodedResult {
+function _decodeDynamicBytes(data: Uint8Array, offset: number, localName: string, tight?: boolean): DecodedResult {
     if (data.length < offset + 32) {
         errors.throwError('insufficient data for dynamicBytes length', errors.INVALID_ARGUMENT, {
             arg: localName,
@@ -660,7 +666,7 @@ function _decodeDynamicBytes(data: Uint8Array, offset: number, localName: string
     }
 
     return {
-        consumed: 32 + 32 * Math.ceil(length / 32),
+        consumed: 32 + (tight ? length : (32 * Math.ceil(length / 32))),
         value: data.slice(offset + 32, offset + 32 + length),
     }
 }
@@ -669,9 +675,9 @@ class CoderDynamicBytes extends Coder {
     constructor(coerceFunc: CoerceFunc, localName: string) {
         super(coerceFunc, 'bytes', 'bytes', localName, true);
     }
-    encode(value: Arrayish): Uint8Array {
+    encode(value: Arrayish, tight?: boolean): Uint8Array {
         try {
-            return _encodeDynamicBytes(arrayify(value));
+            return _encodeDynamicBytes(arrayify(value), tight);
         } catch (error) {
             errors.throwError('invalid bytes value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
@@ -682,8 +688,8 @@ class CoderDynamicBytes extends Coder {
         return null;
     }
 
-    decode(data: Uint8Array, offset: number): DecodedResult {
-        var result = _decodeDynamicBytes(data, offset, this.localName);
+    decode(data: Uint8Array, offset: number, tight?: boolean): DecodedResult {
+        var result = _decodeDynamicBytes(data, offset, this.localName, tight);
         result.value = this.coerceFunc('bytes', hexlify(result.value));
         return result;
     }
@@ -694,7 +700,7 @@ class CoderString extends Coder {
         super(coerceFunc, 'string', 'string', localName, true);
     }
 
-    encode(value: string): Uint8Array {
+    encode(value: string, tight?: boolean): Uint8Array {
         if (typeof(value) !== 'string') {
             errors.throwError('invalid string value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
@@ -702,11 +708,11 @@ class CoderString extends Coder {
                 value: value
             });
         }
-        return _encodeDynamicBytes(toUtf8Bytes(value));
+        return _encodeDynamicBytes(toUtf8Bytes(value), tight);
     }
 
-    decode(data: Uint8Array, offset: number): DecodedResult {
-        var result = _decodeDynamicBytes(data, offset, this.localName);
+    decode(data: Uint8Array, offset: number, tight?: boolean): DecodedResult {
+        var result = _decodeDynamicBytes(data, offset, this.localName, tight);
         result.value = this.coerceFunc('string', toUtf8String(result.value));
         return result;
     }
@@ -716,8 +722,7 @@ function alignSize(size: number): number {
     return 32 * Math.ceil(size / 32);
 }
 
-function pack(coders: Array<Coder>, values: Array<any>): Uint8Array {
-
+export function pack(coders: Array<Coder>, values: Array<any>, tight?: boolean): Uint8Array {
     if (Array.isArray(values)) {
        // do nothing
 
@@ -745,12 +750,14 @@ function pack(coders: Array<Coder>, values: Array<any>): Uint8Array {
     var parts: Array<{ dynamic: boolean, value: any }> = [];
 
     coders.forEach(function(coder, index) {
-        parts.push({ dynamic: coder.dynamic, value: coder.encode(values[index]) });
+        parts.push({ dynamic: coder.dynamic, value: coder.encode(values[index], tight) });
     });
 
     var staticSize = 0, dynamicSize = 0;
     parts.forEach(function(part) {
-        if (part.dynamic) {
+        if (tight) {
+            dynamicSize += part.value.length;
+        } else if (part.dynamic) {
             staticSize += 32;
             dynamicSize += alignSize(part.value.length);
         } else {
@@ -762,7 +769,10 @@ function pack(coders: Array<Coder>, values: Array<any>): Uint8Array {
     var data = new Uint8Array(staticSize + dynamicSize);
 
     parts.forEach(function(part) {
-        if (part.dynamic) {
+        if (tight) {
+            data.set(part.value, offset);
+            offset += part.value.length;
+        } else if (part.dynamic) {
             //uint256Coder.encode(dynamicOffset).copy(data, offset);
             data.set(uint256Coder.encode(dynamicOffset), offset);
             offset += 32;
@@ -780,12 +790,14 @@ function pack(coders: Array<Coder>, values: Array<any>): Uint8Array {
     return data;
 }
 
-function unpack(coders: Array<Coder>, data: Uint8Array, offset: number): DecodedResult {
+export function unpack(coders: Array<Coder>, data: Uint8Array, offset: number, tight?: boolean): DecodedResult {
     var baseOffset = offset;
     var consumed = 0;
     var value: any = [];
     coders.forEach(function(coder) {
-        if (coder.dynamic) {
+        if (tight) {
+            var result = coder.decode(data, offset, true);
+        } else if (coder.dynamic) {
             var dynamicOffset = uint256Coder.decode(data, offset);
             var result = coder.decode(data, baseOffset + dynamicOffset.value.toNumber());
             // The dynamic part is leap-frogged somewhere else; doesn't count towards size
@@ -831,7 +843,7 @@ class CoderArray extends Coder {
         this.length = length;
     }
 
-    encode(value: Array<any>): Uint8Array {
+    encode(value: Array<any>, tight?: boolean): Uint8Array {
         if (!Array.isArray(value)) {
             errors.throwError('expected array value', errors.INVALID_ARGUMENT, {
                 arg: this.localName,
@@ -853,10 +865,10 @@ class CoderArray extends Coder {
         var coders = [];
         for (var i = 0; i < value.length; i++) { coders.push(this.coder); }
 
-        return concat([result, pack(coders, value)]);
+        return concat([result, pack(coders, value, tight)]);
     }
 
-    decode(data: Uint8Array, offset: number) {
+    decode(data: Uint8Array, offset: number, tight?: boolean) {
         // @TODO:
         //if (data.length < offset + length * 32) { throw new Error('invalid array'); }
 
@@ -873,24 +885,24 @@ class CoderArray extends Coder {
                     coderType: 'array',
                     value: error.value
                 });
-             }
-             try {
-                 count = decodedLength.value.toNumber();
-             } catch (error) {
-                 errors.throwError('array count too large', errors.INVALID_ARGUMENT, {
-                     arg: this.localName,
-                     coderType: 'array',
-                     value: decodedLength.value.toString()
-                 });
-             }
-             consumed += decodedLength.consumed;
-             offset += decodedLength.consumed;
+            }
+            try {
+                count = decodedLength.value.toNumber();
+            } catch (error) {
+                errors.throwError('array count too large', errors.INVALID_ARGUMENT, {
+                    arg: this.localName,
+                    coderType: 'array',
+                    value: decodedLength.value.toString()
+                });
+            }
+            consumed += decodedLength.consumed;
+            offset += decodedLength.consumed;
         }
 
         var coders = [];
         for (var i = 0; i < count; i++) { coders.push(new CoderAnonymous(this.coder)); }
 
-        var result = unpack(coders, data, offset);
+        var result = unpack(coders, data, offset, tight);
         result.consumed += consumed;
         result.value = this.coerceFunc(this.type, result.value);
         return result;
@@ -912,12 +924,12 @@ class CoderTuple extends Coder {
         this.coders = coders;
     }
 
-    encode(value: Array<any>): Uint8Array {
-        return pack(this.coders, value);
+    encode(value: Array<any>, tight?: boolean): Uint8Array {
+        return pack(this.coders, value, tight);
     }
 
-    decode(data: Uint8Array, offset: number): DecodedResult {
-        var result = unpack(this.coders, data, offset);
+    decode(data: Uint8Array, offset: number, tight?: boolean): DecodedResult {
+        var result = unpack(this.coders, data, offset, tight);
         result.value = this.coerceFunc(this.type, result.value);
         return result;
     }
@@ -1065,6 +1077,35 @@ export class AbiCoder {
         return hexlify(new CoderTuple(this.coerceFunc, coders, '_').encode(values));
     }
 
+    encodePacked(types: Array<string | ParamType>, values: Array<any>): string {
+
+        if (types.length !== values.length) {
+            errors.throwError('types/values length mismatch', errors.INVALID_ARGUMENT, {
+                count: { types: types.length, values: values.length },
+                value: { types: types, values: values }
+            });
+        }
+
+        var coders: Array<Coder> = [];
+        types.forEach(function(type) {
+            // Convert types to type objects
+            //   - "uint foo" => { type: "uint", name: "foo" }
+            //   - "tuple(uint, uint)" => { type: "tuple", components: [ { type: "uint" }, { type: "uint" }, ] }
+
+            let typeObject: ParamType = null;
+            if (typeof(type) === 'string') {
+                typeObject = parseParam(type);
+            } else {
+                typeObject = type;
+            }
+
+            coders.push(getParamCoder(this.coerceFunc, typeObject));
+
+        }, this);
+
+        return hexlify(new CoderTuple(this.coerceFunc, coders, '_').encode(values, true));
+    }
+
     decode(types: Array<string | ParamType>, data: Arrayish): any {
 
         var coders: Array<Coder> = [];
@@ -1082,6 +1123,25 @@ export class AbiCoder {
         }, this);
 
         return new CoderTuple(this.coerceFunc, coders, '_').decode(arrayify(data), 0).value;
+    }
+
+    decodePacked(types: Array<string | ParamType>, data: Arrayish): any {
+
+        var coders: Array<Coder> = [];
+        types.forEach(function(type) {
+
+            // See encode for details
+            let typeObject: ParamType = null;
+            if (typeof(type) === 'string') {
+                typeObject = parseParam(type);
+            } else {
+                typeObject = deepCopy(type);
+            }
+
+            coders.push(getParamCoder(this.coerceFunc, typeObject));
+        }, this);
+
+        return new CoderTuple(this.coerceFunc, coders, '_').decode(arrayify(data), 0, true).value;
     }
 }
 
