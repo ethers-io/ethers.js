@@ -104,7 +104,7 @@ describe('ABI Coder Encoding', function() {
 
         var title = test.name + ' => (' + test.types + ') = (' + test.normalizedValues + ')';
 
-        it(('encodes paramters - ' + test.name + ' - ' + test.types), function() {
+        it(('encodes parameters - ' + test.name + ' - ' + test.types), function() {
             this.timeout(120000);
             var encoded = coder.encode(types, values);
             assert.equal(encoded, result, 'encoded data - ' + title);
@@ -170,6 +170,46 @@ describe('ABI Coder ABIv2 Decoding', function() {
             this.timeout(120000);
 
             var decoded = coder.decode(types, result);
+            assert.ok(equals(decoded, values), 'decoded positional parameters - ' + title);
+        });
+    });
+});
+
+describe('ABI Coder Packed Encoding & Decoding', function() {
+    var coder = ethers.utils.defaultAbiCoder;
+
+    var tests = utils.loadTests('contract-interface');
+    tests.forEach(function(test) {
+        var values = getValues(JSON.parse(test.normalizedValues));
+        var types = JSON.parse(test.types);
+        var result = test.result;
+
+        var title = test.name + ' => (' + test.types + ') = (' + test.normalizedValues + ')';
+
+        it(('encodes & decodes packed parameters - ' + test.name + ' - ' + test.types), function() {
+            this.timeout(120000);
+            var encoded = coder.encodePacked(types, values);
+            var decoded = coder.decodePacked(types, encoded);
+            encoded = coder.encode(types, decoded);
+            assert.ok(equals(encoded, result), 'encoded data - ' + title);
+        });
+    });
+});
+
+describe('ABI Coder ABIv2 Packed Encoding & Decoding', function() {
+    var coder = ethers.utils.defaultAbiCoder;
+
+    var tests = utils.loadTests('contract-interface-abi2');
+    tests.forEach(function(test) {
+        var values = getValues(JSON.parse(test.values));
+        var types = JSON.parse(test.types);
+        var title = test.name + ' => (' + test.types + ') = (' + test.values + ')';
+
+        it(('encodes & decodes packed ABIv2 parameters - ' + test.name + ' - ' + test.types), function() {
+            this.timeout(120000);
+
+            var encoded = coder.encodePacked(types, values);
+            var decoded = coder.decodePacked(types, encoded);
             assert.ok(equals(decoded, values), 'decoded positional parameters - ' + title);
         });
     });
@@ -274,7 +314,8 @@ describe('Test Number Coder', function() {
             var result = coder.decode([ 'bool' ], '0x');
             console.log(result);
         }, function(error) {
-            assert.equal(error.reason, 'insufficient data for boolean type', 'got invalid bool');
+            var msg = 'got invalid bool' + JSON.stringify(ethers.utils.parseParamType('bool'))
+            assert.equal(error.reason, 'insufficient data for boolean type', msg);
             return true;
         }, 'null bytes throws an error');
     });
