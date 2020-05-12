@@ -424,13 +424,19 @@ export class FallbackProvider extends BaseProvider {
             logger.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
         }
 
-        // All networks are ready, we can know the network for certain
-        const network = checkNetworks(providerConfigs.map((c) => (<any>(c.provider)).network));
-        if (network) {
-            super(network);
-        } else {
-            super(this.detectNetwork());
+        // Are all providers' networks are known
+        let networkOrReady: Network | Promise<Network> = checkNetworks(providerConfigs.map((c) => (<any>(c.provider)).network));
+
+        // Not all networks are known; we must stall
+        if (networkOrReady == null) {
+            networkOrReady = new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    this.detectNetwork().then(resolve, reject);
+                }, 0);
+            });
         }
+
+        super(networkOrReady);
 
         // Preserve a copy, so we do not get mutated
         defineReadOnly(this, "providerConfigs", Object.freeze(providerConfigs));
