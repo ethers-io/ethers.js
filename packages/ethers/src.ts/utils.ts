@@ -1,6 +1,6 @@
 "use strict";
 
-import { AbiCoder, checkResultErrors, defaultAbiCoder, EventFragment, FormatTypes, Fragment, FunctionFragment, Indexed, Interface, ParamType, Result } from "@ethersproject/abi";
+import { AbiCoder, checkResultErrors, defaultAbiCoder, EventFragment, FormatTypes, Fragment, FunctionFragment, Indexed, Interface, LogDescription, ParamType, Result, TransactionDescription }from "@ethersproject/abi";
 import { getAddress, getCreate2Address, getContractAddress, getIcapAddress, isAddress } from "@ethersproject/address";
 import * as base64 from "@ethersproject/base64";
 import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexValue, hexZeroPad, isBytes, isBytesLike, isHexString, joinSignature, zeroPad, splitSignature, stripZeros } from "@ethersproject/bytes";
@@ -82,6 +82,9 @@ export {
     SigningKey,
 
     Interface,
+
+    LogDescription,
+    TransactionDescription,
 
     base64,
 
