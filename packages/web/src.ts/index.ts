@@ -144,6 +144,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
         } catch (error) {
             response = (<any>error).response;
             if (response == null) {
+                runningTimeout.cancel();
                 logger.throwError("missing response", Logger.errors.SERVER_ERROR, {
                     serverError: error,
                     url: url
