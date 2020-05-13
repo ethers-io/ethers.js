@@ -19,7 +19,7 @@ export class TupleCoder extends Coder {
         this.coders = coders;
     }
 
-    encode(writer: Writer, value: Array<any>): number {
+    encode(writer: Writer, value: Array<any> | { [ name: string ]: any }): number {
         return pack(writer, this.coders, value);
     }
 

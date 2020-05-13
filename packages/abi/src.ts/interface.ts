@@ -49,6 +49,7 @@ function wrapAccessError(property: string, error: Error): Error {
     return wrap;
 }
 
+/*
 function checkNames(fragment: Fragment, type: "input" | "output", params: Array<ParamType>): void {
     params.reduce((accum, param) => {
         if (param.name) {
@@ -60,7 +61,7 @@ function checkNames(fragment: Fragment, type: "input" | "output", params: Array<
         return accum;
     }, <{ [ name: string ]: boolean }>{ });
 }
-
+*/
 export class Interface {
     readonly fragments: Array<Fragment>;
 
@@ -105,16 +106,16 @@ export class Interface {
                         logger.warn("duplicate definition - constructor");
                         return;
                     }
-                    checkNames(fragment, "input", fragment.inputs);
+                    //checkNames(fragment, "input", fragment.inputs);
                     defineReadOnly(this, "deploy", <ConstructorFragment>fragment);
                     return;
                 case "function":
-                    checkNames(fragment, "input", fragment.inputs);
-                    checkNames(fragment, "output", (<FunctionFragment>fragment).outputs);
+                    //checkNames(fragment, "input", fragment.inputs);
+                    //checkNames(fragment, "output", (<FunctionFragment>fragment).outputs);
                     bucket = this.functions;
                     break;
                 case "event":
-                    checkNames(fragment, "input", fragment.inputs);
+                    //checkNames(fragment, "input", fragment.inputs);
                     bucket = this.events;
                     break;
                 default:
