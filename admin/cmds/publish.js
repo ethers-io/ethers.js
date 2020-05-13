@@ -2,8 +2,9 @@
 
 const config = require("../config");
 
-const { latestChange } = require("../changelog");
+const { ChangelogPath, latestChange } = require("../changelog");
 const { getOrdered, loadPackage } = require("../depgraph");
+const { getGitTag } = require("../git");
 const { createRelease } = require("../github");
 const { getPackageVersion, publish } = require("../npm");
 const { log } = require("../log");
@@ -34,6 +35,8 @@ if (process.argv.length > 2) {
 
 (async function() {
     let token = null;
+
+    const gitCommit = await getGitTag(ChangelogPath);
 
     let includeEthers = false;
 
@@ -107,7 +110,7 @@ if (process.argv.length > 2) {
         const change = latestChange();
 
         // Publish the release
-        const link = await createRelease(username, password, change.version, change.title, change.content, beta);
+        const link = await createRelease(username, password, change.version, change.title, change.content, beta, gitCommit);
         log(`<bold:Published Release:> ${ link }`);
     }
 
