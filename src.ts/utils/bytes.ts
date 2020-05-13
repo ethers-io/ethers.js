@@ -167,7 +167,7 @@ export function hexlify(value: Arrayish | Hexable | number): string {
         // We can about (value == MAX_INT) to as well, since that may indicate we underflowed already
         if (value >= 9007199254740991) {
             errors.throwError("out-of-range", errors.NUMERIC_FAULT, {
-                operartion: "hexlify",
+                operation: "hexlify",
                 fault: "out-of-safe-range"
             });
         }
