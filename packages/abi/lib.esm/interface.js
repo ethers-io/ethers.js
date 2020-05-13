@@ -26,17 +26,19 @@ function wrapAccessError(property, error) {
     wrap.error = error;
     return wrap;
 }
-function checkNames(fragment, type, params) {
+/*
+function checkNames(fragment: Fragment, type: "input" | "output", params: Array<ParamType>): void {
     params.reduce((accum, param) => {
         if (param.name) {
             if (accum[param.name]) {
-                logger.throwArgumentError(`duplicate ${type} parameter ${JSON.stringify(param.name)} in ${fragment.format("full")}`, "fragment", fragment);
+                logger.throwArgumentError(`duplicate ${ type } parameter ${ JSON.stringify(param.name) } in ${ fragment.format("full") }`, "fragment", fragment);
             }
             accum[param.name] = true;
         }
         return accum;
-    }, {});
+    }, <{ [ name: string ]: boolean }>{ });
 }
+*/
 export class Interface {
     constructor(fragments) {
         logger.checkNew(new.target, Interface);
@@ -64,16 +66,16 @@ export class Interface {
                         logger.warn("duplicate definition - constructor");
                         return;
                     }
-                    checkNames(fragment, "input", fragment.inputs);
+                    //checkNames(fragment, "input", fragment.inputs);
                     defineReadOnly(this, "deploy", fragment);
                     return;
                 case "function":
-                    checkNames(fragment, "input", fragment.inputs);
-                    checkNames(fragment, "output", fragment.outputs);
+                    //checkNames(fragment, "input", fragment.inputs);
+                    //checkNames(fragment, "output", (<FunctionFragment>fragment).outputs);
                     bucket = this.functions;
                     break;
                 case "event":
-                    checkNames(fragment, "input", fragment.inputs);
+                    //checkNames(fragment, "input", fragment.inputs);
                     bucket = this.events;
                     break;
                 default:

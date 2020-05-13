@@ -58,17 +58,19 @@ function wrapAccessError(property, error) {
     wrap.error = error;
     return wrap;
 }
-function checkNames(fragment, type, params) {
-    params.reduce(function (accum, param) {
+/*
+function checkNames(fragment: Fragment, type: "input" | "output", params: Array<ParamType>): void {
+    params.reduce((accum, param) => {
         if (param.name) {
             if (accum[param.name]) {
-                logger.throwArgumentError("duplicate " + type + " parameter " + JSON.stringify(param.name) + " in " + fragment.format("full"), "fragment", fragment);
+                logger.throwArgumentError(`duplicate ${ type } parameter ${ JSON.stringify(param.name) } in ${ fragment.format("full") }`, "fragment", fragment);
             }
             accum[param.name] = true;
         }
         return accum;
-    }, {});
+    }, <{ [ name: string ]: boolean }>{ });
 }
+*/
 var Interface = /** @class */ (function () {
     function Interface(fragments) {
         var _newTarget = this.constructor;
@@ -98,16 +100,16 @@ var Interface = /** @class */ (function () {
                         logger.warn("duplicate definition - constructor");
                         return;
                     }
-                    checkNames(fragment, "input", fragment.inputs);
+                    //checkNames(fragment, "input", fragment.inputs);
                     properties_1.defineReadOnly(_this, "deploy", fragment);
                     return;
                 case "function":
-                    checkNames(fragment, "input", fragment.inputs);
-                    checkNames(fragment, "output", fragment.outputs);
+                    //checkNames(fragment, "input", fragment.inputs);
+                    //checkNames(fragment, "output", (<FunctionFragment>fragment).outputs);
                     bucket = _this.functions;
                     break;
                 case "event":
-                    checkNames(fragment, "input", fragment.inputs);
+                    //checkNames(fragment, "input", fragment.inputs);
                     bucket = _this.events;
                     break;
                 default:

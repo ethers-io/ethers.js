@@ -133,6 +133,7 @@ function fetchJson(connection, json, processFunc) {
                         error_1 = _a.sent();
                         response = error_1.response;
                         if (response == null) {
+                            runningTimeout.cancel();
                             logger.throwError("missing response", logger_1.Logger.errors.SERVER_ERROR, {
                                 serverError: error_1,
                                 url: url

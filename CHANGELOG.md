@@ -2,11 +2,19 @@ Changelog
 =========
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
-
 During the v5-BETA, although attempts are made to minimize it, some of the APIs
 may change. It is generally recommended that you remove your `node_modules/`,
 `package-lock.json` (and similar files for yarn, etc.) and doing an `npm install`
 after upgrading to a newer version of the v5-BETA.
+
+ethers/v5.0.0-beta.187 (2020-05-12 23:29)
+-----------------------------------------
+
+  - Add sub-error to gas estimate error for Ganache users. ([#829](https://github.com/ethers-io/ethers.js/issues/829); [647fbd8](https://github.com/ethers-io/ethers.js/commit/647fbd8cbfa0f94f72db6faadd528e61c49b1dd6))
+  - Moved ABI check for unique names to coding time and only if ambiguous. ([#816](https://github.com/ethers-io/ethers.js/issues/816); [fa87417](https://github.com/ethers-io/ethers.js/commit/fa87417e9416d99a37d9a2668a1e54feb7e342fc))
+  - Added missing Interface exports to umbrella utils. ([82a9326](https://github.com/ethers-io/ethers.js/commit/82a93263fae330ae39a7212e74d973fa9f820f64))
+  - Fixed FallbackProvider ESM super-this out-of-order issue. ([#822](https://github.com/ethers-io/ethers.js/issues/822); [fde102b](https://github.com/ethers-io/ethers.js/commit/fde102b7eda304403dcc677cd6d3b48339cd3a81))
+  - Fixed node hanging on unnecessary timeout when fetchJson fails. ([fdf2253](https://github.com/ethers-io/ethers.js/commit/fdf2253218cf379043acc32dea8c95c284a82cec))
 
 ethers/v5.0.0-beta.186 (2020-05-08 15:27)
 -----------------------------------------

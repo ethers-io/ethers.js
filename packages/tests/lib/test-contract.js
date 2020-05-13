@@ -42,8 +42,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var assert_1 = __importDefault(require("assert"));
 var ethers_1 = require("ethers");
 var test_contract_json_1 = __importDefault(require("./test-contract.json"));
-//const provider = new ethers.providers.InfuraProvider('rinkeby');
-var provider = ethers_1.ethers.getDefaultProvider("rinkeby");
+var provider = new ethers_1.ethers.providers.InfuraProvider('rinkeby');
+//const provider = ethers.getDefaultProvider("rinkeby");
 var TIMEOUT_PERIOD = 120000;
 var contract = (function () {
     return new ethers_1.ethers.Contract(test_contract_json_1.default.contractAddress, test_contract_json_1.default.interface, provider);

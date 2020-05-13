@@ -4806,7 +4806,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.0.0-beta.154";
+const version$4 = "abi/5.0.0-beta.155";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6485,27 +6485,43 @@ class AnonymousCoder extends Coder {
 "use strict";
 const logger$8 = new Logger(version$4);
 function pack(writer, coders, values) {
+    let arrayValues = null;
     if (Array.isArray(values)) {
-        // do nothing
+        arrayValues = values;
     }
     else if (values && typeof (values) === "object") {
-        let arrayValues = [];
-        coders.forEach(function (coder) {
-            arrayValues.push(values[coder.localName]);
+        let unique = {};
+        arrayValues = coders.map((coder) => {
+            const name = coder.localName;
+            if (!name) {
+                logger$8.throwError("cannot encode object for signature with missing names", Logger.errors.INVALID_ARGUMENT, {
+                    argument: "values",
+                    coder: coder,
+                    value: values
+                });
+            }
+            if (unique[name]) {
+                logger$8.throwError("cannot encode object for signature with duplicate names", Logger.errors.INVALID_ARGUMENT, {
+                    argument: "values",
+                    coder: coder,
+                    value: values
+                });
+            }
+            unique[name] = true;
+            return values[name];
         });
-        values = arrayValues;
     }
     else {
         logger$8.throwArgumentError("invalid tuple value", "tuple", values);
     }
-    if (coders.length !== values.length) {
+    if (coders.length !== arrayValues.length) {
         logger$8.throwArgumentError("types/value length mismatch", "tuple", values);
     }
     let staticWriter = new Writer(writer.wordSize);
     let dynamicWriter = new Writer(writer.wordSize);
     let updateFuncs = [];
     coders.forEach((coder, index) => {
-        let value = values[index];
+        let value = arrayValues[index];
         if (coder.dynamic) {
             // Get current dynamic offset (for the future pointer)
             let dynamicOffset = dynamicWriter.length;
@@ -6575,10 +6591,21 @@ function unpack(reader, coders) {
     // @TODO: get rid of this an see if it still works?
     // Consume the dynamic components in the main reader
     reader.readBytes(dynamicLength);
+    // We only output named properties for uniquely named coders
+    const uniqueNames = coders.reduce((accum, coder) => {
+        const name = coder.localName;
+        if (name) {
+            if (!accum[name]) {
+                accum[name] = 0;
+            }
+            accum[name]++;
+        }
+        return accum;
+    }, {});
     // Add any named parameters (i.e. tuples)
     coders.forEach((coder, index) => {
         let name = coder.localName;
-        if (!name) {
+        if (!name || uniqueNames[name] !== 1) {
             return;
         }
         if (name === "length") {
@@ -7419,17 +7446,19 @@ function wrapAccessError(property, error) {
     wrap.error = error;
     return wrap;
 }
-function checkNames(fragment, type, params) {
+/*
+function checkNames(fragment: Fragment, type: "input" | "output", params: Array<ParamType>): void {
     params.reduce((accum, param) => {
         if (param.name) {
             if (accum[param.name]) {
-                logger$c.throwArgumentError(`duplicate ${type} parameter ${JSON.stringify(param.name)} in ${fragment.format("full")}`, "fragment", fragment);
+                logger.throwArgumentError(`duplicate ${ type } parameter ${ JSON.stringify(param.name) } in ${ fragment.format("full") }`, "fragment", fragment);
             }
             accum[param.name] = true;
         }
         return accum;
-    }, {});
+    }, <{ [ name: string ]: boolean }>{ });
 }
+*/
 class Interface {
     constructor(fragments) {
         logger$c.checkNew(new.target, Interface);
@@ -7457,16 +7486,16 @@ class Interface {
                         logger$c.warn("duplicate definition - constructor");
                         return;
                     }
-                    checkNames(fragment, "input", fragment.inputs);
+                    //checkNames(fragment, "input", fragment.inputs);
                     defineReadOnly(this, "deploy", fragment);
                     return;
                 case "function":
-                    checkNames(fragment, "input", fragment.inputs);
-                    checkNames(fragment, "output", fragment.outputs);
+                    //checkNames(fragment, "input", fragment.inputs);
+                    //checkNames(fragment, "output", (<FunctionFragment>fragment).outputs);
                     bucket = this.functions;
                     break;
                 case "event":
-                    checkNames(fragment, "input", fragment.inputs);
+                    //checkNames(fragment, "input", fragment.inputs);
                     bucket = this.events;
                     break;
                 default:
@@ -7963,7 +7992,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.0.0-beta.143";
+const version$a = "abstract-signer/5.0.0-beta.144";
 
 "use strict";
 var __awaiter$1 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8102,6 +8131,7 @@ class Signer {
             if (tx.gasLimit == null) {
                 tx.gasLimit = this.estimateGas(tx).catch((error) => {
                     return logger$e.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+                        error: error,
                         tx: tx
                     });
                 });
@@ -15728,7 +15758,7 @@ var browser$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.0.0-beta.139";
+const version$l = "web/5.0.0-beta.140";
 
 "use strict";
 var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -15869,6 +15899,7 @@ function fetchJson(connection, json, processFunc) {
             catch (error) {
                 response = error.response;
                 if (response == null) {
+                    runningTimeout.cancel();
                     logger$p.throwError("missing response", Logger.errors.SERVER_ERROR, {
                         serverError: error,
                         url: url
@@ -15998,7 +16029,7 @@ function poll(func, options) {
     });
 }
 
-const version$m = "providers/5.0.0-beta.166";
+const version$m = "providers/5.0.0-beta.167";
 
 "use strict";
 const logger$q = new Logger(version$m);
@@ -18681,14 +18712,17 @@ class FallbackProvider extends BaseProvider {
         else if (quorum > total) {
             logger$x.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
         }
-        // All networks are ready, we can know the network for certain
-        const network = checkNetworks(providerConfigs.map((c) => (c.provider).network));
-        if (network) {
-            super(network);
+        // Are all providers' networks are known
+        let networkOrReady = checkNetworks(providerConfigs.map((c) => (c.provider).network));
+        // Not all networks are known; we must stall
+        if (networkOrReady == null) {
+            networkOrReady = new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    this.detectNetwork().then(resolve, reject);
+                }, 0);
+            });
         }
-        else {
-            super(this.detectNetwork());
-        }
+        super(networkOrReady);
         // Preserve a copy, so we do not get mutated
         defineReadOnly(this, "providerConfigs", Object.freeze(providerConfigs));
         defineReadOnly(this, "quorum", quorum);
@@ -18850,7 +18884,7 @@ var browserIpcProvider = {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.0-beta.166";
+exports.version = "providers/5.0.0-beta.167";
 });
 
 var _version$3 = unwrapExports(_version$2);
@@ -19548,6 +19582,8 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	HDNode: HDNode,
 	SigningKey: SigningKey,
 	Interface: Interface,
+	LogDescription: LogDescription,
+	TransactionDescription: TransactionDescription,
 	base64: browser$2,
 	hexlify: hexlify,
 	isHexString: isHexString,
@@ -19608,7 +19644,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.0-beta.186";
+const version$o = "ethers/5.0.0-beta.187";
 
 "use strict";
 const logger$E = new Logger(version$o);

@@ -11,8 +11,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import assert from "assert";
 import { ethers } from "ethers";
 import contractData from "./test-contract.json";
-//const provider = new ethers.providers.InfuraProvider('rinkeby');
-const provider = ethers.getDefaultProvider("rinkeby");
+const provider = new ethers.providers.InfuraProvider('rinkeby');
+//const provider = ethers.getDefaultProvider("rinkeby");
 const TIMEOUT_PERIOD = 120000;
 const contract = (function () {
     return new ethers.Contract(contractData.contractAddress, contractData.interface, provider);

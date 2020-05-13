@@ -4998,7 +4998,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.154";
+	exports.version = "abi/5.0.0-beta.155";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -6894,27 +6894,43 @@
 
 
 	function pack(writer, coders, values) {
+	    var arrayValues = null;
 	    if (Array.isArray(values)) {
-	        // do nothing
+	        arrayValues = values;
 	    }
 	    else if (values && typeof (values) === "object") {
-	        var arrayValues_1 = [];
-	        coders.forEach(function (coder) {
-	            arrayValues_1.push(values[coder.localName]);
+	        var unique_1 = {};
+	        arrayValues = coders.map(function (coder) {
+	            var name = coder.localName;
+	            if (!name) {
+	                logger.throwError("cannot encode object for signature with missing names", lib.Logger.errors.INVALID_ARGUMENT, {
+	                    argument: "values",
+	                    coder: coder,
+	                    value: values
+	                });
+	            }
+	            if (unique_1[name]) {
+	                logger.throwError("cannot encode object for signature with duplicate names", lib.Logger.errors.INVALID_ARGUMENT, {
+	                    argument: "values",
+	                    coder: coder,
+	                    value: values
+	                });
+	            }
+	            unique_1[name] = true;
+	            return values[name];
 	        });
-	        values = arrayValues_1;
 	    }
 	    else {
 	        logger.throwArgumentError("invalid tuple value", "tuple", values);
 	    }
-	    if (coders.length !== values.length) {
+	    if (coders.length !== arrayValues.length) {
 	        logger.throwArgumentError("types/value length mismatch", "tuple", values);
 	    }
 	    var staticWriter = new abstractCoder.Writer(writer.wordSize);
 	    var dynamicWriter = new abstractCoder.Writer(writer.wordSize);
 	    var updateFuncs = [];
 	    coders.forEach(function (coder, index) {
-	        var value = values[index];
+	        var value = arrayValues[index];
 	        if (coder.dynamic) {
 	            // Get current dynamic offset (for the future pointer)
 	            var dynamicOffset_1 = dynamicWriter.length;
@@ -6985,10 +7001,21 @@
 	    // @TODO: get rid of this an see if it still works?
 	    // Consume the dynamic components in the main reader
 	    reader.readBytes(dynamicLength);
+	    // We only output named properties for uniquely named coders
+	    var uniqueNames = coders.reduce(function (accum, coder) {
+	        var name = coder.localName;
+	        if (name) {
+	            if (!accum[name]) {
+	                accum[name] = 0;
+	            }
+	            accum[name]++;
+	        }
+	        return accum;
+	    }, {});
 	    // Add any named parameters (i.e. tuples)
 	    coders.forEach(function (coder, index) {
 	        var name = coder.localName;
-	        if (!name) {
+	        if (!name || uniqueNames[name] !== 1) {
 	            return;
 	        }
 	        if (name === "length") {
@@ -8217,17 +8244,19 @@
 	    wrap.error = error;
 	    return wrap;
 	}
-	function checkNames(fragment, type, params) {
-	    params.reduce(function (accum, param) {
+	/*
+	function checkNames(fragment: Fragment, type: "input" | "output", params: Array<ParamType>): void {
+	    params.reduce((accum, param) => {
 	        if (param.name) {
 	            if (accum[param.name]) {
-	                logger.throwArgumentError("duplicate " + type + " parameter " + JSON.stringify(param.name) + " in " + fragment.format("full"), "fragment", fragment);
+	                logger.throwArgumentError(`duplicate ${ type } parameter ${ JSON.stringify(param.name) } in ${ fragment.format("full") }`, "fragment", fragment);
 	            }
 	            accum[param.name] = true;
 	        }
 	        return accum;
-	    }, {});
+	    }, <{ [ name: string ]: boolean }>{ });
 	}
+	*/
 	var Interface = /** @class */ (function () {
 	    function Interface(fragments$1) {
 	        var _newTarget = this.constructor;
@@ -8257,16 +8286,16 @@
 	                        logger.warn("duplicate definition - constructor");
 	                        return;
 	                    }
-	                    checkNames(fragment, "input", fragment.inputs);
+	                    //checkNames(fragment, "input", fragment.inputs);
 	                    lib$3.defineReadOnly(_this, "deploy", fragment);
 	                    return;
 	                case "function":
-	                    checkNames(fragment, "input", fragment.inputs);
-	                    checkNames(fragment, "output", fragment.outputs);
+	                    //checkNames(fragment, "input", fragment.inputs);
+	                    //checkNames(fragment, "output", (<FunctionFragment>fragment).outputs);
 	                    bucket = _this.functions;
 	                    break;
 	                case "event":
-	                    checkNames(fragment, "input", fragment.inputs);
+	                    //checkNames(fragment, "input", fragment.inputs);
 	                    bucket = _this.events;
 	                    break;
 	                default:
@@ -8873,7 +8902,7 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.0-beta.143";
+	exports.version = "abstract-signer/5.0.0-beta.144";
 	});
 
 	var _version$l = unwrapExports(_version$k);
@@ -9119,6 +9148,7 @@
 	                        if (tx.gasLimit == null) {
 	                            tx.gasLimit = this.estimateGas(tx).catch(function (error) {
 	                                return logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", lib.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+	                                    error: error,
 	                                    tx: tx
 	                                });
 	                            });
@@ -17370,7 +17400,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.0-beta.139";
+	exports.version = "web/5.0.0-beta.140";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -17603,6 +17633,7 @@
 	                        error_1 = _a.sent();
 	                        response = error_1.response;
 	                        if (response == null) {
+	                            runningTimeout.cancel();
 	                            logger.throwError("missing response", lib.Logger.errors.SERVER_ERROR, {
 	                                serverError: error_1,
 	                                url: url
@@ -17749,7 +17780,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.166";
+	exports.version = "providers/5.0.0-beta.167";
 	});
 
 	var _version$J = unwrapExports(_version$I);
@@ -21288,14 +21319,17 @@
 	        else if (quorum > total) {
 	            logger.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
 	        }
-	        // All networks are ready, we can know the network for certain
-	        var network = checkNetworks(providerConfigs.map(function (c) { return (c.provider).network; }));
-	        if (network) {
-	            _this = _super.call(this, network) || this;
+	        // Are all providers' networks are known
+	        var networkOrReady = checkNetworks(providerConfigs.map(function (c) { return (c.provider).network; }));
+	        // Not all networks are known; we must stall
+	        if (networkOrReady == null) {
+	            networkOrReady = new Promise(function (resolve, reject) {
+	                setTimeout(function () {
+	                    _this.detectNetwork().then(resolve, reject);
+	                }, 0);
+	            });
 	        }
-	        else {
-	            _this = _super.call(this, _this.detectNetwork()) || this;
-	        }
+	        _this = _super.call(this, networkOrReady) || this;
 	        // Preserve a copy, so we do not get mutated
 	        lib$3.defineReadOnly(_this, "providerConfigs", Object.freeze(providerConfigs));
 	        lib$3.defineReadOnly(_this, "quorum", quorum);
@@ -22425,7 +22459,9 @@
 	exports.FunctionFragment = lib$a.FunctionFragment;
 	exports.Indexed = lib$a.Indexed;
 	exports.Interface = lib$a.Interface;
+	exports.LogDescription = lib$a.LogDescription;
 	exports.ParamType = lib$a.ParamType;
+	exports.TransactionDescription = lib$a.TransactionDescription;
 
 	exports.getAddress = lib$6.getAddress;
 	exports.getCreate2Address = lib$6.getCreate2Address;
@@ -22537,88 +22573,90 @@
 	var utils_7 = utils$3.FunctionFragment;
 	var utils_8 = utils$3.Indexed;
 	var utils_9 = utils$3.Interface;
-	var utils_10 = utils$3.ParamType;
-	var utils_11 = utils$3.getAddress;
-	var utils_12 = utils$3.getCreate2Address;
-	var utils_13 = utils$3.getContractAddress;
-	var utils_14 = utils$3.getIcapAddress;
-	var utils_15 = utils$3.isAddress;
-	var utils_16 = utils$3.base64;
-	var utils_17 = utils$3.arrayify;
-	var utils_18 = utils$3.concat;
-	var utils_19 = utils$3.hexDataSlice;
-	var utils_20 = utils$3.hexDataLength;
-	var utils_21 = utils$3.hexlify;
-	var utils_22 = utils$3.hexStripZeros;
-	var utils_23 = utils$3.hexValue;
-	var utils_24 = utils$3.hexZeroPad;
-	var utils_25 = utils$3.isBytes;
-	var utils_26 = utils$3.isBytesLike;
-	var utils_27 = utils$3.isHexString;
-	var utils_28 = utils$3.joinSignature;
-	var utils_29 = utils$3.zeroPad;
-	var utils_30 = utils$3.splitSignature;
-	var utils_31 = utils$3.stripZeros;
-	var utils_32 = utils$3.hashMessage;
-	var utils_33 = utils$3.id;
-	var utils_34 = utils$3.isValidName;
-	var utils_35 = utils$3.namehash;
-	var utils_36 = utils$3.defaultPath;
-	var utils_37 = utils$3.entropyToMnemonic;
-	var utils_38 = utils$3.HDNode;
-	var utils_39 = utils$3.isValidMnemonic;
-	var utils_40 = utils$3.mnemonicToEntropy;
-	var utils_41 = utils$3.mnemonicToSeed;
-	var utils_42 = utils$3.getJsonWalletAddress;
-	var utils_43 = utils$3.keccak256;
-	var utils_44 = utils$3.Logger;
-	var utils_45 = utils$3.computeHmac;
-	var utils_46 = utils$3.ripemd160;
-	var utils_47 = utils$3.sha256;
-	var utils_48 = utils$3.sha512;
-	var utils_49 = utils$3.solidityKeccak256;
-	var utils_50 = utils$3.solidityPack;
-	var utils_51 = utils$3.soliditySha256;
-	var utils_52 = utils$3.randomBytes;
-	var utils_53 = utils$3.shuffled;
-	var utils_54 = utils$3.checkProperties;
-	var utils_55 = utils$3.deepCopy;
-	var utils_56 = utils$3.defineReadOnly;
-	var utils_57 = utils$3.getStatic;
-	var utils_58 = utils$3.resolveProperties;
-	var utils_59 = utils$3.shallowCopy;
-	var utils_60 = utils$3.RLP;
-	var utils_61 = utils$3.computePublicKey;
-	var utils_62 = utils$3.recoverPublicKey;
-	var utils_63 = utils$3.SigningKey;
-	var utils_64 = utils$3.formatBytes32String;
-	var utils_65 = utils$3.nameprep;
-	var utils_66 = utils$3.parseBytes32String;
-	var utils_67 = utils$3._toEscapedUtf8String;
-	var utils_68 = utils$3.toUtf8Bytes;
-	var utils_69 = utils$3.toUtf8CodePoints;
-	var utils_70 = utils$3.toUtf8String;
-	var utils_71 = utils$3.Utf8ErrorFuncs;
-	var utils_72 = utils$3.computeAddress;
-	var utils_73 = utils$3.parseTransaction;
-	var utils_74 = utils$3.recoverAddress;
-	var utils_75 = utils$3.serializeTransaction;
-	var utils_76 = utils$3.commify;
-	var utils_77 = utils$3.formatEther;
-	var utils_78 = utils$3.parseEther;
-	var utils_79 = utils$3.formatUnits;
-	var utils_80 = utils$3.parseUnits;
-	var utils_81 = utils$3.verifyMessage;
-	var utils_82 = utils$3.fetchJson;
-	var utils_83 = utils$3.poll;
-	var utils_84 = utils$3.SupportedAlgorithm;
-	var utils_85 = utils$3.UnicodeNormalizationForm;
-	var utils_86 = utils$3.Utf8ErrorReason;
+	var utils_10 = utils$3.LogDescription;
+	var utils_11 = utils$3.ParamType;
+	var utils_12 = utils$3.TransactionDescription;
+	var utils_13 = utils$3.getAddress;
+	var utils_14 = utils$3.getCreate2Address;
+	var utils_15 = utils$3.getContractAddress;
+	var utils_16 = utils$3.getIcapAddress;
+	var utils_17 = utils$3.isAddress;
+	var utils_18 = utils$3.base64;
+	var utils_19 = utils$3.arrayify;
+	var utils_20 = utils$3.concat;
+	var utils_21 = utils$3.hexDataSlice;
+	var utils_22 = utils$3.hexDataLength;
+	var utils_23 = utils$3.hexlify;
+	var utils_24 = utils$3.hexStripZeros;
+	var utils_25 = utils$3.hexValue;
+	var utils_26 = utils$3.hexZeroPad;
+	var utils_27 = utils$3.isBytes;
+	var utils_28 = utils$3.isBytesLike;
+	var utils_29 = utils$3.isHexString;
+	var utils_30 = utils$3.joinSignature;
+	var utils_31 = utils$3.zeroPad;
+	var utils_32 = utils$3.splitSignature;
+	var utils_33 = utils$3.stripZeros;
+	var utils_34 = utils$3.hashMessage;
+	var utils_35 = utils$3.id;
+	var utils_36 = utils$3.isValidName;
+	var utils_37 = utils$3.namehash;
+	var utils_38 = utils$3.defaultPath;
+	var utils_39 = utils$3.entropyToMnemonic;
+	var utils_40 = utils$3.HDNode;
+	var utils_41 = utils$3.isValidMnemonic;
+	var utils_42 = utils$3.mnemonicToEntropy;
+	var utils_43 = utils$3.mnemonicToSeed;
+	var utils_44 = utils$3.getJsonWalletAddress;
+	var utils_45 = utils$3.keccak256;
+	var utils_46 = utils$3.Logger;
+	var utils_47 = utils$3.computeHmac;
+	var utils_48 = utils$3.ripemd160;
+	var utils_49 = utils$3.sha256;
+	var utils_50 = utils$3.sha512;
+	var utils_51 = utils$3.solidityKeccak256;
+	var utils_52 = utils$3.solidityPack;
+	var utils_53 = utils$3.soliditySha256;
+	var utils_54 = utils$3.randomBytes;
+	var utils_55 = utils$3.shuffled;
+	var utils_56 = utils$3.checkProperties;
+	var utils_57 = utils$3.deepCopy;
+	var utils_58 = utils$3.defineReadOnly;
+	var utils_59 = utils$3.getStatic;
+	var utils_60 = utils$3.resolveProperties;
+	var utils_61 = utils$3.shallowCopy;
+	var utils_62 = utils$3.RLP;
+	var utils_63 = utils$3.computePublicKey;
+	var utils_64 = utils$3.recoverPublicKey;
+	var utils_65 = utils$3.SigningKey;
+	var utils_66 = utils$3.formatBytes32String;
+	var utils_67 = utils$3.nameprep;
+	var utils_68 = utils$3.parseBytes32String;
+	var utils_69 = utils$3._toEscapedUtf8String;
+	var utils_70 = utils$3.toUtf8Bytes;
+	var utils_71 = utils$3.toUtf8CodePoints;
+	var utils_72 = utils$3.toUtf8String;
+	var utils_73 = utils$3.Utf8ErrorFuncs;
+	var utils_74 = utils$3.computeAddress;
+	var utils_75 = utils$3.parseTransaction;
+	var utils_76 = utils$3.recoverAddress;
+	var utils_77 = utils$3.serializeTransaction;
+	var utils_78 = utils$3.commify;
+	var utils_79 = utils$3.formatEther;
+	var utils_80 = utils$3.parseEther;
+	var utils_81 = utils$3.formatUnits;
+	var utils_82 = utils$3.parseUnits;
+	var utils_83 = utils$3.verifyMessage;
+	var utils_84 = utils$3.fetchJson;
+	var utils_85 = utils$3.poll;
+	var utils_86 = utils$3.SupportedAlgorithm;
+	var utils_87 = utils$3.UnicodeNormalizationForm;
+	var utils_88 = utils$3.Utf8ErrorReason;
 
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.186";
+	exports.version = "ethers/5.0.0-beta.187";
 	});
 
 	var _version$N = unwrapExports(_version$M);

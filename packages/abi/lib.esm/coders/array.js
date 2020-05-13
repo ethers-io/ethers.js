@@ -5,27 +5,43 @@ const logger = new Logger(version);
 import { Coder, Writer } from "./abstract-coder";
 import { AnonymousCoder } from "./anonymous";
 export function pack(writer, coders, values) {
+    let arrayValues = null;
     if (Array.isArray(values)) {
-        // do nothing
+        arrayValues = values;
     }
     else if (values && typeof (values) === "object") {
-        let arrayValues = [];
-        coders.forEach(function (coder) {
-            arrayValues.push(values[coder.localName]);
+        let unique = {};
+        arrayValues = coders.map((coder) => {
+            const name = coder.localName;
+            if (!name) {
+                logger.throwError("cannot encode object for signature with missing names", Logger.errors.INVALID_ARGUMENT, {
+                    argument: "values",
+                    coder: coder,
+                    value: values
+                });
+            }
+            if (unique[name]) {
+                logger.throwError("cannot encode object for signature with duplicate names", Logger.errors.INVALID_ARGUMENT, {
+                    argument: "values",
+                    coder: coder,
+                    value: values
+                });
+            }
+            unique[name] = true;
+            return values[name];
         });
-        values = arrayValues;
     }
     else {
         logger.throwArgumentError("invalid tuple value", "tuple", values);
     }
-    if (coders.length !== values.length) {
+    if (coders.length !== arrayValues.length) {
         logger.throwArgumentError("types/value length mismatch", "tuple", values);
     }
     let staticWriter = new Writer(writer.wordSize);
     let dynamicWriter = new Writer(writer.wordSize);
     let updateFuncs = [];
     coders.forEach((coder, index) => {
-        let value = values[index];
+        let value = arrayValues[index];
         if (coder.dynamic) {
             // Get current dynamic offset (for the future pointer)
             let dynamicOffset = dynamicWriter.length;
@@ -95,10 +111,21 @@ export function unpack(reader, coders) {
     // @TODO: get rid of this an see if it still works?
     // Consume the dynamic components in the main reader
     reader.readBytes(dynamicLength);
+    // We only output named properties for uniquely named coders
+    const uniqueNames = coders.reduce((accum, coder) => {
+        const name = coder.localName;
+        if (name) {
+            if (!accum[name]) {
+                accum[name] = 0;
+            }
+            accum[name]++;
+        }
+        return accum;
+    }, {});
     // Add any named parameters (i.e. tuples)
     coders.forEach((coder, index) => {
         let name = coder.localName;
-        if (!name) {
+        if (!name || uniqueNames[name] !== 1) {
             return;
         }
         if (name === "length") {

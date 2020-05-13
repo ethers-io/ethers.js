@@ -434,14 +434,17 @@ var FallbackProvider = /** @class */ (function (_super) {
         else if (quorum > total) {
             logger.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
         }
-        // All networks are ready, we can know the network for certain
-        var network = checkNetworks(providerConfigs.map(function (c) { return (c.provider).network; }));
-        if (network) {
-            _this = _super.call(this, network) || this;
+        // Are all providers' networks are known
+        var networkOrReady = checkNetworks(providerConfigs.map(function (c) { return (c.provider).network; }));
+        // Not all networks are known; we must stall
+        if (networkOrReady == null) {
+            networkOrReady = new Promise(function (resolve, reject) {
+                setTimeout(function () {
+                    _this.detectNetwork().then(resolve, reject);
+                }, 0);
+            });
         }
-        else {
-            _this = _super.call(this, _this.detectNetwork()) || this;
-        }
+        _this = _super.call(this, networkOrReady) || this;
         // Preserve a copy, so we do not get mutated
         properties_1.defineReadOnly(_this, "providerConfigs", Object.freeze(providerConfigs));
         properties_1.defineReadOnly(_this, "quorum", quorum);

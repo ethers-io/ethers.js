@@ -19,27 +19,43 @@ var logger = new logger_1.Logger(_version_1.version);
 var abstract_coder_1 = require("./abstract-coder");
 var anonymous_1 = require("./anonymous");
 function pack(writer, coders, values) {
+    var arrayValues = null;
     if (Array.isArray(values)) {
-        // do nothing
+        arrayValues = values;
     }
     else if (values && typeof (values) === "object") {
-        var arrayValues_1 = [];
-        coders.forEach(function (coder) {
-            arrayValues_1.push(values[coder.localName]);
+        var unique_1 = {};
+        arrayValues = coders.map(function (coder) {
+            var name = coder.localName;
+            if (!name) {
+                logger.throwError("cannot encode object for signature with missing names", logger_1.Logger.errors.INVALID_ARGUMENT, {
+                    argument: "values",
+                    coder: coder,
+                    value: values
+                });
+            }
+            if (unique_1[name]) {
+                logger.throwError("cannot encode object for signature with duplicate names", logger_1.Logger.errors.INVALID_ARGUMENT, {
+                    argument: "values",
+                    coder: coder,
+                    value: values
+                });
+            }
+            unique_1[name] = true;
+            return values[name];
         });
-        values = arrayValues_1;
     }
     else {
         logger.throwArgumentError("invalid tuple value", "tuple", values);
     }
-    if (coders.length !== values.length) {
+    if (coders.length !== arrayValues.length) {
         logger.throwArgumentError("types/value length mismatch", "tuple", values);
     }
     var staticWriter = new abstract_coder_1.Writer(writer.wordSize);
     var dynamicWriter = new abstract_coder_1.Writer(writer.wordSize);
     var updateFuncs = [];
     coders.forEach(function (coder, index) {
-        var value = values[index];
+        var value = arrayValues[index];
         if (coder.dynamic) {
             // Get current dynamic offset (for the future pointer)
             var dynamicOffset_1 = dynamicWriter.length;
@@ -110,10 +126,21 @@ function unpack(reader, coders) {
     // @TODO: get rid of this an see if it still works?
     // Consume the dynamic components in the main reader
     reader.readBytes(dynamicLength);
+    // We only output named properties for uniquely named coders
+    var uniqueNames = coders.reduce(function (accum, coder) {
+        var name = coder.localName;
+        if (name) {
+            if (!accum[name]) {
+                accum[name] = 0;
+            }
+            accum[name]++;
+        }
+        return accum;
+    }, {});
     // Add any named parameters (i.e. tuples)
     coders.forEach(function (coder, index) {
         var name = coder.localName;
-        if (!name) {
+        if (!name || uniqueNames[name] !== 1) {
             return;
         }
         if (name === "length") {
