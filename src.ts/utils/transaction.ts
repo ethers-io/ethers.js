@@ -142,7 +142,7 @@ export function serialize(transaction: UnsignedTransaction, signature?: Arrayish
 export function parse(rawTransaction: Arrayish): Transaction {
     let transaction = RLP.decode(rawTransaction);
     if (transaction.length !== 9 && transaction.length !== 6) {
-        errors.throwError('invalid raw transaction', errors.INVALID_ARGUMENT, { arg: 'rawTransactin', value: rawTransaction });
+        errors.throwError('invalid raw transaction', errors.INVALID_ARGUMENT, { arg: 'rawTransaction', value: rawTransaction });
     }
 
     let tx: Transaction = {
