@@ -316,7 +316,7 @@ async function waitForSync(config: RunningConfig, blockNumber: number): Promise<
             setTimeout(function() {
 
                 // We are synced
-                if (provider.blockNumber >= blockNumber) { return resolve(Provider); }
+                if (provider.blockNumber >= blockNumber) { return resolve(provider); }
 
                 // We're done; just quit
                 if (config.cancelled) { return resolve(null); }

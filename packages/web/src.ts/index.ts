@@ -200,7 +200,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
     return Promise.race([ runningTimeout.promise, runningFetch ]);
 }
 
-export function poll(func: () => Promise<any>, options?: PollOptions): Promise<any> {
+export function poll<T>(func: () => Promise<T>, options?: PollOptions): Promise<T> {
     if (!options) { options = {}; }
     options = shallowCopy(options);
     if (options.floor == null) { options.floor = 0; }
