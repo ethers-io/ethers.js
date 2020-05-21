@@ -865,7 +865,7 @@ export class Contract {
             if (toBlock != null) {
                 logger.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
             }
-            (<FilterByBlockHash>filter).blockhash = fromBlockOrBlockhash;
+            (<FilterByBlockHash>filter).blockHash = fromBlockOrBlockhash;
         } else {
              (<Filter>filter).fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash: 0);
              (<Filter>filter).toBlock = ((toBlock != null) ? toBlock: "latest");
