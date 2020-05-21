@@ -13,7 +13,7 @@
     "@ethersproject/strings": ">=5.0.0-beta.136",
     "@ethersproject/transactions": ">=5.0.0-beta.135",
     "aes-js": "3.0.0",
-    "scrypt-js": "3.0.0",
+    "scrypt-js": "3.0.1",
     "uuid": "2.0.1"
   },
   "description": "Wallet management utilities for KeyStore and Crowdsale JSON wallets.",
@@ -36,7 +36,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x93fb74fe10dc7907d97d537858ed70d603e1f80d1cd1faab948ddbe2105d2ce8",
+  "tarballHash": "0x095861746097c0e77ceed3ec162a515cd9ffddaeb9e9efd7a4c423a72442789c",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.139"
+  "version": "5.0.0-beta.140"
 }

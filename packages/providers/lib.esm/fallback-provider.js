@@ -266,7 +266,7 @@ function waitForSync(config, blockNumber) {
                 setTimeout(function () {
                     // We are synced
                     if (provider.blockNumber >= blockNumber) {
-                        return resolve(Provider);
+                        return resolve(provider);
                     }
                     // We're done; just quit
                     if (config.cancelled) {

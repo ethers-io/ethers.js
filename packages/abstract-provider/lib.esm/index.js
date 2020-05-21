@@ -15,15 +15,15 @@ export class ForkEvent extends Description {
     }
 }
 export class BlockForkEvent extends ForkEvent {
-    constructor(blockhash, expiry) {
-        if (!isHexString(blockhash, 32)) {
-            logger.throwArgumentError("invalid blockhash", "blockhash", blockhash);
+    constructor(blockHash, expiry) {
+        if (!isHexString(blockHash, 32)) {
+            logger.throwArgumentError("invalid blockHash", "blockHash", blockHash);
         }
         super({
             _isForkEvent: true,
             _isBlockForkEvent: true,
             expiry: (expiry || 0),
-            blockHash: blockhash
+            blockHash: blockHash
         });
     }
 }

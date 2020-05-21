@@ -7915,7 +7915,7 @@ class Interface {
 
 "use strict";
 
-const version$9 = "abstract-provider/5.0.0-beta.140";
+const version$9 = "abstract-provider/5.0.0-beta.141";
 
 "use strict";
 const logger$d = new Logger(version$9);
@@ -7930,15 +7930,15 @@ class ForkEvent extends Description {
     }
 }
 class BlockForkEvent extends ForkEvent {
-    constructor(blockhash, expiry) {
-        if (!isHexString(blockhash, 32)) {
-            logger$d.throwArgumentError("invalid blockhash", "blockhash", blockhash);
+    constructor(blockHash, expiry) {
+        if (!isHexString(blockHash, 32)) {
+            logger$d.throwArgumentError("invalid blockHash", "blockHash", blockHash);
         }
         super({
             _isForkEvent: true,
             _isBlockForkEvent: true,
             expiry: (expiry || 0),
-            blockHash: blockhash
+            blockHash: blockHash
         });
     }
 }
@@ -8192,7 +8192,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$b = "contracts/5.0.0-beta.152";
+const version$b = "contracts/5.0.0-beta.153";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8829,7 +8829,7 @@ class Contract {
             if (toBlock != null) {
                 logger$f.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
             }
-            filter.blockhash = fromBlockOrBlockhash;
+            filter.blockHash = fromBlockOrBlockhash;
         }
         else {
             filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash : 0);
@@ -14256,7 +14256,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$i = "json-wallets/5.0.0-beta.139";
+const version$i = "json-wallets/5.0.0-beta.140";
 
 "use strict";
 function looseArrayify(hexString) {
@@ -15758,7 +15758,7 @@ var browser$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.0.0-beta.140";
+const version$l = "web/5.0.0-beta.141";
 
 "use strict";
 var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -16029,7 +16029,7 @@ function poll(func, options) {
     });
 }
 
-const version$m = "providers/5.0.0-beta.167";
+const version$m = "providers/5.0.0-beta.168";
 
 "use strict";
 const logger$q = new Logger(version$m);
@@ -18614,7 +18614,7 @@ function waitForSync(config, blockNumber) {
                 setTimeout(function () {
                     // We are synced
                     if (provider.blockNumber >= blockNumber) {
-                        return resolve(Provider);
+                        return resolve(provider);
                     }
                     // We're done; just quit
                     if (config.cancelled) {
@@ -18884,7 +18884,7 @@ var browserIpcProvider = {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.0-beta.167";
+exports.version = "providers/5.0.0-beta.168";
 });
 
 var _version$3 = unwrapExports(_version$2);
@@ -19644,7 +19644,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.0-beta.187";
+const version$o = "ethers/5.0.0-beta.188";
 
 "use strict";
 const logger$E = new Logger(version$o);

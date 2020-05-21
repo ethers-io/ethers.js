@@ -31,4 +31,4 @@ export declare type FetchJsonResponse = {
     };
 };
 export declare function fetchJson(connection: string | ConnectionInfo, json?: string, processFunc?: (value: any, response: FetchJsonResponse) => any): Promise<any>;
-export declare function poll(func: () => Promise<any>, options?: PollOptions): Promise<any>;
+export declare function poll<T>(func: () => Promise<T>, options?: PollOptions): Promise<T>;

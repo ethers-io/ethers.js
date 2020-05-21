@@ -36,16 +36,16 @@ var ForkEvent = /** @class */ (function (_super) {
 exports.ForkEvent = ForkEvent;
 var BlockForkEvent = /** @class */ (function (_super) {
     __extends(BlockForkEvent, _super);
-    function BlockForkEvent(blockhash, expiry) {
+    function BlockForkEvent(blockHash, expiry) {
         var _this = this;
-        if (!bytes_1.isHexString(blockhash, 32)) {
-            logger.throwArgumentError("invalid blockhash", "blockhash", blockhash);
+        if (!bytes_1.isHexString(blockHash, 32)) {
+            logger.throwArgumentError("invalid blockHash", "blockHash", blockHash);
         }
         _this = _super.call(this, {
             _isForkEvent: true,
             _isBlockForkEvent: true,
             expiry: (expiry || 0),
-            blockHash: blockhash
+            blockHash: blockHash
         }) || this;
         return _this;
     }

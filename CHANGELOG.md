@@ -7,6 +7,13 @@ may change. It is generally recommended that you remove your `node_modules/`,
 `package-lock.json` (and similar files for yarn, etc.) and doing an `npm install`
 after upgrading to a newer version of the v5-BETA.
 
+ethers/v5.0.0-beta.188 (2020-05-21 00:02)
+-----------------------------------------
+
+  - Make filter blockHash property name match EIP-234. ([b03c4ed](https://github.com/ethers-io/ethers.js/commit/b03c4edd31a1929b411d0559d17eee7e3d6b11c8), [ed29fac](https://github.com/ethers-io/ethers.js/commit/ed29fac376c1a0aa210bf75979bb2ab62d0cf46b))
+  - Fixed FallbackProvider sync-stalling for backends. ([#841](https://github.com/ethers-io/ethers.js/issues/841); [f963589](https://github.com/ethers-io/ethers.js/commit/f96358940043123aa7a8fe97a1af7af293ce9740))
+  - Add correct tag to release on publish. ([#828](https://github.com/ethers-io/ethers.js/issues/828); [8516076](https://github.com/ethers-io/ethers.js/commit/85160766cdcd031f226382901ebadee9d7f40200))
+
 ethers/v5.0.0-beta.187 (2020-05-12 23:29)
 -----------------------------------------
 
@@ -257,8 +264,8 @@ ethers/v5.0.0-beta.163 (2020-01-06 18:57)
   - Add circleci and parity test files ([fdf0980](https://github.com/ethers-io/ethers.js/commit/fdf0980663ffead0faf3e9b7b233b22ca1574e21))
   - Fixed typo in package test dist scripts. ([9c78c7f](https://github.com/ethers-io/ethers.js/commit/9c78c7fee69d07733048d898d58205ae7f5c82d7))
 
-ethers/v5.0.0-beta.162 (2019-11-25 0:02)
-----------------------------------------
+ethers/v5.0.0-beta.162 (2019-11-25 00:02)
+-----------------------------------------
 
   - Update elliptic package to protect from Minerva timing attack. ([#666](https://github.com/ethers-io/ethers.js/issues/666); [cf036e1](https://github.com/ethers-io/ethers.js/commit/cf036e1ffad3340fcf1c7559d0032493ccc08e6e))
   - Browser and node testing works again. ([4470477](https://github.com/ethers-io/ethers.js/commit/4470477d7fd3031f2f3a1fbd9c538468c33c7350))

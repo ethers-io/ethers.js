@@ -4,7 +4,7 @@
     "@ensdomains/address-encoder": "^0.1.2",
     "@ethersproject/web": ">=5.0.0-beta.138",
     "ethers": ">=5.0.0-beta.186",
-    "scrypt-js": "3.0.0"
+    "scrypt-js": "3.0.1"
   },
   "description": "Experimental libraries for ethers. These should not be considered stable.",
   "ethereum": "donations.ethers.eth",
@@ -26,7 +26,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x3fc7436c39b2fa87c46196405aee164147b1bd889c325c60033f4ce9c3aeef7b",
+  "tarballHash": "0x6a4021f3ca22ef7efa4e741b28058c4eae8870dabc8ddb74c48ce6303323e354",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.141"
+  "version": "5.0.0-beta.142"
 }

@@ -8767,7 +8767,7 @@
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-provider/5.0.0-beta.140";
+	exports.version = "abstract-provider/5.0.0-beta.141";
 	});
 
 	var _version$j = unwrapExports(_version$i);
@@ -8812,16 +8812,16 @@
 	exports.ForkEvent = ForkEvent;
 	var BlockForkEvent = /** @class */ (function (_super) {
 	    __extends(BlockForkEvent, _super);
-	    function BlockForkEvent(blockhash, expiry) {
+	    function BlockForkEvent(blockHash, expiry) {
 	        var _this = this;
-	        if (!lib$1.isHexString(blockhash, 32)) {
-	            logger.throwArgumentError("invalid blockhash", "blockhash", blockhash);
+	        if (!lib$1.isHexString(blockHash, 32)) {
+	            logger.throwArgumentError("invalid blockHash", "blockHash", blockHash);
 	        }
 	        _this = _super.call(this, {
 	            _isForkEvent: true,
 	            _isBlockForkEvent: true,
 	            expiry: (expiry || 0),
-	            blockHash: blockhash
+	            blockHash: blockHash
 	        }) || this;
 	        return _this;
 	    }
@@ -9228,7 +9228,7 @@
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.0-beta.152";
+	exports.version = "contracts/5.0.0-beta.153";
 	});
 
 	var _version$n = unwrapExports(_version$m);
@@ -9957,7 +9957,7 @@
 	            if (toBlock != null) {
 	                logger.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
 	            }
-	            filter.blockhash = fromBlockOrBlockhash;
+	            filter.blockHash = fromBlockOrBlockhash;
 	        }
 	        else {
 	            filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash : 0);
@@ -15626,7 +15626,7 @@
 	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "json-wallets/5.0.0-beta.139";
+	exports.version = "json-wallets/5.0.0-beta.140";
 	});
 
 	var _version$B = unwrapExports(_version$A);
@@ -17400,7 +17400,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.0-beta.140";
+	exports.version = "web/5.0.0-beta.141";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -17780,7 +17780,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.167";
+	exports.version = "providers/5.0.0-beta.168";
 	});
 
 	var _version$J = unwrapExports(_version$I);
@@ -21194,7 +21194,7 @@
 	                        setTimeout(function () {
 	                            // We are synced
 	                            if (provider.blockNumber >= blockNumber) {
-	                                return resolve(lib$b.Provider);
+	                                return resolve(provider);
 	                            }
 	                            // We're done; just quit
 	                            if (config.cancelled) {
@@ -22656,7 +22656,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.187";
+	exports.version = "ethers/5.0.0-beta.188";
 	});
 
 	var _version$N = unwrapExports(_version$M);

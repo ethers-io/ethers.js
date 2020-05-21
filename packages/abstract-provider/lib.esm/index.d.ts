@@ -80,7 +80,7 @@ export interface Filter extends EventFilter {
     toBlock?: BlockTag;
 }
 export interface FilterByBlockHash extends EventFilter {
-    blockhash?: string;
+    blockHash?: string;
 }
 export declare abstract class ForkEvent extends Description {
     readonly expiry: number;
@@ -88,9 +88,9 @@ export declare abstract class ForkEvent extends Description {
     static isForkEvent(value: any): value is ForkEvent;
 }
 export declare class BlockForkEvent extends ForkEvent {
-    readonly blockhash: string;
+    readonly blockHash: string;
     readonly _isBlockForkEvent?: boolean;
-    constructor(blockhash: string, expiry?: number);
+    constructor(blockHash: string, expiry?: number);
 }
 export declare class TransactionForkEvent extends ForkEvent {
     readonly hash: string;

@@ -643,7 +643,7 @@ export class Contract {
             if (toBlock != null) {
                 logger.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
             }
-            filter.blockhash = fromBlockOrBlockhash;
+            filter.blockHash = fromBlockOrBlockhash;
         }
         else {
             filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash : 0);

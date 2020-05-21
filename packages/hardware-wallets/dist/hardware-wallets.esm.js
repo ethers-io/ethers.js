@@ -8,7 +8,7 @@ else {
     ethers = w._ethers;
 }
 
-const version = "hardware-wallets/5.0.0-beta.7";
+const version = "hardware-wallets/5.0.0-beta.8";
 
 var global$1 = (typeof global !== "undefined" ? global :
             typeof self !== "undefined" ? self :
@@ -2348,7 +2348,7 @@ var StatusCodes = {
     MAX_VALUE_REACHED: 0x9850,
     GP_AUTH_FAILED: 0x6300,
     LICENSING: 0x6f42,
-    HALTED: 0x6faa
+    HALTED: 0x6faa,
 };
 function getAltStatusMessage(code) {
     switch (code) {

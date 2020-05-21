@@ -309,7 +309,7 @@ function waitForSync(config, blockNumber) {
                         setTimeout(function () {
                             // We are synced
                             if (provider.blockNumber >= blockNumber) {
-                                return resolve(abstract_provider_1.Provider);
+                                return resolve(provider);
                             }
                             // We're done; just quit
                             if (config.cancelled) {

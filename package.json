@@ -43,6 +43,7 @@
     "aes-js": "3.0.0",
     "aws-sdk": "2.137.0",
     "diff": "4.0.1",
+    "flatworm": "0.0.2-beta.3",
     "karma": "5.0.2",
     "karma-chrome-launcher": "3.1.0",
     "karma-mocha": "2.0.0",
@@ -59,7 +60,7 @@
     "rollup-plugin-terser": "^5.2.0",
     "rollup-plugin-uglify": "^6.0.4",
     "rollup-pluginutils": "2.8.1",
-    "scrypt-js": "3.0.0",
+    "scrypt-js": "3.0.1",
     "semver": "^5.6.0",
     "tar": "4.4.8",
     "typescript": "3.8.3"
