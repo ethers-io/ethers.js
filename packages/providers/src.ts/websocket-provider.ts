@@ -179,7 +179,7 @@ export class WebSocketProvider extends JsonRpcProvider {
     _startEvent(event: Event): void {
         switch (event.type) {
             case "block":
-                this._subscribe("block", [ "newHeads", { } ], (result: any) => {
+                this._subscribe("block", [ "newHeads" ], (result: any) => {
                     this.emit("block", BigNumber.from(result.number).toNumber());
                 });
                 break;
