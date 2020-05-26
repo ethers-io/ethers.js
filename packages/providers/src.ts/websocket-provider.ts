@@ -179,7 +179,7 @@ export class WebSocketProvider extends JsonRpcProvider {
     _startEvent(event: Event): void {
         switch (event.type) {
             case "block":
-                this._subscribe("block", [ "newHeads", { } ], (result: any) => {
+                this._subscribe("block", [ "newHeads" ], (result: any) => {
                     this.emit("block", BigNumber.from(result.number).toNumber());
                 });
                 break;
@@ -213,7 +213,7 @@ export class WebSocketProvider extends JsonRpcProvider {
                 // to keep an eye out for transactions we are watching for.
                 // Starting a subscription for an event (i.e. "tx") that is already
                 // running is (basically) a nop.
-                this._subscribe("tx", [ "newHeads", { } ], (result: any) => {
+                this._subscribe("tx", [ "newHeads" ], (result: any) => {
                     this._events.filter((e) => (e.type === "tx")).forEach(emitReceipt);
                 });
                 break;
