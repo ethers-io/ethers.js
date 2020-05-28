@@ -1,6 +1,9 @@
 The Ethers Project
 ==================
 
+[![NPM Package][npm-badge]][npm-link]
+[![Actions Status][actions-badge]][actions-link]
+
 **EXPERIMENTAL**
 
 This branch is the next release of ethers.js, which should
@@ -97,3 +100,7 @@ License
 
 MIT License (including **all** dependencies).
 
+[npm-badge]: https://img.shields.io/npm/v/ethers/next.svg
+[npm-link]: https://www.npmjs.com/package/ethers/v/next
+[actions-badge]: https://github.com/ethers-io/ethers.js/workflows/Build/badge.svg?branch=ethers-v5-beta
+[actions-link]: https://github.com/ethers-io/ethers.js/actions
