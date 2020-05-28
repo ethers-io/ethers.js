@@ -1,0 +1,39 @@
+name: Build
+on:
+  push:
+    branches:
+      - ethers-v5-beta
+    tags:
+      - v5.*
+  pull_request:
+    types: [opened, reopened, synchronize]
+jobs:
+  test-node:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 13.x]
+    steps:
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - uses: actions/checkout@v2
+      - run: npm ci
+      - run: npm run bootstrap
+      - run: npm run build
+      - run: npm run test-node
+  test-browser:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: ['esm', 'umd']
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - uses: actions/checkout@v2
+      - run: npm ci
+      - run: npm run bootstrap
+      - run: npm run build
+      - run: npm run test-browser-${{ matrix.module }}
