@@ -271,12 +271,15 @@ export class BaseProvider extends Provider {
             }
 
             // This should never happen; every Provider sub-class should have
-            // suggested a network by here (or thrown).
+            // suggested a network by here (or have thrown).
             if (!network) {
                 logger.throwError("no network detected", Logger.errors.UNKNOWN_ERROR, { });
             }
 
-            defineReadOnly(this, "_network", network);
+            // Possible this call stacked so do not call defineReadOnly again
+            if (this._network == null) {
+                defineReadOnly(this, "_network", network);
+            }
         }
 
         return this._network;
