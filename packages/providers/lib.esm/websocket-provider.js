@@ -82,6 +82,15 @@ export class WebSocketProvider extends JsonRpcProvider {
                 console.warn("this should not happen");
             }
         };
+        // This Provider does not actually poll, but we want to trigger
+        // poll events for things that depend on them (like stalling for
+        // block and transaction lookups)
+        const fauxPoll = setInterval(() => {
+            this.emit("poll");
+        }, 1000);
+        if (fauxPoll.unref) {
+            fauxPoll.unref();
+        }
     }
     get pollingInterval() {
         return 0;
@@ -149,8 +158,10 @@ export class WebSocketProvider extends JsonRpcProvider {
     _startEvent(event) {
         switch (event.type) {
             case "block":
-                this._subscribe("block", ["newHeads", {}], (result) => {
-                    this.emit("block", BigNumber.from(result.number).toNumber());
+                this._subscribe("block", ["newHeads"], (result) => {
+                    const blockNumber = BigNumber.from(result.number).toNumber();
+                    this._emitted.block = blockNumber;
+                    this.emit("block", blockNumber);
                 });
                 break;
             case "pending":
@@ -182,13 +193,16 @@ export class WebSocketProvider extends JsonRpcProvider {
                 // to keep an eye out for transactions we are watching for.
                 // Starting a subscription for an event (i.e. "tx") that is already
                 // running is (basically) a nop.
-                this._subscribe("tx", ["newHeads", {}], (result) => {
+                this._subscribe("tx", ["newHeads"], (result) => {
                     this._events.filter((e) => (e.type === "tx")).forEach(emitReceipt);
                 });
                 break;
             }
             // Nothing is needed
             case "debug":
+            case "poll":
+            case "willPoll":
+            case "didPoll":
             case "error":
                 break;
             default:

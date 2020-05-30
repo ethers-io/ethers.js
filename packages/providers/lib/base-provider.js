@@ -280,11 +280,14 @@ var BaseProvider = /** @class */ (function (_super) {
                         _a.label = 6;
                     case 6:
                         // This should never happen; every Provider sub-class should have
-                        // suggested a network by here (or thrown).
+                        // suggested a network by here (or have thrown).
                         if (!network) {
                             logger.throwError("no network detected", logger_1.Logger.errors.UNKNOWN_ERROR, {});
                         }
-                        properties_1.defineReadOnly(this, "_network", network);
+                        // Possible this call stacked so do not call defineReadOnly again
+                        if (this._network == null) {
+                            properties_1.defineReadOnly(this, "_network", network);
+                        }
                         _a.label = 7;
                     case 7: return [2 /*return*/, this._network];
                 }
@@ -1015,7 +1018,7 @@ var BaseProvider = /** @class */ (function (_super) {
                                     case 8: return [2 /*return*/, this.formatter.block(block)];
                                 }
                             });
-                        }); }, { onceBlock: this })];
+                        }); }, { oncePoll: this })];
                 }
             });
         });
@@ -1073,7 +1076,7 @@ var BaseProvider = /** @class */ (function (_super) {
                                         case 4: return [2 /*return*/, this._wrapTransaction(tx)];
                                     }
                                 });
-                            }); }, { onceBlock: this })];
+                            }); }, { oncePoll: this })];
                 }
             });
         });
@@ -1129,7 +1132,7 @@ var BaseProvider = /** @class */ (function (_super) {
                                         case 4: return [2 /*return*/, receipt];
                                     }
                                 });
-                            }); }, { onceBlock: this })];
+                            }); }, { oncePoll: this })];
                 }
             });
         });

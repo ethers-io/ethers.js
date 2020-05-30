@@ -16,11 +16,11 @@ export interface CallOverrides extends PayableOverrides {
     blockTag?: BlockTag | Promise<BlockTag>;
     from?: string | Promise<string>;
 }
-export declare type ContractFunction = (...params: Array<any>) => Promise<any>;
 export declare type EventFilter = {
     address?: string;
-    topics?: Array<string>;
+    topics?: Array<string | Array<string>>;
 };
+export declare type ContractFunction<T = any> = (...args: Array<any>) => Promise<T>;
 export interface Event extends Log {
     event?: string;
     eventSignature?: string;
@@ -37,9 +37,6 @@ export interface ContractReceipt extends TransactionReceipt {
 }
 export interface ContractTransaction extends TransactionResponse {
     wait(confirmations?: number): Promise<ContractReceipt>;
-}
-interface Bucket<T> {
-    [name: string]: T;
 }
 declare class RunningEvent {
     readonly tag: string;
@@ -61,17 +58,31 @@ export declare class Contract {
     readonly interface: Interface;
     readonly signer: Signer;
     readonly provider: Provider;
-    readonly functions: Bucket<ContractFunction>;
-    readonly callStatic: Bucket<ContractFunction>;
-    readonly estimateGas: Bucket<(...params: Array<any>) => Promise<BigNumber>>;
-    readonly populateTransaction: Bucket<(...params: Array<any>) => Promise<UnsignedTransaction>>;
-    readonly filters: Bucket<(...params: Array<any>) => EventFilter>;
-    readonly [name: string]: ContractFunction | any;
+    readonly functions: {
+        [name: string]: ContractFunction;
+    };
+    readonly callStatic: {
+        [name: string]: ContractFunction;
+    };
+    readonly estimateGas: {
+        [name: string]: ContractFunction<BigNumber>;
+    };
+    readonly populateTransaction: {
+        [name: string]: ContractFunction<UnsignedTransaction>;
+    };
+    readonly filters: {
+        [name: string]: (...args: Array<any>) => EventFilter;
+    };
+    readonly [key: string]: ContractFunction | any;
     readonly resolvedAddress: Promise<string>;
     readonly deployTransaction: TransactionResponse;
-    private _deployedPromise;
-    private _runningEvents;
-    private _wrappedEmits;
+    _deployedPromise: Promise<Contract>;
+    _runningEvents: {
+        [eventTag: string]: RunningEvent;
+    };
+    _wrappedEmits: {
+        [eventTag: string]: (...args: Array<any>) => void;
+    };
     constructor(addressOrName: string, contractInterface: ContractInterface, signerOrProvider: Signer | Provider);
     static getContractAddress(transaction: {
         from: string;

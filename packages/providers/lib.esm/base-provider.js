@@ -205,11 +205,14 @@ export class BaseProvider extends Provider {
                     network = yield this.detectNetwork();
                 }
                 // This should never happen; every Provider sub-class should have
-                // suggested a network by here (or thrown).
+                // suggested a network by here (or have thrown).
                 if (!network) {
                     logger.throwError("no network detected", Logger.errors.UNKNOWN_ERROR, {});
                 }
-                defineReadOnly(this, "_network", network);
+                // Possible this call stacked so do not call defineReadOnly again
+                if (this._network == null) {
+                    defineReadOnly(this, "_network", network);
+                }
             }
             return this._network;
         });
@@ -732,7 +735,7 @@ export class BaseProvider extends Provider {
                     return this.formatter.blockWithTransactions(block);
                 }
                 return this.formatter.block(block);
-            }), { onceBlock: this });
+            }), { oncePoll: this });
         });
     }
     getBlock(blockHashOrBlockTag) {
@@ -770,7 +773,7 @@ export class BaseProvider extends Provider {
                     tx.confirmations = confirmations;
                 }
                 return this._wrapTransaction(tx);
-            }), { onceBlock: this });
+            }), { oncePoll: this });
         });
     }
     getTransactionReceipt(transactionHash) {
@@ -806,7 +809,7 @@ export class BaseProvider extends Provider {
                     receipt.confirmations = confirmations;
                 }
                 return receipt;
-            }), { onceBlock: this });
+            }), { oncePoll: this });
         });
     }
     getLogs(filter) {

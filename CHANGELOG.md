@@ -2,10 +2,16 @@ Changelog
 =========
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
-During the v5-BETA, although attempts are made to minimize it, some of the APIs
-may change. It is generally recommended that you remove your `node_modules/`,
-`package-lock.json` (and similar files for yarn, etc.) and doing an `npm install`
-after upgrading to a newer version of the v5-BETA.
+
+
+ethers/v5.0.0-beta.189 (2020-05-29 21:25)
+-----------------------------------------
+
+  - Simplify typing for properties module. ([41e66ab](https://github.com/ethers-io/ethers.js/commit/41e66ab834e9835807481658a7956207edfef3d7))
+  - Refactor Contract away from monolithic runMethod. ([e5a1b4d](https://github.com/ethers-io/ethers.js/commit/e5a1b4d5cbbaa0a8ce64c72e13d0d12fa2b856e3))
+  - Correctly set last emitted block for WebSocketProvider. ([#856](https://github.com/ethers-io/ethers.js/issues/856); [1b0ad5a](https://github.com/ethers-io/ethers.js/commit/1b0ad5aa69327f80c7814069142965914673dc06))
+  - Fixed delayed network detection attempting to overwrite read-only value. ([#854](https://github.com/ethers-io/ethers.js/issues/854); [8efd8d2](https://github.com/ethers-io/ethers.js/commit/8efd8d203158ebdef040ec759c3b423312a86e7c))
+  - Better WebSocket compatibilities with Parity. ([#849](https://github.com/ethers-io/ethers.js/issues/849); [180a1af](https://github.com/ethers-io/ethers.js/commit/180a1aff3adc5b4af3a1349b52666ca5942c92a2))
 
 ethers/v5.0.0-beta.188 (2020-05-21 00:02)
 -----------------------------------------

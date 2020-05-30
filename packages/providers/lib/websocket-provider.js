@@ -127,6 +127,15 @@ var WebSocketProvider = /** @class */ (function (_super) {
                 console.warn("this should not happen");
             }
         };
+        // This Provider does not actually poll, but we want to trigger
+        // poll events for things that depend on them (like stalling for
+        // block and transaction lookups)
+        var fauxPoll = setInterval(function () {
+            _this.emit("poll");
+        }, 1000);
+        if (fauxPoll.unref) {
+            fauxPoll.unref();
+        }
         return _this;
     }
     Object.defineProperty(WebSocketProvider.prototype, "pollingInterval", {
@@ -217,8 +226,10 @@ var WebSocketProvider = /** @class */ (function (_super) {
         var _this = this;
         switch (event.type) {
             case "block":
-                this._subscribe("block", ["newHeads", {}], function (result) {
-                    _this.emit("block", bignumber_1.BigNumber.from(result.number).toNumber());
+                this._subscribe("block", ["newHeads"], function (result) {
+                    var blockNumber = bignumber_1.BigNumber.from(result.number).toNumber();
+                    _this._emitted.block = blockNumber;
+                    _this.emit("block", blockNumber);
                 });
                 break;
             case "pending":
@@ -250,13 +261,16 @@ var WebSocketProvider = /** @class */ (function (_super) {
                 // to keep an eye out for transactions we are watching for.
                 // Starting a subscription for an event (i.e. "tx") that is already
                 // running is (basically) a nop.
-                this._subscribe("tx", ["newHeads", {}], function (result) {
+                this._subscribe("tx", ["newHeads"], function (result) {
                     _this._events.filter(function (e) { return (e.type === "tx"); }).forEach(emitReceipt_1);
                 });
                 break;
             }
             // Nothing is needed
             case "debug":
+            case "poll":
+            case "willPoll":
+            case "didPoll":
             case "error":
                 break;
             default:

@@ -4689,7 +4689,7 @@ class FixedNumber {
     }
 }
 
-const version$3 = "properties/5.0.0-beta.141";
+const version$3 = "properties/5.0.0-beta.142";
 
 "use strict";
 var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8192,7 +8192,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$b = "contracts/5.0.0-beta.153";
+const version$b = "contracts/5.0.0-beta.154";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8230,150 +8230,238 @@ function resolveAddresses(signerOrProvider, value, paramType) {
     }
     return Promise.resolve(value);
 }
-/*
-export function _populateTransaction(func: FunctionFragment, args: Array<any>, overrides?: any): Promise<Transaction> {
-    return null;
-}
-
-export function _sendTransaction(func: FunctionFragment, args: Array<any>, overrides?: any): Promise<Transaction> {
-    return null;
-}
-*/
-function runMethod(contract, functionName, options) {
-    const method = contract.interface.functions[functionName];
-    return function (...params) {
-        let tx = {};
-        let blockTag = null;
-        // If 1 extra parameter was passed in, it contains overrides
-        if (params.length === method.inputs.length + 1 && typeof (params[params.length - 1]) === "object") {
-            tx = shallowCopy(params.pop());
-            if (tx.blockTag != null) {
-                blockTag = tx.blockTag;
-            }
-            delete tx.blockTag;
-            // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
-            for (let key in tx) {
-                if (!allowedTransactionKeys$1[key]) {
-                    logger$f.throwArgumentError(("unknown transaction override - " + key), "overrides", tx);
-                }
-            }
-        }
-        logger$f.checkArgumentCount(params.length, method.inputs.length, "passed to contract");
-        // Check overrides make sense
-        ["data", "to"].forEach(function (key) {
-            if (tx[key] != null) {
-                logger$f.throwError("cannot override " + key, Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
-            }
+function _populateTransaction(contract, fragment, args, overrides) {
+    return __awaiter$2(this, void 0, void 0, function* () {
+        overrides = shallowCopy(overrides);
+        // Wait for all dependency addresses to be resolved (prefer the signer over the provider)
+        const resolved = yield resolveProperties({
+            args: resolveAddresses(contract.signer || contract.provider, args, fragment.inputs),
+            address: contract.resolvedAddress,
+            overrides: (resolveProperties(overrides) || {})
         });
-        // If the contract was just deployed, wait until it is minded
-        if (contract.deployTransaction != null) {
-            tx.to = contract._deployed(blockTag).then(() => {
-                return contract.resolvedAddress;
+        // The ABI coded transaction
+        const tx = {
+            data: contract.interface.encodeFunctionData(fragment, resolved.args),
+            to: resolved.address
+        };
+        // Resolved Overrides
+        const ro = resolved.overrides;
+        if (ro.nonce != null) {
+            tx.nonce = BigNumber.from(ro.nonce).toNumber();
+        }
+        if (ro.gasLimit != null) {
+            tx.gasLimit = BigNumber.from(ro.gasLimit);
+        }
+        if (ro.gasPrice != null) {
+            tx.gasPrice = BigNumber.from(ro.gasPrice);
+        }
+        // If there was no gasLimit override, but the ABI specifies one use it
+        if (tx.gasLimit == null && fragment.gas != null) {
+            tx.gasLimit = BigNumber.from(fragment.gas).add(21000);
+        }
+        // Remvoe the overrides
+        delete overrides.nonce;
+        delete overrides.gasLimit;
+        delete overrides.gasPrice;
+        // @TODO: Maybe move all tx property validation to the Signer and Provider?
+        // Make sure there are no stray overrides, which may indicate a
+        // typo or using an unsupported key.
+        const leftovers = Object.keys(overrides);
+        if (leftovers.length) {
+            logger$f.throwError(`cannot override ${leftovers.map((l) => JSON.stringify(l)).join(",")}`, Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "overrides",
+                keys: leftovers
             });
         }
-        else {
-            tx.to = contract.resolvedAddress;
+        return tx;
+    });
+}
+function populateTransaction(contract, fragment, args, overrides) {
+    return __awaiter$2(this, void 0, void 0, function* () {
+        overrides = shallowCopy(overrides);
+        // If the contract was just deployed, wait until it is minded
+        if (contract.deployTransaction != null) {
+            yield contract._deployed();
         }
-        return resolveAddresses(contract.signer || contract.provider, params, method.inputs).then((params) => {
-            tx.data = contract.interface.encodeFunctionData(method, params);
-            if (method.constant || options.callStatic) {
-                // Call (constant functions) always cost 0 ether
-                if (options.estimate) {
-                    return Promise.resolve(Zero$1);
-                }
-                if (!contract.provider && !contract.signer) {
-                    logger$f.throwError("call (constant functions) require a provider or signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "call" });
-                }
-                // Check overrides make sense
-                ["gasLimit", "gasPrice", "value"].forEach(function (key) {
-                    if (tx[key] != null) {
-                        throw new Error("call cannot override " + key);
-                    }
-                });
-                if (options.transaction) {
-                    return resolveProperties(tx);
-                }
-                return (contract.signer || contract.provider).call(tx, blockTag).then((value) => {
-                    try {
-                        let result = contract.interface.decodeFunctionResult(method, value);
-                        if (method.outputs.length === 1) {
-                            result = result[0];
-                        }
-                        return result;
-                    }
-                    catch (error) {
-                        if (error.code === Logger.errors.CALL_EXCEPTION) {
-                            error.address = contract.address;
-                            error.args = params;
-                            error.transaction = tx;
-                        }
-                        throw error;
-                    }
+        // Resolved Overrides (keep value for errors)
+        const ro = yield resolveProperties(overrides);
+        const value = overrides.value;
+        delete overrides.value;
+        const tx = yield _populateTransaction(contract, fragment, args, overrides);
+        if (ro.value) {
+            const roValue = BigNumber.from(ro.value);
+            if (!roValue.isZero() && !fragment.payable) {
+                logger$f.throwError("non-payable method cannot override value", Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: "overrides.value",
+                    value: value
                 });
             }
-            // Only computing the transaction estimate
-            if (options.estimate) {
-                if (!contract.provider && !contract.signer) {
-                    logger$f.throwError("estimate require a provider or signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "estimateGas" });
+            tx.value = roValue;
+        }
+        return tx;
+    });
+}
+function populateCallTransaction(contract, fragment, args, overrides) {
+    return __awaiter$2(this, void 0, void 0, function* () {
+        overrides = shallowCopy(overrides);
+        // If the contract was just deployed, wait until it is minded
+        if (contract.deployTransaction != null) {
+            let blockTag = undefined;
+            if (overrides.blockTag) {
+                blockTag = yield overrides.blockTag;
+            }
+            yield contract._deployed(blockTag);
+        }
+        // Resolved Overrides
+        delete overrides.blockTag;
+        const ro = yield resolveProperties(overrides);
+        delete overrides.from;
+        const tx = yield populateTransaction(contract, fragment, args, overrides);
+        if (ro.from) {
+            tx.from = this.interface.constructor.getAddress(ro.from);
+        }
+        return tx;
+    });
+}
+function buildPopulate(contract, fragment) {
+    const populate = (fragment.constant) ? populateCallTransaction : populateTransaction;
+    return function (...args) {
+        return __awaiter$2(this, void 0, void 0, function* () {
+            let overrides = null;
+            if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
+                overrides = args.pop();
+            }
+            logger$f.checkArgumentCount(args.length, fragment.inputs.length, "passed to contract");
+            return populate(contract, fragment, args, overrides);
+        });
+    };
+}
+function buildEstimate(contract, fragment) {
+    const signerOrProvider = (contract.signer || contract.provider);
+    const populate = (fragment.constant) ? populateCallTransaction : populateTransaction;
+    return function (...args) {
+        return __awaiter$2(this, void 0, void 0, function* () {
+            let overrides = null;
+            if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
+                overrides = args.pop();
+            }
+            logger$f.checkArgumentCount(args.length, fragment.inputs.length, "passed to contract");
+            if (!signerOrProvider) {
+                logger$f.throwError("estimate require a provider or signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "estimateGas" });
+            }
+            const tx = yield populate(contract, fragment, args, overrides);
+            return yield signerOrProvider.estimateGas(tx);
+        });
+    };
+}
+function buildCall(contract, fragment, collapseSimple) {
+    const signerOrProvider = (contract.signer || contract.provider);
+    const populate = (fragment.constant) ? populateCallTransaction : populateTransaction;
+    return function (...args) {
+        return __awaiter$2(this, void 0, void 0, function* () {
+            let overrides = null;
+            let blockTag = undefined;
+            if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
+                overrides = shallowCopy(args.pop());
+                if (overrides.blockTag) {
+                    blockTag = yield overrides.blockTag;
+                    delete overrides.blockTag;
                 }
-                return (contract.signer || contract.provider).estimateGas(tx);
             }
-            if (tx.gasLimit == null && method.gas != null) {
-                tx.gasLimit = BigNumber.from(method.gas).add(21000);
+            logger$f.checkArgumentCount(args.length, fragment.inputs.length, "passed to contract");
+            const tx = yield populate(contract, fragment, args, overrides);
+            const value = yield signerOrProvider.call(tx, blockTag);
+            try {
+                let result = contract.interface.decodeFunctionResult(fragment, value);
+                if (collapseSimple && fragment.outputs.length === 1) {
+                    result = result[0];
+                }
+                return result;
             }
-            if (tx.value != null && !method.payable) {
-                logger$f.throwArgumentError("contract method is not payable", "sendTransaction:" + method.format(), tx);
+            catch (error) {
+                if (error.code === Logger.errors.CALL_EXCEPTION) {
+                    error.address = contract.address;
+                    error.args = args;
+                    error.transaction = tx;
+                }
+                throw error;
             }
-            if (options.transaction) {
-                return resolveProperties(tx);
-            }
+        });
+    };
+}
+function buildSend(contract, fragment) {
+    return function (...args) {
+        return __awaiter$2(this, void 0, void 0, function* () {
             if (!contract.signer) {
                 logger$f.throwError("sending a transaction requires a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" });
             }
-            return contract.signer.sendTransaction(tx).then((tx) => {
-                const wait = tx.wait.bind(tx);
-                tx.wait = (confirmations) => {
-                    return wait(confirmations).then((receipt) => {
-                        receipt.events = receipt.logs.map((log) => {
-                            let event = deepCopy(log);
-                            let parsed = null;
-                            try {
-                                parsed = contract.interface.parseLog(log);
-                            }
-                            catch (e) { }
-                            if (parsed) {
-                                event.args = parsed.args;
-                                event.decode = (data, topics) => {
-                                    return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
-                                };
-                                event.event = parsed.name;
-                                event.eventSignature = parsed.signature;
-                            }
-                            event.removeListener = () => { return contract.provider; };
-                            event.getBlock = () => {
-                                return contract.provider.getBlock(receipt.blockHash);
+            // We allow CallOverrides, since the Signer can accept from
+            let overrides = null;
+            if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
+                overrides = shallowCopy(args.pop());
+                if (overrides.blockTag != null) {
+                    logger$f.throwArgumentError(`cannot override "blockTag" in transaction`, "overrides", overrides);
+                }
+            }
+            logger$f.checkArgumentCount(args.length, fragment.inputs.length, "passed to contract");
+            const txRequest = yield populateCallTransaction(contract, fragment, args, overrides);
+            const tx = yield contract.signer.sendTransaction(txRequest);
+            // Tweak the tw.wait so the receipt has extra properties
+            const wait = tx.wait.bind(tx);
+            tx.wait = (confirmations) => {
+                return wait(confirmations).then((receipt) => {
+                    receipt.events = receipt.logs.map((log) => {
+                        let event = deepCopy(log);
+                        let parsed = null;
+                        try {
+                            parsed = contract.interface.parseLog(log);
+                        }
+                        catch (e) { }
+                        // Successfully parsed the event log; include it
+                        if (parsed) {
+                            event.args = parsed.args;
+                            event.decode = (data, topics) => {
+                                return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
                             };
-                            event.getTransaction = () => {
-                                return contract.provider.getTransaction(receipt.transactionHash);
-                            };
-                            event.getTransactionReceipt = () => {
-                                return Promise.resolve(receipt);
-                            };
-                            return event;
-                        });
-                        return receipt;
+                            event.event = parsed.name;
+                            event.eventSignature = parsed.signature;
+                        }
+                        // Useful operations
+                        event.removeListener = () => { return contract.provider; };
+                        event.getBlock = () => {
+                            return contract.provider.getBlock(receipt.blockHash);
+                        };
+                        event.getTransaction = () => {
+                            return contract.provider.getTransaction(receipt.transactionHash);
+                        };
+                        event.getTransactionReceipt = () => {
+                            return Promise.resolve(receipt);
+                        };
+                        return event;
                     });
-                };
-                return tx;
-            });
+                    return receipt;
+                });
+            };
+            return tx;
         });
     };
+}
+function buildDefault(contract, fragment, collapseSimple) {
+    if (fragment.constant) {
+        return buildCall(contract, fragment, collapseSimple);
+    }
+    return buildSend(contract, fragment);
 }
 function getEventTag(filter) {
     if (filter.address && (filter.topics == null || filter.topics.length === 0)) {
         return "*";
     }
-    return (filter.address || "*") + "@" + (filter.topics ? filter.topics.join(":") : "");
+    return (filter.address || "*") + "@" + (filter.topics ? filter.topics.map((topic) => {
+        if (Array.isArray(topic)) {
+            return topic.join("|");
+        }
+        return topic;
+    }).join(":") : "");
 }
 class RunningEvent {
     constructor(tag, filter) {
@@ -8595,22 +8683,23 @@ class Contract {
                 }
                 uniqueNames[name].push(signature);
             }
-            // @TODO: This should take in fragment
-            const run = runMethod(this, signature, {});
             if (this[signature] == null) {
-                defineReadOnly(this, signature, run);
+                defineReadOnly(this, signature, buildDefault(this, fragment, true));
             }
+            // We do not collapse simple calls on this bucket, which allows
+            // frameworks to safely use this without introspection as well as
+            // allows decoding error recovery.
             if (this.functions[signature] == null) {
-                defineReadOnly(this.functions, signature, run);
+                defineReadOnly(this.functions, signature, buildDefault(this, fragment, false));
             }
             if (this.callStatic[signature] == null) {
-                defineReadOnly(this.callStatic, signature, runMethod(this, signature, { callStatic: true }));
+                defineReadOnly(this.callStatic, signature, buildCall(this, fragment, true));
             }
             if (this.populateTransaction[signature] == null) {
-                defineReadOnly(this.populateTransaction, signature, runMethod(this, signature, { transaction: true }));
+                defineReadOnly(this.populateTransaction, signature, buildPopulate(this, fragment));
             }
             if (this.estimateGas[signature] == null) {
-                defineReadOnly(this.estimateGas, signature, runMethod(this, signature, { estimate: true }));
+                defineReadOnly(this.estimateGas, signature, buildEstimate(this, fragment));
             }
         });
         Object.keys(uniqueNames).forEach((name) => {
@@ -8743,7 +8832,11 @@ class Contract {
         if (eventName.topics && eventName.topics.length > 0) {
             // Is it a known topichash? (throws if no matching topichash)
             try {
-                const fragment = this.interface.getEvent(eventName.topics[0]);
+                const topic = eventName.topics[0];
+                if (typeof (topic) !== "string") {
+                    throw new Error("invalid topic"); // @TODO: May happen for anonymous events
+                }
+                const fragment = this.interface.getEvent(topic);
                 return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
             }
             catch (error) { }
@@ -8942,6 +9035,7 @@ class ContractFactory {
         defineReadOnly(this, "interface", getStatic((new.target), "getInterface")(contractInterface));
         defineReadOnly(this, "signer", signer || null);
     }
+    // @TODO: Future; rename to populteTransaction?
     getDeployTransaction(...args) {
         let tx = {};
         // If we have 1 additional argument, we allow transaction overrides
@@ -16029,7 +16123,7 @@ function poll(func, options) {
     });
 }
 
-const version$m = "providers/5.0.0-beta.168";
+const version$m = "providers/5.0.0-beta.169";
 
 "use strict";
 const logger$q = new Logger(version$m);
@@ -16602,11 +16696,14 @@ class BaseProvider extends Provider {
                     network = yield this.detectNetwork();
                 }
                 // This should never happen; every Provider sub-class should have
-                // suggested a network by here (or thrown).
+                // suggested a network by here (or have thrown).
                 if (!network) {
                     logger$r.throwError("no network detected", Logger.errors.UNKNOWN_ERROR, {});
                 }
-                defineReadOnly(this, "_network", network);
+                // Possible this call stacked so do not call defineReadOnly again
+                if (this._network == null) {
+                    defineReadOnly(this, "_network", network);
+                }
             }
             return this._network;
         });
@@ -17129,7 +17226,7 @@ class BaseProvider extends Provider {
                     return this.formatter.blockWithTransactions(block);
                 }
                 return this.formatter.block(block);
-            }), { onceBlock: this });
+            }), { oncePoll: this });
         });
     }
     getBlock(blockHashOrBlockTag) {
@@ -17167,7 +17264,7 @@ class BaseProvider extends Provider {
                     tx.confirmations = confirmations;
                 }
                 return this._wrapTransaction(tx);
-            }), { onceBlock: this });
+            }), { oncePoll: this });
         });
     }
     getTransactionReceipt(transactionHash) {
@@ -17203,7 +17300,7 @@ class BaseProvider extends Provider {
                     receipt.confirmations = confirmations;
                 }
                 return receipt;
-            }), { onceBlock: this });
+            }), { oncePoll: this });
         });
     }
     getLogs(filter) {
@@ -18884,7 +18981,7 @@ var browserIpcProvider = {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.0-beta.168";
+exports.version = "providers/5.0.0-beta.169";
 });
 
 var _version$3 = unwrapExports(_version$2);
@@ -18993,6 +19090,15 @@ class WebSocketProvider extends JsonRpcProvider {
                 console.warn("this should not happen");
             }
         };
+        // This Provider does not actually poll, but we want to trigger
+        // poll events for things that depend on them (like stalling for
+        // block and transaction lookups)
+        const fauxPoll = setInterval(() => {
+            this.emit("poll");
+        }, 1000);
+        if (fauxPoll.unref) {
+            fauxPoll.unref();
+        }
     }
     get pollingInterval() {
         return 0;
@@ -19060,8 +19166,10 @@ class WebSocketProvider extends JsonRpcProvider {
     _startEvent(event) {
         switch (event.type) {
             case "block":
-                this._subscribe("block", ["newHeads", {}], (result) => {
-                    this.emit("block", BigNumber.from(result.number).toNumber());
+                this._subscribe("block", ["newHeads"], (result) => {
+                    const blockNumber = BigNumber.from(result.number).toNumber();
+                    this._emitted.block = blockNumber;
+                    this.emit("block", blockNumber);
                 });
                 break;
             case "pending":
@@ -19093,13 +19201,16 @@ class WebSocketProvider extends JsonRpcProvider {
                 // to keep an eye out for transactions we are watching for.
                 // Starting a subscription for an event (i.e. "tx") that is already
                 // running is (basically) a nop.
-                this._subscribe("tx", ["newHeads", {}], (result) => {
+                this._subscribe("tx", ["newHeads"], (result) => {
                     this._events.filter((e) => (e.type === "tx")).forEach(emitReceipt);
                 });
                 break;
             }
             // Nothing is needed
             case "debug":
+            case "poll":
+            case "willPoll":
+            case "didPoll":
             case "error":
                 break;
             default:
@@ -19644,7 +19755,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.0-beta.188";
+const version$o = "ethers/5.0.0-beta.189";
 
 "use strict";
 const logger$E = new Logger(version$o);
