@@ -823,7 +823,7 @@ export class BaseProvider extends Provider {
             }
 
             return this.formatter.block(block);
-        }, { onceBlock: this });
+        }, { oncePoll: this });
     }
 
     getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> {
@@ -865,7 +865,7 @@ export class BaseProvider extends Provider {
             }
 
             return this._wrapTransaction(tx);
-        }, { onceBlock: this });
+        }, { oncePoll: this });
     }
 
     async getTransactionReceipt(transactionHash: string | Promise<string>): Promise<TransactionReceipt> {
@@ -903,7 +903,7 @@ export class BaseProvider extends Provider {
             }
 
             return receipt;
-        }, { onceBlock: this });
+        }, { oncePoll: this });
     }
 
     async getLogs(filter: Filter | FilterByBlockHash | Promise<Filter | FilterByBlockHash>): Promise<Array<Log>> {
