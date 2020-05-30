@@ -1,12 +1,11 @@
 "use strict";
 
-import { checkResultErrors, EventFragment, Fragment, Indexed, Interface, JsonFragment, LogDescription, ParamType, Result } from "@ethersproject/abi";
+import { checkResultErrors, EventFragment, Fragment, FunctionFragment, Indexed, Interface, JsonFragment, LogDescription, ParamType, Result } from "@ethersproject/abi";
 import { Block, BlockTag, Filter, FilterByBlockHash, Listener, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { Signer, VoidSigner } from "@ethersproject/abstract-signer";
 import { getContractAddress } from "@ethersproject/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike, concat, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
-import { Zero } from "@ethersproject/constants";
 import { defineReadOnly, deepCopy, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { UnsignedTransaction } from "@ethersproject/transactions";
 
@@ -30,14 +29,15 @@ export interface CallOverrides extends PayableOverrides {
     from?: string | Promise<string>
 }
 
-export type ContractFunction = (...params: Array<any>) => Promise<any>;
 
 export type EventFilter = {
     address?: string;
-    topics?: Array<string>;
-    // @TODO: Support OR-style topcis; backwards compatible to make this change
-    //topics?: Array<string | Array<string>>
+    topics?: Array<string|Array<string>>;
 };
+
+
+export type ContractFunction<T = any> = (...args: Array<any>) => Promise<T>;
+
 
 // The (n + 1)th parameter passed to contract event callbacks
 export interface Event extends Log {
@@ -109,189 +109,255 @@ function resolveAddresses(signerOrProvider: Signer | Provider, value: any, param
     return Promise.resolve(value);
 }
 
-type RunFunction = (...params: Array<any>) => Promise<any>;
+async function _populateTransaction(contract: Contract, fragment: FunctionFragment, args: Array<any>, overrides?: Overrides): Promise<UnsignedTransaction> {
+    overrides = shallowCopy(overrides);
 
-type RunOptions = {
-    estimate?: boolean;
-    callStatic?: boolean;
-    payable?: boolean;
-    transaction?: boolean;
-};
+    // Wait for all dependency addresses to be resolved (prefer the signer over the provider)
+    const resolved = await resolveProperties({
+        args: resolveAddresses(contract.signer || contract.provider, args, fragment.inputs),
+        address: contract.resolvedAddress,
+        overrides: (resolveProperties(overrides) || { })
+    });
 
-/*
-export function _populateTransaction(func: FunctionFragment, args: Array<any>, overrides?: any): Promise<Transaction> {
-    return null;
-}
+    // The ABI coded transaction
+    const tx: UnsignedTransaction = {
+      data: contract.interface.encodeFunctionData(fragment, resolved.args),
+      to: resolved.address
+    };
 
-export function _sendTransaction(func: FunctionFragment, args: Array<any>, overrides?: any): Promise<Transaction> {
-    return null;
-}
-*/
+    // Resolved Overrides
+    const ro = resolved.overrides;
+    if (ro.nonce != null) { tx.nonce = BigNumber.from(ro.nonce).toNumber(); }
+    if (ro.gasLimit != null) { tx.gasLimit = BigNumber.from(ro.gasLimit); }
+    if (ro.gasPrice != null) { tx.gasPrice = BigNumber.from(ro.gasPrice); }
 
-function runMethod(contract: Contract, functionName: string, options: RunOptions): RunFunction {
-    const method = contract.interface.functions[functionName];
-    return function(...params): Promise<any> {
-        let tx: any = {}
+    // If there was no gasLimit override, but the ABI specifies one use it
+    if (tx.gasLimit == null && fragment.gas != null) {
+        tx.gasLimit = BigNumber.from(fragment.gas).add(21000);
+    }
 
-        let blockTag: BlockTag = null;
+    // Remvoe the overrides
+    delete overrides.nonce;
+    delete overrides.gasLimit;
+    delete overrides.gasPrice;
 
-        // If 1 extra parameter was passed in, it contains overrides
-        if (params.length === method.inputs.length + 1 && typeof(params[params.length - 1]) === "object") {
-            tx = shallowCopy(params.pop());
+    // @TODO: Maybe move all tx property validation to the Signer and Provider?
 
-            if (tx.blockTag != null) {
-                blockTag = tx.blockTag;
-            }
-
-            delete tx.blockTag;
-
-            // Check for unexpected keys (e.g. using "gas" instead of "gasLimit")
-            for (let key in tx) {
-                if (!allowedTransactionKeys[key]) {
-                    logger.throwArgumentError(("unknown transaction override - " + key), "overrides", tx);
-                }
-            }
-        }
-
-        logger.checkArgumentCount(params.length, method.inputs.length, "passed to contract");
-
-        // Check overrides make sense
-        ["data", "to"].forEach(function(key) {
-            if (tx[key] != null) {
-                logger.throwError("cannot override " + key, Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
-            }
-        });
-
-        // If the contract was just deployed, wait until it is minded
-        if (contract.deployTransaction != null) {
-            tx.to = contract._deployed(blockTag).then(() => {
-                return contract.resolvedAddress;
-            });
-        } else {
-            tx.to = contract.resolvedAddress;
-        }
-
-        return resolveAddresses(contract.signer || contract.provider, params, method.inputs).then((params) => {
-            tx.data = contract.interface.encodeFunctionData(method, params);
-            if (method.constant || options.callStatic) {
-
-                // Call (constant functions) always cost 0 ether
-                if (options.estimate) {
-                    return Promise.resolve(Zero);
-                }
-
-                if (!contract.provider && !contract.signer) {
-                    logger.throwError("call (constant functions) require a provider or signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "call" })
-                }
-
-                // Check overrides make sense
-                ["gasLimit", "gasPrice", "value"].forEach(function(key) {
-                    if (tx[key] != null) {
-                        throw new Error("call cannot override " + key) ;
-                    }
-                });
-
-                if (options.transaction) { return resolveProperties(tx); }
-
-                return (contract.signer || contract.provider).call(tx, blockTag).then((value) => {
-
-                    try {
-                        let result = contract.interface.decodeFunctionResult(method, value);
-                        if (method.outputs.length === 1) {
-                            result = result[0];
-                        }
-                        return result;
-
-                    } catch (error) {
-                        if (error.code === Logger.errors.CALL_EXCEPTION) {
-                            error.address = contract.address;
-                            error.args = params;
-                            error.transaction = tx;
-                        }
-                        throw error;
-                    }
-                });
-
-            }
-
-            // Only computing the transaction estimate
-            if (options.estimate) {
-                if (!contract.provider && !contract.signer) {
-                    logger.throwError("estimate require a provider or signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "estimateGas" })
-                }
-
-                return (contract.signer || contract.provider).estimateGas(tx);
-            }
-
-            if (tx.gasLimit == null && method.gas != null) {
-                tx.gasLimit = BigNumber.from(method.gas).add(21000);
-            }
-
-            if (tx.value != null && !method.payable) {
-                logger.throwArgumentError("contract method is not payable", "sendTransaction:" + method.format(), tx);
-            }
-
-            if (options.transaction) { return resolveProperties(tx); }
-
-            if (!contract.signer) {
-                logger.throwError("sending a transaction requires a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" })
-            }
-
-            return contract.signer.sendTransaction(tx).then((tx) => {
-                const wait = tx.wait.bind(tx);
-
-                tx.wait = (confirmations?: number) => {
-                    return wait(confirmations).then((receipt: ContractReceipt) => {
-                        receipt.events = receipt.logs.map((log) => {
-                             let event: Event = (<Event>deepCopy(log));
-
-                             let parsed: LogDescription = null;
-                             try {
-                                parsed = contract.interface.parseLog(log);
-                             } catch (e){ }
-
-                             if (parsed) {
-                                 event.args = parsed.args;
-                                 event.decode = (data: BytesLike, topics?: Array<any>) => {
-                                     return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
-                                 };
-                                 event.event = parsed.name;
-                                 event.eventSignature = parsed.signature;
-                            }
-
-                            event.removeListener = () => { return contract.provider; }
-                            event.getBlock = () => {
-                                return contract.provider.getBlock(receipt.blockHash);
-                            }
-                            event.getTransaction = () => {
-                                return contract.provider.getTransaction(receipt.transactionHash);
-                            }
-                            event.getTransactionReceipt = () => {
-                                return Promise.resolve(receipt);
-                            }
-
-                            return event;
-                        });
-
-                        return receipt;
-                    });
-                };
-
-                return tx;
-            });
+    // Make sure there are no stray overrides, which may indicate a
+    // typo or using an unsupported key.
+    const leftovers = Object.keys(overrides);
+    if (leftovers.length) {
+        logger.throwError(`cannot override ${ leftovers.map((l) => JSON.stringify(l)).join(",") }`, Logger.errors.UNSUPPORTED_OPERATION, {
+            operation: "overrides",
+            keys: leftovers
         });
     }
+
+    return tx;
+
+}
+
+async function populateTransaction(contract: Contract, fragment: FunctionFragment, args: Array<any>, overrides?: PayableOverrides): Promise<UnsignedTransaction> {
+    overrides = shallowCopy(overrides);
+
+    // If the contract was just deployed, wait until it is minded
+    if (contract.deployTransaction != null) {
+        await contract._deployed();
+    }
+
+    // Resolved Overrides (keep value for errors)
+    const ro = await resolveProperties(overrides);
+    const value = overrides.value;
+    delete overrides.value;
+
+    const tx = await _populateTransaction(contract, fragment, args, overrides);
+
+    if (ro.value) {
+        const roValue = BigNumber.from(ro.value);
+        if (!roValue.isZero() && !fragment.payable) {
+            logger.throwError("non-payable method cannot override value", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "overrides.value",
+                value: value
+            });
+        }
+        tx.value = roValue;
+    }
+
+    return tx;
+}
+
+async function populateCallTransaction(contract: Contract, fragment: FunctionFragment, args: Array<any>, overrides?: CallOverrides): Promise<UnsignedTransaction> {
+    overrides = shallowCopy(overrides);
+
+    // If the contract was just deployed, wait until it is minded
+    if (contract.deployTransaction != null) {
+        let blockTag = undefined;
+        if (overrides.blockTag) { blockTag = await overrides.blockTag; }
+        await contract._deployed(blockTag);
+    }
+
+    // Resolved Overrides
+    delete overrides.blockTag;
+    const ro = await resolveProperties(overrides);
+    delete overrides.from;
+
+    const tx = await populateTransaction(contract, fragment, args, overrides);
+    if (ro.from) { (<any>tx).from = this.interface.constructor.getAddress(ro.from); }
+
+    return tx;
+}
+
+
+function buildPopulate(contract: Contract, fragment: FunctionFragment): ContractFunction<UnsignedTransaction> {
+    const populate = (fragment.constant) ? populateCallTransaction: populateTransaction;
+    return async function(...args: Array<any>): Promise<UnsignedTransaction> {
+        let overrides: CallOverrides = null;
+        if (args.length === fragment.inputs.length + 1 && typeof(args[args.length - 1]) === "object") {
+            overrides = args.pop();
+        }
+        logger.checkArgumentCount(args.length, fragment.inputs.length, "passed to contract");
+
+        return populate(contract, fragment, args, overrides);
+    };
+}
+
+function buildEstimate(contract: Contract, fragment: FunctionFragment): ContractFunction<BigNumber> {
+    const signerOrProvider = (contract.signer || contract.provider);
+    const populate = (fragment.constant) ? populateCallTransaction: populateTransaction;
+    return async function(...args: Array<any>): Promise<BigNumber> {
+        let overrides: CallOverrides = null;
+        if (args.length === fragment.inputs.length + 1 && typeof(args[args.length - 1]) === "object") {
+            overrides = args.pop();
+        }
+        logger.checkArgumentCount(args.length, fragment.inputs.length, "passed to contract");
+
+        if (!signerOrProvider) {
+            logger.throwError("estimate require a provider or signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "estimateGas" })
+        }
+
+        const tx = await populate(contract, fragment, args, overrides);
+        return await signerOrProvider.estimateGas(tx);
+    };
+}
+
+function buildCall(contract: Contract, fragment: FunctionFragment, collapseSimple: boolean): ContractFunction {
+    const signerOrProvider = (contract.signer || contract.provider);
+    const populate = (fragment.constant) ? populateCallTransaction: populateTransaction;
+
+    return async function(...args: Array<any>): Promise<any> {
+        let overrides: CallOverrides = null;
+        let blockTag = undefined;
+        if (args.length === fragment.inputs.length + 1 && typeof(args[args.length - 1]) === "object") {
+            overrides = shallowCopy(args.pop());
+            if (overrides.blockTag) {
+                blockTag = await overrides.blockTag;
+                delete overrides.blockTag;
+            }
+        }
+        logger.checkArgumentCount(args.length, fragment.inputs.length, "passed to contract");
+
+        const tx = await populate(contract, fragment, args, overrides);
+        const value = await signerOrProvider.call(tx, blockTag);
+
+        try {
+            let result = contract.interface.decodeFunctionResult(fragment, value);
+            if (collapseSimple && fragment.outputs.length === 1) {
+                result = result[0];
+            }
+            return result;
+
+        } catch (error) {
+            if (error.code === Logger.errors.CALL_EXCEPTION) {
+                error.address = contract.address;
+                error.args = args;
+                error.transaction = tx;
+            }
+            throw error;
+         }
+    };
+}
+
+function buildSend(contract: Contract, fragment: FunctionFragment): ContractFunction<TransactionResponse> {
+    return async function(...args: Array<any>): Promise<TransactionResponse> {
+        if (!contract.signer) {
+            logger.throwError("sending a transaction requires a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction" })
+        }
+
+        // We allow CallOverrides, since the Signer can accept from
+        let overrides: CallOverrides = null;
+        if (args.length === fragment.inputs.length + 1 && typeof(args[args.length - 1]) === "object") {
+            overrides = shallowCopy(args.pop());
+            if (overrides.blockTag != null) {
+                logger.throwArgumentError(`cannot override "blockTag" in transaction`, "overrides", overrides);
+            }
+        }
+        logger.checkArgumentCount(args.length, fragment.inputs.length, "passed to contract");
+
+        const txRequest = await populateCallTransaction(contract, fragment, args, overrides);
+
+        const tx = await contract.signer.sendTransaction(txRequest);
+
+        // Tweak the tw.wait so the receipt has extra properties
+        const wait = tx.wait.bind(tx);
+        tx.wait = (confirmations?: number) => {
+            return wait(confirmations).then((receipt: ContractReceipt) => {
+                receipt.events = receipt.logs.map((log) => {
+                    let event: Event = (<Event>deepCopy(log));
+                    let parsed: LogDescription = null;
+                    try {
+                        parsed = contract.interface.parseLog(log);
+                    } catch (e){ }
+
+                    // Successfully parsed the event log; include it
+                    if (parsed) {
+                        event.args = parsed.args;
+                        event.decode = (data: BytesLike, topics?: Array<any>) => {
+                            return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
+                        };
+                        event.event = parsed.name;
+                        event.eventSignature = parsed.signature;
+                    }
+
+                    // Useful operations
+                    event.removeListener = () => { return contract.provider; }
+                    event.getBlock = () => {
+                        return contract.provider.getBlock(receipt.blockHash);
+                    }
+                    event.getTransaction = () => {
+                        return contract.provider.getTransaction(receipt.transactionHash);
+                    }
+                    event.getTransactionReceipt = () => {
+                        return Promise.resolve(receipt);
+                    }
+
+                    return event;
+                });
+
+                return receipt;
+            });
+        };
+        return tx;
+    };
+}
+
+function buildDefault(contract: Contract, fragment: FunctionFragment, collapseSimple: boolean): ContractFunction {
+    if (fragment.constant) {
+        return buildCall(contract, fragment, collapseSimple);
+    }
+    return buildSend(contract, fragment);
 }
 
 function getEventTag(filter: EventFilter): string {
     if (filter.address && (filter.topics == null || filter.topics.length === 0)) {
         return "*";
     }
-    return (filter.address || "*") + "@" + (filter.topics ? filter.topics.join(":"): "");
-}
 
-interface Bucket<T> {
-    [name: string]: T;
+    return (filter.address || "*") + "@" + (filter.topics ? filter.topics.map((topic) => {
+        if (Array.isArray(topic)) {
+            return topic.join("|");
+        }
+        return topic;
+    }).join(":"): "");
 }
 
 class RunningEvent {
@@ -375,7 +441,7 @@ class FragmentRunningEvent extends RunningEvent {
     readonly interface: Interface;
     readonly fragment: EventFragment;
 
-    constructor(address: string, contractInterface: Interface, fragment: EventFragment, topics?: Array<string>) {
+    constructor(address: string, contractInterface: Interface, fragment: EventFragment, topics?: Array<string|Array<string>>) {
         const filter: EventFilter = {
             address: address
         }
@@ -461,6 +527,7 @@ export type ContractInterface = string | Array<Fragment | JsonFragment | string>
 
 type InterfaceFunc = (contractInterface: ContractInterface) => Interface;
 
+
 export class Contract {
     readonly address: string;
     readonly interface: Interface;
@@ -468,28 +535,31 @@ export class Contract {
     readonly signer: Signer;
     readonly provider: Provider;
 
-    readonly functions: Bucket<ContractFunction>;
+    readonly functions: { [ name: string ]: ContractFunction };
 
-    readonly callStatic: Bucket<ContractFunction>;
-    readonly estimateGas: Bucket<(...params: Array<any>) => Promise<BigNumber>>;
-    readonly populateTransaction: Bucket<(...params: Array<any>) => Promise<UnsignedTransaction>>;
+    readonly callStatic: { [ name: string ]: ContractFunction };
+    readonly estimateGas: { [ name: string ]: ContractFunction<BigNumber> };
+    readonly populateTransaction: { [ name: string ]: ContractFunction<UnsignedTransaction> };
 
-    readonly filters: Bucket<(...params: Array<any>) => EventFilter>;
+    readonly filters: { [ name: string ]: (...args: Array<any>) => EventFilter };
 
-    readonly [ name: string ]: ContractFunction | any;
+    // The meta-class properties
+    readonly [ key: string ]: ContractFunction | any;
 
+    // This will always be an address. This will only differ from
+    // address if an ENS name was used in the constructor
     readonly resolvedAddress: Promise<string>;
 
     // This is only set if the contract was created with a call to deploy
     readonly deployTransaction: TransactionResponse;
 
-    private _deployedPromise: Promise<Contract>;
+    _deployedPromise: Promise<Contract>;
 
     // A list of RunningEvents to track listsners for each event tag
-    private _runningEvents: { [ eventTag: string ]: RunningEvent };
+    _runningEvents: { [ eventTag: string ]: RunningEvent };
 
     // Wrapped functions to call emit and allow deregistration from the provider
-    private _wrappedEmits: { [ eventTag: string ]: (...args: Array<any>) => void };
+    _wrappedEmits: { [ eventTag: string ]: (...args: Array<any>) => void };
 
     constructor(addressOrName: string, contractInterface: ContractInterface, signerOrProvider: Signer | Provider) {
         logger.checkNew(new.target, Contract);
@@ -519,7 +589,7 @@ export class Contract {
             const uniqueFilters: { [ name: string ]: Array<string> } = { };
             Object.keys(this.interface.events).forEach((eventSignature) => {
                 const event = this.interface.events[eventSignature];
-                defineReadOnly<any, any>(this.filters, eventSignature, (...args: Array<any>) => {
+                defineReadOnly(this.filters, eventSignature, (...args: Array<any>) => {
                     return {
                         address: this.address,
                         topics: this.interface.encodeFilterTopics(event, args)
@@ -581,27 +651,27 @@ export class Contract {
                 uniqueNames[name].push(signature);
             }
 
-            // @TODO: This should take in fragment
-            const run = runMethod(this, signature, { });
-
             if (this[signature] == null) {
-                defineReadOnly<any, any>(this, signature, run);
+                defineReadOnly<any, any>(this, signature, buildDefault(this, fragment, true));
             }
 
+            // We do not collapse simple calls on this bucket, which allows
+            // frameworks to safely use this without introspection as well as
+            // allows decoding error recovery.
             if (this.functions[signature] == null) {
-                defineReadOnly(this.functions, signature, run);
+                defineReadOnly(this.functions, signature, buildDefault(this, fragment, false));
             }
 
             if (this.callStatic[signature] == null) {
-                defineReadOnly(this.callStatic, signature, runMethod(this, signature, { callStatic: true }));
+                defineReadOnly(this.callStatic, signature, buildCall(this, fragment, true));
             }
 
             if (this.populateTransaction[signature] == null) {
-                defineReadOnly(this.populateTransaction, signature, runMethod(this, signature, { transaction: true }));
+                defineReadOnly(this.populateTransaction, signature, buildPopulate(this, fragment));
             }
 
             if (this.estimateGas[signature] == null) {
-                defineReadOnly(this.estimateGas, signature, runMethod(this, signature, { estimate: true }));
+                defineReadOnly(this.estimateGas, signature, buildEstimate(this, fragment));
             }
         });
 
@@ -763,7 +833,11 @@ export class Contract {
 
             // Is it a known topichash? (throws if no matching topichash)
             try {
-                const fragment = this.interface.getEvent(eventName.topics[0]);
+                const topic = eventName.topics[0];
+                if (typeof(topic) !== "string") {
+                    throw new Error("invalid topic"); // @TODO: May happen for anonymous events
+                }
+                const fragment = this.interface.getEvent(topic);
                 return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
             } catch (error) { }
 
@@ -993,6 +1067,7 @@ export class ContractFactory {
         defineReadOnly(this, "signer", signer || null);
     }
 
+    // @TODO: Future; rename to populteTransaction?
     getDeployTransaction(...args: Array<any>): UnsignedTransaction {
         let tx: UnsignedTransaction = { };
 
@@ -1093,5 +1168,3 @@ export class ContractFactory {
         return new Contract(address, contractInterface, signer);
     }
 }
-
-
