@@ -22,17 +22,13 @@ export function getStatic<T>(ctor: any, key: string): T {
     return null;
 }
 
-export type Similar<T> = {
-    [P in keyof T]: T[P];
-}
-
 export type Resolvable<T> = {
     [P in keyof T]: T[P] | Promise<T[P]>;
 }
 
 type Result = { key: string, value: any};
 
-export async function resolveProperties<T>(object: Readonly<Resolvable<T>>): Promise<Similar<T>> {
+export async function resolveProperties<T>(object: Readonly<Resolvable<T>>): Promise<T> {
     const promises: Array<Promise<Result>> = Object.keys(object).map((key) => {
         const value = object[<keyof Resolvable<T>>key];
         return Promise.resolve(value).then((v) => ({ key: key, value: v }));
@@ -41,9 +37,9 @@ export async function resolveProperties<T>(object: Readonly<Resolvable<T>>): Pro
     const results = await Promise.all(promises);
 
     return results.reduce((accum, result) => {
-        accum[<keyof Similar<T>>(result.key)] = result.value;
+        accum[<keyof T>(result.key)] = result.value;
         return accum;
-    }, <Similar<T>>{ });
+    }, <T>{ });
 }
 
 export function checkProperties(object: any, properties: { [ name: string ]: boolean }): void {
@@ -58,7 +54,7 @@ export function checkProperties(object: any, properties: { [ name: string ]: boo
     });
 }
 
-export function shallowCopy<T>(object: T): Similar<T> {
+export function shallowCopy<T>(object: T): T {
     const result: any = {};
     for (const key in object) { result[key] = object[key]; }
     return result;
@@ -110,7 +106,7 @@ function _deepCopy(object: any): any {
     return logger.throwArgumentError(`Cannot deepCopy ${ typeof(object) }`, "object", object);
 }
 
-export function deepCopy<T>(object: T): Similar<T> {
+export function deepCopy<T>(object: T): T {
     return _deepCopy(object);
 }
 
