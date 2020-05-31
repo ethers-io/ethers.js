@@ -202,7 +202,7 @@ async function populateCallTransaction(contract: Contract, fragment: FunctionFra
     delete overrides.from;
 
     const tx = await populateTransaction(contract, fragment, args, overrides);
-    if (ro.from) { (<any>tx).from = this.interface.constructor.getAddress(ro.from); }
+    if (ro.from) { (<any>tx).from = (<any>(contract.interface.constructor)).getAddress(ro.from); }
 
     return tx;
 }
