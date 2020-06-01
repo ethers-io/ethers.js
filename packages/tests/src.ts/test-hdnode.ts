@@ -17,9 +17,11 @@ function randomCase(seed: string, text: string): string {
 // Too many test cases are caussing issues for the CI
 // Only run random cases under random-128
 function checkRandom(name: string): boolean {
+    /*
     if (name.substring(0, 7) === "random-") {
         return (parseInt(name.substring(7)) <= 128);
     }
+    */
     return true;
 }
 
