@@ -8,7 +8,7 @@ import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { arrayify, hexDataLength, hexlify, hexValue, isHexString } from "@ethersproject/bytes";
 import { namehash } from "@ethersproject/hash";
 import { getNetwork, Network, Networkish } from "@ethersproject/networks";
-import { defineReadOnly, getStatic, resolveProperties } from "@ethersproject/properties";
+import { Deferrable, defineReadOnly, getStatic, resolveProperties } from "@ethersproject/properties";
 import { Transaction } from "@ethersproject/transactions";
 import { toUtf8String } from "@ethersproject/strings";
 import { poll } from "@ethersproject/web";
@@ -678,7 +678,7 @@ export class BaseProvider extends Provider {
         }
     }
 
-    async _getTransactionRequest(transaction: TransactionRequest | Promise<TransactionRequest>): Promise<Transaction> {
+    async _getTransactionRequest(transaction: Deferrable<TransactionRequest>): Promise<Transaction> {
         const values: any = await transaction;
 
         const tx: any = { };
@@ -723,8 +723,7 @@ export class BaseProvider extends Provider {
         return this.formatter.filter(await resolveProperties(result));
     }
 
-
-    async call(transaction: TransactionRequest | Promise<TransactionRequest>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
+    async call(transaction: Deferrable<TransactionRequest>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
         await this.ready;
         const params = await resolveProperties({
             transaction: this._getTransactionRequest(transaction),
@@ -733,7 +732,7 @@ export class BaseProvider extends Provider {
         return hexlify(await this.perform("call", params));
     }
 
-    async estimateGas(transaction: TransactionRequest | Promise<TransactionRequest>): Promise<BigNumber> {
+    async estimateGas(transaction: Deferrable<TransactionRequest>): Promise<BigNumber> {
         await this.ready;
         const params = await resolveProperties({
             transaction: this._getTransactionRequest(transaction)

@@ -3,7 +3,7 @@
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike, isHexString } from "@ethersproject/bytes";
 import { Network } from "@ethersproject/networks";
-import { Description, defineReadOnly } from "@ethersproject/properties";
+import { Deferrable, Description, defineReadOnly } from "@ethersproject/properties";
 import { Transaction } from "@ethersproject/transactions";
 import { OnceBlockable } from "@ethersproject/web";
 
@@ -16,16 +16,16 @@ const logger = new Logger(version);
 
 
 export type TransactionRequest = {
-    to?: string | Promise<string>,
-    from?: string | Promise<string>,
-    nonce?: BigNumberish | Promise<BigNumberish>,
+    to?: string,
+    from?: string,
+    nonce?: BigNumberish,
 
-    gasLimit?: BigNumberish | Promise<BigNumberish>,
-    gasPrice?: BigNumberish | Promise<BigNumberish>,
+    gasLimit?: BigNumberish,
+    gasPrice?: BigNumberish,
 
-    data?: BytesLike | Promise<BytesLike>,
-    value?: BigNumberish | Promise<BigNumberish>,
-    chainId?: number | Promise<number>,
+    data?: BytesLike,
+    value?: BigNumberish,
+    chainId?: number
 }
 
 export interface TransactionResponse extends Transaction {
@@ -221,8 +221,8 @@ export abstract class Provider implements OnceBlockable {
 
     // Execution
     abstract sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
-    abstract call(transaction: TransactionRequest, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
-    abstract estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
+    abstract call(transaction: Deferrable<TransactionRequest>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
+    abstract estimateGas(transaction: Deferrable<TransactionRequest>): Promise<BigNumber>;
 
     // Queries
     abstract getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block>;

@@ -35,6 +35,7 @@ import { CoerceFunc } from "@ethersproject/abi";
 import { Bytes, BytesLike, Hexable } from "@ethersproject/bytes"
 import { Mnemonic } from "@ethersproject/hdnode";
 import { EncryptOptions, ProgressCallback } from "@ethersproject/json-wallets";
+import { Deferrable } from "@ethersproject/properties";
 import { Utf8ErrorFunc } from "@ethersproject/strings";
 import { ConnectionInfo, FetchJsonResponse, OnceBlockable, OncePollable, PollOptions } from "@ethersproject/web";
 
@@ -182,6 +183,8 @@ export {
     Indexed,
 
     Mnemonic,
+
+    Deferrable,
 
     Utf8ErrorFunc,
 

@@ -3,7 +3,7 @@
 import { BlockTag, Provider, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { BigNumber } from "@ethersproject/bignumber";
 import { Bytes } from "@ethersproject/bytes";
-import { defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
+import { Deferrable, defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -46,7 +46,7 @@ export abstract class Signer {
     // The EXACT transaction MUST be signed, and NO additional properties to be added.
     // - This MAY throw if signing transactions is not supports, but if
     //   it does, sentTransaction MUST be overridden.
-    abstract signTransaction(transaction: TransactionRequest): Promise<string>;
+    abstract signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string>;
 
     // Returns a new instance of the Signer, connected to provider.
     // This MAY throw if changing providers is not supported.
@@ -77,21 +77,21 @@ export abstract class Signer {
     }
 
     // Populates "from" if unspecified, and estimates the gas for the transation
-    async estimateGas(transaction: TransactionRequest): Promise<BigNumber> {
+    async estimateGas(transaction: Deferrable<TransactionRequest>): Promise<BigNumber> {
         this._checkProvider("estimateGas");
         const tx = await resolveProperties(this.checkTransaction(transaction));
         return await this.provider.estimateGas(tx);
     }
 
     // Populates "from" if unspecified, and calls with the transation
-    async call(transaction: TransactionRequest, blockTag?: BlockTag): Promise<string> {
+    async call(transaction: Deferrable<TransactionRequest>, blockTag?: BlockTag): Promise<string> {
         this._checkProvider("call");
         const tx = await resolveProperties(this.checkTransaction(transaction));
         return await this.provider.call(tx, blockTag);
     }
 
     // Populates all fields in a transaction, signs it and sends it to the network
-    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
+    sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse> {
         this._checkProvider("sendTransaction");
         return this.populateTransaction(transaction).then((tx) => {
             return this.signTransaction(tx).then((signedTx) => {
@@ -128,7 +128,7 @@ export abstract class Signer {
     //   - call
     //   - estimateGas
     //   - populateTransaction (and therefor sendTransaction)
-    checkTransaction(transaction: TransactionRequest): TransactionRequest {
+    checkTransaction(transaction: Deferrable<TransactionRequest>): Deferrable<TransactionRequest> {
         for (const key in transaction) {
             if (allowedTransactionKeys.indexOf(key) === -1) {
                 logger.throwArgumentError("invalid transaction key: " + key, "transaction", transaction);
@@ -159,9 +159,9 @@ export abstract class Signer {
     // this Signer. Should be used by sendTransaction but NOT by signTransaction.
     // By default called from: (overriding these prevents it)
     //   - sendTransaction
-    async populateTransaction(transaction: TransactionRequest): Promise<TransactionRequest> {
+    async populateTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionRequest> {
 
-        const tx: TransactionRequest = await resolveProperties(this.checkTransaction(transaction))
+        const tx: Deferrable<TransactionRequest> = await resolveProperties(this.checkTransaction(transaction))
 
         if (tx.to != null) { tx.to = Promise.resolve(tx.to).then((to) => this.resolveName(to)); }
         if (tx.gasPrice == null) { tx.gasPrice = this.getGasPrice(); }
@@ -232,7 +232,7 @@ export class VoidSigner extends Signer {
         return this._fail("VoidSigner cannot sign messages", "signMessage");
     }
 
-    signTransaction(transaction: TransactionRequest): Promise<string> {
+    signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string> {
         return this._fail("VoidSigner cannot sign transactions", "signTransaction");
     }
 

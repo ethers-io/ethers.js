@@ -7,7 +7,7 @@ import { Signer } from "@ethersproject/abstract-signer";
 import { BigNumber } from "@ethersproject/bignumber";
 import { Bytes, hexlify, hexValue } from "@ethersproject/bytes";
 import { Network, Networkish } from "@ethersproject/networks";
-import { checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
+import { checkProperties, deepCopy, Deferrable, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes } from "@ethersproject/strings";
 import { ConnectionInfo, fetchJson, poll } from "@ethersproject/web";
 
@@ -99,7 +99,7 @@ export class JsonRpcSigner extends Signer {
         });
     }
 
-    sendUncheckedTransaction(transaction: TransactionRequest): Promise<string> {
+    sendUncheckedTransaction(transaction: Deferrable<TransactionRequest>): Promise<string> {
         transaction = shallowCopy(transaction);
 
         let fromAddress = this.getAddress().then((address) => {
@@ -149,13 +149,13 @@ export class JsonRpcSigner extends Signer {
         });
     }
 
-    signTransaction(transaction: TransactionRequest): Promise<string> {
+    signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string> {
         return logger.throwError("signing transactions is unsupported", Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "signTransaction"
         });
     }
 
-    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
+    sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse> {
         return this.sendUncheckedTransaction(transaction).then((hash) => {
             return poll(() => {
                 return this.provider.getTransaction(hash).then((tx: TransactionResponse) => {
@@ -188,7 +188,7 @@ export class JsonRpcSigner extends Signer {
 }
 
 class UncheckedJsonRpcSigner extends JsonRpcSigner {
-    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
+    sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse> {
         return this.sendUncheckedTransaction(transaction).then((hash) => {
             return <TransactionResponse>{
                 hash: hash,

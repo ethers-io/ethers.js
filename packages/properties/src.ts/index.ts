@@ -22,15 +22,16 @@ export function getStatic<T>(ctor: any, key: string): T {
     return null;
 }
 
-export type Resolvable<T> = {
-    [P in keyof T]: T[P] | Promise<T[P]>;
+export type Deferrable<T> = {
+    [ K in keyof T ]: T[K] | Promise<T[K]>;
 }
+
 
 type Result = { key: string, value: any};
 
-export async function resolveProperties<T>(object: Readonly<Resolvable<T>>): Promise<T> {
+export async function resolveProperties<T>(object: Readonly<Deferrable<T>>): Promise<T> {
     const promises: Array<Promise<Result>> = Object.keys(object).map((key) => {
-        const value = object[<keyof Resolvable<T>>key];
+        const value = object[<keyof Deferrable<T>>key];
         return Promise.resolve(value).then((v) => ({ key: key, value: v }));
     });
 
