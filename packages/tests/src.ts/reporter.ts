@@ -28,6 +28,7 @@ interface Suite {
     _countFail: number;
     _countPass: number;
     _countTotal: number;
+    _countSkip: number;
 }
 
 interface Runner {
@@ -68,26 +69,42 @@ export function Reporter(runner: Runner) {
             if (filename) { filename = ' (' + filename + ')'; }
             log('Test Suite: ' + suite.title + filename);
         }
+
         suites.push(suite);
+
         suite._t0 = getTime();
         suite._countFail = 0;
         suite._countPass = 0;
+        suite._countSkip = 0;
         suite._countTotal = 0;
     });
 
     runner.on('suite end', function() {
         let suite = suites.pop();
-        let failure = '';
-        if (suite._countTotal > suite._countPass) {
-            failure = ' (' + (suite._countTotal - suite._countPass) + ' failed) *****';
+
+        let extras = [ ];
+
+        if (suite._countSkip) {
+            extras.push(suite._countSkip + " skipped");
         }
-        log('  Total Tests: ' + suite._countPass + '/' + suite._countTotal + ' passed ' + getDelta(suite._t0) + failure);
+
+        if (suite._countTotal > suite._countPass) {
+            extras.push((suite._countTotal - suite._countPass) + " failed");
+        }
+
+        let extra = "";
+        if (extras.length) {
+            extra = " (" + extras.join(",") + ")  ******** WARNING! ********";
+        }
+
+        log(`  Total Tests: ${ suite._countPass }/${ suite._countTotal } passed ${ getDelta(suite._t0) } ${ extra} `);
         log();
 
         if (suites.length > 0) {
             let currentSuite = suites[suites.length - 1];
             currentSuite._countFail += suite._countFail;
             currentSuite._countPass += suite._countPass;
+            currentSuite._countSkip += suite._countSkip;
             currentSuite._countTotal += suite._countTotal;
         } else {
             clearTimeout(timer);
@@ -119,12 +136,15 @@ export function Reporter(runner: Runner) {
         }
 
         log('Failure: ' + test.title);
+
         error.toString().split('\n').forEach((line: string) => {
             log('  ' + line);
         });
+
         Object.keys(error).forEach(function(key) {
             log('  ' + key + ': ' + error[key]);
         });
+
         if (error.stack) {
             log("Stack Trace:");
             error.stack.split('\n').forEach((line: string) => {
@@ -136,6 +156,11 @@ export function Reporter(runner: Runner) {
     runner.on('pass', function(test) {
         let currentSuite = suites[suites.length - 1];
         currentSuite._countPass++;
+    });
+
+    runner.on('pending', function(test) {
+        let currentSuite = suites[suites.length - 1];
+        currentSuite._countSkip++;
     });
 }
 
