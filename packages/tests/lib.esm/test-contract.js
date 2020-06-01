@@ -142,3 +142,129 @@ describe('Test Contract Objects', function () {
         });
     });
 });
+// @TODO: Exapnd this
+describe("Test Contract Transaction Population", function () {
+    const abi = [
+        "function transfer(address to, uint amount)",
+        "function unstake() nonpayable",
+        "function mint() payable",
+        "function balanceOf(address owner) view returns (uint)"
+    ];
+    const testAddress = "0xdeadbeef00deadbeef01deadbeef02deadbeef03";
+    const testAddressCheck = "0xDEAdbeeF00deAdbeEF01DeAdBEEF02DeADBEEF03";
+    const fireflyAddress = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
+    const contract = new ethers.Contract(testAddress, abi);
+    const contractConnected = contract.connect(ethers.getDefaultProvider());
+    it("standard population", function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            const tx = yield contract.populateTransaction.balanceOf(testAddress);
+            //console.log(tx);
+            assert.equal(Object.keys(tx).length, 2, "correct number of keys");
+            assert.equal(tx.data, "0x70a08231000000000000000000000000deadbeef00deadbeef01deadbeef02deadbeef03", "data matches");
+            assert.equal(tx.to, testAddressCheck, "to address matches");
+        });
+    });
+    it("allows 'from' overrides", function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            const tx = yield contract.populateTransaction.balanceOf(testAddress, {
+                from: testAddress
+            });
+            //console.log(tx);
+            assert.equal(Object.keys(tx).length, 3, "correct number of keys");
+            assert.equal(tx.data, "0x70a08231000000000000000000000000deadbeef00deadbeef01deadbeef02deadbeef03", "data matches");
+            assert.equal(tx.to, testAddressCheck, "to address matches");
+            assert.equal(tx.from, testAddressCheck, "from address matches");
+        });
+    });
+    it("allows ENS 'from' overrides", function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.timeout(20000);
+            const tx = yield contractConnected.populateTransaction.balanceOf(testAddress, {
+                from: "ricmoo.firefly.eth"
+            });
+            //console.log(tx);
+            assert.equal(Object.keys(tx).length, 3, "correct number of keys");
+            assert.equal(tx.data, "0x70a08231000000000000000000000000deadbeef00deadbeef01deadbeef02deadbeef03", "data matches");
+            assert.equal(tx.to, testAddressCheck, "to address matches");
+            assert.equal(tx.from, fireflyAddress, "from address matches");
+        });
+    });
+    it("allows send overrides", function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            const tx = yield contract.populateTransaction.mint({
+                gasLimit: 150000,
+                gasPrice: 1900000000,
+                nonce: 5,
+                value: 1234,
+                from: testAddress
+            });
+            //console.log(tx);
+            assert.equal(Object.keys(tx).length, 7, "correct number of keys");
+            assert.equal(tx.data, "0x1249c58b", "data matches");
+            assert.equal(tx.to, testAddressCheck, "to address matches");
+            assert.equal(tx.nonce, 5, "nonce address matches");
+            assert.ok(tx.gasLimit.eq(150000), "gasLimit matches");
+            assert.ok(tx.gasPrice.eq(1900000000), "gasPrice matches");
+            assert.ok(tx.value.eq(1234), "value matches");
+            assert.equal(tx.from, testAddressCheck, "from address matches");
+        });
+    });
+    it("allows zero 'value' to non-payable", function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            const tx = yield contract.populateTransaction.unstake({
+                from: testAddress,
+                value: 0
+            });
+            //console.log(tx);
+            assert.equal(Object.keys(tx).length, 3, "correct number of keys");
+            assert.equal(tx.data, "0x2def6620", "data matches");
+            assert.equal(tx.to, testAddressCheck, "to address matches");
+            assert.equal(tx.from, testAddressCheck, "from address matches");
+        });
+    });
+    // @TODO: Add test cases to check for fault cases
+    // - cannot send non-zero value to non-payable
+    // - using the wrong from for a Signer-connected contract
+    it("forbids non-zero 'value' to non-payable", function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const tx = yield contract.populateTransaction.unstake({
+                    value: 1
+                });
+                console.log("Tx", tx);
+                assert.ok(false, "throws on non-zero value to non-payable");
+            }
+            catch (error) {
+                assert.ok(error.operation === "overrides.value");
+            }
+        });
+    });
+    it("allows overriding same 'from' with a Signer", function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            const contractSigner = contract.connect(testAddress);
+            const tx = yield contractSigner.populateTransaction.unstake({
+                from: testAddress
+            });
+            //console.log(tx);
+            assert.equal(Object.keys(tx).length, 3, "correct number of keys");
+            assert.equal(tx.data, "0x2def6620", "data matches");
+            assert.equal(tx.to, testAddressCheck, "to address matches");
+            assert.equal(tx.from, testAddressCheck, "from address matches");
+        });
+    });
+    it("forbids overriding 'from' with a Signer", function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            const contractSigner = contract.connect(testAddress);
+            try {
+                const tx = yield contractSigner.populateTransaction.unstake({
+                    from: fireflyAddress
+                });
+                console.log("Tx", tx);
+                assert.ok(false, "throws on non-zero value to non-payable");
+            }
+            catch (error) {
+                assert.ok(error.operation === "overrides.from");
+            }
+        });
+    });
+});

@@ -60,20 +60,29 @@ function Reporter(runner) {
         suite._t0 = getTime();
         suite._countFail = 0;
         suite._countPass = 0;
+        suite._countSkip = 0;
         suite._countTotal = 0;
     });
     runner.on('suite end', function () {
         var suite = suites.pop();
-        var failure = '';
-        if (suite._countTotal > suite._countPass) {
-            failure = ' (' + (suite._countTotal - suite._countPass) + ' failed) *****';
+        var extras = [];
+        if (suite._countSkip) {
+            extras.push(suite._countSkip + " skipped");
         }
-        log('  Total Tests: ' + suite._countPass + '/' + suite._countTotal + ' passed ' + getDelta(suite._t0) + failure);
+        if (suite._countTotal > suite._countPass) {
+            extras.push((suite._countTotal - suite._countPass) + " failed");
+        }
+        var extra = "";
+        if (extras.length) {
+            extra = " (" + extras.join(",") + ")  ******** WARNING! ********";
+        }
+        log("  Total Tests: " + suite._countPass + "/" + suite._countTotal + " passed " + getDelta(suite._t0) + " " + extra + " ");
         log();
         if (suites.length > 0) {
             var currentSuite = suites[suites.length - 1];
             currentSuite._countFail += suite._countFail;
             currentSuite._countPass += suite._countPass;
+            currentSuite._countSkip += suite._countSkip;
             currentSuite._countTotal += suite._countTotal;
         }
         else {
@@ -116,6 +125,10 @@ function Reporter(runner) {
     runner.on('pass', function (test) {
         var currentSuite = suites[suites.length - 1];
         currentSuite._countPass++;
+    });
+    runner.on('pending', function (test) {
+        var currentSuite = suites[suites.length - 1];
+        currentSuite._countSkip++;
     });
 }
 exports.Reporter = Reporter;

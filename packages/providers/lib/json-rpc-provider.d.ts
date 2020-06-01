@@ -2,6 +2,7 @@ import { Provider, TransactionRequest, TransactionResponse } from "@ethersprojec
 import { Signer } from "@ethersproject/abstract-signer";
 import { Bytes } from "@ethersproject/bytes";
 import { Network, Networkish } from "@ethersproject/networks";
+import { Deferrable } from "@ethersproject/properties";
 import { ConnectionInfo } from "@ethersproject/web";
 import { BaseProvider, Event } from "./base-provider";
 export declare class JsonRpcSigner extends Signer {
@@ -12,14 +13,14 @@ export declare class JsonRpcSigner extends Signer {
     connect(provider: Provider): JsonRpcSigner;
     connectUnchecked(): JsonRpcSigner;
     getAddress(): Promise<string>;
-    sendUncheckedTransaction(transaction: TransactionRequest): Promise<string>;
-    signTransaction(transaction: TransactionRequest): Promise<string>;
-    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
+    sendUncheckedTransaction(transaction: Deferrable<TransactionRequest>): Promise<string>;
+    signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string>;
+    sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse>;
     signMessage(message: Bytes | string): Promise<string>;
     unlock(password: string): Promise<boolean>;
 }
 declare class UncheckedJsonRpcSigner extends JsonRpcSigner {
-    sendTransaction(transaction: TransactionRequest): Promise<TransactionResponse>;
+    sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse>;
 }
 export declare class JsonRpcProvider extends BaseProvider {
     readonly connection: ConnectionInfo;

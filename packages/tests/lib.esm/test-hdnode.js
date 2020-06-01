@@ -13,9 +13,11 @@ function randomCase(seed, text) {
 // Too many test cases are caussing issues for the CI
 // Only run random cases under random-128
 function checkRandom(name) {
+    /*
     if (name.substring(0, 7) === "random-") {
         return (parseInt(name.substring(7)) <= 128);
     }
+    */
     return true;
 }
 describe('Test HD Node Derivation is Case Agnostic', function () {

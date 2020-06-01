@@ -3,7 +3,6 @@ import { Block, BlockTag, Listener, Log, Provider, TransactionReceipt, Transacti
 import { Signer } from "@ethersproject/abstract-signer";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike } from "@ethersproject/bytes";
-import { UnsignedTransaction } from "@ethersproject/transactions";
 export interface Overrides {
     gasLimit?: BigNumberish | Promise<BigNumberish>;
     gasPrice?: BigNumberish | Promise<BigNumberish>;
@@ -15,6 +14,16 @@ export interface PayableOverrides extends Overrides {
 export interface CallOverrides extends PayableOverrides {
     blockTag?: BlockTag | Promise<BlockTag>;
     from?: string | Promise<string>;
+}
+export interface PopulatedTransaction {
+    to?: string;
+    from?: string;
+    nonce?: number;
+    gasLimit?: BigNumber;
+    gasPrice?: BigNumber;
+    data?: string;
+    value?: BigNumber;
+    chainId?: number;
 }
 export declare type EventFilter = {
     address?: string;
@@ -68,7 +77,7 @@ export declare class Contract {
         [name: string]: ContractFunction<BigNumber>;
     };
     readonly populateTransaction: {
-        [name: string]: ContractFunction<UnsignedTransaction>;
+        [name: string]: ContractFunction<PopulatedTransaction>;
     };
     readonly filters: {
         [name: string]: (...args: Array<any>) => EventFilter;
@@ -83,7 +92,7 @@ export declare class Contract {
     _wrappedEmits: {
         [eventTag: string]: (...args: Array<any>) => void;
     };
-    constructor(addressOrName: string, contractInterface: ContractInterface, signerOrProvider: Signer | Provider);
+    constructor(addressOrName: string, contractInterface: ContractInterface, signerOrProvider?: Signer | Provider);
     static getContractAddress(transaction: {
         from: string;
         nonce: BigNumberish;
@@ -117,7 +126,7 @@ export declare class ContractFactory {
     constructor(contractInterface: ContractInterface, bytecode: BytesLike | {
         object: string;
     }, signer?: Signer);
-    getDeployTransaction(...args: Array<any>): UnsignedTransaction;
+    getDeployTransaction(...args: Array<any>): TransactionRequest;
     deploy(...args: Array<any>): Promise<Contract>;
     attach(address: string): Contract;
     connect(signer: Signer): ContractFactory;

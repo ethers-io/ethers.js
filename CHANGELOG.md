@@ -3,6 +3,13 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.190 (2020-06-01 05:02)
+-----------------------------------------
+
+  - Re-enable tests removed to fix slow CI. ([cd7a0b3](https://github.com/ethers-io/ethers.js/commit/cd7a0b36cd77df5d5951a97cdb6b6be1c9387f51))
+  - Major Contract refactor for overrides. ([#819](https://github.com/ethers-io/ethers.js/issues/819), [#845](https://github.com/ethers-io/ethers.js/issues/845), [#847](https://github.com/ethers-io/ethers.js/issues/847), [#860](https://github.com/ethers-io/ethers.js/issues/860); [42dee67](https://github.com/ethers-io/ethers.js/commit/42dee67187adb04d0b88f420b24cb3e73301d609))
+  - Remove legacy Circle CI tasks. ([c445232](https://github.com/ethers-io/ethers.js/commit/c445232980007d3474bc036ff59fb37638f93820))
+  - Fixing GitHub actions. ([#853](https://github.com/ethers-io/ethers.js/issues/853); [6b8f0f3](https://github.com/ethers-io/ethers.js/commit/6b8f0f3cb38295cd5d693f9b71f629b591206f1e))
 
 ethers/v5.0.0-beta.189 (2020-05-29 21:25)
 -----------------------------------------

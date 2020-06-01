@@ -180,3 +180,201 @@ describe('Test Contract Objects', function () {
         });
     });
 });
+// @TODO: Exapnd this
+describe("Test Contract Transaction Population", function () {
+    var abi = [
+        "function transfer(address to, uint amount)",
+        "function unstake() nonpayable",
+        "function mint() payable",
+        "function balanceOf(address owner) view returns (uint)"
+    ];
+    var testAddress = "0xdeadbeef00deadbeef01deadbeef02deadbeef03";
+    var testAddressCheck = "0xDEAdbeeF00deAdbeEF01DeAdBEEF02DeADBEEF03";
+    var fireflyAddress = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
+    var contract = new ethers_1.ethers.Contract(testAddress, abi);
+    var contractConnected = contract.connect(ethers_1.ethers.getDefaultProvider());
+    it("standard population", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var tx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, contract.populateTransaction.balanceOf(testAddress)];
+                    case 1:
+                        tx = _a.sent();
+                        //console.log(tx);
+                        assert_1.default.equal(Object.keys(tx).length, 2, "correct number of keys");
+                        assert_1.default.equal(tx.data, "0x70a08231000000000000000000000000deadbeef00deadbeef01deadbeef02deadbeef03", "data matches");
+                        assert_1.default.equal(tx.to, testAddressCheck, "to address matches");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("allows 'from' overrides", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var tx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, contract.populateTransaction.balanceOf(testAddress, {
+                            from: testAddress
+                        })];
+                    case 1:
+                        tx = _a.sent();
+                        //console.log(tx);
+                        assert_1.default.equal(Object.keys(tx).length, 3, "correct number of keys");
+                        assert_1.default.equal(tx.data, "0x70a08231000000000000000000000000deadbeef00deadbeef01deadbeef02deadbeef03", "data matches");
+                        assert_1.default.equal(tx.to, testAddressCheck, "to address matches");
+                        assert_1.default.equal(tx.from, testAddressCheck, "from address matches");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("allows ENS 'from' overrides", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var tx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(20000);
+                        return [4 /*yield*/, contractConnected.populateTransaction.balanceOf(testAddress, {
+                                from: "ricmoo.firefly.eth"
+                            })];
+                    case 1:
+                        tx = _a.sent();
+                        //console.log(tx);
+                        assert_1.default.equal(Object.keys(tx).length, 3, "correct number of keys");
+                        assert_1.default.equal(tx.data, "0x70a08231000000000000000000000000deadbeef00deadbeef01deadbeef02deadbeef03", "data matches");
+                        assert_1.default.equal(tx.to, testAddressCheck, "to address matches");
+                        assert_1.default.equal(tx.from, fireflyAddress, "from address matches");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("allows send overrides", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var tx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, contract.populateTransaction.mint({
+                            gasLimit: 150000,
+                            gasPrice: 1900000000,
+                            nonce: 5,
+                            value: 1234,
+                            from: testAddress
+                        })];
+                    case 1:
+                        tx = _a.sent();
+                        //console.log(tx);
+                        assert_1.default.equal(Object.keys(tx).length, 7, "correct number of keys");
+                        assert_1.default.equal(tx.data, "0x1249c58b", "data matches");
+                        assert_1.default.equal(tx.to, testAddressCheck, "to address matches");
+                        assert_1.default.equal(tx.nonce, 5, "nonce address matches");
+                        assert_1.default.ok(tx.gasLimit.eq(150000), "gasLimit matches");
+                        assert_1.default.ok(tx.gasPrice.eq(1900000000), "gasPrice matches");
+                        assert_1.default.ok(tx.value.eq(1234), "value matches");
+                        assert_1.default.equal(tx.from, testAddressCheck, "from address matches");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("allows zero 'value' to non-payable", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var tx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, contract.populateTransaction.unstake({
+                            from: testAddress,
+                            value: 0
+                        })];
+                    case 1:
+                        tx = _a.sent();
+                        //console.log(tx);
+                        assert_1.default.equal(Object.keys(tx).length, 3, "correct number of keys");
+                        assert_1.default.equal(tx.data, "0x2def6620", "data matches");
+                        assert_1.default.equal(tx.to, testAddressCheck, "to address matches");
+                        assert_1.default.equal(tx.from, testAddressCheck, "from address matches");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    // @TODO: Add test cases to check for fault cases
+    // - cannot send non-zero value to non-payable
+    // - using the wrong from for a Signer-connected contract
+    it("forbids non-zero 'value' to non-payable", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var tx, error_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, contract.populateTransaction.unstake({
+                                value: 1
+                            })];
+                    case 1:
+                        tx = _a.sent();
+                        console.log("Tx", tx);
+                        assert_1.default.ok(false, "throws on non-zero value to non-payable");
+                        return [3 /*break*/, 3];
+                    case 2:
+                        error_1 = _a.sent();
+                        assert_1.default.ok(error_1.operation === "overrides.value");
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("allows overriding same 'from' with a Signer", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var contractSigner, tx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        contractSigner = contract.connect(testAddress);
+                        return [4 /*yield*/, contractSigner.populateTransaction.unstake({
+                                from: testAddress
+                            })];
+                    case 1:
+                        tx = _a.sent();
+                        //console.log(tx);
+                        assert_1.default.equal(Object.keys(tx).length, 3, "correct number of keys");
+                        assert_1.default.equal(tx.data, "0x2def6620", "data matches");
+                        assert_1.default.equal(tx.to, testAddressCheck, "to address matches");
+                        assert_1.default.equal(tx.from, testAddressCheck, "from address matches");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("forbids overriding 'from' with a Signer", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var contractSigner, tx, error_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        contractSigner = contract.connect(testAddress);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, contractSigner.populateTransaction.unstake({
+                                from: fireflyAddress
+                            })];
+                    case 2:
+                        tx = _a.sent();
+                        console.log("Tx", tx);
+                        assert_1.default.ok(false, "throws on non-zero value to non-payable");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_2 = _a.sent();
+                        assert_1.default.ok(error_2.operation === "overrides.from");
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    });
+});

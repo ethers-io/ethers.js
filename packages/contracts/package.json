@@ -9,8 +9,7 @@
     "@ethersproject/bytes": ">=5.0.0-beta.137",
     "@ethersproject/constants": ">=5.0.0-beta.133",
     "@ethersproject/logger": ">=5.0.0-beta.137",
-    "@ethersproject/properties": ">=5.0.0-beta.140",
-    "@ethersproject/transactions": ">=5.0.0-beta.135"
+    "@ethersproject/properties": ">=5.0.0-beta.140"
   },
   "description": "Contract abstraction meta-class for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -32,7 +31,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xc7210dbd8a387e8ee1b090ba36f5393ab7167a7a5fbb2dea34fc938b2e5c67e6",
+  "tarballHash": "0xccc2bced42f75b771c52745a7f9736b37b1adbb9d4e67c694c143422fe1e6ad4",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.154"
+  "version": "5.0.0-beta.155"
 }

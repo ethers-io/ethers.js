@@ -169,7 +169,7 @@ describe("Test Contract Transaction Population", function() {
     const contract = new ethers.Contract(testAddress, abi);
     const contractConnected = contract.connect(ethers.getDefaultProvider());
 
-    it("standard populatation", async function() {
+    it("standard population", async function() {
         const tx = await contract.populateTransaction.balanceOf(testAddress);
         //console.log(tx);
         assert.equal(Object.keys(tx).length, 2, "correct number of keys");

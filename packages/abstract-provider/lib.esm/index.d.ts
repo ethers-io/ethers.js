@@ -1,18 +1,18 @@
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike } from "@ethersproject/bytes";
 import { Network } from "@ethersproject/networks";
-import { Description } from "@ethersproject/properties";
+import { Deferrable, Description } from "@ethersproject/properties";
 import { Transaction } from "@ethersproject/transactions";
 import { OnceBlockable } from "@ethersproject/web";
 export declare type TransactionRequest = {
-    to?: string | Promise<string>;
-    from?: string | Promise<string>;
-    nonce?: BigNumberish | Promise<BigNumberish>;
-    gasLimit?: BigNumberish | Promise<BigNumberish>;
-    gasPrice?: BigNumberish | Promise<BigNumberish>;
-    data?: BytesLike | Promise<BytesLike>;
-    value?: BigNumberish | Promise<BigNumberish>;
-    chainId?: number | Promise<number>;
+    to?: string;
+    from?: string;
+    nonce?: BigNumberish;
+    gasLimit?: BigNumberish;
+    gasPrice?: BigNumberish;
+    data?: BytesLike;
+    value?: BigNumberish;
+    chainId?: number;
 };
 export interface TransactionResponse extends Transaction {
     hash: string;
@@ -113,8 +113,8 @@ export declare abstract class Provider implements OnceBlockable {
     abstract getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
     abstract getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
     abstract sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
-    abstract call(transaction: TransactionRequest, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
-    abstract estimateGas(transaction: TransactionRequest): Promise<BigNumber>;
+    abstract call(transaction: Deferrable<TransactionRequest>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
+    abstract estimateGas(transaction: Deferrable<TransactionRequest>): Promise<BigNumber>;
     abstract getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block>;
     abstract getBlockWithTransactions(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<BlockWithTransactions>;
     abstract getTransaction(transactionHash: string): Promise<TransactionResponse>;
