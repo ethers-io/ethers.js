@@ -27,7 +27,7 @@ function timer(timeout: number): Promise<any> {
 function getResult(payload: { error?: { code?: number, data?: any, message?: string }, result?: any }): any {
     if (payload.error) {
         // @TODO: not any
-        let error: any = new Error(payload.error.message);
+        const error: any = new Error(payload.error.message);
         error.code = payload.error.code;
         error.data = payload.error.data;
         throw error;
@@ -102,7 +102,7 @@ export class JsonRpcSigner extends Signer {
     sendUncheckedTransaction(transaction: Deferrable<TransactionRequest>): Promise<string> {
         transaction = shallowCopy(transaction);
 
-        let fromAddress = this.getAddress().then((address) => {
+        const fromAddress = this.getAddress().then((address) => {
             if (address) { address = address.toLowerCase(); }
             return address;
         });
@@ -111,18 +111,25 @@ export class JsonRpcSigner extends Signer {
         // wishes to use this, it is easy to specify explicitly, otherwise
         // we look it up for them.
         if (transaction.gasLimit == null) {
-            let estimate = shallowCopy(transaction);
+            const estimate = shallowCopy(transaction);
             estimate.from = fromAddress;
             transaction.gasLimit = this.provider.estimateGas(estimate);
         }
 
-        return Promise.all([
-            resolveProperties(transaction),
-            fromAddress
-        ]).then((results) => {
-            let tx = results[0];
-            let hexTx = (<any>this.provider.constructor).hexlifyTransaction(tx);
-            hexTx.from = results[1];
+        return resolveProperties({
+            tx: resolveProperties(transaction),
+            sender: fromAddress
+        }).then(({ tx, sender }) => {
+            if (tx.from != null) {
+                if (tx.from.toLowerCase() !== sender) {
+                    logger.throwArgumentError("from address mismatch", "transaction", transaction);
+                }
+            } else {
+                tx.from = sender;
+            }
+
+            const hexTx = (<any>this.provider.constructor).hexlifyTransaction(tx, { from: true });
+
             return this.provider.send("eth_sendTransaction", [ hexTx ]).then((hash) => {
                 return hash;
             }, (error) => {
@@ -170,7 +177,7 @@ export class JsonRpcSigner extends Signer {
     }
 
     signMessage(message: Bytes | string): Promise<string> {
-        let data = ((typeof(message) === "string") ? toUtf8Bytes(message): message);
+        const data = ((typeof(message) === "string") ? toUtf8Bytes(message): message);
         return this.getAddress().then((address) => {
 
             // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
@@ -179,7 +186,7 @@ export class JsonRpcSigner extends Signer {
     }
 
     unlock(password: string): Promise<boolean> {
-        let provider = this.provider;
+        const provider = this.provider;
 
         return this.getAddress().then(function(address) {
             return provider.send("personal_unlockAccount", [ address.toLowerCase(), password, null ]);
@@ -296,7 +303,7 @@ export class JsonRpcProvider extends BaseProvider {
     }
 
     send(method: string, params: Array<any>): Promise<any> {
-        let request = {
+        const request = {
             method: method,
             params: params,
             id: (this._nextId++),
@@ -429,9 +436,9 @@ export class JsonRpcProvider extends BaseProvider {
 
     _startPending(): void {
         if (this._pendingFilter != null) { return; }
-        let self = this;
+        const self = this;
 
-        let pendingFilter: Promise<number> = this.send("eth_newPendingTransactionFilter", []);
+        const pendingFilter: Promise<number> = this.send("eth_newPendingTransactionFilter", []);
         this._pendingFilter = pendingFilter;
 
         pendingFilter.then(function(filterId) {
@@ -491,7 +498,7 @@ export class JsonRpcProvider extends BaseProvider {
         // Check only allowed properties are given
         const allowed = shallowCopy(allowedTransactionKeys);
         if (allowExtra) {
-            for (let key in allowExtra) {
+            for (const key in allowExtra) {
                 if (allowExtra[key]) { allowed[key] = true; }
             }
         }
