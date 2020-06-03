@@ -276,6 +276,20 @@ describe("Test Contract Transaction Population", function() {
             assert.ok(error.operation === "overrides.from");
         }
     });
+
+    it("allows overriding with invalid, but nullish values", async function() {
+        const contractSigner = contract.connect(testAddress);
+        const tx = await contractSigner.populateTransaction.unstake({
+            blockTag: null,
+            from: null
+        });
+        //console.log("Tx", tx);
+        assert.equal(Object.keys(tx).length, 3, "correct number of keys");
+        assert.equal(tx.data, "0x2def6620", "data matches");
+        assert.equal(tx.to, testAddressCheck, "to address matches");
+        assert.equal(tx.from, testAddressCheck.toLowerCase(), "from address matches");
+    });
+
 });
 
 /*
