@@ -235,6 +235,11 @@ export class BaseProvider extends Provider {
 
         super();
 
+        // Events being listened to
+        this._events = [];
+
+        this._emitted = { block: -2 };
+
         this.formatter = new.target.getFormatter();
 
         // If network is any, this Provider allows the underlying
@@ -267,12 +272,7 @@ export class BaseProvider extends Provider {
 
         this._lastBlockNumber = -2;
 
-        // Events being listened to
-        this._events = [];
-
         this._pollingInterval = 4000;
-
-        this._emitted = { block: -2 };
 
         this._fastQueryDate = 0;
     }
