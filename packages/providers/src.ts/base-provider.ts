@@ -104,6 +104,12 @@ function getTime() {
     return (new Date()).getTime();
 }
 
+function stall(duration: number): Promise<void> {
+    return new Promise((resolve) => {
+        setTimeout(resolve, duration);
+    });
+}
+
 //////////////////////////////
 // Provider Object
 
@@ -112,12 +118,16 @@ function getTime() {
  *  EventType
  *   - "block"
  *   - "poll"
+ *   - "didPoll"
  *   - "pending"
  *   - "error"
+ *   - "network"
  *   - filter
  *   - topics array
  *   - transaction hash
  */
+
+const PollableEvents = [ "block", "network", "pending", "poll" ];
 
 export class Event {
     readonly listener: Listener;
@@ -165,10 +175,9 @@ export class Event {
     }
 
     pollable(): boolean {
-        return (this.tag.indexOf(":") >= 0 || this.tag === "block" || this.tag === "pending" || this.tag === "poll");
+        return (this.tag.indexOf(":") >= 0 || PollableEvents.indexOf(this.tag) >= 0);
     }
 }
-
 
 let defaultFormatter: Formatter = null;
 
@@ -208,6 +217,8 @@ export class BaseProvider extends Provider {
     _maxInternalBlockNumber: number;
     _internalBlockNumber: Promise<{ blockNumber: number, reqTime: number, respTime: number }>;
 
+    readonly anyNetwork: boolean;
+
 
     /**
      *  ready
@@ -226,16 +237,26 @@ export class BaseProvider extends Provider {
 
         this.formatter = new.target.getFormatter();
 
+        // If network is any, this Provider allows the underlying
+        // network to change dynamically, and we auto-detect the
+        // current network
+        defineReadOnly(this, "anyNetwork", (network === "any"));
+        if (this.anyNetwork) { network = this.detectNetwork(); }
+
         if (network instanceof Promise) {
             this._networkPromise = network;
 
             // Squash any "unhandled promise" errors; that do not need to be handled
             network.catch((error) => { });
 
+            // Trigger initial network setting (async)
+            this._ready();
+
         } else {
             const knownNetwork = getStatic<(network: Networkish) => Network>(new.target, "getNetwork")(network);
             if (knownNetwork) {
                 defineReadOnly(this, "_network", knownNetwork);
+                this.emit("network", knownNetwork, null);
 
             } else {
                 logger.throwArgumentError("invalid network", "network", network);
@@ -278,23 +299,26 @@ export class BaseProvider extends Provider {
 
             // Possible this call stacked so do not call defineReadOnly again
             if (this._network == null) {
-                defineReadOnly(this, "_network", network);
+                if (this.anyNetwork) {
+                    this._network = network;
+                } else {
+                    defineReadOnly(this, "_network", network);
+                }
+                this.emit("network", network, null);
             }
         }
 
         return this._network;
     }
 
+    // This will always return the most recently established network.
+    // For "any", this can change (a "network" event is emitted before
+    // any change is refelcted); otherwise this cannot change
     get ready(): Promise<Network> {
         return this._ready();
     }
 
-    async detectNetwork(): Promise<Network> {
-        return logger.throwError("provider does not support network detection", Logger.errors.UNSUPPORTED_OPERATION, {
-            operation: "provider.detectNetwork"
-        });
-    }
-
+    // @TODO: Remove this and just create a singleton formatter
     static getFormatter(): Formatter {
         if (defaultFormatter == null) {
             defaultFormatter = new Formatter();
@@ -302,10 +326,13 @@ export class BaseProvider extends Provider {
         return defaultFormatter;
     }
 
+    // @TODO: Remove this and just use getNetwork
     static getNetwork(network: Networkish): Network {
         return getNetwork((network == null) ? "homestead": network);
     }
 
+    // Fetches the blockNumber, but will reuse any result that is less
+    // than maxAge old or has been requested since the last request
     async _getInternalBlockNumber(maxAge: number): Promise<number> {
         await this.ready;
 
@@ -319,22 +346,36 @@ export class BaseProvider extends Provider {
         }
 
         const reqTime = getTime();
-        this._internalBlockNumber = this.perform("getBlockNumber", { }).then((blockNumber) => {
+
+        const checkInternalBlockNumber = resolveProperties({
+            blockNumber: this.perform("getBlockNumber", { }),
+            networkError: this.getNetwork().then((network) => (null), (error) => (error))
+        }).then(({ blockNumber, networkError }) => {
+            if (networkError) {
+                // Unremember this bad internal block number
+                if (this._internalBlockNumber === checkInternalBlockNumber) {
+                    this._internalBlockNumber = null;
+                }
+                throw networkError;
+            }
+
             const respTime = getTime();
+
             blockNumber = BigNumber.from(blockNumber).toNumber();
             if (blockNumber < this._maxInternalBlockNumber) { blockNumber = this._maxInternalBlockNumber; }
+
             this._maxInternalBlockNumber = blockNumber;
             this._setFastBlockNumber(blockNumber); // @TODO: Still need this?
             return { blockNumber, reqTime, respTime };
         });
 
-        return (await this._internalBlockNumber).blockNumber;
+        this._internalBlockNumber = checkInternalBlockNumber;
+
+        return (await checkInternalBlockNumber).blockNumber;
     }
 
     async poll(): Promise<void> {
         const pollId = nextPollId++;
-
-        this.emit("willPoll", pollId);
 
         // Track all running promises, so we can trigger a post-poll once they are complete
         const runners: Array<Promise<void>> = [];
@@ -356,9 +397,19 @@ export class BaseProvider extends Provider {
             this._emitted.block = blockNumber - 1;
         }
 
-        // Notify all listener for each block that has passed
-        for (let i = (<number>this._emitted.block) + 1; i <= blockNumber; i++) {
-            this.emit("block", i);
+        if (Math.abs((<number>(this._emitted.block)) - blockNumber) > 1000) {
+            logger.warn("network block skew detected; skipping block events");
+            this.emit("error", logger.makeError("network block skew detected", Logger.errors.NETWORK_ERROR, {
+                blockNumber: blockNumber,
+                previousBlockNumber: this._emitted.block
+            }));
+            this.emit("block", blockNumber);
+
+        } else {
+            // Notify all listener for each block that has passed
+            for (let i = (<number>this._emitted.block) + 1; i <= blockNumber; i++) {
+                this.emit("block", i);
+            }
         }
 
         // The emitted block was updated, check for obsolete events
@@ -429,6 +480,7 @@ export class BaseProvider extends Provider {
 
         this._lastBlockNumber = blockNumber;
 
+        // Once all events for this loop have been processed, emit "didPoll"
         Promise.all(runners).then(() => {
             this.emit("didPoll", pollId);
         });
@@ -436,6 +488,7 @@ export class BaseProvider extends Provider {
         return null;
     }
 
+    // Deprecated; do not use this
     resetEventsBlock(blockNumber: number): void {
         this._lastBlockNumber = blockNumber - 1;
         if (this.polling) { this.poll(); }
@@ -445,8 +498,57 @@ export class BaseProvider extends Provider {
         return this._network;
     }
 
-    getNetwork(): Promise<Network> {
-        return this.ready;
+    // This method should query the network if the underlying network
+    // can change, such as when connected to a JSON-RPC backend
+    async detectNetwork(): Promise<Network> {
+        return logger.throwError("provider does not support network detection", Logger.errors.UNSUPPORTED_OPERATION, {
+            operation: "provider.detectNetwork"
+        });
+    }
+
+    async getNetwork(): Promise<Network> {
+        const network = await this.ready;
+
+        // Make sure we are still connected to the same network; this is
+        // only an external call for backends which can have the underlying
+        // network change spontaneously
+        const currentNetwork = await this.detectNetwork();
+        if (network.chainId !== currentNetwork.chainId) {
+
+            // We are allowing network changes, things can get complex fast;
+            // make sure you know what you are doing if you use "any"
+            if (this.anyNetwork) {
+                this._network = currentNetwork;
+
+                // Reset all internal block number guards and caches
+                this._lastBlockNumber = -2;
+                this._fastBlockNumber = null;
+                this._fastBlockNumberPromise = null;
+                this._fastQueryDate = 0;
+                this._emitted.block = -2;
+                this._maxInternalBlockNumber = -1024;
+                this._internalBlockNumber = null;
+
+                // The "network" event MUST happen before this method resolves
+                // so any events have a chance to unregister, so we stall an
+                // additional event loop before returning from /this/ call
+                this.emit("network", currentNetwork, network);
+                await stall(0);
+
+                return this._network;
+            }
+
+            const error = logger.makeError("underlying network changed", Logger.errors.NETWORK_ERROR, {
+                event: "changed",
+                network: network,
+                detectedNetwork: currentNetwork
+            });
+
+            this.emit("error", error);
+            throw error;
+        }
+
+        return network;
     }
 
     get blockNumber(): number {
@@ -536,9 +638,6 @@ export class BaseProvider extends Provider {
         }
     }
 
-    // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
-    //        this will be used once we move to the WebSocket or other alternatives to polling
-
     async waitForTransaction(transactionHash: string, confirmations?: number, timeout?: number): Promise<TransactionReceipt> {
         if (confirmations == null) { confirmations = 1; }
 
@@ -578,17 +677,17 @@ export class BaseProvider extends Provider {
         });
     }
 
-    getBlockNumber(): Promise<number> {
+    async getBlockNumber(): Promise<number> {
         return this._getInternalBlockNumber(0);
     }
 
     async getGasPrice(): Promise<BigNumber> {
-        await this.ready;
+        await this.getNetwork();
         return BigNumber.from(await this.perform("getGasPrice", { }));
     }
 
     async getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber> {
-        await this.ready;
+        await this.getNetwork();
         const params = await resolveProperties({
             address: this._getAddress(addressOrName),
             blockTag: this._getBlockTag(blockTag)
@@ -597,7 +696,7 @@ export class BaseProvider extends Provider {
     }
 
     async getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number> {
-        await this.ready;
+        await this.getNetwork();
         const params = await resolveProperties({
             address: this._getAddress(addressOrName),
             blockTag: this._getBlockTag(blockTag)
@@ -606,7 +705,7 @@ export class BaseProvider extends Provider {
     }
 
     async getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
-        await this.ready;
+        await this.getNetwork();
         const params = await resolveProperties({
             address: this._getAddress(addressOrName),
             blockTag: this._getBlockTag(blockTag)
@@ -615,7 +714,7 @@ export class BaseProvider extends Provider {
     }
 
     async getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
-        await this.ready;
+        await this.getNetwork();
         const params = await resolveProperties({
             address: this._getAddress(addressOrName),
             blockTag: this._getBlockTag(blockTag),
@@ -665,7 +764,7 @@ export class BaseProvider extends Provider {
     }
 
     async sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse> {
-        await this.ready;
+        await this.getNetwork();
         const hexTx = await Promise.resolve(signedTransaction).then(t => hexlify(t));
         const tx = this.formatter.transaction(signedTransaction);
         try {
@@ -702,7 +801,7 @@ export class BaseProvider extends Provider {
     }
 
     async _getFilter(filter: Filter | FilterByBlockHash | Promise<Filter | FilterByBlockHash>): Promise<Filter | FilterByBlockHash> {
-        if (filter instanceof Promise) { filter = await filter; }
+        filter = await filter;
 
         const result: any = { };
 
@@ -724,7 +823,7 @@ export class BaseProvider extends Provider {
     }
 
     async call(transaction: Deferrable<TransactionRequest>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
-        await this.ready;
+        await this.getNetwork();
         const params = await resolveProperties({
             transaction: this._getTransactionRequest(transaction),
             blockTag: this._getBlockTag(blockTag)
@@ -733,7 +832,7 @@ export class BaseProvider extends Provider {
     }
 
     async estimateGas(transaction: Deferrable<TransactionRequest>): Promise<BigNumber> {
-        await this.ready;
+        await this.getNetwork();
         const params = await resolveProperties({
             transaction: this._getTransactionRequest(transaction)
         });
@@ -751,11 +850,9 @@ export class BaseProvider extends Provider {
     }
 
     async _getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>, includeTransactions?: boolean): Promise<Block | BlockWithTransactions> {
-        await this.ready;
+        await this.getNetwork();
 
-        if (blockHashOrBlockTag instanceof Promise) {
-            blockHashOrBlockTag = await blockHashOrBlockTag;
-        }
+        blockHashOrBlockTag = await blockHashOrBlockTag;
 
         // If blockTag is a number (not "latest", etc), this is the block number
         let blockNumber = -128;
@@ -834,8 +931,8 @@ export class BaseProvider extends Provider {
     }
 
     async getTransaction(transactionHash: string | Promise<string>): Promise<TransactionResponse> {
-        await this.ready;
-        if (transactionHash instanceof Promise) { transactionHash = await transactionHash; }
+        await this.getNetwork();
+        transactionHash = await transactionHash;
 
         const params = { transactionHash: this.formatter.hash(transactionHash, true) };
 
@@ -868,9 +965,9 @@ export class BaseProvider extends Provider {
     }
 
     async getTransactionReceipt(transactionHash: string | Promise<string>): Promise<TransactionReceipt> {
-        await this.ready;
+        await this.getNetwork();
 
-        if (transactionHash instanceof Promise) { transactionHash = await transactionHash; }
+        transactionHash = await transactionHash;
 
         const params = { transactionHash: this.formatter.hash(transactionHash, true) };
 
@@ -906,7 +1003,7 @@ export class BaseProvider extends Provider {
     }
 
     async getLogs(filter: Filter | FilterByBlockHash | Promise<Filter | FilterByBlockHash>): Promise<Array<Log>> {
-        await this.ready;
+        await this.getNetwork();
         const params = await resolveProperties({ filter: this._getFilter(filter) });
         const logs: Array<Log> = await this.perform("getLogs", params);
         logs.forEach((log) => {
@@ -916,14 +1013,12 @@ export class BaseProvider extends Provider {
     }
 
     async getEtherPrice(): Promise<number> {
-        await this.ready;
+        await this.getNetwork();
         return this.perform("getEtherPrice", { });
     }
 
     async _getBlockTag(blockTag: BlockTag | Promise<BlockTag>): Promise<BlockTag> {
-        if (blockTag instanceof Promise) {
-            blockTag = await blockTag;
-        }
+        blockTag = await blockTag;
 
         if (typeof(blockTag) === "number" && blockTag < 0) {
             if (blockTag % 1) {
@@ -963,8 +1058,7 @@ export class BaseProvider extends Provider {
     }
 
     async resolveName(name: string | Promise<string>): Promise<string> {
-
-        if (name instanceof Promise) { name = await name; }
+        name = await name;
 
         // If it is already an address, nothing to resolve
         try {
@@ -992,8 +1086,7 @@ export class BaseProvider extends Provider {
     }
 
     async lookupAddress(address: string | Promise<string>): Promise<string> {
-        if (address instanceof Promise) { address = await address; }
-
+        address = await address;
         address = this.formatter.address(address);
 
         const reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
