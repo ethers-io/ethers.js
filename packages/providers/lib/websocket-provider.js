@@ -79,7 +79,14 @@ var NextId = 1;
 var WebSocketProvider = /** @class */ (function (_super) {
     __extends(WebSocketProvider, _super);
     function WebSocketProvider(url, network) {
-        var _this = _super.call(this, url, network) || this;
+        var _this = this;
+        // This will be added in the future; please open an issue to expedite
+        if (network === "any") {
+            logger.throwError("WebSocketProvider does not support 'any' network yet", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "network:any"
+            });
+        }
+        _this = _super.call(this, url, network) || this;
         _this._pollingInterval = -1;
         properties_1.defineReadOnly(_this, "_websocket", new ws_1.default(_this.connection.url));
         properties_1.defineReadOnly(_this, "_requests", {});

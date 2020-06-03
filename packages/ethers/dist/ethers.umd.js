@@ -9228,7 +9228,7 @@
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.0-beta.155";
+	exports.version = "contracts/5.0.0-beta.156";
 	});
 
 	var _version$n = unwrapExports(_version$m);
@@ -9445,7 +9445,7 @@
 	                    delete overrides.gasPrice;
 	                    delete overrides.from;
 	                    delete overrides.value;
-	                    leftovers = Object.keys(overrides);
+	                    leftovers = Object.keys(overrides).filter(function (key) { return (overrides[key] != null); });
 	                    if (leftovers.length) {
 	                        logger.throwError("cannot override " + leftovers.map(function (l) { return JSON.stringify(l); }).join(","), lib.Logger.errors.UNSUPPORTED_OPERATION, {
 	                            operation: "overrides",
@@ -9512,13 +9512,13 @@
 	                        blockTag = undefined;
 	                        if (!(args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object")) return [3 /*break*/, 3];
 	                        overrides = lib$3.shallowCopy(args.pop());
-	                        if (!overrides.blockTag) return [3 /*break*/, 2];
+	                        if (!(overrides.blockTag != null)) return [3 /*break*/, 2];
 	                        return [4 /*yield*/, overrides.blockTag];
 	                    case 1:
 	                        blockTag = _a.sent();
-	                        delete overrides.blockTag;
 	                        _a.label = 2;
 	                    case 2:
+	                        delete overrides.blockTag;
 	                        args.push(overrides);
 	                        _a.label = 3;
 	                    case 3:
@@ -9562,7 +9562,6 @@
 	        }
 	        return __awaiter(this, void 0, void 0, function () {
 	            var txRequest, tx, wait;
-	            var _this = this;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
@@ -9596,7 +9595,7 @@
 	                                    if (parsed) {
 	                                        event.args = parsed.args;
 	                                        event.decode = function (data, topics) {
-	                                            return _this.interface.decodeEventLog(parsed.eventFragment, data, topics);
+	                                            return contract.interface.decodeEventLog(parsed.eventFragment, data, topics);
 	                                        };
 	                                        event.event = parsed.name;
 	                                        event.eventSignature = parsed.signature;
@@ -17953,7 +17952,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.0-beta.170";
+	exports.version = "providers/5.0.0-beta.171";
 	});
 
 	var _version$J = unwrapExports(_version$I);
@@ -18492,18 +18491,26 @@
 	function getTime() {
 	    return (new Date()).getTime();
 	}
+	function stall(duration) {
+	    return new Promise(function (resolve) {
+	        setTimeout(resolve, duration);
+	    });
+	}
 	//////////////////////////////
 	// Provider Object
 	/**
 	 *  EventType
 	 *   - "block"
 	 *   - "poll"
+	 *   - "didPoll"
 	 *   - "pending"
 	 *   - "error"
+	 *   - "network"
 	 *   - filter
 	 *   - topics array
 	 *   - transaction hash
 	 */
+	var PollableEvents = ["block", "network", "pending", "poll"];
 	var Event = /** @class */ (function () {
 	    function Event(tag, listener, once) {
 	        lib$3.defineReadOnly(this, "tag", tag);
@@ -18562,7 +18569,7 @@
 	        configurable: true
 	    });
 	    Event.prototype.pollable = function () {
-	        return (this.tag.indexOf(":") >= 0 || this.tag === "block" || this.tag === "pending" || this.tag === "poll");
+	        return (this.tag.indexOf(":") >= 0 || PollableEvents.indexOf(this.tag) >= 0);
 	    };
 	    return Event;
 	}());
@@ -18585,16 +18592,29 @@
 	        var _this = this;
 	        logger.checkNew(_newTarget, lib$b.Provider);
 	        _this = _super.call(this) || this;
+	        // Events being listened to
+	        _this._events = [];
+	        _this._emitted = { block: -2 };
 	        _this.formatter = _newTarget.getFormatter();
+	        // If network is any, this Provider allows the underlying
+	        // network to change dynamically, and we auto-detect the
+	        // current network
+	        lib$3.defineReadOnly(_this, "anyNetwork", (network === "any"));
+	        if (_this.anyNetwork) {
+	            network = _this.detectNetwork();
+	        }
 	        if (network instanceof Promise) {
 	            _this._networkPromise = network;
 	            // Squash any "unhandled promise" errors; that do not need to be handled
 	            network.catch(function (error) { });
+	            // Trigger initial network setting (async)
+	            _this._ready();
 	        }
 	        else {
 	            var knownNetwork = lib$3.getStatic((_newTarget), "getNetwork")(network);
 	            if (knownNetwork) {
 	                lib$3.defineReadOnly(_this, "_network", knownNetwork);
+	                _this.emit("network", knownNetwork, null);
 	            }
 	            else {
 	                logger.throwArgumentError("invalid network", "network", network);
@@ -18602,10 +18622,7 @@
 	        }
 	        _this._maxInternalBlockNumber = -1024;
 	        _this._lastBlockNumber = -2;
-	        // Events being listened to
-	        _this._events = [];
 	        _this._pollingInterval = 4000;
-	        _this._emitted = { block: -2 };
 	        _this._fastQueryDate = 0;
 	        return _this;
 	    }
@@ -18642,7 +18659,13 @@
 	                        }
 	                        // Possible this call stacked so do not call defineReadOnly again
 	                        if (this._network == null) {
-	                            lib$3.defineReadOnly(this, "_network", network);
+	                            if (this.anyNetwork) {
+	                                this._network = network;
+	                            }
+	                            else {
+	                                lib$3.defineReadOnly(this, "_network", network);
+	                            }
+	                            this.emit("network", network, null);
 	                        }
 	                        _a.label = 7;
 	                    case 7: return [2 /*return*/, this._network];
@@ -18651,33 +18674,31 @@
 	        });
 	    };
 	    Object.defineProperty(BaseProvider.prototype, "ready", {
+	        // This will always return the most recently established network.
+	        // For "any", this can change (a "network" event is emitted before
+	        // any change is refelcted); otherwise this cannot change
 	        get: function () {
 	            return this._ready();
 	        },
 	        enumerable: true,
 	        configurable: true
 	    });
-	    BaseProvider.prototype.detectNetwork = function () {
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                return [2 /*return*/, logger.throwError("provider does not support network detection", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                        operation: "provider.detectNetwork"
-	                    })];
-	            });
-	        });
-	    };
+	    // @TODO: Remove this and just create a singleton formatter
 	    BaseProvider.getFormatter = function () {
 	        if (defaultFormatter == null) {
 	            defaultFormatter = new formatter.Formatter();
 	        }
 	        return defaultFormatter;
 	    };
+	    // @TODO: Remove this and just use getNetwork
 	    BaseProvider.getNetwork = function (network) {
 	        return lib$k.getNetwork((network == null) ? "homestead" : network);
 	    };
+	    // Fetches the blockNumber, but will reuse any result that is less
+	    // than maxAge old or has been requested since the last request
 	    BaseProvider.prototype._getInternalBlockNumber = function (maxAge) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var internalBlockNumber, result, reqTime;
+	            var internalBlockNumber, result, reqTime, checkInternalBlockNumber;
 	            var _this = this;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
@@ -18695,7 +18716,18 @@
 	                        _a.label = 3;
 	                    case 3:
 	                        reqTime = getTime();
-	                        this._internalBlockNumber = this.perform("getBlockNumber", {}).then(function (blockNumber) {
+	                        checkInternalBlockNumber = lib$3.resolveProperties({
+	                            blockNumber: this.perform("getBlockNumber", {}),
+	                            networkError: this.getNetwork().then(function (network) { return (null); }, function (error) { return (error); })
+	                        }).then(function (_a) {
+	                            var blockNumber = _a.blockNumber, networkError = _a.networkError;
+	                            if (networkError) {
+	                                // Unremember this bad internal block number
+	                                if (_this._internalBlockNumber === checkInternalBlockNumber) {
+	                                    _this._internalBlockNumber = null;
+	                                }
+	                                throw networkError;
+	                            }
 	                            var respTime = getTime();
 	                            blockNumber = lib$2.BigNumber.from(blockNumber).toNumber();
 	                            if (blockNumber < _this._maxInternalBlockNumber) {
@@ -18705,7 +18737,8 @@
 	                            _this._setFastBlockNumber(blockNumber); // @TODO: Still need this?
 	                            return { blockNumber: blockNumber, reqTime: reqTime, respTime: respTime };
 	                        });
-	                        return [4 /*yield*/, this._internalBlockNumber];
+	                        this._internalBlockNumber = checkInternalBlockNumber;
+	                        return [4 /*yield*/, checkInternalBlockNumber];
 	                    case 4: return [2 /*return*/, (_a.sent()).blockNumber];
 	                }
 	            });
@@ -18719,7 +18752,6 @@
 	                switch (_a.label) {
 	                    case 0:
 	                        pollId = nextPollId++;
-	                        this.emit("willPoll", pollId);
 	                        runners = [];
 	                        return [4 /*yield*/, this._getInternalBlockNumber(100 + this.pollingInterval / 2)];
 	                    case 1:
@@ -18736,9 +18768,19 @@
 	                        if (this._emitted.block === -2) {
 	                            this._emitted.block = blockNumber - 1;
 	                        }
-	                        // Notify all listener for each block that has passed
-	                        for (i = this._emitted.block + 1; i <= blockNumber; i++) {
-	                            this.emit("block", i);
+	                        if (Math.abs((this._emitted.block) - blockNumber) > 1000) {
+	                            logger.warn("network block skew detected; skipping block events");
+	                            this.emit("error", logger.makeError("network block skew detected", lib.Logger.errors.NETWORK_ERROR, {
+	                                blockNumber: blockNumber,
+	                                previousBlockNumber: this._emitted.block
+	                            }));
+	                            this.emit("block", blockNumber);
+	                        }
+	                        else {
+	                            // Notify all listener for each block that has passed
+	                            for (i = this._emitted.block + 1; i <= blockNumber; i++) {
+	                                this.emit("block", i);
+	                            }
 	                        }
 	                        // The emitted block was updated, check for obsolete events
 	                        if (this._emitted.block !== blockNumber) {
@@ -18803,6 +18845,7 @@
 	                            }
 	                        });
 	                        this._lastBlockNumber = blockNumber;
+	                        // Once all events for this loop have been processed, emit "didPoll"
 	                        Promise.all(runners).then(function () {
 	                            _this.emit("didPoll", pollId);
 	                        });
@@ -18811,6 +18854,7 @@
 	            });
 	        });
 	    };
+	    // Deprecated; do not use this
 	    BaseProvider.prototype.resetEventsBlock = function (blockNumber) {
 	        this._lastBlockNumber = blockNumber - 1;
 	        if (this.polling) {
@@ -18824,8 +18868,59 @@
 	        enumerable: true,
 	        configurable: true
 	    });
+	    // This method should query the network if the underlying network
+	    // can change, such as when connected to a JSON-RPC backend
+	    BaseProvider.prototype.detectNetwork = function () {
+	        return __awaiter(this, void 0, void 0, function () {
+	            return __generator(this, function (_a) {
+	                return [2 /*return*/, logger.throwError("provider does not support network detection", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                        operation: "provider.detectNetwork"
+	                    })];
+	            });
+	        });
+	    };
 	    BaseProvider.prototype.getNetwork = function () {
-	        return this.ready;
+	        return __awaiter(this, void 0, void 0, function () {
+	            var network, currentNetwork, error;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 1:
+	                        network = _a.sent();
+	                        return [4 /*yield*/, this.detectNetwork()];
+	                    case 2:
+	                        currentNetwork = _a.sent();
+	                        if (!(network.chainId !== currentNetwork.chainId)) return [3 /*break*/, 5];
+	                        if (!this.anyNetwork) return [3 /*break*/, 4];
+	                        this._network = currentNetwork;
+	                        // Reset all internal block number guards and caches
+	                        this._lastBlockNumber = -2;
+	                        this._fastBlockNumber = null;
+	                        this._fastBlockNumberPromise = null;
+	                        this._fastQueryDate = 0;
+	                        this._emitted.block = -2;
+	                        this._maxInternalBlockNumber = -1024;
+	                        this._internalBlockNumber = null;
+	                        // The "network" event MUST happen before this method resolves
+	                        // so any events have a chance to unregister, so we stall an
+	                        // additional event loop before returning from /this/ call
+	                        this.emit("network", currentNetwork, network);
+	                        return [4 /*yield*/, stall(0)];
+	                    case 3:
+	                        _a.sent();
+	                        return [2 /*return*/, this._network];
+	                    case 4:
+	                        error = logger.makeError("underlying network changed", lib.Logger.errors.NETWORK_ERROR, {
+	                            event: "changed",
+	                            network: network,
+	                            detectedNetwork: currentNetwork
+	                        });
+	                        this.emit("error", error);
+	                        throw error;
+	                    case 5: return [2 /*return*/, network];
+	                }
+	            });
+	        });
 	    };
 	    Object.defineProperty(BaseProvider.prototype, "blockNumber", {
 	        get: function () {
@@ -18917,8 +19012,6 @@
 	            this._fastBlockNumberPromise = Promise.resolve(blockNumber);
 	        }
 	    };
-	    // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
-	    //        this will be used once we move to the WebSocket or other alternatives to polling
 	    BaseProvider.prototype.waitForTransaction = function (transactionHash, confirmations, timeout) {
 	        return __awaiter(this, void 0, void 0, function () {
 	            var receipt;
@@ -18975,14 +19068,18 @@
 	        });
 	    };
 	    BaseProvider.prototype.getBlockNumber = function () {
-	        return this._getInternalBlockNumber(0);
+	        return __awaiter(this, void 0, void 0, function () {
+	            return __generator(this, function (_a) {
+	                return [2 /*return*/, this._getInternalBlockNumber(0)];
+	            });
+	        });
 	    };
 	    BaseProvider.prototype.getGasPrice = function () {
 	        return __awaiter(this, void 0, void 0, function () {
 	            var _a, _b;
 	            return __generator(this, function (_c) {
 	                switch (_c.label) {
-	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _c.sent();
 	                        _b = (_a = lib$2.BigNumber).from;
@@ -18997,7 +19094,7 @@
 	            var params, _a, _b;
 	            return __generator(this, function (_c) {
 	                switch (_c.label) {
-	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _c.sent();
 	                        return [4 /*yield*/, lib$3.resolveProperties({
@@ -19018,7 +19115,7 @@
 	            var params, _a, _b;
 	            return __generator(this, function (_c) {
 	                switch (_c.label) {
-	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _c.sent();
 	                        return [4 /*yield*/, lib$3.resolveProperties({
@@ -19039,7 +19136,7 @@
 	            var params, _a;
 	            return __generator(this, function (_b) {
 	                switch (_b.label) {
-	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _b.sent();
 	                        return [4 /*yield*/, lib$3.resolveProperties({
@@ -19060,7 +19157,7 @@
 	            var params, _a;
 	            return __generator(this, function (_b) {
 	                switch (_b.label) {
-	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _b.sent();
 	                        return [4 /*yield*/, lib$3.resolveProperties({
@@ -19126,7 +19223,7 @@
 	            var hexTx, tx, hash, error_2;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _a.sent();
 	                        return [4 /*yield*/, Promise.resolve(signedTransaction).then(function (t) { return lib$1.hexlify(t); })];
@@ -19191,13 +19288,9 @@
 	            var _this = this;
 	            return __generator(this, function (_c) {
 	                switch (_c.label) {
-	                    case 0:
-	                        if (!(filter instanceof Promise)) return [3 /*break*/, 2];
-	                        return [4 /*yield*/, filter];
+	                    case 0: return [4 /*yield*/, filter];
 	                    case 1:
 	                        filter = _c.sent();
-	                        _c.label = 2;
-	                    case 2:
 	                        result = {};
 	                        if (filter.address != null) {
 	                            result.address = this._getAddress(filter.address);
@@ -19216,7 +19309,7 @@
 	                        });
 	                        _b = (_a = this.formatter).filter;
 	                        return [4 /*yield*/, lib$3.resolveProperties(result)];
-	                    case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+	                    case 2: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
 	                }
 	            });
 	        });
@@ -19226,7 +19319,7 @@
 	            var params, _a;
 	            return __generator(this, function (_b) {
 	                switch (_b.label) {
-	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _b.sent();
 	                        return [4 /*yield*/, lib$3.resolveProperties({
@@ -19247,7 +19340,7 @@
 	            var params, _a, _b;
 	            return __generator(this, function (_c) {
 	                switch (_c.label) {
-	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _c.sent();
 	                        return [4 /*yield*/, lib$3.resolveProperties({
@@ -19286,38 +19379,35 @@
 	            var _this = this;
 	            return __generator(this, function (_d) {
 	                switch (_d.label) {
-	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _d.sent();
-	                        if (!(blockHashOrBlockTag instanceof Promise)) return [3 /*break*/, 3];
 	                        return [4 /*yield*/, blockHashOrBlockTag];
 	                    case 2:
 	                        blockHashOrBlockTag = _d.sent();
-	                        _d.label = 3;
-	                    case 3:
 	                        blockNumber = -128;
 	                        params = {
 	                            includeTransactions: !!includeTransactions
 	                        };
-	                        if (!lib$1.isHexString(blockHashOrBlockTag, 32)) return [3 /*break*/, 4];
+	                        if (!lib$1.isHexString(blockHashOrBlockTag, 32)) return [3 /*break*/, 3];
 	                        params.blockHash = blockHashOrBlockTag;
-	                        return [3 /*break*/, 7];
-	                    case 4:
-	                        _d.trys.push([4, 6, , 7]);
+	                        return [3 /*break*/, 6];
+	                    case 3:
+	                        _d.trys.push([3, 5, , 6]);
 	                        _a = params;
 	                        _c = (_b = this.formatter).blockTag;
 	                        return [4 /*yield*/, this._getBlockTag(blockHashOrBlockTag)];
-	                    case 5:
+	                    case 4:
 	                        _a.blockTag = _c.apply(_b, [_d.sent()]);
 	                        if (lib$1.isHexString(params.blockTag)) {
 	                            blockNumber = parseInt(params.blockTag.substring(2), 16);
 	                        }
-	                        return [3 /*break*/, 7];
-	                    case 6:
+	                        return [3 /*break*/, 6];
+	                    case 5:
 	                        error_3 = _d.sent();
 	                        logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
-	                        return [3 /*break*/, 7];
-	                    case 7: return [2 /*return*/, lib$l.poll(function () { return __awaiter(_this, void 0, void 0, function () {
+	                        return [3 /*break*/, 6];
+	                    case 6: return [2 /*return*/, lib$l.poll(function () { return __awaiter(_this, void 0, void 0, function () {
 	                            var block, blockNumber_1, i, tx, confirmations;
 	                            return __generator(this, function (_a) {
 	                                switch (_a.label) {
@@ -19391,15 +19481,12 @@
 	            var _this = this;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _a.sent();
-	                        if (!(transactionHash instanceof Promise)) return [3 /*break*/, 3];
 	                        return [4 /*yield*/, transactionHash];
 	                    case 2:
 	                        transactionHash = _a.sent();
-	                        _a.label = 3;
-	                    case 3:
 	                        params = { transactionHash: this.formatter.hash(transactionHash, true) };
 	                        return [2 /*return*/, lib$l.poll(function () { return __awaiter(_this, void 0, void 0, function () {
 	                                var result, tx, blockNumber, confirmations;
@@ -19443,15 +19530,12 @@
 	            var _this = this;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _a.sent();
-	                        if (!(transactionHash instanceof Promise)) return [3 /*break*/, 3];
 	                        return [4 /*yield*/, transactionHash];
 	                    case 2:
 	                        transactionHash = _a.sent();
-	                        _a.label = 3;
-	                    case 3:
 	                        params = { transactionHash: this.formatter.hash(transactionHash, true) };
 	                        return [2 /*return*/, lib$l.poll(function () { return __awaiter(_this, void 0, void 0, function () {
 	                                var result, receipt, blockNumber, confirmations;
@@ -19498,7 +19582,7 @@
 	            var params, logs;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _a.sent();
 	                        return [4 /*yield*/, lib$3.resolveProperties({ filter: this._getFilter(filter) })];
@@ -19521,7 +19605,7 @@
 	        return __awaiter(this, void 0, void 0, function () {
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, this.ready];
+	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _a.sent();
 	                        return [2 /*return*/, this.perform("getEtherPrice", {})];
@@ -19534,26 +19618,22 @@
 	            var blockNumber;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
-	                    case 0:
-	                        if (!(blockTag instanceof Promise)) return [3 /*break*/, 2];
-	                        return [4 /*yield*/, blockTag];
+	                    case 0: return [4 /*yield*/, blockTag];
 	                    case 1:
 	                        blockTag = _a.sent();
-	                        _a.label = 2;
-	                    case 2:
-	                        if (!(typeof (blockTag) === "number" && blockTag < 0)) return [3 /*break*/, 4];
+	                        if (!(typeof (blockTag) === "number" && blockTag < 0)) return [3 /*break*/, 3];
 	                        if (blockTag % 1) {
 	                            logger.throwArgumentError("invalid BlockTag", "blockTag", blockTag);
 	                        }
 	                        return [4 /*yield*/, this._getInternalBlockNumber(100 + 2 * this.pollingInterval)];
-	                    case 3:
+	                    case 2:
 	                        blockNumber = _a.sent();
 	                        blockNumber += blockTag;
 	                        if (blockNumber < 0) {
 	                            blockNumber = 0;
 	                        }
 	                        return [2 /*return*/, this.formatter.blockTag(blockNumber)];
-	                    case 4: return [2 /*return*/, this.formatter.blockTag(blockTag)];
+	                    case 3: return [2 /*return*/, this.formatter.blockTag(blockTag)];
 	                }
 	            });
 	        });
@@ -19586,13 +19666,9 @@
 	            var resolverAddress, transaction, _a, _b;
 	            return __generator(this, function (_c) {
 	                switch (_c.label) {
-	                    case 0:
-	                        if (!(name instanceof Promise)) return [3 /*break*/, 2];
-	                        return [4 /*yield*/, name];
+	                    case 0: return [4 /*yield*/, name];
 	                    case 1:
 	                        name = _c.sent();
-	                        _c.label = 2;
-	                    case 2:
 	                        // If it is already an address, nothing to resolve
 	                        try {
 	                            return [2 /*return*/, Promise.resolve(this.formatter.address(name))];
@@ -19607,7 +19683,7 @@
 	                            logger.throwArgumentError("invalid ENS name", "name", name);
 	                        }
 	                        return [4 /*yield*/, this._getResolver(name)];
-	                    case 3:
+	                    case 2:
 	                        resolverAddress = _c.sent();
 	                        if (!resolverAddress) {
 	                            return [2 /*return*/, null];
@@ -19618,7 +19694,7 @@
 	                        };
 	                        _b = (_a = this.formatter).callAddress;
 	                        return [4 /*yield*/, this.call(transaction)];
-	                    case 4: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+	                    case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
 	                }
 	            });
 	        });
@@ -19628,17 +19704,13 @@
 	            var reverseName, resolverAddress, bytes, _a, length, name, addr;
 	            return __generator(this, function (_b) {
 	                switch (_b.label) {
-	                    case 0:
-	                        if (!(address instanceof Promise)) return [3 /*break*/, 2];
-	                        return [4 /*yield*/, address];
+	                    case 0: return [4 /*yield*/, address];
 	                    case 1:
 	                        address = _b.sent();
-	                        _b.label = 2;
-	                    case 2:
 	                        address = this.formatter.address(address);
 	                        reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
 	                        return [4 /*yield*/, this._getResolver(reverseName)];
-	                    case 3:
+	                    case 2:
 	                        resolverAddress = _b.sent();
 	                        if (!resolverAddress) {
 	                            return [2 /*return*/, null];
@@ -19648,7 +19720,7 @@
 	                                to: resolverAddress,
 	                                data: ("0x691f3431" + lib$9.namehash(reverseName).substring(2))
 	                            })];
-	                    case 4:
+	                    case 3:
 	                        bytes = _a.apply(void 0, [_b.sent()]);
 	                        // Strip off the dynamic string pointer (0x20)
 	                        if (bytes.length < 32 || !lib$2.BigNumber.from(bytes.slice(0, 32)).eq(32)) {
@@ -19667,7 +19739,7 @@
 	                        }
 	                        name = lib$8.toUtf8String(bytes.slice(0, length));
 	                        return [4 /*yield*/, this.resolveName(name)];
-	                    case 5:
+	                    case 4:
 	                        addr = _b.sent();
 	                        if (addr != address) {
 	                            return [2 /*return*/, null];
@@ -19943,13 +20015,20 @@
 	            estimate.from = fromAddress;
 	            transaction.gasLimit = this.provider.estimateGas(estimate);
 	        }
-	        return Promise.all([
-	            lib$3.resolveProperties(transaction),
-	            fromAddress
-	        ]).then(function (results) {
-	            var tx = results[0];
-	            var hexTx = _this.provider.constructor.hexlifyTransaction(tx);
-	            hexTx.from = results[1];
+	        return lib$3.resolveProperties({
+	            tx: lib$3.resolveProperties(transaction),
+	            sender: fromAddress
+	        }).then(function (_a) {
+	            var tx = _a.tx, sender = _a.sender;
+	            if (tx.from != null) {
+	                if (tx.from.toLowerCase() !== sender) {
+	                    logger.throwArgumentError("from address mismatch", "transaction", transaction);
+	                }
+	            }
+	            else {
+	                tx.from = sender;
+	            }
+	            var hexTx = _this.provider.constructor.hexlifyTransaction(tx, { from: true });
 	            return _this.provider.send("eth_sendTransaction", [hexTx]).then(function (hash) {
 	                return hash;
 	            }, function (error) {
@@ -21818,7 +21897,14 @@
 	var WebSocketProvider = /** @class */ (function (_super) {
 	    __extends(WebSocketProvider, _super);
 	    function WebSocketProvider(url, network) {
-	        var _this = _super.call(this, url, network) || this;
+	        var _this = this;
+	        // This will be added in the future; please open an issue to expedite
+	        if (network === "any") {
+	            logger.throwError("WebSocketProvider does not support 'any' network yet", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                operation: "network:any"
+	            });
+	        }
+	        _this = _super.call(this, url, network) || this;
 	        _this._pollingInterval = -1;
 	        lib$3.defineReadOnly(_this, "_websocket", new ws_1.default(_this.connection.url));
 	        lib$3.defineReadOnly(_this, "_requests", {});
@@ -22846,7 +22932,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.190";
+	exports.version = "ethers/5.0.0-beta.191";
 	});
 
 	var _version$N = unwrapExports(_version$M);

@@ -377,4 +377,27 @@ describe("Test Contract Transaction Population", function () {
             });
         });
     });
+    it("allows overriding with invalid, but nullish values", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var contractSigner, tx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        contractSigner = contract.connect(testAddress);
+                        return [4 /*yield*/, contractSigner.populateTransaction.unstake({
+                                blockTag: null,
+                                from: null
+                            })];
+                    case 1:
+                        tx = _a.sent();
+                        //console.log("Tx", tx);
+                        assert_1.default.equal(Object.keys(tx).length, 3, "correct number of keys");
+                        assert_1.default.equal(tx.data, "0x2def6620", "data matches");
+                        assert_1.default.equal(tx.to, testAddressCheck, "to address matches");
+                        assert_1.default.equal(tx.from, testAddressCheck.toLowerCase(), "from address matches");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
 });

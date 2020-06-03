@@ -26,7 +26,7 @@ function timer(timeout) {
 function getResult(payload) {
     if (payload.error) {
         // @TODO: not any
-        let error = new Error(payload.error.message);
+        const error = new Error(payload.error.message);
         error.code = payload.error.code;
         error.data = payload.error.data;
         throw error;
@@ -86,7 +86,7 @@ export class JsonRpcSigner extends Signer {
     }
     sendUncheckedTransaction(transaction) {
         transaction = shallowCopy(transaction);
-        let fromAddress = this.getAddress().then((address) => {
+        const fromAddress = this.getAddress().then((address) => {
             if (address) {
                 address = address.toLowerCase();
             }
@@ -96,17 +96,23 @@ export class JsonRpcSigner extends Signer {
         // wishes to use this, it is easy to specify explicitly, otherwise
         // we look it up for them.
         if (transaction.gasLimit == null) {
-            let estimate = shallowCopy(transaction);
+            const estimate = shallowCopy(transaction);
             estimate.from = fromAddress;
             transaction.gasLimit = this.provider.estimateGas(estimate);
         }
-        return Promise.all([
-            resolveProperties(transaction),
-            fromAddress
-        ]).then((results) => {
-            let tx = results[0];
-            let hexTx = this.provider.constructor.hexlifyTransaction(tx);
-            hexTx.from = results[1];
+        return resolveProperties({
+            tx: resolveProperties(transaction),
+            sender: fromAddress
+        }).then(({ tx, sender }) => {
+            if (tx.from != null) {
+                if (tx.from.toLowerCase() !== sender) {
+                    logger.throwArgumentError("from address mismatch", "transaction", transaction);
+                }
+            }
+            else {
+                tx.from = sender;
+            }
+            const hexTx = this.provider.constructor.hexlifyTransaction(tx, { from: true });
             return this.provider.send("eth_sendTransaction", [hexTx]).then((hash) => {
                 return hash;
             }, (error) => {
@@ -153,14 +159,14 @@ export class JsonRpcSigner extends Signer {
         });
     }
     signMessage(message) {
-        let data = ((typeof (message) === "string") ? toUtf8Bytes(message) : message);
+        const data = ((typeof (message) === "string") ? toUtf8Bytes(message) : message);
         return this.getAddress().then((address) => {
             // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
             return this.provider.send("eth_sign", [address.toLowerCase(), hexlify(data)]);
         });
     }
     unlock(password) {
-        let provider = this.provider;
+        const provider = this.provider;
         return this.getAddress().then(function (address) {
             return provider.send("personal_unlockAccount", [address.toLowerCase(), password, null]);
         });
@@ -261,7 +267,7 @@ export class JsonRpcProvider extends BaseProvider {
         });
     }
     send(method, params) {
-        let request = {
+        const request = {
             method: method,
             params: params,
             id: (this._nextId++),
@@ -373,8 +379,8 @@ export class JsonRpcProvider extends BaseProvider {
         if (this._pendingFilter != null) {
             return;
         }
-        let self = this;
-        let pendingFilter = this.send("eth_newPendingTransactionFilter", []);
+        const self = this;
+        const pendingFilter = this.send("eth_newPendingTransactionFilter", []);
         this._pendingFilter = pendingFilter;
         pendingFilter.then(function (filterId) {
             function poll() {
@@ -428,7 +434,7 @@ export class JsonRpcProvider extends BaseProvider {
         // Check only allowed properties are given
         const allowed = shallowCopy(allowedTransactionKeys);
         if (allowExtra) {
-            for (let key in allowExtra) {
+            for (const key in allowExtra) {
                 if (allowExtra[key]) {
                     allowed[key] = true;
                 }

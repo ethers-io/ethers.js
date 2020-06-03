@@ -3,6 +3,13 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.191 (2020-06-03 03:41)
+-----------------------------------------
+
+  - Allow undefined properties in transaction object and fix stray this. ([#860](https://github.com/ethers-io/ethers.js/issues/860); [98bb589](https://github.com/ethers-io/ethers.js/commit/98bb58964bec7dff0ccf481d474354ec1ca6f376), [d2406c4](https://github.com/ethers-io/ethers.js/commit/d2406c42a18c123205918eb46bf24de0ff97ee23))
+  - Allow JsonRpcSigner to override from if it matches Signer. ([#862](https://github.com/ethers-io/ethers.js/issues/862); [1a89c59](https://github.com/ethers-io/ethers.js/commit/1a89c591c26a7fcc2031d0df90137d8a096c5c01))
+  - Added initial support for spontaneous network changes. ([#495](https://github.com/ethers-io/ethers.js/issues/495), [#861](https://github.com/ethers-io/ethers.js/issues/861); [2bc7bb6](https://github.com/ethers-io/ethers.js/commit/2bc7bb6e61219a40cfe2acd95c115c2195c21223), [d2ca4fb](https://github.com/ethers-io/ethers.js/commit/d2ca4fb443b2653063ca5aa349b52ecd0ff79e2f))
+
 ethers/v5.0.0-beta.190 (2020-06-01 05:02)
 -----------------------------------------
 

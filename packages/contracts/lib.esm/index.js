@@ -149,7 +149,7 @@ function populateTransaction(contract, fragment, args) {
         delete overrides.value;
         // Make sure there are no stray overrides, which may indicate a
         // typo or using an unsupported key.
-        const leftovers = Object.keys(overrides);
+        const leftovers = Object.keys(overrides).filter((key) => (overrides[key] != null));
         if (leftovers.length) {
             logger.throwError(`cannot override ${leftovers.map((l) => JSON.stringify(l)).join(",")}`, Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "overrides",
@@ -188,10 +188,10 @@ function buildCall(contract, fragment, collapseSimple) {
             let blockTag = undefined;
             if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
                 const overrides = shallowCopy(args.pop());
-                if (overrides.blockTag) {
+                if (overrides.blockTag != null) {
                     blockTag = yield overrides.blockTag;
-                    delete overrides.blockTag;
                 }
+                delete overrides.blockTag;
                 args.push(overrides);
             }
             // If the contract was just deployed, wait until it is mined
@@ -248,7 +248,7 @@ function buildSend(contract, fragment) {
                         if (parsed) {
                             event.args = parsed.args;
                             event.decode = (data, topics) => {
-                                return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
+                                return contract.interface.decodeEventLog(parsed.eventFragment, data, topics);
                             };
                             event.event = parsed.name;
                             event.eventSignature = parsed.signature;

@@ -5,16 +5,6 @@ import { Network, Networkish } from "@ethersproject/networks";
 import { Deferrable } from "@ethersproject/properties";
 import { Transaction } from "@ethersproject/transactions";
 import { Formatter } from "./formatter";
-/**
- *  EventType
- *   - "block"
- *   - "poll"
- *   - "pending"
- *   - "error"
- *   - filter
- *   - topics array
- *   - transaction hash
- */
 export declare class Event {
     readonly listener: Listener;
     readonly once: boolean;
@@ -47,6 +37,7 @@ export declare class BaseProvider extends Provider {
         reqTime: number;
         respTime: number;
     }>;
+    readonly anyNetwork: boolean;
     /**
      *  ready
      *
@@ -59,13 +50,13 @@ export declare class BaseProvider extends Provider {
     constructor(network: Networkish | Promise<Network>);
     _ready(): Promise<Network>;
     get ready(): Promise<Network>;
-    detectNetwork(): Promise<Network>;
     static getFormatter(): Formatter;
     static getNetwork(network: Networkish): Network;
     _getInternalBlockNumber(maxAge: number): Promise<number>;
     poll(): Promise<void>;
     resetEventsBlock(blockNumber: number): void;
     get network(): Network;
+    detectNetwork(): Promise<Network>;
     getNetwork(): Promise<Network>;
     get blockNumber(): number;
     get polling(): boolean;

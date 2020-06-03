@@ -208,7 +208,7 @@ function populateTransaction(contract, fragment, args) {
                     delete overrides.gasPrice;
                     delete overrides.from;
                     delete overrides.value;
-                    leftovers = Object.keys(overrides);
+                    leftovers = Object.keys(overrides).filter(function (key) { return (overrides[key] != null); });
                     if (leftovers.length) {
                         logger.throwError("cannot override " + leftovers.map(function (l) { return JSON.stringify(l); }).join(","), logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                             operation: "overrides",
@@ -275,13 +275,13 @@ function buildCall(contract, fragment, collapseSimple) {
                         blockTag = undefined;
                         if (!(args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object")) return [3 /*break*/, 3];
                         overrides = properties_1.shallowCopy(args.pop());
-                        if (!overrides.blockTag) return [3 /*break*/, 2];
+                        if (!(overrides.blockTag != null)) return [3 /*break*/, 2];
                         return [4 /*yield*/, overrides.blockTag];
                     case 1:
                         blockTag = _a.sent();
-                        delete overrides.blockTag;
                         _a.label = 2;
                     case 2:
+                        delete overrides.blockTag;
                         args.push(overrides);
                         _a.label = 3;
                     case 3:
@@ -325,7 +325,6 @@ function buildSend(contract, fragment) {
         }
         return __awaiter(this, void 0, void 0, function () {
             var txRequest, tx, wait;
-            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -359,7 +358,7 @@ function buildSend(contract, fragment) {
                                     if (parsed) {
                                         event.args = parsed.args;
                                         event.decode = function (data, topics) {
-                                            return _this.interface.decodeEventLog(parsed.eventFragment, data, topics);
+                                            return contract.interface.decodeEventLog(parsed.eventFragment, data, topics);
                                         };
                                         event.event = parsed.name;
                                         event.eventSignature = parsed.signature;

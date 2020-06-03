@@ -147,13 +147,20 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             estimate.from = fromAddress;
             transaction.gasLimit = this.provider.estimateGas(estimate);
         }
-        return Promise.all([
-            properties_1.resolveProperties(transaction),
-            fromAddress
-        ]).then(function (results) {
-            var tx = results[0];
-            var hexTx = _this.provider.constructor.hexlifyTransaction(tx);
-            hexTx.from = results[1];
+        return properties_1.resolveProperties({
+            tx: properties_1.resolveProperties(transaction),
+            sender: fromAddress
+        }).then(function (_a) {
+            var tx = _a.tx, sender = _a.sender;
+            if (tx.from != null) {
+                if (tx.from.toLowerCase() !== sender) {
+                    logger.throwArgumentError("from address mismatch", "transaction", transaction);
+                }
+            }
+            else {
+                tx.from = sender;
+            }
+            var hexTx = _this.provider.constructor.hexlifyTransaction(tx, { from: true });
             return _this.provider.send("eth_sendTransaction", [hexTx]).then(function (hash) {
                 return hash;
             }, function (error) {

@@ -8192,7 +8192,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$b = "contracts/5.0.0-beta.155";
+const version$b = "contracts/5.0.0-beta.156";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8334,7 +8334,7 @@ function populateTransaction(contract, fragment, args) {
         delete overrides.value;
         // Make sure there are no stray overrides, which may indicate a
         // typo or using an unsupported key.
-        const leftovers = Object.keys(overrides);
+        const leftovers = Object.keys(overrides).filter((key) => (overrides[key] != null));
         if (leftovers.length) {
             logger$f.throwError(`cannot override ${leftovers.map((l) => JSON.stringify(l)).join(",")}`, Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "overrides",
@@ -8373,10 +8373,10 @@ function buildCall(contract, fragment, collapseSimple) {
             let blockTag = undefined;
             if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
                 const overrides = shallowCopy(args.pop());
-                if (overrides.blockTag) {
+                if (overrides.blockTag != null) {
                     blockTag = yield overrides.blockTag;
-                    delete overrides.blockTag;
                 }
+                delete overrides.blockTag;
                 args.push(overrides);
             }
             // If the contract was just deployed, wait until it is mined
@@ -8433,7 +8433,7 @@ function buildSend(contract, fragment) {
                         if (parsed) {
                             event.args = parsed.args;
                             event.decode = (data, topics) => {
-                                return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
+                                return contract.interface.decodeEventLog(parsed.eventFragment, data, topics);
                             };
                             event.event = parsed.name;
                             event.eventSignature = parsed.signature;
@@ -16141,7 +16141,7 @@ function poll(func, options) {
     });
 }
 
-const version$m = "providers/5.0.0-beta.170";
+const version$m = "providers/5.0.0-beta.171";
 
 "use strict";
 const logger$q = new Logger(version$m);
@@ -16604,18 +16604,26 @@ function getEventTag$1(eventName) {
 function getTime() {
     return (new Date()).getTime();
 }
+function stall(duration) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, duration);
+    });
+}
 //////////////////////////////
 // Provider Object
 /**
  *  EventType
  *   - "block"
  *   - "poll"
+ *   - "didPoll"
  *   - "pending"
  *   - "error"
+ *   - "network"
  *   - filter
  *   - topics array
  *   - transaction hash
  */
+const PollableEvents = ["block", "network", "pending", "poll"];
 class Event {
     constructor(tag, listener, once) {
         defineReadOnly(this, "tag", tag);
@@ -16658,7 +16666,7 @@ class Event {
         return filter;
     }
     pollable() {
-        return (this.tag.indexOf(":") >= 0 || this.tag === "block" || this.tag === "pending" || this.tag === "poll");
+        return (this.tag.indexOf(":") >= 0 || PollableEvents.indexOf(this.tag) >= 0);
     }
 }
 let defaultFormatter = null;
@@ -16676,16 +16684,29 @@ class BaseProvider extends Provider {
     constructor(network) {
         logger$r.checkNew(new.target, Provider);
         super();
+        // Events being listened to
+        this._events = [];
+        this._emitted = { block: -2 };
         this.formatter = new.target.getFormatter();
+        // If network is any, this Provider allows the underlying
+        // network to change dynamically, and we auto-detect the
+        // current network
+        defineReadOnly(this, "anyNetwork", (network === "any"));
+        if (this.anyNetwork) {
+            network = this.detectNetwork();
+        }
         if (network instanceof Promise) {
             this._networkPromise = network;
             // Squash any "unhandled promise" errors; that do not need to be handled
             network.catch((error) => { });
+            // Trigger initial network setting (async)
+            this._ready();
         }
         else {
             const knownNetwork = getStatic((new.target), "getNetwork")(network);
             if (knownNetwork) {
                 defineReadOnly(this, "_network", knownNetwork);
+                this.emit("network", knownNetwork, null);
             }
             else {
                 logger$r.throwArgumentError("invalid network", "network", network);
@@ -16693,10 +16714,7 @@ class BaseProvider extends Provider {
         }
         this._maxInternalBlockNumber = -1024;
         this._lastBlockNumber = -2;
-        // Events being listened to
-        this._events = [];
         this._pollingInterval = 4000;
-        this._emitted = { block: -2 };
         this._fastQueryDate = 0;
     }
     _ready() {
@@ -16720,31 +16738,37 @@ class BaseProvider extends Provider {
                 }
                 // Possible this call stacked so do not call defineReadOnly again
                 if (this._network == null) {
-                    defineReadOnly(this, "_network", network);
+                    if (this.anyNetwork) {
+                        this._network = network;
+                    }
+                    else {
+                        defineReadOnly(this, "_network", network);
+                    }
+                    this.emit("network", network, null);
                 }
             }
             return this._network;
         });
     }
+    // This will always return the most recently established network.
+    // For "any", this can change (a "network" event is emitted before
+    // any change is refelcted); otherwise this cannot change
     get ready() {
         return this._ready();
     }
-    detectNetwork() {
-        return __awaiter$6(this, void 0, void 0, function* () {
-            return logger$r.throwError("provider does not support network detection", Logger.errors.UNSUPPORTED_OPERATION, {
-                operation: "provider.detectNetwork"
-            });
-        });
-    }
+    // @TODO: Remove this and just create a singleton formatter
     static getFormatter() {
         if (defaultFormatter == null) {
             defaultFormatter = new Formatter();
         }
         return defaultFormatter;
     }
+    // @TODO: Remove this and just use getNetwork
     static getNetwork(network) {
         return getNetwork((network == null) ? "homestead" : network);
     }
+    // Fetches the blockNumber, but will reuse any result that is less
+    // than maxAge old or has been requested since the last request
     _getInternalBlockNumber(maxAge) {
         return __awaiter$6(this, void 0, void 0, function* () {
             yield this.ready;
@@ -16756,7 +16780,17 @@ class BaseProvider extends Provider {
                 }
             }
             const reqTime = getTime();
-            this._internalBlockNumber = this.perform("getBlockNumber", {}).then((blockNumber) => {
+            const checkInternalBlockNumber = resolveProperties({
+                blockNumber: this.perform("getBlockNumber", {}),
+                networkError: this.getNetwork().then((network) => (null), (error) => (error))
+            }).then(({ blockNumber, networkError }) => {
+                if (networkError) {
+                    // Unremember this bad internal block number
+                    if (this._internalBlockNumber === checkInternalBlockNumber) {
+                        this._internalBlockNumber = null;
+                    }
+                    throw networkError;
+                }
                 const respTime = getTime();
                 blockNumber = BigNumber.from(blockNumber).toNumber();
                 if (blockNumber < this._maxInternalBlockNumber) {
@@ -16766,13 +16800,13 @@ class BaseProvider extends Provider {
                 this._setFastBlockNumber(blockNumber); // @TODO: Still need this?
                 return { blockNumber, reqTime, respTime };
             });
-            return (yield this._internalBlockNumber).blockNumber;
+            this._internalBlockNumber = checkInternalBlockNumber;
+            return (yield checkInternalBlockNumber).blockNumber;
         });
     }
     poll() {
         return __awaiter$6(this, void 0, void 0, function* () {
             const pollId = nextPollId++;
-            this.emit("willPoll", pollId);
             // Track all running promises, so we can trigger a post-poll once they are complete
             const runners = [];
             const blockNumber = yield this._getInternalBlockNumber(100 + this.pollingInterval / 2);
@@ -16788,9 +16822,19 @@ class BaseProvider extends Provider {
             if (this._emitted.block === -2) {
                 this._emitted.block = blockNumber - 1;
             }
-            // Notify all listener for each block that has passed
-            for (let i = this._emitted.block + 1; i <= blockNumber; i++) {
-                this.emit("block", i);
+            if (Math.abs((this._emitted.block) - blockNumber) > 1000) {
+                logger$r.warn("network block skew detected; skipping block events");
+                this.emit("error", logger$r.makeError("network block skew detected", Logger.errors.NETWORK_ERROR, {
+                    blockNumber: blockNumber,
+                    previousBlockNumber: this._emitted.block
+                }));
+                this.emit("block", blockNumber);
+            }
+            else {
+                // Notify all listener for each block that has passed
+                for (let i = this._emitted.block + 1; i <= blockNumber; i++) {
+                    this.emit("block", i);
+                }
             }
             // The emitted block was updated, check for obsolete events
             if (this._emitted.block !== blockNumber) {
@@ -16855,12 +16899,14 @@ class BaseProvider extends Provider {
                 }
             });
             this._lastBlockNumber = blockNumber;
+            // Once all events for this loop have been processed, emit "didPoll"
             Promise.all(runners).then(() => {
                 this.emit("didPoll", pollId);
             });
             return null;
         });
     }
+    // Deprecated; do not use this
     resetEventsBlock(blockNumber) {
         this._lastBlockNumber = blockNumber - 1;
         if (this.polling) {
@@ -16870,8 +16916,52 @@ class BaseProvider extends Provider {
     get network() {
         return this._network;
     }
+    // This method should query the network if the underlying network
+    // can change, such as when connected to a JSON-RPC backend
+    detectNetwork() {
+        return __awaiter$6(this, void 0, void 0, function* () {
+            return logger$r.throwError("provider does not support network detection", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "provider.detectNetwork"
+            });
+        });
+    }
     getNetwork() {
-        return this.ready;
+        return __awaiter$6(this, void 0, void 0, function* () {
+            const network = yield this.ready;
+            // Make sure we are still connected to the same network; this is
+            // only an external call for backends which can have the underlying
+            // network change spontaneously
+            const currentNetwork = yield this.detectNetwork();
+            if (network.chainId !== currentNetwork.chainId) {
+                // We are allowing network changes, things can get complex fast;
+                // make sure you know what you are doing if you use "any"
+                if (this.anyNetwork) {
+                    this._network = currentNetwork;
+                    // Reset all internal block number guards and caches
+                    this._lastBlockNumber = -2;
+                    this._fastBlockNumber = null;
+                    this._fastBlockNumberPromise = null;
+                    this._fastQueryDate = 0;
+                    this._emitted.block = -2;
+                    this._maxInternalBlockNumber = -1024;
+                    this._internalBlockNumber = null;
+                    // The "network" event MUST happen before this method resolves
+                    // so any events have a chance to unregister, so we stall an
+                    // additional event loop before returning from /this/ call
+                    this.emit("network", currentNetwork, network);
+                    yield stall(0);
+                    return this._network;
+                }
+                const error = logger$r.makeError("underlying network changed", Logger.errors.NETWORK_ERROR, {
+                    event: "changed",
+                    network: network,
+                    detectedNetwork: currentNetwork
+                });
+                this.emit("error", error);
+                throw error;
+            }
+            return network;
+        });
     }
     get blockNumber() {
         this._getInternalBlockNumber(100 + this.pollingInterval / 2).then((blockNumber) => {
@@ -16947,8 +17037,6 @@ class BaseProvider extends Provider {
             this._fastBlockNumberPromise = Promise.resolve(blockNumber);
         }
     }
-    // @TODO: Add .poller which must be an event emitter with a 'start', 'stop' and 'block' event;
-    //        this will be used once we move to the WebSocket or other alternatives to polling
     waitForTransaction(transactionHash, confirmations, timeout) {
         return __awaiter$6(this, void 0, void 0, function* () {
             if (confirmations == null) {
@@ -16996,17 +17084,19 @@ class BaseProvider extends Provider {
         });
     }
     getBlockNumber() {
-        return this._getInternalBlockNumber(0);
+        return __awaiter$6(this, void 0, void 0, function* () {
+            return this._getInternalBlockNumber(0);
+        });
     }
     getGasPrice() {
         return __awaiter$6(this, void 0, void 0, function* () {
-            yield this.ready;
+            yield this.getNetwork();
             return BigNumber.from(yield this.perform("getGasPrice", {}));
         });
     }
     getBalance(addressOrName, blockTag) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            yield this.ready;
+            yield this.getNetwork();
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
                 blockTag: this._getBlockTag(blockTag)
@@ -17016,7 +17106,7 @@ class BaseProvider extends Provider {
     }
     getTransactionCount(addressOrName, blockTag) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            yield this.ready;
+            yield this.getNetwork();
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
                 blockTag: this._getBlockTag(blockTag)
@@ -17026,7 +17116,7 @@ class BaseProvider extends Provider {
     }
     getCode(addressOrName, blockTag) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            yield this.ready;
+            yield this.getNetwork();
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
                 blockTag: this._getBlockTag(blockTag)
@@ -17036,7 +17126,7 @@ class BaseProvider extends Provider {
     }
     getStorageAt(addressOrName, position, blockTag) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            yield this.ready;
+            yield this.getNetwork();
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
                 blockTag: this._getBlockTag(blockTag),
@@ -17082,7 +17172,7 @@ class BaseProvider extends Provider {
     }
     sendTransaction(signedTransaction) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            yield this.ready;
+            yield this.getNetwork();
             const hexTx = yield Promise.resolve(signedTransaction).then(t => hexlify(t));
             const tx = this.formatter.transaction(signedTransaction);
             try {
@@ -17123,9 +17213,7 @@ class BaseProvider extends Provider {
     }
     _getFilter(filter) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            if (filter instanceof Promise) {
-                filter = yield filter;
-            }
+            filter = yield filter;
             const result = {};
             if (filter.address != null) {
                 result.address = this._getAddress(filter.address);
@@ -17147,7 +17235,7 @@ class BaseProvider extends Provider {
     }
     call(transaction, blockTag) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            yield this.ready;
+            yield this.getNetwork();
             const params = yield resolveProperties({
                 transaction: this._getTransactionRequest(transaction),
                 blockTag: this._getBlockTag(blockTag)
@@ -17157,7 +17245,7 @@ class BaseProvider extends Provider {
     }
     estimateGas(transaction) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            yield this.ready;
+            yield this.getNetwork();
             const params = yield resolveProperties({
                 transaction: this._getTransactionRequest(transaction)
             });
@@ -17177,10 +17265,8 @@ class BaseProvider extends Provider {
     }
     _getBlock(blockHashOrBlockTag, includeTransactions) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            yield this.ready;
-            if (blockHashOrBlockTag instanceof Promise) {
-                blockHashOrBlockTag = yield blockHashOrBlockTag;
-            }
+            yield this.getNetwork();
+            blockHashOrBlockTag = yield blockHashOrBlockTag;
             // If blockTag is a number (not "latest", etc), this is the block number
             let blockNumber = -128;
             const params = {
@@ -17255,10 +17341,8 @@ class BaseProvider extends Provider {
     }
     getTransaction(transactionHash) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            yield this.ready;
-            if (transactionHash instanceof Promise) {
-                transactionHash = yield transactionHash;
-            }
+            yield this.getNetwork();
+            transactionHash = yield transactionHash;
             const params = { transactionHash: this.formatter.hash(transactionHash, true) };
             return poll(() => __awaiter$6(this, void 0, void 0, function* () {
                 const result = yield this.perform("getTransaction", params);
@@ -17287,10 +17371,8 @@ class BaseProvider extends Provider {
     }
     getTransactionReceipt(transactionHash) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            yield this.ready;
-            if (transactionHash instanceof Promise) {
-                transactionHash = yield transactionHash;
-            }
+            yield this.getNetwork();
+            transactionHash = yield transactionHash;
             const params = { transactionHash: this.formatter.hash(transactionHash, true) };
             return poll(() => __awaiter$6(this, void 0, void 0, function* () {
                 const result = yield this.perform("getTransactionReceipt", params);
@@ -17323,7 +17405,7 @@ class BaseProvider extends Provider {
     }
     getLogs(filter) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            yield this.ready;
+            yield this.getNetwork();
             const params = yield resolveProperties({ filter: this._getFilter(filter) });
             const logs = yield this.perform("getLogs", params);
             logs.forEach((log) => {
@@ -17336,15 +17418,13 @@ class BaseProvider extends Provider {
     }
     getEtherPrice() {
         return __awaiter$6(this, void 0, void 0, function* () {
-            yield this.ready;
+            yield this.getNetwork();
             return this.perform("getEtherPrice", {});
         });
     }
     _getBlockTag(blockTag) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            if (blockTag instanceof Promise) {
-                blockTag = yield blockTag;
-            }
+            blockTag = yield blockTag;
             if (typeof (blockTag) === "number" && blockTag < 0) {
                 if (blockTag % 1) {
                     logger$r.throwArgumentError("invalid BlockTag", "blockTag", blockTag);
@@ -17377,9 +17457,7 @@ class BaseProvider extends Provider {
     }
     resolveName(name) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            if (name instanceof Promise) {
-                name = yield name;
-            }
+            name = yield name;
             // If it is already an address, nothing to resolve
             try {
                 return Promise.resolve(this.formatter.address(name));
@@ -17408,9 +17486,7 @@ class BaseProvider extends Provider {
     }
     lookupAddress(address) {
         return __awaiter$6(this, void 0, void 0, function* () {
-            if (address instanceof Promise) {
-                address = yield address;
-            }
+            address = yield address;
             address = this.formatter.address(address);
             const reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
             const resolverAddress = yield this._getResolver(reverseName);
@@ -17568,7 +17644,7 @@ function timer(timeout) {
 function getResult(payload) {
     if (payload.error) {
         // @TODO: not any
-        let error = new Error(payload.error.message);
+        const error = new Error(payload.error.message);
         error.code = payload.error.code;
         error.data = payload.error.data;
         throw error;
@@ -17628,7 +17704,7 @@ class JsonRpcSigner extends Signer {
     }
     sendUncheckedTransaction(transaction) {
         transaction = shallowCopy(transaction);
-        let fromAddress = this.getAddress().then((address) => {
+        const fromAddress = this.getAddress().then((address) => {
             if (address) {
                 address = address.toLowerCase();
             }
@@ -17638,17 +17714,23 @@ class JsonRpcSigner extends Signer {
         // wishes to use this, it is easy to specify explicitly, otherwise
         // we look it up for them.
         if (transaction.gasLimit == null) {
-            let estimate = shallowCopy(transaction);
+            const estimate = shallowCopy(transaction);
             estimate.from = fromAddress;
             transaction.gasLimit = this.provider.estimateGas(estimate);
         }
-        return Promise.all([
-            resolveProperties(transaction),
-            fromAddress
-        ]).then((results) => {
-            let tx = results[0];
-            let hexTx = this.provider.constructor.hexlifyTransaction(tx);
-            hexTx.from = results[1];
+        return resolveProperties({
+            tx: resolveProperties(transaction),
+            sender: fromAddress
+        }).then(({ tx, sender }) => {
+            if (tx.from != null) {
+                if (tx.from.toLowerCase() !== sender) {
+                    logger$s.throwArgumentError("from address mismatch", "transaction", transaction);
+                }
+            }
+            else {
+                tx.from = sender;
+            }
+            const hexTx = this.provider.constructor.hexlifyTransaction(tx, { from: true });
             return this.provider.send("eth_sendTransaction", [hexTx]).then((hash) => {
                 return hash;
             }, (error) => {
@@ -17695,14 +17777,14 @@ class JsonRpcSigner extends Signer {
         });
     }
     signMessage(message) {
-        let data = ((typeof (message) === "string") ? toUtf8Bytes(message) : message);
+        const data = ((typeof (message) === "string") ? toUtf8Bytes(message) : message);
         return this.getAddress().then((address) => {
             // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
             return this.provider.send("eth_sign", [address.toLowerCase(), hexlify(data)]);
         });
     }
     unlock(password) {
-        let provider = this.provider;
+        const provider = this.provider;
         return this.getAddress().then(function (address) {
             return provider.send("personal_unlockAccount", [address.toLowerCase(), password, null]);
         });
@@ -17803,7 +17885,7 @@ class JsonRpcProvider extends BaseProvider {
         });
     }
     send(method, params) {
-        let request = {
+        const request = {
             method: method,
             params: params,
             id: (this._nextId++),
@@ -17915,8 +17997,8 @@ class JsonRpcProvider extends BaseProvider {
         if (this._pendingFilter != null) {
             return;
         }
-        let self = this;
-        let pendingFilter = this.send("eth_newPendingTransactionFilter", []);
+        const self = this;
+        const pendingFilter = this.send("eth_newPendingTransactionFilter", []);
         this._pendingFilter = pendingFilter;
         pendingFilter.then(function (filterId) {
             function poll() {
@@ -17970,7 +18052,7 @@ class JsonRpcProvider extends BaseProvider {
         // Check only allowed properties are given
         const allowed = shallowCopy(allowedTransactionKeys$3);
         if (allowExtra) {
-            for (let key in allowExtra) {
+            for (const key in allowExtra) {
                 if (allowExtra[key]) {
                     allowed[key] = true;
                 }
@@ -18554,7 +18636,7 @@ function serialize$1(value) {
 // Next request ID to use for emitting debug info
 let nextRid = 1;
 ;
-function stall(duration) {
+function stall$1(duration) {
     let cancel = null;
     let timer = null;
     let promise = (new Promise((resolve) => {
@@ -18893,7 +18975,7 @@ class FallbackProvider extends BaseProvider {
                     const config = configs[i++];
                     const rid = nextRid++;
                     config.start = now();
-                    config.staller = stall(config.stallTimeout);
+                    config.staller = stall$1(config.stallTimeout);
                     config.staller.wait(() => { config.staller = null; });
                     config.runner = getRunner(config, currentBlockNumber, method, params).then((result) => {
                         config.done = true;
@@ -18961,7 +19043,7 @@ class FallbackProvider extends BaseProvider {
                         return result;
                     }
                     if (!first) {
-                        yield stall(100).getPromise();
+                        yield stall$1(100).getPromise();
                     }
                     first = false;
                 }
@@ -18999,7 +19081,7 @@ var browserIpcProvider = {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.0-beta.170";
+exports.version = "providers/5.0.0-beta.171";
 });
 
 var _version$3 = unwrapExports(_version$2);
@@ -19060,6 +19142,12 @@ let NextId = 1;
 //   https://geth.ethereum.org/docs/rpc/pubsub
 class WebSocketProvider extends JsonRpcProvider {
     constructor(url, network) {
+        // This will be added in the future; please open an issue to expedite
+        if (network === "any") {
+            logger$y.throwError("WebSocketProvider does not support 'any' network yet", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "network:any"
+            });
+        }
         super(url, network);
         this._pollingInterval = -1;
         defineReadOnly(this, "_websocket", new WebSocket$1(this.connection.url));
@@ -19773,7 +19861,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.0-beta.190";
+const version$o = "ethers/5.0.0-beta.191";
 
 "use strict";
 const logger$E = new Logger(version$o);
