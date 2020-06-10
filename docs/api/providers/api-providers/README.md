@@ -7,103 +7,190 @@ Documentation: [html](https://docs-beta.ethers.io/)
 API Providers
 =============
 
-
-There are many services which offer a web API for accessing
-the Ethereum Blockchain. These Providers allow connecting
-to them, which simplifies development, since you do not need
-to run your own instance or cluster of Ethereum nodes.
-
-However, this reliance on third-party services can reduce
-resiliance, security and increase the amount of required trust.
-To mitigate these issues, it is recommended you use a
-[Default Provider](..).
-
-
 EtherscanProvider
 -----------------
 
+#### **new ***ethers* . *providers* . **EtherscanProvider**( [ network = "homestead" , [ apiKey ] ] )
 
-The **EtherscanProvider** is backed by a combination of the various
-[Etherscan APIs](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/etherscan.io/apis).
+Create a new **EtherscanProvider** connected to *network* with the optional *apiKey*.
+
+The *network* may be specified as **string** for a common network name, a **number** for a common chain ID or a [Network Object]provider-(network).
+
+If no *apiKey* is provided, a shared API key will be used, which may result in reduced performance and throttled requests. It is highly recommended for production, you register with [Etherscan](https://etherscan.io) for your own API key.
 
 
-#### *provider* . **getHistory** ( address )  **=>** *Array< History >*
+#### Note: Default API keys
 
-@TODO... Explain
+If no *apiKey* is provided, a shared API key will be used, which may result in reduced performance and throttled requests.
 
-
+It is highly recommended for production, you register with [Etherscan](https://etherscan.io) for your own API key.
 
 
 #### **Supported Networks**
 
+- Homestead (Mainnet) 
+- Ropsten (proof-of-work testnet) 
+- Rinkeby (proof-of-authority testnet) 
+- Gorli (clique testnet) 
+- Kovan (proof-of-authority testnet) 
 
 
-* Homestead (Mainnet)
-* Ropsten (proof-of-work testnet)
-* Rinkeby (proof-of-authority testnet)
-* G&ouml;rli (clique testnet)
-* Kovan (proof-of-authority testnet)
 
 
+```javascript
+// <hide>
+const EtherscanProvider = ethers.providers.EtherscanProvider;
+const apiKey = "...";
+// </hide>
+
+// Connect to mainnet (homestead)
+provider = new EtherscanProvider();
+
+// Connect to rinkeby testnet (these are equivalent)
+provider = new EtherscanProvider("rinkeby");
+provider = new EtherscanProvider(4);
+
+const network = ethers.providers.getNetwork("rinkeby");
+// <hide>
+delete network._defaultProvider;
+network
+// </hide>
+//!
+
+provider = new EtherscanProvider(network);
+
+// Connect to mainnet (homestead) with an API key
+provider = new EtherscanProvider(null, apiKey);
+provider = new EtherscanProvider("homestead", apiKey);
+```
+
+#### *provider* . **getHistory**( address ) => *Array< History >*
+
+@TODO... Explain
 
 
 InfuraProvider
 --------------
 
+#### **new ***ethers* . *providers* . **InfuraProvider**( [ network = "homestead" , [ apiKey ] ] )
 
-The **InfuraProvider** is backed by the popular [INFURA](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/infura.io)
-Ethereum service.
+Create a new **InfuraProvider** connected to *network* with the optional *apiKey*.
+
+The *network* may be specified as **string** for a common network name, a **number** for a common chain ID or a [Network Object]provider-(network).
+
+The *apiKey* can be a **string** Project ID or an **object** with the properties `projectId` and `projectSecret` to specify a [Project Secret](https://infura.io/docs/gettingStarted/authentication) which can be used on non-public sources (like on a server) to further secure your API access and quotas.
+
+
+#### Note: Default API keys
+
+If no *apiKey* is provided, a shared API key will be used, which may result in reduced performance and throttled requests.
+
+It is highly recommended for production, you register with [INFURA](https://infura.io) for your own API key.
 
 
 #### **Supported Networks**
 
+- Homestead (Mainnet) 
+- Ropsten (proof-of-work testnet) 
+- Rinkeby (proof-of-authority testnet) 
+- Gorli (clique testnet) 
+- Kovan (proof-of-authority testnet) 
 
 
-* Homestead (Mainnet)
-* Ropsten (proof-of-work testnet)
-* Rinkeby (proof-of-authority testnet)
-* G&ouml;rli (clique testnet)
-* Kovan (proof-of-authority testnet)
 
 
+```javascript
+// <hide>
+const InfuraProvider = ethers.providers.InfuraProvider;
+const projectId = "...";
+const projectSecret = "...";
+// </hide>
 
+// Connect to mainnet (homestead)
+provider = new InfuraProvider();
+
+// Connect to the ropsten testnet
+// (see EtherscanProvider above for other network examples)
+provider = new InfuraProvider("ropsten");
+
+// Connect to mainnet with a Project ID (these are equivalent)
+provider = new InfuraProvider(null, projectId);
+provider = new InfuraProvider("homestead", projectId);
+
+// Connect to mainnet with a Project ID and Project Secret
+provider = new InfuraProvider("homestead", {
+    projectId: projectId,
+    projectSecret: projectSecret
+});
+```
 
 AlchemyProvider
 ---------------
 
+#### **new ***ethers* . *providers* . **AlchemyProvider**( [ network = "homestead" , [ apiKey ] ] )
 
-The **AlchemtProvider** is backed by [Alchemy](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/alchemyapi.io).
+Create a new **AlchemyProvider** connected to *network* with the optional *apiKey*.
+
+The *network* may be specified as **string** for a common network name, a **number** for a common chain ID or a [Network Object](/api/providers/types/#providers-Network).
+
+
+#### Note: Default API keys
+
+If no *apiKey* is provided, a shared API key will be used, which may result in reduced performance and throttled requests.
+
+It is highly recommended for production, you register with [Alchemy](https://alchemyapi.io) for your own API key.
 
 
 #### **Supported Networks**
 
-
-
-* Homestead (Mainnet)
-* Ropsten (proof-of-work testnet)
-* Rinkeby (proof-of-authority testnet)
-* G&ouml;rli (clique testnet)
-* Kovan (proof-of-authority testnet)
+- Homestead (Mainnet) 
+- Ropsten (proof-of-work testnet) 
+- Rinkeby (proof-of-authority testnet) 
+- Gorli (clique testnet) 
+- Kovan (proof-of-authority testnet) 
 
 
 
 
-CloudfrontProvider
+```javascript
+// <hide>
+const AlchemyProvider = ethers.providers.AlchemyProvider;
+const apiKey = "...";
+// </hide>
+
+// Connect to mainnet (homestead)
+provider = new AlchemyProvider();
+
+// Connect to the ropsten testnet
+// (see EtherscanProvider above for other network examples)
+provider = new AlchemyProvider("ropsten");
+
+// Connect to mainnet with an API key (these are equivalent)
+provider = new AlchemyProvider(null, apiKey);
+provider = new AlchemyProvider("homestead", apiKey);
+```
+
+CloudflareProvider
 ------------------
 
+#### **new ***ethers* . *providers* . **CloudflareProvider**( )
 
-The CloudfrontProvider is backed by the [Cloudflare Ethereum Gateway](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/developers.cloudflare.com/distributed-web/ethereum-gateway).
+Create a new **CloudflareProvider** connected to mainnet (i.e. "homestead").
 
 
 #### **Supported Networks**
 
-
-
-* Homestead (Mainnet)
-
+- Homestead (Mainnet) 
 
 
 
 
------
-**Content Hash:** 79ad5dae92f00fc2ef2aceff6620ed9ae5f12d92d9e29ebc6be1c5752e65322f
+```javascript
+// <hide>
+const CloudflareProvider = ethers.providers.CloudflareProvider;
+// </hide>
+
+// Connect to mainnet (homestead)
+provider = new CloudflareProvider();
+```
+

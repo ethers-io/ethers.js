@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html class="paged">
+  <head>
+    <title>Ethers ASM Dialect</title>
+    <link rel="stylesheet" type="text/css" href="/v5/static/style.css">
+  </head>
+  <body>
+    <div class="sidebar">
+      <div class="header">
+        <div class="logo"><a href="/v5/"><div class="image"></div><div class="name">ethers</div><div class="version">v5.0-beta</div></a></div>
+      </div>
+      <div class="toc"><div>
+        <div class="link title"><a href="/">Documentation</a></div><div class="base show link depth-1"><a href="/v5/getting-started/">Getting Started</a></div><div class="base show link depth-1"><a href="/v5/concepts/">Ethereum Basics</a></div><div class="hide link depth-2"><a href="/v5/concepts/events/">Events</a></div><div class="hide link depth-2"><a href="/v5/concepts/gas/">Gas</a></div><div class="hide link depth-2"><a href="/v5/concepts/security/">Security</a></div><div class="base ancestor show link depth-1"><a href="/v5/api/">Application Programming Interface</a></div><div class="show link depth-2"><a href="/v5/api/contract/">Contract Interaction</a></div><div class="hide link depth-3"><a href="/v5/api/contract/contract/">Contract</a></div><div class="hide link depth-3"><a href="/v5/api/contract/contract-factory/">ContractFactory</a></div><div class="hide link depth-3"><a href="/v5/api/contract/example/">Example: ERC-20 Contract</a></div><div class="show link depth-2"><a href="/v5/api/signer/">Signers</a></div><div class="show link depth-2"><a href="/v5/api/providers/">Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/provider/">Provider</a></div><div class="hide link depth-3"><a href="/v5/api/providers/jsonrpc-provider/">JsonRpcProvider</a></div><div class="hide link depth-3"><a href="/v5/api/providers/api-providers/">API Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/other/">Other Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/types/">Types</a></div><div class="show link depth-2"><a href="/v5/api/utils/">Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/abi/">Application Binary Interface</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/interface/">Interface</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/fragments/">Fragments</a></div><div class="hide link depth-3"><a href="/v5/api/utils/address/">Addresses</a></div><div class="hide link depth-3"><a href="/v5/api/utils/bignumber/">BigNumber</a></div><div class="hide link depth-3"><a href="/v5/api/utils/bytes/">Byte Manipulation</a></div><div class="hide link depth-3"><a href="/v5/api/utils/constants/">Constants</a></div><div class="hide link depth-3"><a href="/v5/api/utils/display-logic/">Display Logic and Input</a></div><div class="hide link depth-3"><a href="/v5/api/utils/encoding/">Encoding Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/fixednumber/">FixedNumber</a></div><div class="hide link depth-3"><a href="/v5/api/utils/hashing/">Hashing Algorithms</a></div><div class="hide link depth-3"><a href="/v5/api/utils/hdnode/">HD Wallet</a></div><div class="hide link depth-3"><a href="/v5/api/utils/logger/">Logging</a></div><div class="hide link depth-3"><a href="/v5/api/utils/properties/">Property Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/signing-key/">Signing Key</a></div><div class="hide link depth-3"><a href="/v5/api/utils/strings/">Strings</a></div><div class="hide link depth-3"><a href="/v5/api/utils/transactions/">Transactions</a></div><div class="hide link depth-3"><a href="/v5/api/utils/web/">Web Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/wordlists/">Wordlists</a></div><div class="ancestor show link depth-2"><a href="/v5/api/other/">Other Libraries</a></div><div class="ancestor show link depth-3"><a href="/v5/api/other/assembly/">Assembly</a></div><div class="myself ancestor ancestor show link depth-4"><a href="/v5/api/other/assembly/dialect/">Ethers ASM Dialect</a></div><div class="show link depth-4"><a href="/v5/api/other/assembly/api/">Utilities</a></div><div class="show link depth-4"><a href="/v5/api/other/assembly/ast/">Abstract Syntax Tree</a></div><div class="show link depth-3"><a href="/v5/api/other/hardware/">Hardware Wallets</a></div><div class="show link depth-2"><a href="/v5/api/experimental/">Experimental</a></div><div class="base show link depth-1"><a href="/v5/cli/">Command Line Interfaces</a></div><div class="hide link depth-2"><a href="/v5/cli/ethers/">Sandbox Utility</a></div><div class="hide link depth-2"><a href="/v5/cli/asm/">Assembler</a></div><div class="hide link depth-2"><a href="/v5/cli/ens/">Ethereum Naming Service</a></div><div class="hide link depth-2"><a href="/v5/cli/typescript/">TypeScript</a></div><div class="hide link depth-2"><a href="/v5/cli/plugin/">Making Your Own</a></div><div class="base show link depth-1"><a href="/v5/cookbook/">Cookbook</a></div><div class="base show link depth-1"><a href="/v5/migration/">Migration Guide</a></div><div class="hide link depth-2"><a href="/v5/migration/web3/">Migration: From Web3.js</a></div><div class="hide link depth-2"><a href="/v5/migration/ethers-v4/">Migration: From Ethers v4</a></div><div class="base show link depth-1"><a href="/v5/testing/">Testing</a></div><div class="base show link depth-1"><a href="/v5/contributing/">Contributing and Hacking</a></div><div class="base show link depth-1"><a href="/v5/documentation/">Flatworm Docs</a></div><div class="base show link depth-1"><a href="/v5/license/">License and Copyright</a></div>
+      </div></div>
+    </div>
+    <div class="content">
+      <div class="breadcrumbs"><a href="/v5/">Documentation</a>&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<a href="/v5/api/">API</a>&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<a href="/v5/api/other/">Other Libraries</a>&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<a href="/v5/api/other/assembly/">Assembly</a>&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<span class="current">Ethers ASM Dialect</span></div>
+
+<a name="asm-dialect"></a><a name="asm-dialect"></a><h1 class="show-anchors"><div>Ethers ASM Dialect<div class="anchors"><a class="self" href="/v5/api/other/assembly/dialect/#asm-dialect"></a></div></div></h1><p>This provides a quick, high-level overcview of the <b>Ethers ASM Dialect</b> for EVM, which is defined by the <a href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/asm/grammar.jison">Ethers ASM Dialect Grammar</a></p>
+
+<p>Once a program is compiled by a higher level langauge into ASM (assembly), or hand-coded directly in ASM, it needs to be assembled into bytecode.</p>
+
+<p>The assembly process performs a very small set of operations and is intentionally simple and closely related to the underlying EVM bytecode.</p>
+
+<p>Operations include embedding programs within programs (for example the deployment bootstrap has the runtime embedded in it) and computing the necessary offsets for jump operations.</p>
+
+<p>The <a href="/v5/cli/asm/">Command-Line Assembler</a> can be used to assemble an <i>Ethers ASM Dialect</i> file or to disassemble bytecode into its human-readable (ish) opcodes and literals.</p>
+
+<a name="asm-dialect-opcode"></a><a name="asm-dialect--asm-dialect-opcode"></a><h2 class="show-anchors"><div>Opcodes<div class="anchors"><a class="self" href="/v5/api/other/assembly/dialect/#asm-dialect-opcode"></a></div></div></h2><p>An <b>Opcode</b> may be provided in either a <i>functional</i> or <i>instructional</i> syntax. For Opcodes that require parameters, the <i>functional</i> syntax is recommended and the <i>instructional</i> syntax will raise a warning.</p>
+
+<p>@TODO: Examples</p>
+
+<a name="asm-dialect-label"></a><a name="asm-dialect--asm-dialect-label"></a><h2 class="show-anchors"><div>Labels<div class="anchors"><a class="self" href="/v5/api/other/assembly/dialect/#asm-dialect-label"></a></div></div></h2><p>A <b>Label</b> is a position in the program which can be jumped to. A <code class="inline">JUMPDEST</code> is automatically added to this point in the assembled output.</p>
+
+<p>@TODO: Exmaples</p>
+
+<a name="asm-dialect-literal"></a><a name="asm-dialect--asm-dialect-literal"></a><h2 class="show-anchors"><div>Literals<div class="anchors"><a class="self" href="/v5/api/other/assembly/dialect/#asm-dialect-literal"></a></div></div></h2><p>A <b>Literal</b> puts data on the stack when executed using a <code class="inline">PUSH</code> operation.</p>
+
+<p>A <b>Literal</b> can be provided using a <a href="/v5/api/utils/bytes/#DataHexString">DataHexString</a> or a decimal byte value.</p>
+
+<p>@TODO: exmples</p>
+
+<a name="asm-dialect-comment"></a><a name="asm-dialect--asm-dialect-comment"></a><h2 class="show-anchors"><div>Comments<div class="anchors"><a class="self" href="/v5/api/other/assembly/dialect/#asm-dialect-comment"></a></div></div></h2><p>To enter a comment in the <b>Ethers ASM Dialect</b>, any text following a semi-colon (i.e. <code class="inline">;</code>) is ignored by the assembler.</p>
+
+<a name="asm-dialect-scope"></a><a name="asm-dialect--asm-dialect-scope"></a><h2 class="show-anchors"><div>Scopes<div class="anchors"><a class="self" href="/v5/api/other/assembly/dialect/#asm-dialect-scope"></a></div></div></h2><p>A common case in Ethereum is to have one program embedded in another.</p>
+
+<p>The most common use of this is embedding a Contract <b>runtime bytecode</b> within a <b>deployment bytecode</b>, which can be used as <b>init code</b>.</p>
+
+<p>When deploying a program to Ethereum, an <b>init transaction</b> is used. An <i>init transaction</i> has a null <code class="inline">to</code> address and contains bytecode in the <code class="inline">data</code>. This <code class="inline">data</code> bytecode is a program, that when executed returns some other bytecode as a result, this restul is the bytecode to be installed.</p>
+
+<p>Therefore it is important that embedded code uses jumps relative to itself, not the entire program it is embedded in, which also means that a jump can <b>only</b> target its own scope, no parent or child scopes. This is enforced by the assembler.</p>
+
+<p>A scope may access the offset of any child <a href="/v5/api/other/assembly/dialect/#asm-dialect-datasegment">Data Segment</a> or child <a href="/v5/api/other/assembly/dialect/#asm-dialect-scope">Scopes</a> (with respect to itself) and may access the length of any <a href="/v5/api/other/assembly/dialect/#asm-dialect-datasegment">Data Segment</a> or <a href="/v5/api/other/assembly/dialect/#asm-dialect-scope">Scopes</a> anywhere in the program.</p>
+
+<p>Every program in the <b>Ethers ASM Dialect</b> has a top-leve scope named <code class="inline">_</code>.</p>
+
+<a name="asm-dialect-datasegment"></a><a name="asm-dialect--asm-dialect-datasegment"></a><h2 class="show-anchors"><div>Data Segment<div class="anchors"><a class="self" href="/v5/api/other/assembly/dialect/#asm-dialect-datasegment"></a></div></div></h2><p>A <b>Data Segment</b> allows arbitrary data to be embedded into a program, which can be useful for lookup tables or deploy-time constants.</p>
+
+<p>An emtpty <b>Data Segment</b> can also be used when a labelled location is required, but without the <code class="inline">JUMPDEST</code> which a <a href="/v5/api/other/assembly/dialect/#asm-dialect-label">Labels</a> adds.</p>
+
+<p>@TODO: Example</p>
+
+<a name="asm-dialect-links"></a><a name="asm-dialect--asm-dialect-links"></a><h2 class="show-anchors"><div>Links<div class="anchors"><a class="self" href="/v5/api/other/assembly/dialect/#asm-dialect-links"></a></div></div></h2><p>A <b>Link</b> allows access to a <a href="/v5/api/other/assembly/dialect/#asm-dialect-scope">Scopes</a>, <a href="/v5/api/other/assembly/dialect/#asm-dialect-datasegment">Data Segment</a> or <a href="/v5/api/other/assembly/dialect/#asm-dialect-label">Labels</a>.</p>
+
+<p>To access the byte offset of a labelled item, use <code class="inline">$foobar</code>.</p>
+
+<p>For a <a href="/v5/api/other/assembly/dialect/#asm-dialect-label">Labels</a>, the target must be directly reachable within this scope. For a <a href="/v5/api/other/assembly/dialect/#asm-dialect-datasegment">Data Segment</a> or a <a href="/v5/api/other/assembly/dialect/#asm-dialect-scope">Scopes</a>, it can be inside the same scope or any child scope.</p>
+
+<p>For a <a href="/v5/api/other/assembly/dialect/#asm-dialect-datasegment">Data Segment</a> or a <a href="/v5/api/other/assembly/dialect/#asm-dialect-label">Labels</a>, there is an additional type of <b>Link</b>, which provides the length of the data or bytecode respectively. A <b>Length Link</b> is accessed by <code class="inline">#foobar</code> and is pushed on the stack as a literal.</p>
+
+<a name="asm-dialect-placeholder"></a><a name="asm-dialect--asm-dialect-placeholder"></a><h2 class="show-anchors"><div>Stack Placeholders<div class="anchors"><a class="self" href="/v5/api/other/assembly/dialect/#asm-dialect-placeholder"></a></div></div></h2><p>@TODO: exampl</p>
+
+<a name="asm-dialect-scripting"></a><a name="asm-dialect--asm-dialect-scripting"></a><h2 class="show-anchors"><div>Evaluation and Excution<div class="anchors"><a class="self" href="/v5/api/other/assembly/dialect/#asm-dialect-scripting"></a></div></div></h2>
+
+
+      <div class="footer">
+        <div class="nav previous"><a href="/v5/api/other/assembly/"><span class="arrow">&larr;</span>Assembly</a></div>
+        <div class="nav next"><a href="/v5/api/other/assembly/api/">Utilities<span class="arrow">&rarr;</span></a></div>
+      </div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on June 8, 2020, 10:6pm.</div>
+    </div>
+    <script src="/v5/static/script.js" type="text/javascript"></script>
+  </body>
+</html>

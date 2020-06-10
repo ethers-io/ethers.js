@@ -7,128 +7,88 @@ Documentation: [html](https://docs-beta.ethers.io/)
 Web Utilities
 =============
 
+#### *ethers* . *utils* . **fetchJson**( urlOrConnectionInfo [ , json [ , processFunc ] ] ) => *Promise< any >*
+
+Fetch and parse the JSON content from *urlOrConnectionInfo*, with the optiona body *json* and optionally processing the result with *processFun* before returning it.
 
 
-#### *ethers* . *utils* . **fetchJson** ( urlOrConnectionInfo [  , json [  , processFunc ]  ]  )  **=>** *Promise< any >*
+#### *ethers* . *utils* . **poll**( pollFunc [ , options ] ) => *Promise< any >*
 
-Fetch and parse the JSON content from *urlOrConnectionInfo*, with the
-optiona body *json* and optionally processing the result with *processFun*
-before returning it.
+Repeatedly call pollFunc using the [PollOptions](/api/utils/web/#PollOptions) until it returns a value other than undefined.
 
 
+### ConnectionInfo
 
-
-#### *ethers* . *utils* . **poll** ( pollFunc [  , options ]  )  **=>** *Promise< any >*
-
-Repeatedly call pollFunc using the [Poll Options](./) until it returns a
-value other than undefined.
-
-
-
-
-### Connection Info
-
-
-
-#### *connection* . **url** **=>** *string*
+#### *connection* . **url** => *string*
 
 The URL to connect to.
 
 
+#### *connection* . **user** => *string*
+
+The username to use for [Basic Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication). The default is null (i.e. do not use basic authentication)
 
 
-#### *connection* . **user** **=>** *string*
+#### *connection* . **password** => *string*
 
-The username to use for [Basic Authentication](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/Basic_access_authentication).
-The default is null (i.e. do not use basic authentication)
-
+The password to use for [Basic Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication). The default is null (i.e. do not use basic authentication)
 
 
+#### *connection* . **allowInsecureAuthentication** => *boolean*
 
-#### *connection* . **password** **=>** *string*
-
-The password to use for [Basic Authentication](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/Basic_access_authentication).
-The default is null (i.e. do not use basic authentication)
+Allow [Basic Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) over non-secure HTTP. The default is false.
 
 
-
-
-#### *connection* . **allowInsecureAuthentication** **=>** *boolean*
-
-Allow [Basic Authentication](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/Basic_access_authentication) over non-secure HTTP. The default is false.
-
-
-
-
-#### *connection* . **timeout** **=>** *number*
+#### *connection* . **timeout** => *number*
 
 How long to wait before rejecting with a *timeout* error.
 
 
-
-
-#### *connection* . **headers** **=>** *{[key:string]:string}*
+#### *connection* . **headers** => *{[key:string]:string}*
 
 Additional headers to include in the connection.
 
 
+### PollOptions
+
+#### *options* . **timeout** => *number*
+
+The amount of time allowed to ellapse before triggering a timeout error.
 
 
-### Poll Options
+#### *options* . **floor** => *number*
 
-
-
-#### *options* . **timeout** **=>** *number*
-
-The amount of time allowed to ellapse before triggering a timeout
-error.
-
-
-
-
-#### *options* . **floor** **=>** *number*
-
-The minimum time limit to allow for [Exponential Backoff](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/Exponential_backoff).
+The minimum time limit to allow for [Exponential Backoff](https://en.wikipedia.org/wiki/Exponential_backoff).
 
 The default is 0s.
 
 
+#### *options* . **ceiling** => *number*
 
-
-#### *options* . **ceiling** **=>** *number*
-
-The maximum time limit to allow for [Exponential Backoff](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/Exponential_backoff).
+The maximum time limit to allow for [Exponential Backoff](https://en.wikipedia.org/wiki/Exponential_backoff).
 
 The default is 10s.
 
 
+#### *options* . **interval** => *number*
 
-
-#### *options* . **interval** **=>** *number*
-
-The interval used during [Exponential Backoff](../../../Users/ricmoo/Development/ethers/ethers.js-v5/https:/en.wikipedia.org/wiki/Exponential_backoff) calculation.
+The interval used during [Exponential Backoff](https://en.wikipedia.org/wiki/Exponential_backoff) calculation.
 
 The default is 250ms.
 
 
+#### *options* . **retryLimit** => *number*
+
+The number of times to retry in the event of an error or *undefined* is returned.
 
 
-#### *options* . **retryLimit** **=>** *number*
+#### *options* . **onceBlock** => *[Provider](/api/providers/provider/)*
 
-The number of times to retry in the event of an error or *undefined* is
-returned.
-
+If this is specified, the polling will wait on new blocks from *provider* before attempting the *pollFunc* again.
 
 
+#### *options* . **oncePoll** => *[Provider](/api/providers/provider/)*
 
-#### *options* . **onceBlock** **=>** *[Provider](../../providers/provider)*
-
-If this is specified, the polling will wait on new blocks from
-*provider* before attempting the *pollFunc* again.
+If this is specified, the polling will occur on each poll cycle of *provider* before attempting the *pollFunc* again.
 
 
-
-
-
------
-**Content Hash:** 595f603aa2c0b7be3b5139c1ea9ea198dabddd6dc76793b1558911ab70bda06f

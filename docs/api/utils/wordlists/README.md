@@ -7,135 +7,89 @@ Documentation: [html](https://docs-beta.ethers.io/)
 Wordlists
 =========
 
-
-
 Wordlist
 --------
 
-
-
-#### *wordlist* . **locale** **=>** *string*
+#### *wordlist* . **locale** => *string*
 
 The locale for this wordlist.
 
 
-
-
-#### *wordlist* . **getWord** ( index )  **=>** *string*
+#### *wordlist* . **getWord**( index ) => *string*
 
 Returns the word at *index*.
 
 
-
-
-#### *wordlist* . **getWordIndex** ( word )  **=>** *number*
+#### *wordlist* . **getWordIndex**( word ) => *number*
 
 Returns the index of *word* within the wordlist.
 
 
+#### *wordlist* . **split**( mnemonic ) => *Array< string >*
+
+Returns the mnemonic split into each individual word, according to a locale's valid whitespace character set.
 
 
-#### *wordlist* . **split** ( mnemonic )  **=>** *Array< string >*
+#### *wordlist* . **join**( words ) => *string*
 
-Returns the mnemonic split into each individual word, according to a
-locale's valid whitespace character set.
-
+Returns the mnemonic by joining *words* together using the whitespace that is standard for the locale.
 
 
+#### *Wordlist* . **check**( wordlists ) => *string< [DataHexString](/api/utils/bytes/#DataHexString)< 32 > >*
 
-#### *wordlist* . **join** ( words )  **=>** *string*
-
-Returns the mnemonic by joining *words* together using the
-whitespace that is standard for the locale.
+Checks that all words map both directions correctly and return the hash of the lists. Sub-classes should use this to validate the wordlist is correct against the official wordlist hash.
 
 
+#### *Wordlist* . **register**( wordlist [ , name ] ) => *void*
 
-
-#### *Wordlist* . **check** ( wordlists )  **=>** *string< [DataHexstring](../bytes)< 32 > >*
-
-Checks that all words map both directions correctly and return the
-hash of the lists. Sub-classes should use this to validate the wordlist
-is correct against the official wordlist hash.
-
-
-
-
-#### *Wordlist* . **register** ( wordlist [  , name ]  )  **=>** *void*
-
-Register a wordlist with the list of wordlists, optionally overriding
-the registered *name*.
-
-
+Register a wordlist with the list of wordlists, optionally overriding the registered *name*.
 
 
 Languages
 ---------
 
+#### *ethers* . *wordlists* . **cz** => *Wordlist*
+
+The Czech [Wordlist](/api/utils/wordlists/#Wordlist).
 
 
-#### *ethers* . *wordlists* . **cz** **=>** *Wordlist*
+#### *ethers* . *wordlists* . **en** => *Wordlist*
 
-The Czech [Wordlist](./).
-
-
+The English [Wordlist](/api/utils/wordlists/#Wordlist).
 
 
-#### *ethers* . *wordlists* . **en** **=>** *Wordlist*
+#### *ethers* . *wordlists* . **es** => *Wordlist*
 
-The English [Wordlist](./).
-
-
+The Spanish [Wordlist](/api/utils/wordlists/#Wordlist).
 
 
-#### *ethers* . *wordlists* . **es** **=>** *Wordlist*
+#### *ethers* . *wordlists* . **fr** => *Wordlist*
 
-The Spanish [Wordlist](./).
-
-
+The French [Wordlist](/api/utils/wordlists/#Wordlist).
 
 
-#### *ethers* . *wordlists* . **fr** **=>** *Wordlist*
+#### *ethers* . *wordlists* . **it** => *Wordlist*
 
-The French [Wordlist](./).
-
-
+The Italian [Wordlist](/api/utils/wordlists/#Wordlist).
 
 
-#### *ethers* . *wordlists* . **it** **=>** *Wordlist*
+#### *ethers* . *wordlists* . **ja** => *Wordlist*
 
-The Italian [Wordlist](./).
-
-
+The Japanese [Wordlist](/api/utils/wordlists/#Wordlist).
 
 
-#### *ethers* . *wordlists* . **ja** **=>** *Wordlist*
+#### *ethers* . *wordlists* . **ko** => *Wordlist*
 
-The Japanese [Wordlist](./).
-
-
+The Korean [Wordlist](/api/utils/wordlists/#Wordlist).
 
 
-#### *ethers* . *wordlists* . **ko** **=>** *Wordlist*
+#### *ethers* . *wordlists* . **zh_cn** => *Wordlist*
 
-The Korean [Wordlist](./).
-
-
+The Simplified Chinese [Wordlist](/api/utils/wordlists/#Wordlist).
 
 
-#### *ethers* . *wordlists* . **zh_cn** **=>** *Wordlist*
+#### *ethers* . *wordlists* . **zh_tw** => *Wordlist*
 
-The Simplified Chinese [Wordlist](./).
-
-
+The Traditional Chinese [Wordlist](/api/utils/wordlists/#Wordlist).
 
 
-#### *ethers* . *wordlists* . **zh_tw** **=>** *Wordlist*
-
-The Traditional Chinese [Wordlist](./).
-
-
-
-
-
------
-**Content Hash:** a5616892113b9a9a384590f4154ea1c32b078a3eb0c3eb82ac80a79c894394d7
