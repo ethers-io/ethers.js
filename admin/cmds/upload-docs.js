@@ -3,13 +3,12 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-
 const AWS = require('aws-sdk');
 
 const config = require("../config");
 
 
-const Bucket = "docs-beta.ethers.io";
+const Bucket = "docs.ethers.io";
 
 
 function _getKeys(s3, result, nextToken, callback) {
@@ -86,7 +85,7 @@ function putObject(s3, name, content) {
             if (error) {
                 reject(error);
             } else {
-                console.log('Uplodaed:', name)
+                console.log("  Done.")
                 resolve({
                     name: name,
                     hash: data.ETag.replace(/"/g, '')
@@ -118,12 +117,18 @@ function _getFiles(result, root) {
     });
 }
 
-function getFiles(dirs) {
-    const result = { } //"index.html": hash("index.html") };
-    dirs.forEach(function(dir) {
-        _getFiles(result, dir);
-    })
-    return result;
+function getFiles(basedir) {
+    // Make sure we have a trailing slash
+    if (!basedir.match(/\/$/)) { basedir += "/"; }
+
+    // Fetch all the file hashes
+    const hashes = { };
+    _getFiles(hashes, basedir);
+
+    return Object.keys(hashes).reduce((accum, key) => {
+        accum[key.substring(basedir.length)] = hashes[key];
+        return accum;
+    }, { });
 }
 
 (async function() {
@@ -138,7 +143,9 @@ function getFiles(dirs) {
 
     const added = [], removed = [], changed = [], upload = [];
 
-    const local = await getFiles([ "docs" ]);
+    const basedir = path.resolve(__dirname, "../../docs");
+
+    const local = await getFiles(basedir);
     const remote = await getKeys(s3);
 
     Object.keys(local).forEach((filename) => {
@@ -166,7 +173,8 @@ function getFiles(dirs) {
 
     for (let i = 0; i < upload.length; i++) {
         const filename = upload[i];
-        console.log("Uploading:", filename);
-        await putObject(s3, filename, fs.readFileSync(filename));
+        const content = fs.readFileSync(path.resolve(basedir, filename));
+        console.log(`Uploading: ${ filename } (${ content.length } bytes)`);
+        await putObject(s3, filename, content);
     }
 })();
